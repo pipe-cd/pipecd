@@ -20,6 +20,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | input | [KubernetesDeploymentInput](/docs/user-guide/configuration-reference/#kubernetesdeploymentinput) | Input for Kubernetes deployment such as kubectl version, helm version, manifests filter... | No |
+| planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | commitMatcher | [CommitMatcher](/docs/user-guide/configuration-reference/#commitmatcher) | Forcibly use QuickSync or Pipeline when commit message matched the specified pattern. | No |
 | quickSync | [KubernetesQuickSync](/docs/user-guide/configuration-reference/#kubernetesquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
@@ -29,6 +30,7 @@ spec:
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
+| notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
 ## Terraform application
 
@@ -44,11 +46,13 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | input | [TerraformDeploymentInput](/docs/user-guide/configuration-reference/#terraformdeploymentinput) | Input for Terraform deployment such as terraform version, workspace... | No |
+| planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [TerraformQuickSync](/docs/user-guide/configuration-reference/#terraformquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
+| notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
 ## CloudRun application
 
@@ -64,11 +68,13 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | input | [CloudRunDeploymentInput](/docs/user-guide/configuration-reference/#cloudrundeploymentinput) | Input for CloudRun deployment such as docker image... | No |
+| planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [CloudRunQuickSync](/docs/user-guide/configuration-reference/#cloudrunquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
+| notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
 ## Lambda application
 
@@ -82,11 +88,13 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [LambdaQuickSync](/docs/user-guide/configuration-reference/#lambdaquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
+| notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
 ## ECS application
 
@@ -102,11 +110,13 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | input | [ECSDeploymentInput](#ecsdeploymentinput) | Input for ECS deployment such as TaskDefinition, Service... | Yes |
+| planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [ECSQuickSync](/docs/user-guide/configuration-reference/#ecsquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
+| notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
 ## Analysis Template Configuration
 
@@ -171,6 +181,12 @@ One of `yamlField` or `regex` is required.
 | outFilename | string | The filename for the decrypted secret. Empty means the same name with the sealed secret file. | No |
 | outDir | string | The directory name where to put the decrypted secret. Empty means the same directory with the sealed secret file. | No |
 
+## DeploymentPlanner
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| alwaysUsePipeline | bool | Always use the defined pipeline to deploy the application in all deployments. Default is `false`. | No |
+
 ## Pipeline
 
 | Field | Type | Description | Required |
@@ -186,6 +202,19 @@ One of `yamlField` or `regex` is required.
 | desc | string | The description about the stage. | No |
 | timeout | duration | The maximum time the stage can be taken to run. | No |
 | with | [StageOptions](/docs/user-guide/configuration-reference/#stageoptions) | Specific configuration for the stage. This must be one of these [StageOptions](/docs/user-guide/configuration-reference/#stageoptions). | No |
+
+## DeploymentNotification
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| mentions | [][NotificationMention](/docs/user-guide/configuration-reference/#notificationmention) | List of users to be notified for each event. | No |
+
+## NotificationMention
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| event | string | The event to be notified to users. | Yes |
+| slack | []string | List of user IDs for mentioning in Slack. See [here](https://api.slack.com/reference/surfaces/formatting#mentioning-users) for more information on how to check them. | No |
 
 ## KubernetesDeploymentInput
 

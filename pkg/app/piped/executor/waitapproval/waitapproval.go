@@ -57,6 +57,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	timeout := e.StageConfig.WaitApprovalStageOptions.Timeout.Duration()
 	timer := time.NewTimer(timeout)
 
+	e.reportRequiringApproval(ctx)
 	e.LogPersister.Info("Waiting for an approval...")
 	for {
 		select {
@@ -113,4 +114,29 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 		e.Logger.Error("failed to report handled command", zap.Error(err))
 	}
 	return approveCmd.Commander, true
+}
+
+func (e *Executor) reportRequiringApproval(ctx context.Context) {
+	ds, err := e.TargetDSP.GetReadOnly(ctx, e.LogPersister)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
+		return
+	}
+
+	var approvers []string
+
+	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
+		if v.Event == "DEPLOYMENT_WAIT_APPROVAL" {
+			approvers = v.Slack
+		}
+	}
+
+	e.Notifier.Notify(model.NotificationEvent{
+		Type: model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL,
+		Metadata: &model.NotificationEventDeploymentWaitApproval{
+			Deployment:        e.Deployment,
+			EnvName:           e.EnvName,
+			MentionedAccounts: approvers,
+		},
+	})
 }

@@ -28,6 +28,8 @@ const (
 )
 
 type GenericDeploymentSpec struct {
+	// Configuration used while planning deployment.
+	Planner DeploymentPlanner `json:"planner"`
 	// Forcibly use QuickSync or Pipeline when commit message matched the specified pattern.
 	CommitMatcher DeploymentCommitMatcher `json:"commitMatcher"`
 	// Pipeline for deploying progressively.
@@ -42,6 +44,14 @@ type GenericDeploymentSpec struct {
 	Timeout Duration `json:"timeout,omitempty" default:"6h"`
 	// List of encrypted secrets and targets that should be decoded before using.
 	Encryption *SecretEncryption `json:"encryption"`
+	// Additional configuration used while sending notification to external services.
+	DeploymentNotification *DeploymentNotification `json:"notification"`
+}
+
+type DeploymentPlanner struct {
+	// Disable auto-detecting to use QUICK_SYNC or PROGRESSIVE_SYNC.
+	// Always use the speficied pipeline for all deployments.
+	AlwaysUsePipeline bool `json:"alwaysUsePipeline"`
 }
 
 func (s *GenericDeploymentSpec) Validate() error {
@@ -312,19 +322,61 @@ type AnalysisStageOptions struct {
 	Metrics          []TemplatableAnalysisMetrics `json:"metrics"`
 	Logs             []TemplatableAnalysisLog     `json:"logs"`
 	Https            []TemplatableAnalysisHTTP    `json:"https"`
-	Dynamic          AnalysisDynamic              `json:"dynamic"`
 }
 
 func (a *AnalysisStageOptions) Validate() error {
 	if a.Duration == 0 {
 		return fmt.Errorf("the ANALYSIS stage requires duration field")
 	}
+
+	for _, m := range a.Metrics {
+		if m.Template.Name != "" {
+			if err := m.Template.Validate(); err != nil {
+				return fmt.Errorf("one of metrics configurations of ANALYSIS stage is invalid: %w", err)
+			}
+			continue
+		}
+		if err := m.AnalysisMetrics.Validate(); err != nil {
+			return fmt.Errorf("one of metrics configurations of ANALYSIS stage is invalid: %w", err)
+		}
+	}
+
+	for _, l := range a.Logs {
+		if l.Template.Name != "" {
+			if err := l.Template.Validate(); err != nil {
+				return fmt.Errorf("one of log configurations of ANALYSIS stage is invalid: %w", err)
+			}
+			continue
+		}
+		if err := l.AnalysisLog.Validate(); err != nil {
+			return fmt.Errorf("one of log configurations of ANALYSIS stage is invalid: %w", err)
+		}
+	}
+	for _, h := range a.Https {
+		if h.Template.Name != "" {
+			if err := h.Template.Validate(); err != nil {
+				return fmt.Errorf("one of http configurations of ANALYSIS stage is invalid: %w", err)
+			}
+			continue
+		}
+		if err := h.AnalysisHTTP.Validate(); err != nil {
+			return fmt.Errorf("one of http configurations of ANALYSIS stage is invalid: %w", err)
+		}
+	}
 	return nil
 }
 
 type AnalysisTemplateRef struct {
-	Name string            `json:"name"`
+	Name string `json:"name"`
+	// TODO: Rename args to appArgs
 	Args map[string]string `json:"args"`
+}
+
+func (a *AnalysisTemplateRef) Validate() error {
+	if a.Name == "" {
+		return fmt.Errorf("the reference of analysis template name is empty")
+	}
+	return nil
 }
 
 // TemplatableAnalysisMetrics wraps AnalysisMetrics to allow specify template to use.
@@ -373,4 +425,31 @@ func (e *SecretEncryption) Validate() error {
 		}
 	}
 	return nil
+}
+
+// DeploymentNotification represents the way to send to users.
+type DeploymentNotification struct {
+	// List of users to be notified for each event.
+	Mentions []NotificationMention `json:"mentions"`
+}
+
+type NotificationMention struct {
+	// The event to be notified to users.
+	Event string `json:"event"`
+	// List of user IDs for mentioning in Slack.
+	// See https://api.slack.com/reference/surfaces/formatting#mentioning-users
+	// for more information on how to check them.
+	Slack []string `json:"slack"`
+	// TODO: Support for email notification
+	// The email for notification.
+	Email []string `json:"email"`
+}
+
+func (n *NotificationMention) Validate() error {
+	for k := range model.NotificationEventType_value {
+		if n.Event == k {
+			return nil
+		}
+	}
+	return fmt.Errorf("event %q is incorrect as NotificationEventType", n.Event)
 }

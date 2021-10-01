@@ -20,8 +20,22 @@ import (
 	"strings"
 )
 
+const (
+	AnalysisStrategyThreshold      = "THRESHOLD"
+	AnalysisStrategyPrevious       = "PREVIOUS"
+	AnalysisStrategyCanaryBaseline = "CANARY_BASELINE"
+	AnalysisStrategyCanaryPrimary  = "CANARY_PRIMARY"
+
+	AnalysisDeviationEither = "EITHER"
+	AnalysisDeviationHigh   = "HIGH"
+	AnalysisDeviationLow    = "LOW"
+)
+
 // AnalysisMetrics contains common configurable values for deployment analysis with metrics.
 type AnalysisMetrics struct {
+	// The strategy name. One of THRESHOLD or PREVIOUS or CANARY_BASELINE or CANARY_PRIMARY is available.
+	// Defaults to THRESHOLD.
+	Strategy string `json:"strategy" default:"THRESHOLD"`
 	// The unique name of provider defined in the Piped Configuration.
 	// Required field.
 	Provider string `json:"provider"`
@@ -29,7 +43,7 @@ type AnalysisMetrics struct {
 	// Required field.
 	Query string `json:"query"`
 	// The expected query result.
-	// Required field.
+	// Required field for the THRESHOLD strategy.
 	Expected AnalysisExpected `json:"expected"`
 	// Run a query at this intervals.
 	// Required field.
@@ -44,6 +58,19 @@ type AnalysisMetrics struct {
 	// How long after which the query times out.
 	// Default is 30s.
 	Timeout Duration `json:"timeout"`
+
+	// The stage fails on deviation in the specified direction. One of LOW or HIGH or EITHER is available.
+	// This can be used only for PREVIOUS, CANARY_BASELINE or CANARY_PRIMARY. Defaults to EITHER.
+	Deviation string `json:"deviation" default:"EITHER"`
+	// The custom arguments to be populated for the Canary query.
+	// They can be reffered as {{ .VariantArgs.xxx }}.
+	CanaryArgs map[string]string `json:"canaryArgs"`
+	// The custom arguments to be populated for the Baseline query.
+	// They can be reffered as {{ .VariantArgs.xxx }}.
+	BaselineArgs map[string]string `json:"baselineArgs"`
+	// The custom arguments to be populated for the Primary query.
+	// They can be reffered as {{ .VariantArgs.xxx }}.
+	PrimaryArgs map[string]string `json:"primaryArgs"`
 }
 
 func (m *AnalysisMetrics) Validate() error {
@@ -56,8 +83,8 @@ func (m *AnalysisMetrics) Validate() error {
 	if m.Interval == 0 {
 		return fmt.Errorf("missing \"interval\" field")
 	}
-	if err := m.Expected.Validate(); err != nil {
-		return err
+	if m.Deviation != AnalysisDeviationEither && m.Deviation != AnalysisDeviationHigh && m.Deviation != AnalysisDeviationLow {
+		return fmt.Errorf("\"deviation\" have to be one of %s, %s or %s", AnalysisDeviationEither, AnalysisDeviationHigh, AnalysisDeviationLow)
 	}
 	return nil
 }
@@ -120,15 +147,19 @@ type AnalysisLog struct {
 	Provider string   `json:"provider"`
 }
 
+func (a *AnalysisLog) Validate() error {
+	return nil
+}
+
 // AnalysisHTTP contains common configurable values for deployment analysis with http.
 type AnalysisHTTP struct {
 	URL    string `json:"url"`
 	Method string `json:"method"`
 	// Custom headers to set in the request. HTTP allows repeated headers.
-	Headers          []AnalysisHeader `json:"headers"`
-	ExpectedCode     int              `json:"expectedCode"`
-	ExpectedResponse string           `json:"expectedResponse"`
-	Interval         Duration         `json:"interval"`
+	Headers          []AnalysisHTTPHeader `json:"headers"`
+	ExpectedCode     int                  `json:"expectedCode"`
+	ExpectedResponse string               `json:"expectedResponse"`
+	Interval         Duration             `json:"interval"`
 	// Maximum number of failed checks before the response is considered as failure.
 	FailureLimit int `json:"failureLimit"`
 	// If true, it considers as success when no data returned from the analysis provider.
@@ -137,36 +168,11 @@ type AnalysisHTTP struct {
 	Timeout      Duration `json:"timeout"`
 }
 
-type AnalysisHeader struct {
+func (a *AnalysisHTTP) Validate() error {
+	return nil
+}
+
+type AnalysisHTTPHeader struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
-}
-
-// AnalysisDynamic contains settings for analysis by comparing  with dynamic data.
-type AnalysisDynamic struct {
-	Metrics []AnalysisDynamicMetrics `json:"metrics"`
-	Logs    []AnalysisDynamicLog     `json:"logs"`
-	Https   []AnalysisDynamicHTTP    `json:"https"`
-}
-
-type AnalysisDynamicMetrics struct {
-	Query    string   `json:"query"`
-	Provider string   `json:"provider"`
-	Timeout  Duration `json:"timeout"`
-}
-
-type AnalysisDynamicLog struct {
-	Query    string   `json:"query"`
-	Provider string   `json:"provider"`
-	Timeout  Duration `json:"timeout"`
-}
-
-type AnalysisDynamicHTTP struct {
-	URL              string           `json:"url"`
-	Method           string           `json:"method"`
-	Headers          []AnalysisHeader `json:"headers"`
-	ExpectedCode     int              `json:"expectedCode"`
-	ExpectedResponse string           `json:"expectedResponse"`
-	Interval         Duration         `json:"interval"`
-	Timeout          Duration         `json:"timeout"`
 }

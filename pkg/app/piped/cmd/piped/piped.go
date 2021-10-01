@@ -38,7 +38,7 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/admin"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
-	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice/pipedclientfake"
+	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/analysisresultstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/applicationstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/deploymentstore"
@@ -84,7 +84,6 @@ type piped struct {
 	adminPort                            int
 	toolsDir                             string
 	enableDefaultKubernetesCloudProvider bool
-	useFakeAPIClient                     bool
 	gracePeriod                          time.Duration
 	addLoginUserToPasswd                 bool
 }
@@ -114,7 +113,6 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().IntVar(&p.adminPort, "admin-port", p.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
 
 	cmd.Flags().StringVar(&p.toolsDir, "tools-dir", p.toolsDir, "The path to directory where to install needed tools such as kubectl, helm, kustomize.")
-	cmd.Flags().BoolVar(&p.useFakeAPIClient, "use-fake-api-client", p.useFakeAPIClient, "Whether the fake api client should be used instead of the real one or not.")
 	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not.")
 	cmd.Flags().BoolVar(&p.addLoginUserToPasswd, "add-login-user-to-passwd", p.addLoginUserToPasswd, "Whether to add login user to $HOME/passwd. This is typically for applications running as a random user ID.")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
@@ -139,16 +137,6 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 
 	// Register all metrics.
 	registry := registerMetrics(cfg.PipedID, cfg.ProjectID)
-
-	// Initialize notifier and add piped events.
-	notifier, err := notifier.NewNotifier(cfg, t.Logger)
-	if err != nil {
-		t.Logger.Error("failed to initialize notifier", zap.Error(err))
-		return err
-	}
-	group.Go(func() error {
-		return notifier.Run(ctx)
-	})
 
 	// Configure SSH config if needed.
 	if cfg.Git.ShouldConfigureSSHConfig() {
@@ -198,6 +186,16 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		t.Logger.Error("failed to report piped meta to control-plane", zap.Error(err))
 		return err
 	}
+
+	// Initialize notifier and add piped events.
+	notifier, err := notifier.NewNotifier(cfg, t.Logger)
+	if err != nil {
+		t.Logger.Error("failed to initialize notifier", zap.Error(err))
+		return err
+	}
+	group.Go(func() error {
+		return notifier.Run(ctx)
+	})
 
 	// Start running admin server.
 	{
@@ -289,6 +287,8 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		eventGetter = store.Getter()
 	}
 
+	analysisResultStore := analysisresultstore.NewStore(apiClient, t.Logger)
+
 	// Create memory caches.
 	appManifestsCache := memorycache.NewTTLCache(ctx, time.Hour, time.Minute)
 
@@ -343,6 +343,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 			applicationLister,
 			environmentStore,
 			livestatestore.LiveResourceLister{Getter: liveStateGetter},
+			analysisResultStore,
 			notifier,
 			decrypter,
 			cfg,
@@ -441,9 +442,6 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 
 // createAPIClient makes a gRPC client to connect to the API.
 func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID string, pipedKey []byte, logger *zap.Logger) (pipedservice.Client, error) {
-	if p.useFakeAPIClient {
-		return pipedclientfake.NewClient(logger), nil
-	}
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
@@ -607,7 +605,8 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	}
 
 	for retry.WaitNext(ctx) {
-		if _, err = client.ReportPipedMeta(ctx, req); err == nil {
+		if res, err := client.ReportPipedMeta(ctx, req); err == nil {
+			cfg.Name = res.Name
 			return nil
 		}
 		logger.Warn("failed to report piped meta to control-plane, wait to the next retry",

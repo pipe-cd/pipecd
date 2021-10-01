@@ -72,13 +72,6 @@ export const dummyApps: Record<ApplicationKind, Application.AsObject> = {
     kind: ApplicationKind.TERRAFORM,
     cloudProvider: "terraform-default",
   },
-  [ApplicationKind.CROSSPLANE]: {
-    ...dummyApplication,
-    id: randomUUID(),
-    name: "Crossplane App",
-    kind: ApplicationKind.CROSSPLANE,
-    cloudProvider: "crossplane-default",
-  },
   [ApplicationKind.LAMBDA]: {
     ...dummyApplication,
     id: randomUUID(),

@@ -27,7 +27,7 @@ export const ApplicationAutocomplete: FC<Props> = ({ value, onChange }) => {
         onChange(value || "");
       }}
       renderInput={(params) => (
-        <TextField {...params} label="Name" variant="outlined" />
+        <TextField {...params} label="Application Name" variant="outlined" />
       )}
     />
   );

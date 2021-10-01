@@ -20,7 +20,7 @@ While it empowers you to build pretty versatile workflows, the canonical use cas
 This guide walks you through configuring Event watcher and how to push an Event.
 
 ## Prerequisites
-Before we get into configuring EventWatcher, be sure to grant write permission to the SSH key used by Piped. See [here](/docs/operator-manual/piped/configuring-event-watcher/) for more details.
+Before we get into configuring EventWatcher, be sure to configure Piped. See [here](/docs/operator-manual/piped/configuring-event-watcher/) for more details.
 
 ## Usage
 File updating can be done by registering the latest value corresponding to the Event in the control-plane and comparing it with the current value.

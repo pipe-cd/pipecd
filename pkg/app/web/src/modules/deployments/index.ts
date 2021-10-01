@@ -28,6 +28,7 @@ export interface DeploymentFilterOptions {
   kind?: string;
   applicationId?: string;
   envId?: string;
+  applicationName?: string;
 }
 
 export const isDeploymentRunning = (
@@ -92,6 +93,7 @@ const convertFilterOptions = (
   options: DeploymentFilterOptions
 ): ListDeploymentsRequest.Options.AsObject => {
   return {
+    applicationName: options.applicationName ?? "",
     applicationIdsList: options.applicationId ? [options.applicationId] : [],
     envIdsList: options.envId ? [options.envId] : [],
     kindsList: options.kind

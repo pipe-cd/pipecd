@@ -8,27 +8,41 @@ description: >
 
 To enable [EventWatcher](/docs/user-guide/event-watcher/), you have to configure your piped at first.
 
-### [required] Grant write permission
+### Grant write permission
 The [SSH key used by Piped](/docs/operator-manual/piped/configuration-reference/#git) must be a key with write-access because piped needs to commit and push to your git repository when any incoming event matches.
 
-### [optional] Settings for watcher
-The Piped's behavior can be finely controlled by setting the `eventWatcher` field.
+### Specify Git repositories to be observed
+Piped watches events only for the Git repositories specified in the `gitRepos` list.
+You need to add all repositories you want to enable Eventwatcher.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
   eventWatcher:
-    checkInterval: 5m
+    gitRepos:
+      - repoId: repo-1
+      - repoId: repo-2
+      - repoId: repo-3
+```
+
+### [optional] Specify Eventwatcher files Piped will use
+If multiple Pipeds handle a single repository, you can prevent conflicts by splitting into the multiple EventWatcher files and setting `includes/excludes` to specify the files that should be monitored by this Piped.
+
+Say for instance, if you only want the Piped to use the Eventwatcher files under `.pipe/dev/`:
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  eventWatcher:
     gitRepos:
       - repoId: repo-1
         commitMessage: Update values by Event watcher
         includes:
-          - event-watcher-dev.yaml
-          - event-watcher-stg.yaml
+          - dev/*.yaml
 ```
 
-If multiple Pipeds handle a single repository, you can prevent conflicts by splitting into the multiple EventWatcher files and setting `includes/excludes` to specify the files that should be monitored by this Piped.
 `excludes` is prioritized if both `includes` and `excludes` are given.
 
 The full list of configurable fields are [here](/docs/operator-manual/piped/configuration-reference/#eventwatcher).

@@ -53,6 +53,10 @@ CREATE INDEX command_piped_id ON Command (PipedId);
 ALTER TABLE Deployment ADD COLUMN ApplicationId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.application_id") VIRTUAL NOT NULL;
 CREATE INDEX deployment_application_id_updated_at_desc ON Deployment (ApplicationId, UpdatedAt DESC);
 
+-- index on `ApplicationName` ASC and `UpdatedAt` DESC
+ALTER TABLE Deployment ADD COLUMN ApplicationName VARCHAR(36) GENERATED ALWAYS AS (data->>"$.application_name") VIRTUAL NOT NULL;
+CREATE INDEX deployment_application_name_updated_at_desc ON Deployment (ApplicationName, UpdatedAt DESC);
+
 -- index on `ProjectId` ASC and `UpdatedAt` DESC
 CREATE INDEX deployment_project_id_updated_at_desc ON Deployment (ProjectId, UpdatedAt DESC);
 

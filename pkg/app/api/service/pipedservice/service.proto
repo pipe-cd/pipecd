@@ -28,6 +28,7 @@ import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
 import "pkg/model/piped_stats.proto";
 import "pkg/model/event.proto";
+import "pkg/model/analysis_result.proto";
 
 // PipedService contains all RPC definitions for piped.
 // All of these RPCs are only called by piped and authenticated by using PIPED_TOKEN.
@@ -147,6 +148,15 @@ service PipedService {
 
     // ListEvents returns a list of Events inside the given range.
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
+
+    // GetLatestAnalysisResult returns the most successful analysis result.
+    rpc GetLatestAnalysisResult(GetLatestAnalysisResultRequest) returns (GetLatestAnalysisResultResponse) {}
+
+    // GetLatestAnalysisResult updates the most successful analysis result.
+    rpc PutLatestAnalysisResult(PutLatestAnalysisResultRequest) returns (PutLatestAnalysisResultResponse) {}
+
+    // GetDesiredVersion returns the desired version of the given Piped.
+    rpc GetDesiredVersion(GetDesiredVersionRequest) returns (GetDesiredVersionResponse) {}
 }
 
 enum ListOrder {
@@ -180,6 +190,7 @@ message ReportPipedMetaRequest {
 }
 
 message ReportPipedMetaResponse {
+    string name = 1 [(validate.rules).string.min_len = 1];
 }
 
 message GetEnvironmentRequest {
@@ -249,7 +260,7 @@ message CreateDeploymentResponse {
 message ReportDeploymentPlannedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     // Simple description about what this deployment does.
-    // Empty means nothing has changed complared to when the deployment was created.
+    // Empty means nothing has changed compared to when the deployment was created.
     string summary = 2;
     // The human-readable description why the deployment is at current status.
     string status_reason = 3;
@@ -258,7 +269,7 @@ message ReportDeploymentPlannedRequest {
     // The application version this deployment is trying to deploy.
     string version = 5;
     // The planned stages.
-    // Empty means nothing has changed complared to when the deployment was created.
+    // Empty means nothing has changed compared to when the deployment was created.
     repeated pipe.model.PipelineStage stages = 6;
 }
 
@@ -396,4 +407,27 @@ message ListEventsRequest {
 
 message ListEventsResponse {
     repeated pipe.model.Event events = 1;
+}
+
+message GetLatestAnalysisResultRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetLatestAnalysisResultResponse {
+    pipe.model.AnalysisResult analysis_result = 1 [(validate.rules).message.required = true];
+}
+
+message PutLatestAnalysisResultRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    pipe.model.AnalysisResult analysis_result = 2 [(validate.rules).message.required = true];
+}
+
+message PutLatestAnalysisResultResponse {
+}
+
+message GetDesiredVersionRequest {
+}
+
+message GetDesiredVersionResponse {
+    string version = 1;
 }
