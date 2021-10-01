@@ -17,6 +17,8 @@ package controller
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -149,7 +151,7 @@ func (p *planner) Run(ctx context.Context) error {
 	planner, ok := p.plannerRegistry.Planner(p.deployment.Kind)
 	if !ok {
 		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-		p.reportDeploymentFailed(ctx, "Unable to find the planner for this application kind")
+		p.reportDeploymentFailed(ctx, "Unable to find the planner for this application kind", nil)
 		return fmt.Errorf("unable to find the planner for application %v", p.deployment.Kind)
 	}
 
@@ -157,7 +159,7 @@ func (p *planner) Run(ctx context.Context) error {
 	repoCfg, ok := p.pipedConfig.GetRepository(repoID)
 	if !ok {
 		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-		p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to find %q from the repository list in piped config", repoID))
+		p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to find %q from the repository list in piped config", repoID), nil)
 		return fmt.Errorf("unable to find %q from the repository list in piped config", repoID)
 	}
 
@@ -197,7 +199,7 @@ func (p *planner) Run(ctx context.Context) error {
 		if cmd != nil {
 			p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
 			desc := fmt.Sprintf("Deployment was cancelled by %s while planning", cmd.Commander)
-			p.reportDeploymentCancelled(ctx, cmd.Commander, desc)
+			p.reportDeploymentCancelled(ctx, cmd.Commander, desc, in.TargetDSP)
 			return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil)
 		}
 	default:
@@ -205,14 +207,14 @@ func (p *planner) Run(ctx context.Context) error {
 
 	if err != nil {
 		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-		return p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to plan the deployment (%v)", err))
+		return p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to plan the deployment (%v)", err), in.TargetDSP)
 	}
 
 	p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_PLANNED
-	return p.reportDeploymentPlanned(ctx, p.lastSuccessfulCommitHash, out)
+	return p.reportDeploymentPlanned(ctx, p.lastSuccessfulCommitHash, out, in.TargetDSP)
 }
 
-func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash string, out pln.Output) error {
+func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash string, out pln.Output, targetDSP deploysource.Provider) error {
 	var (
 		err   error
 		retry = pipedservice.NewRetry(10)
@@ -226,13 +228,19 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash
 		}
 	)
 
+	accounts, err := p.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED, targetDSP)
+	if err != nil {
+		p.logger.Error("failed to get the list of accounts", zap.Error(err))
+	}
+
 	defer func() {
 		p.notifier.Notify(model.NotificationEvent{
 			Type: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
 			Metadata: &model.NotificationEventDeploymentPlanned{
-				Deployment: p.deployment,
-				EnvName:    p.envName,
-				Summary:    out.Summary,
+				Deployment:        p.deployment,
+				EnvName:           p.envName,
+				Summary:           out.Summary,
+				MentionedAccounts: accounts,
 			},
 		})
 	}()
@@ -250,7 +258,7 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash
 	return err
 }
 
-func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) error {
+func (p *planner) reportDeploymentFailed(ctx context.Context, reason string, targetDSP deploysource.Provider) error {
 	var (
 		err error
 		now = p.nowFunc()
@@ -264,13 +272,19 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) err
 		retry = pipedservice.NewRetry(10)
 	)
 
+	accounts, err := p.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_FAILED, targetDSP)
+	if err != nil {
+		p.logger.Error("failed to get the list of accounts", zap.Error(err))
+	}
+
 	defer func() {
 		p.notifier.Notify(model.NotificationEvent{
 			Type: model.NotificationEventType_EVENT_DEPLOYMENT_FAILED,
 			Metadata: &model.NotificationEventDeploymentFailed{
-				Deployment: p.deployment,
-				EnvName:    p.envName,
-				Reason:     reason,
+				Deployment:        p.deployment,
+				EnvName:           p.envName,
+				Reason:            reason,
+				MentionedAccounts: accounts,
 			},
 		})
 	}()
@@ -288,7 +302,7 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) err
 	return err
 }
 
-func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reason string) error {
+func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reason string, targetDSP deploysource.Provider) error {
 	var (
 		err error
 		now = p.nowFunc()
@@ -302,13 +316,19 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 		retry = pipedservice.NewRetry(10)
 	)
 
+	accounts, err := p.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED, targetDSP)
+	if err != nil {
+		p.logger.Error("failed to get the list of accounts", zap.Error(err))
+	}
+
 	defer func() {
 		p.notifier.Notify(model.NotificationEvent{
 			Type: model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED,
 			Metadata: &model.NotificationEventDeploymentCancelled{
-				Deployment: p.deployment,
-				EnvName:    p.envName,
-				Commander:  commander,
+				Deployment:        p.deployment,
+				EnvName:           p.envName,
+				Commander:         commander,
+				MentionedAccounts: accounts,
 			},
 		})
 	}()
@@ -324,4 +344,39 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 		p.logger.Error("failed to mark deployment to be cancelled", zap.Error(err))
 	}
 	return err
+}
+
+func (p *planner) getMentionedAccounts(ctx context.Context, event model.NotificationEventType, targetDSP deploysource.Provider) ([]string, error) {
+	var spec config.GenericDeploymentSpec
+
+	if targetDSP == nil {
+		repo := p.deployment.GitPath.Repo
+		gitRepo, err := p.gitClient.Clone(ctx, repo.Id, repo.Remote, repo.Branch, "")
+		if err != nil {
+			return nil, fmt.Errorf("failed to clone repository %s: %w", repo.Id, err)
+		}
+
+		absPath := filepath.Join(gitRepo.GetPath(), p.deployment.GitPath.GetDeploymentConfigFilePath())
+		cfg, err := config.LoadFromYAML(absPath)
+		if err != nil {
+			if os.IsNotExist(err) {
+				return nil, fmt.Errorf("deployment config file %s was not found", absPath)
+			}
+			return nil, err
+		}
+		spec = cfg.KubernetesDeploymentSpec.GenericDeploymentSpec
+	} else {
+		ds, err := targetDSP.GetReadOnly(ctx, ioutil.Discard)
+		if err != nil {
+			return nil, fmt.Errorf("failed to prepare running deploy source data (%w)", err)
+		}
+		spec = ds.GenericDeploymentConfig
+	}
+
+	for _, v := range spec.DeploymentNotification.Mentions {
+		if e := "EVENT_" + v.Event; e == event.String() {
+			return v.Slack, nil
+		}
+	}
+	return nil, nil
 }
