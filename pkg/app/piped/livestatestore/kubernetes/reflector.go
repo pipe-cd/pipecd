@@ -48,6 +48,7 @@ var (
 		"apiextensions.k8s.io":      {},
 		"rbac.authorization.k8s.io": {},
 		"policy":                    {},
+		"apiregistration.k8s.io":    {},
 		"authorization.k8s.io":      {},
 	}
 	versionWhitelist = map[string]struct{}{
@@ -82,6 +83,7 @@ var (
 		"CustomResourceDefinition": {},
 		"PodDisruptionBudget":      {},
 		"PodSecurityPolicy":        {},
+		"APIService":               {},
 		"LocalSubjectAccessReview": {},
 		"SelfSubjectAccessReview":  {},
 		"SelfSubjectRulesReview":   {},
