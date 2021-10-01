@@ -328,19 +328,39 @@ func (a *AnalysisStageOptions) Validate() error {
 	if a.Duration == 0 {
 		return fmt.Errorf("the ANALYSIS stage requires duration field")
 	}
+
 	for _, m := range a.Metrics {
-		if err := m.Validate(); err != nil {
-			return fmt.Errorf("one of metrics configurations is invalid: %w", err)
+		if m.Template.Name != "" {
+			if err := m.Template.Validate(); err != nil {
+				return fmt.Errorf("one of metrics configurations of ANALYSIS stage is invalid: %w", err)
+			}
+			continue
+		}
+		if err := m.AnalysisMetrics.Validate(); err != nil {
+			return fmt.Errorf("one of metrics configurations of ANALYSIS stage is invalid: %w", err)
 		}
 	}
+
 	for _, l := range a.Logs {
-		if err := l.Validate(); err != nil {
-			return fmt.Errorf("one of log configurations is invalid: %w", err)
+		if l.Template.Name != "" {
+			if err := l.Template.Validate(); err != nil {
+				return fmt.Errorf("one of log configurations of ANALYSIS stage is invalid: %w", err)
+			}
+			continue
+		}
+		if err := l.AnalysisLog.Validate(); err != nil {
+			return fmt.Errorf("one of log configurations of ANALYSIS stage is invalid: %w", err)
 		}
 	}
 	for _, h := range a.Https {
-		if err := h.Validate(); err != nil {
-			return fmt.Errorf("one of http configurations is invalid: %w", err)
+		if h.Template.Name != "" {
+			if err := h.Template.Validate(); err != nil {
+				return fmt.Errorf("one of http configurations of ANALYSIS stage is invalid: %w", err)
+			}
+			continue
+		}
+		if err := h.AnalysisHTTP.Validate(); err != nil {
+			return fmt.Errorf("one of http configurations of ANALYSIS stage is invalid: %w", err)
 		}
 	}
 	return nil
@@ -350,6 +370,13 @@ type AnalysisTemplateRef struct {
 	Name string `json:"name"`
 	// TODO: Rename args to appArgs
 	Args map[string]string `json:"args"`
+}
+
+func (a *AnalysisTemplateRef) Validate() error {
+	if a.Name == "" {
+		return fmt.Errorf("the reference of analysis template name is empty")
+	}
+	return nil
 }
 
 // TemplatableAnalysisMetrics wraps AnalysisMetrics to allow specify template to use.
