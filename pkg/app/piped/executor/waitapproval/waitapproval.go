@@ -134,9 +134,9 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 	e.Notifier.Notify(model.NotificationEvent{
 		Type: model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL,
 		Metadata: &model.NotificationEventDeploymentWaitApproval{
-			Deployment: e.Deployment,
-			EnvName:    e.EnvName,
-			Approvers:  approvers,
+			Deployment:        e.Deployment,
+			EnvName:           e.EnvName,
+			MentionedAccounts: approvers,
 		},
 	})
 }

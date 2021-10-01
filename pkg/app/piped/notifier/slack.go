@@ -174,33 +174,29 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL:
 		md := event.Metadata.(*model.NotificationEventDeploymentWaitApproval)
 		title = fmt.Sprintf("Deployment for %q is waiting for an approval", md.Deployment.ApplicationName)
-
-		if len(md.Approvers) > 0 {
-			approvers := make([]string, 0, len(md.Approvers))
-			for _, a := range md.Approvers {
-				approvers = append(approvers, fmt.Sprintf("<@%s>", a))
-			}
-			text = fmt.Sprintf("Approvable users: %s", strings.Join(approvers, " "))
-		}
+		text = addAccountsToText("", md.MentionedAccounts)
 		generateDeploymentEventData(md.Deployment, md.EnvName)
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED:
 		md := event.Metadata.(*model.NotificationEventDeploymentSucceeded)
 		title = fmt.Sprintf("Deployment for %q was completed successfully", md.Deployment.ApplicationName)
+		text = addAccountsToText("", md.MentionedAccounts)
 		color = slackSuccessColor
 		generateDeploymentEventData(md.Deployment, md.EnvName)
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_FAILED:
 		md := event.Metadata.(*model.NotificationEventDeploymentFailed)
 		title = fmt.Sprintf("Deployment for %q was failed", md.Deployment.ApplicationName)
-		text = md.Reason
+		body := md.Reason
+		text = addAccountsToText(body, md.MentionedAccounts)
 		color = slackErrorColor
 		generateDeploymentEventData(md.Deployment, md.EnvName)
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED:
 		md := event.Metadata.(*model.NotificationEventDeploymentCancelled)
 		title = fmt.Sprintf("Deployment for %q was cancelled", md.Deployment.ApplicationName)
-		text = fmt.Sprintf("Cancelled by %s", md.Commander)
+		body := fmt.Sprintf("Cancelled by %s", md.Commander)
+		text = addAccountsToText(body, md.MentionedAccounts)
 		color = slackWarnColor
 		generateDeploymentEventData(md.Deployment, md.EnvName)
 
@@ -271,4 +267,15 @@ func makeSlackMessage(title, titleLink, text, color string, timestamp int64, fie
 			Timestamp: timestamp,
 		}},
 	}
+}
+
+func addAccountsToText(text string, accounts []string) string {
+	if len(accounts) == 0 {
+		return text
+	}
+	formattedAccounts := make([]string, 0, len(accounts))
+	for _, a := range accounts {
+		formattedAccounts = append(formattedAccounts, fmt.Sprintf("<@%s>", a))
+	}
+	return fmt.Sprintf("%s %s", strings.Join(formattedAccounts, " "), text)
 }

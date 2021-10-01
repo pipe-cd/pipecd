@@ -594,31 +594,46 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	defer func() {
 		switch status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
+			accounts, err := s.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED)
+			if err != nil {
+				s.logger.Error("failed to get the list of accounts", zap.Error(err))
+			}
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED,
 				Metadata: &model.NotificationEventDeploymentSucceeded{
-					Deployment: s.deployment,
-					EnvName:    s.envName,
+					Deployment:        s.deployment,
+					EnvName:           s.envName,
+					MentionedAccounts: accounts,
 				},
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE:
+			accounts, err := s.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
+			if err != nil {
+				s.logger.Error("failed to get the list of accounts", zap.Error(err))
+			}
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_FAILED,
 				Metadata: &model.NotificationEventDeploymentFailed{
-					Deployment: s.deployment,
-					EnvName:    s.envName,
-					Reason:     desc,
+					Deployment:        s.deployment,
+					EnvName:           s.envName,
+					Reason:            desc,
+					MentionedAccounts: accounts,
 				},
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_CANCELLED:
+			accounts, err := s.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			if err != nil {
+				s.logger.Error("failed to get the list of accounts", zap.Error(err))
+			}
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED,
 				Metadata: &model.NotificationEventDeploymentCancelled{
-					Deployment: s.deployment,
-					EnvName:    s.envName,
-					Commander:  cancelCommander,
+					Deployment:        s.deployment,
+					EnvName:           s.envName,
+					Commander:         cancelCommander,
+					MentionedAccounts: accounts,
 				},
 			})
 		}
@@ -633,6 +648,25 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	}
 
 	return err
+}
+
+func (s *scheduler) getMentionedAccounts(ctx context.Context, event model.NotificationEventType) ([]string, error) {
+	if s.targetDSP == nil {
+		return nil, fmt.Errorf("targetDSP is not configured")
+	}
+
+	ds, err := s.targetDSP.GetReadOnly(ctx, ioutil.Discard)
+	if err != nil {
+		err = fmt.Errorf("failed to prepare running deploy source data (%w)", err)
+		return nil, err
+	}
+
+	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
+		if e := "EVENT_" + v.Event; e == event.String() {
+			return v.Slack, nil
+		}
+	}
+	return nil, nil
 }
 
 func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) error {
