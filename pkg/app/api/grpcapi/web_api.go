@@ -563,6 +563,22 @@ func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) 
 	}, nil
 }
 
+func (a *WebAPI) UpdatePipedDesiredVersion(ctx context.Context, req *webservice.UpdatePipedDesiredVersionRequest) (*webservice.UpdatePipedDesiredVersionResponse, error) {
+	updater := func(ctx context.Context, pipedID string) error {
+		return a.pipedStore.UpdatePiped(ctx, pipedID, func(p *model.Piped) error {
+			p.DesiredVersion = req.Version
+			return nil
+		})
+	}
+	for _, pipedID := range req.PipedIds {
+		if err := a.updatePiped(ctx, pipedID, updater); err != nil {
+			return nil, err
+		}
+	}
+
+	return &webservice.UpdatePipedDesiredVersionResponse{}, nil
+}
+
 // validatePipedBelongsToProject checks if the given piped belongs to the given project.
 // It gives back error unless the piped belongs to the project.
 func (a *WebAPI) validatePipedBelongsToProject(ctx context.Context, pipedID, projectID string) error {
