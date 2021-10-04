@@ -95,9 +95,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   );
 
   const [isUpgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
-  const handleUpgradeDialogClose = useCallback(() => {
-    setUpgradeDialogOpen(false);
-  }, []);
+  const handleUpgradeDialogClose = () => setUpgradeDialogOpen(false);
 
   const registeredPiped = useAppSelector<RegisteredPiped | null>(
     (state) => state.pipeds.registeredPiped
