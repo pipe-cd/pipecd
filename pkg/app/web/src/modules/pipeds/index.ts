@@ -92,6 +92,16 @@ export const editPiped = createAsyncThunk<
   });
 });
 
+export const updatePipedDesiredVersion = createAsyncThunk<
+  void,
+  { version: string; pipedIds: string[] }
+>(`${MODULE_NAME}/updatePipedDesiredVersion`, async ({ version, pipedIds }) => {
+    await pipedsApi.updatePipedDesiredVersion({
+      version,
+      pipedIdsList: pipedIds,
+    });
+});
+
 export const pipedsSlice = createSlice({
   name: MODULE_NAME,
   initialState: pipedsAdapter.getInitialState<{
