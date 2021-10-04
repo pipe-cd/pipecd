@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,17 +17,17 @@ package main
 import (
 	"log"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/cmd/piped"
+	"github.com/pipe-cd/pipe/pkg/app/launcher/cmd/launcher"
 	"github.com/pipe-cd/pipe/pkg/cli"
 )
 
 func main() {
 	app := cli.NewApp(
-		"piped",
-		"A component that runs inside target environment to execute deployment and report its state.",
+		"launcher",
+		"A component that manages Piped to run with the desired version and config.",
 	)
 	app.AddCommands(
-		piped.NewCommand(),
+		launcher.NewCommand(),
 	)
 	if err := app.Run(); err != nil {
 		log.Fatal(err)
