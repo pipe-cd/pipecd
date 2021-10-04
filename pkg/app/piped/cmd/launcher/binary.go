@@ -124,7 +124,7 @@ func downloadBinary(url, destDir, destFile string, logger *zap.Logger) (string, 
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("HTTP GET %s failed with error %w", url, resp.StatusCode)
 	}
 
