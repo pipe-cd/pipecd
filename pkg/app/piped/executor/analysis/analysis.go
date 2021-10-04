@@ -292,22 +292,22 @@ func (e *Executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP,
 	return &cfg, nil
 }
 
-func (e *Executor) buildAppArgs(customArgs map[string]string) appArgs {
-	args := appArgs{
-		BuiltIn: appBuiltInArgs{
+func (e *Executor) buildAppArgs(customArgs map[string]string) argsTemplate {
+	args := argsTemplate{
+		App: appArgs{
 			Name: e.Application.Name,
 			// TODO: Populate Env
 			Env: "",
 		},
-		Custom: customArgs,
+		AppCustomArgs: customArgs,
 	}
-	if e.config.Kind == config.KindKubernetesApp {
+	if e.config.Kind != config.KindKubernetesApp {
 		return args
 	}
 	namespace := "default"
 	if n := e.config.KubernetesDeploymentSpec.Input.Namespace; n != "" {
 		namespace = n
 	}
-	args.BuiltIn.K8s = struct{ Namespace string }{Namespace: namespace}
+	args.K8s.Namespace = namespace
 	return args
 }

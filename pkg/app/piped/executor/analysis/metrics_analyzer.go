@@ -44,19 +44,19 @@ type metricsAnalyzer struct {
 	provider            metrics.Provider
 	analysisResultStore executor.AnalysisResultStore
 	// Application-specific arguments using when rendering the query.
-	appTemplateArgs appArgs
-	logger          *zap.Logger
-	logPersister    executor.LogPersister
+	argsTemplate argsTemplate
+	logger       *zap.Logger
+	logPersister executor.LogPersister
 }
 
-func newMetricsAnalyzer(id string, cfg config.AnalysisMetrics, stageStartTime time.Time, provider metrics.Provider, analysisResultStore executor.AnalysisResultStore, appTemplateArgs appArgs, logger *zap.Logger, logPersister executor.LogPersister) *metricsAnalyzer {
+func newMetricsAnalyzer(id string, cfg config.AnalysisMetrics, stageStartTime time.Time, provider metrics.Provider, analysisResultStore executor.AnalysisResultStore, argsTemplate argsTemplate, logger *zap.Logger, logPersister executor.LogPersister) *metricsAnalyzer {
 	return &metricsAnalyzer{
 		id:                  id,
 		cfg:                 cfg,
 		stageStartTime:      stageStartTime,
 		provider:            provider,
 		analysisResultStore: analysisResultStore,
-		appTemplateArgs:     appTemplateArgs,
+		argsTemplate:        argsTemplate,
 		logPersister:        logPersister,
 		logger: logger.With(
 			zap.String("analyzer-id", id),
@@ -324,54 +324,43 @@ func compare(experiment, control []float64, deviation string) (err error) {
 	return fmt.Errorf("the difference between the medians is statistically significant")
 }
 
-type argsTemplate struct {
-	VariantArgs variantArgs
-	AppArgs     appArgs
-}
-
-// appArgs allows variant-specific data to be embedded in the query.
+// argsTemplate is a collection of available template arguments.
 // NOTE: Changing its fields will force users to change the template definition.
-type variantArgs struct {
-	// The args that is automatically populated.
-	// This can be referred as {{ .VariantArgs.BuiltInArgs }}
-	BuiltIn variantBuiltInArgs
-	// User-defined custom args.
-	// This can be referred as {{ .VariantArgs.Custom }}
-	Custom map[string]string
-}
+type argsTemplate struct {
+	// The args that are automatically populated.
+	App     appArgs
+	K8s     k8sArgs
+	Variant variantArgs
 
-type variantBuiltInArgs struct {
-	// One of "primary", "canary", or "baseline" will be populated.
-	Variant string
+	// User-defined custom args.
+	VariantCustomArgs map[string]string
+	AppCustomArgs     map[string]string
 }
 
 // appArgs allows application-specific data to be embedded in the query.
-// NOTE: Changing its fields will force users to change the template definition.
 type appArgs struct {
-	// The args that is automatically populated.
-	// This can be referred as {{ .AppArgs.BuiltInArgs }}
-	BuiltIn appBuiltInArgs
-	// User-defined custom args.
-	// This can be referred as {{ .AppArgs.Custom }}
-	Custom map[string]string
-}
-
-type appBuiltInArgs struct {
 	Name string
 	Env  string
-	K8s  struct {
-		Namespace string
-	}
+}
+
+type k8sArgs struct {
+	Namespace string
+}
+
+// variantArgs allows variant-specific data to be embedded in the query.
+type variantArgs struct {
+	// One of "primary", "canary", or "baseline" will be populated.
+	Name string
 }
 
 // renderQuery applies the given variant args to the query template.
 func (a *metricsAnalyzer) renderQuery(queryTemplate string, variantCustomArgs map[string]string, variant string) (string, error) {
 	args := argsTemplate{
-		VariantArgs: variantArgs{
-			BuiltIn: struct{ Variant string }{Variant: variant},
-			Custom:  variantCustomArgs,
-		},
-		AppArgs: a.appTemplateArgs,
+		Variant:           variantArgs{Name: variant},
+		VariantCustomArgs: variantCustomArgs,
+		App:               a.argsTemplate.App,
+		K8s:               a.argsTemplate.K8s,
+		AppCustomArgs:     a.argsTemplate.AppCustomArgs,
 	}
 
 	t, err := template.New("AnalysisTemplate").Parse(queryTemplate)

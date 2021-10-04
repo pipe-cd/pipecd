@@ -226,7 +226,7 @@ func Test_metricsAnalyzer_renderQuery(t *testing.T) {
 		{
 			name: "using only variant built in args",
 			args: args{
-				queryTemplate: `variant="{{ .VariantArgs.BuiltIn.Variant }}"`,
+				queryTemplate: `variant="{{ .Variant.Name }}"`,
 				variant:       "canary",
 			},
 			metricsAnalyzer: &metricsAnalyzer{},
@@ -236,12 +236,12 @@ func Test_metricsAnalyzer_renderQuery(t *testing.T) {
 		{
 			name: "using variant and app built in args",
 			args: args{
-				queryTemplate: `variant="{{ .VariantArgs.BuiltIn.Variant }}", app="{{ .AppArgs.BuiltIn.Name }}"`,
+				queryTemplate: `variant="{{ .Variant.Name }}", app="{{ .App.Name }}"`,
 				variant:       "canary",
 			},
 			metricsAnalyzer: &metricsAnalyzer{
-				appTemplateArgs: appArgs{
-					BuiltIn: appBuiltInArgs{
+				argsTemplate: argsTemplate{
+					App: appArgs{
 						Name: "app-1",
 					},
 				},
@@ -252,16 +252,16 @@ func Test_metricsAnalyzer_renderQuery(t *testing.T) {
 		{
 			name: "using variant and app built in and custom args",
 			args: args{
-				queryTemplate:     `variant="{{ .VariantArgs.BuiltIn.Variant }}", app="{{ .AppArgs.BuiltIn.Name }}", pod="{{ .VariantArgs.Custom.pod }}", id="{{ .AppArgs.Custom.id }}"`,
+				queryTemplate:     `variant="{{ .Variant.Name }}", app="{{ .App.Name }}", pod="{{ .VariantCustomArgs.pod }}", id="{{ .AppCustomArgs.id }}"`,
 				variantCustomArgs: map[string]string{"pod": "1234"},
 				variant:           "canary",
 			},
 			metricsAnalyzer: &metricsAnalyzer{
-				appTemplateArgs: appArgs{
-					BuiltIn: appBuiltInArgs{
+				argsTemplate: argsTemplate{
+					App: appArgs{
 						Name: "app-1",
 					},
-					Custom: map[string]string{"id": "xxxx"},
+					AppCustomArgs: map[string]string{"id": "xxxx"},
 				},
 			},
 			want:    `variant="canary", app="app-1", pod="1234", id="xxxx"`,
