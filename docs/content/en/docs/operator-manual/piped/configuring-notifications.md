@@ -14,7 +14,7 @@ Notification configuration including:
 - a list of `Receiver`s which used to know how to send events to the external service
 
 [Notification Route](/docs/operator-manual/piped/configuration-reference/#notificationroute) matches events based on their metadata like `name`, `group`, `env`, `app`.
-Below is the list of supporting event names and their groups.
+Below is the list of supporting event names and their groups.(Events of `APPLICATION~` are not supported yet.)
 
 | Event | Group |
 |-|-|
