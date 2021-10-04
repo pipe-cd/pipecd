@@ -211,7 +211,7 @@ message GetPipedResponse {
 }
 
 message UpdatePipedDesiredVersionRequest {
-    string version = 1;
+    string version = 1 [(validate.rules).string.prefix = "v"];
     repeated string piped_ids = 2 [(validate.rules).repeated.min_items = 1];
 }
 
