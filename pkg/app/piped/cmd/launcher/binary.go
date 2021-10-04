@@ -34,8 +34,8 @@ type command struct {
 
 func (c *command) IsRunning() bool {
 	select {
-	case _, ok := <-c.stoppedCh:
-		return ok
+	case _, notClosed := <-c.stoppedCh:
+		return notClosed
 	default:
 		return true
 	}
@@ -99,7 +99,7 @@ func downloadBinary(url, destDir, destFile string, logger *zap.Logger) (string, 
 	}
 	var (
 		tmpName = tmpFile.Name()
-		done = false
+		done    = false
 	)
 
 	defer func() {
