@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,26 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package launcher
 
 import (
-	"log"
+	"testing"
+	"time"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/cmd/launcher"
-	"github.com/pipe-cd/pipe/pkg/app/piped/cmd/piped"
-	"github.com/pipe-cd/pipe/pkg/cli"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func main() {
-	app := cli.NewApp(
-		"piped",
-		"A component that runs inside target environment to execute deployment and report its state.",
-	)
-	app.AddCommands(
-		piped.NewCommand(),
-		launcher.NewCommand(),
-	)
-	if err := app.Run(); err != nil {
-		log.Fatal(err)
-	}
+func TestCommand(t *testing.T) {
+	cmd, err := runBinary("sh", []string{"sleep", "1m"})
+	require.NoError(t, err)
+	require.NotNil(t, cmd)
+
+	assert.True(t, cmd.IsRunning())
+	cmd.GracefulStop(time.Millisecond)
+	assert.False(t, cmd.IsRunning())
 }

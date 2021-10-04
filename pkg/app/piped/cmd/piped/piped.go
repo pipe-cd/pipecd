@@ -105,6 +105,7 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&p.configFile, "config-file", p.configFile, "The path to the configuration file.")
+	// TODO: Remove config-data and config-gcp-secret once launcher component released.
 	cmd.Flags().StringVar(&p.configData, "config-data", p.configData, "The configuration data in YAML/JSON format.")
 	cmd.Flags().StringVar(&p.configGCPSecret, "config-gcp-secret", p.configGCPSecret, "The resource ID of secret that contains Piped config and be stored in GCP SecretManager.")
 
