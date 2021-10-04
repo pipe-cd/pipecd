@@ -19,6 +19,7 @@ import {
   Add as AddIcon,
   Close as CloseIcon,
   FilterList as FilterIcon,
+  Update as UpgradeIcon,
 } from "@material-ui/icons";
 import Alert from "@material-ui/lab/Alert";
 import { createSelector } from "@reduxjs/toolkit";
@@ -29,6 +30,7 @@ import {
   UI_TEXT_CLOSE,
   UI_TEXT_FILTER,
   UI_TEXT_HIDE_FILTER,
+  UI_TEXT_UPGRADE,
 } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
@@ -46,6 +48,7 @@ import { AddPipedDrawer } from "./components/add-piped-drawer";
 import { EditPipedDrawer } from "./components/edit-piped-drawer";
 import { FilterValues, PipedFilter } from "./components/piped-filter";
 import { PipedTableRow } from "./components/piped-table-row";
+import { UpgradePipedDialog } from "./components/upgrade-dialog";
 
 const useStyles = makeStyles(() => ({
   toolbarSpacer: {
@@ -90,6 +93,11 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const pipeds = useAppSelector((state) =>
     selectFilteredPipeds(state, filterValues.enabled)
   );
+
+  const [isUpgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
+  const handleUpgradeDialogClose = useCallback(() => {
+    setUpgradeDialogOpen(false);
+  }, []);
 
   const registeredPiped = useAppSelector<RegisteredPiped | null>(
     (state) => state.pipeds.registeredPiped
@@ -142,6 +150,13 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
         <div className={classes.toolbarSpacer} />
         <Button
           color="primary"
+          startIcon={<UpgradeIcon />}
+          onClick={() => setUpgradeDialogOpen(true)}
+        >
+          {UI_TEXT_UPGRADE}
+        </Button>
+        <Button
+          color="primary"
           startIcon={openFilter ? <CloseIcon /> : <FilterIcon />}
           onClick={() => setOpenFilter(!openFilter)}
         >
@@ -192,6 +207,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
 
       <AddPipedDrawer open={isOpenForm} onClose={handleClose} />
       <EditPipedDrawer pipedId={editPipedId} onClose={handleEditClose} />
+      <UpgradePipedDialog open={isUpgradeDialogOpen} pipeds={pipeds} onClose={handleUpgradeDialogClose} />
 
       <Dialog fullWidth open={Boolean(registeredPiped)}>
         <DialogTitle>
