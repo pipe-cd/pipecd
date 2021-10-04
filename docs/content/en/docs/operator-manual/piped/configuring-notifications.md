@@ -18,20 +18,20 @@ Below is the list of supporting event names and their groups.
 
 | Event | Group | Supported |
 |-|-|-|
-| DEPLOYMENT_TRIGGERED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked></p> |
-| DEPLOYMENT_PLANNED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked></p> |
-| DEPLOYMENT_APPROVED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked></p> |
-| DEPLOYMENT_WAIT_APPROVAL | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked></p> |
-| DEPLOYMENT_ROLLING_BACK | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked></p> |
-| DEPLOYMENT_SUCCEEDED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked></p> |
-| DEPLOYMENT_FAILED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked></p> |
-| DEPLOYMENT_CANCELLED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked></p> |
-| APPLICATION_SYNCED | APPLICATION_SYNC | <p style="text-align: center;"><input type="checkbox"></p> |
-| APPLICATION_OUT_OF_SYNC | APPLICATION_SYNC | <p style="text-align: center;"><input type="checkbox"></p> |
-| APPLICATION_HEALTHY | APPLICATION_HEALTH | <p style="text-align: center;"><input type="checkbox"></p> |
-| APPLICATION_UNHEALTHY | APPLICATION_HEALTH | <p style="text-align: center;"><input type="checkbox"></p> |
-| PIPED_STARTED | PIPED | <p style="text-align: center;"><input type="checkbox"></p> |
-| PIPED_STOPPED | PIPED | <p style="text-align: center;"><input type="checkbox"></p> |
+| DEPLOYMENT_TRIGGERED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
+| DEPLOYMENT_PLANNED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
+| DEPLOYMENT_APPROVED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
+| DEPLOYMENT_WAIT_APPROVAL | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
+| DEPLOYMENT_ROLLING_BACK | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
+| DEPLOYMENT_SUCCEEDED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
+| DEPLOYMENT_FAILED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
+| DEPLOYMENT_CANCELLED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
+| APPLICATION_SYNCED | APPLICATION_SYNC | <p style="text-align: center;"><input type="checkbox" disabled></p> |
+| APPLICATION_OUT_OF_SYNC | APPLICATION_SYNC | <p style="text-align: center;"><input type="checkbox" disabled></p> |
+| APPLICATION_HEALTHY | APPLICATION_HEALTH | <p style="text-align: center;"><input type="checkbox" disabled></p> |
+| APPLICATION_UNHEALTHY | APPLICATION_HEALTH | <p style="text-align: center;"><input type="checkbox" disabled></p> |
+| PIPED_STARTED | PIPED | <p style="text-align: center;"><input type="checkbox" disabled></p> |
+| PIPED_STOPPED | PIPED | <p style="text-align: center;"><input type="checkbox" disabled></p> |
 
 ### Sending notifications to Slack
 
