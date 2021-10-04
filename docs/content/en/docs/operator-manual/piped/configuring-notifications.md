@@ -30,8 +30,8 @@ Below is the list of supporting event names and their groups.
 | APPLICATION_OUT_OF_SYNC | APPLICATION_SYNC | <p style="text-align: center;"><input type="checkbox" disabled></p> |
 | APPLICATION_HEALTHY | APPLICATION_HEALTH | <p style="text-align: center;"><input type="checkbox" disabled></p> |
 | APPLICATION_UNHEALTHY | APPLICATION_HEALTH | <p style="text-align: center;"><input type="checkbox" disabled></p> |
-| PIPED_STARTED | PIPED | <p style="text-align: center;"><input type="checkbox" disabled></p> |
-| PIPED_STOPPED | PIPED | <p style="text-align: center;"><input type="checkbox" disabled></p> |
+| PIPED_STARTED | PIPED | <p style="text-align: center;"><input type="checkbox" checked  disabled></p> |
+| PIPED_STOPPED | PIPED | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
 
 ### Sending notifications to Slack
 
