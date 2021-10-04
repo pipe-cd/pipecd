@@ -353,11 +353,16 @@ Note: You can get examples for those object from [here](/docs/examples/#ecs-appl
 | Field | Type | Description | Required |
 |-|-|-|-|
 | provider | string | The unique name of provider defined in the Piped Configuration. | Yes |
+| strategy | string | The strategy name. One of `THRESHOLD` or `PREVIOUS` or `CANARY_BASELINE` or `CANARY_PRIMARY` is available. Defaults to `THRESHOLD`. | No |
 | query | string | A query performed against the [Analysis Provider](/docs/concepts/#analysis-provider). | Yes |
-| expected | [AnalysisExpected](/docs/user-guide/configuration-reference/#analysisexpected) | The expected query result. | Yes |
+| expected | [AnalysisExpected](/docs/user-guide/configuration-reference/#analysisexpected) | The statically defined expected query result. | No (for the `THRESHOLD`strategy, Yes) |
 | interval | duration | Run a query at specified intervals. | Yes |
 | failureLimit | int | Acceptable number of failures. e.g. If 1 is set, the `ANALYSIS` stage will end with failure after two queries results failed. Defaults to 1. | No |
 | skipOnNoData | bool | If true, it considers as a success when no data returned from the analysis provider. Defaults to false. | No |
+| deviation | string | The stage fails on deviation in the specified direction. One of `LOW` or `HIGH` or `EITHER` is available. This can be used only for `PREVIOUS`, `CANARY_BASELINE` or `CANARY_PRIMARY`. Defaults to `EITHER`. | No |
+| baselineArgs | map[string][string] | The custom arguments to be populated for the Baseline query. They can be reffered as `{{ .VariantCustomArgs.xxx }}`. | No |
+| canaryArgs | map[string][string] | The custom arguments to be populated for the Canary query. They can be reffered as `{{ .VariantCustomArgs.xxx }}`. | No |
+| primaryArgs | map[string][string] | The custom arguments to be populated for the Primary query. They can be reffered as `{{ .VariantCustomArgs.xxx }}`. | No |
 | timeout | duration | How long after which the query times out. | No |
 | template | [AnalysisTemplateRef](/docs/user-guide/configuration-reference/#analysistemplateref) | Reference to the template to be used. | No |
 

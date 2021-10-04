@@ -10,7 +10,9 @@ spec:
         with:
           duration: 30m
           metrics:
-            - provider: prometheus-dev
+            # The simplest way to analyze.
+            - strategy: THRESHOLD
+              provider: my-prometheus
               interval: 5m
               expected:
                 max: 0.01
@@ -18,5 +20,11 @@ spec:
                 sum by (job) (rate(http_requests_total{status=~"5.*", job="analysis"}[5m]))
                 /
                 sum by (job) (rate(http_requests_total{job="analysis"}[5m]))
+
+            # In case of using AnalysisTemplate
+            - template:
+                name: http_request_duration_99th_quantile
+                appArgs:
+                  job: foo
       - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
