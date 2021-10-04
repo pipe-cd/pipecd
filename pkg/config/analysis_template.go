@@ -49,6 +49,7 @@ func LoadAnalysisTemplate(repoRoot string) (*AnalysisTemplateSpec, error) {
 			return nil, fmt.Errorf("failed to load config file %s: %w", path, err)
 		}
 		if cfg.Kind == KindAnalysisTemplate {
+			// TODO: Populate default values here because creasty/defaults seems not to set into maps
 			return cfg.AnalysisTemplateSpec, nil
 		}
 	}

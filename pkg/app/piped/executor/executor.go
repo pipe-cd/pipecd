@@ -73,10 +73,12 @@ type Input struct {
 	Stage       *model.PipelineStage
 	StageConfig config.PipelineStage
 	// Readonly deployment model.
-	Deployment            *model.Deployment
-	Application           *model.Application
-	PipedConfig           *config.PipedSpec
-	TargetDSP             deploysource.Provider
+	Deployment  *model.Deployment
+	Application *model.Application
+	PipedConfig *config.PipedSpec
+	// Deploy source at target commit
+	TargetDSP deploysource.Provider
+	// Deploy source at running commit
 	RunningDSP            deploysource.Provider
 	CommandLister         CommandLister
 	LogPersister          LogPersister

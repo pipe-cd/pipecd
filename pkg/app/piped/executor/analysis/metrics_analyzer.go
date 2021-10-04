@@ -43,17 +43,20 @@ type metricsAnalyzer struct {
 	stageStartTime      time.Time
 	provider            metrics.Provider
 	analysisResultStore executor.AnalysisResultStore
-	logger              *zap.Logger
-	logPersister        executor.LogPersister
+	// Application-specific arguments using when rendering the query.
+	argsTemplate argsTemplate
+	logger       *zap.Logger
+	logPersister executor.LogPersister
 }
 
-func newMetricsAnalyzer(id string, cfg config.AnalysisMetrics, stageStartTime time.Time, provider metrics.Provider, analysisResultStore executor.AnalysisResultStore, logger *zap.Logger, logPersister executor.LogPersister) *metricsAnalyzer {
+func newMetricsAnalyzer(id string, cfg config.AnalysisMetrics, stageStartTime time.Time, provider metrics.Provider, analysisResultStore executor.AnalysisResultStore, argsTemplate argsTemplate, logger *zap.Logger, logPersister executor.LogPersister) *metricsAnalyzer {
 	return &metricsAnalyzer{
 		id:                  id,
 		cfg:                 cfg,
 		stageStartTime:      stageStartTime,
 		provider:            provider,
 		analysisResultStore: analysisResultStore,
+		argsTemplate:        argsTemplate,
 		logPersister:        logPersister,
 		logger: logger.With(
 			zap.String("analyzer-id", id),
@@ -97,14 +100,14 @@ func (a *metricsAnalyzer) run(ctx context.Context) error {
 				return nil
 			}
 			if errors.Is(err, metrics.ErrNoDataFound) && a.cfg.SkipOnNoData {
-				a.logPersister.Infof("[%s] The query result evaluation was skipped because \"skipOnNoData\" is true even though no data returned. Reason: %v. Performed query: %q", a.id, err, a.cfg.Query)
+				a.logPersister.Infof("[%s] The query result evaluation was skipped because \"skipOnNoData\" is true though no data returned. Reason: %v", a.id, err)
 				continue
 			}
 			if err != nil {
-				a.logPersister.Errorf("[%s] Unexpected error: %v. Performed query: %q", a.id, err, a.cfg.Query)
+				a.logPersister.Errorf("[%s] Unexpected error: %v", a.id, err)
 			}
 			if expected {
-				a.logPersister.Successf("[%s] The query result is expected one. Performed query: %q", a.id, a.cfg.Query)
+				a.logPersister.Successf("[%s] The query result is expected one", a.id)
 				continue
 			}
 			failureCount++
@@ -163,7 +166,7 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (expected, fi
 	}
 	points, err := a.provider.QueryPoints(ctx, a.cfg.Query, queryRange)
 	if err != nil {
-		return false, false, fmt.Errorf("failed to run query: %w", err)
+		return false, false, fmt.Errorf("failed to run query: %w: performed query: %q", err, a.cfg.Query)
 	}
 	values := make([]float64, 0, len(points))
 	for i := range points {
@@ -187,7 +190,7 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (expected, fi
 	}
 	prevPoints, err := a.provider.QueryPoints(ctx, a.cfg.Query, prevQueryRange)
 	if err != nil {
-		return false, false, fmt.Errorf("failed to run query to fetch metrics for the previous deployment: %w", err)
+		return false, false, fmt.Errorf("failed to run query to fetch metrics for the previous deployment: %w: performed query: %q", err, a.cfg.Query)
 	}
 	prevValues := make([]float64, 0, len(prevPoints))
 	for i := range prevPoints {
@@ -219,7 +222,7 @@ func (a *metricsAnalyzer) analyzeWithCanaryBaseline(ctx context.Context) (bool, 
 
 	canaryPoints, err := a.provider.QueryPoints(ctx, canaryQuery, queryRange)
 	if err != nil {
-		return false, fmt.Errorf("failed to run query to fetch metrics for the Canary variant: %w", err)
+		return false, fmt.Errorf("failed to run query to fetch metrics for the Canary variant: %w: performed query: %q", err, canaryQuery)
 	}
 	canaryValues := make([]float64, 0, len(canaryPoints))
 	for i := range canaryPoints {
@@ -227,7 +230,7 @@ func (a *metricsAnalyzer) analyzeWithCanaryBaseline(ctx context.Context) (bool, 
 	}
 	baselinePoints, err := a.provider.QueryPoints(ctx, baselineQuery, queryRange)
 	if err != nil {
-		return false, fmt.Errorf("failed to run query to fetch metrics for the Baseline variant: %w", err)
+		return false, fmt.Errorf("failed to run query to fetch metrics for the Baseline variant: %w: performed query: %q", err, baselineQuery)
 	}
 	baselineValues := make([]float64, 0, len(baselinePoints))
 	for i := range baselinePoints {
@@ -260,7 +263,7 @@ func (a *metricsAnalyzer) analyzeWithCanaryPrimary(ctx context.Context) (bool, e
 
 	canaryPoints, err := a.provider.QueryPoints(ctx, canaryQuery, queryRange)
 	if err != nil {
-		return false, fmt.Errorf("failed to run query to fetch metrics for the Canary variant: %w", err)
+		return false, fmt.Errorf("failed to run query to fetch metrics for the Canary variant: %w: performed query: %q", err, canaryQuery)
 	}
 	canaryValues := make([]float64, 0, len(canaryPoints))
 	for i := range canaryPoints {
@@ -268,7 +271,7 @@ func (a *metricsAnalyzer) analyzeWithCanaryPrimary(ctx context.Context) (bool, e
 	}
 	primaryPoints, err := a.provider.QueryPoints(ctx, primaryQuery, queryRange)
 	if err != nil {
-		return false, fmt.Errorf("failed to run query to fetch metrics for the Primary variant: %w", err)
+		return false, fmt.Errorf("failed to run query to fetch metrics for the Primary variant: %w: performed query: %q", err, primaryQuery)
 	}
 	primaryValues := make([]float64, 0, len(primaryPoints))
 	for i := range primaryPoints {
@@ -279,37 +282,6 @@ func (a *metricsAnalyzer) analyzeWithCanaryPrimary(ctx context.Context) (bool, e
 		return false, nil
 	}
 	return true, nil
-}
-
-type argsForTemplate struct {
-	BuiltInArgs builtInArgs
-	// User-defined custom args.
-	VariantArgs map[string]string
-}
-
-type builtInArgs struct {
-	Variant struct {
-		Name string
-	}
-}
-
-// renderQuery applies the given variant args to the query template.
-func (a *metricsAnalyzer) renderQuery(queryTemplate string, variantArgs map[string]string, variant string) (string, error) {
-	args := argsForTemplate{
-		BuiltInArgs: builtInArgs{Variant: struct{ Name string }{Name: variant}},
-		VariantArgs: variantArgs,
-	}
-
-	t, err := template.New("AnalysisVariantTemplate").Parse(queryTemplate)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse query template: %w", err)
-	}
-
-	b := new(bytes.Buffer)
-	if err := t.Execute(b, args); err != nil {
-		return "", fmt.Errorf("failed to apply template: %w", err)
-	}
-	return b.String(), err
 }
 
 // compare compares the given two samples using Mann-Whitney U test.
@@ -334,6 +306,9 @@ func compare(experiment, control []float64, deviation string) (err error) {
 		return fmt.Errorf("unknown deviation %q given", deviation)
 	}
 	res, err := mannwhitney.MannWhitneyUTest(experiment, control, alternativeHypothesis)
+	if errors.Is(err, mannwhitney.ErrSamplesEqual) {
+		return nil
+	}
 	if err != nil {
 		return fmt.Errorf("failed to perform the Mann-Whitney U test: %w", err)
 	}
@@ -347,4 +322,55 @@ func compare(experiment, control []float64, deviation string) (err error) {
 		return nil
 	}
 	return fmt.Errorf("the difference between the medians is statistically significant")
+}
+
+// argsTemplate is a collection of available template arguments.
+// NOTE: Changing its fields will force users to change the template definition.
+type argsTemplate struct {
+	// The args that are automatically populated.
+	App     appArgs
+	K8s     k8sArgs
+	Variant variantArgs
+
+	// User-defined custom args.
+	VariantCustomArgs map[string]string
+	AppCustomArgs     map[string]string
+}
+
+// appArgs allows application-specific data to be embedded in the query.
+type appArgs struct {
+	Name string
+	Env  string
+}
+
+type k8sArgs struct {
+	Namespace string
+}
+
+// variantArgs allows variant-specific data to be embedded in the query.
+type variantArgs struct {
+	// One of "primary", "canary", or "baseline" will be populated.
+	Name string
+}
+
+// renderQuery applies the given variant args to the query template.
+func (a *metricsAnalyzer) renderQuery(queryTemplate string, variantCustomArgs map[string]string, variant string) (string, error) {
+	args := argsTemplate{
+		Variant:           variantArgs{Name: variant},
+		VariantCustomArgs: variantCustomArgs,
+		App:               a.argsTemplate.App,
+		K8s:               a.argsTemplate.K8s,
+		AppCustomArgs:     a.argsTemplate.AppCustomArgs,
+	}
+
+	t, err := template.New("AnalysisTemplate").Parse(queryTemplate)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse query template: %w", err)
+	}
+
+	b := new(bytes.Buffer)
+	if err := t.Execute(b, args); err != nil {
+		return "", fmt.Errorf("failed to apply template: %w", err)
+	}
+	return b.String(), err
 }
