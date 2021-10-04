@@ -564,6 +564,9 @@ func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) 
 }
 
 func (a *WebAPI) UpdatePipedDesiredVersion(ctx context.Context, req *webservice.UpdatePipedDesiredVersionRequest) (*webservice.UpdatePipedDesiredVersionResponse, error) {
+	if req.Version != "" && !strings.HasPrefix(req.Version, "v") {
+		return nil, status.Error(codes.InvalidArgument, "Version must be prefixed with a `v` character")
+	}
 	updater := func(ctx context.Context, pipedID string) error {
 		return a.pipedStore.UpdatePiped(ctx, pipedID, func(p *model.Piped) error {
 			p.DesiredVersion = req.Version
