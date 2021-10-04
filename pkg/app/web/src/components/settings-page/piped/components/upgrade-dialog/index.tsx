@@ -47,13 +47,10 @@ export const UpgradePipedDialog: FC<UpgradePipedProps> = memo(
       // Check if "upgradePipedIds" contains "selectedIds".
       if (upgradePipedIds.includes(selectedId)) {
         // If true, this checkbox is already checked and we have to remote it from the list.
-        const newIds = upgradePipedIds.filter((id) => id !== selectedId);
-        setUpgradePipedIds(newIds);
+        setUpgradePipedIds(ids => ids.filter((id) => id !== selectedId));
       } else {
         // Otherwise, it is not selected yet and we have to add it into the list.
-        const newIds = [...upgradePipedIds];
-        newIds.push(selectedId);
-        setUpgradePipedIds(newIds);
+        setUpgradePipedIds(upgradePipedIds => [...upgradePipedIds, selectedId]);
       }
     };
 
