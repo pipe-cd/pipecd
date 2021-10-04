@@ -336,7 +336,7 @@ func (l *launcher) getDesiredVersion(ctx context.Context, address, projectID, pi
 	if l.defaultVersion != "" {
 		return l.defaultVersion, nil
 	}
-
+// Using launcher version if there is no runner version is set.
 	return version.Get().Version, nil
 }
 
