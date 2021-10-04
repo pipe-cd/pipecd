@@ -371,15 +371,15 @@ func (l *launcher) createAPIClient(ctx context.Context, address, projectID, pipe
 // makePipedArgs generates arguments for Piped from the ones passed to Launcher.
 func makePipedArgs(launcherArgs []string, configFile string) []string {
 	ignoreArgs := map[string]struct{}{
-		"config-file":            struct{}{},
-		"config-data":            struct{}{},
-		"config-from-gcp-secret": struct{}{},
-		"gcp-secret-id":          struct{}{},
-		"config-from-git-repo":   struct{}{},
-		"git-repo-url":           struct{}{},
-		"home-dir":               struct{}{},
-		"default-version":        struct{}{},
-		"check-interval":         struct{}{},
+		"config-file":            {},
+		"config-data":            {},
+		"config-from-gcp-secret": {},
+		"gcp-secret-id":          {},
+		"config-from-git-repo":   {},
+		"git-repo-url":           {},
+		"home-dir":               {},
+		"default-version":        {},
+		"check-interval":         {},
 	}
 
 	pipedArgs := make([]string, 0, len(launcherArgs)+2)
