@@ -42,7 +42,6 @@ config:
   #         branch: master
   #     syncInterval: 1m
 
-# TODO: Allow adding arbitrary secret files instead of fixing them as currently.
 secret:
   # Specifies whether a Secret for storing sensitive data should be created.
   create: true
@@ -50,6 +49,9 @@ secret:
   name: ""
   # Where the secret files will be mounted to.
   mountPath: /etc/piped-secret
+  # Additional list of secret data will be added to the Secret resource.
+  # TODO: Remove the predefined secrets after data field because this data field is more flexible.
+  data: {}
   pipedKey:
     # The name of the piped key file.
     fileName: piped-key
