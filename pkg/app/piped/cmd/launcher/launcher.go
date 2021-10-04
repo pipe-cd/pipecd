@@ -138,7 +138,7 @@ func (l *launcher) run(ctx context.Context, t cli.Telemetry) error {
 		t.Logger.Info("LAUNCHER: will relaunch a new Piped because some changes in version/config were detected")
 
 		// Stop old piped process and clean its data.
-		if err := l.cleanOldPiped(ctx, runningPiped, workingDir, t.Logger); err != nil {
+		if err := l.cleanOldPiped(runningPiped, workingDir, t.Logger); err != nil {
 			t.Logger.Error("LAUNCHER: failed while cleaning old Piped",
 				zap.String("version", version),
 				zap.Error(err),
@@ -169,7 +169,7 @@ func (l *launcher) run(ctx context.Context, t cli.Telemetry) error {
 
 		case <-ctx.Done():
 			// Stop old piped process and clean its data.
-			if err := l.cleanOldPiped(ctx, runningPiped, workingDir, t.Logger); err != nil {
+			if err := l.cleanOldPiped(runningPiped, workingDir, t.Logger); err != nil {
 				t.Logger.Error("LAUNCHER: failed while cleaning old Piped",
 					zap.String("version", l.runningVersion),
 					zap.Error(err),
@@ -211,7 +211,7 @@ func (l *launcher) shouldRelaunch(ctx context.Context, logger *zap.Logger) (vers
 	return
 }
 
-func (l *launcher) cleanOldPiped(ctx context.Context, cmd *command, workingDir string, logger *zap.Logger) error {
+func (l *launcher) cleanOldPiped(cmd *command, workingDir string, logger *zap.Logger) error {
 	// Stop running Piped gracefully.
 	if cmd != nil {
 		if err := cmd.GracefulStop(l.gracePeriod); err != nil {
