@@ -115,9 +115,7 @@ func downloadBinary(url, destDir, destFile string, logger *zap.Logger) (string, 
 	if err != nil {
 		return "", fmt.Errorf("could not create request (%w)", err)
 	}
-	client := &http.Client{
-		Transport: http.DefaultTransport,
-	}
+	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("HTTP GET %s failed (%w)", url, err)

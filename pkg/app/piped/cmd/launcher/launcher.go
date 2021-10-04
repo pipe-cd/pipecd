@@ -300,6 +300,7 @@ func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {
 
 	if l.configFromGitRepo {
 		// TODO: Support loading config data from a Git repository.
+		return nil, fmt.Errorf("loading configuration from a Git repository is not supported yet")
 	}
 
 	return nil, fmt.Errorf("either [%s] must be set", strings.Join([]string{
@@ -336,7 +337,7 @@ func (l *launcher) getDesiredVersion(ctx context.Context, address, projectID, pi
 	if l.defaultVersion != "" {
 		return l.defaultVersion, nil
 	}
-// Using launcher version if there is no runner version is set.
+	// Using launcher version if there is no runner version is set.
 	return version.Get().Version, nil
 }
 
