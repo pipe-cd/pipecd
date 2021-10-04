@@ -151,7 +151,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
           </Box>
         </TableCell>
         <TableCell>
-          {piped.version}{piped.desiredVersion.length > 0 && piped.desiredVersion !== piped.version ? ` (upgrading to ${piped.desiredVersion})` : ''}
+          {piped.version}{piped.desiredVersion && piped.desiredVersion !== piped.version ? ` (upgrading to ${piped.desiredVersion})` : ''}
         </TableCell>
         <TableCell>
           <Typography variant="body2" color="textSecondary">
