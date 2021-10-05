@@ -134,6 +134,7 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 			S3ObjectVersion: aws.String(fm.Spec.S3ObjectVersion),
 		}
 		input.Handler = aws.String(fm.Spec.Handler)
+		input.Runtime = types.Runtime(fm.Spec.Runtime)
 	}
 	_, err := c.client.CreateFunction(ctx, input)
 	if err != nil {
@@ -171,6 +172,7 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 			Role:         aws.String(fm.Spec.Role),
 			MemorySize:   aws.Int32(fm.Spec.Memory),
 			Timeout:      aws.Int32(fm.Spec.Timeout),
+			Runtime:      types.Runtime(fm.Spec.Runtime),
 			Environment: &types.Environment{
 				Variables: fm.Spec.Environments,
 			},
