@@ -228,7 +228,11 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	}
 
 	// Initialize git client.
-	gitClient, err := git.NewClient(cfg.Git.Username, cfg.Git.Email, t.Logger)
+	gitClient, err := git.NewClient(
+		git.WithUserName(cfg.Git.Username),
+		git.WithEmail(cfg.Git.Email),
+		git.WithLogger(t.Logger),
+	)
 	if err != nil {
 		t.Logger.Error("failed to initialize git client", zap.Error(err))
 		return err
@@ -400,7 +404,11 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	{
 		// Initialize a dedicated git client for plan-preview feature.
 		// Basically, this feature is an utility so it should not share any resource with the main components of piped.
-		gc, err := git.NewClient(cfg.Git.Username, cfg.Git.Email, t.Logger)
+		gc, err := git.NewClient(
+			git.WithUserName(cfg.Git.Username),
+			git.WithEmail(cfg.Git.Email),
+			git.WithLogger(t.Logger),
+		)
 		if err != nil {
 			t.Logger.Error("failed to initialize git client for plan-preview", zap.Error(err))
 			return err

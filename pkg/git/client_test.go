@@ -34,7 +34,7 @@ func TestClone(t *testing.T) {
 	require.NoError(t, err)
 	defer faker.clean()
 
-	c, err := NewClient("", "", zap.NewNop())
+	c, err := NewClient()
 	require.NoError(t, err)
 	require.NotNil(t, c)
 	defer c.Clean()

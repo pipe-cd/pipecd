@@ -49,12 +49,44 @@ type client struct {
 	cacheDir  string
 	mu        sync.Mutex
 	repoLocks map[string]*sync.Mutex
-	logger    *zap.Logger
+
+	gitEnvs []string
+	logger  *zap.Logger
+}
+
+type Option func(*client)
+
+func WithGitEnv(env string) Option {
+	return func(c *client) {
+		c.gitEnvs = append(c.gitEnvs, env)
+	}
+}
+
+func WithLogger(logger *zap.Logger) Option {
+	return func(c *client) {
+		c.logger = logger
+	}
+}
+
+func WithUserName(n string) Option {
+	return func(c *client) {
+		if n != "" {
+			c.username = n
+		}
+	}
+}
+
+func WithEmail(e string) Option {
+	return func(c *client) {
+		if e != "" {
+			c.email = e
+		}
+	}
 }
 
 // NewClient creates a new CLient instance for cloning git repositories.
 // After using Clean should be called to delete cache data.
-func NewClient(username, email string, logger *zap.Logger) (Client, error) {
+func NewClient(opts ...Option) (Client, error) {
 	gitPath, err := exec.LookPath("git")
 	if err != nil {
 		return nil, fmt.Errorf("unable to find the path of git: %v", err)
@@ -65,21 +97,20 @@ func NewClient(username, email string, logger *zap.Logger) (Client, error) {
 		return nil, fmt.Errorf("unable to create a temporary directory for git cache: %v", err)
 	}
 
-	if username == "" {
-		username = defaultUsername
-	}
-	if email == "" {
-		email = defaultEmail
-	}
-
-	return &client{
-		username:  username,
-		email:     email,
+	c := &client{
+		username:  defaultUsername,
+		email:     defaultEmail,
 		gitPath:   gitPath,
 		cacheDir:  cacheDir,
 		repoLocks: make(map[string]*sync.Mutex),
-		logger:    logger,
-	}, nil
+		logger:    zap.NewNop(),
+	}
+
+	for _, opt := range opts {
+		opt(c)
+	}
+
+	return c, nil
 }
 
 // Clone clones a specific git repository to the given destination.
@@ -159,7 +190,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		return nil, fmt.Errorf("failed to clone from local: %v", err)
 	}
 
-	r := NewRepo(destination, c.gitPath, remote, branch)
+	r := NewRepo(destination, c.gitPath, remote, branch, c.gitEnvs)
 	if c.username != "" || c.email != "" {
 		if err := r.setUser(ctx, c.username, c.email); err != nil {
 			return nil, fmt.Errorf("failed to set user: %v", err)
@@ -220,6 +251,7 @@ func (c *client) unlockRepo(repoID string) {
 func (c *client) runGitCommand(ctx context.Context, dir string, args ...string) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, c.gitPath, args...)
 	cmd.Dir = dir
+	cmd.Env = append(cmd.Env, c.gitEnvs...)
 	return cmd.CombinedOutput()
 }
 
