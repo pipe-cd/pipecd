@@ -53,21 +53,25 @@ func (fm *FunctionManifest) validate() error {
 
 // FunctionManifestSpec contains configuration for LambdaFunction.
 type FunctionManifestSpec struct {
-	Name         string            `json:"name"`
-	Role         string            `json:"role"`
-	ImageURI     string            `json:"image"`
-	Memory       int32             `json:"memory"`
-	Timeout      int32             `json:"timeout"`
-	Tags         map[string]string `json:"tags,omitempty"`
-	Environments map[string]string `json:"environments,omitempty"`
+	Name            string            `json:"name"`
+	Role            string            `json:"role"`
+	ImageURI        string            `json:"image"`
+	S3Bucket        string            `json:"s3Bucket"`
+	S3Key           string            `json:"s3Key"`
+	S3ObjectVersion string            `json:"s3ObjectVersion"`
+	Handler         string            `json:"handler"`
+	Memory          int32             `json:"memory"`
+	Timeout         int32             `json:"timeout"`
+	Tags            map[string]string `json:"tags,omitempty"`
+	Environments    map[string]string `json:"environments,omitempty"`
 }
 
 func (fmp FunctionManifestSpec) validate() error {
 	if len(fmp.Name) == 0 {
 		return fmt.Errorf("lambda function is missing")
 	}
-	if len(fmp.ImageURI) == 0 {
-		return fmt.Errorf("image uri is missing")
+	if len(fmp.ImageURI) == 0 && len(fmp.S3Bucket) == 0 {
+		return fmt.Errorf("one of image or s3 bucket is required to be configured")
 	}
 	if len(fmp.Role) == 0 {
 		return fmt.Errorf("role is missing")
