@@ -8,7 +8,7 @@ description: >
 
 >NOTE: This feature is currently alpha status.
 
-Automated Deployment Analysis (ADA) evaluates the impact of the application you are about to deploy by analyzing the metrics data, log entries, and the responses of the configured HTTP requests.
+Automated Deployment Analysis (ADA) evaluates the impact of the deployment you are in the middle of by analyzing the metrics data, log entries, and the responses of the configured HTTP requests.
 The analysis of the newly deployed application is often carried out in a manual, ad-hoc or statistically incorrect manner.
 ADA automates that and helps to build a robust deployment process.
 ADA is available as a [Stage](/docs/concepts/#stage) in the pipeline specified in the deployment configuration file.
@@ -29,14 +29,14 @@ Before enabling ADA inside the pipeline, all required Analysis Providers must be
 ### Strategies
 You can choose one of the four strategies to fit your use case.
 
-- `THRESHOLD`: A simple method to compare against a statically defined threshold (same as the typical analysis method up to `v0.18.0`)
-- `PREVIOUS`: A method to compare metrics with the last successful deployment
-- `CANARY_BASELINE`: A method to compare the metrics in Canary and Baseline.
-- `CANARY_PRIMARY`(not recommended): A method to compare the metrics in Canary and Primary.
+- `THRESHOLD`: A simple method to compare against a statically defined threshold (same as the typical analysis method up to `v0.18.0`).
+- `PREVIOUS`: A method to compare metrics with the last successful deployment.
+- `CANARY_BASELINE`: A method to compare the metrics between the Canary and Baseline variants.
+- `CANARY_PRIMARY`(not recommended): A method to compare the metrics between the Canary and Primary variants.
 
 `THRESHOLD` is the simplest strategy, so it's for you if you attempt to evaluate this feature.
 
-`THRESHOLD` only checks if the query result falls within the statically specified range, whereas others compare the two collections of time-series data then check for deviation.
+`THRESHOLD` only checks if the query result falls within the statically specified range, whereas others evaluate by checking the deviation of two time-series data.
 Therefore, the those configuration fields are slightly different each other. The next section covers how to configure it for each strategy.
 
 ### Configuration
