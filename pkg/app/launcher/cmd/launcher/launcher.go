@@ -68,8 +68,8 @@ type launcher struct {
 	runningConfigData []byte
 
 	configRepo git.Repo
-	clientKey string
-	client    pipedservice.Client
+	clientKey  string
+	client     pipedservice.Client
 }
 
 func NewCommand() *cobra.Command {
