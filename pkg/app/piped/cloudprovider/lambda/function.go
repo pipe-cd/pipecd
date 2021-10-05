@@ -70,8 +70,8 @@ func (fmp FunctionManifestSpec) validate() error {
 	if len(fmp.Name) == 0 {
 		return fmt.Errorf("lambda function is missing")
 	}
-	if len(fmp.ImageURI) == 0 {
-		return fmt.Errorf("image uri is missing")
+	if len(fmp.ImageURI) == 0 && len(fmp.S3Bucket) == 0 {
+		return fmt.Errorf("one of image or s3 bucket is required to be configured")
 	}
 	if len(fmp.Role) == 0 {
 		return fmt.Errorf("role is missing")
