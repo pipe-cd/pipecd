@@ -19,6 +19,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/creasty/defaults"
 )
 
 type AnalysisTemplateSpec struct {
@@ -49,7 +51,27 @@ func LoadAnalysisTemplate(repoRoot string) (*AnalysisTemplateSpec, error) {
 			return nil, fmt.Errorf("failed to load config file %s: %w", path, err)
 		}
 		if cfg.Kind == KindAnalysisTemplate {
-			// TODO: Populate default values here because creasty/defaults seems not to set into maps
+			// "creasty/defaults.Set" doesn't set the default value to the entry that key already exists in a map.
+			// Therefore, we need to set them one by one.
+			// See: https://github.com/creasty/defaults/issues/28
+			for k, v := range cfg.AnalysisTemplateSpec.Metrics {
+				if err := defaults.Set(&v); err != nil {
+					return nil, fmt.Errorf("failed to set the default value to metrics configurations: %w", err)
+				}
+				cfg.AnalysisTemplateSpec.Metrics[k] = v
+			}
+			for k, v := range cfg.AnalysisTemplateSpec.Logs {
+				if err := defaults.Set(&v); err != nil {
+					return nil, fmt.Errorf("failed to set the default value to log configurations: %w", err)
+				}
+				cfg.AnalysisTemplateSpec.Logs[k] = v
+			}
+			for k, v := range cfg.AnalysisTemplateSpec.HTTPs {
+				if err := defaults.Set(&v); err != nil {
+					return nil, fmt.Errorf("failed to set the default value to http configurations: %w", err)
+				}
+				cfg.AnalysisTemplateSpec.HTTPs[k] = v
+			}
 			return cfg.AnalysisTemplateSpec, nil
 		}
 	}
