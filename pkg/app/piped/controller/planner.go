@@ -349,6 +349,10 @@ func (p *planner) getMentionedAccounts(ctx context.Context, event model.Notifica
 		return nil, fmt.Errorf("failed to prepare running deploy source data (%w)", err)
 	}
 
+	if ds.GenericDeploymentConfig.DeploymentNotification == nil {
+		return nil, nil
+	}
+
 	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
 		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
