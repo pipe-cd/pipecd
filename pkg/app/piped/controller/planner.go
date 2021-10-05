@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -148,19 +147,10 @@ func (p *planner) Run(ctx context.Context) error {
 		p.done.Store(true)
 	}()
 
-	planner, ok := p.plannerRegistry.Planner(p.deployment.Kind)
-	if !ok {
-		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-		p.reportDeploymentFailed(ctx, "Unable to find the planner for this application kind", nil)
-		return fmt.Errorf("unable to find the planner for application %v", p.deployment.Kind)
-	}
-
-	repoID := p.deployment.GitPath.Repo.Id
-	repoCfg, ok := p.pipedConfig.GetRepository(repoID)
-	if !ok {
-		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-		p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to find %q from the repository list in piped config", repoID), nil)
-		return fmt.Errorf("unable to find %q from the repository list in piped config", repoID)
+	repoCfg := &config.PipedRepository{
+		RepoID: p.deployment.GitPath.Repo.Id,
+		Remote: p.deployment.GitPath.Repo.Remote,
+		Branch: p.deployment.GitPath.Repo.Branch,
 	}
 
 	in := pln.Input{
@@ -177,7 +167,7 @@ func (p *planner) Run(ctx context.Context) error {
 
 	in.TargetDSP = deploysource.NewProvider(
 		filepath.Join(p.workingDir, "target-deploysource"),
-		deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "target", p.deployment.Trigger.Commit.Hash),
+		deploysource.NewGitSourceCloner(p.gitClient, *repoCfg, "target", p.deployment.Trigger.Commit.Hash),
 		*p.deployment.GitPath,
 		p.secretDecrypter,
 	)
@@ -185,10 +175,17 @@ func (p *planner) Run(ctx context.Context) error {
 	if p.lastSuccessfulCommitHash != "" {
 		in.RunningDSP = deploysource.NewProvider(
 			filepath.Join(p.workingDir, "running-deploysource"),
-			deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "running", p.lastSuccessfulCommitHash),
+			deploysource.NewGitSourceCloner(p.gitClient, *repoCfg, "running", p.lastSuccessfulCommitHash),
 			*p.deployment.GitPath,
 			p.secretDecrypter,
 		)
+	}
+
+	planner, ok := p.plannerRegistry.Planner(p.deployment.Kind)
+	if !ok {
+		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
+		p.reportDeploymentFailed(ctx, "Unable to find the planner for this application kind", in.TargetDSP)
+		return fmt.Errorf("unable to find the planner for application %v", p.deployment.Kind)
 	}
 
 	out, err := planner.Plan(ctx, in)
@@ -347,33 +344,12 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 }
 
 func (p *planner) getMentionedAccounts(ctx context.Context, event model.NotificationEventType, targetDSP deploysource.Provider) ([]string, error) {
-	var spec config.GenericDeploymentSpec
-
-	if targetDSP == nil {
-		repo := p.deployment.GitPath.Repo
-		gitRepo, err := p.gitClient.Clone(ctx, repo.Id, repo.Remote, repo.Branch, "")
-		if err != nil {
-			return nil, fmt.Errorf("failed to clone repository %s: %w", repo.Id, err)
-		}
-
-		absPath := filepath.Join(gitRepo.GetPath(), p.deployment.GitPath.GetDeploymentConfigFilePath())
-		cfg, err := config.LoadFromYAML(absPath)
-		if err != nil {
-			if os.IsNotExist(err) {
-				return nil, fmt.Errorf("deployment config file %s was not found", absPath)
-			}
-			return nil, err
-		}
-		spec = cfg.KubernetesDeploymentSpec.GenericDeploymentSpec
-	} else {
-		ds, err := targetDSP.GetReadOnly(ctx, ioutil.Discard)
-		if err != nil {
-			return nil, fmt.Errorf("failed to prepare running deploy source data (%w)", err)
-		}
-		spec = ds.GenericDeploymentConfig
+	ds, err := targetDSP.GetReadOnly(ctx, ioutil.Discard)
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare running deploy source data (%w)", err)
 	}
 
-	for _, v := range spec.DeploymentNotification.Mentions {
+	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
 		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
 		}
