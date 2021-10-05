@@ -1,0 +1,25 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "github.com/pipe-cd/pipe/cmd/launcher",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//pkg/app/launcher/cmd/launcher:go_default_library",
+        "//pkg/cli:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "launcher",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+go_image(
+    name = "launcher_image",
+    binary = ":launcher",
+    visibility = ["//visibility:public"],
+)
