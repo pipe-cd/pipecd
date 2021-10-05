@@ -34,6 +34,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcclient"
 	"github.com/pipe-cd/pipe/pkg/version"
@@ -52,6 +53,9 @@ type launcher struct {
 	gcpSecretID             string
 	configFromGitRepo       bool
 	gitRepoURL              string
+	gitBranch               string
+	gitPipedConfigPath      string
+	gitSSHKeyFile           string
 	configFilePathInGitRepo string
 	insecure                bool
 	certFile                string
@@ -63,6 +67,7 @@ type launcher struct {
 	runningVersion    string
 	runningConfigData []byte
 
+	configRepo git.Repo
 	clientKey string
 	client    pipedservice.Client
 }
@@ -87,8 +92,11 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&l.configFromGCPSecret, "config-from-gcp-secret", l.configFromGCPSecret, "Whether to load Piped config that is being stored in GCP SecretManager service.")
 	cmd.Flags().StringVar(&l.gcpSecretID, "gcp-secret-id", l.gcpSecretID, "The resource ID of secret that contains Piped config in GCP SecretManager service.")
 
-	cmd.Flags().BoolVar(&l.configFromGitRepo, "config-from-git-repo", l.configFromGitRepo, "Whether to load Piped config that is being stored in a Git repository.")
-	cmd.Flags().StringVar(&l.gitRepoURL, "git-repo-url", l.gitRepoURL, "The remote URL of Git repository to fetch Piped configuration.")
+	cmd.Flags().BoolVar(&l.configFromGitRepo, "config-from-git-repo", l.configFromGitRepo, "Whether to load Piped config that is being stored in a git repository.")
+	cmd.Flags().StringVar(&l.gitRepoURL, "git-repo-url", l.gitRepoURL, "The remote URL of git repository to fetch Piped config.")
+	cmd.Flags().StringVar(&l.gitBranch, "git-branch", l.gitBranch, "Branch of git repository to for Piped config.")
+	cmd.Flags().StringVar(&l.gitPipedConfigPath, "git-piped-config-path", l.gitPipedConfigPath, "Relative path within git repository to locate Piped config file.")
+	cmd.Flags().StringVar(&l.gitSSHKeyFile, "git-ssh-key-file", l.gitSSHKeyFile, "The path to SSH private key to fetch private git repository.")
 
 	cmd.Flags().BoolVar(&l.insecure, "insecure", l.insecure, "Whether disabling transport security while connecting to control-plane.")
 	cmd.Flags().StringVar(&l.certFile, "cert-file", l.certFile, "The path to the TLS certificate file.")
@@ -102,7 +110,31 @@ func NewCommand() *cobra.Command {
 	return cmd
 }
 
+func (l *launcher) validateFlags() error {
+	if l.configFromGCPSecret {
+		if l.gcpSecretID == "" {
+			return fmt.Errorf("gcp-secret-id must be set to load Piped config from GCP SecretManager service")
+		}
+	}
+	if l.configFromGitRepo {
+		if l.gitRepoURL == "" {
+			return fmt.Errorf("git-repo-url must be set to load config from a git repository")
+		}
+		if l.gitBranch == "" {
+			return fmt.Errorf("git-branch must be set to load config from a git repository")
+		}
+		if l.gitPipedConfigPath == "" {
+			return fmt.Errorf("git-piped-config-path must be set to load config from a git repository")
+		}
+	}
+	return nil
+}
+
 func (l *launcher) run(ctx context.Context, t cli.Telemetry) error {
+	if err := l.validateFlags(); err != nil {
+		return err
+	}
+
 	if l.homeDir == "" {
 		userCacheDir, err := os.UserCacheDir()
 		if err != nil {
@@ -110,6 +142,33 @@ func (l *launcher) run(ctx context.Context, t cli.Telemetry) error {
 			return err
 		}
 		l.homeDir = filepath.Join(userCacheDir, "piped-launcher")
+	}
+
+	if l.configFromGitRepo {
+		options := []git.Option{
+			git.WithLogger(t.Logger),
+		}
+		if l.gitSSHKeyFile != "" {
+			options = append(options, git.WithGitEnv(`GIT_SSH_COMMAND="ssh -i `+l.gitSSHKeyFile+` -F /dev/null"`))
+		}
+		gc, err := git.NewClient(options...)
+		if err != nil {
+			t.Logger.Error("failed to initialize git client", zap.Error(err))
+			return err
+		}
+		defer func() {
+			if err := gc.Clean(); err != nil {
+				t.Logger.Error("failed to clean git client", zap.Error(err))
+			}
+		}()
+
+		repo, err := gc.Clone(ctx, l.gitRepoURL, l.gitRepoURL, l.gitBranch, "")
+		if err != nil {
+			return fmt.Errorf("failed to clone git repo (%w)", err)
+		}
+		defer repo.Clean()
+
+		l.configRepo = repo
 	}
 
 	var (
@@ -278,10 +337,6 @@ func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {
 
 	// Load config data from a secret which is stored in Google Cloud Secret Manager service.
 	if l.configFromGCPSecret {
-		if l.gcpSecretID == "" {
-			return nil, fmt.Errorf("gcp-secret-id is required to load Piped config from GCP SecretManager service")
-		}
-
 		client, err := secretmanager.NewClient(ctx)
 		if err != nil {
 			return nil, err
@@ -299,8 +354,11 @@ func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {
 	}
 
 	if l.configFromGitRepo {
-		// TODO: Support loading config data from a Git repository.
-		return nil, fmt.Errorf("loading configuration from a Git repository is not supported yet")
+		// Pull to update the local data.
+		if err := l.configRepo.Pull(ctx, l.gitBranch); err != nil {
+			return nil, fmt.Errorf("failed to pull config repository (%w)", err)
+		}
+		return os.ReadFile(filepath.Join(l.configRepo.GetPath(), l.gitPipedConfigPath))
 	}
 
 	return nil, fmt.Errorf("either [%s] must be set", strings.Join([]string{
