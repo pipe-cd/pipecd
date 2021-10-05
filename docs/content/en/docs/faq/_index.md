@@ -45,3 +45,8 @@ Yes, you can use PipeCD for both mesh (Istio, SMI) applications and non-mesh app
 - Has built-in secrets management
 - Supports gradual rollout of a single app to multiple clusters
 - Shows the delivery performance  insights
+
+### 6. What should I do if I lost `PIPED Key`?
+
+You can create the new PIPED Key. Go to the `Piped` tab at `Settings` page, and click the vertical ellipsis of the project that you would like to create the new PIPED Key. Don't forget deleting the old Key, too.
+
