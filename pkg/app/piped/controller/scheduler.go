@@ -662,6 +662,7 @@ func (s *scheduler) getMentionedAccounts(ctx context.Context, event model.Notifi
 	}
 
 	if ds.GenericDeploymentConfig.DeploymentNotification == nil {
+		// There is no event to mention users.
 		return nil, nil
 	}
 
