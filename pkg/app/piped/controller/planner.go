@@ -147,7 +147,7 @@ func (p *planner) Run(ctx context.Context) error {
 		p.done.Store(true)
 	}()
 
-	repoCfg := &config.PipedRepository{
+	repoCfg := config.PipedRepository{
 		RepoID: p.deployment.GitPath.Repo.Id,
 		Remote: p.deployment.GitPath.Repo.Remote,
 		Branch: p.deployment.GitPath.Repo.Branch,
@@ -167,7 +167,7 @@ func (p *planner) Run(ctx context.Context) error {
 
 	in.TargetDSP = deploysource.NewProvider(
 		filepath.Join(p.workingDir, "target-deploysource"),
-		deploysource.NewGitSourceCloner(p.gitClient, *repoCfg, "target", p.deployment.Trigger.Commit.Hash),
+		deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "target", p.deployment.Trigger.Commit.Hash),
 		*p.deployment.GitPath,
 		p.secretDecrypter,
 	)
@@ -175,7 +175,7 @@ func (p *planner) Run(ctx context.Context) error {
 	if p.lastSuccessfulCommitHash != "" {
 		in.RunningDSP = deploysource.NewProvider(
 			filepath.Join(p.workingDir, "running-deploysource"),
-			deploysource.NewGitSourceCloner(p.gitClient, *repoCfg, "running", p.lastSuccessfulCommitHash),
+			deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "running", p.lastSuccessfulCommitHash),
 			*p.deployment.GitPath,
 			p.secretDecrypter,
 		)
