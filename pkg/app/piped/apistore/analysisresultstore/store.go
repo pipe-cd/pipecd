@@ -60,7 +60,10 @@ func (s *store) GetLatestAnalysisResult(ctx context.Context, applicationID strin
 		return nil, ErrNotFound
 	}
 	if err != nil {
-		s.logger.Error("failed to get the most recent analysis result", zap.Error(err))
+		s.logger.Error("failed to get the most recent analysis result",
+			zap.String("application-id", applicationID),
+			zap.Error(err),
+		)
 		return nil, err
 	}
 	return resp.AnalysisResult, nil
@@ -72,7 +75,10 @@ func (s *store) PutLatestAnalysisResult(ctx context.Context, applicationID strin
 		AnalysisResult: analysisResult,
 	})
 	if err != nil {
-		s.logger.Error("failed to put the most recent analysis result", zap.Error(err))
+		s.logger.Error("failed to put the most recent analysis result",
+			zap.String("application-id", applicationID),
+			zap.Error(err),
+		)
 		return err
 	}
 	return nil

@@ -855,11 +855,11 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 }
 
 func (a *PipedAPI) GetLatestAnalysisResult(ctx context.Context, req *pipedservice.GetLatestAnalysisResultRequest) (*pipedservice.GetLatestAnalysisResultResponse, error) {
-	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, projectID); err != nil {
+	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, pipedID); err != nil {
 		return nil, err
 	}
 
@@ -877,11 +877,11 @@ func (a *PipedAPI) GetLatestAnalysisResult(ctx context.Context, req *pipedservic
 }
 
 func (a *PipedAPI) PutLatestAnalysisResult(ctx context.Context, req *pipedservice.PutLatestAnalysisResultRequest) (*pipedservice.PutLatestAnalysisResultResponse, error) {
-	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, projectID); err != nil {
+	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, pipedID); err != nil {
 		return nil, err
 	}
 

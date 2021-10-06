@@ -91,10 +91,10 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	defer e.saveElapsedTime(ctx)
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	eg, ctx := errgroup.WithContext(ctx)
+	eg, ctxWithTimeout := errgroup.WithContext(ctxWithTimeout)
 
 	// Run analyses with metrics providers.
 	for i := range options.Metrics {
@@ -113,7 +113,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		analyzer := newMetricsAnalyzer(id, *cfg, e.startTime, provider, e.AnalysisResultStore, args, e.Logger, e.LogPersister)
 		eg.Go(func() error {
 			e.LogPersister.Infof("[%s] Start analysis", analyzer.id)
-			return analyzer.run(ctx)
+			return analyzer.run(ctxWithTimeout)
 		})
 	}
 	// Run analyses with logging providers.
@@ -125,7 +125,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		}
 		eg.Go(func() error {
 			e.LogPersister.Infof("[%s] Start analysis for %s", analyzer.id, analyzer.providerType)
-			return analyzer.run(ctx)
+			return analyzer.run(ctxWithTimeout)
 		})
 	}
 	// Run analyses with http providers.
@@ -137,7 +137,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		}
 		eg.Go(func() error {
 			e.LogPersister.Infof("[%s] Start analysis for %s", analyzer.id, analyzer.providerType)
-			return analyzer.run(ctx)
+			return analyzer.run(ctxWithTimeout)
 		})
 	}
 
@@ -156,7 +156,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		StartTime: e.startTime.Unix(),
 	})
 	if err != nil {
-		e.Logger.Error("failed to send the analysis metadata")
+		e.Logger.Error("failed to send the analysis result", zap.Error(err))
 	}
 	return status
 }
