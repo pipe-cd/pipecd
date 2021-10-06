@@ -211,17 +211,14 @@ func (s *scheduler) Run(ctx context.Context) error {
 		cancelCommand   *model.ReportableCommand
 		cancelCommander string
 		lastStage       *model.PipelineStage
-		repoID          = s.deployment.GitPath.Repo.Id
 		statusReason    = "The deployment was completed successfully"
 	)
 	deploymentStatus = model.DeploymentStatus_DEPLOYMENT_SUCCESS
 
-	repoCfg, ok := s.pipedConfig.GetRepository(repoID)
-	if !ok {
-		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-		statusReason = fmt.Sprintf("Repository %q is not found in the piped config", repoID)
-		s.reportDeploymentCompleted(ctx, deploymentStatus, statusReason, "")
-		return fmt.Errorf("unable to find %q from the repository list in piped config", repoID)
+	repoCfg := config.PipedRepository{
+		RepoID: s.deployment.GitPath.Repo.Id,
+		Remote: s.deployment.GitPath.Repo.Remote,
+		Branch: s.deployment.GitPath.Repo.Branch,
 	}
 
 	s.targetDSP = deploysource.NewProvider(
