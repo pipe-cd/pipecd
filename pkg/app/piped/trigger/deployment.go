@@ -48,6 +48,7 @@ func (t *Trigger) triggerDeployment(
 	if !ok {
 		t.logger.Warn("detected some applications binding with a non existent repository", zap.String("repo-id", deployment.GitPath.Repo.Id))
 		t.logger.Error("missing repository")
+		return
 	}
 
 	absPath := filepath.Join(repo.GetPath(), deployment.GitPath.GetDeploymentConfigFilePath())
@@ -56,6 +57,7 @@ func (t *Trigger) triggerDeployment(
 	if err != nil {
 		if os.IsNotExist(err) {
 			t.logger.Error("deployment config file was not found", zap.String("path", absPath))
+			return
 		}
 	}
 
