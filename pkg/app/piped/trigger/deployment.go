@@ -61,9 +61,11 @@ func (t *Trigger) triggerDeployment(
 
 	var accounts []string
 
-	for _, v := range cfg.KubernetesDeploymentSpec.GenericDeploymentSpec.DeploymentNotification.Mentions {
-		if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
-			accounts = v.Slack
+	if cfg.KubernetesDeploymentSpec.GenericDeploymentSpec.DeploymentNotification != nil {
+		for _, v := range cfg.KubernetesDeploymentSpec.GenericDeploymentSpec.DeploymentNotification.Mentions {
+			if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
+				accounts = v.Slack
+			}
 		}
 	}
 
