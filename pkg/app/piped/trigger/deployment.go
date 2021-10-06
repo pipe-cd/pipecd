@@ -17,12 +17,15 @@ package trigger
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -40,6 +43,30 @@ func (t *Trigger) triggerDeployment(
 		return
 	}
 
+	// Find the application repo from pre-loaded ones.
+	repo, ok := t.gitRepos[deployment.GitPath.Repo.Id]
+	if !ok {
+		t.logger.Warn("detected some applications binding with a non existent repository", zap.String("repo-id", deployment.GitPath.Repo.Id))
+		t.logger.Error("missing repository")
+	}
+
+	absPath := filepath.Join(repo.GetPath(), deployment.GitPath.GetDeploymentConfigFilePath())
+
+	cfg, err := config.LoadFromYAML(absPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			t.logger.Error("deployment config file was not found", zap.String("path", absPath))
+		}
+	}
+
+	var accounts []string
+
+	for _, v := range cfg.KubernetesDeploymentSpec.GenericDeploymentSpec.DeploymentNotification.Mentions {
+		if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
+			accounts = v.Slack
+		}
+	}
+
 	defer func() {
 		if err != nil {
 			return
@@ -51,8 +78,9 @@ func (t *Trigger) triggerDeployment(
 		t.notifier.Notify(model.NotificationEvent{
 			Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
 			Metadata: &model.NotificationEventDeploymentTriggered{
-				Deployment: deployment,
-				EnvName:    env.Name,
+				Deployment:        deployment,
+				EnvName:           env.Name,
+				MentionedAccounts: accounts,
 			},
 		})
 	}()

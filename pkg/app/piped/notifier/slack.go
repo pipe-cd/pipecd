@@ -164,7 +164,7 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED:
 		md := event.Metadata.(*model.NotificationEventDeploymentTriggered)
 		title = fmt.Sprintf("Triggered a new deployment for %q", md.Deployment.ApplicationName)
-		generateDeploymentEventData(md.Deployment, md.EnvName, "")
+		generateDeploymentEventData(md.Deployment, md.EnvName, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED:
 		md := event.Metadata.(*model.NotificationEventDeploymentPlanned)
