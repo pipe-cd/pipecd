@@ -16,6 +16,7 @@ package waitapproval
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -117,21 +118,9 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 }
 
 func (e *Executor) reportRequiringApproval(ctx context.Context) {
-	ds, err := e.TargetDSP.GetReadOnly(ctx, e.LogPersister)
+	accounts, err := e.getMentionedAccounts(ctx)
 	if err != nil {
-		e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
-		return
-	}
-
-	var approvers []string
-
-	if ds.GenericDeploymentConfig.DeploymentNotification != nil {
-		for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
-			if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL.String() {
-				approvers = v.Slack
-				break
-			}
-		}
+		e.Logger.Error("failed to get the list of accounts", zap.Error(err))
 	}
 
 	e.Notifier.Notify(model.NotificationEvent{
@@ -139,7 +128,26 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 		Metadata: &model.NotificationEventDeploymentWaitApproval{
 			Deployment:        e.Deployment,
 			EnvName:           e.EnvName,
-			MentionedAccounts: approvers,
+			MentionedAccounts: accounts,
 		},
 	})
+}
+
+func (e *Executor) getMentionedAccounts(ctx context.Context) ([]string, error) {
+	ds, err := e.TargetDSP.GetReadOnly(ctx, e.LogPersister)
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare running deploy source data (%v)", err)
+	}
+
+	if ds.GenericDeploymentConfig.DeploymentNotification == nil {
+		// There is no event to mention users.
+		return nil, nil
+	}
+
+	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
+		if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL.String() {
+			return v.Slack, nil
+		}
+	}
+	return nil, nil
 }
