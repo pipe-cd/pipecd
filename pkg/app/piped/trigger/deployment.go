@@ -43,32 +43,10 @@ func (t *Trigger) triggerDeployment(
 		return
 	}
 
-	// Find the application repo from pre-loaded ones.
-	repo, ok := t.gitRepos[deployment.GitPath.Repo.Id]
-	if !ok {
-		t.logger.Warn("detected some applications binding with a non existent repository", zap.String("repo-id", deployment.GitPath.Repo.Id))
-		t.logger.Error("missing repository")
-		return
-	}
-
-	absPath := filepath.Join(repo.GetPath(), deployment.GitPath.GetDeploymentConfigFilePath())
-
-	cfg, err := config.LoadFromYAML(absPath)
+	accounts, err := t.getMentionedAccounts(deployment)
 	if err != nil {
-		if os.IsNotExist(err) {
-			t.logger.Error("deployment config file was not found", zap.String("path", absPath))
-			return
-		}
-	}
-
-	var accounts []string
-
-	if cfg.KubernetesDeploymentSpec.GenericDeploymentSpec.DeploymentNotification != nil {
-		for _, v := range cfg.KubernetesDeploymentSpec.GenericDeploymentSpec.DeploymentNotification.Mentions {
-			if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
-				accounts = v.Slack
-			}
-		}
+		t.logger.Error("failed to get the list of accounts", zap.Error(err))
+		return
 	}
 
 	defer func() {
@@ -183,4 +161,35 @@ func buildDeployment(
 	}
 
 	return deployment, nil
+}
+
+func (t *Trigger) getMentionedAccounts(d *model.Deployment) ([]string, error) {
+	// Find the application repo from pre-loaded ones.
+	repo, ok := t.gitRepos[d.GitPath.Repo.Id]
+	if !ok {
+		t.logger.Warn("detected some applications binding with a non existent repository", zap.String("repo-id", d.GitPath.Repo.Id))
+		return nil, fmt.Errorf("missing repository")
+	}
+
+	absPath := filepath.Join(repo.GetPath(), d.GitPath.GetDeploymentConfigFilePath())
+
+	cfg, err := config.LoadFromYAML(absPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("deployment config file %s was not found", d.GitPath.GetDeploymentConfigFilePath())
+		}
+		return nil, err
+	}
+
+	if cfg.KubernetesDeploymentSpec.GenericDeploymentSpec.DeploymentNotification == nil {
+		// There is no event to mention users.
+		return nil, nil
+	}
+
+	for _, v := range cfg.KubernetesDeploymentSpec.GenericDeploymentSpec.DeploymentNotification.Mentions {
+		if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
+			return v.Slack, nil
+		}
+	}
+	return nil, nil
 }
