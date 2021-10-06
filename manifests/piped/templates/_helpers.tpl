@@ -123,3 +123,38 @@ A set of permissions ClusterRole will contain
   - '*'
 {{- end }}
 {{- end }}
+
+{{/*
+A set of args for Launcher.
+*/}}
+{{- define "piped.launcherArgs" -}}
+- launcher
+{{- if .Values.launcher.configFromGitRepo.enabled }}
+{{- with .Values.launcher.configFromGitRepo }}
+- --config-from-git-repo=true
+- --git-repo-url={{ required "repoUrl is required" .repoUrl }}
+- --git-branch={{ required "branch is required" .branch }}
+- --git-piped-config-path={{ required "configFilePath is required" .configFilePath }}
+{{- end }}
+{{- else }}
+- --config-file=/etc/piped-config/{{ .Values.config.fileName }}
+{{- end }}
+- --metrics={{ .Values.args.metrics }}
+- --enable-default-kubernetes-cloud-provider={{ .Values.args.enableDefaultKubernetesCloudProvider }}
+- --insecure={{ .Values.args.insecure }}
+- --log-encoding={{ .Values.args.logEncoding }}
+- --add-login-user-to-passwd={{ .Values.args.addLoginUserToPasswd }}
+{{- end }}
+
+{{/*
+A set of args for Piped.
+*/}}
+{{- define "piped.pipedArgs" -}}
+- piped
+- --config-file=/etc/piped-config/{{ .Values.config.fileName }}
+- --metrics={{ .Values.args.metrics }}
+- --enable-default-kubernetes-cloud-provider={{ .Values.args.enableDefaultKubernetesCloudProvider }}
+- --insecure={{ .Values.args.insecure }}
+- --log-encoding={{ .Values.args.logEncoding }}
+- --add-login-user-to-passwd={{ .Values.args.addLoginUserToPasswd }}
+{{- end }}
