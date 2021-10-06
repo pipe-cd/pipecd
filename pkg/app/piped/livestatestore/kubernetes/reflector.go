@@ -49,6 +49,8 @@ var (
 		"rbac.authorization.k8s.io": {},
 		"policy":                    {},
 		"authentication.k8s.io":     {},
+		"apiregistration.k8s.io":    {},
+		"authorization.k8s.io":      {},
 	}
 	versionWhitelist = map[string]struct{}{
 		"v1":      {},
@@ -83,6 +85,15 @@ var (
 		"PodDisruptionBudget":      {},
 		"PodSecurityPolicy":        {},
 		"TokenReview":              {},
+		"APIService":               {},
+		"LocalSubjectAccessReview": {},
+		"SelfSubjectAccessReview":  {},
+		"SelfSubjectRulesReview":   {},
+		"SubjectAccessReview":      {},
+		"ResourceQuota":            {},
+		"PodTemplate":              {},
+		"IngressClass":             {},
+		"Namespace":                {},
 	}
 	ignoreResourceKeys = map[string]struct{}{
 		"v1:Service:default:kubernetes":               {},

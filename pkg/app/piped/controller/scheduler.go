@@ -38,22 +38,23 @@ import (
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
 	// Readonly deployment model.
-	deployment         *model.Deployment
-	envName            string
-	workingDir         string
-	executorRegistry   registry.Registry
-	apiClient          apiClient
-	gitClient          gitClient
-	commandLister      commandLister
-	applicationLister  applicationLister
-	liveResourceLister liveResourceLister
-	logPersister       logpersister.Persister
-	metadataStore      *metadataStore
-	notifier           notifier
-	secretDecrypter    secretDecrypter
-	pipedConfig        *config.PipedSpec
-	appManifestsCache  cache.Cache
-	logger             *zap.Logger
+	deployment          *model.Deployment
+	envName             string
+	workingDir          string
+	executorRegistry    registry.Registry
+	apiClient           apiClient
+	gitClient           gitClient
+	commandLister       commandLister
+	applicationLister   applicationLister
+	liveResourceLister  liveResourceLister
+	analysisResultStore analysisResultStore
+	logPersister        logpersister.Persister
+	metadataStore       *metadataStore
+	notifier            notifier
+	secretDecrypter     secretDecrypter
+	pipedConfig         *config.PipedSpec
+	appManifestsCache   cache.Cache
+	logger              *zap.Logger
 
 	targetDSP  deploysource.Provider
 	runningDSP deploysource.Provider
@@ -84,6 +85,7 @@ func newScheduler(
 	commandLister commandLister,
 	applicationLister applicationLister,
 	liveResourceLister liveResourceLister,
+	analysisResultStore analysisResultStore,
 	lp logpersister.Persister,
 	notifier notifier,
 	sd secretDecrypter,
@@ -111,6 +113,7 @@ func newScheduler(
 		commandLister:        commandLister,
 		applicationLister:    applicationLister,
 		liveResourceLister:   liveResourceLister,
+		analysisResultStore:  analysisResultStore,
 		logPersister:         lp,
 		metadataStore:        NewMetadataStore(apiClient, d),
 		notifier:             notifier,
@@ -470,6 +473,10 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		cloudProvider: app.CloudProvider,
 		appID:         app.Id,
 	}
+	aStore := appAnalysisResultStore{
+		store:         s.analysisResultStore,
+		applicationID: app.Id,
+	}
 	input := executor.Input{
 		Stage:                 &ps,
 		StageConfig:           stageConfig,
@@ -483,7 +490,10 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		MetadataStore:         s.metadataStore,
 		AppManifestsCache:     s.appManifestsCache,
 		AppLiveResourceLister: alrLister,
+		AnalysisResultStore:   aStore,
 		Logger:                s.logger,
+		Notifier:              s.notifier,
+		EnvName:               s.envName,
 	}
 
 	// Find the executor for this stage.
@@ -563,6 +573,7 @@ func (s *scheduler) reportDeploymentStatusChanged(ctx context.Context, status mo
 		}
 		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
 	}
+
 	return err
 }
 
@@ -583,31 +594,46 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	defer func() {
 		switch status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
+			accounts, err := s.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED)
+			if err != nil {
+				s.logger.Error("failed to get the list of accounts", zap.Error(err))
+			}
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED,
 				Metadata: &model.NotificationEventDeploymentSucceeded{
-					Deployment: s.deployment,
-					EnvName:    s.envName,
+					Deployment:        s.deployment,
+					EnvName:           s.envName,
+					MentionedAccounts: accounts,
 				},
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE:
+			accounts, err := s.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
+			if err != nil {
+				s.logger.Error("failed to get the list of accounts", zap.Error(err))
+			}
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_FAILED,
 				Metadata: &model.NotificationEventDeploymentFailed{
-					Deployment: s.deployment,
-					EnvName:    s.envName,
-					Reason:     desc,
+					Deployment:        s.deployment,
+					EnvName:           s.envName,
+					Reason:            desc,
+					MentionedAccounts: accounts,
 				},
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_CANCELLED:
+			accounts, err := s.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			if err != nil {
+				s.logger.Error("failed to get the list of accounts", zap.Error(err))
+			}
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED,
 				Metadata: &model.NotificationEventDeploymentCancelled{
-					Deployment: s.deployment,
-					EnvName:    s.envName,
-					Commander:  cancelCommander,
+					Deployment:        s.deployment,
+					EnvName:           s.envName,
+					Commander:         cancelCommander,
+					MentionedAccounts: accounts,
 				},
 			})
 		}
@@ -622,6 +648,30 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	}
 
 	return err
+}
+
+func (s *scheduler) getMentionedAccounts(ctx context.Context, event model.NotificationEventType) ([]string, error) {
+	if s.targetDSP == nil {
+		return nil, fmt.Errorf("targetDSP is not configured")
+	}
+
+	ds, err := s.targetDSP.GetReadOnly(ctx, ioutil.Discard)
+	if err != nil {
+		err = fmt.Errorf("failed to prepare running deploy source data (%w)", err)
+		return nil, err
+	}
+
+	if ds.GenericDeploymentConfig.DeploymentNotification == nil {
+		// There is no event to mention users.
+		return nil, nil
+	}
+
+	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
+		if e := "EVENT_" + v.Event; e == event.String() {
+			return v.Slack, nil
+		}
+	}
+	return nil, nil
 }
 
 func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) error {
@@ -648,6 +698,7 @@ func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) 
 		}
 		err = fmt.Errorf("failed to report most recent successful deployment: %w", err)
 	}
+
 	return err
 }
 
@@ -659,4 +710,17 @@ type stageCommandLister struct {
 
 func (s stageCommandLister) ListCommands() []model.ReportableCommand {
 	return s.lister.ListStageCommands(s.deploymentID, s.stageID)
+}
+
+type appAnalysisResultStore struct {
+	store         analysisResultStore
+	applicationID string
+}
+
+func (a appAnalysisResultStore) GetLatestAnalysisResult(ctx context.Context) (*model.AnalysisResult, error) {
+	return a.store.GetLatestAnalysisResult(ctx, a.applicationID)
+}
+
+func (a appAnalysisResultStore) PutLatestAnalysisResult(ctx context.Context, analysisResult *model.AnalysisResult) error {
+	return a.store.PutLatestAnalysisResult(ctx, a.applicationID, analysisResult)
 }

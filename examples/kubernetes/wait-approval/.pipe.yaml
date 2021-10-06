@@ -14,3 +14,9 @@ spec:
             - nghialv
       - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
+  notification:
+    mentions:
+      - event: DEPLOYMENT_WAIT_APPROVAL
+        slack:
+          - slack-user-id-1  # slack-user-name-1
+          - slack-user-id-2  # slack-user-name-2

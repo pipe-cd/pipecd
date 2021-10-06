@@ -16,6 +16,7 @@ load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_docker//container:container.bzl", "container_bundle")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 
+# TODO: Use go and container rules directly in each app directory and remove this helper.
 def app_image(name, binary, repository, base = None, **kwargs):
     go_image(
         name = "%s_image" % name,

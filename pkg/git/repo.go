@@ -54,15 +54,17 @@ type repo struct {
 	gitPath      string
 	remote       string
 	clonedBranch string
+	gitEnvs      []string
 }
 
 // NewRepo creates a new Repo instance.
-func NewRepo(dir, gitPath, remote, clonedBranch string) *repo {
+func NewRepo(dir, gitPath, remote, clonedBranch string, gitEnvs []string) *repo {
 	return &repo{
 		dir:          dir,
 		gitPath:      gitPath,
 		remote:       remote,
 		clonedBranch: clonedBranch,
+		gitEnvs:      gitEnvs,
 	}
 }
 
@@ -292,6 +294,7 @@ func (r *repo) setRemote(ctx context.Context, remote string) error {
 func (r *repo) runGitCommand(ctx context.Context, args ...string) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, r.gitPath, args...)
 	cmd.Dir = r.dir
+	cmd.Env = append(cmd.Env, r.gitEnvs...)
 	return cmd.CombinedOutput()
 }
 

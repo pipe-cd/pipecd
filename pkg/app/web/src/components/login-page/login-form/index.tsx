@@ -6,7 +6,6 @@ import {
   PAGE_PATH_LOGIN,
 } from "~/constants/path";
 import { MarkGithubIcon } from "@primer/octicons-react";
-import { Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -66,6 +65,10 @@ export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
   projectName,
 }) {
   const classes = useStyles();
+
+  const handleOnBack = (): void => {
+    window.location.href = PAGE_PATH_LOGIN;
+  };
 
   return (
     <div className={classes.root}>
@@ -127,8 +130,7 @@ export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
             <Button
               type="reset"
               color="primary"
-              component={Link}
-              to={PAGE_PATH_LOGIN}
+              onClick={handleOnBack}
             >
               back
             </Button>

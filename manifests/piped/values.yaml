@@ -3,7 +3,6 @@ image:
 
 args:
   metrics: true
-  useFakeAPI: false
   enableDefaultKubernetesCloudProvider: true
   insecure: false
   # One of "humanize", "json", or "console" is available.
@@ -11,6 +10,18 @@ args:
   # Specifies whether it adds logged-in user to /etc/passwd at runtime.
   # This is typically for applications running as a random user ID, such as OpenShift less than 4.2.
   addLoginUserToPasswd: false
+
+launcher:
+  enabled: false
+  configFromGitRepo:
+    # Whether to load Piped config that is being stored in a git repository.
+    enabled: false
+    # The remote URL of the git repository to fetch Piped config.
+    repoUrl: ""
+    # Branch of the git repository for Piped config.
+    branch: ""
+    # Relative path within git repository to locate Piped config file.
+    configFilePath: ""
 
 service:
   enabled: true
@@ -43,7 +54,6 @@ config:
   #         branch: master
   #     syncInterval: 1m
 
-# TODO: Allow adding arbitrary secret files instead of fixing them as currently.
 secret:
   # Specifies whether a Secret for storing sensitive data should be created.
   create: true
@@ -51,6 +61,9 @@ secret:
   name: ""
   # Where the secret files will be mounted to.
   mountPath: /etc/piped-secret
+  # Additional list of secret data will be added to the Secret resource.
+  # TODO: Remove the predefined secrets after data field because this data field is more flexible.
+  data: {}
   pipedKey:
     # The name of the piped key file.
     fileName: piped-key

@@ -7,9 +7,9 @@ description: >
 ---
 
 Deploying a Lambda application requires a `function.yaml` file placing inside the application directory. That file contains values to be used to deploy Lambda function on your AWS cluster.
-Currently, only container image built source is supported by piped deployment. For more information about container images as function, read [this post on AWS blog](https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/).
+Currently, __container image built source__ and __AWS S3 stored zip packing function code__ are supported by Piped deployment. For more information about container image as Lambda function, read [this post on AWS blog](https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/).
 
-A sample `function.yaml` file as following:
+A sample `function.yaml` file for container image as Lambda function used deployment as follows:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -35,6 +35,31 @@ Except the `tags` and the `environments` field, all others are required fields f
 The `role` value represents the service role (for your Lambda function to run), not for Piped agent to deploy your Lambda application. To be able to pull container images from AWS ECR, besides policies to run as usual, you need to add `Lambda.ElasticContainerRegistry` __read__ permission to your Lambda function service role.
 
 The `environments` field represents environment variables that can be accessed by your Lambda application at runtime. __In case of no value set for this field, all environment variables for the deploying Lambda application will be revoked__, so make sure you set all currently required environment variables of your running Lambda application on `function.yaml` if you migrate your app to PipeCD deployment.
+
+It's recommended to use container image as Lambda function due to its simplicity, but as mentioned above, below is a sample `function.yaml` file for Lambda which uses zip packing source code stored in AWS S3.
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaFunction
+spec:
+  name: SimpleZipPackingS3Function
+  role: arn:aws:iam::76xxxxxxx:role/lambda-role
+  # --- 5 next lines are required for zip packing source code stored in S3 deployment.
+  s3Bucket: pipecd-sample-lambda
+  s3Key: pipecd-sample-src
+  s3ObjectVersion: 1pTK9_v0Kd7I8Sk4n6abzCL
+  handler: app.lambdaHandler
+  runtime: nodejs14.x
+  # ---
+  memory: 512
+  timeout: 30
+  environments:
+    FOO: bar
+  tags:
+    app: simple-zip-s3
+```
+
+Value for the `runtime` field should be listed in [AWS Lambda runtimes official docs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
 
 ## Quick sync
 

@@ -1,0 +1,16 @@
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaFunction
+spec:
+  name: SimpleZipPackingS3Function
+  role: arn:aws:iam::76xxxxxxx:role/lambda-role
+  s3Bucket: pipecd-sample-lambda
+  s3Key: pipecd-sample-src
+  s3ObjectVersion: 1pTK9_v0Kd7I8Sk4n6abzCL
+  handler: app.lambdaHandler
+  runtime: nodejs14.x
+  memory: 512
+  timeout: 30
+  environments:
+    FOO: bar
+  tags:
+    app: simple-zip-s3

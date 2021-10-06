@@ -1,7 +1,7 @@
 import loadable from "@loadable/component";
 import { EntityId } from "@reduxjs/toolkit";
 import { FC, useEffect } from "react";
-import { Redirect, Route, Switch } from "react-router-dom";
+import { Redirect, Route, Switch, useLocation } from "react-router-dom";
 import { ApplicationIndexPage } from "~/components/applications-page";
 import { DeploymentIndexPage } from "~/components/deployments-page";
 import { Header } from "~/components/header";
@@ -17,6 +17,7 @@ import {
 } from "~/constants/path";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { useInterval } from "~/hooks/use-interval";
+import useQueryString from "./hooks/use-query-string";
 import {
   fetchCommand,
   selectIds as selectCommandIds,
@@ -89,6 +90,14 @@ export const Routes: FC = () => {
   }, [dispatch, me]);
   useCommandsStatusChecking();
 
+  const location = useLocation();
+  const [_, onLoadProject] = useQueryString("project", "");
+  useEffect(() => {
+    if (me?.isLogin) {
+      onLoadProject(me.projectId);
+    }
+  }, [location]);
+
   if (me === null) {
     return (
       <>
@@ -102,7 +111,7 @@ export const Routes: FC = () => {
       <>
         <Header />
         <Switch>
-          <Route path={`${PAGE_PATH_LOGIN}/:projectName?`}>
+          <Route exact path={PAGE_PATH_LOGIN}>
             <LoginPage />
           </Route>
           <Route
@@ -118,15 +127,6 @@ export const Routes: FC = () => {
     <>
       <Header />
       <Switch>
-        <Route
-          exact
-          path={PAGE_PATH_TOP}
-          component={() => <Redirect to={PAGE_PATH_APPLICATIONS} />}
-        />
-        <Route
-          path={PAGE_PATH_LOGIN}
-          component={() => <Redirect to={PAGE_PATH_APPLICATIONS} />}
-        />
         <Route
           exact
           path={PAGE_PATH_APPLICATIONS}
@@ -149,6 +149,10 @@ export const Routes: FC = () => {
         />
         <Route path={PAGE_PATH_SETTINGS} component={SettingsIndexPage} />
         <Route path={PAGE_PATH_INSIGHTS} component={InsightIndexPage} />
+        <Route
+          path={PAGE_PATH_TOP}
+          component={() => <Redirect to={PAGE_PATH_APPLICATIONS} />}
+        />
       </Switch>
       <Toasts />
     </>

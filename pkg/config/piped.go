@@ -40,6 +40,8 @@ type PipedSpec struct {
 	PipedKeyFile string
 	// Base64 encoded string of Piped key.
 	PipedKeyData string
+	// The name of this piped.
+	Name string
 	// The address used to connect to the control-plane's API.
 	APIAddress string `json:"apiAddress"`
 	// The address to the control-plane's Web.
@@ -676,7 +678,8 @@ func (s *SecretManagement) UnmarshalJSON(data []byte) error {
 type PipedEventWatcher struct {
 	// Interval to fetch the latest event and compare it with one defined in EventWatcher config files
 	CheckInterval Duration `json:"checkInterval"`
-	// Settings for each git repository.
+	// The configuration list of git repositories to be observed.
+	// Only the repositories in this list will be observed by Piped.
 	GitRepos []PipedEventWatcherGitRepo `json:"gitRepos"`
 }
 

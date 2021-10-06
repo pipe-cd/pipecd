@@ -17,6 +17,7 @@ go get github.com/bazelbuild/bazelisk
 ```
 
 or directly install its [binary](https://github.com/bazelbuild/bazelisk/releases) from the release page.
+For more information, you might want to read the [installation notes of `bazelisk`](https://github.com/bazelbuild/bazelisk#requirements).
 
 ## Repositories
 - [pipe](https://github.com/pipe-cd/pipe): contains all source code and documentation of PipeCD project.
@@ -32,6 +33,6 @@ or directly install its [binary](https://github.com/bazelbuild/bazelisk/releases
 - `make buildifier`: formats bazel BUILD and .bzl files with a standard convention.
 - `make clean`: cleans all bazel cache.
 - `make expose-generated-go`: exposes generated Go files (`.pb.go`, `.mock.go`...) to editors and IDEs.
-- `make site`: runs PipeCD site (https://pipecd.dev) locally.
+- `make site`: runs PipeCD site (https://pipecd.dev) locally (requires [hugo](https://github.com/gohugoio/hugo) to be installed).
 
 **NOTE**: The first time of running a bazel command will take some minutes because bazel needs to download all required dependencies. From the second time it will be very fast.

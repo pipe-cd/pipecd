@@ -60,21 +60,35 @@ type AppLiveResourceLister interface {
 	ListKubernetesResources() ([]provider.Manifest, bool)
 }
 
+type AnalysisResultStore interface {
+	GetLatestAnalysisResult(ctx context.Context) (*model.AnalysisResult, error)
+	PutLatestAnalysisResult(ctx context.Context, analysisResult *model.AnalysisResult) error
+}
+
+type Notifier interface {
+	Notify(event model.NotificationEvent)
+}
+
 type Input struct {
 	Stage       *model.PipelineStage
 	StageConfig config.PipelineStage
 	// Readonly deployment model.
-	Deployment            *model.Deployment
-	Application           *model.Application
-	PipedConfig           *config.PipedSpec
-	TargetDSP             deploysource.Provider
+	Deployment  *model.Deployment
+	Application *model.Application
+	PipedConfig *config.PipedSpec
+	// Deploy source at target commit
+	TargetDSP deploysource.Provider
+	// Deploy source at running commit
 	RunningDSP            deploysource.Provider
 	CommandLister         CommandLister
 	LogPersister          LogPersister
 	MetadataStore         MetadataStore
 	AppManifestsCache     cache.Cache
 	AppLiveResourceLister AppLiveResourceLister
+	AnalysisResultStore   AnalysisResultStore
 	Logger                *zap.Logger
+	Notifier              Notifier
+	EnvName               string
 }
 
 func DetermineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.StageStatus {

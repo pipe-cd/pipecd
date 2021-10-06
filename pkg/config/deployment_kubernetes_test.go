@@ -38,6 +38,9 @@ func TestKubernetesDeploymentConfig(t *testing.T) {
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &KubernetesDeploymentSpec{
 				GenericDeploymentSpec: GenericDeploymentSpec{
+					Planner: DeploymentPlanner{
+						AlwaysUsePipeline: true,
+					},
 					Pipeline: &DeploymentPipeline{
 						Stages: []PipelineStage{
 							{

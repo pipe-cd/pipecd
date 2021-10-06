@@ -16,6 +16,8 @@ import {
   UpdatePipedResponse,
   DeleteOldPipedKeysRequest,
   DeleteOldPipedKeysResponse,
+  UpdatePipedDesiredVersionRequest,
+  UpdatePipedDesiredVersionResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 
 export const getPipeds = ({
@@ -100,4 +102,14 @@ export const updatePiped = ({
   req.setDesc(desc);
   req.setEnvIdsList(envIdsList);
   return apiRequest(req, apiClient.updatePiped);
+};
+
+export const updatePipedDesiredVersion = ({
+  version,
+  pipedIdsList,
+}: UpdatePipedDesiredVersionRequest.AsObject): Promise<UpdatePipedDesiredVersionResponse.AsObject> => {
+  const req = new UpdatePipedDesiredVersionRequest();
+  req.setVersion(version);
+  req.setPipedIdsList(pipedIdsList);
+  return apiRequest(req, apiClient.updatePipedDesiredVersion);
 };

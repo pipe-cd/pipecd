@@ -139,7 +139,7 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		fields            []slackField
 	)
 
-	generateDeploymentEventData := func(d *model.Deployment, envName string) {
+	generateDeploymentEventData := func(d *model.Deployment, envName string, accounts string) {
 		link = webURL + "/deployments/" + d.Id
 		fields = []slackField{
 			{"Env", truncateText(envName, 8), true},
@@ -148,13 +148,15 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 			{"Deployment", makeSlackLink(truncateText(d.Id, 8), link), true},
 			{"Triggered By", d.TriggeredBy(), true},
 			{"Started At", makeSlackDate(d.CreatedAt), true},
+			{"Mention To", accounts, true},
 		}
 	}
-	generatePipedEventData := func(id, version string) {
+	generatePipedEventData := func(id, name, version string) {
 		link = webURL + "/settings/piped"
 		fields = []slackField{
-			{"Id", id, true},
+			{"Name", name, true},
 			{"Version", version, true},
+			{"Id", id, true},
 		}
 	}
 
@@ -162,43 +164,48 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED:
 		md := event.Metadata.(*model.NotificationEventDeploymentTriggered)
 		title = fmt.Sprintf("Triggered a new deployment for %q", md.Deployment.ApplicationName)
-		generateDeploymentEventData(md.Deployment, md.EnvName)
+		generateDeploymentEventData(md.Deployment, md.EnvName, "")
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED:
 		md := event.Metadata.(*model.NotificationEventDeploymentPlanned)
 		title = fmt.Sprintf("Deployment for %q was planned", md.Deployment.ApplicationName)
 		text = md.Summary
-		generateDeploymentEventData(md.Deployment, md.EnvName)
+		generateDeploymentEventData(md.Deployment, md.EnvName, getAccountsAsString(md.MentionedAccounts))
+
+	case model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL:
+		md := event.Metadata.(*model.NotificationEventDeploymentWaitApproval)
+		title = fmt.Sprintf("Deployment for %q is waiting for an approval", md.Deployment.ApplicationName)
+		generateDeploymentEventData(md.Deployment, md.EnvName, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED:
 		md := event.Metadata.(*model.NotificationEventDeploymentSucceeded)
 		title = fmt.Sprintf("Deployment for %q was completed successfully", md.Deployment.ApplicationName)
 		color = slackSuccessColor
-		generateDeploymentEventData(md.Deployment, md.EnvName)
+		generateDeploymentEventData(md.Deployment, md.EnvName, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_FAILED:
 		md := event.Metadata.(*model.NotificationEventDeploymentFailed)
 		title = fmt.Sprintf("Deployment for %q was failed", md.Deployment.ApplicationName)
 		text = md.Reason
 		color = slackErrorColor
-		generateDeploymentEventData(md.Deployment, md.EnvName)
+		generateDeploymentEventData(md.Deployment, md.EnvName, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED:
 		md := event.Metadata.(*model.NotificationEventDeploymentCancelled)
 		title = fmt.Sprintf("Deployment for %q was cancelled", md.Deployment.ApplicationName)
 		text = fmt.Sprintf("Cancelled by %s", md.Commander)
 		color = slackWarnColor
-		generateDeploymentEventData(md.Deployment, md.EnvName)
+		generateDeploymentEventData(md.Deployment, md.EnvName, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_PIPED_STARTED:
 		md := event.Metadata.(*model.NotificationEventPipedStarted)
 		title = "A piped has been started"
-		generatePipedEventData(md.Id, md.Version)
+		generatePipedEventData(md.Id, md.Name, md.Version)
 
 	case model.NotificationEventType_EVENT_PIPED_STOPPED:
 		md := event.Metadata.(*model.NotificationEventPipedStopped)
 		title = "A piped has been stopped"
-		generatePipedEventData(md.Id, md.Version)
+		generatePipedEventData(md.Id, md.Name, md.Version)
 
 	// TODO: Support application type of notification event.
 	default:
@@ -257,4 +264,15 @@ func makeSlackMessage(title, titleLink, text, color string, timestamp int64, fie
 			Timestamp: timestamp,
 		}},
 	}
+}
+
+func getAccountsAsString(accounts []string) string {
+	if len(accounts) == 0 {
+		return ""
+	}
+	formattedAccounts := make([]string, 0, len(accounts))
+	for _, a := range accounts {
+		formattedAccounts = append(formattedAccounts, fmt.Sprintf("<@%s>", a))
+	}
+	return strings.Join(formattedAccounts, " ")
 }

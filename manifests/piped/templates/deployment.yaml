@@ -26,15 +26,16 @@ spec:
         - name: piped
           image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
+          {{- if .Values.launcher.enabled }}
+          command:
+            - /launcher
+          {{- end }}
           args:
-          - piped
-          - --config-file=/etc/piped-config/{{ .Values.config.fileName }}
-          - --metrics={{ .Values.args.metrics }}
-          - --use-fake-api-client={{ .Values.args.useFakeAPI }}
-          - --enable-default-kubernetes-cloud-provider={{ .Values.args.enableDefaultKubernetesCloudProvider }}
-          - --insecure={{ .Values.args.insecure }}
-          - --log-encoding={{ .Values.args.logEncoding }}
-          - --add-login-user-to-passwd={{ .Values.args.addLoginUserToPasswd }}
+            {{- if .Values.launcher.enabled }}
+              {{- include "piped.launcherArgs" . | nindent 12 }}
+            {{- else }}
+              {{- include "piped.pipedArgs" . | nindent 12 }}
+            {{- end }}
           ports:
             - name: admin
               containerPort: 9085
@@ -43,6 +44,9 @@ spec:
             httpGet:
               path: /healthz
               port: admin
+            # We increase this period value since Launcher stops and starts Piped gracefully.
+            periodSeconds: 30
+            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /healthz

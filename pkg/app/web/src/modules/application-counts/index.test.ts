@@ -32,10 +32,6 @@ describe("applicationCountsSlice reducer", () => {
           DISABLED: 0,
           ENABLED: 0,
         },
-        CROSSPLANE: {
-          DISABLED: 0,
-          ENABLED: 0,
-        },
         ECS: {
           DISABLED: 0,
           ENABLED: 0,
@@ -67,10 +63,6 @@ test("fetchApplicationCount", async () => {
     expect.objectContaining({
       counts: {
         CLOUDRUN: {
-          DISABLED: 0,
-          ENABLED: 0,
-        },
-        CROSSPLANE: {
           DISABLED: 0,
           ENABLED: 0,
         },

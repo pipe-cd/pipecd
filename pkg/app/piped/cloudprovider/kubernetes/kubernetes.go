@@ -104,7 +104,7 @@ type provider struct {
 func initSharedGitClient(logger *zap.Logger) error {
 	var err error
 	initSharedGitClientOnce.Do(func() {
-		sharedGitClient, err = git.NewClient("", "", logger)
+		sharedGitClient, err = git.NewClient(git.WithLogger(logger))
 	})
 	return err
 }

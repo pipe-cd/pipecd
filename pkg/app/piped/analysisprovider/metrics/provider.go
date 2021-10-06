@@ -28,29 +28,18 @@ var (
 // Provider represents a client for metrics provider which provides metrics for analysis.
 type Provider interface {
 	Type() string
-
-	// Evaluate runs the given query against the metrics provider,
-	// and then checks if the results are expected or not.
-	// Returns the result reason if non-error occurred.
-	// The first value "expected" must be false if err isn't nil.
-	// TODO: Do not evaluate data points by Analysis providers
-	//   Instead, the executor should do that by using QueryPoints().
-	Evaluate(ctx context.Context, query string, queryRange QueryRange, evaluator Evaluator) (expected bool, reason string, err error)
-
 	// QueryPoints gives back data points within the given range.
 	QueryPoints(ctx context.Context, query string, queryRange QueryRange) (points []DataPoint, err error)
 }
 
 type DataPoint struct {
+	// Unix timestamp in seconds.
 	Timestamp int64
 	Value     float64
 }
 
-// Evaluator evaluates the response from the metrics provider.
-type Evaluator interface {
-	// InRange checks if the value is expected one.
-	InRange(value float64) bool
-	String() string
+func (d *DataPoint) String() string {
+	return fmt.Sprintf("timestamp: %q, value: %g", time.Unix(d.Timestamp, 0), d.Value)
 }
 
 // QueryRange represents a sliced time range.

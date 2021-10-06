@@ -15,12 +15,9 @@
 package analysis
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"text/template"
 	"time"
 
 	"go.uber.org/zap"
@@ -58,22 +55,8 @@ func Register(r registerer) {
 	r.Register(model.StageAnalysis, f)
 }
 
-// templateArgs allows deployment-specific data to be embedded in the analysis template.
-// NOTE: Changing its fields will force users to change the template definition.
-type templateArgs struct {
-	App struct {
-		Name string
-		Env  string
-	}
-	K8s struct {
-		Namespace string
-	}
-	// User-defined custom args.
-	Args map[string]string
-}
-
 // Execute spawns and runs multiple analyzer that run a query at the regular time.
-// Any on of those fail then the stage ends with failure.
+// Any of those fail then the stage ends with failure.
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	e.startTime = time.Now()
 	ctx := sig.Context()
@@ -83,7 +66,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	ds, err := e.RunningDSP.Get(ctx, e.LogPersister)
+	ds, err := e.TargetDSP.Get(ctx, e.LogPersister)
 	if err != nil {
 		e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -108,21 +91,29 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	defer e.saveElapsedTime(ctx)
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	eg, ctx := errgroup.WithContext(ctx)
+	eg, ctxWithTimeout := errgroup.WithContext(ctxWithTimeout)
 
 	// Run analyses with metrics providers.
 	for i := range options.Metrics {
-		analyzer, err := e.newAnalyzerForMetrics(i, &options.Metrics[i], templateCfg)
+		cfg, err := e.getMetricsConfig(options.Metrics[i], templateCfg)
 		if err != nil {
-			e.LogPersister.Errorf("Failed to spawn analyzer for %s: %v", options.Metrics[i].Provider, err)
+			e.LogPersister.Errorf("Failed to get metrics config: %v", err)
 			return model.StageStatus_STAGE_FAILURE
 		}
+		provider, err := e.newMetricsProvider(cfg.Provider, options.Metrics[i])
+		if err != nil {
+			e.LogPersister.Errorf("Failed to generate metrics provider: %v", err)
+			return model.StageStatus_STAGE_FAILURE
+		}
+		id := fmt.Sprintf("metrics-%d", i)
+		args := e.buildAppArgs(options.Metrics[i].Template.AppArgs)
+		analyzer := newMetricsAnalyzer(id, *cfg, e.startTime, provider, e.AnalysisResultStore, args, e.Logger, e.LogPersister)
 		eg.Go(func() error {
-			e.LogPersister.Infof("[%s] Start analysis for %s", analyzer.id, analyzer.providerType)
-			return analyzer.run(ctx)
+			e.LogPersister.Infof("[%s] Start analysis", analyzer.id)
+			return analyzer.run(ctxWithTimeout)
 		})
 	}
 	// Run analyses with logging providers.
@@ -134,7 +125,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		}
 		eg.Go(func() error {
 			e.LogPersister.Infof("[%s] Start analysis for %s", analyzer.id, analyzer.providerType)
-			return analyzer.run(ctx)
+			return analyzer.run(ctxWithTimeout)
 		})
 	}
 	// Run analyses with http providers.
@@ -146,7 +137,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		}
 		eg.Go(func() error {
 			e.LogPersister.Infof("[%s] Start analysis for %s", analyzer.id, analyzer.providerType)
-			return analyzer.run(ctx)
+			return analyzer.run(ctxWithTimeout)
 		})
 	}
 
@@ -156,8 +147,16 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 
 	status := executor.DetermineStageStatus(sig.Signal(), e.Stage.Status, model.StageStatus_STAGE_SUCCESS)
-	if status == model.StageStatus_STAGE_SUCCESS {
-		e.LogPersister.Success("All analyses were successful.")
+	if status != model.StageStatus_STAGE_SUCCESS {
+		return status
+	}
+
+	e.LogPersister.Success("All analyses were successful")
+	err = e.AnalysisResultStore.PutLatestAnalysisResult(ctx, &model.AnalysisResult{
+		StartTime: e.startTime.Unix(),
+	})
+	if err != nil {
+		e.Logger.Error("failed to send the analysis result", zap.Error(err))
 	}
 	return status
 }
@@ -195,29 +194,8 @@ func (e *Executor) retrievePreviousElapsedTime() time.Duration {
 	return et
 }
 
-func (e *Executor) newAnalyzerForMetrics(i int, templatable *config.TemplatableAnalysisMetrics, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
-	cfg, err := e.getMetricsConfig(templatable, templateCfg, templatable.Template.Args)
-	if err != nil {
-		return nil, err
-	}
-	provider, err := e.newMetricsProvider(cfg.Provider, templatable)
-	if err != nil {
-		return nil, err
-	}
-	id := fmt.Sprintf("metrics-%d", i)
-	runner := func(ctx context.Context, query string) (bool, string, error) {
-		now := time.Now()
-		queryRange := metrics.QueryRange{
-			From: now.Add(-cfg.Interval.Duration()),
-			To:   now,
-		}
-		return provider.Evaluate(ctx, query, queryRange, &cfg.Expected)
-	}
-	return newAnalyzer(id, provider.Type(), cfg.Query, runner, time.Duration(cfg.Interval), cfg.FailureLimit, cfg.SkipOnNoData, e.Logger, e.LogPersister), nil
-}
-
 func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnalysisLog, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
-	cfg, err := e.getLogConfig(templatable, templateCfg, templatable.Template.Args)
+	cfg, err := e.getLogConfig(templatable, templateCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -233,7 +211,7 @@ func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnaly
 }
 
 func (e *Executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnalysisHTTP, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
-	cfg, err := e.getHTTPConfig(templatable, templateCfg, templatable.Template.Args)
+	cfg, err := e.getHTTPConfig(templatable, templateCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -245,12 +223,12 @@ func (e *Executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnal
 	return newAnalyzer(id, provider.Type(), "", runner, time.Duration(cfg.Interval), cfg.FailureLimit, cfg.SkipOnNoData, e.Logger, e.LogPersister), nil
 }
 
-func (e *Executor) newMetricsProvider(providerName string, templatable *config.TemplatableAnalysisMetrics) (metrics.Provider, error) {
+func (e *Executor) newMetricsProvider(providerName string, templatable config.TemplatableAnalysisMetrics) (metrics.Provider, error) {
 	cfg, ok := e.PipedConfig.GetAnalysisProvider(providerName)
 	if !ok {
 		return nil, fmt.Errorf("unknown provider name %s", providerName)
 	}
-	provider, err := metricsfactory.NewProvider(templatable, &cfg, e.Logger)
+	provider, err := metricsfactory.NewProvider(&templatable, &cfg, e.Logger)
 	if err != nil {
 		return nil, err
 	}
@@ -271,44 +249,27 @@ func (e *Executor) newLogProvider(providerName string) (log.Provider, error) {
 
 // getMetricsConfig renders the given template and returns the metrics config.
 // Just returns metrics config if no template specified.
-func (e *Executor) getMetricsConfig(templatableCfg *config.TemplatableAnalysisMetrics, templateCfg *config.AnalysisTemplateSpec, args map[string]string) (*config.AnalysisMetrics, error) {
+func (e *Executor) getMetricsConfig(templatableCfg config.TemplatableAnalysisMetrics, templateCfg *config.AnalysisTemplateSpec) (*config.AnalysisMetrics, error) {
 	name := templatableCfg.Template.Name
 	if name == "" {
-		cfg := &templatableCfg.AnalysisMetrics
-		if err := cfg.Validate(); err != nil {
-			return nil, fmt.Errorf("invalid metrics configuration: %w", err)
-		}
-		return cfg, nil
+		return &templatableCfg.AnalysisMetrics, nil
 	}
 
-	var err error
-	templateCfg, err = e.render(*templateCfg, args)
-	if err != nil {
-		return nil, err
-	}
 	cfg, ok := templateCfg.Metrics[name]
 	if !ok {
 		return nil, fmt.Errorf("analysis template %s not found despite template specified", name)
-	}
-	if err := cfg.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid metrics configuration: %w", err)
 	}
 	return &cfg, nil
 }
 
 // getLogConfig renders the given template and returns the log config.
 // Just returns log config if no template specified.
-func (e *Executor) getLogConfig(templatableCfg *config.TemplatableAnalysisLog, templateCfg *config.AnalysisTemplateSpec, args map[string]string) (*config.AnalysisLog, error) {
+func (e *Executor) getLogConfig(templatableCfg *config.TemplatableAnalysisLog, templateCfg *config.AnalysisTemplateSpec) (*config.AnalysisLog, error) {
 	name := templatableCfg.Template.Name
 	if name == "" {
 		return &templatableCfg.AnalysisLog, nil
 	}
 
-	var err error
-	templateCfg, err = e.render(*templateCfg, args)
-	if err != nil {
-		return nil, err
-	}
 	cfg, ok := templateCfg.Logs[name]
 	if !ok {
 		return nil, fmt.Errorf("analysis template %s not found despite template specified", name)
@@ -318,17 +279,12 @@ func (e *Executor) getLogConfig(templatableCfg *config.TemplatableAnalysisLog, t
 
 // getHTTPConfig renders the given template and returns the http config.
 // Just returns http config if no template specified.
-func (e *Executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP, templateCfg *config.AnalysisTemplateSpec, args map[string]string) (*config.AnalysisHTTP, error) {
+func (e *Executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP, templateCfg *config.AnalysisTemplateSpec) (*config.AnalysisHTTP, error) {
 	name := templatableCfg.Template.Name
 	if name == "" {
 		return &templatableCfg.AnalysisHTTP, nil
 	}
 
-	var err error
-	templateCfg, err = e.render(*templateCfg, args)
-	if err != nil {
-		return nil, err
-	}
 	cfg, ok := templateCfg.HTTPs[name]
 	if !ok {
 		return nil, fmt.Errorf("analysis template %s not found despite template specified", name)
@@ -336,37 +292,22 @@ func (e *Executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP,
 	return &cfg, nil
 }
 
-// render returns a new AnalysisTemplateSpec, where deployment-specific arguments populated.
-func (e *Executor) render(templateCfg config.AnalysisTemplateSpec, customArgs map[string]string) (*config.AnalysisTemplateSpec, error) {
-	args := templateArgs{
-		Args: customArgs,
-		App: struct {
-			Name string
-			Env  string
+func (e *Executor) buildAppArgs(customArgs map[string]string) argsTemplate {
+	args := argsTemplate{
+		App: appArgs{
+			Name: e.Application.Name,
 			// TODO: Populate Env
-		}{Name: e.Application.Name, Env: ""},
+			Env: "",
+		},
+		AppCustomArgs: customArgs,
 	}
-	if e.config.Kind == config.KindKubernetesApp {
-		namespace := "default"
-		if n := e.config.KubernetesDeploymentSpec.Input.Namespace; n != "" {
-			namespace = n
-		}
-		args.K8s = struct{ Namespace string }{Namespace: namespace}
+	if e.config.Kind != config.KindKubernetesApp {
+		return args
 	}
-
-	cfg, err := json.Marshal(templateCfg)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal json: %w", err)
+	namespace := "default"
+	if n := e.config.KubernetesDeploymentSpec.Input.Namespace; n != "" {
+		namespace = n
 	}
-	t, err := template.New("AnalysisTemplate").Parse(string(cfg))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse text: %w", err)
-	}
-	b := new(bytes.Buffer)
-	if err := t.Execute(b, args); err != nil {
-		return nil, fmt.Errorf("failed to apply template: %w", err)
-	}
-	newCfg := &config.AnalysisTemplateSpec{}
-	err = json.Unmarshal(b.Bytes(), newCfg)
-	return newCfg, err
+	args.K8s.Namespace = namespace
+	return args
 }

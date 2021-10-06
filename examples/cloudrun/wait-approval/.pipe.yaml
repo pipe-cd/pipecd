@@ -1,0 +1,21 @@
+# Deployment pipeline that contains a manual approval stage.
+apiVersion: pipecd.dev/v1beta1
+kind: CloudRunApp
+spec:
+  pipeline:
+    stages:
+      # Promote new version to receive amount of traffic.
+      - name: CLOUDRUN_PROMOTE
+        with:
+          percent: 10
+      - name: WAIT_APPOVAL
+      # Promote new version to receive all traffic.
+      - name: CLOUDRUN_PROMOTE
+        with:
+          percent: 100
+  notification:
+    mentions:
+      - event: DEPLOYMENT_WAIT_APPROVAL
+        slack:
+          - slack-user-id-1  # slack-user-name-1
+          - slack-user-id-2  # slack-user-name-2

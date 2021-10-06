@@ -32,10 +32,9 @@ const promotePercentageMetadataKey = "promote-percentage"
 type deployExecutor struct {
 	executor.Input
 
-	deploySource      *deploysource.DeploySource
-	deployCfg         *config.CloudRunDeploymentSpec
-	cloudProviderName string
-	cloudProviderCfg  *config.CloudProviderCloudRunConfig
+	deploySource *deploysource.DeploySource
+	deployCfg    *config.CloudRunDeploymentSpec
+	client       provider.Client
 }
 
 func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
@@ -53,9 +52,14 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	var found bool
-	e.cloudProviderName, e.cloudProviderCfg, found = findCloudProvider(&e.Input)
+	cpName, cpCfg, found := findCloudProvider(&e.Input)
 	if !found {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	e.client, err = provider.DefaultRegistry().Client(ctx, cpName, cpCfg, e.Logger)
+	if err != nil {
+		e.LogPersister.Errorf("Unable to create ClourRun client for the provider (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -85,7 +89,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	revision, ok := decideRevisionName(&e.Input, sm, e.Deployment.Trigger.Commit.Hash)
+	revision, ok := decideRevisionName(sm, e.Deployment.Trigger.Commit.Hash, e.LogPersister)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -96,11 +100,11 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 			Percent:      100,
 		},
 	}
-	if !configureServiceManifest(&e.Input, sm, revision, traffics) {
+	if !configureServiceManifest(sm, revision, traffics, e.LogPersister) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !apply(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, sm) {
+	if !apply(ctx, e.client, sm, e.LogPersister) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -143,7 +147,7 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	lastDeployedRevision, ok := decideRevisionName(&e.Input, lastDeployedSM, e.Deployment.RunningCommitHash)
+	lastDeployedRevision, ok := decideRevisionName(lastDeployedSM, e.Deployment.RunningCommitHash, e.LogPersister)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -154,7 +158,7 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	revision, ok := decideRevisionName(&e.Input, sm, e.Deployment.Trigger.Commit.Hash)
+	revision, ok := decideRevisionName(sm, e.Deployment.Trigger.Commit.Hash, e.LogPersister)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -169,11 +173,23 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 			Percent:      100 - options.Percent.Int(),
 		},
 	}
-	if !configureServiceManifest(&e.Input, sm, revision, traffics) {
+
+	exist, err := revisionExists(ctx, e.client, revision, e.LogPersister)
+	if err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !apply(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, sm) {
+	newRevision := revision
+	if exist {
+		newRevision = ""
+		e.LogPersister.Infof("Revision %s was already registered", revision)
+	}
+
+	if !configureServiceManifest(sm, newRevision, traffics, e.LogPersister) {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	if !apply(ctx, e.client, sm, e.LogPersister) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

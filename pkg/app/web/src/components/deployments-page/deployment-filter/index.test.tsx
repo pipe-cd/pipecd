@@ -28,10 +28,10 @@ test("Change filter values", () => {
   );
 
   userEvent.type(
-    screen.getByRole("textbox", { name: /application/i }),
-    dummyApplication.name
+    screen.getByRole("textbox", { name: /application id/i }),
+    dummyApplication.id
   );
-  userEvent.click(screen.getByRole("option", { name: dummyApplication.name }));
+  userEvent.click(screen.getByRole("option", { name: `${dummyApplication.name} (${dummyApplication.id})` }));
 
   expect(onChange).toHaveBeenCalledWith({ applicationId: dummyApplication.id });
   onChange.mockClear();

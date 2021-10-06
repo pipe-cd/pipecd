@@ -109,16 +109,32 @@ func (c *client) IsFunctionExist(ctx context.Context, name string) (bool, error)
 
 func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error {
 	input := &lambda.CreateFunctionInput{
-		Code: &types.FunctionCode{
-			ImageUri: aws.String(fm.Spec.ImageURI),
-		},
-		PackageType:  types.PackageType("Image"),
-		Role:         aws.String(fm.Spec.Role),
 		FunctionName: aws.String(fm.Spec.Name),
+		Role:         aws.String(fm.Spec.Role),
+		MemorySize:   aws.Int32(fm.Spec.Memory),
+		Timeout:      aws.Int32(fm.Spec.Timeout),
 		Tags:         fm.Spec.Tags,
 		Environment: &types.Environment{
 			Variables: fm.Spec.Environments,
 		},
+	}
+	// Container image packing.
+	if fm.Spec.ImageURI != "" {
+		input.PackageType = types.PackageTypeImage
+		input.Code = &types.FunctionCode{
+			ImageUri: aws.String(fm.Spec.ImageURI),
+		}
+	}
+	// Zip packing which stored in s3.
+	if fm.Spec.S3Bucket != "" {
+		input.PackageType = types.PackageTypeZip
+		input.Code = &types.FunctionCode{
+			S3Bucket:        aws.String(fm.Spec.S3Bucket),
+			S3Key:           aws.String(fm.Spec.S3Key),
+			S3ObjectVersion: aws.String(fm.Spec.S3ObjectVersion),
+		}
+		input.Handler = aws.String(fm.Spec.Handler)
+		input.Runtime = types.Runtime(fm.Spec.Runtime)
 	}
 	_, err := c.client.CreateFunction(ctx, input)
 	if err != nil {
@@ -131,7 +147,16 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 	// Update function code.
 	codeInput := &lambda.UpdateFunctionCodeInput{
 		FunctionName: aws.String(fm.Spec.Name),
-		ImageUri:     aws.String(fm.Spec.ImageURI),
+	}
+	// Container image packing.
+	if fm.Spec.ImageURI != "" {
+		codeInput.ImageUri = aws.String(fm.Spec.ImageURI)
+	}
+	// Zip packing which stored in s3.
+	if fm.Spec.S3Bucket != "" {
+		codeInput.S3Bucket = aws.String(fm.Spec.S3Bucket)
+		codeInput.S3Key = aws.String(fm.Spec.S3Key)
+		codeInput.S3ObjectVersion = aws.String(fm.Spec.S3ObjectVersion)
 	}
 	_, err := c.client.UpdateFunctionCode(ctx, codeInput)
 	if err != nil {
@@ -144,11 +169,18 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 	for retry.WaitNext(ctx) {
 		configInput := &lambda.UpdateFunctionConfigurationInput{
 			FunctionName: aws.String(fm.Spec.Name),
+			Role:         aws.String(fm.Spec.Role),
 			MemorySize:   aws.Int32(fm.Spec.Memory),
 			Timeout:      aws.Int32(fm.Spec.Timeout),
+			Runtime:      types.Runtime(fm.Spec.Runtime),
 			Environment: &types.Environment{
 				Variables: fm.Spec.Environments,
 			},
+		}
+		// For zip packing Lambda function code, allow update the function handler
+		// on update the function's manifest.
+		if fm.Spec.Handler != "" {
+			configInput.Handler = aws.String(fm.Spec.Handler)
 		}
 		_, err = c.client.UpdateFunctionConfiguration(ctx, configInput)
 		if err != nil {
