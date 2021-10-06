@@ -16,7 +16,7 @@ launcher:
   configFromGitRepo:
     # Whether to load Piped config that is being stored in a git repository.
     enabled: false
-    # The remote URL of git repository to fetch Piped config.
+    # The remote URL of the git repository to fetch Piped config.
     repoUrl: ""
     # Branch of git repository to for Piped config.
     branch: ""
