@@ -59,6 +59,7 @@ type FunctionManifestSpec struct {
 	S3Bucket        string            `json:"s3Bucket"`
 	S3Key           string            `json:"s3Key"`
 	S3ObjectVersion string            `json:"s3ObjectVersion"`
+	SourceCode      SourceCode        `json:"source"`
 	Handler         string            `json:"handler"`
 	Runtime         string            `json:"runtime"`
 	Memory          int32             `json:"memory"`
@@ -72,7 +73,9 @@ func (fmp FunctionManifestSpec) validate() error {
 		return fmt.Errorf("lambda function is missing")
 	}
 	if len(fmp.ImageURI) == 0 && len(fmp.S3Bucket) == 0 {
-		return fmt.Errorf("one of image or s3 bucket is required to be configured")
+		if err := fmp.SourceCode.validate(); err != nil {
+			return err
+		}
 	}
 	if len(fmp.Role) == 0 {
 		return fmt.Errorf("role is missing")
@@ -82,6 +85,26 @@ func (fmp FunctionManifestSpec) validate() error {
 	}
 	if fmp.Timeout < timeoutLowerLimit || fmp.Timeout > timeoutUpperLimit {
 		return fmt.Errorf("timeout is missing or out of range")
+	}
+	return nil
+}
+
+type SourceCode struct {
+	Git    string `json:"git"`
+	Branch string `json:"branch"`
+	Path   string `json:"path"`
+}
+
+func (sc SourceCode) validate() error {
+	if len(sc.Git) == 0 {
+		return fmt.Errorf("remote git source is missing")
+	}
+	// TODO add defaults.
+	if len(sc.Branch) == 0 {
+		return fmt.Errorf("source branch is missing")
+	}
+	if len(sc.Path) == 0 {
+		return fmt.Errorf("path is missing")
 	}
 	return nil
 }

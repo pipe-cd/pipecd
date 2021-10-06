@@ -94,6 +94,57 @@ func TestparseFunctionManifest(t *testing.T) {
 			wantSpec: FunctionManifest{},
 			wantErr:  true,
 		},
+		{
+			name: "no function code defined",
+			data: `{
+  "apiVersion": "pipecd.dev/v1beta1",
+  "kind": "LambdaFunction",
+  "spec": {
+	  "name": "SimpleFunction",
+	  "role": "arn:aws:iam::xxxxx:role/lambda-role",
+	  "memory": 128,
+	  "timeout": 5
+  }
+}`,
+			wantSpec: FunctionManifest{},
+			wantErr:  true,
+		},
+		{
+			name: "no error in case of multiple function code defined",
+			data: `{
+  "apiVersion": "pipecd.dev/v1beta1",
+  "kind": "LambdaFunction",
+  "spec": {
+	  "name": "SimpleFunction",
+	  "role": "arn:aws:iam::xxxxx:role/lambda-role",
+	  "memory": 128,
+	  "timeout": 5,
+	  "image": "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
+	  "source": {
+		"git": "git@remote-url",
+		"branch": "master",
+		"path": "./"
+	  }
+  }
+}`,
+			wantSpec: FunctionManifest{
+				Kind:       "LambdaFunction",
+				APIVersion: "pipecd.dev/v1beta1",
+				Spec: FunctionManifestSpec{
+					Name:     "SimpleFunction",
+					Role:     "arn:aws:iam::xxxxx:role/lambda-role",
+					Memory:   128,
+					Timeout:  5,
+					ImageURI: "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
+					SourceCode: SourceCode{
+						Git:    "git@remote-url",
+						Branch: "master",
+						Path:   "./",
+					},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
