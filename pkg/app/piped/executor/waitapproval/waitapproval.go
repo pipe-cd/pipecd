@@ -126,7 +126,7 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 	var approvers []string
 
 	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
-		if v.Event == "DEPLOYMENT_WAIT_APPROVAL" {
+		if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL.String() {
 			approvers = v.Slack
 		}
 	}
