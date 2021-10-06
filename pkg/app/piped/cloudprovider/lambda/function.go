@@ -60,6 +60,7 @@ type FunctionManifestSpec struct {
 	S3Key           string            `json:"s3Key"`
 	S3ObjectVersion string            `json:"s3ObjectVersion"`
 	Handler         string            `json:"handler"`
+	Runtime         string            `json:"runtime"`
 	Memory          int32             `json:"memory"`
 	Timeout         int32             `json:"timeout"`
 	Tags            map[string]string `json:"tags,omitempty"`
