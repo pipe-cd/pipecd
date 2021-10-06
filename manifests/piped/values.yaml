@@ -11,6 +11,18 @@ args:
   # This is typically for applications running as a random user ID, such as OpenShift less than 4.2.
   addLoginUserToPasswd: false
 
+launcher:
+  enabled: false
+  configFromGitRepo:
+    # Whether to load Piped config that is being stored in a git repository.
+    enabled: false
+    # The remote URL of git repository to fetch Piped config.
+    repoUrl: ""
+    # Branch of git repository to for Piped config.
+    branch: ""
+    # Relative path within git repository to locate Piped config file.
+    configFilePath: ""
+
 service:
   enabled: true
   type: ClusterIP
