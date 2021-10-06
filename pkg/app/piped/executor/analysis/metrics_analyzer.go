@@ -85,7 +85,7 @@ func (a *metricsAnalyzer) run(ctx context.Context) error {
 				var firstDeploy bool
 				expected, firstDeploy, err = a.analyzeWithPrevious(ctx)
 				if firstDeploy {
-					a.logPersister.Info("[%s] PreviousAnalysis cannot be executed because this seems to be the first deployment, so it is considered as a success")
+					a.logPersister.Infof("[%s] PreviousAnalysis cannot be executed because this seems to be the first deployment, so it is considered as a success", a.id)
 					return nil
 				}
 			case config.AnalysisStrategyCanaryBaseline:
@@ -168,7 +168,9 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (expected, fi
 	if err != nil {
 		return false, false, fmt.Errorf("failed to run query: %w: performed query: %q", err, a.cfg.Query)
 	}
-	values := make([]float64, 0, len(points))
+	pointsCount := len(points)
+	a.logPersister.Infof("[%s] Got %d data points for current Primary from the query: %q", a.id, pointsCount, a.cfg.Query)
+	values := make([]float64, 0, pointsCount)
 	for i := range points {
 		values = append(values, points[i].Value)
 	}
@@ -192,13 +194,32 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (expected, fi
 	if err != nil {
 		return false, false, fmt.Errorf("failed to run query to fetch metrics for the previous deployment: %w: performed query: %q", err, a.cfg.Query)
 	}
-	prevValues := make([]float64, 0, len(prevPoints))
+	prevPointsCount := len(prevPoints)
+	a.logPersister.Infof("[%s] Got %d data points for previous Primary from the query: %q", a.id, prevPointsCount, a.cfg.Query)
+	prevValues := make([]float64, 0, prevPointsCount)
 	for i := range prevPoints {
 		prevValues = append(prevValues, prevPoints[i].Value)
 	}
-	if err := compare(values, prevValues, a.cfg.Deviation); err != nil {
-		a.logPersister.Errorf("[%s] Failed because %v. Performed query: %q", a.id, err, a.cfg.Query)
+	expected, err = compare(values, prevValues, a.cfg.Deviation)
+	if err != nil {
+		a.logPersister.Errorf("[%s] Failed to compare data points: %v", a.id, err)
+		a.logPersister.Infof("[%s] Performed query: %q", a.id, a.cfg.Query)
 		return false, false, err
+	}
+	if !expected {
+		a.logPersister.Errorf("[%s] The difference between Current Primary and Previous one is statistically significant", a.id)
+		a.logPersister.Infof("[%s] Performed query range for current Primary: %q", a.id, &queryRange)
+		a.logPersister.Infof("[%s] Performed query range for previous Primary: %q", a.id, &prevQueryRange)
+		a.logPersister.Infof("[%s] Performed query: %q", a.id, a.cfg.Query)
+		a.logPersister.Infof("[%s] Current data points acquired:", a.id)
+		for i := range points {
+			a.logPersister.Infof("[%s] %s", a.id, &points[i])
+		}
+		a.logPersister.Infof("[%s] Previous data points acquired:", a.id)
+		for i := range prevPoints {
+			a.logPersister.Infof("[%s] %s", a.id, &prevPoints[i])
+		}
+		return false, false, nil
 	}
 	return true, false, nil
 }
@@ -223,11 +244,11 @@ func (a *metricsAnalyzer) analyzeWithCanaryBaseline(ctx context.Context) (bool, 
 	// Fetch data points from Canary.
 	canaryPoints, err := a.provider.QueryPoints(ctx, canaryQuery, queryRange)
 	if err != nil {
-		return false, fmt.Errorf("failed to run query to fetch metrics for the Canary variant: %w: performed query: %q", err, canaryQuery)
+		return false, fmt.Errorf("failed to run query to fetch metrics for the Canary variant: %w: query range: %s: performed query: %q", err, &queryRange, canaryQuery)
 	}
-	canaryPointsCtn := len(canaryPoints)
-	a.logPersister.Infof("[%s] Got %d data points for Canary from the query: %q", a.id, canaryPointsCtn, canaryQuery)
-	canaryValues := make([]float64, 0, canaryPointsCtn)
+	canaryPointsCount := len(canaryPoints)
+	a.logPersister.Infof("[%s] Got %d data points for Canary from the query: %q", a.id, canaryPointsCount, canaryQuery)
+	canaryValues := make([]float64, 0, canaryPointsCount)
 	for i := range canaryPoints {
 		canaryValues = append(canaryValues, canaryPoints[i].Value)
 	}
@@ -235,17 +256,35 @@ func (a *metricsAnalyzer) analyzeWithCanaryBaseline(ctx context.Context) (bool, 
 	// Fetch data points from Baseline.
 	baselinePoints, err := a.provider.QueryPoints(ctx, baselineQuery, queryRange)
 	if err != nil {
-		return false, fmt.Errorf("failed to run query to fetch metrics for the Baseline variant: %w: performed query: %q", err, baselineQuery)
+		return false, fmt.Errorf("failed to run query to fetch metrics for the Baseline variant: %w: query range: %s: performed query: %q", err, &queryRange, baselineQuery)
 	}
-	baselinePointsCtn := len(baselinePoints)
-	a.logPersister.Infof("[%s] Got %d data points for Baseline from the query: %q", a.id, baselinePointsCtn, baselineQuery)
-	baselineValues := make([]float64, 0, baselinePointsCtn)
+	baselinePointsCount := len(baselinePoints)
+	a.logPersister.Infof("[%s] Got %d data points for Baseline from the query: %q", a.id, baselinePointsCount, baselineQuery)
+	baselineValues := make([]float64, 0, baselinePointsCount)
 	for i := range baselinePoints {
 		baselineValues = append(baselineValues, baselinePoints[i].Value)
 	}
 
-	if err := compare(canaryValues, baselineValues, a.cfg.Deviation); err != nil {
-		a.logPersister.Errorf("[%s] Failed because %v. Performed query for canary: %q. Performed query for baseline: %q", a.id, err, canaryQuery, baselineQuery)
+	expected, err := compare(canaryValues, baselineValues, a.cfg.Deviation)
+	if err != nil {
+		a.logPersister.Errorf("[%s] Failed to compare data points: %v", a.id, err)
+		a.logPersister.Infof("[%s] Performed query for Canary: %q", a.id, canaryQuery)
+		a.logPersister.Infof("[%s] Performed query for Baseline: %q", a.id, baselineQuery)
+		return false, err
+	}
+	if !expected {
+		a.logPersister.Errorf("[%s] The difference between Canary and Baseline is statistically significant", a.id)
+		a.logPersister.Infof("[%s] Performed query range: %q", a.id, &queryRange)
+		a.logPersister.Infof("[%s] Performed query for Canary: %q", a.id, canaryQuery)
+		a.logPersister.Infof("[%s] Performed query for Baseline: %q", a.id, baselineQuery)
+		a.logPersister.Infof("[%s] Canary data points acquired:", a.id)
+		for i := range canaryPoints {
+			a.logPersister.Infof("[%s] %s", a.id, &canaryPoints[i])
+		}
+		a.logPersister.Infof("[%s] Baseline data points acquired:", a.id)
+		for i := range baselinePoints {
+			a.logPersister.Infof("[%s] %s", a.id, &baselinePoints[i])
+		}
 		return false, nil
 	}
 	return true, nil
@@ -272,7 +311,9 @@ func (a *metricsAnalyzer) analyzeWithCanaryPrimary(ctx context.Context) (bool, e
 	if err != nil {
 		return false, fmt.Errorf("failed to run query to fetch metrics for the Canary variant: %w: performed query: %q", err, canaryQuery)
 	}
-	canaryValues := make([]float64, 0, len(canaryPoints))
+	canaryPointsCount := len(canaryPoints)
+	a.logPersister.Infof("[%s] Got %d data points for Canary from the query: %q", a.id, canaryPointsCount, canaryQuery)
+	canaryValues := make([]float64, 0, canaryPointsCount)
 	for i := range canaryPoints {
 		canaryValues = append(canaryValues, canaryPoints[i].Value)
 	}
@@ -280,12 +321,32 @@ func (a *metricsAnalyzer) analyzeWithCanaryPrimary(ctx context.Context) (bool, e
 	if err != nil {
 		return false, fmt.Errorf("failed to run query to fetch metrics for the Primary variant: %w: performed query: %q", err, primaryQuery)
 	}
-	primaryValues := make([]float64, 0, len(primaryPoints))
+	primaryPointsCount := len(primaryPoints)
+	a.logPersister.Infof("[%s] Got %d data points for Primary from the query: %q", a.id, primaryPointsCount, primaryQuery)
+	primaryValues := make([]float64, 0, primaryPointsCount)
 	for i := range primaryPoints {
 		primaryValues = append(primaryValues, primaryPoints[i].Value)
 	}
-	if err := compare(canaryValues, primaryValues, a.cfg.Deviation); err != nil {
-		a.logPersister.Errorf("[%s] Failed because %v. Performed query for canary: %q. Performed query for primary: %q", a.id, err, canaryQuery, primaryQuery)
+	expected, err := compare(canaryValues, primaryValues, a.cfg.Deviation)
+	if err != nil {
+		a.logPersister.Errorf("[%s] Failed to compare data points: %v", a.id, err)
+		a.logPersister.Infof("[%s] Performed query for Canary: %q", a.id, canaryQuery)
+		a.logPersister.Infof("[%s] Performed query for Primary: %q", a.id, primaryQuery)
+		return false, err
+	}
+	if !expected {
+		a.logPersister.Errorf("[%s] The difference between Canary and Primary is statistically significant", a.id)
+		a.logPersister.Infof("[%s] Performed query range: %q", a.id, &queryRange)
+		a.logPersister.Infof("[%s] Performed query for Canary: %q", a.id, canaryQuery)
+		a.logPersister.Infof("[%s] Performed query for Primary: %q", a.id, primaryQuery)
+		a.logPersister.Infof("[%s] Canary data points acquired:", a.id)
+		for i := range canaryPoints {
+			a.logPersister.Infof("[%s] %s", a.id, &canaryPoints[i])
+		}
+		a.logPersister.Infof("[%s] Primary data points acquired:", a.id)
+		for i := range primaryPoints {
+			a.logPersister.Infof("[%s] %s", a.id, &primaryPoints[i])
+		}
 		return false, nil
 	}
 	return true, nil
@@ -294,12 +355,12 @@ func (a *metricsAnalyzer) analyzeWithCanaryPrimary(ctx context.Context) (bool, e
 // compare compares the given two samples using Mann-Whitney U test.
 // Considered as failure if it deviates in the specified direction as the third argument.
 // No error means that the result is expected.
-func compare(experiment, control []float64, deviation string) (err error) {
+func compare(experiment, control []float64, deviation string) (expected bool, err error) {
 	if len(experiment) == 0 {
-		return fmt.Errorf("no data points of Experiment found")
+		return false, fmt.Errorf("no data points of Experiment found")
 	}
 	if len(control) == 0 {
-		return fmt.Errorf("no data points of Control found")
+		return false, fmt.Errorf("no data points of Control found")
 	}
 	var alternativeHypothesis mannwhitney.LocationHypothesis
 	switch deviation {
@@ -310,14 +371,15 @@ func compare(experiment, control []float64, deviation string) (err error) {
 	case config.AnalysisDeviationHigh:
 		alternativeHypothesis = mannwhitney.LocationGreater
 	default:
-		return fmt.Errorf("unknown deviation %q given", deviation)
+		return false, fmt.Errorf("unknown deviation %q given", deviation)
 	}
 	res, err := mannwhitney.MannWhitneyUTest(experiment, control, alternativeHypothesis)
 	if errors.Is(err, mannwhitney.ErrSamplesEqual) {
-		return nil
+		// All samples are exact the same.
+		return true, nil
 	}
 	if err != nil {
-		return fmt.Errorf("failed to perform the Mann-Whitney U test: %w", err)
+		return false, fmt.Errorf("failed to perform the Mann-Whitney U test: %w", err)
 	}
 
 	// alpha is the significance level. Typically 5% is used.
@@ -326,9 +388,9 @@ func compare(experiment, control []float64, deviation string) (err error) {
 	// we cannot say that the distributions in the two groups differed significantly.
 	// See: https://support.minitab.com/en-us/minitab-express/1/help-and-how-to/basic-statistics/inference/how-to/two-samples/mann-whitney-test/interpret-the-results/key-results/
 	if res.P > alpha {
-		return nil
+		return true, nil
 	}
-	return fmt.Errorf("the difference between the medians is statistically significant")
+	return false, nil
 }
 
 // argsTemplate is a collection of available template arguments.

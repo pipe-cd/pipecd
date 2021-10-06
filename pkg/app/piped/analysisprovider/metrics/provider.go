@@ -21,6 +21,8 @@ import (
 	"time"
 )
 
+const timeFormat = "2006-01-02 15:04:05 MST"
+
 var (
 	ErrNoDataFound = errors.New("no data found")
 )
@@ -39,7 +41,7 @@ type DataPoint struct {
 }
 
 func (d *DataPoint) String() string {
-	return fmt.Sprintf("timestamp: %q, value: %g", time.Unix(d.Timestamp, 0), d.Value)
+	return fmt.Sprintf("timestamp: %q, value: %g", time.Unix(d.Timestamp, 0).Format(timeFormat), d.Value)
 }
 
 // QueryRange represents a sliced time range.
@@ -48,6 +50,10 @@ type QueryRange struct {
 	From time.Time
 	// End of the queried time period. Defaults to the current time.
 	To time.Time
+}
+
+func (q *QueryRange) String() string {
+	return fmt.Sprintf("from: %q, to: %q", q.From.Format(timeFormat), q.To.Format(timeFormat))
 }
 
 func (q *QueryRange) Validate() error {
