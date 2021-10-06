@@ -17,7 +17,7 @@ package controller
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"path/filepath"
 	"time"
 
@@ -344,7 +344,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 }
 
 func (p *planner) getMentionedAccounts(ctx context.Context, event model.NotificationEventType, targetDSP deploysource.Provider) ([]string, error) {
-	ds, err := targetDSP.GetReadOnly(ctx, ioutil.Discard)
+	ds, err := targetDSP.GetReadOnly(ctx, io.Discard)
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare running deploy source data (%w)", err)
 	}
