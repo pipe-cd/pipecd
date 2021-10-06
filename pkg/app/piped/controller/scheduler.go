@@ -661,6 +661,10 @@ func (s *scheduler) getMentionedAccounts(ctx context.Context, event model.Notifi
 		return nil, err
 	}
 
+	if ds.GenericDeploymentConfig.DeploymentNotification == nil {
+		return nil, nil
+	}
+
 	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
 		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
