@@ -66,6 +66,7 @@ message NotificationEventDeploymentApproved {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     string env_name = 2 [(validate.rules).string.min_len = 1];
     string approver = 3;
+    repeated string mentioned_accounts = 4;
 }
 
 message NotificationEventDeploymentRollingBack {
