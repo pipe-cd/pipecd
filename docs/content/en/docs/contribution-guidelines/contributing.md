@@ -24,6 +24,10 @@ If you've found a problem, please create an issue in the [pipe-cd/pipe](https://
 
 Look at our [help wanted issues](https://github.com/pipe-cd/pipe/issues?q=is%3Aissue+is%3Aopen+label%3A"help+wanted") or our [good first issues](https://github.com/pipe-cd/pipe/issues?q=is%3Aissue+is%3Aopen+label%3A"good+first+issue") for finding some good issues for your first pull request.
 
+### Small tips
+
+The pull request title is used to generate our release changelog. Therefore, it would be great if you write the title that is easier to understand from the user's point of view.
+
 ## Code reviews
 
 All submissions, including submissions by project members, require review. We use GitHub pull requests for this purpose. Consult [GitHub Help](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests) for more information on using pull requests.
