@@ -136,7 +136,7 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 func (e *Executor) getMentionedAccounts(ctx context.Context) ([]string, error) {
 	ds, err := e.TargetDSP.GetReadOnly(ctx, e.LogPersister)
 	if err != nil {
-		return nil, fmt.Errorf("failed to prepare running deploy source data (%v)", err)
+		return nil, fmt.Errorf("failed to prepare running deploy source data: %w", err)
 	}
 
 	if ds.GenericDeploymentConfig.DeploymentNotification == nil {
