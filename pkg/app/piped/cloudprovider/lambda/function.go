@@ -77,6 +77,14 @@ func (fmp FunctionManifestSpec) validate() error {
 			return err
 		}
 	}
+	if len(fmp.ImageURI) == 0 {
+		if len(fmp.Handler) == 0 {
+			return fmt.Errorf("handler is missing")
+		}
+		if len(fmp.Runtime) == 0 {
+			return fmt.Errorf("runtime is missing")
+		}
+	}
 	if len(fmp.Role) == 0 {
 		return fmt.Errorf("role is missing")
 	}

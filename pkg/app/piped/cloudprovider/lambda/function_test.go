@@ -145,6 +145,24 @@ func TestparseFunctionManifest(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "missing required values in case of using other than container image as function",
+			data: `{
+  "apiVersion": "pipecd.dev/v1beta1",
+  "kind": "LambdaFunction",
+  "spec": {
+	  "name": "SimpleFunction",
+	  "role": "arn:aws:iam::xxxxx:role/lambda-role",
+	  "memory": 128,
+	  "timeout": 10,
+	  "s3Bucket": "pipecd-sample",
+	  "s3Key": "function-code",
+	  "s3ObjectVersion": "xyz"
+  }
+}`,
+			wantSpec: FunctionManifest{},
+			wantErr:  true,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
