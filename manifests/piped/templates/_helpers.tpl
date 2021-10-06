@@ -135,6 +135,7 @@ A set of args for Launcher.
 - --git-repo-url={{ required "repoUrl is required" .repoUrl }}
 - --git-branch={{ required "branch is required" .branch }}
 - --git-piped-config-path={{ required "configFilePath is required" .configFilePath }}
+- --git-ssh-key-file={{ required "sshKeyFilePath is required" .sshKeyFilePath }}
 {{- end }}
 {{- else }}
 - --config-file=/etc/piped-config/{{ .Values.config.fileName }}
