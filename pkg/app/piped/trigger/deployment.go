@@ -17,12 +17,15 @@ package trigger
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -40,6 +43,12 @@ func (t *Trigger) triggerDeployment(
 		return
 	}
 
+	accounts, err := t.getMentionedAccounts(deployment)
+	if err != nil {
+		t.logger.Error("failed to get the list of accounts", zap.Error(err))
+		return
+	}
+
 	defer func() {
 		if err != nil {
 			return
@@ -51,8 +60,9 @@ func (t *Trigger) triggerDeployment(
 		t.notifier.Notify(model.NotificationEvent{
 			Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
 			Metadata: &model.NotificationEventDeploymentTriggered{
-				Deployment: deployment,
-				EnvName:    env.Name,
+				Deployment:        deployment,
+				EnvName:           env.Name,
+				MentionedAccounts: accounts,
 			},
 		})
 	}()
@@ -151,4 +161,35 @@ func buildDeployment(
 	}
 
 	return deployment, nil
+}
+
+func (t *Trigger) getMentionedAccounts(d *model.Deployment) ([]string, error) {
+	// Find the application repo from pre-loaded ones.
+	repo, ok := t.gitRepos[d.GitPath.Repo.Id]
+	if !ok {
+		t.logger.Warn("detected some applications binding with a non existent repository", zap.String("repo-id", d.GitPath.Repo.Id))
+		return nil, fmt.Errorf("unknown repo %q is set to the deployment", d.GitPath.Repo.Id)
+	}
+
+	absPath := filepath.Join(repo.GetPath(), d.GitPath.GetDeploymentConfigFilePath())
+
+	cfg, err := config.LoadFromYAML(absPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("deployment config file %s was not found", d.GitPath.GetDeploymentConfigFilePath())
+		}
+		return nil, err
+	}
+
+	if cfg.KubernetesDeploymentSpec.GenericDeploymentSpec.DeploymentNotification == nil {
+		// There is no event to mention users.
+		return nil, nil
+	}
+
+	for _, v := range cfg.KubernetesDeploymentSpec.GenericDeploymentSpec.DeploymentNotification.Mentions {
+		if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
+			return v.Slack, nil
+		}
+	}
+	return nil, nil
 }
