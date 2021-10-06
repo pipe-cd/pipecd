@@ -225,9 +225,9 @@ func (a *metricsAnalyzer) analyzeWithCanaryBaseline(ctx context.Context) (bool, 
 	if err != nil {
 		return false, fmt.Errorf("failed to run query to fetch metrics for the Canary variant: %w: performed query: %q", err, canaryQuery)
 	}
-	canaryNum := len(canaryPoints)
-	a.logPersister.Infof("[%s] Got %d data points for Canary from the query: %q", a.id, canaryNum, canaryQuery)
-	canaryValues := make([]float64, 0, canaryNum)
+	canaryPointsCtn := len(canaryPoints)
+	a.logPersister.Infof("[%s] Got %d data points for Canary from the query: %q", a.id, canaryPointsCtn, canaryQuery)
+	canaryValues := make([]float64, 0, canaryPointsCtn)
 	for i := range canaryPoints {
 		canaryValues = append(canaryValues, canaryPoints[i].Value)
 	}
@@ -237,9 +237,9 @@ func (a *metricsAnalyzer) analyzeWithCanaryBaseline(ctx context.Context) (bool, 
 	if err != nil {
 		return false, fmt.Errorf("failed to run query to fetch metrics for the Baseline variant: %w: performed query: %q", err, baselineQuery)
 	}
-	baselineNum := len(baselinePoints)
-	a.logPersister.Infof("[%s] Got %d data points for Baseline from the query: %q", a.id, baselineNum, baselineQuery)
-	baselineValues := make([]float64, 0, baselineNum)
+	baselinePointsCtn := len(baselinePoints)
+	a.logPersister.Infof("[%s] Got %d data points for Baseline from the query: %q", a.id, baselinePointsCtn, baselineQuery)
+	baselineValues := make([]float64, 0, baselinePointsCtn)
 	for i := range baselinePoints {
 		baselineValues = append(baselineValues, baselinePoints[i].Value)
 	}
