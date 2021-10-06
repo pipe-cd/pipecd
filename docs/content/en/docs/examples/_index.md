@@ -70,6 +70,7 @@ https://github.com/pipe-cd/examples
 | [remote-git](https://github.com/pipe-cd/examples/tree/master/lambda/remote-git) | Deploy the lambda code sourced from another Git repository. |
 | [secret-management](https://github.com/pipe-cd/examples/tree/master/lambda/secret-management) | Demonstrate how to manage sensitive data by using [Secret Management](https://pipecd.dev/docs/user-guide/secret-management/) feature. |
 | [wait-approval](https://github.com/pipe-cd/examples/tree/master/lambda/wait-approval) | Deployment pipeline that contains a manual approval stage. |
+| [zip-packing-s3](https://github.com/pipe-cd/examples/tree/master/lambda/zip-packing-s3) | Deployment pipeline of kind Lambda which uses s3 stored zip file as function code. |
 
 ### ECS Applications
 
