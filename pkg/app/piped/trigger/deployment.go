@@ -168,7 +168,7 @@ func (t *Trigger) getMentionedAccounts(d *model.Deployment) ([]string, error) {
 	repo, ok := t.gitRepos[d.GitPath.Repo.Id]
 	if !ok {
 		t.logger.Warn("detected some applications binding with a non existent repository", zap.String("repo-id", d.GitPath.Repo.Id))
-		return nil, fmt.Errorf("missing repository")
+		return nil, fmt.Errorf("unknown repo %q is set to the deployment", d.GitPath.Repo.Id)
 	}
 
 	absPath := filepath.Join(repo.GetPath(), d.GitPath.GetDeploymentConfigFilePath())
