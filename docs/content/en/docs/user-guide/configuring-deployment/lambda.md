@@ -7,9 +7,9 @@ description: >
 ---
 
 Deploying a Lambda application requires a `function.yaml` file placing inside the application directory. That file contains values to be used to deploy Lambda function on your AWS cluster.
-Currently, __container image built source__ and __AWS S3 stored zip packing function code__ are supported by Piped deployment. For more information about container images as function, read [this post on AWS blog](https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/).
+Currently, __container image built source__ and __AWS S3 stored zip packing function code__ are supported by Piped deployment. For more information about container image as Lambda function, read [this post on AWS blog](https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/).
 
-A sample `function.yaml` file for container image as function used deployment as following:
+A sample `function.yaml` file for container image as Lambda function used deployment as follows:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
