@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["encrypt.go"],
+    importpath = "github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/encrypt",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/app/api/service/apiservice:go_default_library",
+        "//pkg/app/pipectl/client:go_default_library",
+        "//pkg/cli:go_default_library",
+        "@com_github_spf13_cobra//:go_default_library",
+    ],
+)

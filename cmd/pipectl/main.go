@@ -20,6 +20,7 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/application"
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/deployment"
+	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/encrypt"
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/event"
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/piped"
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/planpreview"
@@ -38,6 +39,7 @@ func main() {
 		event.NewCommand(),
 		planpreview.NewCommand(),
 		piped.NewCommand(),
+		encrypt.NewCommand(),
 	)
 
 	if err := app.Run(); err != nil {
