@@ -23,6 +23,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -69,6 +70,10 @@ type Notifier interface {
 	Notify(event model.NotificationEvent)
 }
 
+type GitClient interface {
+	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
+}
+
 type Input struct {
 	Stage       *model.PipelineStage
 	StageConfig config.PipelineStage
@@ -80,6 +85,7 @@ type Input struct {
 	TargetDSP deploysource.Provider
 	// Deploy source at running commit
 	RunningDSP            deploysource.Provider
+	GitClient             GitClient
 	CommandLister         CommandLister
 	LogPersister          LogPersister
 	MetadataStore         MetadataStore
