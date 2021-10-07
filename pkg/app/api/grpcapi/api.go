@@ -29,6 +29,8 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/apiservice"
+	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
@@ -44,12 +46,15 @@ type API struct {
 	commandStore        commandstore.Store
 	commandOutputGetter commandOutputGetter
 
+	encryptionKeyCache cache.Cache
+
 	webBaseURL string
 	logger     *zap.Logger
 }
 
 // NewAPI creates a new API instance.
 func NewAPI(
+	ctx context.Context,
 	ds datastore.DataStore,
 	cmds commandstore.Store,
 	cog commandOutputGetter,
@@ -64,8 +69,10 @@ func NewAPI(
 		eventStore:          datastore.NewEventStore(ds),
 		commandStore:        cmds,
 		commandOutputGetter: cog,
-		webBaseURL:          webBaseURL,
-		logger:              logger.Named("api"),
+		// Public key is variable but likely to be accessed multiple times in a short period.
+		encryptionKeyCache: memorycache.NewTTLCache(ctx, 5*time.Minute, 5*time.Minute),
+		webBaseURL:         webBaseURL,
+		logger:             logger.Named("api"),
 	}
 	return a
 }
@@ -571,6 +578,37 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 
 	return &apiservice.GetPlanPreviewResultsResponse{
 		Results: results,
+	}, nil
+}
+
+func (a *API) Encrypt(ctx context.Context, req *apiservice.EncryptRequest) (*apiservice.EncryptResponse, error) {
+	_, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	var pubkey []byte
+	if v, err := a.encryptionKeyCache.Get(req.PipedId); err == nil {
+		pubkey = v.([]byte)
+	}
+	if pubkey == nil {
+		piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
+		if err != nil {
+			return nil, err
+		}
+		pubkey, err = getEncriptionKey(model.GetSecretEncryptionInPiped(piped))
+		if err != nil {
+			return nil, err
+		}
+		a.encryptionKeyCache.Put(req.PipedId, pubkey)
+	}
+	ciphertext, err := encrypt(req.Plaintext, pubkey, req.Base64Encoding, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	return &apiservice.EncryptResponse{
+		Ciphertext: ciphertext,
 	}, nil
 }
 

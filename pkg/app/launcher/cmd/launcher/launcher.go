@@ -46,6 +46,9 @@ const (
 	pipedConfigFileName = "piped-config.yaml"
 )
 
+// List of flags that should be ignored while building flag list for Piped.
+var ignoreFlags map[string]struct{}
+
 type launcher struct {
 	configFile              string
 	configData              string
@@ -54,7 +57,7 @@ type launcher struct {
 	configFromGitRepo       bool
 	gitRepoURL              string
 	gitBranch               string
-	gitPipedConfigPath      string
+	gitPipedConfigFile      string
 	gitSSHKeyFile           string
 	configFilePathInGitRepo string
 	insecure                bool
@@ -95,7 +98,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&l.configFromGitRepo, "config-from-git-repo", l.configFromGitRepo, "Whether to load Piped config that is being stored in a git repository.")
 	cmd.Flags().StringVar(&l.gitRepoURL, "git-repo-url", l.gitRepoURL, "The remote URL of git repository to fetch Piped config.")
 	cmd.Flags().StringVar(&l.gitBranch, "git-branch", l.gitBranch, "Branch of git repository to for Piped config.")
-	cmd.Flags().StringVar(&l.gitPipedConfigPath, "git-piped-config-path", l.gitPipedConfigPath, "Relative path within git repository to locate Piped config file.")
+	cmd.Flags().StringVar(&l.gitPipedConfigFile, "git-piped-config-file", l.gitPipedConfigFile, "Relative path within git repository to locate Piped config file.")
 	cmd.Flags().StringVar(&l.gitSSHKeyFile, "git-ssh-key-file", l.gitSSHKeyFile, "The path to SSH private key to fetch private git repository.")
 
 	cmd.Flags().BoolVar(&l.insecure, "insecure", l.insecure, "Whether disabling transport security while connecting to control-plane.")
@@ -106,6 +109,22 @@ func NewCommand() *cobra.Command {
 
 	cmd.Flags().DurationVar(&l.checkInterval, "check-interval", l.checkInterval, "Interval to periodically check desired config/version to restart Piped. Default is 1m.")
 	cmd.Flags().DurationVar(&l.gracePeriod, "grace-period", l.gracePeriod, "How long to wait for graceful shutdown.")
+
+	// TODO: Find a better way to automatically maintain this ignore list.
+	ignoreFlags = map[string]struct{}{
+		"config-file":            {},
+		"config-data":            {},
+		"config-from-gcp-secret": {},
+		"gcp-secret-id":          {},
+		"config-from-git-repo":   {},
+		"git-repo-url":           {},
+		"git-branch":             {},
+		"git-piped-config-file":  {},
+		"git-ssh-key-file":       {},
+		"home-dir":               {},
+		"default-version":        {},
+		"check-interval":         {},
+	}
 
 	return cmd
 }
@@ -123,7 +142,7 @@ func (l *launcher) validateFlags() error {
 		if l.gitBranch == "" {
 			return fmt.Errorf("git-branch must be set to load config from a git repository")
 		}
-		if l.gitPipedConfigPath == "" {
+		if l.gitPipedConfigFile == "" {
 			return fmt.Errorf("git-piped-config-path must be set to load config from a git repository")
 		}
 	}
@@ -358,7 +377,7 @@ func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {
 		if err := l.configRepo.Pull(ctx, l.gitBranch); err != nil {
 			return nil, fmt.Errorf("failed to pull config repository (%w)", err)
 		}
-		return os.ReadFile(filepath.Join(l.configRepo.GetPath(), l.gitPipedConfigPath))
+		return os.ReadFile(filepath.Join(l.configRepo.GetPath(), l.gitPipedConfigFile))
 	}
 
 	return nil, fmt.Errorf("either [%s] must be set", strings.Join([]string{
@@ -428,18 +447,6 @@ func (l *launcher) createAPIClient(ctx context.Context, address, projectID, pipe
 
 // makePipedArgs generates arguments for Piped from the ones passed to Launcher.
 func makePipedArgs(launcherArgs []string, configFile string) []string {
-	ignoreArgs := map[string]struct{}{
-		"config-file":            {},
-		"config-data":            {},
-		"config-from-gcp-secret": {},
-		"gcp-secret-id":          {},
-		"config-from-git-repo":   {},
-		"git-repo-url":           {},
-		"home-dir":               {},
-		"default-version":        {},
-		"check-interval":         {},
-	}
-
 	pipedArgs := make([]string, 0, len(launcherArgs)+2)
 	pipedArgs = append(pipedArgs, "piped", "--config-file="+configFile)
 
@@ -448,7 +455,7 @@ func makePipedArgs(launcherArgs []string, configFile string) []string {
 		parts := strings.SplitN(normalizedArg, "=", 2)
 		name := parts[0]
 
-		if _, ok := ignoreArgs[name]; !ok {
+		if _, ok := ignoreFlags[name]; !ok {
 			pipedArgs = append(pipedArgs, a)
 		}
 	}

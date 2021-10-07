@@ -16,7 +16,6 @@ package grpcapi
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"strings"
@@ -36,7 +35,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/git"
@@ -941,41 +939,18 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 	}
 
 	se := model.GetSecretEncryptionInPiped(piped)
-	if se == nil {
-		return nil, status.Error(codes.FailedPrecondition, "The piped does not contain the encryption configuration")
-	}
-
-	data := req.Data
-	if req.Base64Encoding {
-		data = base64.StdEncoding.EncodeToString([]byte(data))
-	}
-
-	var enc encrypter
-	switch model.SecretManagementType(se.Type) {
-	case model.SecretManagementTypeSealingKey:
-		fallthrough
-	case model.SecretManagementTypeKeyPair:
-		if se.PublicKey == "" {
-			return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a public key")
-		}
-		enc, err = crypto.NewHybridEncrypter([]byte(se.PublicKey))
-		if err != nil {
-			a.logger.Error("failed to initialize the crypter", zap.Error(err))
-			return nil, status.Error(codes.FailedPrecondition, "Failed to initialize the encrypter")
-		}
-
-	default:
-		return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a valid encryption type")
-	}
-
-	encryptedText, err := enc.Encrypt(data)
+	pubkey, err := getEncriptionKey(se)
 	if err != nil {
-		a.logger.Error("failed to encrypt the secret", zap.Error(err))
-		return nil, status.Error(codes.FailedPrecondition, "Failed to encrypt the secret")
+		return nil, err
+	}
+
+	ciphertext, err := encrypt(req.Data, pubkey, req.Base64Encoding, a.logger)
+	if err != nil {
+		return nil, err
 	}
 
 	return &webservice.GenerateApplicationSealedSecretResponse{
-		Data: encryptedText,
+		Data: ciphertext,
 	}, nil
 }
 

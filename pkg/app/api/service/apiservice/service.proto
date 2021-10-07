@@ -43,6 +43,8 @@ service APIService {
 
     rpc RequestPlanPreview(RequestPlanPreviewRequest) returns (RequestPlanPreviewResponse) {}
     rpc GetPlanPreviewResults(GetPlanPreviewResultsRequest) returns (GetPlanPreviewResultsResponse) {}
+
+    rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
 }
 
 message AddApplicationRequest {
@@ -148,4 +150,15 @@ message GetPlanPreviewResultsRequest {
 
 message GetPlanPreviewResultsResponse {
     repeated pipe.model.PlanPreviewCommandResult results = 1;
+}
+
+message EncryptRequest {
+    string plaintext = 1 [(validate.rules).string.min_len = 1];
+    string piped_id = 2 [(validate.rules).string.min_len = 1];
+    // Whether the data should be base64 encoded before encrypting or not.
+    bool base64_encoding = 3;
+}
+
+message EncryptResponse {
+    string ciphertext = 1 [(validate.rules).string.min_len = 1];
 }
