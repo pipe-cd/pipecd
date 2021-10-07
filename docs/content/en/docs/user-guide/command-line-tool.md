@@ -201,4 +201,4 @@ pipectl event register \
 
 ### You want more?
 
-We always want to add more needed commands into pipectl. Please let us know what command do you want to add by creating issues in the [pipe-cd/pipe ](https://github.com/pipe-cd/pipe/issues) repository. We also welcome your pull request to add the command.
+We always want to add more needed commands into pipectl. Please let us know what command you want to add by creating issues in the [pipe-cd/pipe ](https://github.com/pipe-cd/pipe/issues) repository. We also welcome your pull request to add the command.
