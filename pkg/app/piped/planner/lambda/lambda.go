@@ -68,7 +68,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	case model.SyncStrategy_QUICK_SYNC:
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (forced via web)", out.Version)
+		out.Summary = fmt.Sprintf("Quick sync to deploy version %s and configure all traffic to it (forced via web)", out.Version)
 		return
 	case model.SyncStrategy_PIPELINE:
 		if cfg.Pipeline == nil {
@@ -77,7 +77,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		}
 		out.SyncStrategy = model.SyncStrategy_PIPELINE
 		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
-		out.Summary = fmt.Sprintf("Sync with pipeline to deploy image %s (forced via web)", out.Version)
+		out.Summary = fmt.Sprintf("Sync with pipeline to deploy version %s (forced via web)", out.Version)
 		return
 	}
 
@@ -85,7 +85,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (pipeline was not configured)", out.Version)
+		out.Summary = fmt.Sprintf("Quick sync to deploy version %s and configure all traffic to it (pipeline was not configured)", out.Version)
 		return
 	}
 
@@ -102,7 +102,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	if in.MostRecentSuccessfulCommitHash == "" {
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (it seems this is the first deployment)", out.Version)
+		out.Summary = fmt.Sprintf("Quick sync to deploy version %s and configure all traffic to it (it seems this is the first deployment)", out.Version)
 		return
 	}
 
@@ -112,7 +112,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		if lastVersion, e := determineVersion(ds.AppDir, cfg.Input.FunctionManifestFile); e == nil {
 			out.SyncStrategy = model.SyncStrategy_PIPELINE
 			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
-			out.Summary = fmt.Sprintf("Sync with pipeline to update image from %s to %s", lastVersion, out.Version)
+			out.Summary = fmt.Sprintf("Sync with pipeline to update version from %s to %s", lastVersion, out.Version)
 			return
 		}
 	}
@@ -129,5 +129,13 @@ func determineVersion(appDir, functionManifestFile string) (string, error) {
 		return "", err
 	}
 
-	return provider.FindImageTag(fm)
+	if fm.Spec.ImageURI != "" {
+		return provider.FindImageTag(fm)
+	}
+
+	if fm.Spec.S3ObjectVersion != "" {
+		return fm.Spec.S3ObjectVersion, nil
+	}
+
+	return "", fmt.Errorf("unable to determine version from manifest")
 }
