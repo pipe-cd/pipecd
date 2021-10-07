@@ -16,6 +16,7 @@ package lambda
 
 import (
 	"context"
+	"os"
 	"path/filepath"
 	"sync"
 
@@ -29,7 +30,9 @@ import (
 type Client interface {
 	IsFunctionExist(ctx context.Context, name string) (bool, error)
 	CreateFunction(ctx context.Context, fm FunctionManifest) error
+	CreateFunctionFromSource(ctx context.Context, fm FunctionManifest, zip *os.File) error
 	UpdateFunction(ctx context.Context, fm FunctionManifest) error
+	UpdateFunctionFromSource(ctx context.Context, fm FunctionManifest, zip *os.File) error
 	PublishFunction(ctx context.Context, fm FunctionManifest) (version string, err error)
 	GetTrafficConfig(ctx context.Context, fm FunctionManifest) (routingTrafficCfg RoutingTrafficConfig, err error)
 	CreateTrafficConfig(ctx context.Context, fm FunctionManifest, version string) error
