@@ -29,6 +29,9 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/apiservice"
+	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
+	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
@@ -44,12 +47,15 @@ type API struct {
 	commandStore        commandstore.Store
 	commandOutputGetter commandOutputGetter
 
+	pipedPubkeyCache cache.Cache
+
 	webBaseURL string
 	logger     *zap.Logger
 }
 
 // NewAPI creates a new API instance.
 func NewAPI(
+	ctx context.Context,
 	ds datastore.DataStore,
 	cmds commandstore.Store,
 	cog commandOutputGetter,
@@ -64,8 +70,10 @@ func NewAPI(
 		eventStore:          datastore.NewEventStore(ds),
 		commandStore:        cmds,
 		commandOutputGetter: cog,
-		webBaseURL:          webBaseURL,
-		logger:              logger.Named("api"),
+		// Public key is variable but likely to be accessed multiple times in a short period.
+		pipedPubkeyCache: memorycache.NewTTLCache(ctx, 5*time.Minute, 5*time.Minute),
+		webBaseURL:       webBaseURL,
+		logger:           logger.Named("api"),
 	}
 	return a
 }
@@ -571,6 +579,42 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 
 	return &apiservice.GetPlanPreviewResultsResponse{
 		Results: results,
+	}, nil
+}
+
+func (a *API) Encrypt(ctx context.Context, req *apiservice.EncryptRequest) (*apiservice.EncryptResponse, error) {
+	_, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	var pubkey string
+	if p, err := a.pipedPubkeyCache.Get(req.PipedId); err == nil {
+		pubkey = p.(string)
+	}
+	if pubkey == "" {
+		piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
+		if err != nil {
+			return nil, err
+		}
+		e := model.GetSecretEncryptionInPiped(piped)
+		pubkey = e.PublicKey
+		a.pipedPubkeyCache.Put(req.PipedId, pubkey)
+	}
+
+	encrypter, err := crypto.NewHybridEncrypter([]byte(pubkey))
+	if err != nil {
+		a.logger.Error("failed to initialize the crypter", zap.Error(err))
+		return nil, status.Error(codes.InvalidArgument, "Invalid public key")
+	}
+	ciphertext, err := encrypter.Encrypt(req.Plaintext)
+	if err != nil {
+		a.logger.Error("failed to encrypt the secret", zap.Error(err))
+		return nil, status.Error(codes.FailedPrecondition, "Failed to encrypt the secret")
+	}
+
+	return &apiservice.EncryptResponse{
+		Ciphertext: ciphertext,
 	}, nil
 }
 
