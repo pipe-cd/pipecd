@@ -121,7 +121,7 @@ func NewCommand() *cobra.Command {
 	return cmd
 }
 
-func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
+func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	group, ctx := errgroup.WithContext(ctx)
 	if p.addLoginUserToPasswd {
 		if err := p.insertLoginUserToPasswd(ctx); err != nil {
@@ -132,7 +132,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	// Load piped configuration from specified file.
 	cfg, err := p.loadConfig(ctx)
 	if err != nil {
-		t.Logger.Error("failed to load piped configuration", zap.Error(err))
+		input.Logger.Error("failed to load piped configuration", zap.Error(err))
 		return err
 	}
 
@@ -142,28 +142,28 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	// Configure SSH config if needed.
 	if cfg.Git.ShouldConfigureSSHConfig() {
 		if err := git.AddSSHConfig(cfg.Git); err != nil {
-			t.Logger.Error("failed to configure ssh-config", zap.Error(err))
+			input.Logger.Error("failed to configure ssh-config", zap.Error(err))
 			return err
 		}
-		t.Logger.Info("successfully configured ssh-config")
+		input.Logger.Info("successfully configured ssh-config")
 	}
 
 	// Initialize default tool registry.
-	if err := toolregistry.InitDefaultRegistry(p.toolsDir, t.Logger); err != nil {
-		t.Logger.Error("failed to initialize default tool registry", zap.Error(err))
+	if err := toolregistry.InitDefaultRegistry(p.toolsDir, input.Logger); err != nil {
+		input.Logger.Error("failed to initialize default tool registry", zap.Error(err))
 		return err
 	}
 
 	// Add configured Helm chart repositories.
 	if len(cfg.ChartRepositories) > 0 {
 		reg := toolregistry.DefaultRegistry()
-		if err := chartrepo.Add(ctx, cfg.ChartRepositories, reg, t.Logger); err != nil {
-			t.Logger.Error("failed to add configured chart repositories", zap.Error(err))
+		if err := chartrepo.Add(ctx, cfg.ChartRepositories, reg, input.Logger); err != nil {
+			input.Logger.Error("failed to add configured chart repositories", zap.Error(err))
 			return err
 		}
 		if len(cfg.ChartRepositories) > 0 {
-			if err := chartrepo.Update(ctx, reg, t.Logger); err != nil {
-				t.Logger.Error("failed to update Helm chart repositories", zap.Error(err))
+			if err := chartrepo.Update(ctx, reg, input.Logger); err != nil {
+				input.Logger.Error("failed to update Helm chart repositories", zap.Error(err))
 				return err
 			}
 		}
@@ -171,27 +171,27 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 
 	pipedKey, err := cfg.LoadPipedKey()
 	if err != nil {
-		t.Logger.Error("failed to load piped key", zap.Error(err))
+		input.Logger.Error("failed to load piped key", zap.Error(err))
 		return err
 	}
 
 	// Make gRPC client and connect to the API.
-	apiClient, err := p.createAPIClient(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey, t.Logger)
+	apiClient, err := p.createAPIClient(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey, input.Logger)
 	if err != nil {
-		t.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
+		input.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
 		return err
 	}
 
 	// Send the newest piped meta to the control-plane.
-	if err := p.sendPipedMeta(ctx, apiClient, cfg, t.Logger); err != nil {
-		t.Logger.Error("failed to report piped meta to control-plane", zap.Error(err))
+	if err := p.sendPipedMeta(ctx, apiClient, cfg, input.Logger); err != nil {
+		input.Logger.Error("failed to report piped meta to control-plane", zap.Error(err))
 		return err
 	}
 
 	// Initialize notifier and add piped events.
-	notifier, err := notifier.NewNotifier(cfg, t.Logger)
+	notifier, err := notifier.NewNotifier(cfg, input.Logger)
 	if err != nil {
-		t.Logger.Error("failed to initialize notifier", zap.Error(err))
+		input.Logger.Error("failed to initialize notifier", zap.Error(err))
 		return err
 	}
 	group.Go(func() error {
@@ -202,7 +202,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	{
 		var (
 			ver   = []byte(version.Get().Version)
-			admin = admin.NewAdmin(p.adminPort, p.gracePeriod, t.Logger)
+			admin = admin.NewAdmin(p.adminPort, p.gracePeriod, input.Logger)
 		)
 
 		admin.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
@@ -211,7 +211,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
-		admin.Handle("/metrics", t.PrometheusMetricsHandlerFor(registry))
+		admin.Handle("/metrics", input.PrometheusMetricsHandlerFor(registry))
 
 		group.Go(func() error {
 			return admin.Run(ctx)
@@ -221,7 +221,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	// Start running stats reporter.
 	{
 		url := fmt.Sprintf("http://localhost:%d/metrics", p.adminPort)
-		r := statsreporter.NewReporter(url, apiClient, t.Logger)
+		r := statsreporter.NewReporter(url, apiClient, input.Logger)
 		group.Go(func() error {
 			return r.Run(ctx)
 		})
@@ -231,31 +231,31 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	gitClient, err := git.NewClient(
 		git.WithUserName(cfg.Git.Username),
 		git.WithEmail(cfg.Git.Email),
-		git.WithLogger(t.Logger),
+		git.WithLogger(input.Logger),
 	)
 	if err != nil {
-		t.Logger.Error("failed to initialize git client", zap.Error(err))
+		input.Logger.Error("failed to initialize git client", zap.Error(err))
 		return err
 	}
 	defer func() {
 		if err := gitClient.Clean(); err != nil {
-			t.Logger.Error("had an error while cleaning gitClient", zap.Error(err))
+			input.Logger.Error("had an error while cleaning gitClient", zap.Error(err))
 			return
 		}
-		t.Logger.Info("successfully cleaned gitClient")
+		input.Logger.Info("successfully cleaned gitClient")
 	}()
 
 	// Initialize environment store.
 	environmentStore := environmentstore.NewStore(
 		apiClient,
 		memorycache.NewTTLCache(ctx, 10*time.Minute, time.Minute),
-		t.Logger,
+		input.Logger,
 	)
 
 	// Start running application store.
 	var applicationLister applicationstore.Lister
 	{
-		store := applicationstore.NewStore(apiClient, p.gracePeriod, t.Logger)
+		store := applicationstore.NewStore(apiClient, p.gracePeriod, input.Logger)
 		group.Go(func() error {
 			return store.Run(ctx)
 		})
@@ -265,7 +265,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	// Start running deployment store.
 	var deploymentLister deploymentstore.Lister
 	{
-		store := deploymentstore.NewStore(apiClient, p.gracePeriod, t.Logger)
+		store := deploymentstore.NewStore(apiClient, p.gracePeriod, input.Logger)
 		group.Go(func() error {
 			return store.Run(ctx)
 		})
@@ -275,7 +275,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	// Start running command store.
 	var commandLister commandstore.Lister
 	{
-		store := commandstore.NewStore(apiClient, p.gracePeriod, t.Logger)
+		store := commandstore.NewStore(apiClient, p.gracePeriod, input.Logger)
 		group.Go(func() error {
 			return store.Run(ctx)
 		})
@@ -285,14 +285,14 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	// Start running event store.
 	var eventGetter eventstore.Getter
 	{
-		store := eventstore.NewStore(apiClient, p.gracePeriod, t.Logger)
+		store := eventstore.NewStore(apiClient, p.gracePeriod, input.Logger)
 		group.Go(func() error {
 			return store.Run(ctx)
 		})
 		eventGetter = store.Getter()
 	}
 
-	analysisResultStore := analysisresultstore.NewStore(apiClient, t.Logger)
+	analysisResultStore := analysisresultstore.NewStore(apiClient, input.Logger)
 
 	// Create memory caches.
 	appManifestsCache := memorycache.NewTTLCache(ctx, time.Hour, time.Minute)
@@ -300,7 +300,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	var liveStateGetter livestatestore.Getter
 	// Start running application live state store.
 	{
-		s := livestatestore.NewStore(cfg, applicationLister, p.gracePeriod, t.Logger)
+		s := livestatestore.NewStore(cfg, applicationLister, p.gracePeriod, input.Logger)
 		group.Go(func() error {
 			return s.Run(ctx)
 		})
@@ -309,7 +309,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 
 	// Start running application live state reporter.
 	{
-		r := livestatereporter.NewReporter(applicationLister, liveStateGetter, apiClient, cfg, t.Logger)
+		r := livestatereporter.NewReporter(applicationLister, liveStateGetter, apiClient, cfg, input.Logger)
 		group.Go(func() error {
 			return r.Run(ctx)
 		})
@@ -317,7 +317,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 
 	decrypter, err := p.initializeSecretDecrypter(cfg)
 	if err != nil {
-		t.Logger.Error("failed to initialize secret decrypter", zap.Error(err))
+		input.Logger.Error("failed to initialize secret decrypter", zap.Error(err))
 		return err
 	}
 
@@ -331,7 +331,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 			appManifestsCache,
 			cfg,
 			decrypter,
-			t.Logger,
+			input.Logger,
 		)
 		group.Go(func() error {
 			return d.Run(ctx)
@@ -354,7 +354,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 			cfg,
 			appManifestsCache,
 			p.gracePeriod,
-			t.Logger,
+			input.Logger,
 		)
 
 		group.Go(func() error {
@@ -374,10 +374,10 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 			notifier,
 			cfg,
 			p.gracePeriod,
-			t.Logger,
+			input.Logger,
 		)
 		if err != nil {
-			t.Logger.Error("failed to initialize trigger", zap.Error(err))
+			input.Logger.Error("failed to initialize trigger", zap.Error(err))
 			return err
 		}
 		lastTriggeredCommitGetter = tr.GetLastTriggeredCommitGetter()
@@ -393,7 +393,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 			cfg,
 			eventGetter,
 			gitClient,
-			t.Logger,
+			input.Logger,
 		)
 		group.Go(func() error {
 			return w.Run(ctx)
@@ -407,18 +407,18 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		gc, err := git.NewClient(
 			git.WithUserName(cfg.Git.Username),
 			git.WithEmail(cfg.Git.Email),
-			git.WithLogger(t.Logger),
+			git.WithLogger(input.Logger),
 		)
 		if err != nil {
-			t.Logger.Error("failed to initialize git client for plan-preview", zap.Error(err))
+			input.Logger.Error("failed to initialize git client for plan-preview", zap.Error(err))
 			return err
 		}
 		defer func() {
 			if err := gc.Clean(); err != nil {
-				t.Logger.Error("had an error while cleaning gitClient for plan-preview", zap.Error(err))
+				input.Logger.Error("had an error while cleaning gitClient for plan-preview", zap.Error(err))
 				return
 			}
-			t.Logger.Info("successfully cleaned gitClient for plan-preview")
+			input.Logger.Info("successfully cleaned gitClient for plan-preview")
 		}()
 
 		h := planpreview.NewHandler(
@@ -431,7 +431,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 			decrypter,
 			appManifestsCache,
 			cfg,
-			planpreview.WithLogger(t.Logger),
+			planpreview.WithLogger(input.Logger),
 		)
 		group.Go(func() error {
 			return h.Run(ctx)
@@ -443,7 +443,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	// could trigger the finish of piped.
 	// This ensures that all components are good or no one.
 	if err := group.Wait(); err != nil {
-		t.Logger.Error("failed while running", zap.Error(err))
+		input.Logger.Error("failed while running", zap.Error(err))
 		return err
 	}
 	return nil

@@ -58,7 +58,7 @@ func newSyncCommand(root *command) *cobra.Command {
 	return cmd
 }
 
-func (c *sync) run(ctx context.Context, t cli.Telemetry) error {
+func (c *sync) run(ctx context.Context, input cli.Input) error {
 	statuses, err := model.DeploymentStatusesFromStrings(c.statuses)
 	if err != nil {
 		return fmt.Errorf("invalid deployment status: %w", err)
@@ -70,17 +70,17 @@ func (c *sync) run(ctx context.Context, t cli.Telemetry) error {
 	}
 	defer cli.Close()
 
-	deploymentID, err := client.SyncApplication(ctx, cli, c.appID, c.checkInterval, c.timeout, t.Logger)
+	deploymentID, err := client.SyncApplication(ctx, cli, c.appID, c.checkInterval, c.timeout, input.Logger)
 	if err != nil {
 		return err
 	}
 
-	t.Logger.Info(fmt.Sprintf("Successfully triggered deployment %s", deploymentID))
+	input.Logger.Info(fmt.Sprintf("Successfully triggered deployment %s", deploymentID))
 	if len(statuses) == 0 {
 		return nil
 	}
 
-	t.Logger.Info("Waiting until the deployment reaches one of the specified statuses")
+	input.Logger.Info("Waiting until the deployment reaches one of the specified statuses")
 
 	return client.WaitDeploymentStatuses(
 		ctx,
@@ -89,6 +89,6 @@ func (c *sync) run(ctx context.Context, t cli.Telemetry) error {
 		statuses,
 		c.checkInterval,
 		c.timeout,
-		t.Logger,
+		input.Logger,
 	)
 }

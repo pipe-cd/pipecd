@@ -50,7 +50,7 @@ func newEnableCommand(root *command) *cobra.Command {
 	return cmd
 }
 
-func (c *enable) run(ctx context.Context, t cli.Telemetry) error {
+func (c *enable) run(ctx context.Context, _ cli.Input) error {
 	cli, err := c.root.clientOptions.NewClient(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to initialize client: %w", err)

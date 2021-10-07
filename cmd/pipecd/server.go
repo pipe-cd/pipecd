@@ -132,7 +132,7 @@ func NewServerCommand() *cobra.Command {
 	return cmd
 }
 
-func (s *server) run(ctx context.Context, t cli.Telemetry) error {
+func (s *server) run(ctx context.Context, input cli.Input) error {
 	// Register all metrics.
 	reg := registerMetrics()
 
@@ -141,52 +141,52 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	// Load control plane configuration from the specified file.
 	cfg, err := loadConfig(s.configFile)
 	if err != nil {
-		t.Logger.Error("failed to load control-plane configuration",
+		input.Logger.Error("failed to load control-plane configuration",
 			zap.String("config-file", s.configFile),
 			zap.Error(err),
 		)
 		return err
 	}
-	t.Logger.Info("successfully loaded control-plane configuration")
+	input.Logger.Info("successfully loaded control-plane configuration")
 
-	ds, err := createDatastore(ctx, cfg, t.Logger)
+	ds, err := createDatastore(ctx, cfg, input.Logger)
 	if err != nil {
-		t.Logger.Error("failed to create datastore", zap.Error(err))
+		input.Logger.Error("failed to create datastore", zap.Error(err))
 		return err
 	}
 	defer func() {
 		if err := ds.Close(); err != nil {
-			t.Logger.Error("failed to close datastore client", zap.Error(err))
+			input.Logger.Error("failed to close datastore client", zap.Error(err))
 
 		}
 	}()
-	t.Logger.Info("succesfully connected to data store")
+	input.Logger.Info("succesfully connected to data store")
 
-	fs, err := createFilestore(ctx, cfg, t.Logger)
+	fs, err := createFilestore(ctx, cfg, input.Logger)
 	if err != nil {
-		t.Logger.Error("failed to create filestore", zap.Error(err))
+		input.Logger.Error("failed to create filestore", zap.Error(err))
 		return err
 	}
 	defer func() {
 		if err := fs.Close(); err != nil {
-			t.Logger.Error("failed to close filestore client", zap.Error(err))
+			input.Logger.Error("failed to close filestore client", zap.Error(err))
 		}
 	}()
-	t.Logger.Info("successfully connected to file store")
+	input.Logger.Info("successfully connected to file store")
 
 	rd := redis.NewRedis(s.cacheAddress, "")
 	defer func() {
 		if err := rd.Close(); err != nil {
-			t.Logger.Error("failed to close redis client", zap.Error(err))
+			input.Logger.Error("failed to close redis client", zap.Error(err))
 		}
 	}()
 	cache := rediscache.NewTTLCache(rd, cfg.Cache.TTLDuration())
-	sls := stagelogstore.NewStore(fs, cache, t.Logger)
-	alss := applicationlivestatestore.NewStore(fs, cache, t.Logger)
-	las := analysisresultstore.NewStore(fs, t.Logger)
-	cmds := commandstore.NewStore(ds, cache, t.Logger)
+	sls := stagelogstore.NewStore(fs, cache, input.Logger)
+	alss := applicationlivestatestore.NewStore(fs, cache, input.Logger)
+	las := analysisresultstore.NewStore(fs, input.Logger)
+	cmds := commandstore.NewStore(ds, cache, input.Logger)
 	is := insightstore.NewStore(fs)
-	cmdOutputStore := commandoutputstore.NewStore(fs, t.Logger)
+	cmdOutputStore := commandoutputstore.NewStore(fs, input.Logger)
 	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
 
 	// Start a gRPC server for handling PipedAPI requests.
@@ -197,15 +197,15 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 				cfg,
 				datastore.NewProjectStore(ds),
 				datastore.NewPipedStore(ds),
-				t.Logger,
+				input.Logger,
 			)
-			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, las, cmds, statCache, cmdOutputStore, t.Logger)
+			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, las, cmds, statCache, cmdOutputStore, input.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),
-				rpc.WithLogger(t.Logger),
-				rpc.WithLogUnaryInterceptor(t.Logger),
-				rpc.WithPipedTokenAuthUnaryInterceptor(verifier, t.Logger),
+				rpc.WithLogger(input.Logger),
+				rpc.WithLogUnaryInterceptor(input.Logger),
+				rpc.WithPipedTokenAuthUnaryInterceptor(verifier, input.Logger),
 				rpc.WithRequestValidationUnaryInterceptor(),
 			}
 		)
@@ -215,7 +215,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		if s.enableGRPCReflection {
 			opts = append(opts, rpc.WithGRPCReflection())
 		}
-		if t.Flags.Metrics {
+		if input.Flags.Metrics {
 			opts = append(opts, rpc.WithPrometheusUnaryInterceptor())
 		}
 
@@ -231,22 +231,22 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			verifier = apikeyverifier.NewVerifier(
 				ctx,
 				datastore.NewAPIKeyStore(ds),
-				t.Logger,
+				input.Logger,
 			)
-			service = grpcapi.NewAPI(ds, cmds, cmdOutputStore, cfg.Address, t.Logger)
+			service = grpcapi.NewAPI(ds, cmds, cmdOutputStore, cfg.Address, input.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.apiPort),
 				rpc.WithGracePeriod(s.gracePeriod),
-				rpc.WithLogger(t.Logger),
-				rpc.WithLogUnaryInterceptor(t.Logger),
-				rpc.WithAPIKeyAuthUnaryInterceptor(verifier, t.Logger),
+				rpc.WithLogger(input.Logger),
+				rpc.WithLogUnaryInterceptor(input.Logger),
+				rpc.WithAPIKeyAuthUnaryInterceptor(verifier, input.Logger),
 				rpc.WithRequestValidationUnaryInterceptor(),
 			}
 		)
 		if s.tls {
 			opts = append(opts, rpc.WithTLS(s.certFile, s.keyFile))
 		}
-		if t.Flags.Metrics {
+		if input.Flags.Metrics {
 			opts = append(opts, rpc.WithPrometheusUnaryInterceptor())
 		}
 
@@ -258,7 +258,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	encryptDecrypter, err := crypto.NewAESEncryptDecrypter(s.encryptionKeyFile)
 	if err != nil {
-		t.Logger.Error("failed to create a new AES EncryptDecrypter", zap.Error(err))
+		input.Logger.Error("failed to create a new AES EncryptDecrypter", zap.Error(err))
 		return err
 	}
 
@@ -266,17 +266,17 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	{
 		verifier, err := jwt.NewVerifier(defaultSigningMethod, s.encryptionKeyFile)
 		if err != nil {
-			t.Logger.Error("failed to create a new JWT verifier", zap.Error(err))
+			input.Logger.Error("failed to create a new JWT verifier", zap.Error(err))
 			return err
 		}
 
-		service := grpcapi.NewWebAPI(ctx, ds, fs, sls, alss, cmds, is, rd, cfg.ProjectMap(), encryptDecrypter, t.Logger)
+		service := grpcapi.NewWebAPI(ctx, ds, fs, sls, alss, cmds, is, rd, cfg.ProjectMap(), encryptDecrypter, input.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
-			rpc.WithLogger(t.Logger),
-			rpc.WithLogUnaryInterceptor(t.Logger),
-			rpc.WithJWTAuthUnaryInterceptor(verifier, webservice.NewRBACAuthorizer(), t.Logger),
+			rpc.WithLogger(input.Logger),
+			rpc.WithLogUnaryInterceptor(input.Logger),
+			rpc.WithJWTAuthUnaryInterceptor(verifier, webservice.NewRBACAuthorizer(), input.Logger),
 			rpc.WithRequestValidationUnaryInterceptor(),
 		}
 		if s.tls {
@@ -285,7 +285,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		if s.enableGRPCReflection {
 			opts = append(opts, rpc.WithGRPCReflection())
 		}
-		if t.Flags.Metrics {
+		if input.Flags.Metrics {
 			opts = append(opts, rpc.WithPrometheusUnaryInterceptor())
 		}
 
@@ -301,7 +301,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	{
 		signer, err := jwt.NewSigner(defaultSigningMethod, s.encryptionKeyFile)
 		if err != nil {
-			t.Logger.Error("failed to create a new signer", zap.Error(err))
+			input.Logger.Error("failed to create a new signer", zap.Error(err))
 			return err
 		}
 
@@ -315,7 +315,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			cfg.SharedSSOConfigMap(),
 			datastore.NewProjectStore(ds),
 			!s.insecureCookie,
-			t.Logger,
+			input.Logger,
 		)
 		httpServer := &http.Server{
 			Addr:    fmt.Sprintf(":%d", s.httpPort),
@@ -323,7 +323,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		}
 
 		group.Go(func() error {
-			return runHTTPServer(ctx, httpServer, s.gracePeriod, t.Logger)
+			return runHTTPServer(ctx, httpServer, s.gracePeriod, input.Logger)
 		})
 	}
 
@@ -331,7 +331,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	{
 		var (
 			ver   = []byte(version.Get().Version)
-			admin = admin.NewAdmin(s.adminPort, s.gracePeriod, t.Logger)
+			admin = admin.NewAdmin(s.adminPort, s.gracePeriod, input.Logger)
 		)
 
 		admin.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
@@ -340,7 +340,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
-		admin.Handle("/metrics", t.PrometheusMetricsHandlerFor(reg))
+		admin.Handle("/metrics", input.PrometheusMetricsHandlerFor(reg))
 
 		group.Go(func() error {
 			return admin.Run(ctx)
@@ -352,7 +352,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	// could trigger the finish of server.
 	// This ensures that all components are good or no one.
 	if err := group.Wait(); err != nil {
-		t.Logger.Error("failed while running", zap.Error(err))
+		input.Logger.Error("failed while running", zap.Error(err))
 		return err
 	}
 	return nil

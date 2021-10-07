@@ -59,7 +59,7 @@ func newWaitStatusCommand(root *command) *cobra.Command {
 	return cmd
 }
 
-func (c *waitStatus) run(ctx context.Context, t cli.Telemetry) error {
+func (c *waitStatus) run(ctx context.Context, input cli.Input) error {
 	statuses, err := model.DeploymentStatusesFromStrings(c.statuses)
 	if err != nil {
 		return fmt.Errorf("invalid deployment status: %w", err)
@@ -78,6 +78,6 @@ func (c *waitStatus) run(ctx context.Context, t cli.Telemetry) error {
 		statuses,
 		c.checkInterval,
 		c.timeout,
-		t.Logger,
+		input.Logger,
 	)
 }
