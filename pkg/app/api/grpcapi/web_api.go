@@ -1181,6 +1181,9 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	if err != nil {
 		return nil, err
 	}
+	if err := a.validateApprover(claims.Subject, deployment.Stages); err != nil {
+		return nil, err
+	}
 	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
@@ -1214,6 +1217,21 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	return &webservice.ApproveStageResponse{
 		CommandId: commandID,
 	}, nil
+}
+
+func (a *WebAPI) validateApprover(commander string, stages []*model.PipelineStage) error {
+	var approvers []string
+	for _, s := range stages {
+		if s.Name == model.StageWaitApproval.String() {
+			approvers = strings.Split(s.Metadata["Approvers"], ",")
+		}
+	}
+	for _, ap := range approvers {
+		if commander == ap {
+			return nil
+		}
+	}
+	return status.Error(codes.FailedPrecondition, "Could not approve the stage because you aren't an approver.")
 }
 
 func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.GetApplicationLiveStateRequest) (*webservice.GetApplicationLiveStateResponse, error) {
