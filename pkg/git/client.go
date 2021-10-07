@@ -251,7 +251,7 @@ func (c *client) unlockRepo(repoID string) {
 func (c *client) runGitCommand(ctx context.Context, dir string, args ...string) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, c.gitPath, args...)
 	cmd.Dir = dir
-	cmd.Env = append(cmd.Env, c.gitEnvs...)
+	cmd.Env = append(os.Environ(), c.gitEnvs...)
 	return cmd.CombinedOutput()
 }
 

@@ -294,7 +294,7 @@ func (r *repo) setRemote(ctx context.Context, remote string) error {
 func (r *repo) runGitCommand(ctx context.Context, args ...string) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, r.gitPath, args...)
 	cmd.Dir = r.dir
-	cmd.Env = append(cmd.Env, r.gitEnvs...)
+	cmd.Env = append(os.Environ(), r.gitEnvs...)
 	return cmd.CombinedOutput()
 }
 

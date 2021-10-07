@@ -149,7 +149,7 @@ func (l *launcher) run(ctx context.Context, t cli.Telemetry) error {
 			git.WithLogger(t.Logger),
 		}
 		if l.gitSSHKeyFile != "" {
-			options = append(options, git.WithGitEnv(`GIT_SSH_COMMAND="ssh -i `+l.gitSSHKeyFile+` -o StrictHostKeyChecking=no -F /dev/null"`))
+			options = append(options, git.WithGitEnv(fmt.Sprintf("GIT_SSH_COMMAND=ssh -i %s -o StrictHostKeyChecking=no -F /dev/null", l.gitSSHKeyFile)))
 		}
 		gc, err := git.NewClient(options...)
 		if err != nil {
