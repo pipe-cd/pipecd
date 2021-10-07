@@ -64,6 +64,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		select {
 		case <-ticker.C:
 			if commander, ok := e.checkApproval(ctx); ok {
+				e.reportApproved(ctx, commander)
 				e.LogPersister.Infof("Got an approval from %s", commander)
 				return model.StageStatus_STAGE_SUCCESS
 			}
@@ -117,8 +118,25 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 	return approveCmd.Commander, true
 }
 
+func (e *Executor) reportApproved(ctx context.Context, approver string) {
+	accounts, err := e.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED)
+	if err != nil {
+		e.Logger.Error("failed to get the list of accounts", zap.Error(err))
+	}
+
+	e.Notifier.Notify(model.NotificationEvent{
+		Type: model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED,
+		Metadata: &model.NotificationEventDeploymentApproved{
+			Deployment:        e.Deployment,
+			EnvName:           e.EnvName,
+			Approver:          approver,
+			MentionedAccounts: accounts,
+		},
+	})
+}
+
 func (e *Executor) reportRequiringApproval(ctx context.Context) {
-	accounts, err := e.getMentionedAccounts(ctx)
+	accounts, err := e.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
 	if err != nil {
 		e.Logger.Error("failed to get the list of accounts", zap.Error(err))
 	}
@@ -133,7 +151,7 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 	})
 }
 
-func (e *Executor) getMentionedAccounts(ctx context.Context) ([]string, error) {
+func (e *Executor) getMentionedAccounts(ctx context.Context, event model.NotificationEventType) ([]string, error) {
 	ds, err := e.TargetDSP.GetReadOnly(ctx, e.LogPersister)
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare running deploy source data: %w", err)
@@ -145,7 +163,7 @@ func (e *Executor) getMentionedAccounts(ctx context.Context) ([]string, error) {
 	}
 
 	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
-		if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL.String() {
+		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
 		}
 	}
