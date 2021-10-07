@@ -216,9 +216,6 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
             >
               {stageColumn.map((stage, stageIndex) => {
                 const approver = findApprover(stage.metadataMap);
-                console.log('checkcheck');
-                console.log(approver);
-                console.log('checkcheck');
                 const isActive = activeStage
                   ? activeStage.deploymentId === deploymentId &&
                     activeStage.stageId === stage.id
