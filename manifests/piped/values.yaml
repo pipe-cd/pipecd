@@ -21,9 +21,9 @@ launcher:
     # Branch of the git repository for Piped config.
     branch: ""
     # Relative path within git repository to locate Piped config file.
-    configFilePath: ""
+    configFile: ""
     # The path to SSH private key to fetch private git repository.
-    sshKeyFilePath: ""
+    sshKeyFile: ""
 
 service:
   enabled: true
