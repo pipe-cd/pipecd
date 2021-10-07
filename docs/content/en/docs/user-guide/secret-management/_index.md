@@ -104,11 +104,11 @@ data:
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
-  kind: LambdaFunction
-  spec:
-    name: HelloFunction
-    environments:
-      KEY: "{{ .encryptedSecrets.key }}"
+kind: LambdaFunction
+spec:
+  name: HelloFunction
+  environments:
+    KEY: "{{ .encryptedSecrets.key }}"
 ```
 
 In all cases, `Piped` will decrypt the encrypted secrets and render the decryption target files before using to handle any deployment tasks.
