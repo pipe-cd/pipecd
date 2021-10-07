@@ -53,18 +53,18 @@ func NewCommand() *cobra.Command {
 	return cmd
 }
 
-func (s *server) run(ctx context.Context, t cli.Telemetry) error {
+func (s *server) run(ctx context.Context, input cli.Input) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	// Start running gRPC server.
 	{
 		service := api.NewHelloWorldAPI(
-			api.WithLogger(t.Logger),
+			api.WithLogger(input.Logger),
 		)
 		server := rpc.NewServer(service,
 			rpc.WithPort(s.grpcPort),
 			rpc.WithGracePeriod(s.gracePeriod),
-			rpc.WithLogger(t.Logger),
+			rpc.WithLogger(input.Logger),
 		)
 		group.Go(func() error {
 			return server.Run(ctx)
@@ -75,7 +75,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	{
 		var (
 			ver   = []byte(version.Get().Version)
-			admin = admin.NewAdmin(s.adminPort, s.gracePeriod, t.Logger)
+			admin = admin.NewAdmin(s.adminPort, s.gracePeriod, input.Logger)
 		)
 
 		admin.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
@@ -84,7 +84,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
-		admin.Handle("/metrics", t.PrometheusMetricsHandler())
+		admin.Handle("/metrics", input.PrometheusMetricsHandler())
 
 		group.Go(func() error {
 			return admin.Run(ctx)
@@ -96,7 +96,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	// could trigger the finish of server.
 	// This ensures that all components are good or no one.
 	if err := group.Wait(); err != nil {
-		t.Logger.Error("failed while running", zap.Error(err))
+		input.Logger.Error("failed while running", zap.Error(err))
 		return err
 	}
 	return nil

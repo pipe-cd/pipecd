@@ -53,7 +53,7 @@ func newRegisterCommand(root *command) *cobra.Command {
 	return cmd
 }
 
-func (r *register) run(ctx context.Context, t cli.Telemetry) error {
+func (r *register) run(ctx context.Context, input cli.Input) error {
 	cli, err := r.root.clientOptions.NewClient(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to initialize client: %w", err)
@@ -71,7 +71,7 @@ func (r *register) run(ctx context.Context, t cli.Telemetry) error {
 		return fmt.Errorf("failed to register event: %w", err)
 	}
 
-	t.Logger.Info("Successfully registered event",
+	input.Logger.Info("Successfully registered event",
 		zap.String("id", res.EventId),
 	)
 	return nil

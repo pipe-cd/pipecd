@@ -46,10 +46,10 @@ func NewCommand() *cobra.Command {
 	return cmd
 }
 
-func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
-	cli, err := s.createHelloWorldClient(ctx, t.Logger)
+func (s *samplecli) run(ctx context.Context, input cli.Input) error {
+	cli, err := s.createHelloWorldClient(ctx, input.Logger)
 	if err != nil {
-		t.Logger.Error("failed to create client", zap.Error(err))
+		input.Logger.Error("failed to create client", zap.Error(err))
 		return err
 	}
 	defer cli.Close()
@@ -60,10 +60,10 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 	}
 	resp, err := cli.Hello(ctx, req)
 	if err != nil {
-		t.Logger.Error("failed to send Hello", zap.Error(err))
+		input.Logger.Error("failed to send Hello", zap.Error(err))
 		return err
 	}
-	t.Logger.Info("succeeded to send Hello", zap.String("message", resp.Message))
+	input.Logger.Info("succeeded to send Hello", zap.String("message", resp.Message))
 	return nil
 }
 

@@ -62,7 +62,7 @@ func newListCommand(root *command) *cobra.Command {
 	return cmd
 }
 
-func (c *list) run(ctx context.Context, _ cli.Telemetry) error {
+func (c *list) run(ctx context.Context, _ cli.Input) error {
 	if c.appKind != "" {
 		if _, ok := model.ApplicationKind_value[c.appKind]; !ok {
 			return fmt.Errorf("invalid applicaiton kind")

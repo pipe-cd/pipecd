@@ -71,7 +71,7 @@ func newAddCommand(root *command) *cobra.Command {
 	return cmd
 }
 
-func (c *add) run(ctx context.Context, t cli.Telemetry) error {
+func (c *add) run(ctx context.Context, input cli.Input) error {
 	cli, err := c.root.clientOptions.NewClient(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to initialize client: %w", err)
@@ -103,6 +103,6 @@ func (c *add) run(ctx context.Context, t cli.Telemetry) error {
 		return fmt.Errorf("failed to add application: %w", err)
 	}
 
-	t.Logger.Info(fmt.Sprintf("Successfully added application id = %s", resp.ApplicationId))
+	input.Logger.Info(fmt.Sprintf("Successfully added application id = %s", resp.ApplicationId))
 	return nil
 }

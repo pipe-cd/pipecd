@@ -149,7 +149,7 @@ func (l *launcher) validateFlags() error {
 	return nil
 }
 
-func (l *launcher) run(ctx context.Context, t cli.Telemetry) error {
+func (l *launcher) run(ctx context.Context, input cli.Input) error {
 	if err := l.validateFlags(); err != nil {
 		return err
 	}
@@ -157,7 +157,7 @@ func (l *launcher) run(ctx context.Context, t cli.Telemetry) error {
 	if l.homeDir == "" {
 		userCacheDir, err := os.UserCacheDir()
 		if err != nil {
-			t.Logger.Error("LAUNCHER: failed to get the user's cache directory", zap.Error(err))
+			input.Logger.Error("LAUNCHER: failed to get the user's cache directory", zap.Error(err))
 			return err
 		}
 		l.homeDir = filepath.Join(userCacheDir, "piped-launcher")
@@ -165,19 +165,19 @@ func (l *launcher) run(ctx context.Context, t cli.Telemetry) error {
 
 	if l.configFromGitRepo {
 		options := []git.Option{
-			git.WithLogger(t.Logger),
+			git.WithLogger(input.Logger),
 		}
 		if l.gitSSHKeyFile != "" {
 			options = append(options, git.WithGitEnv(fmt.Sprintf("GIT_SSH_COMMAND=ssh -i %s -o StrictHostKeyChecking=no -F /dev/null", l.gitSSHKeyFile)))
 		}
 		gc, err := git.NewClient(options...)
 		if err != nil {
-			t.Logger.Error("failed to initialize git client", zap.Error(err))
+			input.Logger.Error("failed to initialize git client", zap.Error(err))
 			return err
 		}
 		defer func() {
 			if err := gc.Clean(); err != nil {
-				t.Logger.Error("failed to clean git client", zap.Error(err))
+				input.Logger.Error("failed to clean git client", zap.Error(err))
 			}
 		}()
 
@@ -197,9 +197,9 @@ func (l *launcher) run(ctx context.Context, t cli.Telemetry) error {
 	)
 
 	execute := func() error {
-		version, config, relaunch, err := l.shouldRelaunch(ctx, t.Logger)
+		version, config, relaunch, err := l.shouldRelaunch(ctx, input.Logger)
 		if err != nil {
-			t.Logger.Error("LAUNCHER: failed while checking desired version and config",
+			input.Logger.Error("LAUNCHER: failed while checking desired version and config",
 				zap.String("version", version),
 				zap.Error(err),
 			)
@@ -208,16 +208,16 @@ func (l *launcher) run(ctx context.Context, t cli.Telemetry) error {
 
 		if !relaunch {
 			if runningPiped != nil && runningPiped.IsRunning() {
-				t.Logger.Info("LAUNCHER: everything up-to-date", zap.String("version", l.runningVersion))
+				input.Logger.Info("LAUNCHER: everything up-to-date", zap.String("version", l.runningVersion))
 				return nil
 			}
-			t.Logger.Warn("LAUNCHER: it seems the launched Piped has stopped unexpectedly")
+			input.Logger.Warn("LAUNCHER: it seems the launched Piped has stopped unexpectedly")
 		}
-		t.Logger.Info("LAUNCHER: will relaunch a new Piped because some changes in version/config were detected")
+		input.Logger.Info("LAUNCHER: will relaunch a new Piped because some changes in version/config were detected")
 
 		// Stop old piped process and clean its data.
-		if err := l.cleanOldPiped(runningPiped, workingDir, t.Logger); err != nil {
-			t.Logger.Error("LAUNCHER: failed while cleaning old Piped",
+		if err := l.cleanOldPiped(runningPiped, workingDir, input.Logger); err != nil {
+			input.Logger.Error("LAUNCHER: failed while cleaning old Piped",
 				zap.String("version", version),
 				zap.Error(err),
 			)
@@ -225,15 +225,15 @@ func (l *launcher) run(ctx context.Context, t cli.Telemetry) error {
 		}
 
 		// Start new piped process.
-		runningPiped, err = l.launchNewPiped(version, config, workingDir, t.Logger)
+		runningPiped, err = l.launchNewPiped(version, config, workingDir, input.Logger)
 		if err != nil {
-			t.Logger.Error("LAUNCHER: failed while launching new Piped", zap.Error(err))
+			input.Logger.Error("LAUNCHER: failed while launching new Piped", zap.Error(err))
 			return err
 		}
 
 		l.runningVersion = version
 		l.runningConfigData = config
-		t.Logger.Info("LAUNCHER: successfully launched a new Piped", zap.String("version", version))
+		input.Logger.Info("LAUNCHER: successfully launched a new Piped", zap.String("version", version))
 		return nil
 	}
 
@@ -247,8 +247,8 @@ func (l *launcher) run(ctx context.Context, t cli.Telemetry) error {
 
 		case <-ctx.Done():
 			// Stop old piped process and clean its data.
-			if err := l.cleanOldPiped(runningPiped, workingDir, t.Logger); err != nil {
-				t.Logger.Error("LAUNCHER: failed while cleaning old Piped",
+			if err := l.cleanOldPiped(runningPiped, workingDir, input.Logger); err != nil {
+				input.Logger.Error("LAUNCHER: failed while cleaning old Piped",
 					zap.String("version", l.runningVersion),
 					zap.Error(err),
 				)

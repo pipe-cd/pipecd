@@ -76,13 +76,13 @@ func NewOpsCommand() *cobra.Command {
 	return cmd
 }
 
-func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
+func (s *ops) run(ctx context.Context, input cli.Input) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	// Load control plane configuration from the specified file.
 	cfg, err := loadConfig(s.configFile)
 	if err != nil {
-		t.Logger.Error("failed to load control-plane configuration",
+		input.Logger.Error("failed to load control-plane configuration",
 			zap.String("config-file", s.configFile),
 			zap.Error(err),
 		)
@@ -91,8 +91,8 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Prepare sql database.
 	if cfg.Datastore.Type == model.DataStoreMySQL {
-		if err := ensureSQLDatabase(ctx, cfg, t.Logger); err != nil {
-			t.Logger.Error("failed to ensure prepare SQL database", zap.Error(err))
+		if err := ensureSQLDatabase(ctx, cfg, input.Logger); err != nil {
+			input.Logger.Error("failed to ensure prepare SQL database", zap.Error(err))
 			return err
 		}
 	}
@@ -104,7 +104,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 			cfg.Datastore.FirestoreConfig.Project,
 			cfg.Datastore.FirestoreConfig.CredentialsFile,
 			cfg.Datastore.FirestoreConfig.CollectionNamePrefix,
-			t.Logger,
+			input.Logger,
 		)
 		group.Go(func() error {
 			return ensurer.CreateIndexes(ctx)
@@ -112,26 +112,26 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	}
 
 	// Connect to the data store.
-	ds, err := createDatastore(ctx, cfg, t.Logger)
+	ds, err := createDatastore(ctx, cfg, input.Logger)
 	if err != nil {
-		t.Logger.Error("failed to create datastore", zap.Error(err))
+		input.Logger.Error("failed to create datastore", zap.Error(err))
 		return err
 	}
 	defer func() {
 		if err := ds.Close(); err != nil {
-			t.Logger.Error("failed to close datastore client", zap.Error(err))
+			input.Logger.Error("failed to close datastore client", zap.Error(err))
 		}
 	}()
 
 	// Connect to the file store.
-	fs, err := createFilestore(ctx, cfg, t.Logger)
+	fs, err := createFilestore(ctx, cfg, input.Logger)
 	if err != nil {
-		t.Logger.Error("failed to create filestore", zap.Error(err))
+		input.Logger.Error("failed to create filestore", zap.Error(err))
 		return err
 	}
 	defer func() {
 		if err := fs.Close(); err != nil {
-			t.Logger.Error("failed to close filestore client", zap.Error(err))
+			input.Logger.Error("failed to close filestore client", zap.Error(err))
 		}
 	}()
 
@@ -139,14 +139,14 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	rd := redis.NewRedis(s.cacheAddress, "")
 	defer func() {
 		if err := rd.Close(); err != nil {
-			t.Logger.Error("failed to close redis client", zap.Error(err))
+			input.Logger.Error("failed to close redis client", zap.Error(err))
 		}
 	}()
 	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
 
 	// Start running staled piped stat cleaner.
 	{
-		cleaner := staledpipedstatcleaner.NewStaledPipedStatCleaner(statCache, t.Logger)
+		cleaner := staledpipedstatcleaner.NewStaledPipedStatCleaner(statCache, input.Logger)
 		group.Go(func() error {
 			return cleaner.Run(ctx)
 		})
@@ -154,7 +154,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running command cleaner.
 	{
-		cleaner := orphancommandcleaner.NewOrphanCommandCleaner(ds, t.Logger)
+		cleaner := orphancommandcleaner.NewOrphanCommandCleaner(ds, input.Logger)
 		group.Go(func() error {
 			return cleaner.Run(ctx)
 		})
@@ -162,14 +162,14 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running planpreview output cleaner.
 	{
-		cleaner := planpreviewoutputcleaner.NewCleaner(fs, t.Logger)
+		cleaner := planpreviewoutputcleaner.NewCleaner(fs, input.Logger)
 		group.Go(func() error {
 			return cleaner.Run(ctx)
 		})
 	}
 
 	// Start running insight collector.
-	ic := insightcollector.NewCollector(ds, fs, cfg.InsightCollector, t.Logger)
+	ic := insightcollector.NewCollector(ds, fs, cfg.InsightCollector, input.Logger)
 	group.Go(func() error {
 		return ic.Run(ctx)
 	})
@@ -177,13 +177,13 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running HTTP server.
 	{
-		handler := handler.NewHandler(s.httpPort, datastore.NewProjectStore(ds), insightstore.NewStore(fs), cfg.SharedSSOConfigs, s.gracePeriod, t.Logger)
+		handler := handler.NewHandler(s.httpPort, datastore.NewProjectStore(ds), insightstore.NewStore(fs), cfg.SharedSSOConfigs, s.gracePeriod, input.Logger)
 		group.Go(func() error {
 			return handler.Run(ctx)
 		})
 	}
 
-	psb := pipedstatsbuilder.NewPipedStatsBuilder(statCache, t.Logger)
+	psb := pipedstatsbuilder.NewPipedStatsBuilder(statCache, input.Logger)
 
 	// Register all pipecd ops metrics collectors.
 	reg := registerOpsMetrics(insightMetricsCollector)
@@ -191,7 +191,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	{
 		var (
 			ver   = []byte(version.Get().Version)
-			admin = admin.NewAdmin(s.adminPort, s.gracePeriod, t.Logger)
+			admin = admin.NewAdmin(s.adminPort, s.gracePeriod, input.Logger)
 		)
 
 		admin.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
@@ -200,7 +200,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
-		admin.Handle("/metrics", t.CustomMetricsHandlerFor(reg, psb))
+		admin.Handle("/metrics", input.CustomMetricsHandlerFor(reg, psb))
 
 		group.Go(func() error {
 			return admin.Run(ctx)
@@ -212,7 +212,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	// could trigger the finish of server.
 	// This ensures that all components are good or no one.
 	if err := group.Wait(); err != nil {
-		t.Logger.Error("failed while running", zap.Error(err))
+		input.Logger.Error("failed while running", zap.Error(err))
 		return err
 	}
 	return nil

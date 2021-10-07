@@ -84,7 +84,7 @@ func NewCommand() *cobra.Command {
 	return cmd
 }
 
-func (c *command) run(ctx context.Context, _ cli.Telemetry) error {
+func (c *command) run(ctx context.Context, _ cli.Input) error {
 	ctx, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()
 

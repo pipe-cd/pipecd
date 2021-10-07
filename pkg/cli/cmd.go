@@ -35,12 +35,13 @@ import (
 	"github.com/pipe-cd/pipe/pkg/version"
 )
 
-type Telemetry struct {
+type Input struct {
 	Logger *zap.Logger
 	Flags  TelemetryFlags
+	Stdin  io.Reader
 }
 
-type Runner func(ctx context.Context, telemetry Telemetry) error
+type Runner func(ctx context.Context, input Input) error
 
 func WithContext(runner Runner) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
@@ -56,8 +57,9 @@ func runWithContext(cmd *cobra.Command, signalCh <-chan os.Signal, runner Runner
 	if err != nil {
 		return err
 	}
-	telemetry := Telemetry{
+	input := Input{
 		Flags: flags,
+		Stdin: cmd.InOrStdin(),
 	}
 	service := extractServiceName(cmd)
 	version := version.Get()
@@ -68,7 +70,7 @@ func runWithContext(cmd *cobra.Command, signalCh <-chan os.Signal, runner Runner
 		return err
 	}
 	defer logger.Sync()
-	telemetry.Logger = logger
+	input.Logger = logger
 
 	// Start running profiler.
 	if flags.Profile {
@@ -90,7 +92,7 @@ func runWithContext(cmd *cobra.Command, signalCh <-chan os.Signal, runner Runner
 		}
 	}()
 
-	return runner(ctx, telemetry)
+	return runner(ctx, input)
 }
 
 func newLogger(service, version, level, encoding string) (*zap.Logger, error) {
@@ -119,7 +121,7 @@ func startProfiler(service, version, credentialsFile string, debugLogging bool, 
 	return profiler.Start(config, options...)
 }
 
-func (t Telemetry) PrometheusMetricsHandler() http.Handler {
+func (t Input) PrometheusMetricsHandler() http.Handler {
 	if t.Flags.Metrics {
 		return promhttp.Handler()
 	}
@@ -129,7 +131,7 @@ func (t Telemetry) PrometheusMetricsHandler() http.Handler {
 	return empty
 }
 
-func (t Telemetry) PrometheusMetricsHandlerFor(r *prometheus.Registry) http.Handler {
+func (t Input) PrometheusMetricsHandlerFor(r *prometheus.Registry) http.Handler {
 	if t.Flags.Metrics {
 		return promhttp.HandlerFor(r, promhttp.HandlerOpts{})
 	}
@@ -143,7 +145,7 @@ type MetricsBuilder interface {
 	Build() (io.Reader, error)
 }
 
-func (t Telemetry) CustomMetricsHandlerFor(reg prometheus.Gatherer, mb MetricsBuilder) http.Handler {
+func (t Input) CustomMetricsHandlerFor(reg prometheus.Gatherer, mb MetricsBuilder) http.Handler {
 	if !t.Flags.Metrics {
 		var empty http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(""))

@@ -27,7 +27,7 @@ import (
 
 func TestRunWithContext(t *testing.T) {
 	calls := 0
-	piped := func(ctx context.Context, t Telemetry) error {
+	piped := func(ctx context.Context, t Input) error {
 		calls++
 		timeout := time.NewTimer(time.Second)
 		select {
