@@ -354,8 +354,7 @@ func (a *metricsAnalyzer) analyzeWithCanaryPrimary(ctx context.Context) (bool, e
 
 // compare compares the given two samples using Mann-Whitney U test.
 // Considered as failure if it deviates in the specified direction as the third argument.
-// No error means that the result is expected.
-func compare(experiment, control []float64, deviation string) (expected bool, err error) {
+func compare(experiment, control []float64, deviation string) (acceptable bool, err error) {
 	if len(experiment) == 0 {
 		return false, fmt.Errorf("no data points of Experiment found")
 	}
