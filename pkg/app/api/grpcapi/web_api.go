@@ -1226,6 +1226,10 @@ func (a *WebAPI) validateApprover(commander string, stages []*model.PipelineStag
 			approvers = strings.Split(s.Metadata["Approvers"], ",")
 		}
 	}
+	if len(approvers) == 0 {
+		// Anyone can approve the deployment pipeline
+		return nil
+	}
 	for _, ap := range approvers {
 		if commander == ap {
 			return nil
