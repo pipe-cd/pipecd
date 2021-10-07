@@ -31,7 +31,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/service/apiservice"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
-	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
@@ -588,29 +587,24 @@ func (a *API) Encrypt(ctx context.Context, req *apiservice.EncryptRequest) (*api
 		return nil, err
 	}
 
-	var pubkey string
-	if p, err := a.pipedPubkeyCache.Get(req.PipedId); err == nil {
-		pubkey = p.(string)
+	var pubkey []byte
+	if v, err := a.pipedPubkeyCache.Get(req.PipedId); err == nil {
+		pubkey = v.([]byte)
 	}
-	if pubkey == "" {
+	if pubkey == nil {
 		piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
 		if err != nil {
 			return nil, err
 		}
-		e := model.GetSecretEncryptionInPiped(piped)
-		pubkey = e.PublicKey
+		pubkey, err = getPublicKey(model.GetSecretEncryptionInPiped(piped))
+		if err != nil {
+			return nil, err
+		}
 		a.pipedPubkeyCache.Put(req.PipedId, pubkey)
 	}
-
-	encrypter, err := crypto.NewHybridEncrypter([]byte(pubkey))
+	ciphertext, err := encrypt(req.Plaintext, pubkey, req.Base64Encoding, a.logger)
 	if err != nil {
-		a.logger.Error("failed to initialize the crypter", zap.Error(err))
-		return nil, status.Error(codes.InvalidArgument, "Invalid public key")
-	}
-	ciphertext, err := encrypter.Encrypt(req.Plaintext)
-	if err != nil {
-		a.logger.Error("failed to encrypt the secret", zap.Error(err))
-		return nil, status.Error(codes.FailedPrecondition, "Failed to encrypt the secret")
+		return nil, err
 	}
 
 	return &apiservice.EncryptResponse{

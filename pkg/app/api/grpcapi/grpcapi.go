@@ -16,6 +16,7 @@ package grpcapi
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 
 	"go.uber.org/zap"
@@ -23,6 +24,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
+	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -154,4 +156,36 @@ func getEnvironment(ctx context.Context, store datastore.EnvironmentStore, id st
 	}
 
 	return env, nil
+}
+
+func encrypt(plaintext string, pubkey []byte, base64Encoding bool, logger *zap.Logger) (string, error) {
+	if base64Encoding {
+		plaintext = base64.StdEncoding.EncodeToString([]byte(plaintext))
+	}
+	encrypter, err := crypto.NewHybridEncrypter(pubkey)
+	if err != nil {
+		logger.Error("failed to initialize the crypter", zap.Error(err))
+		return "", status.Error(codes.InvalidArgument, "Invalid public key")
+	}
+	ciphertext, err := encrypter.Encrypt(plaintext)
+	if err != nil {
+		logger.Error("failed to encrypt the secret", zap.Error(err))
+		return "", status.Error(codes.FailedPrecondition, "Failed to encrypt the secret")
+	}
+	return ciphertext, nil
+}
+
+func getPublicKey(se *model.Piped_SecretEncryption) ([]byte, error) {
+	if se == nil {
+		return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a public key")
+	}
+	switch model.SecretManagementType(se.Type) {
+	case model.SecretManagementTypeSealingKey, model.SecretManagementTypeKeyPair:
+		if se.PublicKey == "" {
+			return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a public key")
+		}
+		return []byte(se.PublicKey), nil
+	default:
+		return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a valid encryption type")
+	}
 }
