@@ -939,7 +939,7 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 	}
 
 	se := model.GetSecretEncryptionInPiped(piped)
-	pubkey, err := getPublicKey(se)
+	pubkey, err := getEncriptionKey(se)
 	if err != nil {
 		return nil, err
 	}

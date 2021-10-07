@@ -158,11 +158,11 @@ func getEnvironment(ctx context.Context, store datastore.EnvironmentStore, id st
 	return env, nil
 }
 
-func encrypt(plaintext string, pubkey []byte, base64Encoding bool, logger *zap.Logger) (string, error) {
+func encrypt(plaintext string, key []byte, base64Encoding bool, logger *zap.Logger) (string, error) {
 	if base64Encoding {
 		plaintext = base64.StdEncoding.EncodeToString([]byte(plaintext))
 	}
-	encrypter, err := crypto.NewHybridEncrypter(pubkey)
+	encrypter, err := crypto.NewHybridEncrypter(key)
 	if err != nil {
 		logger.Error("failed to initialize the crypter", zap.Error(err))
 		return "", status.Error(codes.InvalidArgument, "Invalid public key")
@@ -175,7 +175,7 @@ func encrypt(plaintext string, pubkey []byte, base64Encoding bool, logger *zap.L
 	return ciphertext, nil
 }
 
-func getPublicKey(se *model.Piped_SecretEncryption) ([]byte, error) {
+func getEncriptionKey(se *model.Piped_SecretEncryption) ([]byte, error) {
 	if se == nil {
 		return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a public key")
 	}

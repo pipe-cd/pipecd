@@ -46,7 +46,7 @@ type API struct {
 	commandStore        commandstore.Store
 	commandOutputGetter commandOutputGetter
 
-	pipedPubkeyCache cache.Cache
+	encryptionKeyCache cache.Cache
 
 	webBaseURL string
 	logger     *zap.Logger
@@ -70,9 +70,9 @@ func NewAPI(
 		commandStore:        cmds,
 		commandOutputGetter: cog,
 		// Public key is variable but likely to be accessed multiple times in a short period.
-		pipedPubkeyCache: memorycache.NewTTLCache(ctx, 5*time.Minute, 5*time.Minute),
-		webBaseURL:       webBaseURL,
-		logger:           logger.Named("api"),
+		encryptionKeyCache: memorycache.NewTTLCache(ctx, 5*time.Minute, 5*time.Minute),
+		webBaseURL:         webBaseURL,
+		logger:             logger.Named("api"),
 	}
 	return a
 }
@@ -588,7 +588,7 @@ func (a *API) Encrypt(ctx context.Context, req *apiservice.EncryptRequest) (*api
 	}
 
 	var pubkey []byte
-	if v, err := a.pipedPubkeyCache.Get(req.PipedId); err == nil {
+	if v, err := a.encryptionKeyCache.Get(req.PipedId); err == nil {
 		pubkey = v.([]byte)
 	}
 	if pubkey == nil {
@@ -596,11 +596,11 @@ func (a *API) Encrypt(ctx context.Context, req *apiservice.EncryptRequest) (*api
 		if err != nil {
 			return nil, err
 		}
-		pubkey, err = getPublicKey(model.GetSecretEncryptionInPiped(piped))
+		pubkey, err = getEncriptionKey(model.GetSecretEncryptionInPiped(piped))
 		if err != nil {
 			return nil, err
 		}
-		a.pipedPubkeyCache.Put(req.PipedId, pubkey)
+		a.encryptionKeyCache.Put(req.PipedId, pubkey)
 	}
 	ciphertext, err := encrypt(req.Plaintext, pubkey, req.Base64Encoding, a.logger)
 	if err != nil {
