@@ -15,10 +15,13 @@
 package lambda
 
 import (
+	"archive/zip"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"time"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda"
@@ -357,5 +360,49 @@ func prepareZipFromSource(ctx context.Context, gc executor.GitClient, fm provide
 	}
 	defer repo.Clean()
 
-	return nil, nil
+	zf, err := os.Create(fm.Spec.Name + ".zip")
+	if err != nil {
+		return nil, err
+	}
+
+	w := zip.NewWriter(zf)
+	defer w.Close()
+
+	source := repo.GetPath()
+	filepath.Walk(source, func(fp string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		header, err := zip.FileInfoHeader(fi)
+		if err != nil {
+			return err
+		}
+		header.Method = zip.Deflate
+		header.Name, err = filepath.Rel(filepath.Dir(source), fp)
+		if err != nil {
+			return err
+		}
+		if fi.IsDir() {
+			header.Name += "/"
+		}
+		headerWriter, err := w.CreateHeader(header)
+		if err != nil {
+			return err
+		}
+		if fi.IsDir() {
+			return nil
+		}
+
+		f, err := os.Open(fp)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		_, err = io.Copy(headerWriter, f)
+		return err
+	})
+
+	return zf, nil
 }
