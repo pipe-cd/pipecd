@@ -1231,7 +1231,7 @@ func (a *WebAPI) validateApprover(stages []*model.PipelineStage, commander, stag
 		return nil
 	}
 	for _, ap := range approvers {
-		if commander == ap {
+		if ap == commander {
 			return nil
 		}
 	}
