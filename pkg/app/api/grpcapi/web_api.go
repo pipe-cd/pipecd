@@ -1181,7 +1181,7 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	if err != nil {
 		return nil, err
 	}
-	if err := a.validateApprover(claims.Subject, deployment.Stages); err != nil {
+	if err := a.validateApprover(deployment.Stages, claims.Subject, req.StageId); err != nil {
 		return nil, err
 	}
 	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
@@ -1219,10 +1219,10 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	}, nil
 }
 
-func (a *WebAPI) validateApprover(commander string, stages []*model.PipelineStage) error {
+func (a *WebAPI) validateApprover(stages []*model.PipelineStage, commander, stageId string) error {
 	var approvers []string
 	for _, s := range stages {
-		if s.Name == model.StageWaitApproval.String() {
+		if s.Id == stageId {
 			approvers = strings.Split(s.Metadata["Approvers"], ",")
 		}
 	}
