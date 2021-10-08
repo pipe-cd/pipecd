@@ -1181,6 +1181,9 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	if err != nil {
 		return nil, err
 	}
+	if err := a.validateApprover(deployment.Stages, claims.Subject, req.StageId); err != nil {
+		return nil, err
+	}
 	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
@@ -1214,6 +1217,26 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	return &webservice.ApproveStageResponse{
 		CommandId: commandID,
 	}, nil
+}
+
+// No error means that the given commander is valid.
+func (a *WebAPI) validateApprover(stages []*model.PipelineStage, commander, stageID string) error {
+	var approvers []string
+	for _, s := range stages {
+		if s.Id == stageID {
+			approvers = strings.Split(s.Metadata["Approvers"], ",")
+		}
+	}
+	if len(approvers) == 0 {
+		// Anyone can approve the deployment pipeline
+		return nil
+	}
+	for _, ap := range approvers {
+		if ap == commander {
+			return nil
+		}
+	}
+	return status.Error(codes.FailedPrecondition, fmt.Sprintf("Could not approve the stage because %q isn't set as an approver.", commander))
 }
 
 func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.GetApplicationLiveStateRequest) (*webservice.GetApplicationLiveStateResponse, error) {
