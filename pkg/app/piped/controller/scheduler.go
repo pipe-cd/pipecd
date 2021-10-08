@@ -655,7 +655,7 @@ func (s *scheduler) getMentionedAccounts(ctx context.Context, event model.Notifi
 
 	ds, err := s.targetDSP.GetReadOnly(ctx, ioutil.Discard)
 	if err != nil {
-		err = fmt.Errorf("failed to prepare running deploy source data (%w)", err)
+		err = fmt.Errorf("failed to prepare running deploy source data: %w", err)
 		return nil, err
 	}
 
