@@ -346,7 +346,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 func (p *planner) getMentionedAccounts(ctx context.Context, event model.NotificationEventType, targetDSP deploysource.Provider) ([]string, error) {
 	ds, err := targetDSP.GetReadOnly(ctx, io.Discard)
 	if err != nil {
-		return nil, fmt.Errorf("failed to prepare running deploy source data %w", err)
+		return nil, fmt.Errorf("failed to prepare running deploy source data: %w", err)
 	}
 
 	if ds.GenericDeploymentConfig.DeploymentNotification == nil {
