@@ -15,9 +15,11 @@
 package lambda
 
 import (
+	"context"
 	"testing"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda"
+	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -138,4 +140,36 @@ func TestConfigureTrafficRouting(t *testing.T) {
 			}
 		})
 	}
+}
+
+type mockRepo struct {
+	git.Repo
+	source string
+}
+
+func (m *mockRepo) GetPath() string {
+	return m.source
+}
+
+func (m *mockRepo) Clean() error {
+	return nil
+}
+
+type mockGitClient struct {
+	repo git.Repo
+}
+
+func (g *mockGitClient) Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error) {
+	return g.repo, nil
+}
+
+func TestPrepareZipFromSource(t *testing.T) {
+	gc := &mockGitClient{
+		repo: &mockRepo{
+			source: "testdata",
+		},
+	}
+	fm := provider.FunctionManifest{}
+	_, err := prepareZipFromSource(context.Background(), gc, fm)
+	assert.Nil(t, err)
 }
