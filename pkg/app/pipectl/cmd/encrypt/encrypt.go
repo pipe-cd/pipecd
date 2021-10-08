@@ -35,6 +35,7 @@ type command struct {
 	clientOptions *client.Options
 
 	pipedID        string
+	inputFile      string
 	base64Encoding bool
 
 	stdout io.Writer
@@ -47,13 +48,14 @@ func NewCommand() *cobra.Command {
 	}
 	cmd := &cobra.Command{
 		Use:   "encrypt",
-		Short: "Encrypt the plaintext entered in stdin.",
+		Short: "Encrypt the plaintext entered in either stdin or the --in flag.",
 		Example: `  pipectl encrypt --piped-id=xxx --api-key=yyy --address=foo.xz <secret.txt
   cat secret.txt | pipectl encrypt --piped-id=xxxxt --api-key=yyy --address=foo.xz`,
 		RunE: cli.WithContext(c.run),
 	}
 
 	cmd.Flags().StringVar(&c.pipedID, "piped-id", c.pipedID, "The id of Piped to which the application using the ciphertext belongs.")
+	cmd.Flags().StringVar(&c.inputFile, "in", c.inputFile, "The path to the file to be encrypted.")
 	cmd.Flags().BoolVar(&c.base64Encoding, "use-base64-encoding", c.base64Encoding, "Whether the plaintext should be base64 encoded before encrypting or not.")
 	cmd.MarkFlagRequired("piped-id")
 
@@ -69,8 +71,21 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 	}
 	defer cli.Close()
 
+	// Prioritize the file passed via the "--in" flag.
+	var source io.Reader
+	if c.inputFile != "" {
+		fd, err := os.Open(c.inputFile)
+		if err != nil {
+			return fmt.Errorf("failed to read file %q: %w", c.inputFile, err)
+		}
+		defer fd.Close()
+		source = fd
+	} else {
+		source = input.Stdin
+	}
+
 	// Prevent accidental loading of large data into memory.
-	reader := io.LimitReader(input.Stdin, maxDataSize+1)
+	reader := io.LimitReader(source, maxDataSize+1)
 	buf := bytes.Buffer{}
 	n, err := buf.ReadFrom(reader)
 	if err != nil {
