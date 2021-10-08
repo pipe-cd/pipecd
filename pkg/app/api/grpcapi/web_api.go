@@ -1219,6 +1219,7 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	}, nil
 }
 
+// No error means that the given commander is valid.
 func (a *WebAPI) validateApprover(stages []*model.PipelineStage, commander, stageID string) error {
 	var approvers []string
 	for _, s := range stages {
