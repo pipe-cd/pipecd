@@ -134,26 +134,26 @@ Global Flags:
 
 - Send a request to sync an application and exit immediately when the deployment is triggered:
 
-``` console
-pipectl application sync \
-    --address={CONTROL_PLANE_API_ADDRESS} \
-    --api-key={API_KEY} \
-    --app-id={APPLICATION_ID}
-```
+  ``` console
+  pipectl application sync \
+      --address={CONTROL_PLANE_API_ADDRESS} \
+      --api-key={API_KEY} \
+      --app-id={APPLICATION_ID}
+  ```
 
 - Send a request to sync an application and wait until the triggered deployment reaches one of the specified statuses:
 
-``` console
-pipectl application sync \
-    --address={CONTROL_PLANE_API_ADDRESS} \
-    --api-key={API_KEY} \
-    --app-id={APPLICATION_ID} \
-    --wait-status=DEPLOYMENT_SUCCESS,DEPLOYMENT_FAILURE
-```
+  ``` console
+  pipectl application sync \
+      --address={CONTROL_PLANE_API_ADDRESS} \
+      --api-key={API_KEY} \
+      --app-id={APPLICATION_ID} \
+      --wait-status=DEPLOYMENT_SUCCESS,DEPLOYMENT_FAILURE
+  ```
 
 ### Getting an application
 
-- Display the information of a given application in JSON format:
+Display the information of a given application in JSON format:
 
 ``` console
 pipectl application get \
@@ -164,7 +164,7 @@ pipectl application get \
 
 ### Listing applications
 
-- Find and display the information of matching applications in JSON format:
+Find and display the information of matching applications in JSON format:
 
 ``` console
 pipectl application list \
@@ -189,7 +189,7 @@ pipectl deployment wait-status \
 
 ### Registering an event for EventWatcher
 
-Register an event that can be used by EventWatcher.
+Register an event that can be used by EventWatcher:
 
 ``` console
 pipectl event register \
@@ -198,6 +198,31 @@ pipectl event register \
     --name=example-image-pushed \
     --data=gcr.io/pipecd/example:v0.1.0
 ```
+
+### Encrypting the data you want to use when deploying
+
+Encrypt the plaintext entered in either stdin or the `--in` flag.
+
+You can encrypt it the same way you do [from the web](/docs/user-guide/secret-management/#encrypting-secret-data).
+
+- From stdin:
+
+  ``` console
+  pipectl encrypt \
+      --address={CONTROL_PLANE_API_ADDRESS} \
+      --api-key={API_KEY} \
+      --piped-id={PIPED_ID} <secret.txt
+  ```
+
+- From the `--in` flag:
+
+  ``` console
+  pipectl encrypt \
+      --address={CONTROL_PLANE_API_ADDRESS} \
+      --api-key={API_KEY} \
+      --piped-id={PIPED_ID} \
+      --in=secret.txt
+  ```
 
 ### You want more?
 
