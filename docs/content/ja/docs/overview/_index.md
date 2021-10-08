@@ -42,7 +42,6 @@ PipeCDはGitOpsを用いてデプロイメントを安全かつ高速に行う�
 - Kubernetes、Terraform、Cloud Run、AWS Lambda、Amazon ECSなどの様々なマルチクラウドに対応
 - Prometheus、Datadog、Stackdriverなどの様々な分析サービスに対応
 - それぞれの環境で簡単な運用が可能
-
 **Open Source**
 
 - オープンソースプロジェクトとして開発
