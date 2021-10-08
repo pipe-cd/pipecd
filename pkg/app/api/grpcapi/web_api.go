@@ -1219,10 +1219,10 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	}, nil
 }
 
-func (a *WebAPI) validateApprover(stages []*model.PipelineStage, commander, stageId string) error {
+func (a *WebAPI) validateApprover(stages []*model.PipelineStage, commander, stageID string) error {
 	var approvers []string
 	for _, s := range stages {
-		if s.Id == stageId {
+		if s.Id == stageID {
 			approvers = strings.Split(s.Metadata["Approvers"], ",")
 		}
 	}
