@@ -181,19 +181,21 @@ func (t *Trigger) getMentionedAccounts(d *model.Deployment) ([]string, error) {
 		return nil, err
 	}
 
-	if cfg.KubernetesDeploymentSpec != nil {
-		if cfg.KubernetesDeploymentSpec.GenericDeploymentSpec.DeploymentNotification == nil {
-			// There is no event to mention users.
-			return nil, nil
-		}
+	spec, ok := cfg.GetGenericDeployment()
+	if !ok {
+		return nil, fmt.Errorf("unsupported application kind: %s", cfg.Kind)
+	}
 
-		for _, v := range cfg.KubernetesDeploymentSpec.GenericDeploymentSpec.DeploymentNotification.Mentions {
-			if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
-				return v.Slack, nil
-			}
+	if spec.DeploymentNotification == nil {
+		// There is no event to mention users.
+		return nil, nil
+	}
+
+	for _, v := range spec.DeploymentNotification.Mentions {
+		if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
+			return v.Slack, nil
 		}
 	}
-	// TODO: Support mention users for other application kinds than K8s.
 
 	return nil, nil
 }
