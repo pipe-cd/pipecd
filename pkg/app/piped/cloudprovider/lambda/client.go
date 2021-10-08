@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"reflect"
 	"time"
 
@@ -145,7 +144,7 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 	return nil
 }
 
-func (c *client) CreateFunctionFromSource(ctx context.Context, fm FunctionManifest, zip *os.File) error {
+func (c *client) CreateFunctionFromSource(ctx context.Context, fm FunctionManifest, zip io.Reader) error {
 	data, err := io.ReadAll(zip)
 	if err != nil {
 		return err
@@ -204,7 +203,7 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 	return c.updateTagsConfig(ctx, fm)
 }
 
-func (c *client) UpdateFunctionFromSource(ctx context.Context, fm FunctionManifest, zip *os.File) error {
+func (c *client) UpdateFunctionFromSource(ctx context.Context, fm FunctionManifest, zip io.Reader) error {
 	data, err := io.ReadAll(zip)
 	if err != nil {
 		return err

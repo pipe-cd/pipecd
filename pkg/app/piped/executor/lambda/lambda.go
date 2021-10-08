@@ -16,6 +16,7 @@ package lambda
 
 import (
 	"archive/zip"
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -334,7 +335,6 @@ func createFunction(ctx context.Context, in *executor.Input, client provider.Cli
 		in.LogPersister.Errorf("Failed to prepare zip from Lambda function source, remote (%s)", fm.Spec.SourceCode.Git)
 		return err
 	}
-	defer zip.Close()
 
 	return client.CreateFunctionFromSource(ctx, fm, zip)
 }
@@ -348,24 +348,19 @@ func updateFunction(ctx context.Context, in *executor.Input, client provider.Cli
 		in.LogPersister.Errorf("Failed to prepare zip from Lambda function source, remote (%s)", fm.Spec.SourceCode.Git)
 		return err
 	}
-	defer zip.Close()
 
 	return client.UpdateFunctionFromSource(ctx, fm, zip)
 }
 
-func prepareZipFromSource(ctx context.Context, gc executor.GitClient, fm provider.FunctionManifest) (*os.File, error) {
+func prepareZipFromSource(ctx context.Context, gc executor.GitClient, fm provider.FunctionManifest) (io.Reader, error) {
 	repo, err := gc.Clone(ctx, fm.Spec.SourceCode.Git, fm.Spec.SourceCode.Git, fm.Spec.SourceCode.Branch, "")
 	if err != nil {
 		return nil, err
 	}
 	defer repo.Clean()
 
-	zf, err := os.Create(fm.Spec.Name + ".zip")
-	if err != nil {
-		return nil, err
-	}
-
-	w := zip.NewWriter(zf)
+	buf := &bytes.Buffer{}
+	w := zip.NewWriter(buf)
 	defer w.Close()
 
 	source := repo.GetPath()
@@ -404,5 +399,5 @@ func prepareZipFromSource(ctx context.Context, gc executor.GitClient, fm provide
 		return err
 	})
 
-	return zf, nil
+	return buf, nil
 }

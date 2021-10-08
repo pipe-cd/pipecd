@@ -16,7 +16,7 @@ package lambda
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"sigs.k8s.io/yaml"
@@ -69,23 +69,23 @@ type FunctionManifestSpec struct {
 }
 
 func (fmp FunctionManifestSpec) validate() error {
-	if len(fmp.Name) == 0 {
+	if fmp.Name == "" {
 		return fmt.Errorf("lambda function is missing")
 	}
-	if len(fmp.ImageURI) == 0 && len(fmp.S3Bucket) == 0 {
+	if fmp.ImageURI == "" && fmp.S3Bucket == "" {
 		if err := fmp.SourceCode.validate(); err != nil {
 			return err
 		}
 	}
-	if len(fmp.ImageURI) == 0 {
-		if len(fmp.Handler) == 0 {
+	if fmp.ImageURI == "" {
+		if fmp.Handler == "" {
 			return fmt.Errorf("handler is missing")
 		}
-		if len(fmp.Runtime) == 0 {
+		if fmp.Runtime == "" {
 			return fmt.Errorf("runtime is missing")
 		}
 	}
-	if len(fmp.Role) == 0 {
+	if fmp.Role == "" {
 		return fmt.Errorf("role is missing")
 	}
 	if fmp.Memory < memoryLowerLimit {
@@ -104,21 +104,21 @@ type SourceCode struct {
 }
 
 func (sc SourceCode) validate() error {
-	if len(sc.Git) == 0 {
+	if sc.Git == "" {
 		return fmt.Errorf("remote git source is missing")
 	}
 	// TODO add defaults.
-	if len(sc.Branch) == 0 {
+	if sc.Branch == "" {
 		return fmt.Errorf("source branch is missing")
 	}
-	if len(sc.Path) == 0 {
+	if sc.Path == "" {
 		return fmt.Errorf("path is missing")
 	}
 	return nil
 }
 
 func loadFunctionManifest(path string) (FunctionManifest, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return FunctionManifest{}, err
 	}
