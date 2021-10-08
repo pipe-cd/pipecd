@@ -145,30 +145,30 @@ func TestConfigureTrafficRouting(t *testing.T) {
 	}
 }
 
-type mockRepo struct {
+type fakeRepo struct {
 	git.Repo
 	source string
 }
 
-func (m *mockRepo) GetPath() string {
+func (m *fakeRepo) GetPath() string {
 	return m.source
 }
 
-func (m *mockRepo) Clean() error {
+func (m *fakeRepo) Clean() error {
 	return nil
 }
 
-type mockGitClient struct {
+type fakeGitClient struct {
 	repo git.Repo
 }
 
-func (g *mockGitClient) Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error) {
+func (g *fakeGitClient) Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error) {
 	return g.repo, nil
 }
 
 func TestPrepareZipFromSource(t *testing.T) {
-	gc := &mockGitClient{
-		repo: &mockRepo{
+	gc := &fakeGitClient{
+		repo: &fakeRepo{
 			source: "testdata",
 		},
 	}
