@@ -1236,7 +1236,7 @@ func (a *WebAPI) validateApprover(stages []*model.PipelineStage, commander, stag
 			return nil
 		}
 	}
-	return status.Error(codes.FailedPrecondition, "Could not approve the stage because you aren't an approver.")
+	return status.Error(codes.FailedPrecondition, fmt.Sprintf("Could not approve the stage because %q isn't set as an approver.", commander))
 }
 
 func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.GetApplicationLiveStateRequest) (*webservice.GetApplicationLiveStateResponse, error) {
