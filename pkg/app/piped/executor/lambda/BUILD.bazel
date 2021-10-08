@@ -30,5 +30,6 @@ go_test(
         "//pkg/app/piped/cloudprovider/lambda:go_default_library",
         "//pkg/git:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
+        "@com_github_stretchr_testify//require:go_default_library",
     ],
 )

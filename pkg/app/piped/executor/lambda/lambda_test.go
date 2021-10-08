@@ -16,11 +16,14 @@ package lambda
 
 import (
 	"context"
+	"io"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda"
 	"github.com/pipe-cd/pipe/pkg/git"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestConfigureTrafficRouting(t *testing.T) {
@@ -170,6 +173,10 @@ func TestPrepareZipFromSource(t *testing.T) {
 		},
 	}
 	fm := provider.FunctionManifest{}
-	_, err := prepareZipFromSource(context.Background(), gc, fm)
+	r, err := prepareZipFromSource(context.Background(), gc, fm)
+	require.Nil(t, err)
+
+	data, err := io.ReadAll(r)
 	assert.Nil(t, err)
+	assert.NotEqual(t, 0, len(data))
 }
