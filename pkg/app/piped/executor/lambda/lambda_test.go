@@ -17,6 +17,7 @@ package lambda
 import (
 	"context"
 	"io"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -169,14 +170,15 @@ func (g *fakeGitClient) Clone(ctx context.Context, repoID, remote, branch, desti
 func TestPrepareZipFromSource(t *testing.T) {
 	gc := &fakeGitClient{
 		repo: &fakeRepo{
-			source: "testdata",
+			source: "testdata/raw",
 		},
 	}
 	fm := provider.FunctionManifest{}
 	r, err := prepareZipFromSource(context.Background(), gc, fm)
 	require.Nil(t, err)
 
+	expected, _ := os.ReadFile("testdata/compress")
 	data, err := io.ReadAll(r)
 	assert.Nil(t, err)
-	assert.NotEqual(t, 0, len(data))
+	assert.Equal(t, expected, data)
 }
