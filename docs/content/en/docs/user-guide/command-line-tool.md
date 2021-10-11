@@ -211,7 +211,7 @@ You can encrypt it the same way you do [from the web](/docs/user-guide/secret-ma
   pipectl encrypt \
       --address={CONTROL_PLANE_API_ADDRESS} \
       --api-key={API_KEY} \
-      --piped-id={PIPED_ID} <secret.txt
+      --piped-id={PIPED_ID} <{PATH_TO_SECRET_FILE}
   ```
 
 - From the `--input-file` flag:
@@ -221,7 +221,7 @@ You can encrypt it the same way you do [from the web](/docs/user-guide/secret-ma
       --address={CONTROL_PLANE_API_ADDRESS} \
       --api-key={API_KEY} \
       --piped-id={PIPED_ID} \
-      --input-file=secret.txt
+      --input-file={PATH_TO_SECRET_FILE}
   ```
 
 ### You want more?
