@@ -27,8 +27,8 @@ spec:
 | service | [KubernetesService](/docs/user-guide/configuration-reference/#kubernetesservice) | Which Kubernetes resource should be considered as the Service of application. Empty means the first Service resource will be used. | No |
 | workloads | [][KubernetesWorkload](/docs/user-guide/configuration-reference/#kubernetesworkload) | Which Kubernetes resources should be considered as the Workloads of application. Empty means all Deployment resources. | No |
 | trafficRouting | [KubernetesTrafficRouting](/docs/user-guide/configuration-reference/#kubernetestrafficrouting) | How to change traffic routing percentages. | No |
-| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
+| encryption | [SecretEncryption](/docs/user-guide/configuration-reference/#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
@@ -49,8 +49,8 @@ spec:
 | planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [TerraformQuickSync](/docs/user-guide/configuration-reference/#terraformquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
-| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
+| encryption | [SecretEncryption](/docs/user-guide/configuration-reference/#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
@@ -72,7 +72,7 @@ spec:
 | quickSync | [CloudRunQuickSync](/docs/user-guide/configuration-reference/#cloudrunquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
-| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
+| encryption | [SecretEncryption](/docs/user-guide/configuration-reference/#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
@@ -92,7 +92,7 @@ spec:
 | quickSync | [LambdaQuickSync](/docs/user-guide/configuration-reference/#lambdaquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
-| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
+| encryption | [SecretEncryption](/docs/user-guide/configuration-reference/#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
@@ -114,7 +114,6 @@ spec:
 | quickSync | [ECSQuickSync](/docs/user-guide/configuration-reference/#ecsquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
-| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
@@ -173,13 +172,12 @@ One of `yamlField` or `regex` is required.
 | quickSync | string | Regular expression string to forcibly do QuickSync when it matches the commit message. | No |
 | pipeline | string | Regular expression string to forcibly do Pipeline when it matches the commit message. | No |
 
-## SealedSecretMapping
+## SecretEncryption
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| path | string | Relative path from the application directory to the sealed secret file. | Yes |
-| outFilename | string | The filename for the decrypted secret. Empty means the same name with the sealed secret file. | No |
-| outDir | string | The directory name where to put the decrypted secret. Empty means the same directory with the sealed secret file. | No |
+| encryptedSecrets | map[string]string | List of encrypted secrets. | No |
+| decryptionTargets | []string | List of files to be decrypted before using. | No |
 
 ## DeploymentPlanner
 
