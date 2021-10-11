@@ -33,7 +33,7 @@ func DecryptSecrets(appDir string, enc config.SecretEncryption, dcr secretDecryp
 		return nil
 	}
 	if len(enc.EncryptedSecrets) == 0 {
-		return fmt.Errorf("no encrypted secret was specified to decrypt (%w)", enc.DecryptionTargets)
+		return fmt.Errorf("no encrypted secret was specified to decrypt (%q)", enc.DecryptionTargets)
 	}
 
 	secrets := make(map[string]string, len(enc.EncryptedSecrets))

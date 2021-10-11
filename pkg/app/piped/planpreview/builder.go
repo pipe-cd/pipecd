@@ -228,7 +228,7 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 	if deploy, err := b.getMostRecentlySuccessfulDeployment(ctx, app.Id); err == nil {
 		preCommit = deploy.Trigger.Commit.Hash
 	} else if status.Code(err) != codes.NotFound {
-		r.Error = fmt.Sprintf("failed while finding the last successful deployment (%w)", err)
+		r.Error = fmt.Sprintf("failed while finding the last successful deployment (%v)", err)
 		return r
 	}
 
