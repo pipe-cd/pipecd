@@ -37,7 +37,7 @@ You can choose one of the four strategies to fit your use case.
 `THRESHOLD` is the simplest strategy, so it's for you if you attempt to evaluate this feature.
 
 `THRESHOLD` only checks if the query result falls within the statically specified range, whereas others evaluate by checking the deviation of two time-series data.
-Therefore, the those configuration fields are slightly different each other. The next section covers how to configure it for each strategy.
+Therefore, those configuration fields are slightly different from each other. The next section covers how to configure the ADA stage for each strategy.
 
 ### Configuration
 Here is an example for the `THRESHOLD` strategy.
