@@ -42,7 +42,7 @@ type DataPoint struct {
 
 func (d *DataPoint) String() string {
 	// Timestamp is shown in UTC.
-	return fmt.Sprintf("timestamp: %q, value: %g", time.Unix(d.Timestamp, 0).In(time.UTC).Format(timeFormat), d.Value)
+	return fmt.Sprintf("timestamp: %q, value: %g", time.Unix(d.Timestamp, 0).UTC().Format(timeFormat), d.Value)
 }
 
 // QueryRange represents a sliced time range.
@@ -55,7 +55,7 @@ type QueryRange struct {
 
 func (q *QueryRange) String() string {
 	// Timestamps are shown in UTC.
-	return fmt.Sprintf("from: %q, to: %q", q.From.In(time.UTC).Format(timeFormat), q.To.In(time.UTC).Format(timeFormat))
+	return fmt.Sprintf("from: %q, to: %q", q.From.UTC().Format(timeFormat), q.To.UTC().Format(timeFormat))
 }
 
 func (q *QueryRange) Validate() error {
