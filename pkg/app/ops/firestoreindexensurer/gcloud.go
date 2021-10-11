@@ -19,7 +19,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -56,7 +56,7 @@ func (c *gcloud) authorize(ctx context.Context) error {
 	serviceAccount := struct {
 		ClientEmail string `json:"client_email"`
 	}{}
-	b, err := ioutil.ReadFile(c.serviceAccountFile)
+	b, err := os.ReadFile(c.serviceAccountFile)
 	if err != nil {
 		return fmt.Errorf("failed to open service account file: %w", err)
 	}

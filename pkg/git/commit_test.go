@@ -15,7 +15,7 @@
 package git
 
 import (
-	"io/ioutil"
+	"os"
 	"sort"
 	"testing"
 
@@ -24,7 +24,7 @@ import (
 )
 
 func TestParseCommit(t *testing.T) {
-	log, err := ioutil.ReadFile("testdata/log.txt")
+	log, err := os.ReadFile("testdata/log.txt")
 	require.NoError(t, err)
 
 	expected := []Commit{

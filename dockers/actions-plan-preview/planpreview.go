@@ -18,8 +18,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -86,7 +86,7 @@ func retrievePlanPreview(
 	timeout time.Duration,
 ) (*PlanPreviewResult, error) {
 
-	dir, err := ioutil.TempDir("", "")
+	dir, err := os.MkdirTemp("", "")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a temporary directory (%w)", err)
 	}
@@ -111,7 +111,7 @@ func retrievePlanPreview(
 
 	log.Println(string(out))
 
-	data, err := ioutil.ReadFile(outPath)
+	data, err := os.ReadFile(outPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read result file (%w)", err)
 	}

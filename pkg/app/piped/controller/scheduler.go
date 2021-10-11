@@ -17,7 +17,7 @@ package controller
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"path/filepath"
 	"time"
 
@@ -247,7 +247,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		*s.deployment.GitPath,
 		nil,
 	)
-	ds, err := configDSP.GetReadOnly(ctx, ioutil.Discard)
+	ds, err := configDSP.GetReadOnly(ctx, io.Discard)
 	if err != nil {
 		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
 		statusReason = fmt.Sprintf("Unable to prepare deployment configuration source data at target commit (%v)", err)
@@ -652,7 +652,7 @@ func (s *scheduler) getMentionedAccounts(ctx context.Context, event model.Notifi
 		return nil, fmt.Errorf("targetDSP is not configured")
 	}
 
-	ds, err := s.targetDSP.GetReadOnly(ctx, ioutil.Discard)
+	ds, err := s.targetDSP.GetReadOnly(ctx, io.Discard)
 	if err != nil {
 		err = fmt.Errorf("failed to prepare running deploy source data: %w", err)
 		return nil, err

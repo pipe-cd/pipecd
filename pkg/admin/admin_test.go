@@ -15,7 +15,7 @@
 package admin
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http/httptest"
 	"testing"
 
@@ -65,7 +65,7 @@ func TestHandleTop(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			tc.admin.handleTop(w, req)
-			body, _ := ioutil.ReadAll(w.Body)
+			body, _ := io.ReadAll(w.Body)
 			assert.Equal(t, tc.expected, string(body))
 		})
 	}

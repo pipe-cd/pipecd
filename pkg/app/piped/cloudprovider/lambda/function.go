@@ -16,7 +16,7 @@ package lambda
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"sigs.k8s.io/yaml"
@@ -87,7 +87,7 @@ func (fmp FunctionManifestSpec) validate() error {
 }
 
 func loadFunctionManifest(path string) (FunctionManifest, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return FunctionManifest{}, err
 	}

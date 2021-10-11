@@ -17,7 +17,7 @@ package rpcclient
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"google.golang.org/grpc/credentials"
@@ -40,7 +40,7 @@ func NewPerRPCCredentials(credentials string, t rpcauth.CredentialsType, require
 }
 
 func NewPerRPCCredentialsFromFile(credentialsFile string, t rpcauth.CredentialsType, requireTransportSecurity bool) (credentials.PerRPCCredentials, error) {
-	credentials, err := ioutil.ReadFile(credentialsFile)
+	credentials, err := os.ReadFile(credentialsFile)
 	if err != nil {
 		return nil, err
 	}

@@ -16,7 +16,7 @@ package stagelogstore
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 
@@ -105,7 +105,7 @@ EOL`,
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			path := stageLogPath(tc.deploymentID, tc.stageID, tc.retriedCount)
-			reader := ioutil.NopCloser(strings.NewReader(tc.content))
+			reader := io.NopCloser(strings.NewReader(tc.content))
 			store.EXPECT().GetReader(context.TODO(), path).Return(reader, tc.readerErr)
 			lf, err := fs.Get(context.TODO(), tc.deploymentID, tc.stageID, tc.retriedCount)
 			if err != nil {

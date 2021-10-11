@@ -16,7 +16,6 @@ package sourcedecrypter
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -37,7 +36,7 @@ func (d testSecretDecrypter) Decrypt(text string) (string, error) {
 }
 
 func TestDecryptSecrets(t *testing.T) {
-	workspace, err := ioutil.TempDir("", "test-decrypt-secrets")
+	workspace, err := os.MkdirTemp("", "test-decrypt-secrets")
 	require.NoError(t, err)
 	defer os.RemoveAll(workspace)
 
@@ -142,13 +141,13 @@ func TestDecryptSecrets(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			appDir, err := ioutil.TempDir(workspace, "app-dir")
+			appDir, err := os.MkdirTemp(workspace, "app-dir")
 			require.NoError(t, err)
 
 			// Prepare source files.
 			for p, c := range tc.sources {
 				p = filepath.Join(appDir, p)
-				err := ioutil.WriteFile(p, []byte(c), 0644)
+				err := os.WriteFile(p, []byte(c), 0644)
 				require.NoError(t, err)
 			}
 
@@ -162,7 +161,7 @@ func TestDecryptSecrets(t *testing.T) {
 
 			for p, c := range tc.expected {
 				p = filepath.Join(appDir, p)
-				data, err := ioutil.ReadFile(p)
+				data, err := os.ReadFile(p)
 				require.NoError(t, err)
 				assert.Equal(t, c, string(data))
 			}
@@ -171,11 +170,11 @@ func TestDecryptSecrets(t *testing.T) {
 }
 
 func TestDecryptSealedSecrets(t *testing.T) {
-	dir, err := ioutil.TempDir("", "test-decrypt-sealed-secrets")
+	dir, err := os.MkdirTemp("", "test-decrypt-sealed-secrets")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
 
-	err = ioutil.WriteFile(filepath.Join(dir, "replacing.yaml"), []byte(`
+	err = os.WriteFile(filepath.Join(dir, "replacing.yaml"), []byte(`
 apiVersion: "pipecd.dev/v1beta1"
 kind: SealedSecret
 spec:
@@ -196,7 +195,7 @@ spec:
 	)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(filepath.Join(dir, "copy.yaml"), []byte(`
+	err = os.WriteFile(filepath.Join(dir, "copy.yaml"), []byte(`
 apiVersion: "pipecd.dev/v1beta1"
 kind: SealedSecret
 spec:
@@ -227,7 +226,7 @@ spec:
 	err = DecryptSealedSecrets(dir, secrets, dcr)
 	require.NoError(t, err)
 
-	data, err := ioutil.ReadFile(filepath.Join(dir, "replacing.yaml"))
+	data, err := os.ReadFile(filepath.Join(dir, "replacing.yaml"))
 	require.NoError(t, err)
 	assert.Equal(t,
 		`apiVersion: v1
@@ -242,14 +241,14 @@ data:
 		string(data),
 	)
 
-	data, err = ioutil.ReadFile(filepath.Join(dir, "new-copy.yaml"))
+	data, err = os.ReadFile(filepath.Join(dir, "new-copy.yaml"))
 	require.NoError(t, err)
 	assert.Equal(t,
 		`decrypted-encrypted-data`,
 		string(data),
 	)
 
-	data, err = ioutil.ReadFile(filepath.Join(dir, ".credentials/copy.yaml"))
+	data, err = os.ReadFile(filepath.Join(dir, ".credentials/copy.yaml"))
 	require.NoError(t, err)
 	assert.Equal(t,
 		`decrypted-encrypted-data`,

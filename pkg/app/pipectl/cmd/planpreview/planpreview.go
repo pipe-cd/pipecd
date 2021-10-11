@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -170,7 +169,7 @@ func printResults(results []*model.PlanPreviewCommandResult, stdout io.Writer, o
 		fmt.Printf("Failed to encode result to JSON: %v\n", err)
 		return err
 	}
-	return ioutil.WriteFile(outFile, data, 0644)
+	return os.WriteFile(outFile, data, 0644)
 }
 
 func convert(results []*model.PlanPreviewCommandResult) ReadableResult {

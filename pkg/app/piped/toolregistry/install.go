@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"text/template"
@@ -41,7 +40,7 @@ var (
 )
 
 func (r *registry) installKubectl(ctx context.Context, version string) error {
-	workingDir, err := ioutil.TempDir("", "kubectl-install")
+	workingDir, err := os.MkdirTemp("", "kubectl-install")
 	if err != nil {
 		return err
 	}
@@ -88,7 +87,7 @@ func (r *registry) installKubectl(ctx context.Context, version string) error {
 }
 
 func (r *registry) installKustomize(ctx context.Context, version string) error {
-	workingDir, err := ioutil.TempDir("", "kustomize-install")
+	workingDir, err := os.MkdirTemp("", "kustomize-install")
 	if err != nil {
 		return err
 	}
@@ -135,7 +134,7 @@ func (r *registry) installKustomize(ctx context.Context, version string) error {
 }
 
 func (r *registry) installHelm(ctx context.Context, version string) error {
-	workingDir, err := ioutil.TempDir("", "helm-install")
+	workingDir, err := os.MkdirTemp("", "helm-install")
 	if err != nil {
 		return err
 	}
@@ -182,7 +181,7 @@ func (r *registry) installHelm(ctx context.Context, version string) error {
 }
 
 func (r *registry) installTerraform(ctx context.Context, version string) error {
-	workingDir, err := ioutil.TempDir("", "terraform-install")
+	workingDir, err := os.MkdirTemp("", "terraform-install")
 	if err != nil {
 		return err
 	}

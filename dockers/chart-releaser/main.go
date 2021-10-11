@@ -18,7 +18,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -89,7 +89,7 @@ func main() {
 	}
 
 	// Make a temporary working directory.
-	workingDir, err := ioutil.TempDir("", "charts")
+	workingDir, err := os.MkdirTemp("", "charts")
 	if err != nil {
 		log.Fatalf("Unable to create a temporary working directory: %v", err)
 	}
@@ -176,12 +176,12 @@ func downloadIndexFile(ctx context.Context, client *storage.Client, dest string)
 	}
 	defer rc.Close()
 
-	content, err := ioutil.ReadAll(rc)
+	content, err := io.ReadAll(rc)
 	if err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile(dest, content, 0644)
+	return os.WriteFile(dest, content, 0644)
 }
 
 func storeFile(ctx context.Context, client *storage.Client, path string, disableCache bool) error {
@@ -189,7 +189,7 @@ func storeFile(ctx context.Context, client *storage.Client, path string, disable
 	wc := client.Bucket(bucket).Object(name).NewWriter(ctx)
 	defer wc.Close()
 
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
