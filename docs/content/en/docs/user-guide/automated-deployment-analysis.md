@@ -63,7 +63,7 @@ spec:
                 sum (rate(http_requests_total[5m]))
 ```
 
-In the `provider` field, put the name of provider you have set to Piped configuration in the [Prerequisites](#prerequisites) section.
+In the `provider` field, put the name of the provider in Piped configuration prepared in the [Prerequisites](#prerequisites) section.
 
 The `ANALYSIS` stage will continue to run for the period specified in the `duration` field.
 In the meantime, Piped sends the given `query` to the Analysis Provider at each specified `interval`.
