@@ -98,18 +98,17 @@ func (fmp FunctionManifestSpec) validate() error {
 }
 
 type SourceCode struct {
-	Git    string `json:"git"`
-	Branch string `json:"branch"`
-	Path   string `json:"path"`
+	Git  string `json:"git"`
+	Ref  string `json:"ref"`
+	Path string `json:"path"`
 }
 
 func (sc SourceCode) validate() error {
 	if sc.Git == "" {
 		return fmt.Errorf("remote git source is missing")
 	}
-	// TODO add defaults.
-	if sc.Branch == "" {
-		return fmt.Errorf("source branch is missing")
+	if sc.Ref == "" {
+		return fmt.Errorf("source ref is missing")
 	}
 	if sc.Path == "" {
 		return fmt.Errorf("path is missing")

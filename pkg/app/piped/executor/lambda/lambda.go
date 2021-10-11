@@ -353,17 +353,21 @@ func updateFunction(ctx context.Context, in *executor.Input, client provider.Cli
 }
 
 func prepareZipFromSource(ctx context.Context, gc executor.GitClient, fm provider.FunctionManifest) (io.Reader, error) {
-	repo, err := gc.Clone(ctx, fm.Spec.SourceCode.Git, fm.Spec.SourceCode.Git, fm.Spec.SourceCode.Branch, "")
+	repo, err := gc.Clone(ctx, fm.Spec.SourceCode.Git, fm.Spec.SourceCode.Git, "", "")
 	if err != nil {
 		return nil, err
 	}
 	defer repo.Clean()
 
+	if err = repo.Checkout(ctx, fm.Spec.SourceCode.Ref); err != nil {
+		return nil, err
+	}
+
 	buf := &bytes.Buffer{}
 	w := zip.NewWriter(buf)
 	defer w.Close()
 
-	source := repo.GetPath()
+	source := filepath.Join(repo.GetPath(), fm.Spec.SourceCode.Path)
 	filepath.Walk(source, func(fp string, fi os.FileInfo, err error) error {
 		if err != nil {
 			return err

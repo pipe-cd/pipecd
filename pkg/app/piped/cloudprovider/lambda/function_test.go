@@ -122,7 +122,7 @@ func TestparseFunctionManifest(t *testing.T) {
 	  "image": "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
 	  "source": {
 		"git": "git@remote-url",
-		"branch": "master",
+		"ref": "master",
 		"path": "./"
 	  }
   }
@@ -137,9 +137,9 @@ func TestparseFunctionManifest(t *testing.T) {
 					Timeout:  5,
 					ImageURI: "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
 					SourceCode: SourceCode{
-						Git:    "git@remote-url",
-						Branch: "master",
-						Path:   "./",
+						Git:  "git@remote-url",
+						Ref:  "master",
+						Path: "./",
 					},
 				},
 			},

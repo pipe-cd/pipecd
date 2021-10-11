@@ -154,6 +154,10 @@ func (m *fakeRepo) GetPath() string {
 	return m.source
 }
 
+func (m *fakeRepo) Checkout(_ context.Context, _ string) error {
+	return nil
+}
+
 func (m *fakeRepo) Clean() error {
 	return nil
 }
@@ -162,7 +166,7 @@ type fakeGitClient struct {
 	repo git.Repo
 }
 
-func (g *fakeGitClient) Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error) {
+func (g *fakeGitClient) Clone(_ context.Context, _, _, _, _ string) (git.Repo, error) {
 	return g.repo, nil
 }
 
