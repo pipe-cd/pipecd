@@ -48,15 +48,15 @@ func NewCommand() *cobra.Command {
 	}
 	cmd := &cobra.Command{
 		Use:   "encrypt",
-		Short: "Encrypt the plaintext entered in either stdin or the --in flag.",
+		Short: "Encrypt the plaintext entered in either stdin or the --input-file flag.",
 		Example: `  pipectl encrypt --piped-id=xxx --api-key=yyy --address=foo.xz <secret.txt
   cat secret.txt | pipectl encrypt --piped-id=xxxxt --api-key=yyy --address=foo.xz
-  pipectl encrypt --in=secret.txt --piped-id=xxxxt --api-key=yyy --address=foo.xz`,
+  pipectl encrypt --input-file=secret.txt --piped-id=xxxxt --api-key=yyy --address=foo.xz`,
 		RunE: cli.WithContext(c.run),
 	}
 
 	cmd.Flags().StringVar(&c.pipedID, "piped-id", c.pipedID, "The id of Piped to which the application using the ciphertext belongs.")
-	cmd.Flags().StringVar(&c.inputFile, "in", c.inputFile, "The path to the file to be encrypted.")
+	cmd.Flags().StringVar(&c.inputFile, "input-file", c.inputFile, "The path to the file to be encrypted.")
 	cmd.Flags().BoolVar(&c.base64Encoding, "use-base64-encoding", c.base64Encoding, "Whether the plaintext should be base64 encoded before encrypting or not. (default false)")
 	cmd.MarkFlagRequired("piped-id")
 
@@ -72,7 +72,7 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 	}
 	defer cli.Close()
 
-	// Prioritize the file passed via the "--in" flag.
+	// Prioritize the file passed via the "--input-file" flag.
 	var source io.Reader
 	if c.inputFile != "" {
 		fd, err := os.Open(c.inputFile)
