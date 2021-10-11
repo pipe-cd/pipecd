@@ -112,7 +112,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		args := e.buildAppArgs(options.Metrics[i].Template.AppArgs)
 		analyzer := newMetricsAnalyzer(id, *cfg, e.startTime, provider, e.AnalysisResultStore, args, e.Logger, e.LogPersister)
 		eg.Go(func() error {
-			e.LogPersister.Infof("[%s] Start analysis", analyzer.id)
+			e.LogPersister.Infof("[%s] Start metrics analyzer. Every %s it runs this query: %q", analyzer.id, cfg.Interval.Duration(), cfg.Query)
 			return analyzer.run(ctxWithTimeout)
 		})
 	}
@@ -124,7 +124,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 			return model.StageStatus_STAGE_FAILURE
 		}
 		eg.Go(func() error {
-			e.LogPersister.Infof("[%s] Start analysis for %s", analyzer.id, analyzer.providerType)
+			e.LogPersister.Infof("[%s] Start log analyzer", analyzer.id)
 			return analyzer.run(ctxWithTimeout)
 		})
 	}
@@ -136,7 +136,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 			return model.StageStatus_STAGE_FAILURE
 		}
 		eg.Go(func() error {
-			e.LogPersister.Infof("[%s] Start analysis for %s", analyzer.id, analyzer.providerType)
+			e.LogPersister.Infof("[%s] Start http analyzer", analyzer.id)
 			return analyzer.run(ctxWithTimeout)
 		})
 	}

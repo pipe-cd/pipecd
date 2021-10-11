@@ -143,10 +143,21 @@ func Test_compare(t *testing.T) {
 		deviation  string
 	}
 	testcases := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name         string
+		args         args
+		wantExpected bool
+		wantErr      bool
 	}{
+		{
+			name: "empty data points given",
+			args: args{
+				experiment: []float64{},
+				control:    []float64{0.1, 0.2, 0.3, 0.4, 0.5},
+				deviation:  "EITHER",
+			},
+			wantExpected: false,
+			wantErr:      true,
+		},
 		{
 			name: "no significance",
 			args: args{
@@ -154,7 +165,8 @@ func Test_compare(t *testing.T) {
 				control:    []float64{0.1, 0.2, 0.3, 0.4, 0.5},
 				deviation:  "EITHER",
 			},
-			wantErr: false,
+			wantExpected: true,
+			wantErr:      false,
 		},
 		{
 			name: "deviation on high direction as expected",
@@ -163,7 +175,8 @@ func Test_compare(t *testing.T) {
 				control:    []float64{0.1, 0.2, 0.3, 0.4, 0.5},
 				deviation:  "LOW",
 			},
-			wantErr: false,
+			wantExpected: true,
+			wantErr:      false,
 		},
 		{
 			name: "deviation on low direction as expected",
@@ -172,7 +185,8 @@ func Test_compare(t *testing.T) {
 				control:    []float64{10.1, 10.2, 10.3, 10.4, 10.5},
 				deviation:  "HIGH",
 			},
-			wantErr: false,
+			wantExpected: true,
+			wantErr:      false,
 		},
 		{
 			name: "deviation on high direction as unexpected",
@@ -181,7 +195,8 @@ func Test_compare(t *testing.T) {
 				control:    []float64{0.1, 0.2, 0.3, 0.4, 0.5},
 				deviation:  "HIGH",
 			},
-			wantErr: true,
+			wantExpected: false,
+			wantErr:      false,
 		},
 		{
 			name: "deviation on low direction as unexpected",
@@ -190,7 +205,8 @@ func Test_compare(t *testing.T) {
 				control:    []float64{10.1, 10.2, 10.3, 10.4, 10.5},
 				deviation:  "LOW",
 			},
-			wantErr: true,
+			wantExpected: false,
+			wantErr:      false,
 		},
 		{
 			name: "deviation as unexpected",
@@ -199,13 +215,15 @@ func Test_compare(t *testing.T) {
 				control:    []float64{0.1, 0.1, 0.1, 0.1, 0.1},
 				deviation:  "EITHER",
 			},
-			wantErr: true,
+			wantExpected: false,
+			wantErr:      false,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := compare(tc.args.experiment, tc.args.control, tc.args.deviation)
+			got, err := compare(tc.args.experiment, tc.args.control, tc.args.deviation)
 			assert.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, tc.wantExpected, got)
 		})
 	}
 }
