@@ -201,7 +201,7 @@ pipectl event register \
 
 ### Encrypting the data you want to use when deploying
 
-Encrypt the plaintext entered in either stdin or the `--in` flag.
+Encrypt the plaintext entered in either stdin or the `--input-file` flag.
 
 You can encrypt it the same way you do [from the web](/docs/user-guide/secret-management/#encrypting-secret-data).
 
@@ -214,14 +214,14 @@ You can encrypt it the same way you do [from the web](/docs/user-guide/secret-ma
       --piped-id={PIPED_ID} <secret.txt
   ```
 
-- From the `--in` flag:
+- From the `--input-file` flag:
 
   ``` console
   pipectl encrypt \
       --address={CONTROL_PLANE_API_ADDRESS} \
       --api-key={API_KEY} \
       --piped-id={PIPED_ID} \
-      --in=secret.txt
+      --input-file=secret.txt
   ```
 
 ### You want more?
