@@ -17,7 +17,7 @@ package lambda
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"time"
 
 	"go.uber.org/zap"
@@ -42,7 +42,7 @@ func Register(r registerer) {
 
 // Plan decides which pipeline should be used for the given input.
 func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Output, err error) {
-	ds, err := in.TargetDSP.Get(ctx, ioutil.Discard)
+	ds, err := in.TargetDSP.Get(ctx, io.Discard)
 	if err != nil {
 		err = fmt.Errorf("error while preparing deploy source data (%v)", err)
 		return
@@ -107,7 +107,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	// Load service manifest at the last deployed commit to decide running version.
-	ds, err = in.RunningDSP.Get(ctx, ioutil.Discard)
+	ds, err = in.RunningDSP.Get(ctx, io.Discard)
 	if err == nil {
 		if lastVersion, e := determineVersion(ds.AppDir, cfg.Input.FunctionManifestFile); e == nil {
 			out.SyncStrategy = model.SyncStrategy_PIPELINE

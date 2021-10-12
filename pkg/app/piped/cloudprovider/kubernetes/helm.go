@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -95,7 +94,7 @@ type helmRemoteGitChart struct {
 
 func (c *Helm) TemplateRemoteGitChart(ctx context.Context, appName, appDir, namespace string, chart helmRemoteGitChart, gitClient gitClient, opts *config.InputHelmOptions) (string, error) {
 	// Firstly, we need to download the remote repositoy.
-	repoDir, err := ioutil.TempDir("", "helm-remote-chart")
+	repoDir, err := os.MkdirTemp("", "helm-remote-chart")
 	if err != nil {
 		return "", fmt.Errorf("unable to created temporary directory for storing remote helm chart: %w", err)
 	}

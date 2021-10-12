@@ -16,7 +16,7 @@ package cloudrun
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -65,7 +65,7 @@ func (m ServiceManifest) YamlBytes() ([]byte, error) {
 }
 
 func loadServiceManifest(path string) (ServiceManifest, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return ServiceManifest{}, err
 	}

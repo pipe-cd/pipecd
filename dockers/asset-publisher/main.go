@@ -17,7 +17,6 @@ package main
 import (
 	"context"
 	"flag"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -55,7 +54,7 @@ func main() {
 	}
 
 	// Load GitHub token file.
-	tokenBytes, err := ioutil.ReadFile(*tokenFile)
+	tokenBytes, err := os.ReadFile(*tokenFile)
 	if err != nil {
 		log.Fatalf("failed to read token file at %s: %v", *tokenFile, err)
 	}

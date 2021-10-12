@@ -17,7 +17,6 @@ package kubernetes
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -238,7 +237,7 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 		if shouldDecryptSealedSecrets || shouldDecryptSecrets {
 			// We have to copy repository into another directory because
 			// decrypting the sealed secrets might change the git repository.
-			dir, err := ioutil.TempDir("", "detector-git-decrypt")
+			dir, err := os.MkdirTemp("", "detector-git-decrypt")
 			if err != nil {
 				return nil, fmt.Errorf("failed to prepare a temporary directory for git repository (%w)", err)
 			}

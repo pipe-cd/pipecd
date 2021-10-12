@@ -15,7 +15,7 @@
 package diff
 
 import (
-	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 
@@ -161,7 +161,7 @@ func TestRenderNodeValueComplex(t *testing.T) {
 	root := reflect.ValueOf(objs[0].Object)
 	got, _ := renderNodeValue(root, "")
 
-	data, err := ioutil.ReadFile("testdata/complex-node.yaml")
+	data, err := os.ReadFile("testdata/complex-node.yaml")
 	require.NoError(t, err)
 	assert.Equal(t, string(data), got)
 }

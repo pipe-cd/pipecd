@@ -17,7 +17,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/google/go-github/v36/github"
@@ -57,7 +56,7 @@ func parseGitHubEvent(ctx context.Context, client *github.Client) (*githubEvent,
 	}
 
 	eventPath := os.Getenv("GITHUB_EVENT_PATH")
-	payload, err := ioutil.ReadFile(eventPath)
+	payload, err := os.ReadFile(eventPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read event payload: %v", err)
 	}

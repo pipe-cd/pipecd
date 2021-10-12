@@ -20,7 +20,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -143,7 +142,7 @@ func (s *Store) Get(ctx context.Context, path string) ([]byte, error) {
 		}
 	}()
 
-	return ioutil.ReadAll(rc)
+	return io.ReadAll(rc)
 }
 
 func (s *Store) Put(ctx context.Context, path string, content []byte) error {

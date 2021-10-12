@@ -16,7 +16,6 @@ package git
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -78,11 +77,11 @@ func TestChangedFiles(t *testing.T) {
 	err = os.MkdirAll(filepath.Join(r.dir, "new-dir"), os.ModePerm)
 	require.NoError(t, err)
 	path := filepath.Join(r.dir, "new-dir", "new-file.txt")
-	err = ioutil.WriteFile(path, []byte("content"), os.ModePerm)
+	err = os.WriteFile(path, []byte("content"), os.ModePerm)
 	require.NoError(t, err)
 
 	readmeFilePath := filepath.Join(r.dir, "README.md")
-	err = ioutil.WriteFile(readmeFilePath, []byte("new content"), os.ModePerm)
+	err = os.WriteFile(readmeFilePath, []byte("new content"), os.ModePerm)
 	require.NoError(t, err)
 
 	err = r.addCommit(ctx, "Added new file")
@@ -127,7 +126,7 @@ func TestAddCommit(t *testing.T) {
 	require.Equal(t, 1, len(commits))
 
 	path := filepath.Join(r.dir, "new-file.txt")
-	err = ioutil.WriteFile(path, []byte("content"), os.ModePerm)
+	err = os.WriteFile(path, []byte("content"), os.ModePerm)
 	require.NoError(t, err)
 
 	err = r.addCommit(ctx, "Added new file")
@@ -176,11 +175,11 @@ func TestCommitChanges(t *testing.T) {
 	require.Equal(t, 2, len(commits))
 	assert.Equal(t, "New commit with changes", commits[0].Message)
 
-	bytes, err := ioutil.ReadFile(filepath.Join(r.dir, "README.md"))
+	bytes, err := os.ReadFile(filepath.Join(r.dir, "README.md"))
 	require.NoError(t, err)
 	assert.Equal(t, string(changes["README.md"]), string(bytes))
 
-	bytes, err = ioutil.ReadFile(filepath.Join(r.dir, "a/b/c/new.txt"))
+	bytes, err = os.ReadFile(filepath.Join(r.dir, "a/b/c/new.txt"))
 	require.NoError(t, err)
 	assert.Equal(t, string(changes["a/b/c/new.txt"]), string(bytes))
 }

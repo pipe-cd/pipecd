@@ -23,7 +23,6 @@ package controller
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"sync"
 	"time"
@@ -202,7 +201,7 @@ func (c *controller) Run(ctx context.Context) error {
 
 	// Make sure the existence of the workspace directory.
 	// Each planner/scheduler will have a working directory inside this workspace.
-	dir, err := ioutil.TempDir("", "workspace")
+	dir, err := os.MkdirTemp("", "workspace")
 	if err != nil {
 		c.logger.Error("failed to create workspace directory", zap.Error(err))
 		return err
@@ -402,7 +401,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	logger.Info("a new planner will be started")
 
 	// Ensure the existence of the working directory for the deployment.
-	workingDir, err := ioutil.TempDir(c.workspaceDir, d.Id+"-planner-*")
+	workingDir, err := os.MkdirTemp(c.workspaceDir, d.Id+"-planner-*")
 	if err != nil {
 		logger.Error("failed to create working directory for planner", zap.Error(err))
 		return nil, err
@@ -566,7 +565,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	logger.Info("will add a new scheduler")
 
 	// Ensure the existence of the working directory for the deployment.
-	workingDir, err := ioutil.TempDir(c.workspaceDir, d.Id+"-scheduler-*")
+	workingDir, err := os.MkdirTemp(c.workspaceDir, d.Id+"-scheduler-*")
 	if err != nil {
 		logger.Error("failed to create working directory for scheduler", zap.Error(err))
 		return nil, err

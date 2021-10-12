@@ -19,10 +19,10 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -67,11 +67,11 @@ func NewStore(endpoint, bucket, accessKeyFile, secretKeyFile string, opts ...Opt
 		useSSL = true
 	}
 
-	accessKey, err := ioutil.ReadFile(accessKeyFile)
+	accessKey, err := os.ReadFile(accessKeyFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read access key file: %w", err)
 	}
-	secretKey, err := ioutil.ReadFile(secretKeyFile)
+	secretKey, err := os.ReadFile(secretKeyFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read secret key file: %w", err)
 	}
@@ -126,7 +126,7 @@ func (s *Store) Get(ctx context.Context, path string) ([]byte, error) {
 		}
 	}()
 
-	return ioutil.ReadAll(rc)
+	return io.ReadAll(rc)
 }
 
 func (s *Store) Put(ctx context.Context, path string, content []byte) error {

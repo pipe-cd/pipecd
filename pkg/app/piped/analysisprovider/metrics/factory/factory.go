@@ -16,7 +16,7 @@ package factory
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"go.uber.org/zap"
@@ -38,11 +38,11 @@ func NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg
 		}
 		cfg := providerCfg.PrometheusConfig
 		if cfg.UsernameFile != "" && cfg.PasswordFile != "" {
-			username, err := ioutil.ReadFile(cfg.UsernameFile)
+			username, err := os.ReadFile(cfg.UsernameFile)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read the username file: %w", err)
 			}
-			password, err := ioutil.ReadFile(cfg.PasswordFile)
+			password, err := os.ReadFile(cfg.PasswordFile)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read the password file: %w", err)
 			}
@@ -53,14 +53,14 @@ func NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg
 		var apiKey, applicationKey string
 		cfg := providerCfg.DatadogConfig
 		if cfg.APIKeyFile != "" {
-			a, err := ioutil.ReadFile(cfg.APIKeyFile)
+			a, err := os.ReadFile(cfg.APIKeyFile)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read the api-key file: %w", err)
 			}
 			apiKey = strings.TrimSpace(string(a))
 		}
 		if cfg.ApplicationKeyFile != "" {
-			a, err := ioutil.ReadFile(cfg.ApplicationKeyFile)
+			a, err := os.ReadFile(cfg.ApplicationKeyFile)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read the application-key file: %w", err)
 			}

@@ -16,7 +16,7 @@ package ecs
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"sigs.k8s.io/yaml"
@@ -25,7 +25,7 @@ import (
 )
 
 func loadTaskDefinition(path string) (types.TaskDefinition, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return types.TaskDefinition{}, err
 	}

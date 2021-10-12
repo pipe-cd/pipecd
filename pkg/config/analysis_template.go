@@ -16,7 +16,6 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -33,7 +32,7 @@ type AnalysisTemplateSpec struct {
 // directory first up. And returns parsed config, ErrNotFound is returned if not found.
 func LoadAnalysisTemplate(repoRoot string) (*AnalysisTemplateSpec, error) {
 	dir := filepath.Join(repoRoot, SharedConfigurationDirName)
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if os.IsNotExist(err) {
 		return nil, ErrNotFound
 	}

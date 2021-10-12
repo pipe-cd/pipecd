@@ -18,7 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"sort"
 	"strings"
 	"time"
@@ -53,7 +53,7 @@ func Register(r registerer) {
 
 // Plan decides which pipeline should be used for the given input.
 func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Output, err error) {
-	ds, err := in.TargetDSP.Get(ctx, ioutil.Discard)
+	ds, err := in.TargetDSP.Get(ctx, io.Discard)
 	if err != nil {
 		err = fmt.Errorf("error while preparing deploy source data (%v)", err)
 		return
@@ -180,7 +180,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	if !ok {
 		// When the manifests were not in the cache we have to load them.
 		var runningDs *deploysource.DeploySource
-		runningDs, err = in.RunningDSP.Get(ctx, ioutil.Discard)
+		runningDs, err = in.RunningDSP.Get(ctx, io.Discard)
 		if err != nil {
 			err = fmt.Errorf("failed to prepare the running deploy source data (%v)", err)
 			return

@@ -17,7 +17,6 @@ package git
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -92,7 +91,7 @@ func NewClient(opts ...Option) (Client, error) {
 		return nil, fmt.Errorf("unable to find the path of git: %v", err)
 	}
 
-	cacheDir, err := ioutil.TempDir("", "gitcache")
+	cacheDir, err := os.MkdirTemp("", "gitcache")
 	if err != nil {
 		return nil, fmt.Errorf("unable to create a temporary directory for git cache: %v", err)
 	}
@@ -169,7 +168,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 			return nil, err
 		}
 	} else {
-		destination, err = ioutil.TempDir("", "git")
+		destination, err = os.MkdirTemp("", "git")
 		if err != nil {
 			return nil, err
 		}

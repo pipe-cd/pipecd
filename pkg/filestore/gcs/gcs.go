@@ -17,7 +17,6 @@ package gcs
 import (
 	"context"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	"cloud.google.com/go/storage"
@@ -105,7 +104,7 @@ func (s *Store) Get(ctx context.Context, path string) ([]byte, error) {
 		}
 	}()
 
-	return ioutil.ReadAll(rc)
+	return io.ReadAll(rc)
 }
 
 func (s *Store) Put(ctx context.Context, path string, content []byte) error {
