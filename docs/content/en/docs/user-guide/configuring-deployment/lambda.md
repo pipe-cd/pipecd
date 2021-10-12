@@ -11,7 +11,7 @@ Currently, Piped supports deploying all types of Lambda deployment packages:
 - container images (called [container image as Lambda function](https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/))
 - `.zip` file archives (which stored in AWS S3)
 
-Besides, Piped also supports deploying your Lambda function __directly from the function source code__ which stored in remote git repository.
+Besides, Piped also supports deploying your Lambda function __directly from the function source code__ which is stored in a remote git repository.
 
 #### Deploy container image as Lambda function
 
