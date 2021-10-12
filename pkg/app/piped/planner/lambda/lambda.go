@@ -129,12 +129,19 @@ func determineVersion(appDir, functionManifestFile string) (string, error) {
 		return "", err
 	}
 
+	// Extract container image tag as application version.
 	if fm.Spec.ImageURI != "" {
 		return provider.FindImageTag(fm)
 	}
 
+	// Extract s3 object version as application version.
 	if fm.Spec.S3ObjectVersion != "" {
 		return fm.Spec.S3ObjectVersion, nil
+	}
+
+	// Extract source code commitish as application version.
+	if fm.Spec.SourceCode.Ref != "" {
+		return fm.Spec.SourceCode.Ref, nil
 	}
 
 	return "", fmt.Errorf("unable to determine version from manifest")
