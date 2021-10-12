@@ -1,7 +1,7 @@
 #!/bin/bash
 
 VERSION="$(hugo version)"
-EXPECTED="Hugo Static Site Generator v0.73.0-428907CC/extended linux/amd64*"
+EXPECTED="hugo v0.88.1-5BC54738+extended linux/amd64*"
 
 if [[ $VERSION == $EXPECTED ]]; then
     echo -e "PASSED: Correct hugo version."
