@@ -8,17 +8,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bep/tech-doc-hugo.git"
+    "url": "git+https://github.com/google/docsy-example.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/bep/tech-doc-hugo/issues"
+    "url": "https://github.com/google/docsy-example/issues"
   },
-  "homepage": "https://github.com/bep/tech-doc-hugo#readme",
-  "dependencies": {},
+  "homepage": "https://github.com/google/docsy-example#readme",
   "devDependencies": {
-    "autoprefixer": "^9.8.5",
-    "postcss-cli": "^5.0.1"
+    "autoprefixer": "^9.8.6",
+    "postcss": "^8.3.7",
+    "postcss-cli": "^8.3.1"
   }
 }

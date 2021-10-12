@@ -140,6 +140,133 @@ If the included Prism configuration is not sufficient for your requirements, and
     * Copy the Javascript file to `static/js/prism.js`
     * Copy the CSS file to `static/css/prism.css`
 
+## \\(\LaTeX\\) support with \\(\KaTeX\\)
+
+[\\(\LaTeX\\)](https://www.latex-project.org/) is a high-quality typesetting system for the production of technical and scientific documentation. Due to its excellent math typesetting capabilities, \\(\TeX\\) became the de facto standard for the communication and publication of scientific documents, especially if these documents contain a lot of mathematical formulae. Designed and mostly written by Donald Knuth, the initial version was released in 1978. Dating back that far, \\(\LaTeX\\) has `pdf` as its primary output target and is not particularly well suited for producing HTML output for the Web. Fortunately, with [\\(\KaTeX\\)](https://katex.org/) there exists a fast and easy-to-use JavaScript library for \\(\TeX\\) math rendering on the web, which was integrated into the Docsy theme.
+
+With \\(\KaTeX\\) support enabled in Docsy, you can include complex mathematical formulae into your web page, either inline or centred on its own line. Since \\(\KaTeX\\) relies on server side rendering, it produces the same output regardless of your browser or your environment. Formulae can be shown either inline or in display mode:
+
+### Inline formulae
+
+The following code sample produces a text line with three inline formulae:
+
+```tex
+When \\(a \ne 0\\), there are two solutions to \\(ax2 + bx + c= 0\\) and they are \\(x = {-b \pm \sqrt{b^2-4ac} \over 2a}.\\)
+```
+
+When \\(a \ne 0\\), there are two solutions to \\(ax2 + bx + c= 0\\) and they are \\(x = {-b \pm \sqrt{b^2-4ac} \over 2a}.\\)
+
+### Formulae in display mode
+
+The following code sample produces an introductory text line followed by a formula numbered as `(1)` residing on her own line:
+
+```tex
+The probability of getting \\(k\\) heads when flipping \\(n\\) coins is:
+$$\tag*{(1)} P(E) = {n \choose k} p^k (1-p)^{n-k}$$
+```
+
+The probability of getting \\(k\\) heads when flipping \\(n\\) coins is:
+$$\tag*{(1)}  P(E) = {n \choose k} p^k (1-p)^{n-k}$$
+
+{{% alert title="Tip" %}}
+This [wiki page](https://en.wikibooks.org/wiki/LaTeX/Mathematics) provides in-depth information about typesetting mathematical formulae using the \\(\LaTeX\\) typesetting system.
+{{% /alert %}}
+
+### Enabling and configuring \\(\LaTeX\\) support
+
+To enable/disable \\(\KaTeX\\) support inside the Docsy theme, update `config.toml`:
+
+```toml
+[params.katex]
+enable = true
+```
+
+Additionally, you can customize various \\(\KaTeX\\) options inside `config.toml`, if needed:
+
+```toml
+[params.katex]
+# enable/disable KaTeX support
+enable = true
+# Element(s) scanned by auto render extension. Default: document.body
+html_dom_element = "document.body"
+
+[params.katex.options]
+# If true (the default), KaTeX will throw a ParseError when it encounters an
+# unsupported command or invalid LaTeX. If false, KaTeX will render unsupported
+# commands as text, and render invalid LaTeX as its source code with hover text
+# giving the error, in the color given by errorColor.
+throwOnError = false
+errorColor = "#CD5C5C"
+
+# This is a list of delimiters to look for math, processed in the same order as
+# the list. Each delimiter has three properties:
+#   left:    A string which starts the math expression (i.e. the left delimiter).
+#   right:   A string which ends the math expression (i.e. the right delimiter).
+#   display: Whether math in the expression should be rendered in display mode.
+[[params.katex.options.delimiters]]
+  left = "$$"
+  right = "$$"
+  display = true
+[[params.katex.options.delimiters]]
+  left = "$"
+  right = "$"
+  display = false
+[[params.katex.options.delimiters]]
+  left = "\\("
+  right = "\\)"
+  display = false
+[[params.katex.options.delimiters]]
+  left = "\\["
+  right = '\\]'
+  display = true
+```
+
+For a complete list of options and their detailed description, have a look at the documentation of \\({\KaTeX}'s\\) [Rendering API options](https://katex.org/docs/autorender.html#api) and of \\({\KaTeX}'s\\) [configuration options](https://katex.org/docs/options.html).
+
+### Display of Chemical Equations and Physical Units
+
+[mhchem](https://www.ctan.org/pkg/mhchem) is a \\(\LaTeX\\) package for typesetting chemical molecular formulae and equations. Fortunately, \\(\KaTeX\\) provides the `mhchem` [extension](https://github.com/KaTeX/KaTeX/tree/master/contrib/mhchem) that makes the `mhchem` package accessible when authoring content for the web. Since this extension was integrated into the Docsy theme, you can write beautiful chemical equations easily once `mhchem` support is enabled inside your `config.toml`:
+
+```toml
+[params.katex]
+enable = true
+
+[params.katex.mhchem]
+enable = true
+```
+
+With `mhchem` extension enabled, you can easily include chemical equations into your page. The equations can be shown either inline or can reside on its own line. The following code sample produces a text line including a chemical equation:
+
+```mhchem
+*Precipitation of barium sulfate:* \\(\ce{SO4^2- + Ba^2+ -> BaSO4 v}\\)
+```
+
+*Precipitation of barium sulfate:* \\(\ce{SO4^2- + Ba^2+ -> BaSO4 v}\\)
+
+More complex equations, like the one shown in the code sample below, should be displayed on their own line:
+
+```mhchem
+$$\tag*{(2)} \ce{Zn^2+  <=>[+ 2OH-][+ 2H+]  $\underset{\text{amphoteric hydroxide}}{\ce{Zn(OH)2 v}}$  <=>[+ 2OH-][+ 2H+]  $\underset{\text{tetrahydroxozincate}}{\ce{[Zn(OH)4]^2-}}$}$$
+```
+
+$$\tag*{(2)} \ce{Zn^2+  <=>[+ 2OH-][+ 2H+]  $\underset{\text{amphoteric hydroxide}}{\ce{Zn(OH)2 v}}$  <=>[+ 2OH-][+ 2H+]  $\underset{\text{tetrahydroxozincate}}{\ce{[Zn(OH)4]^2-}}$}$$
+
+{{% alert title="Tip" %}}
+The [manual](https://mhchem.github.io/MathJax-mhchem/) for mchem’s input syntax provides in-depth information about typesetting chemical formulae and physical units using the `mhchem` tool.
+{{% /alert %}}
+
+Use of `mhchem` is not limited to the authoring of chemical equations, using the included `\pu` command, pretty looking physical units can be written with ease, too. The following code sample produces two text lines with four numbers plus their corresponding physical units:
+
+```mhchem
+* Scientific number notation: \\(\pu{1.2e3 kJ}\\) or \\(\pu{1.2E3 kJ}\\) \\
+* Divisions: \\(\pu{123 kJ/mol}\\) or \\(\pu{123 kJ//mol}\\)
+```
+
+* Scientific number notation: \\(\pu{1.2e3 kJ}\\) or \\(\pu{1.2E3 kJ}\\)
+* Divisions: \\(\pu{123 kJ/mol}\\) or \\(\pu{123 kJ//mol}\\)
+
+For a complete list of options when authoring physical units, have a look at the [section](https://mhchem.github.io/MathJax-mhchem/#pu) on physical units in the `mhchem` documentation.
+
 ## Diagrams with Mermaid
 
 [Mermaid](https://mermaid-js.github.io) is a Javascript library for rendering simple text definitions to useful diagrams in the browser.  It can generate a variety of different diagram types, including flowcharts, sequence diagrams, class diagrams, state diagrams, ER diagrams, user journey diagrams, Gantt charts and pie charts.
@@ -174,6 +301,14 @@ To enable/disable Mermaid, update `config.toml`:
 ```toml
 [params.mermaid]
 enable = true
+```
+
+You also need to disable the `guessSyntax` from markup highlighting in `config.toml`  for Mermaid to work:
+
+```toml
+[markup]
+  [markup.highlight]
+      guessSyntax = "false"
 ```
 
 You can also update settings for Mermaid, such as themes, padding, etc:
@@ -258,20 +393,91 @@ svg_image_url = "https://www.plantuml.com/plantuml/svg/"
 
 ```
 
+## MindMap support with MarkMap
+
+[MarkMap](https://markmap.js.org/) is a Javascript library for rendering simple text definitions to MindMap in the browser.
+
+For example, the following defines a simple MindMap:
+
+````
+```markmap
+# markmap
+
+## Links
+
+- <https://markmap.js.org/>
+- [GitHub](https://github.com/gera2ld/markmap)
+
+## Related
+
+- [coc-markmap](https://github.com/gera2ld/coc-markmap)
+- [gatsby-remark-markmap](https://github.com/gera2ld/gatsby-remark-markmap)
+
+## Features
+
+- links
+- **inline** ~~text~~ *styles*
+- multiline
+  text
+- `inline code`
+-
+    ```js
+    console.log('code block');
+    ```
+- Katex - $x = {-b \pm \sqrt{b^2-4ac} \over 2a}$
+```
+````
+
+Automatically renders to:
+
+```markmap
+# markmap
+
+## Links
+
+- <https://markmap.js.org/>
+- [GitHub](https://github.com/gera2ld/markmap)
+
+## Related
+
+- [coc-markmap](https://github.com/gera2ld/coc-markmap)
+- [gatsby-remark-markmap](https://github.com/gera2ld/gatsby-remark-markmap)
+
+## Features
+
+- links
+- **inline** ~~text~~ *styles*
+- multiline
+  text
+- `inline code`
+-
+    ```js
+    console.log('code block');
+    ```
+- Katex - $x = {-b \pm \sqrt{b^2-4ac} \over 2a}$
+```
+
+To enable/disable MarkMap, update `config.toml`:
+
+```toml
+[params.markmap]
+enable = true
+```
+
 ## Customizing templates
 
 ### Add code to head or before body end
 
-If you need to add some code (CSS import or similar) to the `head` section on every page, add a partial to your project:
+If you need to add some code (CSS import, cookie consent, or similar) to the `head` section on every page, add the `head-end.html` partial to your project:
 
 ```
 layouts/partials/hooks/head-end.html
 ```
 
-And add the code you need in that file. Your partial code is automatically included at the end of the theme partial [head.html](https://github.com/google/docsy/blob/master/layouts/partials/head.html) (the [theme version](https://github.com/google/docsy/blob/master/layouts/partials/head.html) of `head-end.html` is empty):
+And add the code you need in that file. Your partial code is automatically included just before the end of the theme partial [`head.html`](https://github.com/google/docsy/blob/master/layouts/partials/head.html). The theme version of [`head-end.html`](https://github.com/google/docsy/blob/master/layouts/partials/hooks/head-end.html) is empty.
 
 
-Similar, if you want to add some code right before the `body` end, create your own version of the following file:
+Similarly, if you want to add some code right before the `body` end, create your own version of the following file:
 
 ```
 layouts/partials/hooks/body-end.html

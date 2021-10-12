@@ -1,6 +1,12 @@
-
-public/
-resources/
 node_modules/
-tech-doc-hugo
 
+# vim temporary files
+*~
+*.sw?
+
+# system files
+.DS_Store
+
+# IDE files
+.idea
+.vscode

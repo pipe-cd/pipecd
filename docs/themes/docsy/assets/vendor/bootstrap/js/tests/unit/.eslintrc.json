@@ -1,4 +1,11 @@
 {
+  "extends": [
+    "../../../.eslintrc.json"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 5,
+    "sourceType": "script"
+  },
   "env": {
     "es6": false,
     "jquery": true,
@@ -14,23 +21,7 @@
     "Simulator": false,
     "Toast": false
   },
-  "parserOptions": {
-    "ecmaVersion": 5,
-    "sourceType": "script"
-  },
-  "extends": "../../../.eslintrc.json",
   "rules": {
-    "no-console": "error",
-    // Best Practices
-    "consistent-return": "off",
-    "no-magic-numbers": "off",
-    "vars-on-top": "off",
-
-    // Stylistic Issues
-    "func-style": "off",
-    "spaced-comment": "off",
-
-    // ECMAScript 6
     "no-var": "off",
     "object-shorthand": "off",
     "prefer-arrow-callback": "off",

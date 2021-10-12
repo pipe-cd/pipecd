@@ -18,15 +18,15 @@
     },
     {
       "path": "./dist/css/bootstrap.css",
-      "maxSize": "25.25 kB"
+      "maxSize": "25.5 kB"
     },
     {
       "path": "./dist/css/bootstrap.min.css",
-      "maxSize": "23.25 kB"
+      "maxSize": "23.5 kB"
     },
     {
       "path": "./dist/js/bootstrap.bundle.js",
-      "maxSize": "47.50 kB"
+      "maxSize": "48 kB"
     },
     {
       "path": "./dist/js/bootstrap.bundle.min.js",
@@ -34,7 +34,7 @@
     },
     {
       "path": "./dist/js/bootstrap.js",
-      "maxSize": "25 kB"
+      "maxSize": "25.5 kB"
     },
     {
       "path": "./dist/js/bootstrap.min.js",
@@ -43,7 +43,7 @@
   ],
   "ci": {
     "trackBranches": [
-      "master",
+      "main",
       "v4-dev"
     ]
   }

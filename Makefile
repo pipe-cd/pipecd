@@ -114,3 +114,8 @@ kind-down:
 .PHONY: prepare-release
 prepare-release:
 	./hack/prepare-release.sh $(version)
+
+.PHONY: update-docsy
+update-docsy:
+	rm -rf docs/themes/docsy
+	git clone --recurse-submodules --depth 1 https://github.com/google/docsy.git docs/themes/docsy
