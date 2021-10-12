@@ -24,9 +24,12 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = ["lambda_test.go"],
+    data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
         "//pkg/app/piped/cloudprovider/lambda:go_default_library",
+        "//pkg/git:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
+        "@com_github_stretchr_testify//require:go_default_library",
     ],
 )

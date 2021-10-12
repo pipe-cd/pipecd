@@ -482,6 +482,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		PipedConfig:           s.pipedConfig,
 		TargetDSP:             s.targetDSP,
 		RunningDSP:            s.runningDSP,
+		GitClient:             s.gitClient,
 		CommandLister:         cmdLister,
 		LogPersister:          lp,
 		MetadataStore:         s.metadataStore,
