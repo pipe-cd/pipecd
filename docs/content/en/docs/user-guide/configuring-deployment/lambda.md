@@ -82,10 +82,10 @@ spec:
   # source configuration use to determine the source code of your Lambda function.
   source:
     # git remote address where the source code is placing.
-    git: git@github.com:username/sample-lambda-function-code.git
+    git: git@github.com:username/lambda-function-code.git
     # the commit SHA or tag for remote git. Use branch name means you will always use
-    # the latest code of that branch as Lambda function code which is not recommended.
-    ref: master
+    # the latest code of that branch as Lambda function code which is NOT recommended.
+    ref: dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603
     # relative path from the repository root directory to the function code directory.
     path: hello-world
   handler: app.lambdaHandler
