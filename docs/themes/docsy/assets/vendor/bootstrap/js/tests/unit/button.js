@@ -180,6 +180,32 @@ $(function () {
     $group.find('label').trigger('click')
   })
 
+  QUnit.test('should trigger label change event only once', function (assert) {
+    assert.expect(1)
+    var done = assert.async()
+    var countChangeEvent = 0
+
+    var groupHTML = '<div class="btn-group" data-toggle="buttons">' +
+      '<label class="btn btn-primary">' +
+      '<input type="checkbox"><span class="check">✓</span> <i class="far fa-clipboard"></i> <span class="d-none d-lg-inline">checkbox</span>' +
+      '</label>' +
+      '</div>'
+    var $group = $(groupHTML).appendTo('#qunit-fixture')
+
+    var $btn = $group.children().eq(0)
+
+    $group.find('label').on('change', function () {
+      countChangeEvent++
+    })
+
+    setTimeout(function () {
+      assert.ok(countChangeEvent === 1, 'onchange event fired only once')
+      done()
+    }, 5)
+
+    $btn[0].click()
+  })
+
   QUnit.test('should check for closest matching toggle', function (assert) {
     assert.expect(18)
     var groupHTML = '<div class="btn-group" data-toggle="buttons">' +
@@ -220,6 +246,46 @@ $(function () {
     assert.ok(!$btn2.hasClass('active'), 'btn2 does not have active class')
     assert.ok(!$btn2.find('input').prop('checked'), 'btn2 is not checked')
     assert.ok(!$btn2.find('input')[0].checked, 'btn2 is not checked')
+  })
+
+  QUnit.test('should fire click event on input', function (assert) {
+    assert.expect(1)
+    var done = assert.async()
+    var groupHTML = '<div class="btn-group" data-toggle="buttons">' +
+      '<label class="btn btn-primary active">' +
+      '<input type="checkbox" id="option1"> Option 1' +
+      '</label>' +
+      '</div>'
+    var $group = $(groupHTML).appendTo('#qunit-fixture')
+
+    var $btn = $group.children().eq(0)
+    $group.find('input').on('click', function (e) {
+      e.preventDefault()
+      assert.ok(true, 'click event fired')
+      done()
+    })
+
+    $btn[0].click()
+  })
+
+  QUnit.test('should fire click event on label', function (assert) {
+    assert.expect(1)
+    var done = assert.async()
+    var groupHTML = '<div class="btn-group" data-toggle="buttons">' +
+      '<label class="btn btn-primary active">' +
+      '<input type="checkbox" id="option1"> Option 1' +
+      '</label>' +
+      '</div>'
+    var $group = $(groupHTML).appendTo('#qunit-fixture')
+
+    var $btn = $group.children().eq(0)
+    $group.find('label').on('click', function (e) {
+      e.preventDefault()
+      assert.ok(true, 'click event fired')
+      done()
+    })
+
+    $btn[0].click()
   })
 
   QUnit.test('should not add aria-pressed on labels for radio/checkbox inputs in a data-toggle="buttons" group', function (assert) {

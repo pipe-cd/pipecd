@@ -32,8 +32,8 @@ $(function () {
     $el.bootstrapPopover()
     try {
       $el.bootstrapPopover('noMethod')
-    } catch (err) {
-      assert.strictEqual(err.message, 'No method named "noMethod"')
+    } catch (error) {
+      assert.strictEqual(error.message, 'No method named "noMethod"')
     }
   })
 
@@ -56,6 +56,19 @@ $(function () {
       })
       .on('hidden.bs.popover', function () {
         assert.strictEqual($('.popover').length, 0, 'popover removed')
+        done()
+      })
+      .bootstrapPopover('show')
+  })
+
+  QUnit.test('should render popover element with additional classes', function (assert) {
+    assert.expect(2)
+    var done = assert.async()
+    $('<a href="#" title="mdo" data-content="https://twitter.com/mdo" data-custom-class="a b">@mdo</a>')
+      .appendTo('#qunit-fixture')
+      .on('shown.bs.popover', function () {
+        assert.strictEqual($('.popover').hasClass('popover fade bs-popover-right show'), true, 'has default classes')
+        assert.strictEqual($('.popover').hasClass('a b'), true, 'has custom classes')
         done()
       })
       .bootstrapPopover('show')
@@ -369,8 +382,8 @@ $(function () {
 
     try {
       $('<div data-toggle="popover" data-title="some title" data-content="@Johann-S" style="display: none"/>').bootstrapPopover('show')
-    } catch (err) {
-      assert.strictEqual(err.message, 'Please use show on visible elements')
+    } catch (error) {
+      assert.strictEqual(error.message, 'Please use show on visible elements')
       done()
     }
   })

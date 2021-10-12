@@ -5,9 +5,9 @@
  * Remember to use the same vendor files as the CDN ones,
  * otherwise the hashes won't match!
  *
- * Copyright 2017-2020 The Bootstrap Authors
- * Copyright 2017-2020 Twitter, Inc.
- * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * Copyright 2017-2021 The Bootstrap Authors
+ * Copyright 2017-2021 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
 
 'use strict'
@@ -21,11 +21,11 @@ const pkg = require('../package.json')
 
 sh.config.fatal = true
 
-const configFile = path.join(__dirname, '../_config.yml')
+const configFile = path.join(__dirname, '../config.yml')
 
 // Array of objects which holds the files to generate SRI hashes for.
 // `file` is the path from the root folder
-// `configPropertyName` is the _config.yml variable's name of the file
+// `configPropertyName` is the config.yml variable's name of the file
 const files = [
   {
     file: 'dist/css/bootstrap.min.css',
@@ -40,7 +40,7 @@ const files = [
     configPropertyName: 'js_bundle_hash'
   },
   {
-    file: `site/docs/${pkg.version_short}/assets/js/vendor/jquery.slim.min.js`,
+    file: `site/static/docs/${pkg.config.version_short}/assets/js/vendor/jquery.slim.min.js`,
     configPropertyName: 'jquery_hash'
   },
   {
@@ -49,7 +49,7 @@ const files = [
   }
 ]
 
-files.forEach((file) => {
+files.forEach(file => {
   fs.readFile(file.file, 'utf8', (err, data) => {
     if (err) {
       throw err
@@ -61,6 +61,6 @@ files.forEach((file) => {
 
     console.log(`${file.configPropertyName}: ${integrity}`)
 
-    sh.sed('-i', new RegExp(`(\\s${file.configPropertyName}:\\s+"|')(\\S+)("|')`), `$1${integrity}$3`, configFile)
+    sh.sed('-i', new RegExp(`^(\\s+${file.configPropertyName}:\\s+["'])\\S*(["'])`), `$1${integrity}$2`, configFile)
   })
 })
