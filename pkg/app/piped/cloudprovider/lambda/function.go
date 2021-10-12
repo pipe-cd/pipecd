@@ -110,9 +110,6 @@ func (sc SourceCode) validate() error {
 	if sc.Ref == "" {
 		return fmt.Errorf("source ref is missing")
 	}
-	if sc.Path == "" {
-		return fmt.Errorf("path is missing")
-	}
 	return nil
 }
 
