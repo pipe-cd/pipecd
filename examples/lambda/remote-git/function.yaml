@@ -1,0 +1,17 @@
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaFunction
+spec:
+  name: SimpleRemoteGitFunction
+  role: arn:aws:iam::76xxxxxxx:role/lambda-role
+  source:
+    git: git@github.com:username/lambda-function-code.git
+    ref: dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603
+    path: hello-world
+  handler: app.lambdaHandler
+  runtime: nodejs14.x
+  memory: 512
+  timeout: 30
+  environments:
+    FOO: bar
+  tags:
+    app: simple-git

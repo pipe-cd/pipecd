@@ -58,6 +58,7 @@ https://github.com/pipe-cd/examples
 | [canary](https://github.com/pipe-cd/examples/tree/master/cloudrun/canary) | Deployment pipeline with canary strategy. |
 | [analysis](https://github.com/pipe-cd/examples/tree/master/cloudrun/analysis) | Deployment pipeline that contains an analysis stage. |
 | [secret-management](https://github.com/pipe-cd/examples/tree/master/cloudrun/secret-management) | Demonstrate how to manage sensitive data by using [Secret Management](https://pipecd.dev/docs/user-guide/secret-management/) feature. |
+| [wait-approval](https://github.com/pipe-cd/examples/tree/master/cloudrun/wait-approval) | Deployment pipeline that contains a manual approval stage. |
 
 ### Lambda Applications
 
@@ -66,8 +67,10 @@ https://github.com/pipe-cd/examples
 | [simple](https://github.com/pipe-cd/examples/tree/master/lambda/simple) | Quick sync by rolling out the new version and switching all traffic to it. |
 | [canary](https://github.com/pipe-cd/examples/tree/master/lambda/canary) | Deployment pipeline with canary strategy. |
 | [analysis](https://github.com/pipe-cd/examples/tree/master/lambda/analysis) | Deployment pipeline that contains an analysis stage. |
-| [remote-git](https://github.com/pipe-cd/examples/tree/master/lambda/remote-git) | Deploy the lambda code sourced from another Git repository. |
 | [secret-management](https://github.com/pipe-cd/examples/tree/master/lambda/secret-management) | Demonstrate how to manage sensitive data by using [Secret Management](https://pipecd.dev/docs/user-guide/secret-management/) feature. |
+| [wait-approval](https://github.com/pipe-cd/examples/tree/master/lambda/wait-approval) | Deployment pipeline that contains a manual approval stage. |
+| [remote-git](https://github.com/pipe-cd/examples/tree/master/lambda/remote-git) | Deploy the lambda code sourced from another Git repository. |
+| [zip-packing-s3](https://github.com/pipe-cd/examples/tree/master/lambda/zip-packing-s3) | Deployment pipeline of kind Lambda which uses s3 stored zip file as function code. |
 
 ### ECS Applications
 
@@ -77,3 +80,4 @@ https://github.com/pipe-cd/examples
 | [canary](https://github.com/pipe-cd/examples/tree/master/ecs/canary) | Deployment pipeline with canary strategy. |
 | [bluegreen](https://github.com/pipe-cd/examples/tree/master/ecs/bluegreen) | Deployment pipeline with blue-green strategy. |
 | [secret-management](https://github.com/pipe-cd/examples/tree/master/ecs/secret-management) | Demonstrate how to manage sensitive data by using [Secret Management](https://pipecd.dev/docs/user-guide/secret-management/) feature. |
+| [wait-approval](https://github.com/pipe-cd/examples/tree/master/ecs/wait-approval) | Deployment pipeline that contains a manual approval stage. |
