@@ -201,7 +201,7 @@ pipectl event register \
 
 ### Encrypting the data you want to use when deploying
 
-Encrypt the plaintext entered in either stdin or the `--input-file` flag.
+Encrypt the plaintext entered either in stdin or via the `--input-file` flag.
 
 You can encrypt it the same way you do [from the web](/docs/user-guide/secret-management/#encrypting-secret-data).
 
