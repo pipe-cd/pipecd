@@ -33,6 +33,6 @@ For more information, you might want to read the [installation notes of `bazelis
 - `make buildifier`: formats bazel BUILD and .bzl files with a standard convention.
 - `make clean`: cleans all bazel cache.
 - `make expose-generated-go`: exposes generated Go files (`.pb.go`, `.mock.go`...) to editors and IDEs.
-- `make site`: runs PipeCD site (https://pipecd.dev) locally (requires [hugo](https://github.com/gohugoio/hugo) to be installed).
+- `make site`: runs PipeCD site (https://pipecd.dev) locally (requires [hugo](https://github.com/gohugoio/hugo) with `_extended` version `0.88.1` or later to be installed).
 
 **NOTE**: The first time of running a bazel command will take some minutes because bazel needs to download all required dependencies. From the second time it will be very fast.
