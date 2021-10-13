@@ -23,9 +23,10 @@ This way requires installing cluster-level resources. Piped installed with this 
 
   ```
   helm repo add pipecd https://charts.pipecd.dev
+  helm repo update
   ```
 
-- Preparing a piped configuration file as the following:
+- Preparing a piped configuration file as the following
 
   ``` yaml
   apiVersion: pipecd.dev/v1beta1
@@ -48,24 +49,58 @@ This way requires installing cluster-level resources. Piped installed with this 
 
 - Installing by using `Helm 3`
 
-  ``` console
-  helm repo update
+  {{< tabpane >}}
+  {{< tab lang="bash" header="Piped" >}}
+# This command just installs a Piped with the specified version.
+# Whenever you want to upgrade that Piped to a new version or update its config data
+# you have to restart it by re-running this command.
 
-  helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
-    --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
-    --set-file secret.pipedKey.data={PATH_TO_PIPED_KEY_FILE} \
-    --set-file secret.sshKey.data={PATH_TO_PRIVATE_SSH_KEY_FILE}
-  ```
+helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+  --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
+  --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
+  --set-file secret.data.ssh-key={PATH_TO_PRIVATE_SSH_KEY_FILE}
+  {{< /tab >}}
+  {{< tab lang="bash" header="Piped with Remote-upgrade" >}}
+# Enable remote-upgrade feature of Piped. This feature is currently under Alpha status.
+# https://pipecd.dev/docs/feature-status/#pipeds-core
+# This allows upgrading Piped to a new version from the web console.
+# But we still need to restart Piped when we want to update its config data.
 
-Note: Be sure to set `--set args.insecure=true` if your control-plane has not TLS-enabled yet.
+helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+  --set launcher.enabled=true \
+  --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
+  --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
+  --set-file secret.data.ssh-key={PATH_TO_PRIVATE_SSH_KEY_FILE}
+  {{< /tab >}}
+  {{< tab lang="bash" header="Piped with Remote-upgrade and Remote-config" >}}
+# Enable both remote-upgrade and remote-config features of Piped.
+# These features are currently under Alpha status.
+# https://pipecd.dev/docs/feature-status/#pipeds-core
+# Beside of the ability to upgrade Piped to a new version from the web console,
+# remote-config allows loading the Piped config stored in a remote location such as a Git repository.
+# Whenever the config data is changed, it loads the new config and restarts Piped to use that new config.
 
-See [values.yaml](https://github.com/pipe-cd/manifests/blob/master/manifests/piped/values.yaml) for the full values.
+helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+  --set launcher.enabled=true \
+  --set launcher.configFromGitRepo.enabled=true \
+  --set launcher.configFromGitRepo.repoUrl=git@github.com:{GIT_ORG}/{GIT_REPO}.git \
+  --set launcher.configFromGitRepo.branch={GIT_BRANCH} \
+  --set launcher.configFromGitRepo.configFile={RELATIVE_PATH_TO_PIPED_CONFIG_FILE_IN_GIT_REPO} \
+  --set launcher.configFromGitRepo.sshKeyFile=/etc/piped-secret/ssh-key \
+  --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
+  --set-file secret.data.ssh-key={PATH_TO_PRIVATE_SSH_KEY_FILE}
+  {{< /tab >}}
+  {{< /tabpane >}}
+
+  Note: Be sure to set `--set args.insecure=true` if your control-plane has not TLS-enabled yet.
+
+  See [values.yaml](https://github.com/pipe-cd/manifests/blob/master/manifests/piped/values.yaml) for the full values.
 
 ## In the namespaced mode
 The previous way requires installing cluster-level resources. If you want to restrict Piped's permission within the namespace where Piped runs on, this way is for you.
 Most parts are identical to the previous way, but some are slightly different.
 
-- Adding a new cloud provider like below to the previous piped configuration file:
+- Adding a new cloud provider like below to the previous piped configuration file
 
   ``` yaml
   apiVersion: pipecd.dev/v1beta1
@@ -93,36 +128,129 @@ Most parts are identical to the previous way, but some are slightly different.
             namespace: {NAMESPACE}
   ```
 
-- Then installing it with the following options:
+- Installing by using `Helm 3`
 
-  ``` console
-  helm repo update
+  {{< tabpane >}}
+  {{< tab lang="bash" header="Piped" >}}
+# This command just installs a Piped with the specified version.
+# Whenever you want to upgrade that Piped to a new version or update its config data
+# you have to restart it by re-running this command.
 
-  helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
-    --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
-    --set-file secret.pipedKey.data={PATH_TO_PIPED_KEY_FILE} \
-    --set-file secret.sshKey.data={PATH_TO_PRIVATE_SSH_KEY_FILE} \
-    --set args.enableDefaultKubernetesCloudProvider=false \
-    --set rbac.scope=namespace
-  ```
+helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+  --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
+  --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
+  --set-file secret.data.ssh-key={PATH_TO_PRIVATE_SSH_KEY_FILE} \
+  --set args.enableDefaultKubernetesCloudProvider=false \
+  --set rbac.scope=namespace
+  {{< /tab >}}
+  {{< tab lang="bash" header="Piped with Remote-upgrade" >}}
+# Enable remote-upgrade feature of Piped. This feature is currently under Alpha status.
+# https://pipecd.dev/docs/feature-status/#pipeds-core
+# This allows upgrading Piped to a new version from the web console.
+# But we still need to restart Piped when we want to update its config data.
+
+helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+  --set launcher.enabled=true \
+  --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
+  --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
+  --set-file secret.data.ssh-key={PATH_TO_PRIVATE_SSH_KEY_FILE} \
+  --set args.enableDefaultKubernetesCloudProvider=false \
+  --set rbac.scope=namespace
+  {{< /tab >}}
+  {{< tab lang="bash" header="Piped with Remote-upgrade and Remote-config" >}}
+# Enable both remote-upgrade and remote-config features of Piped.
+# These features are currently under Alpha status.
+# https://pipecd.dev/docs/feature-status/#pipeds-core
+# Beside of the ability to upgrade Piped to a new version from the web console,
+# remote-config allows loading the Piped config stored in a remote location such as a Git repository.
+# Whenever the config data is changed, it loads the new config and restarts Piped to use that new config.
+
+helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+  --set launcher.enabled=true \
+  --set launcher.configFromGitRepo.enabled=true \
+  --set launcher.configFromGitRepo.repoUrl=git@github.com:{GIT_ORG}/{GIT_REPO}.git \
+  --set launcher.configFromGitRepo.branch={GIT_BRANCH} \
+  --set launcher.configFromGitRepo.configFile={RELATIVE_PATH_TO_PIPED_CONFIG_FILE_IN_GIT_REPO} \
+  --set launcher.configFromGitRepo.sshKeyFile=/etc/piped-secret/ssh-key \
+  --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
+  --set-file secret.data.ssh-key={PATH_TO_PRIVATE_SSH_KEY_FILE} \
+  --set args.enableDefaultKubernetesCloudProvider=false \
+  --set rbac.scope=namespace
+  {{< /tab >}}
+  {{< /tabpane >}}
 
 #### In case on OpenShift less than 4.2
-OpenShift uses an arbitrarily assigned user ID when it starts a container.
-Starting from OpenShift 4.2, it also inserts that user into /etc/passwd for using by the application inside the container,
-but before that version, the assigned user is missing in that file. That blocks workloads of gcr.io/pipecd/piped image.
-Therefore if you are running on OpenShift with a version before 4.2, please use gcr.io/pipecd/piped-okd image with the following command:
 
-``` console
-  helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
-    --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
-    --set-file secret.pipedKey.data={PATH_TO_PIPED_KEY_FILE} \
-    --set-file secret.sshKey.data={PATH_TO_PRIVATE_SSH_KEY_FILE} \
-    --set args.enableDefaultKubernetesCloudProvider=false \
-    --set rbac.scope=namespace
-    --set args.addLoginUserToPasswd=true \
-    --set securityContext.runAsNonRoot=true \
-    --set securityContext.runAsUser={UID} \
-    --set securityContext.fsGroup={FS_GROUP} \
-    --set securityContext.runAsGroup=0 \
-    --set image.repository="gcr.io/pipecd/piped-okd"
-```
+OpenShift uses an arbitrarily assigned user ID when it starts a container.
+Starting from OpenShift 4.2, it also inserts that user into `/etc/passwd` for using by the application inside the container,
+but before that version, the assigned user is missing in that file. That blocks workloads of `gcr.io/pipecd/piped` image.
+Therefore if you are running on OpenShift with a version before 4.2, please use `gcr.io/pipecd/piped-okd` image with the following command:
+
+- Installing by using `Helm 3`
+
+  {{< tabpane >}}
+  {{< tab lang="bash" header="Piped" >}}
+# This command just installs a Piped with the specified version.
+# Whenever you want to upgrade that Piped to a new version or update its config data
+# you have to restart it by re-running this command.
+
+helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+  --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
+  --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
+  --set-file secret.data.ssh-key={PATH_TO_PRIVATE_SSH_KEY_FILE} \
+  --set args.enableDefaultKubernetesCloudProvider=false \
+  --set rbac.scope=namespace
+  --set args.addLoginUserToPasswd=true \
+  --set securityContext.runAsNonRoot=true \
+  --set securityContext.runAsUser={UID} \
+  --set securityContext.fsGroup={FS_GROUP} \
+  --set securityContext.runAsGroup=0 \
+  --set image.repository="gcr.io/pipecd/piped-okd"
+  {{< /tab >}}
+  {{< tab lang="bash" header="Piped with Remote-upgrade" >}}
+# Enable remote-upgrade feature of Piped. This feature is currently under Alpha status.
+# https://pipecd.dev/docs/feature-status/#pipeds-core
+# This allows upgrading Piped to a new version from the web console.
+# But we still need to restart Piped when we want to update its config data.
+
+helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+  --set launcher.enabled=true \
+  --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
+  --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
+  --set-file secret.data.ssh-key={PATH_TO_PRIVATE_SSH_KEY_FILE} \
+  --set args.enableDefaultKubernetesCloudProvider=false \
+  --set rbac.scope=namespace
+  --set args.addLoginUserToPasswd=true \
+  --set securityContext.runAsNonRoot=true \
+  --set securityContext.runAsUser={UID} \
+  --set securityContext.fsGroup={FS_GROUP} \
+  --set securityContext.runAsGroup=0 \
+  --set image.repository="gcr.io/pipecd/piped-okd"
+  {{< /tab >}}
+  {{< tab lang="bash" header="Piped with Remote-upgrade and Remote-config" >}}
+# Enable both remote-upgrade and remote-config features of Piped.
+# These features are currently under Alpha status.
+# https://pipecd.dev/docs/feature-status/#pipeds-core
+# Beside of the ability to upgrade Piped to a new version from the web console,
+# remote-config allows loading the Piped config stored in a remote location such as a Git repository.
+# Whenever the config data is changed, it loads the new config and restarts Piped to use that new config.
+
+helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+  --set launcher.enabled=true \
+  --set launcher.configFromGitRepo.enabled=true \
+  --set launcher.configFromGitRepo.repoUrl=git@github.com:{GIT_ORG}/{GIT_REPO}.git \
+  --set launcher.configFromGitRepo.branch={GIT_BRANCH} \
+  --set launcher.configFromGitRepo.configFile={RELATIVE_PATH_TO_PIPED_CONFIG_FILE_IN_GIT_REPO} \
+  --set launcher.configFromGitRepo.sshKeyFile=/etc/piped-secret/ssh-key \
+  --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
+  --set-file secret.data.ssh-key={PATH_TO_PRIVATE_SSH_KEY_FILE} \
+  --set args.enableDefaultKubernetesCloudProvider=false \
+  --set rbac.scope=namespace
+  --set args.addLoginUserToPasswd=true \
+  --set securityContext.runAsNonRoot=true \
+  --set securityContext.runAsUser={UID} \
+  --set securityContext.fsGroup={FS_GROUP} \
+  --set securityContext.runAsGroup=0 \
+  --set image.repository="gcr.io/pipecd/piped-okd"
+  {{< /tab >}}
+  {{< /tabpane >}}
