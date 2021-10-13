@@ -3,32 +3,34 @@ kind: AnalysisTemplate
 spec:
   metrics:
     http_error_rate:
-      interval: 1m
-      provider: prometheus-dev
+      strategy: THRESHOLD
+      interval: 5m
+      provider: my-prometheus
       expected:
         max: 0
       query: |
-        sum by (job) (rate(http_requests_total{status=~"5.*", job="{{ .App.Name }}"}[1m]))
+        sum by (job) (rate(http_requests_total{status=~"5.*", job="{{ .App.Name }}"}[5m]))
         /
-        sum by (job) (rate(http_requests_total{job="{{ .App.Name }}"}[1m]))
+        sum by (job) (rate(http_requests_total{job="{{ .App.Name }}"}[5m]))
 
     http_request_duration_99th_quantile:
-      interval: 1m
-      provider: prometheus-dev
+      strategy: CANARY_BASELINE
+      interval: 5m
+      provider: my-prometheus
       expected:
         max: 0.5
       query: |
         histogram_quantile(
           0.99,
-          sum without (instance, job) (rate(http_request_duration_seconds_bucket{job="{{ .App.Name }}"}[1m]))
+          sum without (instance, job) (rate(http_request_duration_seconds_bucket{job="{{ .AppCustomArgs.job }}"}[5m]))
         )
 
     container_cpu_usage_seconds_total:
-      interval: 1m
-      provider: prometheus-dev
+      interval: 5m
+      strategy: PREVIOUS
+      provider: my-prometheus
       failureLimit: 2
-      expected:
-        max: 20
+      deviation: HIGH
       query: |
         sum by (job) (
           rate(container_cpu_usage_seconds_total{
