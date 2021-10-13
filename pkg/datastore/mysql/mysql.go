@@ -18,7 +18,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
@@ -298,11 +298,11 @@ func BuildDataSourceName(url, database, usernameFile, passwordFile string) (stri
 		return fmt.Sprintf("%s/%s", url, database), nil
 	}
 
-	username, err := ioutil.ReadFile(usernameFile)
+	username, err := os.ReadFile(usernameFile)
 	if err != nil {
 		return "", fmt.Errorf("failed to read username file: %w", err)
 	}
-	password, err := ioutil.ReadFile(passwordFile)
+	password, err := os.ReadFile(passwordFile)
 	if err != nil {
 		return "", fmt.Errorf("failed to read password file: %w", err)
 	}

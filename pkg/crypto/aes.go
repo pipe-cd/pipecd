@@ -20,7 +20,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
+	"os"
 )
 
 type AESEncryptDecrypter struct {
@@ -31,7 +31,7 @@ const aesKeySize = 32
 
 // NewAESEncryptDecrypter reads the specified key file and returns an AES EncryptDecrypter.
 func NewAESEncryptDecrypter(keyFile string) (*AESEncryptDecrypter, error) {
-	key, err := ioutil.ReadFile(keyFile)
+	key, err := os.ReadFile(keyFile)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read key file: %v", err)
 	}

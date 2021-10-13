@@ -17,8 +17,8 @@ package cloudrun
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 
 	"go.uber.org/zap"
 	"google.golang.org/api/googleapi"
@@ -43,7 +43,7 @@ func newClient(ctx context.Context, projectID, region, credentialsFile string, l
 
 	var options []option.ClientOption
 	if len(credentialsFile) > 0 {
-		data, err := ioutil.ReadFile(credentialsFile)
+		data, err := os.ReadFile(credentialsFile)
 		if err != nil {
 			return nil, fmt.Errorf("unable to read credentials file (%w)", err)
 		}

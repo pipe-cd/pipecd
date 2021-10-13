@@ -15,9 +15,14 @@
 package lambda
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
 	"time"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda"
@@ -282,12 +287,12 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, fm p
 		return
 	}
 	if found {
-		if err := client.UpdateFunction(ctx, fm); err != nil {
+		if err := updateFunction(ctx, in, client, fm); err != nil {
 			in.LogPersister.Errorf("Failed to update lambda function %s: %v", fm.Spec.Name, err)
 			return
 		}
 	} else {
-		if err := client.CreateFunction(ctx, fm); err != nil {
+		if err := createFunction(ctx, in, client, fm); err != nil {
 			in.LogPersister.Errorf("Failed to create lambda function %s: %v", fm.Spec.Name, err)
 			return
 		}
@@ -318,4 +323,85 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, fm p
 	in.LogPersister.Infof("Successfully committed new version (v%s) for Lambda function %s after duration %v", version, fm.Spec.Name, time.Since(startWaitingStamp))
 	ok = true
 	return
+}
+
+func createFunction(ctx context.Context, in *executor.Input, client provider.Client, fm provider.FunctionManifest) error {
+	if fm.Spec.ImageURI != "" || fm.Spec.S3Bucket != "" {
+		return client.CreateFunction(ctx, fm)
+	}
+
+	zip, err := prepareZipFromSource(ctx, in.GitClient, fm)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to prepare zip from Lambda function source, remote (%s)", fm.Spec.SourceCode.Git)
+		return err
+	}
+
+	return client.CreateFunctionFromSource(ctx, fm, zip)
+}
+
+func updateFunction(ctx context.Context, in *executor.Input, client provider.Client, fm provider.FunctionManifest) error {
+	if fm.Spec.ImageURI != "" || fm.Spec.S3Bucket != "" {
+		return client.UpdateFunction(ctx, fm)
+	}
+	zip, err := prepareZipFromSource(ctx, in.GitClient, fm)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to prepare zip from Lambda function source, remote (%s)", fm.Spec.SourceCode.Git)
+		return err
+	}
+
+	return client.UpdateFunctionFromSource(ctx, fm, zip)
+}
+
+func prepareZipFromSource(ctx context.Context, gc executor.GitClient, fm provider.FunctionManifest) (io.Reader, error) {
+	repo, err := gc.Clone(ctx, fm.Spec.SourceCode.Git, fm.Spec.SourceCode.Git, "", "")
+	if err != nil {
+		return nil, err
+	}
+	defer repo.Clean()
+
+	if err = repo.Checkout(ctx, fm.Spec.SourceCode.Ref); err != nil {
+		return nil, err
+	}
+
+	buf := &bytes.Buffer{}
+	w := zip.NewWriter(buf)
+	defer w.Close()
+
+	source := filepath.Join(repo.GetPath(), fm.Spec.SourceCode.Path)
+	filepath.Walk(source, func(fp string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		header, err := zip.FileInfoHeader(fi)
+		if err != nil {
+			return err
+		}
+		header.Method = zip.Deflate
+		header.Name, err = filepath.Rel(filepath.Dir(source), fp)
+		if err != nil {
+			return err
+		}
+		if fi.IsDir() {
+			header.Name += "/"
+		}
+		headerWriter, err := w.CreateHeader(header)
+		if err != nil {
+			return err
+		}
+		if fi.IsDir() {
+			return nil
+		}
+
+		f, err := os.Open(fp)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		_, err = io.Copy(headerWriter, f)
+		return err
+	})
+
+	return buf, nil
 }

@@ -16,7 +16,6 @@ package sourcedecrypter
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -107,7 +106,7 @@ func DecryptSealedSecrets(appDir string, secrets []config.SealedSecretMapping, d
 		}
 		outPath := filepath.Join(appDir, outDir, outFile)
 
-		if err := ioutil.WriteFile(outPath, content, 0644); err != nil {
+		if err := os.WriteFile(outPath, content, 0644); err != nil {
 			return fmt.Errorf("unable to write decrypted content of sealed secret file %s (%w)", s.Path, err)
 		}
 	}

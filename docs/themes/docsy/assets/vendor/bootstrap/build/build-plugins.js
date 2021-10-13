@@ -2,26 +2,25 @@
 
 /*!
  * Script to build our plugins to use them separately.
- * Copyright 2020 The Bootstrap Authors
- * Copyright 2020 Twitter, Inc.
- * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * Copyright 2020-2021 The Bootstrap Authors
+ * Copyright 2020-2021 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
 
 'use strict'
 
-const path    = require('path')
-const rollup  = require('rollup')
-const babel   = require('rollup-plugin-babel')
-const banner  = require('./banner.js')
-const babelHelpers = require('./babel-helpers.js')
+const path = require('path')
+const rollup = require('rollup')
+const { babel } = require('@rollup/plugin-babel')
+const banner = require('./banner.js')
 
-const TEST    = process.env.NODE_ENV === 'test'
+const TEST = process.env.NODE_ENV === 'test'
 const plugins = [
   babel({
     // Only transpile our source code
     exclude: 'node_modules/**',
-    // Include only required helpers
-    externalHelpersWhitelist: babelHelpers
+    // Include the helpers in each file, at most one copy of each
+    babelHelpers: 'bundled'
   })
 ]
 const bsPlugins = {
@@ -40,7 +39,7 @@ const bsPlugins = {
 }
 const rootPath = TEST ? '../js/coverage/dist/' : '../js/dist/'
 
-const build = async (plugin) => {
+const build = async plugin => {
   console.log(`Building ${plugin} plugin...`)
 
   const external = ['jquery', 'popper.js']
@@ -82,7 +81,7 @@ const build = async (plugin) => {
 
 const main = async () => {
   try {
-    await Promise.all(Object.keys(bsPlugins).map((plugin) => build(plugin)))
+    await Promise.all(Object.keys(bsPlugins).map(plugin => build(plugin)))
   } catch (error) {
     console.error(error)
 

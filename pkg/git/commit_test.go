@@ -15,7 +15,7 @@
 package git
 
 import (
-	"io/ioutil"
+	"os"
 	"sort"
 	"testing"
 
@@ -24,11 +24,11 @@ import (
 )
 
 func TestParseCommit(t *testing.T) {
-	log, err := ioutil.ReadFile("testdata/log.txt")
+	log, err := os.ReadFile("testdata/log.txt")
 	require.NoError(t, err)
 
 	expected := []Commit{
-		Commit{
+		{
 			Author:          "nghialv",
 			Committer:       "kapetanios-robot",
 			CreatedAt:       1565752022,
@@ -36,7 +36,7 @@ func TestParseCommit(t *testing.T) {
 			AbbreviatedHash: "74e20ed",
 			Message:         "wip",
 		},
-		Commit{
+		{
 			Author:          "Le Van Nghia",
 			Committer:       "kapetanios-robot",
 			CreatedAt:       1565749682,
@@ -59,7 +59,7 @@ NONE
 
 This PR was merged by Kapetanios.`,
 		},
-		Commit{
+		{
 			Author:          "nghialv",
 			Committer:       "kapetanios-robot",
 			CreatedAt:       2565752022,

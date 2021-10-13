@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/creasty/defaults"
 	"sigs.k8s.io/yaml"
@@ -202,7 +202,7 @@ func (c *Config) Validate() error {
 
 // LoadFromYAML reads and decodes a yaml file to construct the Config.
 func LoadFromYAML(file string) (*Config, error) {
-	data, err := ioutil.ReadFile(file)
+	data, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}

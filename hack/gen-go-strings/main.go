@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -36,7 +35,7 @@ func main() {
 		log.Fatalf("invalidate flag: %v", err)
 	}
 
-	license, err := ioutil.ReadFile("./hack/boilerplate.go.txt")
+	license, err := os.ReadFile("./hack/boilerplate.go.txt")
 	if err != nil {
 		log.Fatalf("unable to read license file: %v", err)
 	}
@@ -77,7 +76,7 @@ func main() {
 		log.Fatalf("unable to render go file: %v", err)
 	}
 
-	if err = ioutil.WriteFile(*out, []byte(generatedCode), os.ModePerm); err != nil {
+	if err = os.WriteFile(*out, []byte(generatedCode), os.ModePerm); err != nil {
 		log.Fatalf("unable to write go file to %s: %v", *out, err)
 	}
 	log.Printf("successfully generated file: %s", *out)
@@ -111,7 +110,7 @@ func loadData(root string) (map[string]interface{}, error) {
 		if !info.Mode().IsRegular() {
 			return nil
 		}
-		bytes, err := ioutil.ReadFile(path)
+		bytes, err := os.ReadFile(path)
 		if err != nil {
 			return err
 		}

@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -124,7 +123,7 @@ func (s *slack) sendMessage(ctx context.Context, msg slackMessage) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		body, _ := ioutil.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
 		return fmt.Errorf("%s from Slack: %s", resp.Status, strings.TrimSpace(string(body)))
 	}
 

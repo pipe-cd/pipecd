@@ -21,7 +21,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp/syntax"
@@ -81,7 +80,7 @@ func NewWatcher(cfg *config.PipedSpec, eventGetter eventGetter, gitClient gitCli
 func (w *watcher) Run(ctx context.Context) error {
 	w.logger.Info("start running event watcher")
 
-	workingDir, err := ioutil.TempDir("", "event-watcher")
+	workingDir, err := os.MkdirTemp("", "event-watcher")
 	if err != nil {
 		return fmt.Errorf("failed to create the working directory: %w", err)
 	}
@@ -192,7 +191,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 
 // cloneRepo clones the git repository under the working directory.
 func (w *watcher) cloneRepo(ctx context.Context, repoCfg config.PipedRepository) (git.Repo, error) {
-	dst, err := ioutil.TempDir(w.workingDir, repoCfg.RepoID)
+	dst, err := os.MkdirTemp(w.workingDir, repoCfg.RepoID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a new temporary directory: %w", err)
 	}
@@ -206,7 +205,7 @@ func (w *watcher) cloneRepo(ctx context.Context, repoCfg config.PipedRepository)
 // updateValues inspects all Event-definition and pushes the changes to git repo if there is.
 func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []config.EventWatcherEvent, commitMsg string) error {
 	// Copy the repo to another directory to modify local file to avoid reverting previous changes.
-	tmpDir, err := ioutil.TempDir(w.workingDir, "repo")
+	tmpDir, err := os.MkdirTemp(w.workingDir, "repo")
 	if err != nil {
 		return fmt.Errorf("failed to create a new temporary directory: %w", err)
 	}
@@ -257,7 +256,7 @@ func (w *watcher) commitFiles(ctx context.Context, eventCfg config.EventWatcherE
 			continue
 		}
 
-		if err := ioutil.WriteFile(path, newContent, os.ModePerm); err != nil {
+		if err := os.WriteFile(path, newContent, os.ModePerm); err != nil {
 			return fmt.Errorf("failed to write file: %w", err)
 		}
 		changes[r.File] = newContent

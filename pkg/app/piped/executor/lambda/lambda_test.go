@@ -15,10 +15,15 @@
 package lambda
 
 import (
+	"context"
+	"io"
 	"testing"
 
-	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda"
+	"github.com/pipe-cd/pipe/pkg/git"
 )
 
 func TestConfigureTrafficRouting(t *testing.T) {
@@ -138,4 +143,44 @@ func TestConfigureTrafficRouting(t *testing.T) {
 			}
 		})
 	}
+}
+
+type fakeRepo struct {
+	git.Repo
+	source string
+}
+
+func (m *fakeRepo) GetPath() string {
+	return m.source
+}
+
+func (m *fakeRepo) Checkout(_ context.Context, _ string) error {
+	return nil
+}
+
+func (m *fakeRepo) Clean() error {
+	return nil
+}
+
+type fakeGitClient struct {
+	repo git.Repo
+}
+
+func (g *fakeGitClient) Clone(_ context.Context, _, _, _, _ string) (git.Repo, error) {
+	return g.repo, nil
+}
+
+func TestPrepareZipFromSource(t *testing.T) {
+	gc := &fakeGitClient{
+		repo: &fakeRepo{
+			source: "testdata/raw",
+		},
+	}
+	fm := provider.FunctionManifest{}
+	r, err := prepareZipFromSource(context.Background(), gc, fm)
+	require.Nil(t, err)
+
+	data, err := io.ReadAll(r)
+	assert.Nil(t, err)
+	assert.NotEqual(t, 0, len(data))
 }

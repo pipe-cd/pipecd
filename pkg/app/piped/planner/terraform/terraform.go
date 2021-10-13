@@ -17,7 +17,7 @@ package terraform
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
@@ -39,7 +39,7 @@ func Register(r registerer) {
 
 // Plan decides which pipeline should be used for the given input.
 func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Output, err error) {
-	ds, err := in.TargetDSP.Get(ctx, ioutil.Discard)
+	ds, err := in.TargetDSP.Get(ctx, io.Discard)
 	if err != nil {
 		err = fmt.Errorf("error while preparing deploy source data (%v)", err)
 		return

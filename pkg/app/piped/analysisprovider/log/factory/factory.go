@@ -16,7 +16,7 @@ package factory
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"go.uber.org/zap"
 
@@ -31,7 +31,7 @@ func NewProvider(providerCfg *config.PipedAnalysisProvider, logger *zap.Logger) 
 	switch providerCfg.Type {
 	case model.AnalysisProviderStackdriver:
 		cfg := providerCfg.StackdriverConfig
-		sa, err := ioutil.ReadFile(cfg.ServiceAccountFile)
+		sa, err := os.ReadFile(cfg.ServiceAccountFile)
 		if err != nil {
 			return nil, err
 		}

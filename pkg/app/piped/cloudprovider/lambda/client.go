@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"reflect"
 	"time"
 
@@ -143,6 +144,36 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 	return nil
 }
 
+func (c *client) CreateFunctionFromSource(ctx context.Context, fm FunctionManifest, zip io.Reader) error {
+	data, err := io.ReadAll(zip)
+	if err != nil {
+		return err
+	}
+
+	input := &lambda.CreateFunctionInput{
+		FunctionName: aws.String(fm.Spec.Name),
+		PackageType:  types.PackageTypeZip,
+		Code: &types.FunctionCode{
+			ZipFile: data,
+		},
+		Handler:    aws.String(fm.Spec.Handler),
+		Runtime:    types.Runtime(fm.Spec.Runtime),
+		Role:       aws.String(fm.Spec.Role),
+		MemorySize: aws.Int32(fm.Spec.Memory),
+		Timeout:    aws.Int32(fm.Spec.Timeout),
+		Tags:       fm.Spec.Tags,
+		Environment: &types.Environment{
+			Variables: fm.Spec.Environments,
+		},
+	}
+
+	_, err = c.client.CreateFunction(ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to create Lambda function %s: %w", fm.Spec.Name, err)
+	}
+	return nil
+}
+
 func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error {
 	// Update function code.
 	codeInput := &lambda.UpdateFunctionCodeInput{
@@ -164,8 +195,43 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 	}
 
 	// Update function configuration.
+	if err = c.updateFunctionConfiguration(ctx, fm); err != nil {
+		return err
+	}
+
+	// Tag/Untag function if necessary.
+	return c.updateTagsConfig(ctx, fm)
+}
+
+func (c *client) UpdateFunctionFromSource(ctx context.Context, fm FunctionManifest, zip io.Reader) error {
+	data, err := io.ReadAll(zip)
+	if err != nil {
+		return err
+	}
+
+	// Update function code.
+	codeInput := &lambda.UpdateFunctionCodeInput{
+		FunctionName: aws.String(fm.Spec.Name),
+		ZipFile:      data,
+	}
+	_, err = c.client.UpdateFunctionCode(ctx, codeInput)
+	if err != nil {
+		return fmt.Errorf("failed to update function code for Lambda function %s: %w", fm.Spec.Name, err)
+	}
+
+	// Update function configuration.
+	if err = c.updateFunctionConfiguration(ctx, fm); err != nil {
+		return err
+	}
+
+	// Tag/Untag function if necessary.
+	return c.updateTagsConfig(ctx, fm)
+}
+
+func (c *client) updateFunctionConfiguration(ctx context.Context, fm FunctionManifest) error {
 	retry := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
 	updateFunctionConfigurationSucceed := false
+	var err error
 	for retry.WaitNext(ctx) {
 		configInput := &lambda.UpdateFunctionConfigurationInput{
 			FunctionName: aws.String(fm.Spec.Name),
@@ -193,9 +259,7 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 	if !updateFunctionConfigurationSucceed {
 		return fmt.Errorf("failed to update configuration for Lambda function %s: %w", fm.Spec.Name, err)
 	}
-
-	// Tag/Untag function if necessary.
-	return c.updateTagsConfig(ctx, fm)
+	return nil
 }
 
 func (c *client) PublishFunction(ctx context.Context, fm FunctionManifest) (string, error) {

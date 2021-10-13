@@ -17,7 +17,6 @@ package git
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -46,7 +45,7 @@ func TestClone(t *testing.T) {
 
 	ctx := context.Background()
 
-	repo1Path, err := ioutil.TempDir("", "repo1path")
+	repo1Path, err := os.MkdirTemp("", "repo1path")
 	require.NoError(t, err)
 	repo1, err := c.Clone(ctx, "repo-1", filepath.Join(faker.dir, "test-clone-org/repo-1"), "", repo1Path)
 	require.NoError(t, err)
@@ -58,7 +57,7 @@ func TestClone(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 1, len(commits1))
 
-	repo2Path, err := ioutil.TempDir("", "repo2path")
+	repo2Path, err := os.MkdirTemp("", "repo2path")
 	require.NoError(t, err)
 	repo2, err := c.Clone(ctx, "repo-2", filepath.Join(faker.dir, "test-clone-org/repo-2"), "", repo2Path)
 	require.NoError(t, err)
@@ -79,7 +78,7 @@ func TestClone(t *testing.T) {
 	}
 	err = commander.addCommit("note.txt", "note.text context")
 	require.NoError(t, err)
-	repo12Path, err := ioutil.TempDir("", "repo12path")
+	repo12Path, err := os.MkdirTemp("", "repo12path")
 	require.NoError(t, err)
 	repo12, err := c.Clone(ctx, "repo-1", filepath.Join(faker.dir, "test-clone-org/repo-1"), "master", repo12Path)
 	require.NoError(t, err)
@@ -103,7 +102,7 @@ func newFaker() (*faker, error) {
 	if err != nil {
 		return nil, err
 	}
-	remoteDir, err := ioutil.TempDir("", "remote")
+	remoteDir, err := os.MkdirTemp("", "remote")
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +165,7 @@ func (g gitCommander) runGitCommands(commands [][]string) error {
 func (g gitCommander) addCommit(filename string, content string) error {
 	rdir := filepath.Join(g.dir, g.org, g.repo)
 	path := filepath.Join(rdir, filename)
-	if err := ioutil.WriteFile(path, []byte(content), os.ModePerm); err != nil {
+	if err := os.WriteFile(path, []byte(content), os.ModePerm); err != nil {
 		return err
 	}
 	return g.runGitCommands([][]string{

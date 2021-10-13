@@ -17,7 +17,6 @@ package kubernetes
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -212,7 +211,7 @@ func LoadPlainYAMLManifests(dir string, names []string, configFileName string) (
 }
 
 func LoadManifestsFromYAMLFile(path string) ([]Manifest, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

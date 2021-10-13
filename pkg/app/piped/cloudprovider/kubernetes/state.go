@@ -67,7 +67,7 @@ func MakeKubernetesResourceState(uid string, key ResourceKey, obj *unstructured.
 
 func determineResourceHealth(key ResourceKey, obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
 	if !IsKubernetesBuiltInResource(key.APIVersion) {
-		desc = fmt.Sprintf("Unreadable resource kind %s/%s", key.APIVersion, key.Kind)
+		desc = fmt.Sprintf("\"%s/%s\" was applied successfully but its health status couldn't be determined exactly. (Because tracking status for this kind of resource is not supported yet.)", key.APIVersion, key.Kind)
 		return
 	}
 

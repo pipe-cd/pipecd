@@ -15,7 +15,7 @@
 package diff
 
 import (
-	"io/ioutil"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -125,7 +125,7 @@ func TestDiff(t *testing.T) {
 }
 
 func loadUnstructureds(path string) ([]unstructured.Unstructured, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

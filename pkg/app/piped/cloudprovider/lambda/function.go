@@ -16,7 +16,7 @@ package lambda
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"sigs.k8s.io/yaml"
@@ -59,6 +59,7 @@ type FunctionManifestSpec struct {
 	S3Bucket        string            `json:"s3Bucket"`
 	S3Key           string            `json:"s3Key"`
 	S3ObjectVersion string            `json:"s3ObjectVersion"`
+	SourceCode      SourceCode        `json:"source"`
 	Handler         string            `json:"handler"`
 	Runtime         string            `json:"runtime"`
 	Memory          int32             `json:"memory"`
@@ -68,13 +69,23 @@ type FunctionManifestSpec struct {
 }
 
 func (fmp FunctionManifestSpec) validate() error {
-	if len(fmp.Name) == 0 {
+	if fmp.Name == "" {
 		return fmt.Errorf("lambda function is missing")
 	}
-	if len(fmp.ImageURI) == 0 && len(fmp.S3Bucket) == 0 {
-		return fmt.Errorf("one of image or s3 bucket is required to be configured")
+	if fmp.ImageURI == "" && fmp.S3Bucket == "" {
+		if err := fmp.SourceCode.validate(); err != nil {
+			return err
+		}
 	}
-	if len(fmp.Role) == 0 {
+	if fmp.ImageURI == "" {
+		if fmp.Handler == "" {
+			return fmt.Errorf("handler is missing")
+		}
+		if fmp.Runtime == "" {
+			return fmt.Errorf("runtime is missing")
+		}
+	}
+	if fmp.Role == "" {
 		return fmt.Errorf("role is missing")
 	}
 	if fmp.Memory < memoryLowerLimit {
@@ -86,8 +97,24 @@ func (fmp FunctionManifestSpec) validate() error {
 	return nil
 }
 
+type SourceCode struct {
+	Git  string `json:"git"`
+	Ref  string `json:"ref"`
+	Path string `json:"path"`
+}
+
+func (sc SourceCode) validate() error {
+	if sc.Git == "" {
+		return fmt.Errorf("remote git source is missing")
+	}
+	if sc.Ref == "" {
+		return fmt.Errorf("source ref is missing")
+	}
+	return nil
+}
+
 func loadFunctionManifest(path string) (FunctionManifest, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return FunctionManifest{}, err
 	}

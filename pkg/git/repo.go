@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -232,7 +231,7 @@ func (r *repo) CommitChanges(ctx context.Context, branch, message string, newBra
 				return fmt.Errorf("failed to create directory, dir: %s, err: %v", dirPath, err)
 			}
 		}
-		if err := ioutil.WriteFile(filePath, bytes, os.ModePerm); err != nil {
+		if err := os.WriteFile(filePath, bytes, os.ModePerm); err != nil {
 			return fmt.Errorf("failed to write file, file: %s, error: %v", filePath, err)
 		}
 	}

@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"go.uber.org/zap"
@@ -114,7 +113,7 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 	logger.Info(fmt.Sprintf("start building planpreview result for command %s", id))
 
 	// Ensure the existence of the working directory.
-	workingDir, err := ioutil.TempDir("", workspacePattern)
+	workingDir, err := os.MkdirTemp("", workspacePattern)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create working directory (%w)", err)
 	}
@@ -283,7 +282,7 @@ type diffResult struct {
 }
 
 func (b *builder) cloneHeadCommit(ctx context.Context, headBranch, headCommit string) (git.Repo, error) {
-	dir, err := ioutil.TempDir(b.workingDir, "")
+	dir, err := os.MkdirTemp(b.workingDir, "")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temporary directory %w", err)
 	}
