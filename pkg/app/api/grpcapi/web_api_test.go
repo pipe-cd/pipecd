@@ -387,3 +387,62 @@ func TestValidatePipedBelongsToProject(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateApprover(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	tests := []struct {
+		name      string
+		stages    []*model.PipelineStage
+		commander string
+		stageId   string
+		wantErr   bool
+	}{
+		{
+			name: "valid if a commander is included in approvers",
+			stages: []*model.PipelineStage{
+				{
+					Id: "stage-id",
+					Metadata: map[string]string{
+						"Approvers": "user1,user2",
+					},
+				},
+			},
+			commander: "user1",
+			stageId:   "stage-id",
+			wantErr:   false,
+		},
+		{
+			name: "invalid if a commander isn't included in approvers",
+			stages: []*model.PipelineStage{
+				{
+					Id: "stage-id",
+					Metadata: map[string]string{
+						"Approvers": "user2,user3",
+					},
+				},
+			},
+			commander: "user1",
+			stageId:   "stage-id",
+			wantErr:   true,
+		},
+		{
+			name: "valid if the Approvers key is not contained in metadata",
+			stages: []*model.PipelineStage{
+				{
+					Id: "stage-id",
+				},
+			},
+			commander: "user1",
+			stageId:   "stage-id",
+			wantErr:   false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateApprover(tt.stages, tt.commander, tt.stageId)
+			assert.Equal(t, tt.wantErr, err != nil)
+		})
+	}
+}
