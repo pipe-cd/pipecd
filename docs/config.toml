@@ -86,7 +86,7 @@ privacy_policy = "https://github.com/pipe-cd/pipe/blob/master/LICENSE"
 
 # Menu title if your navbar has a versions selector to access old versions of your site.
 # This menu appears only if you have at least one [params.versions] set.
-version_menu = "Releases"
+version_menu = ""
 
 # Repository configuration (URLs for in-page links to opening issues and suggesting changes)
 github_repo = "https://github.com/pipe-cd/pipe"
@@ -159,3 +159,13 @@ no = 'Sorry to hear that. Please <a href="https://github.com/pipe-cd/pipe/issues
 	url = "mailto:pipecd.dev@gmail.com"
 	icon = "fa fa-envelope"
         desc = "Discuss development issues around the project"
+
+# Append the release versions here.
+[[params.versions]]
+  version = "dev"
+  githubbranch = "master"
+  url = "/docs-dev/"
+
+[[params.versions]]
+  version = "v0.18.0"
+  url = "/docs-v0.18.0/"

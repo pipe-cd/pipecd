@@ -7,9 +7,10 @@
 {{ if .Site.Params.offlineSearch }}
 {{ $jsSearch = resources.Get "js/offline-search.js" }}
 {{ end }}
-{{ $jsImageZoom := resources.Get "js/medium-zoom.js"   }}
+{{ $jsImageZoom := resources.Get "js/medium-zoom.js" }}
+{{ $jsNavbarVersionSelector := resources.Get "js/navbar-version-selector.js" }}
 <script defer src="{{ $jsImageZoom.RelPermalink }}" integrity="{{ $jsImageZoom.Data.Integrity }}" crossorigin="anonymous"></script>
-{{ $js := (slice $jsBase $jsAnchor $jsSearch) | resources.Concat "js/main.js" }}
+{{ $js := (slice $jsBase $jsAnchor $jsSearch $jsNavbarVersionSelector) | resources.Concat "js/main.js" }}
 {{ if .Site.IsServer }}
 <script src="{{ $js.RelPermalink }}"></script>
 {{ else }}
