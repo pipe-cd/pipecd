@@ -1236,7 +1236,7 @@ func (a *WebAPI) validateApprover(stages []*model.PipelineStage, commander, stag
 			return nil
 		}
 	}
-	return status.Error(codes.FailedPrecondition, fmt.Sprintf("You can't approve this deployment because you (%s) are not in the approver list: %v", commander, approvers))
+	return status.Error(codes.PermissionDenied, fmt.Sprintf("You can't approve this deployment because you (%s) are not in the approver list: %v", commander, approvers))
 }
 
 func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.GetApplicationLiveStateRequest) (*webservice.GetApplicationLiveStateResponse, error) {
