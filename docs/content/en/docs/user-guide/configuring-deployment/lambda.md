@@ -7,13 +7,7 @@ description: >
 ---
 
 Deploying a Lambda application requires a `function.yaml` file placing inside the application directory. That file contains values to be used to deploy Lambda function on your AWS cluster.
-Currently, Piped supports deploying all types of Lambda deployment packages:
-- container images (called [container image as Lambda function](https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/))
-- `.zip` file archives (which stored in AWS S3)
-
-Besides, Piped also supports deploying your Lambda function __directly from the function source code__ which is stored in a remote git repository.
-
-#### Deploy container image as Lambda function
+Currently, __container image built source__ and __AWS S3 stored zip packing function code__ are supported by Piped deployment. For more information about container image as Lambda function, read [this post on AWS blog](https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/).
 
 A sample `function.yaml` file for container image as Lambda function used deployment as follows:
 
@@ -42,8 +36,6 @@ The `role` value represents the service role (for your Lambda function to run), 
 
 The `environments` field represents environment variables that can be accessed by your Lambda application at runtime. __In case of no value set for this field, all environment variables for the deploying Lambda application will be revoked__, so make sure you set all currently required environment variables of your running Lambda application on `function.yaml` if you migrate your app to PipeCD deployment.
 
-#### Deploy .zip file archives as Lambda function
-
 It's recommended to use container image as Lambda function due to its simplicity, but as mentioned above, below is a sample `function.yaml` file for Lambda which uses zip packing source code stored in AWS S3.
 
 ```yaml
@@ -52,13 +44,13 @@ kind: LambdaFunction
 spec:
   name: SimpleZipPackingS3Function
   role: arn:aws:iam::76xxxxxxx:role/lambda-role
-  # --- 3 next lines allow Piped to determine your Lambda function code stored in AWS S3.
+  # --- 5 next lines are required for zip packing source code stored in S3 deployment.
   s3Bucket: pipecd-sample-lambda
   s3Key: pipecd-sample-src
   s3ObjectVersion: 1pTK9_v0Kd7I8Sk4n6abzCL
-  # ---
   handler: app.lambdaHandler
   runtime: nodejs14.x
+  # ---
   memory: 512
   timeout: 30
   environments:
@@ -67,36 +59,7 @@ spec:
     app: simple-zip-s3
 ```
 
-Value for the `runtime` field should be listed in [AWS Lambda runtimes official docs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html). All other fields setting are remained as in the case of using [container image as Lambda function](#deploy-container-image-as-lambda-function) pattern.
-
-#### Deploy source code directly as Lambda function
-
-In case you don’t have a separated CI pipeline that provides artifacts (such as container image, built zip files) as its outputs and want to set up a simple pipeline to deploy the Lambda function directly from your source code, this deployment package is for you.
-
-```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: LambdaFunction
-spec:
-  name: SimpleCanaryZipFunction
-  role: arn:aws:iam::76xxxxxxx:role/lambda-role
-  # source configuration use to determine the source code of your Lambda function.
-  source:
-    # git remote address where the source code is placing.
-    git: git@github.com:username/lambda-function-code.git
-    # the commit SHA or tag for remote git. Use branch name means you will always use
-    # the latest code of that branch as Lambda function code which is NOT recommended.
-    ref: dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603
-    # relative path from the repository root directory to the function code directory.
-    path: hello-world
-  handler: app.lambdaHandler
-  runtime: nodejs14.x
-  memory: 128
-  timeout: 5
-  tags:
-    app: canary-zip
-```
-
-All other fields setting are remained as in the case of using [.zip archives as Lambda function](#deploy-zip-file-archives-as-lambda-function) pattern.
+Value for the `runtime` field should be listed in [AWS Lambda runtimes official docs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
 
 ## Quick sync
 
