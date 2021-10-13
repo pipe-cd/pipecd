@@ -1181,7 +1181,7 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	if err != nil {
 		return nil, err
 	}
-	if err := a.validateApprover(deployment.Stages, claims.Subject, req.StageId); err != nil {
+	if err := validateApprover(deployment.Stages, claims.Subject, req.StageId); err != nil {
 		return nil, err
 	}
 	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
@@ -1220,7 +1220,7 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 }
 
 // No error means that the given commander is valid.
-func (a *WebAPI) validateApprover(stages []*model.PipelineStage, commander, stageID string) error {
+func validateApprover(stages []*model.PipelineStage, commander, stageID string) error {
 	var approvers []string
 	for _, s := range stages {
 		if s.Id == stageID {
