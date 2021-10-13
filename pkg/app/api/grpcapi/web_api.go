@@ -1221,21 +1221,16 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 
 // No error means that the given commander is valid.
 func (a *WebAPI) validateApprover(stages []*model.PipelineStage, commander, stageID string) error {
-	a.logger.Debug(fmt.Sprintf("got a commander named %q", commander))
 	var approvers []string
 	for _, s := range stages {
 		if s.Id == stageID {
 			approvers = strings.Split(s.Metadata["Approvers"], ",")
 		}
 	}
-
 	if len(approvers) == 0 {
-		a.logger.Debug("do not get any approvers")
 		// Anyone can approve the deployment pipeline
 		return nil
 	}
-	a.logger.Debug(fmt.Sprintf("got approvers named %v", approvers))
-
 	for _, ap := range approvers {
 		if ap == commander {
 			return nil
