@@ -387,3 +387,73 @@ func TestValidatePipedBelongsToProject(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateApprover(t *testing.T) {
+	tests := []struct {
+		name      string
+		stages    []*model.PipelineStage
+		commander string
+		stageID   string
+		wantErr   bool
+	}{
+		{
+			name: "valid if a commander is included in approvers",
+			stages: []*model.PipelineStage{
+				{
+					Id: "stage-id",
+					Metadata: map[string]string{
+						"Approvers": "user1,user2",
+					},
+				},
+			},
+			commander: "user1",
+			stageID:   "stage-id",
+			wantErr:   false,
+		},
+		{
+			name: "valid if a commander match approvers",
+			stages: []*model.PipelineStage{
+				{
+					Id: "stage-id",
+					Metadata: map[string]string{
+						"Approvers": "user1",
+					},
+				},
+			},
+			commander: "user1",
+			stageID:   "stage-id",
+			wantErr:   false,
+		},
+		{
+			name: "invalid if a commander isn't included in approvers",
+			stages: []*model.PipelineStage{
+				{
+					Id: "stage-id",
+					Metadata: map[string]string{
+						"Approvers": "user2,user3",
+					},
+				},
+			},
+			commander: "user1",
+			stageID:   "stage-id",
+			wantErr:   true,
+		},
+		{
+			name: "valid if the Approvers key isn't contained in metadata",
+			stages: []*model.PipelineStage{
+				{
+					Id: "stage-id",
+				},
+			},
+			commander: "user1",
+			stageID:   "stage-id",
+			wantErr:   false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateApprover(tt.stages, tt.commander, tt.stageID)
+			assert.Equal(t, tt.wantErr, err != nil)
+		})
+	}
+}
