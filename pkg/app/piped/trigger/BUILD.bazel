@@ -12,6 +12,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/api/service/pipedservice:go_default_library",
+        "//pkg/app/piped/controller:go_default_library",
         "//pkg/cache:go_default_library",
         "//pkg/cache/memorycache:go_default_library",
         "//pkg/config:go_default_library",
