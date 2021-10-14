@@ -393,7 +393,7 @@ func TestValidateApprover(t *testing.T) {
 		name      string
 		stages    []*model.PipelineStage
 		commander string
-		stageId   string
+		stageID   string
 		wantErr   bool
 	}{
 		{
@@ -407,7 +407,7 @@ func TestValidateApprover(t *testing.T) {
 				},
 			},
 			commander: "user1",
-			stageId:   "stage-id",
+			stageID:   "stage-id",
 			wantErr:   false,
 		},
 		{
@@ -421,7 +421,7 @@ func TestValidateApprover(t *testing.T) {
 				},
 			},
 			commander: "user1",
-			stageId:   "stage-id",
+			stageID:   "stage-id",
 			wantErr:   false,
 		},
 		{
@@ -435,7 +435,7 @@ func TestValidateApprover(t *testing.T) {
 				},
 			},
 			commander: "user1",
-			stageId:   "stage-id",
+			stageID:   "stage-id",
 			wantErr:   true,
 		},
 		{
@@ -446,13 +446,13 @@ func TestValidateApprover(t *testing.T) {
 				},
 			},
 			commander: "user1",
-			stageId:   "stage-id",
+			stageID:   "stage-id",
 			wantErr:   false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := validateApprover(tt.stages, tt.commander, tt.stageId)
+			err := validateApprover(tt.stages, tt.commander, tt.stageID)
 			assert.Equal(t, tt.wantErr, err != nil)
 		})
 	}
