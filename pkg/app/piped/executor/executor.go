@@ -47,9 +47,11 @@ type LogPersister interface {
 
 type MetadataStore interface {
 	Get(key string) (string, bool)
+	// Different value for the same key will overwrite the previous value for that key.
 	Set(ctx context.Context, key, value string) error
 
 	GetStageMetadata(stageID string) (map[string]string, bool)
+	// Different value for the same key will overwrite the previous value for that key.
 	SetStageMetadata(ctx context.Context, stageID string, metadata map[string]string) error
 }
 

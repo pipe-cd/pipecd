@@ -141,7 +141,7 @@ func (s *deploymentStore) PutDeploymentMetadata(ctx context.Context, id string, 
 	now := s.nowFunc().Unix()
 	return s.ds.Update(ctx, DeploymentModelKind, id, deploymentFactory, func(e interface{}) error {
 		d := e.(*model.Deployment)
-		d.Metadata = metadata
+		d.Metadata = mergeMetadata(d.Metadata, metadata)
 		d.UpdatedAt = now
 		return nil
 	})
@@ -153,13 +153,24 @@ func (s *deploymentStore) PutDeploymentStageMetadata(ctx context.Context, deploy
 		d := e.(*model.Deployment)
 		for _, stage := range d.Stages {
 			if stage.Id == stageID {
-				stage.Metadata = metadata
+				stage.Metadata = mergeMetadata(stage.Metadata, metadata)
 				d.UpdatedAt = now
 				return nil
 			}
 		}
 		return fmt.Errorf("stage %s is not found: %w", stageID, ErrInvalidArgument)
 	})
+}
+
+func mergeMetadata(ori map[string]string, new map[string]string) map[string]string {
+	out := make(map[string]string, len(ori)+len(new))
+	for k, v := range ori {
+		out[k] = v
+	}
+	for k, v := range new {
+		out[k] = v
+	}
+	return out
 }
 
 func (s *deploymentStore) ListDeployments(ctx context.Context, opts ListOptions) ([]*model.Deployment, string, error) {

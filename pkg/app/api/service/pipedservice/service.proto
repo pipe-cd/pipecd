@@ -93,10 +93,12 @@ service PipedService {
     rpc ReportDeploymentCompleted(ReportDeploymentCompletedRequest) returns (ReportDeploymentCompletedResponse) {}
 
     // SaveDeploymentMetadata is used to persist the metadata of a specific deployment.
+    // Different value for the same key will overwrite the previous value for that key.
     rpc SaveDeploymentMetadata(SaveDeploymentMetadataRequest) returns (SaveDeploymentMetadataResponse) {}
 
     // SaveStageMetadata is used to persist the metadata
     // of a specific stage of a deployment.
+    // Different value for the same key will overwrite the previous value for that key.
     rpc SaveStageMetadata(SaveStageMetadataRequest) returns (SaveStageMetadataResponse) {}
 
     // ReportStageLogs is used to save the log of a pipeline stage.

@@ -459,3 +459,58 @@ func TestListDeployments(t *testing.T) {
 		})
 	}
 }
+
+func TestMergeMetadata(t *testing.T) {
+	testcases := []struct {
+		name     string
+		ori      map[string]string
+		new      map[string]string
+		expected map[string]string
+	}{
+		{
+			name:     "both are empty",
+			expected: map[string]string{},
+		},
+		{
+			name: "ori map is emtpy",
+			new: map[string]string{
+				"key-1": "value-1",
+			},
+			expected: map[string]string{
+				"key-1": "value-1",
+			},
+		},
+		{
+			name: "new map is emtpy",
+			ori: map[string]string{
+				"key-1": "value-1",
+			},
+			expected: map[string]string{
+				"key-1": "value-1",
+			},
+		},
+		{
+			name: "there is a same key",
+			ori: map[string]string{
+				"key-1": "value-1",
+				"key-2": "value-2",
+			},
+			new: map[string]string{
+				"key-2": "value-22",
+				"key-3": "value-3",
+			},
+			expected: map[string]string{
+				"key-1": "value-1",
+				"key-2": "value-22",
+				"key-3": "value-3",
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := mergeMetadata(tc.ori, tc.new)
+			assert.Equal(t, got, tc.expected)
+		})
+	}
+}
