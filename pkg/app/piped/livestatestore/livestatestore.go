@@ -27,6 +27,7 @@ import (
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/cloudrun"
+	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/ecs"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/lambda"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/terraform"
@@ -117,6 +118,10 @@ func NewStore(cfg *config.PipedSpec, appLister applicationLister, gracePeriod ti
 		case model.CloudProviderLambda:
 			store := lambda.NewStore(cp.LambdaConfig, cp.Name, appLister, logger)
 			s.lambdaStores[cp.Name] = store
+
+		case model.CloudProviderECS:
+			store := ecs.NewStore(cp.ECSConfig, cp.Name, appLister, logger)
+			s.ecsStores[cp.Name] = store
 		}
 	}
 
