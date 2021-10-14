@@ -1223,9 +1223,13 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 func validateApprover(stages []*model.PipelineStage, commander, stageID string) error {
 	var approvers []string
 	for _, s := range stages {
-		if s.Id == stageID && s.Metadata["Approvers"] != "" {
-			approvers = strings.Split(s.Metadata["Approvers"], ",")
+		if s.Id == stageID {
+			continue
 		}
+		if as := s.Metadata["Approvers"]; as != "" {
+			approvers = strings.Split(as, ",")
+		}
+		break
 	}
 	if len(approvers) == 0 {
 		// Anyone can approve the deployment pipeline
