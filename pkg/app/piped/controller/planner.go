@@ -367,6 +367,7 @@ func (p *planner) retrieveFromMetadata() ([]config.NotificationMention, error) {
 	if !ok {
 		return []config.NotificationMention{}, fmt.Errorf("not found")
 	}
+
 	var as []config.NotificationMention
 	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
 		return []config.NotificationMention{}, err
