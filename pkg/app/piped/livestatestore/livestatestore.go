@@ -134,32 +134,37 @@ func (s *store) Run(ctx context.Context) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	for i := range s.kubernetesStores {
+		cpName := i
 		group.Go(func() error {
-			return s.kubernetesStores[i].Run(ctx)
+			return s.kubernetesStores[cpName].Run(ctx)
 		})
 	}
 
 	for i := range s.terraformStores {
+		cpName := i
 		group.Go(func() error {
-			return s.terraformStores[i].Run(ctx)
+			return s.terraformStores[cpName].Run(ctx)
 		})
 	}
 
 	for i := range s.cloudrunStores {
+		cpName := i
 		group.Go(func() error {
-			return s.cloudrunStores[i].Run(ctx)
+			return s.cloudrunStores[cpName].Run(ctx)
 		})
 	}
 
 	for i := range s.lambdaStores {
+		cpName := i
 		group.Go(func() error {
-			return s.lambdaStores[i].Run(ctx)
+			return s.lambdaStores[cpName].Run(ctx)
 		})
 	}
 
 	for i := range s.ecsStores {
+		cpName := i
 		group.Go(func() error {
-			return s.ecsStores[i].Run(ctx)
+			return s.ecsStores[cpName].Run(ctx)
 		})
 	}
 
