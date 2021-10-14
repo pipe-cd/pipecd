@@ -81,6 +81,7 @@ func (r *reporter) Run(ctx context.Context) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	for i, reporter := range r.reporters {
+		reporter := reporter
 		// Avoid starting all reporters at the same time to reduce the API call burst.
 		time.Sleep(time.Duration(i) * 10 * time.Second)
 		r.logger.Info(fmt.Sprintf("starting app live state reporter for cloud provider: %s", reporter.ProviderName()))
