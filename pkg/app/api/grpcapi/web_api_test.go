@@ -411,7 +411,7 @@ func TestValidateApprover(t *testing.T) {
 			wantErr:   false,
 		},
 		{
-			name: "valid if a commander is match approvers",
+			name: "valid if a commander match approvers",
 			stages: []*model.PipelineStage{
 				{
 					Id: "stage-id",
@@ -439,7 +439,7 @@ func TestValidateApprover(t *testing.T) {
 			wantErr:   true,
 		},
 		{
-			name: "valid if the Approvers key is not contained in metadata",
+			name: "valid if the Approvers key isn't contained in metadata",
 			stages: []*model.PipelineStage{
 				{
 					Id: "stage-id",
