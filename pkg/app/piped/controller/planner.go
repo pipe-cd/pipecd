@@ -349,8 +349,8 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 
 func (p *planner) getMentionedAccounts(ctx context.Context, event model.NotificationEventType, targetDSP deploysource.Provider) ([]string, error) {
 	accounts, err := p.retrieveFromMetadata()
-	if err != nil{
-		return nil, fmt.Errorf("failed to prepare running deploy source data: %v", err)
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare running deploy source data: %w", err)
 	}
 
 	for _, v := range accounts {
