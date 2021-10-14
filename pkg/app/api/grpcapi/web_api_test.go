@@ -411,6 +411,20 @@ func TestValidateApprover(t *testing.T) {
 			wantErr:   false,
 		},
 		{
+			name: "valid if a commander is match approvers",
+			stages: []*model.PipelineStage{
+				{
+					Id: "stage-id",
+					Metadata: map[string]string{
+						"Approvers": "user1",
+					},
+				},
+			},
+			commander: "user1",
+			stageId:   "stage-id",
+			wantErr:   false,
+		},
+		{
 			name: "invalid if a commander isn't included in approvers",
 			stages: []*model.PipelineStage{
 				{
