@@ -122,6 +122,7 @@ func (d *detector) Run(ctx context.Context) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	for i, detector := range d.detectors {
+		detector := detector
 		// Avoid starting all detectors at the same time to reduce the API call burst.
 		time.Sleep(time.Duration(i) * 10 * time.Second)
 		d.logger.Info(fmt.Sprintf("starting drift detector for cloud provider: %s", detector.ProviderName()))
