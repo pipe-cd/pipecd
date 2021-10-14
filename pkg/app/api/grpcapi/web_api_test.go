@@ -389,9 +389,6 @@ func TestValidatePipedBelongsToProject(t *testing.T) {
 }
 
 func TestValidateApprover(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	tests := []struct {
 		name      string
 		stages    []*model.PipelineStage
