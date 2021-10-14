@@ -1223,7 +1223,7 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 func validateApprover(stages []*model.PipelineStage, commander, stageID string) error {
 	var approvers []string
 	for _, s := range stages {
-		if s.Id == stageID {
+		if s.Id != stageID {
 			continue
 		}
 		if as := s.Metadata["Approvers"]; as != "" {
