@@ -61,8 +61,8 @@ helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} -
   --set-file secret.data.ssh-key={PATH_TO_PRIVATE_SSH_KEY_FILE}
   {{< /tab >}}
   {{< tab lang="bash" header="Piped with Remote-upgrade" >}}
-# Enable remote-upgrade feature of Piped. This feature is currently under Alpha status.
-# https://pipecd.dev/docs/feature-status/#pipeds-core
+# Enable remote-upgrade feature of Piped.
+# https://pipecd.dev/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-upgrade
 # This allows upgrading Piped to a new version from the web console.
 # But we still need to restart Piped when we want to update its config data.
 
@@ -74,8 +74,7 @@ helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} -
   {{< /tab >}}
   {{< tab lang="bash" header="Piped with Remote-upgrade and Remote-config" >}}
 # Enable both remote-upgrade and remote-config features of Piped.
-# These features are currently under Alpha status.
-# https://pipecd.dev/docs/feature-status/#pipeds-core
+# https://pipecd.dev/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-config
 # Beside of the ability to upgrade Piped to a new version from the web console,
 # remote-config allows loading the Piped config stored in a remote location such as a Git repository.
 # Whenever the config data is changed, it loads the new config and restarts Piped to use that new config.
@@ -144,8 +143,8 @@ helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} -
   --set rbac.scope=namespace
   {{< /tab >}}
   {{< tab lang="bash" header="Piped with Remote-upgrade" >}}
-# Enable remote-upgrade feature of Piped. This feature is currently under Alpha status.
-# https://pipecd.dev/docs/feature-status/#pipeds-core
+# Enable remote-upgrade feature of Piped.
+# https://pipecd.dev/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-upgrade
 # This allows upgrading Piped to a new version from the web console.
 # But we still need to restart Piped when we want to update its config data.
 
@@ -159,8 +158,7 @@ helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} -
   {{< /tab >}}
   {{< tab lang="bash" header="Piped with Remote-upgrade and Remote-config" >}}
 # Enable both remote-upgrade and remote-config features of Piped.
-# These features are currently under Alpha status.
-# https://pipecd.dev/docs/feature-status/#pipeds-core
+# https://pipecd.dev/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-config
 # Beside of the ability to upgrade Piped to a new version from the web console,
 # remote-config allows loading the Piped config stored in a remote location such as a Git repository.
 # Whenever the config data is changed, it loads the new config and restarts Piped to use that new config.
@@ -208,8 +206,8 @@ helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} -
   --set image.repository="gcr.io/pipecd/piped-okd"
   {{< /tab >}}
   {{< tab lang="bash" header="Piped with Remote-upgrade" >}}
-# Enable remote-upgrade feature of Piped. This feature is currently under Alpha status.
-# https://pipecd.dev/docs/feature-status/#pipeds-core
+# Enable remote-upgrade feature of Piped.
+# https://pipecd.dev/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-upgrade
 # This allows upgrading Piped to a new version from the web console.
 # But we still need to restart Piped when we want to update its config data.
 
@@ -229,8 +227,7 @@ helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} -
   {{< /tab >}}
   {{< tab lang="bash" header="Piped with Remote-upgrade and Remote-config" >}}
 # Enable both remote-upgrade and remote-config features of Piped.
-# These features are currently under Alpha status.
-# https://pipecd.dev/docs/feature-status/#pipeds-core
+# https://pipecd.dev/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-config
 # Beside of the ability to upgrade Piped to a new version from the web console,
 # remote-config allows loading the Piped config stored in a remote location such as a Git repository.
 # Whenever the config data is changed, it loads the new config and restarts Piped to use that new config.
