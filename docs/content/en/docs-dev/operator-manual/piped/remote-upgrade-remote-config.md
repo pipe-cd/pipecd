@@ -10,7 +10,7 @@ description: >
 
 > NOTE: This feature is currently under Alpha status.
 
-Remote upgrade is the ability to restart the currently running Piped with another version from the web console.
+The remote upgrade is the ability to restart the currently running Piped with another version from the web console.
 This reduces the effort involved in updating Piped to newer versions.
 All Pipeds that are running by the provided Piped container image can be enabled to use this feature.
 It means Pipeds running on a Kubernetes cluster, a virtual machine, a serverless service can be upgraded remotely from the web console.
@@ -30,9 +30,9 @@ Select a list of Pipeds to upgrade from Settings page
 
 > NOTE: This feature is currently under Alpha status.
 
-Although the remote-upgrade allows you remotely restart your Pipeds to run any new version you want, if your Piped is loading its config locally where Piped is running, you still need to manually restart Piped after adding any change on that config data. Remote-config is what for you to remove that kind of manual operation.
+Although the remote-upgrade allows you remotely restart your Pipeds to run any new version you want, if your Piped is loading its config locally where Piped is running, you still need to manually restart Piped after adding any change on that config data. Remote-config is for you to remove that kind of manual operation.
 
-Remote-config is the ability to load Piped config data from a remote location such as a Git repository. Not only that, but it also watches the config periodically to detect any changes on that config to restart Piped with the new data automatically.
+Remote-config is the ability to load Piped config data from a remote location such as a Git repository. Not only that, but it also watches the config periodically to detect any changes on that config and restarts Piped to reflect the new configuration automatically.
 
 This feature requires the remote-upgrade feature to be enabled simultaneously. And currently, we are only supporting remote config from a Git repository, but in the future other remote locations could be supported too. Please check the [installation](/docs-dev/operator-manual/piped/installation/) guide on each environment to know how to configure Piped to load a remote config file.
 
