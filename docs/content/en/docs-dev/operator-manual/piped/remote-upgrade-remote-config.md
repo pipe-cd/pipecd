@@ -16,7 +16,7 @@ All Pipeds that are running by the provided Piped container image can be enabled
 It means Pipeds running on a Kubernetes cluster, a virtual machine, a serverless service can be upgraded remotely from the web console.
 
 Basically, in order to use this feature you must run Piped with `/launcher` command instead of `/piped` command as usual.
-Please check the [installation](/docs-dev/operator-manual/piped/installation/) guide on each environment to see the details.
+Please check the [installation](/docs/operator-manual/piped/installation/) guide on each environment to see the details.
 
 After starting Piped with the remote-upgrade feature, you can go to the Settings page then click on `UPGRADE` button on the top-right corner.
 A dialog will be shown for selecting which Pipeds you want to upgrade and what version they should run.
