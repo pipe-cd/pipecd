@@ -16,8 +16,8 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"io"
 	"path/filepath"
 	"time"
 
@@ -32,6 +32,10 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/regexpool"
+)
+
+const (
+	MentionedAccountsKey = "MentionedAccounts"
 )
 
 // What planner does:
@@ -344,20 +348,28 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 }
 
 func (p *planner) getMentionedAccounts(ctx context.Context, event model.NotificationEventType, targetDSP deploysource.Provider) ([]string, error) {
-	ds, err := targetDSP.GetReadOnly(ctx, io.Discard)
-	if err != nil {
-		return nil, fmt.Errorf("failed to prepare running deploy source data: %w", err)
+	accounts, err := p.retrieveFromMetadata()
+	if err != nil{
+		return nil, fmt.Errorf("failed to prepare running deploy source data: %v", err)
 	}
 
-	if ds.GenericDeploymentConfig.DeploymentNotification == nil {
-		// There is no event to mention users.
-		return nil, nil
-	}
-
-	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
+	for _, v := range accounts {
 		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
 		}
 	}
 	return nil, nil
+}
+
+func (p *planner) retrieveFromMetadata() ([]config.NotificationMention, error) {
+	metaDataStore := NewMetadataStore(p.apiClient, p.deployment)
+	accounts, ok := metaDataStore.Get(MentionedAccountsKey)
+	if !ok {
+		return []config.NotificationMention{}, fmt.Errorf("not found")
+	}
+	var as []config.NotificationMention
+	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
+		return []config.NotificationMention{}, err
+	}
+	return as, nil
 }
