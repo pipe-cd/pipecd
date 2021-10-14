@@ -40,4 +40,4 @@ This feature requires the remote-upgrade feature to be enabled simultaneously. C
 ## Summary
 
 - By `remote-upgrade` you can upgrade your Piped to a newer version by clicking on the web console
-- By `remote-config` you can enforce your Piped to use a new config data by updating the config file stored in a Git repository
+- By `remote-config` you can enforce your Piped to use the latest config data just by updating its config file stored in a Git repository
