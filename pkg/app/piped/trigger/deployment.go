@@ -26,7 +26,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
-	"github.com/pipe-cd/pipe/pkg/app/piped/controller"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -46,17 +45,6 @@ func (t *Trigger) triggerDeployment(
 ) (deployment *model.Deployment, err error) {
 	deployment, err = buildDeployment(app, branch, commit, commander, syncStrategy, time.Now())
 	if err != nil {
-		return
-	}
-
-	t.logger.Info(fmt.Sprintf("application %s will be triggered to sync", app.Id),
-		zap.String("commit-hash", commit.Hash),
-	)
-	req := &pipedservice.CreateDeploymentRequest{
-		Deployment: deployment,
-	}
-	if _, err = t.apiClient.CreateDeployment(ctx, req); err != nil {
-		t.logger.Error("failed to create deployment", zap.Error(err))
 		return
 	}
 
@@ -84,6 +72,17 @@ func (t *Trigger) triggerDeployment(
 			},
 		})
 	}()
+
+	t.logger.Info(fmt.Sprintf("application %s will be triggered to sync", app.Id),
+		zap.String("commit-hash", commit.Hash),
+	)
+	req := &pipedservice.CreateDeploymentRequest{
+		Deployment: deployment,
+	}
+	if _, err = t.apiClient.CreateDeployment(ctx, req); err != nil {
+		t.logger.Error("failed to create deployment", zap.Error(err))
+		return
+	}
 
 	// TODO: Find a better way to ensure that the application should be updated correctly
 	// when the deployment was successfully triggered.
@@ -199,9 +198,12 @@ func (t *Trigger) getMentionedAccounts(ctx context.Context, d *model.Deployment)
 		return nil, nil
 	}
 
-	if err := t.storeMentionedAccounts(ctx, d, n); err != nil {
-		return nil, fmt.Errorf("unable to store mentioned accounts to metadata store: %v", err)
+	d.Metadata = map[string]string{}
+	metadata, err := json.Marshal(n.Mentions)
+	if err != nil {
+		return nil, fmt.Errorf("unable to store mentioned accounts to metadata store: %w", err)
 	}
+	d.Metadata[MentionedAccountsKey] = string(metadata)
 
 	for _, v := range n.Mentions {
 		if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
@@ -210,17 +212,4 @@ func (t *Trigger) getMentionedAccounts(ctx context.Context, d *model.Deployment)
 	}
 
 	return nil, nil
-}
-
-func (t *Trigger) storeMentionedAccounts(ctx context.Context, d *model.Deployment, n *config.DeploymentNotification) error {
-	metaDataStore := controller.NewMetadataStore(t.apiClient, d)
-	metadata, err := json.Marshal(n.Mentions)
-	if err != nil {
-		return err
-	}
-
-	if err := metaDataStore.Set(ctx, MentionedAccountsKey, string(metadata)); err != nil {
-		return err
-	}
-	return nil
 }
