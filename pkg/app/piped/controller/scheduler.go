@@ -653,29 +653,22 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 }
 
 func (s *scheduler) getMentionedAccounts(ctx context.Context, event model.NotificationEventType) ([]string, error) {
-	accounts, err := s.retrieveFromMetadata()
-	if err != nil {
+	accounts, ok := s.metadataStore.Get(mentionsKey)
+	if !ok {
+		return nil, fmt.Errorf("failed to prepare running deploy source data: not found")
+	}
+
+	var as []config.NotificationMention
+	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
 		return nil, fmt.Errorf("failed to prepare running deploy source data: %w", err)
 	}
 
-	for _, v := range accounts {
+	for _, v := range as {
 		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
 		}
 	}
 	return nil, nil
-}
-
-func (s *scheduler) retrieveFromMetadata() ([]config.NotificationMention, error) {
-	accounts, ok := s.metadataStore.Get(mentionsKey)
-	if !ok {
-		return []config.NotificationMention{}, fmt.Errorf("not found")
-	}
-	var as []config.NotificationMention
-	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
-		return []config.NotificationMention{}, err
-	}
-	return as, nil
 }
 
 func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) error {
