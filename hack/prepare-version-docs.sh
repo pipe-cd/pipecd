@@ -21,7 +21,7 @@ do
     exit 1
 done
 
-echo "Prepare versions docs"
+echo "Prepare version docs"
 
 CONTENT_DIR=docs/content/en
 
@@ -61,4 +61,4 @@ EOT
 tail -4 docs/config.toml >> docs/config.toml.tmp
 mv docs/config.toml.tmp docs/config.toml
 
-echo "Versions docs has been prepared successfully"
+echo "Version docs has been prepared successfully at $CONTENT_DIR/docs-$1/"
