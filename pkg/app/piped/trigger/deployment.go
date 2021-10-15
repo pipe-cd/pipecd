@@ -46,7 +46,7 @@ func (t *Trigger) triggerDeployment(
 		return
 	}
 
-	accounts, err := t.getMentionedAccounts(ctx, deployment)
+	accounts, err := t.getMentionedAccounts(deployment)
 	if err != nil {
 		t.logger.Error("failed to get the list of accounts", zap.Error(err))
 		return
@@ -166,7 +166,7 @@ func buildDeployment(
 	return deployment, nil
 }
 
-func (t *Trigger) getMentionedAccounts(ctx context.Context, d *model.Deployment) ([]string, error) {
+func (t *Trigger) getMentionedAccounts(d *model.Deployment) ([]string, error) {
 	// Find the application repo from pre-loaded ones.
 	repo, ok := t.gitRepos[d.GitPath.Repo.Id]
 	if !ok {
