@@ -37,9 +37,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const (
-	MentionedAccountsKey = "MentionedAccounts"
-)
+const mentionsKey = "Mentions"
 
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
@@ -669,7 +667,7 @@ func (s *scheduler) getMentionedAccounts(ctx context.Context, event model.Notifi
 }
 
 func (s *scheduler) retrieveFromMetadata() ([]config.NotificationMention, error) {
-	accounts, ok := s.metadataStore.Get(MentionedAccountsKey)
+	accounts, ok := s.metadataStore.Get(mentionsKey)
 	if !ok {
 		return []config.NotificationMention{}, fmt.Errorf("not found")
 	}
