@@ -47,21 +47,21 @@ func (t *Trigger) triggerDeployment(
 	}
 
 	var as []string
-	accounts, err := t.getMentionedAccounts(deployment)
+	mentions, err := t.getNotificationMentions(deployment)
 	if err != nil {
-		t.logger.Error("failed to get the list of accounts", zap.Error(err))
+		t.logger.Error("failed to get the list of mentions", zap.Error(err))
 		return
 	}
 
-	if accounts != nil {
+	if mentions != nil {
 		deployment.Metadata = map[string]string{}
-		metadata, err := json.Marshal(accounts)
+		metadata, err := json.Marshal(mentions)
 		if err != nil {
-			return nil, fmt.Errorf("unable to store mentioned accounts to metadata store: %w", err)
+			return nil, fmt.Errorf("unable to store mentioned mentions to metadata store: %w", err)
 		}
 		deployment.Metadata[mentionsKey] = string(metadata)
 
-		for _, v := range accounts {
+		for _, v := range mentions {
 			if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
 				as = v.Slack
 				break
@@ -183,7 +183,7 @@ func buildDeployment(
 	return deployment, nil
 }
 
-func (t *Trigger) getMentionedAccounts(d *model.Deployment) ([]config.NotificationMention, error) {
+func (t *Trigger) getNotificationMentions(d *model.Deployment) ([]config.NotificationMention, error) {
 	// Find the application repo from pre-loaded ones.
 	repo, ok := t.gitRepos[d.GitPath.Repo.Id]
 	if !ok {
