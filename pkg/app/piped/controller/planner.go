@@ -34,9 +34,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/regexpool"
 )
 
-const (
-	MentionedAccountsKey = "MentionedAccounts"
-)
+const mentionsKey = "Mentions"
 
 // What planner does:
 // - Wait until there is no PLANNED or RUNNING deployment
@@ -363,7 +361,7 @@ func (p *planner) getMentionedAccounts(ctx context.Context, event model.Notifica
 
 func (p *planner) retrieveFromMetadata() ([]config.NotificationMention, error) {
 	metaDataStore := NewMetadataStore(p.apiClient, p.deployment)
-	accounts, ok := metaDataStore.Get(MentionedAccountsKey)
+	accounts, ok := metaDataStore.Get(mentionsKey)
 	if !ok {
 		return []config.NotificationMention{}, fmt.Errorf("not found")
 	}
