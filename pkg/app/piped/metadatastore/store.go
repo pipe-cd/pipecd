@@ -136,7 +136,7 @@ func (s *metadataStore) syncSharedMetadata(ctx context.Context) error {
 	return err
 }
 
-func (s *metadataStore) stagePut(ctx context.Context, stageID string, md map[string]string) error {
+func (s *metadataStore) stagePutMulti(ctx context.Context, stageID string, md map[string]string) error {
 	merged := make(map[string]string, len(md))
 
 	s.stagesMu.Lock()
@@ -181,11 +181,11 @@ type stageMetadataStore struct {
 }
 
 func (s *stageMetadataStore) PutMulti(ctx context.Context, md map[string]string) error {
-	return s.backend.stagePut(ctx, s.stageID, md)
+	return s.backend.stagePutMulti(ctx, s.stageID, md)
 }
 
 func (s *stageMetadataStore) Put(ctx context.Context, key, value string) error {
-	return s.backend.stagePut(ctx, s.stageID, map[string]string{key: value})
+	return s.backend.stagePutMulti(ctx, s.stageID, map[string]string{key: value})
 }
 
 func (s *stageMetadataStore) Get(key string) (string, bool) {
