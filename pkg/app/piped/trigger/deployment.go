@@ -49,6 +49,7 @@ func (t *Trigger) triggerDeployment(
 
 	deployment, err = buildDeployment(app, branch, commit, commander, syncStrategy, time.Now(), mentions)
 	if err != nil {
+		t.logger.Error("failed to build the deployment", zap.Error(err))
 		return
 	}
 
