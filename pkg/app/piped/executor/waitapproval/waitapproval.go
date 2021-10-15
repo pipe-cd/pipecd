@@ -28,8 +28,8 @@ import (
 )
 
 const (
-	approvedByKey        = "ApprovedBy"
-	mentionsKey = "Mentions"
+	approvedByKey = "ApprovedBy"
+	mentionsKey   = "Mentions"
 )
 
 type Executor struct {
