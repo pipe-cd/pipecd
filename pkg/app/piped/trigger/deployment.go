@@ -41,26 +41,19 @@ func (t *Trigger) triggerDeployment(
 	commander string,
 	syncStrategy model.SyncStrategy,
 ) (deployment *model.Deployment, err error) {
-	deployment, err = buildDeployment(app, branch, commit, commander, syncStrategy, time.Now())
-	if err != nil {
-		return
-	}
-
-	var as []string
 	mentions, err := t.getNotificationMentions(app.GitPath)
 	if err != nil {
 		t.logger.Error("failed to get the list of mentions", zap.Error(err))
 		return
 	}
 
-	if mentions != nil {
-		deployment.Metadata = map[string]string{}
-		metadata, err := json.Marshal(mentions)
-		if err != nil {
-			return nil, fmt.Errorf("unable to store mentioned mentions to metadata store: %w", err)
-		}
-		deployment.Metadata[mentionsKey] = string(metadata)
+	deployment, err = buildDeployment(app, branch, commit, commander, syncStrategy, time.Now(), mentions)
+	if err != nil {
+		return
+	}
 
+	var as []string
+	if mentions != nil {
 		for _, v := range mentions {
 			if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
 				as = v.Slack
@@ -141,6 +134,7 @@ func buildDeployment(
 	commander string,
 	syncStrategy model.SyncStrategy,
 	now time.Time,
+	mentions []config.NotificationMention,
 ) (*model.Deployment, error) {
 	commitURL := ""
 	if r := app.GitPath.Repo; r != nil {
@@ -149,6 +143,14 @@ func buildDeployment(
 		if err != nil {
 			return nil, err
 		}
+	}
+	metadata := make(map[string]string)
+	if mentions != nil {
+		value, err := json.Marshal(mentions)
+		if err != nil {
+			return nil, fmt.Errorf("unable to store mentioned mentions to value store: %w", err)
+		}
+		metadata[mentionsKey] = string(value)
 	}
 
 	deployment := &model.Deployment{
@@ -176,6 +178,7 @@ func buildDeployment(
 		CloudProvider: app.CloudProvider,
 		Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
 		StatusReason:  "The deployment is waiting to be planned",
+		Metadata:      metadata,
 		CreatedAt:     now.Unix(),
 		UpdatedAt:     now.Unix(),
 	}
