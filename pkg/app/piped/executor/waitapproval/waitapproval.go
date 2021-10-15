@@ -29,7 +29,7 @@ import (
 
 const (
 	approvedByKey        = "ApprovedBy"
-	MentionedAccountsKey = "MentionedAccounts"
+	mentionsKey = "Mentions"
 )
 
 type Executor struct {
@@ -150,7 +150,7 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 }
 
 func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
-	accounts, ok := e.MetadataStore.Get(MentionedAccountsKey)
+	accounts, ok := e.MetadataStore.Get(mentionsKey)
 	if !ok {
 		return nil, fmt.Errorf("failed to prepare running deploy source data: not found")
 	}
