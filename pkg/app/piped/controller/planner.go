@@ -271,7 +271,7 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string, tar
 		retry = pipedservice.NewRetry(10)
 	)
 
-	accounts, err := p.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_FAILED, targetDSP)
+	accounts, err := p.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
 	if err != nil {
 		p.logger.Error("failed to get the list of accounts", zap.Error(err))
 	}
@@ -315,7 +315,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 		retry = pipedservice.NewRetry(10)
 	)
 
-	accounts, err := p.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED, targetDSP)
+	accounts, err := p.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 	if err != nil {
 		p.logger.Error("failed to get the list of accounts", zap.Error(err))
 	}
