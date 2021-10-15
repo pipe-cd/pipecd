@@ -596,7 +596,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	defer func() {
 		switch status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
-			accounts, err := s.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED)
+			accounts, err := s.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED)
 			if err != nil {
 				s.logger.Error("failed to get the list of accounts", zap.Error(err))
 			}
@@ -610,7 +610,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE:
-			accounts, err := s.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
+			accounts, err := s.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
 			if err != nil {
 				s.logger.Error("failed to get the list of accounts", zap.Error(err))
 			}
@@ -625,7 +625,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_CANCELLED:
-			accounts, err := s.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			accounts, err := s.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 			if err != nil {
 				s.logger.Error("failed to get the list of accounts", zap.Error(err))
 			}
@@ -652,7 +652,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	return err
 }
 
-func (s *scheduler) getMentionedAccounts(ctx context.Context, event model.NotificationEventType) ([]string, error) {
+func (s *scheduler) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
 	accounts, ok := s.metadataStore.Get(mentionsKey)
 	if !ok {
 		return nil, fmt.Errorf("failed to prepare running deploy source data: not found")
