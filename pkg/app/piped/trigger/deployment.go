@@ -31,6 +31,8 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+const mentionsKey = "Mentions"
+
 func (t *Trigger) triggerDeployment(
 	ctx context.Context,
 	app *model.Application,
@@ -199,7 +201,7 @@ func (t *Trigger) getMentionedAccounts(ctx context.Context, d *model.Deployment)
 	if err != nil {
 		return nil, fmt.Errorf("unable to store mentioned accounts to metadata store: %w", err)
 	}
-	d.Metadata["Mentions"] = string(metadata)
+	d.Metadata[mentionsKey] = string(metadata)
 
 	for _, v := range n.Mentions {
 		if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
