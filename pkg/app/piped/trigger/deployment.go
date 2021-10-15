@@ -16,6 +16,7 @@ package trigger
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -30,6 +31,8 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+const mentionsKey = "Mentions"
+
 func (t *Trigger) triggerDeployment(
 	ctx context.Context,
 	app *model.Application,
@@ -38,15 +41,24 @@ func (t *Trigger) triggerDeployment(
 	commander string,
 	syncStrategy model.SyncStrategy,
 ) (deployment *model.Deployment, err error) {
-	deployment, err = buildDeployment(app, branch, commit, commander, syncStrategy, time.Now())
+	mentions, err := t.getNotificationMentions(app.GitPath)
 	if err != nil {
+		t.logger.Error("failed to get the list of mentions", zap.Error(err))
 		return
 	}
 
-	accounts, err := t.getMentionedAccounts(deployment)
+	deployment, err = buildDeployment(app, branch, commit, commander, syncStrategy, time.Now(), mentions)
 	if err != nil {
-		t.logger.Error("failed to get the list of accounts", zap.Error(err))
+		t.logger.Error("failed to build the deployment", zap.Error(err))
 		return
+	}
+
+	var as []string
+	for _, v := range mentions {
+		if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
+			as = v.Slack
+			break
+		}
 	}
 
 	defer func() {
@@ -62,7 +74,7 @@ func (t *Trigger) triggerDeployment(
 			Metadata: &model.NotificationEventDeploymentTriggered{
 				Deployment:        deployment,
 				EnvName:           env.Name,
-				MentionedAccounts: accounts,
+				MentionedAccounts: as,
 			},
 		})
 	}()
@@ -121,6 +133,7 @@ func buildDeployment(
 	commander string,
 	syncStrategy model.SyncStrategy,
 	now time.Time,
+	mentions []config.NotificationMention,
 ) (*model.Deployment, error) {
 	commitURL := ""
 	if r := app.GitPath.Repo; r != nil {
@@ -129,6 +142,14 @@ func buildDeployment(
 		if err != nil {
 			return nil, err
 		}
+	}
+	metadata := make(map[string]string)
+	if mentions != nil {
+		value, err := json.Marshal(mentions)
+		if err != nil {
+			return nil, fmt.Errorf("failed to save mention config to deployment metadata: %w", err)
+		}
+		metadata[mentionsKey] = string(value)
 	}
 
 	deployment := &model.Deployment{
@@ -156,6 +177,7 @@ func buildDeployment(
 		CloudProvider: app.CloudProvider,
 		Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
 		StatusReason:  "The deployment is waiting to be planned",
+		Metadata:      metadata,
 		CreatedAt:     now.Unix(),
 		UpdatedAt:     now.Unix(),
 	}
@@ -163,20 +185,20 @@ func buildDeployment(
 	return deployment, nil
 }
 
-func (t *Trigger) getMentionedAccounts(d *model.Deployment) ([]string, error) {
+func (t *Trigger) getNotificationMentions(p *model.ApplicationGitPath) ([]config.NotificationMention, error) {
 	// Find the application repo from pre-loaded ones.
-	repo, ok := t.gitRepos[d.GitPath.Repo.Id]
+	repo, ok := t.gitRepos[p.Repo.Id]
 	if !ok {
-		t.logger.Warn("detected some applications binding with a non existent repository", zap.String("repo-id", d.GitPath.Repo.Id))
-		return nil, fmt.Errorf("unknown repo %q is set to the deployment", d.GitPath.Repo.Id)
+		t.logger.Warn("detected some applications binding with a non existent repository", zap.String("repo-id", p.Repo.Id))
+		return nil, fmt.Errorf("unknown repo %q is set to the deployment", p.Repo.Id)
 	}
 
-	absPath := filepath.Join(repo.GetPath(), d.GitPath.GetDeploymentConfigFilePath())
+	absPath := filepath.Join(repo.GetPath(), p.GetDeploymentConfigFilePath())
 
 	cfg, err := config.LoadFromYAML(absPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("deployment config file %s was not found", d.GitPath.GetDeploymentConfigFilePath())
+			return nil, fmt.Errorf("deployment config file %s was not found", p.GetDeploymentConfigFilePath())
 		}
 		return nil, err
 	}
@@ -191,11 +213,5 @@ func (t *Trigger) getMentionedAccounts(d *model.Deployment) ([]string, error) {
 		return nil, nil
 	}
 
-	for _, v := range spec.DeploymentNotification.Mentions {
-		if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
-			return v.Slack, nil
-		}
-	}
-
-	return nil, nil
+	return spec.DeploymentNotification.Mentions, nil
 }
