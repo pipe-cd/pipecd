@@ -60,15 +60,15 @@ func (t *Trigger) triggerDeployment(
 			return nil, fmt.Errorf("unable to store mentioned accounts to metadata store: %w", err)
 		}
 		deployment.Metadata[mentionsKey] = string(metadata)
-	
+
 		for _, v := range accounts {
 			if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
 				as = v.Slack
 				break
 			}
-		}	
+		}
 	}
-	
+
 	defer func() {
 		if err != nil {
 			return
