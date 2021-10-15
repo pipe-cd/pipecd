@@ -137,9 +137,8 @@ func (s *metadataStore) syncSharedMetadata(ctx context.Context) error {
 }
 
 func (s *metadataStore) stagePutMulti(ctx context.Context, stageID string, md map[string]string) error {
-	merged := make(map[string]string, len(md))
-
 	s.stagesMu.Lock()
+	merged := make(map[string]string, len(md)+len(s.stages[stageID]))
 	for k, v := range s.stages[stageID] {
 		merged[k] = v
 	}
