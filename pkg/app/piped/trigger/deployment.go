@@ -46,12 +46,29 @@ func (t *Trigger) triggerDeployment(
 		return
 	}
 
+	var as []string
 	accounts, err := t.getMentionedAccounts(deployment)
 	if err != nil {
 		t.logger.Error("failed to get the list of accounts", zap.Error(err))
 		return
 	}
 
+	if accounts != nil {
+		deployment.Metadata = map[string]string{}
+		metadata, err := json.Marshal(accounts)
+		if err != nil {
+			return nil, fmt.Errorf("unable to store mentioned accounts to metadata store: %w", err)
+		}
+		deployment.Metadata[mentionsKey] = string(metadata)
+	
+		for _, v := range accounts {
+			if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
+				as = v.Slack
+				break
+			}
+		}	
+	}
+	
 	defer func() {
 		if err != nil {
 			return
@@ -65,7 +82,7 @@ func (t *Trigger) triggerDeployment(
 			Metadata: &model.NotificationEventDeploymentTriggered{
 				Deployment:        deployment,
 				EnvName:           env.Name,
-				MentionedAccounts: accounts,
+				MentionedAccounts: as,
 			},
 		})
 	}()
@@ -166,7 +183,7 @@ func buildDeployment(
 	return deployment, nil
 }
 
-func (t *Trigger) getMentionedAccounts(d *model.Deployment) ([]string, error) {
+func (t *Trigger) getMentionedAccounts(d *model.Deployment) ([]config.NotificationMention, error) {
 	// Find the application repo from pre-loaded ones.
 	repo, ok := t.gitRepos[d.GitPath.Repo.Id]
 	if !ok {
@@ -189,24 +206,10 @@ func (t *Trigger) getMentionedAccounts(d *model.Deployment) ([]string, error) {
 		return nil, fmt.Errorf("unsupported application kind: %s", cfg.Kind)
 	}
 
-	n := spec.DeploymentNotification
-	if n == nil {
+	if spec.DeploymentNotification == nil {
 		// There is no event to mention users.
 		return nil, nil
 	}
 
-	d.Metadata = map[string]string{}
-	metadata, err := json.Marshal(n.Mentions)
-	if err != nil {
-		return nil, fmt.Errorf("unable to store mentioned accounts to metadata store: %w", err)
-	}
-	d.Metadata[mentionsKey] = string(metadata)
-
-	for _, v := range n.Mentions {
-		if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
-			return v.Slack, nil
-		}
-	}
-
-	return nil, nil
+	return spec.DeploymentNotification.Mentions, nil
 }
