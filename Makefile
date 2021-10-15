@@ -115,6 +115,10 @@ kind-down:
 prepare-release:
 	./hack/prepare-release.sh $(version)
 
+.PHONY: prepare-version-docs
+prepare-version-docs:
+	./hack/prepare-version-docs.sh $(version)
+
 .PHONY: update-docsy
 update-docsy:
 	rm -rf docs/themes/docsy
