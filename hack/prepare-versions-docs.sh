@@ -23,6 +23,8 @@ done
 
 echo "Prepare versions docs"
 
+CONTENT_DIR=docs/content/en
+
 # Update $CONTENT_DIR/docs
 rm -rf $CONTENT_DIR/docs
 cp -rf $CONTENT_DIR/docs-dev $CONTENT_DIR/docs
