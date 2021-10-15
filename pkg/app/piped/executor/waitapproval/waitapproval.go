@@ -117,7 +117,7 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 }
 
 func (e *Executor) reportApproved(ctx context.Context, approver string) {
-	accounts, err := e.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED)
+	accounts, err := e.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED)
 	if err != nil {
 		e.Logger.Error("failed to get the list of accounts", zap.Error(err))
 	}
@@ -134,7 +134,7 @@ func (e *Executor) reportApproved(ctx context.Context, approver string) {
 }
 
 func (e *Executor) reportRequiringApproval(ctx context.Context) {
-	accounts, err := e.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
+	accounts, err := e.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
 	if err != nil {
 		e.Logger.Error("failed to get the list of accounts", zap.Error(err))
 	}
@@ -149,7 +149,7 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 	})
 }
 
-func (e *Executor) getMentionedAccounts(ctx context.Context, event model.NotificationEventType) ([]string, error) {
+func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
 	accounts, err := e.retrieveFromMetadata()
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare running deploy source data: %w", err)
