@@ -115,8 +115,8 @@ kind-down:
 prepare-release:
 	./hack/prepare-release.sh $(version)
 
-.PHONY: dump-version-docs
-dump-version-docs:
+.PHONY: prepare-version-docs
+prepare-version-docs:
 	./hack/prepare-version-docs.sh $(version)
 
 .PHONY: update-docsy
