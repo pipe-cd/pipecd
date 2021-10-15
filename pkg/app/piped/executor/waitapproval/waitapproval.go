@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	approvedByKey = "ApprovedBy"
+	approvedByKey        = "ApprovedBy"
 	MentionedAccountsKey = "MentionedAccounts"
 )
 
