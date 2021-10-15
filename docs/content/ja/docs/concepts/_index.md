@@ -68,7 +68,7 @@ Deploymentプロセスにおいて現在の状態と望ましい状態の間に�
 
 ### Cloud Provider
 
-Cloud Providerはどのクラウドを用いてどこにApplicationをデプロイすべきかを定義します。
+Cloud Providerではどのクラウドを用いてどこにApplicationをデプロイすべきかを定義します。
 
 ### Analysis Provider
 
