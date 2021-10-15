@@ -65,10 +65,10 @@ func TestStore(t *testing.T) {
 			"key-1": "value-1",
 		},
 		Stages: []*model.PipelineStage{
-			&model.PipelineStage{
+			{
 				Id: "stage-1",
 			},
-			&model.PipelineStage{
+			{
 				Id: "stage-2",
 				Metadata: map[string]string{
 					"stage-2-key-1": "stage-2-value-1",
