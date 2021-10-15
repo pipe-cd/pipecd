@@ -227,7 +227,7 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash
 		}
 	)
 
-	accounts, err := p.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED, targetDSP)
+	accounts, err := p.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED)
 	if err != nil {
 		p.logger.Error("failed to get the list of accounts", zap.Error(err))
 	}
@@ -345,30 +345,22 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 	return err
 }
 
-func (p *planner) getMentionedAccounts(ctx context.Context, event model.NotificationEventType, targetDSP deploysource.Provider) ([]string, error) {
-	accounts, err := p.retrieveFromMetadata()
-	if err != nil {
-		return nil, fmt.Errorf("failed to prepare running deploy source data: %w", err)
+func (p *planner) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
+	metaDataStore := NewMetadataStore(p.apiClient, p.deployment)
+	accounts, ok := metaDataStore.Get(mentionsKey)
+	if !ok {
+		return nil, fmt.Errorf("failed to prepare running deploy source data: not found")
 	}
 
-	for _, v := range accounts {
+	var as []config.NotificationMention
+	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
+		return nil, fmt.Errorf("failed to prepare running deploy source data: %v", err)
+	}
+
+	for _, v := range as {
 		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
 		}
 	}
 	return nil, nil
-}
-
-func (p *planner) retrieveFromMetadata() ([]config.NotificationMention, error) {
-	metaDataStore := NewMetadataStore(p.apiClient, p.deployment)
-	accounts, ok := metaDataStore.Get(mentionsKey)
-	if !ok {
-		return []config.NotificationMention{}, fmt.Errorf("not found")
-	}
-
-	var as []config.NotificationMention
-	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
-		return []config.NotificationMention{}, err
-	}
-	return as, nil
 }
