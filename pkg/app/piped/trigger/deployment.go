@@ -47,7 +47,7 @@ func (t *Trigger) triggerDeployment(
 	}
 
 	var as []string
-	mentions, err := t.getNotificationMentions(deployment)
+	mentions, err := t.getNotificationMentions(app.GitPath)
 	if err != nil {
 		t.logger.Error("failed to get the list of mentions", zap.Error(err))
 		return
@@ -183,20 +183,20 @@ func buildDeployment(
 	return deployment, nil
 }
 
-func (t *Trigger) getNotificationMentions(d *model.Deployment) ([]config.NotificationMention, error) {
+func (t *Trigger) getNotificationMentions(g *model.ApplicationGitPath) ([]config.NotificationMention, error) {
 	// Find the application repo from pre-loaded ones.
-	repo, ok := t.gitRepos[d.GitPath.Repo.Id]
+	repo, ok := t.gitRepos[g.Repo.Id]
 	if !ok {
-		t.logger.Warn("detected some applications binding with a non existent repository", zap.String("repo-id", d.GitPath.Repo.Id))
-		return nil, fmt.Errorf("unknown repo %q is set to the deployment", d.GitPath.Repo.Id)
+		t.logger.Warn("detected some applications binding with a non existent repository", zap.String("repo-id", g.Repo.Id))
+		return nil, fmt.Errorf("unknown repo %q is set to the deployment", g.Repo.Id)
 	}
 
-	absPath := filepath.Join(repo.GetPath(), d.GitPath.GetDeploymentConfigFilePath())
+	absPath := filepath.Join(repo.GetPath(), g.GetDeploymentConfigFilePath())
 
 	cfg, err := config.LoadFromYAML(absPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("deployment config file %s was not found", d.GitPath.GetDeploymentConfigFilePath())
+			return nil, fmt.Errorf("deployment config file %s was not found", g.GetDeploymentConfigFilePath())
 		}
 		return nil, err
 	}
