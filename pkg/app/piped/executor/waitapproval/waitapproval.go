@@ -150,28 +150,20 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 }
 
 func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
-	accounts, err := e.retrieveFromMetadata()
-	if err != nil {
+	accounts, ok := e.MetadataStore.Get(MentionedAccountsKey)
+	if !ok {
+		return nil, fmt.Errorf("failed to prepare running deploy source data: not found")
+	}
+
+	var as []config.NotificationMention
+	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
 		return nil, fmt.Errorf("failed to prepare running deploy source data: %w", err)
 	}
 
-	for _, v := range accounts {
+	for _, v := range as {
 		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
 		}
 	}
 	return nil, nil
-}
-
-func (e *Executor) retrieveFromMetadata() ([]config.NotificationMention, error) {
-	accounts, ok := e.MetadataStore.Get(MentionedAccountsKey)
-	if !ok {
-		return []config.NotificationMention{}, fmt.Errorf("not found")
-	}
-
-	var as []config.NotificationMention
-	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
-		return []config.NotificationMention{}, err
-	}
-	return as, nil
 }
