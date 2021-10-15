@@ -26,6 +26,7 @@ import (
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/providertest"
+	"github.com/pipe-cd/pipe/pkg/app/piped/metadatastore"
 	"github.com/pipe-cd/pipe/pkg/config"
 )
 
@@ -41,12 +42,25 @@ func (l *fakeLogPersister) Errorf(_ string, _ ...interface{})   {}
 
 type fakeMetadataStore struct{}
 
-func (m *fakeMetadataStore) Get(_ string) (string, bool)                         { return "", false }
-func (m *fakeMetadataStore) Set(_ context.Context, _, _ string) error            { return nil }
-func (m *fakeMetadataStore) GetStageMetadata(_ string) (map[string]string, bool) { return nil, false }
-func (m *fakeMetadataStore) SetStageMetadata(_ context.Context, _ string, _ map[string]string) error {
-	return nil
+func (m *fakeMetadataStore) Shared() metadatastore.Store {
+	return &fakeMetadataSharedStore{}
 }
+
+func (m *fakeMetadataStore) Stage(stageID string) metadatastore.Store {
+	return &fakeMetadataStageStore{}
+}
+
+type fakeMetadataSharedStore struct{}
+
+func (m *fakeMetadataSharedStore) Get(_ string) (string, bool)                           { return "", false }
+func (m *fakeMetadataSharedStore) Put(_ context.Context, _, _ string) error              { return nil }
+func (m *fakeMetadataSharedStore) PutMulti(_ context.Context, _ map[string]string) error { return nil }
+
+type fakeMetadataStageStore struct{}
+
+func (m *fakeMetadataStageStore) Get(_ string) (string, bool)                           { return "", false }
+func (m *fakeMetadataStageStore) Put(_ context.Context, _, _ string) error              { return nil }
+func (m *fakeMetadataStageStore) PutMulti(_ context.Context, _ map[string]string) error { return nil }
 
 func TestGenerateServiceManifests(t *testing.T) {
 	testcases := []struct {

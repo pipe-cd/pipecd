@@ -90,7 +90,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 		addedResources = append(addedResources, m.Key.String())
 	}
 	metadata := strings.Join(addedResources, ",")
-	err = e.MetadataStore.Set(ctx, addedCanaryResourcesMetadataKey, metadata)
+	err = e.MetadataStore.Shared().Put(ctx, addedCanaryResourcesMetadataKey, metadata)
 	if err != nil {
 		e.LogPersister.Errorf("Unable to save deployment metadata (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -107,7 +107,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 }
 
 func (e *deployExecutor) ensureCanaryClean(ctx context.Context) model.StageStatus {
-	value, ok := e.MetadataStore.Get(addedCanaryResourcesMetadataKey)
+	value, ok := e.MetadataStore.Shared().Get(addedCanaryResourcesMetadataKey)
 	if !ok {
 		e.LogPersister.Error("Unable to determine the applied CANARY resources")
 		return model.StageStatus_STAGE_FAILURE

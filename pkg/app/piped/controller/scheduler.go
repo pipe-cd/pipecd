@@ -29,6 +29,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor/registry"
 	"github.com/pipe-cd/pipe/pkg/app/piped/logpersister"
+	"github.com/pipe-cd/pipe/pkg/app/piped/metadatastore"
 	pln "github.com/pipe-cd/pipe/pkg/app/piped/planner"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
@@ -49,7 +50,7 @@ type scheduler struct {
 	liveResourceLister  liveResourceLister
 	analysisResultStore analysisResultStore
 	logPersister        logpersister.Persister
-	metadataStore       *metadataStore
+	metadataStore       metadatastore.MetadataStore
 	notifier            notifier
 	secretDecrypter     secretDecrypter
 	pipedConfig         *config.PipedSpec
@@ -115,7 +116,7 @@ func newScheduler(
 		liveResourceLister:   liveResourceLister,
 		analysisResultStore:  analysisResultStore,
 		logPersister:         lp,
-		metadataStore:        NewMetadataStore(apiClient, d),
+		metadataStore:        metadatastore.NewMetadataStore(apiClient, d),
 		notifier:             notifier,
 		secretDecrypter:      sd,
 		pipedConfig:          pipedConfig,

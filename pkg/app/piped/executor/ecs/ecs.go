@@ -255,7 +255,7 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		metadata := map[string]string{
 			canaryScaleMetadataKey: strconv.FormatInt(int64(options.Scale.Int()), 10),
 		}
-		if err := in.MetadataStore.SetStageMetadata(ctx, in.Stage.Id, metadata); err != nil {
+		if err := in.MetadataStore.Stage(in.Stage.Id).PutMulti(ctx, metadata); err != nil {
 			in.Logger.Error("Failed to store canary scale infor to metadata store", zap.Error(err))
 		}
 
@@ -266,7 +266,7 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 			return false
 		}
 		// Store created ACTIVE TaskSet (CANARY variant) to delete later.
-		if err := in.MetadataStore.Set(ctx, canaryTaskSetARNKeyName, *taskSet.TaskSetArn); err != nil {
+		if err := in.MetadataStore.Shared().Put(ctx, canaryTaskSetARNKeyName, *taskSet.TaskSetArn); err != nil {
 			in.LogPersister.Errorf("Unable to store created active taskSet to metadata store: %v", err)
 			return false
 		}
@@ -276,7 +276,7 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 			in.LogPersister.Errorf("Unable to store applied service to metadata store: %v", err)
 			return false
 		}
-		if err := in.MetadataStore.Set(ctx, canaryServiceKeyName, string(serviceObjData)); err != nil {
+		if err := in.MetadataStore.Shared().Put(ctx, canaryServiceKeyName, string(serviceObjData)); err != nil {
 			in.LogPersister.Errorf("Unable to store applied service to metadata store: %v", err)
 			return false
 		}
@@ -293,12 +293,12 @@ func clean(ctx context.Context, in *executor.Input, cloudProviderName string, cl
 		return false
 	}
 
-	taskSetArn, ok := in.MetadataStore.Get(canaryTaskSetARNKeyName)
+	taskSetArn, ok := in.MetadataStore.Shared().Get(canaryTaskSetARNKeyName)
 	if !ok {
 		in.LogPersister.Errorf("Unable to restore CANARY task set to clean: Not found")
 		return false
 	}
-	serviceObjData, ok := in.MetadataStore.Get(canaryServiceKeyName)
+	serviceObjData, ok := in.MetadataStore.Shared().Get(canaryServiceKeyName)
 	if !ok {
 		in.LogPersister.Errorf("Unable to restore CANARY service to clean: Not found")
 		return false
@@ -345,7 +345,7 @@ func routing(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		trafficRoutePrimaryMetadataKey: strconv.FormatInt(int64(primary), 10),
 		trafficRouteCanaryMetadataKey:  strconv.FormatInt(int64(canary), 10),
 	}
-	if err := in.MetadataStore.SetStageMetadata(ctx, in.Stage.Id, metadata); err != nil {
+	if err := in.MetadataStore.Stage(in.Stage.Id).PutMulti(ctx, metadata); err != nil {
 		in.Logger.Error("Failed to store traffic routing config to metadata store", zap.Error(err))
 	}
 

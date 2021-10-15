@@ -75,7 +75,7 @@ func (e *deployExecutor) ensureBaselineRollout(ctx context.Context) model.StageS
 		addedResources = append(addedResources, m.Key.String())
 	}
 	metadata := strings.Join(addedResources, ",")
-	err = e.MetadataStore.Set(ctx, addedBaselineResourcesMetadataKey, metadata)
+	err = e.MetadataStore.Shared().Put(ctx, addedBaselineResourcesMetadataKey, metadata)
 	if err != nil {
 		e.LogPersister.Errorf("Unable to save deployment metadata (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -92,7 +92,7 @@ func (e *deployExecutor) ensureBaselineRollout(ctx context.Context) model.StageS
 }
 
 func (e *deployExecutor) ensureBaselineClean(ctx context.Context) model.StageStatus {
-	value, ok := e.MetadataStore.Get(addedBaselineResourcesMetadataKey)
+	value, ok := e.MetadataStore.Shared().Get(addedBaselineResourcesMetadataKey)
 	if !ok {
 		e.LogPersister.Error("Unable to determine the applied BASELINE resources")
 		return model.StageStatus_STAGE_FAILURE

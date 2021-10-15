@@ -21,6 +21,7 @@ import (
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
+	"github.com/pipe-cd/pipe/pkg/app/piped/metadatastore"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
@@ -43,16 +44,6 @@ type LogPersister interface {
 	Successf(format string, a ...interface{})
 	Error(log string)
 	Errorf(format string, a ...interface{})
-}
-
-type MetadataStore interface {
-	Get(key string) (string, bool)
-	// Different value for the same key will overwrite the previous value for that key.
-	Set(ctx context.Context, key, value string) error
-
-	GetStageMetadata(stageID string) (map[string]string, bool)
-	// Different value for the same key will overwrite the previous value for that key.
-	SetStageMetadata(ctx context.Context, stageID string, metadata map[string]string) error
 }
 
 type CommandLister interface {
@@ -90,7 +81,7 @@ type Input struct {
 	GitClient             GitClient
 	CommandLister         CommandLister
 	LogPersister          LogPersister
-	MetadataStore         MetadataStore
+	MetadataStore         metadatastore.MetadataStore
 	AppManifestsCache     cache.Cache
 	AppLiveResourceLister AppLiveResourceLister
 	AnalysisResultStore   AnalysisResultStore

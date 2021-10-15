@@ -11,6 +11,7 @@ go_library(
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
         "//pkg/app/piped/deploysource:go_default_library",
+        "//pkg/app/piped/metadatastore:go_default_library",
         "//pkg/cache:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/git:go_default_library",
