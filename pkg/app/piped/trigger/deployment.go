@@ -46,7 +46,6 @@ func (t *Trigger) triggerDeployment(
 		return
 	}
 
-	// To store mentioned accounts to metadata store, `CreateDeployment` needs to be called.
 	accounts, err := t.getMentionedAccounts(ctx, deployment)
 	if err != nil {
 		t.logger.Error("failed to get the list of accounts", zap.Error(err))
