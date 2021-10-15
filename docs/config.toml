@@ -167,9 +167,9 @@ no = 'Sorry to hear that. Please <a href="https://github.com/pipe-cd/pipe/issues
   url = "/docs-dev/"
 
 [[params.versions]]
-  version = "v0.20.0"
-  url = "/docs-v0.20.0/"
+  version = "v0.20.x"
+  url = "/docs-v0.20.x/"
 
 [[params.versions]]
-  version = "v0.18.0"
-  url = "/docs-v0.18.0/"
+  version = "v0.18.x"
+  url = "/docs-v0.18.x/"
