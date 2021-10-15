@@ -16,17 +16,20 @@ package waitapproval
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 const (
 	approvedByKey = "ApprovedBy"
+	MentionedAccountsKey = "MentionedAccounts"
 )
 
 type Executor struct {
@@ -147,20 +150,28 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 }
 
 func (e *Executor) getMentionedAccounts(ctx context.Context, event model.NotificationEventType) ([]string, error) {
-	ds, err := e.TargetDSP.GetReadOnly(ctx, e.LogPersister)
+	accounts, err := e.retrieveFromMetadata()
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare running deploy source data: %w", err)
 	}
 
-	if ds.GenericDeploymentConfig.DeploymentNotification == nil {
-		// There is no event to mention users.
-		return nil, nil
-	}
-
-	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
+	for _, v := range accounts {
 		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
 		}
 	}
 	return nil, nil
+}
+
+func (e *Executor) retrieveFromMetadata() ([]config.NotificationMention, error) {
+	accounts, ok := e.MetadataStore.Get(MentionedAccountsKey)
+	if !ok {
+		return []config.NotificationMention{}, fmt.Errorf("not found")
+	}
+
+	var as []config.NotificationMention
+	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
+		return []config.NotificationMention{}, err
+	}
+	return as, nil
 }
