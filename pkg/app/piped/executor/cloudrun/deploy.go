@@ -120,7 +120,7 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 	metadata := map[string]string{
 		promotePercentageMetadataKey: strconv.FormatInt(int64(options.Percent.Int()), 10),
 	}
-	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, metadata); err != nil {
+	if err := e.MetadataStore.Stage(e.Stage.Id).PutMulti(ctx, metadata); err != nil {
 		e.Logger.Error("failed to save routing percentages to metadata", zap.Error(err))
 	}
 

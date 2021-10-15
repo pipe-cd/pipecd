@@ -4,7 +4,6 @@ go_library(
     name = "go_default_library",
     srcs = [
         "controller.go",
-        "metadatastore.go",
         "planner.go",
         "scheduler.go",
     ],
@@ -17,6 +16,7 @@ go_library(
         "//pkg/app/piped/executor:go_default_library",
         "//pkg/app/piped/executor/registry:go_default_library",
         "//pkg/app/piped/logpersister:go_default_library",
+        "//pkg/app/piped/metadatastore:go_default_library",
         "//pkg/app/piped/planner:go_default_library",
         "//pkg/app/piped/planner/registry:go_default_library",
         "//pkg/cache:go_default_library",

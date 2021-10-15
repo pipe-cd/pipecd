@@ -132,7 +132,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 
 	// Next we delete all resources of CANARY variant.
 	e.LogPersister.Info("Start checking to ensure that the CANARY variant should be removed")
-	if value, ok := e.MetadataStore.Get(addedCanaryResourcesMetadataKey); ok {
+	if value, ok := e.MetadataStore.Shared().Get(addedCanaryResourcesMetadataKey); ok {
 		resources := strings.Split(value, ",")
 		if err := removeCanaryResources(ctx, p, resources, e.LogPersister); err != nil {
 			errs = append(errs, err)
@@ -141,7 +141,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 
 	// Then delete all resources of BASELINE variant.
 	e.LogPersister.Info("Start checking to ensure that the BASELINE variant should be removed")
-	if value, ok := e.MetadataStore.Get(addedBaselineResourcesMetadataKey); ok {
+	if value, ok := e.MetadataStore.Shared().Get(addedBaselineResourcesMetadataKey); ok {
 		resources := strings.Split(value, ",")
 		if err := removeBaselineResources(ctx, p, resources, e.LogPersister); err != nil {
 			errs = append(errs, err)

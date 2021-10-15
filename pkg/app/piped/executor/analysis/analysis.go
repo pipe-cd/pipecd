@@ -171,18 +171,14 @@ func (e *Executor) saveElapsedTime(ctx context.Context) {
 	metadata := map[string]string{
 		elapsedTimeKey: elapsedTime.String(),
 	}
-	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, metadata); err != nil {
+	if err := e.MetadataStore.Stage(e.Stage.Id).PutMulti(ctx, metadata); err != nil {
 		e.Logger.Error("failed to store metadata", zap.Error(err))
 	}
 }
 
 // retrievePreviousElapsedTime sets the elapsed time of analysis stage by decoding metadata.
 func (e *Executor) retrievePreviousElapsedTime() time.Duration {
-	metadata, ok := e.MetadataStore.GetStageMetadata(e.Stage.Id)
-	if !ok {
-		return 0
-	}
-	s, ok := metadata[elapsedTimeKey]
+	s, ok := e.MetadataStore.Stage(e.Stage.Id).Get(elapsedTimeKey)
 	if !ok {
 		return 0
 	}

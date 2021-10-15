@@ -123,7 +123,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 			return false
 		}
 		originalTrafficKeyName := fmt.Sprintf("original-traffic-%s", in.Deployment.RunningCommitHash)
-		if e := in.MetadataStore.Set(ctx, originalTrafficKeyName, originalTrafficCfg); e != nil {
+		if e := in.MetadataStore.Shared().Put(ctx, originalTrafficKeyName, originalTrafficCfg); e != nil {
 			in.LogPersister.Errorf("Unable to store current traffic config for rollback: %v", e)
 			return false
 		}
@@ -161,7 +161,7 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 
 	// Update rolled out version name to metadata store
 	rolloutVersionKeyName := fmt.Sprintf("%s-rollout", fm.Spec.Name)
-	if err := in.MetadataStore.Set(ctx, rolloutVersionKeyName, version); err != nil {
+	if err := in.MetadataStore.Shared().Put(ctx, rolloutVersionKeyName, version); err != nil {
 		in.LogPersister.Errorf("Failed to update latest version name to metadata store for Lambda function %s: %v", fm.Spec.Name, err)
 		return false
 	}
@@ -175,7 +175,7 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 			return false
 		}
 		originalTrafficKeyName := fmt.Sprintf("original-traffic-%s", in.Deployment.RunningCommitHash)
-		if e := in.MetadataStore.Set(ctx, originalTrafficKeyName, originalTrafficCfg); e != nil {
+		if e := in.MetadataStore.Shared().Put(ctx, originalTrafficKeyName, originalTrafficCfg); e != nil {
 			in.LogPersister.Errorf("Unable to store current traffic config for rollback: %v", e)
 			return false
 		}
@@ -193,7 +193,7 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	}
 
 	rolloutVersionKeyName := fmt.Sprintf("%s-rollout", fm.Spec.Name)
-	version, ok := in.MetadataStore.Get(rolloutVersionKeyName)
+	version, ok := in.MetadataStore.Shared().Get(rolloutVersionKeyName)
 	if !ok {
 		in.LogPersister.Errorf("Unable to prepare version to promote for Lambda function %s: Not found", fm.Spec.Name)
 		return false
@@ -237,7 +237,7 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		return false
 	}
 	promoteTrafficKeyName := fmt.Sprintf("latest-promote-traffic-%s", in.Deployment.RunningCommitHash)
-	if err := in.MetadataStore.Set(ctx, promoteTrafficKeyName, promoteTrafficCfgData); err != nil {
+	if err := in.MetadataStore.Shared().Put(ctx, promoteTrafficKeyName, promoteTrafficCfgData); err != nil {
 		in.LogPersister.Errorf("Unable to store promote traffic config for rollback: %v", err)
 		return false
 	}

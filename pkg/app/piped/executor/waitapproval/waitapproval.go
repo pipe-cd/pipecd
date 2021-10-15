@@ -102,12 +102,7 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 	metadata := map[string]string{
 		approvedByKey: approveCmd.Commander,
 	}
-	if ori, ok := e.MetadataStore.GetStageMetadata(e.Stage.Id); ok {
-		for k, v := range ori {
-			metadata[k] = v
-		}
-	}
-	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, metadata); err != nil {
+	if err := e.MetadataStore.Stage(e.Stage.Id).PutMulti(ctx, metadata); err != nil {
 		e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
 		return "", false
 	}

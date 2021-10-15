@@ -207,7 +207,7 @@ func (e *deployExecutor) saveTrafficRoutingMetadata(ctx context.Context, primary
 		canaryMetadataKey:   strconv.FormatInt(int64(canary), 10),
 		baselineMetadataKey: strconv.FormatInt(int64(baseline), 10),
 	}
-	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, metadata); err != nil {
+	if err := e.MetadataStore.Stage(e.Stage.Id).PutMulti(ctx, metadata); err != nil {
 		e.Logger.Error("failed to save traffic routing percentages to metadata", zap.Error(err))
 	}
 }

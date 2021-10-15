@@ -106,11 +106,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 }
 
 func (e *Executor) retrieveStartTime() (t time.Time) {
-	metadata, ok := e.MetadataStore.GetStageMetadata(e.Stage.Id)
-	if !ok {
-		return
-	}
-	s, ok := metadata[startTimeKey]
+	s, ok := e.MetadataStore.Stage(e.Stage.Id).Get(startTimeKey)
 	if !ok {
 		return
 	}
@@ -125,7 +121,7 @@ func (e *Executor) saveStartTime(ctx context.Context, t time.Time) {
 	metadata := map[string]string{
 		startTimeKey: strconv.FormatInt(t.Unix(), 10),
 	}
-	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, metadata); err != nil {
+	if err := e.MetadataStore.Stage(e.Stage.Id).PutMulti(ctx, metadata); err != nil {
 		e.Logger.Error("failed to store metadata", zap.Error(err))
 	}
 }
