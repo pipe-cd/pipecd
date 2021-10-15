@@ -16,6 +16,7 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -34,6 +35,10 @@ import (
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
+)
+
+const (
+	MentionedAccountsKey = "MentionedAccounts"
 )
 
 // scheduler is a dedicated object for a specific deployment of a single application.
@@ -650,27 +655,29 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 }
 
 func (s *scheduler) getMentionedAccounts(ctx context.Context, event model.NotificationEventType) ([]string, error) {
-	if s.targetDSP == nil {
-		return nil, fmt.Errorf("targetDSP is not configured")
-	}
-
-	ds, err := s.targetDSP.GetReadOnly(ctx, io.Discard)
+	accounts, err := s.retrieveFromMetadata()
 	if err != nil {
-		err = fmt.Errorf("failed to prepare running deploy source data: %w", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to prepare running deploy source data: %w", err)
 	}
 
-	if ds.GenericDeploymentConfig.DeploymentNotification == nil {
-		// There is no event to mention users.
-		return nil, nil
-	}
-
-	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
+	for _, v := range accounts {
 		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
 		}
 	}
 	return nil, nil
+}
+
+func (s *scheduler) retrieveFromMetadata() ([]config.NotificationMention, error) {
+	accounts, ok := s.metadataStore.Get(MentionedAccountsKey)
+	if !ok {
+		return []config.NotificationMention{}, fmt.Errorf("not found")
+	}
+	var as []config.NotificationMention
+	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
+		return []config.NotificationMention{}, err
+	}
+	return as, nil
 }
 
 func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) error {
