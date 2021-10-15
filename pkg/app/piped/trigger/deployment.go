@@ -147,7 +147,7 @@ func buildDeployment(
 	if mentions != nil {
 		value, err := json.Marshal(mentions)
 		if err != nil {
-			return nil, fmt.Errorf("unable to store mentioned mentions to value store: %w", err)
+			return nil, fmt.Errorf("failed to save mention config to deployment metadata: %w", err)
 		}
 		metadata[mentionsKey] = string(value)
 	}
