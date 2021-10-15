@@ -54,12 +54,10 @@ func (t *Trigger) triggerDeployment(
 	}
 
 	var as []string
-	if mentions != nil {
-		for _, v := range mentions {
-			if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
-				as = v.Slack
-				break
-			}
+	for _, v := range mentions {
+		if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
+			as = v.Slack
+			break
 		}
 	}
 
