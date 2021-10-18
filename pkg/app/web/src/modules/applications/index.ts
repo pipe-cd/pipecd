@@ -151,12 +151,14 @@ export const updateDescription = createAsyncThunk<
 const initialState = applicationsAdapter.getInitialState<{
   adding: boolean;
   loading: boolean;
+  addedApplicationId: string | null;
   syncing: Record<string, boolean>;
   disabling: Record<string, boolean>;
   fetchApplicationError: SerializedError | null;
 }>({
   adding: false,
   loading: false,
+  addedApplicationId: null,
   syncing: {},
   disabling: {},
   fetchApplicationError: null,
@@ -167,7 +169,11 @@ export type ApplicationsState = typeof initialState;
 export const applicationsSlice = createSlice({
   name: MODULE_NAME,
   initialState,
-  reducers: {},
+  reducers: {
+    clearAddedApplicationId(state) {
+      state.addedApplicationId = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchApplications.pending, (state) => {
@@ -191,8 +197,9 @@ export const applicationsSlice = createSlice({
       .addCase(addApplication.pending, (state) => {
         state.adding = true;
       })
-      .addCase(addApplication.fulfilled, (state) => {
+      .addCase(addApplication.fulfilled, (state, action) => {
         state.adding = false;
+        state.addedApplicationId = action.payload;
       })
       .addCase(addApplication.rejected, (state) => {
         // TODO: Show alert when failed to add an application
@@ -247,6 +254,8 @@ export const selectApplicationsByEnvId = (envId: string) => (
 ): Application.AsObject[] => {
   return selectAll(state.applications).filter((app) => app.envId === envId);
 };
+
+export const { clearAddedApplicationId } = applicationsSlice.actions;
 
 export {
   Application,

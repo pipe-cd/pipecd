@@ -21,8 +21,7 @@ import {
   UI_TEXT_REFRESH,
 } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { fetchApplications } from "~/modules/applications";
-import { clearTemplateTarget } from "~/modules/deployment-configs";
+import { clearAddedApplicationId, fetchApplications } from "~/modules/applications";
 import { stringifySearchParams, useSearchParams } from "~/utils/search-params";
 import { AddApplicationDrawer } from "./add-application-drawer";
 import { ApplicationFilter } from "./application-filter";
@@ -64,7 +63,7 @@ export const ApplicationIndexPage: FC = () => {
     (state) => state.applications.loading
   );
   const addedApplicationId = useAppSelector<string | null>(
-    (state) => state.deploymentConfigs.targetApplicationId
+    (state) => state.applications.addedApplicationId
   );
 
   const currentPage =
@@ -97,9 +96,8 @@ export const ApplicationIndexPage: FC = () => {
     dispatch(fetchApplications(filterOptions));
   }, [dispatch, filterOptions]);
 
-  // TODO: Remove this handler.
-  const handleCloseTemplateForm = (): void => {
-    dispatch(clearTemplateTarget());
+  const handleCloseApplicationAddedView = (): void => {
+    dispatch(clearAddedApplicationId());
   };
 
   const handlePageChange = useCallback(
@@ -173,12 +171,10 @@ export const ApplicationIndexPage: FC = () => {
       <Drawer
         anchor="right"
         open={!!addedApplicationId}
-        onClose={handleCloseTemplateForm}
+        onClose={handleCloseApplicationAddedView}
         ModalProps={{ disableBackdropClick: isAdding }}
       >
-        {addedApplicationId && (
-          <ApplicationAddedView onClose={handleCloseTemplateForm} />
-        )}
+        <ApplicationAddedView onClose={handleCloseApplicationAddedView} />
       </Drawer>
     </>
   );

@@ -57,6 +57,7 @@ const baseState: Partial<AppState> = {
     disabling: {},
     loading: false,
     syncing: {},
+    addedApplicationId: null,
     fetchApplicationError: null,
   },
   applicationLiveState: {

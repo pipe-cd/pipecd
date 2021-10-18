@@ -37,7 +37,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/filestore"
-	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/redis"
@@ -1446,72 +1445,6 @@ func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandReque
 	return &webservice.GetCommandResponse{
 		Command: cmd,
 	}, nil
-}
-
-func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webservice.ListDeploymentConfigTemplatesRequest) (*webservice.ListDeploymentConfigTemplatesResponse, error) {
-	claims, err := rpcauth.ExtractClaims(ctx)
-	if err != nil {
-		a.logger.Error("failed to authenticate the current user", zap.Error(err))
-		return nil, err
-	}
-
-	app, err := getApplication(ctx, a.applicationStore, req.ApplicationId, a.logger)
-	if err != nil {
-		return nil, err
-	}
-	if err := a.validateAppBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
-		return nil, err
-	}
-
-	var templates []*webservice.DeploymentConfigTemplate
-	switch app.Kind {
-	case model.ApplicationKind_KUBERNETES:
-		templates = k8sDeploymentConfigTemplates
-	case model.ApplicationKind_TERRAFORM:
-		templates = terraformDeploymentConfigTemplates
-	case model.ApplicationKind_LAMBDA:
-		templates = lambdaDeploymentConfigTemplates
-	case model.ApplicationKind_CLOUDRUN:
-		templates = cloudrunDeploymentConfigTemplates
-	case model.ApplicationKind_ECS:
-		templates = ecsDeploymentConfigTemplates
-	default:
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Unknown application kind %v", app.Kind))
-	}
-	for _, t := range templates {
-		g := app.GetGitPath()
-		filename := g.ConfigFilename
-		if filename == "" {
-			filename = ".pipe.yaml"
-		}
-		t.FileCreationUrl, err = git.MakeFileCreationURL(g.Repo.Remote, g.Path, g.Repo.Branch, filename, t.Content)
-		if err != nil {
-			a.logger.Error("failed to make a link to create a file", zap.Error(err))
-			return nil, status.Error(codes.Internal, "Failed to make a link to create a file")
-		}
-	}
-
-	if len(req.Labels) == 0 {
-		return &webservice.ListDeploymentConfigTemplatesResponse{Templates: templates}, nil
-	}
-
-	filtered := filterDeploymentConfigTemplates(templates, req.Labels)
-	return &webservice.ListDeploymentConfigTemplatesResponse{Templates: filtered}, nil
-}
-
-// Returns the one from the given templates with all the specified labels.
-func filterDeploymentConfigTemplates(templates []*webservice.DeploymentConfigTemplate, labels []webservice.DeploymentConfigTemplateLabel) []*webservice.DeploymentConfigTemplate {
-	filtered := make([]*webservice.DeploymentConfigTemplate, 0, len(templates))
-L:
-	for _, template := range templates {
-		for _, l := range labels {
-			if !template.HasLabel(l) {
-				continue L
-			}
-		}
-		filtered = append(filtered, template)
-	}
-	return filtered
 }
 
 func (a *WebAPI) GenerateAPIKey(ctx context.Context, req *webservice.GenerateAPIKeyRequest) (*webservice.GenerateAPIKeyResponse, error) {

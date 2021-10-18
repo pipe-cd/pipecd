@@ -31,7 +31,6 @@ go_library(
     name = "go_default_library",
     srcs = [
         "client.go",
-        "service.go",
         "service.pb.auth.go",
     ],
     embed = [":webservice_go_proto"],

@@ -50,6 +50,7 @@ const initialState = {
       [dummyApplication.id]: dummyApplication,
     },
     fetchApplicationError: null,
+    addedApplicationId: null,
     ids: [dummyApplication.id],
     syncing: {},
     disabling: {},

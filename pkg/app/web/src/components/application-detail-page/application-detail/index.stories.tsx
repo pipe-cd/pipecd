@@ -19,6 +19,7 @@ const dummyStore: Partial<AppState> = {
     disabling: {},
     adding: false,
     loading: false,
+    addedApplicationId: null,
     fetchApplicationError: null,
   },
   environments: {

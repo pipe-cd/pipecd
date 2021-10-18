@@ -33,6 +33,7 @@ afterAll(() => {
 });
 
 const baseState: ApplicationsState = {
+  addedApplicationId: null,
   adding: false,
   disabling: {},
   entities: {},
@@ -208,9 +209,13 @@ describe("applicationsSlice reducer", () => {
           },
           {
             type: addApplication.fulfilled.type,
+            payload: dummyApplication.id,
           }
         )
-      ).toEqual(baseState);
+      ).toEqual({
+        ...baseState,
+        addedApplicationId: dummyApplication.id,
+      })
     });
 
     it(`should handle ${addApplication.rejected.type}`, () => {

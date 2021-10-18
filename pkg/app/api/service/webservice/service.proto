@@ -88,10 +88,6 @@ service WebService {
     // Command
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
 
-    // Deployment Config Template
-    // TODO: Remove this RPC because templating feature was removed.
-    rpc ListDeploymentConfigTemplates(ListDeploymentConfigTemplatesRequest) returns (ListDeploymentConfigTemplatesResponse) {}
-
     // API Key
     rpc GenerateAPIKey(GenerateAPIKeyRequest) returns (GenerateAPIKeyResponse) {}
     rpc DisableAPIKey(DisableAPIKeyRequest) returns (DisableAPIKeyResponse) {}
@@ -444,29 +440,6 @@ message GetCommandRequest {
 
 message GetCommandResponse {
     pipe.model.Command command = 1;
-}
-
-message DeploymentConfigTemplate {
-    pipe.model.ApplicationKind application_kind = 1 [(validate.rules).enum.defined_only = true];
-    string name = 2 [(validate.rules).string.min_len = 1];
-    repeated DeploymentConfigTemplateLabel labels = 3;
-    string content = 4 [(validate.rules).string.min_len = 1];
-    // An HTML link to create a new file under the git path, with template content as default value.
-    string file_creation_url = 5;
-}
-
-enum DeploymentConfigTemplateLabel {
-    CANARY = 0;
-    BLUE_GREEN = 1;
-}
-
-message ListDeploymentConfigTemplatesRequest {
-    string application_id = 1 [(validate.rules).string.min_len = 1];
-    repeated DeploymentConfigTemplateLabel labels = 2;
-}
-
-message ListDeploymentConfigTemplatesResponse {
-    repeated DeploymentConfigTemplate templates = 1;
 }
 
 message GenerateAPIKeyRequest {
