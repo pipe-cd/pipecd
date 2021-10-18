@@ -20,23 +20,35 @@ import (
 )
 
 type OrderDirection int
-type Operator string
 
 const (
 	// Asc sorts results from smallest to largest.
 	Asc OrderDirection = iota + 1
 	// Desc sorts results from largest to smallest.
 	Desc
+)
 
-	OperatorEqual              Operator = "=="
-	OperatorNotEqual           Operator = "!="
-	OperatorIn                 Operator = "in"
-	OperatorNotIn              Operator = "not-in"
-	OperatorGreaterThan        Operator = ">"
-	OperatorGreaterThanOrEqual Operator = ">="
-	OperatorLessThan           Operator = "<"
-	OperatorLessThanOrEqual    Operator = "<="
-	OperatorContains           Operator = "array-contains"
+type Operator int
+
+const (
+	// Operation to find the field is equal to the specified value.
+	OperatorEqual = iota + 1
+	// Operation to find the field isn't equal to the specified value.
+	OperatorNotEqual
+	// Operation to find ones that contain any one of the multiple values.
+	OperatorIn
+	// Operation to find ones that do not contain any of the specified multiple values.
+	OperatorNotIn
+	// Operation to find ones the field is greater than the specified value.
+	OperatorGreaterThan
+	// Operation to find ones the field is greater or equal than the specified value.
+	OperatorGreaterThanOrEqual
+	// Operation to find ones the field is less than the specified value.
+	OperatorLessThan
+	// Operation to find ones the field is less or equal than the specified value.
+	OperatorLessThanOrEqual
+	// Operation to find ones that have a specified value in its array.
+	OperatorContains
 )
 
 var (

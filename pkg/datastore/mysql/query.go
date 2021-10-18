@@ -24,6 +24,18 @@ import (
 	"github.com/pipe-cd/pipe/pkg/datastore"
 )
 
+var operatorMap = map[datastore.Operator]string{
+	datastore.OperatorEqual:              "=",
+	datastore.OperatorNotEqual:           "!=",
+	datastore.OperatorIn:                 "IN",
+	datastore.OperatorNotIn:              "NOT IN",
+	datastore.OperatorGreaterThan:        ">",
+	datastore.OperatorGreaterThanOrEqual: ">=",
+	datastore.OperatorLessThan:           "<",
+	datastore.OperatorLessThanOrEqual:    "<=",
+	datastore.OperatorContains:           "MEMBER OF",
+}
+
 func buildGetQuery(table string) string {
 	return fmt.Sprintf("SELECT Data FROM %s WHERE Id = UUID_TO_BIN(?,true)", table)
 }
@@ -41,20 +53,20 @@ func buildCreateQuery(table string) string {
 }
 
 func buildFindQuery(table string, ops datastore.ListOptions) (string, error) {
-	filters, err := refineFiltersOperator(refineFiltersField(ops.Filters))
+	filters := refineFiltersField(ops.Filters)
+
+	whereClause, err := buildWhereClause(filters)
 	if err != nil {
 		return "", err
 	}
-
 	orderByClause, err := buildOrderByClause(refineOrdersField(ops.Orders))
 	if err != nil {
 		return "", err
 	}
-
 	rawQuery := fmt.Sprintf(
 		"SELECT Data FROM %s %s %s %s %s",
 		table,
-		buildWhereClause(filters),
+		whereClause,
 		buildPaginationCondition(ops),
 		orderByClause,
 		buildLimitClause(ops.Limit),
@@ -62,25 +74,29 @@ func buildFindQuery(table string, ops datastore.ListOptions) (string, error) {
 	return strings.Join(strings.Fields(rawQuery), " "), nil
 }
 
-func buildWhereClause(filters []datastore.ListFilter) string {
+func buildWhereClause(filters []datastore.ListFilter) (string, error) {
 	if len(filters) == 0 {
-		return ""
+		return "", nil
 	}
 
 	conds := make([]string, len(filters))
 	for i, filter := range filters {
+		op, ok := operatorMap[filter.Operator]
+		if !ok {
+			return "", fmt.Errorf("unsupported operator given: %v", filter.Operator)
+		}
 		switch filter.Operator {
-		case "IN", "NOT IN":
+		case datastore.OperatorIn, datastore.OperatorNotIn:
 			// Make string of (?,...) which contains the number of `?` equal to the element number of filter.Value
 			valLength := reflect.ValueOf(filter.Value).Len()
-			conds[i] = fmt.Sprintf("%s %s (?%s)", filter.Field, filter.Operator, strings.Repeat(",?", valLength-1))
-		case "MEMBER OF":
-			conds[i] = fmt.Sprintf("? %s (%s)", filter.Operator, filter.Field)
+			conds[i] = fmt.Sprintf("%s %s (?%s)", filter.Field, op, strings.Repeat(",?", valLength-1))
+		case datastore.OperatorContains:
+			conds[i] = fmt.Sprintf("? %s (%s)", op, filter.Field)
 		default:
-			conds[i] = fmt.Sprintf("%s %s ?", filter.Field, filter.Operator)
+			conds[i] = fmt.Sprintf("%s %s ?", filter.Field, op)
 		}
 	}
-	return fmt.Sprintf("WHERE %s", strings.Join(conds[:], " AND "))
+	return fmt.Sprintf("WHERE %s", strings.Join(conds[:], " AND ")), nil
 }
 
 func buildPaginationCondition(opts datastore.ListOptions) string {
@@ -201,33 +217,6 @@ func refineFiltersField(filters []datastore.ListFilter) []datastore.ListFilter {
 		out[i] = filter
 	}
 	return out
-}
-
-// refineFiltersOperator converts operators unified within this project into one dedicated to MySQL.
-func refineFiltersOperator(filters []datastore.ListFilter) ([]datastore.ListFilter, error) {
-	out := make([]datastore.ListFilter, len(filters))
-	for i, filter := range filters {
-		switch filter.Operator {
-		case datastore.OperatorEqual:
-			filter.Operator = "="
-		case datastore.OperatorIn:
-			filter.Operator = "IN"
-		case datastore.OperatorNotIn:
-			filter.Operator = "NOT IN"
-		case datastore.OperatorContains:
-			filter.Operator = "MEMBER OF"
-		case datastore.OperatorNotEqual,
-			datastore.OperatorGreaterThan,
-			datastore.OperatorGreaterThanOrEqual,
-			datastore.OperatorLessThan,
-			datastore.OperatorLessThanOrEqual:
-			break
-		default:
-			return nil, fmt.Errorf("unsupported operator %s", filter.Operator)
-		}
-		out[i] = filter
-	}
-	return out, nil
 }
 
 // refineFiltersValue destructs all slide/array type values and makes an array of all element values.

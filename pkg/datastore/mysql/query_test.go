@@ -251,7 +251,7 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Extra",
-						Operator: "like",
+						Operator: 0,
 						Value:    "app-%",
 					},
 				},

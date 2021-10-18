@@ -19,6 +19,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"cloud.google.com/go/firestore"
 	"go.uber.org/zap"
@@ -32,6 +33,18 @@ import (
 const (
 	defaultNamespace = "pipecd"
 )
+
+var operatorMap = map[datastore.Operator]string{
+	datastore.OperatorEqual:              "==",
+	datastore.OperatorNotEqual:           "!=",
+	datastore.OperatorIn:                 "in",
+	datastore.OperatorNotIn:              "not-in",
+	datastore.OperatorGreaterThan:        ">",
+	datastore.OperatorGreaterThanOrEqual: ">=",
+	datastore.OperatorLessThan:           "<",
+	datastore.OperatorLessThanOrEqual:    "<=",
+	datastore.OperatorContains:           "array-contains",
+}
 
 type FireStore struct {
 	client               *firestore.Client
@@ -99,7 +112,11 @@ func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOp
 
 	q := s.client.Collection(s.namespace).Doc(s.environment).Collection(colName).Query
 	for _, f := range opts.Filters {
-		q = q.Where(f.Field, string(f.Operator), f.Value)
+		op, ok := operatorMap[f.Operator]
+		if !ok {
+			return nil, fmt.Errorf("unsupported operator given: %v", f.Operator)
+		}
+		q = q.Where(f.Field, op, f.Value)
 	}
 	for _, o := range opts.Orders {
 		q = q.OrderBy(o.Field, convertToDirection(o.Direction))
