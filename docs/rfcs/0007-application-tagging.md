@@ -19,6 +19,15 @@ message Application {
 }
 ```
 
+Letting a Deployment have `application_tags` will bring us to filter deployment they want.
+
+```proto
+message Deployment {
+    ...
+    repeated string application_tags = 15;
+}
+```
+
 It works well to embed comma-separated tags in the URL to share.
 
 ```
