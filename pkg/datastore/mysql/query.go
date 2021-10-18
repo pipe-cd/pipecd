@@ -81,20 +81,18 @@ func buildWhereClause(filters []datastore.ListFilter) (string, error) {
 
 	conds := make([]string, len(filters))
 	for i, filter := range filters {
+		op, ok := operatorMap[filter.Operator]
+		if !ok {
+			return "", fmt.Errorf("unsupported operator given: %v", filter.Operator)
+		}
 		switch filter.Operator {
 		case datastore.OperatorIn, datastore.OperatorNotIn:
-			op := operatorMap[filter.Operator]
 			// Make string of (?,...) which contains the number of `?` equal to the element number of filter.Value
 			valLength := reflect.ValueOf(filter.Value).Len()
 			conds[i] = fmt.Sprintf("%s %s (?%s)", filter.Field, op, strings.Repeat(",?", valLength-1))
 		case datastore.OperatorContains:
-			op := operatorMap[filter.Operator]
 			conds[i] = fmt.Sprintf("? %s (%s)", op, filter.Field)
 		default:
-			op, ok := operatorMap[filter.Operator]
-			if !ok {
-				return "", fmt.Errorf("unsupported operator given: %v", filter.Operator)
-			}
 			conds[i] = fmt.Sprintf("%s %s ?", filter.Field, op)
 		}
 	}
