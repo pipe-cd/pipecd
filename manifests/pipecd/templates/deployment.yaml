@@ -138,7 +138,6 @@ spec:
               path: /healthz
               port: admin
           readinessProbe:
-            initialDelaySeconds: 30
             httpGet:
               path: /healthz
               port: admin
