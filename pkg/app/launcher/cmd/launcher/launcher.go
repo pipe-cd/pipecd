@@ -267,21 +267,25 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 func (l *launcher) shouldRelaunch(ctx context.Context, logger *zap.Logger) (version string, config []byte, should bool, err error) {
 	config, err = l.loadConfigData(ctx)
 	if err != nil {
+		logger.Error("LAUNCHER: error on loading Piped configuration data", zap.Error(err))
 		return
 	}
 
 	cfg, err := parseConfig(config)
 	if err != nil {
+		logger.Error("LAUNCHER: error on parsing Piped configuration data", zap.Error(err))
 		return
 	}
 
 	pipedKey, err := cfg.LoadPipedKey()
 	if err != nil {
+		logger.Error("LAUNCHER: error on loading Piped key", zap.Error(err))
 		return
 	}
 
 	version, err = l.getDesiredVersion(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey, logger)
 	if err != nil {
+		logger.Error("LAUNCHER: error on checking desired version", zap.Error(err))
 		return
 	}
 
