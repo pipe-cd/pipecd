@@ -4,11 +4,9 @@ go_library(
     name = "go_default_library",
     srcs = [
         "api.go",
-        "deployment_config_templates.go",
         "grpcapi.go",
         "piped_api.go",
         "web_api.go",
-        ":deployment_config_templates.embed",  #keep
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/api/grpcapi",
     visibility = ["//visibility:public"],
@@ -50,7 +48,6 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
-        "//pkg/app/api/service/webservice:go_default_library",
         "//pkg/cache:go_default_library",
         "//pkg/cache/cachetest:go_default_library",
         "//pkg/datastore:go_default_library",
@@ -64,13 +61,3 @@ go_test(
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_embed_data")
-
-go_embed_data(
-    name = "deployment_config_templates.embed",
-    srcs = glob(["deploymentconfigtemplates/*"]),
-    flatten = True,
-    package = "grpcapi",
-    string = True,
-    var = "DeploymentConfigTemplates",
-    visibility = ["//visibility:public"],
-)

@@ -7,7 +7,6 @@ import { applicationLiveStateSlice } from "./applications-live-state";
 import { commandsSlice } from "./commands";
 import { deleteApplicationSlice } from "./delete-application";
 import { deletingEnvSlice } from "./deleting-env";
-import { deploymentConfigsSlice } from "./deployment-configs";
 import { deploymentFrequencySlice } from "./deployment-frequency";
 import { deploymentsSlice } from "./deployments";
 import { environmentsSlice } from "./environments";
@@ -34,7 +33,6 @@ export const reducers = combineReducers({
   toasts: toastsSlice.reducer,
   me: meSlice.reducer,
   project: projectSlice.reducer,
-  deploymentConfigs: deploymentConfigsSlice.reducer,
   sealedSecret: sealedSecretSlice.reducer,
   apiKeys: apiKeysSlice.reducer,
   insight: insightSlice.reducer,
