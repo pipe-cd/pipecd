@@ -98,6 +98,7 @@ func NewStore(cfg *config.PipedSpec, appLister applicationLister, gracePeriod ti
 		terraformStores:  make(map[string]terraformStore),
 		cloudrunStores:   make(map[string]cloudRunStore),
 		lambdaStores:     make(map[string]lambdaStore),
+		ecsStores:        make(map[string]ecsStore),
 		gracePeriod:      gracePeriod,
 		logger:           logger,
 	}
