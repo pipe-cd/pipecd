@@ -72,4 +72,3 @@ genrule(
 # gazelle:exclude pkg/datastore/mysql/ensurer/sql.embed.go
 # gazelle:exclude pkg/app/ops/handler/templates.embed.go
 # gazelle:exclude pkg/app/ops/firestoreindexensurer/indexes.embed.go
-# gazelle:exclude pkg/app/api/grpcapi/deployment_config_templates.embed.go
