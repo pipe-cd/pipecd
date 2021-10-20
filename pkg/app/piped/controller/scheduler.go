@@ -653,7 +653,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 }
 
 func (s *scheduler) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
-	accounts, ok := s.metadataStore.Get(mentionsKey)
+	accounts, ok := s.metadataStore.Shared().Get(mentionsKey)
 	if !ok {
 		return nil, fmt.Errorf("failed to prepare running deploy source data: not found")
 	}
