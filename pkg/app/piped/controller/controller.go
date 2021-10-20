@@ -431,14 +431,6 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		return nil, err
 	}
 
-	var metadataStore *metadataStore
-	s := c.schedulers[d.ApplicationId]
-	if s == nil {
-		metadataStore = NewMetadataStore(c.apiClient, d)
-	} else {
-		metadataStore = s.metadataStore
-	}
-
 	planner := newPlanner(
 		d,
 		env.Name,
@@ -446,7 +438,6 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		workingDir,
 		c.apiClient,
 		c.gitClient,
-		metadataStore,
 		c.notifier,
 		c.secretDecrypter,
 		c.pipedConfig,

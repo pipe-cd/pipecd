@@ -50,7 +50,6 @@ type planner struct {
 	workingDir               string
 	apiClient                apiClient
 	gitClient                gitClient
-	metadataStore            *metadataStore
 	notifier                 notifier
 	secretDecrypter          secretDecrypter
 	plannerRegistry          registry.Registry
@@ -74,7 +73,6 @@ func newPlanner(
 	workingDir string,
 	apiClient apiClient,
 	gitClient gitClient,
-	metadataStore *metadataStore,
 	notifier notifier,
 	sd secretDecrypter,
 	pipedConfig *config.PipedSpec,
@@ -98,7 +96,6 @@ func newPlanner(
 		workingDir:               workingDir,
 		apiClient:                apiClient,
 		gitClient:                gitClient,
-		metadataStore:            metadataStore,
 		notifier:                 notifier,
 		secretDecrypter:          sd,
 		pipedConfig:              pipedConfig,
@@ -349,7 +346,8 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 }
 
 func (p *planner) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
-	accounts, ok := p.metadataStore.Get(mentionsKey)
+	metaDataStore := NewMetadataStore(p.apiClient, p.deployment)
+	accounts, ok := metaDataStore.Get(mentionsKey)
 	if !ok {
 		return nil, nil
 	}
