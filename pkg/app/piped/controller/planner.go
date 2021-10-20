@@ -351,7 +351,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 func (p *planner) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
 	accounts, ok := p.metadataStore.Get(mentionsKey)
 	if !ok {
-		return nil, fmt.Errorf("failed to prepare running deploy source data: not found")
+		return nil, nil
 	}
 
 	var as []config.NotificationMention
