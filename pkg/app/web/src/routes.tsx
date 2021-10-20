@@ -1,7 +1,7 @@
 import loadable from "@loadable/component";
 import { EntityId } from "@reduxjs/toolkit";
 import { FC, useEffect } from "react";
-import { Redirect, Route, Switch, useLocation } from "react-router-dom";
+import { Redirect, Route, Switch, useLocation, RouteComponentProps } from "react-router-dom";
 import { ApplicationIndexPage } from "~/components/applications-page";
 import { DeploymentIndexPage } from "~/components/deployments-page";
 import { Header } from "~/components/header";
@@ -116,7 +116,9 @@ export const Routes: FC = () => {
           </Route>
           <Route
             path={PAGE_PATH_TOP}
-            component={() => <Redirect to={PAGE_PATH_LOGIN} />}
+            component={(props: RouteComponentProps) => {
+              return <Redirect to={`${PAGE_PATH_LOGIN}${props.location.search}`} />
+            }}
           />
         </Switch>
       </>
