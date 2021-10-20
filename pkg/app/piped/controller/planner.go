@@ -16,8 +16,8 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"io"
 	"path/filepath"
 	"time"
 
@@ -26,6 +26,7 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
+	"github.com/pipe-cd/pipe/pkg/app/piped/metadatastore"
 	pln "github.com/pipe-cd/pipe/pkg/app/piped/planner"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner/registry"
 	"github.com/pipe-cd/pipe/pkg/cache"
@@ -48,6 +49,7 @@ type planner struct {
 	workingDir               string
 	apiClient                apiClient
 	gitClient                gitClient
+	metadataStore            metadatastore.MetadataStore
 	notifier                 notifier
 	secretDecrypter          secretDecrypter
 	plannerRegistry          registry.Registry
@@ -94,6 +96,7 @@ func newPlanner(
 		workingDir:               workingDir,
 		apiClient:                apiClient,
 		gitClient:                gitClient,
+		metadataStore:            metadatastore.NewMetadataStore(apiClient, d),
 		notifier:                 notifier,
 		secretDecrypter:          sd,
 		pipedConfig:              pipedConfig,
@@ -225,7 +228,7 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash
 		}
 	)
 
-	accounts, err := p.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED, targetDSP)
+	accounts, err := p.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED)
 	if err != nil {
 		p.logger.Error("failed to get the list of accounts", zap.Error(err))
 	}
@@ -269,7 +272,7 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string, tar
 		retry = pipedservice.NewRetry(10)
 	)
 
-	accounts, err := p.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_FAILED, targetDSP)
+	accounts, err := p.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
 	if err != nil {
 		p.logger.Error("failed to get the list of accounts", zap.Error(err))
 	}
@@ -313,7 +316,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 		retry = pipedservice.NewRetry(10)
 	)
 
-	accounts, err := p.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED, targetDSP)
+	accounts, err := p.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 	if err != nil {
 		p.logger.Error("failed to get the list of accounts", zap.Error(err))
 	}
@@ -343,18 +346,18 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 	return err
 }
 
-func (p *planner) getMentionedAccounts(ctx context.Context, event model.NotificationEventType, targetDSP deploysource.Provider) ([]string, error) {
-	ds, err := targetDSP.GetReadOnly(ctx, io.Discard)
-	if err != nil {
-		return nil, fmt.Errorf("failed to prepare running deploy source data: %w", err)
-	}
-
-	if ds.GenericDeploymentConfig.DeploymentNotification == nil {
-		// There is no event to mention users.
+func (p *planner) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
+	accounts, ok := p.metadataStore.Shared().Get(mentionsKey)
+	if !ok {
 		return nil, nil
 	}
 
-	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
+	var as []config.NotificationMention
+	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
+		return nil, fmt.Errorf("could not extract mentions config: %w", err)
+	}
+
+	for _, v := range as {
 		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
 		}
