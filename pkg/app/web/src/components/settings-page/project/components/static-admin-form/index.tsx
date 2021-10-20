@@ -73,7 +73,6 @@ const StaticAdminDialog: FC<{
             id="username"
             name="username"
             value={formik.values.username}
-            defaultValue={formik.values.username}
             variant="outlined"
             margin="dense"
             label="Username"
@@ -210,12 +209,14 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
           </div>
         )}
       </div>
-      <StaticAdminDialog
-        open={isEdit}
-        currentUsername={currentUsername || ""}
-        onClose={handleClose}
-        onSubmit={handleSubmit}
-      />
+      {currentUsername && (
+        <StaticAdminDialog
+          open={isEdit}
+          currentUsername={currentUsername}
+          onClose={handleClose}
+          onSubmit={handleSubmit}
+        />
+      )}
     </>
   );
 });
