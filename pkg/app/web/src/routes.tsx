@@ -118,7 +118,7 @@ export const Routes: FC = () => {
           <Route
             path={PAGE_PATH_TOP}
             component={(props: RouteComponentProps) => {
-              localStorage.setItem(REDIRECT_PATH_KEY, props.location.pathname);
+              localStorage.setItem(REDIRECT_PATH_KEY, `${props.location.pathname}${props.location.search}`);
               return <Redirect to={`${PAGE_PATH_LOGIN}${props.location.search}`} />
             }}
           />
