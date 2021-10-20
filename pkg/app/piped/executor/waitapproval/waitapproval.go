@@ -152,7 +152,7 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
 	accounts, ok := e.MetadataStore.Shared().Get(mentionsKey)
 	if !ok {
-		return nil, fmt.Errorf("could not extract mentions config: not found")
+		return nil, nil
 	}
 
 	var as []config.NotificationMention
