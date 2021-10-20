@@ -35,8 +35,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/regexpool"
 )
 
-const mentionsKey = "Mentions"
-
 // What planner does:
 // - Wait until there is no PLANNED or RUNNING deployment
 // - Pick the oldest PENDING deployment to plan its pipeline
