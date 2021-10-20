@@ -79,6 +79,7 @@ const useCommandsStatusChecking = (): void => {
   );
 };
 
+const REDIRECT_PATH_KEY = 'redirect_path';
 export const Routes: FC = () => {
   const dispatch = useAppDispatch();
   const me = useAppSelector((state) => state.me);
@@ -117,6 +118,7 @@ export const Routes: FC = () => {
           <Route
             path={PAGE_PATH_TOP}
             component={(props: RouteComponentProps) => {
+              localStorage.setItem(REDIRECT_PATH_KEY, props.location.pathname);
               return <Redirect to={`${PAGE_PATH_LOGIN}${props.location.search}`} />
             }}
           />
@@ -153,7 +155,11 @@ export const Routes: FC = () => {
         <Route path={PAGE_PATH_INSIGHTS} component={InsightIndexPage} />
         <Route
           path={PAGE_PATH_TOP}
-          component={() => <Redirect to={PAGE_PATH_APPLICATIONS} />}
+          component={() => {
+            const path = localStorage.getItem(REDIRECT_PATH_KEY) || PAGE_PATH_APPLICATIONS;
+            localStorage.removeItem(REDIRECT_PATH_KEY);
+            return <Redirect to={path} />;
+          }}
         />
       </Switch>
       <Toasts />
