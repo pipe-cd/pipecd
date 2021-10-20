@@ -31,7 +31,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const mentionsKey = "Mentions"
+const notificationsKey = "DeploymentNotification"
 
 func (t *Trigger) triggerDeployment(
 	ctx context.Context,
@@ -41,23 +41,25 @@ func (t *Trigger) triggerDeployment(
 	commander string,
 	syncStrategy model.SyncStrategy,
 ) (deployment *model.Deployment, err error) {
-	mentions, err := t.getNotificationMentions(app.GitPath)
+	n, err := t.getNotification(app.GitPath)
 	if err != nil {
 		t.logger.Error("failed to get the list of mentions", zap.Error(err))
 		return
 	}
 
-	deployment, err = buildDeployment(app, branch, commit, commander, syncStrategy, time.Now(), mentions)
+	deployment, err = buildDeployment(app, branch, commit, commander, syncStrategy, time.Now(), n)
 	if err != nil {
 		t.logger.Error("failed to build the deployment", zap.Error(err))
 		return
 	}
 
 	var as []string
-	for _, v := range mentions {
-		if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
-			as = v.Slack
-			break
+	if n != nil {
+		for _, v := range n.Mentions {
+			if e := "EVENT_" + v.Event; e == model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED.String() {
+				as = v.Slack
+				break
+			}
 		}
 	}
 
@@ -133,7 +135,7 @@ func buildDeployment(
 	commander string,
 	syncStrategy model.SyncStrategy,
 	now time.Time,
-	mentions []config.NotificationMention,
+	notification *config.DeploymentNotification,
 ) (*model.Deployment, error) {
 	commitURL := ""
 	if r := app.GitPath.Repo; r != nil {
@@ -144,12 +146,12 @@ func buildDeployment(
 		}
 	}
 	metadata := make(map[string]string)
-	if mentions != nil {
-		value, err := json.Marshal(mentions)
+	if notification != nil {
+		value, err := json.Marshal(notification)
 		if err != nil {
 			return nil, fmt.Errorf("failed to save mention config to deployment metadata: %w", err)
 		}
-		metadata[mentionsKey] = string(value)
+		metadata[notificationsKey] = string(value)
 	}
 
 	deployment := &model.Deployment{
@@ -185,7 +187,7 @@ func buildDeployment(
 	return deployment, nil
 }
 
-func (t *Trigger) getNotificationMentions(p *model.ApplicationGitPath) ([]config.NotificationMention, error) {
+func (t *Trigger) getNotification(p *model.ApplicationGitPath) (*config.DeploymentNotification, error) {
 	// Find the application repo from pre-loaded ones.
 	repo, ok := t.gitRepos[p.Repo.Id]
 	if !ok {
@@ -208,10 +210,5 @@ func (t *Trigger) getNotificationMentions(p *model.ApplicationGitPath) ([]config
 		return nil, fmt.Errorf("unsupported application kind: %s", cfg.Kind)
 	}
 
-	if spec.DeploymentNotification == nil {
-		// There is no event to mention users.
-		return nil, nil
-	}
-
-	return spec.DeploymentNotification.Mentions, nil
+	return spec.DeploymentNotification, nil
 }
