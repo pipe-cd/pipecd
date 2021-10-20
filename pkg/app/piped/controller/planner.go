@@ -356,7 +356,7 @@ func (p *planner) getMentionedAccounts(event model.NotificationEventType) ([]str
 
 	var as []config.NotificationMention
 	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
-		return nil, fmt.Errorf("failed to prepare running deploy source data: %w", err)
+		return nil, fmt.Errorf("could not extract mentions config: %w", err)
 	}
 
 	for _, v := range as {
