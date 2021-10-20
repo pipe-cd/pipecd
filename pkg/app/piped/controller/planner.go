@@ -26,6 +26,7 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
+	"github.com/pipe-cd/pipe/pkg/app/piped/metadatastore"
 	pln "github.com/pipe-cd/pipe/pkg/app/piped/planner"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner/registry"
 	"github.com/pipe-cd/pipe/pkg/cache"
@@ -50,7 +51,7 @@ type planner struct {
 	workingDir               string
 	apiClient                apiClient
 	gitClient                gitClient
-	metadataStore            *metadataStore
+	metadataStore            metadatastore.MetadataStore
 	notifier                 notifier
 	secretDecrypter          secretDecrypter
 	plannerRegistry          registry.Registry
@@ -97,7 +98,7 @@ func newPlanner(
 		workingDir:               workingDir,
 		apiClient:                apiClient,
 		gitClient:                gitClient,
-		metadataStore:            NewMetadataStore(apiClient, d),
+		metadataStore:            metadatastore.NewMetadataStore(apiClient, d)
 		notifier:                 notifier,
 		secretDecrypter:          sd,
 		pipedConfig:              pipedConfig,
