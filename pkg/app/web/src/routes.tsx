@@ -79,7 +79,7 @@ const useCommandsStatusChecking = (): void => {
   );
 };
 
-const REDIRECT_PATH_KEY = 'path';
+const REDIRECT_PATH_KEY = 'redirect_path';
 export const Routes: FC = () => {
   const dispatch = useAppDispatch();
   const me = useAppSelector((state) => state.me);
