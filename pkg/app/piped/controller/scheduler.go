@@ -655,12 +655,12 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 func (s *scheduler) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
 	accounts, ok := s.metadataStore.Shared().Get(mentionsKey)
 	if !ok {
-		return nil, fmt.Errorf("failed to prepare running deploy source data: not found")
+		return nil, fmt.Errorf("could not extract mentions config: not found")
 	}
 
 	var as []config.NotificationMention
 	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
-		return nil, fmt.Errorf("failed to prepare running deploy source data: %w", err)
+		return nil, fmt.Errorf("could not extract mentions config: %w", err)
 	}
 
 	for _, v := range as {
