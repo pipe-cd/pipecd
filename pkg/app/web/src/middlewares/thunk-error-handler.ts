@@ -12,7 +12,7 @@ export const thunkErrorHandler: Middleware = ({
   let res;
   try {
     res = await next(action);
-  } catch (err) {
+  } catch (err: any) {
     if (process.env.NODE_ENV === "development") {
       console.error(err);
     }
@@ -26,7 +26,7 @@ export const thunkErrorHandler: Middleware = ({
 
   if (isPlainAction(action)) {
     if (action.type.includes("rejected")) {
-      dispatch(addToast({ message: action.error.message, severity: "error" }));
+      dispatch(addToast({ message: action.error.message, severity: "error", issuer: action.type }));
     }
   }
 

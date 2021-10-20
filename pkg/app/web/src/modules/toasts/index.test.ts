@@ -57,4 +57,30 @@ describe("toastsSlice reducer", () => {
       ids: [],
     });
   });
+
+  it(`should not add the same toast which cause by the same reason with the latest toast`, () => {
+    expect(
+      toastsSlice.reducer(
+        {
+          entities: {
+            "1": { id: "1", message: "toast message", severity: "error", issuer: "api/rejected" },
+          },
+          ids: ["1"],
+        },
+        {
+          type: addToast.type,
+          payload: {
+            message: "toast message",
+            severity: "error",
+            issuer: "api/rejected",
+          },
+        }
+      )
+    ).toEqual({
+      entities: {
+        "1": { id: "1", message: "toast message", severity: "error", issuer: "api/rejected" },
+      },
+      ids: ["1"],
+    })
+  });
 });
