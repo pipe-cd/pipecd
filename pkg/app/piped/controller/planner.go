@@ -98,7 +98,7 @@ func newPlanner(
 		workingDir:               workingDir,
 		apiClient:                apiClient,
 		gitClient:                gitClient,
-		metadataStore:            metadatastore.NewMetadataStore(apiClient, d)
+		metadataStore:            metadatastore.NewMetadataStore(apiClient, d),
 		notifier:                 notifier,
 		secretDecrypter:          sd,
 		pipedConfig:              pipedConfig,
@@ -349,7 +349,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 }
 
 func (p *planner) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
-	accounts, ok := p.metadataStore.Get(mentionsKey)
+	accounts, ok := p.metadataStore.Shared().Get(mentionsKey)
 	if !ok {
 		return nil, nil
 	}
