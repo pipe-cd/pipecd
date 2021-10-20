@@ -16,6 +16,7 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -35,6 +36,8 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
+
+const mentionsKey = "Mentions"
 
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
@@ -593,7 +596,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	defer func() {
 		switch status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
-			accounts, err := s.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED)
+			accounts, err := s.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED)
 			if err != nil {
 				s.logger.Error("failed to get the list of accounts", zap.Error(err))
 			}
@@ -607,7 +610,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE:
-			accounts, err := s.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
+			accounts, err := s.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
 			if err != nil {
 				s.logger.Error("failed to get the list of accounts", zap.Error(err))
 			}
@@ -622,7 +625,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_CANCELLED:
-			accounts, err := s.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			accounts, err := s.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 			if err != nil {
 				s.logger.Error("failed to get the list of accounts", zap.Error(err))
 			}
@@ -649,23 +652,18 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	return err
 }
 
-func (s *scheduler) getMentionedAccounts(ctx context.Context, event model.NotificationEventType) ([]string, error) {
-	if s.targetDSP == nil {
-		return nil, fmt.Errorf("targetDSP is not configured")
-	}
-
-	ds, err := s.targetDSP.GetReadOnly(ctx, io.Discard)
-	if err != nil {
-		err = fmt.Errorf("failed to prepare running deploy source data: %w", err)
-		return nil, err
-	}
-
-	if ds.GenericDeploymentConfig.DeploymentNotification == nil {
-		// There is no event to mention users.
+func (s *scheduler) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
+	accounts, ok := s.metadataStore.Shared().Get(mentionsKey)
+	if !ok {
 		return nil, nil
 	}
 
-	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
+	var as []config.NotificationMention
+	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
+		return nil, fmt.Errorf("could not extract mentions config: %w", err)
+	}
+
+	for _, v := range as {
 		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
 		}
