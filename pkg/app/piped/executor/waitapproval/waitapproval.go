@@ -16,17 +16,20 @@ package waitapproval
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 const (
 	approvedByKey = "ApprovedBy"
+	mentionsKey   = "Mentions"
 )
 
 type Executor struct {
@@ -114,7 +117,7 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 }
 
 func (e *Executor) reportApproved(ctx context.Context, approver string) {
-	accounts, err := e.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED)
+	accounts, err := e.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED)
 	if err != nil {
 		e.Logger.Error("failed to get the list of accounts", zap.Error(err))
 	}
@@ -131,7 +134,7 @@ func (e *Executor) reportApproved(ctx context.Context, approver string) {
 }
 
 func (e *Executor) reportRequiringApproval(ctx context.Context) {
-	accounts, err := e.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
+	accounts, err := e.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
 	if err != nil {
 		e.Logger.Error("failed to get the list of accounts", zap.Error(err))
 	}
@@ -146,18 +149,18 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 	})
 }
 
-func (e *Executor) getMentionedAccounts(ctx context.Context, event model.NotificationEventType) ([]string, error) {
-	ds, err := e.TargetDSP.GetReadOnly(ctx, e.LogPersister)
-	if err != nil {
-		return nil, fmt.Errorf("failed to prepare running deploy source data: %w", err)
-	}
-
-	if ds.GenericDeploymentConfig.DeploymentNotification == nil {
-		// There is no event to mention users.
+func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
+	accounts, ok := e.MetadataStore.Shared().Get(mentionsKey)
+	if !ok {
 		return nil, nil
 	}
 
-	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
+	var as []config.NotificationMention
+	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
+		return nil, fmt.Errorf("could not extract mentions config: %w", err)
+	}
+
+	for _, v := range as {
 		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
 		}
