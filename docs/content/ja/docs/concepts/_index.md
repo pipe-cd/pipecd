@@ -8,7 +8,7 @@ description: >
 
 ### Piped
 
-`piped` (’d’は’daemon’の略称です。)はDeploymentタスクを実行することのできるシングルバイナリコンポーネントです。
+`piped` (’d’は’daemon’の略称です) はDeploymentタスクを実行することのできるシングルバイナリコンポーネントです。
 PodまたはDeploymentを開始するだけでKubernetesクラスタ内で起動させることができます。
 ステートレスに設計されているため、一つの仮想マシンやお使いの物理マシンでも実行することができます。
 
@@ -19,15 +19,15 @@ Deploymentのデータを管理し、`piped`に接続する為のgRPC APIを提�
 ### Project
 
 複数のApplicationやEnvironmentを持つことができる論理的なグループです。
-また、プロジェクトごとに複数の`piped`インスタンスを異なるクラウドやEnvironmentから持つことができます。
+一つのプロジェクトは異なるクラウド上で動く複数の`piped`を持つことができます。
 プロジェクトの権限には3つの種類があります。
-- **Viewer** はDeploymentとApplicationを見ることしかできません。
-- **Editor** はViewerの権限に加えて、Deploymentにおける手動のトリガーやキャンセルといった変更を行うことができます。
+- **Viewer** はDeploymentとApplicationを閲覧することが出来ます。
+- **Editor** はViewerの権限に加えて、Deploymentのトリガーやキャンセルといった操作を行うことができます。
 - **Admin** はEditorの権限に加えてプロジェクトのデータや`piped`を管理することができます。
 
 ### Application
 
-リソースの集合や設定があわせて管理されているもので、`KUBERNETES`や`TERRAFORM`が例として挙げられます。
+リソースの集合や設定があわせて管理されているもので、例えば`KUBERNETES`, `TERRAFORM`, `ECS`, `CLOUDRUN`や`LAMBDA`が挙げられます。
 
 ### Environment
 
@@ -41,8 +41,8 @@ Deploymentが成功すると、対象となるコミットがデプロイ環境�
 
 ### Deployment Configuration
 
-`.pipe.yaml`にはApplicationのデプロイ方法が書かれています。
-各Applicationには設定ファイルがApplicationディレクトリにそれぞれ作られている必要があります。
+Applicationのデプロイ方法が定義された設定ファイルです。
+このファイルがそれぞれのApplicationディレクトリの下に作成されている必要があります。
 
 ### Application Directory
 
@@ -51,7 +51,7 @@ Applicationごとに一つのApplication Directoryを持っています。
 
 ### Quick Sync
 
-Quick Syncを使えば、最先端のStrategyや手動によるアプルーブなしでApplicationのDeploymentを素早く行うことができます。
+Quick Syncを使えば、プログレッシブデリバリーや手動による承認などの手順を挟まずにApplicationのDeploymentを素早く行うことができます。
 いくつかの例を以下にあげます。
 - Kubernetesの場合全てのManifestsを適用するだけです。
 - Terraformの場合検出された全ての変更を自動で適用します。
@@ -72,5 +72,5 @@ Cloud Providerではどのクラウドを用いてどこにApplicationをデプ�
 
 ### Analysis Provider
 
-`Prometheus`, `Datadog`, `Stackdriver`, `CloudWatch`などのメトリクスやログを提供する外部のDeployment監視ツールのことです。
+`Prometheus`, `Datadog`, `Stackdriver`, `CloudWatch`などのメトリクスやログを提供する外部のツールのことで、PipeCDではDeploymentを評価するために利用されます。
 [Automated deployment analysis](/docs/user-guide/automated-deployment-analysis/)に関する話題で主に使用されます。
