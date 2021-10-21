@@ -349,7 +349,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 func (p *planner) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
 	n, ok := p.metadataStore.Shared().Get(notificationsKey)
 	if !ok {
-		return nil, nil
+		return []string{}, nil
 	}
 
 	var notification config.DeploymentNotification
@@ -362,5 +362,5 @@ func (p *planner) getMentionedAccounts(event model.NotificationEventType) ([]str
 			return v.Slack, nil
 		}
 	}
-	return nil, nil
+	return []string{}, nil
 }

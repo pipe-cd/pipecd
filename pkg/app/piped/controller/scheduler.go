@@ -655,7 +655,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 func (s *scheduler) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
 	n, ok := s.metadataStore.Shared().Get(notificationsKey)
 	if !ok {
-		return nil, nil
+		return []string{}, nil
 	}
 
 	var notification config.DeploymentNotification
@@ -668,7 +668,7 @@ func (s *scheduler) getMentionedAccounts(event model.NotificationEventType) ([]s
 			return v.Slack, nil
 		}
 	}
-	return nil, nil
+	return []string{}, nil
 }
 
 func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) error {

@@ -152,7 +152,7 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
 	n, ok := e.MetadataStore.Shared().Get(notificationsKey)
 	if !ok {
-		return nil, nil
+		return []string{}, nil
 	}
 
 	var notification config.DeploymentNotification
@@ -165,5 +165,5 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 			return v.Slack, nil
 		}
 	}
-	return nil, nil
+	return []string{}, nil
 }
