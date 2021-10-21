@@ -28,8 +28,8 @@ import (
 )
 
 const (
-	approvedByKey = "ApprovedBy"
-	mentionsKey   = "Mentions"
+	approvedByKey    = "ApprovedBy"
+	notificationsKey = "DeploymentNotification"
 )
 
 type Executor struct {
@@ -150,20 +150,20 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 }
 
 func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
-	accounts, ok := e.MetadataStore.Shared().Get(mentionsKey)
+	n, ok := e.MetadataStore.Shared().Get(notificationsKey)
 	if !ok {
-		return nil, nil
+		return []string{}, nil
 	}
 
-	var as []config.NotificationMention
-	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
+	var notification config.DeploymentNotification
+	if err := json.Unmarshal([]byte(n), &notification); err != nil {
 		return nil, fmt.Errorf("could not extract mentions config: %w", err)
 	}
 
-	for _, v := range as {
+	for _, v := range notification.Mentions {
 		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
 		}
 	}
-	return nil, nil
+	return []string{}, nil
 }

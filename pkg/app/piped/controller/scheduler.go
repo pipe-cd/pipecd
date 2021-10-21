@@ -37,7 +37,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const mentionsKey = "Mentions"
+const notificationsKey = "DeploymentNotification"
 
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
@@ -653,22 +653,22 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 }
 
 func (s *scheduler) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
-	accounts, ok := s.metadataStore.Shared().Get(mentionsKey)
+	n, ok := s.metadataStore.Shared().Get(notificationsKey)
 	if !ok {
-		return nil, nil
+		return []string{}, nil
 	}
 
-	var as []config.NotificationMention
-	if err := json.Unmarshal([]byte(accounts), &as); err != nil {
+	var notification config.DeploymentNotification
+	if err := json.Unmarshal([]byte(n), &notification); err != nil {
 		return nil, fmt.Errorf("could not extract mentions config: %w", err)
 	}
 
-	for _, v := range as {
+	for _, v := range notification.Mentions {
 		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
 		}
 	}
-	return nil, nil
+	return []string{}, nil
 }
 
 func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) error {
