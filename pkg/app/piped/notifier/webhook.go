@@ -37,12 +37,12 @@ func newWebhookSender(name string, cfg config.NotificationReceiverWebhook, logge
 	}
 }
 
-func (s *webhook) Run(ctx context.Context) error {
+func (w *webhook) Run(ctx context.Context) error {
 	return nil
 }
 
-func (s *webhook) Notify(_ model.NotificationEvent) {
+func (w *webhook) Notify(_ model.NotificationEvent) {
 }
 
-func (s *webhook) Close(ctx context.Context) {
+func (w *webhook) Close(ctx context.Context) {
 }
