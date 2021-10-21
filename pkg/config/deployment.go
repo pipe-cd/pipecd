@@ -432,6 +432,15 @@ type DeploymentNotification struct {
 	Mentions []NotificationMention `json:"mentions"`
 }
 
+func (n *DeploymentNotification) FindSlackAccounts(event model.NotificationEventType) []string {
+	for _, v := range n.Mentions {
+		if e := "EVENT_" + v.Event; e == event.String() {
+			return v.Slack
+		}
+	}
+	return []string{}
+}
+
 type NotificationMention struct {
 	// The event to be notified to users.
 	Event string `json:"event"`
