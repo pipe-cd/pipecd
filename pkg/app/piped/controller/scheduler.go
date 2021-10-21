@@ -663,12 +663,7 @@ func (s *scheduler) getMentionedAccounts(event model.NotificationEventType) ([]s
 		return nil, fmt.Errorf("could not extract mentions config: %w", err)
 	}
 
-	for _, v := range notification.Mentions {
-		if e := "EVENT_" + v.Event; e == event.String() {
-			return v.Slack, nil
-		}
-	}
-	return []string{}, nil
+	return notification.FindSlackAccounts(event), nil
 }
 
 func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) error {
