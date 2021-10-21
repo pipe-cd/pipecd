@@ -125,7 +125,9 @@ GET applications/_search
 ```
 
 
-BTW: The license got changed lately but it works fine for us. See: https://www.elastic.co/pricing/faq/licensing
+BTW:
+- The license got changed lately but it works fine for us. See: https://www.elastic.co/pricing/faq/licensing
+- Elasticseach can also be used to filter events by labels when we support Eventwatcher's event list in the future.
 
 # Alternatives
 
