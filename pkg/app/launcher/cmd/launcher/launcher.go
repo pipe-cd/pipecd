@@ -19,6 +19,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -28,9 +29,11 @@ import (
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 	"google.golang.org/grpc/credentials"
 
+	"github.com/pipe-cd/pipe/pkg/admin"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/config"
@@ -64,6 +67,7 @@ type launcher struct {
 	certFile                string
 	homeDir                 string
 	defaultVersion          string
+	launcherAdminPort       int
 	checkInterval           time.Duration
 	gracePeriod             time.Duration
 
@@ -106,6 +110,7 @@ func NewCommand() *cobra.Command {
 
 	cmd.Flags().StringVar(&l.homeDir, "home-dir", l.homeDir, "The working directory of Launcher.")
 	cmd.Flags().StringVar(&l.defaultVersion, "default-version", l.defaultVersion, "The version should be run when no desired version was specified. Empty means using the same version with Launcher.")
+	cmd.Flags().IntVar(&l.launcherAdminPort, "launcher-admin-port", l.launcherAdminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
 
 	cmd.Flags().DurationVar(&l.checkInterval, "check-interval", l.checkInterval, "Interval to periodically check desired config/version to restart Piped. Default is 1m.")
 	cmd.Flags().DurationVar(&l.gracePeriod, "grace-period", l.gracePeriod, "How long to wait for graceful shutdown.")
@@ -123,6 +128,7 @@ func NewCommand() *cobra.Command {
 		"git-ssh-key-file":       {},
 		"home-dir":               {},
 		"default-version":        {},
+		"launcher-admin-port":    {},
 		"check-interval":         {},
 	}
 
@@ -150,8 +156,29 @@ func (l *launcher) validateFlags() error {
 }
 
 func (l *launcher) run(ctx context.Context, input cli.Input) error {
+	group, ctx := errgroup.WithContext(ctx)
+
 	if err := l.validateFlags(); err != nil {
 		return err
+	}
+
+	// Start running admin server.
+	if port := l.launcherAdminPort; port > 0 {
+		var (
+			ver   = []byte(version.Get().Version)
+			admin = admin.NewAdmin(port, l.gracePeriod, input.Logger)
+		)
+
+		admin.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
+			w.Write(ver)
+		})
+		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("ok"))
+		})
+
+		group.Go(func() error {
+			return admin.Run(ctx)
+		})
 	}
 
 	if l.homeDir == "" {
@@ -237,27 +264,33 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 		return nil
 	}
 
-	// Execute the first time immediately.
-	execute()
+	group.Go(func() error {
+		// Execute the first time immediately.
+		execute()
 
-	for {
-		select {
-		case <-ticker.C:
-			execute()
+		for {
+			select {
+			case <-ticker.C:
+				execute()
 
-		case <-ctx.Done():
-			// Stop old piped process and clean its data.
-			if err := l.cleanOldPiped(runningPiped, workingDir, input.Logger); err != nil {
-				input.Logger.Error("LAUNCHER: failed while cleaning old Piped",
-					zap.String("version", l.runningVersion),
-					zap.Error(err),
-				)
-				return err
+			case <-ctx.Done():
+				// Stop old piped process and clean its data.
+				if err := l.cleanOldPiped(runningPiped, workingDir, input.Logger); err != nil {
+					input.Logger.Error("LAUNCHER: failed while cleaning old Piped",
+						zap.String("version", l.runningVersion),
+						zap.Error(err),
+					)
+					return err
+				}
+				return nil
 			}
-			return nil
 		}
-	}
+	})
 
+	if err := group.Wait(); err != nil {
+		input.Logger.Error("failed while running", zap.Error(err))
+		return err
+	}
 	return nil
 }
 

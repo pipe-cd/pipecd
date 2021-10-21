@@ -9,6 +9,7 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/launcher/cmd/launcher",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/admin:go_default_library",
         "//pkg/app/api/service/pipedservice:go_default_library",
         "//pkg/cli:go_default_library",
         "//pkg/config:go_default_library",
@@ -20,6 +21,7 @@ go_library(
         "@com_google_cloud_go//secretmanager/apiv1:go_default_library",
         "@go_googleapis//google/cloud/secretmanager/v1:secretmanager_go_proto",
         "@org_golang_google_grpc//credentials:go_default_library",
+        "@org_golang_x_sync//errgroup:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )
