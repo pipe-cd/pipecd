@@ -15,7 +15,14 @@
 package notifier
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -24,24 +31,75 @@ import (
 )
 
 type webhook struct {
-	name   string
-	config config.NotificationReceiverWebhook
-	logger *zap.Logger
+	name       string
+	config     config.NotificationReceiverWebhook
+	webURL     string
+	httpClient *http.Client
+	eventCh    chan model.NotificationEvent
+	logger     *zap.Logger
 }
 
-func newWebhookSender(name string, cfg config.NotificationReceiverWebhook, logger *zap.Logger) *webhook {
+func newWebhookSender(name string, cfg config.NotificationReceiverWebhook, webURL string, logger *zap.Logger) *webhook {
 	return &webhook{
 		name:   name,
 		config: cfg,
-		logger: logger.Named("webhook"),
+		webURL: strings.TrimRight(webURL, "/"),
+		httpClient: &http.Client{
+			Timeout: 5 * time.Second,
+		},
+		eventCh: make(chan model.NotificationEvent, 100),
+		logger:  logger.Named("webhook"),
 	}
 }
 
 func (w *webhook) Run(ctx context.Context) error {
-	return nil
+	for {
+		select {
+		case event, ok := <-w.eventCh:
+			if ok {
+				w.sendEvent(ctx, event)
+			}
+		case <-ctx.Done():
+			return nil
+		}
+	}
 }
 
-func (w *webhook) Notify(_ model.NotificationEvent) {
+func (w *webhook) Notify(event model.NotificationEvent) {
+	w.eventCh <- event
+}
+
+func (w *webhook) sendEvent(ctx context.Context, event model.NotificationEvent) {
+	buf := &bytes.Buffer{}
+	if err := json.NewEncoder(buf).Encode(event); err != nil {
+		w.logger.Error(fmt.Sprintf("unable to send data to webhook url: %v", err))
+		return
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", w.config.URL, buf)
+	if err != nil {
+		w.logger.Error(fmt.Sprintf("unable to send data to webhook url: %v", err))
+		return
+	}
+
+	key := "Pipecd-Signature"
+	if w.config.SignatureKey != "" {
+		key = w.config.SignatureKey
+	}
+	req.Header.Add(key, w.config.SignatureValue)
+
+	resp, err := w.httpClient.Do(req)
+	if err != nil {
+		w.logger.Error(fmt.Sprintf("unable to send data to webhook url: %v", err))
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+		w.logger.Error(fmt.Sprintf("%s from the destination of webhook: %s", resp.Status, strings.TrimSpace(string(body))))
+		return
+	}
 }
 
 func (w *webhook) Close(ctx context.Context) {
