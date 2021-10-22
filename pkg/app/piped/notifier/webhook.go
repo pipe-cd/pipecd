@@ -81,11 +81,7 @@ func (w *webhook) sendEvent(ctx context.Context, event model.NotificationEvent) 
 		return
 	}
 
-	key := "Pipecd-Signature"
-	if w.config.SignatureKey != "" {
-		key = w.config.SignatureKey
-	}
-	req.Header.Add(key, w.config.SignatureValue)
+	req.Header.Add(w.config.SignatureKey, w.config.SignatureValue)
 
 	resp, err := w.httpClient.Do(req)
 	if err != nil {
