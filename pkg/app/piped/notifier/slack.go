@@ -138,23 +138,25 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		fields            []slackField
 	)
 
-	generateDeploymentEventData := func(d *model.Deployment, envName string, accounts string) {
-		link = webURL + "/deployments/" + d.Id
+	generateDeploymentEventData := func(d *model.Deployment, envName, accounts string) {
+		link = fmt.Sprintf("%s/deployments/%s?project=%s", webURL, d.Id, d.ProjectId)
 		fields = []slackField{
-			{"Env", truncateText(envName, 8), true},
-			{"Application", makeSlackLink(d.ApplicationName, webURL+"/applications/"+d.ApplicationId), true},
+			{"Project", truncateText(d.ProjectId, 8), true},
+			{"Application", makeSlackLink(d.ApplicationName, fmt.Sprintf("%s/applications/%s?project=%s", webURL, d.ApplicationId, d.ProjectId)), true},
 			{"Kind", strings.ToLower(d.Kind.String()), true},
 			{"Deployment", makeSlackLink(truncateText(d.Id, 8), link), true},
+			{"Env", truncateText(envName, 8), true},
 			{"Triggered By", d.TriggeredBy(), true},
-			{"Started At", makeSlackDate(d.CreatedAt), true},
 			{"Mention To", accounts, true},
+			{"Started At", makeSlackDate(d.CreatedAt), true},
 		}
 	}
-	generatePipedEventData := func(id, name, version string) {
-		link = webURL + "/settings/piped"
+	generatePipedEventData := func(id, name, version, project string) {
+		link = fmt.Sprintf("%s/settings/piped?project=%s", webURL, project)
 		fields = []slackField{
 			{"Name", name, true},
 			{"Version", version, true},
+			{"Project", truncateText(project, 8), true},
 			{"Id", id, true},
 		}
 	}
@@ -205,12 +207,12 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 	case model.NotificationEventType_EVENT_PIPED_STARTED:
 		md := event.Metadata.(*model.NotificationEventPipedStarted)
 		title = "A piped has been started"
-		generatePipedEventData(md.Id, md.Name, md.Version)
+		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId)
 
 	case model.NotificationEventType_EVENT_PIPED_STOPPED:
 		md := event.Metadata.(*model.NotificationEventPipedStopped)
 		title = "A piped has been stopped"
-		generatePipedEventData(md.Id, md.Name, md.Version)
+		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId)
 
 	// TODO: Support application type of notification event.
 	default:
