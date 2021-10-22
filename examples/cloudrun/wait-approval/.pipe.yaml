@@ -19,14 +19,6 @@ spec:
         slack:
           - slack-user-id-1  # slack-user-name-1
           - slack-user-id-2  # slack-user-name-2
-      - event: DEPLOYMENT_SUCCEEDED
-        slack:
-          - slack-user-id-3  # slack-user-name-3
-          - slack-user-id-4  # slack-user-name-4
-      - event: DEPLOYMENT_TRIGGERED
-        slack:
-          - slack-user-id-1  # slack-user-name-1
-          - slack-user-id-2  # slack-user-name-2
       # The empty event will notify all events to users.
       - event:
         slack:
