@@ -189,6 +189,8 @@ func TestPipedConfig(t *testing.T) {
 							Name: "ci-webhook",
 							Webhook: &NotificationReceiverWebhook{
 								URL: "https://pipecd.dev/dev-hook",
+								SignatureKey: "PipeCD-Signature",
+								SignatureValue: "random-signature-string",
 							},
 						},
 					},
