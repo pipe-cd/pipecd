@@ -73,50 +73,99 @@ description: >
 
   Prepare a CloudRun service manifest file as below.
 
-  **Note**: Fields which set to `1` are strict to be set with that value to ensure piped work correctly.
+  {{< tabpane >}}
+  {{< tab lang="yaml" header="Piped with Remote-upgrade" >}}
+# Enable remote-upgrade feature of Piped.
+# https://pipecd.dev/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-upgrade
+# This allows upgrading Piped to a new version from the web console.
 
-  ``` yaml
-  apiVersion: serving.knative.dev/v1
-  kind: Service
-  metadata:
-    name: piped
-  spec:
-    template:
-      metadata:
-        annotations:
-          autoscaling.knative.dev/maxScale: '1' # This must be 1.
-          autoscaling.knative.dev/minScale: '1' # This must be 1.
-          run.googleapis.com/ingress: internal
-          run.googleapis.com/ingress-status: internal
-      spec:
-        containerConcurrency: 1 # This must be 1.
-        containers:
-          - image: gcr.io/pipecd/piped:{{< blocks/latest_version >}}
-            args:
-              - piped
-              - --config-file=/etc/piped-config/config.yaml
-            ports:
-              - containerPort: 9085
-            volumeMounts:
-              - mountPath: /etc/piped-config
-                name: piped-config
-            resources:
-              limits:
-                cpu: 1000m
-                memory: 2Gi
-        volumes:
-          - name: piped-config
-            secret:
-              secretName: cloudrun-piped-config
-              items:
-                - path: config.yaml
-                  key: latest
-  ```
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: piped
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: '1'           # This must be 1.
+        autoscaling.knative.dev/minScale: '1'           # This must be 1.
+        run.googleapis.com/ingress: internal
+        run.googleapis.com/ingress-status: internal
+        run.googleapis.com/cpu-throttling: "false"      # This is required.
+    spec:
+      containerConcurrency: 1                           # This must be 1 to ensure Piped work correctly.
+      containers:
+        - image: gcr.io/pipecd/piped:{{< blocks/latest_version >}}
+          command:
+            - /launcher
+          args:
+            - launcher
+            - --launcher-admin-port=9086
+            - --config-file=/etc/piped-config/config.yaml
+          ports:
+            - containerPort: 9086
+          volumeMounts:
+            - mountPath: /etc/piped-config
+              name: piped-config
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+      volumes:
+        - name: piped-config
+          secret:
+            secretName: cloudrun-piped-config
+            items:
+              - path: config.yaml
+                key: latest
+  {{< /tab >}}
+  {{< tab lang="bash" header="Piped" >}}
+# This just installs a Piped with the specified version.
+# Whenever you want to upgrade that Piped to a new version or update its config data you have to restart it.
 
-  Create Piped service on CloudRun with the following command. Please note to use `no-cpu-throttling` flag to disable CPU throttling on its container.
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: piped
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: '1'           # This must be 1.
+        autoscaling.knative.dev/minScale: '1'           # This must be 1.
+        run.googleapis.com/ingress: internal
+        run.googleapis.com/ingress-status: internal
+        run.googleapis.com/cpu-throttling: "false"      # This is required.
+    spec:
+      containerConcurrency: 1                           # This must be 1.
+      containers:
+        - image: gcr.io/pipecd/piped:{{< blocks/latest_version >}}
+          args:
+            - piped
+            - --config-file=/etc/piped-config/config.yaml
+          ports:
+            - containerPort: 9085
+          volumeMounts:
+            - mountPath: /etc/piped-config
+              name: piped-config
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+      volumes:
+        - name: piped-config
+          secret:
+            secretName: cloudrun-piped-config
+            items:
+              - path: config.yaml
+                key: latest
+  {{< /tab >}}
+  {{< /tabpane >}}
+
+  Run Piped service on CloudRun with the following command:
 
   ``` console
-  gcloud beta run services replace cloudrun-piped-service.yaml --no-cpu-throttling
+  gcloud beta run services replace cloudrun-piped-service.yaml
   ```
 
   Note: Make sure that the created secret is accessible from this Piped service. See more [here](https://cloud.google.com/run/docs/configuring/secrets#access-secret).
