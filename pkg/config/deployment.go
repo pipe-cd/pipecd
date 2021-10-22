@@ -466,6 +466,9 @@ type NotificationMention struct {
 }
 
 func (n *NotificationMention) Validate() error {
+	if n.Event == "" {
+		return nil
+	}
 	e := "EVENT_" + n.Event
 	for k := range model.NotificationEventType_value {
 		if e == k {
