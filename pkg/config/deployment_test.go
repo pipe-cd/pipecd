@@ -74,27 +74,27 @@ func TestHasStage(t *testing.T) {
 
 func TestValidateMentions(t *testing.T) {
 	testcases := []struct {
-		name string
-		event string
-		slack []string
+		name    string
+		event   string
+		slack   []string
 		wantErr bool
 	}{
 		{
-			name: "valid if an event is correct",
-			event: "DEPLOYMENT_TRIGGERED",
-			slack: []string{"user-1", "user-2"},
+			name:    "valid if an event is correct",
+			event:   "DEPLOYMENT_TRIGGERED",
+			slack:   []string{"user-1", "user-2"},
 			wantErr: false,
 		},
 		{
-			name: "invalid if an event is wrong",
-			event: "event-1",
-			slack: []string{"user-1", "user-2"},
+			name:    "invalid if an event is wrong",
+			event:   "event-1",
+			slack:   []string{"user-1", "user-2"},
 			wantErr: true,
 		},
 		{
-			name: "invalid if an event is empty",
-			event: "",
-			slack: []string{"user-1", "user-2"},
+			name:    "invalid if an event is empty",
+			event:   "",
+			slack:   []string{"user-1", "user-2"},
 			wantErr: true,
 		},
 	}
