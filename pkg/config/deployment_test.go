@@ -72,6 +72,81 @@ func TestHasStage(t *testing.T) {
 	}
 }
 
+func TestFindSlackAccounts(t *testing.T) {
+	testcases := []struct {
+		name string
+		mentions []NotificationMention
+		event model.NotificationEventType
+		want []string
+	}{
+		{
+			name: "the applicable event",
+			mentions: []NotificationMention{
+				{
+					Event: "DEPLOYMENT_TRIGGERED",
+					Slack: []string{"user-1", "user-2"},
+				},
+				{
+					Event: "DEPLOYMENT_PLANNED",
+					Slack: []string{"user-3", "user-4"},
+				},
+			},
+			event: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+			want: []string{"user-1", "user-2"},
+		},
+		{
+			name: "the applicable event and all events",
+			mentions: []NotificationMention{
+				{
+					Event: "DEPLOYMENT_TRIGGERED",
+					Slack: []string{"user-1", "user-2"},
+				},
+				{
+					Event: "*",
+					Slack: []string{"user-1", "user-3"},
+				},
+			},
+			event: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+			want: []string{"user-1", "user-2", "user-3"},
+		},
+		{
+			name: "not the appricable event and all events",
+			mentions: []NotificationMention{
+				{
+					Event: "DEPLOYMENT_TRIGGERED",
+					Slack: []string{"user-1", "user-2"},
+				},
+				{
+					Event: "*",
+					Slack: []string{"user-1", "user-3"},
+				},
+			},
+			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+			want: []string{"user-1", "user-3"},
+		},
+		{
+			name: "not the appricable event",
+			mentions: []NotificationMention{
+				{
+					Event: "DEPLOYMENT_TRIGGERED",
+					Slack: []string{"user-1", "user-2"},
+				},
+			},
+			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+			want: []string{},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			n := &DeploymentNotification {
+				tc.mentions,
+			}
+			as := n.FindSlackAccounts(tc.event)
+			assert.ElementsMatch(t, tc.want, as)
+		})
+	}
+}
+
 func TestValidateMentions(t *testing.T) {
 	testcases := []struct {
 		name    string
@@ -82,6 +157,12 @@ func TestValidateMentions(t *testing.T) {
 		{
 			name:    "valid",
 			event:   "DEPLOYMENT_TRIGGERED",
+			slack:   []string{"user-1", "user-2"},
+			wantErr: false,
+		},
+		{
+			name:    "valid",
+			event:   "*",
 			slack:   []string{"user-1", "user-2"},
 			wantErr: false,
 		},
