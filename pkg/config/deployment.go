@@ -71,6 +71,14 @@ func (s *GenericDeploymentSpec) Validate() error {
 		}
 	}
 
+	if s.DeploymentNotification != nil {
+		for _, m := range s.DeploymentNotification.Mentions {
+			if err := m.Validate(); err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -458,8 +466,9 @@ type NotificationMention struct {
 }
 
 func (n *NotificationMention) Validate() error {
+	e := "EVENT_" + n.Event
 	for k := range model.NotificationEventType_value {
-		if n.Event == k {
+		if e == k {
 			return nil
 		}
 	}
