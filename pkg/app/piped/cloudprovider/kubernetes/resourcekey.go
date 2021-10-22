@@ -97,7 +97,9 @@ func (k ResourceKey) String() string {
 }
 
 func (k ResourceKey) ReadableString() string {
-	return fmt.Sprintf("name=%q, kind=%q, namespace=%q, apiVersion=%q", k.Name, k.Kind, k.Namespace, k.APIVersion)
+	// TODO: Ensure the Namespace value of ResourceKey used for kubernetes diff detection
+	// works with the current ResourceKey Namespace loading model.
+	return fmt.Sprintf("name=%q, kind=%q, apiVersion=%q", k.Name, k.Kind, k.APIVersion)
 }
 
 func (k ResourceKey) IsZero() bool {
