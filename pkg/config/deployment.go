@@ -455,6 +455,7 @@ func (n *DeploymentNotification) FindSlackAccounts(event model.NotificationEvent
 
 type NotificationMention struct {
 	// The event to be notified to users.
+	// Empty means all events will be matched.
 	Event string `json:"event"`
 	// List of user IDs for mentioning in Slack.
 	// See https://api.slack.com/reference/surfaces/formatting#mentioning-users
