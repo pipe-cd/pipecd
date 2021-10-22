@@ -93,7 +93,6 @@ func (w *webhook) sendEvent(ctx context.Context, event model.NotificationEvent) 
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		w.logger.Warn("unexpected status was returned from the destination of webhook", zap.String("status", resp.Status))
-		return
 	}
 }
 
