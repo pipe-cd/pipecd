@@ -80,19 +80,19 @@ func TestValidateMentions(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "valid if an event is correct",
+			name:    "valid",
 			event:   "DEPLOYMENT_TRIGGERED",
 			slack:   []string{"user-1", "user-2"},
 			wantErr: false,
 		},
 		{
-			name:    "invalid if an event is wrong",
+			name:    "invalid because of non-existent event",
 			event:   "event-1",
 			slack:   []string{"user-1", "user-2"},
 			wantErr: true,
 		},
 		{
-			name:    "invalid if an event is empty",
+			name:    "invalid because of missing event",
 			event:   "",
 			slack:   []string{"user-1", "user-2"},
 			wantErr: true,
