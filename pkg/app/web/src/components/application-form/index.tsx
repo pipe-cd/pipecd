@@ -18,7 +18,6 @@ import { ApplicationKind } from "~/modules/applications";
 import { selectAllEnvs } from "~/modules/environments";
 import { Piped, selectPipedById, selectPipedsByEnv } from "~/modules/pipeds";
 
-const emptyItems = [{ name: "None", value: "" }];
 const createCloudProviderListFromPiped = ({
   kind,
   piped,
@@ -27,7 +26,7 @@ const createCloudProviderListFromPiped = ({
   kind: ApplicationKind;
 }): Array<{ name: string; value: string }> => {
   if (!piped) {
-    return emptyItems;
+    return [{ name: "None", value: "" }];
   }
 
   return piped.cloudProvidersList
@@ -37,6 +36,26 @@ const createCloudProviderListFromPiped = ({
       value: provider.name,
     }));
 };
+
+const createRepoListFromPiped = (
+  piped?: Piped.AsObject
+): Array<{ name: string; value: string; branch: string; remote: string }> => {
+  if (!piped) {
+    return [{
+      name: "None",
+      value: "",
+      branch: "",
+      remote: "",
+    }];
+  }
+
+  return piped.repositoriesList.map((repo) => ({
+    name: repo.id,
+    value: repo.id,
+    branch: repo.branch,
+    remote: repo.remote,
+  }));
+}
 
 const useStyles = makeStyles((theme) => ({
   title: {
@@ -189,6 +208,8 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
       kind: values.kind,
     });
 
+    const repositories = createRepoListFromPiped(selectedPiped);
+
     return (
       <Box width={600}>
         <Typography className={classes.title} variant="h6">
@@ -272,16 +293,12 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
                   remote: value.remote,
                 })
               }
-              items={
-                selectedPiped?.repositoriesList?.map((repo) => ({
-                  name: repo.id,
-                  value: repo.id,
-                  branch: repo.branch,
-                  remote: repo.remote,
-                })) || []
-              }
+              items={repositories}
               disabled={
-                selectedPiped === undefined || isSubmitting || disableGitPath
+                selectedPiped === undefined ||
+                repositories.length === 0 ||
+                isSubmitting ||
+                disableGitPath
               }
             />
 
