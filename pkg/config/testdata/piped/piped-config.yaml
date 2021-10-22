@@ -106,6 +106,7 @@ spec:
       - name: ci-webhook
         webhook:
           url: https://pipecd.dev/dev-hook
+          signatureValue: random-signature-string
 
   sealedSecretManagement:
     type: SEALING_KEY

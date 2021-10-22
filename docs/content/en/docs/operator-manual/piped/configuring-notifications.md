@@ -67,6 +67,8 @@ spec:
       - name: ci-webhook
         webhook:
           url: https://pipecd.dev/dev-hook
+          signatureKey: PipeCD-Signature
+          signatureValue: {RANDOM_SIGNATURE_STRING}
 ```
 
 

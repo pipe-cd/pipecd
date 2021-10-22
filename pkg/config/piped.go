@@ -548,7 +548,9 @@ type NotificationReceiverSlack struct {
 }
 
 type NotificationReceiverWebhook struct {
-	URL string `json:"url"`
+	URL            string `json:"url"`
+	SignatureKey   string `json:"signatureKey" default:"PipeCD-Signature"`
+	SignatureValue string `json:"signatureValue"`
 }
 
 type SecretManagement struct {
