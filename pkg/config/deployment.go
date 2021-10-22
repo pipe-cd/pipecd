@@ -443,7 +443,7 @@ type DeploymentNotification struct {
 func (n *DeploymentNotification) FindSlackAccounts(event model.NotificationEventType) []string {
 	var as []string
 	for _, v := range n.Mentions {
-		if v.Event == "" {		
+		if v.Event == "" {
 			as = append(as, v.Slack...)
 		}
 		if e := "EVENT_" + v.Event; e == event.String() {
