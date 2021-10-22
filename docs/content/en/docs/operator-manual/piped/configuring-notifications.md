@@ -67,8 +67,6 @@ spec:
       - name: ci-webhook
         webhook:
           url: https://pipecd.dev/dev-hook
-          # `SignatureKey` will be changed to match the MIME header key.
-          # For example, `pipecd-signature` will be converted to `Pipecd-Signature`.
           signatureKey: Pipecd-Signature
           signatureValue: 6348a40fb854f7d250c0a8efd3f76e960f476dd0
 ```
