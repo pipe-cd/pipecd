@@ -441,12 +441,28 @@ type DeploymentNotification struct {
 }
 
 func (n *DeploymentNotification) FindSlackAccounts(event model.NotificationEventType) []string {
+	as := make(map[string]int)
 	for _, v := range n.Mentions {
+		if v.Event == "*" {
+			as = setApprover(as, v.Slack)
+		}
 		if e := "EVENT_" + v.Event; e == event.String() {
-			return v.Slack
+			as = setApprover(as, v.Slack)
 		}
 	}
-	return []string{}
+
+	var approvers []string
+	for a := range as {
+		approvers = append(approvers, a)
+	}
+	return approvers
+}
+
+func setApprover(approvers map[string]int, accounts []string) map[string]int {
+	for _, a := range accounts {
+		approvers[a] = 0
+	}
+	return approvers
 }
 
 type NotificationMention struct {
@@ -462,6 +478,10 @@ type NotificationMention struct {
 }
 
 func (n *NotificationMention) Validate() error {
+	if n.Event == "*" {
+		return nil
+	}
+
 	e := "EVENT_" + n.Event
 	for k := range model.NotificationEventType_value {
 		if e == k {
