@@ -89,7 +89,7 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 		e.LogPersister.Infof(
 			"Detected %d traffic routing manifests but only the first one (%s) will be used",
 			len(trafficRoutingManifests),
-			trafficRoutingManifests[0].Key.ReadableString(),
+			trafficRoutingManifests[0].Key.ReadableLogString(),
 		)
 	}
 	trafficRoutingManifest := trafficRoutingManifests[0]
@@ -99,7 +99,7 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 		if err := checkVariantSelectorInService(trafficRoutingManifest, primaryVariant); err != nil {
 			e.LogPersister.Errorf("Traffic routing by PodSelector requires %q inside the selector of Service manifest but it was unable to check that field in manifest %s (%v)",
 				variantLabel+": "+primaryVariant,
-				trafficRoutingManifest.Key.ReadableString(),
+				trafficRoutingManifest.Key.ReadableLogString(),
 				err,
 			)
 			return model.StageStatus_STAGE_FAILURE
