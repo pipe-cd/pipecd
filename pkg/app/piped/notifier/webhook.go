@@ -19,7 +19,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -96,8 +95,7 @@ func (w *webhook) sendEvent(ctx context.Context, event model.NotificationEvent) 
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
-		w.logger.Error(fmt.Sprintf("%s from the destination of webhook: %s", resp.Status, strings.TrimSpace(string(body))))
+		w.logger.Warn("unexpected status was returned from the destination of webhook", zap.String("status", resp.Status))
 		return
 	}
 }
