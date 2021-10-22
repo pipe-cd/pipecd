@@ -59,9 +59,9 @@ func (e *NotificationEventDeploymentFailed) GetAppName() string {
 }
 
 func (e *NotificationEventApplicationSynced) GetAppName() string {
-	return e.Application.Id
+	return e.Application.Name
 }
 
 func (e *NotificationEventApplicationOutOfSync) GetAppName() string {
-	return e.Application.Id
+	return e.Application.Name
 }
