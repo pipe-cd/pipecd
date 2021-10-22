@@ -117,10 +117,12 @@ message NotificationEventPipedStarted {
     string id = 1 [(validate.rules).string.min_len = 1];
     string name = 2 [(validate.rules).string.min_len = 1];
     string version = 3;
+    string project_id = 4 [(validate.rules).string.min_len = 1];
 }
 
 message NotificationEventPipedStopped {
     string id = 1 [(validate.rules).string.min_len = 1];
     string name = 2 [(validate.rules).string.min_len = 1];
     string version = 3;
+    string project_id = 4 [(validate.rules).string.min_len = 1];
 }
