@@ -28,6 +28,8 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+const eventChannelBufferSize = 1000
+
 type webhook struct {
 	name       string
 	config     config.NotificationReceiverWebhook
@@ -45,7 +47,7 @@ func newWebhookSender(name string, cfg config.NotificationReceiverWebhook, webUR
 		httpClient: &http.Client{
 			Timeout: 5 * time.Second,
 		},
-		eventCh: make(chan model.NotificationEvent, 100),
+		eventCh: make(chan model.NotificationEvent, eventChannelBufferSize),
 		logger:  logger.Named("webhook").With(zap.String("name", name)),
 	}
 }
