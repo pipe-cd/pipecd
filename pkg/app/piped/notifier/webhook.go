@@ -71,13 +71,13 @@ func (w *webhook) Notify(event model.NotificationEvent) {
 func (w *webhook) sendEvent(ctx context.Context, event model.NotificationEvent) {
 	buf := &bytes.Buffer{}
 	if err := json.NewEncoder(buf).Encode(event); err != nil {
-		w.logger.Error(fmt.Sprintf("unable to send data to webhook url: %v", err))
+		w.logger.Error("unable to send data to webhook url", zap.Error(err))
 		return
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "POST", w.config.URL, buf)
 	if err != nil {
-		w.logger.Error(fmt.Sprintf("unable to send data to webhook url: %v", err))
+		w.logger.Error("unable to send data to webhook url", zap.Error(err))
 		return
 	}
 
@@ -85,7 +85,7 @@ func (w *webhook) sendEvent(ctx context.Context, event model.NotificationEvent) 
 
 	resp, err := w.httpClient.Do(req)
 	if err != nil {
-		w.logger.Error(fmt.Sprintf("unable to send data to webhook url: %v", err))
+		w.logger.Error("unable to send data to webhook url", zap.Error(err))
 		return
 	}
 	defer resp.Body.Close()
