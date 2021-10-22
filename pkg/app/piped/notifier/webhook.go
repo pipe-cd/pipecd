@@ -46,7 +46,7 @@ func newWebhookSender(name string, cfg config.NotificationReceiverWebhook, webUR
 			Timeout: 5 * time.Second,
 		},
 		eventCh: make(chan model.NotificationEvent, 100),
-		logger:  logger.Named("webhook"),
+		logger:  logger.Named("webhook").With(zap.String("name", name)),
 	}
 }
 
