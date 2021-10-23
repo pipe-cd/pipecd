@@ -74,10 +74,10 @@ func TestHasStage(t *testing.T) {
 
 func TestFindSlackAccounts(t *testing.T) {
 	testcases := []struct {
-		name string
+		name     string
 		mentions []NotificationMention
-		event model.NotificationEventType
-		want []string
+		event    model.NotificationEventType
+		want     []string
 	}{
 		{
 			name: "the applicable event",
@@ -92,7 +92,7 @@ func TestFindSlackAccounts(t *testing.T) {
 				},
 			},
 			event: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
-			want: []string{"user-1", "user-2"},
+			want:  []string{"user-1", "user-2"},
 		},
 		{
 			name: "the applicable event and all events",
@@ -107,7 +107,7 @@ func TestFindSlackAccounts(t *testing.T) {
 				},
 			},
 			event: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
-			want: []string{"user-1", "user-2", "user-3"},
+			want:  []string{"user-1", "user-2", "user-3"},
 		},
 		{
 			name: "not the appricable event and all events",
@@ -122,7 +122,7 @@ func TestFindSlackAccounts(t *testing.T) {
 				},
 			},
 			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
-			want: []string{"user-1", "user-3"},
+			want:  []string{"user-1", "user-3"},
 		},
 		{
 			name: "not the appricable event",
@@ -133,12 +133,12 @@ func TestFindSlackAccounts(t *testing.T) {
 				},
 			},
 			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
-			want: []string{},
+			want:  []string{},
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			n := &DeploymentNotification {
+			n := &DeploymentNotification{
 				tc.mentions,
 			}
 			as := n.FindSlackAccounts(tc.event)
