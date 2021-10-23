@@ -120,7 +120,18 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
           <TableCell>{env?.name}</TableCell>
           {recentlyDeployment ? (
             <>
-              <TableCell>{recentlyDeployment.version}</TableCell>
+              <TableCell>
+                {recentlyDeployment.version.includes(',') ? (
+                  recentlyDeployment.version.split(',').map((v) => (
+                    <>
+                      <span>{v}</span>
+                      <br/>
+                    </>
+                  ))
+                ) : (
+                  <span>{recentlyDeployment.version}</span>
+                )}
+              </TableCell>
               <TableCell>
                 {recentlyDeployment.trigger?.commit?.hash.slice(0, 8) ??
                   UI_TEXT_NOT_AVAILABLE_TEXT}
