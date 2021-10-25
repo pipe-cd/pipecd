@@ -87,7 +87,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Deployment wait stage](/docs/user-guide/adding-a-wait-stage/) | Beta |
 | [Deployment manual approval stage](/docs/user-guide/adding-a-manual-approval/) | Beta |
 | [Notification](/docs/operator-manual/piped/configuring-notifications/) to Slack | Beta |
-| [Notification](/docs/operator-manual/piped/configuring-notifications/) to external service via webhook | Incubating |
+| [Notification](/docs/operator-manual/piped/configuring-notifications/) to external service via webhook | Alpha |
 | [Secrets management](/docs/user-guide/secret-management/) - Storing secrets safely in the Git repository | Beta |
 | [Event watcher](/docs/user-guide/event-watcher/) - Updating files in Git automatically for given events | Alpha |
 | [Pipectl](/docs/user-guide/command-line-tool/) - Command-line tool for interacting with control-plane | Beta |
