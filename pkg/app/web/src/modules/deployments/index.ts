@@ -102,6 +102,7 @@ const convertFilterOptions = (
     statusesList: options.status
       ? [parseInt(options.status, 10) as DeploymentStatus]
       : [],
+    tagsList: [], // TODO: Specify tags for ListDeployments
   };
 };
 
@@ -117,6 +118,7 @@ export const fetchDeployments = createAsyncThunk<
     options: convertFilterOptions({ ...options }),
     pageSize: ITEMS_PER_PAGE,
     cursor: "",
+    pageMinUpdatedAt: 0, // TODO Specify pageMinUpdatedAt for ListDeployments
   });
 
   return {
@@ -138,6 +140,7 @@ export const fetchMoreDeployments = createAsyncThunk<
     options: convertFilterOptions({ ...options }),
     pageSize: FETCH_MORE_ITEMS_PER_PAGE,
     cursor: deployments.cursor,
+    pageMinUpdatedAt: 0, // TODO Specify pageMinUpdatedAt for ListDeployments
   });
 
   return {

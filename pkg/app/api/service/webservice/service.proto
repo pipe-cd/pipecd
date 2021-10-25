@@ -281,6 +281,7 @@ message ListApplicationsRequest {
         repeated model.ApplicationSyncStatus sync_statuses = 3;
         repeated string env_ids = 4;
         string name = 5;
+        repeated string tags = 6;
     }
     Options options = 1;
 }
@@ -324,10 +325,14 @@ message ListDeploymentsRequest {
         repeated string application_ids = 3;
         repeated string env_ids = 4;
         string application_name = 5;
+        repeated string tags = 6;
     }
     Options options = 1;
     int32 page_size = 2;
     string cursor = 3;
+    // It will not return any data older than this timestamp, even if it does not meet the page size.
+    // This aims to prevent the server from scanning the entire database to look for deployments that have the specified fields in spite of nothing.
+    int64 page_min_updated_at = 4;
 }
 
 message ListDeploymentsResponse {
