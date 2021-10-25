@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"os"
@@ -105,8 +106,7 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&p.configFile, "config-file", p.configFile, "The path to the configuration file.")
-	// TODO: Remove config-data and config-gcp-secret once launcher component released.
-	cmd.Flags().StringVar(&p.configData, "config-data", p.configData, "The configuration data in YAML/JSON format.")
+	cmd.Flags().StringVar(&p.configData, "config-data", p.configData, "The base64 encoded string of the configuration data.")
 	cmd.Flags().StringVar(&p.configGCPSecret, "config-gcp-secret", p.configGCPSecret, "The resource ID of secret that contains Piped config and be stored in GCP SecretManager.")
 
 	cmd.Flags().BoolVar(&p.insecure, "insecure", p.insecure, "Whether disabling transport security while connecting to control-plane.")
@@ -129,7 +129,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		}
 	}
 
-	// Load piped configuration from specified file.
+	// Load piped configuration from the specified source.
 	cfg, err := p.loadConfig(ctx)
 	if err != nil {
 		input.Logger.Error("failed to load piped configuration", zap.Error(err))
@@ -507,7 +507,12 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 	}
 
 	if p.configData != "" {
-		cfg, err := config.DecodeYAML([]byte(p.configData))
+		data, err := base64.StdEncoding.DecodeString(p.configData)
+		if err != nil {
+			return nil, fmt.Errorf("the given config-data isn't base64 encoded: %w", err)
+		}
+
+		cfg, err := config.DecodeYAML(data)
 		if err != nil {
 			return nil, err
 		}
