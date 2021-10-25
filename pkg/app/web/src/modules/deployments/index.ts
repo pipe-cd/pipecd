@@ -118,7 +118,7 @@ export const fetchDeployments = createAsyncThunk<
     options: convertFilterOptions({ ...options }),
     pageSize: ITEMS_PER_PAGE,
     cursor: "",
-    lowestUpdatedAt: 0, // TODO Specify lowestUpdatedAt for ListDeployments
+    pageMinUpdatedAt: 0, // TODO Specify pageMinUpdatedAt for ListDeployments
   });
 
   return {
@@ -140,7 +140,7 @@ export const fetchMoreDeployments = createAsyncThunk<
     options: convertFilterOptions({ ...options }),
     pageSize: FETCH_MORE_ITEMS_PER_PAGE,
     cursor: deployments.cursor,
-    lowestUpdatedAt: 0, // TODO Specify lowestUpdatedAt for ListDeployments
+    pageMinUpdatedAt: 0, // TODO Specify pageMinUpdatedAt for ListDeployments
   });
 
   return {

@@ -332,7 +332,7 @@ message ListDeploymentsRequest {
     string cursor = 3;
     // It will not return any data older than this timestamp, even if it does not meet the page size.
     // This aims to prevent the server from scanning the entire database to look for deployments that have the specified fields in spite of nothing.
-    int64 lowest_updated_at = 4;
+    int64 page_min_updated_at = 4;
 }
 
 message ListDeploymentsResponse {
