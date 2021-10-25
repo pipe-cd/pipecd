@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"os"
@@ -94,7 +95,7 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&l.configFile, "config-file", l.configFile, "The path to the configuration file.")
-	cmd.Flags().StringVar(&l.configData, "config-data", l.configData, "The configuration data in YAML/JSON format.")
+	cmd.Flags().StringVar(&l.configData, "config-data", l.configData, "The base64 encoded string of the configuration data.")
 
 	cmd.Flags().BoolVar(&l.configFromGCPSecret, "config-from-gcp-secret", l.configFromGCPSecret, "Whether to load Piped config that is being stored in GCP SecretManager service.")
 	cmd.Flags().StringVar(&l.gcpSecretID, "gcp-secret-id", l.gcpSecretID, "The resource ID of secret that contains Piped config in GCP SecretManager service.")
@@ -388,7 +389,12 @@ func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {
 
 	// Return config data passed directly.
 	if l.configData != "" {
-		return []byte(l.configData), nil
+		data, err := base64.StdEncoding.DecodeString(l.configData)
+		if err != nil {
+			return nil, err
+		}
+
+		return data, nil
 	}
 
 	// Load config data from a secret which is stored in Google Cloud Secret Manager service.
