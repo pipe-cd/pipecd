@@ -102,6 +102,8 @@ const convertFilterOptions = (
     statusesList: options.status
       ? [parseInt(options.status, 10) as DeploymentStatus]
       : [],
+    tagsList: [], // TODO: Specify tags for ListDeployments
+    minUpdatedAt: 0, // TODO Specify minUpdatedAt for ListDeployments
   };
 };
 

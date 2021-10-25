@@ -82,6 +82,7 @@ message ListApplicationsRequest {
     string env_id = 3;
     bool disabled = 4;
     string env_name = 5;
+    // TODO: Enable to filter by tags
     string cursor = 10;
 }
 

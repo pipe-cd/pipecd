@@ -68,6 +68,9 @@ message Deployment {
     // This must be one of the provider names registered in the piped.
     string cloud_provider = 9 [(validate.rules).string.min_len = 1];
 
+    // Custom attributes for filtering.
+    repeated string tags = 10;
+
     DeploymentTrigger trigger = 20 [(validate.rules).message.required = true];
     // Hash value of the most recently successfully deployed commit.
     string running_commit_hash = 21;
