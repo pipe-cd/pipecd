@@ -99,7 +99,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 		for _, m := range workloads {
 			if err := checkVariantSelectorInWorkload(m, primaryVariant); err != nil {
 				invalid = true
-				e.LogPersister.Errorf("Missing %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
+				e.LogPersister.Errorf("Missing %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableLogString(), err)
 			}
 		}
 		if invalid {
@@ -214,7 +214,7 @@ func (e *deployExecutor) generatePrimaryManifests(manifests []provider.Manifest,
 		workloads := findWorkloadManifests(manifests, e.deployCfg.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
-				return nil, fmt.Errorf("unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
+				return nil, fmt.Errorf("unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableLogString(), err)
 			}
 		}
 	}
