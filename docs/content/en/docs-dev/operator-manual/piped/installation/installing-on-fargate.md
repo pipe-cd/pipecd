@@ -70,7 +70,7 @@ description: >
     --secret-string `base64 piped-config.yaml`
   ```
   
-  Note: The YAML configuration for Piped has been encoded by the base64 command to ensure when we retrieve it from SecretsManager, it still has a valid YAML format after decode.
+  Note: The YAML configuration for Piped must be encoded base64.
 
 - Prepare task definition for your piped task. Basically, you can just define your piped TaskDefinition as normal TaskDefinition, the only thing that needs to be beware is, to enable your piped accesses it's configuration we created as a secret on above, you need to add `secretsmanager:GetSecretValue` policy to your piped task `executionRole`. Read more in [Required IAM permissions for Amazon ECS secrets](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html).
 
