@@ -391,7 +391,7 @@ func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {
 	if l.configData != "" {
 		data, err := base64.StdEncoding.DecodeString(l.configData)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("the given config-data isn't base64 encoded: %w", err)
 		}
 
 		return data, nil
