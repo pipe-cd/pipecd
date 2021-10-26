@@ -101,7 +101,7 @@ description: >
         "-c"
       ],
       "command": [
-        "/bin/sh -c \"/launcher launcher --config-data=$(echo $configData)\""
+        "/bin/sh -c \"/launcher launcher --config-data=$(echo $CONFIG_DATA)\""
       ],
       "secrets": [
         {
@@ -136,7 +136,7 @@ description: >
         "-c"
       ],
       "command": [
-        "/bin/sh -c \"/piped piped --config-data=$(echo $configData)\""
+        "/bin/sh -c \"/piped piped --config-data=$(echo $CONFIG_DATA)\""
       ],
       "secrets": [
         {
