@@ -1074,14 +1074,15 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 			filtered = append(filtered, d)
 		}
 	}
-	// It has no sense to additionally run query if the size before filtering is already less than size.
+	// Stop running additional queries for more data, and return filtered deployments immediately with
+	// current cursor if the size before filtering is already less than the page size.
 	if len(deployments) < pageSize {
 		return &webservice.ListDeploymentsResponse{
 			Deployments: filtered,
 			Cursor:      cursor,
 		}, nil
 	}
-	// Repeat the query until the number of deployments reaches the page size,
+	// Repeat the query until the number of filtered deployments reaches the page size,
 	// or until it finishes scanning to page_min_updated_at.
 	for len(filtered) < pageSize {
 		options.Cursor = cursor
