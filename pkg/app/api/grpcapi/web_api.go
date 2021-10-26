@@ -1081,7 +1081,6 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		if deployments[len(deployments)-1].UpdatedAt <= req.PageMinUpdatedAt {
 			break
 		}
-
 	}
 	return &webservice.ListDeploymentsResponse{
 		Deployments: filtered[:req.PageSize],
