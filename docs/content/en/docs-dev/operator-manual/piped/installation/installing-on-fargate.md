@@ -62,26 +62,23 @@ description: >
     #     publicKeyData: {BASE64_ENCODED_PUBLIC_KEY}
   ```
 
-- Create a new secret in [AWS SecretManager](https://aws.amazon.com/secrets-manager/) to store above configuration data securely
+- Store the above configuration data to AWS to enable using it while creating piped task. Both [AWS SecretManager](https://aws.amazon.com/secrets-manager/) and [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) are available to address this task.
 
-  ```console
+  {{< tabpane >}}
+  {{< tab lang="bash" header="Store in AWS SecretManager" >}}
   aws secretsmanager create-secret --name PipedConfig \
     --description "Configuration of piped running as ECS Fargate task" \
     --secret-string `base64 piped-config.yaml`
-  ```
-  
-  Note: The YAML configuration for Piped must be encoded base64.
-
-  As another option, you can also use [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) to store this piped configuration.
-
-  ```console
+  {{< /tab >}}
+  {{< tab lang="bash" header="Store in AWS Systems Manager Parameter Store" >}}
   aws ssm put-parameter \
     --name PipedConfig \
     --value `base64 piped-config.yaml` \
     --type SecureString
-  ```
+  {{< /tab >}}
+  {{< /tabpane >}}
 
-- Prepare task definition for your piped task. Basically, you can just define your piped TaskDefinition as normal TaskDefinition, the only thing that needs to be beware is, to enable your piped accesses it's configuration we created as a secret on above, you need to add `secretsmanager:GetSecretValue` policy to your piped task `executionRole`. Read more in [Required IAM permissions for Amazon ECS secrets](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html).
+- Prepare task definition for your piped task. Basically, you can just define your piped TaskDefinition as normal TaskDefinition, the only thing that needs to be beware is, in case you used [AWS SecretManager](https://aws.amazon.com/secrets-manager/) to store piped configuration, to enable your piped accesses it's configuration we created as a secret on above, you need to add `secretsmanager:GetSecretValue` policy to your piped task `executionRole`. Read more in [Required IAM permissions for Amazon ECS secrets](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html).
 
   A sample TaskDefinition for Piped as follows
 
