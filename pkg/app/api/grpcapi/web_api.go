@@ -859,8 +859,20 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		return nil, status.Error(codes.Internal, "Failed to get applications")
 	}
 
+	if len(req.Options.Tags) == 0 {
+		return &webservice.ListApplicationsResponse{
+			Applications: apps,
+		}, nil
+	}
+
+	filtered := make([]*model.Application, 0, len(apps))
+	for _, a := range apps {
+		if a.ContainTags(req.Options.Tags) {
+			filtered = append(filtered, a)
+		}
+	}
 	return &webservice.ListApplicationsResponse{
-		Applications: apps,
+		Applications: filtered,
 	}, nil
 }
 
