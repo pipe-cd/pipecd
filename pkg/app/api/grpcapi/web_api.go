@@ -16,6 +16,8 @@ package grpcapi
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -999,6 +1001,11 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 			Operator: datastore.OperatorEqual,
 			Value:    claims.Role.ProjectId,
 		},
+		{
+			Field:    "UpdatedAt",
+			Operator: datastore.OperatorGreaterThanOrEqual,
+			Value:    req.PageMinUpdatedAt,
+		},
 	}
 	if o := req.Options; o != nil {
 		// Allowing multiple so that it can do In Query later.
@@ -1040,20 +1047,79 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		}
 	}
 
-	deployments, cursor, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+	options := datastore.ListOptions{
 		Filters: filters,
 		Orders:  orders,
 		Limit:   int(req.PageSize),
 		Cursor:  req.Cursor,
-	})
+	}
+	deployments, cursor, err := a.deploymentStore.ListDeployments(ctx, options)
 	if err != nil {
 		a.logger.Error("failed to get deployments", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get deployments")
 	}
+	tags := req.Options.Tags
+	if len(tags) == 0 {
+		return &webservice.ListDeploymentsResponse{
+			Deployments: deployments,
+			Cursor:      cursor,
+		}, nil
+	}
+
+	// Start filtering them by tags.
+	// NOTE: For document-oriented databases, it's hard to look for deployments that have all the tags we specified.
+	// We don't want to depend on any other search engine, that's why it filters here.
+	filtered := filterDeploymentsByTags(deployments, tags)
+	// Repeat the query until the number of deployments reaches the page size,
+	// or until it finishes scanning to page_min_updated_at.
+	for len(filtered) < int(req.PageSize) {
+		deployments, cursor, err = a.deploymentStore.ListDeployments(ctx, options)
+		if err != nil {
+			a.logger.Error("failed to get deployments", zap.Error(err))
+			return nil, status.Error(codes.Internal, "Failed to get deployments")
+		}
+		filtered = append(filtered, filterDeploymentsByTags(deployments, tags)...)
+		data, err := base64.StdEncoding.DecodeString(cursor)
+		if err != nil {
+			return nil, status.Error(codes.Internal, "Invalid cursor found")
+		}
+		decodedCursor := struct{ UpdatedAt int64 }{}
+		if err := json.Unmarshal(data, &decodedCursor); err != nil {
+			return nil, err
+		}
+		if decodedCursor.UpdatedAt == 0 {
+			return nil, status.Error(codes.Internal, "Invalid cursor found: cursor doesn't contain UpdatedAt")
+		}
+		if decodedCursor.UpdatedAt <= req.PageMinUpdatedAt {
+			break
+		}
+	}
 	return &webservice.ListDeploymentsResponse{
-		Deployments: deployments,
+		Deployments: filtered[:req.PageSize],
 		Cursor:      cursor,
 	}, nil
+}
+
+// filterDeploymentsByTags finds out deployments that have all needed tags.
+func filterDeploymentsByTags(deployments []*model.Deployment, neededTags []string) []*model.Deployment {
+	out := make([]*model.Deployment, 0, len(deployments))
+L:
+	for _, d := range deployments {
+		if len(d.Tags) < len(neededTags) {
+			continue
+		}
+		tagMap := make(map[string]struct{}, len(d.Tags))
+		for i := range d.Tags {
+			tagMap[d.Tags[i]] = struct{}{}
+		}
+		for _, tag := range neededTags {
+			if _, ok := tagMap[tag]; !ok {
+				continue L
+			}
+		}
+		out = append(out, d)
+	}
+	return out
 }
 
 func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymentRequest) (*webservice.GetDeploymentResponse, error) {

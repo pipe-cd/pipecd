@@ -374,3 +374,60 @@ func TestValidateApprover(t *testing.T) {
 		})
 	}
 }
+
+func Test_filterDeploymentsByTags(t *testing.T) {
+	type args struct {
+		deployments []*model.Deployment
+		neededTags  []string
+	}
+	testcases := []struct {
+		name string
+		args args
+		want []*model.Deployment
+	}{
+		{
+			name: "no deployments that have all needed tags",
+			args: args{
+				deployments: []*model.Deployment{
+					{Id: "1", Tags: []string{"foo"}},
+					{Id: "2", Tags: []string{"bar"}},
+				},
+				neededTags: []string{"foo", "bar"},
+			},
+			want: []*model.Deployment{},
+		},
+		{
+			name: "one deployment has all needed tags",
+			args: args{
+				deployments: []*model.Deployment{
+					{Id: "1", Tags: []string{"foo", "bar"}},
+					{Id: "2", Tags: []string{"bar"}},
+				},
+				neededTags: []string{"foo", "bar"},
+			},
+			want: []*model.Deployment{
+				{Id: "1", Tags: []string{"foo", "bar"}},
+			},
+		},
+		{
+			name: "two deployments have all needed tags",
+			args: args{
+				deployments: []*model.Deployment{
+					{Id: "1", Tags: []string{"foo", "bar"}},
+					{Id: "2", Tags: []string{"baz", "foo", "qux"}},
+				},
+				neededTags: []string{"foo"},
+			},
+			want: []*model.Deployment{
+				{Id: "1", Tags: []string{"foo", "bar"}},
+				{Id: "2", Tags: []string{"baz", "foo", "qux"}},
+			},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := filterDeploymentsByTags(tc.args.deployments, tc.args.neededTags)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
