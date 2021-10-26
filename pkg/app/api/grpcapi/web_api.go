@@ -1045,10 +1045,11 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		}
 	}
 
+	pageSize := int(req.PageSize)
 	options := datastore.ListOptions{
 		Filters: filters,
 		Orders:  orders,
-		Limit:   int(req.PageSize),
+		Limit:   pageSize,
 		Cursor:  req.Cursor,
 	}
 	deployments, cursor, err := a.deploymentStore.ListDeployments(ctx, options)
@@ -1057,7 +1058,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		return nil, status.Error(codes.Internal, "Failed to get deployments")
 	}
 	tags := req.Options.Tags
-	if len(tags) == 0 {
+	if len(tags) == 0 || len(deployments) == 0 {
 		return &webservice.ListDeploymentsResponse{
 			Deployments: deployments,
 			Cursor:      cursor,
@@ -1067,36 +1068,47 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 	// Start filtering them by tags.
 	// NOTE: For document-oriented databases, it's hard to look for deployments that have all the tags we specified.
 	// We don't want to depend on any other search engine, that's why it filters here.
-	filtered := filterDeploymentsByTags(deployments, tags)
+	filtered := make([]*model.Deployment, 0, len(deployments))
+	for _, d := range deployments {
+		if d.ContainTags(tags) {
+			filtered = append(filtered, d)
+		}
+	}
+	// It has no sense to additionally run query if the size before filtering is already less than size.
+	if len(deployments) < pageSize {
+		return &webservice.ListDeploymentsResponse{
+			Deployments: filtered,
+			Cursor:      cursor,
+		}, nil
+	}
 	// Repeat the query until the number of deployments reaches the page size,
 	// or until it finishes scanning to page_min_updated_at.
-	for len(filtered) < int(req.PageSize) {
+	for len(filtered) < pageSize {
 		options.Cursor = cursor
 		deployments, cursor, err = a.deploymentStore.ListDeployments(ctx, options)
 		if err != nil {
 			a.logger.Error("failed to get deployments", zap.Error(err))
 			return nil, status.Error(codes.Internal, "Failed to get deployments")
 		}
-		filtered = append(filtered, filterDeploymentsByTags(deployments, tags)...)
+		if len(deployments) == 0 {
+			break
+		}
+		for _, d := range deployments {
+			if d.ContainTags(tags) {
+				filtered = append(filtered, d)
+			}
+		}
 		if deployments[len(deployments)-1].UpdatedAt <= req.PageMinUpdatedAt {
 			break
 		}
 	}
+	if len(filtered) > pageSize {
+		filtered = filtered[:pageSize]
+	}
 	return &webservice.ListDeploymentsResponse{
-		Deployments: filtered[:req.PageSize],
+		Deployments: filtered,
 		Cursor:      cursor,
 	}, nil
-}
-
-// filterDeploymentsByTags finds out deployments that have all needed tags.
-func filterDeploymentsByTags(deployments []*model.Deployment, neededTags []string) []*model.Deployment {
-	out := make([]*model.Deployment, 0, len(deployments))
-	for _, d := range deployments {
-		if d.ContainTags(neededTags) {
-			out = append(out, d)
-		}
-	}
-	return out
 }
 
 func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymentRequest) (*webservice.GetDeploymentResponse, error) {

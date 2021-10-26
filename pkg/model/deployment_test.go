@@ -21,31 +21,34 @@ import (
 )
 
 func TestDeployment_ContainTags(t *testing.T) {
-	type args struct {
-		tags []string
-	}
 	testcases := []struct {
 		name       string
 		deployment *Deployment
-		args       args
+		tags       []string
 		want       bool
 	}{
 		{
 			name:       "all given tags aren't contained",
 			deployment: &Deployment{Tags: []string{"foo"}},
-			args:       args{tags: []string{"foo", "bar"}},
+			tags:       []string{"foo", "bar"},
 			want:       false,
+		},
+		{
+			name:       "a tag is contained",
+			deployment: &Deployment{Tags: []string{"foo", "bar"}},
+			tags:       []string{"foo"},
+			want:       true,
 		},
 		{
 			name:       "all tags are contained",
 			deployment: &Deployment{Tags: []string{"foo", "bar", "baz"}},
-			args:       args{tags: []string{"baz", "foo", "bar"}},
+			tags:       []string{"baz", "foo", "bar"},
 			want:       true,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := tc.deployment.ContainTags(tc.args.tags)
+			got := tc.deployment.ContainTags(tc.tags)
 			assert.Equal(t, tc.want, got)
 		})
 	}
