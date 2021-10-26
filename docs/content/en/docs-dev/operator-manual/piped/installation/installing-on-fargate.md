@@ -18,7 +18,7 @@ description: >
 
 ## Installation
 
-- Preparing a piped configuration file as the following:
+- Preparing a piped configuration file as follows:
 
   ``` yaml
   apiVersion: pipecd.dev/v1beta1
@@ -62,7 +62,7 @@ description: >
     #     publicKeyData: {BASE64_ENCODED_PUBLIC_KEY}
   ```
 
-- Create a new secret in [SecretManager](https://aws.amazon.com/secrets-manager/) to store above configuration data securely
+- Create a new secret in [AWS SecretManager](https://aws.amazon.com/secrets-manager/) to store above configuration data securely
 
   ```console
   aws secretsmanager create-secret --name PipedConfig \
@@ -72,9 +72,18 @@ description: >
   
   Note: The YAML configuration for Piped must be encoded base64.
 
+  As another option, you can also use [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) to store this piped configuration.
+
+  ```console
+  aws ssm put-parameter \
+    --name PipedConfig \
+    --value `base64 piped-config.yaml` \
+    --type SecureString
+  ```
+
 - Prepare task definition for your piped task. Basically, you can just define your piped TaskDefinition as normal TaskDefinition, the only thing that needs to be beware is, to enable your piped accesses it's configuration we created as a secret on above, you need to add `secretsmanager:GetSecretValue` policy to your piped task `executionRole`. Read more in [Required IAM permissions for Amazon ECS secrets](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html).
 
-  A sample TaskDefinition for Piped as following.
+  A sample TaskDefinition for Piped as follows
 
   {{< tabpane >}}
   {{< tab lang="json" header="Piped with Remote-upgrade" >}}
@@ -145,7 +154,7 @@ description: >
   {{< /tab >}}
   {{< /tabpane >}}
 
-  Register this piped task definition and start pipe task:
+  Register this piped task definition and start piped task:
 
   ```console
   aws ecs register-task-definition --cli-input-json file://taskdef.json
