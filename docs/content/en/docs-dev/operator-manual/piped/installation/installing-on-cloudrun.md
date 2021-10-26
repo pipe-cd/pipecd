@@ -119,7 +119,7 @@ spec:
               - path: config.yaml
                 key: latest
   {{< /tab >}}
-  {{< tab lang="bash" header="Piped" >}}
+  {{< tab lang="yaml" header="Piped" >}}
 # This just installs a Piped with the specified version.
 # Whenever you want to upgrade that Piped to a new version or update its config data you have to restart it.
 
