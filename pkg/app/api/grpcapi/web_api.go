@@ -1099,7 +1099,8 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 				filtered = append(filtered, d)
 			}
 		}
-		if deployments[len(deployments)-1].UpdatedAt <= req.PageMinUpdatedAt {
+		// We've already specified UpdatedAt >= req.PageMinUpdatedAt, so we need to check just equality.
+		if deployments[len(deployments)-1].UpdatedAt == req.PageMinUpdatedAt {
 			break
 		}
 	}
