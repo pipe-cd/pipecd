@@ -156,6 +156,7 @@ export interface ApplicationFormValue {
     remote: string;
     branch: string;
   };
+  tagsList: string[],
 }
 
 export type ApplicationFormProps = FormikProps<ApplicationFormValue> & {
@@ -177,6 +178,7 @@ export const emptyFormValues: ApplicationFormValue = {
     remote: "",
     branch: "",
   },
+  tagsList: [],
 };
 
 export const ApplicationForm: FC<ApplicationFormProps> = memo(

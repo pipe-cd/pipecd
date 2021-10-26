@@ -637,6 +637,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		Kind:          req.Kind,
 		CloudProvider: req.CloudProvider,
 		Description:   req.Description,
+		Tags:          req.Tags,
 	}
 	err = a.applicationStore.AddApplication(ctx, &app)
 	if errors.Is(err, datastore.ErrAlreadyExists) {
@@ -659,6 +660,7 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 		app.PipedId = req.PipedId
 		app.Kind = req.Kind
 		app.CloudProvider = req.CloudProvider
+		app.Tags = req.Tags
 		return nil
 	}
 
