@@ -90,6 +90,7 @@ description: >
       "name": "piped",
       "essential": true,
       "image": "gcr.io/pipecd/piped:{{< blocks/latest_version >}}",
+      "entryPoint": ["/launcher"],
       "command": [
         "launcher",
         "--config-data=$(echo $CONFIG_DATA)"
