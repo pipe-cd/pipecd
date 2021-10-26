@@ -1103,9 +1103,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 			break
 		}
 	}
-	if len(filtered) > pageSize {
-		filtered = filtered[:pageSize]
-	}
+	// TODO: Think about possibility that the response of ListDeployments exceeds the page size
 	return &webservice.ListDeploymentsResponse{
 		Deployments: filtered,
 		Cursor:      cursor,
