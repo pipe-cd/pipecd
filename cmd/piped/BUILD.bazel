@@ -48,19 +48,6 @@ container_image(
     visibility = ["//visibility:public"],
 )
 
-container_bundle(
-    name = "piped_app_bundle",
-    images = {
-        "$(DOCKER_REGISTRY)/piped:{STABLE_VERSION}": ":piped_app_image",
-    },
-)
-
-docker_push(
-    name = "piped_app_push",
-    bundle = ":piped_app_bundle",
-    visibility = ["//visibility:public"],
-)
-
 # Piped app for OKD
 
 go_image(
@@ -79,18 +66,5 @@ container_image(
         "/piped": "/app/cmd/piped/piped",
         "/launcher": "/app/cmd/launcher/launcher",
     },
-    visibility = ["//visibility:public"],
-)
-
-container_bundle(
-    name = "piped_okd_app_bundle",
-    images = {
-        "$(DOCKER_REGISTRY)/piped-okd:{STABLE_VERSION}": ":piped_okd_app_image",
-    },
-)
-
-docker_push(
-    name = "piped_okd_app_push",
-    bundle = ":piped_okd_app_bundle",
     visibility = ["//visibility:public"],
 )

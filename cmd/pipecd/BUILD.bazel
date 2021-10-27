@@ -1,5 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-load("//bazel:image.bzl", "app_image")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 
 go_library(
     name = "go_default_library",
@@ -69,10 +69,9 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
-app_image(
-    name = "pipecd_app",
+go_image(
+    name = "pipecd_app_image",
     base = "@pipecd-base//image",
     binary = ":pipecd",
-    repository = "pipecd",
     visibility = ["//visibility:public"],
 )

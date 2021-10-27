@@ -1,5 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-load("//bazel:image.bzl", "app_image")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 
 go_library(
     name = "go_default_library",
@@ -18,9 +18,8 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
-app_image(
-    name = "helloworld_app",
+go_image(
+    name = "helloworld_app_image",
     binary = ":helloworld",
-    repository = "helloworld",
     visibility = ["//visibility:public"],
 )
