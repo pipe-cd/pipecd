@@ -25,7 +25,7 @@ import (
 const (
 	defaultWaitApprovalTimeout  = Duration(6 * time.Hour)
 	defaultAnalysisQueryTimeout = Duration(30 * time.Second)
-	asterisk = "*"
+	asterisk                    = "*"
 )
 
 type GenericDeploymentSpec struct {
