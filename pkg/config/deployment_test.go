@@ -134,6 +134,18 @@ func TestFindSlackAccounts(t *testing.T) {
 			},
 			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
 			want:  []string{},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			n := &DeploymentNotification{
+				tc.mentions,
+			}
+			as := n.FindSlackAccounts(tc.event)
+			assert.ElementsMatch(t, tc.want, as)
+		})
+	}
+}
 
 func TestValidateEncryption(t *testing.T) {
 	testcases := []struct {
@@ -159,11 +171,6 @@ func TestValidateEncryption(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			n := &DeploymentNotification{
-				tc.mentions,
-			}
-			as := n.FindSlackAccounts(tc.event)
-			assert.ElementsMatch(t, tc.want, as)
 			s := &SecretEncryption{
 				EncryptedSecrets: tc.encryptedSecrets,
 			}
