@@ -241,3 +241,6 @@ Must be one of the following structs:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| url | string | The URL where notification event will be sent to. | Yes |
+| signatureKey | string | The HTTP header key used to store the configured signature in each event. Default is "PipeCD-Signature". | No |
+| signatureValue | string | The value of signature included in header of each event request. It can be used to verify the received events. | No |

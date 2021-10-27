@@ -83,6 +83,7 @@ go_test(
         "apikey_test.go",
         "application_test.go",
         "common_test.go",
+        "deployment_test.go",
         "environment_test.go",
         "event_test.go",
         "model_test.go",

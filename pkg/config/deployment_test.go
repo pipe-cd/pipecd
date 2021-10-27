@@ -134,6 +134,27 @@ func TestFindSlackAccounts(t *testing.T) {
 			},
 			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
 			want:  []string{},
+
+func TestValidateEncryption(t *testing.T) {
+	testcases := []struct {
+		name             string
+		encryptedSecrets map[string]string
+		wantErr          bool
+	}{
+		{
+			name:             "valid",
+			encryptedSecrets: map[string]string{"password": "pw"},
+			wantErr: false,
+		},
+		{
+			name:             "invalid because key is an empty",
+			encryptedSecrets: map[string]string{"": "pw"},
+			wantErr: true,
+		},
+		{
+			name:             "invalid because value is an empty",
+			encryptedSecrets: map[string]string{"password": ""},
+			wantErr: true,
 		},
 	}
 	for _, tc := range testcases {
@@ -143,6 +164,11 @@ func TestFindSlackAccounts(t *testing.T) {
 			}
 			as := n.FindSlackAccounts(tc.event)
 			assert.ElementsMatch(t, tc.want, as)
+			s := &SecretEncryption{
+				EncryptedSecrets: tc.encryptedSecrets,
+			}
+			err := s.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
 }

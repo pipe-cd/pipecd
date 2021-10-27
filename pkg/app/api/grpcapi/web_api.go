@@ -859,8 +859,20 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		return nil, status.Error(codes.Internal, "Failed to get applications")
 	}
 
+	if len(req.Options.Tags) == 0 {
+		return &webservice.ListApplicationsResponse{
+			Applications: apps,
+		}, nil
+	}
+
+	filtered := make([]*model.Application, 0, len(apps))
+	for _, a := range apps {
+		if a.ContainTags(req.Options.Tags) {
+			filtered = append(filtered, a)
+		}
+	}
 	return &webservice.ListApplicationsResponse{
-		Applications: apps,
+		Applications: filtered,
 	}, nil
 }
 
@@ -999,6 +1011,11 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 			Operator: datastore.OperatorEqual,
 			Value:    claims.Role.ProjectId,
 		},
+		{
+			Field:    "UpdatedAt",
+			Operator: datastore.OperatorGreaterThanOrEqual,
+			Value:    req.PageMinUpdatedAt,
+		},
 	}
 	if o := req.Options; o != nil {
 		// Allowing multiple so that it can do In Query later.
@@ -1040,18 +1057,68 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		}
 	}
 
-	deployments, cursor, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+	pageSize := int(req.PageSize)
+	options := datastore.ListOptions{
 		Filters: filters,
 		Orders:  orders,
-		Limit:   int(req.PageSize),
+		Limit:   pageSize,
 		Cursor:  req.Cursor,
-	})
+	}
+	deployments, cursor, err := a.deploymentStore.ListDeployments(ctx, options)
 	if err != nil {
 		a.logger.Error("failed to get deployments", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get deployments")
 	}
+	tags := req.Options.Tags
+	if len(tags) == 0 || len(deployments) == 0 {
+		return &webservice.ListDeploymentsResponse{
+			Deployments: deployments,
+			Cursor:      cursor,
+		}, nil
+	}
+
+	// Start filtering them by tags.
+	// NOTE: For document-oriented databases, it's hard to look for deployments that have all the tags we specified.
+	// We don't want to depend on any other search engine, that's why it filters here.
+	filtered := make([]*model.Deployment, 0, len(deployments))
+	for _, d := range deployments {
+		if d.ContainTags(tags) {
+			filtered = append(filtered, d)
+		}
+	}
+	// Stop running additional queries for more data, and return filtered deployments immediately with
+	// current cursor if the size before filtering is already less than the page size.
+	if len(deployments) < pageSize {
+		return &webservice.ListDeploymentsResponse{
+			Deployments: filtered,
+			Cursor:      cursor,
+		}, nil
+	}
+	// Repeat the query until the number of filtered deployments reaches the page size,
+	// or until it finishes scanning to page_min_updated_at.
+	for len(filtered) < pageSize {
+		options.Cursor = cursor
+		deployments, cursor, err = a.deploymentStore.ListDeployments(ctx, options)
+		if err != nil {
+			a.logger.Error("failed to get deployments", zap.Error(err))
+			return nil, status.Error(codes.Internal, "Failed to get deployments")
+		}
+		if len(deployments) == 0 {
+			break
+		}
+		for _, d := range deployments {
+			if d.ContainTags(tags) {
+				filtered = append(filtered, d)
+			}
+		}
+		// We've already specified UpdatedAt >= req.PageMinUpdatedAt, so we need to check just equality.
+		if deployments[len(deployments)-1].UpdatedAt == req.PageMinUpdatedAt {
+			break
+		}
+	}
+	// TODO: Think about possibility that the response of ListDeployments exceeds the page size
 	return &webservice.ListDeploymentsResponse{
-		Deployments: deployments,
+		Deployments: filtered,
 		Cursor:      cursor,
 	}, nil
 }

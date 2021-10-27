@@ -39,6 +39,7 @@ export const dummyApplication: Application.AsObject = {
   pipedId: dummyPiped.id,
   projectId: "project-1",
   description: "",
+  tagsList: [],
   mostRecentlySuccessfulDeployment: {
     deploymentId: "deployment-1",
     completedAt: 0,

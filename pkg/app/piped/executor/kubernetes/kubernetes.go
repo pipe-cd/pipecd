@@ -216,10 +216,10 @@ func applyManifests(ctx context.Context, applier provider.Applier, manifests []p
 	}
 	for _, m := range manifests {
 		if err := applier.ApplyManifest(ctx, m); err != nil {
-			lp.Errorf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err)
+			lp.Errorf("Failed to apply manifest: %s (%v)", m.Key.ReadableLogString(), err)
 			return err
 		}
-		lp.Successf("- applied manifest: %s", m.Key.ReadableString())
+		lp.Successf("- applied manifest: %s", m.Key.ReadableLogString())
 	}
 	lp.Successf("Successfully applied %d manifests", len(manifests))
 	return nil
@@ -238,16 +238,16 @@ func deleteResources(ctx context.Context, applier provider.Applier, resources []
 	for _, k := range resources {
 		err := applier.Delete(ctx, k)
 		if err == nil {
-			lp.Successf("- deleted resource: %s", k.ReadableString())
+			lp.Successf("- deleted resource: %s", k.ReadableLogString())
 			deletedCount++
 			continue
 		}
 		if errors.Is(err, provider.ErrNotFound) {
-			lp.Infof("- no resource %s to delete", k.ReadableString())
+			lp.Infof("- no resource %s to delete", k.ReadableLogString())
 			deletedCount++
 			continue
 		}
-		lp.Errorf("- unable to delete resource: %s (%v)", k.ReadableString(), err)
+		lp.Errorf("- unable to delete resource: %s (%v)", k.ReadableLogString(), err)
 	}
 
 	if deletedCount < resourcesLen {

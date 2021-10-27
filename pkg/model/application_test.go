@@ -47,3 +47,37 @@ func TestMakeApplicationURL(t *testing.T) {
 		})
 	}
 }
+
+func TestApplication_ContainTags(t *testing.T) {
+	testcases := []struct {
+		name string
+		app  *Application
+		tags []string
+		want bool
+	}{
+		{
+			name: "all given tags aren't contained",
+			app:  &Application{Tags: []string{"foo"}},
+			tags: []string{"foo", "bar"},
+			want: false,
+		},
+		{
+			name: "a tag is contained",
+			app:  &Application{Tags: []string{"foo", "bar"}},
+			tags: []string{"foo"},
+			want: true,
+		},
+		{
+			name: "all tags are contained",
+			app:  &Application{Tags: []string{"foo", "bar", "baz"}},
+			tags: []string{"baz", "foo", "bar"},
+			want: true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.app.ContainTags(tc.tags)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}

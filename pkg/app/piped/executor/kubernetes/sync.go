@@ -49,7 +49,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		workloads := findWorkloadManifests(manifests, e.deployCfg.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
-				e.LogPersister.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
+				e.LogPersister.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableLogString(), err)
 				return model.StageStatus_STAGE_FAILURE
 			}
 		}

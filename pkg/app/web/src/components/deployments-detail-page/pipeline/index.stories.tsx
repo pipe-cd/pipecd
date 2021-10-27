@@ -27,6 +27,7 @@ const fakeDeployment: Deployment.AsObject = {
   },
   version: "0.0.1",
   cloudProvider: "",
+  tagsList: [],
   trigger: {
     commit: {
       hash: "3808585b46f1e90196d7ffe8dd04c807a251febc",
