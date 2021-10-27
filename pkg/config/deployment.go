@@ -25,6 +25,7 @@ import (
 const (
 	defaultWaitApprovalTimeout  = Duration(6 * time.Hour)
 	defaultAnalysisQueryTimeout = Duration(30 * time.Second)
+	allEventsSymbol             = "*"
 )
 
 type GenericDeploymentSpec struct {
@@ -441,12 +442,21 @@ type DeploymentNotification struct {
 }
 
 func (n *DeploymentNotification) FindSlackAccounts(event model.NotificationEventType) []string {
-	for _, v := range n.Mentions {
-		if e := "EVENT_" + v.Event; e == event.String() {
-			return v.Slack
+	as := make(map[string]struct{})
+	for _, m := range n.Mentions {
+		if m.Event != allEventsSymbol && "EVENT_"+m.Event != event.String() {
+			continue
+		}
+		for _, s := range m.Slack {
+			as[s] = struct{}{}
 		}
 	}
-	return []string{}
+
+	approvers := make([]string, 0, len(as))
+	for a := range as {
+		approvers = append(approvers, a)
+	}
+	return approvers
 }
 
 type NotificationMention struct {
@@ -462,6 +472,10 @@ type NotificationMention struct {
 }
 
 func (n *NotificationMention) Validate() error {
+	if n.Event == allEventsSymbol {
+		return nil
+	}
+
 	e := "EVENT_" + n.Event
 	for k := range model.NotificationEventType_value {
 		if e == k {

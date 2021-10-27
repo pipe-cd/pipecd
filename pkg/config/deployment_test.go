@@ -72,6 +72,81 @@ func TestHasStage(t *testing.T) {
 	}
 }
 
+func TestFindSlackAccounts(t *testing.T) {
+	testcases := []struct {
+		name     string
+		mentions []NotificationMention
+		event    model.NotificationEventType
+		want     []string
+	}{
+		{
+			name: "match an event name",
+			mentions: []NotificationMention{
+				{
+					Event: "DEPLOYMENT_TRIGGERED",
+					Slack: []string{"user-1", "user-2"},
+				},
+				{
+					Event: "DEPLOYMENT_PLANNED",
+					Slack: []string{"user-3", "user-4"},
+				},
+			},
+			event: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+			want:  []string{"user-1", "user-2"},
+		},
+		{
+			name: "match with both event name and all-events mark",
+			mentions: []NotificationMention{
+				{
+					Event: "DEPLOYMENT_TRIGGERED",
+					Slack: []string{"user-1", "user-2"},
+				},
+				{
+					Event: "*",
+					Slack: []string{"user-1", "user-3"},
+				},
+			},
+			event: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+			want:  []string{"user-1", "user-2", "user-3"},
+		},
+		{
+			name: "match by all-events mark",
+			mentions: []NotificationMention{
+				{
+					Event: "DEPLOYMENT_TRIGGERED",
+					Slack: []string{"user-1", "user-2"},
+				},
+				{
+					Event: "*",
+					Slack: []string{"user-1", "user-3"},
+				},
+			},
+			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+			want:  []string{"user-1", "user-3"},
+		},
+		{
+			name: "does not match anything",
+			mentions: []NotificationMention{
+				{
+					Event: "DEPLOYMENT_TRIGGERED",
+					Slack: []string{"user-1", "user-2"},
+				},
+			},
+			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+			want:  []string{},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			n := &DeploymentNotification{
+				tc.mentions,
+			}
+			as := n.FindSlackAccounts(tc.event)
+			assert.ElementsMatch(t, tc.want, as)
+		})
+	}
+}
+
 func TestValidateEncryption(t *testing.T) {
 	testcases := []struct {
 		name             string
@@ -81,17 +156,17 @@ func TestValidateEncryption(t *testing.T) {
 		{
 			name:             "valid",
 			encryptedSecrets: map[string]string{"password": "pw"},
-			wantErr: false,
+			wantErr:          false,
 		},
 		{
 			name:             "invalid because key is an empty",
 			encryptedSecrets: map[string]string{"": "pw"},
-			wantErr: true,
+			wantErr:          true,
 		},
 		{
 			name:             "invalid because value is an empty",
 			encryptedSecrets: map[string]string{"password": ""},
-			wantErr: true,
+			wantErr:          true,
 		},
 	}
 	for _, tc := range testcases {
@@ -115,6 +190,12 @@ func TestValidateMentions(t *testing.T) {
 		{
 			name:    "valid",
 			event:   "DEPLOYMENT_TRIGGERED",
+			slack:   []string{"user-1", "user-2"},
+			wantErr: false,
+		},
+		{
+			name:    "valid",
+			event:   "*",
 			slack:   []string{"user-1", "user-2"},
 			wantErr: false,
 		},
