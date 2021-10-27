@@ -80,7 +80,7 @@ func TestFindSlackAccounts(t *testing.T) {
 		want     []string
 	}{
 		{
-			name: "the applicable event",
+			name: "match an event name",
 			mentions: []NotificationMention{
 				{
 					Event: "DEPLOYMENT_TRIGGERED",
@@ -95,7 +95,7 @@ func TestFindSlackAccounts(t *testing.T) {
 			want:  []string{"user-1", "user-2"},
 		},
 		{
-			name: "the applicable event and all events",
+			name: "match with both event name and all-events mark",
 			mentions: []NotificationMention{
 				{
 					Event: "DEPLOYMENT_TRIGGERED",
@@ -110,7 +110,7 @@ func TestFindSlackAccounts(t *testing.T) {
 			want:  []string{"user-1", "user-2", "user-3"},
 		},
 		{
-			name: "not the applicable event and all events",
+			name: "match by all-events mark",
 			mentions: []NotificationMention{
 				{
 					Event: "DEPLOYMENT_TRIGGERED",
@@ -125,7 +125,7 @@ func TestFindSlackAccounts(t *testing.T) {
 			want:  []string{"user-1", "user-3"},
 		},
 		{
-			name: "not the applicable event",
+			name: "does not match anything",
 			mentions: []NotificationMention{
 				{
 					Event: "DEPLOYMENT_TRIGGERED",
