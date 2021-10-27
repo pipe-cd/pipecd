@@ -472,7 +472,7 @@ type NotificationMention struct {
 }
 
 func (n *NotificationMention) Validate() error {
-	if n.Event == "*" {
+	if n.Event == allEvents {
 		return nil
 	}
 
