@@ -28,6 +28,7 @@ export const updateApplication = createAsyncThunk<
     configFilename?: string;
     kind: ApplicationKind;
     cloudProvider: string;
+    tagsList: string[];
   }
 >(`${MODULE_NAME}/update`, async (values) => {
   await applicationAPI.updateApplication({
@@ -37,6 +38,7 @@ export const updateApplication = createAsyncThunk<
     pipedId: values.pipedId,
     cloudProvider: values.cloudProvider,
     kind: values.kind,
+    tagsList: values.tagsList,
   });
 });
 
