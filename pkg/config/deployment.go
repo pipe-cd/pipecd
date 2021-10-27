@@ -452,7 +452,7 @@ func (n *DeploymentNotification) FindSlackAccounts(event model.NotificationEvent
 		}
 	}
 
-	var approvers []string
+	approvers := make([]string, 0, len(as))
 	for a := range as {
 		approvers = append(approvers, a)
 	}
