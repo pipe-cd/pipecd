@@ -54,6 +54,8 @@ message AddApplicationRequest {
     model.ApplicationGitPath git_path = 4 [(validate.rules).message.required = true];
     model.ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
     string cloud_provider = 6 [(validate.rules).string.min_len = 1];
+    string description = 7;
+    repeated string tags = 8;
 }
 
 message AddApplicationResponse {
