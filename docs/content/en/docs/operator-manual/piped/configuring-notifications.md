@@ -75,7 +75,7 @@ A piped has been started
 </p>
 
 
-For detailed configuration, please check the [configuration reference](/docs/operator-manual/piped/configuration-reference/#notifications) section.
+For detailed configuration, please check the [configuration reference for Notifications](/docs/operator-manual/piped/configuration-reference/#notifications) section.
 
 ### Sending notifications to webhook endpoints
 
@@ -95,3 +95,5 @@ spec:
           signatureKey: Sample-Signature
           signatureValue: {RANDOM_SIGNATURE_STRING}
 ```
+
+For detailed configuration, please check the [configuration reference for NotificationReceiverWebhook](/docs/operator-manual/piped/configuration-reference/#notificationreceiverwebhook) section.
