@@ -85,13 +85,13 @@ kind: Piped
 spec:
   notifications:
     routes:
-      # Sending all events a CI service.
-      - name: all-events-to-ci
-        receiver: ci-webhook
+      # Sending all events an external service.
+      - name: all-events-to-a-external-service
+        receiver: a-webhook-service
     receivers:
-      - name: ci-webhook
+      - name: a-webhook-service
         webhook:
-          url: https://pipecd.dev/dev-hook
+          url: {WEBHOOK_SERVICE_URL}
           signatureValue: {RANDOM_SIGNATURE_STRING}
 ```
 
