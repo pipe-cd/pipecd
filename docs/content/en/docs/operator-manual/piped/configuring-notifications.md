@@ -85,4 +85,19 @@ For detailed configuration, please check the [configuration reference](/docs/ope
 
 ### Sending notifications to webhook endpoints
 
-> TBA
+``` yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  notifications:
+    routes:
+      # Sending all events a CI service.
+      - name: all-events-to-ci
+        receiver: ci-webhook
+    receivers:
+      - name: ci-webhook
+        webhook:
+          url: https://pipecd.dev/dev-hook
+          signatureKey: Sample-Signature
+          signatureValue: {RANDOM_SIGNATURE_STRING}
+```
