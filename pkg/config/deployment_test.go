@@ -110,7 +110,7 @@ func TestFindSlackAccounts(t *testing.T) {
 			want:  []string{"user-1", "user-2", "user-3"},
 		},
 		{
-			name: "not the appricable event and all events",
+			name: "not the applicable event and all events",
 			mentions: []NotificationMention{
 				{
 					Event: "DEPLOYMENT_TRIGGERED",
@@ -125,7 +125,7 @@ func TestFindSlackAccounts(t *testing.T) {
 			want:  []string{"user-1", "user-3"},
 		},
 		{
-			name: "not the appricable event",
+			name: "not the applicable event",
 			mentions: []NotificationMention{
 				{
 					Event: "DEPLOYMENT_TRIGGERED",
