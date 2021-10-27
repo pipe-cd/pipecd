@@ -443,14 +443,14 @@ type DeploymentNotification struct {
 
 func (n *DeploymentNotification) FindSlackAccounts(event model.NotificationEventType) []string {
 	as := make(map[string]struct{})
-	for _, v := range n.Mentions {
-		if v.Event == asterisk {
-			for _, a := range v.Slack {
+	for _, m := range n.Mentions {
+		if m.Event == asterisk {
+			for _, a := range m.Slack {
 				as[a] = struct{}{}
 			}
 		}
-		if e := "EVENT_" + v.Event; e == event.String() {
-			for _, a := range v.Slack {
+		if e := "EVENT_" + m.Event; e == event.String() {
+			for _, a := range m.Slack {
 				as[a] = struct{}{}
 			}
 		}
