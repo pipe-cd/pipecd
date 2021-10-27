@@ -22,7 +22,7 @@ spec:
         slack:
           - slack-user-id-1  # slack-user-name-1
           - slack-user-id-2  # slack-user-name-2
-      # The asterisk will notify all events to users.
+      # Specifying "*" means mentioning the given users for all events.
       - event: "*"
         slack:
           - slack-user-id-3  # slack-user-name-3
