@@ -25,7 +25,7 @@ import (
 const (
 	defaultWaitApprovalTimeout  = Duration(6 * time.Hour)
 	defaultAnalysisQueryTimeout = Duration(30 * time.Second)
-	asterisk                    = "*"
+	allEvents                   = "*"
 )
 
 type GenericDeploymentSpec struct {
@@ -444,7 +444,7 @@ type DeploymentNotification struct {
 func (n *DeploymentNotification) FindSlackAccounts(event model.NotificationEventType) []string {
 	as := make(map[string]struct{})
 	for _, m := range n.Mentions {
-		if m.Event != asterisk &&  "EVENT_" + m.Event != event.String() {
+		if m.Event != allEvents && "EVENT_"+m.Event != event.String() {
 			continue
 		}
 		for _, s := range m.Slack {
