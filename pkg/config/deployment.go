@@ -447,8 +447,8 @@ func (n *DeploymentNotification) FindSlackAccounts(event model.NotificationEvent
 		if m.Event != asterisk &&  "EVENT_" + m.Event != event.String() {
 			continue
 		}
-		for _, a := range m.Slack {
-			as[a] = struct{}{}
+		for _, s := range m.Slack {
+			as[s] = struct{}{}
 		}
 	}
 
