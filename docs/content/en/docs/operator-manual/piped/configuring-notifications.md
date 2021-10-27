@@ -77,7 +77,7 @@ A piped has been started
 
 For detailed configuration, please check the [configuration reference for Notifications](/docs/operator-manual/piped/configuration-reference/#notifications) section.
 
-### Sending notifications to webhook endpoints
+### Sending notification to exiternal services via webhook
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
