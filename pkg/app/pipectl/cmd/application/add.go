@@ -62,7 +62,7 @@ func newAddCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&c.appDir, "app-dir", c.appDir, "The relative path from the root of repository to the application directory.")
 	cmd.Flags().StringVar(&c.configFileName, "config-file-name", c.configFileName, "The configuration file name. Default is .pipe.yaml")
 	cmd.Flags().StringVar(&c.description, "description", c.description, "The description of the application.")
-	cmd.Flags().StringArrayVar(&c.tags, "tags", c.tags, "The additional attributes of the application.")
+	cmd.Flags().StringSliceVar(&c.tags, "tags", c.tags, "The comma-separated custom attributes of the application.")
 
 	cmd.MarkFlagRequired("app-name")
 	cmd.MarkFlagRequired("app-kind")
