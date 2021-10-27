@@ -54,9 +54,6 @@ spec:
         envs:
           - dev
         receiver: prod-slack-channel
-      # Sending all events a CI service.
-      - name: all-events-to-ci
-        receiver: ci-webhook
     receivers:
       - name: dev-slack-channel
         slack:
@@ -64,9 +61,6 @@ spec:
       - name: prod-slack-channel
         slack:
           hookURL: https://slack.com/prod
-      - name: ci-webhook
-        webhook:
-          url: https://pipecd.dev/dev-hook
 ```
 
 
