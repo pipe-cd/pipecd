@@ -59,7 +59,7 @@ type Trigger struct {
 	// Regular expression can be used.
 	Paths []string `json:"paths,omitempty"`
 	// Control trigger new deployment on Git change or not.
-	AutoDeployOnChange bool `json:"autoDeployOnChange,omitempty" default:"true"`
+	DisableAutoDeployOnChange bool `json:"disableAutoDeployOnChange,omitempty"`
 }
 
 func (s *GenericDeploymentSpec) Validate() error {

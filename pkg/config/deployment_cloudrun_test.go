@@ -37,9 +37,6 @@ func TestCloudRunDeploymentConfig(t *testing.T) {
 			expectedSpec: &CloudRunDeploymentSpec{
 				GenericDeploymentSpec: GenericDeploymentSpec{
 					Timeout: Duration(6 * time.Hour),
-					Trigger: Trigger{
-						AutoDeployOnChange: true,
-					},
 				},
 				Input: CloudRunDeploymentInput{
 					AutoRollback: true,

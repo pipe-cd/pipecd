@@ -45,9 +45,6 @@ func TestHasStage(t *testing.T) {
 						},
 					},
 				},
-				Trigger: Trigger{
-					AutoDeployOnChange: true,
-				},
 			},
 			stage: model.StageK8sPrimaryRollout,
 			want:  false,
@@ -61,9 +58,6 @@ func TestHasStage(t *testing.T) {
 							Name: model.StageK8sSync,
 						},
 					},
-				},
-				Trigger: Trigger{
-					AutoDeployOnChange: true,
 				},
 			},
 			stage: model.StageK8sSync,
