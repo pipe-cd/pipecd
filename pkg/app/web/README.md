@@ -58,6 +58,12 @@ Add your API endpoint to the `.env` file like this:
 API_ENDPOINT=https://{API_ADDRESS}
 ```
 
+Set `ENABLE_MOCK` to false explicitly.
+
+```
+ENABLE_MOCK=false
+```
+
 If API server has authorization by cookie, set `API_COOKIE` to the cookie you have already obtained through other clients
 (typically you need to send some kind of request from an authenticated client and peek at the request header in some way).
 
