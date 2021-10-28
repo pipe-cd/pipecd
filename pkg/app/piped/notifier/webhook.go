@@ -97,4 +97,18 @@ func (w *webhook) sendEvent(ctx context.Context, event model.NotificationEvent) 
 }
 
 func (w *webhook) Close(ctx context.Context) {
+	close(w.eventCh)
+
+	// Send all remaining events.
+	for {
+		select {
+		case event, ok := <-w.eventCh:
+			if !ok {
+				return
+			}
+			w.sendEvent(ctx, event)
+		case <-ctx.Done():
+			return
+		}
+	}
 }
