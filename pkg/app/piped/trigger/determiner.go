@@ -62,7 +62,6 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application) 
 		return false, err
 	}
 
-	logger.Info(fmt.Sprintf("trigger for application, trigger: %v", deployConfig.Trigger))
 	if !deployConfig.Trigger.DisableAutoDeployOnChange {
 		logger.Info(fmt.Sprintf("auto trigger deployment disabled for application, hash: %s", d.targetCommit))
 		return false, nil
