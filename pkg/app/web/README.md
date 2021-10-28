@@ -62,5 +62,5 @@ If API server has authorization by cookie, set `API_COOKIE` to the cookie you ha
 (typically you need to send some kind of request from an authenticated client and peek at the request header in some way).
 
 ```
-API_COOKIE=https://{API_ADDRESS}
+API_COOKIE={COOKIE}
 ```
