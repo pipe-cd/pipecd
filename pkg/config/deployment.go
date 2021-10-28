@@ -37,9 +37,8 @@ type GenericDeploymentSpec struct {
 	Pipeline *DeploymentPipeline `json:"pipeline"`
 	// The list of sealed secrets that should be decrypted.
 	SealedSecrets []SealedSecretMapping `json:"sealedSecrets"`
-	// List of directories or files where their changes will trigger the deployment.
-	// Regular expression can be used.
-	TriggerPaths []string `json:"triggerPaths,omitempty"`
+	// The trigger configuration use to determine trigger logic.
+	Trigger Trigger `json:"trigger"`
 	// The maximum length of time to execute deployment before giving up.
 	// Default is 6h.
 	Timeout Duration `json:"timeout,omitempty" default:"6h"`
@@ -53,6 +52,14 @@ type DeploymentPlanner struct {
 	// Disable auto-detecting to use QUICK_SYNC or PROGRESSIVE_SYNC.
 	// Always use the speficied pipeline for all deployments.
 	AlwaysUsePipeline bool `json:"alwaysUsePipeline"`
+}
+
+type Trigger struct {
+	// List of directories or files where their changes will trigger the deployment.
+	// Regular expression can be used.
+	Paths []string `json:"paths,omitempty"`
+	// Control trigger new deployment on Git change or not.
+	AutoDeployOnChange bool `json:"autoDeployOnChange,omitempty" default:"true"`
 }
 
 func (s *GenericDeploymentSpec) Validate() error {

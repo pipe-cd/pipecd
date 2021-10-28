@@ -57,6 +57,17 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application) 
 		zap.String("target-commit", d.targetCommit),
 	)
 
+	deployConfig, err := loadDeploymentConfiguration(d.repo.GetPath(), app)
+	if err != nil {
+		return false, err
+	}
+
+	logger.Info(fmt.Sprintf("trigger for application, trigger: %v", deployConfig.Trigger))
+	if !deployConfig.Trigger.AutoDeployOnChange {
+		logger.Info(fmt.Sprintf("auto trigger deployment disabled for application, hash: %s", d.targetCommit))
+		return false, nil
+	}
+
 	preCommit, err := d.commitGetter.Get(ctx, app.Id)
 	if err != nil {
 		logger.Error("failed to get last triggered commit", zap.Error(err))
@@ -84,12 +95,7 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application) 
 		return false, err
 	}
 
-	deployConfig, err := loadDeploymentConfiguration(d.repo.GetPath(), app)
-	if err != nil {
-		return false, err
-	}
-
-	touched, err := isTouchedByChangedFiles(app.GitPath.Path, deployConfig.TriggerPaths, changedFiles)
+	touched, err := isTouchedByChangedFiles(app.GitPath.Path, deployConfig.Trigger.Paths, changedFiles)
 	if err != nil {
 		return false, err
 	}
