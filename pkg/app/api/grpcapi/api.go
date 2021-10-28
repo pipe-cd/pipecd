@@ -43,6 +43,7 @@ type API struct {
 	deploymentStore     datastore.DeploymentStore
 	pipedStore          datastore.PipedStore
 	eventStore          datastore.EventStore
+	tagStore            datastore.TagStore
 	commandStore        commandstore.Store
 	commandOutputGetter commandOutputGetter
 
@@ -67,6 +68,7 @@ func NewAPI(
 		deploymentStore:     datastore.NewDeploymentStore(ds),
 		pipedStore:          datastore.NewPipedStore(ds),
 		eventStore:          datastore.NewEventStore(ds),
+		tagStore:            datastore.NewTagStore(ds),
 		commandStore:        cmds,
 		commandOutputGetter: cog,
 		// Public key is variable but likely to be accessed multiple times in a short period.
@@ -108,6 +110,13 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 		return nil, err
 	}
 
+	// TODO: Cache the existing tags.
+	//   This is not necessary if you want to pass the Tag model itself to the web client.
+	tags, err := getOrCreateTags(ctx, req.TagNames, key.ProjectId, a.tagStore, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
 	app := model.Application{
 		Id:            uuid.New().String(),
 		Name:          req.Name,
@@ -118,7 +127,7 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 		Kind:          req.Kind,
 		CloudProvider: req.CloudProvider,
 		Description:   req.Description,
-		Tags:          req.Tags,
+		Tags:          tags,
 	}
 	err = a.applicationStore.AddApplication(ctx, &app)
 	if errors.Is(err, datastore.ErrAlreadyExists) {

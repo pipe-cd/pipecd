@@ -57,19 +57,26 @@ func TestApplication_ContainTags(t *testing.T) {
 	}{
 		{
 			name: "all given tags aren't contained",
-			app:  &Application{Tags: []string{"foo"}},
+			app:  &Application{Tags: []*Tag{{Id: "foo"}}},
 			tags: []string{"foo", "bar"},
 			want: false,
 		},
 		{
 			name: "a tag is contained",
-			app:  &Application{Tags: []string{"foo", "bar"}},
+			app: &Application{Tags: []*Tag{
+				{Id: "foo"},
+				{Id: "bar"},
+			}},
 			tags: []string{"foo"},
 			want: true,
 		},
 		{
 			name: "all tags are contained",
-			app:  &Application{Tags: []string{"foo", "bar", "baz"}},
+			app: &Application{Tags: []*Tag{
+				{Id: "foo"},
+				{Id: "bar"},
+				{Id: "baz"},
+			}},
 			tags: []string{"baz", "foo", "bar"},
 			want: true,
 		},

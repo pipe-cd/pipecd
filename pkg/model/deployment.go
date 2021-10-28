@@ -194,15 +194,15 @@ func DeploymentStatusStrings() []string {
 }
 
 // ContainTags checks if it has all the given tags.
-func (d *Deployment) ContainTags(tags []string) bool {
-	if len(d.Tags) < len(tags) {
+func (d *Deployment) ContainTags(tagIDs []string) bool {
+	if len(d.Tags) < len(tagIDs) {
 		return false
 	}
 	tagMap := make(map[string]struct{}, len(d.Tags))
 	for i := range d.Tags {
-		tagMap[d.Tags[i]] = struct{}{}
+		tagMap[d.Tags[i].Id] = struct{}{}
 	}
-	for _, tag := range tags {
+	for _, tag := range tagIDs {
 		if _, ok := tagMap[tag]; !ok {
 			return false
 		}

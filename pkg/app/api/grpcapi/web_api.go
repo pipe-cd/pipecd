@@ -55,6 +55,7 @@ type WebAPI struct {
 	pipedStore                datastore.PipedStore
 	projectStore              datastore.ProjectStore
 	apiKeyStore               datastore.APIKeyStore
+	tagStore                  datastore.TagStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
@@ -91,6 +92,7 @@ func NewWebAPI(
 		pipedStore:                datastore.NewPipedStore(ds),
 		projectStore:              datastore.NewProjectStore(ds),
 		apiKeyStore:               datastore.NewAPIKeyStore(ds),
+		tagStore:                  datastore.NewTagStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
 		commandStore:              cmds,
@@ -627,6 +629,10 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		return nil, err
 	}
 
+	tags, err := getOrCreateTags(ctx, req.TagNames, claims.Role.ProjectId, a.tagStore, a.logger)
+	if err != nil {
+		return nil, err
+	}
 	app := model.Application{
 		Id:            uuid.New().String(),
 		Name:          req.Name,
@@ -637,7 +643,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		Kind:          req.Kind,
 		CloudProvider: req.CloudProvider,
 		Description:   req.Description,
-		Tags:          req.Tags,
+		Tags:          tags,
 	}
 	err = a.applicationStore.AddApplication(ctx, &app)
 	if errors.Is(err, datastore.ErrAlreadyExists) {
@@ -654,13 +660,22 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 }
 
 func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateApplicationRequest) (*webservice.UpdateApplicationResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+	tags, err := getOrCreateTags(ctx, req.TagNames, claims.Role.ProjectId, a.tagStore, a.logger)
+	if err != nil {
+		return nil, err
+	}
 	updater := func(app *model.Application) error {
 		app.Name = req.Name
 		app.EnvId = req.EnvId
 		app.PipedId = req.PipedId
 		app.Kind = req.Kind
 		app.CloudProvider = req.CloudProvider
-		app.Tags = req.Tags
+		app.Tags = tags
 		return nil
 	}
 
@@ -861,7 +876,7 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		return nil, status.Error(codes.Internal, "Failed to get applications")
 	}
 
-	if len(req.Options.Tags) == 0 {
+	if len(req.Options.TagIds) == 0 {
 		return &webservice.ListApplicationsResponse{
 			Applications: apps,
 		}, nil
@@ -869,7 +884,7 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 
 	filtered := make([]*model.Application, 0, len(apps))
 	for _, a := range apps {
-		if a.ContainTags(req.Options.Tags) {
+		if a.ContainTags(req.Options.TagIds) {
 			filtered = append(filtered, a)
 		}
 	}
@@ -1071,7 +1086,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		a.logger.Error("failed to get deployments", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get deployments")
 	}
-	tags := req.Options.Tags
+	tags := req.Options.TagIds
 	if len(tags) == 0 || len(deployments) == 0 {
 		return &webservice.ListDeploymentsResponse{
 			Deployments: deployments,
