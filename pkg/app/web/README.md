@@ -35,25 +35,38 @@ src
 ## Development
 
 ### Running with Mocks(msw)
-
 We use `msw` for mocking API, so you can see UI without running API server.
 
 ```bash
-yarn dev
+make web-dev
 ```
 
 The app will be available at http://localhost:9090.
 
 ### Connect Real API server
+If you want to connect the real API server, additional settings on the `.env` file are needed.
+
+First, create your own `.env` file based on the `.env.example.env` file.
 
 ```bash
 cp .env.example .env
 ```
 
-Add your API endpoint to the env file like this:
+Add your API endpoint to the `.env` file like this:
 
 ```
-API_ENDPOINT=https://api.pipecd.dev
+API_ENDPOINT=https://{API_ADDRESS}
 ```
 
-If API server has authorization by cookie, you can use `API_COOKIE` for adding cookie to request.
+Set `ENABLE_MOCK` to false explicitly.
+
+```
+ENABLE_MOCK=false
+```
+
+If API server has authorization by cookie, set `API_COOKIE` to the cookie you have already obtained through other clients
+(typically you need to send some kind of request from an authenticated client and peek at the request header in some way).
+
+```
+API_COOKIE={COOKIE}
+```
