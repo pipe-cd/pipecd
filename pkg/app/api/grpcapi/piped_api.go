@@ -57,11 +57,12 @@ type PipedAPI struct {
 	envProjectCache      cache.Cache
 	pipedStatCache       cache.Cache
 
-	logger *zap.Logger
+	webBaseURL string
+	logger     *zap.Logger
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, cs commandstore.Store, hc cache.Cache, cop commandOutputPutter, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, cs commandstore.Store, hc cache.Cache, cop commandOutputPutter, webBaseURL string, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
@@ -78,6 +79,7 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.
 		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		envProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            hc,
+		webBaseURL:                webBaseURL,
 		logger:                    logger.Named("piped-api"),
 	}
 	return a
@@ -155,7 +157,8 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 		return nil, err
 	}
 	return &pipedservice.ReportPipedMetaResponse{
-		Name: piped.Name,
+		Name:       piped.Name,
+		WebBaseUrl: a.webBaseURL,
 	}, nil
 }
 
