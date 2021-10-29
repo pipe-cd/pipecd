@@ -629,7 +629,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		return nil, err
 	}
 
-	tags, err := getOrCreateTags(ctx, req.TagNames, claims.Role.ProjectId, a.tagStore, a.logger)
+	tagIDs, err := a.ensureTagsStored(ctx, req.Tags, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -643,7 +643,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		Kind:          req.Kind,
 		CloudProvider: req.CloudProvider,
 		Description:   req.Description,
-		Tags:          tags,
+		TagIds:        tagIDs,
 	}
 	err = a.applicationStore.AddApplication(ctx, &app)
 	if errors.Is(err, datastore.ErrAlreadyExists) {
@@ -665,7 +665,7 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 		a.logger.Error("failed to authenticate the current user", zap.Error(err))
 		return nil, err
 	}
-	tags, err := getOrCreateTags(ctx, req.TagNames, claims.Role.ProjectId, a.tagStore, a.logger)
+	tagIDs, err := a.ensureTagsStored(ctx, req.Tags, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -675,7 +675,7 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 		app.PipedId = req.PipedId
 		app.Kind = req.Kind
 		app.CloudProvider = req.CloudProvider
-		app.Tags = tags
+		app.TagIds = tagIDs
 		return nil
 	}
 
@@ -683,6 +683,28 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 		return nil, err
 	}
 	return &webservice.UpdateApplicationResponse{}, nil
+}
+
+func (a *WebAPI) ensureTagsStored(ctx context.Context, tags []*webservice.ApplicationTag, projectID string) ([]string, error) {
+	tagIDs := make([]string, 0, len(tags))
+	for _, tag := range tags {
+		if tag.Id != "" {
+			tagIDs = append(tagIDs, tag.Id)
+			continue
+		}
+
+		// Store the newly created tag.
+		err := a.tagStore.AddTag(ctx, &model.Tag{
+			Id:        model.BuildTagID(projectID, tag.Name),
+			Name:      tag.Name,
+			ProjectId: projectID,
+		})
+		if err != nil {
+			a.logger.Error("failed to create tag", zap.Error(err))
+			return nil, status.Error(codes.Internal, "Failed to create tag")
+		}
+	}
+	return tagIDs, nil
 }
 
 func (a *WebAPI) UpdateApplicationDescription(ctx context.Context, req *webservice.UpdateApplicationDescriptionRequest) (*webservice.UpdateApplicationDescriptionResponse, error) {
@@ -884,7 +906,7 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 
 	filtered := make([]*model.Application, 0, len(apps))
 	for _, a := range apps {
-		if a.ContainTags(req.Options.TagIds) {
+		if a.ContainTagIDs(req.Options.TagIds) {
 			filtered = append(filtered, a)
 		}
 	}
@@ -1099,7 +1121,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 	// We don't want to depend on any other search engine, that's why it filters here.
 	filtered := make([]*model.Deployment, 0, len(deployments))
 	for _, d := range deployments {
-		if d.ContainTags(tags) {
+		if d.ContainTagIDs(tags) {
 			filtered = append(filtered, d)
 		}
 	}
@@ -1124,7 +1146,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 			break
 		}
 		for _, d := range deployments {
-			if d.ContainTags(tags) {
+			if d.ContainTagIDs(tags) {
 				filtered = append(filtered, d)
 			}
 		}

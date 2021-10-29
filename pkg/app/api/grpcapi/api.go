@@ -48,6 +48,8 @@ type API struct {
 	commandOutputGetter commandOutputGetter
 
 	encryptionKeyCache cache.Cache
+	// Cache the existence of the tagID.
+	tagIDCache cache.Cache
 
 	webBaseURL string
 	logger     *zap.Logger
@@ -73,6 +75,7 @@ func NewAPI(
 		commandOutputGetter: cog,
 		// Public key is variable but likely to be accessed multiple times in a short period.
 		encryptionKeyCache: memorycache.NewTTLCache(ctx, 5*time.Minute, 5*time.Minute),
+		tagIDCache:         memorycache.NewTTLCache(ctx, 24*time.Minute, 3*time.Minute),
 		webBaseURL:         webBaseURL,
 		logger:             logger.Named("api"),
 	}
@@ -110,11 +113,13 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 		return nil, err
 	}
 
-	// TODO: Cache the existing tags.
-	//   This is not necessary if you want to pass the Tag model itself to the web client.
-	tags, err := getOrCreateTags(ctx, req.TagNames, key.ProjectId, a.tagStore, a.logger)
-	if err != nil {
-		return nil, err
+	tagIDs := make([]string, 0, len(req.TagNames))
+	for _, name := range req.TagNames {
+		id, err := a.getOrCreateTag(ctx, name, key.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		tagIDs = append(tagIDs, id)
 	}
 
 	app := model.Application{
@@ -127,7 +132,7 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 		Kind:          req.Kind,
 		CloudProvider: req.CloudProvider,
 		Description:   req.Description,
-		Tags:          tags,
+		TagIds:        tagIDs,
 	}
 	err = a.applicationStore.AddApplication(ctx, &app)
 	if errors.Is(err, datastore.ErrAlreadyExists) {
@@ -141,6 +146,34 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 	return &apiservice.AddApplicationResponse{
 		ApplicationId: app.Id,
 	}, nil
+}
+
+func (a *API) getOrCreateTag(ctx context.Context, tagName, projectID string) (tagID string, err error) {
+	id := model.BuildTagID(projectID, tagName)
+	if _, err := a.tagIDCache.Get(id); err == nil {
+		return id, nil
+	}
+
+	tag, err := a.tagStore.GetTag(ctx, id)
+	if err == nil {
+		a.tagIDCache.Put(id, struct{}{})
+		return tag.Id, nil
+	}
+	if !errors.Is(err, datastore.ErrNotFound) {
+		a.logger.Error("failed to get tag", zap.Error(err))
+		return "", status.Error(codes.Internal, "Failed to get tag")
+	}
+	tag = &model.Tag{
+		Id:        id,
+		Name:      tagName,
+		ProjectId: projectID,
+	}
+	if err := a.tagStore.AddTag(ctx, tag); err != nil {
+		a.logger.Error("failed to create tag", zap.Error(err))
+		return "", status.Error(codes.Internal, "Failed to create tag")
+	}
+	a.tagIDCache.Put(id, struct{}{})
+	return id, nil
 }
 
 func (a *API) SyncApplication(ctx context.Context, req *apiservice.SyncApplicationRequest) (*apiservice.SyncApplicationResponse, error) {

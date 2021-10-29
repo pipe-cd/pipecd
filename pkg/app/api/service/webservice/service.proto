@@ -219,6 +219,12 @@ message AddEnvironmentRequest {
     string desc = 2;
 }
 
+message ApplicationTag {
+    // Empty id means newly created tag.
+    string id = 1;
+    string name = 2 [(validate.rules).string.min_len = 1];
+}
+
 message AddApplicationRequest {
     string name = 1 [(validate.rules).string.min_len = 1];
     string env_id = 2 [(validate.rules).string.min_len = 1];
@@ -227,7 +233,7 @@ message AddApplicationRequest {
     model.ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
     string cloud_provider = 6 [(validate.rules).string.min_len = 1];
     string description = 7;
-    repeated string tag_names = 8;
+    repeated ApplicationTag tags = 8;
 }
 
 message AddApplicationResponse {
@@ -241,7 +247,7 @@ message UpdateApplicationRequest {
     string piped_id = 4 [(validate.rules).string.min_len = 1];
     model.ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
     string cloud_provider = 7 [(validate.rules).string.min_len = 1];
-    repeated string tag_names = 8;
+    repeated ApplicationTag tags = 8;
 }
 
 message UpdateApplicationResponse {

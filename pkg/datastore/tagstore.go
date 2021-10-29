@@ -28,7 +28,7 @@ var tagFactory = func() interface{} {
 }
 
 type TagStore interface {
-	AddTag(ctx context.Context, app *model.Tag) error
+	AddTag(ctx context.Context, tag *model.Tag) error
 	GetTag(ctx context.Context, id string) (*model.Tag, error)
 }
 

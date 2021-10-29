@@ -55,7 +55,7 @@ export const fetchApplications = createAsyncThunk<
       enabled: options.activeStatus
         ? { value: options.activeStatus === "enabled" }
         : undefined,
-      tagsList: [], // TODO: Specify tags for ListApplications
+      tagIdsList: [], // TODO: Specify tags for ListApplications
     },
   });
   return applicationsList as Application.AsObject[];

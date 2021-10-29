@@ -28,36 +28,27 @@ func TestDeployment_ContainTags(t *testing.T) {
 		want       bool
 	}{
 		{
-			name: "all given tags aren't contained",
-			deployment: &Deployment{Tags: []*Tag{
-				{Id: "foo"},
-			}},
-			tags: []string{"foo", "bar"},
-			want: false,
+			name:       "all given tags aren't contained",
+			deployment: &Deployment{TagIds: []string{"foo"}},
+			tags:       []string{"foo", "bar"},
+			want:       false,
 		},
 		{
-			name: "a tag is contained",
-			deployment: &Deployment{Tags: []*Tag{
-				{Id: "foo"},
-				{Id: "bar"},
-			}},
-			tags: []string{"foo"},
-			want: true,
+			name:       "a tag is contained",
+			deployment: &Deployment{TagIds: []string{"foo", "bar"}},
+			tags:       []string{"foo"},
+			want:       true,
 		},
 		{
-			name: "all tags are contained",
-			deployment: &Deployment{Tags: []*Tag{
-				{Id: "foo"},
-				{Id: "bar"},
-				{Id: "baz"},
-			}},
-			tags: []string{"baz", "foo", "bar"},
-			want: true,
+			name:       "all tags are contained",
+			deployment: &Deployment{TagIds: []string{"foo", "bar", "baz"}},
+			tags:       []string{"baz", "foo", "bar"},
+			want:       true,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := tc.deployment.ContainTags(tc.tags)
+			got := tc.deployment.ContainTagIDs(tc.tags)
 			assert.Equal(t, tc.want, got)
 		})
 	}

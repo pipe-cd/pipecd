@@ -23,7 +23,7 @@ export const dummyDeployment: Deployment.AsObject = {
   trigger: dummyTrigger,
   version: "0.0.0",
   cloudProvider: "kube-1",
-  tagsList: [],
+  tagIdsList: [],
   createdAt: createdAt.unix(),
   updatedAt: completedAt.unix(),
   completedAt: completedAt.unix(),

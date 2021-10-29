@@ -189,30 +189,3 @@ func getEncriptionKey(se *model.Piped_SecretEncryption) ([]byte, error) {
 		return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a valid encryption type")
 	}
 }
-
-func getOrCreateTags(ctx context.Context, tagNames []string, projectID string, tagStore datastore.TagStore, logger *zap.Logger) ([]*model.Tag, error) {
-	tags := make([]*model.Tag, 0, len(tagNames))
-	for _, name := range tagNames {
-		id := model.BuildTagID(projectID, name)
-		tag, err := tagStore.GetTag(ctx, id)
-		if err == nil {
-			tags = append(tags, tag)
-			continue
-		}
-		if !errors.Is(err, datastore.ErrNotFound) {
-			logger.Error("failed to get tag", zap.Error(err))
-			return nil, status.Error(codes.Internal, "Failed to get tag")
-		}
-		tag = &model.Tag{
-			Id:        id,
-			Name:      name,
-			ProjectId: projectID,
-		}
-		if err := tagStore.AddTag(ctx, tag); err != nil {
-			logger.Error("failed to create tag", zap.Error(err))
-			return nil, status.Error(codes.Internal, "Failed to create tag")
-		}
-		tags = append(tags, tag)
-	}
-	return tags, nil
-}

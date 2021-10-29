@@ -57,33 +57,26 @@ func TestApplication_ContainTags(t *testing.T) {
 	}{
 		{
 			name: "all given tags aren't contained",
-			app:  &Application{Tags: []*Tag{{Id: "foo"}}},
+			app:  &Application{TagIds: []string{"foo"}},
 			tags: []string{"foo", "bar"},
 			want: false,
 		},
 		{
 			name: "a tag is contained",
-			app: &Application{Tags: []*Tag{
-				{Id: "foo"},
-				{Id: "bar"},
-			}},
+			app:  &Application{TagIds: []string{"foo", "bar"}},
 			tags: []string{"foo"},
 			want: true,
 		},
 		{
 			name: "all tags are contained",
-			app: &Application{Tags: []*Tag{
-				{Id: "foo"},
-				{Id: "bar"},
-				{Id: "baz"},
-			}},
+			app:  &Application{TagIds: []string{"foo", "bar", "baz"}},
 			tags: []string{"baz", "foo", "bar"},
 			want: true,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := tc.app.ContainTags(tc.tags)
+			got := tc.app.ContainTagIDs(tc.tags)
 			assert.Equal(t, tc.want, got)
 		})
 	}

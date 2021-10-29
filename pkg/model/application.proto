@@ -44,7 +44,7 @@ message Application {
     // Additional description about application.
     string description = 9;
     // Custom attributes for filtering.
-    repeated Tag tags = 10;
+    repeated string tag_ids = 10;
 
     // Basic information about the most recently successful deployment.
     // This also shows information about current running workloads.

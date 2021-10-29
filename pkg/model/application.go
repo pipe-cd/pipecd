@@ -50,14 +50,14 @@ func MakeApplicationURL(baseURL, applicationID string) string {
 	return fmt.Sprintf("%s/applications/%s", strings.TrimSuffix(baseURL, "/"), applicationID)
 }
 
-// ContainTags checks if it has all the given tags.
-func (a *Application) ContainTags(tagIDs []string) bool {
-	if len(a.Tags) < len(tagIDs) {
+// ContainTagIDs checks if it has all the given tags.
+func (a *Application) ContainTagIDs(tagIDs []string) bool {
+	if len(a.TagIds) < len(tagIDs) {
 		return false
 	}
-	tagMap := make(map[string]struct{}, len(a.Tags))
-	for i := range a.Tags {
-		tagMap[a.Tags[i].Id] = struct{}{}
+	tagMap := make(map[string]struct{}, len(a.TagIds))
+	for i := range a.TagIds {
+		tagMap[a.TagIds[i]] = struct{}{}
 	}
 	for _, tag := range tagIDs {
 		if _, ok := tagMap[tag]; !ok {
