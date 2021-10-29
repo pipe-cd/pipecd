@@ -97,7 +97,12 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application, 
 		return false, err
 	}
 
-	touched, err := isTouchedByChangedFiles(app.GitPath.Path, deployConfig.Trigger.Paths, changedFiles)
+	// TODO: Remove deprecated `deployConfig.TriggerPaths` configuration.
+	checkingPaths := make([]string, len(deployConfig.Trigger.Paths)+len(deployConfig.TriggerPaths))
+	checkingPaths = append(checkingPaths, deployConfig.Trigger.Paths...)
+	checkingPaths = append(checkingPaths, deployConfig.TriggerPaths...)
+
+	touched, err := isTouchedByChangedFiles(app.GitPath.Path, checkingPaths, changedFiles)
 	if err != nil {
 		return false, err
 	}

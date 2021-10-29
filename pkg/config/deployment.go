@@ -37,6 +37,10 @@ type GenericDeploymentSpec struct {
 	Pipeline *DeploymentPipeline `json:"pipeline"`
 	// The list of sealed secrets that should be decrypted.
 	SealedSecrets []SealedSecretMapping `json:"sealedSecrets"`
+	// List of directories or files where their changes will trigger the deployment.
+	// Regular expression can be used.
+	// Deprecated: use Trigger.Paths instead.
+	TriggerPaths []string `json:"triggerPaths,omitempty"`
 	// The trigger configuration use to determine trigger logic.
 	Trigger Trigger `json:"trigger"`
 	// The maximum length of time to execute deployment before giving up.
