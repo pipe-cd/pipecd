@@ -150,24 +150,24 @@ func TestFindSlackAccounts(t *testing.T) {
 func TestValidateAnalysisTemplateRef(t *testing.T) {
 	testcases := []struct {
 		name    string
-		tpl_name string
+		tplName string
 		wantErr bool
 	}{
 		{
 			name: "valid",
-			tpl_name: "name",
+			tplName: "name",
 			wantErr: false,
 		},
 		{
 			name: "valid",
-			tpl_name: "",
+			tplName: "",
 			wantErr: true,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			a := &AnalysisTemplateRef{
-				Name: tc.tpl_name,
+				Name: tc.tplName,
 			}
 			err := a.Validate()
 			assert.Equal(t, tc.wantErr, err != nil)
