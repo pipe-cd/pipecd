@@ -88,9 +88,6 @@ func (s *PipedSpec) Validate() error {
 	if s.APIAddress == "" {
 		return errors.New("apiAddress must be set")
 	}
-	if s.WebAddress == "" {
-		return errors.New("webAddress must be set")
-	}
 	if s.SyncInterval < 0 {
 		return errors.New("syncInterval must be greater than or equal to 0")
 	}
