@@ -147,6 +147,34 @@ func TestFindSlackAccounts(t *testing.T) {
 	}
 }
 
+func TestValidateAnalysisTemplateRef(t *testing.T) {
+	testcases := []struct {
+		name    string
+		tpl_name string
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			tpl_name: "name",
+			wantErr: false,
+		},
+		{
+			name: "valid",
+			tpl_name: "",
+			wantErr: true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			a := &AnalysisTemplateRef{
+				Name: tc.tpl_name,
+			}
+			err := a.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
+		})
+	}
+}
+
 func TestValidateEncryption(t *testing.T) {
 	testcases := []struct {
 		name             string
