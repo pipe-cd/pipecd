@@ -48,7 +48,7 @@ Applicationリストページにある`+ADD`ボタンをクリックすること
 ## Deploymentの設定ファイルの追加
 
 Applicationの登録後はDeploymentの設定ファイル（`.pipe.yaml`）をGitリポジトリのApplicationディレクトリに追加していきます。
-`piped`はこのファイルによってcanary/blue-greenストラテジーや手動による承認などといったアプリケーションのデプロイ方法について知ることができます。
+`piped`はこのファイルによってApplicationのデプロイ方法（canary/blue-greenストラテジーや手動による承認など）について知ることができます。
 Deploymentの設定ファイルは以下のようにYAMLフォーマットで書くことができます。
 
 ``` yaml
