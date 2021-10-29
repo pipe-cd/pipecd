@@ -89,7 +89,7 @@ func TestParsePipedToken(t *testing.T) {
 		{
 			name:      "malformed token: missing pipedID",
 			token:     "test-project-id,,test-piped-key",
-			projectID: "",
+			projectID: "test-project-id",
 			pipedID:   "",
 			pipedKey:  "",
 			wantErr:   true,
@@ -97,8 +97,8 @@ func TestParsePipedToken(t *testing.T) {
 		{
 			name:      "malformed token: missing pipedKey",
 			token:     "test-project-id,test-piped-id,",
-			projectID: "",
-			pipedID:   "",
+			projectID: "test-project-id",
+			pipedID:   "test-piped-id",
 			pipedKey:  "",
 			wantErr:   true,
 		},
