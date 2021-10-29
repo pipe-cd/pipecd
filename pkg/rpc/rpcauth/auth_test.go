@@ -22,6 +22,74 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+func TestMakePipedToken(t *testing.T) {
+	testcases := []struct {
+		name      string
+		projectID string
+		pipedID   string
+		pipedKey  string
+		want      string
+	}{
+		{
+			name:      "ok",
+			projectID: "test-project-id",
+			pipedID:   "test-piped-id",
+			pipedKey:  "test-piped-key",
+			want:      "test-project-id,test-piped-id,test-piped-key",
+		},
+		{
+			name:      "projectID is empty",
+			projectID: "",
+			pipedID:   "test-piped-id",
+			pipedKey:  "test-piped-key",
+			want:      ",test-piped-id,test-piped-key",
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := MakePipedToken(tc.projectID, tc.pipedID, tc.pipedKey)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestParsePipedToken(t *testing.T) {
+	testcases := []struct {
+		name      string
+		token     string
+		projectID string
+		pipedID   string
+		pipedKey  string
+		wantErr   bool
+	}{
+		{
+			name:      "ok",
+			token:     "test-project-id,test-piped-id,test-piped-key",
+			projectID: "test-project-id",
+			pipedID:   "test-piped-id",
+			pipedKey:  "test-piped-key",
+			wantErr:   false,
+		},
+		{
+			name:      "missing projectID",
+			token:     ",test-piped-id,test-piped-key",
+			projectID: "",
+			pipedID:   "",
+			pipedKey:  "",
+			wantErr:   true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			projectID, pipedID, pipedKey, err := parsePipedToken(tc.token)
+			assert.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, tc.projectID, projectID)
+			assert.Equal(t, tc.pipedID, pipedID)
+			assert.Equal(t, tc.pipedKey, pipedKey)
+		})
+	}
+}
+
 func TestExtractToken(t *testing.T) {
 	testcases := []struct {
 		name                    string

@@ -48,12 +48,10 @@ type Credentials struct {
 }
 
 // MakePipedToken builds a piped token can be used as data of Credentials.
-// TODO: Add test for this function.
 func MakePipedToken(projectID, pipedID, pipedKey string) string {
 	return fmt.Sprintf("%s,%s,%s", projectID, pipedID, pipedKey)
 }
 
-// TODO: Add test for this function.
 func parsePipedToken(token string) (projectID, pipedID, pipedKey string, err error) {
 	parts := strings.Split(token, ",")
 	if len(parts) != 3 {
