@@ -27,6 +27,7 @@ description: >
     projectID: {PROJECT_ID}
     pipedID: {PIPED_ID}
     pipedKeyData: {BASE64_ENCODED_PIPED_KEY}
+    webAddress: {CONTROL_PLANE_WEB_ADDRESS}
     # Write in a format like "host:443" because the communication is done via gRPC.
     apiAddress: {CONTROL_PLANE_API_ADDRESS}
 

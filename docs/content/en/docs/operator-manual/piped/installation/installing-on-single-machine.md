@@ -31,6 +31,7 @@ description: >
     projectID: {PROJECT_ID}
     pipedID: {PIPED_ID}
     pipedKeyFile: {PATH_TO_PIPED_KEY_FILE}
+    webAddress: {CONTROL_PLANE_WEB_ADDRESS}
     # Write in a format like "host:443" because the communication is done via gRPC.
     apiAddress: {CONTROL_PLANE_API_ADDRESS}
     git:
