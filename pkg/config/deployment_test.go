@@ -154,12 +154,12 @@ func TestValidateAnalysisTemplateRef(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "valid",
+			name:    "valid",
 			tplName: "name",
 			wantErr: false,
 		},
 		{
-			name: "valid",
+			name:    "valid",
 			tplName: "",
 			wantErr: true,
 		},
