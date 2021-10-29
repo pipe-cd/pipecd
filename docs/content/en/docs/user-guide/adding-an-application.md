@@ -20,7 +20,7 @@ An application must belong to exactly one environment and can be handled by one 
 
 ## Registering a new application from Web UI
 
-Registering application helps PipedCD know the basic information about that application, where the application configuration is placing, what `piped` should handle it as well as what cloud the application should be deployed to.
+Registering application helps PipeCD know the basic information about that application, where the application configuration is placing, what `piped` should handle it as well as what cloud the application should be deployed to.
 
 By clicking on `+ADD` button at the application list page, a popup will be revealed from the right side as below:
 
@@ -48,7 +48,7 @@ Here are the list of fields in the register form:
 
 After registering the application, one more step left is adding the deployment configuration file (`.pipe.yaml`) for that application into the application directory in Git repository.
 
-While registering application helps `control-plane` know the basic information about application, the deployment configuration file is used by `piped`, and it helps `piped` know how the application should be deployed, such as doing canary/blue-green strategy or requiring a manual approval...
+Adding deployment configuration file helps `piped` know how the application should be deployed, such as doing canary/blue-green strategy or requiring a manual approval...
 That deployment configuration file is in `YAML` format as below:
 
 ``` yaml
