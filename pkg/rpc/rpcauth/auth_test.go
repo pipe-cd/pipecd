@@ -55,61 +55,61 @@ func TestMakePipedToken(t *testing.T) {
 
 func TestParsePipedToken(t *testing.T) {
 	testcases := []struct {
-		name      string
-		token     string
-		projectID string
-		pipedID   string
-		pipedKey  string
-		wantErr   bool
+		name          string
+		token         string
+		wantProjectID string
+		wantPipedID   string
+		wantPipedKey  string
+		wantErr       bool
 	}{
 		{
-			name:      "ok",
-			token:     "test-project-id,test-piped-id,test-piped-key",
-			projectID: "test-project-id",
-			pipedID:   "test-piped-id",
-			pipedKey:  "test-piped-key",
-			wantErr:   false,
+			name:          "ok",
+			token:         "test-project-id,test-piped-id,test-piped-key",
+			wantProjectID: "test-project-id",
+			wantPipedID:   "test-piped-id",
+			wantPipedKey:  "test-piped-key",
+			wantErr:       false,
 		},
 		{
-			name:      "malformed token: empty",
-			token:     "",
-			projectID: "",
-			pipedID:   "",
-			pipedKey:  "",
-			wantErr:   true,
+			name:          "malformed token: empty",
+			token:         "",
+			wantProjectID: "",
+			wantPipedID:   "",
+			wantPipedKey:  "",
+			wantErr:       true,
 		},
 		{
-			name:      "malformed token: missing projectID",
-			token:     ",test-piped-id,test-piped-key",
-			projectID: "",
-			pipedID:   "",
-			pipedKey:  "",
-			wantErr:   true,
+			name:          "malformed token: missing projectID",
+			token:         ",test-piped-id,test-piped-key",
+			wantProjectID: "",
+			wantPipedID:   "",
+			wantPipedKey:  "",
+			wantErr:       true,
 		},
 		{
-			name:      "malformed token: missing pipedID",
-			token:     "test-project-id,,test-piped-key",
-			projectID: "test-project-id",
-			pipedID:   "",
-			pipedKey:  "",
-			wantErr:   true,
+			name:          "malformed token: missing pipedID",
+			token:         "test-project-id,,test-piped-key",
+			wantProjectID: "test-project-id",
+			wantPipedID:   "",
+			wantPipedKey:  "",
+			wantErr:       true,
 		},
 		{
-			name:      "malformed token: missing pipedKey",
-			token:     "test-project-id,test-piped-id,",
-			projectID: "test-project-id",
-			pipedID:   "test-piped-id",
-			pipedKey:  "",
-			wantErr:   true,
+			name:          "malformed token: missing pipedKey",
+			token:         "test-project-id,test-piped-id,",
+			wantProjectID: "test-project-id",
+			wantPipedID:   "test-piped-id",
+			wantPipedKey:  "",
+			wantErr:       true,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			projectID, pipedID, pipedKey, err := parsePipedToken(tc.token)
 			assert.Equal(t, tc.wantErr, err != nil)
-			assert.Equal(t, tc.projectID, projectID)
-			assert.Equal(t, tc.pipedID, pipedID)
-			assert.Equal(t, tc.pipedKey, pipedKey)
+			assert.Equal(t, tc.wantProjectID, projectID)
+			assert.Equal(t, tc.wantPipedID, pipedID)
+			assert.Equal(t, tc.wantPipedKey, pipedKey)
 		})
 	}
 }
