@@ -159,9 +159,6 @@ service PipedService {
 
     // GetDesiredVersion returns the desired version of the given Piped.
     rpc GetDesiredVersion(GetDesiredVersionRequest) returns (GetDesiredVersionResponse) {}
-
-    // GetWebAddress returns the url of control plane.
-    rpc GetWebAddress(GetWebAddressRequest) returns (GetWebAddressResponse) {}
 }
 
 enum ListOrder {
@@ -196,6 +193,7 @@ message ReportPipedMetaRequest {
 
 message ReportPipedMetaResponse {
     string name = 1 [(validate.rules).string.min_len = 1];
+    string web_base_url = 2;
 }
 
 message GetEnvironmentRequest {
@@ -435,11 +433,4 @@ message GetDesiredVersionRequest {
 
 message GetDesiredVersionResponse {
     string version = 1;
-}
-
-message GetWebAddressRequest {
-}
-
-message GetWebAddressResponse {
-    string web_base_url = 1;
 }

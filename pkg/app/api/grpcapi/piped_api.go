@@ -157,7 +157,8 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 		return nil, err
 	}
 	return &pipedservice.ReportPipedMetaResponse{
-		Name: piped.Name,
+		Name:       piped.Name,
+		WebBaseUrl: a.webBaseURL,
 	}, nil
 }
 
@@ -988,10 +989,4 @@ func (a *PipedAPI) validateEnvBelongsToProject(ctx context.Context, envID, proje
 		return status.Error(codes.PermissionDenied, "requested environment doesn't belong to the project")
 	}
 	return nil
-}
-
-func (a *PipedAPI) GetWebAddress(_ context.Context, _ *pipedservice.GetWebAddressRequest) (*pipedservice.GetWebAddressResponse, error) {
-	return &pipedservice.GetWebAddressResponse{
-		WebBaseUrl: a.webBaseURL,
-	}, nil
 }
