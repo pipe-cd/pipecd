@@ -24,6 +24,7 @@ spec:
 | pipedKeyFile | string | The path to the file containing the generated key string for this piped. | Yes |
 | pipedKeyData | string | Base64 encoded string of Piped key. Either pipedKeyFile or pipedKeyData must be set. | Yes |
 | apiAddress | string | The address used to connect to the control-plane's API. | Yes |
+| webAddress | string | The address to the control-plane's Web. | No |
 | syncInterval | duration | How often to check whether an application should be synced. Default is `1m`. | No |
 | git | [Git](/docs/operator-manual/piped/configuration-reference/#git) | Git configuration needed for Git commands.  | No |
 | repositories | [][Repository](/docs/operator-manual/piped/configuration-reference/#gitrepository) | List of Git repositories this piped will handle. | No |
