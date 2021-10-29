@@ -78,6 +78,14 @@ func TestParsePipedToken(t *testing.T) {
 			pipedKey:  "",
 			wantErr:   true,
 		},
+		{
+			name: "malformed token: empty",
+			token: "",
+			projectID: "",
+			pipedID:   "",
+			pipedKey:  "",
+			wantErr:   true,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
