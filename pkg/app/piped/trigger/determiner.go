@@ -50,7 +50,9 @@ func NewDeterminer(repo git.Repo, targetCommit string, cg LastTriggeredCommitGet
 }
 
 // ShouldTrigger decides whether a given application should be triggered or not.
-func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application) (bool, error) {
+// Flag `ignorable` set to `false` will force check changes and use it to determine
+// the application deployment should be triggered or not, regardless of the user's configuration.
+func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application, ignorable bool) (bool, error) {
 	logger := d.logger.With(
 		zap.String("app", app.Name),
 		zap.String("app-id", app.Id),
@@ -62,7 +64,8 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application) 
 		return false, err
 	}
 
-	if !deployConfig.Trigger.DisableAutoDeployOnChange {
+	// Not trigger in case users disable auto trigger deploy on change and the change is ignorable.
+	if deployConfig.Trigger.DisableAutoDeployOnChange && ignorable {
 		logger.Info(fmt.Sprintf("auto trigger deployment disabled for application, hash: %s", d.targetCommit))
 		return false, nil
 	}
