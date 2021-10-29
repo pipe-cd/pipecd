@@ -159,7 +159,7 @@ func TestValidateAnalysisTemplateRef(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "invalid because the template name is an empty",
+			name:    "invalid due to empty template name",
 			tplName: "",
 			wantErr: true,
 		},
