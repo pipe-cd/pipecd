@@ -415,7 +415,7 @@ message ListEventsResponse {
 }
 
 message ReportEventsHandledRequest {
-    repeated string event_ids = 1;
+    repeated string event_ids = 1 [(validate.rules).repeated.min_items = 1];
 }
 
 message ReportEventsHandledResponse {
