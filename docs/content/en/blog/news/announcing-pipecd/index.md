@@ -2,7 +2,7 @@
 date: 2020-10-06
 title: "Announcing PipeCD"
 linkTitle: "Announcing PipeCD"
-weight: 1
+weight: 1000
 description: "Continuous Delivery for declarative Kubernetes, Serverless and Infrastructure applications"
 author: Le Van Nghia ([@nghialv](https://twitter.com/nghialv2607))
 images: 
