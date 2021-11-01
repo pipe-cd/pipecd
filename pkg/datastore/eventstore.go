@@ -32,6 +32,7 @@ var (
 type EventStore interface {
 	AddEvent(ctx context.Context, e model.Event) error
 	ListEvents(ctx context.Context, opts ListOptions) ([]*model.Event, error)
+	MarkEventHandled(ctx context.Context, eventID string) error
 }
 
 type eventStore struct {
@@ -80,4 +81,13 @@ func (s *eventStore) ListEvents(ctx context.Context, opts ListOptions) ([]*model
 		es = append(es, &e)
 	}
 	return es, nil
+}
+
+func (s *eventStore) MarkEventHandled(ctx context.Context, eventID string) error {
+	return s.ds.Update(ctx, EventModelKind, eventID, eventFactory, func(e interface{}) error {
+		event := e.(*model.Event)
+		event.Handled = true
+		event.HandledAt = s.nowFunc().Unix()
+		return nil
+	})
 }

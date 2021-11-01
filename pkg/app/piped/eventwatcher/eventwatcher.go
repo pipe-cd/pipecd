@@ -29,7 +29,9 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 
+	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -55,10 +57,15 @@ type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
+type apiClient interface {
+	ReportEventsHandled(ctx context.Context, req *pipedservice.ReportEventsHandledRequest, opts ...grpc.CallOption) (*pipedservice.ReportEventsHandledResponse, error)
+}
+
 type watcher struct {
 	config      *config.PipedSpec
 	eventGetter eventGetter
 	gitClient   gitClient
+	apiClient   apiClient
 	logger      *zap.Logger
 	wg          sync.WaitGroup
 
@@ -66,11 +73,12 @@ type watcher struct {
 	workingDir string
 }
 
-func NewWatcher(cfg *config.PipedSpec, eventGetter eventGetter, gitClient gitClient, logger *zap.Logger) Watcher {
+func NewWatcher(cfg *config.PipedSpec, eventGetter eventGetter, gitClient gitClient, apiClient apiClient, logger *zap.Logger) Watcher {
 	return &watcher{
 		config:      cfg,
 		eventGetter: eventGetter,
 		gitClient:   gitClient,
+		apiClient:   apiClient,
 		logger:      logger.Named("event-watcher"),
 	}
 }
@@ -215,21 +223,32 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 	}
 	defer tmpRepo.Clean()
 
+	handledEventIDs := make([]string, 0, len(events))
 	for _, e := range events {
-		if err := w.commitFiles(ctx, e, tmpRepo, commitMsg); err != nil {
+		latestEvent, ok := w.eventGetter.GetLatest(ctx, e.Name, e.Labels)
+		if !ok {
+			continue
+		}
+		if latestEvent.Handled {
+			continue
+		}
+		if err := w.commitFiles(ctx, latestEvent.Data, e, tmpRepo, commitMsg); err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
 			continue
 		}
+		handledEventIDs = append(handledEventIDs, latestEvent.Id)
 	}
-	return tmpRepo.Push(ctx, tmpRepo.GetClonedBranch())
+	if err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch()); err != nil {
+		return fmt.Errorf("failed to push commits: %w", err)
+	}
+	if _, err := w.apiClient.ReportEventsHandled(ctx, &pipedservice.ReportEventsHandledRequest{EventIds: handledEventIDs}); err != nil {
+		return fmt.Errorf("failed to report that events are handled: %w", err)
+	}
+	return nil
 }
 
 // commitFiles commits changes if the data in Git is different from the latest event.
-func (w *watcher) commitFiles(ctx context.Context, eventCfg config.EventWatcherEvent, repo git.Repo, commitMsg string) error {
-	latestEvent, ok := w.eventGetter.GetLatest(ctx, eventCfg.Name, eventCfg.Labels)
-	if !ok {
-		return nil
-	}
+func (w *watcher) commitFiles(ctx context.Context, latestData string, eventCfg config.EventWatcherEvent, repo git.Repo, commitMsg string) error {
 	// Determine files to be changed by comparing with the latest event.
 	changes := make(map[string][]byte, len(eventCfg.Replacements))
 	for _, r := range eventCfg.Replacements {
@@ -241,13 +260,13 @@ func (w *watcher) commitFiles(ctx context.Context, eventCfg config.EventWatcherE
 		)
 		switch {
 		case r.YAMLField != "":
-			newContent, upToDate, err = modifyYAML(path, r.YAMLField, latestEvent.Data)
+			newContent, upToDate, err = modifyYAML(path, r.YAMLField, latestData)
 		case r.JSONField != "":
 			// TODO: Empower Event watcher to parse JSON format
 		case r.HCLField != "":
 			// TODO: Empower Event watcher to parse HCL format
 		case r.Regex != "":
-			newContent, upToDate, err = modifyText(path, r.Regex, latestEvent.Data)
+			newContent, upToDate, err = modifyText(path, r.Regex, latestData)
 		}
 		if err != nil {
 			return err
@@ -266,7 +285,7 @@ func (w *watcher) commitFiles(ctx context.Context, eventCfg config.EventWatcherE
 	}
 
 	if commitMsg == "" {
-		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, latestEvent.Data, eventCfg.Name)
+		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, latestData, eventCfg.Name)
 	}
 	if err := repo.CommitChanges(ctx, repo.GetClonedBranch(), commitMsg, false, changes); err != nil {
 		return fmt.Errorf("failed to perform git commit: %w", err)

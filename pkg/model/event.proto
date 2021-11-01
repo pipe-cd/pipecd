@@ -33,7 +33,11 @@ message Event {
     map<string,string> labels = 5;
     // A fixed-length identifier consists of its own name and labels.
     string event_key = 6 [(validate.rules).string.min_len = 1];
+    // True if it have been handled.
+    bool handled = 7;
 
+    // Unix time when the event was handled.
+    int64 handled_at = 13;
     // Unix time when the event was created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     // Unix time of the last time when the event was updated.
