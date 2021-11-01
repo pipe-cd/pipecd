@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ApplicationGitRepository } from "pipe/pkg/app/web/model/common_pb";
 import * as applicationAPI from "~/api/applications";
 import { ApplicationKind } from "../applications";
+import { ApplicationTag } from "pipe/pkg/app/web/api_client/service_pb";
 
 const MODULE_NAME = "updateApplication";
 
@@ -28,7 +29,7 @@ export const updateApplication = createAsyncThunk<
     configFilename?: string;
     kind: ApplicationKind;
     cloudProvider: string;
-    tagsList: string[];
+    tagsList: ApplicationTag.AsObject[];
   }
 >(`${MODULE_NAME}/update`, async (values) => {
   await applicationAPI.updateApplication({

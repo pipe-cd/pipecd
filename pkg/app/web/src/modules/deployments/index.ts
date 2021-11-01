@@ -102,7 +102,7 @@ const convertFilterOptions = (
     statusesList: options.status
       ? [parseInt(options.status, 10) as DeploymentStatus]
       : [],
-    tagsList: [], // TODO: Specify tags for ListDeployments
+    tagIdsList: [], // TODO: Specify tags for ListDeployments
   };
 };
 

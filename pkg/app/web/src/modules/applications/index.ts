@@ -14,6 +14,9 @@ import {
   ApplicationGitRepository,
   ApplicationKind,
 } from "pipe/pkg/app/web/model/common_pb";
+import {
+  ApplicationTag,
+} from "pipe/pkg/app/web/api_client/service_pb";
 import { SyncStrategy } from "../deployments";
 import { fetchCommand, CommandStatus, Command } from "../commands";
 import type { AppState } from "~/store";
@@ -71,7 +74,7 @@ export const fetchApplicationsByEnv = createAsyncThunk<
       kindsList: [],
       name: "",
       syncStatusesList: [],
-      tagsList: [],
+      tagIdsList: [],
     },
   });
   return applicationsList as Application.AsObject[];
@@ -108,7 +111,7 @@ export const addApplication = createAsyncThunk<
     configFilename?: string;
     kind: ApplicationKind;
     cloudProvider: string;
-    tagsList: string[];
+    tagsList: ApplicationTag.AsObject[];
   }
 >(`${MODULE_NAME}/add`, async (props) => {
   const { applicationId } = await applicationsAPI.addApplication({

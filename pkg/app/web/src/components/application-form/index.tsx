@@ -156,7 +156,10 @@ export interface ApplicationFormValue {
     remote: string;
     branch: string;
   };
-  tagsList: string[],
+  tagsList: {
+    id: string;
+    name: string;
+  }[],
 }
 
 export type ApplicationFormProps = FormikProps<ApplicationFormValue> & {
