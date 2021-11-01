@@ -7,7 +7,7 @@ description: "Development status update to recap what happened in October"
 author: Le Van Nghia ([@nghialv](https://twitter.com/nghialv2607))
 ---
 
-_Published by the PipeCD dev team every month, this update will provide you with news and updates about the project! Please click [here](/blog/2021/10/26/november-2021-update/) if you want to see the last status update._
+_Published by the PipeCD dev team every month, this update will provide you with news and updates about the project! Please click [here](/blog/2021/11/01/november-2021-update/) if you want to see the last status update._
 
 #### What's changed
 ---
