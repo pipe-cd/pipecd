@@ -36,10 +36,10 @@ message Event {
     // True if it have been handled.
     bool handled = 7;
 
+    // Unix time when the event was handled.
+    int64 handled_at = 13;
     // Unix time when the event was created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     // Unix time of the last time when the event was updated.
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
-    // Unix time when the event was handled.
-    int64 handled_at = 16;
 }

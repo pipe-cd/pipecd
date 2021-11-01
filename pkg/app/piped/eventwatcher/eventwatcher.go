@@ -58,7 +58,7 @@ type gitClient interface {
 }
 
 type apiClient interface {
-	ReportEventHandled(ctx context.Context, req *pipedservice.ReportEventHandledRequest, opts ...grpc.CallOption) (*pipedservice.ReportEventHandledResponse, error)
+	ReportEventsHandled(ctx context.Context, req *pipedservice.ReportEventsHandledRequest, opts ...grpc.CallOption) (*pipedservice.ReportEventsHandledResponse, error)
 }
 
 type watcher struct {
@@ -225,36 +225,30 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 
 	handledEventIDs := make([]string, 0, len(events))
 	for _, e := range events {
-		id, err := w.commitFiles(ctx, e, tmpRepo, commitMsg)
-		if err != nil {
+		latestEvent, ok := w.eventGetter.GetLatest(ctx, e.Name, e.Labels)
+		if !ok {
+			continue
+		}
+		if latestEvent.Handled {
+			continue
+		}
+		if err := w.commitFiles(ctx, latestEvent.Data, e, tmpRepo, commitMsg); err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
 			continue
 		}
-		if id != "" {
-			handledEventIDs = append(handledEventIDs, id)
-		}
+		handledEventIDs = append(handledEventIDs, latestEvent.Id)
 	}
 	if err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch()); err != nil {
 		return fmt.Errorf("failed to push commits: %w", err)
 	}
-	for _, id := range handledEventIDs {
-		if _, err := w.apiClient.ReportEventHandled(ctx, &pipedservice.ReportEventHandledRequest{EventId: id}); err != nil {
-			return fmt.Errorf("failed to report that event %q is handled: %w", id, err)
-		}
+	if _, err := w.apiClient.ReportEventsHandled(ctx, &pipedservice.ReportEventsHandledRequest{EventIds: handledEventIDs}); err != nil {
+		return fmt.Errorf("failed to report that events are handled: %w", err)
 	}
 	return nil
 }
 
 // commitFiles commits changes if the data in Git is different from the latest event.
-// If it handled the latest event, it returns its id.
-func (w *watcher) commitFiles(ctx context.Context, eventCfg config.EventWatcherEvent, repo git.Repo, commitMsg string) (latestEventID string, err error) {
-	latestEvent, ok := w.eventGetter.GetLatest(ctx, eventCfg.Name, eventCfg.Labels)
-	if !ok {
-		return "", nil
-	}
-	if latestEvent.Handled {
-		return "", nil
-	}
+func (w *watcher) commitFiles(ctx context.Context, latestData string, eventCfg config.EventWatcherEvent, repo git.Repo, commitMsg string) error {
 	// Determine files to be changed by comparing with the latest event.
 	changes := make(map[string][]byte, len(eventCfg.Replacements))
 	for _, r := range eventCfg.Replacements {
@@ -266,38 +260,38 @@ func (w *watcher) commitFiles(ctx context.Context, eventCfg config.EventWatcherE
 		)
 		switch {
 		case r.YAMLField != "":
-			newContent, upToDate, err = modifyYAML(path, r.YAMLField, latestEvent.Data)
+			newContent, upToDate, err = modifyYAML(path, r.YAMLField, latestData)
 		case r.JSONField != "":
 			// TODO: Empower Event watcher to parse JSON format
 		case r.HCLField != "":
 			// TODO: Empower Event watcher to parse HCL format
 		case r.Regex != "":
-			newContent, upToDate, err = modifyText(path, r.Regex, latestEvent.Data)
+			newContent, upToDate, err = modifyText(path, r.Regex, latestData)
 		}
 		if err != nil {
-			return "", err
+			return err
 		}
 		if upToDate {
 			continue
 		}
 
 		if err := os.WriteFile(path, newContent, os.ModePerm); err != nil {
-			return "", fmt.Errorf("failed to write file: %w", err)
+			return fmt.Errorf("failed to write file: %w", err)
 		}
 		changes[r.File] = newContent
 	}
 	if len(changes) == 0 {
-		return latestEvent.Id, nil
+		return nil
 	}
 
 	if commitMsg == "" {
-		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, latestEvent.Data, eventCfg.Name)
+		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, latestData, eventCfg.Name)
 	}
 	if err := repo.CommitChanges(ctx, repo.GetClonedBranch(), commitMsg, false, changes); err != nil {
-		return "", fmt.Errorf("failed to perform git commit: %w", err)
+		return fmt.Errorf("failed to perform git commit: %w", err)
 	}
 	w.logger.Info(fmt.Sprintf("event watcher will update values of Event %q", eventCfg.Name))
-	return latestEvent.Id, nil
+	return nil
 }
 
 // modifyYAML returns a new YAML content as a first returned value if the value of given

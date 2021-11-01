@@ -857,26 +857,27 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 	}, nil
 }
 
-func (a *PipedAPI) ReportEventHandled(ctx context.Context, req *pipedservice.ReportEventHandledRequest) (*pipedservice.ReportEventHandledResponse, error) {
+func (a *PipedAPI) ReportEventsHandled(ctx context.Context, req *pipedservice.ReportEventsHandledRequest) (*pipedservice.ReportEventsHandledResponse, error) {
 	_, _, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	err = a.eventStore.MarkEventHandled(ctx, req.EventId)
-	if err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return nil, status.Errorf(codes.NotFound, "event %q is not found", req.EventId)
-		default:
-			a.logger.Error("failed to mark event as handled",
-				zap.String("event-id", req.EventId),
-				zap.Error(err),
-			)
-			return nil, status.Errorf(codes.Internal, "failed to mark event %q as handled", req.EventId)
+	for _, id := range req.EventIds {
+		if err := a.eventStore.MarkEventHandled(ctx, id); err != nil {
+			switch err {
+			case datastore.ErrNotFound:
+				return nil, status.Errorf(codes.NotFound, "event %q is not found", id)
+			default:
+				a.logger.Error("failed to mark event as handled",
+					zap.String("event-id", id),
+					zap.Error(err),
+				)
+				return nil, status.Errorf(codes.Internal, "failed to mark event %q as handled", id)
+			}
 		}
 	}
-	return &pipedservice.ReportEventHandledResponse{}, nil
+	return &pipedservice.ReportEventsHandledResponse{}, nil
 }
 
 func (a *PipedAPI) GetLatestAnalysisResult(ctx context.Context, req *pipedservice.GetLatestAnalysisResultRequest) (*pipedservice.GetLatestAnalysisResultResponse, error) {

@@ -150,8 +150,8 @@ service PipedService {
 
     // ListEvents returns a list of Events inside the given range.
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
-    // ReportEventHandled marks the event as handled.
-    rpc ReportEventHandled(ReportEventHandledRequest) returns (ReportEventHandledResponse) {}
+    // ReportEventHandled marks the given all events as handled.
+    rpc ReportEventsHandled(ReportEventsHandledRequest) returns (ReportEventsHandledResponse) {}
 
     // GetLatestAnalysisResult returns the most successful analysis result.
     rpc GetLatestAnalysisResult(GetLatestAnalysisResultRequest) returns (GetLatestAnalysisResultResponse) {}
@@ -414,11 +414,11 @@ message ListEventsResponse {
     repeated pipe.model.Event events = 1;
 }
 
-message ReportEventHandledRequest {
-    string event_id = 1 [(validate.rules).string.min_len = 1];
+message ReportEventsHandledRequest {
+    repeated string event_ids = 1;
 }
 
-message ReportEventHandledResponse {
+message ReportEventsHandledResponse {
 }
 
 message GetLatestAnalysisResultRequest {
