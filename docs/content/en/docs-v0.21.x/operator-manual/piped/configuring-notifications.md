@@ -54,9 +54,6 @@ spec:
         envs:
           - dev
         receiver: prod-slack-channel
-      # Sending all events a CI service.
-      - name: all-events-to-ci
-        receiver: ci-webhook
     receivers:
       - name: dev-slack-channel
         slack:
@@ -64,9 +61,6 @@ spec:
       - name: prod-slack-channel
         slack:
           hookURL: https://slack.com/prod
-      - name: ci-webhook
-        webhook:
-          url: https://pipecd.dev/dev-hook
 ```
 
 
@@ -81,8 +75,24 @@ A piped has been started
 </p>
 
 
-For detailed configuration, please check the [configuration reference](/docs/operator-manual/piped/configuration-reference/#notifications) section.
+For detailed configuration, please check the [configuration reference for Notifications](/docs/operator-manual/piped/configuration-reference/#notifications) section.
 
-### Sending notifications to webhook endpoints
+### Sending notifications to external services via webhook
 
-> TBA
+``` yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  notifications:
+    routes:
+      # Sending all events an external service.
+      - name: all-events-to-a-external-service
+        receiver: a-webhook-service
+    receivers:
+      - name: a-webhook-service
+        webhook:
+          url: {WEBHOOK_SERVICE_URL}
+          signatureValue: {RANDOM_SIGNATURE_STRING}
+```
+
+For detailed configuration, please check the [configuration reference for NotificationReceiverWebhook](/docs/operator-manual/piped/configuration-reference/#notificationreceiverwebhook) section.
