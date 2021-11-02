@@ -119,6 +119,10 @@ prepare-release:
 prepare-version-docs:
 	./hack/prepare-version-docs.sh $(version)
 
+.PHONY: sync-stable-docs
+sync-stable-docs:
+	./hack/sync-stable-docs.sh $(version)
+
 .PHONY: update-docsy
 update-docsy:
 	rm -rf docs/themes/docsy
