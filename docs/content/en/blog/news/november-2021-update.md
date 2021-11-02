@@ -69,7 +69,7 @@ Sum up, you can choose one of the following four strategies which fits your use 
 
 {{< tabpane >}}
 {{< tab lang="yaml" header="Using PREVIOUS strategy" >}}
-# ADA by comparing between metrics data of current and previous deployment.
+# ADA by comparing the time series of metrics data between the running and the last successful deployment.
 - name: ANALYSIS
   with:
     duration: 30m
@@ -81,7 +81,7 @@ Sum up, you can choose one of the following four strategies which fits your use 
       query: sum (rate(http_requests_total{status=~"5.*"}[5m])) / sum (rate(http_requests_total[5m]))
 {{< /tab >}}
 {{< tab lang="yaml" header="Using CANARY_BASELINE strategy" >}}
-# Deploy Lambda function by a Zip packing source code stored in S3.
+# ADA by comparing the time series of metrics data between the Canary and Baseline variants.
 - name: ANALYSIS
   with:
     duration: 30m
@@ -93,7 +93,7 @@ Sum up, you can choose one of the following four strategies which fits your use 
       query: sum (rate(http_requests_total{job="foo-{{ .Variant.Name }}", status=~"5.*"}[5m])) / sum (rate(http_requests_total{job="foo-{{ .Variant.Name }}"}[5m]))
 {{< /tab >}}
 {{< tab lang="yaml" header="Using THRESHOLD strategy" >}}
-# Deploy Lambda function by using a container image.
+# ADA by checking the given queries againts the given thresholds.
 - name: ANALYSIS
   with:
     duration: 30m
