@@ -63,14 +63,9 @@ func (s *store) GetStateSnapshot(ctx context.Context, applicationID string) (*mo
 
 	fileResp, err := s.backend.Get(ctx, applicationID)
 	if err != nil {
-		if errors.Is(err, filestore.ErrNotFound) {
-			s.logger.Warn("application live state is not found",
-				zap.String("app-id", applicationID),
-				zap.Error(err),
-			)
-		} else {
+		if !errors.Is(err, filestore.ErrNotFound) {
 			s.logger.Error("failed to get application live state from filestore",
-				zap.String("app-id", applicationID),
+				zap.String("application-id", applicationID),
 				zap.Error(err),
 			)
 		}
