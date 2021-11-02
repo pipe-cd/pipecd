@@ -113,7 +113,7 @@ Check out its [documentation](/docs/user-guide/automated-deployment-analysis/#st
 
 Any PipeCD event (deployment triggered, planned, analysis completed...) can be configured to send to external services like Slack or a Webhook service. While forwarding those events to a chat service helps developers have a quick and convenient way to know the deployment’s current status, forwarding to a Webhook service may be useful for triggering other related tasks.
 
-Until now, only Slack has been supported. From `v0.21.0` you can configure your Pipeds to send its events to external services via Webhook. See [here](http://localhost:1313/docs/operator-manual/piped/configuring-notifications/#sending-notifications-to-external-services-via-webhook) to know how to configure.
+Until now, only Slack has been supported. From `v0.21.0` you can configure your Pipeds to send its events to external services via Webhook. See [here](/docs/operator-manual/piped/configuring-notifications/#sending-notifications-to-external-services-via-webhook) to know how to configure.
 
 Besides that, events sent to Slack can be configured to mention one or multiple Slack users. It would be helpful to prevent developers from missing important events.
 
