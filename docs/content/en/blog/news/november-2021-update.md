@@ -169,7 +169,7 @@ Two members from PipeCD team did talk about PipeCD at some local events in Japan
 The team continues actively working on improving PipeCD product. Besides fixing the reported issues, enhancing the existing features, here are some new features the team is currently working on:
 
 - Deployment Chain - Allow rolling out to multiple clusters gradually or promoting across environments
-- Resource Tagging - A better way to group and filter resouces such as application, deployment
+- Resource Tagging - A better way to group and filter PipeCD resources such as applications, deployments
 
 If you have any features want to request or find out a problem, please let us know by creating issues to the [pipe-cd/pipe](https://github.com/pipe-cd/pipe/issues) repository.
 
