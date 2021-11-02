@@ -102,7 +102,7 @@ Sum up, you can choose one of the following four strategies which fits your use 
       provider: my-prometheus
       interval: 5m
       expected:
-      max: 0.01
+        max: 0.01
       query: sum (rate(http_requests_total{status=~"5.*"}[5m])) / sum (rate(http_requests_total[5m]))
 {{< /tab >}}
 {{< /tabpane >}}
