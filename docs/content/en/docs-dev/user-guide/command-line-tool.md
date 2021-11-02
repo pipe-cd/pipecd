@@ -96,7 +96,7 @@ pipectl application add \
     --piped-id=PIPED_ID \
     --cloud-provider=kubernetes-default \
     --repo-id=examples \
-    --app-dir=kubernetes/simple \
+    --app-dir=kubernetes/simple
 ```
 
 Run `help` to know what command flags should be specified:
