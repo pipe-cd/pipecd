@@ -2,7 +2,7 @@
 date: 2021-04-01
 title: "Migrate Control Plane datastore to MySQL"
 linkTitle: "Migrate Control Plane datastore from MongoDB to MySQL"
-weight: 2
+weight: 999
 description: "This page describes how to migrate Control Plane' datastore from MongoDB to MySQL."
 author: Khanh Tran ([@khanhtc1202](https://twitter.com/khanhtc1202))
 ---
