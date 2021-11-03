@@ -14,19 +14,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# parse params
-while [[ -z "$1" ]]
-do
-    echo "Missing docs version..."
-    exit 1
-done
+# get version from the release/RELEASE file and create the version docs string
+# for example, with the release file content:
+# version: v0.21.0
+# the version docs string will be v0.21.x
+LATEST_DOCS_VERSION="$(cut -d ' ' -f 2 release/RELEASE | cut -d '.' -f -2).x"
 
-echo "Sync stable docs with docs at version $1"
+# parse params
+if [[ -z "$1" ]]
+then
+  STABLE_DOCS_VERSION=$LATEST_DOCS_VERSION
+else
+  STABLE_DOCS_VERSION=$1
+fi
+
+echo "Sync stable docs with docs at version $STABLE_DOCS_VERSION"
 
 CONTENT_DIR=docs/content/en
 
 rm -rf $CONTENT_DIR/docs
-cp -rf $CONTENT_DIR/docs-$1 $CONTENT_DIR/docs
+cp -rf $CONTENT_DIR/docs-$STABLE_DOCS_VERSION $CONTENT_DIR/docs
 cat <<EOT > $CONTENT_DIR/docs/_index.md
 ---
 title: "Welcome to PipeCD"
@@ -38,4 +45,4 @@ menu:
 ---
 EOT
 
-echo "Stable version docs has been synced successfully with docs at version $1"
+echo "Stable version docs has been synced successfully with docs at version $STABLE_DOCS_VERSION"
