@@ -277,7 +277,7 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 			select {
 			case <-ticker.C:
 				// Don't return an error to continue piped execution.
-				_ = execute()
+				execute()
 
 			case <-ctx.Done():
 				// Stop old piped process and clean its data.
