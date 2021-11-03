@@ -276,11 +276,8 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 		for {
 			select {
 			case <-ticker.C:
-				if err := execute(); err != nil {
-					input.Logger.Error("LAUNCHER: failed while checking whether relaunch required or relaunching. Skip the loop this time", zap.Error(err))
-					// Don't return an error to continue piped execution.
-					return nil
-				}
+				// Don't return an error to continue piped execution.
+				_ = execute()
 
 			case <-ctx.Done():
 				// Stop old piped process and clean its data.
