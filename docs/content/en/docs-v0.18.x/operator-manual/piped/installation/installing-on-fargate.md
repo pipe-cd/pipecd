@@ -155,8 +155,8 @@ A sample Service definition to control piped task deployment.
   "desiredCount": 1, # This must be 1.
   "taskDefinition": "{PIPED_TASK_DEFINITION_ARN}",
   "deploymentConfiguration": {
-    "minimumHealthyPercent": 100,
-    "maximumPercent": 110
+    "minimumHealthyPercent": 0,
+    "maximumPercent": 100
   },
   "schedulingStrategy": "REPLICA",
   "launchType": "FARGATE",
