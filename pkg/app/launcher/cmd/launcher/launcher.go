@@ -267,12 +267,20 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 
 	group.Go(func() error {
 		// Execute the first time immediately.
-		execute()
+		if err := execute(); err != nil {
+			input.Logger.Error("LAUNCHER: failed while launching new Piped", zap.Error(err))
+			// Return an error if the initial startup fails.
+			return err
+		}
 
 		for {
 			select {
 			case <-ticker.C:
-				execute()
+				if err := execute(); err != nil {
+					input.Logger.Error("LAUNCHER: failed while checking whether relaunch required or relaunching. Skip the loop this time", zap.Error(err))
+					// Don't return an error to continue piped execution.
+					return nil
+				}
 
 			case <-ctx.Done():
 				// Stop old piped process and clean its data.
