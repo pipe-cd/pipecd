@@ -108,6 +108,14 @@ func determineResourceHealth(key ResourceKey, obj *unstructured.Unstructured) (s
 		return determineClusterRoleHealth(obj)
 	case KindClusterRoleBinding:
 		return determineClusterRoleBindingHealth(obj)
+	case KindVirtualService:
+		return determineVirtualService(obj)
+	case KindDestinationRule:
+		return determineDestinationRule(obj)
+	case KindGateway:
+		return determineGateway(obj)
+	case KindServiceEntry:
+		return determineServiceEntry(obj)
 	default:
 		desc = "Unimplemented or unknown resource"
 		return
@@ -135,6 +143,30 @@ func determineClusterRoleHealth(obj *unstructured.Unstructured) (status model.Ku
 }
 
 func determineClusterRoleBindingHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
+	status = model.KubernetesResourceState_HEALTHY
+	return
+}
+
+func determineVirtualService(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
+	status = model.KubernetesResourceState_HEALTHY
+	return
+}
+
+func determineDestinationRule(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
+	status = model.KubernetesResourceState_HEALTHY
+	return
+}
+
+func determineGateway(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
+	status = model.KubernetesResourceState_HEALTHY
+	return
+}
+
+func determineServiceEntry(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
 	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
 	status = model.KubernetesResourceState_HEALTHY
 	return

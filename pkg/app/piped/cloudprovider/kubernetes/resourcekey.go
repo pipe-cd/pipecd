@@ -76,6 +76,10 @@ const (
 	KindRoleBinding           = "RoleBinding"
 	KindClusterRole           = "ClusterRole"
 	KindClusterRoleBinding    = "ClusterRoleBinding"
+	KindVirtualService        = "VirtualService"
+	KindDestinationRule       = "DestinationRule"
+	KindGateway               = "Gateway"
+	KindServiceEntry          = "ServiceEntry"
 
 	DefaultNamespace = "default"
 )
