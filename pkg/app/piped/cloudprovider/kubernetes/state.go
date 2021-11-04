@@ -112,8 +112,6 @@ func determineResourceHealth(key ResourceKey, obj *unstructured.Unstructured) (s
 		desc = "Unimplemented or unknown resource"
 		return
 	}
-
-	return
 }
 
 func determineRoleHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
