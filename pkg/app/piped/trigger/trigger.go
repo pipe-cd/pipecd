@@ -45,6 +45,7 @@ type apiClient interface {
 	GetApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.GetApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetApplicationMostRecentDeploymentResponse, error)
 	CreateDeployment(ctx context.Context, in *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error)
 	ReportApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.ReportApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationMostRecentDeploymentResponse, error)
+	ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error)
 }
 
 type gitClient interface {
@@ -80,6 +81,8 @@ type Trigger struct {
 	gitRepos          map[string]git.Repo
 	gracePeriod       time.Duration
 	logger            *zap.Logger
+
+	nowFunc func() time.Time
 }
 
 // NewTrigger creates a new instance for Trigger.
@@ -116,6 +119,7 @@ func NewTrigger(
 		gitRepos:          make(map[string]git.Repo, len(cfg.Repositories)),
 		gracePeriod:       gracePeriod,
 		logger:            logger.Named("trigger"),
+		nowFunc:           time.Now,
 	}
 
 	return t, nil
@@ -233,6 +237,7 @@ func (t *Trigger) checkNewCommits(ctx context.Context) error {
 			shouldTrigger, err := d.ShouldTrigger(ctx, app)
 			if err != nil {
 				t.logger.Error(fmt.Sprintf("failed to check application: %s", app.Id), zap.Error(err))
+				t.reportDeploymentFailed(ctx, fmt.Sprintf("failed to get the list of mentions %v", err))
 				continue
 			}
 
