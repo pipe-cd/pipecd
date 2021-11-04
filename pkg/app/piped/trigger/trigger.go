@@ -234,7 +234,7 @@ func (t *Trigger) checkNewCommits(ctx context.Context) error {
 			shouldTrigger, err := d.ShouldTrigger(ctx, app)
 			if err != nil {
 				t.logger.Error(fmt.Sprintf("failed to check application: %s", app.Id), zap.Error(err))
-				t.reportDeploymentFailed(ctx, fmt.Sprintf("failed to get the list of mentions %v", err))
+				t.reportDeploymentFailed(fmt.Sprintf("failed to get the list of mentions %v", err))
 				continue
 			}
 
