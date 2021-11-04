@@ -87,6 +87,14 @@ The newly added configuration fields as follow:
 |-|-|-|-|
 | commitPrefix | string | The prefix of the commit message that used to trigger running one deployment flow | Yes |
 
+## Web view
+
+For the next step, we will postpone the implementation for `deployment flow` page, everything around application and deployment are remained since the main thing that changed due to tasks for this feature are mainly on the server side. To make users have a more clear view to know which deployment is in deployment flow and which is just a single triggered lets add one more stage to the deployment plan of the first deployment in the flow
+
+![image](assets/deployment-flow-post-sync.png)
+
+This stage will be added in the planning step by the piped in charge for the first deployment in flow. Piped will base on the `postSync.flow.conditions` to decide should add this stage or not.
+
 With this approach, we can
 - have a place where the can configure the deployment flow directly (the deployment configuration YAML of the first application in the flow), we can review it and manage it on Git as other current deployment configuration
 - all pipeds that are in charge to deploy applications in the deployment flow only need to care about the deployment of its controlling applications, everything else will be triggered via sync command on the control-plane side, so no need to change anything about execution and no extra shared information across applications/piped's configuration is required
