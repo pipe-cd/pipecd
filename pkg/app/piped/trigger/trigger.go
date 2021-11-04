@@ -81,8 +81,6 @@ type Trigger struct {
 	gitRepos          map[string]git.Repo
 	gracePeriod       time.Duration
 	logger            *zap.Logger
-
-	nowFunc func() time.Time
 }
 
 // NewTrigger creates a new instance for Trigger.
@@ -119,7 +117,6 @@ func NewTrigger(
 		gitRepos:          make(map[string]git.Repo, len(cfg.Repositories)),
 		gracePeriod:       gracePeriod,
 		logger:            logger.Named("trigger"),
-		nowFunc:           time.Now,
 	}
 
 	return t, nil
