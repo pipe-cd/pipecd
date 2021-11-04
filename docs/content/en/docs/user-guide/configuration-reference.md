@@ -296,6 +296,7 @@ One of `yamlField` or `regex` is required.
 | terraformVersion | string | The version of terraform should be used. Empty means the pre-installed version will be used. | No |
 | vars | []string | List of variables that will be set directly on terraform commands with `-var` flag. The variable must be formatted by `key=value`. | No |
 | varFiles | []string | List of variable files that will be set on terraform commands with `-var-file` flag. | No |
+| commandFlags | [TerraformCommandFlags](/docs/user-guide/configuration-reference/#terraformcommandflags) | List of additional flags will be used while execute terraform commands. | No |
 | autoRollback | bool | Automatically reverts all changes from all stages when one of them failed. | No |
 
 ## TerraformQuickSync
@@ -303,6 +304,15 @@ One of `yamlField` or `regex` is required.
 | Field | Type | Description | Required |
 |-|-|-|-|
 | retries | int | How many times to retry applying terraform changes. Default is `0`. | No |
+
+## TerraformCommandFlags
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| shared | []string | List of additional flags used for all Terraform commands. | No |
+| init | []string | List of additional flags used for Terraform `init` command. | No |
+| plan | []string | List of additional flags used for Terraform `plan` command. | No |
+| apply | []string | List of additional flags used for Terraform `apply` command. | No |
 
 ## CloudRunDeploymentInput
 
