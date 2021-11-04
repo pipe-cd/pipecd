@@ -213,7 +213,7 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		md := event.Metadata.(*model.NotificationEventPipedStopped)
 		title = "A piped has been stopped"
 		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId)
-	
+
 	case model.NotificationEventType_EVENT_PIPED_FAILED:
 		md := event.Metadata.(*model.NotificationEventPipedFailed)
 		title = "A piped failed to start"
