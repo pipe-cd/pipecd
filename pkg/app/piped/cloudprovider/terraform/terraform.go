@@ -29,6 +29,11 @@ type options struct {
 	noColor  bool
 	vars     []string
 	varFiles []string
+
+	sharedFlags []string
+	initFlags   []string
+	planFlags   []string
+	applyFlags  []string
 }
 
 type Option func(*options)
@@ -48,6 +53,15 @@ func WithVars(vars []string) Option {
 func WithVarFiles(files []string) Option {
 	return func(opts *options) {
 		opts.varFiles = files
+	}
+}
+
+func WithAdditionalFlags(shared, init, plan, apply []string) Option {
+	return func(opts *options) {
+		opts.sharedFlags = append(opts.sharedFlags, shared...)
+		opts.initFlags = append(opts.initFlags, init...)
+		opts.planFlags = append(opts.planFlags, plan...)
+		opts.applyFlags = append(opts.applyFlags, apply...)
 	}
 }
 
@@ -89,6 +103,9 @@ func (t *Terraform) Init(ctx context.Context, w io.Writer) error {
 		"init",
 	}
 	args = append(args, t.makeCommonCommandArgs()...)
+	for _, f := range t.options.initFlags {
+		args = append(args, f)
+	}
 
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir
@@ -143,6 +160,9 @@ func (t *Terraform) Plan(ctx context.Context, w io.Writer) (PlanResult, error) {
 		"-detailed-exitcode",
 	}
 	args = append(args, t.makeCommonCommandArgs()...)
+	for _, f := range t.options.planFlags {
+		args = append(args, f)
+	}
 
 	var buf bytes.Buffer
 	stdout := io.MultiWriter(w, &buf)
@@ -173,6 +193,9 @@ func (t *Terraform) makeCommonCommandArgs() (args []string) {
 	}
 	for _, f := range t.options.varFiles {
 		args = append(args, fmt.Sprintf("-var-file=%s", f))
+	}
+	for _, f := range t.options.sharedFlags {
+		args = append(args, f)
 	}
 	return
 }
@@ -237,6 +260,9 @@ func (t *Terraform) Apply(ctx context.Context, w io.Writer) error {
 		"-input=false",
 	}
 	args = append(args, t.makeCommonCommandArgs()...)
+	for _, f := range t.options.applyFlags {
+		args = append(args, f)
+	}
 
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir

@@ -89,11 +89,15 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 }
 
 func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
-	cmd := provider.NewTerraform(
-		e.terraformPath,
-		e.appDir,
-		provider.WithVars(e.vars),
-		provider.WithVarFiles(e.deployCfg.Input.VarFiles),
+	var (
+		flags = e.deployCfg.Input.CommandFlags
+		cmd   = provider.NewTerraform(
+			e.terraformPath,
+			e.appDir,
+			provider.WithVars(e.vars),
+			provider.WithVarFiles(e.deployCfg.Input.VarFiles),
+			provider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
+		)
 	)
 
 	if ok := showUsingVersion(ctx, cmd, e.LogPersister); !ok {
@@ -132,11 +136,15 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 }
 
 func (e *deployExecutor) ensurePlan(ctx context.Context) model.StageStatus {
-	cmd := provider.NewTerraform(
-		e.terraformPath,
-		e.appDir,
-		provider.WithVars(e.vars),
-		provider.WithVarFiles(e.deployCfg.Input.VarFiles),
+	var (
+		flags = e.deployCfg.Input.CommandFlags
+		cmd   = provider.NewTerraform(
+			e.terraformPath,
+			e.appDir,
+			provider.WithVars(e.vars),
+			provider.WithVarFiles(e.deployCfg.Input.VarFiles),
+			provider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
+		)
 	)
 
 	if ok := showUsingVersion(ctx, cmd, e.LogPersister); !ok {
@@ -168,11 +176,15 @@ func (e *deployExecutor) ensurePlan(ctx context.Context) model.StageStatus {
 }
 
 func (e *deployExecutor) ensureApply(ctx context.Context) model.StageStatus {
-	cmd := provider.NewTerraform(
-		e.terraformPath,
-		e.appDir,
-		provider.WithVars(e.vars),
-		provider.WithVarFiles(e.deployCfg.Input.VarFiles),
+	var (
+		flags = e.deployCfg.Input.CommandFlags
+		cmd   = provider.NewTerraform(
+			e.terraformPath,
+			e.appDir,
+			provider.WithVars(e.vars),
+			provider.WithVarFiles(e.deployCfg.Input.VarFiles),
+			provider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
+		)
 	)
 
 	if ok := showUsingVersion(ctx, cmd, e.LogPersister); !ok {
