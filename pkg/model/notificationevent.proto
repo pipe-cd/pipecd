@@ -39,7 +39,6 @@ enum NotificationEventType {
 
     EVENT_PIPED_STARTED = 300;
     EVENT_PIPED_STOPPED = 301;
-    EVENT_PIPED_FAILED = 302;
 
 }
 
@@ -126,12 +125,4 @@ message NotificationEventPipedStopped {
     string name = 2 [(validate.rules).string.min_len = 1];
     string version = 3;
     string project_id = 4 [(validate.rules).string.min_len = 1];
-}
-
-message NotificationEventPipedFailed {
-    string id = 1 [(validate.rules).string.min_len = 1];
-    string name = 2 [(validate.rules).string.min_len = 1];
-    string version = 3;
-    string project_id = 4 [(validate.rules).string.min_len = 1];
-    string reason = 5;
 }
