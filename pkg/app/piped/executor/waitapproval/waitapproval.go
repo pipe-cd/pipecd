@@ -61,13 +61,13 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	timeout := e.StageConfig.WaitApprovalStageOptions.Timeout.Duration()
 	timer := time.NewTimer(timeout)
 
-	e.reportRequiringApproval(ctx)
+	e.reportRequiringApproval()
 	e.LogPersister.Info("Waiting for an approval...")
 	for {
 		select {
 		case <-ticker.C:
 			if commander, ok := e.checkApproval(ctx); ok {
-				e.reportApproved(ctx, commander)
+				e.reportApproved(commander)
 				e.LogPersister.Infof("Got an approval from %s", commander)
 				return model.StageStatus_STAGE_SUCCESS
 			}
@@ -116,7 +116,7 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 	return approveCmd.Commander, true
 }
 
-func (e *Executor) reportApproved(ctx context.Context, approver string) {
+func (e *Executor) reportApproved(approver string) {
 	accounts, err := e.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED)
 	if err != nil {
 		e.Logger.Error("failed to get the list of accounts", zap.Error(err))
@@ -133,7 +133,7 @@ func (e *Executor) reportApproved(ctx context.Context, approver string) {
 	})
 }
 
-func (e *Executor) reportRequiringApproval(ctx context.Context) {
+func (e *Executor) reportRequiringApproval() {
 	accounts, err := e.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
 	if err != nil {
 		e.Logger.Error("failed to get the list of accounts", zap.Error(err))

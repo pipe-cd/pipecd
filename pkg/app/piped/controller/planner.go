@@ -187,7 +187,7 @@ func (p *planner) Run(ctx context.Context) error {
 	planner, ok := p.plannerRegistry.Planner(p.deployment.Kind)
 	if !ok {
 		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-		p.reportDeploymentFailed(ctx, "Unable to find the planner for this application kind", in.TargetDSP)
+		p.reportDeploymentFailed(ctx, "Unable to find the planner for this application kind")
 		return fmt.Errorf("unable to find the planner for application %v", p.deployment.Kind)
 	}
 
@@ -199,7 +199,7 @@ func (p *planner) Run(ctx context.Context) error {
 		if cmd != nil {
 			p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
 			desc := fmt.Sprintf("Deployment was cancelled by %s while planning", cmd.Commander)
-			p.reportDeploymentCancelled(ctx, cmd.Commander, desc, in.TargetDSP)
+			p.reportDeploymentCancelled(ctx, cmd.Commander, desc)
 			return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil)
 		}
 	default:
@@ -207,14 +207,14 @@ func (p *planner) Run(ctx context.Context) error {
 
 	if err != nil {
 		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-		return p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to plan the deployment (%v)", err), in.TargetDSP)
+		return p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to plan the deployment (%v)", err))
 	}
 
 	p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_PLANNED
-	return p.reportDeploymentPlanned(ctx, p.lastSuccessfulCommitHash, out, in.TargetDSP)
+	return p.reportDeploymentPlanned(ctx, p.lastSuccessfulCommitHash, out)
 }
 
-func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash string, out pln.Output, targetDSP deploysource.Provider) error {
+func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash string, out pln.Output) error {
 	var (
 		err   error
 		retry = pipedservice.NewRetry(10)
@@ -258,7 +258,7 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash
 	return err
 }
 
-func (p *planner) reportDeploymentFailed(ctx context.Context, reason string, targetDSP deploysource.Provider) error {
+func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) error {
 	var (
 		err error
 		now = p.nowFunc()
@@ -302,7 +302,7 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string, tar
 	return err
 }
 
-func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reason string, targetDSP deploysource.Provider) error {
+func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reason string) error {
 	var (
 		err error
 		now = p.nowFunc()
