@@ -14,23 +14,16 @@ This guides you to install PipeCD in your kubernetes and deploy a `helloworld` a
 - Installed [helm3](https://helm.sh/docs/intro/install/)
 - Forked the [Examples](https://github.com/pipe-cd/examples) repository
 
-### 1. Cloning pipe-cd/manifests repository
-
-Navigate to the root of the repository once cloned.
+### 1. Installing control plane
 
 ``` console
-git clone https://github.com/pipe-cd/manifests.git
-cd manifests
+helm repo add pipecd https://charts.pipecd.dev
+
+helm install pipecd pipecd/pipecd -n pipecd --dependency-update --create-namespace \
+  --values https://raw.githubusercontent.com/pipe-cd/manifests/{{< blocks/latest_version >}}/quickstart/control-plane-values.yaml
 ```
 
-### 2. Installing control plane
-
-``` console
-helm -n pipecd install pipecd ./manifests/pipecd --dependency-update --create-namespace \
-  --values ./quickstart/control-plane-values.yaml
-```
-
-### 3. Accessing the PipeCD web
+### 2. Accessing the PipeCD web
 PipeCD comes with an embedded web-based UI.
 First up, using kubectl port-forward to expose the installed control-plane on your localhost:
 
@@ -47,7 +40,7 @@ Enter the project name, username and password. Be sure to give the following:
 - Username: `hello-pipecd`
 - Password: `hello-pipecd`
 
-### 4. Adding an environment
+### 3. Adding an environment
 Go to the `Environment` tab at `Settings` page and click on the `Add` button to add a new [Environment](/docs/concepts/#environment) to the project.
 
 Then you give the environment name and its description as shown below:
@@ -56,7 +49,7 @@ Then you give the environment name and its description as shown below:
 
 After filling out the form, click on the `Save` button.
 
-### 5. Installing a `piped`
+### 4. Installing a `piped`
 Before running a piped, you have to register it on the web and take the generated ID and Key strings.
 
 Navigate to the `Piped` tab on the same page as before, click on the `Add` button. Then you enter as:
@@ -69,7 +62,6 @@ Be sure to keep a copy for later use.
 ![](/images/quickstart-piped-registered.png)
 
 
-
 Open [`./quickstart/piped-values.yaml`](https://github.com/pipe-cd/manifests/blob/master/quickstart/piped-values.yaml) with your editor and:
 - replace `FORKED_REPO_URL` with forked repository of [Examples](https://github.com/pipe-cd/examples), such as `https://github.com/YOUR_ORG/examples.git`
 - replace `YOUR_PIPED_ID` with the piped-id you have copied before
@@ -77,12 +69,12 @@ Open [`./quickstart/piped-values.yaml`](https://github.com/pipe-cd/manifests/blo
 You can complete the installation by running the following after replacing `{YOUR_PIPED_SECRET_KEY}` with what you just got:
 
 ``` console
-helm -n pipecd install piped ./manifests/piped \
-  --values ./quickstart/piped-values.yaml \
+helm install piped pipecd/piped -n pipecd \
+  --values https://raw.githubusercontent.com/pipe-cd/manifests/{{< blocks/latest_version >}}/quickstart/piped-values.yaml \
   --set secret.pipedKey.data={YOUR_PIPED_SECRET_KEY}
 ```
 
-### 6. Configuring a kubernetes application
+### 5. Configuring a kubernetes application
 Navigate to the `Application` page, click on the `Add` button. Then give as:
 
 ![](/images/quickstart-adding-application.png)
@@ -93,7 +85,7 @@ After a bit, the first deployment would be complete automatically to sync the ap
 
 ![](/images/quickstart-first-deployment.png)
 
-### 7. Let's deploy!
+### 6. Let's deploy!
 Let's get started with deployment! All you have to do is to make a PR to update the image tag, scale the replicas, or change the manifests.
 
 For instance, open the `kubernetes/canary/deployment.yaml` under the forked examples' repository, then change the tag from `v0.1.0` to `v0.2.0`.
@@ -104,7 +96,7 @@ After a short wait, a new deployment will be started to update to `v0.2.0`.
 
 ![](/images/quickstart-deploying.png)
 
-### 8. Cleanup
+### 7. Cleanup
 When you’re finished experimenting with PipeCD, you can uninstall with:
 
 ``` console

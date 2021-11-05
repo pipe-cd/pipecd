@@ -53,23 +53,24 @@ spec:
       namespace: pipecd
       environment: dev
       project: {YOUR_GCP_PROJECT_NAME}
-      # Must be a service account with "Cloud Datastore User" and "Cloud Datastore Index Admin" roles.
+      # Must be a service account with "Cloud Datastore User" and "Cloud Datastore Index Admin" roles
+      # since PipeCD needs them to creates the needed Firestore composite indexes in the background.
       credentialsFile: /etc/pipecd-secret/firestore-service-account
   filestore:
     type: GCS
     config:
       bucket: {YOUR_BUCKET_NAME}
+      # Must be a service account with "Storage Object Admin (roles/storage.objectAdmin)" role on the given bucket
+      # since PipeCD need to write file object such as deployment log file to that bucket.
       credentialsFile: /etc/pipecd-secret/gcs-service-account
 ```
-
-PipeCD automatically creates needed Firestore composite indexes in the background. So you have to prepare the service account with not only `Cloud Datastore User` but `Cloud Datastore Index Admin` roles to perform this behavior.
 
 See [ConfigurationReference](/docs/operator-manual/control-plane/configuration-reference/) for the full configuration.
 
 After all, install the control-plane as bellow:
 
 ``` console
-helm install pipecd pipecd/pipecd --version={VERSION} --namespace={NAMESPACE} \
+helm install pipecd pipecd/pipecd --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
   --set-file config.data=path-to-control-plane-configuration-file \
   --set-file secret.encryptionKey.data=path-to-encryption-key-file \
   --set-file secret.firestoreServiceAccount.data=path-to-service-account-file \
