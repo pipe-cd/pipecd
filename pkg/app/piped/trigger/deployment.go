@@ -29,7 +29,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
-	"github.com/pipe-cd/pipe/pkg/version"
 )
 
 const notificationsKey = "DeploymentNotification"
@@ -45,7 +44,7 @@ func (t *Trigger) triggerDeployment(
 	n, err := t.getNotification(app.GitPath)
 	if err != nil {
 		t.logger.Error("failed to get the list of mentions", zap.Error(err))
-		t.reportDeploymentFailed(fmt.Sprintf("failed to get the list of mentions %v", err))
+		t.reportDeploymentFailed(app, fmt.Sprintf("failed to get the list of mentions %v", err), commit)
 		return
 	}
 
@@ -185,15 +184,16 @@ func buildDeployment(
 	return deployment, nil
 }
 
-func (t *Trigger) reportDeploymentFailed(reason string) {
+func (t *Trigger) reportDeploymentFailed(app *model.Application, reason string, commit git.Commit) {
 	t.notifier.Notify(model.NotificationEvent{
 		Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED,
 		Metadata: &model.NotificationEventDeploymentTriggerFailed{
-			Id:        t.config.PipedID,
-			Name:      t.config.Name,
-			Version:   version.Get().Version,
-			ProjectId: t.config.ProjectID,
-			Reason:    reason,
+			Application: app,
+			Commit: &model.GitCommit{
+				Hash: commit.Hash,
+				Message: commit.Message,
+			},
+			Reason: reason,
 		},
 	})
 }

@@ -151,6 +151,15 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 			{"Started At", makeSlackDate(d.CreatedAt), true},
 		}
 	}
+	generateDeploymentEventDataForTriggerFailed := func(app *model.Application, commit *model.GitCommit) {
+		link = makeCommitLink(app.GitPath, commit.Hash)
+		fields = []slackField{
+			{"Project", truncateText(app.ProjectId, 8), true},
+			{"Application", makeSlackLink(app.Name, fmt.Sprintf("%s/applications/%s?project=%s", webURL, app.Id, app.PipedId)), true},
+			{"Kind", strings.ToLower(app.Kind.String()), true},
+			{"Commit", makeSlackLink(truncateText(commit.Message, 8), link), true},
+		}
+	}
 	generatePipedEventData := func(id, name, version, project string) {
 		link = fmt.Sprintf("%s/settings/piped?project=%s", webURL, project)
 		fields = []slackField{
@@ -208,7 +217,7 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		md := event.Metadata.(*model.NotificationEventDeploymentTriggerFailed)
 		title = "Deployment Trigger was failed"
 		text = md.Reason
-		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId)
+		generateDeploymentEventDataForTriggerFailed(md.Application, md.Commit)
 
 	case model.NotificationEventType_EVENT_PIPED_STARTED:
 		md := event.Metadata.(*model.NotificationEventPipedStarted)
@@ -288,4 +297,8 @@ func getAccountsAsString(accounts []string) string {
 		formattedAccounts = append(formattedAccounts, fmt.Sprintf("<@%s>", a))
 	}
 	return strings.Join(formattedAccounts, " ")
+}
+
+func makeCommitLink(gp *model.ApplicationGitPath, hash string) string {
+	return strings.Replace(gp.Url, fmt.Sprintf("/tree/master/%s", gp.Path), "", 1) + fmt.Sprintf("/commit/%s", hash)
 }
