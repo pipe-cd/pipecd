@@ -204,6 +204,12 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		color = slackWarnColor
 		generateDeploymentEventData(md.Deployment, md.EnvName, getAccountsAsString(md.MentionedAccounts))
 
+	case model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED:
+		md := event.Metadata.(*model.NotificationEventDeploymentTriggerFailed)
+		title = "Deployment Trigger was failed"
+		text = md.Reason
+		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId)
+
 	case model.NotificationEventType_EVENT_PIPED_STARTED:
 		md := event.Metadata.(*model.NotificationEventPipedStarted)
 		title = "A piped has been started"
@@ -212,12 +218,6 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 	case model.NotificationEventType_EVENT_PIPED_STOPPED:
 		md := event.Metadata.(*model.NotificationEventPipedStopped)
 		title = "A piped has been stopped"
-		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId)
-
-	case model.NotificationEventType_EVENT_PIPED_FAILED:
-		md := event.Metadata.(*model.NotificationEventPipedFailed)
-		title = "A piped failed to start"
-		text = md.Reason
 		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId)
 
 	// TODO: Support application type of notification event.

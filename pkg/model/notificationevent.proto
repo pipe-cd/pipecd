@@ -30,6 +30,7 @@ enum NotificationEventType {
     EVENT_DEPLOYMENT_FAILED = 5;
     EVENT_DEPLOYMENT_CANCELLED = 6;
     EVENT_DEPLOYMENT_WAIT_APPROVAL = 7;
+    EVENT_DEPLOYMENT_TRIGGER_FAILED = 8;
 
     EVENT_APPLICATION_SYNCED = 100;
     EVENT_APPLICATION_OUT_OF_SYNC = 101;
@@ -39,8 +40,6 @@ enum NotificationEventType {
 
     EVENT_PIPED_STARTED = 300;
     EVENT_PIPED_STOPPED = 301;
-    EVENT_PIPED_FAILED = 302;
-
 }
 
 enum NotificationEventGroup {
@@ -102,6 +101,14 @@ message NotificationEventDeploymentWaitApproval {
     repeated string mentioned_accounts = 3;
 }
 
+message NotificationEventDeploymentTriggerFailed {
+    string id = 1 [(validate.rules).string.min_len = 1];
+    string name = 2 [(validate.rules).string.min_len = 1];
+    string version = 3;
+    string project_id = 4 [(validate.rules).string.min_len = 1];
+    string reason = 5;
+}
+
 message NotificationEventApplicationSynced {
     Application application = 1 [(validate.rules).message.required = true];
     string env_name = 2 [(validate.rules).string.min_len = 1];
@@ -126,12 +133,4 @@ message NotificationEventPipedStopped {
     string name = 2 [(validate.rules).string.min_len = 1];
     string version = 3;
     string project_id = 4 [(validate.rules).string.min_len = 1];
-}
-
-message NotificationEventPipedFailed {
-    string id = 1 [(validate.rules).string.min_len = 1];
-    string name = 2 [(validate.rules).string.min_len = 1];
-    string version = 3;
-    string project_id = 4 [(validate.rules).string.min_len = 1];
-    string reason = 5;
 }

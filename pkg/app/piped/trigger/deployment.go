@@ -188,8 +188,8 @@ func buildDeployment(
 func (t *Trigger) reportDeploymentFailed(reason string) {
 	defer func() {
 		t.notifier.Notify(model.NotificationEvent{
-			Type: model.NotificationEventType_EVENT_PIPED_FAILED,
-			Metadata: &model.NotificationEventPipedFailed{
+			Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED,
+			Metadata: &model.NotificationEventDeploymentTriggerFailed{
 				Id:        t.config.PipedID,
 				Name:      t.config.Name,
 				Version:   version.Get().Version,
