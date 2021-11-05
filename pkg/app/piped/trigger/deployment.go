@@ -186,18 +186,16 @@ func buildDeployment(
 }
 
 func (t *Trigger) reportDeploymentFailed(reason string) {
-	defer func() {
-		t.notifier.Notify(model.NotificationEvent{
-			Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED,
-			Metadata: &model.NotificationEventDeploymentTriggerFailed{
-				Id:        t.config.PipedID,
-				Name:      t.config.Name,
-				Version:   version.Get().Version,
-				ProjectId: t.config.ProjectID,
-				Reason:    reason,
-			},
-		})
-	}()
+	t.notifier.Notify(model.NotificationEvent{
+		Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED,
+		Metadata: &model.NotificationEventDeploymentTriggerFailed{
+			Id:        t.config.PipedID,
+			Name:      t.config.Name,
+			Version:   version.Get().Version,
+			ProjectId: t.config.ProjectID,
+			Reason:    reason,
+		},
+	})
 }
 
 func (t *Trigger) getNotification(p *model.ApplicationGitPath) (*config.DeploymentNotification, error) {
