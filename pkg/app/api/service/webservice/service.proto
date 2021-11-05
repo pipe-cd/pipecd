@@ -227,7 +227,6 @@ message AddApplicationRequest {
     model.ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
     string cloud_provider = 6 [(validate.rules).string.min_len = 1];
     string description = 7;
-    repeated string tags = 8;
 }
 
 message AddApplicationResponse {
@@ -241,7 +240,6 @@ message UpdateApplicationRequest {
     string piped_id = 4 [(validate.rules).string.min_len = 1];
     model.ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
     string cloud_provider = 7 [(validate.rules).string.min_len = 1];
-    repeated string tags = 8;
 }
 
 message UpdateApplicationResponse {
@@ -283,7 +281,7 @@ message ListApplicationsRequest {
         repeated model.ApplicationSyncStatus sync_statuses = 3;
         repeated string env_ids = 4;
         string name = 5;
-        repeated string tags = 6;
+        map<string, string> labels = 6;
     }
     Options options = 1;
 }
@@ -327,7 +325,7 @@ message ListDeploymentsRequest {
         repeated string application_ids = 3;
         repeated string env_ids = 4;
         string application_name = 5;
-        repeated string tags = 6;
+        map<string, string> labels = 6;
     }
     Options options = 1;
     int32 page_size = 2;

@@ -24,31 +24,47 @@ func TestDeployment_ContainTags(t *testing.T) {
 	testcases := []struct {
 		name       string
 		deployment *Deployment
-		tags       []string
+		labels     map[string]string
 		want       bool
 	}{
 		{
 			name:       "all given tags aren't contained",
-			deployment: &Deployment{Tags: []string{"foo"}},
-			tags:       []string{"foo", "bar"},
-			want:       false,
+			deployment: &Deployment{Labels: map[string]string{"key1": "value1"}},
+			labels: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+			},
+			want: false,
 		},
 		{
-			name:       "a tag is contained",
-			deployment: &Deployment{Tags: []string{"foo", "bar"}},
-			tags:       []string{"foo"},
-			want:       true,
+			name: "a label is contained",
+			deployment: &Deployment{Labels: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+			}},
+			labels: map[string]string{
+				"key1": "value1",
+			},
+			want: true,
 		},
 		{
-			name:       "all tags are contained",
-			deployment: &Deployment{Tags: []string{"foo", "bar", "baz"}},
-			tags:       []string{"baz", "foo", "bar"},
-			want:       true,
+			name: "all tags are contained",
+			deployment: &Deployment{Labels: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+				"key3": "value3",
+			}},
+			labels: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+				"key3": "value3",
+			},
+			want: true,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := tc.deployment.ContainTags(tc.tags)
+			got := tc.deployment.ContainLabels(tc.labels)
 			assert.Equal(t, tc.want, got)
 		})
 	}

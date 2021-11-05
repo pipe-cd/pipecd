@@ -172,7 +172,7 @@ func buildDeployment(
 		},
 		GitPath:       app.GitPath,
 		CloudProvider: app.CloudProvider,
-		Tags:          app.Tags,
+		Labels:        app.Labels,
 		Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
 		StatusReason:  "The deployment is waiting to be planned",
 		Metadata:      metadata,

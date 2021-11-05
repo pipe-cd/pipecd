@@ -34,7 +34,6 @@ type add struct {
 	pipedID       string
 	cloudProvider string
 	description   string
-	tags          []string
 
 	repoID         string
 	appDir         string

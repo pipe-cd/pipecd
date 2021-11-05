@@ -42,8 +42,8 @@ message Application {
     string cloud_provider = 8 [(validate.rules).string.min_len = 1];
     // Additional description about application.
     string description = 9;
-    // Custom attributes for filtering.
-    repeated string tags = 10;
+    // Custom attributes to identify applications.
+    map<string, string> labels = 10;
 
     // Basic information about the most recently successful deployment.
     // This also shows information about current running workloads.

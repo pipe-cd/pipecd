@@ -637,7 +637,6 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		Kind:          req.Kind,
 		CloudProvider: req.CloudProvider,
 		Description:   req.Description,
-		Tags:          req.Tags,
 	}
 	err = a.applicationStore.AddApplication(ctx, &app)
 	if errors.Is(err, datastore.ErrAlreadyExists) {
@@ -647,6 +646,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		a.logger.Error("failed to create application", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to create application")
 	}
+	// TODO: Create a command to send an application information defined in the application config
 
 	return &webservice.AddApplicationResponse{
 		ApplicationId: app.Id,
@@ -660,7 +660,6 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 		app.PipedId = req.PipedId
 		app.Kind = req.Kind
 		app.CloudProvider = req.CloudProvider
-		app.Tags = req.Tags
 		return nil
 	}
 
@@ -861,15 +860,16 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		return nil, status.Error(codes.Internal, "Failed to get applications")
 	}
 
-	if len(req.Options.Tags) == 0 {
+	if len(req.Options.Labels) == 0 {
 		return &webservice.ListApplicationsResponse{
 			Applications: apps,
 		}, nil
 	}
 
+	// NOTE: Filtering by labels is done by the application-side because we need to create composite indexes for every combination in the filter.
 	filtered := make([]*model.Application, 0, len(apps))
 	for _, a := range apps {
-		if a.ContainTags(req.Options.Tags) {
+		if a.ContainLabels(req.Options.Labels) {
 			filtered = append(filtered, a)
 		}
 	}
@@ -1071,20 +1071,21 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		a.logger.Error("failed to get deployments", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get deployments")
 	}
-	tags := req.Options.Tags
-	if len(tags) == 0 || len(deployments) == 0 {
+	labels := req.Options.Labels
+	if len(labels) == 0 || len(deployments) == 0 {
 		return &webservice.ListDeploymentsResponse{
 			Deployments: deployments,
 			Cursor:      cursor,
 		}, nil
 	}
 
-	// Start filtering them by tags.
-	// NOTE: For document-oriented databases, it's hard to look for deployments that have all the tags we specified.
+	// Start filtering them by labels.
+	//
+	// NOTE: Filtering by labels is done by the application-side because we need to create composite indexes for every combination in the filter.
 	// We don't want to depend on any other search engine, that's why it filters here.
 	filtered := make([]*model.Deployment, 0, len(deployments))
 	for _, d := range deployments {
-		if d.ContainTags(tags) {
+		if d.ContainLabels(labels) {
 			filtered = append(filtered, d)
 		}
 	}
@@ -1109,7 +1110,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 			break
 		}
 		for _, d := range deployments {
-			if d.ContainTags(tags) {
+			if d.ContainLabels(labels) {
 				filtered = append(filtered, d)
 			}
 		}

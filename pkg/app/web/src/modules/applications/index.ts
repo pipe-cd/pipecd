@@ -55,7 +55,7 @@ export const fetchApplications = createAsyncThunk<
       enabled: options.activeStatus
         ? { value: options.activeStatus === "enabled" }
         : undefined,
-      tagsList: [], // TODO: Specify tags for ListApplications
+      labelsMap: [], // TODO: Specify labels for ListApplications
     },
   });
   return applicationsList as Application.AsObject[];
@@ -71,7 +71,7 @@ export const fetchApplicationsByEnv = createAsyncThunk<
       kindsList: [],
       name: "",
       syncStatusesList: [],
-      tagsList: [],
+      labelsMap: [],
     },
   });
   return applicationsList as Application.AsObject[];
@@ -108,7 +108,6 @@ export const addApplication = createAsyncThunk<
     configFilename?: string;
     kind: ApplicationKind;
     cloudProvider: string;
-    tagsList: string[];
   }
 >(`${MODULE_NAME}/add`, async (props) => {
   const { applicationId } = await applicationsAPI.addApplication({
@@ -125,7 +124,6 @@ export const addApplication = createAsyncThunk<
     cloudProvider: props.cloudProvider,
     kind: props.kind,
     description: "",
-    tagsList: props.tagsList,
   });
 
   return applicationId;

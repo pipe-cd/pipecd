@@ -48,35 +48,51 @@ func TestMakeApplicationURL(t *testing.T) {
 	}
 }
 
-func TestApplication_ContainTags(t *testing.T) {
+func TestApplication_ContainLabels(t *testing.T) {
 	testcases := []struct {
-		name string
-		app  *Application
-		tags []string
-		want bool
+		name   string
+		app    *Application
+		labels map[string]string
+		want   bool
 	}{
 		{
 			name: "all given tags aren't contained",
-			app:  &Application{Tags: []string{"foo"}},
-			tags: []string{"foo", "bar"},
+			app:  &Application{Labels: map[string]string{"key1": "value1"}},
+			labels: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+			},
 			want: false,
 		},
 		{
-			name: "a tag is contained",
-			app:  &Application{Tags: []string{"foo", "bar"}},
-			tags: []string{"foo"},
+			name: "a label is contained",
+			app: &Application{Labels: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+			}},
+			labels: map[string]string{
+				"key1": "value1",
+			},
 			want: true,
 		},
 		{
 			name: "all tags are contained",
-			app:  &Application{Tags: []string{"foo", "bar", "baz"}},
-			tags: []string{"baz", "foo", "bar"},
+			app: &Application{Labels: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+				"key3": "value3",
+			}},
+			labels: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+				"key3": "value3",
+			},
 			want: true,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := tc.app.ContainTags(tc.tags)
+			got := tc.app.ContainLabels(tc.labels)
 			assert.Equal(t, tc.want, got)
 		})
 	}
