@@ -54,11 +54,11 @@ spec:
   postSync:
     flow:
       graph:
-        - appName: lambda1
+        - appName: app1
           requireApproval: true # add wait approval stage to the lambda 1 deployment pipeline on planning 
-        - appName: lambda2
+        - appName: app2
           depends:
-            - lambda1
+            - app1
       conditions:
         - commitPrefix: “xx”
         - ...
