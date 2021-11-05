@@ -118,7 +118,7 @@ func makeGitPath(repoID, path, cfgFilename string, piped *model.Piped, logger *z
 		}
 	}
 	if repo == nil {
-		return nil, status.Error(codes.Internal, "The requested repository is not found")
+		return nil, status.Error(codes.NotFound, "The requested repository is not found in the Piped configuration")
 	}
 
 	u, err := git.MakeDirURL(repo.Remote, path, repo.Branch)
