@@ -82,7 +82,7 @@ The newly added configuration fields as follow:
 
 ### Application
 
-A set of filters, use to decide which application (PipeCD application) should be trigger to deploy as part of the deployment chain. If multiple filters are set, manipulate those filter by `AND` operator.
+A set of filters, use to decide which application (PipeCD application) should be triggered to deploy as part of the deployment chain. If multiple filters are set, manipulate those filters by `AND` operator.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
@@ -126,4 +126,4 @@ In case the deployment chain is triggered, if applications in the chain require 
 
 ![image](assets/deployment-chain-commit-diff.png)
 
-This issue can be avoided by ensuring all changes required for all applications are provided in the same commit but it is tricky and hard for users to keep that way. Besides, if the applications' configurations are stored in separated repositories from start, the commit-ish for those changes are always different. We may need to require users to ensure all changes for applications will be provided in the same commit (in case of using single configuration repo) or make changes for each to be triggered applications as the last commit of their configuration repository to avoid that issue.
+This issue can be avoided by ensuring all changes required for all applications are provided in the same commit but it is tricky and hard for users to keep that way. Besides, if the applications' configurations are stored in separated repositories from start, the commit-ish for those changes are always different. We may need to require users to ensure all changes for applications will be provided in the same commit (in case of using single configuration repo) or make changes for each to be triggered application as the last commit of their configuration repository to avoid that issue.
