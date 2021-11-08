@@ -50,9 +50,9 @@ func NewDeterminer(repo git.Repo, targetCommit string, cg LastTriggeredCommitGet
 }
 
 // ShouldTrigger decides whether a given application should be triggered or not.
-// Flag `ignorable` set to `false` will force check changes and use it to determine
+// Flag `ignoreUserConfig` set to `true` will force check changes and use it to determine
 // the application deployment should be triggered or not, regardless of the user's configuration.
-func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application, ignorable bool) (bool, error) {
+func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application, ignoreUserConfig bool) (bool, error) {
 	logger := d.logger.With(
 		zap.String("app", app.Name),
 		zap.String("app-id", app.Id),
@@ -64,8 +64,8 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application, 
 		return false, err
 	}
 
-	// Not trigger in case users disable auto trigger deploy on change and the change is ignorable.
-	if deployConfig.Trigger.OnCommit.Disable && ignorable {
+	// Not trigger in case users disable auto trigger deploy on change and the user config is unignorable.
+	if deployConfig.Trigger.OnCommit.Disable && !ignoreUserConfig {
 		logger.Info(fmt.Sprintf("auto trigger deployment disabled for application, hash: %s", d.targetCommit))
 		return false, nil
 	}
@@ -102,6 +102,8 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application, 
 	checkingPaths = append(checkingPaths, deployConfig.Trigger.OnCommit.Paths...)
 	checkingPaths = append(checkingPaths, deployConfig.TriggerPaths...)
 
+	logger.Info("CheckingPaths", zap.Any("checking", checkingPaths))
+	logger.Info("ChangedFiles", zap.Any("changes", changedFiles))
 	touched, err := isTouchedByChangedFiles(app.GitPath.Path, checkingPaths, changedFiles)
 	if err != nil {
 		return false, err

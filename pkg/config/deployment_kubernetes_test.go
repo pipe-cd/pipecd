@@ -79,6 +79,11 @@ func TestKubernetesDeploymentConfig(t *testing.T) {
 						},
 					},
 					Timeout: Duration(6 * time.Hour),
+					Trigger: Trigger{
+						OnCommit: OnCommitConfig{
+							Disable: false,
+						},
+					},
 				},
 				Input: KubernetesDeploymentInput{
 					AutoRollback: true,

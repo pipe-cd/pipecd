@@ -38,6 +38,11 @@ func TestECSDeploymentConfig(t *testing.T) {
 			expectedSpec: &ECSDeploymentSpec{
 				GenericDeploymentSpec: GenericDeploymentSpec{
 					Timeout: Duration(6 * time.Hour),
+					Trigger: Trigger{
+						OnCommit: OnCommitConfig{
+							Disable: false,
+						},
+					},
 				},
 				Input: ECSDeploymentInput{
 					ServiceDefinitionFile: "/path/to/servicedef.yaml",

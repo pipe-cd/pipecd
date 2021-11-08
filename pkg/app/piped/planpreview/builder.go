@@ -307,7 +307,7 @@ func (b *builder) cloneHeadCommit(ctx context.Context, headBranch, headCommit st
 func (b *builder) findTriggerApps(ctx context.Context, repo git.Repo, apps []*model.Application, headCommit string) (triggerApps []*model.Application, failedResults []*model.ApplicationPlanPreviewResult, err error) {
 	d := trigger.NewDeterminer(repo, headCommit, b.commitGetter, b.logger)
 	for _, app := range apps {
-		shouldTrigger, err := d.ShouldTrigger(ctx, app, false)
+		shouldTrigger, err := d.ShouldTrigger(ctx, app, true)
 		if err != nil {
 			// We only need the environment name
 			// so the returned error can be ignorable.

@@ -16,8 +16,10 @@ package config
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -248,6 +250,50 @@ func TestValidateMentions(t *testing.T) {
 			}
 			err := m.Validate()
 			assert.Equal(t, tc.wantErr, err != nil)
+		})
+	}
+}
+
+func TestGenericTriggerConfiguration(t *testing.T) {
+	testcases := []struct {
+		fileName           string
+		expectedKind       Kind
+		expectedAPIVersion string
+		expectedSpec       interface{}
+		expectedError      error
+	}{
+		{
+			fileName:           "testdata/application/generic-trigger.yaml",
+			expectedKind:       KindKubernetesApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedSpec: &KubernetesDeploymentSpec{
+				GenericDeploymentSpec: GenericDeploymentSpec{
+					Timeout: Duration(6 * time.Hour),
+					Trigger: Trigger{
+						OnCommit: OnCommitConfig{
+							Disable: false,
+							Paths: []string{
+								"deployment.yaml",
+							},
+						},
+					},
+				},
+				Input: KubernetesDeploymentInput{
+					AutoRollback: true,
+				},
+			},
+			expectedError: nil,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.fileName, func(t *testing.T) {
+			cfg, err := LoadFromYAML(tc.fileName)
+			require.Equal(t, tc.expectedError, err)
+			if err == nil {
+				assert.Equal(t, tc.expectedKind, cfg.Kind)
+				assert.Equal(t, tc.expectedAPIVersion, cfg.APIVersion)
+				assert.Equal(t, tc.expectedSpec, cfg.spec)
+			}
 		})
 	}
 }

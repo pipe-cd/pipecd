@@ -37,6 +37,11 @@ func TestLambdaDeploymentConfig(t *testing.T) {
 			expectedSpec: &LambdaDeploymentSpec{
 				GenericDeploymentSpec: GenericDeploymentSpec{
 					Timeout: Duration(6 * time.Hour),
+					Trigger: Trigger{
+						OnCommit: OnCommitConfig{
+							Disable: false,
+						},
+					},
 				},
 				Input: LambdaDeploymentInput{
 					FunctionManifestFile: "function.yaml",
