@@ -105,7 +105,7 @@ The above configuration will provide a deployment chain as follow
 
 ## More examples regards known use-cases
 
-The above configuration contains sample for a completely flexsible deployment chain (multiple applications with difference kinds deployed across environment). For clarity, here are some examples for each known use-cases
+The above configuration contains sample for a completely flexsible deployment chain (multiple applications with difference kinds deployed across environment). For clarity, here are some examples for each known use-cases listed in [above section](#motivation)
 
 ### Use-case <1>: chain of deployments contains multiple application cross kinds
 
