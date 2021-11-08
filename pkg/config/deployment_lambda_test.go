@@ -20,6 +20,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func TestLambdaDeploymentConfig(t *testing.T) {
@@ -37,6 +39,79 @@ func TestLambdaDeploymentConfig(t *testing.T) {
 			expectedSpec: &LambdaDeploymentSpec{
 				GenericDeploymentSpec: GenericDeploymentSpec{
 					Timeout: Duration(6 * time.Hour),
+				},
+				Input: LambdaDeploymentInput{
+					FunctionManifestFile: "function.yaml",
+					AutoRollback:         true,
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			fileName:           "testdata/application/lambda-app-canary.yaml",
+			expectedKind:       KindLambdaApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedSpec: &LambdaDeploymentSpec{
+				GenericDeploymentSpec: GenericDeploymentSpec{
+					Timeout: Duration(6 * time.Hour),
+					Pipeline: &DeploymentPipeline{
+						Stages: []PipelineStage{
+							{
+								Name:                            model.StageLambdaCanaryRollout,
+								LambdaCanaryRolloutStageOptions: &LambdaCanaryRolloutStageOptions{},
+							},
+							{
+								Name: model.StageLambdaPromote,
+								LambdaPromoteStageOptions: &LambdaPromoteStageOptions{
+									Percent: Percentage{
+										Number:    10,
+										HasSuffix: false,
+									},
+								},
+							},
+							{
+								Name: model.StageLambdaPromote,
+								LambdaPromoteStageOptions: &LambdaPromoteStageOptions{
+									Percent: Percentage{
+										Number:    100,
+										HasSuffix: false,
+									},
+								},
+							},
+						},
+					},
+				},
+				Input: LambdaDeploymentInput{
+					FunctionManifestFile: "function.yaml",
+					AutoRollback:         true,
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			fileName:           "testdata/application/lambda-app-bluegreen.yaml",
+			expectedKind:       KindLambdaApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedSpec: &LambdaDeploymentSpec{
+				GenericDeploymentSpec: GenericDeploymentSpec{
+					Timeout: Duration(6 * time.Hour),
+					Pipeline: &DeploymentPipeline{
+						Stages: []PipelineStage{
+							{
+								Name:                            model.StageLambdaCanaryRollout,
+								LambdaCanaryRolloutStageOptions: &LambdaCanaryRolloutStageOptions{},
+							},
+							{
+								Name: model.StageLambdaPromote,
+								LambdaPromoteStageOptions: &LambdaPromoteStageOptions{
+									Percent: Percentage{
+										Number:    100,
+										HasSuffix: false,
+									},
+								},
+							},
+						},
+					},
 				},
 				Input: LambdaDeploymentInput{
 					FunctionManifestFile: "function.yaml",
