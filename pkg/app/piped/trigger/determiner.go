@@ -120,8 +120,6 @@ func (d *Determiner) shouldTriggerOnCommit(ctx context.Context, app *model.Appli
 		}
 	}
 
-	logger.Info("CheckingPaths", zap.Any("checking", checkingPaths))
-	logger.Info("ChangedFiles", zap.Any("changes", changedFiles))
 	touched, err := isTouchedByChangedFiles(app.GitPath.Path, checkingPaths, changedFiles)
 	if err != nil {
 		return false, err
