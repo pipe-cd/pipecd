@@ -3,11 +3,6 @@
 apiVersion: pipecd.dev/v1beta1
 kind: LambdaApp
 spec:
-  input:
-    # Where to fetch the source code to create lambda package.
-    git: git@github.com:org/source-repo.git
-    path: lambdas/demoapp
-    ref: v1.0.0
   pipeline:
     stages:
       # Deploy workloads of the new version.
@@ -18,8 +13,4 @@ spec:
       # This is known as blue-green strategy.
       - name: LAMBDA_PROMOTE
         with:
-          canary: 100
-      # Optional: We can also add an ANALYSIS stage to verify the new version.
-      # If this stage finds any not good metrics of the new version,
-      # a rollback process to the previous version will be executed.
-      - name: ANALYSIS
+          percent: 100
