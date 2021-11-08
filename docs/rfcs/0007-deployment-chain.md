@@ -2,7 +2,7 @@
 - Target Version: 0.22.0
 
 # Summary
-This RFC introduces a new way to enable users to deploy their complex system (or applications) in a more flexible way by manipulating the currently supporting application's deployment.
+This RFC introduces a new way to enable users to connect multiple applications to a complex deployment pipeline. It can bring to users the ability to roll out to multiple clusters gradually or promote across environments.
 
 # Motivation
 With the current supporting deployment, our users have to define their application as one of the supporting application's kinds (K8s, Terraform, CloudRun, Lambda, ECS), they can still define multiple PipeCD applications as parts of their application and trigger them one by one, but it's a bit difficult for them to control the deployment chain smoothly.
@@ -10,7 +10,7 @@ With the current supporting deployment, our users have to define their applicati
 ![image](assets/deployment-chain-kind.png)
 Use-case <1>: chain of deployments contains multiple application cross kinds
 
-Another typical usecase is when users want to build up some kind of deployment chain such as deploy application to the development environment, then if it's done successfully, deploy that application to the staging and then the production environment.
+Another typical use-case is when users want to build up some kind of chain such as deploy application to the development environment, then if it's done successfully, deploy that application to the staging and then the production environment.
 
 ![image](assets/deployment-chain-env.png)
 Use-case <2>: chain of deployments contains application deployed across multiple environments
