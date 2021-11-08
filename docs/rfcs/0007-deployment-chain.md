@@ -8,14 +8,17 @@ This RFC introduces a new way to enable users to deploy their complex system (or
 With the current supporting deployment, our users have to define their application as one of the supporting application's kinds (K8s, Terraform, CloudRun, Lambda, ECS), they can still define multiple PipeCD applications as parts of their application and trigger them one by one, but it's a bit difficult for them to control the deployment chain smoothly.
 
 ![image](assets/deployment-chain-kind.png)
+Use-case <1>: chain of deployments contains multiple application cross kinds
 
 Another typical usecase is when users want to build up some kind of deployment chain such as deploy application to the development environment, then if it's done successfully, deploy that application to the staging and then the production environment.
 
 ![image](assets/deployment-chain-env.png)
+Use-case <2>: chain of deployments contains application deployed across multiple environments
 
 Or a variant of that requirement, when users want to roll out their applications to their cluster one by one based on its region. As the same below image, the order of the rolling out deployment should be flex, supports both sequential and parallel.
 
 ![image](assets/deployment-chain-region.png)
+Use-case <3>: chain of deployments contains application deployed across multiple region
 
 All the above requirements share the same thing in the context, that is: it can be done by users' deployment for their applications as PipeCD applications one by one and make trigger those deployments manually via console or make trigger via pull requests to those application configurations separately, but this all manual stub are tedious and difficult to manage smoothly. With this new __PipeCD deployment chain__ feature, all of those manual steps will be replaced, to keep the good point of using a CD system.
 
@@ -99,6 +102,149 @@ A set of filters, use to decide which application (PipeCD application) should be
 The above configuration will provide a deployment chain as follow
 
 ![image](assets/deployment-chain-configuration.png)
+
+## More examples regards known use-cases
+
+The above configuration contains sample for a completely flexsible deployment chain (multiple applications with difference kinds deployed across environment). For clarity, here are some examples for each known use-cases
+
+### Use-case <1>: chain of deployments contains multiple application cross kinds
+
+In this examples, users create 3 applications which are: Infra (name: infra, kind: terraform), X (name: x, kind: cloudrun), Y (name: y, kind: kubernetes).
+
+Application `Infra` (the first application of the chain) configuration:
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: TerraformApp
+name: infra
+spec:
+  input:
+    ...
+  pipeline:
+    ...
+  postSync:
+    chain:
+      applications:
+        - name: x
+          kind: CloudrunApp
+        - name: y
+          kind: KubernetesApp
+      conditions:
+        - commitPrefix: “Trigger chain”
+```
+
+Application `x` configuration:
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: CloudrunApp
+name: x
+spec:
+  pipeline:
+    ...
+```
+
+Application `y` configuration:
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+name: y
+spec:
+  pipeline:
+    ...
+```
+
+### Use-case <2>: chain of deployments contains application deployed across multiple environments
+
+In this examples, users create 3 applications which are: X-1 (name: x, kind: kubernetes, env: dev), X-2 (name: x, kind: kubernetes, env: stag), X-3 (name: x, kind: kubernetes, env: prod).
+
+Application `X-1` (the first application of the chain) configuration:
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+name: x
+spec:
+  pipeline:
+    ...
+  postSync:
+    chain:
+      applications:
+        - name: x
+          labels:
+            - env: stag # need to add labels <env:stag> to application X-2 to separate it with others.
+        - name: x
+          labels:
+            - env: prod # need to add labels <env:prod> to application X-3 to separate it with others.
+      conditions:
+        - commitPrefix: “Trigger chain”
+```
+
+Application `X-2` configuration:
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+name: x
+labels:
+  - env: stag
+spec:
+  pipeline:
+    ...
+```
+
+Application `X-3` configuration:
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+name: x
+labels:
+  - env: prod
+spec:
+  pipeline:
+    ...
+```
+
+### Use-case <3>: chain of deployments contains application deployed across multiple region
+
+In this examples, users create 3 applications which are: X-a (name: x, kind: kubernetes, region: region-a), X-b (name: x, kind: kubernetes, region: region-b), X-c (name: x, kind: kubernetes, region: region-c)
+
+Application `X-a` (the first application of the chain) configuration:
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+name: x
+spec:
+  pipeline:
+    ...
+  postSync:
+    chain:
+      applications:
+        - name: x # since all 3 application has the same name `x`
+      conditions:
+        - commitPrefix: “Trigger chain”
+```
+
+Application `X-b` configuration:
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+name: x
+spec:
+  pipeline:
+    ...
+```
+
+Application `X-c` configuration:
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+name: x
+spec:
+  pipeline:
+    ...
+```
+
+Note:
+- All labels in the above examples are users' defined labels, not specified by PipeCD.
+- In use-case <3>, the `X-a` application will be triggered first, and after it's deployed successfully, `X-b` and `X-c` will be triggered and rolling out at the same time (deployment run in parallel).
 
 ## Web view
 
