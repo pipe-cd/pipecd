@@ -161,6 +161,8 @@ service PipedService {
 
     // GetDesiredVersion returns the desired version of the given Piped.
     rpc GetDesiredVersion(GetDesiredVersionRequest) returns (GetDesiredVersionResponse) {}
+
+    // TODO: Add an rpc to update application info based on one defined in the application config
 }
 
 enum ListOrder {

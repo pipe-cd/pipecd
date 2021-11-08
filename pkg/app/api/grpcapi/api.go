@@ -118,7 +118,6 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 		Kind:          req.Kind,
 		CloudProvider: req.CloudProvider,
 		Description:   req.Description,
-		Tags:          req.Tags,
 	}
 	err = a.applicationStore.AddApplication(ctx, &app)
 	if errors.Is(err, datastore.ErrAlreadyExists) {

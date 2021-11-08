@@ -55,7 +55,6 @@ message AddApplicationRequest {
     model.ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
     string cloud_provider = 6 [(validate.rules).string.min_len = 1];
     string description = 7;
-    repeated string tags = 8;
 }
 
 message AddApplicationResponse {
@@ -84,7 +83,7 @@ message ListApplicationsRequest {
     string env_id = 3;
     bool disabled = 4;
     string env_name = 5;
-    // TODO: Enable to filter by tags
+    // TODO: Enable to filter by labels
     string cursor = 10;
 }
 
