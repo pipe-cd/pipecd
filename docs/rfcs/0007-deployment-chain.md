@@ -9,7 +9,7 @@ With the current supporting deployment, our users have to define their applicati
 
 ![image](assets/deployment-chain-kind.png)
 
-Another typical usecase is when users want to build up some kind of deployment chain such as deploy application to the development environment, then if it's done successfully, deploy that application to the staging and then the production environment.
+Another typical use-case is when users want to build up some kind of chain such as deploy application to the development environment, then if it's done successfully, deploy that application to the staging and then the production environment.
 
 ![image](assets/deployment-chain-env.png)
 
