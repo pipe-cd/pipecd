@@ -28,6 +28,10 @@ func TestCommand(t *testing.T) {
 	require.NotNil(t, cmd)
 
 	assert.True(t, cmd.IsRunning())
-	cmd.GracefulStop(time.Millisecond)
+
+	stopAfter := time.Millisecond
+	cmd.GracefulStop(stopAfter)
+	time.Sleep(stopAfter)
+
 	assert.False(t, cmd.IsRunning())
 }
