@@ -65,7 +65,7 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application, 
 	}
 
 	// Not trigger in case users disable auto trigger deploy on change and the change is ignorable.
-	if deployConfig.Trigger.DisableAutoDeployOnChange && ignorable {
+	if deployConfig.Trigger.OnCommit.Disable && ignorable {
 		logger.Info(fmt.Sprintf("auto trigger deployment disabled for application, hash: %s", d.targetCommit))
 		return false, nil
 	}
@@ -98,8 +98,8 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application, 
 	}
 
 	// TODO: Remove deprecated `deployConfig.TriggerPaths` configuration.
-	checkingPaths := make([]string, len(deployConfig.Trigger.Paths)+len(deployConfig.TriggerPaths))
-	checkingPaths = append(checkingPaths, deployConfig.Trigger.Paths...)
+	checkingPaths := make([]string, len(deployConfig.Trigger.OnCommit.Paths)+len(deployConfig.TriggerPaths))
+	checkingPaths = append(checkingPaths, deployConfig.Trigger.OnCommit.Paths...)
 	checkingPaths = append(checkingPaths, deployConfig.TriggerPaths...)
 
 	touched, err := isTouchedByChangedFiles(app.GitPath.Path, checkingPaths, changedFiles)

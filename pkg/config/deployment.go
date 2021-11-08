@@ -59,11 +59,16 @@ type DeploymentPlanner struct {
 }
 
 type Trigger struct {
+	// Configuration in case changes on commit are found.
+	OnCommit OnCommitConfig `json:"onCommit"`
+}
+
+type OnCommitConfig struct {
+	// Control trigger new deployment on Git change or not.
+	Disable bool `json:"disable,omitempty"`
 	// List of directories or files where their changes will trigger the deployment.
 	// Regular expression can be used.
 	Paths []string `json:"paths,omitempty"`
-	// Control trigger new deployment on Git change or not.
-	DisableAutoDeployOnChange bool `json:"disableAutoDeployOnChange,omitempty"`
 }
 
 func (s *GenericDeploymentSpec) Validate() error {
