@@ -22,12 +22,30 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCommand(t *testing.T) {
-	cmd, err := runBinary("sh", []string{"sleep", "1m"})
-	require.NoError(t, err)
-	require.NotNil(t, cmd)
+func TestGracefulStopCommand(t *testing.T) {
+	testcases := []struct {
+		name      string
+		stopAfter time.Duration
+	}{
+		{
+			name:      "graceful stop after very short time",
+			stopAfter: time.Nanosecond,
+		},
+		{
+			name:      "graceful stop after second",
+			stopAfter: time.Second,
+		},
+	}
 
-	assert.True(t, cmd.IsRunning())
-	cmd.GracefulStop(time.Millisecond)
-	assert.False(t, cmd.IsRunning())
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			cmd, err := runBinary("sh", []string{"sleep", "1m"})
+			require.NoError(t, err)
+			require.NotNil(t, cmd)
+
+			assert.True(t, cmd.IsRunning())
+			cmd.GracefulStop(tc.stopAfter)
+			assert.False(t, cmd.IsRunning())
+		})
+	}
 }

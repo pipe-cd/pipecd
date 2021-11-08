@@ -50,7 +50,7 @@ func (c *command) GracefulStop(period time.Duration) error {
 	select {
 	case <-timer.C:
 		c.cmd.Process.Kill()
-		return nil
+		return <-c.stoppedCh
 	case err := <-c.stoppedCh:
 		return err
 	}
