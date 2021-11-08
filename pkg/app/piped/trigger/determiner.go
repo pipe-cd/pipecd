@@ -59,6 +59,11 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application, 
 		zap.String("target-commit", d.targetCommit),
 	)
 
+	// TODO: Add logic to determine trigger or not based on other configuration than onCommit.
+	return d.shouldTriggerOnCommit(ctx, app, ignoreUserConfig, logger)
+}
+
+func (d *Determiner) shouldTriggerOnCommit(ctx context.Context, app *model.Application, ignoreUserConfig bool, logger *zap.Logger) (bool, error) {
 	deployConfig, err := loadDeploymentConfiguration(d.repo.GetPath(), app)
 	if err != nil {
 		return false, err
@@ -98,9 +103,22 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application, 
 	}
 
 	// TODO: Remove deprecated `deployConfig.TriggerPaths` configuration.
-	checkingPaths := make([]string, len(deployConfig.Trigger.OnCommit.Paths)+len(deployConfig.TriggerPaths))
-	checkingPaths = append(checkingPaths, deployConfig.Trigger.OnCommit.Paths...)
-	checkingPaths = append(checkingPaths, deployConfig.TriggerPaths...)
+	checkingPaths := make([]string, 0, len(deployConfig.Trigger.OnCommit.Paths)+len(deployConfig.TriggerPaths))
+	// Note: deployConfig.TriggerPaths or deployConfig.Trigger.OnCommit.Paths may contain "" (empty string)
+	// in case users use one of them without the other, that cause unexpected "" path in the checkingPaths list
+	// leads to always trigger deployment since "" path matched all other paths.
+	// The below logic is to remove that "" path from checking path list, will remove after remove the
+	// deprecated deployConfig.TriggerPaths.
+	for _, p := range deployConfig.Trigger.OnCommit.Paths {
+		if p != "" {
+			checkingPaths = append(checkingPaths, p)
+		}
+	}
+	for _, p := range deployConfig.TriggerPaths {
+		if p != "" {
+			checkingPaths = append(checkingPaths, p)
+		}
+	}
 
 	logger.Info("CheckingPaths", zap.Any("checking", checkingPaths))
 	logger.Info("ChangedFiles", zap.Any("changes", changedFiles))
