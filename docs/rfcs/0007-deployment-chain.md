@@ -8,7 +8,7 @@ This RFC introduces a new way to enable users to connect multiple applications t
 With the current supporting deployment, our users have to define their application as one of the supporting application's kinds (K8s, Terraform, CloudRun, Lambda, ECS), they can still define multiple PipeCD applications as parts of their application and trigger them one by one, but it's a bit difficult for them to control the deployment chain smoothly.
 
 ![image](assets/deployment-chain-kind.png)
-Use-case <1>: chain of deployments contains multiple application cross kinds
+Use-case <1>: chain of deployments contains multiple applications cross kinds
 
 Another typical use-case is when users want to build up some kind of chain such as deploy application to the development environment, then if it's done successfully, deploy that application to the staging and then the production environment.
 
@@ -18,7 +18,7 @@ Use-case <2>: chain of deployments contains application deployed across multiple
 Or a variant of that requirement, when users want to roll out their applications to their cluster one by one based on its region. As the same below image, the order of the rolling out deployment should be flex, supports both sequential and parallel.
 
 ![image](assets/deployment-chain-region.png)
-Use-case <3>: chain of deployments contains application deployed across multiple region
+Use-case <3>: chain of deployments contains application deployed across multiple regions
 
 All the above requirements share the same thing in the context, that is: it can be done by users' deployment for their applications as PipeCD applications one by one and make trigger those deployments manually via console or make trigger via pull requests to those application configurations separately, but this all manual stub are tedious and difficult to manage smoothly. With this new __PipeCD deployment chain__ feature, all of those manual steps will be replaced, to keep the good point of using a CD system.
 
@@ -107,7 +107,8 @@ The above configuration will provide a deployment chain as follow
 
 The above configuration contains sample for a completely flexsible deployment chain (multiple applications with difference kinds deployed across environment). For clarity, here are some examples for each known use-cases listed in [above section](#motivation)
 
-### Use-case <1>: chain of deployments contains multiple application cross kinds
+### Use-case <1>: chain of deployments contains multiple applications cross kinds
+![image](assets/deployment-chain-kind.png)
 
 In this examples, users create 3 applications which are: Infra (name: infra, kind: terraform), X (name: x, kind: cloudrun), Y (name: y, kind: kubernetes).
 
@@ -154,6 +155,7 @@ spec:
 ```
 
 ### Use-case <2>: chain of deployments contains application deployed across multiple environments
+![image](assets/deployment-chain-env.png)
 
 In this examples, users create 3 applications which are: X-1 (name: x, kind: kubernetes, env: dev), X-2 (name: x, kind: kubernetes, env: stag), X-3 (name: x, kind: kubernetes, env: prod).
 
@@ -202,7 +204,8 @@ spec:
     ...
 ```
 
-### Use-case <3>: chain of deployments contains application deployed across multiple region
+### Use-case <3>: chain of deployments contains application deployed across multiple regions
+![image](assets/deployment-chain-region.png)
 
 In this examples, users create 3 applications which are: X-a (name: x, kind: kubernetes, region: region-a), X-b (name: x, kind: kubernetes, region: region-b), X-c (name: x, kind: kubernetes, region: region-c)
 
