@@ -19,18 +19,19 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| input | [KubernetesDeploymentInput](/docs/user-guide/configuration-reference/#kubernetesdeploymentinput) | Input for Kubernetes deployment such as kubectl version, helm version, manifests filter... | No |
-| planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
-| commitMatcher | [CommitMatcher](/docs/user-guide/configuration-reference/#commitmatcher) | Forcibly use QuickSync or Pipeline when commit message matched the specified pattern. | No |
-| quickSync | [KubernetesQuickSync](/docs/user-guide/configuration-reference/#kubernetesquicksync) | Configuration for quick sync. | No |
-| pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
-| service | [KubernetesService](/docs/user-guide/configuration-reference/#kubernetesservice) | Which Kubernetes resource should be considered as the Service of application. Empty means the first Service resource will be used. | No |
-| workloads | [][KubernetesWorkload](/docs/user-guide/configuration-reference/#kubernetesworkload) | Which Kubernetes resources should be considered as the Workloads of application. Empty means all Deployment resources. | No |
-| trafficRouting | [KubernetesTrafficRouting](/docs/user-guide/configuration-reference/#kubernetestrafficrouting) | How to change traffic routing percentages. | No |
-| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
-| encryption | [SecretEncryption](/docs/user-guide/configuration-reference/#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
+| input | [KubernetesDeploymentInput](#kubernetesdeploymentinput) | Input for Kubernetes deployment such as kubectl version, helm version, manifests filter... | No |
+| planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
+| trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
+| commitMatcher | [CommitMatcher](#commitmatcher) | Forcibly use QuickSync or Pipeline when commit message matched the specified pattern. | No |
+| quickSync | [KubernetesQuickSync](#kubernetesquicksync) | Configuration for quick sync. | No |
+| pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
+| service | [KubernetesService](#kubernetesservice) | Which Kubernetes resource should be considered as the Service of application. Empty means the first Service resource will be used. | No |
+| workloads | [][KubernetesWorkload](#kubernetesworkload) | Which Kubernetes resources should be considered as the Workloads of application. Empty means all Deployment resources. | No |
+| trafficRouting | [KubernetesTrafficRouting](#kubernetestrafficrouting) | How to change traffic routing percentages. | No |
+| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No |
+| encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
-| notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
+| notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
 ## Terraform application
 
@@ -45,14 +46,15 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| input | [TerraformDeploymentInput](/docs/user-guide/configuration-reference/#terraformdeploymentinput) | Input for Terraform deployment such as terraform version, workspace... | No |
-| planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
-| quickSync | [TerraformQuickSync](/docs/user-guide/configuration-reference/#terraformquicksync) | Configuration for quick sync. | No |
-| pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
-| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
-| encryption | [SecretEncryption](/docs/user-guide/configuration-reference/#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
+| input | [TerraformDeploymentInput](#terraformdeploymentinput) | Input for Terraform deployment such as terraform version, workspace... | No |
+| planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
+| trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
+| quickSync | [TerraformQuickSync](#terraformquicksync) | Configuration for quick sync. | No |
+| pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
+| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No |
+| encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
-| notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
+| notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
 ## CloudRun application
 
@@ -67,14 +69,15 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| input | [CloudRunDeploymentInput](/docs/user-guide/configuration-reference/#cloudrundeploymentinput) | Input for CloudRun deployment such as docker image... | No |
-| planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
-| quickSync | [CloudRunQuickSync](/docs/user-guide/configuration-reference/#cloudrunquicksync) | Configuration for quick sync. | No |
-| pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
-| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
-| encryption | [SecretEncryption](/docs/user-guide/configuration-reference/#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
+| input | [CloudRunDeploymentInput](#cloudrundeploymentinput) | Input for CloudRun deployment such as docker image... | No |
+| planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
+| trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
+| quickSync | [CloudRunQuickSync](#cloudrunquicksync) | Configuration for quick sync. | No |
+| pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
+| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No |
+| encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
-| notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
+| notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
 ## Lambda application
 
@@ -88,13 +91,14 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
-| quickSync | [LambdaQuickSync](/docs/user-guide/configuration-reference/#lambdaquicksync) | Configuration for quick sync. | No |
-| pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
-| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
-| encryption | [SecretEncryption](/docs/user-guide/configuration-reference/#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
+| planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
+| trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
+| quickSync | [LambdaQuickSync](#lambdaquicksync) | Configuration for quick sync. | No |
+| pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
+| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No |
+| encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
-| notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
+| notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
 ## ECS application
 
@@ -110,12 +114,13 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | input | [ECSDeploymentInput](#ecsdeploymentinput) | Input for ECS deployment such as TaskDefinition, Service... | Yes |
-| planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
-| quickSync | [ECSQuickSync](/docs/user-guide/configuration-reference/#ecsquicksync) | Configuration for quick sync. | No |
-| pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
-| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
+| planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
+| trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
+| quickSync | [ECSQuickSync](#ecsquicksync) | Configuration for quick sync. | No |
+| pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
+| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
-| notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
+| notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
 ## Analysis Template Configuration
 
@@ -135,7 +140,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| metrics | map[string][AnalysisMetrics](/docs/user-guide/configuration-reference/#analysismetrics) | Template for metrics. | No |
+| metrics | map[string][AnalysisMetrics](#analysismetrics) | Template for metrics. | No |
 
 ## Event Watcher Configuration
 
@@ -154,7 +159,7 @@ spec:
 |-|-|-|-|
 | name | string | The event name. | Yes |
 | labels | map[string]string | Additional attributes of event. This can make an event definition unique even if the one with the same name exists. | No |
-| replacements | [][EventWatcherReplacement](/docs/user-guide/configuration-reference/#eventwatcherreplacement) | List of places where will be replaced when the new event matches. | Yes |
+| replacements | [][EventWatcherReplacement](#eventwatcherreplacement) | List of places where will be replaced when the new event matches. | Yes |
 
 ## EventWatcherReplacement
 One of `yamlField` or `regex` is required.
@@ -185,11 +190,24 @@ One of `yamlField` or `regex` is required.
 |-|-|-|-|
 | alwaysUsePipeline | bool | Always use the defined pipeline to deploy the application in all deployments. Default is `false`. | No |
 
+## DeploymentTrigger
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| onCommit | [OnCommitConfiguration](#oncommitconfiguration) | Configuration controls how trigger handles deployment in case of some changes found in Git source. | No |
+
+## OnCommitConfiguration
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| disabled | bool | Disable trigger a new deployment in case of some changes found in Git source or not. Default is `false`. | No |
+| paths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. No value provided means watch all changes under the application directory. | No |
+
 ## Pipeline
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| stages | [][PipelineStage](/docs/user-guide/configuration-reference/#pipelinestage) | List of deployment pipeline stages. | No |
+| stages | [][PipelineStage](#pipelinestage) | List of deployment pipeline stages. | No |
 
 ## PipelineStage
 
@@ -199,13 +217,13 @@ One of `yamlField` or `regex` is required.
 | name | string | One of the provided stage names. | Yes |
 | desc | string | The description about the stage. | No |
 | timeout | duration | The maximum time the stage can be taken to run. | No |
-| with | [StageOptions](/docs/user-guide/configuration-reference/#stageoptions) | Specific configuration for the stage. This must be one of these [StageOptions](/docs/user-guide/configuration-reference/#stageoptions). | No |
+| with | [StageOptions](#stageoptions) | Specific configuration for the stage. This must be one of these [StageOptions](#stageoptions). | No |
 
 ## DeploymentNotification
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| mentions | [][NotificationMention](/docs/user-guide/configuration-reference/#notificationmention) | List of users to be notified for each event. | No |
+| mentions | [][NotificationMention](#notificationmention) | List of users to be notified for each event. | No |
 
 ## NotificationMention
 
@@ -223,8 +241,8 @@ One of `yamlField` or `regex` is required.
 | kustomizeVersion | string | Version of kustomize will be used. Empty means the [default version](https://github.com/pipe-cd/pipe/blob/master/dockers/piped-base/install-kustomize.sh#L34) will be used. | No |
 | kustomizeOptions | map[string]string | List of options that should be used by Kustomize commands. | No |
 | helmVersion | string | Version of helm will be used. Empty means the [default version](https://github.com/pipe-cd/pipe/blob/master/dockers/piped-base/install-helm.sh#L35) will be used. | No |
-| helmChart | [HelmChart](/docs/user-guide/configuration-reference/#helmchart) | Where to fetch helm chart. | No |
-| helmOptions | [HelmOptions](/docs/user-guide/configuration-reference/#helmoptions) | Configurable parameters for helm commands. | No |
+| helmChart | [HelmChart](#helmchart) | Where to fetch helm chart. | No |
+| helmOptions | [HelmOptions](#helmoptions) | Configurable parameters for helm commands. | No |
 | namespace | string | The namespace where manifests will be applied. | No |
 | autoRollback | bool | Automatically reverts all deployment changes on failure. Default is `true`. | No |
 
@@ -272,7 +290,7 @@ One of `yamlField` or `regex` is required.
 | Field | Type | Description | Required |
 |-|-|-|-|
 | method | string | Which traffic routing method will be used. Available values are `istio`, `smi`, `podselector`. Default is `podselector`. | No |
-| istio | [IstioTrafficRouting](/docs/user-guide/configuration-reference/#istiotrafficrouting)| Istio configuration when the method is `istio`. | No |
+| istio | [IstioTrafficRouting](#istiotrafficrouting)| Istio configuration when the method is `istio`. | No |
 
 ## IstioTrafficRouting
 
@@ -280,7 +298,7 @@ One of `yamlField` or `regex` is required.
 |-|-|-|-|
 | editableRoutes | []string | List of routes in the VirtualService that can be changed to update traffic routing. Empty means all routes should be updated. | No |
 | host | string | The service host. | No |
-| virtualService | [IstioVirtualService](/docs/user-guide/configuration-reference/#istiovirtualservice) | The reference to VirtualService manifest. Empty means the first VirtualService resource will be used. | No |
+| virtualService | [IstioVirtualService](#istiovirtualservice) | The reference to VirtualService manifest. Empty means the first VirtualService resource will be used. | No |
 
 ## IstioVirtualService
 
@@ -296,7 +314,7 @@ One of `yamlField` or `regex` is required.
 | terraformVersion | string | The version of terraform should be used. Empty means the pre-installed version will be used. | No |
 | vars | []string | List of variables that will be set directly on terraform commands with `-var` flag. The variable must be formatted by `key=value`. | No |
 | varFiles | []string | List of variable files that will be set on terraform commands with `-var-file` flag. | No |
-| commandFlags | [TerraformCommandFlags](/docs/user-guide/configuration-reference/#terraformcommandflags) | List of additional flags will be used while execute terraform commands. | No |
+| commandFlags | [TerraformCommandFlags](#terraformcommandflags) | List of additional flags will be used while execute terraform commands. | No |
 | autoRollback | bool | Automatically reverts all changes from all stages when one of them failed. | No |
 
 ## TerraformQuickSync
@@ -365,7 +383,7 @@ Note: You can get examples for those object from [here](/docs/examples/#ecs-appl
 | provider | string | The unique name of provider defined in the Piped Configuration. | Yes |
 | strategy | string | The strategy name. One of `THRESHOLD` or `PREVIOUS` or `CANARY_BASELINE` or `CANARY_PRIMARY` is available. Defaults to `THRESHOLD`. | No |
 | query | string | A query performed against the [Analysis Provider](/docs/concepts/#analysis-provider). | Yes |
-| expected | [AnalysisExpected](/docs/user-guide/configuration-reference/#analysisexpected) | The statically defined expected query result. | No (for the `THRESHOLD`strategy, Yes) |
+| expected | [AnalysisExpected](#analysisexpected) | The statically defined expected query result. | No (for the `THRESHOLD`strategy, Yes) |
 | interval | duration | Run a query at specified intervals. | Yes |
 | failureLimit | int | Acceptable number of failures. e.g. If 1 is set, the `ANALYSIS` stage will end with failure after two queries results failed. Defaults to 1. | No |
 | skipOnNoData | bool | If true, it considers as a success when no data returned from the analysis provider. Defaults to false. | No |
@@ -374,7 +392,7 @@ Note: You can get examples for those object from [here](/docs/examples/#ecs-appl
 | canaryArgs | map[string][string] | The custom arguments to be populated for the Canary query. They can be reffered as `{{ .VariantCustomArgs.xxx }}`. | No |
 | primaryArgs | map[string][string] | The custom arguments to be populated for the Primary query. They can be reffered as `{{ .VariantCustomArgs.xxx }}`. | No |
 | timeout | duration | How long after which the query times out. | No |
-| template | [AnalysisTemplateRef](/docs/user-guide/configuration-reference/#analysistemplateref) | Reference to the template to be used. | No |
+| template | [AnalysisTemplateRef](#analysistemplateref) | Reference to the template to be used. | No |
 
 
 ## AnalysisLog
@@ -419,7 +437,7 @@ Note: You can get examples for those object from [here](/docs/examples/#ecs-appl
 | replicas | int | How many pods for CANARY workloads. Default is `1` pod. Alternatively, can be specified a string suffixed by "%" to indicate a percentage value compared to the pod number of PRIMARY | No |
 | suffix | string | Suffix that should be used when naming the CANARY variant's resources. Default is `canary`. | No |
 | createService | bool | Whether the CANARY service should be created. Default is `false`. | No |
-| patches | [][KubernetesResourcePatch](/docs/user-guide/configuration-reference/#kubernetesresourcepatch) | List of patches used to customize manifests for CANARY variant. | No |
+| patches | [][KubernetesResourcePatch](#kubernetesresourcepatch) | List of patches used to customize manifests for CANARY variant. | No |
 
 ### KubernetesCanaryCleanStageOptions
 
@@ -442,7 +460,7 @@ Note: You can get examples for those object from [here](/docs/examples/#ecs-appl
 | | | | |
 
 ### KubernetesTrafficRoutingStageOptions
-This stage routes traffic with the method specified in [KubernetesTrafficRouting](https://pipecd.dev/docs/user-guide/configuration-reference/#kubernetestrafficrouting).
+This stage routes traffic with the method specified in [KubernetesTrafficRouting](#kubernetestrafficrouting).
 When using `podselector` method as a traffic routing method, routing is done by updating the Service selector.
 Therefore, note that all traffic will be routed to the primary if the the primary variant's service is rolled out by running the `K8S_PRIMARY_ROLLOUT` stage.
 
@@ -506,7 +524,7 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | Field | Type | Description | Required |
 |-|-|-|-|
 | duration | duration | Maximum time to perform the analysis. | Yes |
-| metrics | [][AnalysisMetrics](/docs/user-guide/configuration-reference/#analysismetrics) | Configuration for analysis by metrics. | No |
+| metrics | [][AnalysisMetrics](#analysismetrics) | Configuration for analysis by metrics. | No |
 
 ## PipeCD rich defined types
 
@@ -517,8 +535,8 @@ A wrapper of type `int` to represent percentage data. Basically, you can pass `1
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| target | [KubernetesResourcePatchTarget](/docs/user-guide/configuration-reference/#kubernetesresourcepatchtarget) | Which manifest, which field will be the target of patch operations. | Yes |
-| ops | [][KubernetesResourcePatchOp](/docs/user-guide/configuration-reference/#kubernetesresourcepatchop) | List of operations should be applied to the above target. | No |
+| target | [KubernetesResourcePatchTarget](#kubernetesresourcepatchtarget) | Which manifest, which field will be the target of patch operations. | Yes |
+| ops | [][KubernetesResourcePatchOp](#kubernetesresourcepatchop) | List of operations should be applied to the above target. | No |
 
 ### KubernetesResourcePatchTarget
 
