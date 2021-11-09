@@ -27,7 +27,6 @@ description: >
     projectID: {PROJECT_ID}
     pipedID: {PIPED_ID}
     pipedKeyData: {BASE64_ENCODED_PIPED_KEY}
-    webAddress: {CONTROL_PLANE_WEB_ADDRESS}
     # Write in a format like "host:443" because the communication is done via gRPC.
     apiAddress: {CONTROL_PLANE_API_ADDRESS}
 
@@ -102,7 +101,27 @@ description: >
 
 - Running Piped on a Google Cloud VM
 
-  ``` shell
+  {{< tabpane >}}
+  {{< tab lang="console" header="Piped with Remote-upgrade" >}}
+# Enable remote-upgrade feature of Piped.
+# https://pipecd.dev/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-upgrade
+# This allows upgrading Piped to a new version from the web console.
+
+  gcloud compute instances create-with-container vm-piped \
+    --container-image="gcr.io/pipecd/piped:{{< blocks/latest_version >}}" \
+    --container-command="/launcher" \
+    --container-arg="launcher" \
+    --container-arg="--config-from-gcp-secret=true" \
+    --container-arg="--gcp-secret-id=projects/{GCP_PROJECT_ID}/secrets/vm-piped-config/versions/{SECRET_VERSION}" \
+    --network="{VPC_NETWORK}" \
+    --subnet="{VPC_SUBNET}" \
+    --scopes="cloud-platform" \
+    --service-account="vm-piped@{GCP_PROJECT_ID}.iam.gserviceaccount.com"
+  {{< /tab >}}
+  {{< tab lang="console" header="Piped" >}}
+# This just installs a Piped with the specified version.
+# Whenever you want to upgrade that Piped to a new version or update its config data you have to restart it.
+
   gcloud compute instances create-with-container vm-piped \
     --container-image="gcr.io/pipecd/piped:{{< blocks/latest_version >}}" \
     --container-arg="piped" \
@@ -111,7 +130,8 @@ description: >
     --subnet="{VPC_SUBNET}" \
     --scopes="cloud-platform" \
     --service-account="vm-piped@{GCP_PROJECT_ID}.iam.gserviceaccount.com"
-  ```
+  {{< /tab >}}
+  {{< /tabpane >}}
 
 After that, you can see on PipeCD web at `Settings` page that Piped is connecting to control-plane.
 You can also view Piped log as described [here](https://cloud.google.com/compute/docs/containers/deploying-containers#viewing_logs).

@@ -35,7 +35,6 @@ This way requires installing cluster-level resources. Piped installed with this 
     projectID: {PROJECT_ID}
     pipedID: {PIPED_ID}
     pipedKeyFile: /etc/piped-secret/piped-key
-    webAddress: {CONTROL_PLANE_WEB_ADDRESS}
     # Write in a format like "host:443" because the communication is done via gRPC.
     apiAddress: {CONTROL_PLANE_API_ADDRESS}
     git:
@@ -108,7 +107,6 @@ Most parts are identical to the previous way, but some are slightly different.
     projectID: {PROJECT_ID}
     pipedID: {PIPED_ID}
     pipedKeyFile: /etc/piped-secret/piped-key
-    webAddress: {CONTROL_PLANE_WEB_ADDRESS}
     # Write in a format like "host:443" because the communication is done via gRPC.
     apiAddress: {CONTROL_PLANE_API_ADDRESS}
     git:
