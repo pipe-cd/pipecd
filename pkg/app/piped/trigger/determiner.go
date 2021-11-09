@@ -37,15 +37,19 @@ type Determiner struct {
 	repo         git.Repo
 	targetCommit string
 	commitGetter LastTriggeredCommitGetter
-	logger       *zap.Logger
+	// Flag `ignoreUserConfig` set to `true` will force check changes and use it to determine
+	// the application deployment should be triggered or not, regardless of the user's configuration.
+	ignoreUserConfig bool
+	logger           *zap.Logger
 }
 
-func NewDeterminer(repo git.Repo, targetCommit string, cg LastTriggeredCommitGetter, logger *zap.Logger) *Determiner {
+func NewDeterminer(repo git.Repo, targetCommit string, cg LastTriggeredCommitGetter, ignoreUserConfig bool, logger *zap.Logger) *Determiner {
 	return &Determiner{
-		repo:         repo,
-		targetCommit: targetCommit,
-		commitGetter: cg,
-		logger:       logger.Named("determiner"),
+		repo:             repo,
+		targetCommit:     targetCommit,
+		commitGetter:     cg,
+		ignoreUserConfig: ignoreUserConfig,
+		logger:           logger.Named("determiner"),
 	}
 }
 
@@ -56,6 +60,22 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application) 
 		zap.String("app-id", app.Id),
 		zap.String("target-commit", d.targetCommit),
 	)
+
+	// TODO: Add logic to determine trigger or not based on other configuration than onCommit.
+	return d.shouldTriggerOnCommit(ctx, app, logger)
+}
+
+func (d *Determiner) shouldTriggerOnCommit(ctx context.Context, app *model.Application, logger *zap.Logger) (bool, error) {
+	deployConfig, err := loadDeploymentConfiguration(d.repo.GetPath(), app)
+	if err != nil {
+		return false, err
+	}
+
+	// Not trigger in case users disable auto trigger deploy on change and the user config is unignorable.
+	if deployConfig.Trigger.OnCommit.Disabled && !d.ignoreUserConfig {
+		logger.Info(fmt.Sprintf("auto trigger deployment disabled for application, hash: %s", d.targetCommit))
+		return false, nil
+	}
 
 	preCommit, err := d.commitGetter.Get(ctx, app.Id)
 	if err != nil {
@@ -84,12 +104,25 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application) 
 		return false, err
 	}
 
-	deployConfig, err := loadDeploymentConfiguration(d.repo.GetPath(), app)
-	if err != nil {
-		return false, err
+	// TODO: Remove deprecated `deployConfig.TriggerPaths` configuration.
+	checkingPaths := make([]string, 0, len(deployConfig.Trigger.OnCommit.Paths)+len(deployConfig.TriggerPaths))
+	// Note: deployConfig.TriggerPaths or deployConfig.Trigger.OnCommit.Paths may contain "" (empty string)
+	// in case users use one of them without the other, that cause unexpected "" path in the checkingPaths list
+	// leads to always trigger deployment since "" path matched all other paths.
+	// The below logic is to remove that "" path from checking path list, will remove after remove the
+	// deprecated deployConfig.TriggerPaths.
+	for _, p := range deployConfig.Trigger.OnCommit.Paths {
+		if p != "" {
+			checkingPaths = append(checkingPaths, p)
+		}
+	}
+	for _, p := range deployConfig.TriggerPaths {
+		if p != "" {
+			checkingPaths = append(checkingPaths, p)
+		}
 	}
 
-	touched, err := isTouchedByChangedFiles(app.GitPath.Path, deployConfig.TriggerPaths, changedFiles)
+	touched, err := isTouchedByChangedFiles(app.GitPath.Path, checkingPaths, changedFiles)
 	if err != nil {
 		return false, err
 	}

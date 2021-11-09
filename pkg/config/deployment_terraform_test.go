@@ -39,6 +39,11 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 			expectedSpec: &TerraformDeploymentSpec{
 				GenericDeploymentSpec: GenericDeploymentSpec{
 					Timeout: Duration(6 * time.Hour),
+					Trigger: Trigger{
+						OnCommit: OnCommit{
+							Disabled: false,
+						},
+					},
 				},
 				Input: TerraformDeploymentInput{},
 			},
@@ -51,6 +56,11 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 			expectedSpec: &TerraformDeploymentSpec{
 				GenericDeploymentSpec: GenericDeploymentSpec{
 					Timeout: Duration(6 * time.Hour),
+					Trigger: Trigger{
+						OnCommit: OnCommit{
+							Disabled: false,
+						},
+					},
 				},
 				Input: TerraformDeploymentInput{
 					Workspace:        "dev",
@@ -73,6 +83,11 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 						},
 					},
 					Timeout: Duration(6 * time.Hour),
+					Trigger: Trigger{
+						OnCommit: OnCommit{
+							Disabled: false,
+						},
+					},
 				},
 				Input: TerraformDeploymentInput{
 					Workspace:        "dev",
@@ -108,6 +123,11 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 						},
 					},
 					Timeout: Duration(6 * time.Hour),
+					Trigger: Trigger{
+						OnCommit: OnCommit{
+							Disabled: false,
+						},
+					},
 				},
 				Input: TerraformDeploymentInput{
 					Workspace:        "dev",
