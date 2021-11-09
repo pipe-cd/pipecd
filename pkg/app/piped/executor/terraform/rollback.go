@@ -81,12 +81,14 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	e.LogPersister.Infof("Start rolling back to the state defined at commit %s", e.Deployment.RunningCommitHash)
 	var (
 		flags = deployCfg.Input.CommandFlags
+		envs  = deployCfg.Input.CommandEnvs
 		cmd   = provider.NewTerraform(
 			terraformPath,
 			ds.AppDir,
 			provider.WithVars(vars),
 			provider.WithVarFiles(deployCfg.Input.VarFiles),
 			provider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
+			provider.WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
 		)
 	)
 

@@ -91,12 +91,14 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	var (
 		flags = e.deployCfg.Input.CommandFlags
+		envs  = e.deployCfg.Input.CommandEnvs
 		cmd   = provider.NewTerraform(
 			e.terraformPath,
 			e.appDir,
 			provider.WithVars(e.vars),
 			provider.WithVarFiles(e.deployCfg.Input.VarFiles),
 			provider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
+			provider.WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
 		)
 	)
 
@@ -138,12 +140,14 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 func (e *deployExecutor) ensurePlan(ctx context.Context) model.StageStatus {
 	var (
 		flags = e.deployCfg.Input.CommandFlags
+		envs  = e.deployCfg.Input.CommandEnvs
 		cmd   = provider.NewTerraform(
 			e.terraformPath,
 			e.appDir,
 			provider.WithVars(e.vars),
 			provider.WithVarFiles(e.deployCfg.Input.VarFiles),
 			provider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
+			provider.WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
 		)
 	)
 
@@ -178,12 +182,14 @@ func (e *deployExecutor) ensurePlan(ctx context.Context) model.StageStatus {
 func (e *deployExecutor) ensureApply(ctx context.Context) model.StageStatus {
 	var (
 		flags = e.deployCfg.Input.CommandFlags
+		envs  = e.deployCfg.Input.CommandEnvs
 		cmd   = provider.NewTerraform(
 			e.terraformPath,
 			e.appDir,
 			provider.WithVars(e.vars),
 			provider.WithVarFiles(e.deployCfg.Input.VarFiles),
 			provider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
+			provider.WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
 		)
 	)
 

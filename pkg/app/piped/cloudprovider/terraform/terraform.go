@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -34,6 +35,11 @@ type options struct {
 	initFlags   []string
 	planFlags   []string
 	applyFlags  []string
+
+	sharedEnvs []string
+	initEnvs   []string
+	planEnvs   []string
+	applyEnvs  []string
 }
 
 type Option func(*options)
@@ -65,6 +71,15 @@ func WithAdditionalFlags(shared, init, plan, apply []string) Option {
 	}
 }
 
+func WithAdditionalEnvs(shared, init, plan, apply []string) Option {
+	return func(opts *options) {
+		opts.sharedEnvs = append(opts.sharedEnvs, shared...)
+		opts.initEnvs = append(opts.initEnvs, init...)
+		opts.planEnvs = append(opts.planEnvs, plan...)
+		opts.applyEnvs = append(opts.applyEnvs, apply...)
+	}
+}
+
 type Terraform struct {
 	execPath string
 	dir      string
@@ -89,6 +104,7 @@ func (t *Terraform) Version(ctx context.Context) (string, error) {
 	args := []string{"version"}
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir
+	cmd.Env = append(os.Environ(), t.options.sharedEnvs...)
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -112,6 +128,10 @@ func (t *Terraform) Init(ctx context.Context, w io.Writer) error {
 	cmd.Stdout = w
 	cmd.Stderr = w
 
+	env := append(os.Environ(), t.options.sharedEnvs...)
+	env = append(env, t.options.initEnvs...)
+	cmd.Env = env
+
 	io.WriteString(w, fmt.Sprintf("terraform %s", strings.Join(args, " ")))
 	return cmd.Run()
 }
@@ -124,6 +144,7 @@ func (t *Terraform) SelectWorkspace(ctx context.Context, workspace string) error
 	}
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir
+	cmd.Env = append(os.Environ(), t.options.sharedEnvs...)
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -171,6 +192,10 @@ func (t *Terraform) Plan(ctx context.Context, w io.Writer) (PlanResult, error) {
 	cmd.Dir = t.dir
 	cmd.Stdout = stdout
 	cmd.Stderr = stdout
+
+	env := append(os.Environ(), t.options.sharedEnvs...)
+	env = append(env, t.options.planEnvs...)
+	cmd.Env = env
 
 	io.WriteString(w, fmt.Sprintf("terraform %s", strings.Join(args, " ")))
 	err := cmd.Run()
@@ -268,6 +293,10 @@ func (t *Terraform) Apply(ctx context.Context, w io.Writer) error {
 	cmd.Dir = t.dir
 	cmd.Stdout = w
 	cmd.Stderr = w
+
+	env := append(os.Environ(), t.options.sharedEnvs...)
+	env = append(env, t.options.applyEnvs...)
+	cmd.Env = env
 
 	io.WriteString(w, fmt.Sprintf("terraform %s", strings.Join(args, " ")))
 	return cmd.Run()

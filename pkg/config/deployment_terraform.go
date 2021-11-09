@@ -51,6 +51,8 @@ type TerraformDeploymentInput struct {
 	AutoRollback bool `json:"autoRollback"`
 	// List of additional flags will be used while execute terraform commands.
 	CommandFlags TerraformCommandFlags `json:"commandFlags"`
+	// List of additional environment variables will be used while execute terraform commands.
+	CommandEnvs TerraformCommandEnvs `json:"commandEnvs"`
 }
 
 // TerraformSyncStageOptions contains all configurable values for a TERRAFORM_SYNC stage.
@@ -71,6 +73,14 @@ type TerraformApplyStageOptions struct {
 
 // TerraformCommandFlags contains all additional flags will be used while execute terraform commands.
 type TerraformCommandFlags struct {
+	Shared []string `json:"shared"`
+	Init   []string `json:"init"`
+	Plan   []string `json:"plan"`
+	Apply  []string `json:"apply"`
+}
+
+// TerraformCommandEnvs contains all additional environment variables will be used while execute terraform commands.
+type TerraformCommandEnvs struct {
 	Shared []string `json:"shared"`
 	Init   []string `json:"init"`
 	Plan   []string `json:"plan"`
