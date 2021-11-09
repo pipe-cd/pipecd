@@ -227,10 +227,10 @@ func (t *Trigger) checkNewCommits(ctx context.Context) error {
 		if err != nil {
 			continue
 		}
-		d := NewDeterminer(gitRepo, headCommit.Hash, t.commitStore, t.logger)
+		d := NewDeterminer(gitRepo, headCommit.Hash, t.commitStore, false, t.logger)
 
 		for _, app := range apps {
-			shouldTrigger, err := d.ShouldTrigger(ctx, app, false)
+			shouldTrigger, err := d.ShouldTrigger(ctx, app)
 			if err != nil {
 				t.logger.Error(fmt.Sprintf("failed to check application: %s", app.Id), zap.Error(err))
 				continue

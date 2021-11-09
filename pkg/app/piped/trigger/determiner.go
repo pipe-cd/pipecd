@@ -37,22 +37,24 @@ type Determiner struct {
 	repo         git.Repo
 	targetCommit string
 	commitGetter LastTriggeredCommitGetter
-	logger       *zap.Logger
+	// Flag `ignoreUserConfig` set to `true` will force check changes and use it to determine
+	// the application deployment should be triggered or not, regardless of the user's configuration.
+	ignoreUserConfig bool
+	logger           *zap.Logger
 }
 
-func NewDeterminer(repo git.Repo, targetCommit string, cg LastTriggeredCommitGetter, logger *zap.Logger) *Determiner {
+func NewDeterminer(repo git.Repo, targetCommit string, cg LastTriggeredCommitGetter, ignoreUserConfig bool, logger *zap.Logger) *Determiner {
 	return &Determiner{
-		repo:         repo,
-		targetCommit: targetCommit,
-		commitGetter: cg,
-		logger:       logger.Named("determiner"),
+		repo:             repo,
+		targetCommit:     targetCommit,
+		commitGetter:     cg,
+		ignoreUserConfig: ignoreUserConfig,
+		logger:           logger.Named("determiner"),
 	}
 }
 
 // ShouldTrigger decides whether a given application should be triggered or not.
-// Flag `ignoreUserConfig` set to `true` will force check changes and use it to determine
-// the application deployment should be triggered or not, regardless of the user's configuration.
-func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application, ignoreUserConfig bool) (bool, error) {
+func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application) (bool, error) {
 	logger := d.logger.With(
 		zap.String("app", app.Name),
 		zap.String("app-id", app.Id),
@@ -60,17 +62,17 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application, 
 	)
 
 	// TODO: Add logic to determine trigger or not based on other configuration than onCommit.
-	return d.shouldTriggerOnCommit(ctx, app, ignoreUserConfig, logger)
+	return d.shouldTriggerOnCommit(ctx, app, logger)
 }
 
-func (d *Determiner) shouldTriggerOnCommit(ctx context.Context, app *model.Application, ignoreUserConfig bool, logger *zap.Logger) (bool, error) {
+func (d *Determiner) shouldTriggerOnCommit(ctx context.Context, app *model.Application, logger *zap.Logger) (bool, error) {
 	deployConfig, err := loadDeploymentConfiguration(d.repo.GetPath(), app)
 	if err != nil {
 		return false, err
 	}
 
 	// Not trigger in case users disable auto trigger deploy on change and the user config is unignorable.
-	if deployConfig.Trigger.OnCommit.Disabled && !ignoreUserConfig {
+	if deployConfig.Trigger.OnCommit.Disabled && !d.ignoreUserConfig {
 		logger.Info(fmt.Sprintf("auto trigger deployment disabled for application, hash: %s", d.targetCommit))
 		return false, nil
 	}
