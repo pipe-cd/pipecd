@@ -28,7 +28,7 @@ The idea is to keep the PipeCD application deployment as a unit of deployment as
 A canonical flow would look as below:
 1. Users trigger to run their first application (the first application in their deployment chain) via the web console or pull requests as usual
 2. Deploy the first triggered application in the deployment chain
-3. After the application is deployed successfully, the piped will send a trigger command to trigger the deployment chain to the control-plane, since all those applications are shared in the same project, this trigger should be valid
+3. In case the trigger for the first application in the deployment chain satisfied some conditions (such as containing configured commit message) the piped will send a trigger command to trigger the deployment chain to the control-plane, since all those applications are shared in the same project, this trigger should be valid
 4. Control-plane gets deployment events triggered by the first application's piped and makes sync deployment commands for all listed applications
 5. Pipeds which handle deployment for all triggered applications fetch sync command and deploy its application once the conditions are satisfied
 
@@ -36,7 +36,7 @@ A canonical flow would look as below:
 
 ## Configuration
 
-At the step (3), to enable configure the deployment chain after the first applications (in the deployment chain) deployed successfully, we introduce a new configuration section to the deployment configuration named `postSync` which contains configurations of actions that the in charge piped should do after the deployment run successfully.
+At the step (3), to configure the deployment chain and trigger it via triggering the first applications (in the deployment chain), we introduce a new configuration section to the deployment configuration named `postSync` which contains configurations of actions that the in charge piped should do after the deployment triggered.
 
 The configuration would look like:
 
@@ -207,9 +207,9 @@ spec:
 ### Use-case <3>: chain of deployments contains application deployed across multiple regions
 ![image](assets/deployment-chain-region.png)
 
-In this examples, users create 3 applications which are: X-a (name: x, kind: kubernetes, region: region-a), X-b (name: x, kind: kubernetes, region: region-b), X-c (name: x, kind: kubernetes, region: region-c)
+In this examples, users create 4 applications which are: X-x (name: x, kind: kubernetes, region: region-x), X-a (name: x, kind: kubernetes, region: region-a), X-b (name: x, kind: kubernetes, region: region-b), X-c (name: x, kind: kubernetes, region: region-c)
 
-Application `X-a` (the first application of the chain) configuration:
+Application `X-x` (the first application of the chain) configuration:
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
@@ -220,22 +220,12 @@ spec:
   postSync:
     chain:
       applications:
-        - name: x # since all 3 application has the same name `x`
+        - name: x # since all required applications have the same name `x`
       conditions:
         - commitPrefix: “Trigger chain”
 ```
 
-Application `X-b` configuration:
-```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: KubernetesApp
-name: x
-spec:
-  pipeline:
-    ...
-```
-
-Application `X-c` configuration:
+Applications `X-a`, `X-b`, `X-c` configuration:
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
@@ -247,7 +237,7 @@ spec:
 
 Note:
 - All labels in the above examples are users' defined labels, not specified by PipeCD.
-- In use-case <3>, the `X-a` application will be triggered first, and after it's deployed successfully, `X-b` and `X-c` will be triggered and rolling out at the same time (deployment run in parallel).
+- In use-case <3>, the `X-x` application will be triggered first, and after it's deployed successfully, `X-a`, `X-b` and `X-c` will be triggered and rolling out at the same time (deployment run in parallel).
 
 ## Web view
 
