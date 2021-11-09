@@ -25,7 +25,7 @@ echo "Prepare version docs"
 
 CONTENT_DIR=docs/content/en
 
-# Update $CONTENT_DIR/docs
+# Update stable docs at $CONTENT_DIR/docs
 rm -rf $CONTENT_DIR/docs
 cp -rf $CONTENT_DIR/docs-dev $CONTENT_DIR/docs
 cat <<EOT > $CONTENT_DIR/docs/_index.md
@@ -39,6 +39,8 @@ menu:
 ---
 EOT
 
+# Remove $CONTENT_DIR/docs-$1 if existed
+rm -rf $CONTENT_DIR/docs-$1
 # Create new $CONTENT_DIR/docs-$1
 cp -rf $CONTENT_DIR/docs-dev $CONTENT_DIR/docs-$1
 cp -rf docs/themes/docsy/layouts/docs/ docs/layouts/docs-$1
@@ -50,15 +52,21 @@ type: docs
 ---
 EOT
 
-# Update docs/config.toml
-tail -r docs/config.toml | tail -n +5 | tail -r >> docs/config.toml.tmp
-cat <<EOT >> docs/config.toml.tmp
+# Update docs/config.toml in case this version docs is not yet existed
+if grep -Fq "$1" docs/config.toml
+then
+  echo "Docs for version $1 existed, updating..."
+else
+  echo "Docs for version $1 has not existed, adding..."
+  tail -r docs/config.toml | tail -n +5 | tail -r >> docs/config.toml.tmp
+  cat <<EOT >> docs/config.toml.tmp
 
 [[params.versions]]
   version = "$1"
   url = "/docs-$1/"
 EOT
-tail -4 docs/config.toml >> docs/config.toml.tmp
-mv docs/config.toml.tmp docs/config.toml
+  tail -4 docs/config.toml >> docs/config.toml.tmp
+  mv docs/config.toml.tmp docs/config.toml
+fi
 
 echo "Version docs has been prepared successfully at $CONTENT_DIR/docs-$1/"
