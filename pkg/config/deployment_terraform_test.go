@@ -40,8 +40,8 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 				GenericDeploymentSpec: GenericDeploymentSpec{
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
-						OnCommit: OnCommitConfig{
-							Disable: false,
+						OnCommit: OnCommit{
+							Disabled: false,
 						},
 					},
 				},
@@ -57,8 +57,8 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 				GenericDeploymentSpec: GenericDeploymentSpec{
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
-						OnCommit: OnCommitConfig{
-							Disable: false,
+						OnCommit: OnCommit{
+							Disabled: false,
 						},
 					},
 				},
@@ -84,8 +84,8 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 					},
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
-						OnCommit: OnCommitConfig{
-							Disable: false,
+						OnCommit: OnCommit{
+							Disabled: false,
 						},
 					},
 				},
@@ -124,8 +124,8 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 					},
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
-						OnCommit: OnCommitConfig{
-							Disable: false,
+						OnCommit: OnCommit{
+							Disabled: false,
 						},
 					},
 				},

@@ -70,7 +70,7 @@ func (d *Determiner) shouldTriggerOnCommit(ctx context.Context, app *model.Appli
 	}
 
 	// Not trigger in case users disable auto trigger deploy on change and the user config is unignorable.
-	if deployConfig.Trigger.OnCommit.Disable && !ignoreUserConfig {
+	if deployConfig.Trigger.OnCommit.Disabled && !ignoreUserConfig {
 		logger.Info(fmt.Sprintf("auto trigger deployment disabled for application, hash: %s", d.targetCommit))
 		return false, nil
 	}

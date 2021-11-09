@@ -60,12 +60,12 @@ type DeploymentPlanner struct {
 
 type Trigger struct {
 	// Configuration in case changes on commit are found.
-	OnCommit OnCommitConfig `json:"onCommit"`
+	OnCommit OnCommit `json:"onCommit"`
 }
 
-type OnCommitConfig struct {
+type OnCommit struct {
 	// Control trigger new deployment on Git change or not.
-	Disable bool `json:"disable,omitempty"`
+	Disabled bool `json:"disabled,omitempty"`
 	// List of directories or files where their changes will trigger the deployment.
 	// Regular expression can be used.
 	Paths []string `json:"paths,omitempty"`
