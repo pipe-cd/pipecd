@@ -3,7 +3,7 @@ apiVersion: pipecd.dev/v1beta1
 kind: TerraformApp
 spec:
   input:
-    terraformVersion: 0.12.26
+    terraformVersion: 1.0.10
   encryption:
     encryptedSecrets:
       serviceAccount: {ENCRYPTED_DATA_GENERATED_FROM_WEB}
