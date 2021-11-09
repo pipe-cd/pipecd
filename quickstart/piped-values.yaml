@@ -10,7 +10,6 @@ config:
       pipedID: YOUR_PIPED_ID
       pipedKeyFile: /etc/piped-secret/piped-key
       apiAddress: pipecd:8080
-      webAddress: http://pipecd:8080
       syncInterval: 1m
       repositories:
         - repoId: examples
