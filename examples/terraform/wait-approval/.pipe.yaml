@@ -4,7 +4,7 @@ kind: TerraformApp
 spec:
   input:
     workspace: dev
-    terraformVersion: 0.12.26
+    terraformVersion: 1.0.10
   pipeline:
     stages:
       - name: TERRAFORM_PLAN
