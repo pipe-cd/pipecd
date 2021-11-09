@@ -26,11 +26,11 @@ All the above requirements share the same thing in the context, that is: it can 
 The idea is to keep the PipeCD application deployment as a unit of deployment as is, but add __a way to enable users to manipulate a deployment chain based on the state of the last sucessfully run deployment__.
 
 A canonical flow would look as below:
-- Users trigger to run their first application (the first application in their deployment chain) via the web console or pull requests as usual (1)
-- Deploy the first triggered application in the deployment chain (2)
-- After the application is deployed successfully, the piped will send a trigger command to trigger the deployment chain to the control-plane, since all those applications are shared in the same project, this trigger should be valid (3)
-- Control-plane gets deployment events triggered by the first application's piped and makes sync deployment commands for all listed applications (4)
-- Pipeds which handle deployment for all triggered applications fetch sync command and deploy its application once the conditions are satisfied (5)
+1. Users trigger to run their first application (the first application in their deployment chain) via the web console or pull requests as usual
+2. Deploy the first triggered application in the deployment chain
+3. After the application is deployed successfully, the piped will send a trigger command to trigger the deployment chain to the control-plane, since all those applications are shared in the same project, this trigger should be valid
+4. Control-plane gets deployment events triggered by the first application's piped and makes sync deployment commands for all listed applications
+5. Pipeds which handle deployment for all triggered applications fetch sync command and deploy its application once the conditions are satisfied
 
 ![image](assets/deployment-chain-idea.png)
 
