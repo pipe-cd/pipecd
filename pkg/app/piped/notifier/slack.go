@@ -151,13 +151,13 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 			{"Started At", makeSlackDate(d.CreatedAt), true},
 		}
 	}
-	generateDeploymentEventDataForTriggerFailed := func(app *model.Application, commit *model.GitCommit) {
-		link = makeCommitLink(app.GitPath, commit.Hash)
+	generateDeploymentEventDataForTriggerFailed := func(app *model.Application, hash, msg string) {
+		link = makeCommitLink(app.GitPath, hash)
 		fields = []slackField{
 			{"Project", truncateText(app.ProjectId, 8), true},
 			{"Application", makeSlackLink(app.Name, fmt.Sprintf("%s/applications/%s?project=%s", webURL, app.Id, app.PipedId)), true},
 			{"Kind", strings.ToLower(app.Kind.String()), true},
-			{"Commit", makeSlackLink(truncateText(commit.Message, 8), link), true},
+			{"Commit", makeSlackLink(truncateText(msg, 8), link), true},
 		}
 	}
 	generatePipedEventData := func(id, name, version, project string) {
@@ -217,7 +217,7 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		md := event.Metadata.(*model.NotificationEventDeploymentTriggerFailed)
 		title = "Deployment Trigger was failed"
 		text = md.Reason
-		generateDeploymentEventDataForTriggerFailed(md.Application, md.Commit)
+		generateDeploymentEventDataForTriggerFailed(md.Application, md.Hash, md.Message)
 
 	case model.NotificationEventType_EVENT_PIPED_STARTED:
 		md := event.Metadata.(*model.NotificationEventPipedStarted)

@@ -103,8 +103,9 @@ message NotificationEventDeploymentWaitApproval {
 
 message NotificationEventDeploymentTriggerFailed {
     Application application = 1 [(validate.rules).message.required = true];
-    GitCommit commit = 2 [(validate.rules).message.required = true];
-    string reason = 3 [(validate.rules).string.min_len = 1];
+    string hash = 2 [(validate.rules).string.min_len = 1];
+    string message = 3 [(validate.rules).string.min_len = 1];
+    string reason = 4 [(validate.rules).string.min_len = 1];
 }
 
 message NotificationEventApplicationSynced {
@@ -131,9 +132,4 @@ message NotificationEventPipedStopped {
     string name = 2 [(validate.rules).string.min_len = 1];
     string version = 3;
     string project_id = 4 [(validate.rules).string.min_len = 1];
-}
-
-message GitCommit {
-    string hash = 4 [(validate.rules).string.min_len = 1];
-    string message = 7 [(validate.rules).string.min_len = 1];
 }
