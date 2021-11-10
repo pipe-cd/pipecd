@@ -172,7 +172,7 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 				{"Commit", makeSlackLink(truncateText(msg, 8), commitURL), true},
 			}
 		}
-		
+
 	}
 	generatePipedEventData := func(id, name, version, project string) {
 		link = fmt.Sprintf("%s/settings/piped?project=%s", webURL, project)
