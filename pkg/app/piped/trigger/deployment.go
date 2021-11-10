@@ -51,7 +51,7 @@ func (t *Trigger) triggerDeployment(
 	deployment, err = buildDeployment(app, branch, commit, commander, syncStrategy, time.Now(), n)
 	if err != nil {
 		t.logger.Error("failed to build the deployment", zap.Error(err))
-		t.reportDeploymentFailed(app, fmt.Sprintf("failed to build the deployment %v", err), commit)
+		t.reportDeploymentFailed(app, fmt.Sprintf("failed to build the deployment: %v", err), commit)
 		return
 	}
 
@@ -88,7 +88,7 @@ func (t *Trigger) triggerDeployment(
 	}
 	if _, err = t.apiClient.CreateDeployment(ctx, req); err != nil {
 		t.logger.Error("failed to create deployment", zap.Error(err))
-		t.reportDeploymentFailed(app, fmt.Sprintf("failed to create deployment %v", err), commit)
+		t.reportDeploymentFailed(app, fmt.Sprintf("failed to create deployment: %v", err), commit)
 		return
 	}
 
