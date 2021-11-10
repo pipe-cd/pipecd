@@ -51,7 +51,7 @@ type TerraformDeploymentInput struct {
 	AutoRollback bool `json:"autoRollback"`
 	// List of additional flags will be used while execute terraform commands.
 	CommandFlags TerraformCommandFlags `json:"commandFlags"`
-	// List of additional environment variables will be used while execute terraform commands.
+	// List of additional environment variables will be used while executing terraform commands.
 	CommandEnvs TerraformCommandEnvs `json:"commandEnvs"`
 }
 
