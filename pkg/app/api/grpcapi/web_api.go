@@ -646,7 +646,6 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		a.logger.Error("failed to create application", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to create application")
 	}
-	// TODO: Create a command to send an application information defined in the application config
 
 	return &webservice.AddApplicationResponse{
 		ApplicationId: app.Id,
