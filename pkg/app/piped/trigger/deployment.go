@@ -188,10 +188,10 @@ func (t *Trigger) reportDeploymentFailed(app *model.Application, reason string, 
 	t.notifier.Notify(model.NotificationEvent{
 		Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED,
 		Metadata: &model.NotificationEventDeploymentTriggerFailed{
-			Application: app,
-			Hash:        commit.Hash,
-			Message:     commit.Message,
-			Reason:      reason,
+			Application:   app,
+			CommitHash:    commit.Hash,
+			CommitMessage: commit.Message,
+			Reason:        reason,
 		},
 	})
 }
