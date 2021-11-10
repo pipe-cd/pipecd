@@ -51,6 +51,7 @@ func (t *Trigger) triggerDeployment(
 	deployment, err = buildDeployment(app, branch, commit, commander, syncStrategy, time.Now(), n)
 	if err != nil {
 		t.logger.Error("failed to build the deployment", zap.Error(err))
+		t.reportDeploymentFailed(app, fmt.Sprintf("failed to build the deployment %v", err), commit)
 		return
 	}
 
@@ -61,10 +62,12 @@ func (t *Trigger) triggerDeployment(
 
 	defer func() {
 		if err != nil {
+			t.reportDeploymentFailed(app, fmt.Sprintf("%v", err), commit)
 			return
 		}
 		env, err := t.environmentLister.Get(ctx, deployment.EnvId)
 		if err != nil {
+			t.reportDeploymentFailed(app, fmt.Sprintf("%v", err), commit)
 			return
 		}
 		t.notifier.Notify(model.NotificationEvent{
@@ -85,6 +88,7 @@ func (t *Trigger) triggerDeployment(
 	}
 	if _, err = t.apiClient.CreateDeployment(ctx, req); err != nil {
 		t.logger.Error("failed to create deployment", zap.Error(err))
+		t.reportDeploymentFailed(app, fmt.Sprintf("failed to create deployment %v", err), commit)
 		return
 	}
 
