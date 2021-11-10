@@ -14,6 +14,7 @@ go_library(
         "//pkg/app/piped/apistore/deploymentstore:go_default_library",
         "//pkg/app/piped/apistore/environmentstore:go_default_library",
         "//pkg/app/piped/apistore/eventstore:go_default_library",
+        "//pkg/app/piped/appconfigreporter:go_default_library",
         "//pkg/app/piped/chartrepo:go_default_library",
         "//pkg/app/piped/cloudprovider/kubernetes/kubernetesmetrics:go_default_library",
         "//pkg/app/piped/controller:go_default_library",

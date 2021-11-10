@@ -29,6 +29,7 @@ const (
 )
 
 type GenericDeploymentSpec struct {
+	Labels map[string]string `json:"labels"`
 	// Configuration used while planning deployment.
 	Planner DeploymentPlanner `json:"planner"`
 	// Forcibly use QuickSync or Pipeline when commit message matched the specified pattern.

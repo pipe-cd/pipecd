@@ -45,6 +45,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/deploymentstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/environmentstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/eventstore"
+	"github.com/pipe-cd/pipe/pkg/app/piped/appconfigreporter"
 	"github.com/pipe-cd/pipe/pkg/app/piped/chartrepo"
 	k8scloudprovidermetrics "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/kubernetesmetrics"
 	"github.com/pipe-cd/pipe/pkg/app/piped/controller"
@@ -436,6 +437,26 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		)
 		group.Go(func() error {
 			return h.Run(ctx)
+		})
+	}
+
+	// Start running app-config-reporter.
+	{
+		r, err := appconfigreporter.NewReporter(
+			apiClient,
+			gitClient,
+			applicationLister,
+			cfg,
+			p.gracePeriod,
+			input.Logger,
+		)
+		if err != nil {
+			input.Logger.Error("failed to initialize app-config-reporter", zap.Error(err))
+			return err
+		}
+
+		group.Go(func() error {
+			return r.Run(ctx)
 		})
 	}
 
