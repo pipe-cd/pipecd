@@ -314,7 +314,7 @@ One of `yamlField` or `regex` is required.
 | terraformVersion | string | The version of terraform should be used. Empty means the pre-installed version will be used. | No |
 | vars | []string | List of variables that will be set directly on terraform commands with `-var` flag. The variable must be formatted by `key=value`. | No |
 | varFiles | []string | List of variable files that will be set on terraform commands with `-var-file` flag. | No |
-| commandFlags | [TerraformCommandFlags](#terraformcommandflags) | List of additional flags will be used while execute terraform commands. | No |
+| commandFlags | [TerraformCommandFlags](#terraformcommandflags) | List of additional flags will be used while executing terraform commands. | No |
 | commandEnvs | [TerraformCommandEnvs](#terraformcommandenvs) | List of additional environment variables will be used while executing terraform commands. | No |
 | autoRollback | bool | Automatically reverts all changes from all stages when one of them failed. | No |
 

@@ -49,7 +49,7 @@ type TerraformDeploymentInput struct {
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is false.
 	AutoRollback bool `json:"autoRollback"`
-	// List of additional flags will be used while execute terraform commands.
+	// List of additional flags will be used while executing terraform commands.
 	CommandFlags TerraformCommandFlags `json:"commandFlags"`
 	// List of additional environment variables will be used while executing terraform commands.
 	CommandEnvs TerraformCommandEnvs `json:"commandEnvs"`
@@ -71,7 +71,7 @@ type TerraformApplyStageOptions struct {
 	Retries int `json:"retries"`
 }
 
-// TerraformCommandFlags contains all additional flags will be used while execute terraform commands.
+// TerraformCommandFlags contains all additional flags will be used while executing terraform commands.
 type TerraformCommandFlags struct {
 	Shared []string `json:"shared"`
 	Init   []string `json:"init"`
@@ -79,7 +79,7 @@ type TerraformCommandFlags struct {
 	Apply  []string `json:"apply"`
 }
 
-// TerraformCommandEnvs contains all additional environment variables will be used while execute terraform commands.
+// TerraformCommandEnvs contains all additional environment variables will be used while executing terraform commands.
 type TerraformCommandEnvs struct {
 	Shared []string `json:"shared"`
 	Init   []string `json:"init"`
