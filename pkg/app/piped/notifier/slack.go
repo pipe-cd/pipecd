@@ -215,7 +215,7 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED:
 		md := event.Metadata.(*model.NotificationEventDeploymentTriggerFailed)
-		title = "Deployment Trigger was failed"
+		title = fmt.Sprintf("Failed to trigger a new deployment for %s", md.Application.Name)
 		text = md.Reason
 		generateDeploymentEventDataForTriggerFailed(md.Application, md.Hash, md.Message)
 
