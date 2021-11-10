@@ -44,7 +44,7 @@ func (t *Trigger) triggerDeployment(
 	n, err := t.getNotification(app.GitPath)
 	if err != nil {
 		t.logger.Error("failed to get the list of mentions", zap.Error(err))
-		t.reportDeploymentFailed(app, fmt.Sprintf("failed to get the list of mentions %v", err), commit)
+		t.reportDeploymentFailed(app, fmt.Sprintf("failed to find the list of mentions from %s: %v", app.GitPath.GetDeploymentConfigFilePath(), err), commit)
 		return
 	}
 
