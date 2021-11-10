@@ -103,8 +103,8 @@ message NotificationEventDeploymentWaitApproval {
 
 message NotificationEventDeploymentTriggerFailed {
     Application application = 1 [(validate.rules).message.required = true];
-    string hash = 2 [(validate.rules).string.min_len = 1];
-    string message = 3 [(validate.rules).string.min_len = 1];
+    string commit_hash = 2 [(validate.rules).string.min_len = 1];
+    string commit_message = 3 [(validate.rules).string.min_len = 1];
     string reason = 4 [(validate.rules).string.min_len = 1];
 }
 
