@@ -157,9 +157,10 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		if err != nil {
 			s.logger.Error(fmt.Sprintf("failed to get the URL for the specified commit: %v", err))
 		}
+		link = makeSlackLink(app.Name, fmt.Sprintf("%s/applications/%s?project=%s", webURL, app.Id, app.PipedId))
 		fields = []slackField{
 			{"Project", truncateText(app.ProjectId, 8), true},
-			{"Application", makeSlackLink(app.Name, fmt.Sprintf("%s/applications/%s?project=%s", webURL, app.Id, app.PipedId)), true},
+			{"Application", link, true},
 			{"Kind", strings.ToLower(app.Kind.String()), true},
 			{"Commit", makeSlackLink(truncateText(msg, 8), commitURL), true},
 		}
