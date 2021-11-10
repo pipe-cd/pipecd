@@ -27,6 +27,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -152,7 +153,11 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		}
 	}
 	generateDeploymentEventDataForTriggerFailed := func(app *model.Application, hash, msg string) {
-		link = makeCommitLink(app.GitPath, hash)
+		var err error
+		link, err = git.MakeCommitURL(app.GitPath.Repo.Remote, hash)
+		if err != nil {
+			s.logger.Error(fmt.Sprintf("failed to get the URL for the specified commit: %v", err))
+		}
 		fields = []slackField{
 			{"Project", truncateText(app.ProjectId, 8), true},
 			{"Application", makeSlackLink(app.Name, fmt.Sprintf("%s/applications/%s?project=%s", webURL, app.Id, app.PipedId)), true},
@@ -297,8 +302,4 @@ func getAccountsAsString(accounts []string) string {
 		formattedAccounts = append(formattedAccounts, fmt.Sprintf("<@%s>", a))
 	}
 	return strings.Join(formattedAccounts, " ")
-}
-
-func makeCommitLink(gp *model.ApplicationGitPath, hash string) string {
-	return strings.Replace(gp.Url, fmt.Sprintf("/tree/master/%s", gp.Path), "", 1) + fmt.Sprintf("/commit/%s", hash)
 }

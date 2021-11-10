@@ -12,6 +12,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/config:go_default_library",
+        "//pkg/git:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/version:go_default_library",
         "@org_golang_x_sync//errgroup:go_default_library",
