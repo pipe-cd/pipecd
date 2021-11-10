@@ -153,7 +153,7 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		}
 	}
 	generateDeploymentEventDataForTriggerFailed := func(app *model.Application, hash, msg string) {
-		link = fmt.Sprintf("%s/applications/%s?project=%s", webURL, app.Id, app.PipedId)
+		link = fmt.Sprintf("%s/applications/%s?project=%s", webURL, app.Id, app.ProjectId)
 		commitURL, err := git.MakeCommitURL(app.GitPath.Repo.Remote, hash)
 		if err != nil {
 			s.logger.Error(fmt.Sprintf("failed to get the URL for the specified commit: %v", err))
