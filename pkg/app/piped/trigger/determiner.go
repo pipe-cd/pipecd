@@ -17,8 +17,6 @@ package trigger
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"go.uber.org/zap"
@@ -29,50 +27,81 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+type Determiner interface {
+	ShouldTrigger(ctx context.Context, app *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error)
+}
+
+type determiners struct {
+	onCommand   Determiner
+	onOutOfSync Determiner
+	onCommit    Determiner
+}
+
+func (ds *determiners) Determiner(ck candidateKind) Determiner {
+	switch ck {
+	case commandCandidate:
+		return ds.onCommand
+	case outOfSyncCandidate:
+		return ds.onOutOfSync
+	default:
+		return ds.onCommit
+	}
+}
+
+type OnCommandDeterminer struct {
+}
+
+// ShouldTrigger decides whether a given application should be triggered or not.
+func (d *OnCommandDeterminer) ShouldTrigger(ctx context.Context, app *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
+	if appCfg.Trigger.OnCommand.Disabled {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+type OnOutOfSyncDeterminer struct {
+}
+
+// ShouldTrigger decides whether a given application should be triggered or not.
+func (d *OnOutOfSyncDeterminer) ShouldTrigger(ctx context.Context, app *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
+	if appCfg.Trigger.OnOutOfSync.Disabled {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 type LastTriggeredCommitGetter interface {
 	Get(ctx context.Context, applicationID string) (string, error)
 }
 
-type Determiner struct {
+type OnCommitDeterminer struct {
 	repo         git.Repo
 	targetCommit string
 	commitGetter LastTriggeredCommitGetter
-	// Flag `ignoreUserConfig` set to `true` will force check changes and use it to determine
-	// the application deployment should be triggered or not, regardless of the user's configuration.
-	ignoreUserConfig bool
-	logger           *zap.Logger
+	logger       *zap.Logger
 }
 
-func NewDeterminer(repo git.Repo, targetCommit string, cg LastTriggeredCommitGetter, ignoreUserConfig bool, logger *zap.Logger) *Determiner {
-	return &Determiner{
-		repo:             repo,
-		targetCommit:     targetCommit,
-		commitGetter:     cg,
-		ignoreUserConfig: ignoreUserConfig,
-		logger:           logger.Named("determiner"),
+func NewOnCommitDeterminer(repo git.Repo, targetCommit string, cg LastTriggeredCommitGetter, logger *zap.Logger) Determiner {
+	return &OnCommitDeterminer{
+		repo:         repo,
+		targetCommit: targetCommit,
+		commitGetter: cg,
+		logger:       logger.Named("determiner"),
 	}
 }
 
 // ShouldTrigger decides whether a given application should be triggered or not.
-func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application) (bool, error) {
+func (d *OnCommitDeterminer) ShouldTrigger(ctx context.Context, app *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
 	logger := d.logger.With(
 		zap.String("app", app.Name),
 		zap.String("app-id", app.Id),
 		zap.String("target-commit", d.targetCommit),
 	)
 
-	// TODO: Add logic to determine trigger or not based on other configuration than onCommit.
-	return d.shouldTriggerOnCommit(ctx, app, logger)
-}
-
-func (d *Determiner) shouldTriggerOnCommit(ctx context.Context, app *model.Application, logger *zap.Logger) (bool, error) {
-	deployConfig, err := loadDeploymentConfiguration(d.repo.GetPath(), app)
-	if err != nil {
-		return false, err
-	}
-
 	// Not trigger in case users disable auto trigger deploy on change and the user config is unignorable.
-	if deployConfig.Trigger.OnCommit.Disabled && !d.ignoreUserConfig {
+	if appCfg.Trigger.OnCommit.Disabled {
 		logger.Info(fmt.Sprintf("auto trigger deployment disabled for application, hash: %s", d.targetCommit))
 		return false, nil
 	}
@@ -104,19 +133,19 @@ func (d *Determiner) shouldTriggerOnCommit(ctx context.Context, app *model.Appli
 		return false, err
 	}
 
-	// TODO: Remove deprecated `deployConfig.TriggerPaths` configuration.
-	checkingPaths := make([]string, 0, len(deployConfig.Trigger.OnCommit.Paths)+len(deployConfig.TriggerPaths))
-	// Note: deployConfig.TriggerPaths or deployConfig.Trigger.OnCommit.Paths may contain "" (empty string)
+	// TODO: Remove deprecated `appCfg.TriggerPaths` configuration.
+	checkingPaths := make([]string, 0, len(appCfg.Trigger.OnCommit.Paths)+len(appCfg.TriggerPaths))
+	// Note: appCfg.TriggerPaths or appCfg.Trigger.OnCommit.Paths may contain "" (empty string)
 	// in case users use one of them without the other, that cause unexpected "" path in the checkingPaths list
 	// leads to always trigger deployment since "" path matched all other paths.
 	// The below logic is to remove that "" path from checking path list, will remove after remove the
-	// deprecated deployConfig.TriggerPaths.
-	for _, p := range deployConfig.Trigger.OnCommit.Paths {
+	// deprecated appCfg.TriggerPaths.
+	for _, p := range appCfg.Trigger.OnCommit.Paths {
 		if p != "" {
 			checkingPaths = append(checkingPaths, p)
 		}
 	}
-	for _, p := range deployConfig.TriggerPaths {
+	for _, p := range appCfg.TriggerPaths {
 		if p != "" {
 			checkingPaths = append(checkingPaths, p)
 		}
@@ -133,31 +162,6 @@ func (d *Determiner) shouldTriggerOnCommit(ctx context.Context, app *model.Appli
 	}
 
 	return true, nil
-}
-
-func loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.GenericDeploymentSpec, error) {
-	var (
-		relPath = app.GitPath.GetDeploymentConfigFilePath()
-		absPath = filepath.Join(repoPath, relPath)
-	)
-
-	cfg, err := config.LoadFromYAML(absPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("deployment config file %s was not found", relPath)
-		}
-		return nil, err
-	}
-	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
-		return nil, fmt.Errorf("invalid application kind in the deployment config file, got: %s, expected: %s", appKind, app.Kind)
-	}
-
-	spec, ok := cfg.GetGenericDeployment()
-	if !ok {
-		return nil, fmt.Errorf("unsupported application kind: %s", app.Kind)
-	}
-
-	return &spec, nil
 }
 
 func isTouchedByChangedFiles(appDir string, changes []string, changedFiles []string) (bool, error) {

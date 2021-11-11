@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -305,26 +306,35 @@ func (b *builder) cloneHeadCommit(ctx context.Context, headBranch, headCommit st
 }
 
 func (b *builder) findTriggerApps(ctx context.Context, repo git.Repo, apps []*model.Application, headCommit string) (triggerApps []*model.Application, failedResults []*model.ApplicationPlanPreviewResult, err error) {
-	d := trigger.NewDeterminer(repo, headCommit, b.commitGetter, true, b.logger)
-	for _, app := range apps {
-		shouldTrigger, err := d.ShouldTrigger(ctx, app)
+	d := trigger.NewOnCommitDeterminer(repo, headCommit, b.commitGetter, b.logger)
+	determine := func(app *model.Application) (bool, error) {
+		appCfg, err := loadDeploymentConfiguration(repo.GetPath(), app)
 		if err != nil {
-			// We only need the environment name
-			// so the returned error can be ignorable.
-			var envName string
-			if env, err := b.environmentGetter.Get(ctx, app.EnvId); err == nil {
-				envName = env.Name
-			}
+			return false, err
+		}
+		return d.ShouldTrigger(ctx, app, appCfg)
+	}
 
-			r := model.MakeApplicationPlanPreviewResult(*app, envName)
-			r.Error = fmt.Sprintf("failed while determining the application should be triggered or not, %v", err)
-			failedResults = append(failedResults, r)
+	for _, app := range apps {
+		shouldTrigger, err := determine(app)
+		if shouldTrigger {
+			triggerApps = append(triggerApps, app)
+			continue
+		}
+		if err == nil {
 			continue
 		}
 
-		if shouldTrigger {
-			triggerApps = append(triggerApps, app)
+		// We only need the environment name
+		// so the returned error can be ignorable.
+		var envName string
+		if env, err := b.environmentGetter.Get(ctx, app.EnvId); err == nil {
+			envName = env.Name
 		}
+
+		r := model.MakeApplicationPlanPreviewResult(*app, envName)
+		r.Error = fmt.Sprintf("failed while determining the application should be triggered or not, %v", err)
+		failedResults = append(failedResults, r)
 	}
 	return
 }
@@ -411,4 +421,29 @@ func (b *builder) getMostRecentlySuccessfulDeployment(ctx context.Context, appli
 	}
 
 	return deploy.(*model.ApplicationDeploymentReference), nil
+}
+
+func loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.GenericDeploymentSpec, error) {
+	var (
+		relPath = app.GitPath.GetDeploymentConfigFilePath()
+		absPath = filepath.Join(repoPath, relPath)
+	)
+
+	cfg, err := config.LoadFromYAML(absPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("application config file %s was not found in Git", relPath)
+		}
+		return nil, err
+	}
+	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
+		return nil, fmt.Errorf("invalid application kind in the deployment config file, got: %s, expected: %s", appKind, app.Kind)
+	}
+
+	spec, ok := cfg.GetGenericDeployment()
+	if !ok {
+		return nil, fmt.Errorf("unsupported application kind: %s", app.Kind)
+	}
+
+	return &spec, nil
 }

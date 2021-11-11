@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ package trigger
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"go.uber.org/zap"
@@ -33,12 +35,9 @@ import (
 )
 
 const (
-	commandCheckInterval                = 10 * time.Second
+	ondemandCheckInterval               = 10 * time.Second
 	defaultLastTriggeredCommitCacheSize = 500
-)
-
-const (
-	triggeredDeploymentIDKey = "TriggeredDeploymentID"
+	triggeredDeploymentIDKey            = "TriggeredDeploymentID"
 )
 
 type apiClient interface {
@@ -68,6 +67,20 @@ type notifier interface {
 	Notify(event model.NotificationEvent)
 }
 
+type candidateKind int
+
+const (
+	commitCandidate candidateKind = iota
+	commandCandidate
+	outOfSyncCandidate
+)
+
+type candidate struct {
+	application *model.Application
+	kind        candidateKind
+	command     model.ReportableCommand
+}
+
 type Trigger struct {
 	apiClient         apiClient
 	gitClient         gitClient
@@ -82,7 +95,6 @@ type Trigger struct {
 	logger            *zap.Logger
 }
 
-// NewTrigger creates a new instance for Trigger.
 func NewTrigger(
 	apiClient apiClient,
 	gitClient gitClient,
@@ -121,63 +133,154 @@ func NewTrigger(
 	return t, nil
 }
 
-// Run starts running Trigger until the specified context has done.
-// This also waits for its cleaning up before returning.
 func (t *Trigger) Run(ctx context.Context) error {
 	t.logger.Info("start running deployment trigger")
 
-	// Pre-clone to cache the registered git repositories.
+	// Pre cloning to cache the registered git repositories.
 	t.gitRepos = make(map[string]git.Repo, len(t.config.Repositories))
 	for _, r := range t.config.Repositories {
 		repo, err := t.gitClient.Clone(ctx, r.RepoID, r.Remote, r.Branch, "")
 		if err != nil {
-			t.logger.Error("failed to clone repository",
-				zap.String("repo-id", r.RepoID),
-				zap.Error(err),
-			)
+			t.logger.Error(fmt.Sprintf("failed to clone git repository %s", r.RepoID), zap.Error(err))
 			return err
 		}
 		t.gitRepos[r.RepoID] = repo
 	}
 
-	commitTicker := time.NewTicker(time.Duration(t.config.SyncInterval))
-	defer commitTicker.Stop()
+	syncTicker := time.NewTicker(time.Duration(t.config.SyncInterval))
+	defer syncTicker.Stop()
 
-	commandTicker := time.NewTicker(commandCheckInterval)
-	defer commandTicker.Stop()
+	ondemandTicker := time.NewTicker(ondemandCheckInterval)
+	defer ondemandTicker.Stop()
 
-L:
 	for {
 		select {
+		case <-syncTicker.C:
+			var (
+				commitCandidates    = t.listCommitCandidates(ctx)
+				outOfSyncCandidates = t.listOutOfSyncCandidates(ctx)
+				candidates          = append(commitCandidates, outOfSyncCandidates...)
+			)
+			t.logger.Info(fmt.Sprintf("found %d candidates: %d commit candidates and %d out_of_sync candidates",
+				len(candidates),
+				len(commitCandidates),
+				len(outOfSyncCandidates),
+			))
+			t.checkCandidates(ctx, candidates)
 
-		case <-commandTicker.C:
-			t.checkNewCommands(ctx)
-
-		case <-commitTicker.C:
-			t.checkNewCommits(ctx)
+		case <-ondemandTicker.C:
+			candidates := t.listCommandCandidates(ctx)
+			t.logger.Info(fmt.Sprintf("found %d command candidates", len(candidates)))
+			t.checkCandidates(ctx, candidates)
 
 		case <-ctx.Done():
-			break L
+			t.logger.Info("deployment trigger has been stopped")
+			return nil
+		}
+	}
+}
+
+func (t *Trigger) checkCandidates(ctx context.Context, cs []candidate) (err error) {
+	// Group candidates by repository to reduce the number of Git operations on each repo.
+	csm := make(map[string][]candidate)
+	for _, c := range cs {
+		repoId := c.application.GitPath.Repo.Id
+		if _, ok := csm[repoId]; !ok {
+			csm[repoId] = []candidate{c}
+			continue
+		}
+		csm[repoId] = append(csm[repoId], c)
+	}
+
+	// Iterate each repository and check its candidates.
+	// Only the last error will be returned.
+	for repoID, cs := range csm {
+		if e := t.checkRepoCandidates(ctx, repoID, cs); e != nil {
+			t.logger.Error(fmt.Sprintf("failed while checking applications in repo %s", repoID), zap.Error(e))
+			err = e
+		}
+	}
+	return
+}
+
+func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []candidate) error {
+	gitRepo, branch, headCommit, err := t.updateRepoToLatest(ctx, repoID)
+	if err != nil {
+		// TODO: Find a better way to skip the CANCELLED error log while shutting down.
+		if ctx.Err() != context.Canceled {
+			t.logger.Error(fmt.Sprintf("failed to update git repository %s to latest", repoID), zap.Error(err))
+		}
+		return err
+	}
+
+	ds := &determiners{
+		onCommand:   &OnCommandDeterminer{},
+		onOutOfSync: &OnOutOfSyncDeterminer{},
+		onCommit:    NewOnCommitDeterminer(gitRepo, headCommit.Hash, t.commitStore, t.logger),
+	}
+
+	for _, c := range cs {
+		app := c.application
+
+		appCfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), app)
+		if err != nil {
+			msg := fmt.Sprintf("failed to load application config file at %s: %v", app.GitPath.GetDeploymentConfigFilePath(), err)
+			t.notifyDeploymentTriggerFailed(app, msg, headCommit)
+			continue
+		}
+
+		shouldTrigger, err := ds.Determiner(c.kind).ShouldTrigger(ctx, app, appCfg)
+		if err != nil {
+			msg := fmt.Sprintf("failed while determining whether application %s should be triggered or not: %s", app.Name, err)
+			t.notifyDeploymentTriggerFailed(app, msg, headCommit)
+			continue
+		}
+
+		if !shouldTrigger {
+			t.commitStore.Put(app.Id, headCommit.Hash)
+			continue
+		}
+
+		// Build deployment model and send a request to API to create a new deployment.
+		deployment, err := t.triggerDeployment(ctx, app, appCfg, branch, headCommit, "", model.SyncStrategy_AUTO)
+		if err != nil {
+			msg := fmt.Sprintf("failed to trigger application %s: %v", app.Id, err)
+			t.notifyDeploymentTriggerFailed(app, msg, headCommit)
+			continue
+		}
+
+		t.commitStore.Put(app.Id, headCommit.Hash)
+		t.notifyDeploymentTriggered(ctx, app, appCfg, deployment)
+
+		// Mask command as handled since the deployment has been triggered successfully.
+		if c.kind == commandCandidate {
+			metadata := map[string]string{
+				triggeredDeploymentIDKey: deployment.Id,
+			}
+			if err := c.command.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, metadata, nil); err != nil {
+				t.logger.Error("failed to report command status", zap.Error(err))
+			}
 		}
 	}
 
-	t.logger.Info("deployment trigger has been stopped")
 	return nil
 }
 
-func (t *Trigger) GetLastTriggeredCommitGetter() LastTriggeredCommitGetter {
-	return t.commitStore
-}
+// listCommandCandidates finds all applications that have been commanded to sync.
+func (t *Trigger) listCommandCandidates(ctx context.Context) []candidate {
+	var (
+		cmds = t.commandLister.ListApplicationCommands()
+		apps = make([]candidate, 0)
+	)
 
-func (t *Trigger) checkNewCommands(ctx context.Context) error {
-	commands := t.commandLister.ListApplicationCommands()
-
-	for _, cmd := range commands {
+	for _, cmd := range cmds {
+		// Filter out commands that are not SYNC command.
 		syncCmd := cmd.GetSyncApplication()
 		if syncCmd == nil {
 			continue
 		}
 
+		// Find the target application specified in command.
 		app, ok := t.applicationLister.Get(syncCmd.ApplicationId)
 		if !ok {
 			t.logger.Warn("detected an AppSync command for an unregistered application",
@@ -188,144 +291,130 @@ func (t *Trigger) checkNewCommands(ctx context.Context) error {
 			continue
 		}
 
-		d, err := t.syncApplication(ctx, app, cmd.Commander, syncCmd.SyncStrategy)
-		if err != nil {
-			t.logger.Error("failed to sync application",
-				zap.String("app-id", app.Id),
-				zap.Error(err),
-			)
-			if err := cmd.Report(ctx, model.CommandStatus_COMMAND_FAILED, nil, nil); err != nil {
-				t.logger.Error("failed to report command status", zap.Error(err))
-			}
-			continue
-		}
-
-		metadata := map[string]string{
-			triggeredDeploymentIDKey: d.Id,
-		}
-		if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, metadata, nil); err != nil {
-			t.logger.Error("failed to report command status", zap.Error(err))
-		}
+		apps = append(apps, candidate{
+			application: app,
+			kind:        commandCandidate,
+			command:     cmd,
+		})
 	}
 
-	return nil
+	return apps
 }
 
-func (t *Trigger) checkNewCommits(ctx context.Context) error {
-	if len(t.gitRepos) == 0 {
-		t.logger.Info("no repositories were configured for this piped")
-		return nil
-	}
-
-	// List all applications that should be handled by this piped
-	// and then group them by repository.
-	var applications = t.listApplications()
-
-	// ENHANCEMENT: We may want to apply worker model here to run them concurrently.
-	for repoID, apps := range applications {
-		gitRepo, branch, headCommit, err := t.updateRepoToLatest(ctx, repoID)
-		if err != nil {
-			continue
-		}
-		d := NewDeterminer(gitRepo, headCommit.Hash, t.commitStore, false, t.logger)
-
-		for _, app := range apps {
-			shouldTrigger, err := d.ShouldTrigger(ctx, app)
-			if err != nil {
-				t.logger.Error(fmt.Sprintf("failed to check application: %s", app.Id), zap.Error(err))
-				t.reportDeploymentFailed(app, fmt.Sprintf("failed to find the list of mentions from %s: %v", app.GitPath.GetDeploymentConfigFilePath(), err), headCommit)
-				continue
-			}
-
-			if !shouldTrigger {
-				t.commitStore.Put(app.Id, headCommit.Hash)
-				continue
-			}
-
-			// Build deployment model and send a request to API to create a new deployment.
-			t.logger.Info("application should be synced because of the new commit")
-			if _, err := t.triggerDeployment(ctx, app, branch, headCommit, "", model.SyncStrategy_AUTO); err != nil {
-				t.logger.Error(fmt.Sprintf("failed to trigger application: %s", app.Id), zap.Error(err))
-			}
-			t.commitStore.Put(app.Id, headCommit.Hash)
-		}
-	}
-
-	return nil
-}
-
-func (t *Trigger) syncApplication(ctx context.Context, app *model.Application, commander string, syncStrategy model.SyncStrategy) (*model.Deployment, error) {
-	_, branch, headCommit, err := t.updateRepoToLatest(ctx, app.GitPath.Repo.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	// Build deployment model and send a request to API to create a new deployment.
-	t.logger.Info(fmt.Sprintf("application %s will be synced because of a sync command", app.Id),
-		zap.String("head-commit", headCommit.Hash),
+// listOutOfSyncCandidates finds all applications that are staying at OUT_OF_SYNC state.
+func (t *Trigger) listOutOfSyncCandidates(ctx context.Context) []candidate {
+	var (
+		list = t.applicationLister.List()
+		apps = make([]candidate, 0)
 	)
-	d, err := t.triggerDeployment(ctx, app, branch, headCommit, commander, syncStrategy)
-	if err != nil {
-		return nil, err
+	for _, app := range list {
+		if app.SyncState.Status != model.ApplicationSyncStatus_OUT_OF_SYNC {
+			continue
+		}
+		apps = append(apps, candidate{
+			application: app,
+			kind:        outOfSyncCandidate,
+		})
 	}
-	t.commitStore.Put(app.Id, headCommit.Hash)
-
-	return d, nil
+	return apps
 }
 
+// listCommitCandidates finds all applications that have potentiality
+// to be candidates by the changes of new commits.
+// They are all applications managed by this Piped.
+func (t *Trigger) listCommitCandidates(ctx context.Context) []candidate {
+	var (
+		list = t.applicationLister.List()
+		apps = make([]candidate, 0)
+	)
+	for _, app := range list {
+		apps = append(apps, candidate{
+			application: app,
+			kind:        commitCandidate,
+		})
+	}
+	return apps
+}
+
+// updateRepoToLatest ensures that the local data of the given Git repository should be up-to-date.
 func (t *Trigger) updateRepoToLatest(ctx context.Context, repoID string) (repo git.Repo, branch string, headCommit git.Commit, err error) {
 	var ok bool
 
-	// Find the application repo from pre-loaded ones.
+	// Find the repository from the previously loaded list.
 	repo, ok = t.gitRepos[repoID]
 	if !ok {
-		t.logger.Warn("detected some applications binding with a non existent repository", zap.String("repo-id", repoID))
-		err = fmt.Errorf("missing repository")
+		err = fmt.Errorf("the repository was not registered in Piped configuration")
 		return
 	}
 	branch = repo.GetClonedBranch()
 
-	// Fetch to update the repository and then
-	if err = repo.Pull(ctx, branch); err != nil {
-		if ctx.Err() != context.Canceled {
-			t.logger.Error("failed to update repository branch",
-				zap.String("repo-id", repoID),
-				zap.Error(err),
-			)
-		}
+	// Fetch to update the repository.
+	err = repo.Pull(ctx, branch)
+	if err != nil {
 		return
 	}
 
 	// Get the head commit of the repository.
 	headCommit, err = repo.GetLatestCommit(ctx)
-	if err != nil {
-		// TODO: Find a better way to skip the CANCELLED error log while shutting down.
-		if ctx.Err() != context.Canceled {
-			t.logger.Error("failed to get head commit hash",
-				zap.String("repo-id", repoID),
-				zap.Error(err),
-			)
-		}
-		return
-	}
-
 	return
 }
 
-// listApplications retrieves all applications those should be handled by this piped
-// and then groups them by repoID.
-func (t *Trigger) listApplications() map[string][]*model.Application {
-	var (
-		apps = t.applicationLister.List()
-		m    = make(map[string][]*model.Application)
-	)
-	for _, app := range apps {
-		repoId := app.GitPath.Repo.Id
-		if _, ok := m[repoId]; !ok {
-			m[repoId] = []*model.Application{app}
-		} else {
-			m[repoId] = append(m[repoId], app)
-		}
+func (t *Trigger) GetLastTriggeredCommitGetter() LastTriggeredCommitGetter {
+	return t.commitStore
+}
+
+func (t *Trigger) notifyDeploymentTriggered(ctx context.Context, app *model.Application, appCfg *config.GenericDeploymentSpec, d *model.Deployment) {
+	var mentions []string
+	if n := appCfg.DeploymentNotification; n != nil {
+		mentions = n.FindSlackAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED)
 	}
-	return m
+
+	if env, err := t.environmentLister.Get(ctx, d.EnvId); err == nil {
+		t.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+			Metadata: &model.NotificationEventDeploymentTriggered{
+				Deployment:        d,
+				EnvName:           env.Name,
+				MentionedAccounts: mentions,
+			},
+		})
+	}
+}
+
+func (t *Trigger) notifyDeploymentTriggerFailed(app *model.Application, reason string, commit git.Commit) {
+	t.notifier.Notify(model.NotificationEvent{
+		Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED,
+		Metadata: &model.NotificationEventDeploymentTriggerFailed{
+			Application:   app,
+			CommitHash:    commit.Hash,
+			CommitMessage: commit.Message,
+			Reason:        reason,
+		},
+	})
+	t.logger.Error(reason)
+}
+
+func loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.GenericDeploymentSpec, error) {
+	var (
+		relPath = app.GitPath.GetDeploymentConfigFilePath()
+		absPath = filepath.Join(repoPath, relPath)
+	)
+
+	cfg, err := config.LoadFromYAML(absPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("application config file %s was not found in Git", relPath)
+		}
+		return nil, err
+	}
+	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
+		return nil, fmt.Errorf("invalid application kind in the deployment config file, got: %s, expected: %s", appKind, app.Kind)
+	}
+
+	spec, ok := cfg.GetGenericDeployment()
+	if !ok {
+		return nil, fmt.Errorf("unsupported application kind: %s", app.Kind)
+	}
+
+	return &spec, nil
 }

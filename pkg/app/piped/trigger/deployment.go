@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/google/uuid"
@@ -36,96 +34,44 @@ const notificationsKey = "DeploymentNotification"
 func (t *Trigger) triggerDeployment(
 	ctx context.Context,
 	app *model.Application,
+	appCfg *config.GenericDeploymentSpec,
 	branch string,
 	commit git.Commit,
 	commander string,
 	syncStrategy model.SyncStrategy,
-) (deployment *model.Deployment, err error) {
-	n, err := t.getNotification(app.GitPath)
-	if err != nil {
-		t.logger.Error("failed to get the list of mentions", zap.Error(err))
-		t.reportDeploymentFailed(app, fmt.Sprintf("failed to find the list of mentions from %s: %v", app.GitPath.GetDeploymentConfigFilePath(), err), commit)
-		return
-	}
+) (*model.Deployment, error) {
 
-	deployment, err = buildDeployment(app, branch, commit, commander, syncStrategy, time.Now(), n)
-	if err != nil {
-		t.logger.Error("failed to build the deployment", zap.Error(err))
-		t.reportDeploymentFailed(app, fmt.Sprintf("failed to build the deployment: %v", err), commit)
-		return
-	}
-
-	var as []string
-	if n != nil {
-		as = n.FindSlackAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED)
-	}
-
-	defer func() {
-		if err != nil {
-			t.reportDeploymentFailed(app, fmt.Sprintf("%v", err), commit)
-			return
-		}
-		env, err := t.environmentLister.Get(ctx, deployment.EnvId)
-		if err != nil {
-			t.reportDeploymentFailed(app, fmt.Sprintf("%v", err), commit)
-			return
-		}
-		t.notifier.Notify(model.NotificationEvent{
-			Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
-			Metadata: &model.NotificationEventDeploymentTriggered{
-				Deployment:        deployment,
-				EnvName:           env.Name,
-				MentionedAccounts: as,
-			},
-		})
-	}()
-
-	t.logger.Info(fmt.Sprintf("application %s will be triggered to sync", app.Id),
-		zap.String("commit-hash", commit.Hash),
+	// Build deployment model to trigger.
+	deployment, err := buildDeployment(
+		app,
+		branch,
+		commit,
+		commander,
+		syncStrategy,
+		time.Now(),
+		appCfg.DeploymentNotification,
 	)
-	req := &pipedservice.CreateDeploymentRequest{
-		Deployment: deployment,
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize deployment: %w", err)
 	}
-	if _, err = t.apiClient.CreateDeployment(ctx, req); err != nil {
-		t.logger.Error("failed to create deployment", zap.Error(err))
-		t.reportDeploymentFailed(app, fmt.Sprintf("failed to create deployment: %v", err), commit)
-		return
+
+	// Send deployment model to control-plane to trigger.
+	t.logger.Info(fmt.Sprintf("application %s will be triggered to sync", app.Id), zap.String("commit", commit.Hash))
+	_, err = t.apiClient.CreateDeployment(ctx, &pipedservice.CreateDeploymentRequest{
+		Deployment: deployment,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("cound not register a new deployment to control-plane: %w", err)
 	}
 
 	// TODO: Find a better way to ensure that the application should be updated correctly
 	// when the deployment was successfully triggered.
-	if e := t.reportMostRecentlyTriggeredDeployment(ctx, deployment); e != nil {
+	// This error is ignored because the deployment was already registered successfully.
+	if e := reportMostRecentlyTriggeredDeployment(ctx, t.apiClient, deployment); e != nil {
 		t.logger.Error("failed to report most recently triggered deployment", zap.Error(e))
 	}
 
-	return
-}
-
-func (t *Trigger) reportMostRecentlyTriggeredDeployment(ctx context.Context, d *model.Deployment) error {
-	var (
-		err error
-		req = &pipedservice.ReportApplicationMostRecentDeploymentRequest{
-			ApplicationId: d.ApplicationId,
-			Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
-			Deployment: &model.ApplicationDeploymentReference{
-				DeploymentId: d.Id,
-				Trigger:      d.Trigger,
-				Summary:      d.Summary,
-				Version:      d.Version,
-				StartedAt:    d.CreatedAt,
-				CompletedAt:  d.CompletedAt,
-			},
-		}
-		retry = pipedservice.NewRetry(10)
-	)
-
-	for retry.WaitNext(ctx) {
-		if _, err = t.apiClient.ReportApplicationMostRecentDeployment(ctx, req); err == nil {
-			return nil
-		}
-		err = fmt.Errorf("failed to report most recent successful deployment: %w", err)
-	}
-	return err
+	return deployment, nil
 }
 
 func buildDeployment(
@@ -135,21 +81,23 @@ func buildDeployment(
 	commander string,
 	syncStrategy model.SyncStrategy,
 	now time.Time,
-	notification *config.DeploymentNotification,
+	noti *config.DeploymentNotification,
 ) (*model.Deployment, error) {
-	commitURL := ""
+
+	var commitURL string
 	if r := app.GitPath.Repo; r != nil {
-		var err error
-		commitURL, err = git.MakeCommitURL(r.Remote, commit.Hash)
+		url, err := git.MakeCommitURL(r.Remote, commit.Hash)
 		if err != nil {
 			return nil, err
 		}
+		commitURL = url
 	}
+
 	metadata := make(map[string]string)
-	if notification != nil {
-		value, err := json.Marshal(notification)
+	if noti != nil {
+		value, err := json.Marshal(noti)
 		if err != nil {
-			return nil, fmt.Errorf("failed to save mention config to deployment metadata: %w", err)
+			return nil, fmt.Errorf("failed to save notification config to deployment metadata: %w", err)
 		}
 		metadata[notificationsKey] = string(value)
 	}
@@ -188,40 +136,29 @@ func buildDeployment(
 	return deployment, nil
 }
 
-func (t *Trigger) reportDeploymentFailed(app *model.Application, reason string, commit git.Commit) {
-	t.notifier.Notify(model.NotificationEvent{
-		Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED,
-		Metadata: &model.NotificationEventDeploymentTriggerFailed{
-			Application:   app,
-			CommitHash:    commit.Hash,
-			CommitMessage: commit.Message,
-			Reason:        reason,
-		},
-	})
-}
-
-func (t *Trigger) getNotification(p *model.ApplicationGitPath) (*config.DeploymentNotification, error) {
-	// Find the application repo from pre-loaded ones.
-	repo, ok := t.gitRepos[p.Repo.Id]
-	if !ok {
-		t.logger.Warn("detected some applications binding with a non existent repository", zap.String("repo-id", p.Repo.Id))
-		return nil, fmt.Errorf("unknown repo %q is set to the deployment", p.Repo.Id)
-	}
-
-	absPath := filepath.Join(repo.GetPath(), p.GetDeploymentConfigFilePath())
-
-	cfg, err := config.LoadFromYAML(absPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("deployment config file %s was not found", p.GetDeploymentConfigFilePath())
+func reportMostRecentlyTriggeredDeployment(ctx context.Context, client apiClient, d *model.Deployment) error {
+	var (
+		err error
+		req = &pipedservice.ReportApplicationMostRecentDeploymentRequest{
+			ApplicationId: d.ApplicationId,
+			Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
+			Deployment: &model.ApplicationDeploymentReference{
+				DeploymentId: d.Id,
+				Trigger:      d.Trigger,
+				Summary:      d.Summary,
+				Version:      d.Version,
+				StartedAt:    d.CreatedAt,
+				CompletedAt:  d.CompletedAt,
+			},
 		}
-		return nil, err
-	}
+		retry = pipedservice.NewRetry(10)
+	)
 
-	spec, ok := cfg.GetGenericDeployment()
-	if !ok {
-		return nil, fmt.Errorf("unsupported application kind: %s", cfg.Kind)
+	for retry.WaitNext(ctx) {
+		if _, err = client.ReportApplicationMostRecentDeployment(ctx, req); err == nil {
+			return nil
+		}
+		err = fmt.Errorf("failed to report most recent successful deployment: %w", err)
 	}
-
-	return spec.DeploymentNotification, nil
+	return err
 }
