@@ -157,8 +157,8 @@ func (t *Trigger) Run(ctx context.Context) error {
 		select {
 		case <-syncTicker.C:
 			var (
-				commitCandidates    = t.listCommitCandidates(ctx)
-				outOfSyncCandidates = t.listOutOfSyncCandidates(ctx)
+				commitCandidates    = t.listCommitCandidates()
+				outOfSyncCandidates = t.listOutOfSyncCandidates()
 				candidates          = append(commitCandidates, outOfSyncCandidates...)
 			)
 			t.logger.Info(fmt.Sprintf("found %d candidates: %d commit candidates and %d out_of_sync candidates",
@@ -169,7 +169,7 @@ func (t *Trigger) Run(ctx context.Context) error {
 			t.checkCandidates(ctx, candidates)
 
 		case <-ondemandTicker.C:
-			candidates := t.listCommandCandidates(ctx)
+			candidates := t.listCommandCandidates()
 			t.logger.Info(fmt.Sprintf("found %d command candidates", len(candidates)))
 			t.checkCandidates(ctx, candidates)
 
@@ -250,7 +250,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 		}
 
 		t.commitStore.Put(app.Id, headCommit.Hash)
-		t.notifyDeploymentTriggered(ctx, app, appCfg, deployment)
+		t.notifyDeploymentTriggered(ctx, appCfg, deployment)
 
 		// Mask command as handled since the deployment has been triggered successfully.
 		if c.kind == commandCandidate {
@@ -267,7 +267,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 }
 
 // listCommandCandidates finds all applications that have been commanded to sync.
-func (t *Trigger) listCommandCandidates(ctx context.Context) []candidate {
+func (t *Trigger) listCommandCandidates() []candidate {
 	var (
 		cmds = t.commandLister.ListApplicationCommands()
 		apps = make([]candidate, 0)
@@ -302,7 +302,7 @@ func (t *Trigger) listCommandCandidates(ctx context.Context) []candidate {
 }
 
 // listOutOfSyncCandidates finds all applications that are staying at OUT_OF_SYNC state.
-func (t *Trigger) listOutOfSyncCandidates(ctx context.Context) []candidate {
+func (t *Trigger) listOutOfSyncCandidates() []candidate {
 	var (
 		list = t.applicationLister.List()
 		apps = make([]candidate, 0)
@@ -322,7 +322,7 @@ func (t *Trigger) listOutOfSyncCandidates(ctx context.Context) []candidate {
 // listCommitCandidates finds all applications that have potentiality
 // to be candidates by the changes of new commits.
 // They are all applications managed by this Piped.
-func (t *Trigger) listCommitCandidates(ctx context.Context) []candidate {
+func (t *Trigger) listCommitCandidates() []candidate {
 	var (
 		list = t.applicationLister.List()
 		apps = make([]candidate, 0)
@@ -363,7 +363,7 @@ func (t *Trigger) GetLastTriggeredCommitGetter() LastTriggeredCommitGetter {
 	return t.commitStore
 }
 
-func (t *Trigger) notifyDeploymentTriggered(ctx context.Context, app *model.Application, appCfg *config.GenericDeploymentSpec, d *model.Deployment) {
+func (t *Trigger) notifyDeploymentTriggered(ctx context.Context, appCfg *config.GenericDeploymentSpec, d *model.Deployment) {
 	var mentions []string
 	if n := appCfg.DeploymentNotification; n != nil {
 		mentions = n.FindSlackAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED)

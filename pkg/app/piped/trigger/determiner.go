@@ -52,7 +52,7 @@ type OnCommandDeterminer struct {
 }
 
 // ShouldTrigger decides whether a given application should be triggered or not.
-func (d *OnCommandDeterminer) ShouldTrigger(ctx context.Context, app *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
+func (d *OnCommandDeterminer) ShouldTrigger(_ context.Context, app *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
 	if appCfg.Trigger.OnCommand.Disabled {
 		return false, nil
 	}
@@ -64,7 +64,7 @@ type OnOutOfSyncDeterminer struct {
 }
 
 // ShouldTrigger decides whether a given application should be triggered or not.
-func (d *OnOutOfSyncDeterminer) ShouldTrigger(ctx context.Context, app *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
+func (d *OnOutOfSyncDeterminer) ShouldTrigger(_ context.Context, app *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
 	if appCfg.Trigger.OnOutOfSync.Disabled {
 		return false, nil
 	}
