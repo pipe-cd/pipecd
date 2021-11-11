@@ -29,10 +29,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const (
-	defaultLastFetchedCommitCacheSize = 500
-)
-
 type apiClient interface {
 	UpdateApplicationConfigurations(ctx context.Context, in *pipedservice.UpdateApplicationConfigurationsRequest, opts ...grpc.CallOption) (*pipedservice.UpdateApplicationConfigurationsResponse, error)
 	ReportUnregisteredApplicationConfigurations(ctx context.Context, in *pipedservice.ReportUnregisteredApplicationConfigurationsRequest, opts ...grpc.CallOption) (*pipedservice.ReportUnregisteredApplicationConfigurationsResponse, error)
@@ -53,9 +49,10 @@ type Reporter struct {
 	config            *config.PipedSpec
 	gitRepos          map[string]git.Repo
 	gracePeriod       time.Duration
-	// Cache for the last fetched commit for each repository. Not goroutine safe.
-	lastFetchedCommitCache map[string]string
-	logger                 *zap.Logger
+	// Cache for the last scanned commit for each repository.
+	// Not goroutine safe.
+	lastScannedCommits map[string]string
+	logger             *zap.Logger
 }
 
 func NewReporter(
@@ -67,13 +64,13 @@ func NewReporter(
 	logger *zap.Logger,
 ) *Reporter {
 	return &Reporter{
-		apiClient:              apiClient,
-		gitClient:              gitClient,
-		applicationLister:      appLister,
-		config:                 cfg,
-		gracePeriod:            gracePeriod,
-		lastFetchedCommitCache: make(map[string]string),
-		logger:                 logger.Named("app-config-reporter"),
+		apiClient:          apiClient,
+		gitClient:          gitClient,
+		applicationLister:  appLister,
+		config:             cfg,
+		gracePeriod:        gracePeriod,
+		lastScannedCommits: make(map[string]string),
+		logger:             logger.Named("app-config-reporter"),
 	}
 }
 
@@ -141,7 +138,7 @@ func (r *Reporter) checkApps(ctx context.Context) (err error) {
 		if err != nil {
 			return
 		}
-		lastFetchedCommit, ok := r.lastFetchedCommitCache[repoID]
+		lastFetchedCommit, ok := r.lastScannedCommits[repoID]
 		if ok && headCommit.Hash == lastFetchedCommit {
 			continue
 		}
@@ -158,7 +155,7 @@ func (r *Reporter) checkApps(ctx context.Context) (err error) {
 
 		defer func() {
 			if err == nil {
-				r.lastFetchedCommitCache[repoID] = headCommit.Hash
+				r.lastScannedCommits[repoID] = headCommit.Hash
 			}
 		}()
 	}
