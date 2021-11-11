@@ -189,12 +189,12 @@ func TestValidateEncryption(t *testing.T) {
 			wantErr:          false,
 		},
 		{
-			name:             "invalid because key is an empty",
+			name:             "invalid because key is empty",
 			encryptedSecrets: map[string]string{"": "pw"},
 			wantErr:          true,
 		},
 		{
-			name:             "invalid because value is an empty",
+			name:             "invalid because value is empty",
 			encryptedSecrets: map[string]string{"password": ""},
 			wantErr:          true,
 		},
