@@ -30,6 +30,7 @@ enum NotificationEventType {
     EVENT_DEPLOYMENT_FAILED = 5;
     EVENT_DEPLOYMENT_CANCELLED = 6;
     EVENT_DEPLOYMENT_WAIT_APPROVAL = 7;
+    EVENT_DEPLOYMENT_TRIGGER_FAILED = 8;
 
     EVENT_APPLICATION_SYNCED = 100;
     EVENT_APPLICATION_OUT_OF_SYNC = 101;
@@ -39,7 +40,6 @@ enum NotificationEventType {
 
     EVENT_PIPED_STARTED = 300;
     EVENT_PIPED_STOPPED = 301;
-
 }
 
 enum NotificationEventGroup {
@@ -99,6 +99,13 @@ message NotificationEventDeploymentWaitApproval {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     string env_name = 2 [(validate.rules).string.min_len = 1];
     repeated string mentioned_accounts = 3;
+}
+
+message NotificationEventDeploymentTriggerFailed {
+    Application application = 1 [(validate.rules).message.required = true];
+    string commit_hash = 2 [(validate.rules).string.min_len = 1];
+    string commit_message = 3 [(validate.rules).string.min_len = 1];
+    string reason = 4 [(validate.rules).string.min_len = 1];
 }
 
 message NotificationEventApplicationSynced {

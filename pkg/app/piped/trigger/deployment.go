@@ -44,12 +44,14 @@ func (t *Trigger) triggerDeployment(
 	n, err := t.getNotification(app.GitPath)
 	if err != nil {
 		t.logger.Error("failed to get the list of mentions", zap.Error(err))
+		t.reportDeploymentFailed(app, fmt.Sprintf("failed to find the list of mentions from %s: %v", app.GitPath.GetDeploymentConfigFilePath(), err), commit)
 		return
 	}
 
 	deployment, err = buildDeployment(app, branch, commit, commander, syncStrategy, time.Now(), n)
 	if err != nil {
 		t.logger.Error("failed to build the deployment", zap.Error(err))
+		t.reportDeploymentFailed(app, fmt.Sprintf("failed to build the deployment: %v", err), commit)
 		return
 	}
 
@@ -60,10 +62,12 @@ func (t *Trigger) triggerDeployment(
 
 	defer func() {
 		if err != nil {
+			t.reportDeploymentFailed(app, fmt.Sprintf("%v", err), commit)
 			return
 		}
 		env, err := t.environmentLister.Get(ctx, deployment.EnvId)
 		if err != nil {
+			t.reportDeploymentFailed(app, fmt.Sprintf("%v", err), commit)
 			return
 		}
 		t.notifier.Notify(model.NotificationEvent{
@@ -84,6 +88,7 @@ func (t *Trigger) triggerDeployment(
 	}
 	if _, err = t.apiClient.CreateDeployment(ctx, req); err != nil {
 		t.logger.Error("failed to create deployment", zap.Error(err))
+		t.reportDeploymentFailed(app, fmt.Sprintf("failed to create deployment: %v", err), commit)
 		return
 	}
 
@@ -181,6 +186,18 @@ func buildDeployment(
 	}
 
 	return deployment, nil
+}
+
+func (t *Trigger) reportDeploymentFailed(app *model.Application, reason string, commit git.Commit) {
+	t.notifier.Notify(model.NotificationEvent{
+		Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED,
+		Metadata: &model.NotificationEventDeploymentTriggerFailed{
+			Application:   app,
+			CommitHash:    commit.Hash,
+			CommitMessage: commit.Message,
+			Reason:        reason,
+		},
+	})
 }
 
 func (t *Trigger) getNotification(p *model.ApplicationGitPath) (*config.DeploymentNotification, error) {

@@ -233,6 +233,7 @@ func (t *Trigger) checkNewCommits(ctx context.Context) error {
 			shouldTrigger, err := d.ShouldTrigger(ctx, app)
 			if err != nil {
 				t.logger.Error(fmt.Sprintf("failed to check application: %s", app.Id), zap.Error(err))
+				t.reportDeploymentFailed(app, fmt.Sprintf("failed to find the list of mentions from %s: %v", app.GitPath.GetDeploymentConfigFilePath(), err), headCommit)
 				continue
 			}
 

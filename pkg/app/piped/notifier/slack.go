@@ -27,6 +27,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -151,6 +152,22 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 			{"Started At", makeSlackDate(d.CreatedAt), true},
 		}
 	}
+	generateDeploymentEventDataForTriggerFailed := func(app *model.Application, hash, msg string) {
+		link = fmt.Sprintf("%s/applications/%s?project=%s", webURL, app.Id, app.ProjectId)
+		commitURL, err := git.MakeCommitURL(app.GitPath.Repo.Remote, hash)
+		if err != nil {
+			s.logger.Error(fmt.Sprintf("failed to get the URL for the specified commit: %v", err))
+		}
+		fields = []slackField{
+			{"Project", truncateText(app.ProjectId, 8), true},
+			{"Application", makeSlackLink(app.Name, link), true},
+			{"Kind", strings.ToLower(app.Kind.String()), true},
+		}
+		if commitURL != "" {
+			fields = append(fields, slackField{"Commit", makeSlackLink(truncateText(msg, 8), commitURL), true})
+		}
+
+	}
 	generatePipedEventData := func(id, name, version, project string) {
 		link = fmt.Sprintf("%s/settings/piped?project=%s", webURL, project)
 		fields = []slackField{
@@ -203,6 +220,12 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		text = fmt.Sprintf("Cancelled by %s", md.Commander)
 		color = slackWarnColor
 		generateDeploymentEventData(md.Deployment, md.EnvName, getAccountsAsString(md.MentionedAccounts))
+
+	case model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED:
+		md := event.Metadata.(*model.NotificationEventDeploymentTriggerFailed)
+		title = fmt.Sprintf("Failed to trigger a new deployment for %s", md.Application.Name)
+		text = md.Reason
+		generateDeploymentEventDataForTriggerFailed(md.Application, md.CommitHash, md.CommitMessage)
 
 	case model.NotificationEventType_EVENT_PIPED_STARTED:
 		md := event.Metadata.(*model.NotificationEventPipedStarted)
