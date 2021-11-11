@@ -39,7 +39,7 @@ For more information, you might want to read the [installation notes of `bazelis
 
 ## Docs and workaround with docs
 
-PipeCD official site contains multiple versions documentation, all placed under `/docs/content/en` directory, which are:
+PipeCD official site contains multiple versions of documentation, all placed under the `/docs/content/en` directory, which are:
 - `/docs`: stable version docs, usually synced with the latest released version docs.
 - `/docs-dev`: experimental version docs, contains docs for not yet released features or changes.
 - `/docs-v0.x.x`: contains docs for specified version family (a version family is all versions which in the same major release).
@@ -48,7 +48,7 @@ Basically, we have two simple rules:
 - Do not touch to the `/docs` content directly.
 - Keep stable docs version synced with the latest released docs version.
 
-Here is the flow of docs contribution regard some known scenarios:
+Here are the flow of docs contribution regard some known scenarios:
 1. Update docs that are related to a specified version (which is not the latest released version):
 In such case, update the docs under `/docs-v0.x.x` is enough.
 2. Update docs for not yet released features or changes:

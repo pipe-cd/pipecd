@@ -48,7 +48,7 @@ Basically, we have two simple rules:
 - Do not touch to the `/docs` content directly.
 - Keep stable docs version synced with the latest released docs version.
 
-Here is the flow of docs contribution regard some known scenarios:
+Here are the flow of docs contribution regard some known scenarios:
 1. Update docs that are related to a specified version (which is not the latest released version):
 In such case, update the docs under `/docs-v0.x.x` is enough.
 2. Update docs for not yet released features or changes:
