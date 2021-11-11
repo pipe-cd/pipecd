@@ -36,3 +36,20 @@ For more information, you might want to read the [installation notes of `bazelis
 - `make site`: runs PipeCD site (https://pipecd.dev) locally (requires [hugo](https://github.com/gohugoio/hugo) with `_extended` version `0.88.1` or later to be installed).
 
 **NOTE**: The first time of running a bazel command will take some minutes because bazel needs to download all required dependencies. From the second time it will be very fast.
+
+## Docs and workaround with docs
+
+PipeCD official site contains multiple versions documentation, all placed under `/docs/content/en` directory, which are:
+- `/docs`: stable version docs, usually synced with the latest released version docs.
+- `/docs-dev`: experimental version docs, contains docs for not yet released features or changes.
+- `/docs-v0.x.x`: contains docs for specified version family (a version family is all versions which in the same major release).
+
+Basically, we have a single rule: `do not touch to the /docs content directly`.
+Here is the flow of docs contribution regard some known scenarios:
+1. Update docs that are related to a specified version (which is not the latest released version family):
+In such case, update the docs under `/docs-v0.x.x` is enough.
+2. Update docs that are related to the latest version docs family:
+- Change the docs' content that fixes the issue under `/docs-dev` and `/docs-v0.x.x`, they share the same file structure so you should find the right files in both directories.
+- Use `make sync-stable-docs` command to sync the latest released version docs under `/docs-v0.x.x` to `/docs`
+
+If you find any issues related to the docs, we're happy to accept your help.
