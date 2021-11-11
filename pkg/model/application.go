@@ -20,7 +20,11 @@ import (
 	"strings"
 )
 
-const DefaultDeploymentConfigFileName = ".pipe.yaml"
+const (
+	// TODO: Consider changing the default application config name
+	DefaultDeploymentConfigFileName      = ".pipe.yaml"
+	DefaultDeploymentConfigFileExtension = ".pipe.yaml"
+)
 
 // GetDeploymentConfigFilePath returns the path to deployment configuration file.
 func (p ApplicationGitPath) GetDeploymentConfigFilePath() string {

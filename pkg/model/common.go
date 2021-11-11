@@ -14,6 +14,8 @@
 
 package model
 
+import "fmt"
+
 // ApplicationKindStrings returns a list of available deployment kinds in string.
 func ApplicationKindStrings() []string {
 	out := make([]string, 0, len(ApplicationKind_value))
@@ -21,4 +23,9 @@ func ApplicationKindStrings() []string {
 		out = append(out, k)
 	}
 	return out
+}
+
+// BuildGitPathID builds a unique path between repositories.
+func BuildGitPathID(repoID, path, configFileName string) string {
+	return fmt.Sprintf("%s:%s/%s", repoID, path, configFileName)
 }

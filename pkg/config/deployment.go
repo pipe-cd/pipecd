@@ -30,7 +30,7 @@ const (
 
 type GenericDeploymentSpec struct {
 	Name   string            `json:"name"`
-	EnvId  string            `json:"env_id"`
+	EnvID  string            `json:"env_id"`
 	Labels map[string]string `json:"labels"`
 
 	// Configuration used while planning deployment.
