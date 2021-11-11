@@ -16,7 +16,6 @@ package appconfigreporter
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"path/filepath"
 	"time"
@@ -25,8 +24,6 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
-	"github.com/pipe-cd/pipe/pkg/cache"
-	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -38,7 +35,7 @@ const (
 
 type apiClient interface {
 	UpdateApplicationConfigurations(ctx context.Context, in *pipedservice.UpdateApplicationConfigurationsRequest, opts ...grpc.CallOption) (*pipedservice.UpdateApplicationConfigurationsResponse, error)
-	PutUnregisteredApplicationConfigurations(ctx context.Context, in *pipedservice.PutUnregisteredApplicationConfigurationsRequest, opts ...grpc.CallOption) (*pipedservice.PutUnregisteredApplicationConfigurationsResponse, error)
+	ReportUnregisteredApplicationConfigurations(ctx context.Context, in *pipedservice.ReportUnregisteredApplicationConfigurationsRequest, opts ...grpc.CallOption) (*pipedservice.ReportUnregisteredApplicationConfigurationsResponse, error)
 }
 
 type gitClient interface {
@@ -56,8 +53,8 @@ type Reporter struct {
 	config            *config.PipedSpec
 	gitRepos          map[string]git.Repo
 	gracePeriod       time.Duration
-	// Cache for the last fetched commit for each repository.
-	lastFetchedCommitCache cache.Cache
+	// Cache for the last fetched commit for each repository. Not goroutine safe.
+	lastFetchedCommitCache map[string]string
 	logger                 *zap.Logger
 }
 
@@ -68,20 +65,16 @@ func NewReporter(
 	cfg *config.PipedSpec,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
-) (*Reporter, error) {
-	cache, err := memorycache.NewLRUCache(defaultLastFetchedCommitCacheSize)
-	if err != nil {
-		return nil, err
-	}
+) *Reporter {
 	return &Reporter{
 		apiClient:              apiClient,
 		gitClient:              gitClient,
 		applicationLister:      appLister,
 		config:                 cfg,
 		gracePeriod:            gracePeriod,
-		lastFetchedCommitCache: cache,
+		lastFetchedCommitCache: make(map[string]string),
 		logger:                 logger.Named("app-config-reporter"),
-	}, nil
+	}
 }
 
 func (r *Reporter) Run(ctx context.Context) error {
@@ -127,9 +120,8 @@ func (r *Reporter) checkApps(ctx context.Context) (err error) {
 	}
 
 	var (
-		unusedApps      = make([]*pipedservice.ApplicationConfiguration, 0)
-		appsToBeUpdated = make([]*pipedservice.ApplicationConfiguration, 0)
-		appsMap         = r.listApplications()
+		unusedApps      = make([]*model.ApplicationInfo, 0)
+		appsToBeUpdated = make([]*model.ApplicationInfo, 0)
 	)
 	for repoID, repo := range r.gitRepos {
 		if err = repo.Pull(ctx, repo.GetClonedBranch()); err != nil {
@@ -149,14 +141,11 @@ func (r *Reporter) checkApps(ctx context.Context) (err error) {
 		if err != nil {
 			return
 		}
-		var lastFetchedCommit interface{}
-		lastFetchedCommit, err = r.lastFetchedCommitCache.Get(repoID)
-		if err != nil && !errors.Is(err, cache.ErrNotFound) {
-			r.logger.Error("failed to get the last fetched commit from cache", zap.Error(err))
-		}
-		if headCommit.Hash == lastFetchedCommit.(string) {
+		lastFetchedCommit, ok := r.lastFetchedCommitCache[repoID]
+		if ok && headCommit.Hash == lastFetchedCommit {
 			continue
 		}
+		appsMap := r.listApplications()
 		apps, ok := appsMap[repoID]
 		if !ok {
 			continue
@@ -169,14 +158,14 @@ func (r *Reporter) checkApps(ctx context.Context) (err error) {
 
 		defer func() {
 			if err == nil {
-				r.lastFetchedCommitCache.Put(repoID, headCommit)
+				r.lastFetchedCommitCache[repoID] = headCommit.Hash
 			}
 		}()
 	}
 	if len(unusedApps) > 0 {
-		_, err = r.apiClient.PutUnregisteredApplicationConfigurations(
+		_, err = r.apiClient.ReportUnregisteredApplicationConfigurations(
 			ctx,
-			&pipedservice.PutUnregisteredApplicationConfigurationsRequest{
+			&pipedservice.ReportUnregisteredApplicationConfigurationsRequest{
 				Applications: unusedApps,
 			},
 		)

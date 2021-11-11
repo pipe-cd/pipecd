@@ -442,7 +442,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start running app-config-reporter.
 	{
-		r, err := appconfigreporter.NewReporter(
+		r := appconfigreporter.NewReporter(
 			apiClient,
 			gitClient,
 			applicationLister,
@@ -450,10 +450,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			p.gracePeriod,
 			input.Logger,
 		)
-		if err != nil {
-			input.Logger.Error("failed to initialize app-config-reporter", zap.Error(err))
-			return err
-		}
 
 		group.Go(func() error {
 			return r.Run(ctx)

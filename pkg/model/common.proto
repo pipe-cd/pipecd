@@ -55,3 +55,12 @@ enum SyncStrategy {
     QUICK_SYNC = 1;
     PIPELINE = 2;
 }
+
+message ApplicationInfo {
+    string name = 1 [(validate.rules).string.min_len = 1];
+    string kind = 2 [(validate.rules).string.min_len = 1];
+    string env_id = 3 [(validate.rules).string.min_len = 1];
+    string path = 4 [(validate.rules).string.pattern = "^[^/].+$"];
+    string config_filename = 5;
+    map<string, string> labels = 6;
+}

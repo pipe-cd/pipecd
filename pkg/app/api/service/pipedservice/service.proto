@@ -164,8 +164,8 @@ service PipedService {
 
     // UpdateApplicationConfigurations updates application configurations.
     rpc UpdateApplicationConfigurations(UpdateApplicationConfigurationsRequest) returns (UpdateApplicationConfigurationsResponse) {}
-    // PutLatestUnusedApplicationConfigurations puts the latest configurations of applications that isn't registered yet.
-    rpc PutUnregisteredApplicationConfigurations(PutUnregisteredApplicationConfigurationsRequest) returns (PutUnregisteredApplicationConfigurationsResponse) {}
+    // ReportLatestUnusedApplicationConfigurations puts the latest configurations of applications that isn't registered yet.
+    rpc ReportUnregisteredApplicationConfigurations(ReportUnregisteredApplicationConfigurationsRequest) returns (ReportUnregisteredApplicationConfigurationsResponse) {}
 }
 
 enum ListOrder {
@@ -449,28 +449,20 @@ message GetDesiredVersionResponse {
     string version = 1;
 }
 
-message ApplicationConfiguration {
-    // TODO: Make it possible to update application configs via Piped
-    //   To do so, first we need to enable application configs to be defined in Git repository
-    //string name = 1 [(validate.rules).string.min_len = 1];
-    //string kind = 2 [(validate.rules).string.min_len = 1];
-    //string env_id = 3 [(validate.rules).string.min_len = 1];
-    map<string, string> labels = 4;
-}
 
 message UpdateApplicationConfigurationsRequest {
     // The application configurations that should be updated.
-    repeated ApplicationConfiguration applications = 1;
+    repeated pipe.model.ApplicationInfo applications = 1;
 }
 
 message UpdateApplicationConfigurationsResponse {
 }
 
-message PutUnregisteredApplicationConfigurationsRequest {
+message ReportUnregisteredApplicationConfigurationsRequest {
     // All the latest application configurations that isn't registered yet.
     // Note that ALL configs are always be contained every time.
-    repeated ApplicationConfiguration applications = 1;
+    repeated pipe.model.ApplicationInfo applications = 1;
 }
 
-message PutUnregisteredApplicationConfigurationsResponse {
+message ReportUnregisteredApplicationConfigurationsResponse {
 }
