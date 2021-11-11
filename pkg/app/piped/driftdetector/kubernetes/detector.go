@@ -198,9 +198,6 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	}
 
 	state := makeSyncState(result, headCommit.Hash)
-	if state.Status == model.ApplicationSyncStatus_SYNCED {
-		return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
-	}
 
 	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 }
