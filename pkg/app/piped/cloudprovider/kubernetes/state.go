@@ -12,6 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Copyright Istio Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package kubernetes
 
 import (
@@ -20,6 +34,7 @@ import (
 	"strings"
 	"time"
 
+	istio "istio.io/api/networking/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -30,6 +45,13 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/pipe-cd/pipe/pkg/model"
+)
+
+const (
+	Resolution_NONE            = "NONE"
+	Resolution_STATIC          = "STATIC"
+	Resolution_DNS             = "DNS"
+	Resolution_DNS_ROUND_ROBIN = "DNS_ROUND_ROBIN"
 )
 
 func MakeKubernetesResourceState(uid string, key ResourceKey, obj *unstructured.Unstructured, now time.Time) model.KubernetesResourceState {
@@ -108,6 +130,14 @@ func determineResourceHealth(key ResourceKey, obj *unstructured.Unstructured) (s
 		return determineClusterRoleHealth(obj)
 	case KindClusterRoleBinding:
 		return determineClusterRoleBindingHealth(obj)
+	case KindVirtualService:
+		return determineVirtualService(obj)
+	case KindDestinationRule:
+		return determineDestinationRule(obj)
+	case KindGateway:
+		return determineGateway(obj)
+	case KindServiceEntry:
+		return determineServiceEntry(obj)
 	default:
 		desc = "Unimplemented or unknown resource"
 		return
@@ -532,5 +562,211 @@ func determinePVCHealth(obj *unstructured.Unstructured) (status model.Kubernetes
 func determineServiceAccountHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
 	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
 	status = model.KubernetesResourceState_HEALTHY
+	return
+}
+
+// This function based on [istio project](https://github.com/istio/istio/blob/8ce0defcc905873dadf3fa1d8c3f3629cd39895c/pkg/config/validation/validation.go#L1930-L2041).
+// See the file headers for detail information.
+func determineVirtualService(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	vs := &istio.VirtualService{}
+	err := scheme.Scheme.Convert(obj, vs, nil)
+	if err != nil {
+		status = model.KubernetesResourceState_OTHER
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, vs, err)
+		return
+	}
+	if len(vs.Hosts) == 0 {
+		desc = "Virtual service must have at least one host"
+		return
+	}
+
+	if len(vs.Http) == 0 && len(vs.Tcp) == 0 && len(vs.Tls) == 0 {
+		desc = "Http, tcp or tls must be provided in virtual service"
+		return
+	}
+	for _, httpRoute := range vs.Http {
+		if httpRoute == nil {
+			desc = "Http route may not be null"
+			continue
+		}
+	}
+	return
+}
+
+// This function based on [istio project](https://github.com/istio/istio/blob/8ce0defcc905873dadf3fa1d8c3f3629cd39895c/pkg/config/validation/validation.go#L442-L484).
+// See the file headers for detail information.
+func determineGateway(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	g := &istio.Gateway{}
+	err := scheme.Scheme.Convert(obj, g, nil)
+	if err != nil {
+		status = model.KubernetesResourceState_OTHER
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, g, err)
+		return
+	}
+
+	if len(g.Servers) == 0 {
+		status = model.KubernetesResourceState_OTHER
+		desc = "Gateway must have at least one server"
+		return
+	}
+
+	portNames := make(map[string]bool)
+	for _, s := range g.Servers {
+		if s == nil {
+			desc = "Server may not be nil"
+			return
+		}
+		if s.Port != nil {
+			if portNames[s.Port.Name] {
+				desc = fmt.Sprintf("Port names in servers must be unique: duplicate name: %s", s.Port.Name)
+				return
+			}
+			portNames[s.Port.Name] = true
+			switch strings.ToLower(s.Port.Protocol) {
+			case "http", "http2", "http-proxy", "grpc", "grpc-web":
+				if s.GetTls().GetHttpsRedirect() {
+					desc = fmt.Sprintf("Tls.httpsRedirect should only be used with http servers: %T", s.Tls)
+					return
+				}
+			}
+		}
+	}
+	return
+}
+
+// This function based on [istio project](https://github.com/istio/istio/blob/8ce0defcc905873dadf3fa1d8c3f3629cd39895c/pkg/config/validation/validation.go#L611-L653).
+// See the file headers for detail information.
+func determineDestinationRule(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	dr := &istio.DestinationRule{}
+	err := scheme.Scheme.Convert(obj, dr, nil)
+	if err != nil {
+		status = model.KubernetesResourceState_OTHER
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, dr, err)
+		return
+	}
+
+	for _, subset := range dr.Subsets {
+		if subset == nil {
+			desc = "The subset may not be nil"
+			return
+		}
+	}
+	return
+}
+
+// This function based on [istio project](https://github.com/istio/istio/blob/8ce0defcc905873dadf3fa1d8c3f3629cd39895c/pkg/config/validation/validation.go#L2941-L3102).
+// See the file headers for detail information.
+func determineServiceEntry(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	se := &istio.ServiceEntry{}
+	err := scheme.Scheme.Convert(obj, se, nil)
+	if err != nil {
+		status = model.KubernetesResourceState_OTHER
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, se, err)
+		return
+	}
+
+	if se.WorkloadSelector != nil && se.Endpoints != nil {
+		status = model.KubernetesResourceState_OTHER
+		desc = "Only one of WorkloadSelector or Endpoints is allowed in Service Entry"
+		return
+	}
+	if len(se.Hosts) == 0 {
+		status = model.KubernetesResourceState_OTHER
+		desc = "Service entry must have at least one host"
+		return
+	}
+	for _, hostname := range se.Hosts {
+		if hostname == "*" {
+			desc = fmt.Sprintf("Invalid host %s", hostname)
+			return
+		}
+	}
+	cidrFound := false
+	for _, address := range se.Addresses {
+		cidrFound = cidrFound || strings.Contains(address, "/")
+	}
+	if cidrFound {
+		if se.Resolution.String() != Resolution_NONE && se.Resolution.String() != Resolution_STATIC {
+			desc = "CIDR addresses are allowed only for NONE/STATIC resolution types"
+			return
+		}
+	}
+	servicePortNumbers := make(map[uint32]bool)
+	servicePorts := make(map[string]bool, len(se.Ports))
+	for _, port := range se.Ports {
+		if port == nil {
+			desc = "Service entry port may not be null"
+			return
+		}
+		if servicePorts[port.Name] {
+			desc = fmt.Sprintf("Service entry port name %q already defined", port.Name)
+			return
+		}
+		servicePorts[port.Name] = true
+		if servicePortNumbers[port.Number] {
+			desc = fmt.Sprintf("Service entry port %d already defined", port.Number)
+			return
+		}
+		servicePortNumbers[port.Number] = true
+		if port.TargetPort == 0 {
+			desc = "Service entry port may not be 0"
+			return
+		}
+	}
+	switch se.Resolution.String() {
+	case Resolution_NONE:
+		if len(se.Endpoints) != 0 {
+			desc = "No endpoints should be provided for resolution type none"
+			return
+		}
+	case Resolution_STATIC:
+		unixEndpoint := false
+		for _, endpoint := range se.Endpoints {
+			addr := endpoint.GetAddress()
+			if strings.HasPrefix(addr, "unix://") {
+				unixEndpoint = true
+				if len(endpoint.Ports) != 0 {
+					desc = fmt.Sprintf("Unix endpoint %s must not include ports", addr)
+					return
+				}
+			} else {
+				for name, port := range endpoint.Ports {
+					if !servicePorts[name] {
+						desc = fmt.Sprintf("Endpoint port %v is not defined by the service entry", port)
+						return
+					}
+				}
+			}
+		}
+		if unixEndpoint && len(se.Ports) != 1 {
+			desc = "Exactly 1 service port required for unix endpoints"
+			return
+		}
+	case Resolution_DNS, Resolution_DNS_ROUND_ROBIN:
+		if len(se.Addresses) > 0 {
+			for _, port := range se.Ports {
+				switch strings.ToLower(port.Protocol) {
+				case "tcp", "https", "tls", "mongo", "redis", "mysql", "thrift":
+					if len(se.Hosts) > 1 {
+						// TODO: prevent this invalid setting, maybe when istio version is 1.11+
+						desc = "Service entry can not have more than one host specified simultaneously with address and tcp port"
+					}
+					return
+				}
+			}
+		}
+	default:
+		desc = fmt.Sprintf("Unsupported resolution type %s", se.Resolution.String())
+		return
+	}
+	if se.Resolution.String() != Resolution_NONE && len(se.Hosts) > 1 {
+		for _, port := range se.Ports {
+			switch strings.ToLower(port.Protocol) {
+			case "http", "http2", "http-proxy", "grpc", "grpc-web", "https", "tls":
+				desc = "Multiple hosts provided with non-HTTP, non-TLS ports"
+				return
+			}
+		}
+	}
 	return
 }

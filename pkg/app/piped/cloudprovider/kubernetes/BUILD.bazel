@@ -26,6 +26,7 @@ go_library(
         "//pkg/diff:go_default_library",
         "//pkg/git:go_default_library",
         "//pkg/model:go_default_library",
+        "@io_istio_api//networking/v1alpha3:go_default_library",
         "@io_k8s_api//apps/v1:go_default_library",
         "@io_k8s_api//batch/v1:go_default_library",
         "@io_k8s_api//core/v1:go_default_library",

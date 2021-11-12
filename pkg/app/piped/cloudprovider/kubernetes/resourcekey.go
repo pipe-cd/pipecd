@@ -55,6 +55,7 @@ var builtInApiVersions = map[string]struct{}{
 	"storage.k8s.io/v1":                    {},
 	"storage.k8s.io/v1beta1":               {},
 	"v1":                                   {},
+	"networking.istio.io/v1alpha3":         {},
 }
 
 const (
@@ -76,6 +77,10 @@ const (
 	KindRoleBinding           = "RoleBinding"
 	KindClusterRole           = "ClusterRole"
 	KindClusterRoleBinding    = "ClusterRoleBinding"
+	KindVirtualService       = "VirtualService"
+	KindDestinationRule       = "DestinationRule"
+	KindGateway               = "Gateway"
+	KindServiceEntry          = "ServiceEntry"
 
 	DefaultNamespace = "default"
 )
