@@ -23,7 +23,7 @@ import (
 const (
 	// TODO: Consider changing the default application config name
 	DefaultDeploymentConfigFileName      = ".pipe.yaml"
-	DefaultDeploymentConfigFileExtension = ".pipe.yaml"
+	DefaultDeploymentConfigFileExtension = ".pipecd.yaml"
 )
 
 // GetDeploymentConfigFilePath returns the path to deployment configuration file.
