@@ -130,8 +130,9 @@ func (r *Reporter) scanAppConfigs(ctx context.Context) error {
 	}
 
 	// Create a map to determine from GitPath if the application is registered.
-	registeredAppPaths := make(map[string]struct{})
-	for _, app := range r.applicationLister.List() {
+	apps := r.applicationLister.List()
+	registeredAppPaths := make(map[string]struct{}, len(apps))
+	for _, app := range apps {
 		id := model.BuildGitPathID(app.GitPath.Repo.Id, app.GitPath.Path, app.GitPath.ConfigFilename)
 		registeredAppPaths[id] = struct{}{}
 	}
