@@ -31,7 +31,7 @@ load(
 go_rules_dependencies()
 
 go_register_toolchains(
-    go_version = "1.16.2",
+    go_version = "1.17.2",
 )
 
 load(
