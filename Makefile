@@ -60,7 +60,7 @@ coverage:
 dep:
 	go mod tidy
 	go mod vendor
-	bazelisk run //:gazelle -- update-repos -from_file=go.mod -prune -to_macro=repositories.bzl%go_repositories
+	bazelisk run //:gazelle -- update-repos -from_file=go.mod -prune -build_file_proto_mode=disable -to_macro=repositories.bzl%go_repositories
 
 .PHONY: gazelle
 gazelle:
