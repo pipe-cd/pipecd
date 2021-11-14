@@ -15,6 +15,8 @@
 package kubernetesmetrics
 
 import (
+	"context"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/client-go/tools/metrics"
 )
@@ -81,7 +83,7 @@ func Register(r prometheus.Registerer) {
 type requestResultCollector struct {
 }
 
-func (c requestResultCollector) Increment(code string, method string, host string) {
+func (c requestResultCollector) Increment(ctx context.Context, code string, method string, host string) {
 	apiRequestsCounter.With(prometheus.Labels{
 		hostKey:   host,
 		methodKey: method,
