@@ -224,8 +224,13 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 
 		appCfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), app)
 		if err != nil {
-			msg := fmt.Sprintf("failed to load application config file at %s: %v", app.GitPath.GetDeploymentConfigFilePath(), err)
-			t.notifyDeploymentTriggerFailed(app, msg, headCommit)
+			t.logger.Error("failed to load application config file", zap.Error(err))
+			// Do not notify this event to external services because it may cause annoying
+			// when one application is missing or having an invalid configuration file.
+			// So instead of notifying this as a notification,
+			// we should show this problem on the web with a status like INVALID_CONFIG.
+			//
+			// t.notifyDeploymentTriggerFailed(app, msg, headCommit)
 			continue
 		}
 
@@ -233,6 +238,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 		if err != nil {
 			msg := fmt.Sprintf("failed while determining whether application %s should be triggered or not: %s", app.Name, err)
 			t.notifyDeploymentTriggerFailed(app, msg, headCommit)
+			t.logger.Error(msg, zap.Error(err))
 			continue
 		}
 
@@ -246,6 +252,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 		if err != nil {
 			msg := fmt.Sprintf("failed to trigger application %s: %v", app.Id, err)
 			t.notifyDeploymentTriggerFailed(app, msg, headCommit)
+			t.logger.Error(msg, zap.Error(err))
 			continue
 		}
 
@@ -391,7 +398,6 @@ func (t *Trigger) notifyDeploymentTriggerFailed(app *model.Application, reason s
 			Reason:        reason,
 		},
 	})
-	t.logger.Error(reason)
 }
 
 func loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.GenericDeploymentSpec, error) {
