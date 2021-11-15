@@ -41,6 +41,12 @@ func TestCloudRunDeploymentConfig(t *testing.T) {
 						OnCommit: OnCommit{
 							Disabled: false,
 						},
+						OnCommand: OnCommand{
+							Disabled: false,
+						},
+						OnOutOfSync: OnOutOfSync{
+							Disabled: true,
+						},
 					},
 				},
 				Input: CloudRunDeploymentInput{

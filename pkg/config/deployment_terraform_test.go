@@ -43,6 +43,12 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 						OnCommit: OnCommit{
 							Disabled: false,
 						},
+						OnCommand: OnCommand{
+							Disabled: false,
+						},
+						OnOutOfSync: OnOutOfSync{
+							Disabled: true,
+						},
 					},
 				},
 				Input: TerraformDeploymentInput{},
@@ -59,6 +65,12 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 					Trigger: Trigger{
 						OnCommit: OnCommit{
 							Disabled: false,
+						},
+						OnCommand: OnCommand{
+							Disabled: false,
+						},
+						OnOutOfSync: OnOutOfSync{
+							Disabled: true,
 						},
 					},
 				},
@@ -86,6 +98,12 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 					Trigger: Trigger{
 						OnCommit: OnCommit{
 							Disabled: false,
+						},
+						OnCommand: OnCommand{
+							Disabled: false,
+						},
+						OnOutOfSync: OnOutOfSync{
+							Disabled: true,
 						},
 					},
 				},
@@ -126,6 +144,12 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 					Trigger: Trigger{
 						OnCommit: OnCommit{
 							Disabled: false,
+						},
+						OnCommand: OnCommand{
+							Disabled: false,
+						},
+						OnOutOfSync: OnOutOfSync{
+							Disabled: true,
 						},
 					},
 				},

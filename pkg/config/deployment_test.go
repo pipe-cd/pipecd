@@ -276,6 +276,9 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 								"deployment.yaml",
 							},
 						},
+						OnOutOfSync: OnOutOfSync{
+							Disabled: true,
+						},
 					},
 				},
 				Input: KubernetesDeploymentInput{

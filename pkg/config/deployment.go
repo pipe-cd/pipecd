@@ -59,16 +59,42 @@ type DeploymentPlanner struct {
 }
 
 type Trigger struct {
-	// Configuration in case changes on commit are found.
+	// Configurable fields used while deciding the application
+	// should be triggered or not based on commit changes.
 	OnCommit OnCommit `json:"onCommit"`
+	// Configurable fields used while deciding the application
+	// should be triggered or not based on received SYNC command.
+	OnCommand OnCommand `json:"onCommand"`
+	// Configurable fields used while deciding the application
+	// should be triggered or not based on OUT_OF_SYNC state.
+	OnOutOfSync OnOutOfSync `json:"onOutOfSync"`
 }
 
 type OnCommit struct {
-	// Control trigger new deployment on Git change or not.
+	// Whether to exclude application from triggering target
+	// when a new commit touched the application.
+	// Default is false.
 	Disabled bool `json:"disabled,omitempty"`
 	// List of directories or files where their changes will trigger the deployment.
 	// Regular expression can be used.
 	Paths []string `json:"paths,omitempty"`
+}
+
+type OnCommand struct {
+	// Whether to exclude application from triggering target
+	// when received a new SYNC command.
+	// Default is false.
+	Disabled bool `json:"disabled,omitempty"`
+}
+
+type OnOutOfSync struct {
+	// Whether to exclude application from triggering target
+	// when application is at OUT_OF_SYNC state.
+	// Default is true.
+	// TODO: Ensure that the given value will not be overridden by the default one.
+	Disabled bool `json:"disabled,omitempty" default:"true"`
+	// TODO: Add a field to control the trigger frequency.
+	// MinWindow Duration `json:"minWindow,omitempty"`
 }
 
 func (s *GenericDeploymentSpec) Validate() error {
