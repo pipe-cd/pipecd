@@ -82,18 +82,11 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			fileName:           "testdata/application/terraform-app-sealed-secret.yaml",
+			fileName:           "testdata/application/terraform-app-secret-management.yaml",
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &TerraformDeploymentSpec{
 				GenericDeploymentSpec: GenericDeploymentSpec{
-					SealedSecrets: []SealedSecretMapping{
-						{
-							Path:        "sealed-service-account.yaml",
-							OutDir:      ".terraform-credentials",
-							OutFilename: "service-account.yaml",
-						},
-					},
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnCommit: OnCommit{
@@ -104,6 +97,14 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 						},
 						OnOutOfSync: OnOutOfSync{
 							Disabled: true,
+						},
+					},
+					Encryption: &SecretEncryption{
+						EncryptedSecrets: map[string]string{
+							"serviceAccount": "ENCRYPTED_DATA_GENERATED_FROM_WEB",
+						},
+						DecryptionTargets: []string{
+							"service-account.yaml",
 						},
 					},
 				},

@@ -536,7 +536,7 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 }
 
 func (p *piped) initializeSecretDecrypter(cfg *config.PipedSpec) (crypto.Decrypter, error) {
-	sm := cfg.GetSecretManagement()
+	sm := cfg.SecretManagement
 	if sm == nil {
 		return nil, nil
 	}
@@ -598,7 +598,7 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	}
 
 	// Configure secret management.
-	if sm := cfg.GetSecretManagement(); sm != nil {
+	if sm := cfg.SecretManagement; sm != nil {
 		switch sm.Type {
 		case model.SecretManagementTypeSealingKey:
 			fallthrough

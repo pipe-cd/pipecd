@@ -108,16 +108,6 @@ spec:
           url: https://pipecd.dev/dev-hook
           signatureValue: random-signature-string
 
-  sealedSecretManagement:
-    type: SEALING_KEY
-    config:
-      privateKeyFile: /etc/piped-secret/sealing-private-key
-      publicKeyFile: /etc/piped-secret/sealing-public-key
-    # type: GCP_KMS
-    # config:
-    #   keyName: key-name
-    #   decryptServiceAccountFile: /etc/piped-secret/decrypt-service-account.json 
-    #   encryptServiceAccountFile: /etc/piped-secret/encrypt-service-account.json
   secretManagement:
     type: KEY_PAIR
     config:

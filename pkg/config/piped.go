@@ -61,10 +61,6 @@ type PipedSpec struct {
 	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders"`
 	// Sending notification to Slack, Webhook…
 	Notifications Notifications `json:"notifications"`
-	// How the sealed secret should be managed.
-	// Deprecated.
-	// TODO: Remove sealedSecretManagement field in the future.
-	SealedSecretManagement *SecretManagement `json:"sealedSecretManagement"`
 	// What secret management method should be used.
 	SecretManagement *SecretManagement `json:"secretManagement"`
 	// Optional settings for event watcher.
@@ -90,11 +86,6 @@ func (s *PipedSpec) Validate() error {
 	}
 	if s.SyncInterval < 0 {
 		return errors.New("syncInterval must be greater than or equal to 0")
-	}
-	if s.SealedSecretManagement != nil {
-		if err := s.SealedSecretManagement.Validate(); err != nil {
-			return err
-		}
 	}
 	if s.SecretManagement != nil {
 		if err := s.SecretManagement.Validate(); err != nil {
@@ -186,13 +177,6 @@ func (s *PipedSpec) IsInsecureChartRepository(name string) bool {
 		}
 	}
 	return false
-}
-
-func (s *PipedSpec) GetSecretManagement() *SecretManagement {
-	if s.SealedSecretManagement != nil {
-		return s.SealedSecretManagement
-	}
-	return s.SecretManagement
 }
 
 func (s *PipedSpec) LoadPipedKey() ([]byte, error) {
