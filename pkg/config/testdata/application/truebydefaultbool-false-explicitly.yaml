@@ -1,0 +1,8 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  trigger:
+    onOutOfSync:
+      disabled: false
+  input:
+    autoRollback: false

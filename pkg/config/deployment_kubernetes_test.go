@@ -87,12 +87,12 @@ func TestKubernetesDeploymentConfig(t *testing.T) {
 							Disabled: false,
 						},
 						OnOutOfSync: OnOutOfSync{
-							Disabled: true,
+							Disabled: newBoolPointer(true),
 						},
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback: true,
+					AutoRollback: newBoolPointer(true),
 				},
 				TrafficRouting: &KubernetesTrafficRouting{
 					Method: KubernetesTrafficRoutingMethodPodSelector,
@@ -100,40 +100,6 @@ func TestKubernetesDeploymentConfig(t *testing.T) {
 			},
 			expectedError: nil,
 		},
-		// {
-		// 	fileName:           "testdata/application/k8s-app-canary.yaml",
-		// 	expectedKind:       KindKubernetesApp,
-		// 	expectedAPIVersion: "pipecd.dev/v1beta1",
-		// 	expectedSpec: &K8sAppSpec{
-		// 		Pipeline: &DeploymentPipeline{
-		// 			Stages: []PipelineStage{
-		// 				PipelineStage{
-		// 					Name: StageK8sCanaryOut,
-		// 					K8sCanaryOutStageOptions: &K8sCanaryOutStageOptions{
-		// 						Weight: 10,
-		// 					},
-		// 					Timeout:   Duration(10 * time.Minute),
-		// 					PostDelay: Duration(time.Minute),
-		// 				},
-		// 				PipelineStage{
-		// 					Name: StageWaitApproval,
-		// 					ApprovalStageOptions: &ApprovalStageOptions{
-		// 						Approvers: []string{"foo", "bar"},
-		// 					},
-		// 				},
-		// 				PipelineStage{
-		// 					Name:                   StageK8sRollout,
-		// 					K8sRolloutStageOptions: &K8sRolloutStageOptions{},
-		// 				},
-		// 				PipelineStage{
-		// 					Name:                    StageK8sCanaryIn,
-		// 					K8sCanaryInStageOptions: &K8sCanaryInStageOptions{},
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	expectedError: nil,
-		// },
 	}
 	for _, tc := range testcases {
 		t.Run(tc.fileName, func(t *testing.T) {

@@ -45,12 +45,12 @@ func TestCloudRunDeploymentConfig(t *testing.T) {
 							Disabled: false,
 						},
 						OnOutOfSync: OnOutOfSync{
-							Disabled: true,
+							Disabled: newBoolPointer(true),
 						},
 					},
 				},
 				Input: CloudRunDeploymentInput{
-					AutoRollback: true,
+					AutoRollback: newBoolPointer(true),
 				},
 			},
 			expectedError: nil,
