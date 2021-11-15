@@ -23,11 +23,11 @@ import "pkg/model/common.proto";
 
 message DeploymentChain {
     // The generated unique identifier.
-	string id = 1 [(validate.rules).string.min_len = 1];
+    string id = 1 [(validate.rules).string.min_len = 1];
     // The ID of the project this environment belongs to.
     string project_id = 2 [(validate.rules).string.min_len = 1];
-	// Deployment node contains all configuration required to perform deployment(s)
-	repeated DeploymentNode nodes = 3;
+    // Deployment node contains all configuration required to perform deployment(s)
+    repeated DeploymentNode nodes = 3;
     // Unix time when all the applications in this chain are deployed.
     int64 completed_at = 100 [(validate.rules).int64.gte = 0];
     // Unix time when the deployment chain is created.
@@ -37,10 +37,10 @@ message DeploymentChain {
 }
 
 message DeploymentNode {
-	// List of applications which should be deployed at the same time in chain.
-	repeated Application applications = 1;
-	// Control whether to start to deploy applications in this node or not.
-	bool runnable = 2;
+    // List of applications which should be deployed at the same time in chain.
+    repeated Application applications = 1;
+    // Control whether to start to deploy applications in this node or not.
+    bool runnable = 2;
     // Unix time when the deployment chain node is started.
     int64 started_at = 100 [(validate.rules).int64.gte = 0];
     // Unix time when all the applications in this chain node are deployed.
