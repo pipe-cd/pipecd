@@ -18,10 +18,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func TestTerraformDeploymentConfig(t *testing.T) {
@@ -47,7 +46,7 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 							Disabled: false,
 						},
 						OnOutOfSync: OnOutOfSync{
-							Disabled: true,
+							Disabled: nil,
 						},
 					},
 				},
@@ -70,7 +69,7 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 							Disabled: false,
 						},
 						OnOutOfSync: OnOutOfSync{
-							Disabled: true,
+							Disabled: nil,
 						},
 					},
 				},
@@ -96,7 +95,7 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 							Disabled: false,
 						},
 						OnOutOfSync: OnOutOfSync{
-							Disabled: true,
+							Disabled: NewTrueByDefaultBool(false),
 						},
 					},
 					Encryption: &SecretEncryption{
@@ -150,7 +149,7 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 							Disabled: false,
 						},
 						OnOutOfSync: OnOutOfSync{
-							Disabled: true,
+							Disabled: nil,
 						},
 					},
 				},

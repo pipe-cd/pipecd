@@ -62,12 +62,14 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		in.Logger.Warn("unable to determine target version", zap.Error(e))
 	}
 
+	autoRollback := cfg.Input.AutoRollback.Value()
+
 	// If the deployment was triggered by forcing via web UI,
 	// we rely on the user's decision.
 	switch in.Trigger.SyncStrategy {
 	case model.SyncStrategy_QUICK_SYNC:
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
-		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
+		out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())
 		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (forced via web)", out.Version)
 		return
 	case model.SyncStrategy_PIPELINE:
@@ -76,7 +78,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 			return
 		}
 		out.SyncStrategy = model.SyncStrategy_PIPELINE
-		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+		out.Stages = buildProgressivePipeline(cfg.Pipeline, autoRollback, time.Now())
 		out.Summary = fmt.Sprintf("Sync with pipeline to deploy image %s (forced via web)", out.Version)
 		return
 	}
@@ -84,7 +86,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// When no pipeline was configured, do the quick sync.
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
-		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
+		out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())
 		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (pipeline was not configured)", out.Version)
 		return
 	}
@@ -92,7 +94,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// Force to use pipeline when the alwaysUsePipeline field was configured.
 	if cfg.Planner.AlwaysUsePipeline {
 		out.SyncStrategy = model.SyncStrategy_PIPELINE
-		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+		out.Stages = buildProgressivePipeline(cfg.Pipeline, autoRollback, time.Now())
 		out.Summary = "Sync with the specified pipeline (alwaysUsePipeline was set)"
 		return
 	}
@@ -101,7 +103,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// We just do the quick sync.
 	if in.MostRecentSuccessfulCommitHash == "" {
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
-		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
+		out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())
 		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (it seems this is the first deployment)", out.Version)
 		return
 	}
@@ -111,14 +113,14 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	if err == nil {
 		if lastVersion, e := p.determineVersion(ds.AppDir, cfg.Input.ServiceManifestFile); e == nil {
 			out.SyncStrategy = model.SyncStrategy_PIPELINE
-			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+			out.Stages = buildProgressivePipeline(cfg.Pipeline, autoRollback, time.Now())
 			out.Summary = fmt.Sprintf("Sync with pipeline to update image from %s to %s", lastVersion, out.Version)
 			return
 		}
 	}
 
 	out.SyncStrategy = model.SyncStrategy_PIPELINE
-	out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+	out.Stages = buildProgressivePipeline(cfg.Pipeline, autoRollback, time.Now())
 	out.Summary = "Sync with the specified pipeline"
 	return
 }

@@ -45,9 +45,7 @@ func TestECSDeploymentConfig(t *testing.T) {
 						OnCommand: OnCommand{
 							Disabled: false,
 						},
-						OnOutOfSync: OnOutOfSync{
-							Disabled: true,
-						},
+						OnOutOfSync: OnOutOfSync{},
 					},
 				},
 				Input: ECSDeploymentInput{
@@ -55,9 +53,7 @@ func TestECSDeploymentConfig(t *testing.T) {
 					TaskDefinitionFile:    "/path/to/taskdef.yaml",
 					TargetGroups: ECSTargetGroups{
 						Primary: json.RawMessage(`{"containerName":"web","containerPort":80,"targetGroupArn":"arn:aws:elasticloadbalancing:xyz"}`),
-						Canary:  nil,
 					},
-					AutoRollback: true,
 				},
 			},
 			expectedError: nil,

@@ -65,7 +65,7 @@ type OnOutOfSyncDeterminer struct {
 
 // ShouldTrigger decides whether a given application should be triggered or not.
 func (d *OnOutOfSyncDeterminer) ShouldTrigger(_ context.Context, _ *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
-	if appCfg.Trigger.OnOutOfSync.Disabled {
+	if appCfg.Trigger.OnOutOfSync.Disabled.Value() {
 		return false, nil
 	}
 

@@ -97,12 +97,14 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		out.Version = version
 	}
 
+	autoRollback := cfg.Input.AutoRollback.Value()
+
 	// If the deployment was triggered by forcing via web UI,
 	// we rely on the user's decision.
 	switch in.Trigger.SyncStrategy {
 	case model.SyncStrategy_QUICK_SYNC:
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
-		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
+		out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())
 		out.Summary = "Quick sync by applying all manifests (forced via web)"
 		return
 	case model.SyncStrategy_PIPELINE:
@@ -111,7 +113,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 			return
 		}
 		out.SyncStrategy = model.SyncStrategy_PIPELINE
-		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+		out.Stages = buildProgressivePipeline(cfg.Pipeline, autoRollback, time.Now())
 		out.Summary = "Sync with the specified pipeline (forced via web)"
 		return
 	}
@@ -120,7 +122,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// we have only one choise to do is applying all manifestt.
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
-		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
+		out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())
 		out.Summary = "Quick sync by applying all manifests (no pipeline was configured)"
 		return
 	}
@@ -128,7 +130,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// Force to use pipeline when the alwaysUsePipeline field was configured.
 	if cfg.Planner.AlwaysUsePipeline {
 		out.SyncStrategy = model.SyncStrategy_PIPELINE
-		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+		out.Stages = buildProgressivePipeline(cfg.Pipeline, autoRollback, time.Now())
 		out.Summary = "Sync with the specified pipeline (alwaysUsePipeline was set)"
 		return
 	}
@@ -143,7 +145,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		}
 		if pipelineRegex.MatchString(in.Trigger.Commit.Message) {
 			out.SyncStrategy = model.SyncStrategy_PIPELINE
-			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+			out.Stages = buildProgressivePipeline(cfg.Pipeline, autoRollback, time.Now())
 			out.Summary = fmt.Sprintf("Sync progressively because the commit message was matching %q", p)
 			return out, err
 		}
@@ -159,7 +161,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		}
 		if syncRegex.MatchString(in.Trigger.Commit.Message) {
 			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
-			out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
+			out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())
 			out.Summary = fmt.Sprintf("Quick sync by applying all manifests because the commit message was matching %q", s)
 			return out, err
 		}
@@ -170,7 +172,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// We just apply all manifests.
 	if in.MostRecentSuccessfulCommitHash == "" {
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
-		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
+		out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())
 		out.Summary = "Quick sync by applying all manifests because it seems this is the first deployment"
 		return
 	}
@@ -200,12 +202,12 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 
 	if progressive {
 		out.SyncStrategy = model.SyncStrategy_PIPELINE
-		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+		out.Stages = buildProgressivePipeline(cfg.Pipeline, autoRollback, time.Now())
 		return
 	}
 
 	out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
-	out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
+	out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())
 	return
 }
 

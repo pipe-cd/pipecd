@@ -37,7 +37,7 @@ type CloudRunDeploymentInput struct {
 	ServiceManifestFile string `json:"serviceManifestFile"`
 	// Automatically reverts to the previous state when the deployment is failed.
 	// Default is true.
-	AutoRollback bool `json:"autoRollback" default:"true"`
+	AutoRollback *TrueByDefaultBool `json:"autoRollback,omitempty"`
 }
 
 // CloudRunSyncStageOptions contains all configurable values for a CLOUDRUN_SYNC stage.

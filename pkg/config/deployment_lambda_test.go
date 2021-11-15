@@ -18,10 +18,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/pipe-cd/pipe/pkg/model"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func TestLambdaDeploymentConfig(t *testing.T) {
@@ -46,14 +46,11 @@ func TestLambdaDeploymentConfig(t *testing.T) {
 						OnCommand: OnCommand{
 							Disabled: false,
 						},
-						OnOutOfSync: OnOutOfSync{
-							Disabled: true,
-						},
+						OnOutOfSync: OnOutOfSync{},
 					},
 				},
 				Input: LambdaDeploymentInput{
 					FunctionManifestFile: "function.yaml",
-					AutoRollback:         true,
 				},
 			},
 			expectedError: nil,
@@ -92,14 +89,11 @@ func TestLambdaDeploymentConfig(t *testing.T) {
 						},
 					},
 					Trigger: Trigger{
-						OnOutOfSync: OnOutOfSync{
-							Disabled: true,
-						},
+						OnOutOfSync: OnOutOfSync{},
 					},
 				},
 				Input: LambdaDeploymentInput{
 					FunctionManifestFile: "function.yaml",
-					AutoRollback:         true,
 				},
 			},
 			expectedError: nil,
@@ -129,14 +123,11 @@ func TestLambdaDeploymentConfig(t *testing.T) {
 						},
 					},
 					Trigger: Trigger{
-						OnOutOfSync: OnOutOfSync{
-							Disabled: true,
-						},
+						OnOutOfSync: OnOutOfSync{},
 					},
 				},
 				Input: LambdaDeploymentInput{
 					FunctionManifestFile: "function.yaml",
-					AutoRollback:         true,
 				},
 			},
 			expectedError: nil,

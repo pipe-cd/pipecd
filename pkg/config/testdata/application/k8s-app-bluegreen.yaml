@@ -5,32 +5,9 @@ kind: KubernetesApp
 spec:
   planner:
     alwaysUsePipeline: true
-  pipeline:
-    stages:
-      - name: K8S_CANARY_ROLLOUT
-        with:
-          replicas: 100%
-      - name: K8S_TRAFFIC_ROUTING
-        with:
-          canary: 100
-      - name: K8S_PRIMARY_ROLLOUT
-      - name: K8S_TRAFFIC_ROUTING
-        with:
-          primary: 100
-      - name: K8S_CANARY_CLEAN
-  trafficRouting:
-    method: podselector
-
----
-# Pipeline for a Kubernetes application.
-# This makes a progressive delivery with BlueGreen strategy.
-# It makes sure to perform syncing if message of commit which
-# triggers the deployment starts with "Revert...".
-apiVersion: pipecd.dev/v1beta1
-kind: KubernetesApp
-spec:
-  commitMatcher:
-    sync: '^Revert'
+  trigger:
+    onOutOfSync:
+      disabled: true
   pipeline:
     stages:
       - name: K8S_CANARY_ROLLOUT
