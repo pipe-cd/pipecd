@@ -23,7 +23,7 @@ require (
 	github.com/goccy/go-yaml v1.9.3
 	github.com/golang-jwt/jwt v3.2.1+incompatible
 	github.com/golang/mock v1.4.4
-	github.com/golang/protobuf v1.5.0
+	github.com/golang/protobuf v1.5.2
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/go-github/v29 v29.0.3
 	github.com/google/uuid v1.2.0
@@ -44,12 +44,12 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
 	google.golang.org/api v0.31.0
-	google.golang.org/genproto v0.0.0-20200831141814-d751682dd103
+	google.golang.org/genproto v0.0.0-20201019141844-1ed22bb0c154
 	google.golang.org/grpc v1.31.1
 	google.golang.org/protobuf v1.27.1
 	istio.io/api v0.0.0-20200710191538-00b73d23c685
-	k8s.io/api v0.19.13
-	k8s.io/apimachinery v0.19.13
-	k8s.io/client-go v0.19.13
+	k8s.io/api v0.22.3
+	k8s.io/apimachinery v0.22.3
+	k8s.io/client-go v0.22.3
 	sigs.k8s.io/yaml v1.2.0
 )
