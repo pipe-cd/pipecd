@@ -91,6 +91,11 @@ func TestLambdaDeploymentConfig(t *testing.T) {
 							},
 						},
 					},
+					Trigger: Trigger{
+						OnOutOfSync: OnOutOfSync{
+							Disabled: true,
+						},
+					},
 				},
 				Input: LambdaDeploymentInput{
 					FunctionManifestFile: "function.yaml",
@@ -121,6 +126,11 @@ func TestLambdaDeploymentConfig(t *testing.T) {
 									},
 								},
 							},
+						},
+					},
+					Trigger: Trigger{
+						OnOutOfSync: OnOutOfSync{
+							Disabled: true,
 						},
 					},
 				},
