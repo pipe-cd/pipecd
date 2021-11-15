@@ -57,6 +57,7 @@ genrule(
 # gazelle:exclude pkg/model/command.pb.validate.go
 # gazelle:exclude pkg/model/common.pb.validate.go
 # gazelle:exclude pkg/model/deployment.pb.validate.go
+# gazelle:exclude pkg/model/deployment_chain.pb.validate.go
 # gazelle:exclude pkg/model/environment.pb.validate.go
 # gazelle:exclude pkg/model/event.pb.validate.go
 # gazelle:exclude pkg/model/insight.pb.validate.go
