@@ -172,13 +172,6 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	fmt.Fprintln(lw, "Successfully loaded the deployment configuration file")
 
 	// Decrypt the sealed secrets if needed.
-	if len(gdc.SealedSecrets) > 0 && p.secretDecrypter != nil {
-		if err := sourcedecrypter.DecryptSealedSecrets(appDir, gdc.SealedSecrets, p.secretDecrypter); err != nil {
-			fmt.Fprintf(lw, "Unable to decrypt the sealed secrets (%v)\n", err)
-			return nil, err
-		}
-		fmt.Fprintf(lw, "Successfully decrypted %d sealed secrets\n", len(gdc.SealedSecrets))
-	}
 	if gdc.Encryption != nil && p.secretDecrypter != nil && len(gdc.Encryption.DecryptionTargets) > 0 {
 		if err := sourcedecrypter.DecryptSecrets(appDir, *gdc.Encryption, p.secretDecrypter); err != nil {
 			fmt.Fprintf(lw, "Unable to decrypt the secrets (%v)\n", err)

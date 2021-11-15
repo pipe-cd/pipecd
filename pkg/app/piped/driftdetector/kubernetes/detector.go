@@ -226,12 +226,7 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 			return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
 		}
 
-		var (
-			shouldDecryptSealedSecrets = d.secretDecrypter != nil && len(gds.SealedSecrets) > 0
-			shouldDecryptSecrets       = d.secretDecrypter != nil && gds.Encryption != nil
-		)
-
-		if shouldDecryptSealedSecrets || shouldDecryptSecrets {
+		if d.secretDecrypter != nil && gds.Encryption != nil {
 			// We have to copy repository into another directory because
 			// decrypting the sealed secrets might change the git repository.
 			dir, err := os.MkdirTemp("", "detector-git-decrypt")
@@ -247,15 +242,8 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 			repoDir = repo.GetPath()
 			appDir = filepath.Join(repoDir, app.GitPath.Path)
 
-			if shouldDecryptSealedSecrets {
-				if err := sourcedecrypter.DecryptSealedSecrets(appDir, gds.SealedSecrets, d.secretDecrypter); err != nil {
-					return nil, fmt.Errorf("failed to decrypt sealed secrets (%w)", err)
-				}
-			}
-			if shouldDecryptSecrets {
-				if err := sourcedecrypter.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
-					return nil, fmt.Errorf("failed to decrypt secrets (%w)", err)
-				}
+			if err := sourcedecrypter.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
+				return nil, fmt.Errorf("failed to decrypt secrets (%w)", err)
 			}
 		}
 
