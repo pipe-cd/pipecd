@@ -276,10 +276,14 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 								"deployment.yaml",
 							},
 						},
-						OnOutOfSync: OnOutOfSync{},
+						OnOutOfSync: OnOutOfSync{
+							Disabled: newBoolPointer(true),
+						},
 					},
 				},
-				Input: KubernetesDeploymentInput{},
+				Input: KubernetesDeploymentInput{
+					AutoRollback: newBoolPointer(true),
+				},
 			},
 			expectedError: nil,
 		},
@@ -313,10 +317,14 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 				GenericDeploymentSpec: GenericDeploymentSpec{
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
-						OnOutOfSync: OnOutOfSync{},
+						OnOutOfSync: OnOutOfSync{
+							Disabled: newBoolPointer(true),
+						},
 					},
 				},
-				Input: KubernetesDeploymentInput{},
+				Input: KubernetesDeploymentInput{
+					AutoRollback: newBoolPointer(true),
+				},
 			},
 			expectedError: nil,
 		},
@@ -329,12 +337,12 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnOutOfSync: OnOutOfSync{
-							Disabled: NewTrueByDefaultBool(false),
+							Disabled: newBoolPointer(false),
 						},
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback: NewTrueByDefaultBool(false),
+					AutoRollback: newBoolPointer(false),
 				},
 			},
 			expectedError: nil,
@@ -348,12 +356,12 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnOutOfSync: OnOutOfSync{
-							Disabled: NewTrueByDefaultBool(true),
+							Disabled: newBoolPointer(true),
 						},
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback: NewTrueByDefaultBool(true),
+					AutoRollback: newBoolPointer(true),
 				},
 			},
 			expectedError: nil,

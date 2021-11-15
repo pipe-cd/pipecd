@@ -45,7 +45,9 @@ func TestECSDeploymentConfig(t *testing.T) {
 						OnCommand: OnCommand{
 							Disabled: false,
 						},
-						OnOutOfSync: OnOutOfSync{},
+						OnOutOfSync: OnOutOfSync{
+							Disabled: newBoolPointer(true),
+						},
 					},
 				},
 				Input: ECSDeploymentInput{
@@ -54,6 +56,7 @@ func TestECSDeploymentConfig(t *testing.T) {
 					TargetGroups: ECSTargetGroups{
 						Primary: json.RawMessage(`{"containerName":"web","containerPort":80,"targetGroupArn":"arn:aws:elasticloadbalancing:xyz"}`),
 					},
+					AutoRollback: newBoolPointer(true),
 				},
 			},
 			expectedError: nil,

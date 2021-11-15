@@ -75,3 +75,7 @@ func TestUnmarshalConfig(t *testing.T) {
 		})
 	}
 }
+
+func newBoolPointer(v bool) *bool {
+	return &v
+}

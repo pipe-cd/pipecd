@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "analysis.go",
         "analysis_template.go",
-        "bool.go",
         "config.go",
         "control_plane.go",
         "deployment.go",

@@ -97,7 +97,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		out.Version = version
 	}
 
-	autoRollback := cfg.Input.AutoRollback.Value()
+	autoRollback := *cfg.Input.AutoRollback
 
 	// If the deployment was triggered by forcing via web UI,
 	// we rely on the user's decision.

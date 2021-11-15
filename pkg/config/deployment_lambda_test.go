@@ -46,11 +46,14 @@ func TestLambdaDeploymentConfig(t *testing.T) {
 						OnCommand: OnCommand{
 							Disabled: false,
 						},
-						OnOutOfSync: OnOutOfSync{},
+						OnOutOfSync: OnOutOfSync{
+							Disabled: newBoolPointer(true),
+						},
 					},
 				},
 				Input: LambdaDeploymentInput{
 					FunctionManifestFile: "function.yaml",
+					AutoRollback:         newBoolPointer(true),
 				},
 			},
 			expectedError: nil,
@@ -89,11 +92,14 @@ func TestLambdaDeploymentConfig(t *testing.T) {
 						},
 					},
 					Trigger: Trigger{
-						OnOutOfSync: OnOutOfSync{},
+						OnOutOfSync: OnOutOfSync{
+							Disabled: newBoolPointer(true),
+						},
 					},
 				},
 				Input: LambdaDeploymentInput{
 					FunctionManifestFile: "function.yaml",
+					AutoRollback:         newBoolPointer(true),
 				},
 			},
 			expectedError: nil,
@@ -123,11 +129,14 @@ func TestLambdaDeploymentConfig(t *testing.T) {
 						},
 					},
 					Trigger: Trigger{
-						OnOutOfSync: OnOutOfSync{},
+						OnOutOfSync: OnOutOfSync{
+							Disabled: newBoolPointer(true),
+						},
 					},
 				},
 				Input: LambdaDeploymentInput{
 					FunctionManifestFile: "function.yaml",
+					AutoRollback:         newBoolPointer(true),
 				},
 			},
 			expectedError: nil,

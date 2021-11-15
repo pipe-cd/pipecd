@@ -86,11 +86,13 @@ func TestKubernetesDeploymentConfig(t *testing.T) {
 							Disabled: false,
 						},
 						OnOutOfSync: OnOutOfSync{
-							Disabled: NewTrueByDefaultBool(true),
+							Disabled: newBoolPointer(true),
 						},
 					},
 				},
-				Input: KubernetesDeploymentInput{},
+				Input: KubernetesDeploymentInput{
+					AutoRollback: newBoolPointer(true),
+				},
 				TrafficRouting: &KubernetesTrafficRouting{
 					Method: KubernetesTrafficRoutingMethodPodSelector,
 				},

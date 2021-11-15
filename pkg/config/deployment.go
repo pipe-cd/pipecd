@@ -89,7 +89,7 @@ type OnOutOfSync struct {
 	// Whether to exclude application from triggering target
 	// when application is at OUT_OF_SYNC state.
 	// Default is true.
-	Disabled *TrueByDefaultBool `json:"disabled,omitempty"`
+	Disabled *bool `json:"disabled,omitempty" default:"true"`
 	// TODO: Add a field to control the trigger frequency.
 	// MinWindow Duration `json:"minWindow,omitempty"`
 }

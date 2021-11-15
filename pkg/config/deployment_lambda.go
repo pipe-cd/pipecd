@@ -37,7 +37,7 @@ type LambdaDeploymentInput struct {
 	FunctionManifestFile string `json:"functionManifestFile" default:"function.yaml"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
-	AutoRollback *TrueByDefaultBool `json:"autoRollback,omitempty"`
+	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
 }
 
 // LambdaSyncStageOptions contains all configurable values for a LAMBDA_SYNC stage.

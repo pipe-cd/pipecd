@@ -42,7 +42,7 @@ load-piped-image:
 
 .PHONY: test
 test:
-	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} -- //pkg/...
+	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} -- //pkg/config/...
 
 .PHONY: test-debug
 test-debug:

@@ -44,7 +44,7 @@ type ECSDeploymentInput struct {
 	TargetGroups ECSTargetGroups `json:"targetGroups"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
-	AutoRollback *TrueByDefaultBool `json:"autoRollback,omitempty"`
+	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
 }
 
 type ECSTargetGroups struct {

@@ -343,8 +343,8 @@ def go_repositories():
         name = "com_github_creasty_defaults",
         build_file_proto_mode = "disable",
         importpath = "github.com/creasty/defaults",
-        sum = "h1:j8WexcS3d/t4ZmllX4GEkl4wIB/trOr035ajcLHCISM=",
-        version = "v1.5.1",
+        sum = "h1:/VfB6uxpyp6h0fr7SPp7n8WJBoV8jfxQXPCnkVSjyls=",
+        version = "v1.5.2",
     )
 
     go_repository(

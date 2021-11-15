@@ -46,7 +46,7 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 							Disabled: false,
 						},
 						OnOutOfSync: OnOutOfSync{
-							Disabled: nil,
+							Disabled: newBoolPointer(true),
 						},
 					},
 				},
@@ -69,7 +69,7 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 							Disabled: false,
 						},
 						OnOutOfSync: OnOutOfSync{
-							Disabled: nil,
+							Disabled: newBoolPointer(true),
 						},
 					},
 				},
@@ -95,7 +95,7 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 							Disabled: false,
 						},
 						OnOutOfSync: OnOutOfSync{
-							Disabled: NewTrueByDefaultBool(false),
+							Disabled: newBoolPointer(false),
 						},
 					},
 					Encryption: &SecretEncryption{
@@ -149,7 +149,7 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 							Disabled: false,
 						},
 						OnOutOfSync: OnOutOfSync{
-							Disabled: nil,
+							Disabled: newBoolPointer(true),
 						},
 					},
 				},
