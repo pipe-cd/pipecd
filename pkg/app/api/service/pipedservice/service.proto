@@ -70,6 +70,9 @@ service PipedService {
     // GetApplicationMostRecentDeployment returns the most recent deployment of the given application.
     rpc GetApplicationMostRecentDeployment(GetApplicationMostRecentDeploymentRequest) returns (GetApplicationMostRecentDeploymentResponse) {}
 
+    // GetDeployment returns the deployment for given deployment ID.
+    rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
+
     // ListNotCompletedDeployments returns a list of not completed deployments
     // which are managed by this piped.
     // DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
@@ -247,6 +250,14 @@ message GetApplicationMostRecentDeploymentRequest {
 
 message GetApplicationMostRecentDeploymentResponse {
     pipe.model.ApplicationDeploymentReference deployment = 1 [(validate.rules).message.required = true];
+}
+
+message GetDeploymentRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetDeploymentResponse {
+    pipe.model.Deployment deployment = 1 [(validate.rules).message.required = true];
 }
 
 message ListNotCompletedDeploymentsRequest {
