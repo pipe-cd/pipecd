@@ -152,7 +152,7 @@ func (r *Reporter) scanAppConfigs(ctx context.Context) error {
 func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPaths map[string]struct{}) error {
 	apps := make([]*model.ApplicationInfo, 0)
 	for repoID, repo := range r.gitRepos {
-		// FIXME: Find another way to specify the root dir
+		// FIXME: Find another way to specify the root dir for a file system
 		as, err := findUnregisteredApps(os.DirFS("/"), repo.GetPath(), repoID, registeredAppPaths, r.logger)
 		if err != nil {
 			return err
@@ -178,7 +178,7 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPath
 // findUnregisteredApps finds out unregistered application info in the given git repository.
 func findUnregisteredApps(fsys fs.FS, repoPath, repoID string, registeredAppPaths map[string]struct{}, logger *zap.Logger) ([]*model.ApplicationInfo, error) {
 	apps := make([]*model.ApplicationInfo, 0)
-	err := fs.WalkDir(fsys, repoPath, func(path string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(fsys, strings.TrimPrefix(repoPath, "/"), func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -221,32 +221,11 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, registeredAppPaths 
 		if ok && headCommit.Hash == lastScannedCommit {
 			continue
 		}
-
-		var files []string
-		files, err = repo.ChangedFiles(ctx, lastScannedCommit, headCommit.Hash)
+		as, err := findRegisteredApps(ctx, os.DirFS("/"), repoID, repo, lastScannedCommit, headCommit.Hash, registeredAppPaths, r.logger)
 		if err != nil {
-			return fmt.Errorf("failed to get files those were touched between two commits: %w", err)
+			return err
 		}
-		if len(files) == 0 {
-			// The case where all changes have been fully reverted.
-			continue
-		}
-		for _, filename := range files {
-			if shouldSkip(repoID, repo.GetPath(), filename, registeredAppPaths, true) {
-				continue
-			}
-			appInfo, err := readApplicationInfo(os.DirFS("/"), repo.GetPath(), filename) // FIXME:
-			if err != nil {
-				r.logger.Error("failed to read application info",
-					zap.String("repo-id", repoID),
-					zap.String("config-file-path", filename),
-					zap.Error(err),
-				)
-				continue
-			}
-			apps = append(apps, appInfo)
-		}
-
+		apps = append(apps, as...)
 		id := repoID
 		defer func() {
 			if err == nil {
@@ -255,7 +234,7 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, registeredAppPaths 
 		}()
 	}
 	if len(apps) == 0 {
-		return
+		return nil
 	}
 
 	_, err = r.apiClient.UpdateApplicationConfigurations(
@@ -267,7 +246,41 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, registeredAppPaths 
 	if err != nil {
 		return fmt.Errorf("failed to update application configurations: %w", err)
 	}
-	return
+	return nil
+}
+
+type gitRepo interface {
+	GetPath() string
+	ChangedFiles(ctx context.Context, from, to string) ([]string, error)
+}
+
+// findRegisteredApps finds out registered application info in the given git repository.
+func findRegisteredApps(ctx context.Context, fsys fs.FS, repoID string, repo gitRepo, lastScannedCommit, headCommitHash string, registeredAppPaths map[string]struct{}, logger *zap.Logger) ([]*model.ApplicationInfo, error) {
+	files, err := repo.ChangedFiles(ctx, lastScannedCommit, headCommitHash)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get files those were touched between two commits: %w", err)
+	}
+	if len(files) == 0 {
+		// The case where all changes have been fully reverted.
+		return []*model.ApplicationInfo{}, nil
+	}
+	apps := make([]*model.ApplicationInfo, 0)
+	for _, filename := range files {
+		if shouldSkip(repoID, repo.GetPath(), filename, registeredAppPaths, true) {
+			continue
+		}
+		appInfo, err := readApplicationInfo(fsys, repo.GetPath(), filepath.Join(repo.GetPath(), filename))
+		if err != nil {
+			logger.Error("failed to read application info",
+				zap.String("repo-id", repoID),
+				zap.String("config-file-path", filename),
+				zap.Error(err),
+			)
+			continue
+		}
+		apps = append(apps, appInfo)
+	}
+	return apps, nil
 }
 
 func shouldSkip(repoID, path, cfgFilename string, registeredAppPaths map[string]struct{}, wantRegistered bool) bool {
