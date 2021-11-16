@@ -11,6 +11,7 @@ proto_library(
         "command.proto",
         "common.proto",
         "deployment.proto",
+        "deployment_chain.proto",
         "environment.proto",
         "event.proto",
         "insight.proto",
