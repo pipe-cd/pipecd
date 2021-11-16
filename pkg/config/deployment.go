@@ -539,6 +539,13 @@ type PostSync struct {
 	DeploymentChain *DeploymentChain `json:"chain"`
 }
 
+func (p *PostSync) Validate() error {
+	if dc := p.DeploymentChain; dc != nil {
+		return dc.Validate()
+	}
+	return nil
+}
+
 // DeploymentChain provides all configurations to used to trigger a chain of deployments.
 type DeploymentChain struct {
 	// Nodes provides list of DeploymentChainNodes which contain filters to be used
@@ -549,6 +556,26 @@ type DeploymentChain struct {
 	// If this field is not set, always trigger a whole new deployment chain when the current
 	// application is triggered.
 	Conditions *DeploymentChainTriggerCondition `json:"conditions,omitempty"`
+}
+
+func (dc *DeploymentChain) Validate() error {
+	if len(dc.Nodes) == 0 {
+		return fmt.Errorf("missing specified applications that will be triggered on this chain of deployment")
+	}
+
+	for _, n := range dc.Nodes {
+		if err := n.Validate(); err != nil {
+			return err
+		}
+	}
+
+	if cc := dc.Conditions; cc != nil {
+		if err := cc.Validate(); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // DeploymentChainNode provides filters used to find the right applications to trigger
@@ -572,20 +599,9 @@ type DeploymentChainTriggerCondition struct {
 	CommitPrefix string `json:"commitPrefix"`
 }
 
-func (p *PostSync) Validate() error {
-	if p.DeploymentChain == nil {
-		return nil
+func (c *DeploymentChainTriggerCondition) Validate() error {
+	if c.CommitPrefix == "" {
+		return fmt.Errorf("missing commitPrefix configration as deployment chain trigger condition")
 	}
-
-	if len(p.DeploymentChain.Nodes) == 0 {
-		return fmt.Errorf("missing specified applications that will be triggered on this chain of deployment")
-	}
-
-	for _, n := range p.DeploymentChain.Nodes {
-		if err := n.Validate(); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
