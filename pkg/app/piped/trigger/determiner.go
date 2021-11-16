@@ -18,9 +18,11 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/filematcher"
 	"github.com/pipe-cd/pipe/pkg/git"
@@ -61,11 +63,38 @@ func (d *OnCommandDeterminer) ShouldTrigger(_ context.Context, _ *model.Applicat
 }
 
 type OnOutOfSyncDeterminer struct {
+	client apiClient
 }
 
 // ShouldTrigger decides whether a given application should be triggered or not.
-func (d *OnOutOfSyncDeterminer) ShouldTrigger(_ context.Context, _ *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
+func (d *OnOutOfSyncDeterminer) ShouldTrigger(ctx context.Context, app *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
 	if *appCfg.Trigger.OnOutOfSync.Disabled {
+		return false, nil
+	}
+
+	// Find the most recently triggered deployment.
+	// Nil means it seems the application has been added recently
+	// and no deployment was triggered yet.
+	ref := app.MostRecentlyTriggeredDeployment
+	if ref == nil {
+		return true, nil
+	}
+
+	resp, err := d.client.GetDeployment(ctx, &pipedservice.GetDeploymentRequest{
+		Id: ref.DeploymentId,
+	})
+	if err != nil {
+		return false, err
+	}
+	deployment := resp.Deployment
+
+	// Check if it was already completed or not.
+	if !model.IsCompletedDeployment(deployment.Status) {
+		return false, nil
+	}
+
+	// Check the elapsed time since the last deployment.
+	if time.Since(time.Unix(deployment.CompletedAt, 0)) < appCfg.Trigger.OnOutOfSync.MinWindow.Duration() {
 		return false, nil
 	}
 

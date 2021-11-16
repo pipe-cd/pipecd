@@ -46,7 +46,8 @@ func TestECSDeploymentConfig(t *testing.T) {
 							Disabled: false,
 						},
 						OnOutOfSync: OnOutOfSync{
-							Disabled: newBoolPointer(true),
+							Disabled:  newBoolPointer(true),
+							MinWindow: Duration(5 * time.Minute),
 						},
 					},
 				},
