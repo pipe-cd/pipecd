@@ -20,6 +20,7 @@ export const dummyTrigger: DeploymentTrigger.AsObject = {
     url: "",
   },
   syncStrategy: SyncStrategy.AUTO,
+  strategySummary: "",
 };
 
 function createCommitFromObject(o: Commit.AsObject): Commit {

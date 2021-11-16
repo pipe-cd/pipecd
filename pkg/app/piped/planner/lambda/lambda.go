@@ -64,13 +64,13 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 
 	autoRollback := *cfg.Input.AutoRollback
 
-	// If the deployment was triggered by forcing via web UI,
-	// we rely on the user's decision.
+	// In case the strategy has been decided by trigger.
+	// For example: user triggered the deployment via web console.
 	switch in.Trigger.SyncStrategy {
 	case model.SyncStrategy_QUICK_SYNC:
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())
-		out.Summary = fmt.Sprintf("Quick sync to deploy version %s and configure all traffic to it (forced via web)", out.Version)
+		out.Summary = in.Trigger.StrategySummary
 		return
 	case model.SyncStrategy_PIPELINE:
 		if cfg.Pipeline == nil {
@@ -79,7 +79,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		}
 		out.SyncStrategy = model.SyncStrategy_PIPELINE
 		out.Stages = buildProgressivePipeline(cfg.Pipeline, autoRollback, time.Now())
-		out.Summary = fmt.Sprintf("Sync with pipeline to deploy version %s (forced via web)", out.Version)
+		out.Summary = in.Trigger.StrategySummary
 		return
 	}
 

@@ -39,11 +39,11 @@ type determiners struct {
 	onCommit    Determiner
 }
 
-func (ds *determiners) Determiner(ck candidateKind) Determiner {
-	switch ck {
-	case commandCandidate:
+func (ds *determiners) Determiner(k model.TriggerKind) Determiner {
+	switch k {
+	case model.TriggerKind_ON_COMMAND:
 		return ds.onCommand
-	case outOfSyncCandidate:
+	case model.TriggerKind_ON_OUT_OF_SYNC:
 		return ds.onOutOfSync
 	default:
 		return ds.onCommit
