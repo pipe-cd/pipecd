@@ -343,6 +343,26 @@ func (a *PipedAPI) GetApplicationMostRecentDeployment(ctx context.Context, req *
 	return nil, status.Error(codes.NotFound, "deployment is not found")
 }
 
+func (a *PipedAPI) GetDeployment(ctx context.Context, req *pipedservice.GetDeploymentRequest) (*pipedservice.GetDeploymentResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	deployment, err := getDeployment(ctx, a.deploymentStore, req.Id, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	if deployment.PipedId != pipedID {
+		return nil, status.Error(codes.PermissionDenied, "requested deployment doesn't belong to the piped")
+	}
+
+	return &pipedservice.GetDeploymentResponse{
+		Deployment: deployment,
+	}, nil
+}
+
 // ListNotCompletedDeployments returns a list of not completed deployments
 // which are managed by this piped.
 // DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
