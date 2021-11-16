@@ -17,6 +17,7 @@ package appconfigreporter
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -151,23 +152,12 @@ func (r *Reporter) scanAppConfigs(ctx context.Context) error {
 func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPaths map[string]struct{}) error {
 	apps := make([]*model.ApplicationInfo, 0)
 	for repoID, repo := range r.gitRepos {
-		err := filepath.Walk(repo.GetPath(), func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if info.IsDir() {
-				return nil
-			}
-			appInfo, skip := r.readApplicationInfo(repoID, repo.GetPath(), filepath.Base(path), registeredAppPaths, false)
-			if skip {
-				return nil
-			}
-			apps = append(apps, appInfo)
-			return nil
-		})
+		// FIXME: Find another way to specify the root dir
+		as, err := findUnregisteredApps(os.DirFS("/"), repo.GetPath(), repoID, registeredAppPaths, r.logger)
 		if err != nil {
-			return fmt.Errorf("failed to inspect files under %s: %w", repo.GetPath(), err)
+			return err
 		}
+		apps = append(apps, as...)
 	}
 	if len(apps) == 0 {
 		return nil
@@ -183,6 +173,39 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPath
 		return fmt.Errorf("failed to put the latest unregistered application configurations: %w", err)
 	}
 	return nil
+}
+
+// findUnregisteredApps finds out unregistered application info in the given git repository.
+func findUnregisteredApps(fsys fs.FS, repoPath, repoID string, registeredAppPaths map[string]struct{}, logger *zap.Logger) ([]*model.ApplicationInfo, error) {
+	apps := make([]*model.ApplicationInfo, 0)
+	err := fs.WalkDir(fsys, repoPath, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+
+		if shouldSkip(repoID, repoPath, filepath.Base(path), registeredAppPaths, false) {
+			return nil
+		}
+
+		appInfo, err := readApplicationInfo(fsys, repoPath, path)
+		if err != nil {
+			logger.Error("failed to read application info",
+				zap.String("repo-id", repoID),
+				zap.String("config-file-path", path),
+				zap.Error(err),
+			)
+			return nil
+		}
+		apps = append(apps, appInfo)
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to inspect files under %s: %w", repoPath, err)
+	}
+	return apps, nil
 }
 
 // updateRegisteredApps sends application configurations that have changed since the last time to the control-plane.
@@ -209,8 +232,16 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, registeredAppPaths 
 			continue
 		}
 		for _, filename := range files {
-			appInfo, skip := r.readApplicationInfo(repoID, repo.GetPath(), filename, registeredAppPaths, true)
-			if skip {
+			if shouldSkip(repoID, repo.GetPath(), filename, registeredAppPaths, true) {
+				continue
+			}
+			appInfo, err := readApplicationInfo(os.DirFS("/"), repo.GetPath(), filename) // FIXME:
+			if err != nil {
+				r.logger.Error("failed to read application info",
+					zap.String("repo-id", repoID),
+					zap.String("config-file-path", filename),
+					zap.Error(err),
+				)
 				continue
 			}
 			apps = append(apps, appInfo)
@@ -239,33 +270,30 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, registeredAppPaths 
 	return
 }
 
-func (r *Reporter) readApplicationInfo(repoID, path, cfgFilename string, registeredAppPaths map[string]struct{}, wantRegistered bool) (appInfo *model.ApplicationInfo, skip bool) {
+func shouldSkip(repoID, path, cfgFilename string, registeredAppPaths map[string]struct{}, wantRegistered bool) bool {
 	if !strings.HasSuffix(cfgFilename, model.DefaultDeploymentConfigFileExtension) {
-		return nil, true
+		return true
 	}
 	gitPathID := model.BuildGitPathID(repoID, path, cfgFilename)
 	if _, registered := registeredAppPaths[gitPathID]; registered != wantRegistered {
-		return nil, true
+		return true
 	}
+	return false
+}
 
-	cfgFilePath := filepath.Join(path, cfgFilename)
-	cfg, err := config.LoadFromYAML(cfgFilePath)
+func readApplicationInfo(fsys fs.FS, path, cfgFilePath string) (appInfo *model.ApplicationInfo, err error) {
+	b, err := fs.ReadFile(fsys, cfgFilePath)
 	if err != nil {
-		r.logger.Error("failed to load configuration file",
-			zap.String("repo-id", repoID),
-			zap.String("config-file-path", cfgFilePath),
-			zap.Error(err),
-		)
-		return nil, true
+		return nil, fmt.Errorf("failed to open the configuration file: %w", err)
+	}
+	cfg, err := config.DecodeYAML(b)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode configuration file: %w", err)
 	}
 
 	spec, ok := cfg.GetGenericDeployment()
 	if !ok {
-		r.logger.Error(fmt.Sprintf("unsupported application kind: %s", cfg.Kind),
-			zap.String("repo-id", repoID),
-			zap.String("config-file-path", cfgFilePath),
-		)
-		return nil, true
+		return nil, fmt.Errorf("unsupported application kind %q", cfg.Kind)
 	}
 
 	return &model.ApplicationInfo{
@@ -274,7 +302,7 @@ func (r *Reporter) readApplicationInfo(repoID, path, cfgFilename string, registe
 		//Kind:           cfg.Kind,
 		EnvId:          spec.EnvID,
 		Path:           path,
-		ConfigFilename: cfgFilename,
+		ConfigFilename: filepath.Base(cfgFilePath),
 		Labels:         spec.Labels,
-	}, false
+	}, nil
 }
