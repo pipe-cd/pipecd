@@ -1,0 +1,11 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  postSync:
+    chain:
+      applications:
+        - name: app-1
+        - labels:
+            env: staging
+            foo: bar
+        - kind: ECSApp
