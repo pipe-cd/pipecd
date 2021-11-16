@@ -18,7 +18,7 @@ package pipe.model;
 option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
 import "validate/validate.proto";
-import "pkg/model/application.proto";
+import "pkg/model/deployment.proto";
 import "pkg/model/common.proto";
 
 message DeploymentChain {
@@ -26,7 +26,8 @@ message DeploymentChain {
     string id = 1 [(validate.rules).string.min_len = 1];
     // The ID of the project this environment belongs to.
     string project_id = 2 [(validate.rules).string.min_len = 1];
-    // Deployment node contains all configuration required to perform deployment(s)
+    // List of all deployment node in the chain which contains all
+    // configuration required to perform deployment(s).
     repeated DeploymentNode nodes = 3;
     // Unix time when all the applications in this chain are deployed.
     int64 completed_at = 100 [(validate.rules).int64.gte = 0];
@@ -38,7 +39,7 @@ message DeploymentChain {
 
 message DeploymentNode {
     // List of applications which should be deployed at the same time in chain.
-    repeated Application applications = 1;
+    repeated Deployment deployments = 1;
     // Control whether to start to deploy applications in this node or not.
     bool runnable = 2;
     // Unix time when the deployment chain node is started.
