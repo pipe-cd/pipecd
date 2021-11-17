@@ -46,7 +46,6 @@ type applicationLister interface {
 }
 
 type environmentGetter interface {
-	Get(ctx context.Context, id string) (*model.Environment, error)
 	GetByName(ctx context.Context, name string) (*model.Environment, error)
 }
 
