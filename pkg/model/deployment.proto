@@ -91,12 +91,19 @@ message Deployment {
     int64 updated_at = 102 [(validate.rules).int64.gte = 0];
 }
 
+enum TriggerKind {
+    ON_COMMIT = 0;
+    ON_COMMAND = 1;
+    ON_OUT_OF_SYNC = 2;
+}
+
 message DeploymentTrigger {
     Commit commit = 1 [(validate.rules).message.required = true];
     // Who triggered this deployment via web page.
     string commander= 2;
     int64 timestamp = 3 [(validate.rules).int64.gt = 0];
     SyncStrategy sync_strategy = 4;
+    string strategy_summary = 5;
 }
 
 message PipelineStage {

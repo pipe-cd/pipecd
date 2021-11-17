@@ -68,17 +68,9 @@ type notifier interface {
 	Notify(event model.NotificationEvent)
 }
 
-type candidateKind int
-
-const (
-	commitCandidate candidateKind = iota
-	commandCandidate
-	outOfSyncCandidate
-)
-
 type candidate struct {
 	application *model.Application
-	kind        candidateKind
+	kind        model.TriggerKind
 	command     model.ReportableCommand
 }
 
@@ -219,9 +211,15 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 		onOutOfSync: NewOnOutOfSyncDeterminer(t.apiClient),
 		onCommit:    NewOnCommitDeterminer(gitRepo, headCommit.Hash, t.commitStore, t.logger),
 	}
+	triggered := make(map[string]struct{})
 
 	for _, c := range cs {
 		app := c.application
+
+		// Avoid triggering multiple deployments for the same application in the same iteration.
+		if _, ok := triggered[app.Id]; ok {
+			continue
+		}
 
 		appCfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), app)
 		if err != nil {
@@ -248,8 +246,32 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			continue
 		}
 
+		var (
+			commander       string
+			strategy        model.SyncStrategy
+			strategySummary string
+		)
+
+		switch c.kind {
+		case model.TriggerKind_ON_COMMAND:
+			strategy = c.command.GetSyncApplication().SyncStrategy
+			commander = c.command.Commander
+			if strategy == model.SyncStrategy_QUICK_SYNC {
+				strategySummary = "Quick sync because piped received a command from user via web console or pipectl"
+			} else {
+				strategySummary = "Sync with the specified pipeline because piped received a command from user via web console or pipectl"
+			}
+
+		case model.TriggerKind_ON_OUT_OF_SYNC:
+			strategy = model.SyncStrategy_QUICK_SYNC
+			strategySummary = "Quick sync to attempt to resolve the detected configuration drift"
+
+		default:
+			strategy = model.SyncStrategy_AUTO
+		}
+
 		// Build deployment model and send a request to API to create a new deployment.
-		deployment, err := t.triggerDeployment(ctx, app, appCfg, branch, headCommit, "", model.SyncStrategy_AUTO)
+		deployment, err := t.triggerDeployment(ctx, app, appCfg, branch, headCommit, commander, strategy, strategySummary)
 		if err != nil {
 			msg := fmt.Sprintf("failed to trigger application %s: %v", app.Id, err)
 			t.notifyDeploymentTriggerFailed(app, msg, headCommit)
@@ -257,11 +279,12 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			continue
 		}
 
+		triggered[app.Id] = struct{}{}
 		t.commitStore.Put(app.Id, headCommit.Hash)
 		t.notifyDeploymentTriggered(ctx, appCfg, deployment)
 
 		// Mask command as handled since the deployment has been triggered successfully.
-		if c.kind == commandCandidate {
+		if c.kind == model.TriggerKind_ON_COMMAND {
 			metadata := map[string]string{
 				triggeredDeploymentIDKey: deployment.Id,
 			}
@@ -301,7 +324,7 @@ func (t *Trigger) listCommandCandidates() []candidate {
 
 		apps = append(apps, candidate{
 			application: app,
-			kind:        commandCandidate,
+			kind:        model.TriggerKind_ON_COMMAND,
 			command:     cmd,
 		})
 	}
@@ -321,7 +344,7 @@ func (t *Trigger) listOutOfSyncCandidates() []candidate {
 		}
 		apps = append(apps, candidate{
 			application: app,
-			kind:        outOfSyncCandidate,
+			kind:        model.TriggerKind_ON_OUT_OF_SYNC,
 		})
 	}
 	return apps
@@ -338,7 +361,7 @@ func (t *Trigger) listCommitCandidates() []candidate {
 	for _, app := range list {
 		apps = append(apps, candidate{
 			application: app,
-			kind:        commitCandidate,
+			kind:        model.TriggerKind_ON_COMMIT,
 		})
 	}
 	return apps

@@ -39,6 +39,7 @@ func (t *Trigger) triggerDeployment(
 	commit git.Commit,
 	commander string,
 	syncStrategy model.SyncStrategy,
+	strategySummary string,
 ) (*model.Deployment, error) {
 
 	// Build deployment model to trigger.
@@ -48,6 +49,7 @@ func (t *Trigger) triggerDeployment(
 		commit,
 		commander,
 		syncStrategy,
+		strategySummary,
 		time.Now(),
 		appCfg.DeploymentNotification,
 	)
@@ -80,6 +82,7 @@ func buildDeployment(
 	commit git.Commit,
 	commander string,
 	syncStrategy model.SyncStrategy,
+	strategySummary string,
 	now time.Time,
 	noti *config.DeploymentNotification,
 ) (*model.Deployment, error) {
@@ -119,9 +122,10 @@ func buildDeployment(
 				Url:       commitURL,
 				CreatedAt: int64(commit.CreatedAt),
 			},
-			Commander:    commander,
-			Timestamp:    now.Unix(),
-			SyncStrategy: syncStrategy,
+			Commander:       commander,
+			Timestamp:       now.Unix(),
+			SyncStrategy:    syncStrategy,
+			StrategySummary: strategySummary,
 		},
 		GitPath:       app.GitPath,
 		CloudProvider: app.CloudProvider,
