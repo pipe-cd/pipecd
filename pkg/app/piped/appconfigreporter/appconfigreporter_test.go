@@ -54,7 +54,7 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 			name: "file not found",
 			reporter: &Reporter{
 				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
-				fsys: fstest.MapFS{
+				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("")},
 				},
 				logger: zap.NewNop(),
@@ -71,7 +71,7 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 			name: "all are registered",
 			reporter: &Reporter{
 				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
-				fsys: fstest.MapFS{
+				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("")},
 				},
 				logger: zap.NewNop(),
@@ -80,7 +80,7 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 				repoPath: "path/to/repo-1",
 				repoID:   "repo-1",
 				registeredAppPaths: map[string]struct{}{
-					"repo-1:path/to/repo-1/app-1/app.pipecd.yaml": {},
+					"repo-1:app-1/app.pipecd.yaml": {},
 				},
 			},
 			want:    []*model.ApplicationInfo{},
@@ -90,7 +90,7 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 			name: "invalid app config is contained",
 			reporter: &Reporter{
 				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
-				fsys: fstest.MapFS{
+				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("invalid-text")},
 				},
 				logger: zap.NewNop(),
@@ -107,7 +107,7 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 			name: "valid app config that is unregistered",
 			reporter: &Reporter{
 				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
-				fsys: fstest.MapFS{
+				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte(`
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
@@ -128,7 +128,7 @@ spec:
 					Name:           "app-1",
 					EnvId:          "env-1",
 					Labels:         map[string]string{"key-1": "value-1"},
-					Path:           "path/to/repo-1",
+					Path:           "path/to/repo-1/app-1",
 					ConfigFilename: "app.pipecd.yaml",
 				},
 			},
@@ -173,25 +173,10 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 		wantErr  bool
 	}{
 		{
-			name: "already scanned commit",
-			reporter: &Reporter{
-				lastScannedCommits: map[string]string{"repo-1": "commit-hash"},
-				logger:             zap.NewNop(),
-			},
-			args: args{
-				repoID:         "repo-1",
-				repo:           &fakeGitRepo{path: "path/to/repo-1", changedFiles: nil},
-				headCommitHash: "commit-hash",
-			},
-			want:    []*model.ApplicationInfo{},
-			wantErr: false,
-		},
-		{
 			name: "no changed file",
 			reporter: &Reporter{
-				lastScannedCommits: make(map[string]string),
-				envGetter:          &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
-				fsys: fstest.MapFS{
+				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
+				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("invalid-text")},
 				},
 				logger: zap.NewNop(),
@@ -206,9 +191,8 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 		{
 			name: "all are unregistered",
 			reporter: &Reporter{
-				lastScannedCommits: make(map[string]string),
-				envGetter:          &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
-				fsys: fstest.MapFS{
+				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
+				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("")},
 				},
 				logger: zap.NewNop(),
@@ -223,9 +207,8 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 		{
 			name: "invalid app config is contained",
 			reporter: &Reporter{
-				lastScannedCommits: make(map[string]string),
-				envGetter:          &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
-				fsys: fstest.MapFS{
+				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
+				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("invalid-text")},
 				},
 				logger: zap.NewNop(),
@@ -234,7 +217,7 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 				repoID: "repo-1",
 				repo:   &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/app.pipecd.yaml"}},
 				registeredAppPaths: map[string]struct{}{
-					"repo-1:path/to/repo-1/app-1/app.pipecd.yaml": {},
+					"repo-1:app-1/app.pipecd.yaml": {},
 				},
 			},
 			want:    []*model.ApplicationInfo{},
@@ -243,9 +226,8 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 		{
 			name: "valid app config that is registered",
 			reporter: &Reporter{
-				lastScannedCommits: make(map[string]string),
-				envGetter:          &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
-				fsys: fstest.MapFS{
+				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
+				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte(`
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
@@ -260,7 +242,7 @@ spec:
 				repoID: "repo-1",
 				repo:   &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/app.pipecd.yaml"}},
 				registeredAppPaths: map[string]struct{}{
-					"repo-1:path/to/repo-1/app-1/app.pipecd.yaml": {},
+					"repo-1:app-1/app.pipecd.yaml": {},
 				},
 			},
 			want: []*model.ApplicationInfo{
@@ -268,7 +250,7 @@ spec:
 					Name:           "app-1",
 					EnvId:          "env-1",
 					Labels:         map[string]string{"key-1": "value-1"},
-					Path:           "path/to/repo-1",
+					Path:           "path/to/repo-1/app-1",
 					ConfigFilename: "app.pipecd.yaml",
 				},
 			},
@@ -277,7 +259,7 @@ spec:
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := tc.reporter.findRegisteredApps(context.Background(), tc.args.repoID, tc.args.repo, "", tc.args.registeredAppPaths)
+			got, err := tc.reporter.findRegisteredApps(context.Background(), tc.args.repoID, tc.args.repo, "", "", tc.args.registeredAppPaths)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)
 		})
