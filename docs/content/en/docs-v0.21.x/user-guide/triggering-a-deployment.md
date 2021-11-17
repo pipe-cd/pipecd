@@ -23,7 +23,7 @@ For example:
 - when the merged pull request updated a Deployment's container image or updated a mounting ConfigMap or Secret, `piped` planner will decide that the deployment should use the specified pipeline to do a progressive deployment.
 - when the merged pull request just updated the `replicas` number, `piped` planner will decide to use a quick sync to scale the resources.
 
-You can force `piped` planer to decide to use the [QuickSync](docs/concepts/#quick-sync) or the specified pipeline based on the commit message by configuring [CommitMatcher](/docs/user-guide/configuration-reference/#commitmatcher) in the deployment configuration.
+You can force `piped` planner to decide to use the [QuickSync](docs/concepts/#quick-sync) or the specified pipeline based on the commit message by configuring [CommitMatcher](/docs/user-guide/configuration-reference/#commitmatcher) in the deployment configuration.
 
 After being planned, the deployment will be executed as the decided pipeline. The deployment execution including the state of each stage as well as their logs can be viewed in realtime at the deployment details page.
 
