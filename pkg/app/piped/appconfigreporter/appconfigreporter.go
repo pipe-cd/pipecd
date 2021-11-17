@@ -226,7 +226,8 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, registeredAppPaths 
 		if err != nil {
 			return fmt.Errorf("failed to get the latest commit of %s: %w", repoID, err)
 		}
-		as, err := r.findRegisteredApps(ctx, repoID, repo, headCommit.Hash, registeredAppPaths)
+		var as []*model.ApplicationInfo
+		as, err = r.findRegisteredApps(ctx, repoID, repo, headCommit.Hash, registeredAppPaths)
 		if err != nil {
 			return err
 		}
@@ -305,7 +306,7 @@ func shouldSkip(repoID, path, cfgFilename string, registeredAppPaths map[string]
 	return false
 }
 
-func (r *Reporter) readApplicationInfo(ctx context.Context, path, cfgFilePath string) (appInfo *model.ApplicationInfo, err error) {
+func (r *Reporter) readApplicationInfo(ctx context.Context, path, cfgFilePath string) (*model.ApplicationInfo, error) {
 	b, err := fs.ReadFile(r.fsys, cfgFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open the configuration file: %w", err)
