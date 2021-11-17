@@ -555,7 +555,8 @@ type DeploymentChain struct {
 	// the first applications in the chain trigger a whole new deployment chain or not.
 	// If this field is not set, always trigger a whole new deployment chain when the current
 	// application is triggered.
-	Conditions *DeploymentChainTriggerCondition `json:"conditions,omitempty"`
+	// TODO: Add conditions to deployment chain configuration.
+	// Conditions *DeploymentChainTriggerCondition `json:"conditions,omitempty"`
 }
 
 func (dc *DeploymentChain) Validate() error {
@@ -569,11 +570,11 @@ func (dc *DeploymentChain) Validate() error {
 		}
 	}
 
-	if cc := dc.Conditions; cc != nil {
-		if err := cc.Validate(); err != nil {
-			return err
-		}
-	}
+	// if cc := dc.Conditions; cc != nil {
+	// 	if err := cc.Validate(); err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	return nil
 }
