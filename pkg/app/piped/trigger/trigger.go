@@ -215,8 +215,8 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 	}
 
 	ds := &determiners{
-		onCommand:   &OnCommandDeterminer{},
-		onOutOfSync: &OnOutOfSyncDeterminer{client: t.apiClient},
+		onCommand:   NewOnCommandDeterminer(),
+		onOutOfSync: NewOnOutOfSyncDeterminer(t.apiClient),
 		onCommit:    NewOnCommitDeterminer(gitRepo, headCommit.Hash, t.commitStore, t.logger),
 	}
 

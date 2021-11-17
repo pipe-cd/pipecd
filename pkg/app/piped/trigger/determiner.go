@@ -53,6 +53,10 @@ func (ds *determiners) Determiner(ck candidateKind) Determiner {
 type OnCommandDeterminer struct {
 }
 
+func NewOnCommandDeterminer() *OnCommandDeterminer {
+	return &OnCommandDeterminer{}
+}
+
 // ShouldTrigger decides whether a given application should be triggered or not.
 func (d *OnCommandDeterminer) ShouldTrigger(_ context.Context, _ *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
 	if appCfg.Trigger.OnCommand.Disabled {
@@ -64,6 +68,12 @@ func (d *OnCommandDeterminer) ShouldTrigger(_ context.Context, _ *model.Applicat
 
 type OnOutOfSyncDeterminer struct {
 	client apiClient
+}
+
+func NewOnOutOfSyncDeterminer(client apiClient) *OnOutOfSyncDeterminer {
+	return &OnOutOfSyncDeterminer{
+		client: client,
+	}
 }
 
 // ShouldTrigger decides whether a given application should be triggered or not.
@@ -89,6 +99,8 @@ func (d *OnOutOfSyncDeterminer) ShouldTrigger(ctx context.Context, app *model.Ap
 	deployment := resp.Deployment
 
 	// Check if it was already completed or not.
+	// Not yet completed means the application is deploying currently,
+	// so no need to trigger a new deployment for it.
 	if !model.IsCompletedDeployment(deployment.Status) {
 		return false, nil
 	}
