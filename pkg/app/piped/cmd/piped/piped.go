@@ -250,6 +250,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	environmentStore := environmentstore.NewStore(
 		apiClient,
 		memorycache.NewTTLCache(ctx, 10*time.Minute, time.Minute),
+		memorycache.NewTTLCache(ctx, 10*time.Minute, time.Minute),
 		input.Logger,
 	)
 
@@ -446,6 +447,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			apiClient,
 			gitClient,
 			applicationLister,
+			environmentStore,
 			cfg,
 			p.gracePeriod,
 			input.Logger,

@@ -45,16 +45,23 @@ type applicationLister interface {
 	List() []*model.Application
 }
 
+type environmentGetter interface {
+	Get(ctx context.Context, id string) (*model.Environment, error)
+	GetByName(ctx context.Context, name string) (*model.Environment, error)
+}
+
 type Reporter struct {
 	apiClient         apiClient
 	gitClient         gitClient
 	applicationLister applicationLister
+	envGetter         environmentGetter
 	config            *config.PipedSpec
 	gitRepos          map[string]git.Repo
 	gracePeriod       time.Duration
 	// Cache for the last scanned commit for each repository.
 	// Not goroutine safe.
 	lastScannedCommits map[string]string
+	fsys               fs.FS
 	logger             *zap.Logger
 }
 
@@ -62,6 +69,7 @@ func NewReporter(
 	apiClient apiClient,
 	gitClient gitClient,
 	appLister applicationLister,
+	envGetter environmentGetter,
 	cfg *config.PipedSpec,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
@@ -70,10 +78,13 @@ func NewReporter(
 		apiClient:          apiClient,
 		gitClient:          gitClient,
 		applicationLister:  appLister,
+		envGetter:          envGetter,
 		config:             cfg,
 		gracePeriod:        gracePeriod,
 		lastScannedCommits: make(map[string]string),
-		logger:             logger.Named("app-config-reporter"),
+		// FIXME: Find another way to specify the root dir for a file system
+		fsys:   os.DirFS("/"),
+		logger: logger.Named("app-config-reporter"),
 	}
 }
 
@@ -152,8 +163,7 @@ func (r *Reporter) scanAppConfigs(ctx context.Context) error {
 func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPaths map[string]struct{}) error {
 	apps := make([]*model.ApplicationInfo, 0)
 	for repoID, repo := range r.gitRepos {
-		// FIXME: Find another way to specify the root dir for a file system
-		as, err := findUnregisteredApps(os.DirFS("/"), repo.GetPath(), repoID, registeredAppPaths, r.logger)
+		as, err := r.findUnregisteredApps(ctx, repo.GetPath(), repoID, registeredAppPaths)
 		if err != nil {
 			return err
 		}
@@ -176,9 +186,9 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPath
 }
 
 // findUnregisteredApps finds out unregistered application info in the given git repository.
-func findUnregisteredApps(fsys fs.FS, repoPath, repoID string, registeredAppPaths map[string]struct{}, logger *zap.Logger) ([]*model.ApplicationInfo, error) {
+func (r *Reporter) findUnregisteredApps(ctx context.Context, repoPath, repoID string, registeredAppPaths map[string]struct{}) ([]*model.ApplicationInfo, error) {
 	apps := make([]*model.ApplicationInfo, 0)
-	err := fs.WalkDir(fsys, strings.TrimPrefix(repoPath, "/"), func(path string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(r.fsys, strings.TrimPrefix(repoPath, "/"), func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -190,9 +200,9 @@ func findUnregisteredApps(fsys fs.FS, repoPath, repoID string, registeredAppPath
 			return nil
 		}
 
-		appInfo, err := readApplicationInfo(fsys, repoPath, path)
+		appInfo, err := r.readApplicationInfo(ctx, repoPath, path)
 		if err != nil {
-			logger.Error("failed to read application info",
+			r.logger.Error("failed to read application info",
 				zap.String("repo-id", repoID),
 				zap.String("config-file-path", path),
 				zap.Error(err),
@@ -217,11 +227,7 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, registeredAppPaths 
 		if err != nil {
 			return fmt.Errorf("failed to get the latest commit of %s: %w", repoID, err)
 		}
-		lastScannedCommit, ok := r.lastScannedCommits[repoID]
-		if ok && headCommit.Hash == lastScannedCommit {
-			continue
-		}
-		as, err := findRegisteredApps(ctx, os.DirFS("/"), repoID, repo, lastScannedCommit, headCommit.Hash, registeredAppPaths, r.logger)
+		as, err := r.findRegisteredApps(ctx, repoID, repo, headCommit.Hash, registeredAppPaths)
 		if err != nil {
 			return err
 		}
@@ -255,7 +261,13 @@ type gitRepo interface {
 }
 
 // findRegisteredApps finds out registered application info in the given git repository.
-func findRegisteredApps(ctx context.Context, fsys fs.FS, repoID string, repo gitRepo, lastScannedCommit, headCommitHash string, registeredAppPaths map[string]struct{}, logger *zap.Logger) ([]*model.ApplicationInfo, error) {
+func (r *Reporter) findRegisteredApps(ctx context.Context, repoID string, repo gitRepo, headCommitHash string, registeredAppPaths map[string]struct{}) ([]*model.ApplicationInfo, error) {
+	// Skip if the head commit is already scanned.
+	lastScannedCommit, ok := r.lastScannedCommits[repoID]
+	if ok && headCommitHash == lastScannedCommit {
+		return []*model.ApplicationInfo{}, nil
+	}
+
 	files, err := repo.ChangedFiles(ctx, lastScannedCommit, headCommitHash)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get files those were touched between two commits: %w", err)
@@ -269,9 +281,9 @@ func findRegisteredApps(ctx context.Context, fsys fs.FS, repoID string, repo git
 		if shouldSkip(repoID, repo.GetPath(), filename, registeredAppPaths, true) {
 			continue
 		}
-		appInfo, err := readApplicationInfo(fsys, repo.GetPath(), filepath.Join(repo.GetPath(), filename))
+		appInfo, err := r.readApplicationInfo(ctx, repo.GetPath(), filepath.Join(repo.GetPath(), filename))
 		if err != nil {
-			logger.Error("failed to read application info",
+			r.logger.Error("failed to read application info",
 				zap.String("repo-id", repoID),
 				zap.String("config-file-path", filename),
 				zap.Error(err),
@@ -294,8 +306,8 @@ func shouldSkip(repoID, path, cfgFilename string, registeredAppPaths map[string]
 	return false
 }
 
-func readApplicationInfo(fsys fs.FS, path, cfgFilePath string) (appInfo *model.ApplicationInfo, err error) {
-	b, err := fs.ReadFile(fsys, cfgFilePath)
+func (r *Reporter) readApplicationInfo(ctx context.Context, path, cfgFilePath string) (appInfo *model.ApplicationInfo, err error) {
+	b, err := fs.ReadFile(r.fsys, cfgFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open the configuration file: %w", err)
 	}
@@ -308,12 +320,16 @@ func readApplicationInfo(fsys fs.FS, path, cfgFilePath string) (appInfo *model.A
 	if !ok {
 		return nil, fmt.Errorf("unsupported application kind %q", cfg.Kind)
 	}
+	env, err := r.envGetter.GetByName(ctx, spec.EnvName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get env by name: %w", err)
+	}
 
 	return &model.ApplicationInfo{
 		Name: spec.Name,
 		// TODO: Convert Kind string into dedicated type
 		//Kind:           cfg.Kind,
-		EnvId:          spec.EnvID,
+		EnvId:          env.Id,
 		Path:           path,
 		ConfigFilename: filepath.Base(cfgFilePath),
 		Labels:         spec.Labels,

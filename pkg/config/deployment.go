@@ -29,9 +29,9 @@ const (
 )
 
 type GenericDeploymentSpec struct {
-	Name   string            `json:"name"`
-	EnvID  string            `json:"envId"`
-	Labels map[string]string `json:"labels"`
+	Name    string            `json:"name"`
+	EnvName string            `json:"envName"`
+	Labels  map[string]string `json:"labels"`
 
 	// Configuration used while planning deployment.
 	Planner DeploymentPlanner `json:"planner"`
