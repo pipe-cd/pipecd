@@ -277,7 +277,8 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 							},
 						},
 						OnOutOfSync: OnOutOfSync{
-							Disabled: newBoolPointer(true),
+							Disabled:  newBoolPointer(true),
+							MinWindow: Duration(5 * time.Minute),
 						},
 					},
 				},
@@ -318,7 +319,8 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnOutOfSync: OnOutOfSync{
-							Disabled: newBoolPointer(true),
+							Disabled:  newBoolPointer(true),
+							MinWindow: Duration(5 * time.Minute),
 						},
 					},
 				},
@@ -337,7 +339,8 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnOutOfSync: OnOutOfSync{
-							Disabled: newBoolPointer(false),
+							Disabled:  newBoolPointer(false),
+							MinWindow: Duration(5 * time.Minute),
 						},
 					},
 				},
@@ -356,7 +359,8 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnOutOfSync: OnOutOfSync{
-							Disabled: newBoolPointer(true),
+							Disabled:  newBoolPointer(true),
+							MinWindow: Duration(5 * time.Minute),
 						},
 					},
 				},

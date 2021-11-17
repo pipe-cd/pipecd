@@ -90,8 +90,9 @@ type OnOutOfSync struct {
 	// when application is at OUT_OF_SYNC state.
 	// Default is true.
 	Disabled *bool `json:"disabled,omitempty" default:"true"`
-	// TODO: Add a field to control the trigger frequency.
-	// MinWindow Duration `json:"minWindow,omitempty"`
+	// Minimum amount of time must be elapsed since the last deployment.
+	// This can be used to avoid triggering unnecessary continuous deployments based on OUT_OF_SYNC status.
+	MinWindow Duration `json:"minWindow,omitempty" default:"5m"`
 }
 
 func (s *GenericDeploymentSpec) Validate() error {

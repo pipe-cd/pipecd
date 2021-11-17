@@ -43,6 +43,7 @@ const (
 type apiClient interface {
 	GetApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.GetApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetApplicationMostRecentDeploymentResponse, error)
 	CreateDeployment(ctx context.Context, in *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error)
+	GetDeployment(ctx context.Context, in *pipedservice.GetDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetDeploymentResponse, error)
 	ReportApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.ReportApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationMostRecentDeploymentResponse, error)
 }
 
@@ -214,8 +215,8 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 	}
 
 	ds := &determiners{
-		onCommand:   &OnCommandDeterminer{},
-		onOutOfSync: &OnOutOfSyncDeterminer{},
+		onCommand:   NewOnCommandDeterminer(),
+		onOutOfSync: NewOnOutOfSyncDeterminer(t.apiClient),
 		onCommit:    NewOnCommitDeterminer(gitRepo, headCommit.Hash, t.commitStore, t.logger),
 	}
 
