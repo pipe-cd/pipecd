@@ -546,7 +546,7 @@ func (p *PostSync) Validate() error {
 	return nil
 }
 
-// DeploymentChain provides all configurations to used to trigger a chain of deployments.
+// DeploymentChain provides all configurations used to trigger a chain of deployments.
 type DeploymentChain struct {
 	// Nodes provides list of DeploymentChainNodes which contain filters to be used
 	// to find applications to deploy as chain node. It's required to not empty.
@@ -601,7 +601,8 @@ type DeploymentChainTriggerCondition struct {
 }
 
 func (c *DeploymentChainTriggerCondition) Validate() error {
-	if c.CommitPrefix == "" {
+	hasCond := c.CommitPrefix != ""
+	if !hasCond {
 		return fmt.Errorf("missing commitPrefix configration as deployment chain trigger condition")
 	}
 	return nil
