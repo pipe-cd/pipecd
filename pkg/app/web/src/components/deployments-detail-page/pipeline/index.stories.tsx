@@ -41,6 +41,7 @@ const fakeDeployment: Deployment.AsObject = {
     commander: "cakecatz",
     timestamp: 1592201366,
     syncStrategy: SyncStrategy.AUTO,
+    strategySummary: "",
   },
   runningCommitHash: "3808585b46f1e90196d7ffe8dd04c807a251febc",
   summary: "This deployment is debug",
