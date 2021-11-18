@@ -401,7 +401,8 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnOutOfSync: OnOutOfSync{
-							Disabled: newBoolPointer(true),
+							Disabled:  newBoolPointer(true),
+							MinWindow: Duration(5 * time.Minute),
 						},
 					},
 					PostSync: &PostSync{
