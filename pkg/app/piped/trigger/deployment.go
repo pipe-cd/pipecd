@@ -100,7 +100,7 @@ func buildDeployment(
 		if err != nil {
 			return nil, fmt.Errorf("failed to save notification config to deployment metadata: %w", err)
 		}
-		metadata[model.DeploymentMeta_NotificationsKey] = string(value)
+		metadata[model.MetadataKeyDeploymentNotification] = string(value)
 	}
 
 	deployment := &model.Deployment{

@@ -651,7 +651,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 }
 
 func (s *scheduler) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
-	n, ok := s.metadataStore.Shared().Get(model.DeploymentMeta_NotificationsKey)
+	n, ok := s.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
 	if !ok {
 		return []string{}, nil
 	}

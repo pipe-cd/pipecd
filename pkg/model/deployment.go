@@ -20,7 +20,9 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const DeploymentMeta_NotificationsKey = "DeploymentNotification"
+const (
+	MetadataKeyDeploymentNotification = "DeploymentNotification"
+)
 
 var notCompletedDeploymentStatuses = []DeploymentStatus{
 	DeploymentStatus_DEPLOYMENT_PENDING,
