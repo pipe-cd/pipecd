@@ -443,3 +443,62 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 		})
 	}
 }
+
+func TestGenericPostSyncConfiguration(t *testing.T) {
+	testcases := []struct {
+		fileName           string
+		expectedKind       Kind
+		expectedAPIVersion string
+		expectedSpec       interface{}
+		expectedError      error
+	}{
+		{
+			fileName:           "testdata/application/generic-postsync.yaml",
+			expectedKind:       KindKubernetesApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedSpec: &KubernetesDeploymentSpec{
+				GenericDeploymentSpec: GenericDeploymentSpec{
+					Timeout: Duration(6 * time.Hour),
+					Trigger: Trigger{
+						OnOutOfSync: OnOutOfSync{
+							Disabled: newBoolPointer(true),
+						},
+					},
+					PostSync: &PostSync{
+						DeploymentChain: &DeploymentChain{
+							Nodes: []*DeploymentChainNode{
+								{
+									AppName: "app-1",
+								},
+								{
+									AppLabels: map[string]string{
+										"env": "staging",
+										"foo": "bar",
+									},
+								},
+								{
+									AppKind: "ECSApp",
+								},
+							},
+						},
+					},
+				},
+				Input: KubernetesDeploymentInput{
+					AutoRollback: newBoolPointer(true),
+				},
+			},
+			expectedError: nil,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.fileName, func(t *testing.T) {
+			cfg, err := LoadFromYAML(tc.fileName)
+			require.Equal(t, tc.expectedError, err)
+			if err == nil {
+				assert.Equal(t, tc.expectedKind, cfg.Kind)
+				assert.Equal(t, tc.expectedAPIVersion, cfg.APIVersion)
+				assert.Equal(t, tc.expectedSpec, cfg.spec)
+			}
+		})
+	}
+}
