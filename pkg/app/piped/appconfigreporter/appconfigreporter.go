@@ -71,6 +71,10 @@ type Reporter struct {
 	lastScannedCommits map[string]string
 	fileSystem         fs.FS
 	logger             *zap.Logger
+
+	// Whether it already swept all unregistered apps from control-plane.
+	// Not goroutine safe.
+	sweptUnregisteredApps bool
 }
 
 func NewReporter(
@@ -228,7 +232,11 @@ func (r *Reporter) findRegisteredApps(ctx context.Context, repoID string, repo g
 	}
 	apps := make([]*model.ApplicationInfo, 0)
 	for _, filename := range files {
-		if shouldSkip(repoID, filename, registeredAppPaths, true) {
+		if !strings.HasSuffix(filename, model.DefaultDeploymentConfigFileExtension) {
+			continue
+		}
+		gitPathKey := makeGitPathKey(repoID, filename)
+		if _, registered := registeredAppPaths[gitPathKey]; !registered {
 			continue
 		}
 		appInfo, err := r.readApplicationInfo(ctx, filepath.Join(repo.GetPath(), filename))
@@ -257,7 +265,12 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPath
 		apps = append(apps, as...)
 	}
 	if len(apps) == 0 {
-		return nil
+		if r.sweptUnregisteredApps {
+			return nil
+		}
+		r.sweptUnregisteredApps = true
+	} else {
+		r.sweptUnregisteredApps = false
 	}
 
 	_, err := r.apiClient.ReportUnregisteredApplicationConfigurations(
@@ -294,7 +307,11 @@ func (r *Reporter) scanAllFiles(ctx context.Context, repoRoot, repoID string, re
 			return err
 		}
 
-		if shouldSkip(repoID, cfgRelPath, registeredAppPaths, wantRegistered) {
+		if !strings.HasSuffix(cfgRelPath, model.DefaultDeploymentConfigFileExtension) {
+			return nil
+		}
+		gitPathKey := makeGitPathKey(repoID, cfgRelPath)
+		if _, registered := registeredAppPaths[gitPathKey]; registered != wantRegistered {
 			return nil
 		}
 
@@ -315,18 +332,6 @@ func (r *Reporter) scanAllFiles(ctx context.Context, repoRoot, repoID string, re
 		return nil, fmt.Errorf("failed to inspect files under %s: %w", repoRoot, err)
 	}
 	return apps, nil
-}
-
-// cfgFilePath is a relative path from the repo root.
-func shouldSkip(repoID, cfgFilePath string, registeredAppPaths map[string]struct{}, wantRegistered bool) bool {
-	if !strings.HasSuffix(cfgFilePath, model.DefaultDeploymentConfigFileExtension) {
-		return true
-	}
-	gitPathKey := makeGitPathKey(repoID, cfgFilePath)
-	if _, registered := registeredAppPaths[gitPathKey]; registered != wantRegistered {
-		return true
-	}
-	return false
 }
 
 // makeGitPathKey builds a unique path between repositories.
