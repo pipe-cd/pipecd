@@ -28,8 +28,7 @@ import (
 )
 
 const (
-	approvedByKey    = "ApprovedBy"
-	notificationsKey = "DeploymentNotification"
+	approvedByKey = "ApprovedBy"
 )
 
 type Executor struct {
@@ -150,7 +149,7 @@ func (e *Executor) reportRequiringApproval() {
 }
 
 func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
-	n, ok := e.MetadataStore.Shared().Get(notificationsKey)
+	n, ok := e.MetadataStore.Shared().Get(model.DeploymentMeta_NotificationsKey)
 	if !ok {
 		return []string{}, nil
 	}
