@@ -579,26 +579,6 @@ func (dc *DeploymentChain) Validate() error {
 	return nil
 }
 
-func (dc *DeploymentChain) Validate() error {
-	if len(dc.Nodes) == 0 {
-		return fmt.Errorf("missing specified applications that will be triggered on this chain of deployment")
-	}
-
-	for _, n := range dc.Nodes {
-		if err := n.Validate(); err != nil {
-			return err
-		}
-	}
-
-	if cc := dc.Conditions; cc != nil {
-		if err := cc.Validate(); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // DeploymentChainNode provides filters used to find the right applications to trigger
 // as a part of the deployment chain.
 type DeploymentChainNode struct {
