@@ -37,7 +37,6 @@ import (
 const (
 	ondemandCheckInterval               = 10 * time.Second
 	defaultLastTriggeredCommitCacheSize = 500
-	triggeredDeploymentIDKey            = "TriggeredDeploymentID"
 )
 
 type apiClient interface {
@@ -286,7 +285,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 		// Mask command as handled since the deployment has been triggered successfully.
 		if c.kind == model.TriggerKind_ON_COMMAND {
 			metadata := map[string]string{
-				triggeredDeploymentIDKey: deployment.Id,
+				model.MetadataKeyTriggeredDeploymentID: deployment.Id,
 			}
 			if err := c.command.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, metadata, nil); err != nil {
 				t.logger.Error("failed to report command status", zap.Error(err))

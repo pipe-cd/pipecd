@@ -51,8 +51,6 @@ func SyncApplication(
 	defer ticker.Stop()
 
 	check := func() (deploymentID string, shouldRetry bool) {
-		const triggeredDeploymentIDKey = "TriggeredDeploymentID"
-
 		cmd, err := getCommand(ctx, cli, resp.CommandId)
 		if err != nil {
 			logger.Error(fmt.Sprintf("Failed while retrieving command information. Try again. (%v)", err))
@@ -67,7 +65,7 @@ func SyncApplication(
 
 		switch cmd.Status {
 		case model.CommandStatus_COMMAND_SUCCEEDED:
-			deploymentID = cmd.Metadata[triggeredDeploymentIDKey]
+			deploymentID = cmd.Metadata[model.MetadataKeyTriggeredDeploymentID]
 			return
 
 		case model.CommandStatus_COMMAND_FAILED:

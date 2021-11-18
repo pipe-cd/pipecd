@@ -16,6 +16,10 @@ package model
 
 import "context"
 
+const (
+	MetadataKeyTriggeredDeploymentID = "TriggeredDeploymentID"
+)
+
 type ReportableCommand struct {
 	*Command
 	Report func(ctx context.Context, status CommandStatus, metadata map[string]string, output []byte) error
