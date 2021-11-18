@@ -37,8 +37,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const notificationsKey = "DeploymentNotification"
-
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
 	// Readonly deployment model.
@@ -653,7 +651,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 }
 
 func (s *scheduler) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
-	n, ok := s.metadataStore.Shared().Get(notificationsKey)
+	n, ok := s.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
 	if !ok {
 		return []string{}, nil
 	}

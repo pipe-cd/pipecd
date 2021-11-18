@@ -29,8 +29,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const notificationsKey = "DeploymentNotification"
-
 func (t *Trigger) triggerDeployment(
 	ctx context.Context,
 	app *model.Application,
@@ -102,7 +100,7 @@ func buildDeployment(
 		if err != nil {
 			return nil, fmt.Errorf("failed to save notification config to deployment metadata: %w", err)
 		}
-		metadata[notificationsKey] = string(value)
+		metadata[model.MetadataKeyDeploymentNotification] = string(value)
 	}
 
 	deployment := &model.Deployment{
