@@ -162,7 +162,7 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 	type args struct {
 		repoID             string
 		repo               gitRepo
-		headCommitHash     string
+		lastScannedCommit  string
 		registeredAppPaths map[string]struct{}
 	}
 	testcases := []struct {
@@ -182,8 +182,9 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 				logger: zap.NewNop(),
 			},
 			args: args{
-				repoID: "repo-1",
-				repo:   &fakeGitRepo{path: "path/to/repo-1", changedFiles: nil},
+				repoID:            "repo-1",
+				repo:              &fakeGitRepo{path: "path/to/repo-1", changedFiles: nil},
+				lastScannedCommit: "xxx",
 			},
 			want:    []*model.ApplicationInfo{},
 			wantErr: false,
@@ -198,8 +199,9 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 				logger: zap.NewNop(),
 			},
 			args: args{
-				repoID: "repo-1",
-				repo:   &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/app.pipecd.yaml"}},
+				repoID:            "repo-1",
+				repo:              &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/app.pipecd.yaml"}},
+				lastScannedCommit: "xxx",
 			},
 			want:    []*model.ApplicationInfo{},
 			wantErr: false,
@@ -214,8 +216,9 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 				logger: zap.NewNop(),
 			},
 			args: args{
-				repoID: "repo-1",
-				repo:   &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/app.pipecd.yaml"}},
+				repoID:            "repo-1",
+				repo:              &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/app.pipecd.yaml"}},
+				lastScannedCommit: "xxx",
 				registeredAppPaths: map[string]struct{}{
 					"repo-1:app-1/app.pipecd.yaml": {},
 				},
@@ -239,8 +242,43 @@ spec:
 				logger: zap.NewNop(),
 			},
 			args: args{
-				repoID: "repo-1",
-				repo:   &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/app.pipecd.yaml"}},
+				repoID:            "repo-1",
+				repo:              &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/app.pipecd.yaml"}},
+				lastScannedCommit: "xxx",
+				registeredAppPaths: map[string]struct{}{
+					"repo-1:app-1/app.pipecd.yaml": {},
+				},
+			},
+			want: []*model.ApplicationInfo{
+				{
+					Name:           "app-1",
+					EnvId:          "env-1",
+					Labels:         map[string]string{"key-1": "value-1"},
+					Path:           "path/to/repo-1/app-1",
+					ConfigFilename: "app.pipecd.yaml",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "last commit commit is empty",
+			reporter: &Reporter{
+				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
+				fileSystem: fstest.MapFS{
+					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: app-1
+  labels:
+    key-1: value-1`)},
+				},
+				logger: zap.NewNop(),
+			},
+			args: args{
+				repoID:            "repo-1",
+				repo:              &fakeGitRepo{path: "path/to/repo-1"},
+				lastScannedCommit: "",
 				registeredAppPaths: map[string]struct{}{
 					"repo-1:app-1/app.pipecd.yaml": {},
 				},
@@ -259,7 +297,7 @@ spec:
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := tc.reporter.findRegisteredApps(context.Background(), tc.args.repoID, tc.args.repo, "", "", tc.args.registeredAppPaths)
+			got, err := tc.reporter.findRegisteredApps(context.Background(), tc.args.repoID, tc.args.repo, tc.args.lastScannedCommit, "", tc.args.registeredAppPaths)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)
 		})

@@ -214,6 +214,10 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, registeredAppPaths 
 
 // findRegisteredApps finds out registered application info in the given git repository.
 func (r *Reporter) findRegisteredApps(ctx context.Context, repoID string, repo gitRepo, lastScannedCommit, headCommitHash string, registeredAppPaths map[string]struct{}) ([]*model.ApplicationInfo, error) {
+	if lastScannedCommit == "" {
+		return r.scanAllFiles(ctx, repo.GetPath(), repoID, registeredAppPaths, true)
+	}
+
 	files, err := repo.ChangedFiles(ctx, lastScannedCommit, headCommitHash)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get files those were touched between two commits: %w", err)
@@ -270,8 +274,14 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPath
 
 // findUnregisteredApps finds out unregistered application info in the given git repository.
 func (r *Reporter) findUnregisteredApps(ctx context.Context, repoPath, repoID string, registeredAppPaths map[string]struct{}) ([]*model.ApplicationInfo, error) {
+	return r.scanAllFiles(ctx, repoPath, repoID, registeredAppPaths, false)
+}
+
+// scanAllFiles inspects all files under the root or the given repository.
+// And gives back all application info as much as possible.
+func (r *Reporter) scanAllFiles(ctx context.Context, repoRoot, repoID string, registeredAppPaths map[string]struct{}, wantRegistered bool) ([]*model.ApplicationInfo, error) {
 	apps := make([]*model.ApplicationInfo, 0)
-	err := fs.WalkDir(r.fileSystem, strings.TrimPrefix(repoPath, "/"), func(path string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(r.fileSystem, repoRoot, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -279,7 +289,12 @@ func (r *Reporter) findUnregisteredApps(ctx context.Context, repoPath, repoID st
 			return nil
 		}
 
-		if shouldSkip(repoID, path, registeredAppPaths, false) {
+		cfgRelPath, err := filepath.Rel(repoRoot, path)
+		if err != nil {
+			return err
+		}
+
+		if shouldSkip(repoID, cfgRelPath, registeredAppPaths, wantRegistered) {
 			return nil
 		}
 
@@ -287,7 +302,7 @@ func (r *Reporter) findUnregisteredApps(ctx context.Context, repoPath, repoID st
 		if err != nil {
 			r.logger.Error("failed to read application info",
 				zap.String("repo-id", repoID),
-				zap.String("config-file-path", path),
+				zap.String("config-file-path", cfgRelPath),
 				zap.Error(err),
 			)
 			return nil
@@ -297,7 +312,7 @@ func (r *Reporter) findUnregisteredApps(ctx context.Context, repoPath, repoID st
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to inspect files under %s: %w", repoPath, err)
+		return nil, fmt.Errorf("failed to inspect files under %s: %w", repoRoot, err)
 	}
 	return apps, nil
 }
