@@ -236,7 +236,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 		shouldTrigger, err := ds.Determiner(c.kind).ShouldTrigger(ctx, app, appCfg)
 		if err != nil {
 			msg := fmt.Sprintf("failed while determining whether application %s should be triggered or not: %s", app.Name, err)
-			t.notifyDeploymentTriggerFailed(app, msg, headCommit)
+			t.notifyDeploymentTriggerFailed(app, appCfg, msg, headCommit)
 			t.logger.Error(msg, zap.Error(err))
 			continue
 		}
@@ -274,7 +274,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 		deployment, err := t.triggerDeployment(ctx, app, appCfg, branch, headCommit, commander, strategy, strategySummary)
 		if err != nil {
 			msg := fmt.Sprintf("failed to trigger application %s: %v", app.Id, err)
-			t.notifyDeploymentTriggerFailed(app, msg, headCommit)
+			t.notifyDeploymentTriggerFailed(app, appCfg, msg, headCommit)
 			t.logger.Error(msg, zap.Error(err))
 			continue
 		}
@@ -412,14 +412,20 @@ func (t *Trigger) notifyDeploymentTriggered(ctx context.Context, appCfg *config.
 	}
 }
 
-func (t *Trigger) notifyDeploymentTriggerFailed(app *model.Application, reason string, commit git.Commit) {
+func (t *Trigger) notifyDeploymentTriggerFailed(app *model.Application, appCfg *config.GenericDeploymentSpec, reason string, commit git.Commit) {
+	var mentions []string
+	if n := appCfg.DeploymentNotification; n != nil {
+		mentions = n.FindSlackAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED)
+	}
+
 	t.notifier.Notify(model.NotificationEvent{
 		Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED,
 		Metadata: &model.NotificationEventDeploymentTriggerFailed{
-			Application:   app,
-			CommitHash:    commit.Hash,
-			CommitMessage: commit.Message,
-			Reason:        reason,
+			Application:       app,
+			CommitHash:        commit.Hash,
+			MentionedAccounts: mentions,
+			CommitMessage:     commit.Message,
+			Reason:            reason,
 		},
 	})
 }
