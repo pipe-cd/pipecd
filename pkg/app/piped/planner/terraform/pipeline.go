@@ -85,6 +85,7 @@ func buildProgressivePipeline(pp *config.DeploymentPipeline, autoRollback bool, 
 			Predefined: false,
 			Visible:    true,
 			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
+			Metadata:   planner.MakeInitialStageMetadata(s),
 			CreatedAt:  now.Unix(),
 			UpdatedAt:  now.Unix(),
 		}
