@@ -106,6 +106,7 @@ message NotificationEventDeploymentTriggerFailed {
     string commit_hash = 2 [(validate.rules).string.min_len = 1];
     string commit_message = 3 [(validate.rules).string.min_len = 1];
     string reason = 4 [(validate.rules).string.min_len = 1];
+    repeated string mentioned_accounts = 5;
 }
 
 message NotificationEventApplicationSynced {
