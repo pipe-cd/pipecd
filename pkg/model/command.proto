@@ -34,6 +34,7 @@ message Command {
         CANCEL_DEPLOYMENT = 2;
         APPROVE_STAGE = 3;
         BUILD_PLAN_PREVIEW = 4;
+        IN_CHAIN_SYNC_APPLICATION = 5;
     }
 
     message SyncApplication {
@@ -66,6 +67,11 @@ message Command {
         int64 timeout = 5 [(validate.rules).int64.gte = 0];
     }
 
+    message InChainSyncApplication {
+        string application_id = 1 [(validate.rules).string.min_len = 1];
+        SyncStrategy sync_strategy = 2;
+    }
+
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
     string piped_id = 2 [(validate.rules).string.min_len = 1];
@@ -86,6 +92,7 @@ message Command {
     CancelDeployment cancel_deployment = 33;
     ApproveStage approve_stage = 34;
     BuildPlanPreview build_plan_preview = 35;
+    InChainSyncApplication in_chain_sync_application = 36;
 
     int64 created_at = 100 [(validate.rules).int64.gt = 0];
     int64 updated_at = 101 [(validate.rules).int64.gt = 0];

@@ -20,6 +20,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -221,6 +222,46 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 	}
 	return &pipedservice.ListApplicationsResponse{
 		Applications: apps,
+	}, nil
+}
+
+// TriggerApplication is used to make a command to trigger deployment for application that's not handled by the requested piped.
+func (a *PipedAPI) TriggerApplication(ctx context.Context, req *pipedservice.TriggerApplicationRequest) (*pipedservice.TriggerApplicationResponse, error) {
+	projectID, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	app, err := getApplication(ctx, a.applicationStore, req.ApplicationId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	// Note: We only validate does the going to sync application is of the same project with the requested piped.
+	// Since this RPC is used by piped for deployment chain, the requested piped may not the piped which
+	// handle this application.
+	if projectID != app.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
+	}
+
+	cmd := model.Command{
+		Id:            uuid.New().String(),
+		PipedId:       app.PipedId,
+		ApplicationId: app.Id,
+		ProjectId:     app.ProjectId,
+		Type:          model.Command_IN_CHAIN_SYNC_APPLICATION,
+		Commander:     pipedID,
+		InChainSyncApplication: &model.Command_InChainSyncApplication{
+			ApplicationId: app.Id,
+			SyncStrategy:  req.SyncStrategy,
+		},
+	}
+	if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
+		return nil, err
+	}
+
+	return &pipedservice.TriggerApplicationResponse{
+		CommandId: cmd.Id,
 	}, nil
 }
 

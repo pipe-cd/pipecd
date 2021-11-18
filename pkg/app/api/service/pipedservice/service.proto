@@ -51,6 +51,8 @@ service PipedService {
     // GetEnvironment finds and returns the environment for the specified ID.
     rpc GetEnvironment(GetEnvironmentRequest) returns (GetEnvironmentResponse) {}
 
+    // Application rpc.
+
     // ListApplications returns a list of registered applications
     // that should be managed by the requested piped.
     // Disabled applications should not be included in the response.
@@ -69,6 +71,33 @@ service PipedService {
 
     // GetApplicationMostRecentDeployment returns the most recent deployment of the given application.
     rpc GetApplicationMostRecentDeployment(GetApplicationMostRecentDeploymentRequest) returns (GetApplicationMostRecentDeploymentResponse) {}
+
+    // ReportApplicationLiveState is periodically sent to correct full state of an application.
+    // For kubernetes application, this contains a full tree of its kubernetes resources.
+    // The tree data should be written into filestore immediately and then the state in cache should be refreshsed too.
+    rpc ReportApplicationLiveState(ReportApplicationLiveStateRequest) returns (ReportApplicationLiveStateResponse) {}
+
+    // ReportApplicationLiveStateEvents is sent to submit one or multiple events
+    // about the changes of application live state.
+    // Control plane uses the received events to update the state of application-resource-tree.
+    // We want to start by a simple solution at this initial stage of development,
+    // so the API server just handles as below:
+    // - loads the releated application-resource-tree from the cache
+    // - checks and builds new state for the application-resource-tree
+    // - updates new state into cache (cache data is for reading while handling web requests)
+    // In the future, we may want to redesign the behavior of this RPC by using pubsub/queue pattern.
+    // After receiving the events, all of them will be published into a queue immediately,
+    // and then another Handler service will pick them inorder to apply to build new state.
+    // By that way we can control the traffic to the datastore in a better way.
+    rpc ReportApplicationLiveStateEvents(ReportApplicationLiveStateEventsRequest) returns (ReportApplicationLiveStateEventsResponse) {}
+
+    // TriggerApplication creates a command to control-plane to start a deployment
+    // for a specifed application which it's not handle by the requested piped. The going to
+    // create deployment is a part of a deployment chain, this RPC is used as an indirection
+    // trigger to start other applications' deployment in the chain.
+    rpc TriggerApplication(TriggerApplicationRequest) returns (TriggerApplicationResponse) {}
+
+    // Deployment rpc.
 
     // GetDeployment returns the deployment for given deployment ID.
     rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
@@ -99,6 +128,8 @@ service PipedService {
     // Different value for the same key will overwrite the previous value for that key.
     rpc SaveDeploymentMetadata(SaveDeploymentMetadataRequest) returns (SaveDeploymentMetadataResponse) {}
 
+    // Stage rpc.
+
     // SaveStageMetadata is used to persist the metadata
     // of a specific stage of a deployment.
     // Different value for the same key will overwrite the previous value for that key.
@@ -113,6 +144,8 @@ service PipedService {
     // ReportStageStatusChanged is used to update the status
     // of a specific stage of a deployment.
     rpc ReportStageStatusChanged(ReportStageStatusChangedRequest) returns (ReportStageStatusChangedResponse) {}
+
+    // Command rpc.
 
     // ListUnhandledCommands is periodically called to obtain the commands
     // that should be handled.
@@ -129,24 +162,7 @@ service PipedService {
     // The handle result should be updated to both datastore and cache (for reading from web).
     rpc ReportCommandHandled(ReportCommandHandledRequest) returns (ReportCommandHandledResponse) {}
 
-    // ReportApplicationLiveState is periodically sent to correct full state of an application.
-    // For kubernetes application, this contains a full tree of its kubernetes resources.
-    // The tree data should be written into filestore immediately and then the state in cache should be refreshsed too.
-    rpc ReportApplicationLiveState(ReportApplicationLiveStateRequest) returns (ReportApplicationLiveStateResponse) {}
-
-    // ReportApplicationLiveStateEvents is sent to submit one or multiple events
-    // about the changes of application live state.
-    // Control plane uses the received events to update the state of application-resource-tree.
-    // We want to start by a simple solution at this initial stage of development,
-    // so the API server just handles as below:
-    // - loads the releated application-resource-tree from the cache
-    // - checks and builds new state for the application-resource-tree
-    // - updates new state into cache (cache data is for reading while handling web requests)
-    // In the future, we may want to redesign the behavior of this RPC by using pubsub/queue pattern.
-    // After receiving the events, all of them will be published into a queue immediately,
-    // and then another Handler service will pick them inorder to apply to build new state.
-    // By that way we can control the traffic to the datastore in a better way.
-    rpc ReportApplicationLiveStateEvents(ReportApplicationLiveStateEventsRequest) returns (ReportApplicationLiveStateEventsResponse) {}
+    // Event rpc.
 
     // GetLatestEvent returns the latest event that meets the given conditions.
     rpc GetLatestEvent(GetLatestEventRequest) returns (GetLatestEventResponse) {}
@@ -455,4 +471,13 @@ message GetDesiredVersionRequest {
 
 message GetDesiredVersionResponse {
     string version = 1;
+}
+
+message TriggerApplicationRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    model.SyncStrategy sync_strategy = 2;
+}
+
+message TriggerApplicationResponse {
+    string command_id = 1;
 }
