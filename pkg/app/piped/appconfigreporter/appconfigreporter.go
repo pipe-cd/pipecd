@@ -67,13 +67,11 @@ type Reporter struct {
 	gitRepos          map[string]git.Repo
 	gracePeriod       time.Duration
 	// Cache for the last scanned commit for each repository.
-	// Not goroutine safe.
 	lastScannedCommits map[string]string
 	fileSystem         fs.FS
 	logger             *zap.Logger
 
 	// Whether it already swept all unregistered apps from control-plane.
-	// Not goroutine safe.
 	sweptUnregisteredApps bool
 }
 
@@ -301,15 +299,15 @@ func (r *Reporter) scanAllFiles(ctx context.Context, repoRoot, repoID string, re
 		if d.IsDir() {
 			return nil
 		}
+		if !strings.HasSuffix(path, model.DefaultDeploymentConfigFileExtension) {
+			return nil
+		}
 
 		cfgRelPath, err := filepath.Rel(repoRoot, path)
 		if err != nil {
 			return err
 		}
 
-		if !strings.HasSuffix(cfgRelPath, model.DefaultDeploymentConfigFileExtension) {
-			return nil
-		}
 		gitPathKey := makeGitPathKey(repoID, cfgRelPath)
 		if _, registered := registeredAppPaths[gitPathKey]; registered != wantRegistered {
 			return nil
