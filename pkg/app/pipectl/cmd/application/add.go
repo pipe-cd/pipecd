@@ -43,7 +43,7 @@ type add struct {
 func newAddCommand(root *command) *cobra.Command {
 	c := &add{
 		root:           root,
-		configFileName: model.DefaultDeploymentConfigFileName,
+		configFileName: model.DefaultApplicationConfigFilename,
 	}
 	cmd := &cobra.Command{
 		Use:   "add",
