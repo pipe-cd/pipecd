@@ -348,7 +348,7 @@ func (r *Reporter) readApplicationInfo(appPath, cfgFileAbsPath string) (*model.A
 	}
 
 	if spec.Name == "" {
-		return nil, fmt.Errorf("application name is empty")
+		return nil, fmt.Errorf("missing application name")
 	}
 	return &model.ApplicationInfo{
 		Name: spec.Name,
