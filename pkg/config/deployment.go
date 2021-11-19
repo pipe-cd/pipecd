@@ -367,6 +367,7 @@ type WaitApprovalStageOptions struct {
 	// Defaults to 6h.
 	Timeout   Duration `json:"timeout"`
 	Approvers []string `json:"approvers"`
+	MinApproverNum int `json:"minApproverNum"`
 }
 
 // AnalysisStageOptions contains all configurable values for a K8S_ANALYSIS stage.

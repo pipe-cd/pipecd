@@ -18,6 +18,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -28,7 +30,9 @@ import (
 )
 
 const (
-	approvedByKey = "ApprovedBy"
+	approvedByKey    = "ApprovedBy"
+	minApproverNum   = "MinApproverNum"
+	approversKey     = "CurrentApprovers"
 )
 
 type Executor struct {
@@ -101,8 +105,18 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 		return "", false
 	}
 
+	as, ok := e.validateApproverNum(ctx, approveCmd.Commander)
+	if !ok {
+		if len(as) > 0 {
+			if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, as); err != nil {
+				e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
+			}
+		}
+		return "", false
+	}
+
 	metadata := map[string]string{
-		approvedByKey: approveCmd.Commander,
+		approvedByKey: as,
 	}
 	if err := e.MetadataStore.Stage(e.Stage.Id).PutMulti(ctx, metadata); err != nil {
 		e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
@@ -112,7 +126,7 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 	if err := approveCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
 		e.Logger.Error("failed to report handled command", zap.Error(err))
 	}
-	return approveCmd.Commander, true
+	return as, true
 }
 
 func (e *Executor) reportApproved(approver string) {
@@ -160,4 +174,36 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 	}
 
 	return notification.FindSlackAccounts(event), nil
+}
+
+func (e *Executor) validateApproverNum(ctx context.Context, approver string) (string, bool) {
+	n, ok := e.MetadataStore.Stage(e.Stage.Id).Get(minApproverNum)
+	if !ok {
+		return "", false
+	}
+	num, err := strconv.Atoi(n)
+	if err != nil {
+		e.LogPersister.Errorf("%s could not be converted to integer: %v", num, err)
+		return "", false
+	}
+	if num <= 1 {
+		return approver, true
+	}
+	as, ok := e.MetadataStore.Stage(e.Stage.Id).Get(approversKey)
+	if !ok {
+		e.LogPersister.Infof("%d more approvals are needed", num-1)
+		return approver, false
+	}
+	approvers := strings.Split(as, ",")
+	for _, a := range approvers {
+		if a == approver {
+			e.LogPersister.Errorf("%s has already approved. %d more approvals are needed", num-1)
+			return "", false
+		}
+	}
+	if d := num - len(approvers) - 1; d > 0 {
+		e.LogPersister.Infof("%d more approvals are needed", d)
+		return as + "," + approver, false
+	}
+	return as + "," + approver, true
 }

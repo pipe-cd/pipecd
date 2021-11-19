@@ -21,6 +21,7 @@ package planner
 
 import (
 	"context"
+	"strconv"
 	"strings"
 
 	"go.uber.org/zap"
@@ -62,7 +63,8 @@ func MakeInitialStageMetadata(cfg config.PipelineStage) map[string]string {
 	switch cfg.Name {
 	case model.StageWaitApproval:
 		return map[string]string{
-			"Approvers": strings.Join(cfg.WaitApprovalStageOptions.Approvers, ","),
+			"Approvers":      strings.Join(cfg.WaitApprovalStageOptions.Approvers, ","),
+			"MinApproverNum": strconv.Itoa(cfg.WaitApprovalStageOptions.MinApproverNum),
 		}
 	default:
 		return nil
