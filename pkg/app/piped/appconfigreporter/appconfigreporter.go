@@ -213,29 +213,28 @@ func (r *Reporter) findRegisteredApps(ctx context.Context, repoID string, repo g
 		return r.scanAllFiles(repo.GetPath(), repoID, registeredAppPaths, true)
 	}
 
-	files, err := repo.ChangedFiles(ctx, lastScannedCommit, headCommitHash)
+	filePaths, err := repo.ChangedFiles(ctx, lastScannedCommit, headCommitHash)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get files those were touched between two commits: %w", err)
 	}
-	if len(files) == 0 {
+	if len(filePaths) == 0 {
 		// The case where all changes have been fully reverted.
 		return []*model.ApplicationInfo{}, nil
 	}
 	apps := make([]*model.ApplicationInfo, 0)
-	for _, filename := range files {
-		if !strings.HasSuffix(filename, model.DefaultDeploymentConfigFileExtension) {
+	for _, path := range filePaths {
+		if !strings.HasSuffix(path, model.DefaultDeploymentConfigFileExtension) {
 			continue
 		}
-		gitPathKey := makeGitPathKey(repoID, filename)
+		gitPathKey := makeGitPathKey(repoID, path)
 		if _, registered := registeredAppPaths[gitPathKey]; !registered {
 			continue
 		}
-		cfgAbsPath := filepath.Join(repo.GetPath(), filename)
-		appInfo, err := r.readApplicationInfo(filepath.Dir(filename), cfgAbsPath)
+		appInfo, err := r.readApplicationInfo(repo.GetPath(), filepath.Dir(path), filepath.Base(path))
 		if err != nil {
 			r.logger.Error("failed to read application info",
 				zap.String("repo-id", repoID),
-				zap.String("config-file-path", filename),
+				zap.String("config-file-path", path),
 				zap.Error(err),
 			)
 			continue
@@ -307,7 +306,7 @@ func (r *Reporter) scanAllFiles(repoRoot, repoID string, registeredAppPaths map[
 			return nil
 		}
 
-		appInfo, err := r.readApplicationInfo(filepath.Dir(cfgRelPath), path)
+		appInfo, err := r.readApplicationInfo(repoRoot, filepath.Dir(cfgRelPath), filepath.Base(cfgRelPath))
 		if err != nil {
 			r.logger.Error("failed to read application info",
 				zap.String("repo-id", repoID),
@@ -332,8 +331,8 @@ func makeGitPathKey(repoID, cfgFilePath string) string {
 	return fmt.Sprintf("%s:%s", repoID, cfgFilePath)
 }
 
-func (r *Reporter) readApplicationInfo(appPath, cfgFileAbsPath string) (*model.ApplicationInfo, error) {
-	b, err := fs.ReadFile(r.fileSystem, cfgFileAbsPath)
+func (r *Reporter) readApplicationInfo(repoDir, appDirRelPath, cfgFilename string) (*model.ApplicationInfo, error) {
+	b, err := fs.ReadFile(r.fileSystem, filepath.Join(repoDir, appDirRelPath, cfgFilename))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open the configuration file: %w", err)
 	}
@@ -355,7 +354,7 @@ func (r *Reporter) readApplicationInfo(appPath, cfgFileAbsPath string) (*model.A
 		// TODO: Convert Kind string into dedicated type
 		//Kind:           cfg.Kind,
 		Labels:         spec.Labels,
-		Path:           appPath,
-		ConfigFilename: filepath.Base(cfgFileAbsPath),
+		Path:           appDirRelPath,
+		ConfigFilename: cfgFilename,
 	}, nil
 }
