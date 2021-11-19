@@ -105,7 +105,7 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 		return "", false
 	}
 
-	as, ok := e.validateApproverNum(ctx, approveCmd.Commander)
+	as, ok := e.validateApproverNum(approveCmd.Commander)
 	if !ok {
 		if len(as) > 0 {
 			if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, as); err != nil {
