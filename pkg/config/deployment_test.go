@@ -407,7 +407,7 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 					},
 					PostSync: &PostSync{
 						DeploymentChain: &DeploymentChain{
-							Nodes: []*DeploymentChainNode{
+							ApplicationMatchers: []*ChainApplicationMatcher{
 								{
 									AppName: "app-1",
 								},

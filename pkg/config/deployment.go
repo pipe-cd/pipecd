@@ -552,9 +552,9 @@ func (p *PostSync) Validate() error {
 
 // DeploymentChain provides all configurations used to trigger a chain of deployments.
 type DeploymentChain struct {
-	// Nodes provides list of DeploymentChainNodes which contain filters to be used
+	// ApplicationMatchers provides list of ChainApplicationMatcher which contain filters to be used
 	// to find applications to deploy as chain node. It's required to not empty.
-	Nodes []*DeploymentChainNode `json:"applications"`
+	ApplicationMatchers []*ChainApplicationMatcher `json:"applications"`
 	// Conditions provides configuration used to determine should the piped in charge in
 	// the first applications in the chain trigger a whole new deployment chain or not.
 	// If this field is not set, always trigger a whole new deployment chain when the current
@@ -564,12 +564,12 @@ type DeploymentChain struct {
 }
 
 func (dc *DeploymentChain) Validate() error {
-	if len(dc.Nodes) == 0 {
+	if len(dc.ApplicationMatchers) == 0 {
 		return fmt.Errorf("missing specified applications that will be triggered on this chain of deployment")
 	}
 
-	for _, n := range dc.Nodes {
-		if err := n.Validate(); err != nil {
+	for _, m := range dc.ApplicationMatchers {
+		if err := m.Validate(); err != nil {
 			return err
 		}
 	}
@@ -583,16 +583,16 @@ func (dc *DeploymentChain) Validate() error {
 	return nil
 }
 
-// DeploymentChainNode provides filters used to find the right applications to trigger
+// ChainApplicationMatcher provides filters used to find the right applications to trigger
 // as a part of the deployment chain.
-type DeploymentChainNode struct {
+type ChainApplicationMatcher struct {
 	AppName   string            `json:"name"`
 	AppKind   string            `json:"kind"`
 	AppLabels map[string]string `json:"labels"`
 }
 
-func (n *DeploymentChainNode) Validate() error {
-	hasFilterCond := n.AppName != "" || n.AppKind != "" || len(n.AppLabels) != 0
+func (m *ChainApplicationMatcher) Validate() error {
+	hasFilterCond := m.AppName != "" || m.AppKind != "" || len(m.AppLabels) != 0
 
 	if !hasFilterCond {
 		return fmt.Errorf("at least one of \"name\", \"kind\" or \"labels\" must be set to find applications to deploy")
