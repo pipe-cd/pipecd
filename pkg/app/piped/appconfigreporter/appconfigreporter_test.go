@@ -25,19 +25,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-type fakeEnvGetter struct {
-	env *model.Environment
-	err error
-}
-
-func (f fakeEnvGetter) Get(_ context.Context, _ string) (*model.Environment, error) {
-	return f.env, f.err
-}
-
-func (f fakeEnvGetter) GetByName(_ context.Context, _ string) (*model.Environment, error) {
-	return f.env, f.err
-}
-
 func TestReporter_findUnregisteredApps(t *testing.T) {
 	type args struct {
 		registeredAppPaths map[string]struct{}
@@ -53,7 +40,6 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 		{
 			name: "file not found",
 			reporter: &Reporter{
-				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("")},
 				},
@@ -70,7 +56,6 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 		{
 			name: "all are registered",
 			reporter: &Reporter{
-				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("")},
 				},
@@ -89,7 +74,6 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 		{
 			name: "invalid app config is contained",
 			reporter: &Reporter{
-				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("invalid-text")},
 				},
@@ -106,7 +90,6 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 		{
 			name: "valid app config that is unregistered",
 			reporter: &Reporter{
-				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte(`
 apiVersion: pipecd.dev/v1beta1
@@ -126,7 +109,6 @@ spec:
 			want: []*model.ApplicationInfo{
 				{
 					Name:           "app-1",
-					EnvId:          "env-1",
 					Labels:         map[string]string{"key-1": "value-1"},
 					Path:           "path/to/repo-1/app-1",
 					ConfigFilename: "app.pipecd.yaml",
@@ -175,7 +157,6 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 		{
 			name: "no changed file",
 			reporter: &Reporter{
-				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("invalid-text")},
 				},
@@ -192,7 +173,6 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 		{
 			name: "all are unregistered",
 			reporter: &Reporter{
-				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("")},
 				},
@@ -209,7 +189,6 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 		{
 			name: "invalid app config is contained",
 			reporter: &Reporter{
-				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("invalid-text")},
 				},
@@ -229,7 +208,6 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 		{
 			name: "valid app config that is registered",
 			reporter: &Reporter{
-				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte(`
 apiVersion: pipecd.dev/v1beta1
@@ -252,7 +230,6 @@ spec:
 			want: []*model.ApplicationInfo{
 				{
 					Name:           "app-1",
-					EnvId:          "env-1",
 					Labels:         map[string]string{"key-1": "value-1"},
 					Path:           "path/to/repo-1/app-1",
 					ConfigFilename: "app.pipecd.yaml",
@@ -263,7 +240,6 @@ spec:
 		{
 			name: "last commit commit is empty",
 			reporter: &Reporter{
-				envGetter: &fakeEnvGetter{env: &model.Environment{Id: "env-1"}},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte(`
 apiVersion: pipecd.dev/v1beta1
@@ -286,7 +262,6 @@ spec:
 			want: []*model.ApplicationInfo{
 				{
 					Name:           "app-1",
-					EnvId:          "env-1",
 					Labels:         map[string]string{"key-1": "value-1"},
 					Path:           "path/to/repo-1/app-1",
 					ConfigFilename: "app.pipecd.yaml",

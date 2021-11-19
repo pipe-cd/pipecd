@@ -44,7 +44,7 @@ message ApplicationPlanPreviewResult {
     ApplicationKind application_kind = 4 [(validate.rules).enum.defined_only = true];
     string application_directory = 5 [(validate.rules).string.min_len = 1];
 
-    string env_id = 6 [(validate.rules).string.min_len = 1];
+    string env_id = 6;
     string env_name = 7;
     // Web URL to the environment page.
     // This is only filled before returning to the client.
