@@ -130,6 +130,7 @@ function FormSelectInput<T extends { name: string; value: string }>({
 export const validationSchema = yup.object().shape({
   name: yup.string().required(),
   kind: yup.number().required(),
+  // TODO: Make all environment fields in the form in optional
   env: yup.string().required(),
   pipedId: yup.string().required(),
   repo: yup

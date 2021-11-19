@@ -49,7 +49,7 @@ message Piped {
     // The ID of the project this enviroment belongs to.
     string project_id = 5 [(validate.rules).string.min_len = 1];
     // The IDs of environments where this piped can be connected to.
-    repeated string env_ids = 6 [(validate.rules).repeated.min_items = 1];
+    repeated string env_ids = 6;
 
     // Currently running version.
     string version = 7;

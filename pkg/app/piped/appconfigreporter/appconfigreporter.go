@@ -50,10 +50,6 @@ type applicationLister interface {
 	List() []*model.Application
 }
 
-type environmentGetter interface {
-	GetByName(ctx context.Context, name string) (*model.Environment, error)
-}
-
 type fileSystem struct{}
 
 func (s *fileSystem) Open(name string) (fs.File, error) { return os.Open(name) }
@@ -62,7 +58,6 @@ type Reporter struct {
 	apiClient         apiClient
 	gitClient         gitClient
 	applicationLister applicationLister
-	envGetter         environmentGetter
 	config            *config.PipedSpec
 	gitRepos          map[string]git.Repo
 	gracePeriod       time.Duration
@@ -79,7 +74,6 @@ func NewReporter(
 	apiClient apiClient,
 	gitClient gitClient,
 	appLister applicationLister,
-	envGetter environmentGetter,
 	cfg *config.PipedSpec,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
@@ -88,7 +82,6 @@ func NewReporter(
 		apiClient:          apiClient,
 		gitClient:          gitClient,
 		applicationLister:  appLister,
-		envGetter:          envGetter,
 		config:             cfg,
 		gracePeriod:        gracePeriod,
 		lastScannedCommits: make(map[string]string),
@@ -352,19 +345,14 @@ func (r *Reporter) readApplicationInfo(ctx context.Context, cfgFilePath string) 
 	if !ok {
 		return nil, fmt.Errorf("unsupported application kind %q", cfg.Kind)
 	}
-	env, err := r.envGetter.GetByName(ctx, spec.EnvName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get env by name: %w", err)
-	}
 
 	// TODO: Return an error if any one of required field of Application is empty
 	return &model.ApplicationInfo{
 		Name: spec.Name,
 		// TODO: Convert Kind string into dedicated type
 		//Kind:           cfg.Kind,
-		EnvId:          env.Id,
+		Labels:         spec.Labels,
 		Path:           filepath.Dir(cfgFilePath),
 		ConfigFilename: filepath.Base(cfgFilePath),
-		Labels:         spec.Labels,
 	}, nil
 }

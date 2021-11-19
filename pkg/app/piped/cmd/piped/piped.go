@@ -447,7 +447,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			apiClient,
 			gitClient,
 			applicationLister,
-			environmentStore,
 			cfg,
 			p.gracePeriod,
 			input.Logger,
