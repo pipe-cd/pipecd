@@ -41,7 +41,7 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 			name: "file not found",
 			reporter: &Reporter{
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("")},
+					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte("")},
 				},
 				logger: zap.NewNop(),
 			},
@@ -57,7 +57,7 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 			name: "all are registered",
 			reporter: &Reporter{
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("")},
+					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte("")},
 				},
 				logger: zap.NewNop(),
 			},
@@ -65,7 +65,7 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 				repoPath: "path/to/repo-1",
 				repoID:   "repo-1",
 				registeredAppPaths: map[string]struct{}{
-					"repo-1:app-1/app.pipecd.yaml": {},
+					"repo-1:app-1/.pipe.yaml": {},
 				},
 			},
 			want:    []*model.ApplicationInfo{},
@@ -75,7 +75,7 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 			name: "invalid app config is contained",
 			reporter: &Reporter{
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("invalid-text")},
+					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte("invalid-text")},
 				},
 				logger: zap.NewNop(),
 			},
@@ -91,7 +91,7 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 			name: "valid app config that is unregistered",
 			reporter: &Reporter{
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte(`
+					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte(`
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
@@ -111,7 +111,7 @@ spec:
 					Name:           "app-1",
 					Labels:         map[string]string{"key-1": "value-1"},
 					Path:           "app-1",
-					ConfigFilename: "app.pipecd.yaml",
+					ConfigFilename: ".pipe.yaml",
 				},
 			},
 			wantErr: false,
@@ -158,7 +158,7 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 			name: "no changed file",
 			reporter: &Reporter{
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("invalid-text")},
+					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte("invalid-text")},
 				},
 				logger: zap.NewNop(),
 			},
@@ -174,13 +174,13 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 			name: "all are unregistered",
 			reporter: &Reporter{
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("")},
+					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte("")},
 				},
 				logger: zap.NewNop(),
 			},
 			args: args{
 				repoID:            "repo-1",
-				repo:              &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/app.pipecd.yaml"}},
+				repo:              &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/.pipe.yaml"}},
 				lastScannedCommit: "xxx",
 			},
 			want:    []*model.ApplicationInfo{},
@@ -190,16 +190,16 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 			name: "invalid app config is contained",
 			reporter: &Reporter{
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("invalid-text")},
+					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte("invalid-text")},
 				},
 				logger: zap.NewNop(),
 			},
 			args: args{
 				repoID:            "repo-1",
-				repo:              &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/app.pipecd.yaml"}},
+				repo:              &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/.pipe.yaml"}},
 				lastScannedCommit: "xxx",
 				registeredAppPaths: map[string]struct{}{
-					"repo-1:app-1/app.pipecd.yaml": {},
+					"repo-1:app-1/.pipe.yaml": {},
 				},
 			},
 			want:    []*model.ApplicationInfo{},
@@ -209,7 +209,7 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 			name: "valid app config that is registered",
 			reporter: &Reporter{
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte(`
+					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte(`
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
@@ -221,10 +221,10 @@ spec:
 			},
 			args: args{
 				repoID:            "repo-1",
-				repo:              &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/app.pipecd.yaml"}},
+				repo:              &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/.pipe.yaml"}},
 				lastScannedCommit: "xxx",
 				registeredAppPaths: map[string]struct{}{
-					"repo-1:app-1/app.pipecd.yaml": {},
+					"repo-1:app-1/.pipe.yaml": {},
 				},
 			},
 			want: []*model.ApplicationInfo{
@@ -232,7 +232,7 @@ spec:
 					Name:           "app-1",
 					Labels:         map[string]string{"key-1": "value-1"},
 					Path:           "app-1",
-					ConfigFilename: "app.pipecd.yaml",
+					ConfigFilename: ".pipe.yaml",
 				},
 			},
 			wantErr: false,
@@ -241,7 +241,7 @@ spec:
 			name: "last commit commit is empty",
 			reporter: &Reporter{
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte(`
+					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte(`
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
@@ -256,7 +256,7 @@ spec:
 				repo:              &fakeGitRepo{path: "path/to/repo-1"},
 				lastScannedCommit: "",
 				registeredAppPaths: map[string]struct{}{
-					"repo-1:app-1/app.pipecd.yaml": {},
+					"repo-1:app-1/.pipe.yaml": {},
 				},
 			},
 			want: []*model.ApplicationInfo{
@@ -264,7 +264,7 @@ spec:
 					Name:           "app-1",
 					Labels:         map[string]string{"key-1": "value-1"},
 					Path:           "app-1",
-					ConfigFilename: "app.pipecd.yaml",
+					ConfigFilename: ".pipe.yaml",
 				},
 			},
 			wantErr: false,

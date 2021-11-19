@@ -20,7 +20,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -210,7 +209,13 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, registeredAppPaths 
 // findRegisteredApps finds out registered application info in the given git repository.
 func (r *Reporter) findRegisteredApps(ctx context.Context, repoID string, repo gitRepo, lastScannedCommit, headCommitHash string, registeredAppPaths map[string]struct{}) ([]*model.ApplicationInfo, error) {
 	if lastScannedCommit == "" {
-		return r.scanAllFiles(repo.GetPath(), repoID, registeredAppPaths, true)
+		return r.scanAllFiles(repo.GetPath(), repoID, func(fileRelPath string) bool {
+			gitPathKey := makeGitPathKey(repoID, fileRelPath)
+			if _, registered := registeredAppPaths[gitPathKey]; !registered {
+				return true
+			}
+			return false
+		})
 	}
 
 	filePaths, err := repo.ChangedFiles(ctx, lastScannedCommit, headCommitHash)
@@ -223,9 +228,6 @@ func (r *Reporter) findRegisteredApps(ctx context.Context, repoID string, repo g
 	}
 	apps := make([]*model.ApplicationInfo, 0)
 	for _, path := range filePaths {
-		if !strings.HasSuffix(path, model.DefaultDeploymentConfigFileExtension) {
-			continue
-		}
 		gitPathKey := makeGitPathKey(repoID, path)
 		if _, registered := registeredAppPaths[gitPathKey]; !registered {
 			continue
@@ -277,13 +279,24 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPath
 }
 
 // findUnregisteredApps finds out unregistered application info in the given git repository.
+// The file name must be default name in order to be recognized as an Application config.
 func (r *Reporter) findUnregisteredApps(repoPath, repoID string, registeredAppPaths map[string]struct{}) ([]*model.ApplicationInfo, error) {
-	return r.scanAllFiles(repoPath, repoID, registeredAppPaths, false)
+	return r.scanAllFiles(repoPath, repoID, func(fileRelPath string) bool {
+		if filepath.Base(fileRelPath) != model.DefaultApplicationConfigFilename {
+			return true
+		}
+
+		gitPathKey := makeGitPathKey(repoID, fileRelPath)
+		if _, registered := registeredAppPaths[gitPathKey]; registered {
+			return true
+		}
+		return false
+	})
 }
 
 // scanAllFiles inspects all files under the root or the given repository.
 // And gives back all application info as much as possible.
-func (r *Reporter) scanAllFiles(repoRoot, repoID string, registeredAppPaths map[string]struct{}, wantRegistered bool) ([]*model.ApplicationInfo, error) {
+func (r *Reporter) scanAllFiles(repoRoot, repoID string, shouldSkip func(string) bool) ([]*model.ApplicationInfo, error) {
 	apps := make([]*model.ApplicationInfo, 0)
 	err := fs.WalkDir(r.fileSystem, repoRoot, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -292,17 +305,11 @@ func (r *Reporter) scanAllFiles(repoRoot, repoID string, registeredAppPaths map[
 		if d.IsDir() {
 			return nil
 		}
-		if !strings.HasSuffix(path, model.DefaultDeploymentConfigFileExtension) {
-			return nil
-		}
-
 		cfgRelPath, err := filepath.Rel(repoRoot, path)
 		if err != nil {
 			return err
 		}
-
-		gitPathKey := makeGitPathKey(repoID, cfgRelPath)
-		if _, registered := registeredAppPaths[gitPathKey]; registered != wantRegistered {
+		if shouldSkip(cfgRelPath) {
 			return nil
 		}
 
