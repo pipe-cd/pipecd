@@ -134,8 +134,7 @@ func (e *Executor) checkApproval(ctx context.Context, num int) (string, bool) {
 		}
 		return "", false
 	}
-	e.LogPersister.Info("Received all needed approvals")
-	e.LogPersister.Info("")
+	e.LogPersister.Info("Received all needed approvals\n")
 
 	metadata := map[string]string{
 		approvedByKey: as,
