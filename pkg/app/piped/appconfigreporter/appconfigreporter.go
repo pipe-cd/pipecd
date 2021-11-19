@@ -282,7 +282,7 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPath
 // The file name must be default name in order to be recognized as an Application config.
 func (r *Reporter) findUnregisteredApps(repoPath, repoID string, registeredAppPaths map[string]struct{}) ([]*model.ApplicationInfo, error) {
 	return r.scanAllFiles(repoPath, repoID, func(fileRelPath string) bool {
-		if filepath.Base(fileRelPath) != model.DefaultApplicationConfigFilename {
+		if !model.IsApplicationConfigFile(filepath.Base(fileRelPath)) {
 			return true
 		}
 

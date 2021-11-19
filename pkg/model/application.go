@@ -22,6 +22,7 @@ import (
 
 const (
 	DefaultApplicationConfigFilename = ".pipe.yaml"
+	applicationConfigFileExtention   = ".pipecd.yaml"
 )
 
 // GetDeploymentConfigFilePath returns the path to deployment configuration file.
@@ -68,4 +69,8 @@ func (a *Application) ContainLabels(labels map[string]string) bool {
 		}
 	}
 	return true
+}
+
+func IsApplicationConfigFile(filename string) bool {
+	return filename == DefaultApplicationConfigFilename || strings.HasSuffix(filename, applicationConfigFileExtention)
 }

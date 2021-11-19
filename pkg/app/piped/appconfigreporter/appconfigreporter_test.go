@@ -116,6 +116,35 @@ spec:
 			},
 			wantErr: false,
 		},
+		{
+			name: "valid app config that name isn't default",
+			reporter: &Reporter{
+				fileSystem: fstest.MapFS{
+					"path/to/repo-1/app-1/dev.pipecd.yaml": &fstest.MapFile{Data: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: app-1
+  labels:
+    key-1: value-1`)},
+				},
+				logger: zap.NewNop(),
+			},
+			args: args{
+				repoPath:           "path/to/repo-1",
+				repoID:             "repo-1",
+				registeredAppPaths: map[string]struct{}{},
+			},
+			want: []*model.ApplicationInfo{
+				{
+					Name:           "app-1",
+					Labels:         map[string]string{"key-1": "value-1"},
+					Path:           "app-1",
+					ConfigFilename: "dev.pipecd.yaml",
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -238,7 +267,7 @@ spec:
 			wantErr: false,
 		},
 		{
-			name: "last commit commit is empty",
+			name: "last scanned commit is empty",
 			reporter: &Reporter{
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte(`
