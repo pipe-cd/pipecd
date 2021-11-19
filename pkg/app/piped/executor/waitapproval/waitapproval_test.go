@@ -18,12 +18,13 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
+
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/app/piped/metadatastore"
 	"github.com/pipe-cd/pipe/pkg/model"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
 )
 
 type fakeLogPersister struct{}
