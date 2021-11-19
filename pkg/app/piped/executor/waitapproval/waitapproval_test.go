@@ -26,6 +26,23 @@ import (
 	"google.golang.org/grpc"
 )
 
+type fakeLogPersister struct{}
+
+func (l *fakeLogPersister) Write(_ []byte) (int, error)         { return 0, nil }
+func (l *fakeLogPersister) Info(_ string)                       {}
+func (l *fakeLogPersister) Infof(_ string, _ ...interface{})    {}
+func (l *fakeLogPersister) Success(_ string)                    {}
+func (l *fakeLogPersister) Successf(_ string, _ ...interface{}) {}
+func (l *fakeLogPersister) Error(_ string)                      {}
+func (l *fakeLogPersister) Errorf(_ string, _ ...interface{})   {}
+
+type metadata map[string]string
+
+type fakeAPIClient struct {
+	shared metadata
+	stages map[string]metadata
+}
+
 func (c *fakeAPIClient) SaveDeploymentMetadata(_ context.Context, req *pipedservice.SaveDeploymentMetadataRequest, _ ...grpc.CallOption) (*pipedservice.SaveDeploymentMetadataResponse, error) {
 	md := make(map[string]string, len(c.shared)+len(req.Metadata))
 	for k, v := range c.shared {
@@ -51,22 +68,6 @@ func (c *fakeAPIClient) SaveStageMetadata(_ context.Context, req *pipedservice.S
 	return &pipedservice.SaveStageMetadataResponse{}, nil
 }
 
-type fakeLogPersister struct{}
-
-func (l *fakeLogPersister) Write(_ []byte) (int, error)         { return 0, nil }
-func (l *fakeLogPersister) Info(_ string)                       {}
-func (l *fakeLogPersister) Infof(_ string, _ ...interface{})    {}
-func (l *fakeLogPersister) Success(_ string)                    {}
-func (l *fakeLogPersister) Successf(_ string, _ ...interface{}) {}
-func (l *fakeLogPersister) Error(_ string)                      {}
-func (l *fakeLogPersister) Errorf(_ string, _ ...interface{})   {}
-
-type metadata map[string]string
-
-type fakeAPIClient struct {
-	shared metadata
-	stages map[string]metadata
-}
 
 func TestValidateApproverNum(t *testing.T) {
 	ac := &fakeAPIClient{
