@@ -176,7 +176,7 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 	return notification.FindSlackAccounts(event), nil
 }
 
-func (e *Executor) validateApproverNum(ctx context.Context, approver string) (string, bool) {
+func (e *Executor) validateApproverNum(approver string) (string, bool) {
 	n, ok := e.MetadataStore.Stage(e.Stage.Id).Get(minApproverNum)
 	if !ok {
 		return "", false

@@ -26,7 +26,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func (c *fakeAPIClient) SaveDeploymentMetadata(ctx context.Context, req *pipedservice.SaveDeploymentMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentMetadataResponse, error) {
+func (c *fakeAPIClient) SaveDeploymentMetadata(_ context.Context, req *pipedservice.SaveDeploymentMetadataRequest, _ ...grpc.CallOption) (*pipedservice.SaveDeploymentMetadataResponse, error) {
 	md := make(map[string]string, len(c.shared)+len(req.Metadata))
 	for k, v := range c.shared {
 		md[k] = v
@@ -38,7 +38,7 @@ func (c *fakeAPIClient) SaveDeploymentMetadata(ctx context.Context, req *pipedse
 	return &pipedservice.SaveDeploymentMetadataResponse{}, nil
 }
 
-func (c *fakeAPIClient) SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error) {
+func (c *fakeAPIClient) SaveStageMetadata(_ context.Context, req *pipedservice.SaveStageMetadataRequest, _ ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error) {
 	ori := c.stages[req.StageId]
 	md := make(map[string]string, len(ori)+len(req.Metadata))
 	for k, v := range ori {
@@ -206,8 +206,7 @@ func TestValidateApproverNum(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			ctx := context.Background()
-			as, ok := tc.executor.validateApproverNum(ctx, tc.approver)
+			as, ok := tc.executor.validateApproverNum(tc.approver)
 			assert.Equal(t, tc.wantBool, ok)
 			assert.Equal(t, tc.wantApprovers, as)
 		})
