@@ -7,7 +7,7 @@ description: >
 ---
 
 Application をプロダクション環境にデプロイする前に、誰かがその変更内容を確認したいケースがあるかもしれません。
-この Stage は `WAIT_APPROVAL` といい、Deployment のプロセスにおいてある時点で特定の人物またはチームによる承認を待ち、承認後 Deployment を再開させることができます。
+`WAIT_APPROVAL` Stage は Deployment のプロセスにおいてある時点で特定の人物またはチームによる承認を待ち、承認後 Deployment を再開させることができます。
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
