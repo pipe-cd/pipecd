@@ -68,7 +68,6 @@ func (c *fakeAPIClient) SaveStageMetadata(_ context.Context, req *pipedservice.S
 	return &pipedservice.SaveStageMetadataResponse{}, nil
 }
 
-
 func TestValidateApproverNum(t *testing.T) {
 	ac := &fakeAPIClient{
 		shared: make(map[string]string, 0),
