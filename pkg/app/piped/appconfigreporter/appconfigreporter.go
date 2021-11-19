@@ -357,6 +357,7 @@ func (r *Reporter) readApplicationInfo(ctx context.Context, cfgFilePath string) 
 		return nil, fmt.Errorf("failed to get env by name: %w", err)
 	}
 
+	// TODO: Return an error if any one of required field of Application is empty
 	return &model.ApplicationInfo{
 		Name: spec.Name,
 		// TODO: Convert Kind string into dedicated type
