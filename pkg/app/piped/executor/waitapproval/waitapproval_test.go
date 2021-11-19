@@ -176,7 +176,7 @@ func TestValidateApproverNum(t *testing.T) {
 				},
 			},
 			wantBool:      false,
-			wantApprovers: "user-1,user-2",
+			wantApprovers: "user-1, user-2",
 		},
 		{
 			name:           "return all approvers and true",
@@ -201,7 +201,7 @@ func TestValidateApproverNum(t *testing.T) {
 				},
 			},
 			wantBool:      true,
-			wantApprovers: "user-1,user-2",
+			wantApprovers: "user-1, user-2",
 		},
 	}
 	for _, tc := range testcases {
