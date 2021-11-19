@@ -554,7 +554,7 @@ func (p *PostSync) Validate() error {
 type DeploymentChain struct {
 	// ApplicationMatchers provides list of ChainApplicationMatcher which contain filters to be used
 	// to find applications to deploy as chain node. It's required to not empty.
-	ApplicationMatchers []*ChainApplicationMatcher `json:"applications"`
+	ApplicationMatchers []ChainApplicationMatcher `json:"applications"`
 	// Conditions provides configuration used to determine should the piped in charge in
 	// the first applications in the chain trigger a whole new deployment chain or not.
 	// If this field is not set, always trigger a whole new deployment chain when the current
@@ -586,13 +586,13 @@ func (dc *DeploymentChain) Validate() error {
 // ChainApplicationMatcher provides filters used to find the right applications to trigger
 // as a part of the deployment chain.
 type ChainApplicationMatcher struct {
-	AppName   string            `json:"name"`
-	AppKind   string            `json:"kind"`
-	AppLabels map[string]string `json:"labels"`
+	Name   string            `json:"name"`
+	Kind   string            `json:"kind"`
+	Labels map[string]string `json:"labels"`
 }
 
 func (m *ChainApplicationMatcher) Validate() error {
-	hasFilterCond := m.AppName != "" || m.AppKind != "" || len(m.AppLabels) != 0
+	hasFilterCond := m.Name != "" || m.Kind != "" || len(m.Labels) != 0
 
 	if !hasFilterCond {
 		return fmt.Errorf("at least one of \"name\", \"kind\" or \"labels\" must be set to find applications to deploy")

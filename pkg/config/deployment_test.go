@@ -407,18 +407,18 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 					},
 					PostSync: &PostSync{
 						DeploymentChain: &DeploymentChain{
-							ApplicationMatchers: []*ChainApplicationMatcher{
+							ApplicationMatchers: []ChainApplicationMatcher{
 								{
-									AppName: "app-1",
+									Name: "app-1",
 								},
 								{
-									AppLabels: map[string]string{
+									Labels: map[string]string{
 										"env": "staging",
 										"foo": "bar",
 									},
 								},
 								{
-									AppKind: "ECSApp",
+									Kind: "ECSApp",
 								},
 							},
 						},
