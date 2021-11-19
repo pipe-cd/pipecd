@@ -110,7 +110,7 @@ spec:
 				{
 					Name:           "app-1",
 					Labels:         map[string]string{"key-1": "value-1"},
-					Path:           "path/to/repo-1/app-1",
+					Path:           "app-1",
 					ConfigFilename: "app.pipecd.yaml",
 				},
 			},
@@ -119,7 +119,7 @@ spec:
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := tc.reporter.findUnregisteredApps(context.Background(), tc.args.repoPath, tc.args.repoID, tc.args.registeredAppPaths)
+			got, err := tc.reporter.findUnregisteredApps(tc.args.repoPath, tc.args.repoID, tc.args.registeredAppPaths)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)
 		})
@@ -231,7 +231,7 @@ spec:
 				{
 					Name:           "app-1",
 					Labels:         map[string]string{"key-1": "value-1"},
-					Path:           "path/to/repo-1/app-1",
+					Path:           "app-1",
 					ConfigFilename: "app.pipecd.yaml",
 				},
 			},
@@ -263,7 +263,7 @@ spec:
 				{
 					Name:           "app-1",
 					Labels:         map[string]string{"key-1": "value-1"},
-					Path:           "path/to/repo-1/app-1",
+					Path:           "app-1",
 					ConfigFilename: "app.pipecd.yaml",
 				},
 			},

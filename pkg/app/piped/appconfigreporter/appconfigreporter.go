@@ -210,7 +210,7 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, registeredAppPaths 
 // findRegisteredApps finds out registered application info in the given git repository.
 func (r *Reporter) findRegisteredApps(ctx context.Context, repoID string, repo gitRepo, lastScannedCommit, headCommitHash string, registeredAppPaths map[string]struct{}) ([]*model.ApplicationInfo, error) {
 	if lastScannedCommit == "" {
-		return r.scanAllFiles(ctx, repo.GetPath(), repoID, registeredAppPaths, true)
+		return r.scanAllFiles(repo.GetPath(), repoID, registeredAppPaths, true)
 	}
 
 	files, err := repo.ChangedFiles(ctx, lastScannedCommit, headCommitHash)
@@ -230,7 +230,8 @@ func (r *Reporter) findRegisteredApps(ctx context.Context, repoID string, repo g
 		if _, registered := registeredAppPaths[gitPathKey]; !registered {
 			continue
 		}
-		appInfo, err := r.readApplicationInfo(ctx, filepath.Join(repo.GetPath(), filename))
+		cfgAbsPath := filepath.Join(repo.GetPath(), filename)
+		appInfo, err := r.readApplicationInfo(filepath.Dir(filename), cfgAbsPath)
 		if err != nil {
 			r.logger.Error("failed to read application info",
 				zap.String("repo-id", repoID),
@@ -248,7 +249,7 @@ func (r *Reporter) findRegisteredApps(ctx context.Context, repoID string, repo g
 func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPaths map[string]struct{}) error {
 	apps := make([]*model.ApplicationInfo, 0)
 	for repoID, repo := range r.gitRepos {
-		as, err := r.findUnregisteredApps(ctx, repo.GetPath(), repoID, registeredAppPaths)
+		as, err := r.findUnregisteredApps(repo.GetPath(), repoID, registeredAppPaths)
 		if err != nil {
 			return err
 		}
@@ -277,13 +278,13 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPath
 }
 
 // findUnregisteredApps finds out unregistered application info in the given git repository.
-func (r *Reporter) findUnregisteredApps(ctx context.Context, repoPath, repoID string, registeredAppPaths map[string]struct{}) ([]*model.ApplicationInfo, error) {
-	return r.scanAllFiles(ctx, repoPath, repoID, registeredAppPaths, false)
+func (r *Reporter) findUnregisteredApps(repoPath, repoID string, registeredAppPaths map[string]struct{}) ([]*model.ApplicationInfo, error) {
+	return r.scanAllFiles(repoPath, repoID, registeredAppPaths, false)
 }
 
 // scanAllFiles inspects all files under the root or the given repository.
 // And gives back all application info as much as possible.
-func (r *Reporter) scanAllFiles(ctx context.Context, repoRoot, repoID string, registeredAppPaths map[string]struct{}, wantRegistered bool) ([]*model.ApplicationInfo, error) {
+func (r *Reporter) scanAllFiles(repoRoot, repoID string, registeredAppPaths map[string]struct{}, wantRegistered bool) ([]*model.ApplicationInfo, error) {
 	apps := make([]*model.ApplicationInfo, 0)
 	err := fs.WalkDir(r.fileSystem, repoRoot, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -306,7 +307,7 @@ func (r *Reporter) scanAllFiles(ctx context.Context, repoRoot, repoID string, re
 			return nil
 		}
 
-		appInfo, err := r.readApplicationInfo(ctx, path)
+		appInfo, err := r.readApplicationInfo(filepath.Dir(cfgRelPath), path)
 		if err != nil {
 			r.logger.Error("failed to read application info",
 				zap.String("repo-id", repoID),
@@ -331,8 +332,8 @@ func makeGitPathKey(repoID, cfgFilePath string) string {
 	return fmt.Sprintf("%s:%s", repoID, cfgFilePath)
 }
 
-func (r *Reporter) readApplicationInfo(ctx context.Context, cfgFilePath string) (*model.ApplicationInfo, error) {
-	b, err := fs.ReadFile(r.fileSystem, cfgFilePath)
+func (r *Reporter) readApplicationInfo(appPath, cfgFileAbsPath string) (*model.ApplicationInfo, error) {
+	b, err := fs.ReadFile(r.fileSystem, cfgFileAbsPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open the configuration file: %w", err)
 	}
@@ -346,13 +347,15 @@ func (r *Reporter) readApplicationInfo(ctx context.Context, cfgFilePath string) 
 		return nil, fmt.Errorf("unsupported application kind %q", cfg.Kind)
 	}
 
-	// TODO: Return an error if any one of required field of Application is empty
+	if spec.Name == "" {
+		return nil, fmt.Errorf("application name is empty")
+	}
 	return &model.ApplicationInfo{
 		Name: spec.Name,
 		// TODO: Convert Kind string into dedicated type
 		//Kind:           cfg.Kind,
 		Labels:         spec.Labels,
-		Path:           filepath.Dir(cfgFilePath),
-		ConfigFilename: filepath.Base(cfgFilePath),
+		Path:           appPath,
+		ConfigFilename: filepath.Base(cfgFileAbsPath),
 	}, nil
 }

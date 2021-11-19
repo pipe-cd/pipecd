@@ -61,5 +61,5 @@ message ApplicationInfo {
     ApplicationKind kind = 2 [(validate.rules).enum.defined_only = true];
     map<string, string> labels = 3;
     string path = 4 [(validate.rules).string.pattern = "^[^/].+$"];
-    string config_filename = 5;
+    string config_filename = 5 [(validate.rules).string.min_len = 1];
 }
