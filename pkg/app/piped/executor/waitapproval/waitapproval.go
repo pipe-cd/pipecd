@@ -65,13 +65,33 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	timer := time.NewTimer(timeout)
 
 	e.reportRequiringApproval()
-	e.LogPersister.Info("Waiting for an approval...")
+	n, ok := e.MetadataStore.Stage(e.Stage.Id).Get(minApproverNum)
+	if !ok {
+		e.LogPersister.Errorf("Unabled to retrive %s from metadata", minApproverNum)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	num, err := strconv.Atoi(n)
+	if err != nil {
+		e.LogPersister.Errorf("%s could not be converted to integer: %v", num, err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+	if num > 1 {
+		e.LogPersister.Infof("Waiting for an approval from at least %d users...", num)
+	} else {
+		e.LogPersister.Infof("Waiting for an approval from at least %d user...", num)
+	}
 	for {
 		select {
 		case <-ticker.C:
-			if commander, ok := e.checkApproval(ctx); ok {
-				e.reportApproved(commander)
-				e.LogPersister.Infof("Got an approval from %s", commander)
+			if as, ok := e.checkApproval(ctx, num); ok {
+				e.reportApproved(as)
+				approvers := strings.Split(as, ", ")
+				if n := len(approvers); n > 1 {
+					e.LogPersister.Infof("This stage has been approved by %d users (%s)", n, as)
+				} else {
+					e.LogPersister.Infof("This stage has been approved by %d user (%s)", n, as)
+				}
 				return model.StageStatus_STAGE_SUCCESS
 			}
 
@@ -91,7 +111,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 }
 
-func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
+func (e *Executor) checkApproval(ctx context.Context, num int) (string, bool) {
 	var approveCmd *model.ReportableCommand
 	commands := e.CommandLister.ListCommands()
 
@@ -105,7 +125,7 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 		return "", false
 	}
 
-	as, ok := e.validateApproverNum(approveCmd.Commander)
+	as, ok := e.validateApproverNum(approveCmd.Commander, num)
 	if !ok {
 		if len(as) > 0 {
 			if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, as); err != nil {
@@ -114,6 +134,8 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 		}
 		return "", false
 	}
+	e.LogPersister.Info("Received all needed approvals")
+	e.LogPersister.Info("")
 
 	metadata := map[string]string{
 		approvedByKey: as,
@@ -176,34 +198,27 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 	return notification.FindSlackAccounts(event), nil
 }
 
-func (e *Executor) validateApproverNum(approver string) (string, bool) {
-	n, ok := e.MetadataStore.Stage(e.Stage.Id).Get(minApproverNum)
-	if !ok {
-		return "", false
-	}
-	num, err := strconv.Atoi(n)
-	if err != nil {
-		e.LogPersister.Errorf("%s could not be converted to integer: %v", num, err)
-		return "", false
-	}
+func (e *Executor) validateApproverNum(approver string, num int) (string, bool) {
 	if num <= 1 {
+		e.LogPersister.Infof("Got approval from \"%s\"", approver)
 		return approver, true
 	}
 	as, ok := e.MetadataStore.Stage(e.Stage.Id).Get(approversKey)
 	if !ok {
-		e.LogPersister.Infof("%d more approvals are needed", num-1)
+		e.LogPersister.Infof("Got approval from \"%s\"", approver)
+		e.LogPersister.Infof("Waiting for other approvers...")
 		return approver, false
 	}
-	approvers := strings.Split(as, ",")
+	approvers := strings.Split(as, " ,")
 	for _, a := range approvers {
 		if a == approver {
-			e.LogPersister.Errorf("%s has already approved. %d more approvals are needed", num-1)
 			return "", false
 		}
 	}
+	e.LogPersister.Infof("Got approval from \"%s\"", approver)
 	if d := num - len(approvers) - 1; d > 0 {
-		e.LogPersister.Infof("%d more approvals are needed", d)
-		return as + "," + approver, false
+		e.LogPersister.Infof("Waiting for other approvers...")
+		return as + ", " + approver, false
 	}
-	return as + "," + approver, true
+	return as + ", " + approver, true
 }

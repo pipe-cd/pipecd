@@ -75,15 +75,17 @@ func TestValidateApproverNum(t *testing.T) {
 		stages: make(map[string]metadata, 0),
 	}
 	testcases := []struct {
-		name          string
-		approver      string
-		executor      *Executor
-		wantBool      bool
-		wantApprovers string
+		name           string
+		approver       string
+		minApproverNum int
+		executor       *Executor
+		wantBool       bool
+		wantApprovers  string
 	}{
 		{
-			name:     "return the person who just approved it and true",
-			approver: "user-1",
+			name:           "return the person who just approved it and true",
+			approver:       "user-1",
+			minApproverNum: 0,
 			executor: &Executor{
 				Input: executor.Input{
 					Stage: &model.PipelineStage{
@@ -93,10 +95,8 @@ func TestValidateApproverNum(t *testing.T) {
 					MetadataStore: metadatastore.NewMetadataStore(ac, &model.Deployment{
 						Stages: []*model.PipelineStage{
 							{
-								Id: "stage-1",
-								Metadata: map[string]string{
-									minApproverNum: "0",
-								},
+								Id:       "stage-1",
+								Metadata: map[string]string{},
 							},
 						},
 					}),
@@ -106,8 +106,9 @@ func TestValidateApproverNum(t *testing.T) {
 			wantApprovers: "user-1",
 		},
 		{
-			name:     "return the person who just approved it and false",
-			approver: "user-1",
+			name:           "return the person who just approved it and false",
+			approver:       "user-1",
+			minApproverNum: 2,
 			executor: &Executor{
 				Input: executor.Input{
 					Stage: &model.PipelineStage{
@@ -117,10 +118,8 @@ func TestValidateApproverNum(t *testing.T) {
 					MetadataStore: metadatastore.NewMetadataStore(ac, &model.Deployment{
 						Stages: []*model.PipelineStage{
 							{
-								Id: "stage-1",
-								Metadata: map[string]string{
-									minApproverNum: "2",
-								},
+								Id:       "stage-1",
+								Metadata: map[string]string{},
 							},
 						},
 					}),
@@ -130,8 +129,9 @@ func TestValidateApproverNum(t *testing.T) {
 			wantApprovers: "user-1",
 		},
 		{
-			name:     "return nothing and false",
-			approver: "user-1",
+			name:           "return nothing and false",
+			approver:       "user-1",
+			minApproverNum: 2,
 			executor: &Executor{
 				Input: executor.Input{
 					Stage: &model.PipelineStage{
@@ -143,8 +143,7 @@ func TestValidateApproverNum(t *testing.T) {
 							{
 								Id: "stage-1",
 								Metadata: map[string]string{
-									minApproverNum: "2",
-									approversKey:   "user-1",
+									approversKey: "user-1",
 								},
 							},
 						},
@@ -155,8 +154,9 @@ func TestValidateApproverNum(t *testing.T) {
 			wantApprovers: "",
 		},
 		{
-			name:     "return all approvers and false",
-			approver: "user-2",
+			name:           "return all approvers and false",
+			approver:       "user-2",
+			minApproverNum: 3,
 			executor: &Executor{
 				Input: executor.Input{
 					Stage: &model.PipelineStage{
@@ -168,8 +168,7 @@ func TestValidateApproverNum(t *testing.T) {
 							{
 								Id: "stage-1",
 								Metadata: map[string]string{
-									minApproverNum: "3",
-									approversKey:   "user-1",
+									approversKey: "user-1",
 								},
 							},
 						},
@@ -180,8 +179,9 @@ func TestValidateApproverNum(t *testing.T) {
 			wantApprovers: "user-1,user-2",
 		},
 		{
-			name:     "return all approvers and true",
-			approver: "user-2",
+			name:           "return all approvers and true",
+			approver:       "user-2",
+			minApproverNum: 2,
 			executor: &Executor{
 				Input: executor.Input{
 					Stage: &model.PipelineStage{
@@ -193,8 +193,7 @@ func TestValidateApproverNum(t *testing.T) {
 							{
 								Id: "stage-1",
 								Metadata: map[string]string{
-									minApproverNum: "2",
-									approversKey:   "user-1",
+									approversKey: "user-1",
 								},
 							},
 						},
@@ -207,7 +206,7 @@ func TestValidateApproverNum(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			as, ok := tc.executor.validateApproverNum(tc.approver)
+			as, ok := tc.executor.validateApproverNum(tc.approver, tc.minApproverNum)
 			assert.Equal(t, tc.wantBool, ok)
 			assert.Equal(t, tc.wantApprovers, as)
 		})
