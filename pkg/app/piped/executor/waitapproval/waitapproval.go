@@ -86,11 +86,10 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		case <-ticker.C:
 			if as, ok := e.checkApproval(ctx, num); ok {
 				e.reportApproved(as)
-				approvers := strings.Split(as, ", ")
-				if n := len(approvers); n > 1 {
-					e.LogPersister.Infof("This stage has been approved by %d users (%s)", n, as)
+				if num > 1 {
+					e.LogPersister.Infof("This stage has been approved by %d users (%s)", num, as)
 				} else {
-					e.LogPersister.Infof("This stage has been approved by %d user (%s)", n, as)
+					e.LogPersister.Infof("This stage has been approved by %d user (%s)", num, as)
 				}
 				return model.StageStatus_STAGE_SUCCESS
 			}
