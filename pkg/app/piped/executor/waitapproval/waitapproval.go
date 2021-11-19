@@ -77,7 +77,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 	if num > 1 {
-		e.LogPersister.Infof("Waiting for an approval from at least %d users...", num)
+		e.LogPersister.Infof("Waiting for approval from at least %d users...", num)
 	} else {
 		e.LogPersister.Infof("Waiting for an approval from at least %d user...", num)
 	}
