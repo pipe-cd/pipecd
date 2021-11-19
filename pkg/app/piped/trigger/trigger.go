@@ -44,6 +44,7 @@ type apiClient interface {
 	CreateDeployment(ctx context.Context, in *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error)
 	GetDeployment(ctx context.Context, in *pipedservice.GetDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetDeploymentResponse, error)
 	ReportApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.ReportApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationMostRecentDeploymentResponse, error)
+	CreateDeploymentChain(ctx context.Context, in *pipedservice.CreateDeploymentChainRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentChainResponse, error)
 }
 
 type gitClient interface {
@@ -289,6 +290,14 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			}
 			if err := c.command.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, metadata, nil); err != nil {
 				t.logger.Error("failed to report command status", zap.Error(err))
+			}
+		}
+
+		// In case the triggered deployment is of application that can trigger a deployment chain
+		// create a new deployment chain with it's configuration.
+		if appCfg.PostSync.DeploymentChain != nil {
+			if err := t.triggerDeploymentChain(ctx, appCfg.PostSync.DeploymentChain); err != nil {
+				t.logger.Error("failed to create new deployment chain", zap.Error(err))
 			}
 		}
 	}

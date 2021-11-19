@@ -25,6 +25,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/google/uuid"
 	"github.com/pipe-cd/pipe/pkg/app/api/analysisresultstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
@@ -42,6 +43,7 @@ import (
 type PipedAPI struct {
 	applicationStore          datastore.ApplicationStore
 	deploymentStore           datastore.DeploymentStore
+	deploymentChainStore      datastore.DeploymentChainStore
 	environmentStore          datastore.EnvironmentStore
 	pipedStore                datastore.PipedStore
 	projectStore              datastore.ProjectStore
@@ -66,6 +68,7 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
+		deploymentChainStore:      datastore.NewDeploymentChainStore(ds),
 		environmentStore:          datastore.NewEnvironmentStore(ds),
 		pipedStore:                datastore.NewPipedStore(ds),
 		projectStore:              datastore.NewProjectStore(ds),
@@ -961,6 +964,93 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 func (a *PipedAPI) ReportUnregisteredApplicationConfigurations(ctx context.Context, req *pipedservice.ReportUnregisteredApplicationConfigurationsRequest) (*pipedservice.ReportUnregisteredApplicationConfigurationsResponse, error) {
 	// TODO: Make the unused application configurations cache up-to-date
 	return nil, status.Errorf(codes.Unimplemented, "ReportUnregisteredApplicationConfigurations is not implemented yet")
+}
+
+// CreateDeploymentChain creates a new deployment chain object and all required commands to
+// trigger deployment for applications in the chain.
+func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.CreateDeploymentChainRequest) (*pipedservice.CreateDeploymentChainResponse, error) {
+	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	dc := model.DeploymentChain{
+		Id:        uuid.New().String(),
+		ProjectId: projectID,
+	}
+	// Create a new deployment chain instance to control newly triggered deployment chain.
+	if err := a.deploymentChainStore.AddDeploymentChain(ctx, &dc); err != nil {
+		return nil, err
+	}
+
+	buildDeploymentChainNode := func(filter *pipedservice.CreateDeploymentChainRequest_ApplicationsFilter) ([]*model.Application, error) {
+		filters := []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    projectID,
+			},
+		}
+
+		if filter.AppName != "" {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "Name",
+				Operator: datastore.OperatorEqual,
+				Value:    filter.AppName,
+			})
+		}
+
+		if filter.AppKind != "" {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "Kind",
+				Operator: datastore.OperatorEqual,
+				// TODO: AppKind enum refinement.
+				Value: 0,
+			})
+		}
+
+		apps, _, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
+			Filters: filters,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return apps, nil
+	}
+
+	apps := make([]*model.Application, 0)
+	for _, filter := range req.Filters {
+		nodeApps, err := buildDeploymentChainNode(filter)
+		if err != nil {
+			return nil, err
+		}
+
+		apps = append(apps, nodeApps...)
+	}
+
+	// Make sync application command for applications of the chain.
+	for _, app := range apps {
+		cmd := model.Command{
+			Id:            uuid.New().String(),
+			PipedId:       app.PipedId,
+			ApplicationId: app.Id,
+			ProjectId:     app.ProjectId,
+			Commander:     dc.Id,
+			// TODO: Add new command type in order to separate this in chain sync command with other commands.
+			Type: model.Command_SYNC_APPLICATION,
+			SyncApplication: &model.Command_SyncApplication{
+				ApplicationId: app.Id,
+				SyncStrategy:  model.SyncStrategy_AUTO,
+			},
+		}
+
+		if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
+			return nil, err
+		}
+	}
+
+	return &pipedservice.CreateDeploymentChainResponse{}, nil
 }
 
 // validateAppBelongsToPiped checks if the given application belongs to the given piped.
