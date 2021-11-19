@@ -953,6 +953,16 @@ func (a *PipedAPI) GetDesiredVersion(ctx context.Context, _ *pipedservice.GetDes
 	}, nil
 }
 
+func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pipedservice.UpdateApplicationConfigurationsRequest) (*pipedservice.UpdateApplicationConfigurationsResponse, error) {
+	// TODO: Update the given application configurations
+	return nil, status.Errorf(codes.Unimplemented, "UpdateApplicationConfigurations is not implemented yet")
+}
+
+func (a *PipedAPI) ReportUnregisteredApplicationConfigurations(ctx context.Context, req *pipedservice.ReportUnregisteredApplicationConfigurationsRequest) (*pipedservice.ReportUnregisteredApplicationConfigurationsResponse, error) {
+	// TODO: Make the unused application configurations cache up-to-date
+	return nil, status.Errorf(codes.Unimplemented, "ReportUnregisteredApplicationConfigurations is not implemented yet")
+}
+
 // validateAppBelongsToPiped checks if the given application belongs to the given piped.
 // It gives back an error unless the application belongs to the piped.
 func (a *PipedAPI) validateAppBelongsToPiped(ctx context.Context, appID, pipedID string) error {

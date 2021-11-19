@@ -45,6 +45,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/deploymentstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/environmentstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/eventstore"
+	"github.com/pipe-cd/pipe/pkg/app/piped/appconfigreporter"
 	"github.com/pipe-cd/pipe/pkg/app/piped/chartrepo"
 	k8scloudprovidermetrics "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/kubernetesmetrics"
 	"github.com/pipe-cd/pipe/pkg/app/piped/controller"
@@ -249,6 +250,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	environmentStore := environmentstore.NewStore(
 		apiClient,
 		memorycache.NewTTLCache(ctx, 10*time.Minute, time.Minute),
+		memorycache.NewTTLCache(ctx, 10*time.Minute, time.Minute),
 		input.Logger,
 	)
 
@@ -436,6 +438,23 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		)
 		group.Go(func() error {
 			return h.Run(ctx)
+		})
+	}
+
+	// Start running app-config-reporter.
+	{
+		r := appconfigreporter.NewReporter(
+			apiClient,
+			gitClient,
+			applicationLister,
+			environmentStore,
+			cfg,
+			p.gracePeriod,
+			input.Logger,
+		)
+
+		group.Go(func() error {
+			return r.Run(ctx)
 		})
 	}
 
