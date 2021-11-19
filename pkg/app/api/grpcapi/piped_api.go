@@ -974,16 +974,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 		return nil, err
 	}
 
-	dc := model.DeploymentChain{
-		Id:        uuid.New().String(),
-		ProjectId: projectID,
-	}
-	// Create a new deployment chain instance to control newly triggered deployment chain.
-	if err := a.deploymentChainStore.AddDeploymentChain(ctx, &dc); err != nil {
-		return nil, err
-	}
-
-	buildDeploymentChainNode := func(filter *pipedservice.CreateDeploymentChainRequest_ApplicationsFilter) ([]*model.Application, error) {
+	findNodeApps := func(filter *pipedservice.CreateDeploymentChainRequest_ApplicationsFilter) ([]*model.Application, error) {
 		filters := []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
@@ -1019,14 +1010,30 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 		return apps, nil
 	}
 
+	chainNodes := make([]*model.DeploymentChainNode, 0, len(req.Filters))
 	apps := make([]*model.Application, 0)
-	for _, filter := range req.Filters {
-		nodeApps, err := buildDeploymentChainNode(filter)
+	for i, filter := range req.Filters {
+		nodeApps, err := findNodeApps(filter)
 		if err != nil {
 			return nil, err
 		}
 
 		apps = append(apps, nodeApps...)
+		chainNodes = append(chainNodes, &model.DeploymentChainNode{
+			Index:    int32(i + 1),
+			Runnable: false,
+		})
+	}
+
+	dc := model.DeploymentChain{
+		Id:        uuid.New().String(),
+		ProjectId: projectID,
+		Nodes:     chainNodes,
+	}
+
+	// Create a new deployment chain instance to control newly triggered deployment chain.
+	if err := a.deploymentChainStore.AddDeploymentChain(ctx, &dc); err != nil {
+		return nil, err
 	}
 
 	// Make sync application command for applications of the chain.

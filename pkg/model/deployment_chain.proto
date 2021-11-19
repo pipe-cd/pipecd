@@ -38,10 +38,12 @@ message DeploymentChain {
 }
 
 message DeploymentChainNode {
+    // Index represent the offset of the node in chain.
+    int32 index = 1;
     // List of applications which should be deployed at the same time in chain.
-    repeated Deployment deployments = 1;
+    repeated Deployment deployments = 2;
     // Control whether to start to deploy applications in this node or not.
-    bool runnable = 2;
+    bool runnable = 3;
     // Unix time when the deployment chain node is started.
     int64 started_at = 100 [(validate.rules).int64.gte = 0];
     // Unix time when all the applications in this chain node are deployed.
