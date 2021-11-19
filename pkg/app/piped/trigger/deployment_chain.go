@@ -20,9 +20,15 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func (t *Trigger) triggerDeploymentChain(ctx context.Context, dc *config.DeploymentChain) error {
+func (t *Trigger) triggerDeploymentChain(
+	ctx context.Context,
+	deploymentChainId string,
+	dc *config.DeploymentChain,
+	firstDeployment *model.Deployment,
+) error {
 	matchers := make([]*pipedservice.CreateDeploymentChainRequest_ApplicationMatcher, 0, len(dc.ApplicationMatchers))
 	for _, m := range dc.ApplicationMatchers {
 		matchers = append(matchers, &pipedservice.CreateDeploymentChainRequest_ApplicationMatcher{
@@ -33,7 +39,9 @@ func (t *Trigger) triggerDeploymentChain(ctx context.Context, dc *config.Deploym
 	}
 
 	if _, err := t.apiClient.CreateDeploymentChain(ctx, &pipedservice.CreateDeploymentChainRequest{
-		Matchers: matchers,
+		Id:              deploymentChainId,
+		Matchers:        matchers,
+		FirstDeployment: firstDeployment,
 	}); err != nil {
 		return fmt.Errorf("could not create new deployment chain: %w", err)
 	}

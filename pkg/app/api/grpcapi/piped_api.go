@@ -975,7 +975,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 		return nil, err
 	}
 
-	findNodeApps := func(matcher *pipedservice.CreateDeploymentChainRequest_ApplicationMatcher) ([]*model.Application, error) {
+	buildChainNodes := func(matcher *pipedservice.CreateDeploymentChainRequest_ApplicationMatcher) ([]*model.ChainNode, []*model.Application, error) {
 		filters := []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
@@ -998,31 +998,55 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 			Filters: filters,
 		})
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
-		return apps, nil
+		nodes := make([]*model.ChainNode, 0, len(apps))
+		for _, app := range apps {
+			nodes = append(nodes, &model.ChainNode{
+				ApplicationRef: &model.ChainApplicationRef{
+					ApplicationId:   app.Id,
+					ApplicationName: app.Name,
+				},
+			})
+		}
+
+		return nodes, apps, nil
 	}
 
-	chainNodes := make([]*model.DeploymentChainNode, 0, len(req.Matchers))
+	chainBlocks := make([]*model.ChainBlock, 0, len(req.Matchers)+1)
+	// Add the first deployment which created by piped as the first block of the chain.
+	chainBlocks[0] = &model.ChainBlock{
+		Index: 0,
+		Nodes: []*model.ChainNode{
+			{
+				ApplicationRef: &model.ChainApplicationRef{
+					ApplicationId:   req.FirstDeployment.ApplicationId,
+					ApplicationName: req.FirstDeployment.ApplicationName,
+				},
+				DeploymentRef: req.FirstDeployment,
+			},
+		},
+	}
+
 	apps := make([]*model.Application, 0)
 	for i, filter := range req.Matchers {
-		nodeApps, err := findNodeApps(filter)
+		nodes, blockApps, err := buildChainNodes(filter)
 		if err != nil {
 			return nil, err
 		}
 
-		apps = append(apps, nodeApps...)
-		chainNodes = append(chainNodes, &model.DeploymentChainNode{
-			Index:    int32(i + 1),
-			Runnable: false,
+		apps = append(apps, blockApps...)
+		chainBlocks = append(chainBlocks, &model.ChainBlock{
+			Index: int32(i + 1),
+			Nodes: nodes,
 		})
 	}
 
 	dc := model.DeploymentChain{
-		Id:        uuid.New().String(),
+		Id:        req.Id,
 		ProjectId: projectID,
-		Nodes:     chainNodes,
+		Blocks:    chainBlocks,
 	}
 
 	// Create a new deployment chain instance to control newly triggered deployment chain.

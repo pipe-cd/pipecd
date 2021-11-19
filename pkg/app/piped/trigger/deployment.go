@@ -29,7 +29,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func (t *Trigger) triggerDeployment(
+func (t *Trigger) triggerStandaloneDeployment(
 	ctx context.Context,
 	app *model.Application,
 	appCfg *config.GenericDeploymentSpec,
@@ -50,6 +50,8 @@ func (t *Trigger) triggerDeployment(
 		strategySummary,
 		time.Now(),
 		appCfg.DeploymentNotification,
+		// Standalone deployment has empty value for its deploymentChainId.
+		"",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize deployment: %w", err)
@@ -83,6 +85,7 @@ func buildDeployment(
 	strategySummary string,
 	now time.Time,
 	noti *config.DeploymentNotification,
+	deploymentChainId string,
 ) (*model.Deployment, error) {
 
 	var commitURL string
@@ -125,14 +128,15 @@ func buildDeployment(
 			SyncStrategy:    syncStrategy,
 			StrategySummary: strategySummary,
 		},
-		GitPath:       app.GitPath,
-		CloudProvider: app.CloudProvider,
-		Labels:        app.Labels,
-		Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
-		StatusReason:  "The deployment is waiting to be planned",
-		Metadata:      metadata,
-		CreatedAt:     now.Unix(),
-		UpdatedAt:     now.Unix(),
+		GitPath:           app.GitPath,
+		CloudProvider:     app.CloudProvider,
+		Labels:            app.Labels,
+		Status:            model.DeploymentStatus_DEPLOYMENT_PENDING,
+		StatusReason:      "The deployment is waiting to be planned",
+		Metadata:          metadata,
+		CreatedAt:         now.Unix(),
+		UpdatedAt:         now.Unix(),
+		DeploymentChainId: deploymentChainId,
 	}
 
 	return deployment, nil

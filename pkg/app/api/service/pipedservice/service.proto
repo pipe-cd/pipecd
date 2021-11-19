@@ -489,7 +489,9 @@ message CreateDeploymentChainRequest {
         map<string,string> labels = 3;
     }
 
-    repeated ApplicationMatcher matchers = 1;
+    string Id = 1;
+    pipe.model.Deployment first_deployment = 2 [(validate.rules).message.required = true];
+    repeated ApplicationMatcher matchers = 3;
 }
 
 message CreateDeploymentChainResponse {
