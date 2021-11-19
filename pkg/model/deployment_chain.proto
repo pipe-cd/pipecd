@@ -42,9 +42,13 @@ message ChainApplicationRef {
     string application_name = 2;
 }
 
+message ChainDeploymentRef {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+}
+
 message ChainNode {
     ChainApplicationRef application_ref = 1 [(validate.rules).message.required = true];
-    Deployment deployment_ref = 2;
+    ChainDeploymentRef deployment_ref = 2;
 }
 
 message ChainBlock {

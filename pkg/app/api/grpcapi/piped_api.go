@@ -1024,7 +1024,9 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 					ApplicationId:   req.FirstDeployment.ApplicationId,
 					ApplicationName: req.FirstDeployment.ApplicationName,
 				},
-				DeploymentRef: req.FirstDeployment,
+				DeploymentRef: &model.ChainDeploymentRef{
+					DeploymentId: req.FirstDeployment.Id,
+				},
 			},
 		},
 	}
@@ -1051,7 +1053,14 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 
 	// Create a new deployment chain instance to control newly triggered deployment chain.
 	if err := a.deploymentChainStore.AddDeploymentChain(ctx, &dc); err != nil {
-		return nil, err
+		a.logger.Error("failed to create deployment chain", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to trigger new deployment chain")
+	}
+
+	// Trigger new deployment for the first application by store first deployment to datastore.
+	if err := a.deploymentStore.AddDeployment(ctx, req.FirstDeployment); err != nil {
+		a.logger.Error("failed to create deployment", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to trigger new deployment for the first application in chain")
 	}
 
 	// Make sync application command for applications of the chain.
@@ -1071,7 +1080,8 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 		}
 
 		if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
-			return nil, err
+			a.logger.Error("failed to create command to trigger application in chain", zap.Error(err))
+			return nil, status.Error(codes.Internal, "failed to command to trigger for applications in chain")
 		}
 	}
 
