@@ -8,10 +8,9 @@ description: >
 
 A running deployment can be cancelled from web UI at the deployment details page.
 
-If the application rollback is enabled in the deployment configuration, the rollback process will be executed after the cancelling. You can also explicitly specify to rollback after the cancelling or not from the web UI by clicking on `▼` mark of the `CANCEL with Rollback` button to select your option.
+If the application rollback is enabled in the deployment configuration, the rollback process will be executed after the cancelling. You can also explicitly specify to rollback after the cancelling or not from the web UI by clicking on `▼` mark on the right side of the `CANCEL with Rollback` button to select your option.
 
 ![](/images/cancel-deployment.png)
 <p style="text-align: center;">
 Cancel a Deployment from web UI
 </p>
-
