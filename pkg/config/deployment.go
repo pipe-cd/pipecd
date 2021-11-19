@@ -365,9 +365,9 @@ type WaitStageOptions struct {
 type WaitApprovalStageOptions struct {
 	// The maximum length of time to wait before giving up.
 	// Defaults to 6h.
-	Timeout   Duration `json:"timeout"`
-	Approvers []string `json:"approvers"`
-	MinApproverNum int `json:"minApproverNum"`
+	Timeout        Duration `json:"timeout"`
+	Approvers      []string `json:"approvers"`
+	MinApproverNum int      `json:"minApproverNum"`
 }
 
 // AnalysisStageOptions contains all configurable values for a K8S_ANALYSIS stage.

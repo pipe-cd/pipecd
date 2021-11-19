@@ -30,9 +30,9 @@ import (
 )
 
 const (
-	approvedByKey    = "ApprovedBy"
-	minApproverNum   = "MinApproverNum"
-	approversKey     = "CurrentApprovers"
+	approvedByKey  = "ApprovedBy"
+	minApproverNum = "MinApproverNum"
+	approversKey   = "CurrentApprovers"
 )
 
 type Executor struct {
