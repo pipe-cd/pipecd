@@ -67,7 +67,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	e.reportRequiringApproval()
 	n, ok := e.MetadataStore.Stage(e.Stage.Id).Get(minApproverNum)
 	if !ok {
-		e.LogPersister.Errorf("Unabled to retrive %s from metadata", minApproverNum)
+		e.LogPersister.Errorf("Unabled to retrieve %s from metadata", minApproverNum)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
