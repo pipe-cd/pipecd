@@ -23,17 +23,17 @@ import (
 )
 
 func (t *Trigger) triggerDeploymentChain(ctx context.Context, dc *config.DeploymentChain) error {
-	filters := make([]*pipedservice.CreateDeploymentChainRequest_ApplicationsFilter, 0, len(dc.Nodes))
-	for _, node := range dc.Nodes {
-		filters = append(filters, &pipedservice.CreateDeploymentChainRequest_ApplicationsFilter{
-			AppName:   node.AppName,
-			AppKind:   node.AppKind,
-			AppLabels: node.AppLabels,
+	matchers := make([]*pipedservice.CreateDeploymentChainRequest_ApplicationMatcher, 0, len(dc.ApplicationMatchers))
+	for _, m := range dc.ApplicationMatchers {
+		matchers = append(matchers, &pipedservice.CreateDeploymentChainRequest_ApplicationMatcher{
+			Name:   m.Name,
+			Kind:   m.Kind,
+			Labels: m.Labels,
 		})
 	}
 
 	if _, err := t.apiClient.CreateDeploymentChain(ctx, &pipedservice.CreateDeploymentChainRequest{
-		Filters: filters,
+		Matchers: matchers,
 	}); err != nil {
 		return fmt.Errorf("could not create new deployment chain: %w", err)
 	}

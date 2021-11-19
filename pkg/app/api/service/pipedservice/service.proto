@@ -483,13 +483,13 @@ message ReportUnregisteredApplicationConfigurationsResponse {
 }
 
 message CreateDeploymentChainRequest {
-    message ApplicationsFilter {
-        string app_name = 1;
-        string app_kind = 2;
-        map<string,string> app_labels = 3;
+    message ApplicationMatcher {
+        string name = 1;
+        string kind = 2;
+        map<string,string> labels = 3;
     }
 
-    repeated ApplicationsFilter filters = 1;
+    repeated ApplicationMatcher matchers = 1;
 }
 
 message CreateDeploymentChainResponse {

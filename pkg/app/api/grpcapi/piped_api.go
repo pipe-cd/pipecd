@@ -975,7 +975,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 		return nil, err
 	}
 
-	findNodeApps := func(filter *pipedservice.CreateDeploymentChainRequest_ApplicationsFilter) ([]*model.Application, error) {
+	findNodeApps := func(matcher *pipedservice.CreateDeploymentChainRequest_ApplicationMatcher) ([]*model.Application, error) {
 		filters := []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
@@ -984,11 +984,11 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 			},
 		}
 
-		if filter.AppName != "" {
+		if matcher.Name != "" {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "Name",
 				Operator: datastore.OperatorEqual,
-				Value:    filter.AppName,
+				Value:    matcher.Name,
 			})
 		}
 
@@ -1004,9 +1004,9 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 		return apps, nil
 	}
 
-	chainNodes := make([]*model.DeploymentChainNode, 0, len(req.Filters))
+	chainNodes := make([]*model.DeploymentChainNode, 0, len(req.Matchers))
 	apps := make([]*model.Application, 0)
-	for i, filter := range req.Filters {
+	for i, filter := range req.Matchers {
 		nodeApps, err := findNodeApps(filter)
 		if err != nil {
 			return nil, err
