@@ -991,14 +991,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 			})
 		}
 
-		if filter.AppKind != "" {
-			filters = append(filters, datastore.ListFilter{
-				Field:    "Kind",
-				Operator: datastore.OperatorEqual,
-				// TODO: AppKind enum refinement.
-				Value: 0,
-			})
-		}
+		// TODO: Support find node apps by appKind and appLabels.
 
 		apps, _, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
 			Filters: filters,
