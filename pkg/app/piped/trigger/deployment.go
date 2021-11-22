@@ -49,7 +49,7 @@ func buildDeployment(
 	strategySummary string,
 	now time.Time,
 	noti *config.DeploymentNotification,
-	deploymentChainId string,
+	deploymentChainID string,
 ) (*model.Deployment, error) {
 
 	var commitURL string
@@ -100,7 +100,7 @@ func buildDeployment(
 		Metadata:          metadata,
 		CreatedAt:         now.Unix(),
 		UpdatedAt:         now.Unix(),
-		DeploymentChainId: deploymentChainId,
+		DeploymentChainId: deploymentChainID,
 	}
 
 	return deployment, nil
