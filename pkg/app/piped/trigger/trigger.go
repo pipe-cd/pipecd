@@ -296,7 +296,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 		// in that chain.
 		if appCfg.PostSync != nil && appCfg.PostSync.DeploymentChain != nil {
 			if err := t.triggerDeploymentChain(ctx, appCfg.PostSync.DeploymentChain, deployment); err != nil {
-				msg := fmt.Sprintf("failed to trigger new deployment chain: %v", err)
+				msg := fmt.Sprintf("failed to trigger application %s and its deployment chain: %v", app.Id, err)
 				t.notifyDeploymentTriggerFailed(app, appCfg, msg, headCommit)
 				t.logger.Error(msg, zap.Error(err))
 				continue
