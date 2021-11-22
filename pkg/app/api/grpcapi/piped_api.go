@@ -424,6 +424,16 @@ func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.Creat
 		a.logger.Error("failed to create deployment", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to create deployment")
 	}
+
+	// If the deployment doesn't belong to another chain, return immediately.
+	if req.Deployment.DeploymentChainId == "" {
+		return &pipedservice.CreateDeploymentResponse{}, nil
+	}
+
+	// Otherwise, add the created deployment ref to its chain block model.
+	if err = a.deploymentChainStore.UpdateDeploymentChain(ctx, req.Deployment.DeploymentChainId, datastore.DeploymentChainAddDeploymentToBlock(req.Deployment)); err != nil {
+		return nil, status.Error(codes.Internal, "failed to add deployment ref to its chain block")
+	}
 	return &pipedservice.CreateDeploymentResponse{}, nil
 }
 

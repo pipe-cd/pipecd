@@ -89,6 +89,9 @@ message Deployment {
     // Reference to the chain which the deployment belongs to.
     // Empty means the deployment is a standalone deployment.
     string deployment_chain_id = 40;
+    // Index represents the offset of the node which this deployment
+    // belongs to.
+    int32 deployment_chain_block_index = 41;
 
     int64 completed_at = 100 [(validate.rules).int64.gte = 0];
     int64 created_at = 101 [(validate.rules).int64.gte = 0];

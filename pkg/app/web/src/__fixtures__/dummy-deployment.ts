@@ -44,6 +44,7 @@ export const dummyDeployment: Deployment.AsObject = {
   kind: ApplicationKind.KUBERNETES,
   metadataMap: [],
   deploymentChainId: "",
+  deploymentChainBlockIndex: 0,
 };
 
 export function createDeploymentFromObject(o: Deployment.AsObject): Deployment {
