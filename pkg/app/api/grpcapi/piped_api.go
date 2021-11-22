@@ -969,8 +969,12 @@ func (a *PipedAPI) ReportUnregisteredApplicationConfigurations(ctx context.Conte
 // CreateDeploymentChain creates a new deployment chain object and all required commands to
 // trigger deployment for applications in the chain.
 func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.CreateDeploymentChainRequest) (*pipedservice.CreateDeploymentChainResponse, error) {
-	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	firstDeployment := req.FirstDeployment
+	projectID, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, firstDeployment.ApplicationId, pipedID); err != nil {
 		return nil, err
 	}
 
@@ -1020,24 +1024,24 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 		Nodes: []*model.ChainNode{
 			{
 				ApplicationRef: &model.ChainApplicationRef{
-					ApplicationId:   req.FirstDeployment.ApplicationId,
-					ApplicationName: req.FirstDeployment.ApplicationName,
+					ApplicationId:   firstDeployment.ApplicationId,
+					ApplicationName: firstDeployment.ApplicationName,
 				},
 				DeploymentRef: &model.ChainDeploymentRef{
-					DeploymentId: req.FirstDeployment.Id,
+					DeploymentId: firstDeployment.Id,
 				},
 			},
 		},
 	})
 
-	apps := make([]*model.Application, 0)
+	blockAppsMap := make(map[int][]*model.Application, len(req.Matchers))
 	for i, filter := range req.Matchers {
 		nodes, blockApps, err := buildChainNodes(filter)
 		if err != nil {
 			return nil, err
 		}
 
-		apps = append(apps, blockApps...)
+		blockAppsMap[i+1] = blockApps
 		chainBlocks = append(chainBlocks, &model.ChainBlock{
 			Index: int32(i + 1),
 			Nodes: nodes,
@@ -1056,7 +1060,6 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 		return nil, status.Error(codes.Internal, "failed to trigger new deployment chain")
 	}
 
-	firstDeployment := req.FirstDeployment
 	firstDeployment.DeploymentChainId = dc.Id
 	// Trigger new deployment for the first application by store first deployment to datastore.
 	if err := a.deploymentStore.AddDeployment(ctx, firstDeployment); err != nil {
@@ -1065,24 +1068,27 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 	}
 
 	// Make sync application command for applications of the chain.
-	for _, app := range apps {
-		cmd := model.Command{
-			Id:            uuid.New().String(),
-			PipedId:       app.PipedId,
-			ApplicationId: app.Id,
-			ProjectId:     app.ProjectId,
-			Commander:     dc.Id,
-			// TODO: Add new command type in order to separate this in chain sync command with other commands.
-			Type: model.Command_SYNC_APPLICATION,
-			SyncApplication: &model.Command_SyncApplication{
+	for blockIndex, apps := range blockAppsMap {
+		for _, app := range apps {
+			cmd := model.Command{
+				Id:            uuid.New().String(),
+				PipedId:       app.PipedId,
 				ApplicationId: app.Id,
-				SyncStrategy:  model.SyncStrategy_AUTO,
-			},
-		}
+				ProjectId:     app.ProjectId,
+				Commander:     dc.Id,
+				Type:          model.Command_CHAIN_SYNC_APPLICATION,
+				ChainSyncApplication: &model.Command_ChainSyncApplication{
+					DeploymentChainId: dc.Id,
+					BlockIndex:        int32(blockIndex),
+					ApplicationId:     app.Id,
+					SyncStrategy:      model.SyncStrategy_AUTO,
+				},
+			}
 
-		if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
-			a.logger.Error("failed to create command to trigger application in chain", zap.Error(err))
-			return nil, status.Error(codes.Internal, "failed to command to trigger for applications in chain")
+			if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
+				a.logger.Error("failed to create command to trigger application in chain", zap.Error(err))
+				return nil, status.Error(codes.Internal, "failed to command to trigger for applications in chain")
+			}
 		}
 	}
 

@@ -271,7 +271,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 		}
 
 		// TODO: Add ability to get deployment chain id from CHAIN_SYNC_APPLICATION command.
-		var deploymentChainId string
+		var deploymentChainID string
 		// Build the deployment to trigger.
 		deployment, err := buildDeployment(
 			app,
@@ -282,7 +282,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			strategySummary,
 			time.Now(),
 			appCfg.DeploymentNotification,
-			deploymentChainId,
+			deploymentChainID,
 		)
 		if err != nil {
 			msg := fmt.Sprintf("failed to build deployment for application %s: %v", app.Id, err)
@@ -292,7 +292,8 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 		}
 
 		// In case the triggered deployment is of application that can trigger a deployment chain
-		// create a new deployment chain with it's configuration.
+		// create a new deployment chain with its configuration besides with the first deployment
+		// in that chain.
 		if appCfg.PostSync != nil && appCfg.PostSync.DeploymentChain != nil {
 			if err := t.triggerDeploymentChain(ctx, appCfg.PostSync.DeploymentChain, deployment); err != nil {
 				msg := fmt.Sprintf("failed to trigger new deployment chain: %v", err)
@@ -301,7 +302,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 				continue
 			}
 		} else {
-			// Build deployment model and send a request to API to create a new deployment.
+			// Send a request to API to create a new deployment.
 			if err := t.triggerDeployment(ctx, deployment); err != nil {
 				msg := fmt.Sprintf("failed to trigger application %s: %v", app.Id, err)
 				t.notifyDeploymentTriggerFailed(app, appCfg, msg, headCommit)
