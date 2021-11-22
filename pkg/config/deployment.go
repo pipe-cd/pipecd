@@ -72,6 +72,9 @@ type Trigger struct {
 	// Configurable fields used while deciding the application
 	// should be triggered or not based on OUT_OF_SYNC state.
 	OnOutOfSync OnOutOfSync `json:"onOutOfSync"`
+	// Configurable fields used while deciding the application
+	// should be triggered based on received CHAIN_SYNC command.
+	OnChain OnChain `json:"onChain"`
 }
 
 type OnCommit struct {
@@ -99,6 +102,13 @@ type OnOutOfSync struct {
 	// Minimum amount of time must be elapsed since the last deployment.
 	// This can be used to avoid triggering unnecessary continuous deployments based on OUT_OF_SYNC status.
 	MinWindow Duration `json:"minWindow,omitempty" default:"5m"`
+}
+
+type OnChain struct {
+	// Whether to exclude application from triggering target
+	// when received a new CHAIN_SYNC command.
+	// Default is false.
+	Disabled bool `json:"disabled,omitempty"`
 }
 
 func (s *GenericDeploymentSpec) Validate() error {

@@ -37,6 +37,7 @@ type determiners struct {
 	onCommand   Determiner
 	onOutOfSync Determiner
 	onCommit    Determiner
+	onChain     Determiner
 }
 
 func (ds *determiners) Determiner(k model.TriggerKind) Determiner {
@@ -45,6 +46,8 @@ func (ds *determiners) Determiner(k model.TriggerKind) Determiner {
 		return ds.onCommand
 	case model.TriggerKind_ON_OUT_OF_SYNC:
 		return ds.onOutOfSync
+	case model.TriggerKind_ON_CHAIN:
+		return ds.onChain
 	default:
 		return ds.onCommit
 	}
@@ -63,6 +66,20 @@ func (d *OnCommandDeterminer) ShouldTrigger(_ context.Context, _ *model.Applicat
 		return false, nil
 	}
 
+	return true, nil
+}
+
+type OnChainDeterminer struct {
+}
+
+func NewOnChainDeterminer() *OnChainDeterminer {
+	return &OnChainDeterminer{}
+}
+
+func (d *OnChainDeterminer) ShouldTrigger(_ context.Context, _ *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
+	if appCfg.Trigger.OnChain.Disabled {
+		return false, nil
+	}
 	return true, nil
 }
 

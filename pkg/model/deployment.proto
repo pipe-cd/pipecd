@@ -99,6 +99,7 @@ enum TriggerKind {
     ON_COMMIT = 0;
     ON_COMMAND = 1;
     ON_OUT_OF_SYNC = 2;
+    ON_CHAIN = 3;
 }
 
 message DeploymentTrigger {

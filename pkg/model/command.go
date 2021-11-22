@@ -28,3 +28,11 @@ type ReportableCommand struct {
 func (c *Command) IsHandled() bool {
 	return c.Status != CommandStatus_COMMAND_NOT_HANDLED_YET
 }
+
+func (c *Command) IsSyncApplicationCmd() bool {
+	return c.GetSyncApplication() != nil
+}
+
+func (c *Command) IsChainSyncApplicationCmd() bool {
+	return c.GetChainSyncApplication() != nil
+}
