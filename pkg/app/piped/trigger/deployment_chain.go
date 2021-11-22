@@ -25,7 +25,6 @@ import (
 
 func (t *Trigger) triggerDeploymentChain(
 	ctx context.Context,
-	deploymentChainId string,
 	dc *config.DeploymentChain,
 	firstDeployment *model.Deployment,
 ) error {
@@ -39,7 +38,6 @@ func (t *Trigger) triggerDeploymentChain(
 	}
 
 	if _, err := t.apiClient.CreateDeploymentChain(ctx, &pipedservice.CreateDeploymentChainRequest{
-		Id:              deploymentChainId,
 		Matchers:        matchers,
 		FirstDeployment: firstDeployment,
 	}); err != nil {

@@ -1046,7 +1046,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 	}
 
 	dc := model.DeploymentChain{
-		Id:        req.Id,
+		Id:        uuid.New().String(),
 		ProjectId: projectID,
 		Blocks:    chainBlocks,
 	}
@@ -1057,8 +1057,10 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 		return nil, status.Error(codes.Internal, "failed to trigger new deployment chain")
 	}
 
+	firstDeployment := req.FirstDeployment
+	firstDeployment.DeploymentChainId = dc.Id
 	// Trigger new deployment for the first application by store first deployment to datastore.
-	if err := a.deploymentStore.AddDeployment(ctx, req.FirstDeployment); err != nil {
+	if err := a.deploymentStore.AddDeployment(ctx, firstDeployment); err != nil {
 		a.logger.Error("failed to create deployment", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to trigger new deployment for the first application in chain")
 	}

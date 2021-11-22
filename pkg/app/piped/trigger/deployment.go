@@ -29,7 +29,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func (t *Trigger) triggerStandaloneDeployment(
+func (t *Trigger) triggerDeployment(
 	ctx context.Context,
 	app *model.Application,
 	appCfg *config.GenericDeploymentSpec,
@@ -38,6 +38,7 @@ func (t *Trigger) triggerStandaloneDeployment(
 	commander string,
 	syncStrategy model.SyncStrategy,
 	strategySummary string,
+	deploymentChainId string,
 ) (*model.Deployment, error) {
 
 	// Build deployment model to trigger.
@@ -50,8 +51,7 @@ func (t *Trigger) triggerStandaloneDeployment(
 		strategySummary,
 		time.Now(),
 		appCfg.DeploymentNotification,
-		// Standalone deployment has empty value for its deploymentChainId.
-		"",
+		deploymentChainId,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize deployment: %w", err)

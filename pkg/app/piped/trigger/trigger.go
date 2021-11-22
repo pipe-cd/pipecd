@@ -27,8 +27,6 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	"github.com/google/uuid"
-
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/config"
@@ -274,8 +272,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 
 		// In case the triggered deployment is of application that can trigger a deployment chain
 		// create a new deployment chain with it's configuration.
-		if appCfg.PostSync.DeploymentChain != nil {
-			deploymentChainId := uuid.New().String()
+		if appCfg.PostSync != nil && appCfg.PostSync.DeploymentChain != nil {
 			// Build the first deployment of the deployment chain.
 			firstDeployment, err := buildDeployment(
 				app,
@@ -286,7 +283,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 				strategySummary,
 				time.Now(),
 				appCfg.DeploymentNotification,
-				deploymentChainId,
+				"",
 			)
 			if err != nil {
 				msg := fmt.Sprintf("failed to build first application %s in chain: %v", app.Id, err)
@@ -295,15 +292,17 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 				continue
 			}
 
-			if err := t.triggerDeploymentChain(ctx, deploymentChainId, appCfg.PostSync.DeploymentChain, firstDeployment); err != nil {
+			if err := t.triggerDeploymentChain(ctx, appCfg.PostSync.DeploymentChain, firstDeployment); err != nil {
 				t.logger.Error("failed to trigger new deployment chain", zap.Error(err))
 			}
 
 			continue
 		}
 
+		// TODO: Add ability to get deployment chain id from CHAIN_SYNC_APPLICATION command.
+		var deploymentChainId string
 		// Build deployment model and send a request to API to create a new deployment.
-		deployment, err := t.triggerStandaloneDeployment(ctx, app, appCfg, branch, headCommit, commander, strategy, strategySummary)
+		deployment, err := t.triggerDeployment(ctx, app, appCfg, branch, headCommit, commander, strategy, strategySummary, deploymentChainId)
 		if err != nil {
 			msg := fmt.Sprintf("failed to trigger application %s: %v", app.Id, err)
 			t.notifyDeploymentTriggerFailed(app, appCfg, msg, headCommit)
