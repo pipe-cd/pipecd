@@ -20,12 +20,11 @@ import (
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"github.com/google/uuid"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/analysisresultstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
@@ -1016,7 +1015,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 
 	chainBlocks := make([]*model.ChainBlock, 0, len(req.Matchers)+1)
 	// Add the first deployment which created by piped as the first block of the chain.
-	chainBlocks[0] = &model.ChainBlock{
+	chainBlocks = append(chainBlocks, &model.ChainBlock{
 		Index: 0,
 		Nodes: []*model.ChainNode{
 			{
@@ -1029,7 +1028,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 				},
 			},
 		},
-	}
+	})
 
 	apps := make([]*model.Application, 0)
 	for i, filter := range req.Matchers {
