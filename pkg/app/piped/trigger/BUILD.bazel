@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "cache.go",
         "deployment.go",
+        "deployment_chain.go",
         "determiner.go",
         "trigger.go",
     ],

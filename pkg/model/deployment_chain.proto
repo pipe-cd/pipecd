@@ -26,9 +26,9 @@ message DeploymentChain {
     string id = 1 [(validate.rules).string.min_len = 1];
     // The ID of the project this environment belongs to.
     string project_id = 2 [(validate.rules).string.min_len = 1];
-    // List of all deployment node in the chain which contains all
+    // List of all deployment block in the chain which contains all
     // configuration required to perform deployment(s).
-    repeated DeploymentChainNode nodes = 3;
+    repeated ChainBlock blocks = 3;
     // Unix time when all the applications in this chain are deployed.
     int64 completed_at = 100 [(validate.rules).int64.gte = 0];
     // Unix time when the deployment chain is created.
@@ -37,11 +37,26 @@ message DeploymentChain {
     int64 updated_at = 102 [(validate.rules).int64.gt = 0];
 }
 
-message DeploymentChainNode {
+message ChainApplicationRef {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    string application_name = 2;
+}
+
+message ChainDeploymentRef {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message ChainNode {
+    ChainApplicationRef application_ref = 1 [(validate.rules).message.required = true];
+    ChainDeploymentRef deployment_ref = 2;
+}
+
+message ChainBlock {
+    // Index represent the offset of the node in chain.
+    int32 index = 1;
     // List of applications which should be deployed at the same time in chain.
-    repeated Deployment deployments = 1;
-    // Control whether to start to deploy applications in this node or not.
-    bool runnable = 2;
+    repeated ChainNode nodes = 2;
+
     // Unix time when the deployment chain node is started.
     int64 started_at = 100 [(validate.rules).int64.gte = 0];
     // Unix time when all the applications in this chain node are deployed.

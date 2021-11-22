@@ -44,6 +44,7 @@ type apiClient interface {
 	CreateDeployment(ctx context.Context, in *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error)
 	GetDeployment(ctx context.Context, in *pipedservice.GetDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetDeploymentResponse, error)
 	ReportApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.ReportApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationMostRecentDeploymentResponse, error)
+	CreateDeploymentChain(ctx context.Context, in *pipedservice.CreateDeploymentChainRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentChainResponse, error)
 }
 
 type gitClient interface {
@@ -269,13 +270,52 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			strategy = model.SyncStrategy_AUTO
 		}
 
-		// Build deployment model and send a request to API to create a new deployment.
-		deployment, err := t.triggerDeployment(ctx, app, appCfg, branch, headCommit, commander, strategy, strategySummary)
+		// TODO: Add ability to get deployment chain id from CHAIN_SYNC_APPLICATION command.
+		var deploymentChainID string
+		// Build the deployment to trigger.
+		deployment, err := buildDeployment(
+			app,
+			branch,
+			headCommit,
+			commander,
+			strategy,
+			strategySummary,
+			time.Now(),
+			appCfg.DeploymentNotification,
+			deploymentChainID,
+		)
 		if err != nil {
-			msg := fmt.Sprintf("failed to trigger application %s: %v", app.Id, err)
+			msg := fmt.Sprintf("failed to build deployment for application %s: %v", app.Id, err)
 			t.notifyDeploymentTriggerFailed(app, appCfg, msg, headCommit)
 			t.logger.Error(msg, zap.Error(err))
 			continue
+		}
+
+		// In case the triggered deployment is of application that can trigger a deployment chain
+		// create a new deployment chain with its configuration besides with the first deployment
+		// in that chain.
+		if appCfg.PostSync != nil && appCfg.PostSync.DeploymentChain != nil {
+			if err := t.triggerDeploymentChain(ctx, appCfg.PostSync.DeploymentChain, deployment); err != nil {
+				msg := fmt.Sprintf("failed to trigger application %s and its deployment chain: %v", app.Id, err)
+				t.notifyDeploymentTriggerFailed(app, appCfg, msg, headCommit)
+				t.logger.Error(msg, zap.Error(err))
+				continue
+			}
+		} else {
+			// Send a request to API to create a new deployment.
+			if err := t.triggerDeployment(ctx, deployment); err != nil {
+				msg := fmt.Sprintf("failed to trigger application %s: %v", app.Id, err)
+				t.notifyDeploymentTriggerFailed(app, appCfg, msg, headCommit)
+				t.logger.Error(msg, zap.Error(err))
+				continue
+			}
+		}
+
+		// TODO: Find a better way to ensure that the application should be updated correctly
+		// when the deployment was successfully triggered.
+		// This error is ignored because the deployment was already registered successfully.
+		if e := reportMostRecentlyTriggeredDeployment(ctx, t.apiClient, deployment); e != nil {
+			t.logger.Error("failed to report most recently triggered deployment", zap.Error(e))
 		}
 
 		triggered[app.Id] = struct{}{}

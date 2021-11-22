@@ -169,6 +169,10 @@ service PipedService {
     rpc UpdateApplicationConfigurations(UpdateApplicationConfigurationsRequest) returns (UpdateApplicationConfigurationsResponse) {}
     // ReportLatestUnusedApplicationConfigurations puts the latest configurations of applications that isn't registered yet.
     rpc ReportUnregisteredApplicationConfigurations(ReportUnregisteredApplicationConfigurationsRequest) returns (ReportUnregisteredApplicationConfigurationsResponse) {}
+
+    // CreateDeploymentChain creates a new deployment chain object and all required commands to
+    // trigger deployment for applications in the chain.
+    rpc CreateDeploymentChain(CreateDeploymentChainRequest) returns (CreateDeploymentChainResponse) {}
 }
 
 enum ListOrder {
@@ -476,4 +480,18 @@ message ReportUnregisteredApplicationConfigurationsRequest {
 }
 
 message ReportUnregisteredApplicationConfigurationsResponse {
+}
+
+message CreateDeploymentChainRequest {
+    message ApplicationMatcher {
+        string name = 1;
+        string kind = 2;
+        map<string,string> labels = 3;
+    }
+
+    pipe.model.Deployment first_deployment = 1 [(validate.rules).message.required = true];
+    repeated ApplicationMatcher matchers = 2;
+}
+
+message CreateDeploymentChainResponse {
 }

@@ -20,6 +20,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -42,6 +43,7 @@ import (
 type PipedAPI struct {
 	applicationStore          datastore.ApplicationStore
 	deploymentStore           datastore.DeploymentStore
+	deploymentChainStore      datastore.DeploymentChainStore
 	environmentStore          datastore.EnvironmentStore
 	pipedStore                datastore.PipedStore
 	projectStore              datastore.ProjectStore
@@ -66,6 +68,7 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
+		deploymentChainStore:      datastore.NewDeploymentChainStore(ds),
 		environmentStore:          datastore.NewEnvironmentStore(ds),
 		pipedStore:                datastore.NewPipedStore(ds),
 		projectStore:              datastore.NewProjectStore(ds),
@@ -961,6 +964,135 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 func (a *PipedAPI) ReportUnregisteredApplicationConfigurations(ctx context.Context, req *pipedservice.ReportUnregisteredApplicationConfigurationsRequest) (*pipedservice.ReportUnregisteredApplicationConfigurationsResponse, error) {
 	// TODO: Make the unused application configurations cache up-to-date
 	return nil, status.Errorf(codes.Unimplemented, "ReportUnregisteredApplicationConfigurations is not implemented yet")
+}
+
+// CreateDeploymentChain creates a new deployment chain object and all required commands to
+// trigger deployment for applications in the chain.
+func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.CreateDeploymentChainRequest) (*pipedservice.CreateDeploymentChainResponse, error) {
+	firstDeployment := req.FirstDeployment
+	projectID, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, firstDeployment.ApplicationId, pipedID); err != nil {
+		return nil, err
+	}
+
+	buildChainNodes := func(matcher *pipedservice.CreateDeploymentChainRequest_ApplicationMatcher) ([]*model.ChainNode, []*model.Application, error) {
+		filters := []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    projectID,
+			},
+		}
+
+		if matcher.Name != "" {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "Name",
+				Operator: datastore.OperatorEqual,
+				Value:    matcher.Name,
+			})
+		}
+
+		// TODO: Support find node apps by appKind and appLabels.
+
+		apps, _, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
+			Filters: filters,
+		})
+		if err != nil {
+			return nil, nil, err
+		}
+
+		nodes := make([]*model.ChainNode, 0, len(apps))
+		for _, app := range apps {
+			nodes = append(nodes, &model.ChainNode{
+				ApplicationRef: &model.ChainApplicationRef{
+					ApplicationId:   app.Id,
+					ApplicationName: app.Name,
+				},
+			})
+		}
+
+		return nodes, apps, nil
+	}
+
+	chainBlocks := make([]*model.ChainBlock, 0, len(req.Matchers)+1)
+	// Add the first deployment which created by piped as the first block of the chain.
+	chainBlocks = append(chainBlocks, &model.ChainBlock{
+		Index: 0,
+		Nodes: []*model.ChainNode{
+			{
+				ApplicationRef: &model.ChainApplicationRef{
+					ApplicationId:   firstDeployment.ApplicationId,
+					ApplicationName: firstDeployment.ApplicationName,
+				},
+				DeploymentRef: &model.ChainDeploymentRef{
+					DeploymentId: firstDeployment.Id,
+				},
+			},
+		},
+	})
+
+	blockAppsMap := make(map[int][]*model.Application, len(req.Matchers))
+	for i, filter := range req.Matchers {
+		nodes, blockApps, err := buildChainNodes(filter)
+		if err != nil {
+			return nil, err
+		}
+
+		blockAppsMap[i+1] = blockApps
+		chainBlocks = append(chainBlocks, &model.ChainBlock{
+			Index: int32(i + 1),
+			Nodes: nodes,
+		})
+	}
+
+	dc := model.DeploymentChain{
+		Id:        uuid.New().String(),
+		ProjectId: projectID,
+		Blocks:    chainBlocks,
+	}
+
+	// Create a new deployment chain instance to control newly triggered deployment chain.
+	if err := a.deploymentChainStore.AddDeploymentChain(ctx, &dc); err != nil {
+		a.logger.Error("failed to create deployment chain", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to trigger new deployment chain")
+	}
+
+	firstDeployment.DeploymentChainId = dc.Id
+	// Trigger new deployment for the first application by store first deployment to datastore.
+	if err := a.deploymentStore.AddDeployment(ctx, firstDeployment); err != nil {
+		a.logger.Error("failed to create deployment", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to trigger new deployment for the first application in chain")
+	}
+
+	// Make sync application command for applications of the chain.
+	for blockIndex, apps := range blockAppsMap {
+		for _, app := range apps {
+			cmd := model.Command{
+				Id:            uuid.New().String(),
+				PipedId:       app.PipedId,
+				ApplicationId: app.Id,
+				ProjectId:     app.ProjectId,
+				Commander:     dc.Id,
+				Type:          model.Command_CHAIN_SYNC_APPLICATION,
+				ChainSyncApplication: &model.Command_ChainSyncApplication{
+					DeploymentChainId: dc.Id,
+					BlockIndex:        int32(blockIndex),
+					ApplicationId:     app.Id,
+					SyncStrategy:      model.SyncStrategy_AUTO,
+				},
+			}
+
+			if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
+				a.logger.Error("failed to create command to trigger application in chain", zap.Error(err))
+				return nil, status.Error(codes.Internal, "failed to command to trigger for applications in chain")
+			}
+		}
+	}
+
+	return &pipedservice.CreateDeploymentChainResponse{}, nil
 }
 
 // validateAppBelongsToPiped checks if the given application belongs to the given piped.
