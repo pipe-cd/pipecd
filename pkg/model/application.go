@@ -21,14 +21,13 @@ import (
 )
 
 const (
-	// TODO: Consider changing the default application config name
-	DefaultDeploymentConfigFileName      = ".pipe.yaml"
-	DefaultDeploymentConfigFileExtension = ".pipecd.yaml"
+	DefaultApplicationConfigFilename = ".pipe.yaml"
+	applicationConfigFileExtention   = ".pipecd.yaml"
 )
 
 // GetDeploymentConfigFilePath returns the path to deployment configuration file.
 func (p ApplicationGitPath) GetDeploymentConfigFilePath() string {
-	filename := DefaultDeploymentConfigFileName
+	filename := DefaultApplicationConfigFilename
 	if n := p.ConfigFilename; n != "" {
 		filename = n
 	}
@@ -70,4 +69,8 @@ func (a *Application) ContainLabels(labels map[string]string) bool {
 		}
 	}
 	return true
+}
+
+func IsApplicationConfigFile(filename string) bool {
+	return filename == DefaultApplicationConfigFilename || strings.HasSuffix(filename, applicationConfigFileExtention)
 }
