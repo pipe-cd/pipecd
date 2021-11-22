@@ -210,6 +210,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 		onCommand:   NewOnCommandDeterminer(),
 		onOutOfSync: NewOnOutOfSyncDeterminer(t.apiClient),
 		onCommit:    NewOnCommitDeterminer(gitRepo, headCommit.Hash, t.commitStore, t.logger),
+		onChain:     NewOnChainDeterminer(),
 	}
 	triggered := make(map[string]struct{})
 
@@ -247,9 +248,10 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 		}
 
 		var (
-			commander       string
-			strategy        model.SyncStrategy
-			strategySummary string
+			commander         string
+			strategy          model.SyncStrategy
+			strategySummary   string
+			deploymentChainID string
 		)
 
 		switch c.kind {
@@ -262,6 +264,12 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 				strategySummary = "Sync with the specified pipeline because piped received a command from user via web console or pipectl"
 			}
 
+		case model.TriggerKind_ON_CHAIN:
+			strategy = c.command.GetChainSyncApplication().SyncStrategy
+			commander = c.command.Commander
+			strategySummary = "Sync application in chain"
+			deploymentChainID = c.command.GetChainSyncApplication().DeploymentChainId
+
 		case model.TriggerKind_ON_OUT_OF_SYNC:
 			strategy = model.SyncStrategy_QUICK_SYNC
 			strategySummary = "Quick sync to attempt to resolve the detected configuration drift"
@@ -270,8 +278,6 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			strategy = model.SyncStrategy_AUTO
 		}
 
-		// TODO: Add ability to get deployment chain id from CHAIN_SYNC_APPLICATION command.
-		var deploymentChainID string
 		// Build the deployment to trigger.
 		deployment, err := buildDeployment(
 			app,
@@ -344,28 +350,45 @@ func (t *Trigger) listCommandCandidates() []candidate {
 	)
 
 	for _, cmd := range cmds {
-		// Filter out commands that are not SYNC command.
-		syncCmd := cmd.GetSyncApplication()
-		if syncCmd == nil {
-			continue
+		// Prepare to handle SYNC_APPLICATION command.
+		if cmd.IsSyncApplicationCmd() {
+			// Find the target application specified in command.
+			app, ok := t.applicationLister.Get(cmd.ApplicationId)
+			if !ok {
+				t.logger.Warn("detected an AppSync command for an unregistered application",
+					zap.String("command", cmd.Id),
+					zap.String("app-id", cmd.ApplicationId),
+					zap.String("commander", cmd.Commander),
+				)
+				continue
+			}
+
+			apps = append(apps, candidate{
+				application: app,
+				kind:        model.TriggerKind_ON_COMMAND,
+				command:     cmd,
+			})
 		}
 
-		// Find the target application specified in command.
-		app, ok := t.applicationLister.Get(syncCmd.ApplicationId)
-		if !ok {
-			t.logger.Warn("detected an AppSync command for an unregistered application",
-				zap.String("command", cmd.Id),
-				zap.String("app-id", syncCmd.ApplicationId),
-				zap.String("commander", cmd.Commander),
-			)
-			continue
-		}
+		// Prepare to handle CHAIN_SYNC_APPLICATION command.
+		if cmd.IsChainSyncApplicationCmd() {
+			// Find the target application specified in command.
+			app, ok := t.applicationLister.Get(cmd.ApplicationId)
+			if !ok {
+				t.logger.Warn("detected an InChainAppSync command for an unregistered application",
+					zap.String("command", cmd.Id),
+					zap.String("app-id", cmd.ApplicationId),
+					zap.String("commander", cmd.Commander),
+				)
+				continue
+			}
 
-		apps = append(apps, candidate{
-			application: app,
-			kind:        model.TriggerKind_ON_COMMAND,
-			command:     cmd,
-		})
+			apps = append(apps, candidate{
+				application: app,
+				kind:        model.TriggerKind_ON_CHAIN,
+				command:     cmd,
+			})
+		}
 	}
 
 	return apps
