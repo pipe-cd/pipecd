@@ -21,7 +21,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/config"
@@ -31,49 +30,14 @@ import (
 
 func (t *Trigger) triggerDeployment(
 	ctx context.Context,
-	app *model.Application,
-	appCfg *config.GenericDeploymentSpec,
-	branch string,
-	commit git.Commit,
-	commander string,
-	syncStrategy model.SyncStrategy,
-	strategySummary string,
-	deploymentChainId string,
-) (*model.Deployment, error) {
-
-	// Build deployment model to trigger.
-	deployment, err := buildDeployment(
-		app,
-		branch,
-		commit,
-		commander,
-		syncStrategy,
-		strategySummary,
-		time.Now(),
-		appCfg.DeploymentNotification,
-		deploymentChainId,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize deployment: %w", err)
-	}
-
-	// Send deployment model to control-plane to trigger.
-	t.logger.Info(fmt.Sprintf("application %s will be triggered to sync", app.Id), zap.String("commit", commit.Hash))
-	_, err = t.apiClient.CreateDeployment(ctx, &pipedservice.CreateDeploymentRequest{
+	deployment *model.Deployment,
+) error {
+	if _, err := t.apiClient.CreateDeployment(ctx, &pipedservice.CreateDeploymentRequest{
 		Deployment: deployment,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("cound not register a new deployment to control-plane: %w", err)
+	}); err != nil {
+		return fmt.Errorf("cound not register a new deployment to control-plane: %w", err)
 	}
-
-	// TODO: Find a better way to ensure that the application should be updated correctly
-	// when the deployment was successfully triggered.
-	// This error is ignored because the deployment was already registered successfully.
-	if e := reportMostRecentlyTriggeredDeployment(ctx, t.apiClient, deployment); e != nil {
-		t.logger.Error("failed to report most recently triggered deployment", zap.Error(e))
-	}
-
-	return deployment, nil
+	return nil
 }
 
 func buildDeployment(
