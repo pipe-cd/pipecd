@@ -108,6 +108,8 @@ func determineResourceHealth(key ResourceKey, obj *unstructured.Unstructured) (s
 		return determineClusterRoleHealth(obj)
 	case KindClusterRoleBinding:
 		return determineClusterRoleBindingHealth(obj)
+	case KindNameSpace:
+		return determineNameSpace(obj)
 	default:
 		desc = "Unimplemented or unknown resource"
 		return
@@ -532,5 +534,48 @@ func determinePVCHealth(obj *unstructured.Unstructured) (status model.Kubernetes
 func determineServiceAccountHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
 	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
 	status = model.KubernetesResourceState_HEALTHY
+	return
+}
+
+func determineNameSpace(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	ns := &corev1.Namespace{}
+	err := scheme.Scheme.Convert(obj, ns, nil)
+	if err != nil {
+		status = model.KubernetesResourceState_OTHER
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, ns, err)
+		return
+	}
+
+	switch ns.Status.Phase {
+	case corev1.NamespaceActive:
+		// Go to determine based on the status' conditions.
+	case corev1.NamespaceTerminating:
+		status = model.KubernetesResourceState_OTHER
+		desc = "NameSpace is gracefully terminated"
+		return
+	default:
+		status = model.KubernetesResourceState_OTHER
+		desc = fmt.Sprintf("The NameSpace is at an unexpected phase: %s", ns.Status.Phase)
+		return
+	}
+
+	status = model.KubernetesResourceState_HEALTHY
+
+	var cond *corev1.NamespaceCondition
+	for i := range ns.Status.Conditions {
+		c := ns.Status.Conditions[i]
+		switch c.Type {
+		case corev1.NamespaceDeletionDiscoveryFailure, corev1.NamespaceDeletionContentFailure, corev1.NamespaceDeletionGVParsingFailure:
+			cond = &c
+		}
+		if cond != nil {
+			break
+		}
+	}
+
+	if cond != nil && cond.Status == corev1.ConditionTrue {
+		status = model.KubernetesResourceState_OTHER
+		desc = cond.Message
+	}
 	return
 }
