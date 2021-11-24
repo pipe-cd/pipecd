@@ -214,7 +214,7 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 	}
 	e.LogPersister.Infof("Got approval from %q", approver)
 
-	totalAs := as + ", " + approver
+	totalAs := fmt.Sprintf("%s, %s", as, approver)
 	if c := minApproverNum - len(strings.Split(totalAs, ", ")); c > 0 {
 		e.LogPersister.Infof("Waiting for %d other approvers...", c)
 		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, totalAs); err != nil {
