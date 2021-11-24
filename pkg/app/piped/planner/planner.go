@@ -62,7 +62,7 @@ func MakeInitialStageMetadata(cfg config.PipelineStage) map[string]string {
 	switch cfg.Name {
 	case model.StageWaitApproval:
 		return map[string]string{
-			"Approvers":      strings.Join(cfg.WaitApprovalStageOptions.Approvers, ","),
+			"Approvers": strings.Join(cfg.WaitApprovalStageOptions.Approvers, ","),
 		}
 	default:
 		return nil
