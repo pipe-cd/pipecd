@@ -193,12 +193,12 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 
 func (e *Executor) validateApproverNum(ctx context.Context, approver string, num int) (string, bool) {
 	if num <= 1 {
-		e.LogPersister.Infof("Got approval from \"%s\"", approver)
+		e.LogPersister.Infof("Got approval from %q", approver)
 		return approver, true
 	}
 	as, ok := e.MetadataStore.Stage(e.Stage.Id).Get(approversKey)
 	if !ok {
-		e.LogPersister.Infof("Got approval from \"%s\"", approver)
+		e.LogPersister.Infof("Got approval from %q", approver)
 		e.LogPersister.Infof("Waiting for other approvers...")
 		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, approver); err != nil {
 			e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
@@ -212,7 +212,7 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, num
 			return "", false
 		}
 	}
-	e.LogPersister.Infof("Got approval from \"%s\"", approver)
+	e.LogPersister.Infof("Got approval from %q", approver)
 
 	totalAs := as + ", " + approver
 	if c := num - len(strings.Split(totalAs, ", ")); c > 0 {
