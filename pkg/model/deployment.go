@@ -48,7 +48,7 @@ func IsCompletedDeployment(status DeploymentStatus) bool {
 	return false
 }
 
-// IsCompletedSuccessfullyDeployment checks whether the deployment is at a successfully addressed.
+// IsSuccessfullyCompletedDeployment checks whether the deployment is at a successfully addressed.
 func IsSuccessfullyCompletedDeployment(status DeploymentStatus) bool {
 	return status == DeploymentStatus_DEPLOYMENT_SUCCESS
 }
