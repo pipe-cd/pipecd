@@ -65,17 +65,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	timer := time.NewTimer(timeout)
 
 	e.reportRequiringApproval()
-	n, ok := e.MetadataStore.Stage(e.Stage.Id).Get(minApproverNumKey)
-	if !ok {
-		e.LogPersister.Errorf("Unabled to retrieve %s from metadata", minApproverNumKey)
-		return model.StageStatus_STAGE_FAILURE
-	}
 
-	num, err := strconv.Atoi(n)
-	if err != nil {
-		e.LogPersister.Errorf("%s could not be converted to integer: %v", num, err)
-		return model.StageStatus_STAGE_FAILURE
-	}
+	num := e.StageConfig.WaitApprovalStageOptions.MinApproverNum
 	if num > 1 {
 		e.LogPersister.Infof("Waiting for approval from at least %d users...", num)
 	} else {
@@ -208,7 +199,6 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 
 	for _, a := range strings.Split(as, ", ") {
 		if a == approver {
-			e.LogPersister.Infof("Approval from the same user (%s) will not be counted", approver)
 			return "", false
 		}
 	}
