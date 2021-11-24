@@ -57,10 +57,11 @@ enum SyncStrategy {
 }
 
 message ApplicationInfo {
-    string name = 1 [(validate.rules).string.min_len = 1];
-    ApplicationKind kind = 2 [(validate.rules).enum.defined_only = true];
-    map<string, string> labels = 3;
-    string repo_id = 4 [(validate.rules).string.min_len = 1];
-    string path = 5 [(validate.rules).string.pattern = "^[^/].+$"];
-    string config_filename = 6;
+    string id = 1;
+    string name = 2 [(validate.rules).string.min_len = 1];
+    ApplicationKind kind = 3 [(validate.rules).enum.defined_only = true];
+    map<string, string> labels = 4;
+    string repo_id = 5 [(validate.rules).string.min_len = 1];
+    string path = 6 [(validate.rules).string.pattern = "^[^/].+$"];
+    string config_filename = 7;
 }

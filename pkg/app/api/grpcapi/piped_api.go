@@ -957,70 +957,19 @@ func (a *PipedAPI) GetDesiredVersion(ctx context.Context, _ *pipedservice.GetDes
 }
 
 func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pipedservice.UpdateApplicationConfigurationsRequest) (*pipedservice.UpdateApplicationConfigurationsResponse, error) {
-	projectID, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	_, _, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
 		return nil, err
 	}
 	// TODO: Consider bulk-updating multiple apps
 	for _, appInfo := range req.Applications {
-		opts := datastore.ListOptions{
-			// NOTE: Assume that no more than one application is referring to a single configuration file.
-			Limit: 1,
-			Filters: []datastore.ListFilter{
-				{
-					Field:    "ProjectId",
-					Operator: datastore.OperatorEqual,
-					Value:    projectID,
-				},
-				{
-					Field:    "PipedId",
-					Operator: datastore.OperatorEqual,
-					Value:    pipedID,
-				},
-				{
-					Field:    "GitPath.Repo.Id",
-					Operator: datastore.OperatorEqual,
-					Value:    appInfo.RepoId,
-				},
-				{
-					Field:    "GitPath.Path",
-					Operator: datastore.OperatorEqual,
-					Value:    appInfo.Path,
-				},
-				{
-					Field:    "GitPath.ConfigFilename",
-					Operator: datastore.OperatorEqual,
-					Value:    appInfo.ConfigFilename,
-				},
-				{
-					Field:    "Disabled",
-					Operator: datastore.OperatorEqual,
-					Value:    false,
-				},
-			},
-		}
-		// TODO: Enable to update multiple apps that match the given condition instead of accessing it twice
-		//   like: UPDATE Application SET Name = 'foo' WHERE GitPath.Repo.Id = '?' AND GitPath.Path = '?'
-		apps, _, err := a.applicationStore.ListApplications(ctx, opts)
-		if err != nil {
-			a.logger.Error("failed to fetch applications", zap.Error(err))
-			return nil, status.Error(codes.Internal, "failed to fetch applications")
-		}
-		if len(apps) == 0 {
-			a.logger.Error("not found any enabled apps that match the terms",
-				zap.String("repo-id", appInfo.RepoId),
-				zap.String("path", appInfo.Path),
-				zap.String("config-filename", appInfo.ConfigFilename),
-			)
-			return nil, status.Error(codes.NotFound, "not found any enabled apps that match the terms")
-		}
 		updater := func(app *model.Application) error {
 			app.Name = appInfo.Name
 			app.Kind = appInfo.Kind
 			app.Labels = appInfo.Labels
 			return nil
 		}
-		if err := a.applicationStore.UpdateApplication(ctx, apps[0].Id, updater); err != nil {
+		if err := a.applicationStore.UpdateApplication(ctx, appInfo.Id, updater); err != nil {
 			a.logger.Error("failed to update application", zap.Error(err))
 			return nil, status.Error(codes.Internal, "failed to update application")
 		}
