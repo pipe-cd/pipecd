@@ -31,7 +31,7 @@ import (
 
 const (
 	approvedByKey  = "ApprovedBy"
-	minApproverNum = "MinApproverNum"
+	minApproverNumKey = "MinApproverNum"
 	approversKey   = "CurrentApprovers"
 )
 
@@ -65,9 +65,9 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	timer := time.NewTimer(timeout)
 
 	e.reportRequiringApproval()
-	n, ok := e.MetadataStore.Stage(e.Stage.Id).Get(minApproverNum)
+	n, ok := e.MetadataStore.Stage(e.Stage.Id).Get(minApproverNumKey)
 	if !ok {
-		e.LogPersister.Errorf("Unabled to retrieve %s from metadata", minApproverNum)
+		e.LogPersister.Errorf("Unabled to retrieve %s from metadata", minApproverNumKey)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
