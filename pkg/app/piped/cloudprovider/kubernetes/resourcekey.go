@@ -76,6 +76,7 @@ const (
 	KindRoleBinding           = "RoleBinding"
 	KindClusterRole           = "ClusterRole"
 	KindClusterRoleBinding    = "ClusterRoleBinding"
+	KindNameSpace             = "NameSpace"
 
 	DefaultNamespace = "default"
 )
