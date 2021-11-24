@@ -1138,6 +1138,8 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 	prevBlock := dc.Blocks[req.Deployment.DeploymentChainBlockIndex-1]
 	plannable := true
 	for _, node := range prevBlock.Nodes {
+		// TODO: Consider add deployment status to the deployment ref in the deployment chain model
+		// instead of fetching deployment model here.
 		dp, err := a.deploymentStore.GetDeployment(ctx, node.DeploymentRef.DeploymentId)
 		if err != nil {
 			return nil, status.Error(codes.Internal, "unable to process previous block nodes in deployment chain")
