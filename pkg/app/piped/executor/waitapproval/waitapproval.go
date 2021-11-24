@@ -115,6 +115,15 @@ func (e *Executor) checkApproval(ctx context.Context, num int) (string, bool) {
 	}
 
 	as, ok := e.validateApproverNum(ctx, approveCmd.Commander, num)
+	if len(as) > 0 {
+		if err := approveCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
+			e.Logger.Error("failed to report handled command", zap.Error(err))
+		}
+	} else {
+		if err := approveCmd.Report(ctx, model.CommandStatus_COMMAND_FAILED, nil, nil); err != nil {
+			e.Logger.Error("failed to report command status", zap.Error(err))
+		}
+	}
 	if !ok {
 		return "", false
 	}
@@ -126,10 +135,6 @@ func (e *Executor) checkApproval(ctx context.Context, num int) (string, bool) {
 	if err := e.MetadataStore.Stage(e.Stage.Id).PutMulti(ctx, metadata); err != nil {
 		e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
 		return "", false
-	}
-
-	if err := approveCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
-		e.Logger.Error("failed to report handled command", zap.Error(err))
 	}
 	return as, true
 }
@@ -198,6 +203,7 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 
 	for _, a := range strings.Split(as, ", ") {
 		if a == approver {
+			e.LogPersister.Infof("Approval from the same user (%s) will not be counted", approver)
 			return "", false
 		}
 	}
