@@ -175,7 +175,7 @@ service PipedService {
     rpc CreateDeploymentChain(CreateDeploymentChainRequest) returns (CreateDeploymentChainResponse) {}
     // DeploymentPlannable checks the completion and status of the previous block in the deployment chain,
     // only when all the nodes of the previous block are completed with a success status,
-    // the nodes of the next block will be treat as processable.
+    // the nodes of the next block will be treated as processable.
     rpc InChainDeploymentPlannable(InChainDeploymentPlannableRequest) returns (InChainDeploymentPlannableResponse) {}
 }
 
