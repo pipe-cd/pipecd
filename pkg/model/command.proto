@@ -69,7 +69,7 @@ message Command {
 
     message ChainSyncApplication {
         string deployment_chain_id = 1;
-        int32 block_index = 2;
+        uint32 block_index = 2;
         string application_id = 3 [(validate.rules).string.min_len = 1];
         SyncStrategy sync_strategy = 4;
     }

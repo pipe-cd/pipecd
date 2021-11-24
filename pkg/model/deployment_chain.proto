@@ -52,10 +52,8 @@ message ChainNode {
 }
 
 message ChainBlock {
-    // Index represent the offset of the node in chain.
-    int32 index = 1;
     // List of applications which should be deployed at the same time in chain.
-    repeated ChainNode nodes = 2;
+    repeated ChainNode nodes = 1;
 
     // Unix time when the deployment chain node is started.
     int64 started_at = 100 [(validate.rules).int64.gte = 0];

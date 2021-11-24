@@ -31,7 +31,7 @@ var deploymentChainFactory = func() interface{} {
 var (
 	DeploymentChainAddDeploymentToBlock = func(deployment *model.Deployment) func(*model.DeploymentChain) error {
 		return func(dc *model.DeploymentChain) error {
-			if deployment.DeploymentChainBlockIndex == 0 || deployment.DeploymentChainBlockIndex >= int32(len(dc.Blocks)) {
+			if deployment.DeploymentChainBlockIndex == 0 || deployment.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
 				return fmt.Errorf("invalid block index provided")
 			}
 			block := dc.Blocks[deployment.DeploymentChainBlockIndex]

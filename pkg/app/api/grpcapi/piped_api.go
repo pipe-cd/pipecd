@@ -1030,7 +1030,6 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 	chainBlocks := make([]*model.ChainBlock, 0, len(req.Matchers)+1)
 	// Add the first deployment which created by piped as the first block of the chain.
 	chainBlocks = append(chainBlocks, &model.ChainBlock{
-		Index: 0,
 		Nodes: []*model.ChainNode{
 			{
 				ApplicationRef: &model.ChainApplicationRef{
@@ -1042,6 +1041,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 				},
 			},
 		},
+		StartedAt: time.Now().Unix(),
 	})
 
 	blockAppsMap := make(map[int][]*model.Application, len(req.Matchers))
@@ -1053,8 +1053,8 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 
 		blockAppsMap[i+1] = blockApps
 		chainBlocks = append(chainBlocks, &model.ChainBlock{
-			Index: int32(i + 1),
-			Nodes: nodes,
+			Nodes:     nodes,
+			StartedAt: time.Now().Unix(),
 		})
 	}
 
@@ -1089,7 +1089,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 				Type:          model.Command_CHAIN_SYNC_APPLICATION,
 				ChainSyncApplication: &model.Command_ChainSyncApplication{
 					DeploymentChainId: dc.Id,
-					BlockIndex:        int32(blockIndex),
+					BlockIndex:        uint32(blockIndex),
 					ApplicationId:     app.Id,
 					SyncStrategy:      model.SyncStrategy_AUTO,
 				},
@@ -1131,7 +1131,7 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 		}, nil
 	}
 
-	if req.Deployment.DeploymentChainBlockIndex >= int32(len(dc.Blocks)) {
+	if req.Deployment.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
 		return nil, status.Error(codes.InvalidArgument, "invalid deployment with chain block index provided")
 	}
 

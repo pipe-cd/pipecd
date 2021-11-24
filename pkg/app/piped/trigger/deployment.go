@@ -50,7 +50,7 @@ func buildDeployment(
 	now time.Time,
 	noti *config.DeploymentNotification,
 	deploymentChainID string,
-	deploymentChainBlockIndex int32,
+	deploymentChainBlockIndex uint32,
 ) (*model.Deployment, error) {
 
 	var commitURL string

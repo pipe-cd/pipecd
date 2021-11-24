@@ -252,7 +252,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			strategy                  model.SyncStrategy
 			strategySummary           string
 			deploymentChainID         string
-			deploymentChainBlockIndex int32
+			deploymentChainBlockIndex uint32
 		)
 
 		switch c.kind {
