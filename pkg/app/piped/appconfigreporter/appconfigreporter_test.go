@@ -110,6 +110,7 @@ spec:
 				{
 					Name:           "app-1",
 					Labels:         map[string]string{"key-1": "value-1"},
+					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: ".pipe.yaml",
 				},
@@ -139,6 +140,7 @@ spec:
 				{
 					Name:           "app-1",
 					Labels:         map[string]string{"key-1": "value-1"},
+					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: "dev.pipecd.yaml",
 				},
@@ -260,6 +262,7 @@ spec:
 				{
 					Name:           "app-1",
 					Labels:         map[string]string{"key-1": "value-1"},
+					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: ".pipe.yaml",
 				},
@@ -292,6 +295,7 @@ spec:
 				{
 					Name:           "app-1",
 					Labels:         map[string]string{"key-1": "value-1"},
+					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: ".pipe.yaml",
 				},
