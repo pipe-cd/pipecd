@@ -957,9 +957,15 @@ func (a *PipedAPI) GetDesiredVersion(ctx context.Context, _ *pipedservice.GetDes
 }
 
 func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pipedservice.UpdateApplicationConfigurationsRequest) (*pipedservice.UpdateApplicationConfigurationsResponse, error) {
-	_, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
 		return nil, err
+	}
+	// Scan all of them to guarantee in advance that there is no invalid request.
+	for _, appInfo := range req.Applications {
+		if err := a.validateAppBelongsToPiped(ctx, appInfo.Id, pipedID); err != nil {
+			return nil, err
+		}
 	}
 	// TODO: Consider bulk-updating multiple apps
 	for _, appInfo := range req.Applications {
