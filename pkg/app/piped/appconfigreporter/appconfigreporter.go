@@ -106,8 +106,7 @@ func (r *Reporter) Run(ctx context.Context) error {
 		r.gitRepos[repoCfg.RepoID] = repo
 	}
 
-	// FIXME: Think about sync interval of app config reporter
-	ticker := time.NewTicker(r.config.SyncInterval.Duration())
+	ticker := time.NewTicker(r.config.AppConfigSyncInterval.Duration())
 	defer ticker.Stop()
 
 	for {
