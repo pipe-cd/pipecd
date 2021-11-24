@@ -214,13 +214,13 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, num
 	}
 	e.LogPersister.Infof("Got approval from \"%s\"", approver)
 
-	total_as := as + ", " + approver
-	if c := num - len(strings.Split(total_as, ", ")); c > 0 {
+	totalAs := as + ", " + approver
+	if c := num - len(strings.Split(totalAs, ", ")); c > 0 {
 		e.LogPersister.Infof("Waiting for %d other approvers...", c)
-		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, total_as); err != nil {
+		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, totalAs); err != nil {
 			e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
 		}
-		return total_as, false
+		return totalAs, false
 	}
-	return total_as, true
+	return totalAs, true
 }
