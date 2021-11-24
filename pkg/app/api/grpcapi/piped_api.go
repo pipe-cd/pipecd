@@ -1030,7 +1030,6 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 	chainBlocks := make([]*model.ChainBlock, 0, len(req.Matchers)+1)
 	// Add the first deployment which created by piped as the first block of the chain.
 	chainBlocks = append(chainBlocks, &model.ChainBlock{
-		Index: 0,
 		Nodes: []*model.ChainNode{
 			{
 				ApplicationRef: &model.ChainApplicationRef{
@@ -1042,6 +1041,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 				},
 			},
 		},
+		StartedAt: time.Now().Unix(),
 	})
 
 	blockAppsMap := make(map[int][]*model.Application, len(req.Matchers))
