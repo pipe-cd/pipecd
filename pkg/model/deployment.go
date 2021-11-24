@@ -49,7 +49,7 @@ func IsCompletedDeployment(status DeploymentStatus) bool {
 }
 
 // IsCompletedSuccessfullyDeployment checks whether the deployment is at a successfully addressed.
-func IsCompletedSuccessfullyDeployment(status DeploymentStatus) bool {
+func IsSuccessfullyCompletedDeployment(status DeploymentStatus) bool {
 	return status == DeploymentStatus_DEPLOYMENT_SUCCESS
 }
 
