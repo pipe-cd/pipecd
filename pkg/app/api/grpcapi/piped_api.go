@@ -1053,7 +1053,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 
 		blockAppsMap[i+1] = blockApps
 		chainBlocks = append(chainBlocks, &model.ChainBlock{
-			Nodes: nodes,
+			Nodes:     nodes,
 			StartedAt: time.Now().Unix(),
 		})
 	}
@@ -1131,7 +1131,7 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 		}, nil
 	}
 
-	if req.Deployment.DeploymentChainBlockIndex >= int32(len(dc.Blocks)) {
+	if req.Deployment.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
 		return nil, status.Error(codes.InvalidArgument, "invalid deployment with chain block index provided")
 	}
 
