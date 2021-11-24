@@ -1144,7 +1144,7 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 		if err != nil {
 			return nil, status.Error(codes.Internal, "unable to process previous block nodes in deployment chain")
 		}
-		if dp.Status != model.DeploymentStatus_DEPLOYMENT_SUCCESS {
+		if model.IsCompletedSuccessfullyDeployment(dp.Status) {
 			plannable = false
 			break
 		}
