@@ -141,12 +141,12 @@ func (r *Reporter) scanAppConfigs(ctx context.Context) error {
 		}
 	}
 
-	// Create a map to determine from GitPath if the application is registered.
 	apps := r.applicationLister.List()
-	registeredAppPaths := make(map[string]struct{}, len(apps))
+	// Create a map from Git path key to app id, to determine if the application is registered.
+	registeredAppPaths := make(map[string]string, len(apps))
 	for _, app := range apps {
 		key := makeGitPathKey(app.GitPath.Repo.Id, filepath.Join(app.GitPath.Path, app.GitPath.ConfigFilename))
-		registeredAppPaths[key] = struct{}{}
+		registeredAppPaths[key] = app.Id
 	}
 
 	if err := r.updateRegisteredApps(ctx, registeredAppPaths); err != nil {
@@ -160,7 +160,7 @@ func (r *Reporter) scanAppConfigs(ctx context.Context) error {
 }
 
 // updateRegisteredApps sends application configurations that have changed since the last time to the control-plane.
-func (r *Reporter) updateRegisteredApps(ctx context.Context, registeredAppPaths map[string]struct{}) (err error) {
+func (r *Reporter) updateRegisteredApps(ctx context.Context, registeredAppPaths map[string]string) (err error) {
 	apps := make([]*model.ApplicationInfo, 0)
 	headCommits := make(map[string]string, len(r.gitRepos))
 	for repoID, repo := range r.gitRepos {
@@ -206,15 +206,45 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, registeredAppPaths 
 }
 
 // findRegisteredApps finds out registered application info in the given git repository.
-func (r *Reporter) findRegisteredApps(ctx context.Context, repoID string, repo gitRepo, lastScannedCommit, headCommitHash string, registeredAppPaths map[string]struct{}) ([]*model.ApplicationInfo, error) {
+func (r *Reporter) findRegisteredApps(ctx context.Context, repoID string, repo gitRepo, lastScannedCommit, headCommitHash string, registeredAppPaths map[string]string) ([]*model.ApplicationInfo, error) {
 	if lastScannedCommit == "" {
-		return r.scanAllFiles(repo.GetPath(), repoID, func(fileRelPath string) bool {
-			gitPathKey := makeGitPathKey(repoID, fileRelPath)
-			if _, registered := registeredAppPaths[gitPathKey]; !registered {
-				return true
+		// Scan all files because it seems to be the first commit since Piped starts.
+		apps := make([]*model.ApplicationInfo, 0)
+		err := fs.WalkDir(r.fileSystem, repo.GetPath(), func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
 			}
-			return false
+			if d.IsDir() {
+				return nil
+			}
+			cfgRelPath, err := filepath.Rel(repo.GetPath(), path)
+			if err != nil {
+				return err
+			}
+			gitPathKey := makeGitPathKey(repoID, cfgRelPath)
+			appID, registered := registeredAppPaths[gitPathKey]
+			if !registered {
+				return nil
+			}
+
+			appInfo, err := r.readApplicationInfo(repo.GetPath(), repoID, filepath.Dir(cfgRelPath), filepath.Base(cfgRelPath))
+			if err != nil {
+				r.logger.Error("failed to read application info",
+					zap.String("repo-id", repoID),
+					zap.String("config-file-path", cfgRelPath),
+					zap.Error(err),
+				)
+				return nil
+			}
+			appInfo.Id = appID
+			apps = append(apps, appInfo)
+			// Continue reading so that it can return apps as much as possible.
+			return nil
 		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to inspect files under %s: %w", repo.GetPath(), err)
+		}
+		return apps, nil
 	}
 
 	filePaths, err := repo.ChangedFiles(ctx, lastScannedCommit, headCommitHash)
@@ -228,10 +258,11 @@ func (r *Reporter) findRegisteredApps(ctx context.Context, repoID string, repo g
 	apps := make([]*model.ApplicationInfo, 0)
 	for _, path := range filePaths {
 		gitPathKey := makeGitPathKey(repoID, path)
-		if _, registered := registeredAppPaths[gitPathKey]; !registered {
+		appID, registered := registeredAppPaths[gitPathKey]
+		if !registered {
 			continue
 		}
-		appInfo, err := r.readApplicationInfo(repo.GetPath(), filepath.Dir(path), filepath.Base(path))
+		appInfo, err := r.readApplicationInfo(repo.GetPath(), repoID, filepath.Dir(path), filepath.Base(path))
 		if err != nil {
 			r.logger.Error("failed to read application info",
 				zap.String("repo-id", repoID),
@@ -240,13 +271,14 @@ func (r *Reporter) findRegisteredApps(ctx context.Context, repoID string, repo g
 			)
 			continue
 		}
+		appInfo.Id = appID
 		apps = append(apps, appInfo)
 	}
 	return apps, nil
 }
 
 // updateUnregisteredApps sends all unregistered application configurations to the control-plane.
-func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPaths map[string]struct{}) error {
+func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPaths map[string]string) error {
 	apps := make([]*model.ApplicationInfo, 0)
 	for repoID, repo := range r.gitRepos {
 		as, err := r.findUnregisteredApps(repo.GetPath(), repoID, registeredAppPaths)
@@ -279,40 +311,29 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPath
 
 // findUnregisteredApps finds out unregistered application info in the given git repository.
 // The file name must be default name in order to be recognized as an Application config.
-func (r *Reporter) findUnregisteredApps(repoPath, repoID string, registeredAppPaths map[string]struct{}) ([]*model.ApplicationInfo, error) {
-	return r.scanAllFiles(repoPath, repoID, func(fileRelPath string) bool {
-		if !model.IsApplicationConfigFile(filepath.Base(fileRelPath)) {
-			return true
-		}
-
-		gitPathKey := makeGitPathKey(repoID, fileRelPath)
-		if _, registered := registeredAppPaths[gitPathKey]; registered {
-			return true
-		}
-		return false
-	})
-}
-
-// scanAllFiles inspects all files under the root or the given repository.
-// And gives back all application info as much as possible.
-func (r *Reporter) scanAllFiles(repoRoot, repoID string, shouldSkip func(string) bool) ([]*model.ApplicationInfo, error) {
+func (r *Reporter) findUnregisteredApps(repoPath, repoID string, registeredAppPaths map[string]string) ([]*model.ApplicationInfo, error) {
 	apps := make([]*model.ApplicationInfo, 0)
-	err := fs.WalkDir(r.fileSystem, repoRoot, func(path string, d fs.DirEntry, err error) error {
+	// Scan all files under the repository.
+	err := fs.WalkDir(r.fileSystem, repoPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		if d.IsDir() {
 			return nil
 		}
-		cfgRelPath, err := filepath.Rel(repoRoot, path)
+		cfgRelPath, err := filepath.Rel(repoPath, path)
 		if err != nil {
 			return err
 		}
-		if shouldSkip(cfgRelPath) {
+		if !model.IsApplicationConfigFile(filepath.Base(cfgRelPath)) {
+			return nil
+		}
+		gitPathKey := makeGitPathKey(repoID, cfgRelPath)
+		if _, registered := registeredAppPaths[gitPathKey]; registered {
 			return nil
 		}
 
-		appInfo, err := r.readApplicationInfo(repoRoot, filepath.Dir(cfgRelPath), filepath.Base(cfgRelPath))
+		appInfo, err := r.readApplicationInfo(repoPath, repoID, filepath.Dir(cfgRelPath), filepath.Base(cfgRelPath))
 		if err != nil {
 			r.logger.Error("failed to read application info",
 				zap.String("repo-id", repoID),
@@ -326,18 +347,12 @@ func (r *Reporter) scanAllFiles(repoRoot, repoID string, shouldSkip func(string)
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to inspect files under %s: %w", repoRoot, err)
+		return nil, fmt.Errorf("failed to inspect files under %s: %w", repoPath, err)
 	}
 	return apps, nil
 }
 
-// makeGitPathKey builds a unique path between repositories.
-// cfgFilePath is a relative path from the repo root.
-func makeGitPathKey(repoID, cfgFilePath string) string {
-	return fmt.Sprintf("%s:%s", repoID, cfgFilePath)
-}
-
-func (r *Reporter) readApplicationInfo(repoDir, appDirRelPath, cfgFilename string) (*model.ApplicationInfo, error) {
+func (r *Reporter) readApplicationInfo(repoDir, repoID, appDirRelPath, cfgFilename string) (*model.ApplicationInfo, error) {
 	b, err := fs.ReadFile(r.fileSystem, filepath.Join(repoDir, appDirRelPath, cfgFilename))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open the configuration file: %w", err)
@@ -363,7 +378,14 @@ func (r *Reporter) readApplicationInfo(repoDir, appDirRelPath, cfgFilename strin
 		Name:           spec.Name,
 		Kind:           kind,
 		Labels:         spec.Labels,
+		RepoId:         repoID,
 		Path:           appDirRelPath,
 		ConfigFilename: cfgFilename,
 	}, nil
+}
+
+// makeGitPathKey builds a unique path between repositories.
+// cfgFilePath is a relative path from the repo root.
+func makeGitPathKey(repoID, cfgFilePath string) string {
+	return fmt.Sprintf("%s:%s", repoID, cfgFilePath)
 }

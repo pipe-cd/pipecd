@@ -27,7 +27,7 @@ import (
 
 func TestReporter_findUnregisteredApps(t *testing.T) {
 	type args struct {
-		registeredAppPaths map[string]struct{}
+		registeredAppPaths map[string]string
 		repoPath, repoID   string
 	}
 	testcases := []struct {
@@ -48,7 +48,7 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 			args: args{
 				repoPath:           "invalid",
 				repoID:             "repo-1",
-				registeredAppPaths: map[string]struct{}{},
+				registeredAppPaths: map[string]string{},
 			},
 			want:    nil,
 			wantErr: true,
@@ -64,8 +64,8 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 			args: args{
 				repoPath: "path/to/repo-1",
 				repoID:   "repo-1",
-				registeredAppPaths: map[string]struct{}{
-					"repo-1:app-1/.pipe.yaml": {},
+				registeredAppPaths: map[string]string{
+					"repo-1:app-1/.pipe.yaml": "id-1",
 				},
 			},
 			want:    []*model.ApplicationInfo{},
@@ -82,7 +82,7 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 			args: args{
 				repoPath:           "path/to/repo-1",
 				repoID:             "repo-1",
-				registeredAppPaths: map[string]struct{}{},
+				registeredAppPaths: map[string]string{},
 			},
 			want:    []*model.ApplicationInfo{},
 			wantErr: false,
@@ -104,12 +104,13 @@ spec:
 			args: args{
 				repoPath:           "path/to/repo-1",
 				repoID:             "repo-1",
-				registeredAppPaths: map[string]struct{}{},
+				registeredAppPaths: map[string]string{},
 			},
 			want: []*model.ApplicationInfo{
 				{
 					Name:           "app-1",
 					Labels:         map[string]string{"key-1": "value-1"},
+					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: ".pipe.yaml",
 				},
@@ -133,12 +134,13 @@ spec:
 			args: args{
 				repoPath:           "path/to/repo-1",
 				repoID:             "repo-1",
-				registeredAppPaths: map[string]struct{}{},
+				registeredAppPaths: map[string]string{},
 			},
 			want: []*model.ApplicationInfo{
 				{
 					Name:           "app-1",
 					Labels:         map[string]string{"key-1": "value-1"},
+					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: "dev.pipecd.yaml",
 				},
@@ -174,7 +176,7 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 		repoID             string
 		repo               gitRepo
 		lastScannedCommit  string
-		registeredAppPaths map[string]struct{}
+		registeredAppPaths map[string]string
 	}
 	testcases := []struct {
 		name     string
@@ -227,8 +229,8 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 				repoID:            "repo-1",
 				repo:              &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/.pipe.yaml"}},
 				lastScannedCommit: "xxx",
-				registeredAppPaths: map[string]struct{}{
-					"repo-1:app-1/.pipe.yaml": {},
+				registeredAppPaths: map[string]string{
+					"repo-1:app-1/.pipe.yaml": "id-1",
 				},
 			},
 			want:    []*model.ApplicationInfo{},
@@ -252,14 +254,16 @@ spec:
 				repoID:            "repo-1",
 				repo:              &fakeGitRepo{path: "path/to/repo-1", changedFiles: []string{"app-1/.pipe.yaml"}},
 				lastScannedCommit: "xxx",
-				registeredAppPaths: map[string]struct{}{
-					"repo-1:app-1/.pipe.yaml": {},
+				registeredAppPaths: map[string]string{
+					"repo-1:app-1/.pipe.yaml": "id-1",
 				},
 			},
 			want: []*model.ApplicationInfo{
 				{
+					Id:             "id-1",
 					Name:           "app-1",
 					Labels:         map[string]string{"key-1": "value-1"},
+					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: ".pipe.yaml",
 				},
@@ -284,14 +288,16 @@ spec:
 				repoID:            "repo-1",
 				repo:              &fakeGitRepo{path: "path/to/repo-1"},
 				lastScannedCommit: "",
-				registeredAppPaths: map[string]struct{}{
-					"repo-1:app-1/.pipe.yaml": {},
+				registeredAppPaths: map[string]string{
+					"repo-1:app-1/.pipe.yaml": "id-1",
 				},
 			},
 			want: []*model.ApplicationInfo{
 				{
+					Id:             "id-1",
 					Name:           "app-1",
 					Labels:         map[string]string{"key-1": "value-1"},
+					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: ".pipe.yaml",
 				},

@@ -967,8 +967,30 @@ func (a *PipedAPI) GetDesiredVersion(ctx context.Context, _ *pipedservice.GetDes
 }
 
 func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pipedservice.UpdateApplicationConfigurationsRequest) (*pipedservice.UpdateApplicationConfigurationsResponse, error) {
-	// TODO: Update the given application configurations
-	return nil, status.Errorf(codes.Unimplemented, "UpdateApplicationConfigurations is not implemented yet")
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// Scan all of them to guarantee in advance that there is no invalid request.
+	for _, appInfo := range req.Applications {
+		if err := a.validateAppBelongsToPiped(ctx, appInfo.Id, pipedID); err != nil {
+			return nil, err
+		}
+	}
+	// TODO: Consider bulk-updating multiple apps
+	for _, appInfo := range req.Applications {
+		updater := func(app *model.Application) error {
+			app.Name = appInfo.Name
+			app.Kind = appInfo.Kind
+			app.Labels = appInfo.Labels
+			return nil
+		}
+		if err := a.applicationStore.UpdateApplication(ctx, appInfo.Id, updater); err != nil {
+			a.logger.Error("failed to update application", zap.Error(err))
+			return nil, status.Error(codes.Internal, "failed to update application")
+		}
+	}
+	return &pipedservice.UpdateApplicationConfigurationsResponse{}, nil
 }
 
 func (a *PipedAPI) ReportUnregisteredApplicationConfigurations(ctx context.Context, req *pipedservice.ReportUnregisteredApplicationConfigurationsRequest) (*pipedservice.ReportUnregisteredApplicationConfigurationsResponse, error) {
