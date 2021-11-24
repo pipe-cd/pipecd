@@ -200,24 +200,27 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, num
 	if !ok {
 		e.LogPersister.Infof("Got approval from \"%s\"", approver)
 		e.LogPersister.Infof("Waiting for other approvers...")
-		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, as); err != nil {
+		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, approver); err != nil {
 			e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
 		}
 		return approver, false
 	}
-	approvers := strings.Split(as, " ,")
-	for _, a := range approvers {
+
+	for _, a := range strings.Split(as, ", ") {
 		if a == approver {
+			e.LogPersister.Infof("Approval from the same user (%s) will not be counted", approver)
 			return "", false
 		}
 	}
 	e.LogPersister.Infof("Got approval from \"%s\"", approver)
-	if d := num - len(approvers) - 1; d > 0 {
-		e.LogPersister.Infof("Waiting for other approvers...")
-		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, as); err != nil {
+
+	total_as := as + ", " + approver
+	if c := num - len(strings.Split(total_as, ", ")); c > 0 {
+		e.LogPersister.Infof("Waiting for %d other approvers...", c)
+		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, total_as); err != nil {
 			e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
 		}
-		return as + ", " + approver, false
+		return total_as, false
 	}
-	return as + ", " + approver, true
+	return total_as, true
 }
