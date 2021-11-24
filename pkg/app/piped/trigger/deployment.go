@@ -50,6 +50,7 @@ func buildDeployment(
 	now time.Time,
 	noti *config.DeploymentNotification,
 	deploymentChainID string,
+	deploymentChainBlockIndex int32,
 ) (*model.Deployment, error) {
 
 	var commitURL string
@@ -92,15 +93,16 @@ func buildDeployment(
 			SyncStrategy:    syncStrategy,
 			StrategySummary: strategySummary,
 		},
-		GitPath:           app.GitPath,
-		CloudProvider:     app.CloudProvider,
-		Labels:            app.Labels,
-		Status:            model.DeploymentStatus_DEPLOYMENT_PENDING,
-		StatusReason:      "The deployment is waiting to be planned",
-		Metadata:          metadata,
-		CreatedAt:         now.Unix(),
-		UpdatedAt:         now.Unix(),
-		DeploymentChainId: deploymentChainID,
+		GitPath:                   app.GitPath,
+		CloudProvider:             app.CloudProvider,
+		Labels:                    app.Labels,
+		Status:                    model.DeploymentStatus_DEPLOYMENT_PENDING,
+		StatusReason:              "The deployment is waiting to be planned",
+		Metadata:                  metadata,
+		CreatedAt:                 now.Unix(),
+		UpdatedAt:                 now.Unix(),
+		DeploymentChainId:         deploymentChainID,
+		DeploymentChainBlockIndex: deploymentChainBlockIndex,
 	}
 
 	return deployment, nil

@@ -248,10 +248,11 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 		}
 
 		var (
-			commander         string
-			strategy          model.SyncStrategy
-			strategySummary   string
-			deploymentChainID string
+			commander                 string
+			strategy                  model.SyncStrategy
+			strategySummary           string
+			deploymentChainID         string
+			deploymentChainBlockIndex int32
 		)
 
 		switch c.kind {
@@ -269,6 +270,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			commander = c.command.Commander
 			strategySummary = "Sync application in chain"
 			deploymentChainID = c.command.GetChainSyncApplication().DeploymentChainId
+			deploymentChainBlockIndex = c.command.GetChainSyncApplication().BlockIndex
 
 		case model.TriggerKind_ON_OUT_OF_SYNC:
 			strategy = model.SyncStrategy_QUICK_SYNC
@@ -289,6 +291,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			time.Now(),
 			appCfg.DeploymentNotification,
 			deploymentChainID,
+			deploymentChainBlockIndex,
 		)
 		if err != nil {
 			msg := fmt.Sprintf("failed to build deployment for application %s: %v", app.Id, err)

@@ -119,6 +119,7 @@ const fakeDeployment: Deployment.AsObject = {
   createdAt: 1592203166,
   updatedAt: 1592203166,
   deploymentChainId: "",
+  deploymentChainBlockIndex: 0,
 };
 
 export default {

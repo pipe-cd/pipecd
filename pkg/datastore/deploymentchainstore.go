@@ -16,6 +16,7 @@ package datastore
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -23,8 +24,38 @@ import (
 
 const DeploymentChainModelKind = "DeploymentChain"
 
+var deploymentChainFactory = func() interface{} {
+	return &model.DeploymentChain{}
+}
+
+var (
+	DeploymentChainAddDeploymentToBlock = func(deployment *model.Deployment) func(*model.DeploymentChain) error {
+		return func(dc *model.DeploymentChain) error {
+			if deployment.DeploymentChainBlockIndex == 0 || deployment.DeploymentChainBlockIndex >= int32(len(dc.Blocks)) {
+				return fmt.Errorf("invalid block index provided")
+			}
+			block := dc.Blocks[deployment.DeploymentChainBlockIndex]
+			var updated bool
+			for _, node := range block.Nodes {
+				if node.ApplicationRef.ApplicationId != deployment.ApplicationId {
+					continue
+				}
+				node.DeploymentRef = &model.ChainDeploymentRef{
+					DeploymentId: deployment.Id,
+				}
+				updated = true
+			}
+			if !updated {
+				return fmt.Errorf("unable to find the right node in chain to assign deployment to")
+			}
+			return nil
+		}
+	}
+)
+
 type DeploymentChainStore interface {
 	AddDeploymentChain(ctx context.Context, d *model.DeploymentChain) error
+	UpdateDeploymentChain(ctx context.Context, id string, updater func(*model.DeploymentChain) error) error
 }
 
 type deploymentChainStore struct {
@@ -53,4 +84,16 @@ func (s *deploymentChainStore) AddDeploymentChain(ctx context.Context, dc *model
 		return err
 	}
 	return s.ds.Create(ctx, DeploymentChainModelKind, dc.Id, dc)
+}
+
+func (s *deploymentChainStore) UpdateDeploymentChain(ctx context.Context, id string, updater func(*model.DeploymentChain) error) error {
+	now := s.nowFunc().Unix()
+	return s.ds.Update(ctx, DeploymentChainModelKind, id, deploymentChainFactory, func(e interface{}) error {
+		dc := e.(*model.DeploymentChain)
+		if err := updater(dc); err != nil {
+			return err
+		}
+		dc.UpdatedAt = now
+		return dc.Validate()
+	})
 }
