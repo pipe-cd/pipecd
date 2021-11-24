@@ -70,6 +70,9 @@ func (c *fakeAPIClient) SaveStageMetadata(_ context.Context, req *pipedservice.S
 }
 
 func TestValidateApproverNum(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	ac := &fakeAPIClient{
 		shared: make(map[string]string, 0),
 		stages: make(map[string]metadata, 0),
@@ -206,7 +209,7 @@ func TestValidateApproverNum(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			as, ok := tc.executor.validateApproverNum(tc.approver, tc.minApproverNum)
+			as, ok := tc.executor.validateApproverNum(ctx, tc.approver, tc.minApproverNum)
 			assert.Equal(t, tc.wantBool, ok)
 			assert.Equal(t, tc.wantApprovers, as)
 		})
