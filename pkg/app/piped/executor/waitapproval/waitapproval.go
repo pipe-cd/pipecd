@@ -124,13 +124,8 @@ func (e *Executor) checkApproval(ctx context.Context, num int) (string, bool) {
 		return "", false
 	}
 
-	as, ok := e.validateApproverNum(approveCmd.Commander, num)
+	as, ok := e.validateApproverNum(ctx, approveCmd.Commander, num)
 	if !ok {
-		if len(as) > 0 {
-			if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, as); err != nil {
-				e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
-			}
-		}
 		return "", false
 	}
 	e.LogPersister.Info("Received all needed approvals\n")
@@ -196,7 +191,7 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 	return notification.FindSlackAccounts(event), nil
 }
 
-func (e *Executor) validateApproverNum(approver string, num int) (string, bool) {
+func (e *Executor) validateApproverNum(ctx context.Context, approver string, num int) (string, bool) {
 	if num <= 1 {
 		e.LogPersister.Infof("Got approval from \"%s\"", approver)
 		return approver, true
@@ -205,6 +200,9 @@ func (e *Executor) validateApproverNum(approver string, num int) (string, bool) 
 	if !ok {
 		e.LogPersister.Infof("Got approval from \"%s\"", approver)
 		e.LogPersister.Infof("Waiting for other approvers...")
+		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, as); err != nil {
+			e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
+		}
 		return approver, false
 	}
 	approvers := strings.Split(as, " ,")
@@ -216,6 +214,9 @@ func (e *Executor) validateApproverNum(approver string, num int) (string, bool) 
 	e.LogPersister.Infof("Got approval from \"%s\"", approver)
 	if d := num - len(approvers) - 1; d > 0 {
 		e.LogPersister.Infof("Waiting for other approvers...")
+		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, as); err != nil {
+			e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
+		}
 		return as + ", " + approver, false
 	}
 	return as + ", " + approver, true
