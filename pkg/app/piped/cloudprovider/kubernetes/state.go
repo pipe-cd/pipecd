@@ -548,7 +548,7 @@ func determineNameSpace(obj *unstructured.Unstructured) (status model.Kubernetes
 
 	switch ns.Status.Phase {
 	case corev1.NamespaceActive:
-		// Correct
+		// Go to determine based on the status' conditions.
 	case corev1.NamespaceTerminating:
 		status = model.KubernetesResourceState_OTHER
 		desc = "NameSpace is gracefully terminated"
