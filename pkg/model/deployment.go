@@ -48,6 +48,11 @@ func IsCompletedDeployment(status DeploymentStatus) bool {
 	return false
 }
 
+// IsSuccessfullyCompletedDeployment checks whether the deployment is at a successfully addressed.
+func IsSuccessfullyCompletedDeployment(status DeploymentStatus) bool {
+	return status == DeploymentStatus_DEPLOYMENT_SUCCESS
+}
+
 // IsCompletedStage checks whether the stage is at a completion state.
 func IsCompletedStage(status StageStatus) bool {
 	if status.String() == "" {

@@ -1105,6 +1105,56 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 	return &pipedservice.CreateDeploymentChainResponse{}, nil
 }
 
+// InChainDeploymentPlannable hecks the completion and status of the previous block in the deployment chain.
+// An in chain deployment is treated as plannable in case:
+// - It's the first deployment of its deployment chain.
+// - All deployments of its previous block in chain are at DEPLOYMENT_SUCCESS state.
+func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedservice.InChainDeploymentPlannableRequest) (*pipedservice.InChainDeploymentPlannableResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateDeploymentBelongsToPiped(ctx, req.Deployment.Id, pipedID); err != nil {
+		return nil, err
+	}
+
+	dc, err := a.deploymentChainStore.GetDeploymentChain(ctx, req.Deployment.DeploymentChainId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "unable to find the deployment chain which this deployment belongs to")
+	}
+
+	// Deployment of blocks[0] in the chain means it's the first deployment of the chain;
+	// hence it should be processed without any lock.
+	if req.Deployment.DeploymentChainBlockIndex == 0 {
+		return &pipedservice.InChainDeploymentPlannableResponse{
+			Plannable: true,
+		}, nil
+	}
+
+	if req.Deployment.DeploymentChainBlockIndex >= int32(len(dc.Blocks)) {
+		return nil, status.Error(codes.InvalidArgument, "invalid deployment with chain block index provided")
+	}
+
+	prevBlock := dc.Blocks[req.Deployment.DeploymentChainBlockIndex-1]
+	plannable := true
+	for _, node := range prevBlock.Nodes {
+		// TODO: Consider add deployment status to the deployment ref in the deployment chain model
+		// instead of fetching deployment model here.
+		dp, err := a.deploymentStore.GetDeployment(ctx, node.DeploymentRef.DeploymentId)
+		if err != nil {
+			return nil, status.Error(codes.Internal, "unable to process previous block nodes in deployment chain")
+		}
+		if model.IsSuccessfullyCompletedDeployment(dp.Status) {
+			plannable = false
+			break
+		}
+	}
+
+	return &pipedservice.InChainDeploymentPlannableResponse{
+		Plannable: plannable,
+	}, nil
+}
+
 // validateAppBelongsToPiped checks if the given application belongs to the given piped.
 // It gives back an error unless the application belongs to the piped.
 func (a *PipedAPI) validateAppBelongsToPiped(ctx context.Context, appID, pipedID string) error {

@@ -173,6 +173,10 @@ service PipedService {
     // CreateDeploymentChain creates a new deployment chain object and all required commands to
     // trigger deployment for applications in the chain.
     rpc CreateDeploymentChain(CreateDeploymentChainRequest) returns (CreateDeploymentChainResponse) {}
+    // DeploymentPlannable checks the completion and status of the previous block in the deployment chain,
+    // only when all the nodes of the previous block are completed with a success status,
+    // the nodes of the next block will be treated as processable.
+    rpc InChainDeploymentPlannable(InChainDeploymentPlannableRequest) returns (InChainDeploymentPlannableResponse) {}
 }
 
 enum ListOrder {
@@ -494,4 +498,12 @@ message CreateDeploymentChainRequest {
 }
 
 message CreateDeploymentChainResponse {
+}
+
+message InChainDeploymentPlannableRequest {
+    pipe.model.Deployment deployment = 1 [(validate.rules).message.required = true];
+}
+
+message InChainDeploymentPlannableResponse {
+    bool plannable = 1;
 }

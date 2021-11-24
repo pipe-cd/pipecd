@@ -56,6 +56,7 @@ var (
 type DeploymentChainStore interface {
 	AddDeploymentChain(ctx context.Context, d *model.DeploymentChain) error
 	UpdateDeploymentChain(ctx context.Context, id string, updater func(*model.DeploymentChain) error) error
+	GetDeploymentChain(ctx context.Context, id string) (*model.DeploymentChain, error)
 }
 
 type deploymentChainStore struct {
@@ -96,4 +97,12 @@ func (s *deploymentChainStore) UpdateDeploymentChain(ctx context.Context, id str
 		dc.UpdatedAt = now
 		return dc.Validate()
 	})
+}
+
+func (s *deploymentChainStore) GetDeploymentChain(ctx context.Context, id string) (*model.DeploymentChain, error) {
+	var entity model.DeploymentChain
+	if err := s.ds.Get(ctx, DeploymentChainModelKind, id, &entity); err != nil {
+		return nil, err
+	}
+	return &entity, nil
 }
