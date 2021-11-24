@@ -1053,8 +1053,8 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 
 		blockAppsMap[i+1] = blockApps
 		chainBlocks = append(chainBlocks, &model.ChainBlock{
-			Index: int32(i + 1),
 			Nodes: nodes,
+			StartedAt: time.Now().Unix(),
 		})
 	}
 
@@ -1089,7 +1089,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 				Type:          model.Command_CHAIN_SYNC_APPLICATION,
 				ChainSyncApplication: &model.Command_ChainSyncApplication{
 					DeploymentChainId: dc.Id,
-					BlockIndex:        int32(blockIndex),
+					BlockIndex:        uint32(blockIndex),
 					ApplicationId:     app.Id,
 					SyncStrategy:      model.SyncStrategy_AUTO,
 				},
