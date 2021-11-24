@@ -356,10 +356,13 @@ func (r *Reporter) readApplicationInfo(repoDir, appDirRelPath, cfgFilename strin
 	if spec.Name == "" {
 		return nil, fmt.Errorf("missing application name")
 	}
+	kind, ok := cfg.Kind.ToApplicationKind()
+	if !ok {
+		return nil, fmt.Errorf("%q is not application config kind", cfg.Kind)
+	}
 	return &model.ApplicationInfo{
-		Name: spec.Name,
-		// TODO: Convert Kind string into dedicated type
-		//Kind:           cfg.Kind,
+		Name:           spec.Name,
+		Kind:           kind,
 		Labels:         spec.Labels,
 		Path:           appDirRelPath,
 		ConfigFilename: cfgFilename,

@@ -19,6 +19,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func TestUnmarshalConfig(t *testing.T) {
@@ -78,4 +80,33 @@ func TestUnmarshalConfig(t *testing.T) {
 
 func newBoolPointer(v bool) *bool {
 	return &v
+}
+
+func TestKind_ToApplicationKind(t *testing.T) {
+	testcases := []struct {
+		name   string
+		k      Kind
+		want   model.ApplicationKind
+		wantOk bool
+	}{
+		{
+			name:   "App config",
+			k:      KindKubernetesApp,
+			want:   model.ApplicationKind_KUBERNETES,
+			wantOk: true,
+		},
+		{
+			name:   "Not an app config",
+			k:      KindPiped,
+			want:   -1,
+			wantOk: false,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, gotOk := tc.k.ToApplicationKind()
+			assert.Equal(t, tc.want, got)
+			assert.Equal(t, tc.wantOk, gotOk)
+		})
+	}
 }
