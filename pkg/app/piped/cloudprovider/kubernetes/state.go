@@ -560,7 +560,6 @@ func determineNameSpace(obj *unstructured.Unstructured) (status model.Kubernetes
 	status = model.KubernetesResourceState_HEALTHY
 
 	var cond *corev1.NamespaceCondition
-
 	for i := range ns.Status.Conditions {
 		c := ns.Status.Conditions[i]
 		switch c.Type {
