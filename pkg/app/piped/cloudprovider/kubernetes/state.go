@@ -555,7 +555,7 @@ func determineNameSpace(obj *unstructured.Unstructured) (status model.Kubernetes
 		return
 	default:
 		status = model.KubernetesResourceState_OTHER
-		desc = "The current phase of NameSpace is unexpected"
+		desc = fmt.Sprintf("The NameSpace is at an unexpected phase: %s", ns.Status.Phase)
 		return
 	}
 
