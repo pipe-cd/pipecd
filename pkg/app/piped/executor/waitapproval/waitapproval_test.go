@@ -70,8 +70,7 @@ func (c *fakeAPIClient) SaveStageMetadata(_ context.Context, req *pipedservice.S
 }
 
 func TestValidateApproverNum(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := context.Background()
 
 	ac := &fakeAPIClient{
 		shared: make(map[string]string, 0),
@@ -107,7 +106,7 @@ func TestValidateApproverNum(t *testing.T) {
 			wantApprovers: "user-1",
 		},
 		{
-			name:           "return an empty string",
+			name:           "return an empty string because number of current approver is not enough",
 			approver:       "user-1",
 			minApproverNum: 2,
 			executor: &Executor{
@@ -129,7 +128,7 @@ func TestValidateApproverNum(t *testing.T) {
 			wantApprovers: "",
 		},
 		{
-			name:           "return an empty string",
+			name:           "return an empty string because current approver is same as an approver in metadata",
 			approver:       "user-1",
 			minApproverNum: 2,
 			executor: &Executor{
@@ -153,7 +152,7 @@ func TestValidateApproverNum(t *testing.T) {
 			wantApprovers: "",
 		},
 		{
-			name:           "return an empty string",
+			name:           "return an empty string because number of current approver and approvers in metadata is not enough",
 			approver:       "user-2",
 			minApproverNum: 3,
 			executor: &Executor{
