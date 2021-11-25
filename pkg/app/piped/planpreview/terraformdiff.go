@@ -67,6 +67,8 @@ func (b *builder) terraformDiff(
 	vars := make([]string, 0, len(cpCfg.Vars)+len(deployCfg.Input.Vars))
 	vars = append(vars, cpCfg.Vars...)
 	vars = append(vars, deployCfg.Input.Vars...)
+	flags := deployCfg.Input.CommandFlags
+	envs := deployCfg.Input.CommandEnvs
 
 	executor := terraformprovider.NewTerraform(
 		terraformPath,
@@ -74,6 +76,8 @@ func (b *builder) terraformDiff(
 		terraformprovider.WithoutColor(),
 		terraformprovider.WithVars(vars),
 		terraformprovider.WithVarFiles(deployCfg.Input.VarFiles),
+		terraformprovider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
+		terraformprovider.WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
 	)
 
 	if err := executor.Init(ctx, buf); err != nil {
