@@ -178,33 +178,31 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 		notifySuccessful(approver, minApproverNum)
 		return true
 	}
-	as, ok := e.MetadataStore.Stage(e.Stage.Id).Get(approversKey)
-	if !ok {
-		e.LogPersister.Infof("Got approval from %q", approver)
-		e.LogPersister.Infof("Waiting for %d other approvers...", minApproverNum-1)
-		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, approver); err != nil {
-			e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
-		}
-		return false
+
+	const delimiter = ", "
+	as, _ := e.MetadataStore.Stage(e.Stage.Id).Get(approversKey)
+	var approvedUsers []string
+	if as != "" {
+		approvedUsers = strings.Split(as, delimiter)
 	}
 
-	for _, a := range strings.Split(as, ", ") {
-		if a == approver {
+	for _, u := range approvedUsers {
+		if u == approver {
 			e.LogPersister.Infof("Approval from the same user (%s) will not be counted", approver)
 			return false
 		}
 	}
+	approvedUsers = append(approvedUsers, approver)
 	e.LogPersister.Infof("Got approval from %q", approver)
 
-	totalAs := fmt.Sprintf("%s, %s", as, approver)
-	if c := minApproverNum - len(strings.Split(totalAs, ", ")); c > 0 {
-		e.LogPersister.Infof("Waiting for %d other approvers...", c)
-		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, totalAs); err != nil {
+	if remain := minApproverNum - len(approvedUsers); remain > 0 {
+		e.LogPersister.Infof("Waiting for %d other approvers...", remain)
+		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, strings.Join(approvedUsers, delimiter)); err != nil {
 			e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
 		}
 		return false
 	}
 
-	notifySuccessful(totalAs, minApproverNum)
+	notifySuccessful(strings.Join(approvedUsers, delimiter), minApproverNum)
 	return true
 }
