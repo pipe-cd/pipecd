@@ -76,19 +76,19 @@ func TestHasStage(t *testing.T) {
 
 func TestValidateWaitApprovalStageOptions(t *testing.T) {
 	testcases := []struct {
-		name string
+		name           string
 		minApproverNum int
-		wantErr bool
+		wantErr        bool
 	}{
 		{
-			name: "valid",
+			name:           "valid",
 			minApproverNum: 1,
-			wantErr: false,
+			wantErr:        false,
 		},
 		{
-			name: "invalid",
+			name:           "invalid",
 			minApproverNum: -1,
-			wantErr: true,
+			wantErr:        true,
 		},
 	}
 	for _, tc := range testcases {
@@ -96,8 +96,8 @@ func TestValidateWaitApprovalStageOptions(t *testing.T) {
 			w := &WaitApprovalStageOptions{
 				MinApproverNum: tc.minApproverNum,
 			}
-			got := w.Validate()
-			assert.Equal(t, tc.wantErr, got)
+			err := w.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
 }

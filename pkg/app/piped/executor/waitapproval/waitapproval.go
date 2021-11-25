@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	approvedByKey     = "ApprovedBy"
+	approvedByKey = "ApprovedBy"
 )
 
 type Executor struct {
