@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	approvedByKey = "ApprovedBy"
+	approvedByKey     = "ApprovedBy"
 	minApproverNumKey = "MinApproverNum"
 )
 
@@ -189,7 +189,7 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 	e.LogPersister.Infof("Got approval from %q", approver)
 	approvedUsers = append(approvedUsers, approver)
 	aus := strings.Join(approvedUsers, delimiter)
-	
+
 	if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approvedByKey, aus); err != nil {
 		e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
 	}
