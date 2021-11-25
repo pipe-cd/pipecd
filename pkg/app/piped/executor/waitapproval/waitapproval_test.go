@@ -85,7 +85,7 @@ func TestValidateApproverNum(t *testing.T) {
 		approver       string
 		minApproverNum int
 		executor       *Executor
-		want  bool
+		want           bool
 	}{
 		{
 			name:           "return the person who just approved",

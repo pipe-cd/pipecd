@@ -107,11 +107,10 @@ func (e *Executor) checkApproval(ctx context.Context, num int) bool {
 		return false
 	}
 
+	reached := e.validateApproverNum(ctx, approveCmd.Commander, num)
 	if err := approveCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
 		e.Logger.Error("failed to report handled command", zap.Error(err))
 	}
-
-	reached := e.validateApproverNum(ctx, approveCmd.Commander, num)
 	return reached
 }
 
@@ -162,10 +161,21 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 	return notification.FindSlackAccounts(event), nil
 }
 
-// An empty string means that number of approvers is invalid
+// True means that number of approvers is valid
 func (e *Executor) validateApproverNum(ctx context.Context, approver string, minApproverNum int) bool {
+	notifySuccessful := func(as string, n int) {
+		e.reportApproved(as)
+		if minApproverNum > 1 {
+			e.LogPersister.Info("Received all needed approvals")
+			e.LogPersister.Infof("This stage has been approved by %d users (%s)", minApproverNum, as)
+		} else {
+			e.LogPersister.Infof("This stage has been approved by %d user (%s)", minApproverNum, as)
+		}
+	}
+
 	if minApproverNum <= 1 {
 		e.LogPersister.Infof("Got approval from %q", approver)
+		notifySuccessful(approver, minApproverNum)
 		return true
 	}
 	as, ok := e.MetadataStore.Stage(e.Stage.Id).Get(approversKey)
@@ -194,13 +204,7 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 		}
 		return false
 	}
-	e.LogPersister.Info("Received all needed approvals")
 
-	e.reportApproved(totalAs)
-	if minApproverNum > 1 {
-		e.LogPersister.Infof("This stage has been approved by %d users (%s)", minApproverNum, totalAs)
-	} else {
-		e.LogPersister.Infof("This stage has been approved by %d user (%s)", minApproverNum, totalAs)
-	}
+	notifySuccessful(totalAs, minApproverNum)
 	return true
 }
