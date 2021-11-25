@@ -501,7 +501,9 @@ message CreateDeploymentChainResponse {
 }
 
 message InChainDeploymentPlannableRequest {
-    pipe.model.Deployment deployment = 1 [(validate.rules).message.required = true];
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string deployment_chain_id = 2 [(validate.rules).string.min_len = 1];
+    uint32 deployment_chain_block_index = 3;
 }
 
 message InChainDeploymentPlannableResponse {

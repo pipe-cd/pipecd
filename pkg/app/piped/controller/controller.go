@@ -54,6 +54,8 @@ type apiClient interface {
 	SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error)
 	ReportStageLogs(ctx context.Context, req *pipedservice.ReportStageLogsRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsResponse, error)
 	ReportStageLogsFromLastCheckpoint(ctx context.Context, in *pipedservice.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error)
+
+	InChainDeploymentPlannable(ctx context.Context, in *pipedservice.InChainDeploymentPlannableRequest, opts ...grpc.CallOption) (*pipedservice.InChainDeploymentPlannableResponse, error)
 }
 
 type gitClient interface {
@@ -369,6 +371,32 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 	}
 
 	for appID, d := range pendingByApp {
+		plannable, err := c.shouldStartPlanningDeployment(ctx, d)
+		if err != nil {
+			c.logger.Error("failed to check deployment plannability",
+				zap.String("deployment", d.Id),
+				zap.String("app", d.ApplicationId),
+				zap.Error(err),
+			)
+			continue
+		}
+
+		if !plannable {
+			if d.IsInChainDeployment() {
+				c.logger.Info("unable to start planning deployment, probably locked by the previous block in its deployment chain",
+					zap.String("deployment_chain", d.DeploymentChainId),
+					zap.String("deployment", d.Id),
+					zap.String("app", d.ApplicationId),
+				)
+			} else {
+				c.logger.Info("unable to start planning deployment, try again next sync interval",
+					zap.String("deployment", d.Id),
+					zap.String("app", d.ApplicationId),
+				)
+			}
+			continue
+		}
+
 		planner, err := c.startNewPlanner(ctx, d)
 		if err != nil {
 			c.logger.Error("failed to start a new planner",
@@ -641,6 +669,21 @@ func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, ap
 		}
 	}
 	return nil, err
+}
+
+func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model.Deployment) (bool, error) {
+	if !d.IsInChainDeployment() {
+		return true, nil
+	}
+	resp, err := c.apiClient.InChainDeploymentPlannable(ctx, &pipedservice.InChainDeploymentPlannableRequest{
+		DeploymentId:              d.Id,
+		DeploymentChainId:         d.DeploymentChainId,
+		DeploymentChainBlockIndex: d.DeploymentChainBlockIndex,
+	})
+	if err != nil {
+		return false, err
+	}
+	return resp.Plannable, nil
 }
 
 type appLiveResourceLister struct {
