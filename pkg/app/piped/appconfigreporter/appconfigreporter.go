@@ -288,6 +288,8 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPath
 		r.logger.Info(fmt.Sprintf("found out %d unregistered applications in repository %s", len(as), repoID))
 		apps = append(apps, as...)
 	}
+	// Prevent Piped from continuing to send meaningless requests
+	// even though Control-plane already knows that there are zero unregistered apps.
 	if len(apps) == 0 {
 		if r.sweptUnregisteredApps {
 			return nil

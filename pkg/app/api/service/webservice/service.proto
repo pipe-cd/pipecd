@@ -65,6 +65,7 @@ service WebService {
     rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
     rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {}
     rpc GenerateApplicationSealedSecret(GenerateApplicationSealedSecretRequest) returns (GenerateApplicationSealedSecretResponse) {}
+    rpc ListUnregisteredApplications(ListUnregisteredApplicationsRequest) returns (ListUnregisteredApplicationsResponse) {}
 
     // Deployment
     rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {}
@@ -219,6 +220,7 @@ message AddEnvironmentRequest {
     string desc = 2;
 }
 
+
 message AddApplicationRequest {
     string name = 1 [(validate.rules).string.min_len = 1];
     string env_id = 2;
@@ -316,6 +318,17 @@ message GenerateApplicationSealedSecretRequest {
 
 message GenerateApplicationSealedSecretResponse {
     string data = 1 [(validate.rules).string.min_len = 1];
+}
+
+message ListUnregisteredApplicationsRequest {
+}
+
+message ListUnregisteredApplicationsResponse {
+    message Repo {
+        string id = 1;
+        repeated model.ApplicationInfo apps = 2;
+    }
+    repeated Repo repos = 1;
 }
 
 message ListDeploymentsRequest {

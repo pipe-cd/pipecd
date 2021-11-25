@@ -41,6 +41,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/cache/cachemetrics"
+	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/config"
@@ -188,6 +189,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 	is := insightstore.NewStore(fs)
 	cmdOutputStore := commandoutputstore.NewStore(fs, input.Logger)
 	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
+	unregisteredAppsCache := memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour)
 
 	// Start a gRPC server for handling PipedAPI requests.
 	{
@@ -199,7 +201,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 				datastore.NewPipedStore(ds),
 				input.Logger,
 			)
-			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, las, cmds, statCache, cmdOutputStore, cfg.Address, input.Logger)
+			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, las, cmds, statCache, unregisteredAppsCache, cmdOutputStore, cfg.Address, input.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),
@@ -271,7 +273,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			return err
 		}
 
-		service := grpcapi.NewWebAPI(ctx, ds, fs, sls, alss, cmds, is, rd, cfg.ProjectMap(), encryptDecrypter, input.Logger)
+		service := grpcapi.NewWebAPI(ctx, ds, fs, sls, alss, cmds, is, rd, unregisteredAppsCache, cfg.ProjectMap(), encryptDecrypter, input.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),

@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -66,6 +67,8 @@ type WebAPI struct {
 	pipedProjectCache      cache.Cache
 	envProjectCache        cache.Cache
 	insightCache           cache.Cache
+	// A map from projectID to map["repo-id"][]*model.ApplicationInfo
+	unregisteredAppsCache cache.Cache
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -81,6 +84,7 @@ func NewWebAPI(
 	cmds commandstore.Store,
 	is insightstore.Store,
 	rd redis.Redis,
+	uac cache.Cache,
 	projs map[string]config.ControlPlaneProject,
 	encrypter encrypter,
 	logger *zap.Logger) *WebAPI {
@@ -102,6 +106,7 @@ func NewWebAPI(
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		envProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		insightCache:              rediscache.NewTTLCache(rd, 3*time.Hour),
+		unregisteredAppsCache:     uac,
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -597,6 +602,40 @@ func (a *WebAPI) validatePipedBelongsToProject(ctx context.Context, pipedID, pro
 		return status.Error(codes.PermissionDenied, "Requested piped doesn't belong to the project you logged in")
 	}
 	return nil
+}
+
+func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice.ListUnregisteredApplicationsRequest) (*webservice.ListUnregisteredApplicationsResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+	entity, err := a.unregisteredAppsCache.Get(claims.Role.ProjectId)
+	if errors.Is(err, cache.ErrNotFound) {
+		return &webservice.ListUnregisteredApplicationsResponse{}, nil
+	}
+	if err != nil {
+		a.logger.Error("failed to get unregistered apps", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get unregistered apps")
+	}
+	repoToApps, ok := entity.(map[string][]*model.ApplicationInfo)
+	if !ok {
+		return nil, status.Error(codes.Internal, "Unexpected data cached")
+	}
+
+	repos := make([]*webservice.ListUnregisteredApplicationsResponse_Repo, len(repoToApps))
+	for repoID, apps := range repoToApps {
+		sort.Slice(apps, func(i, j int) bool {
+			return apps[i].GetPath() < apps[j].GetPath()
+		})
+		repos = append(repos, &webservice.ListUnregisteredApplicationsResponse_Repo{
+			Id:   repoID,
+			Apps: apps,
+		})
+	}
+	return &webservice.ListUnregisteredApplicationsResponse{
+		Repos: repos,
+	}, nil
 }
 
 // TODO: Validate the specified piped to ensure that it belongs to the specified environment.

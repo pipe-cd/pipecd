@@ -58,13 +58,15 @@ type PipedAPI struct {
 	deploymentPipedCache cache.Cache
 	envProjectCache      cache.Cache
 	pipedStatCache       cache.Cache
+	// A map from projectID to map["repo-id"][]*model.ApplicationInfo
+	unregisteredAppsCache cache.Cache
 
 	webBaseURL string
 	logger     *zap.Logger
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, cs commandstore.Store, hc cache.Cache, cop commandOutputPutter, webBaseURL string, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, cs commandstore.Store, hc, uac cache.Cache, cop commandOutputPutter, webBaseURL string, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
@@ -82,6 +84,7 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.
 		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		envProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            hc,
+		unregisteredAppsCache:     uac,
 		webBaseURL:                webBaseURL,
 		logger:                    logger.Named("piped-api"),
 	}
@@ -994,8 +997,26 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 }
 
 func (a *PipedAPI) ReportUnregisteredApplicationConfigurations(ctx context.Context, req *pipedservice.ReportUnregisteredApplicationConfigurationsRequest) (*pipedservice.ReportUnregisteredApplicationConfigurationsResponse, error) {
-	// TODO: Make the unused application configurations cache up-to-date
-	return nil, status.Errorf(codes.Unimplemented, "ReportUnregisteredApplicationConfigurations is not implemented yet")
+	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Make a map from repo-id to a collection of ApplicationInfo.
+	repoToApps := make(map[string][]*model.ApplicationInfo)
+	for _, appInfo := range req.Applications {
+		repoID := appInfo.RepoId
+		if _, ok := repoToApps[repoID]; !ok {
+			repoToApps[repoID] = []*model.ApplicationInfo{}
+		}
+		repoToApps[repoID] = append(repoToApps[repoID], appInfo)
+	}
+
+	if err := a.unregisteredAppsCache.Put(projectID, repoToApps); err != nil {
+		return nil, status.Error(codes.Internal, "failed to put the unregistered apps to the cache")
+	}
+
+	return &pipedservice.ReportUnregisteredApplicationConfigurationsResponse{}, nil
 }
 
 // CreateDeploymentChain creates a new deployment chain object and all required commands to
