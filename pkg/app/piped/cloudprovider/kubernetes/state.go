@@ -356,6 +356,9 @@ func determineJobHealth(obj *unstructured.Unstructured) (status model.Kubernetes
 			completed = true
 			message = condition.Message
 		}
+		if failed {
+			break
+		}
 	}
 
 	switch {
