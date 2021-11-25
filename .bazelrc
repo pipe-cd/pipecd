@@ -8,7 +8,7 @@ test --test_output=errors --test_verbose_timeout_warnings --incompatible_strict_
 build:stamping --stamp --workspace_status_command hack/print-workspace-status.sh
 
 # Enable go race detection
-build --features=race
+build --@io_bazel_rules_go//go/config:race
 
 # Output profiling to a file
 build --profile=/tmp/build.bazelprofile
