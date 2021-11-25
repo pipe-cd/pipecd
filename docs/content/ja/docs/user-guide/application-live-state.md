@@ -1,7 +1,7 @@
 ---
 title: "Applicationの状態"
 linkTitle: "Applicationの状態"
-weight: 9
+weight: 5
 description: >
   Application のコンポーネントの状態やそれらのヘルスステータスに関する説明
 ---
