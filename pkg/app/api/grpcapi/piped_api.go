@@ -33,9 +33,11 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
+	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/redis"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
 
@@ -58,15 +60,14 @@ type PipedAPI struct {
 	deploymentPipedCache cache.Cache
 	envProjectCache      cache.Cache
 	pipedStatCache       cache.Cache
-	// A map from projectID to map["repo-id"][]*model.ApplicationInfo
-	unregisteredAppsCache cache.Cache
+	redis                redis.Redis
 
 	webBaseURL string
 	logger     *zap.Logger
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, cs commandstore.Store, hc, uac cache.Cache, cop commandOutputPutter, webBaseURL string, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, cs commandstore.Store, hc cache.Cache, rd redis.Redis, cop commandOutputPutter, webBaseURL string, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
@@ -84,7 +85,7 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.
 		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		envProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            hc,
-		unregisteredAppsCache:     uac,
+		redis:                     rd,
 		webBaseURL:                webBaseURL,
 		logger:                    logger.Named("piped-api"),
 	}
@@ -997,7 +998,7 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 }
 
 func (a *PipedAPI) ReportUnregisteredApplicationConfigurations(ctx context.Context, req *pipedservice.ReportUnregisteredApplicationConfigurationsRequest) (*pipedservice.ReportUnregisteredApplicationConfigurationsResponse, error) {
-	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	projectID, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1012,7 +1013,10 @@ func (a *PipedAPI) ReportUnregisteredApplicationConfigurations(ctx context.Conte
 		repoToApps[repoID] = append(repoToApps[repoID], appInfo)
 	}
 
-	if err := a.unregisteredAppsCache.Put(projectID, repoToApps); err != nil {
+	key := makeUnregisteredAppsCacheKey(projectID)
+	c := rediscache.NewHashCache(a.redis, key)
+	// Put an entity like map["piped-id"]map["repo-id"][]*model.ApplicationInfo
+	if err := c.Put(pipedID, repoToApps); err != nil {
 		return nil, status.Error(codes.Internal, "failed to put the unregistered apps to the cache")
 	}
 

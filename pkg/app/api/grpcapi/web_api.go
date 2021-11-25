@@ -67,8 +67,7 @@ type WebAPI struct {
 	pipedProjectCache      cache.Cache
 	envProjectCache        cache.Cache
 	insightCache           cache.Cache
-	// A map from projectID to map["repo-id"][]*model.ApplicationInfo
-	unregisteredAppsCache cache.Cache
+	redis                  redis.Redis
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -84,7 +83,6 @@ func NewWebAPI(
 	cmds commandstore.Store,
 	is insightstore.Store,
 	rd redis.Redis,
-	uac cache.Cache,
 	projs map[string]config.ControlPlaneProject,
 	encrypter encrypter,
 	logger *zap.Logger) *WebAPI {
@@ -106,7 +104,7 @@ func NewWebAPI(
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		envProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		insightCache:              rediscache.NewTTLCache(rd, 3*time.Hour),
-		unregisteredAppsCache:     uac,
+		redis:                     rd,
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -610,7 +608,12 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 		a.logger.Error("failed to authenticate the current user", zap.Error(err))
 		return nil, err
 	}
-	entity, err := a.unregisteredAppsCache.Get(claims.Role.ProjectId)
+
+	// Collect all apps that belong to the project.
+	key := makeUnregisteredAppsCacheKey(claims.Role.ProjectId)
+	c := rediscache.NewHashCache(a.redis, key)
+	// It assumes each entry is map["piped-id"]map["repo-id"][]*model.ApplicationInfo
+	pipedToRepos, err := c.GetAll()
 	if errors.Is(err, cache.ErrNotFound) {
 		return &webservice.ListUnregisteredApplicationsResponse{}, nil
 	}
@@ -618,21 +621,45 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 		a.logger.Error("failed to get unregistered apps", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get unregistered apps")
 	}
-	repoToApps, ok := entity.(map[string][]*model.ApplicationInfo)
-	if !ok {
-		return nil, status.Error(codes.Internal, "Unexpected data cached")
+
+	// FIXME: Refactor and fall into independent functions and write tests
+	// Integrate the apps cached for each Piped.
+	repoToApps := make(map[string][]*model.ApplicationInfo)
+	for _, r := range pipedToRepos {
+		repoToAppsPerPiped, ok := r.(map[string][]*model.ApplicationInfo)
+		if !ok {
+			return nil, status.Error(codes.Internal, "Unexpected data cached")
+		}
+		for repoID, apps := range repoToAppsPerPiped {
+			if _, ok := repoToApps[repoID]; !ok {
+				repoToApps[repoID] = []*model.ApplicationInfo{}
+			}
+			repoToApps[repoID] = append(repoToApps[repoID], apps...)
+		}
 	}
 
+	// Tidy apps.
 	repos := make([]*webservice.ListUnregisteredApplicationsResponse_Repo, len(repoToApps))
 	for repoID, apps := range repoToApps {
-		sort.Slice(apps, func(i, j int) bool {
-			return apps[i].GetPath() < apps[j].GetPath()
+		// Eliminate duplicated apps
+		tidiedApps := make([]*model.ApplicationInfo, 0, len(apps))
+		gitPaths := make(map[string]struct{})
+		for _, app := range apps {
+			if _, ok := gitPaths[app.GetPath()]; ok {
+				continue
+			}
+			tidiedApps = append(tidiedApps, app)
+		}
+
+		sort.Slice(tidiedApps, func(i, j int) bool {
+			return tidiedApps[i].GetPath() < tidiedApps[j].GetPath()
 		})
 		repos = append(repos, &webservice.ListUnregisteredApplicationsResponse_Repo{
 			Id:   repoID,
-			Apps: apps,
+			Apps: tidiedApps,
 		})
 	}
+
 	return &webservice.ListUnregisteredApplicationsResponse{
 		Repos: repos,
 	}, nil

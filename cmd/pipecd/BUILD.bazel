@@ -32,7 +32,6 @@ go_library(
         "//pkg/app/ops/planpreviewoutputcleaner:go_default_library",
         "//pkg/app/ops/staledpipedstatcleaner:go_default_library",
         "//pkg/cache/cachemetrics:go_default_library",
-        "//pkg/cache/memorycache:go_default_library",
         "//pkg/cache/rediscache:go_default_library",
         "//pkg/cli:go_default_library",
         "//pkg/config:go_default_library",
