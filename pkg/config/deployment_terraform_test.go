@@ -136,6 +136,7 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 									Approvers: []string{"foo", "bar"},
 									// Use defaultWaitApprovalTimeout on unset timeout value for WaitApprovalStage.
 									Timeout: defaultWaitApprovalTimeout,
+									MinApproverNum: 1,
 								},
 							},
 							{
