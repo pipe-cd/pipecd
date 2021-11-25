@@ -367,7 +367,14 @@ type WaitApprovalStageOptions struct {
 	// Defaults to 6h.
 	Timeout        Duration `json:"timeout"`
 	Approvers      []string `json:"approvers"`
-	MinApproverNum int      `json:"minApproverNum"`
+	MinApproverNum int      `json:"minApproverNum" default:"1"`
+}
+
+func (w *WaitApprovalStageOptions) Validate() error {
+	if w.MinApproverNum < 1 {
+		return fmt.Errorf("MinApproverNum %d should be one or more", w.MinApproverNum)
+	}
+	return nil
 }
 
 // AnalysisStageOptions contains all configurable values for a K8S_ANALYSIS stage.

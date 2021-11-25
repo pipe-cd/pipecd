@@ -30,7 +30,6 @@ import (
 
 const (
 	approvedByKey     = "ApprovedBy"
-	minApproverNumKey = "MinApproverNum"
 )
 
 type Executor struct {
@@ -161,9 +160,9 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 	return notification.FindSlackAccounts(event), nil
 }
 
-// True means that number of approvers is valid
+// validateApproverNum checks if number of approves is valid.
 func (e *Executor) validateApproverNum(ctx context.Context, approver string, minApproverNum int) bool {
-	if minApproverNum <= 1 {
+	if minApproverNum == 1 {
 		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approvedByKey, approver); err != nil {
 			e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
 		}
