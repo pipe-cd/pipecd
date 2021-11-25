@@ -182,7 +182,7 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 }
 
 // An empty string means that number of approvers is invalid
-func (e *Executor) validateApproverNum(ctx context.Context, approver string, minApproverNum int) (string) {
+func (e *Executor) validateApproverNum(ctx context.Context, approver string, minApproverNum int) string {
 	if minApproverNum <= 1 {
 		e.LogPersister.Infof("Got approval from %q", approver)
 		return approver
