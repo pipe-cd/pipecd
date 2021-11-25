@@ -671,9 +671,12 @@ func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, ap
 	return nil, err
 }
 
-func (c *controller) shouldStartPlanningDeployment(ctx context.Context, deployment *model.Deployment) (bool, error) {
+func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model.Deployment) (bool, error) {
+	if !d.IsInChainDeployment() {
+		return true, nil
+	}
 	resp, err := c.apiClient.InChainDeploymentPlannable(ctx, &pipedservice.InChainDeploymentPlannableRequest{
-		Deployment: deployment,
+		Deployment: d,
 	})
 	if err != nil {
 		return false, err
