@@ -472,6 +472,7 @@ func determineServiceHealth(obj *unstructured.Unstructured) (status model.Kubern
 	if len(s.Status.LoadBalancer.Ingress) == 0 {
 		status = model.KubernetesResourceState_OTHER
 		desc = "Ingress points for the load-balancer are in progress"
+		return
 	}
 	return
 }
