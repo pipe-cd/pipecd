@@ -163,19 +163,10 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 
 // True means that number of approvers is valid
 func (e *Executor) validateApproverNum(ctx context.Context, approver string, minApproverNum int) bool {
-	notifySuccessful := func(as string, n int) {
-		e.reportApproved(as)
-		if minApproverNum > 1 {
-			e.LogPersister.Info("Received all needed approvals")
-			e.LogPersister.Infof("This stage has been approved by %d users (%s)", minApproverNum, as)
-		} else {
-			e.LogPersister.Infof("This stage has been approved by %d user (%s)", minApproverNum, as)
-		}
-	}
-
 	if minApproverNum <= 1 {
 		e.LogPersister.Infof("Got approval from %q", approver)
-		notifySuccessful(approver, minApproverNum)
+		e.reportApproved(approver)
+		e.LogPersister.Infof("This stage has been approved by %d user (%s)", minApproverNum, approver)
 		return true
 	}
 
@@ -203,6 +194,8 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 		return false
 	}
 
-	notifySuccessful(strings.Join(approvedUsers, delimiter), minApproverNum)
+	e.reportApproved(strings.Join(approvedUsers, delimiter))
+	e.LogPersister.Info("Received all needed approvals")
+	e.LogPersister.Infof("This stage has been approved by %d users (%s)", minApproverNum, as)
 	return true
 }
