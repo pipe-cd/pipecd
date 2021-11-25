@@ -147,7 +147,7 @@ func TestValidateApproverNum(t *testing.T) {
 							{
 								Id: "stage-1",
 								Metadata: map[string]string{
-									approversKey: "user-1",
+									approvedByKey: "user-1",
 								},
 							},
 						},
@@ -172,7 +172,7 @@ func TestValidateApproverNum(t *testing.T) {
 							{
 								Id: "stage-1",
 								Metadata: map[string]string{
-									approversKey: "user-1",
+									approvedByKey: "user-1",
 								},
 							},
 						},
@@ -197,7 +197,7 @@ func TestValidateApproverNum(t *testing.T) {
 							{
 								Id: "stage-1",
 								Metadata: map[string]string{
-									approversKey: "user-1",
+									approvedByKey: "user-1",
 								},
 							},
 						},

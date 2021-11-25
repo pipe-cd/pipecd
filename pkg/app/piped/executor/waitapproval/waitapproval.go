@@ -31,7 +31,6 @@ import (
 const (
 	approvedByKey = "ApprovedBy"
 	minApproverNumKey = "MinApproverNum"
-	approversKey      = "CurrentApprovers"
 )
 
 type Executor struct {
@@ -175,7 +174,7 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 	}
 
 	const delimiter = ", "
-	as, _ := e.MetadataStore.Stage(e.Stage.Id).Get(approversKey)
+	as, _ := e.MetadataStore.Stage(e.Stage.Id).Get(approvedByKey)
 	var approvedUsers []string
 	if as != "" {
 		approvedUsers = strings.Split(as, delimiter)
@@ -187,20 +186,16 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 			return false
 		}
 	}
-	approvedUsers = append(approvedUsers, approver)
 	e.LogPersister.Infof("Got approval from %q", approver)
-
+	approvedUsers = append(approvedUsers, approver)
 	aus := strings.Join(approvedUsers, delimiter)
-	if remain := minApproverNum - len(approvedUsers); remain > 0 {
-		e.LogPersister.Infof("Waiting for %d other approvers...", remain)
-		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, aus); err != nil {
-			e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
-		}
-		return false
-	}
-
+	
 	if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approvedByKey, aus); err != nil {
 		e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
+	}
+	if remain := minApproverNum - len(approvedUsers); remain > 0 {
+		e.LogPersister.Infof("Waiting for %d other approvers...", remain)
+		return false
 	}
 	e.reportApproved(aus)
 	e.LogPersister.Info("Received all needed approvals")
