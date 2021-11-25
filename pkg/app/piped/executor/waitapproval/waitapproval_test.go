@@ -82,11 +82,10 @@ func TestValidateApproverNum(t *testing.T) {
 		approver       string
 		minApproverNum int
 		executor       *Executor
-		wantBool       bool
 		wantApprovers  string
 	}{
 		{
-			name:           "return the person who just approved it and true",
+			name:           "return the person who just approved",
 			approver:       "user-1",
 			minApproverNum: 0,
 			executor: &Executor{
@@ -105,11 +104,10 @@ func TestValidateApproverNum(t *testing.T) {
 					}),
 				},
 			},
-			wantBool:      true,
 			wantApprovers: "user-1",
 		},
 		{
-			name:           "return the person who just approved it and false",
+			name:           "return an empty string",
 			approver:       "user-1",
 			minApproverNum: 2,
 			executor: &Executor{
@@ -128,11 +126,10 @@ func TestValidateApproverNum(t *testing.T) {
 					}),
 				},
 			},
-			wantBool:      false,
-			wantApprovers: "user-1",
+			wantApprovers: "",
 		},
 		{
-			name:           "return nothing and false",
+			name:           "return an empty string",
 			approver:       "user-1",
 			minApproverNum: 2,
 			executor: &Executor{
@@ -153,11 +150,10 @@ func TestValidateApproverNum(t *testing.T) {
 					}),
 				},
 			},
-			wantBool:      false,
 			wantApprovers: "",
 		},
 		{
-			name:           "return all approvers and false",
+			name:           "return an empty string",
 			approver:       "user-2",
 			minApproverNum: 3,
 			executor: &Executor{
@@ -178,11 +174,10 @@ func TestValidateApproverNum(t *testing.T) {
 					}),
 				},
 			},
-			wantBool:      false,
-			wantApprovers: "user-1, user-2",
+			wantApprovers: "",
 		},
 		{
-			name:           "return all approvers and true",
+			name:           "return all approvers",
 			approver:       "user-2",
 			minApproverNum: 2,
 			executor: &Executor{
@@ -203,14 +198,12 @@ func TestValidateApproverNum(t *testing.T) {
 					}),
 				},
 			},
-			wantBool:      true,
 			wantApprovers: "user-1, user-2",
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			as, ok := tc.executor.validateApproverNum(ctx, tc.approver, tc.minApproverNum)
-			assert.Equal(t, tc.wantBool, ok)
+			as := tc.executor.validateApproverNum(ctx, tc.approver, tc.minApproverNum)
 			assert.Equal(t, tc.wantApprovers, as)
 		})
 	}

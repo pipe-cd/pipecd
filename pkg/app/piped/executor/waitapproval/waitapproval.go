@@ -114,17 +114,12 @@ func (e *Executor) checkApproval(ctx context.Context, num int) (string, bool) {
 		return "", false
 	}
 
-	as, ok := e.validateApproverNum(ctx, approveCmd.Commander, num)
-	if len(as) > 0 {
-		if err := approveCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
-			e.Logger.Error("failed to report handled command", zap.Error(err))
-		}
-	} else {
-		if err := approveCmd.Report(ctx, model.CommandStatus_COMMAND_FAILED, nil, nil); err != nil {
-			e.Logger.Error("failed to report command status", zap.Error(err))
-		}
+	if err := approveCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
+		e.Logger.Error("failed to report handled command", zap.Error(err))
 	}
-	if !ok {
+
+	as := e.validateApproverNum(ctx, approveCmd.Commander, num)
+	if as == "" {
 		return "", false
 	}
 	e.LogPersister.Info("Received all needed approvals\n")
@@ -186,10 +181,11 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 	return notification.FindSlackAccounts(event), nil
 }
 
-func (e *Executor) validateApproverNum(ctx context.Context, approver string, minApproverNum int) (string, bool) {
+// An empty string means that number of approvers is invalid
+func (e *Executor) validateApproverNum(ctx context.Context, approver string, minApproverNum int) (string) {
 	if minApproverNum <= 1 {
 		e.LogPersister.Infof("Got approval from %q", approver)
-		return approver, true
+		return approver
 	}
 	as, ok := e.MetadataStore.Stage(e.Stage.Id).Get(approversKey)
 	if !ok {
@@ -198,13 +194,13 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, approver); err != nil {
 			e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
 		}
-		return approver, false
+		return ""
 	}
 
 	for _, a := range strings.Split(as, ", ") {
 		if a == approver {
 			e.LogPersister.Infof("Approval from the same user (%s) will not be counted", approver)
-			return "", false
+			return ""
 		}
 	}
 	e.LogPersister.Infof("Got approval from %q", approver)
@@ -215,7 +211,7 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, totalAs); err != nil {
 			e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
 		}
-		return totalAs, false
+		return ""
 	}
-	return totalAs, true
+	return totalAs
 }
