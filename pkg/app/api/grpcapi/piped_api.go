@@ -1136,28 +1136,28 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 	if err != nil {
 		return nil, err
 	}
-	if err := a.validateDeploymentBelongsToPiped(ctx, req.Deployment.Id, pipedID); err != nil {
+	if err := a.validateDeploymentBelongsToPiped(ctx, req.DeploymentId, pipedID); err != nil {
 		return nil, err
 	}
 
-	dc, err := a.deploymentChainStore.GetDeploymentChain(ctx, req.Deployment.DeploymentChainId)
+	dc, err := a.deploymentChainStore.GetDeploymentChain(ctx, req.DeploymentChainId)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "unable to find the deployment chain which this deployment belongs to")
 	}
 
 	// Deployment of blocks[0] in the chain means it's the first deployment of the chain;
 	// hence it should be processed without any lock.
-	if req.Deployment.DeploymentChainBlockIndex == 0 {
+	if req.DeploymentChainBlockIndex == 0 {
 		return &pipedservice.InChainDeploymentPlannableResponse{
 			Plannable: true,
 		}, nil
 	}
 
-	if req.Deployment.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
+	if req.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
 		return nil, status.Error(codes.InvalidArgument, "invalid deployment with chain block index provided")
 	}
 
-	prevBlock := dc.Blocks[req.Deployment.DeploymentChainBlockIndex-1]
+	prevBlock := dc.Blocks[req.DeploymentChainBlockIndex-1]
 	plannable := true
 	for _, node := range prevBlock.Nodes {
 		// TODO: Consider add deployment status to the deployment ref in the deployment chain model

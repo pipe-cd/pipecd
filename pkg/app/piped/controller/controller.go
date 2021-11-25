@@ -676,7 +676,9 @@ func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model
 		return true, nil
 	}
 	resp, err := c.apiClient.InChainDeploymentPlannable(ctx, &pipedservice.InChainDeploymentPlannableRequest{
-		Deployment: d,
+		DeploymentId:              d.Id,
+		DeploymentChainId:         d.DeploymentChainId,
+		DeploymentChainBlockIndex: d.DeploymentChainBlockIndex,
 	})
 	if err != nil {
 		return false, err
