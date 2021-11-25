@@ -219,3 +219,9 @@ func (d *Deployment) ContainLabels(labels map[string]string) bool {
 	}
 	return true
 }
+
+// IsInChainDeployment returns true if the current deployment belongs
+// to a deployment chain.
+func (d *Deployment) IsInChainDeployment() bool {
+	return d.DeploymentChainId != ""
+}
