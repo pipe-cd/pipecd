@@ -355,7 +355,6 @@ func determineJobHealth(obj *unstructured.Unstructured) (status model.Kubernetes
 		case batchv1.JobComplete:
 			completed = true
 			message = condition.Message
-			break
 		}
 	}
 
