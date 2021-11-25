@@ -18,8 +18,6 @@ package pipe.model;
 option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
 import "validate/validate.proto";
-import "pkg/model/common.proto";
-import "pkg/model/deployment.proto";
 
 message DeploymentChain {
     // The generated unique identifier.
