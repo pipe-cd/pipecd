@@ -55,6 +55,7 @@ ts_project(
         "@npm//:node_modules",
         "@npm//@types",
     ],
+    declaration = True,
 )
 
 genrule(

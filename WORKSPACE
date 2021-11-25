@@ -187,8 +187,8 @@ container_pull(
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "55a25a762fcf9c9b88ab54436581e671bc9f4f523cb5a1bd32459ebec7be68a8",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/3.2.2/rules_nodejs-3.2.2.tar.gz"],
+    sha256 = "cfc289523cf1594598215901154a6c2515e8bf3671fd708264a6f6aefe02bf39",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/4.4.6/rules_nodejs-4.4.6.tar.gz"],
 )
 
 load(
@@ -199,7 +199,7 @@ load(
 
 ### https://bazelbuild.github.io/rules_nodejs/Built-ins.html#usage
 node_repositories(
-    node_version = "12.13.0",
+    node_version = "16.13.0",
     package_json = ["//pkg/app/web:package.json"],
     yarn_version = "1.22.4",
 )
@@ -208,6 +208,7 @@ yarn_install(
     name = "npm",
     package_json = "//pkg/app/web:package.json",
     yarn_lock = "//pkg/app/web:yarn.lock",
+    frozen_lockfile = False,
 )
 
 load("@npm//@bazel/labs:package.bzl", "npm_bazel_labs_dependencies")

@@ -46,7 +46,8 @@
       "../../../bazel-out/darwin-dbg/bin",
       "../../../bazel-out/k8-dbg/bin",
       "../../../bazel-out/x64_windows-dbg/bin"
-    ]
+    ],
+    "declaration": true
   },
   "include": [
     "./src/**/*.*",
