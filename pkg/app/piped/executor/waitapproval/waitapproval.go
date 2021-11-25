@@ -29,6 +29,7 @@ import (
 )
 
 const (
+	approvedByKey = "ApprovedBy"
 	minApproverNumKey = "MinApproverNum"
 	approversKey      = "CurrentApprovers"
 )
@@ -164,6 +165,9 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 // True means that number of approvers is valid
 func (e *Executor) validateApproverNum(ctx context.Context, approver string, minApproverNum int) bool {
 	if minApproverNum <= 1 {
+		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approvedByKey, approver); err != nil {
+			e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
+		}
 		e.LogPersister.Infof("Got approval from %q", approver)
 		e.reportApproved(approver)
 		e.LogPersister.Infof("This stage has been approved by %d user (%s)", minApproverNum, approver)
@@ -195,6 +199,9 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 		return false
 	}
 
+	if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approvedByKey, aus); err != nil {
+		e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
+	}
 	e.reportApproved(aus)
 	e.LogPersister.Info("Received all needed approvals")
 	e.LogPersister.Infof("This stage has been approved by %d users (%s)", minApproverNum, aus)
