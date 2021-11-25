@@ -133,7 +133,7 @@ func (e *Executor) checkApproval(ctx context.Context, num int) (string, bool) {
 		approvedByKey: as,
 	}
 	if err := e.MetadataStore.Stage(e.Stage.Id).PutMulti(ctx, metadata); err != nil {
-		e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
+		e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
 		return "", false
 	}
 	return as, true
@@ -196,7 +196,7 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 		e.LogPersister.Infof("Got approval from %q", approver)
 		e.LogPersister.Infof("Waiting for %d other approvers...", minApproverNum-1)
 		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, approver); err != nil {
-			e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
+			e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
 		}
 		return approver, false
 	}
@@ -213,7 +213,7 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 	if c := minApproverNum - len(strings.Split(totalAs, ", ")); c > 0 {
 		e.LogPersister.Infof("Waiting for %d other approvers...", c)
 		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, totalAs); err != nil {
-			e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
+			e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
 		}
 		return totalAs, false
 	}
