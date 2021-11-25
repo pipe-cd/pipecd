@@ -69,6 +69,10 @@ func (c *fakeAPIClient) SaveStageMetadata(_ context.Context, req *pipedservice.S
 	return &pipedservice.SaveStageMetadataResponse{}, nil
 }
 
+type fakeNotifier struct{}
+
+func (n *fakeNotifier) Notify(_ model.NotificationEvent) {}
+
 func TestValidateApproverNum(t *testing.T) {
 	ctx := context.Background()
 
@@ -81,7 +85,7 @@ func TestValidateApproverNum(t *testing.T) {
 		approver       string
 		minApproverNum int
 		executor       *Executor
-		wantApprovers  string
+		want  bool
 	}{
 		{
 			name:           "return the person who just approved",
@@ -101,9 +105,10 @@ func TestValidateApproverNum(t *testing.T) {
 							},
 						},
 					}),
+					Notifier: &fakeNotifier{},
 				},
 			},
-			wantApprovers: "user-1",
+			want: true,
 		},
 		{
 			name:           "return an empty string because number of current approver is not enough",
@@ -125,7 +130,7 @@ func TestValidateApproverNum(t *testing.T) {
 					}),
 				},
 			},
-			wantApprovers: "",
+			want: false,
 		},
 		{
 			name:           "return an empty string because current approver is same as an approver in metadata",
@@ -147,9 +152,10 @@ func TestValidateApproverNum(t *testing.T) {
 							},
 						},
 					}),
+					Notifier: &fakeNotifier{},
 				},
 			},
-			wantApprovers: "",
+			want: false,
 		},
 		{
 			name:           "return an empty string because number of current approver and approvers in metadata is not enough",
@@ -171,9 +177,10 @@ func TestValidateApproverNum(t *testing.T) {
 							},
 						},
 					}),
+					Notifier: &fakeNotifier{},
 				},
 			},
-			wantApprovers: "",
+			want: false,
 		},
 		{
 			name:           "return all approvers",
@@ -195,15 +202,16 @@ func TestValidateApproverNum(t *testing.T) {
 							},
 						},
 					}),
+					Notifier: &fakeNotifier{},
 				},
 			},
-			wantApprovers: "user-1, user-2",
+			want: true,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			as := tc.executor.validateApproverNum(ctx, tc.approver, tc.minApproverNum)
-			assert.Equal(t, tc.wantApprovers, as)
+			got := tc.executor.validateApproverNum(ctx, tc.approver, tc.minApproverNum)
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }

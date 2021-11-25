@@ -29,7 +29,6 @@ import (
 )
 
 const (
-	approvedByKey     = "ApprovedBy"
 	minApproverNumKey = "MinApproverNum"
 	approversKey      = "CurrentApprovers"
 )
@@ -74,13 +73,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	for {
 		select {
 		case <-ticker.C:
-			if as, ok := e.checkApproval(ctx, num); ok {
-				e.reportApproved(as)
-				if num > 1 {
-					e.LogPersister.Infof("This stage has been approved by %d users (%s)", num, as)
-				} else {
-					e.LogPersister.Infof("This stage has been approved by %d user (%s)", num, as)
-				}
+			if e.checkApproval(ctx, num) {
 				return model.StageStatus_STAGE_SUCCESS
 			}
 
@@ -100,7 +93,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 }
 
-func (e *Executor) checkApproval(ctx context.Context, num int) (string, bool) {
+func (e *Executor) checkApproval(ctx context.Context, num int) bool {
 	var approveCmd *model.ReportableCommand
 	commands := e.CommandLister.ListCommands()
 
@@ -111,27 +104,15 @@ func (e *Executor) checkApproval(ctx context.Context, num int) (string, bool) {
 		}
 	}
 	if approveCmd == nil {
-		return "", false
+		return false
 	}
 
 	if err := approveCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
 		e.Logger.Error("failed to report handled command", zap.Error(err))
 	}
 
-	as := e.validateApproverNum(ctx, approveCmd.Commander, num)
-	if as == "" {
-		return "", false
-	}
-	e.LogPersister.Info("Received all needed approvals\n")
-
-	metadata := map[string]string{
-		approvedByKey: as,
-	}
-	if err := e.MetadataStore.Stage(e.Stage.Id).PutMulti(ctx, metadata); err != nil {
-		e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
-		return "", false
-	}
-	return as, true
+	reached := e.validateApproverNum(ctx, approveCmd.Commander, num)
+	return reached
 }
 
 func (e *Executor) reportApproved(approver string) {
@@ -182,10 +163,10 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 }
 
 // An empty string means that number of approvers is invalid
-func (e *Executor) validateApproverNum(ctx context.Context, approver string, minApproverNum int) string {
+func (e *Executor) validateApproverNum(ctx context.Context, approver string, minApproverNum int) bool {
 	if minApproverNum <= 1 {
 		e.LogPersister.Infof("Got approval from %q", approver)
-		return approver
+		return true
 	}
 	as, ok := e.MetadataStore.Stage(e.Stage.Id).Get(approversKey)
 	if !ok {
@@ -194,13 +175,13 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, approver); err != nil {
 			e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
 		}
-		return ""
+		return false
 	}
 
 	for _, a := range strings.Split(as, ", ") {
 		if a == approver {
 			e.LogPersister.Infof("Approval from the same user (%s) will not be counted", approver)
-			return ""
+			return false
 		}
 	}
 	e.LogPersister.Infof("Got approval from %q", approver)
@@ -211,7 +192,15 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, totalAs); err != nil {
 			e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
 		}
-		return ""
+		return false
 	}
-	return totalAs
+	e.LogPersister.Info("Received all needed approvals")
+
+	e.reportApproved(totalAs)
+	if minApproverNum > 1 {
+		e.LogPersister.Infof("This stage has been approved by %d users (%s)", minApproverNum, totalAs)
+	} else {
+		e.LogPersister.Infof("This stage has been approved by %d user (%s)", minApproverNum, totalAs)
+	}
+	return true
 }
