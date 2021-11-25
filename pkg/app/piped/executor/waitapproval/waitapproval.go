@@ -186,16 +186,17 @@ func (e *Executor) validateApproverNum(ctx context.Context, approver string, min
 	approvedUsers = append(approvedUsers, approver)
 	e.LogPersister.Infof("Got approval from %q", approver)
 
+	aus := strings.Join(approvedUsers, delimiter)
 	if remain := minApproverNum - len(approvedUsers); remain > 0 {
 		e.LogPersister.Infof("Waiting for %d other approvers...", remain)
-		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, strings.Join(approvedUsers, delimiter)); err != nil {
+		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approversKey, aus); err != nil {
 			e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
 		}
 		return false
 	}
 
-	e.reportApproved(strings.Join(approvedUsers, delimiter))
+	e.reportApproved(aus)
 	e.LogPersister.Info("Received all needed approvals")
-	e.LogPersister.Infof("This stage has been approved by %d users (%s)", minApproverNum, as)
+	e.LogPersister.Infof("This stage has been approved by %d users (%s)", minApproverNum, aus)
 	return true
 }
