@@ -355,6 +355,9 @@ func determineJobHealth(obj *unstructured.Unstructured) (status model.Kubernetes
 			completed = true
 			message = condition.Message
 		}
+		if failed {
+			break
+		}
 	}
 
 	switch {
@@ -450,7 +453,6 @@ func determineIngressHealth(obj *unstructured.Unstructured) (status model.Kubern
 	status = model.KubernetesResourceState_OTHER
 	desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to neither %T, %T, nor %T: %v", obj, v1Ingress, betaIngress, extensionIngress, err)
 	return
-
 }
 
 func determineServiceHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
@@ -499,12 +501,11 @@ func determinePersistentVolumeHealth(obj *unstructured.Unstructured) (status mod
 	case corev1.VolumeBound, corev1.VolumeAvailable:
 		status = model.KubernetesResourceState_HEALTHY
 		desc = pv.Status.Message
-		return
 	default:
 		status = model.KubernetesResourceState_OTHER
 		desc = pv.Status.Message
-		return
 	}
+	return
 }
 
 func determinePVCHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
