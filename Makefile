@@ -110,7 +110,6 @@ kind-up:
 kind-down:
 	kind delete cluster --name pipecd
 
-
 .PHONY: prepare-release
 prepare-release:
 	./hack/prepare-release.sh $(version)
