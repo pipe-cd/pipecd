@@ -528,7 +528,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 			return nil, status.Error(codes.PermissionDenied, fmt.Sprintf("The requested command %s does not belong to your project", commandID))
 		}
 		if cmd.Type != model.Command_BUILD_PLAN_PREVIEW {
-			return nil, status.Error(codes.FailedPrecondition, fmt.Sprint("Command %s is not a plan preview command", commandID))
+			return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("Command %s is not a plan preview command", commandID))
 		}
 
 		if !cmd.IsHandled() {
@@ -538,7 +538,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 			results = append(results, &model.PlanPreviewCommandResult{
 				CommandId: cmd.Id,
 				PipedId:   cmd.PipedId,
-				Error:     fmt.Sprintf("Timed out, maybe the Piped is offline currently."),
+				Error:     "Timed out, maybe the Piped is offline currently.",
 			})
 			continue
 		}
