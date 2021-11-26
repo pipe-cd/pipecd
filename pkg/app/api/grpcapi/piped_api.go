@@ -977,7 +977,6 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 			return nil, err
 		}
 	}
-	// TODO: Consider bulk-updating multiple apps
 	for _, appInfo := range req.Applications {
 		updater := func(app *model.Application) error {
 			app.Name = appInfo.Name
