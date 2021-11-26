@@ -577,6 +577,7 @@ func determineNameSpace(obj *unstructured.Unstructured) (status model.Kubernetes
 	if cond != nil && cond.Status == corev1.ConditionTrue {
 		status = model.KubernetesResourceState_OTHER
 		desc = cond.Message
+		return
 	}
 	return
 }
