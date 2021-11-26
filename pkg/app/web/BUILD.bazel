@@ -50,6 +50,7 @@ ts_project(
         ":build_model",
     ],
     allow_js = True,
+    declaration = True,
     tsconfig = ":tsconfig.json",
     deps = [
         "@npm//:node_modules",
