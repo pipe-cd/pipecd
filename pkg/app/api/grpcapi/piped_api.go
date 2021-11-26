@@ -1003,20 +1003,10 @@ func (a *PipedAPI) ReportUnregisteredApplicationConfigurations(ctx context.Conte
 		return nil, err
 	}
 
-	// Make a map from repo-id to a collection of ApplicationInfo.
-	repoToApps := make(map[string][]*model.ApplicationInfo)
-	for _, appInfo := range req.Applications {
-		repoID := appInfo.RepoId
-		if _, ok := repoToApps[repoID]; !ok {
-			repoToApps[repoID] = []*model.ApplicationInfo{}
-		}
-		repoToApps[repoID] = append(repoToApps[repoID], appInfo)
-	}
-
 	key := makeUnregisteredAppsCacheKey(projectID)
 	c := rediscache.NewHashCache(a.redis, key)
-	// Put an entity like map["piped-id"]map["repo-id"][]*model.ApplicationInfo
-	if err := c.Put(pipedID, repoToApps); err != nil {
+	// Cache a slice of *model.ApplicationInfo.
+	if err := c.Put(pipedID, req.Applications); err != nil {
 		return nil, status.Error(codes.Internal, "failed to put the unregistered apps to the cache")
 	}
 

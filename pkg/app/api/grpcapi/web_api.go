@@ -612,8 +612,8 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 	// Collect all apps that belong to the project.
 	key := makeUnregisteredAppsCacheKey(claims.Role.ProjectId)
 	c := rediscache.NewHashCache(a.redis, key)
-	// It assumes each entry is map["piped-id"]map["repo-id"][]*model.ApplicationInfo
-	pipedToRepos, err := c.GetAll()
+	// pipedToApps assumes to be a map["piped-id"][]*model.ApplicationInfo
+	pipedToApps, err := c.GetAll()
 	if errors.Is(err, cache.ErrNotFound) {
 		return &webservice.ListUnregisteredApplicationsResponse{}, nil
 	}
@@ -622,32 +622,51 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 		return nil, status.Error(codes.Internal, "Failed to get unregistered apps")
 	}
 
-	// FIXME: Refactor and fall into independent functions and write tests
-	// Integrate the apps cached for each Piped.
-	repoToApps := make(map[string][]*model.ApplicationInfo)
-	for _, r := range pipedToRepos {
-		repoToAppsPerPiped, ok := r.(map[string][]*model.ApplicationInfo)
+	// Integrate all apps cached for each Piped.
+	allApps := make([]*model.ApplicationInfo, 0)
+	for _, as := range pipedToApps {
+		apps, ok := as.([]*model.ApplicationInfo)
 		if !ok {
 			return nil, status.Error(codes.Internal, "Unexpected data cached")
 		}
-		for repoID, apps := range repoToAppsPerPiped {
-			if _, ok := repoToApps[repoID]; !ok {
-				repoToApps[repoID] = []*model.ApplicationInfo{}
-			}
-			repoToApps[repoID] = append(repoToApps[repoID], apps...)
+		allApps = append(allApps, apps...)
+	}
+
+	return &webservice.ListUnregisteredApplicationsResponse{
+		Repos: groupAppsByRepo(allApps),
+	}, nil
+}
+
+func groupAppsByRepo(apps []*model.ApplicationInfo) []*webservice.ListUnregisteredApplicationsResponse_Repo {
+	if len(apps) == 0 {
+		return []*webservice.ListUnregisteredApplicationsResponse_Repo{}
+	}
+	if len(apps) == 1 {
+		return []*webservice.ListUnregisteredApplicationsResponse_Repo{
+			{Id: apps[0].RepoId, Apps: apps},
 		}
 	}
 
+	// Make a map from repo-id to apps.
+	repoToApps := make(map[string][]*model.ApplicationInfo)
+	for _, app := range apps {
+		if _, ok := repoToApps[app.RepoId]; !ok {
+			repoToApps[app.RepoId] = []*model.ApplicationInfo{}
+		}
+		repoToApps[app.RepoId] = append(repoToApps[app.RepoId], app)
+	}
+
 	// Tidy apps.
-	repos := make([]*webservice.ListUnregisteredApplicationsResponse_Repo, len(repoToApps))
-	for repoID, apps := range repoToApps {
+	repos := make([]*webservice.ListUnregisteredApplicationsResponse_Repo, 0, len(repoToApps))
+	for repoID, as := range repoToApps {
 		// Eliminate duplicated apps
-		tidiedApps := make([]*model.ApplicationInfo, 0, len(apps))
+		tidiedApps := make([]*model.ApplicationInfo, 0, len(as))
 		gitPaths := make(map[string]struct{})
-		for _, app := range apps {
+		for _, app := range as {
 			if _, ok := gitPaths[app.GetPath()]; ok {
 				continue
 			}
+			gitPaths[app.GetPath()] = struct{}{}
 			tidiedApps = append(tidiedApps, app)
 		}
 
@@ -659,10 +678,7 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 			Apps: tidiedApps,
 		})
 	}
-
-	return &webservice.ListUnregisteredApplicationsResponse{
-		Repos: repos,
-	}, nil
+	return repos
 }
 
 // TODO: Validate the specified piped to ensure that it belongs to the specified environment.
