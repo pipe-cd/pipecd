@@ -91,8 +91,8 @@ protobuf_deps()
 ### BuildTools
 http_archive(
     name = "com_github_bazelbuild_buildtools",
-    strip_prefix = "buildtools-3.5.0",
-    url = "https://github.com/bazelbuild/buildtools/archive/3.5.0.zip",
+    strip_prefix = "buildtools-4.2.3",
+    url = "https://github.com/bazelbuild/buildtools/archive/4.2.3.zip",
 )
 
 load(
@@ -199,9 +199,9 @@ node_repositories(
 
 yarn_install(
     name = "npm",
+    frozen_lockfile = False,
     package_json = "//pkg/app/web:package.json",
     yarn_lock = "//pkg/app/web:yarn.lock",
-    frozen_lockfile = False,
 )
 
 load("@npm//@bazel/labs:package.bzl", "npm_bazel_labs_dependencies")
@@ -209,4 +209,3 @@ load("@npm//@bazel/labs:package.bzl", "npm_bazel_labs_dependencies")
 npm_bazel_labs_dependencies()
 
 # gazelle:repository_macro repositories.bzl%go_repositories
-

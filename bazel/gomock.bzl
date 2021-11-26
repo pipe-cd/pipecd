@@ -44,7 +44,7 @@ def _gomock_source_impl(ctx):
     gopath = "$(pwd)/" + ctx.bin_dir.path + "/" + ctx.attr.gopath_dep[GoPath].gopath
 
     # passed in source needs to be in gopath to not trigger module mode
-    args = ["-source", gopath + "/src/" + ctx.attr.library[GoLibrary].importmap + "/"+ ctx.file.source.basename]
+    args = ["-source", gopath + "/src/" + ctx.attr.library[GoLibrary].importmap + "/" + ctx.file.source.basename]
 
     args, needed_files = _handle_shared_args(ctx, args)
 
@@ -52,7 +52,7 @@ def _gomock_source_impl(ctx):
         aux_files = []
         for pkg, files in ctx.attr.aux_files.items():
             for f in files:
-                mapped_f = gopath + "/src/" + ctx.attr.library[GoLibrary].importmap + "/"+ f
+                mapped_f = gopath + "/src/" + ctx.attr.library[GoLibrary].importmap + "/" + f
                 aux_files.append("{0}={1}".format(pkg, mapped_f))
         args += ["-aux_files", ",".join(aux_files)]
 
@@ -112,7 +112,7 @@ _gomock_source = rule(
             doc = "Ignored. If `source` is not set, this would be the list of Go interfaces to generate mocks for.",
             mandatory = True,
         ),
-	"aux_files": attr.string_list_dict(
+        "aux_files": attr.string_list_dict(
             default = {},
             doc = "A map from packages to auxilliary Go source files to load for those packages.",
         ),
@@ -170,14 +170,16 @@ def gomock(name, library, out, **kwargs):
             library = library,
             gopath_dep = gopath_name,
             out = out,
-            **kwargs)
+            **kwargs
+        )
     else:
         _gomock_reflect(
             name = name,
             library = library,
             out = out,
             mockgen_tool = mockgen_tool,
-            **kwargs)
+            **kwargs
+        )
 
 def _gomock_reflect(name, library, out, mockgen_tool, **kwargs):
     interfaces = kwargs.pop("interfaces", None)
@@ -208,7 +210,8 @@ def _gomock_reflect(name, library, out, mockgen_tool, **kwargs):
         out = out,
         prog_bin = prog_bin,
         mockgen_tool = mockgen_tool,
-        **kwargs)
+        **kwargs
+    )
 
 def _gomock_prog_gen_impl(ctx):
     args = ["-prog_only"]
@@ -227,7 +230,7 @@ def _gomock_prog_gen_impl(ctx):
             args = " ".join(args),
             out = out.path,
         ),
-        mnemonic = "GoMockReflectProgOnlyGen"
+        mnemonic = "GoMockReflectProgOnlyGen",
     )
 
 _gomock_prog_gen = rule(
@@ -336,7 +339,7 @@ _gomock_prog_exec = rule(
             executable = True,
             cfg = "exec",
             mandatory = False,
-	),
+        ),
         "_go_context_data": attr.label(
             default = "@io_bazel_rules_go//:go_context_data",
         ),
