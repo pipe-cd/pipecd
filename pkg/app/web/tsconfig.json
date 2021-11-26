@@ -9,6 +9,7 @@
       ],
       "pipe/*": [
         "../../../bazel-out/darwin-fastbuild/bin/*",
+        "../../../bazel-out/darwin_arm64-fastbuild/bin/*",
         "../../../bazel-out/k8-fastbuild/bin/*",
         "../../../bazel-out/x64_windows-fastbuild/bin/*",
         "../../../bazel-out/darwin-dbg/bin/*",
@@ -41,6 +42,7 @@
     "rootDirs": [
       ".",
       "../../../bazel-out/darwin-fastbuild/bin",
+      "../../../bazel-out/darwin_arm64-fastbuild/bin",
       "../../../bazel-out/k8-fastbuild/bin",
       "../../../bazel-out/x64_windows-fastbuild/bin",
       "../../../bazel-out/darwin-dbg/bin",
