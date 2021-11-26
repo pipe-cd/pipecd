@@ -19,7 +19,7 @@ export const INSIGHT_APPLICATION_COUNT_LABEL_KEY_TEXT: Record<
   [InsightApplicationCountLabelKey.ACTIVE_STATUS]: "ACTIVE_STATUS",
 };
 
-interface ApplicationCounts {
+export interface ApplicationCounts {
   updatedAt: number;
   counts: Record<string, Record<string, number>>;
 }
