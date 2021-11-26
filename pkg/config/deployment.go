@@ -377,7 +377,7 @@ type WaitApprovalStageOptions struct {
 
 func (w *WaitApprovalStageOptions) Validate() error {
 	if w.MinApproverNum < 1 {
-		return fmt.Errorf("minApproverNum %d should be one or more", w.MinApproverNum)
+		return fmt.Errorf("minApproverNum %d should be greater than 0", w.MinApproverNum)
 	}
 	return nil
 }
