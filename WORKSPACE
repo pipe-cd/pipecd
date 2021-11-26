@@ -105,9 +105,9 @@ buildifier_dependencies()
 ### Docker
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "4521794f0fba2e20f3bf15846ab5e01d5332e587e9ce81629c7f96c793bb7036",
-    strip_prefix = "rules_docker-0.14.4",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.4/rules_docker-v0.14.4.tar.gz"],
+    sha256 = "4349f2b0b45c860dd2ffe18802e9f79183806af93ce5921fb12cbd6c07ab69a8",
+    strip_prefix = "rules_docker-0.21.0",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.21.0/rules_docker-v0.21.0.tar.gz"],
 )
 
 load(
@@ -130,13 +130,6 @@ load(
 )
 
 container_deps()
-
-load(
-    "@io_bazel_rules_docker//repositories:pip_repositories.bzl",
-    "pip_deps",
-)
-
-pip_deps()
 
 load(
     "@io_bazel_rules_docker//container:container.bzl",
