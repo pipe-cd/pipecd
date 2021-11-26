@@ -105,6 +105,11 @@ func (s *GenericDeploymentSpec) Validate() error {
 					return err
 				}
 			}
+			if stage.WaitApprovalStageOptions != nil {
+				if err := stage.WaitApprovalStageOptions.Validate(); err != nil {
+					return err
+				}
+			}
 		}
 	}
 
