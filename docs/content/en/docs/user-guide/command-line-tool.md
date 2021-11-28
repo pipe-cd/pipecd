@@ -16,11 +16,12 @@ You can use pipectl to add and sync applications, wait for a deployment status.
 1. Download the appropriate version for your platform from [PipeCD Releases](https://github.com/pipe-cd/pipe/releases).
 
     We recommend using the latest version of pipectl to avoid unforeseen issues.
-    Please set `{VERSION}` to the same format like `v0.9.15`.
-    And `{OS}` can be replaced with either `linux` or `darwin`.
+    Run the following script:
 
     ``` console
-    curl -Lo ./pipectl https://github.com/pipe-cd/pipe/releases/download/{VERSION}/pipectl_{VERSION}_{OS}_amd64
+    OS="darwin" # or "linux"
+    URL=$(curl -s https://api.github.com/repos/pipe-cd/pipe/releases/latest | grep browser_download_url | grep pipectl | grep "${OS}" | cut -d : -f 2,3 | tr -d '" ')
+    curl -Lo ./pipectl :"${URL}"
     ```
 
 2. Make the pipectl binary executable.
