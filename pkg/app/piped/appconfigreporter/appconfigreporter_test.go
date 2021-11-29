@@ -94,6 +94,7 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 		{
 			name: "app not changed",
 			reporter: &Reporter{
+				config: &config.PipedSpec{PipedID: "piped-1"},
 				applicationLister: &fakeApplicationLister{apps: []*model.Application{
 					{Id: "id-1", Name: "app-1", Labels: map[string]string{"key-1": "value-1"}, GitPath: &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "repo-1"}, Path: "app-1", ConfigFilename: ".pipe.yaml"}},
 				}},
@@ -118,7 +119,7 @@ spec:
 		{
 			name: "app changed",
 			reporter: &Reporter{
-        config: &config.PipedSpec{PipedID: "piped-1"},
+				config: &config.PipedSpec{PipedID: "piped-1"},
 				applicationLister: &fakeApplicationLister{apps: []*model.Application{
 					{Id: "id-1", Name: "app-1", Labels: map[string]string{"key-1": "value-1"}, GitPath: &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "repo-1"}, Path: "app-1", ConfigFilename: ".pipe.yaml"}},
 				}},
@@ -145,7 +146,7 @@ spec:
 					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: ".pipe.yaml",
-          PipedId:        "piped-1",
+					PipedId:        "piped-1",
 				},
 			},
 			wantErr: false,
@@ -228,7 +229,7 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 		{
 			name: "valid app config that is unregistered",
 			reporter: &Reporter{
-        config: &config.PipedSpec{PipedID: "piped-1"},
+				config:            &config.PipedSpec{PipedID: "piped-1"},
 				applicationLister: &fakeApplicationLister{},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte(`
@@ -253,7 +254,7 @@ spec:
 					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: ".pipe.yaml",
-          PipedId:        "piped-1",
+					PipedId:        "piped-1",
 				},
 			},
 			wantErr: false,
@@ -261,7 +262,7 @@ spec:
 		{
 			name: "valid app config that name isn't default",
 			reporter: &Reporter{
-        config: &config.PipedSpec{PipedID: "piped-1"},
+				config:            &config.PipedSpec{PipedID: "piped-1"},
 				applicationLister: &fakeApplicationLister{},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/dev.pipecd.yaml": &fstest.MapFile{Data: []byte(`
@@ -286,7 +287,7 @@ spec:
 					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: "dev.pipecd.yaml",
-          PipedId:        "piped-1",
+					PipedId:        "piped-1",
 				},
 			},
 			wantErr: false,
