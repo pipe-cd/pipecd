@@ -79,18 +79,13 @@ type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
-var (
-	// shared gitClient used inside this package for downloading dependencies.
-	sharedGitClient         gitClient
-	initSharedGitClientOnce sync.Once
-)
-
 type provider struct {
 	appName        string
 	appDir         string
 	repoDir        string
 	configFileName string
 	input          config.KubernetesDeploymentInput
+	gc             gitClient
 	logger         *zap.Logger
 
 	kubectl          *Kubectl
@@ -101,35 +96,35 @@ type provider struct {
 	initErr          error
 }
 
-func initSharedGitClient(logger *zap.Logger) error {
-	var err error
-	initSharedGitClientOnce.Do(func() {
-		sharedGitClient, err = git.NewClient(git.WithLogger(logger))
-	})
-	return err
-}
+func NewProvider(
+	appName, appDir, repoDir, configFileName string,
+	input config.KubernetesDeploymentInput,
+	gc gitClient,
+	logger *zap.Logger,
+) Provider {
 
-func NewProvider(appName, appDir, repoDir, configFileName string, input config.KubernetesDeploymentInput, logger *zap.Logger) Provider {
 	return &provider{
 		appName:        appName,
 		appDir:         appDir,
 		repoDir:        repoDir,
 		configFileName: configFileName,
 		input:          input,
+		gc:             gc,
 		logger:         logger.Named("kubernetes-provider"),
 	}
 }
 
-func NewManifestLoader(appName, appDir, repoDir, configFileName string, input config.KubernetesDeploymentInput, logger *zap.Logger) ManifestLoader {
-	return NewProvider(appName, appDir, repoDir, configFileName, input, logger)
+func NewManifestLoader(
+	appName, appDir, repoDir, configFileName string,
+	input config.KubernetesDeploymentInput,
+	gc gitClient,
+	logger *zap.Logger,
+) ManifestLoader {
+
+	return NewProvider(appName, appDir, repoDir, configFileName, input, gc, logger)
 }
 
 func (p *provider) init(ctx context.Context) {
-	if err := initSharedGitClient(p.logger); err != nil {
-		p.initErr = err
-		return
-	}
-
 	p.templatingMethod = determineTemplatingMethod(p.input, p.appDir)
 
 	// We need kubectl for all templating methods.
@@ -169,7 +164,7 @@ func (p *provider) LoadManifests(ctx context.Context) (manifests []Manifest, err
 				p.appDir,
 				p.input.Namespace,
 				chart,
-				sharedGitClient,
+				p.gc,
 				p.input.HelmOptions)
 
 		case p.input.HelmChart.Repository != "":
