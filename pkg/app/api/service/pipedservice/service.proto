@@ -324,6 +324,12 @@ message ReportDeploymentCompletedRequest {
     string status_reason = 3;
     // The completed statuses of all stages.
     map<string,model.StageStatus> stage_statuses = 4;
+    // The deployment chain id which this deployment possible to belong to
+    // In case the deployment does not belong to any deployment chain, this
+    // value will be empty.
+    string deployment_chain_id = 5;
+    // The deployment chain block index which the deployment assigned to.
+    uint32 deployment_chain_block_index = 6;
     // The completion time of deployment.
     int64 completed_at = 13 [(validate.rules).int64.gt = 0];
 }

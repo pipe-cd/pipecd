@@ -524,6 +524,55 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 			return nil, status.Error(codes.Internal, "failed to update deployment to be completed")
 		}
 	}
+
+	// In case the deployment does not belong to a deployment chain, return immediately.
+	if req.DeploymentChainId == "" {
+		return &pipedservice.ReportDeploymentCompletedResponse{}, nil
+	}
+
+	dc, err := a.deploymentChainStore.GetDeploymentChain(ctx, req.DeploymentChainId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "unable to find deployment chain which the deployment belongs to")
+	}
+
+	// In case the deployment does not belong to the last block of the chain, return immediately.
+	if int(req.DeploymentChainBlockIndex) != len(dc.Blocks)-1 {
+		return &pipedservice.ReportDeploymentCompletedResponse{}, nil
+	}
+
+	lastBlockDeployments, err := getDeploymentsInDeploymentChainBlock(ctx, a.deploymentStore, dc, uint32(len(dc.Blocks)-1), a.logger)
+	if err != nil {
+		return nil, err
+	}
+	isAllDeploymentInBlockFinished := true
+	for _, dp := range lastBlockDeployments {
+		if !model.IsCompletedDeployment(dp.Status) {
+			isAllDeploymentInBlockFinished = false
+		}
+	}
+	// If all the deployment of the last block have not finished yet, return immediately.
+	if !isAllDeploymentInBlockFinished {
+		return &pipedservice.ReportDeploymentCompletedResponse{}, nil
+	}
+
+	var (
+		chainStatus       model.DeploymentChainStatus
+		chainStatusReason string
+	)
+	switch req.Status {
+	case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
+		chainStatus = model.DeploymentChainStatus_DEPLOYMENT_CHAIN_SUCCESS
+		chainStatusReason = "Chain is finished wih SUCCESS status due to all deployments in chain finished successfully."
+	case model.DeploymentStatus_DEPLOYMENT_CANCELLED:
+		chainStatus = model.DeploymentChainStatus_DEPLOYMENT_CHAIN_CANCELLED
+		chainStatusReason = "Chain is CANCELLED due to one deployment got cancelled."
+	case model.DeploymentStatus_DEPLOYMENT_FAILURE:
+		chainStatus = model.DeploymentChainStatus_DEPLOYMENT_CHAIN_FAILURE
+		chainStatusReason = "Chain is finished with FAILURE status due to one deployment is failed."
+	}
+	if err = a.deploymentChainStore.UpdateDeploymentChain(ctx, req.DeploymentChainId, datastore.DeploymentChainCompletedStatusUpdater(chainStatus, chainStatusReason)); err != nil {
+		return nil, status.Error(codes.Internal, "unable to update status of the deployment chain which this deployment belongs to")
+	}
 	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
 }
 
@@ -1082,6 +1131,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 		Id:        uuid.New().String(),
 		ProjectId: projectID,
 		Blocks:    chainBlocks,
+		Status:    model.DeploymentChainStatus_DEPLOYMENT_CHAIN_RUNNING,
 	}
 
 	// Create a new deployment chain instance to control newly triggered deployment chain.
@@ -1155,29 +1205,15 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 		return nil, status.Error(codes.InvalidArgument, "invalid deployment with chain block index provided")
 	}
 
-	prevBlock := dc.Blocks[req.DeploymentChainBlockIndex-1]
-	deploymentIds := make([]string, 0, len(prevBlock.Nodes))
-	for _, node := range prevBlock.Nodes {
-		deploymentIds = append(deploymentIds, node.DeploymentRef.DeploymentId)
-	}
-
 	// TODO: Consider add deployment status to the deployment ref in the deployment chain model
 	// instead of fetching deployment model here.
-	blockDeployments, _, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-		Filters: []datastore.ListFilter{
-			{
-				Field:    "Id",
-				Operator: datastore.OperatorIn,
-				Value:    deploymentIds,
-			},
-		},
-	})
+	prevBlockDeployments, err := getDeploymentsInDeploymentChainBlock(ctx, a.deploymentStore, dc, req.DeploymentChainBlockIndex-1, a.logger)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "unable to process previous block nodes in deployment chain")
+		return nil, err
 	}
 
 	plannable := true
-	for _, dp := range blockDeployments {
+	for _, dp := range prevBlockDeployments {
 		if !model.IsSuccessfullyCompletedDeployment(dp.Status) {
 			plannable = false
 			break

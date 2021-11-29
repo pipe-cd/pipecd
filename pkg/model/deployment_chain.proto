@@ -19,6 +19,15 @@ option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
 import "validate/validate.proto";
 
+// DeploymentChainStatus reprensents the current status of the deployment chain.
+enum DeploymentChainStatus {
+    DEPLOYMENT_CHAIN_RUNNING = 0;
+    DEPLOYMENT_CHAIN_ROLLING_BACK = 1;
+    DEPLOYMENT_CHAIN_SUCCESS = 2;
+    DEPLOYMENT_CHAIN_FAILURE = 3;
+    DEPLOYMENT_CHAIN_CANCELLED = 4;
+}
+
 message DeploymentChain {
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
@@ -27,6 +36,10 @@ message DeploymentChain {
     // List of all deployment block in the chain which contains all
     // configuration required to perform deployment(s).
     repeated ChainBlock blocks = 3;
+
+    DeploymentChainStatus status = 30 [(validate.rules).enum.defined_only = true];
+    string status_reason = 31;
+
     // Unix time when all the applications in this chain are deployed.
     int64 completed_at = 100 [(validate.rules).int64.gte = 0];
     // Unix time when the deployment chain is created.

@@ -582,11 +582,13 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 		err error
 		now = s.nowFunc()
 		req = &pipedservice.ReportDeploymentCompletedRequest{
-			DeploymentId:  s.deployment.Id,
-			Status:        status,
-			StatusReason:  desc,
-			StageStatuses: s.stageStatuses,
-			CompletedAt:   now.Unix(),
+			DeploymentId:              s.deployment.Id,
+			Status:                    status,
+			StatusReason:              desc,
+			StageStatuses:             s.stageStatuses,
+			DeploymentChainId:         s.deployment.DeploymentChainId,
+			DeploymentChainBlockIndex: s.deployment.DeploymentChainBlockIndex,
+			CompletedAt:               now.Unix(),
 		}
 		retry = pipedservice.NewRetry(10)
 	)

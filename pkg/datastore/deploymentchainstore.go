@@ -51,6 +51,15 @@ var (
 			return nil
 		}
 	}
+
+	DeploymentChainCompletedStatusUpdater = func(status model.DeploymentChainStatus, statusReason string) func(*model.DeploymentChain) error {
+		return func(dc *model.DeploymentChain) error {
+			dc.Status = status
+			dc.StatusReason = statusReason
+			dc.CompletedAt = time.Now().Unix()
+			return nil
+		}
+	}
 )
 
 type DeploymentChainStore interface {

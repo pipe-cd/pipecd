@@ -189,3 +189,32 @@ func getEncriptionKey(se *model.Piped_SecretEncryption) ([]byte, error) {
 		return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a valid encryption type")
 	}
 }
+
+func getDeploymentsInDeploymentChainBlock(ctx context.Context, store datastore.DeploymentStore, dc *model.DeploymentChain, blockIndex uint32, logger *zap.Logger) ([]*model.Deployment, error) {
+	if blockIndex >= uint32(len(dc.Blocks)) {
+		return nil, status.Error(codes.Internal, "invalid block index provided")
+	}
+
+	deploymentIds := make([]string, 0, len(dc.Blocks[blockIndex].Nodes))
+	for _, n := range dc.Blocks[blockIndex].Nodes {
+		deploymentIds = append(deploymentIds, n.DeploymentRef.DeploymentId)
+	}
+
+	blockDeployments, _, err := store.ListDeployments(ctx, datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "Id",
+				Operator: datastore.OperatorIn,
+				Value:    deploymentIds,
+			},
+		},
+	})
+	if err != nil {
+		logger.Error("failed to get deployments of the given chain block",
+			zap.String("deploymentChainId", dc.Id),
+			zap.Int32("blockIndex", int32(blockIndex)),
+			zap.Error(err))
+		return nil, status.Error(codes.Internal, "unable to process previous block nodes in deployment chain")
+	}
+	return blockDeployments, nil
+}
