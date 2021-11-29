@@ -119,6 +119,11 @@ func (s *GenericDeploymentSpec) Validate() error {
 					return err
 				}
 			}
+			if stage.WaitApprovalStageOptions != nil {
+				if err := stage.WaitApprovalStageOptions.Validate(); err != nil {
+					return err
+				}
+			}
 		}
 	}
 
@@ -379,8 +384,16 @@ type WaitStageOptions struct {
 type WaitApprovalStageOptions struct {
 	// The maximum length of time to wait before giving up.
 	// Defaults to 6h.
-	Timeout   Duration `json:"timeout"`
-	Approvers []string `json:"approvers"`
+	Timeout        Duration `json:"timeout"`
+	Approvers      []string `json:"approvers"`
+	MinApproverNum int      `json:"minApproverNum" default:"1"`
+}
+
+func (w *WaitApprovalStageOptions) Validate() error {
+	if w.MinApproverNum < 1 {
+		return fmt.Errorf("minApproverNum %d should be greater than 0", w.MinApproverNum)
+	}
+	return nil
 }
 
 // AnalysisStageOptions contains all configurable values for a K8S_ANALYSIS stage.

@@ -165,6 +165,7 @@ func (p *planner) Run(ctx context.Context) error {
 		PipedConfig:                    p.pipedConfig,
 		AppManifestsCache:              p.appManifestsCache,
 		RegexPool:                      regexpool.DefaultPool(),
+		GitClient:                      p.gitClient,
 		Logger:                         p.logger,
 	}
 

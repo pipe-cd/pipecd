@@ -28,12 +28,17 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/regexpool"
 )
 
 type Planner interface {
 	Plan(ctx context.Context, in Input) (Output, error)
+}
+
+type gitClient interface {
+	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
 type Input struct {
@@ -47,6 +52,7 @@ type Input struct {
 	RunningDSP                     deploysource.Provider
 	AppManifestsCache              cache.Cache
 	RegexPool                      *regexpool.Pool
+	GitClient                      gitClient
 	Logger                         *zap.Logger
 }
 

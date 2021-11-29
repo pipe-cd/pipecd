@@ -81,7 +81,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	newManifests, ok := manifestCache.Get(in.Trigger.Commit.Hash)
 	if !ok {
 		// When the manifests were not in the cache we have to load them.
-		loader := provider.NewManifestLoader(in.ApplicationName, ds.AppDir, ds.RepoDir, in.GitPath.ConfigFilename, cfg.Input, in.Logger)
+		loader := provider.NewManifestLoader(in.ApplicationName, ds.AppDir, ds.RepoDir, in.GitPath.ConfigFilename, cfg.Input, in.GitClient, in.Logger)
 		newManifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			return
@@ -188,7 +188,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 			return
 		}
 
-		loader := provider.NewManifestLoader(in.ApplicationName, runningDs.AppDir, runningDs.RepoDir, in.GitPath.ConfigFilename, cfg.Input, in.Logger)
+		loader := provider.NewManifestLoader(in.ApplicationName, runningDs.AppDir, runningDs.RepoDir, in.GitPath.ConfigFilename, cfg.Input, in.GitClient, in.Logger)
 		oldManifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			err = fmt.Errorf("failed to load previously deployed manifests: %w", err)

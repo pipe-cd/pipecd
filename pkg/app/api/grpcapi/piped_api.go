@@ -981,11 +981,9 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 			return nil, err
 		}
 	}
-	// TODO: Consider bulk-updating multiple apps
 	for _, appInfo := range req.Applications {
 		updater := func(app *model.Application) error {
 			app.Name = appInfo.Name
-			app.Kind = appInfo.Kind
 			app.Labels = appInfo.Labels
 			return nil
 		}
@@ -1151,37 +1149,51 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 	if err != nil {
 		return nil, err
 	}
-	if err := a.validateDeploymentBelongsToPiped(ctx, req.Deployment.Id, pipedID); err != nil {
+	if err := a.validateDeploymentBelongsToPiped(ctx, req.DeploymentId, pipedID); err != nil {
 		return nil, err
 	}
 
-	dc, err := a.deploymentChainStore.GetDeploymentChain(ctx, req.Deployment.DeploymentChainId)
+	dc, err := a.deploymentChainStore.GetDeploymentChain(ctx, req.DeploymentChainId)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "unable to find the deployment chain which this deployment belongs to")
 	}
 
 	// Deployment of blocks[0] in the chain means it's the first deployment of the chain;
 	// hence it should be processed without any lock.
-	if req.Deployment.DeploymentChainBlockIndex == 0 {
+	if req.DeploymentChainBlockIndex == 0 {
 		return &pipedservice.InChainDeploymentPlannableResponse{
 			Plannable: true,
 		}, nil
 	}
 
-	if req.Deployment.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
+	if req.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
 		return nil, status.Error(codes.InvalidArgument, "invalid deployment with chain block index provided")
 	}
 
-	prevBlock := dc.Blocks[req.Deployment.DeploymentChainBlockIndex-1]
-	plannable := true
+	prevBlock := dc.Blocks[req.DeploymentChainBlockIndex-1]
+	deploymentIds := make([]string, 0, len(prevBlock.Nodes))
 	for _, node := range prevBlock.Nodes {
-		// TODO: Consider add deployment status to the deployment ref in the deployment chain model
-		// instead of fetching deployment model here.
-		dp, err := a.deploymentStore.GetDeployment(ctx, node.DeploymentRef.DeploymentId)
-		if err != nil {
-			return nil, status.Error(codes.Internal, "unable to process previous block nodes in deployment chain")
-		}
-		if model.IsSuccessfullyCompletedDeployment(dp.Status) {
+		deploymentIds = append(deploymentIds, node.DeploymentRef.DeploymentId)
+	}
+
+	// TODO: Consider add deployment status to the deployment ref in the deployment chain model
+	// instead of fetching deployment model here.
+	blockDeployments, _, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "Id",
+				Operator: datastore.OperatorIn,
+				Value:    deploymentIds,
+			},
+		},
+	})
+	if err != nil {
+		return nil, status.Error(codes.Internal, "unable to process previous block nodes in deployment chain")
+	}
+
+	plannable := true
+	for _, dp := range blockDeployments {
+		if !model.IsSuccessfullyCompletedDeployment(dp.Status) {
 			plannable = false
 			break
 		}

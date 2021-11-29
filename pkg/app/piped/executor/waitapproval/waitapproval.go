@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -61,13 +62,13 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	timer := time.NewTimer(timeout)
 
 	e.reportRequiringApproval()
-	e.LogPersister.Info("Waiting for an approval...")
+
+	num := e.StageConfig.WaitApprovalStageOptions.MinApproverNum
+	e.LogPersister.Infof("Waiting for approval from at least %d user(s)...", num)
 	for {
 		select {
 		case <-ticker.C:
-			if commander, ok := e.checkApproval(ctx); ok {
-				e.reportApproved(commander)
-				e.LogPersister.Infof("Got an approval from %s", commander)
+			if e.checkApproval(ctx, num) {
 				return model.StageStatus_STAGE_SUCCESS
 			}
 
@@ -87,7 +88,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 }
 
-func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
+func (e *Executor) checkApproval(ctx context.Context, num int) bool {
 	var approveCmd *model.ReportableCommand
 	commands := e.CommandLister.ListCommands()
 
@@ -98,21 +99,14 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 		}
 	}
 	if approveCmd == nil {
-		return "", false
+		return false
 	}
 
-	metadata := map[string]string{
-		approvedByKey: approveCmd.Commander,
-	}
-	if err := e.MetadataStore.Stage(e.Stage.Id).PutMulti(ctx, metadata); err != nil {
-		e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
-		return "", false
-	}
-
+	reached := e.validateApproverNum(ctx, approveCmd.Commander, num)
 	if err := approveCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
 		e.Logger.Error("failed to report handled command", zap.Error(err))
 	}
-	return approveCmd.Commander, true
+	return reached
 }
 
 func (e *Executor) reportApproved(approver string) {
@@ -160,4 +154,46 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 	}
 
 	return notification.FindSlackAccounts(event), nil
+}
+
+// validateApproverNum checks if number of approves is valid.
+func (e *Executor) validateApproverNum(ctx context.Context, approver string, minApproverNum int) bool {
+	if minApproverNum == 1 {
+		if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approvedByKey, approver); err != nil {
+			e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
+		}
+		e.LogPersister.Infof("Got approval from %q", approver)
+		e.reportApproved(approver)
+		e.LogPersister.Infof("This stage has been approved by %d user (%s)", minApproverNum, approver)
+		return true
+	}
+
+	const delimiter = ", "
+	as, _ := e.MetadataStore.Stage(e.Stage.Id).Get(approvedByKey)
+	var approvedUsers []string
+	if as != "" {
+		approvedUsers = strings.Split(as, delimiter)
+	}
+
+	for _, u := range approvedUsers {
+		if u == approver {
+			e.LogPersister.Infof("Approval from the same user (%s) will not be counted", approver)
+			return false
+		}
+	}
+	e.LogPersister.Infof("Got approval from %q", approver)
+	approvedUsers = append(approvedUsers, approver)
+	aus := strings.Join(approvedUsers, delimiter)
+
+	if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, approvedByKey, aus); err != nil {
+		e.LogPersister.Errorf("Unable to save approver information to deployment, %v", err)
+	}
+	if remain := minApproverNum - len(approvedUsers); remain > 0 {
+		e.LogPersister.Infof("Waiting for %d other approvers...", remain)
+		return false
+	}
+	e.reportApproved(aus)
+	e.LogPersister.Info("Received all needed approvals")
+	e.LogPersister.Infof("This stage has been approved by %d users (%s)", minApproverNum, aus)
+	return true
 }

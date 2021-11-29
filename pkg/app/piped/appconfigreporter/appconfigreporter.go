@@ -67,6 +67,8 @@ type Reporter struct {
 
 	// Whether it already swept all unregistered apps from control-plane.
 	sweptUnregisteredApps bool
+	// The latest unregistered apps for each repository.
+	latestUnregisteredApps map[string][]*model.ApplicationInfo
 }
 
 func NewReporter(
@@ -78,14 +80,15 @@ func NewReporter(
 	logger *zap.Logger,
 ) *Reporter {
 	return &Reporter{
-		apiClient:          apiClient,
-		gitClient:          gitClient,
-		applicationLister:  appLister,
-		config:             cfg,
-		gracePeriod:        gracePeriod,
-		lastScannedCommits: make(map[string]string),
-		fileSystem:         &fileSystem{},
-		logger:             logger.Named("app-config-reporter"),
+		apiClient:              apiClient,
+		gitClient:              gitClient,
+		applicationLister:      appLister,
+		config:                 cfg,
+		gracePeriod:            gracePeriod,
+		lastScannedCommits:     make(map[string]string),
+		fileSystem:             &fileSystem{},
+		logger:                 logger.Named("app-config-reporter"),
+		latestUnregisteredApps: make(map[string][]*model.ApplicationInfo),
 	}
 }
 
@@ -131,6 +134,7 @@ func (r *Reporter) scanAppConfigs(ctx context.Context) error {
 	}
 
 	// Make all repos up-to-date.
+	headCommits := make(map[string]string, len(r.gitRepos))
 	for repoID, repo := range r.gitRepos {
 		if err := repo.Pull(ctx, repo.GetClonedBranch()); err != nil {
 			r.logger.Error("failed to update repo to latest",
@@ -139,156 +143,85 @@ func (r *Reporter) scanAppConfigs(ctx context.Context) error {
 			)
 			return err
 		}
+		headCommit, err := repo.GetLatestCommit(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get the latest commit of %s: %w", repoID, err)
+		}
+		headCommits[repoID] = headCommit.Hash
 	}
 
-	apps := r.applicationLister.List()
-	// Create a map from Git path key to app id, to determine if the application is registered.
-	registeredAppPaths := make(map[string]string, len(apps))
-	for _, app := range apps {
-		key := makeGitPathKey(app.GitPath.Repo.Id, filepath.Join(app.GitPath.Path, app.GitPath.ConfigFilename))
-		registeredAppPaths[key] = app.Id
+	if err := r.updateRegisteredApps(ctx, headCommits); err != nil {
+		return err
+	}
+	if err := r.updateUnregisteredApps(ctx, headCommits); err != nil {
+		return err
 	}
 
-	if err := r.updateRegisteredApps(ctx, registeredAppPaths); err != nil {
-		return fmt.Errorf("failed to update registered applications: %w", err)
+	for repoID, hash := range headCommits {
+		r.lastScannedCommits[repoID] = hash
 	}
-	if err := r.updateUnregisteredApps(ctx, registeredAppPaths); err != nil {
-		return fmt.Errorf("failed to update unregistered applications: %w", err)
-	}
-
 	return nil
 }
 
 // updateRegisteredApps sends application configurations that have changed since the last time to the control-plane.
-func (r *Reporter) updateRegisteredApps(ctx context.Context, registeredAppPaths map[string]string) (err error) {
-	apps := make([]*model.ApplicationInfo, 0)
-	headCommits := make(map[string]string, len(r.gitRepos))
+func (r *Reporter) updateRegisteredApps(ctx context.Context, headCommits map[string]string) error {
+	registeredApps := make([]*model.ApplicationInfo, 0)
 	for repoID, repo := range r.gitRepos {
-		var headCommit git.Commit
-		headCommit, err = repo.GetLatestCommit(ctx)
-		if err != nil {
-			return fmt.Errorf("failed to get the latest commit of %s: %w", repoID, err)
-		}
+		headCommit := headCommits[repoID]
 		// Skip if the head commit is already scanned.
-		lastScannedCommit, ok := r.lastScannedCommits[repoID]
-		if ok && headCommit.Hash == lastScannedCommit {
+		if lc, ok := r.lastScannedCommits[repoID]; ok && headCommit == lc {
 			continue
 		}
-		var as []*model.ApplicationInfo
-		as, err = r.findRegisteredApps(ctx, repoID, repo, lastScannedCommit, headCommit.Hash, registeredAppPaths)
+
+		rs, err := r.findRegisteredApps(repo.GetPath(), repoID)
 		if err != nil {
 			return err
 		}
-		apps = append(apps, as...)
-		headCommits[repoID] = headCommit.Hash
+		r.logger.Info(fmt.Sprintf("found out %d registered applications that config has been changed in repository %q", len(rs), repoID))
+		registeredApps = append(registeredApps, rs...)
 	}
-	defer func() {
-		if err == nil {
-			for repoID, hash := range headCommits {
-				r.lastScannedCommits[repoID] = hash
-			}
-		}
-	}()
-	if len(apps) == 0 {
-		return
+	if len(registeredApps) == 0 {
+		return nil
 	}
 
-	_, err = r.apiClient.UpdateApplicationConfigurations(
+	_, err := r.apiClient.UpdateApplicationConfigurations(
 		ctx,
 		&pipedservice.UpdateApplicationConfigurationsRequest{
-			Applications: apps,
+			Applications: registeredApps,
 		},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to update application configurations: %w", err)
 	}
-	return
-}
-
-// findRegisteredApps finds out registered application info in the given git repository.
-func (r *Reporter) findRegisteredApps(ctx context.Context, repoID string, repo gitRepo, lastScannedCommit, headCommitHash string, registeredAppPaths map[string]string) ([]*model.ApplicationInfo, error) {
-	if lastScannedCommit == "" {
-		// Scan all files because it seems to be the first commit since Piped starts.
-		apps := make([]*model.ApplicationInfo, 0)
-		err := fs.WalkDir(r.fileSystem, repo.GetPath(), func(path string, d fs.DirEntry, err error) error {
-			if err != nil {
-				return err
-			}
-			if d.IsDir() {
-				return nil
-			}
-			cfgRelPath, err := filepath.Rel(repo.GetPath(), path)
-			if err != nil {
-				return err
-			}
-			gitPathKey := makeGitPathKey(repoID, cfgRelPath)
-			appID, registered := registeredAppPaths[gitPathKey]
-			if !registered {
-				return nil
-			}
-
-			appInfo, err := r.readApplicationInfo(repo.GetPath(), repoID, filepath.Dir(cfgRelPath), filepath.Base(cfgRelPath))
-			if err != nil {
-				r.logger.Error("failed to read application info",
-					zap.String("repo-id", repoID),
-					zap.String("config-file-path", cfgRelPath),
-					zap.Error(err),
-				)
-				return nil
-			}
-			appInfo.Id = appID
-			apps = append(apps, appInfo)
-			// Continue reading so that it can return apps as much as possible.
-			return nil
-		})
-		if err != nil {
-			return nil, fmt.Errorf("failed to inspect files under %s: %w", repo.GetPath(), err)
-		}
-		return apps, nil
-	}
-
-	filePaths, err := repo.ChangedFiles(ctx, lastScannedCommit, headCommitHash)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get files those were touched between two commits: %w", err)
-	}
-	if len(filePaths) == 0 {
-		// The case where all changes have been fully reverted.
-		return []*model.ApplicationInfo{}, nil
-	}
-	apps := make([]*model.ApplicationInfo, 0)
-	for _, path := range filePaths {
-		gitPathKey := makeGitPathKey(repoID, path)
-		appID, registered := registeredAppPaths[gitPathKey]
-		if !registered {
-			continue
-		}
-		appInfo, err := r.readApplicationInfo(repo.GetPath(), repoID, filepath.Dir(path), filepath.Base(path))
-		if err != nil {
-			r.logger.Error("failed to read application info",
-				zap.String("repo-id", repoID),
-				zap.String("config-file-path", path),
-				zap.Error(err),
-			)
-			continue
-		}
-		appInfo.Id = appID
-		apps = append(apps, appInfo)
-	}
-	return apps, nil
+	return nil
 }
 
 // updateUnregisteredApps sends all unregistered application configurations to the control-plane.
-func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPaths map[string]string) error {
-	apps := make([]*model.ApplicationInfo, 0)
+func (r *Reporter) updateUnregisteredApps(ctx context.Context, headCommits map[string]string) error {
+	unregisteredApps := make([]*model.ApplicationInfo, 0)
 	for repoID, repo := range r.gitRepos {
-		as, err := r.findUnregisteredApps(repo.GetPath(), repoID, registeredAppPaths)
+		headCommit := headCommits[repoID]
+		if lc, ok := r.lastScannedCommits[repoID]; ok && headCommit == lc {
+			// Use the cached apps if the head commit is already scanned.
+			// The unregistered apps sent previously aren't persisted, that's why it has to send them again even if it's scanned one.
+			if apps, ok := r.latestUnregisteredApps[repoID]; ok {
+				unregisteredApps = append(unregisteredApps, apps...)
+			}
+			continue
+		}
+
+		us, err := r.findUnregisteredApps(repo.GetPath(), repoID)
 		if err != nil {
 			return err
 		}
-		r.logger.Info(fmt.Sprintf("found out %d unregistered applications in repository %s", len(as), repoID))
-		apps = append(apps, as...)
+		r.logger.Info(fmt.Sprintf("found out %d unregistered applications in repository %q", len(us), repoID))
+		unregisteredApps = append(unregisteredApps, us...)
+		r.latestUnregisteredApps[repoID] = us
 	}
-	if len(apps) == 0 {
+
+	// Even if the result is zero, we need to report at least once.
+	// However, it should return after the second time which is unnecessary.
+	if len(unregisteredApps) == 0 {
 		if r.sweptUnregisteredApps {
 			return nil
 		}
@@ -300,7 +233,7 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPath
 	_, err := r.apiClient.ReportUnregisteredApplicationConfigurations(
 		ctx,
 		&pipedservice.ReportUnregisteredApplicationConfigurationsRequest{
-			Applications: apps,
+			Applications: unregisteredApps,
 		},
 	)
 	if err != nil {
@@ -309,10 +242,67 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context, registeredAppPath
 	return nil
 }
 
+// findRegisteredApps finds out registered application info that should be updated in the given git repository.
+func (r *Reporter) findRegisteredApps(repoPath, repoID string) ([]*model.ApplicationInfo, error) {
+	// Compare the apps registered on Control-plane with the latest config file
+	// and return only the ones that have been changed.
+	apps := make([]*model.ApplicationInfo, 0)
+	for _, app := range r.applicationLister.List() {
+		if app.GitPath.Repo.Id != repoID {
+			continue
+		}
+		appCfg, err := r.readApplicationInfo(repoPath, repoID, app.GitPath.Path, app.GitPath.ConfigFilename)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read application config file: %w", err)
+		}
+		if r.isSynced(appCfg, app) {
+			continue
+		}
+		appCfg.Id = app.Id
+		apps = append(apps, appCfg)
+	}
+	return apps, nil
+}
+
+func (r *Reporter) isSynced(appInfo *model.ApplicationInfo, app *model.Application) bool {
+	if appInfo.Kind != app.Kind {
+		r.logger.Warn("kind in application config has been changed which isn't allowed",
+			zap.String("app-id", app.Id),
+			zap.String("repo-id", app.GitPath.Repo.Id),
+			zap.String("path", app.GitPath.Path),
+			zap.String("config-filename", app.GitPath.ConfigFilename),
+		)
+	}
+
+	// TODO: Make it possible to follow the ApplicationInfo field changes
+	if appInfo.Name != app.Name {
+		return false
+	}
+	if len(appInfo.Labels) != len(app.Labels) {
+		return false
+	}
+	for key, value := range appInfo.Labels {
+		if value != app.Labels[key] {
+			return false
+		}
+	}
+	return true
+}
+
 // findUnregisteredApps finds out unregistered application info in the given git repository.
 // The file name must be default name in order to be recognized as an Application config.
-func (r *Reporter) findUnregisteredApps(repoPath, repoID string, registeredAppPaths map[string]string) ([]*model.ApplicationInfo, error) {
-	apps := make([]*model.ApplicationInfo, 0)
+func (r *Reporter) findUnregisteredApps(repoPath, repoID string) ([]*model.ApplicationInfo, error) {
+	apps := r.applicationLister.List()
+	// Create a map to determine the app is registered by GitPath.
+	registeredAppPaths := make(map[string]struct{}, len(apps))
+	for _, app := range apps {
+		if app.GitPath.Repo.Id != repoID {
+			continue
+		}
+		registeredAppPaths[filepath.Join(app.GitPath.Path, app.GitPath.ConfigFilename)] = struct{}{}
+	}
+
+	out := make([]*model.ApplicationInfo, 0)
 	// Scan all files under the repository.
 	err := fs.WalkDir(r.fileSystem, repoPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -328,8 +318,7 @@ func (r *Reporter) findUnregisteredApps(repoPath, repoID string, registeredAppPa
 		if !model.IsApplicationConfigFile(filepath.Base(cfgRelPath)) {
 			return nil
 		}
-		gitPathKey := makeGitPathKey(repoID, cfgRelPath)
-		if _, registered := registeredAppPaths[gitPathKey]; registered {
+		if _, registered := registeredAppPaths[cfgRelPath]; registered {
 			return nil
 		}
 
@@ -342,14 +331,14 @@ func (r *Reporter) findUnregisteredApps(repoPath, repoID string, registeredAppPa
 			)
 			return nil
 		}
-		apps = append(apps, appInfo)
+		out = append(out, appInfo)
 		// Continue reading so that it can return apps as much as possible.
 		return nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to inspect files under %s: %w", repoPath, err)
 	}
-	return apps, nil
+	return out, nil
 }
 
 func (r *Reporter) readApplicationInfo(repoDir, repoID, appDirRelPath, cfgFilename string) (*model.ApplicationInfo, error) {
@@ -383,10 +372,4 @@ func (r *Reporter) readApplicationInfo(repoDir, repoID, appDirRelPath, cfgFilena
 		ConfigFilename: cfgFilename,
 		PipedId:        r.config.PipedID,
 	}, nil
-}
-
-// makeGitPathKey builds a unique path between repositories.
-// cfgFilePath is a relative path from the repo root.
-func makeGitPathKey(repoID, cfgFilePath string) string {
-	return fmt.Sprintf("%s:%s", repoID, cfgFilePath)
 }

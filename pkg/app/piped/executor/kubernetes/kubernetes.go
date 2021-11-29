@@ -96,7 +96,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		}
 	}
 
-	e.provider = provider.NewProvider(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, e.deployCfg.Input, e.Logger)
+	e.provider = provider.NewProvider(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, e.deployCfg.Input, e.GitClient, e.Logger)
 	e.Logger.Info("start executing kubernetes stage",
 		zap.String("stage-name", e.Stage.Name),
 		zap.String("app-dir", ds.AppDir),
@@ -157,6 +157,7 @@ func (e *deployExecutor) loadRunningManifests(ctx context.Context) (manifests []
 				ds.RepoDir,
 				e.Deployment.GitPath.ConfigFilename,
 				e.deployCfg.Input,
+				e.GitClient,
 				e.Logger,
 			)
 			return loader.LoadManifests(ctx)

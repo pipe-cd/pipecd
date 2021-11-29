@@ -74,6 +74,34 @@ func TestHasStage(t *testing.T) {
 	}
 }
 
+func TestValidateWaitApprovalStageOptions(t *testing.T) {
+	testcases := []struct {
+		name           string
+		minApproverNum int
+		wantErr        bool
+	}{
+		{
+			name:           "valid",
+			minApproverNum: 1,
+			wantErr:        false,
+		},
+		{
+			name:           "invalid",
+			minApproverNum: -1,
+			wantErr:        true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := &WaitApprovalStageOptions{
+				MinApproverNum: tc.minApproverNum,
+			}
+			err := w.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
+		})
+	}
+}
+
 func TestFindSlackAccounts(t *testing.T) {
 	testcases := []struct {
 		name     string
