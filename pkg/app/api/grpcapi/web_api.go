@@ -15,7 +15,9 @@
 package grpcapi
 
 import (
+	"bytes"
 	"context"
+	"encoding/gob"
 	"errors"
 	"fmt"
 	"sort"
@@ -612,7 +614,7 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 	// Collect all apps that belong to the project.
 	key := makeUnregisteredAppsCacheKey(claims.Role.ProjectId)
 	c := rediscache.NewHashCache(a.redis, key)
-	// pipedToApps assumes to be a map["piped-id"][]*model.ApplicationInfo
+	// pipedToApps assumes to be a map["piped-id"][]byte(slice of *model.ApplicationInfo encoded by encoding/gob)
 	pipedToApps, err := c.GetAll()
 	if errors.Is(err, cache.ErrNotFound) {
 		return &webservice.ListUnregisteredApplicationsResponse{}, nil
@@ -625,9 +627,15 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 	// Integrate all apps cached for each Piped.
 	allApps := make([]*model.ApplicationInfo, 0)
 	for _, as := range pipedToApps {
-		apps, ok := as.([]*model.ApplicationInfo)
+		b, ok := as.([]byte)
 		if !ok {
 			return nil, status.Error(codes.Internal, "Unexpected data cached")
+		}
+		dec := gob.NewDecoder(bytes.NewReader(b))
+		var apps []*model.ApplicationInfo
+		if err := dec.Decode(&apps); err != nil {
+			a.logger.Error("failed to decode the unregistered apps", zap.Error(err))
+			return nil, status.Error(codes.Internal, "failed to decode the unregistered apps")
 		}
 		allApps = append(allApps, apps...)
 	}

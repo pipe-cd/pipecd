@@ -15,7 +15,9 @@
 package grpcapi
 
 import (
+	"bytes"
 	"context"
+	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"time"
@@ -1001,10 +1003,16 @@ func (a *PipedAPI) ReportUnregisteredApplicationConfigurations(ctx context.Conte
 		return nil, err
 	}
 
+	// Cache an encoded slice of *model.ApplicationInfo.
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	if err := enc.Encode(req.Applications); err != nil {
+		a.logger.Error("failed to encode the unregistered apps", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to encode the unregistered apps")
+	}
 	key := makeUnregisteredAppsCacheKey(projectID)
 	c := rediscache.NewHashCache(a.redis, key)
-	// Cache a slice of *model.ApplicationInfo.
-	if err := c.Put(pipedID, req.Applications); err != nil {
+	if err := c.Put(pipedID, buf.Bytes()); err != nil {
 		return nil, status.Error(codes.Internal, "failed to put the unregistered apps to the cache")
 	}
 

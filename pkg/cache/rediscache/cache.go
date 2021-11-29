@@ -77,6 +77,7 @@ func (c *RedisCache) Get(k string) (interface{}, error) {
 	return reply, nil
 }
 
+// It is caller's responsibility to encode Go struct.
 func (c *RedisCache) Put(k string, v interface{}) error {
 	conn := c.redis.Get()
 	defer conn.Close()
