@@ -644,7 +644,7 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 	}
 
 	sort.Slice(allApps, func(i, j int) bool {
-		return allApps[i].GetPath() < allApps[j].GetPath()
+		return allApps[i].Path < allApps[j].Path
 	})
 	return &webservice.ListUnregisteredApplicationsResponse{
 		Applications: allApps,
