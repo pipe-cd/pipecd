@@ -250,7 +250,19 @@ type PipedRepository struct {
 	Branch string `json:"branch"`
 }
 
+type HelmChartRepositoryType string
+
+const (
+	HTTPHelmChartRepository HelmChartRepositoryType = "HTTP"
+	GITHelmChartRepository  HelmChartRepositoryType = "GIT"
+)
+
 type HelmChartRepository struct {
+	// The repository type. Currently, HTTP and GIT are supported.
+	// Default is HTTP.
+	Type HelmChartRepositoryType `json:"type" default:"HTTP"`
+
+	// Configuration for HTTP type.
 	// The name of the Helm chart repository.
 	Name string `json:"name"`
 	// The address to the Helm chart repository.
@@ -262,6 +274,7 @@ type HelmChartRepository struct {
 	// Whether to skip TLS certificate checks for the repository or not.
 	Insecure bool `json:"insecure"`
 
+	// Configuration for GIT type.
 	// Remote address of the Git repository used to clone Helm charts.
 	// e.g. git@github.com:org/repo.git
 	GitRemote string `json:"gitRemote"`
@@ -270,11 +283,11 @@ type HelmChartRepository struct {
 }
 
 func (r *HelmChartRepository) IsHTTPRepository() bool {
-	return r.Name != "" && r.Address != ""
+	return r.Type == HTTPHelmChartRepository
 }
 
 func (r *HelmChartRepository) IsGitRepository() bool {
-	return r.GitRemote != ""
+	return r.Type == GITHelmChartRepository
 }
 
 func (r *HelmChartRepository) Validate() error {

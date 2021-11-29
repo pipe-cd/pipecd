@@ -59,6 +59,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| type | string | The repository type. Currently, HTTP and GIT are supported. Default is HTTP. | No |
 | name | string | The name of the Helm chart repository. Note that is not a Git repository but a [Helm chart repository](https://helm.sh/docs/topics/chart_repository/). | Yes |
 | address | string | The address to the Helm chart repository. | Yes |
 | username | string | Username used for the repository backed by HTTP basic authentication. | No |
