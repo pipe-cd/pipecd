@@ -269,9 +269,6 @@ func isSynced(appInfo *model.ApplicationInfo, app *model.Application) bool {
 	if appInfo.Name != app.Name {
 		return false
 	}
-	if appInfo.Kind != app.Kind {
-		return false
-	}
 	if len(appInfo.Labels) != len(app.Labels) {
 		return false
 	}
