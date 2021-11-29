@@ -285,12 +285,14 @@ func (r *HelmChartRepository) Validate() error {
 		if r.Address == "" {
 			return errors.New("address must be set")
 		}
+		return nil
 	}
 
 	if r.IsGitRepository() {
 		if r.GitRemote == "" {
 			return errors.New("gitRemote must be set")
 		}
+		return nil
 	}
 
 	return errors.New("either HTTP repository or Git repository must be configured")
