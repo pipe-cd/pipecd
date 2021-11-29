@@ -980,7 +980,6 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 	for _, appInfo := range req.Applications {
 		updater := func(app *model.Application) error {
 			app.Name = appInfo.Name
-			app.Kind = appInfo.Kind
 			app.Labels = appInfo.Labels
 			return nil
 		}
