@@ -464,6 +464,10 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 			return nil, status.Error(codes.Internal, "failed to update deployment to be planned")
 		}
 	}
+
+	if err = a.updateDeploymentRefStatusIfNecessary(ctx, req.DeploymentChainId, req.DeploymentChainBlockIndex, req.DeploymentId, model.DeploymentStatus_DEPLOYMENT_PLANNED, req.StatusReason); err != nil {
+		return nil, status.Error(codes.Internal, "unable to update deployment ref status of the deployment chain this deployment belongs to")
+	}
 	return &pipedservice.ReportDeploymentPlannedResponse{}, nil
 }
 
@@ -494,6 +498,10 @@ func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *piped
 			return nil, status.Error(codes.Internal, "failed to update deployment status")
 		}
 	}
+
+	if err = a.updateDeploymentRefStatusIfNecessary(ctx, req.DeploymentChainId, req.DeploymentChainBlockIndex, req.DeploymentId, req.Status, req.StatusReason); err != nil {
+		return nil, status.Error(codes.Internal, "unable to update deployment ref status of the deployment chain this deployment belongs to")
+	}
 	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
 }
 
@@ -523,6 +531,10 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 			)
 			return nil, status.Error(codes.Internal, "failed to update deployment to be completed")
 		}
+	}
+
+	if err = a.updateDeploymentRefStatusIfNecessary(ctx, req.DeploymentChainId, req.DeploymentChainBlockIndex, req.DeploymentId, req.Status, req.StatusReason); err != nil {
+		return nil, status.Error(codes.Internal, "unable to update deployment ref status of the deployment chain this deployment belongs to")
 	}
 	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
 }
@@ -1058,6 +1070,8 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 				},
 				DeploymentRef: &model.ChainDeploymentRef{
 					DeploymentId: firstDeployment.Id,
+					Status:       firstDeployment.Status,
+					StatusReason: firstDeployment.StatusReason,
 				},
 			},
 		},
@@ -1267,5 +1281,19 @@ func (a *PipedAPI) validateEnvBelongsToProject(ctx context.Context, envID, proje
 	if env.ProjectId != projectID {
 		return status.Error(codes.PermissionDenied, "requested environment doesn't belong to the project")
 	}
+	return nil
+}
+
+func (a *PipedAPI) updateDeploymentRefStatusIfNecessary(ctx context.Context, deploymentChainID string, blockIndex uint32, deploymentID string, status model.DeploymentStatus, reason string) error {
+	// If the deployment does not belongs to any deployment chain, no need to update anything.
+	if deploymentChainID == "" {
+		return nil
+	}
+
+	dcUpdater := datastore.DeploymentChainNodeDeploymentStatusUpdater(blockIndex, deploymentID, status, reason)
+	if err := a.deploymentChainStore.UpdateDeploymentChain(ctx, deploymentChainID, dcUpdater); err != nil {
+		return err
+	}
+
 	return nil
 }

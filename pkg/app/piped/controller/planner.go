@@ -220,12 +220,14 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash
 		err   error
 		retry = pipedservice.NewRetry(10)
 		req   = &pipedservice.ReportDeploymentPlannedRequest{
-			DeploymentId:      p.deployment.Id,
-			Summary:           out.Summary,
-			StatusReason:      "The deployment has been planned",
-			RunningCommitHash: runningCommitHash,
-			Version:           out.Version,
-			Stages:            out.Stages,
+			DeploymentId:              p.deployment.Id,
+			Summary:                   out.Summary,
+			StatusReason:              "The deployment has been planned",
+			RunningCommitHash:         runningCommitHash,
+			Version:                   out.Version,
+			Stages:                    out.Stages,
+			DeploymentChainId:         p.deployment.DeploymentChainId,
+			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
 		}
 	)
 
@@ -264,11 +266,13 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) err
 		err error
 		now = p.nowFunc()
 		req = &pipedservice.ReportDeploymentCompletedRequest{
-			DeploymentId:  p.deployment.Id,
-			Status:        model.DeploymentStatus_DEPLOYMENT_FAILURE,
-			StatusReason:  reason,
-			StageStatuses: nil,
-			CompletedAt:   now.Unix(),
+			DeploymentId:              p.deployment.Id,
+			Status:                    model.DeploymentStatus_DEPLOYMENT_FAILURE,
+			StatusReason:              reason,
+			StageStatuses:             nil,
+			DeploymentChainId:         p.deployment.DeploymentChainId,
+			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
+			CompletedAt:               now.Unix(),
 		}
 		retry = pipedservice.NewRetry(10)
 	)
@@ -308,11 +312,13 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 		err error
 		now = p.nowFunc()
 		req = &pipedservice.ReportDeploymentCompletedRequest{
-			DeploymentId:  p.deployment.Id,
-			Status:        model.DeploymentStatus_DEPLOYMENT_CANCELLED,
-			StatusReason:  reason,
-			StageStatuses: nil,
-			CompletedAt:   now.Unix(),
+			DeploymentId:              p.deployment.Id,
+			Status:                    model.DeploymentStatus_DEPLOYMENT_CANCELLED,
+			StatusReason:              reason,
+			StageStatuses:             nil,
+			DeploymentChainId:         p.deployment.DeploymentChainId,
+			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
+			CompletedAt:               now.Unix(),
 		}
 		retry = pipedservice.NewRetry(10)
 	)

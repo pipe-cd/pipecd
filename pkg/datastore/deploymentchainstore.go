@@ -42,7 +42,34 @@ var (
 				}
 				node.DeploymentRef = &model.ChainDeploymentRef{
 					DeploymentId: deployment.Id,
+					Status:       deployment.Status,
+					StatusReason: deployment.StatusReason,
 				}
+				updated = true
+			}
+			if !updated {
+				return fmt.Errorf("unable to find the right node in chain to assign deployment to")
+			}
+			return nil
+		}
+	}
+
+	DeploymentChainNodeDeploymentStatusUpdater = func(blockIndex uint32, deploymentID string, status model.DeploymentStatus, reason string) func(*model.DeploymentChain) error {
+		return func(dc *model.DeploymentChain) error {
+			if blockIndex >= uint32(len(dc.Blocks)) {
+				return fmt.Errorf("invalid block index provided")
+			}
+			block := dc.Blocks[blockIndex]
+			var updated bool
+			for _, node := range block.Nodes {
+				if node.DeploymentRef.DeploymentId != deploymentID {
+					continue
+				}
+				if node.DeploymentRef == nil {
+					continue
+				}
+				node.DeploymentRef.Status = status
+				node.DeploymentRef.StatusReason = reason
 				updated = true
 			}
 			if !updated {
