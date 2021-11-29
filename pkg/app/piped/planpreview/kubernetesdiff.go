@@ -40,7 +40,7 @@ func (b *builder) kubernetesDiff(
 	var oldManifests, newManifests []provider.Manifest
 	var err error
 
-	newManifests, err = loadKubernetesManifests(ctx, *app, targetDSP, b.appManifestsCache, b.logger)
+	newManifests, err = loadKubernetesManifests(ctx, *app, targetDSP, b.appManifestsCache, b.gitClient, b.logger)
 	if err != nil {
 		fmt.Fprintf(buf, "failed to load kubernetes manifests at the head commit (%v)\n", err)
 		return nil, err
@@ -53,7 +53,7 @@ func (b *builder) kubernetesDiff(
 			*app.GitPath,
 			b.secretDecrypter,
 		)
-		oldManifests, err = loadKubernetesManifests(ctx, *app, runningDSP, b.appManifestsCache, b.logger)
+		oldManifests, err = loadKubernetesManifests(ctx, *app, runningDSP, b.appManifestsCache, b.gitClient, b.logger)
 		if err != nil {
 			fmt.Fprintf(buf, "failed to load kubernetes manifests at the running commit (%v)\n", err)
 			return nil, err
@@ -91,7 +91,7 @@ func (b *builder) kubernetesDiff(
 	}, nil
 }
 
-func loadKubernetesManifests(ctx context.Context, app model.Application, dsp deploysource.Provider, manifestsCache cache.Cache, logger *zap.Logger) (manifests []provider.Manifest, err error) {
+func loadKubernetesManifests(ctx context.Context, app model.Application, dsp deploysource.Provider, manifestsCache cache.Cache, gc gitClient, logger *zap.Logger) (manifests []provider.Manifest, err error) {
 	commit := dsp.Revision()
 	cache := provider.AppManifestsCache{
 		AppID:  app.Id,
@@ -121,6 +121,7 @@ func loadKubernetesManifests(ctx context.Context, app model.Application, dsp dep
 		ds.RepoDir,
 		app.GitPath.ConfigFilename,
 		deployCfg.Input,
+		gc,
 		logger,
 	)
 	manifests, err = loader.LoadManifests(ctx)
