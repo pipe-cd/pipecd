@@ -1156,15 +1156,29 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 	}
 
 	prevBlock := dc.Blocks[req.DeploymentChainBlockIndex-1]
-	plannable := true
+	deploymentIds := make([]string, 0, len(prevBlock.Nodes))
 	for _, node := range prevBlock.Nodes {
-		// TODO: Consider add deployment status to the deployment ref in the deployment chain model
-		// instead of fetching deployment model here.
-		dp, err := a.deploymentStore.GetDeployment(ctx, node.DeploymentRef.DeploymentId)
-		if err != nil {
-			return nil, status.Error(codes.Internal, "unable to process previous block nodes in deployment chain")
-		}
-		if model.IsSuccessfullyCompletedDeployment(dp.Status) {
+		deploymentIds = append(deploymentIds, node.DeploymentRef.DeploymentId)
+	}
+
+	// TODO: Consider add deployment status to the deployment ref in the deployment chain model
+	// instead of fetching deployment model here.
+	blockDeployments, _, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "Id",
+				Operator: datastore.OperatorIn,
+				Value:    deploymentIds,
+			},
+		},
+	})
+	if err != nil {
+		return nil, status.Error(codes.Internal, "unable to process previous block nodes in deployment chain")
+	}
+
+	plannable := true
+	for _, dp := range blockDeployments {
+		if !model.IsSuccessfullyCompletedDeployment(dp.Status) {
 			plannable = false
 			break
 		}
