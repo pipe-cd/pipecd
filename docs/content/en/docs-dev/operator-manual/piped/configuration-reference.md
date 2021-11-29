@@ -64,6 +64,8 @@ spec:
 | username | string | Username used for the repository backed by HTTP basic authentication. | No |
 | password | string | Password used for the repository backed by HTTP basic authentication. | No |
 | insecure | bool | Whether to skip TLS certificate checks for the repository or not. | No |
+| gitRemote | string | Remote address of the Git repository used to clone Helm charts. | No |
+| sshKeyFile | string | The path to the private ssh key file used while cloning Helm charts from above Git repository. | No |
 
 ## CloudProvider
 

@@ -156,17 +156,15 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	}
 
 	// Add configured Helm chart repositories.
-	if len(cfg.ChartRepositories) > 0 {
+	if repos := cfg.HTTPHelmChartRepositories(); len(repos) > 0 {
 		reg := toolregistry.DefaultRegistry()
-		if err := chartrepo.Add(ctx, cfg.ChartRepositories, reg, input.Logger); err != nil {
+		if err := chartrepo.Add(ctx, repos, reg, input.Logger); err != nil {
 			input.Logger.Error("failed to add configured chart repositories", zap.Error(err))
 			return err
 		}
-		if len(cfg.ChartRepositories) > 0 {
-			if err := chartrepo.Update(ctx, reg, input.Logger); err != nil {
-				input.Logger.Error("failed to update Helm chart repositories", zap.Error(err))
-				return err
-			}
+		if err := chartrepo.Update(ctx, reg, input.Logger); err != nil {
+			input.Logger.Error("failed to update Helm chart repositories", zap.Error(err))
+			return err
 		}
 	}
 
@@ -229,11 +227,19 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	}
 
 	// Initialize git client.
-	gitClient, err := git.NewClient(
+	gitOptions := []git.Option{
 		git.WithUserName(cfg.Git.Username),
 		git.WithEmail(cfg.Git.Email),
 		git.WithLogger(input.Logger),
-	)
+	}
+	for _, repo := range cfg.GitHelmChartRepositories() {
+		if f := repo.SSHKeyFile; f != "" {
+			// Configure git client to use the specified SSH key while fetching private Helm charts.
+			env := fmt.Sprintf("GIT_SSH_COMMAND=ssh -i %s -o StrictHostKeyChecking=no -F /dev/null", f)
+			gitOptions = append(gitOptions, git.WithGitEnvForRepo(repo.GitRemote, env))
+		}
+	}
+	gitClient, err := git.NewClient(gitOptions...)
 	if err != nil {
 		input.Logger.Error("failed to initialize git client", zap.Error(err))
 		return err

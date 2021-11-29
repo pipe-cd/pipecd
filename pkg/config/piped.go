@@ -90,6 +90,11 @@ func (s *PipedSpec) Validate() error {
 	if s.SyncInterval < 0 {
 		return errors.New("syncInterval must be greater than or equal to 0")
 	}
+	for _, r := range s.ChartRepositories {
+		if err := r.Validate(); err != nil {
+			return err
+		}
+	}
 	if s.SecretManagement != nil {
 		if err := s.SecretManagement.Validate(); err != nil {
 			return err
@@ -256,6 +261,58 @@ type HelmChartRepository struct {
 	Password string `json:"password"`
 	// Whether to skip TLS certificate checks for the repository or not.
 	Insecure bool `json:"insecure"`
+
+	// Remote address of the Git repository used to clone Helm charts.
+	// e.g. git@github.com:org/repo.git
+	GitRemote string
+	// The path to the private ssh key file used while cloning Helm charts from above Git repository.
+	SSHKeyFile string `json:"sshKeyFile"`
+}
+
+func (r *HelmChartRepository) IsHTTPRepository() bool {
+	return r.Name != "" && r.Address != ""
+}
+
+func (r *HelmChartRepository) IsGitRepository() bool {
+	return r.GitRemote != ""
+}
+
+func (r *HelmChartRepository) Validate() error {
+	if r.IsHTTPRepository() {
+		if r.Name == "" {
+			return errors.New("name must be set")
+		}
+		if r.Address == "" {
+			return errors.New("address must be set")
+		}
+	}
+
+	if r.IsGitRepository() {
+		if r.GitRemote == "" {
+			return errors.New("gitRemote must be set")
+		}
+	}
+	return nil
+}
+
+func (s *PipedSpec) HTTPHelmChartRepositories() []HelmChartRepository {
+	repos := make([]HelmChartRepository, 0, len(s.ChartRepositories))
+	for _, r := range s.ChartRepositories {
+		if r.IsHTTPRepository() {
+			repos = append(repos, r)
+		}
+	}
+	return repos
+}
+
+func (s *PipedSpec) GitHelmChartRepositories() []HelmChartRepository {
+	repos := make([]HelmChartRepository, 0, len(s.ChartRepositories))
+	for _, r := range s.ChartRepositories {
+		if r.IsGitRepository() {
+			repos = append(repos, r)
+		}
+	}
+	return repos
 }
 
 type PipedCloudProvider struct {
