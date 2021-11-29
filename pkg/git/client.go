@@ -49,8 +49,9 @@ type client struct {
 	mu        sync.Mutex
 	repoLocks map[string]*sync.Mutex
 
-	gitEnvs []string
-	logger  *zap.Logger
+	gitEnvs       []string
+	gitEnvsByRepo map[string][]string
+	logger        *zap.Logger
 }
 
 type Option func(*client)
@@ -58,6 +59,12 @@ type Option func(*client)
 func WithGitEnv(env string) Option {
 	return func(c *client) {
 		c.gitEnvs = append(c.gitEnvs, env)
+	}
+}
+
+func WithGitEnvForRepo(remote string, env string) Option {
+	return func(c *client) {
+		c.gitEnvsByRepo[remote] = append(c.gitEnvsByRepo[remote], env)
 	}
 }
 
@@ -97,12 +104,13 @@ func NewClient(opts ...Option) (Client, error) {
 	}
 
 	c := &client{
-		username:  defaultUsername,
-		email:     defaultEmail,
-		gitPath:   gitPath,
-		cacheDir:  cacheDir,
-		repoLocks: make(map[string]*sync.Mutex),
-		logger:    zap.NewNop(),
+		username:      defaultUsername,
+		email:         defaultEmail,
+		gitPath:       gitPath,
+		cacheDir:      cacheDir,
+		repoLocks:     make(map[string]*sync.Mutex),
+		gitEnvsByRepo: make(map[string][]string, 0),
+		logger:        zap.NewNop(),
 	}
 
 	for _, opt := range opts {
@@ -138,7 +146,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 			return nil, err
 		}
 		out, err := retryCommand(3, time.Second, logger, func() ([]byte, error) {
-			return c.runGitCommand(ctx, "", "clone", "--mirror", remote, repoCachePath)
+			return runGitCommand(ctx, c.gitPath, "", c.envsForRepo(remote), "clone", "--mirror", remote, repoCachePath)
 		})
 		if err != nil {
 			logger.Error("failed to clone from remote",
@@ -151,7 +159,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		// Cache hit. Do a git fetch to keep updated.
 		c.logger.Info(fmt.Sprintf("fetching %s to update the cache", repoID))
 		out, err := retryCommand(3, time.Second, c.logger, func() ([]byte, error) {
-			return c.runGitCommand(ctx, repoCachePath, "fetch")
+			return runGitCommand(ctx, c.gitPath, repoCachePath, c.envsForRepo(remote), "fetch")
 		})
 		if err != nil {
 			logger.Error("failed to fetch from remote",
@@ -179,7 +187,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		args = append(args, "-b", branch)
 	}
 	args = append(args, repoCachePath, destination)
-	if out, err := c.runGitCommand(ctx, "", args...); err != nil {
+	if out, err := runGitCommand(ctx, c.gitPath, "", c.envsForRepo(remote), args...); err != nil {
 		logger.Error("failed to clone from local",
 			zap.String("out", string(out)),
 			zap.String("branch", branch),
@@ -189,7 +197,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		return nil, fmt.Errorf("failed to clone from local: %v", err)
 	}
 
-	r := NewRepo(destination, c.gitPath, remote, branch, c.gitEnvs)
+	r := NewRepo(destination, c.gitPath, remote, branch, c.envsForRepo(remote))
 	if c.username != "" || c.email != "" {
 		if err := r.setUser(ctx, c.username, c.email); err != nil {
 			return nil, fmt.Errorf("failed to set user: %v", err)
@@ -215,7 +223,7 @@ func (c *client) Clean() error {
 func (c *client) getLatestRemoteHashForBranch(ctx context.Context, remote, branch string) (string, error) {
 	ref := "refs/heads/" + branch
 	out, err := retryCommand(3, time.Second, c.logger, func() ([]byte, error) {
-		return c.runGitCommand(ctx, "", "ls-remote", ref)
+		return runGitCommand(ctx, c.gitPath, "", c.envsForRepo(remote), "ls-remote", ref)
 	})
 	if err != nil {
 		c.logger.Error("failed to get latest remote hash for branch",
@@ -247,10 +255,15 @@ func (c *client) unlockRepo(repoID string) {
 	c.mu.Unlock()
 }
 
-func (c *client) runGitCommand(ctx context.Context, dir string, args ...string) ([]byte, error) {
-	cmd := exec.CommandContext(ctx, c.gitPath, args...)
+func (c *client) envsForRepo(remote string) []string {
+	envs := c.gitEnvsByRepo[remote]
+	return append(envs, c.gitEnvs...)
+}
+
+func runGitCommand(ctx context.Context, execPath, dir string, envs []string, args ...string) ([]byte, error) {
+	cmd := exec.CommandContext(ctx, execPath, args...)
 	cmd.Dir = dir
-	cmd.Env = append(os.Environ(), c.gitEnvs...)
+	cmd.Env = append(os.Environ(), envs...)
 	return cmd.CombinedOutput()
 }
 
