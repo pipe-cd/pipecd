@@ -292,7 +292,8 @@ func (r *HelmChartRepository) Validate() error {
 			return errors.New("gitRemote must be set")
 		}
 	}
-	return nil
+
+	return errors.New("either HTTP repository or Git repository must be configured")
 }
 
 func (s *PipedSpec) HTTPHelmChartRepositories() []HelmChartRepository {
