@@ -64,4 +64,5 @@ message ApplicationInfo {
     string repo_id = 5 [(validate.rules).string.min_len = 1];
     string path = 6 [(validate.rules).string.pattern = "^[^/].+$"];
     string config_filename = 7;
+    string piped_id = 8 [(validate.rules).string.min_len = 1];
 }

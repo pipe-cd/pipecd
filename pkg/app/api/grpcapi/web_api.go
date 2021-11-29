@@ -631,54 +631,16 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 		}
 		allApps = append(allApps, apps...)
 	}
+	if len(allApps) == 0 {
+		return &webservice.ListUnregisteredApplicationsResponse{}, nil
+	}
 
+	sort.Slice(allApps, func(i, j int) bool {
+		return allApps[i].GetPath() < allApps[j].GetPath()
+	})
 	return &webservice.ListUnregisteredApplicationsResponse{
-		Repos: groupAppsByRepo(allApps),
+		Applications: allApps,
 	}, nil
-}
-
-func groupAppsByRepo(apps []*model.ApplicationInfo) []*webservice.ListUnregisteredApplicationsResponse_Repo {
-	if len(apps) == 0 {
-		return []*webservice.ListUnregisteredApplicationsResponse_Repo{}
-	}
-	if len(apps) == 1 {
-		return []*webservice.ListUnregisteredApplicationsResponse_Repo{
-			{Id: apps[0].RepoId, Apps: apps},
-		}
-	}
-
-	// Make a map from repo-id to apps.
-	repoToApps := make(map[string][]*model.ApplicationInfo)
-	for _, app := range apps {
-		if _, ok := repoToApps[app.RepoId]; !ok {
-			repoToApps[app.RepoId] = []*model.ApplicationInfo{}
-		}
-		repoToApps[app.RepoId] = append(repoToApps[app.RepoId], app)
-	}
-
-	// Tidy apps.
-	repos := make([]*webservice.ListUnregisteredApplicationsResponse_Repo, 0, len(repoToApps))
-	for repoID, as := range repoToApps {
-		// Eliminate duplicated apps
-		tidiedApps := make([]*model.ApplicationInfo, 0, len(as))
-		gitPaths := make(map[string]struct{})
-		for _, app := range as {
-			if _, ok := gitPaths[app.GetPath()]; ok {
-				continue
-			}
-			gitPaths[app.GetPath()] = struct{}{}
-			tidiedApps = append(tidiedApps, app)
-		}
-
-		sort.Slice(tidiedApps, func(i, j int) bool {
-			return tidiedApps[i].GetPath() < tidiedApps[j].GetPath()
-		})
-		repos = append(repos, &webservice.ListUnregisteredApplicationsResponse_Repo{
-			Id:   repoID,
-			Apps: tidiedApps,
-		})
-	}
-	return repos
 }
 
 // TODO: Validate the specified piped to ensure that it belongs to the specified environment.

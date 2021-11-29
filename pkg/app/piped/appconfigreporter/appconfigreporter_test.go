@@ -22,6 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -90,6 +91,7 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 		{
 			name: "valid app config that is unregistered",
 			reporter: &Reporter{
+				config: &config.PipedSpec{PipedID: "piped-1"},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte(`
 apiVersion: pipecd.dev/v1beta1
@@ -113,6 +115,7 @@ spec:
 					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: ".pipe.yaml",
+					PipedId:        "piped-1",
 				},
 			},
 			wantErr: false,
@@ -120,6 +123,7 @@ spec:
 		{
 			name: "valid app config that name isn't default",
 			reporter: &Reporter{
+				config: &config.PipedSpec{PipedID: "piped-1"},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/dev.pipecd.yaml": &fstest.MapFile{Data: []byte(`
 apiVersion: pipecd.dev/v1beta1
@@ -143,6 +147,7 @@ spec:
 					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: "dev.pipecd.yaml",
+					PipedId:        "piped-1",
 				},
 			},
 			wantErr: false,
@@ -239,6 +244,7 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 		{
 			name: "valid app config that is registered",
 			reporter: &Reporter{
+				config: &config.PipedSpec{PipedID: "piped-1"},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte(`
 apiVersion: pipecd.dev/v1beta1
@@ -266,6 +272,7 @@ spec:
 					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: ".pipe.yaml",
+					PipedId:        "piped-1",
 				},
 			},
 			wantErr: false,
@@ -273,6 +280,7 @@ spec:
 		{
 			name: "last scanned commit is empty",
 			reporter: &Reporter{
+				config: &config.PipedSpec{PipedID: "piped-1"},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte(`
 apiVersion: pipecd.dev/v1beta1
@@ -300,6 +308,7 @@ spec:
 					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: ".pipe.yaml",
+					PipedId:        "piped-1",
 				},
 			},
 			wantErr: false,

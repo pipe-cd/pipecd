@@ -381,6 +381,7 @@ func (r *Reporter) readApplicationInfo(repoDir, repoID, appDirRelPath, cfgFilena
 		RepoId:         repoID,
 		Path:           appDirRelPath,
 		ConfigFilename: cfgFilename,
+		PipedId:        r.config.PipedID,
 	}, nil
 }
 

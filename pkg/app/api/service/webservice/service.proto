@@ -324,11 +324,7 @@ message ListUnregisteredApplicationsRequest {
 }
 
 message ListUnregisteredApplicationsResponse {
-    message Repo {
-        string id = 1;
-        repeated model.ApplicationInfo apps = 2;
-    }
-    repeated Repo repos = 1;
+    repeated model.ApplicationInfo applications = 1;
 }
 
 message ListDeploymentsRequest {
