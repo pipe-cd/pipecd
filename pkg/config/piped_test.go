@@ -63,10 +63,12 @@ func TestPipedConfig(t *testing.T) {
 				},
 				ChartRepositories: []HelmChartRepository{
 					{
+						Type:    HTTPHelmChartRepository,
 						Name:    "fantastic-charts",
 						Address: "https://fantastic-charts.storage.googleapis.com",
 					},
 					{
+						Type:     HTTPHelmChartRepository,
 						Name:     "private-charts",
 						Address:  "https://private-charts.com",
 						Username: "basic-username",
