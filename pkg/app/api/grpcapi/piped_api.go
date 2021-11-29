@@ -1169,17 +1169,13 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 		return nil, status.Error(codes.InvalidArgument, "invalid deployment with chain block index provided")
 	}
 
-	prevBlock := dc.Blocks[req.DeploymentChainBlockIndex-1]
-	plannable := true
-	for _, node := range prevBlock.Nodes {
-		if !model.IsSuccessfullyCompletedDeployment(node.DeploymentRef.Status) {
-			plannable = false
-			break
-		}
+	prevBlockSuccessfullyCompleted, err := dc.IsSuccessfullyCompletedBlock(req.DeploymentChainBlockIndex - 1)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "unable to process the previous block of this deployment in chain")
 	}
 
 	return &pipedservice.InChainDeploymentPlannableResponse{
-		Plannable: plannable,
+		Plannable: prevBlockSuccessfullyCompleted,
 	}, nil
 }
 

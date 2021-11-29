@@ -55,6 +55,7 @@ go_library(
         "common.go",
         "datastore.go",
         "deployment.go",
+        "deployment_chain.go",
         "docs.go",
         "environment.go",
         "event.go",
