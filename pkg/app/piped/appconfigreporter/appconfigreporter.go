@@ -169,7 +169,7 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, headCommits map[str
 	for repoID, repo := range r.gitRepos {
 		headCommit := headCommits[repoID]
 		// Skip if the head commit is already scanned.
-		if lastScannedCommit, ok := r.lastScannedCommits[repoID]; ok && headCommit == lastScannedCommit {
+		if lc, ok := r.lastScannedCommits[repoID]; ok && headCommit == lc {
 			continue
 		}
 
@@ -201,7 +201,7 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context, headCommits map[s
 	unregisteredApps := make([]*model.ApplicationInfo, 0)
 	for repoID, repo := range r.gitRepos {
 		headCommit := headCommits[repoID]
-		if lastScannedCommit, ok := r.lastScannedCommits[repoID]; ok && headCommit == lastScannedCommit {
+		if lc, ok := r.lastScannedCommits[repoID]; ok && headCommit == lc {
 			// Use the cached apps if the head commit is already scanned.
 			// The unregistered apps sent previously aren't persisted, that's why it has to send them again even if it's scanned one.
 			if apps, ok := r.latestUnregisteredApps[repoID]; ok {
