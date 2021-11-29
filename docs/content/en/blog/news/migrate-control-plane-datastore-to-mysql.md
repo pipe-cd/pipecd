@@ -5,6 +5,7 @@ linkTitle: "Migrate Control Plane datastore from MongoDB to MySQL"
 weight: 999
 description: "This page describes how to migrate Control Plane' datastore from MongoDB to MySQL."
 author: Khanh Tran ([@khanhtc1202](https://twitter.com/khanhtc1202))
+toc_hide: true
 ---
 
 Since PipeCD release [v0.9.8](/blog/2021/03/25/release-v0.9.8) which introduces MySQL as PipeCD control-plane datastore, we plan to drop the support for MongoDB datastore in the near future.
