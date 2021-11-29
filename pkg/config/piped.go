@@ -308,7 +308,7 @@ func (r *HelmChartRepository) Validate() error {
 		return nil
 	}
 
-	return errors.New("either HTTP repository or Git repository must be configured")
+	return fmt.Errorf("either %s repository or %s repository must be configured", HTTPHelmChartRepository, GITHelmChartRepository)
 }
 
 func (s *PipedSpec) HTTPHelmChartRepositories() []HelmChartRepository {
