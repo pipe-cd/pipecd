@@ -264,7 +264,7 @@ type HelmChartRepository struct {
 
 	// Remote address of the Git repository used to clone Helm charts.
 	// e.g. git@github.com:org/repo.git
-	GitRemote string
+	GitRemote string `json:"gitRemote"`
 	// The path to the private ssh key file used while cloning Helm charts from above Git repository.
 	SSHKeyFile string `json:"sshKeyFile"`
 }
