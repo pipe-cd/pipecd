@@ -553,7 +553,7 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 		}
 	}
 
-	// If the deployment does not belongs to any deployment chain, no need to update anything.
+	// If the deployment does not belong to any deployment chain, no need to update anything.
 	if req.DeploymentChainId == "" {
 		return &pipedservice.ReportDeploymentCompletedResponse{}, nil
 	}
