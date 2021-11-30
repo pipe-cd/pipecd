@@ -60,6 +60,8 @@ func (r *RedisHashCache) Get(k string) (interface{}, error) {
 // check if the TTL for hashkey (not the key k), in case the TTL for
 // hashkey is not yet existed or unset, EXPIRE will be called and set
 // TTL time for the whole hashkey.
+//
+// It is caller's responsibility to encode Go struct.
 func (r *RedisHashCache) Put(k string, v interface{}) error {
 	conn := r.redis.Get()
 	defer conn.Close()

@@ -199,7 +199,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 				datastore.NewPipedStore(ds),
 				input.Logger,
 			)
-			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, las, cmds, statCache, cmdOutputStore, cfg.Address, input.Logger)
+			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, las, cmds, statCache, rd, cmdOutputStore, cfg.Address, input.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),

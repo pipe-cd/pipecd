@@ -15,9 +15,12 @@
 package grpcapi
 
 import (
+	"bytes"
 	"context"
+	"encoding/gob"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -66,6 +69,7 @@ type WebAPI struct {
 	pipedProjectCache      cache.Cache
 	envProjectCache        cache.Cache
 	insightCache           cache.Cache
+	redis                  redis.Redis
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -102,6 +106,7 @@ func NewWebAPI(
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		envProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		insightCache:              rediscache.NewTTLCache(rd, 3*time.Hour),
+		redis:                     rd,
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -597,6 +602,53 @@ func (a *WebAPI) validatePipedBelongsToProject(ctx context.Context, pipedID, pro
 		return status.Error(codes.PermissionDenied, "Requested piped doesn't belong to the project you logged in")
 	}
 	return nil
+}
+
+func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice.ListUnregisteredApplicationsRequest) (*webservice.ListUnregisteredApplicationsResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	// Collect all apps that belong to the project.
+	key := makeUnregisteredAppsCacheKey(claims.Role.ProjectId)
+	c := rediscache.NewHashCache(a.redis, key)
+	// pipedToApps assumes to be a map["piped-id"][]byte(slice of *model.ApplicationInfo encoded by encoding/gob)
+	pipedToApps, err := c.GetAll()
+	if errors.Is(err, cache.ErrNotFound) {
+		return &webservice.ListUnregisteredApplicationsResponse{}, nil
+	}
+	if err != nil {
+		a.logger.Error("failed to get unregistered apps", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get unregistered apps")
+	}
+
+	// Integrate all apps cached for each Piped.
+	allApps := make([]*model.ApplicationInfo, 0)
+	for _, as := range pipedToApps {
+		b, ok := as.([]byte)
+		if !ok {
+			return nil, status.Error(codes.Internal, "Unexpected data cached")
+		}
+		dec := gob.NewDecoder(bytes.NewReader(b))
+		var apps []*model.ApplicationInfo
+		if err := dec.Decode(&apps); err != nil {
+			a.logger.Error("failed to decode the unregistered apps", zap.Error(err))
+			return nil, status.Error(codes.Internal, "failed to decode the unregistered apps")
+		}
+		allApps = append(allApps, apps...)
+	}
+	if len(allApps) == 0 {
+		return &webservice.ListUnregisteredApplicationsResponse{}, nil
+	}
+
+	sort.Slice(allApps, func(i, j int) bool {
+		return allApps[i].Path < allApps[j].Path
+	})
+	return &webservice.ListUnregisteredApplicationsResponse{
+		Applications: allApps,
+	}, nil
 }
 
 // TODO: Validate the specified piped to ensure that it belongs to the specified environment.

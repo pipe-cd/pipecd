@@ -68,4 +68,5 @@ message ApplicationInfo {
     string path = 6 [(validate.rules).string.pattern = "^[^/].+$"];
     // This field is not allowed to be changed.
     string config_filename = 7;
+    string piped_id = 8 [(validate.rules).string.min_len = 1];
 }

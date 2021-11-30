@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"fmt"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -188,4 +189,8 @@ func getEncriptionKey(se *model.Piped_SecretEncryption) ([]byte, error) {
 	default:
 		return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a valid encryption type")
 	}
+}
+
+func makeUnregisteredAppsCacheKey(projectID string) string {
+	return fmt.Sprintf("HASHKEY:UNREGISTERED_APPS:%s", projectID)
 }

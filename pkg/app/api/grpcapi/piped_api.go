@@ -15,7 +15,9 @@
 package grpcapi
 
 import (
+	"bytes"
 	"context"
+	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"time"
@@ -33,9 +35,11 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
+	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/redis"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
 
@@ -58,13 +62,14 @@ type PipedAPI struct {
 	deploymentPipedCache cache.Cache
 	envProjectCache      cache.Cache
 	pipedStatCache       cache.Cache
+	redis                redis.Redis
 
 	webBaseURL string
 	logger     *zap.Logger
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, cs commandstore.Store, hc cache.Cache, cop commandOutputPutter, webBaseURL string, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, cs commandstore.Store, hc cache.Cache, rd redis.Redis, cop commandOutputPutter, webBaseURL string, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
@@ -82,6 +87,7 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.
 		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		envProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            hc,
+		redis:                     rd,
 		webBaseURL:                webBaseURL,
 		logger:                    logger.Named("piped-api"),
 	}
@@ -992,8 +998,25 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 }
 
 func (a *PipedAPI) ReportUnregisteredApplicationConfigurations(ctx context.Context, req *pipedservice.ReportUnregisteredApplicationConfigurationsRequest) (*pipedservice.ReportUnregisteredApplicationConfigurationsResponse, error) {
-	// TODO: Make the unused application configurations cache up-to-date
-	return nil, status.Errorf(codes.Unimplemented, "ReportUnregisteredApplicationConfigurations is not implemented yet")
+	projectID, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Cache an encoded slice of *model.ApplicationInfo.
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	if err := enc.Encode(req.Applications); err != nil {
+		a.logger.Error("failed to encode the unregistered apps", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to encode the unregistered apps")
+	}
+	key := makeUnregisteredAppsCacheKey(projectID)
+	c := rediscache.NewHashCache(a.redis, key)
+	if err := c.Put(pipedID, buf.Bytes()); err != nil {
+		return nil, status.Error(codes.Internal, "failed to put the unregistered apps to the cache")
+	}
+
+	return &pipedservice.ReportUnregisteredApplicationConfigurationsResponse{}, nil
 }
 
 // CreateDeploymentChain creates a new deployment chain object and all required commands to
