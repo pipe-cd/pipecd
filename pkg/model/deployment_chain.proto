@@ -18,6 +18,7 @@ package pipe.model;
 option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
 import "validate/validate.proto";
+import "pkg/model/deployment.proto";
 
 message DeploymentChain {
     // The generated unique identifier.
@@ -42,6 +43,8 @@ message ChainApplicationRef {
 
 message ChainDeploymentRef {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
+    string status_reason = 3;
 }
 
 message ChainNode {

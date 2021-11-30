@@ -470,6 +470,10 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 			return nil, status.Error(codes.Internal, "failed to update deployment to be planned")
 		}
 	}
+
+	if err = a.updateDeploymentRefStatusIfNecessary(ctx, req.DeploymentChainId, req.DeploymentChainBlockIndex, req.DeploymentId, model.DeploymentStatus_DEPLOYMENT_PLANNED, req.StatusReason); err != nil {
+		return nil, status.Error(codes.Internal, "unable to update deployment ref status of the deployment chain this deployment belongs to")
+	}
 	return &pipedservice.ReportDeploymentPlannedResponse{}, nil
 }
 
@@ -499,6 +503,10 @@ func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *piped
 			)
 			return nil, status.Error(codes.Internal, "failed to update deployment status")
 		}
+	}
+
+	if err = a.updateDeploymentRefStatusIfNecessary(ctx, req.DeploymentChainId, req.DeploymentChainBlockIndex, req.DeploymentId, req.Status, req.StatusReason); err != nil {
+		return nil, status.Error(codes.Internal, "unable to update deployment ref status of the deployment chain this deployment belongs to")
 	}
 	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
 }
@@ -530,7 +538,25 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 			return nil, status.Error(codes.Internal, "failed to update deployment to be completed")
 		}
 	}
+
+	if err = a.updateDeploymentRefStatusIfNecessary(ctx, req.DeploymentChainId, req.DeploymentChainBlockIndex, req.DeploymentId, req.Status, req.StatusReason); err != nil {
+		return nil, status.Error(codes.Internal, "unable to update deployment ref status of the deployment chain this deployment belongs to")
+	}
 	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
+}
+
+func (a *PipedAPI) updateDeploymentRefStatusIfNecessary(ctx context.Context, deploymentChainID string, blockIndex uint32, deploymentID string, status model.DeploymentStatus, reason string) error {
+	// If the deployment does not belongs to any deployment chain, no need to update anything.
+	if deploymentChainID == "" {
+		return nil
+	}
+
+	dcUpdater := datastore.DeploymentChainNodeDeploymentStatusUpdater(blockIndex, deploymentID, status, reason)
+	if err := a.deploymentChainStore.UpdateDeploymentChain(ctx, deploymentChainID, dcUpdater); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // SaveDeploymentMetadata used by piped to persist the metadata of a specific deployment.
@@ -1081,6 +1107,8 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 				},
 				DeploymentRef: &model.ChainDeploymentRef{
 					DeploymentId: firstDeployment.Id,
+					Status:       firstDeployment.Status,
+					StatusReason: firstDeployment.StatusReason,
 				},
 			},
 		},
@@ -1178,37 +1206,13 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 		return nil, status.Error(codes.InvalidArgument, "invalid deployment with chain block index provided")
 	}
 
-	prevBlock := dc.Blocks[req.DeploymentChainBlockIndex-1]
-	deploymentIds := make([]string, 0, len(prevBlock.Nodes))
-	for _, node := range prevBlock.Nodes {
-		deploymentIds = append(deploymentIds, node.DeploymentRef.DeploymentId)
-	}
-
-	// TODO: Consider add deployment status to the deployment ref in the deployment chain model
-	// instead of fetching deployment model here.
-	blockDeployments, _, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-		Filters: []datastore.ListFilter{
-			{
-				Field:    "Id",
-				Operator: datastore.OperatorIn,
-				Value:    deploymentIds,
-			},
-		},
-	})
+	prevBlockSuccessfullyCompleted, err := dc.IsSuccessfullyCompletedBlock(req.DeploymentChainBlockIndex - 1)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "unable to process previous block nodes in deployment chain")
-	}
-
-	plannable := true
-	for _, dp := range blockDeployments {
-		if !model.IsSuccessfullyCompletedDeployment(dp.Status) {
-			plannable = false
-			break
-		}
+		return nil, status.Error(codes.InvalidArgument, "unable to process the previous block of this deployment in chain")
 	}
 
 	return &pipedservice.InChainDeploymentPlannableResponse{
-		Plannable: plannable,
+		Plannable: prevBlockSuccessfullyCompleted,
 	}, nil
 }
 
