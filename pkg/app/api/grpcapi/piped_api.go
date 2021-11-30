@@ -471,9 +471,16 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 		}
 	}
 
-	if err = a.updateDeploymentRefStatusIfNecessary(ctx, req.DeploymentChainId, req.DeploymentChainBlockIndex, req.DeploymentId, model.DeploymentStatus_DEPLOYMENT_PLANNED, req.StatusReason); err != nil {
+	// If the deployment does not belongs to any deployment chain, no need to update anything.
+	if req.DeploymentChainId == "" {
+		return &pipedservice.ReportDeploymentPlannedResponse{}, nil
+	}
+	// Otherwise, update this deployment ref status in its deployment chain.
+	dcUpdater := datastore.DeploymentChainNodeDeploymentStatusUpdater(req.DeploymentChainBlockIndex, req.DeploymentId, model.DeploymentStatus_DEPLOYMENT_PLANNED, req.StatusReason)
+	if err := a.deploymentChainStore.UpdateDeploymentChain(ctx, req.DeploymentChainId, dcUpdater); err != nil {
 		return nil, status.Error(codes.Internal, "unable to update deployment ref status of the deployment chain this deployment belongs to")
 	}
+
 	return &pipedservice.ReportDeploymentPlannedResponse{}, nil
 }
 
@@ -505,9 +512,16 @@ func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *piped
 		}
 	}
 
-	if err = a.updateDeploymentRefStatusIfNecessary(ctx, req.DeploymentChainId, req.DeploymentChainBlockIndex, req.DeploymentId, req.Status, req.StatusReason); err != nil {
+	// If the deployment does not belongs to any deployment chain, no need to update anything.
+	if req.DeploymentChainId == "" {
+		return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
+	}
+	// Otherwise, update this deployment ref status in its deployment chain.
+	dcUpdater := datastore.DeploymentChainNodeDeploymentStatusUpdater(req.DeploymentChainBlockIndex, req.DeploymentId, req.Status, req.StatusReason)
+	if err := a.deploymentChainStore.UpdateDeploymentChain(ctx, req.DeploymentChainId, dcUpdater); err != nil {
 		return nil, status.Error(codes.Internal, "unable to update deployment ref status of the deployment chain this deployment belongs to")
 	}
+
 	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
 }
 
@@ -539,24 +553,44 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 		}
 	}
 
-	if err = a.updateDeploymentRefStatusIfNecessary(ctx, req.DeploymentChainId, req.DeploymentChainBlockIndex, req.DeploymentId, req.Status, req.StatusReason); err != nil {
+	// If the deployment does not belongs to any deployment chain, no need to update anything.
+	if req.DeploymentChainId == "" {
+		return &pipedservice.ReportDeploymentCompletedResponse{}, nil
+	}
+	// Otherwise, update this deployment ref status in its deployment chain.
+	dcUpdater := datastore.DeploymentChainNodeDeploymentStatusUpdater(req.DeploymentChainBlockIndex, req.DeploymentId, req.Status, req.StatusReason)
+	if err := a.deploymentChainStore.UpdateDeploymentChain(ctx, req.DeploymentChainId, dcUpdater); err != nil {
 		return nil, status.Error(codes.Internal, "unable to update deployment ref status of the deployment chain this deployment belongs to")
 	}
+
+	// If the deployment completed successfully, return immediately.
+	if model.IsSuccessfullyCompletedDeployment(req.Status) {
+		return &pipedservice.ReportDeploymentCompletedResponse{}, nil
+	}
+	// Otherwise, send cancel deployment to all other unfinished deployment in the deployment chain.
+	dc, err := a.deploymentChainStore.GetDeploymentChain(ctx, req.DeploymentChainId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "unable to find the deployment chain which this deployment belongs to")
+	}
+	for _, node := range dc.ListIncompletedNodes() {
+		if err = addCommand(ctx, a.commandStore, &model.Command{
+			Id:            uuid.New().String(),
+			PipedId:       node.DeploymentRef.PipedId,
+			ApplicationId: node.ApplicationRef.ApplicationId,
+			ProjectId:     dc.ProjectId,
+			DeploymentId:  node.DeploymentRef.DeploymentId,
+			Type:          model.Command_CANCEL_DEPLOYMENT,
+			Commander:     dc.Id,
+			CancelDeployment: &model.Command_CancelDeployment{
+				DeploymentId:  node.DeploymentRef.DeploymentId,
+				ForceRollback: true,
+			},
+		}, a.logger); err != nil {
+			return nil, status.Error(codes.Internal, "failed to command to cancel for deploying applications in stopped chain")
+		}
+	}
+
 	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
-}
-
-func (a *PipedAPI) updateDeploymentRefStatusIfNecessary(ctx context.Context, deploymentChainID string, blockIndex uint32, deploymentID string, status model.DeploymentStatus, reason string) error {
-	// If the deployment does not belongs to any deployment chain, no need to update anything.
-	if deploymentChainID == "" {
-		return nil
-	}
-
-	dcUpdater := datastore.DeploymentChainNodeDeploymentStatusUpdater(blockIndex, deploymentID, status, reason)
-	if err := a.deploymentChainStore.UpdateDeploymentChain(ctx, deploymentChainID, dcUpdater); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // SaveDeploymentMetadata used by piped to persist the metadata of a specific deployment.
@@ -1107,6 +1141,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 				},
 				DeploymentRef: &model.ChainDeploymentRef{
 					DeploymentId: firstDeployment.Id,
+					PipedId:      firstDeployment.PipedId,
 					Status:       firstDeployment.Status,
 					StatusReason: firstDeployment.StatusReason,
 				},

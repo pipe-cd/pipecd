@@ -14,7 +14,9 @@
 
 package model
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func (dc *DeploymentChain) IsSuccessfullyCompletedBlock(blockIndex uint32) (bool, error) {
 	if blockIndex >= uint32(len(dc.Blocks)) {
@@ -28,4 +30,16 @@ func (dc *DeploymentChain) IsSuccessfullyCompletedBlock(blockIndex uint32) (bool
 		}
 	}
 	return true, nil
+}
+
+func (dc *DeploymentChain) ListIncompletedNodes() []*ChainNode {
+	icn := make([]*ChainNode, 0)
+	for _, block := range dc.Blocks {
+		for _, node := range block.Nodes {
+			if !IsCompletedDeployment(node.DeploymentRef.Status) {
+				icn = append(icn, node)
+			}
+		}
+	}
+	return icn
 }
