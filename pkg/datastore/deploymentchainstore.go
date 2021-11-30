@@ -47,7 +47,6 @@ var (
 				}
 				node.DeploymentRef = &model.ChainDeploymentRef{
 					DeploymentId: deployment.Id,
-					PipedId:      deployment.PipedId,
 					Status:       deployment.Status,
 					StatusReason: deployment.StatusReason,
 				}

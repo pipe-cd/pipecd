@@ -1107,7 +1107,6 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 				},
 				DeploymentRef: &model.ChainDeploymentRef{
 					DeploymentId: firstDeployment.Id,
-					PipedId:      firstDeployment.PipedId,
 					Status:       firstDeployment.Status,
 					StatusReason: firstDeployment.StatusReason,
 				},
