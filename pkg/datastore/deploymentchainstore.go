@@ -62,10 +62,10 @@ var (
 			block := dc.Blocks[blockIndex]
 			var updated bool
 			for _, node := range block.Nodes {
-				if node.DeploymentRef.DeploymentId != deploymentID {
+				if node.DeploymentRef == nil {
 					continue
 				}
-				if node.DeploymentRef == nil {
+				if node.DeploymentRef.DeploymentId != deploymentID {
 					continue
 				}
 				node.DeploymentRef.Status = status

@@ -539,6 +539,20 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
 }
 
+func (a *PipedAPI) updateDeploymentRefStatusIfNecessary(ctx context.Context, deploymentChainID string, blockIndex uint32, deploymentID string, status model.DeploymentStatus, reason string) error {
+	// If the deployment does not belongs to any deployment chain, no need to update anything.
+	if deploymentChainID == "" {
+		return nil
+	}
+
+	dcUpdater := datastore.DeploymentChainNodeDeploymentStatusUpdater(blockIndex, deploymentID, status, reason)
+	if err := a.deploymentChainStore.UpdateDeploymentChain(ctx, deploymentChainID, dcUpdater); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // SaveDeploymentMetadata used by piped to persist the metadata of a specific deployment.
 func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice.SaveDeploymentMetadataRequest) (*pipedservice.SaveDeploymentMetadataResponse, error) {
 	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
@@ -1257,19 +1271,5 @@ func (a *PipedAPI) validateEnvBelongsToProject(ctx context.Context, envID, proje
 	if env.ProjectId != projectID {
 		return status.Error(codes.PermissionDenied, "requested environment doesn't belong to the project")
 	}
-	return nil
-}
-
-func (a *PipedAPI) updateDeploymentRefStatusIfNecessary(ctx context.Context, deploymentChainID string, blockIndex uint32, deploymentID string, status model.DeploymentStatus, reason string) error {
-	// If the deployment does not belongs to any deployment chain, no need to update anything.
-	if deploymentChainID == "" {
-		return nil
-	}
-
-	dcUpdater := datastore.DeploymentChainNodeDeploymentStatusUpdater(blockIndex, deploymentID, status, reason)
-	if err := a.deploymentChainStore.UpdateDeploymentChain(ctx, deploymentChainID, dcUpdater); err != nil {
-		return err
-	}
-
 	return nil
 }
