@@ -57,7 +57,7 @@ var (
 	DeploymentChainNodeDeploymentStatusUpdater = func(blockIndex uint32, deploymentID string, status model.DeploymentStatus, reason string) func(*model.DeploymentChain) error {
 		return func(dc *model.DeploymentChain) error {
 			if blockIndex >= uint32(len(dc.Blocks)) {
-				return fmt.Errorf("invalid block index provided")
+				return fmt.Errorf("invalid block index %d provided", blockIndex)
 			}
 			block := dc.Blocks[blockIndex]
 			var updated bool
