@@ -14,32 +14,20 @@
 
 package model
 
-import (
-	"fmt"
-)
+import "fmt"
 
-func (dc *DeploymentChain) IsSuccessfullyCompletedBlock(blockIndex uint32) (bool, error) {
+func (dc *DeploymentChain) IsCompletedBlock(blockIndex uint32) (bool, error) {
 	if blockIndex >= uint32(len(dc.Blocks)) {
 		return false, fmt.Errorf("invalid block index %d given", blockIndex)
 	}
 
 	block := dc.Blocks[blockIndex]
-	for _, node := range block.Nodes {
-		if !IsSuccessfullyCompletedDeployment(node.DeploymentRef.Status) {
-			return false, nil
-		}
+	switch block.Status {
+	case ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS,
+		ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE,
+		ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED:
+		return true, nil
+	default:
+		return false, nil
 	}
-	return true, nil
-}
-
-func (dc *DeploymentChain) ListIncompletedNodes() []*ChainNode {
-	icn := make([]*ChainNode, 0)
-	for _, block := range dc.Blocks {
-		for _, node := range block.Nodes {
-			if !IsCompletedDeployment(node.DeploymentRef.Status) {
-				icn = append(icn, node)
-			}
-		}
-	}
-	return icn
 }

@@ -522,6 +522,7 @@ message InChainDeploymentPlannableRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string deployment_chain_id = 2 [(validate.rules).string.min_len = 1];
     uint32 deployment_chain_block_index = 3;
+    string application_id = 4 [(validate.rules).string.min_len = 1];
 }
 
 message InChainDeploymentPlannableResponse {

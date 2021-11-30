@@ -679,6 +679,7 @@ func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model
 		DeploymentId:              d.Id,
 		DeploymentChainId:         d.DeploymentChainId,
 		DeploymentChainBlockIndex: d.DeploymentChainBlockIndex,
+		ApplicationId:             d.ApplicationId,
 	})
 	if err != nil {
 		return false, err
