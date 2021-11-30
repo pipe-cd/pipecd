@@ -14,9 +14,7 @@
 
 package model
 
-import (
-	"errors"
-)
+import "fmt"
 
 func (dc *DeploymentChain) IsSuccessfullyCompletedBlock(blockIndex uint32) (bool, error) {
 	if blockIndex >= uint32(len(dc.Blocks)) {
