@@ -1226,7 +1226,7 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 		plannable = true
 	case model.ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE, model.ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED:
 		plannable = false
-		// Send CANCEL_DEPLOYMENT command so that the in charge pipes will be aware and stop the deployment.
+		// Send CANCEL_DEPLOYMENT command so that the in-charge piped will be aware and stop the deployment.
 		if err = addCommand(ctx, a.commandStore, &model.Command{
 			Id:            uuid.New().String(),
 			PipedId:       pipedID,
