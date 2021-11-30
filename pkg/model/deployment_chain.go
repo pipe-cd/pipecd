@@ -20,7 +20,7 @@ import (
 
 func (dc *DeploymentChain) IsSuccessfullyCompletedBlock(blockIndex uint32) (bool, error) {
 	if blockIndex >= uint32(len(dc.Blocks)) {
-		return false, errors.New("invalid block index given")
+		return false, fmt.Errorf("invalid block index %d given", blockIndex)
 	}
 
 	block := dc.Blocks[blockIndex]
