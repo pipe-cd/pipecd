@@ -176,6 +176,8 @@ service PipedService {
     // DeploymentPlannable checks the completion and status of the previous block in the deployment chain,
     // only when all the nodes of the previous block are completed with a success status,
     // the nodes of the next block will be treated as processable.
+    // In case the previous block of this deployment is finished with FAILURE | CANCELLED status,
+    // one CANCEL_DEPLOYMENT will be sent to aware piped to stop this deployment.
     rpc InChainDeploymentPlannable(InChainDeploymentPlannableRequest) returns (InChainDeploymentPlannableResponse) {}
 }
 
