@@ -1211,10 +1211,8 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 		return nil, status.Error(codes.InvalidArgument, "invalid deployment with chain block index provided")
 	}
 
-	isPreviousBlockFinished, err := dc.IsCompletedBlock(req.DeploymentChainBlockIndex - 1)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "unable to process the previous block of this deployment in chain")
-	}
+	previousBlock := dc.Blocks[req.DeploymentChainBlockIndex-1]
+	isPreviousBlockFinished := previousBlock.IsCompleted()
 
 	// If the previous block has not finished yet, should not plan this deployment to run.
 	if !isPreviousBlockFinished {
@@ -1224,7 +1222,7 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 	}
 
 	var plannable bool
-	switch dc.Blocks[req.DeploymentChainBlockIndex-1].Status {
+	switch previousBlock.Status {
 	case model.ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS:
 		plannable = true
 	case model.ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE, model.ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED:

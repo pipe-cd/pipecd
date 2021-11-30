@@ -14,20 +14,13 @@
 
 package model
 
-import "fmt"
-
-func (dc *DeploymentChain) IsCompletedBlock(blockIndex uint32) (bool, error) {
-	if blockIndex >= uint32(len(dc.Blocks)) {
-		return false, fmt.Errorf("invalid block index %d given", blockIndex)
-	}
-
-	block := dc.Blocks[blockIndex]
-	switch block.Status {
+func (b *ChainBlock) IsCompleted() bool {
+	switch b.Status {
 	case ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS,
 		ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE,
 		ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED:
-		return true, nil
+		return true
 	default:
-		return false, nil
+		return false
 	}
 }

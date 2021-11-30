@@ -34,7 +34,12 @@ var (
 			if deployment.DeploymentChainBlockIndex == 0 || deployment.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
 				return fmt.Errorf("invalid block index (%d) provided", deployment.DeploymentChainBlockIndex)
 			}
+
 			block := dc.Blocks[deployment.DeploymentChainBlockIndex]
+			if block.IsCompleted() {
+				return fmt.Errorf("can not update a finished block")
+			}
+
 			var updated bool
 			for _, node := range block.Nodes {
 				if node.ApplicationRef.ApplicationId != deployment.ApplicationId {
@@ -63,6 +68,11 @@ var (
 				return fmt.Errorf("invalid block index %d provided", blockIndex)
 			}
 
+			block := dc.Blocks[blockIndex]
+			if block.IsCompleted() {
+				return fmt.Errorf("can not update a finished block")
+			}
+
 			var (
 				updated                bool
 				successDeploymentCtn   int
@@ -70,7 +80,6 @@ var (
 				cancelledDeploymentCtn int
 			)
 
-			block := dc.Blocks[blockIndex]
 			for _, node := range block.Nodes {
 				if node.DeploymentRef == nil {
 					continue
