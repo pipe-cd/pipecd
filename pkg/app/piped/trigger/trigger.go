@@ -224,7 +224,12 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 
 		appCfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), app)
 		if err != nil {
-			t.logger.Error("failed to load application config file", zap.Error(err))
+			t.logger.Error("failed to load application config file",
+				zap.String("app", app.Name),
+				zap.String("app-id", app.Id),
+				zap.String("commit", headCommit.Hash),
+				zap.Error(err),
+			)
 			// Do not notify this event to external services because it may cause annoying
 			// when one application is missing or having an invalid configuration file.
 			// So instead of notifying this as a notification,
