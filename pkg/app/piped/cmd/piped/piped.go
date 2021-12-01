@@ -45,7 +45,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/deploymentstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/environmentstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/eventstore"
-	_ "github.com/pipe-cd/pipe/pkg/app/piped/appconfigreporter"
+	"github.com/pipe-cd/pipe/pkg/app/piped/appconfigreporter"
 	"github.com/pipe-cd/pipe/pkg/app/piped/chartrepo"
 	k8scloudprovidermetrics "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/kubernetesmetrics"
 	"github.com/pipe-cd/pipe/pkg/app/piped/controller"
@@ -448,20 +448,20 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	}
 
 	// Start running app-config-reporter.
-	// {
-	// 	r := appconfigreporter.NewReporter(
-	// 		apiClient,
-	// 		gitClient,
-	// 		applicationLister,
-	// 		cfg,
-	// 		p.gracePeriod,
-	// 		input.Logger,
-	// 	)
+	{
+		r := appconfigreporter.NewReporter(
+			apiClient,
+			gitClient,
+			applicationLister,
+			cfg,
+			p.gracePeriod,
+			input.Logger,
+		)
 
-	// 	group.Go(func() error {
-	// 		return r.Run(ctx)
-	// 	})
-	// }
+		group.Go(func() error {
+			return r.Run(ctx)
+		})
+	}
 
 	// Wait until all piped components have finished.
 	// A terminating signal or a finish of any components
