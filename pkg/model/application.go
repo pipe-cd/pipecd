@@ -71,6 +71,13 @@ func (a *Application) ContainLabels(labels map[string]string) bool {
 	return true
 }
 
+func (a *Application) IsOutOfSync() bool {
+	if a.SyncState == nil {
+		return false
+	}
+	return a.SyncState.Status == ApplicationSyncStatus_OUT_OF_SYNC
+}
+
 func IsApplicationConfigFile(filename string) bool {
 	return filename == DefaultApplicationConfigFilename || strings.HasSuffix(filename, applicationConfigFileExtention)
 }

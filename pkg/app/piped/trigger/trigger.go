@@ -404,7 +404,7 @@ func (t *Trigger) listOutOfSyncCandidates() []candidate {
 		apps = make([]candidate, 0)
 	)
 	for _, app := range list {
-		if app.SyncState.Status != model.ApplicationSyncStatus_OUT_OF_SYNC {
+		if !app.IsOutOfSync() {
 			continue
 		}
 		apps = append(apps, candidate{
