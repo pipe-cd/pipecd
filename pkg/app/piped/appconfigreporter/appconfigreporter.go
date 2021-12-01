@@ -257,7 +257,7 @@ func (r *Reporter) findRegisteredApps(repoPath, repoID string) ([]*model.Applica
 			continue
 		}
 		appCfg, err := r.readApplicationInfo(repoPath, repoID, app.GitPath.GetDeploymentConfigFilePath())
-		if errors.Is(err, errRequiredFieldMissing) {
+		if errors.Is(err, errMissingRequiredField) {
 			// For historical reasons, we need to treat applications that don't define app config in a file as normal.
 			r.logger.Warn("found a registered application config file that is missing a required field",
 				zap.String("repo-id", repoID),
@@ -346,7 +346,7 @@ func (r *Reporter) findUnregisteredApps(repoPath, repoID string) ([]*model.Appli
 		}
 
 		appInfo, err := r.readApplicationInfo(repoPath, repoID, cfgRelPath)
-		if errors.Is(err, errRequiredFieldMissing) {
+		if errors.Is(err, errMissingRequiredField) {
 			r.logger.Warn("found an unregistered application config file that is missing a required field",
 				zap.String("repo-id", repoID),
 				zap.String("config-file-path", cfgRelPath),
@@ -388,7 +388,7 @@ func (r *Reporter) readApplicationInfo(repoDir, repoID, cfgRelPath string) (*mod
 	}
 
 	if spec.Name == "" {
-		return nil, fmt.Errorf("missing application name: %w", errRequiredFieldMissing)
+		return nil, fmt.Errorf("missing application name: %w", errMissingRequiredField)
 	}
 	kind, ok := cfg.Kind.ToApplicationKind()
 	if !ok {
