@@ -20,8 +20,8 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | input | [KubernetesDeploymentInput](#kubernetesdeploymentinput) | Input for Kubernetes deployment such as kubectl version, helm version, manifests filter... | No |
-| planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
+| planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | commitMatcher | [CommitMatcher](#commitmatcher) | Forcibly use QuickSync or Pipeline when commit message matched the specified pattern. | No |
 | quickSync | [KubernetesQuickSync](#kubernetesquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
@@ -47,8 +47,8 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | input | [TerraformDeploymentInput](#terraformdeploymentinput) | Input for Terraform deployment such as terraform version, workspace... | No |
-| planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
+| planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [TerraformQuickSync](#terraformquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No |
@@ -70,8 +70,8 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | input | [CloudRunDeploymentInput](#cloudrundeploymentinput) | Input for CloudRun deployment such as docker image... | No |
-| planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
+| planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [CloudRunQuickSync](#cloudrunquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No |
@@ -91,8 +91,8 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
+| planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [LambdaQuickSync](#lambdaquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No |
@@ -113,9 +113,9 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
 | input | [ECSDeploymentInput](#ecsdeploymentinput) | Input for ECS deployment such as TaskDefinition, Service... | Yes |
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
-| trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
 | quickSync | [ECSQuickSync](#ecsquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No |
@@ -194,14 +194,29 @@ One of `yamlField` or `regex` is required.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| onCommit | [OnCommitConfiguration](#oncommitconfiguration) | Configuration controls how trigger handles deployment in case of some changes found in Git source. | No |
+| onCommit | [OnCommit](#oncommit) | Controls triggering new deployment when new Git commits touched the application. | No |
+| onCommand | [OnCommand](#oncommand) | Controls triggering new deployment when received a new `SYNC` command. | No |
+| onOutOfSync | [OnOutOfSync](#onoutofsync) | Controls triggering new deployment when application is at `OUT_OF_SYNC` state. | No |
 
-## OnCommitConfiguration
+## OnCommit
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| disabled | bool | Disable trigger a new deployment in case of some changes found in Git source or not. Default is `false`. | No |
-| paths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. No value provided means watch all changes under the application directory. | No |
+| disabled | bool | Whether to exclude application from triggering target when new Git commits touched it. Default is `false`. | No |
+| paths | []string | List of directories or files where any changes of them will be considered as touching the application. Regular expression can be used. Empty means watching all changes under the application directory. | No |
+
+## OnCommand
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| disabled | bool | Whether to exclude application from triggering target when received a new `SYNC` command. Default is `false`. | No |
+
+## OnOutOfSync
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| disabled | bool | Whether to exclude application from triggering target when application is at `OUT_OF_SYNC` state. Default is `true`. | No |
+| minWindow | duration | Minimum amount of time must be elapsed since the last deployment. This can be used to avoid triggering unnecessary continuous deployments based on `OUT_OF_SYNC` status. Default is `5m`. | No |
 
 ## Pipeline
 
