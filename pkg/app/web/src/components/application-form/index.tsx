@@ -140,6 +140,7 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
         </TabPanel>
         <TabPanel value={value} index={1}>
           Comming soon...
+          {/** TODO: Show unregistered applications on the ADD FROM GIT tab */}
         </TabPanel>
       </Box >
   );
@@ -274,7 +275,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
     const repositories = createRepoListFromPiped(selectedPiped);
 
     return (
-      <Box width={600}>
+      <Box width="100%">
         <Typography className={classes.title} variant="h6">
           {title}
         </Typography>
