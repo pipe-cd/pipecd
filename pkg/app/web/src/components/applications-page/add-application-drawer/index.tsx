@@ -13,7 +13,7 @@ import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { addApplication } from "~/modules/applications";
 import { selectProjectName } from "~/modules/me";
 import {
-  ApplicationForm,
+  ApplicationFormTabs,
   ApplicationFormValue,
   emptyFormValues,
   validationSchema,
@@ -68,7 +68,7 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
           onClose={handleClose}
           ModalProps={{ disableBackdropClick: formik.isSubmitting }}
         >
-          <ApplicationForm
+          <ApplicationFormTabs
             {...formik}
             title={`Add a new application to "${projectName}" project`}
             onClose={handleClose}

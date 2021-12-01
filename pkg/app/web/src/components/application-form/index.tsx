@@ -7,10 +7,13 @@ import {
   MenuItem,
   TextField,
   Typography,
+  Tabs,
+  Tab,
 } from "@material-ui/core";
 import { FormikProps } from "formik";
-import { FC, memo, ReactElement } from "react";
+import { FC, memo, ReactElement, useState } from "react";
 import * as yup from "yup";
+import PropTypes from "prop-types";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import { useAppSelector } from "~/hooks/redux";
@@ -82,6 +85,65 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: -12,
   },
 }));
+
+type TabPanelProps = {
+  children: any
+  value: any
+  index: any
+}
+
+function TabPanel(props: TabPanelProps) {
+  return (
+      <Typography
+          component="div"
+          role="tabpanel"
+          hidden={props.value !== props.index}
+          id={`scrollable-auto-tabpanel-${props.index}`}
+          aria-labelledby={`scrollable-auto-tab-${props.index}`}
+      >
+        <Box p={3}>{props.children}</Box>
+      </Typography>
+  );
+}
+
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.any.isRequired,
+  value: PropTypes.any.isRequired
+};
+
+
+function a11yProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  };
+}
+
+export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
+  const [value, setValue] = useState(0);
+
+  const handleChange = (event: React.ChangeEvent<{}>, newValue: any) => {
+    setValue(newValue);
+  };
+
+  return (
+      <Box width={600}>
+        <Box >
+          <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+            <Tab label="Add manually" {...a11yProps(0)} />
+            <Tab label="Add from Git (Alpha)" {...a11yProps(1)} />
+          </Tabs>
+        </Box>
+        <TabPanel value={value} index={0}>
+          <ApplicationForm {...props} />
+        </TabPanel>
+        <TabPanel value={value} index={1}>
+          Comming soon...
+        </TabPanel>
+      </Box >
+  );
+}
 
 function FormSelectInput<T extends { name: string; value: string }>({
   id,
