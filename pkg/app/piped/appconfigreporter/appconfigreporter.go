@@ -33,7 +33,7 @@ import (
 )
 
 var (
-	errRequiredFieldMissing = errors.New("required field missing")
+	errMissingRequiredField = errors.New("missing required field")
 )
 
 type apiClient interface {
