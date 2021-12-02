@@ -24,8 +24,7 @@ spec:
 | pipedKeyFile | string | The path to the file containing the generated key string for this piped. | Yes |
 | pipedKeyData | string | Base64 encoded string of Piped key. Either pipedKeyFile or pipedKeyData must be set. | Yes |
 | apiAddress | string | The address used to connect to the control-plane's API. | Yes |
-| syncInterval | duration | How often to check whether an application should be synced. Default is `1m`. | No |
-<!-- TODO: Add doc for appConfigSyncInterval -->
+| syncInterval | duration | How often to check whether an application should be synced. Default is `1m`. | No | <!-- TODO: Add doc for appConfigSyncInterval -->
 | git | [Git](/docs/operator-manual/piped/configuration-reference/#git) | Git configuration needed for Git commands.  | No |
 | repositories | [][Repository](/docs/operator-manual/piped/configuration-reference/#gitrepository) | List of Git repositories this piped will handle. | No |
 | chartRepositories | [][ChartRepository](/docs/operator-manual/piped/configuration-reference/#chartrepository) | List of Helm chart repositories that should be added while starting up. | No |
@@ -60,12 +59,12 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | type | string | The repository type. Currently, HTTP and GIT are supported. Default is HTTP. | No |
-| name | string | The name of the Helm chart repository. Note that is not a Git repository but a [Helm chart repository](https://helm.sh/docs/topics/chart_repository/). | Yes |
-| address | string | The address to the Helm chart repository. | Yes |
+| name | string | The name of the Helm chart repository. Note that is not a Git repository but a [Helm chart repository](https://helm.sh/docs/topics/chart_repository/). | Yes if type is HTTP |
+| address | string | The address to the Helm chart repository. | Yes if type is HTTP |
 | username | string | Username used for the repository backed by HTTP basic authentication. | No |
 | password | string | Password used for the repository backed by HTTP basic authentication. | No |
 | insecure | bool | Whether to skip TLS certificate checks for the repository or not. | No |
-| gitRemote | string | Remote address of the Git repository used to clone Helm charts. | No |
+| gitRemote | string | Remote address of the Git repository used to clone Helm charts. | Yes if type is GIT |
 | sshKeyFile | string | The path to the private ssh key file used while cloning Helm charts from above Git repository. | No |
 
 ## CloudProvider
