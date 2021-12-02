@@ -88,8 +88,8 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 				repoPath: "path/to/repo-1",
 				repoID:   "repo-1",
 			},
-			want:    nil,
-			wantErr: true,
+			want:    []*model.ApplicationInfo{},
+			wantErr: false,
 		},
 		{
 			name: "app not changed",

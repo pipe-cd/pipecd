@@ -16,6 +16,7 @@ package appconfigreporter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -29,6 +30,10 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
+)
+
+var (
+	errMissingRequiredField = errors.New("missing required field")
 )
 
 type apiClient interface {
@@ -177,7 +182,7 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, headCommits map[str
 		if err != nil {
 			return err
 		}
-		r.logger.Info(fmt.Sprintf("found out %d registered applications that config has been changed in repository %q", len(rs), repoID))
+		r.logger.Info(fmt.Sprintf("found out %d valid registered applications that config has been changed in repository %q", len(rs), repoID))
 		registeredApps = append(registeredApps, rs...)
 	}
 	if len(registeredApps) == 0 {
@@ -214,7 +219,7 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context, headCommits map[s
 		if err != nil {
 			return err
 		}
-		r.logger.Info(fmt.Sprintf("found out %d unregistered applications in repository %q", len(us), repoID))
+		r.logger.Info(fmt.Sprintf("found out %d valid unregistered applications in repository %q", len(us), repoID))
 		unregisteredApps = append(unregisteredApps, us...)
 		r.latestUnregisteredApps[repoID] = us
 	}
@@ -251,10 +256,26 @@ func (r *Reporter) findRegisteredApps(repoPath, repoID string) ([]*model.Applica
 		if app.GitPath.Repo.Id != repoID {
 			continue
 		}
-		appCfg, err := r.readApplicationInfo(repoPath, repoID, app.GitPath.Path, app.GitPath.ConfigFilename)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read application config file: %w", err)
+		appCfg, err := r.readApplicationInfo(repoPath, repoID, app.GitPath.GetDeploymentConfigFilePath())
+		if errors.Is(err, errMissingRequiredField) {
+			// For historical reasons, we need to treat applications that don't define app config in a file as normal.
+			r.logger.Warn("found a registered application config file that is missing a required field",
+				zap.String("repo-id", repoID),
+				zap.String("config-file-path", app.GitPath.GetDeploymentConfigFilePath()),
+				zap.Error(err),
+			)
+			continue
 		}
+		if err != nil {
+			r.logger.Error("failed to read registered application config file",
+				zap.String("repo-id", repoID),
+				zap.String("config-file-path", app.GitPath.GetDeploymentConfigFilePath()),
+				zap.Error(err),
+			)
+			// Continue reading so that it can return apps as much as possible.
+			continue
+		}
+
 		if r.isSynced(appCfg, app) {
 			continue
 		}
@@ -269,8 +290,7 @@ func (r *Reporter) isSynced(appInfo *model.ApplicationInfo, app *model.Applicati
 		r.logger.Warn("kind in application config has been changed which isn't allowed",
 			zap.String("app-id", app.Id),
 			zap.String("repo-id", app.GitPath.Repo.Id),
-			zap.String("path", app.GitPath.Path),
-			zap.String("config-filename", app.GitPath.ConfigFilename),
+			zap.String("config-file-path", app.GitPath.GetDeploymentConfigFilePath()),
 		)
 	}
 
@@ -299,7 +319,7 @@ func (r *Reporter) findUnregisteredApps(repoPath, repoID string) ([]*model.Appli
 		if app.GitPath.Repo.Id != repoID {
 			continue
 		}
-		registeredAppPaths[filepath.Join(app.GitPath.Path, app.GitPath.ConfigFilename)] = struct{}{}
+		registeredAppPaths[app.GitPath.GetDeploymentConfigFilePath()] = struct{}{}
 	}
 
 	out := make([]*model.ApplicationInfo, 0)
@@ -322,17 +342,25 @@ func (r *Reporter) findUnregisteredApps(repoPath, repoID string) ([]*model.Appli
 			return nil
 		}
 
-		appInfo, err := r.readApplicationInfo(repoPath, repoID, filepath.Dir(cfgRelPath), filepath.Base(cfgRelPath))
-		if err != nil {
-			r.logger.Error("failed to read application info",
+		appInfo, err := r.readApplicationInfo(repoPath, repoID, cfgRelPath)
+		if errors.Is(err, errMissingRequiredField) {
+			r.logger.Warn("found an unregistered application config file that is missing a required field",
 				zap.String("repo-id", repoID),
 				zap.String("config-file-path", cfgRelPath),
 				zap.Error(err),
 			)
 			return nil
 		}
+		if err != nil {
+			r.logger.Error("failed to read unregistered application info",
+				zap.String("repo-id", repoID),
+				zap.String("config-file-path", cfgRelPath),
+				zap.Error(err),
+			)
+			// Continue reading so that it can return apps as much as possible.
+			return nil
+		}
 		out = append(out, appInfo)
-		// Continue reading so that it can return apps as much as possible.
 		return nil
 	})
 	if err != nil {
@@ -341,8 +369,8 @@ func (r *Reporter) findUnregisteredApps(repoPath, repoID string) ([]*model.Appli
 	return out, nil
 }
 
-func (r *Reporter) readApplicationInfo(repoDir, repoID, appDirRelPath, cfgFilename string) (*model.ApplicationInfo, error) {
-	b, err := fs.ReadFile(r.fileSystem, filepath.Join(repoDir, appDirRelPath, cfgFilename))
+func (r *Reporter) readApplicationInfo(repoDir, repoID, cfgRelPath string) (*model.ApplicationInfo, error) {
+	b, err := fs.ReadFile(r.fileSystem, filepath.Join(repoDir, cfgRelPath))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open the configuration file: %w", err)
 	}
@@ -357,7 +385,7 @@ func (r *Reporter) readApplicationInfo(repoDir, repoID, appDirRelPath, cfgFilena
 	}
 
 	if spec.Name == "" {
-		return nil, fmt.Errorf("missing application name")
+		return nil, fmt.Errorf("missing application name: %w", errMissingRequiredField)
 	}
 	kind, ok := cfg.Kind.ToApplicationKind()
 	if !ok {
@@ -368,8 +396,8 @@ func (r *Reporter) readApplicationInfo(repoDir, repoID, appDirRelPath, cfgFilena
 		Kind:           kind,
 		Labels:         spec.Labels,
 		RepoId:         repoID,
-		Path:           appDirRelPath,
-		ConfigFilename: cfgFilename,
+		Path:           filepath.Dir(cfgRelPath),
+		ConfigFilename: filepath.Base(cfgRelPath),
 		PipedId:        r.config.PipedID,
 	}, nil
 }

@@ -64,51 +64,7 @@ secret:
   # Where the secret files will be mounted to.
   mountPath: /etc/piped-secret
   # Additional list of secret data will be added to the Secret resource.
-  # TODO: Remove the predefined secrets after data field because this data field is more flexible.
   data: {}
-  pipedKey:
-    # The name of the piped key file.
-    fileName: piped-key
-    # Configuration data when create is true.
-    data: ""
-  sshKey:
-    # The name of the ssh key file.
-    fileName: ssh-key
-    # Configuration data when create is true.
-    data: ""
-  sealedSecretSealingKey:
-    publicKey:
-      fileName: sealed-secret-sealingkey-public-key
-      data: ""
-    privateKey:
-      fileName: sealed-secret-sealingkey-private-key
-      data: ""
-  sealedSecretGCPKMS:
-    encryptServiceAccount:
-      fileName: sealed-secret-gcpkms-encrypt-service-account
-      data: ""
-    decryptServiceAccount:
-      fileName: sealed-secret-gcpkms-decrypt-service-account
-      data: ""
-  secretManagementKeyPair:
-    publicKey:
-      fileName: secret-management-public-key
-      data: ""
-    privateKey:
-      fileName: secret-management-private-key
-      data: ""
-  cloudRunCredentials:
-    fileName: cloudrun-credentials
-    data: ""
-  awsCredentials:
-    fileName: aws-credentials
-    data: ""
-  datadogApiKey:
-    fileName: datadog-api-key
-    data: ""
-  datadogApplicationKey:
-    fileName: datadog-application-key
-    data: ""
   # The list of kubeConfig should be embedded in the Secret to be used by Piped.
   # Each item of this list has 2 fields "fileName" and "data".
   kubeConfigs: []

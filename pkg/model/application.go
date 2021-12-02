@@ -26,6 +26,7 @@ const (
 )
 
 // GetDeploymentConfigFilePath returns the path to deployment configuration file.
+// TODO: Rename all identifiers named DeploymentConfig to ApplicationConfig
 func (p ApplicationGitPath) GetDeploymentConfigFilePath() string {
 	filename := DefaultApplicationConfigFilename
 	if n := p.ConfigFilename; n != "" {
