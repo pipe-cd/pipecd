@@ -13,7 +13,6 @@ import {
 import { FormikProps } from "formik";
 import { FC, memo, ReactElement, useState } from "react";
 import * as yup from "yup";
-import PropTypes from "prop-types";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import { useAppSelector } from "~/hooks/redux";
@@ -86,31 +85,30 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-type TabPanelProps = {
-  children: any
-  value: any
-  index: any
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
 }
 
 function TabPanel(props: TabPanelProps) {
+
   return (
-      <Typography
-          component="div"
+      <div
           role="tabpanel"
           hidden={props.value !== props.index}
-          id={`scrollable-auto-tabpanel-${props.index}`}
-          aria-labelledby={`scrollable-auto-tab-${props.index}`}
+          id={`simple-tabpanel-${props.index}`}
+          aria-labelledby={`simple-tab-${props.index}`}
       >
-        <Box p={3}>{props.children}</Box>
-      </Typography>
+        {props.value === props.index && (
+            <Box >
+              <Typography>{props.children}</Typography>
+            </Box>
+        )}
+      </div>
   );
 }
 
-TabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.any.isRequired,
-  value: PropTypes.any.isRequired
-};
 
 
 function a11yProps(index: number) {
@@ -121,24 +119,24 @@ function a11yProps(index: number) {
 }
 
 export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
-  const [value, setValue] = useState(0);
+  const [selectedTabIndex, setValue] = useState(0);
 
-  const handleChange = (event: React.ChangeEvent<{}>, newValue: any) => {
+  const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setValue(newValue);
   };
 
   return (
       <Box width={600}>
         <Box >
-          <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+          <Tabs value={selectedTabIndex} onChange={handleChange} aria-label="basic tabs example">
             <Tab label="Add manually" {...a11yProps(0)} />
             <Tab label="Add from Git (Alpha)" {...a11yProps(1)} />
           </Tabs>
         </Box>
-        <TabPanel value={value} index={0}>
+        <TabPanel value={selectedTabIndex} index={0}>
           <ApplicationForm {...props} />
         </TabPanel>
-        <TabPanel value={value} index={1}>
+        <TabPanel value={selectedTabIndex} index={1}>
           Comming soon...
           {/** TODO: Show unregistered applications on the ADD FROM GIT tab */}
         </TabPanel>
