@@ -697,7 +697,7 @@ func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model
 	}
 	plannable = resp.Plannable
 	cancel = resp.Cancel
-	cancelReason = ""
+	cancelReason = resp.CancelReason
 	return
 }
 
