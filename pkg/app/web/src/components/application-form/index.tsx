@@ -88,18 +88,18 @@ const useStyles = makeStyles((theme) => ({
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
-  value: number;
+  selected: boolean;
 }
 
 function TabPanel(props: TabPanelProps) {
   return (
       <div
           role="tabpanel"
-          hidden={props.value !== props.index}
+          hidden={!props.selected}
           id={`simple-tabpanel-${props.index}`}
           aria-labelledby={`simple-tab-${props.index}`}
       >
-        {props.value === props.index && (
+        {props.selected && (
             <Box >
               <Typography>{props.children}</Typography>
             </Box>
@@ -130,10 +130,10 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
             <Tab label="Add from Git (Alpha)" {...a11yProps(1)} />
           </Tabs>
         </Box>
-        <TabPanel value={selectedTabIndex} index={0}>
+        <TabPanel selected={selectedTabIndex === 0} index={0}>
           <ApplicationForm {...props} />
         </TabPanel>
-        <TabPanel value={selectedTabIndex} index={1}>
+          <TabPanel selected={selectedTabIndex === 1} index={1}>
           Comming soon...
           {/** TODO: Show unregistered applications on the ADD FROM GIT tab */}
         </TabPanel>
