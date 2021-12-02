@@ -7,9 +7,11 @@ import {
   MenuItem,
   TextField,
   Typography,
+  Tabs,
+  Tab,
 } from "@material-ui/core";
 import { FormikProps } from "formik";
-import { FC, memo, ReactElement } from "react";
+import { FC, memo, ReactElement, useState } from "react";
 import * as yup from "yup";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
@@ -82,6 +84,62 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: -12,
   },
 }));
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  selected: boolean;
+}
+
+function TabPanel(props: TabPanelProps): ReactElement {
+  return (
+      <div
+          role="tabpanel"
+          hidden={!props.selected}
+          id={`simple-tabpanel-${props.index}`}
+          aria-labelledby={`simple-tab-${props.index}`}
+      >
+        {props.selected && (
+            <Box>
+              <Typography>{props.children}</Typography>
+            </Box>
+        )}
+      </div>
+  );
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  };
+}
+
+export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
+  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
+
+  const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    setSelectedTabIndex(newValue);
+  };
+
+  return (
+      <Box width={600}>
+        <Box>
+          <Tabs value={selectedTabIndex} onChange={handleChange} aria-label="basic tabs example">
+            <Tab label="Add manually" {...a11yProps(0)} />
+            <Tab label="Add from Git (Alpha)" {...a11yProps(1)} />
+          </Tabs>
+        </Box>
+        <TabPanel selected={selectedTabIndex === 0} index={0}>
+          <ApplicationForm {...props} />
+        </TabPanel>
+          <TabPanel selected={selectedTabIndex === 1} index={1}>
+          Coming soon...
+          {/** TODO: Show unregistered applications on the ADD FROM GIT tab */}
+        </TabPanel>
+      </Box>
+  );
+}
 
 function FormSelectInput<T extends { name: string; value: string }>({
   id,
@@ -212,7 +270,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
     const repositories = createRepoListFromPiped(selectedPiped);
 
     return (
-      <Box width={600}>
+      <Box width="100%">
         <Typography className={classes.title} variant="h6">
           {title}
         </Typography>
