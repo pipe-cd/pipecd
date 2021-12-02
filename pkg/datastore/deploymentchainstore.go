@@ -36,10 +36,6 @@ var (
 			}
 
 			block := dc.Blocks[deployment.DeploymentChainBlockIndex]
-			if block.IsCompleted() {
-				return fmt.Errorf("can not update a finished block")
-			}
-
 			var updated bool
 			for _, node := range block.Nodes {
 				if node.ApplicationRef.ApplicationId != deployment.ApplicationId {
