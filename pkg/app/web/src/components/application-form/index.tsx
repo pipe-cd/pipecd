@@ -92,7 +92,6 @@ interface TabPanelProps {
 }
 
 function TabPanel(props: TabPanelProps) {
-
   return (
       <div
           role="tabpanel"
@@ -109,8 +108,6 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-
-
 function a11yProps(index: number) {
   return {
     id: `simple-tab-${index}`,
@@ -119,10 +116,10 @@ function a11yProps(index: number) {
 }
 
 export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
-  const [selectedTabIndex, setValue] = useState(0);
+  const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-    setValue(newValue);
+    setSelectedTabIndex(newValue);
   };
 
   return (
