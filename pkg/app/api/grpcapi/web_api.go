@@ -643,8 +643,6 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 		return &webservice.ListUnregisteredApplicationsResponse{}, nil
 	}
 
-	// TODO: Eliminate apps registered by another Piped
-	//   In case that multiple Pipeds watches the same repo, it could be happen that one Piped report App-1 as an unregistered app even though another Piped register that app.
 	sort.Slice(allApps, func(i, j int) bool {
 		return allApps[i].Path < allApps[j].Path
 	})
