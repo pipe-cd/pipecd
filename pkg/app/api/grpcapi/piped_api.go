@@ -1112,7 +1112,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 				},
 			},
 		},
-		Status:    model.ChainBlockStatus_DEPLOYMENT_BLOCK_RUNNING,
+		Status:    model.ChainBlockStatus_DEPLOYMENT_BLOCK_PENDING,
 		StartedAt: time.Now().Unix(),
 	})
 
@@ -1183,7 +1183,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 // - It's the first deployment of its deployment chain.
 // - All deployments of its previous block in chain are at DEPLOYMENT_SUCCESS state.
 // In case the previous block is finished with unsuccessfully status, cancelled flag will be returned
-// so that the in charge pipes will be aware and stop that deployment.
+// so that the in charge piped will be aware and stop that deployment.
 func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedservice.InChainDeploymentPlannableRequest) (*pipedservice.InChainDeploymentPlannableResponse, error) {
 	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {

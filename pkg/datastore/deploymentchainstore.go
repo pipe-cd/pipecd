@@ -50,7 +50,6 @@ var (
 					Status:       deployment.Status,
 					StatusReason: deployment.StatusReason,
 				}
-				block.Status = model.ChainBlockStatus_DEPLOYMENT_BLOCK_RUNNING
 				updated = true
 				break
 			}
@@ -67,28 +66,24 @@ var (
 				return fmt.Errorf("invalid block index %d provided", blockIndex)
 			}
 
-			block := dc.Blocks[blockIndex]
-			if block.IsCompleted() {
-				return fmt.Errorf("can not update a finished block")
-			}
-
 			var (
 				updated                bool
 				successDeploymentCtn   int
 				failedDeploymentCtn    int
 				cancelledDeploymentCtn int
+				runningDeploymentCtn   int
 			)
 
+			block := dc.Blocks[blockIndex]
 			for _, node := range block.Nodes {
 				if node.DeploymentRef == nil {
 					continue
 				}
-				if node.DeploymentRef.DeploymentId != deploymentID {
-					continue
+				if node.DeploymentRef.DeploymentId == deploymentID {
+					node.DeploymentRef.Status = status
+					node.DeploymentRef.StatusReason = reason
+					updated = true
 				}
-				node.DeploymentRef.Status = status
-				node.DeploymentRef.StatusReason = reason
-				updated = true
 
 				// Count values to determine block status.
 				switch node.DeploymentRef.Status {
@@ -98,11 +93,18 @@ var (
 					failedDeploymentCtn++
 				case model.DeploymentStatus_DEPLOYMENT_CANCELLED:
 					cancelledDeploymentCtn++
+				case model.DeploymentStatus_DEPLOYMENT_RUNNING:
+					runningDeploymentCtn++
 				}
 			}
 
 			if !updated {
 				return fmt.Errorf("unable to find the right node in chain to assign deployment to")
+			}
+
+			// If the block is already finished, keep its finished status.
+			if block.IsCompleted() {
+				return nil
 			}
 
 			// Update block status based on its state after update latest submitted deployment status.
@@ -123,6 +125,11 @@ var (
 				block.Status = model.ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED
 				block.CompletedAt = time.Now().Unix()
 				return nil
+			}
+			// If there is at least a deployment in chain which has RUNNING status,
+			// and the block passed all above filters, the block counted as RUNNING.
+			if runningDeploymentCtn > 0 {
+				block.Status = model.ChainBlockStatus_DEPLOYMENT_BLOCK_RUNNING
 			}
 			// Otherwise, the block status is remained.
 

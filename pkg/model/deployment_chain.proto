@@ -60,7 +60,7 @@ enum ChainBlockStatus {
     // all block nodes do not have its deploymentRef created.
     DEPLOYMENT_BLOCK_PENDING = 1;
     // DEPLOYMENT_BLOCK_RUNNING means at least one of the block's nodes has
-    // its deploymentRef and started its deployment flow.
+    // its deploymentRef and that deployment is RUNNING or after that state.
     DEPLOYMENT_BLOCK_RUNNING = 2;
     // DEPLOYMENT_BLOCK_SUCCESS means all nodes in the block had finished with
     // DEPLOYMENT_SUCCESS status.
