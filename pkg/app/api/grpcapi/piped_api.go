@@ -1203,7 +1203,6 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 	if req.DeploymentChainBlockIndex == 0 {
 		return &pipedservice.InChainDeploymentPlannableResponse{
 			Plannable: true,
-			Cancel:    false,
 		}, nil
 	}
 
@@ -1218,29 +1217,28 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 	if !isPreviousBlockFinished {
 		return &pipedservice.InChainDeploymentPlannableResponse{
 			Plannable: false,
-			Cancel:    false,
 		}, nil
 	}
 
 	var (
-		plannable bool
-		cancel    bool
+		plannable, cancel bool
+		reason            string
 	)
 	switch previousBlock.Status {
 	case model.ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS:
 		plannable = true
-		cancel = false
-	case model.ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE, model.ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED:
-		plannable = false
+	case model.ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE:
 		cancel = true
-	default:
-		plannable = false
-		cancel = false
+		reason = "Previous block finished with FAILURE status"
+	case model.ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED:
+		cancel = true
+		reason = "Previous block finished with CANCELLED status"
 	}
 
 	return &pipedservice.InChainDeploymentPlannableResponse{
-		Plannable: plannable,
-		Cancel:    cancel,
+		Plannable:    plannable,
+		Cancel:       cancel,
+		CancelReason: reason,
 	}, nil
 }
 

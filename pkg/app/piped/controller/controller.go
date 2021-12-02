@@ -371,7 +371,7 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 	}
 
 	for appID, d := range pendingByApp {
-		plannable, cancel, err := c.shouldStartPlanningDeployment(ctx, d)
+		plannable, cancel, cancelReason, err := c.shouldStartPlanningDeployment(ctx, d)
 		if err != nil {
 			c.logger.Error("failed to check deployment plannability",
 				zap.String("deployment", d.Id),
@@ -382,7 +382,7 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 		}
 
 		if cancel {
-			if err = c.cancelDeployment(ctx, d, ""); err != nil {
+			if err = c.cancelDeployment(ctx, d, cancelReason); err != nil {
 				c.logger.Error("failed to cancel deployment",
 					zap.String("deployment", d.Id),
 					zap.String("app", d.ApplicationId),
@@ -682,7 +682,7 @@ func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, ap
 	return nil, err
 }
 
-func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model.Deployment) (plannable, cancel bool, err error) {
+func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model.Deployment) (plannable, cancel bool, cancelReason string, err error) {
 	if !d.IsInChainDeployment() {
 		plannable = true
 		return
@@ -697,6 +697,7 @@ func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model
 	}
 	plannable = resp.Plannable
 	cancel = resp.Cancel
+	cancelReason = ""
 	return
 }
 

@@ -531,4 +531,5 @@ message InChainDeploymentPlannableResponse {
     bool plannable = 1;
     // cancel used to determine whether piped should cancel the given development.
     bool cancel = 2;
+    string cancel_reason = 3;
 }
