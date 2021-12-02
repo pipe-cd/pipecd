@@ -261,8 +261,7 @@ func (r *Reporter) findRegisteredApps(repoPath, repoID string) ([]*model.Applica
 			// For historical reasons, we need to treat applications that don't define app config in a file as normal.
 			r.logger.Warn("found a registered application config file that is missing a required field",
 				zap.String("repo-id", repoID),
-				zap.String("git-path", app.GitPath.Path),
-				zap.String("config-file-path", app.GitPath.ConfigFilename),
+				zap.String("config-file-path", app.GitPath.GetDeploymentConfigFilePath()),
 				zap.Error(err),
 			)
 			continue
@@ -270,8 +269,7 @@ func (r *Reporter) findRegisteredApps(repoPath, repoID string) ([]*model.Applica
 		if err != nil {
 			r.logger.Error("failed to read registered application config file",
 				zap.String("repo-id", repoID),
-				zap.String("git-path", app.GitPath.Path),
-				zap.String("config-file-path", app.GitPath.ConfigFilename),
+				zap.String("config-file-path", app.GitPath.GetDeploymentConfigFilePath()),
 				zap.Error(err),
 			)
 			// Continue reading so that it can return apps as much as possible.
@@ -292,8 +290,7 @@ func (r *Reporter) isSynced(appInfo *model.ApplicationInfo, app *model.Applicati
 		r.logger.Warn("kind in application config has been changed which isn't allowed",
 			zap.String("app-id", app.Id),
 			zap.String("repo-id", app.GitPath.Repo.Id),
-			zap.String("path", app.GitPath.Path),
-			zap.String("config-filename", app.GitPath.ConfigFilename),
+			zap.String("config-file-path", app.GitPath.GetDeploymentConfigFilePath()),
 		)
 	}
 
@@ -322,7 +319,7 @@ func (r *Reporter) findUnregisteredApps(repoPath, repoID string) ([]*model.Appli
 		if app.GitPath.Repo.Id != repoID {
 			continue
 		}
-		registeredAppPaths[filepath.Join(app.GitPath.Path, app.GitPath.ConfigFilename)] = struct{}{}
+		registeredAppPaths[app.GitPath.GetDeploymentConfigFilePath()] = struct{}{}
 	}
 
 	out := make([]*model.ApplicationInfo, 0)
