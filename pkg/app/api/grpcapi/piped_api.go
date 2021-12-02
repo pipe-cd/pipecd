@@ -1182,7 +1182,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 // An in chain deployment is treated as plannable in case:
 // - It's the first deployment of its deployment chain.
 // - All deployments of its previous block in chain are at DEPLOYMENT_SUCCESS state.
-// In case the previous block is finished with unsuccessfully status, CANCEL_DEPLOYMENT command will be sent
+// In case the previous block is finished with unsuccessfully status, cancelled flag will be returned
 // so that the in charge pipes will be aware and stop that deployment.
 func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedservice.InChainDeploymentPlannableRequest) (*pipedservice.InChainDeploymentPlannableResponse, error) {
 	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
@@ -1203,6 +1203,7 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 	if req.DeploymentChainBlockIndex == 0 {
 		return &pipedservice.InChainDeploymentPlannableResponse{
 			Plannable: true,
+			Cancel:    false,
 		}, nil
 	}
 
@@ -1217,37 +1218,29 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 	if !isPreviousBlockFinished {
 		return &pipedservice.InChainDeploymentPlannableResponse{
 			Plannable: false,
+			Cancel:    false,
 		}, nil
 	}
 
-	var plannable bool
+	var (
+		plannable bool
+		cancel    bool
+	)
 	switch previousBlock.Status {
 	case model.ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS:
 		plannable = true
+		cancel = false
 	case model.ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE, model.ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED:
 		plannable = false
-		// Send CANCEL_DEPLOYMENT command so that the in-charge piped will be aware and stop the deployment.
-		if err = addCommand(ctx, a.commandStore, &model.Command{
-			Id:            uuid.New().String(),
-			PipedId:       pipedID,
-			ApplicationId: req.ApplicationId,
-			ProjectId:     dc.ProjectId,
-			DeploymentId:  req.DeploymentId,
-			Type:          model.Command_CANCEL_DEPLOYMENT,
-			Commander:     dc.Id,
-			CancelDeployment: &model.Command_CancelDeployment{
-				DeploymentId:  req.DeploymentId,
-				ForceRollback: true,
-			},
-		}, a.logger); err != nil {
-			return nil, status.Error(codes.Internal, "unable to send cancel deployment command to stop this deployment")
-		}
+		cancel = true
 	default:
 		plannable = false
+		cancel = false
 	}
 
 	return &pipedservice.InChainDeploymentPlannableResponse{
 		Plannable: plannable,
+		Cancel:    cancel,
 	}, nil
 }
 

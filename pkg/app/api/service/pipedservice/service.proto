@@ -177,7 +177,7 @@ service PipedService {
     // only when all the nodes of the previous block are completed with a success status,
     // the nodes of the next block will be treated as processable.
     // In case the previous block of this deployment is finished with FAILURE | CANCELLED status,
-    // one CANCEL_DEPLOYMENT will be sent to aware piped to stop this deployment.
+    // `cancel` flag will be returned to aware piped to stop this deployment.
     rpc InChainDeploymentPlannable(InChainDeploymentPlannableRequest) returns (InChainDeploymentPlannableResponse) {}
 }
 
@@ -524,9 +524,11 @@ message InChainDeploymentPlannableRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string deployment_chain_id = 2 [(validate.rules).string.min_len = 1];
     uint32 deployment_chain_block_index = 3;
-    string application_id = 4 [(validate.rules).string.min_len = 1];
 }
 
 message InChainDeploymentPlannableResponse {
+    // plannable used to determine whether piped should start planning the given development.
     bool plannable = 1;
+    // cancel used to determine whether piped should cancel the given development.
+    bool cancel = 2;
 }
