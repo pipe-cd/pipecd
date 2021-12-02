@@ -100,7 +100,7 @@ function TabPanel(props: TabPanelProps): ReactElement {
           aria-labelledby={`simple-tab-${props.index}`}
       >
         {props.selected && (
-            <Box >
+            <Box>
               <Typography>{props.children}</Typography>
             </Box>
         )}
@@ -124,7 +124,7 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
 
   return (
       <Box width={600}>
-        <Box >
+        <Box>
           <Tabs value={selectedTabIndex} onChange={handleChange} aria-label="basic tabs example">
             <Tab label="Add manually" {...a11yProps(0)} />
             <Tab label="Add from Git (Alpha)" {...a11yProps(1)} />
@@ -137,7 +137,7 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
           Coming soon...
           {/** TODO: Show unregistered applications on the ADD FROM GIT tab */}
         </TabPanel>
-      </Box >
+      </Box>
   );
 }
 
