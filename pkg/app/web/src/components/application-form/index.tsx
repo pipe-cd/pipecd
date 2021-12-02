@@ -91,7 +91,7 @@ interface TabPanelProps {
   selected: boolean;
 }
 
-function TabPanel(props: TabPanelProps) {
+function TabPanel(props: TabPanelProps): ReactElement {
   return (
       <div
           role="tabpanel"
@@ -134,7 +134,7 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
           <ApplicationForm {...props} />
         </TabPanel>
           <TabPanel selected={selectedTabIndex === 1} index={1}>
-          Comming soon...
+          Coming soon...
           {/** TODO: Show unregistered applications on the ADD FROM GIT tab */}
         </TabPanel>
       </Box >
