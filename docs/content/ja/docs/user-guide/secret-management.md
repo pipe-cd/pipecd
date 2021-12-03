@@ -71,7 +71,7 @@ Application リストのページ例
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
-# One of Piped defined app kind such as: KubernetesApp
+# KubernetesApp などの Piped で定義されている Application の Kind
 kind: {APPLICATION_KIND}
 spec:
   encryption:
