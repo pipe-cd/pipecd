@@ -9,7 +9,7 @@ description: >
 全てを Git で管理するのは便利ですが、Kubernetes の Secret や Terraform の Credential などといった機密データを Git に直接格納するのは安全ではありません。
 ここでは、そういった機密情報をどのように Git 上で安全に管理できるかについて説明します。
 
-基本的には、以下のフローになっています。
+基本的には以下のフローになっています。
 - PipeCD の Web コンソールで暗号化した機密情報を Git に格納
 - `Piped` は Deployment のタスクを実行する際に復号化
 
@@ -22,7 +22,6 @@ openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out private-key
 openssl pkey -in private-key -pubout -out public-key
 ```
 
-Then specify them while [installing](http://localhost:1313/docs/operator-manual/piped/installation/#installing-on-a-kubernetes-cluster) the `Piped` with these options:
 作成後、`Piped` の[インストール](http://localhost:1313/docs/operator-manual/piped/installation/#installing-on-a-kubernetes-cluster)時に以下のオプションを追加します。
 
 ``` console
