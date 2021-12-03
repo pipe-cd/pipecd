@@ -1,7 +1,7 @@
 ---
 title: "機密データの管理"
 linkTitle: "機密データの管理"
-weight: 11
+weight: 6
 description: >
   Git リポジトリ内の機密データの管理方法について
 ---
