@@ -55,7 +55,7 @@ message ChainNode {
 // ChainBlockStatus represents the current status of a block in deployment chain.
 enum ChainBlockStatus {
     // DEPLOYMENT_BLOCK_PENDING means the block's nodes just initialized,
-    // all block nodes do not have its deploymentRef created.
+    // all node deployments have not been initialized or still at PENDING.
     DEPLOYMENT_BLOCK_PENDING = 0;
     // DEPLOYMENT_BLOCK_RUNNING means at least one of the block's nodes has
     // its deploymentRef and that deployment is RUNNING or after that state.
