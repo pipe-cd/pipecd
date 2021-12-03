@@ -62,36 +62,19 @@ var (
 				return fmt.Errorf("invalid block index %d provided", blockIndex)
 			}
 
-			var (
-				updated                bool
-				successDeploymentCtn   int
-				failedDeploymentCtn    int
-				cancelledDeploymentCtn int
-				runningDeploymentCtn   int
-			)
-
+			var updated bool
 			block := dc.Blocks[blockIndex]
 			for _, node := range block.Nodes {
 				if node.DeploymentRef == nil {
 					continue
 				}
-				if node.DeploymentRef.DeploymentId == deploymentID {
-					node.DeploymentRef.Status = status
-					node.DeploymentRef.StatusReason = reason
-					updated = true
+				if node.DeploymentRef.DeploymentId != deploymentID {
+					continue
 				}
-
-				// Count values to determine block status.
-				switch node.DeploymentRef.Status {
-				case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
-					successDeploymentCtn++
-				case model.DeploymentStatus_DEPLOYMENT_FAILURE:
-					failedDeploymentCtn++
-				case model.DeploymentStatus_DEPLOYMENT_CANCELLED:
-					cancelledDeploymentCtn++
-				case model.DeploymentStatus_DEPLOYMENT_RUNNING:
-					runningDeploymentCtn++
-				}
+				node.DeploymentRef.Status = status
+				node.DeploymentRef.StatusReason = reason
+				updated = true
+				break
 			}
 
 			if !updated {
@@ -104,30 +87,10 @@ var (
 			}
 
 			// Update block status based on its state after update latest submitted deployment status.
-			// If all the nodes in block is completed successfully, the block counted as SUCCESS.
-			if successDeploymentCtn == len(block.Nodes) {
-				block.Status = model.ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS
+			block.Status = block.DesiredStatus()
+			if block.IsCompleted() {
 				block.CompletedAt = time.Now().Unix()
-				return nil
 			}
-			// If one of the node in the block is completed with FAILURE status, the block counted as FAILURE.
-			if failedDeploymentCtn > 0 {
-				block.Status = model.ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE
-				block.CompletedAt = time.Now().Unix()
-				return nil
-			}
-			// If one of the node in the block is completed with CANCELLED status, the block counted as CANCELLED.
-			if cancelledDeploymentCtn > 0 {
-				block.Status = model.ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED
-				block.CompletedAt = time.Now().Unix()
-				return nil
-			}
-			// If there is at least a deployment in chain which has RUNNING status,
-			// and the block passed all above filters, the block counted as RUNNING.
-			if runningDeploymentCtn > 0 {
-				block.Status = model.ChainBlockStatus_DEPLOYMENT_BLOCK_RUNNING
-			}
-			// Otherwise, the block status is remained.
 
 			return nil
 		}
