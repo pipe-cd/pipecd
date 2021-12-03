@@ -46,7 +46,7 @@ spec:
 
 ## 機密データの暗号化
 
-機密データを暗号化するために、 該当する Application の右側のオプションアイコンをクリックして、 "Encrypt Secret" オプションを選択します。
+機密データを暗号化するために、 該当する Application の右側のオプションアイコンをクリックして、 "Encrypt Secret" を選択します。
 機密情報を入力後、 "ENCRYPT" ボタンをクリックします。
 暗号化されたデータが表示されるのでコピーして Git に保存してください。
 
@@ -67,7 +67,7 @@ Application リストのページ例
 暗号化された機密データを利用できるようにする為には Application の `pipe.yaml` 内で指定する必要があります。
 
 - `encryptedSecrets` には暗号化された機密情報の文字列を記入します
-- `decryptionTargets` には 暗号化された機密情報が書かれているファイル名を記入します。
+- `decryptionTargets` には 暗号化された機密情報が書かれているファイル名を記入します
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
@@ -85,7 +85,7 @@ spec:
 
 Application ディレクトリにある任意のファイルは `.pipe.yaml` に書かれた機密情報にアクセスする為に `.encryptedSecrets` Context を使用することができます。
 
-以下、例を紹介します。
+一例を紹介します。
 
 - Kubernets の Secret マニフェストへのアクセス
 
