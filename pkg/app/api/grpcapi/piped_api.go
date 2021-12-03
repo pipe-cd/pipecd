@@ -1211,10 +1211,8 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 	}
 
 	previousBlock := dc.Blocks[req.DeploymentChainBlockIndex-1]
-	isPreviousBlockFinished := previousBlock.IsCompleted()
-
 	// If the previous block has not finished yet, should not plan this deployment to run.
-	if !isPreviousBlockFinished {
+	if !previousBlock.IsCompleted() {
 		return &pipedservice.InChainDeploymentPlannableResponse{
 			Plannable: false,
 		}, nil
