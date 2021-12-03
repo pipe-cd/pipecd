@@ -54,23 +54,21 @@ message ChainNode {
 
 // ChainBlockStatus represents the current status of a block in deployment chain.
 enum ChainBlockStatus {
-    // DEPLOYMENT_BLOCK_UNKNOWN means the block is at unexpected status.
-    DEPLOYMENT_BLOCK_UNKNOWN = 0;
     // DEPLOYMENT_BLOCK_PENDING means the block's nodes just initialized,
     // all block nodes do not have its deploymentRef created.
-    DEPLOYMENT_BLOCK_PENDING = 1;
+    DEPLOYMENT_BLOCK_PENDING = 0;
     // DEPLOYMENT_BLOCK_RUNNING means at least one of the block's nodes has
     // its deploymentRef and that deployment is RUNNING or after that state.
-    DEPLOYMENT_BLOCK_RUNNING = 2;
+    DEPLOYMENT_BLOCK_RUNNING = 1;
     // DEPLOYMENT_BLOCK_SUCCESS means all nodes in the block had finished with
     // DEPLOYMENT_SUCCESS status.
-    DEPLOYMENT_BLOCK_SUCCESS = 3;
+    DEPLOYMENT_BLOCK_SUCCESS = 2;
     // DEPLOYMENT_BLOCK_FAILURE means one of the block's nodes had finished with
     // DEPLOYMENT_FAILURE status.
-    DEPLOYMENT_BLOCK_FAILURE = 4;
+    DEPLOYMENT_BLOCK_FAILURE = 3;
     // DEPLOYMENT_BLOCK_CANCELLED means one of the block's nodes had finished with
     // DEPLOYMENT_CANCELLED status.
-    DEPLOYMENT_BLOCK_CANCELLED = 5;
+    DEPLOYMENT_BLOCK_CANCELLED = 4;
 }
 
 message ChainBlock {

@@ -20,6 +20,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -1198,16 +1199,25 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 		return nil, status.Error(codes.InvalidArgument, "unable to find the deployment chain which this deployment belongs to")
 	}
 
+	if req.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
+		return nil, status.Error(codes.InvalidArgument, "invalid deployment with chain block index provided")
+	}
+
+	// In case the block is already finished, should cancel the deployment immediately.
+	currentBlock := dc.Blocks[req.DeploymentChainBlockIndex]
+	if currentBlock.IsCompleted() {
+		return &pipedservice.InChainDeploymentPlannableResponse{
+			Cancel:       true,
+			CancelReason: fmt.Sprintf("Block which contains this deployment is finished with %s status", currentBlock.Status.String()),
+		}, nil
+	}
+
 	// Deployment of blocks[0] in the chain means it's the first deployment of the chain;
 	// hence it should be processed without any lock.
 	if req.DeploymentChainBlockIndex == 0 {
 		return &pipedservice.InChainDeploymentPlannableResponse{
 			Plannable: true,
 		}, nil
-	}
-
-	if req.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
-		return nil, status.Error(codes.InvalidArgument, "invalid deployment with chain block index provided")
 	}
 
 	previousBlock := dc.Blocks[req.DeploymentChainBlockIndex-1]
