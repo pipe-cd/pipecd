@@ -20,8 +20,7 @@ You can use pipectl to add and sync applications, wait for a deployment status.
 
     ``` console
     OS="darwin" # or "linux"
-    URL=$(curl -s https://api.github.com/repos/pipe-cd/pipe/releases/latest | grep browser_download_url | grep pipectl | grep "${OS}" | cut -d : -f 2,3 | tr -d '" ')
-    curl -Lo ./pipectl :"${URL}"
+    curl -Lo ./pipectl https://github.com/pipe-cd/pipe/releases/download/{{< blocks/latest_version >}}/pipectl_{{< blocks/latest_version >}}_${OS}_amd64
     ```
 
 2. Make the pipectl binary executable.
