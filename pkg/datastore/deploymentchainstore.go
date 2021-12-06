@@ -31,7 +31,7 @@ var deploymentChainFactory = func() interface{} {
 var (
 	DeploymentChainAddDeploymentToBlock = func(deployment *model.Deployment) func(*model.DeploymentChain) error {
 		return func(dc *model.DeploymentChain) error {
-			if deployment.DeploymentChainBlockIndex == 0 || deployment.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
+			if deployment.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
 				return fmt.Errorf("invalid block index (%d) provided", deployment.DeploymentChainBlockIndex)
 			}
 
@@ -62,24 +62,13 @@ var (
 				return fmt.Errorf("invalid block index %d provided", blockIndex)
 			}
 
-			var updated bool
 			block := dc.Blocks[blockIndex]
-			for _, node := range block.Nodes {
-				if node.DeploymentRef == nil {
-					continue
-				}
-				if node.DeploymentRef.DeploymentId != deploymentID {
-					continue
-				}
-				node.DeploymentRef.Status = status
-				node.DeploymentRef.StatusReason = reason
-				updated = true
-				break
+			node, err := block.GetNodeByDeploymentID(deploymentID)
+			if err != nil {
+				return err
 			}
-
-			if !updated {
-				return fmt.Errorf("unable to find the right node in chain to assign deployment to")
-			}
+			node.DeploymentRef.Status = status
+			node.DeploymentRef.StatusReason = reason
 
 			// If the block is already finished, keep its finished status.
 			if block.IsCompleted() {

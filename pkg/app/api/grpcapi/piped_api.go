@@ -475,6 +475,10 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 	if err = a.updateDeploymentRefStatusIfNecessary(ctx, req.DeploymentChainId, req.DeploymentChainBlockIndex, req.DeploymentId, model.DeploymentStatus_DEPLOYMENT_PLANNED, req.StatusReason); err != nil {
 		return nil, status.Error(codes.Internal, "unable to update deployment ref status of the deployment chain this deployment belongs to")
 	}
+
+	if err = a.sendCancelDeploymentCommandIfNecessary(ctx, pipedID, req.DeploymentId, req.DeploymentChainId, req.DeploymentChainBlockIndex); err != nil {
+		return nil, err
+	}
 	return &pipedservice.ReportDeploymentPlannedResponse{}, nil
 }
 
@@ -509,7 +513,66 @@ func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *piped
 	if err = a.updateDeploymentRefStatusIfNecessary(ctx, req.DeploymentChainId, req.DeploymentChainBlockIndex, req.DeploymentId, req.Status, req.StatusReason); err != nil {
 		return nil, status.Error(codes.Internal, "unable to update deployment ref status of the deployment chain this deployment belongs to")
 	}
+
+	if err = a.sendCancelDeploymentCommandIfNecessary(ctx, pipedID, req.DeploymentId, req.DeploymentChainId, req.DeploymentChainBlockIndex); err != nil {
+		return nil, err
+	}
 	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
+}
+
+// sendCancelDeploymentCommandIfNecessary check the current deployment containing blocks' status.
+// If the current block is marked as finished with one of FAILURE | CANCELLED status, cancel the
+// current deployment immediately by sending a CANCEL_DEPLOYMENT command to its piped.
+// Note: In case the current block is finished with SUCCESS status, the deployment should not in any
+// of running states (all DeploymentStatus other than SUCCESS).
+func (a *PipedAPI) sendCancelDeploymentCommandIfNecessary(ctx context.Context, pipedID, deploymentID, deploymentChainID string, blockIndex uint32) error {
+	// In case the deployment does not belong to any chain, return immediately.
+	if deploymentChainID == "" {
+		return nil
+	}
+
+	// The first block contains only one deployment; thus, its deployment flow is independent and relies only on itself.
+	if blockIndex == 0 {
+		return nil
+	}
+
+	dc, err := a.deploymentChainStore.GetDeploymentChain(ctx, deploymentChainID)
+	if err != nil {
+		return status.Error(codes.NotFound, "unable to find the chain with given chain id")
+	}
+
+	if blockIndex >= uint32(len(dc.Blocks)) {
+		return status.Error(codes.InvalidArgument, "invalid block index given")
+	}
+
+	block := dc.Blocks[blockIndex]
+	// If the current block is not yet finished with FAILURE | CANCELLED status, should not
+	// cancel the current running deployment.
+	if !block.IsUnsuccessfullyCompleted() {
+		return nil
+	}
+
+	node, err := block.GetNodeByDeploymentID(deploymentID)
+	if err != nil {
+		return status.Error(codes.InvalidArgument, "unable to find the deployment with given id in chain")
+	}
+
+	if err = addCommand(ctx, a.commandStore, &model.Command{
+		Id:            uuid.New().String(),
+		PipedId:       pipedID,
+		ApplicationId: node.ApplicationRef.ApplicationId,
+		ProjectId:     dc.ProjectId,
+		DeploymentId:  deploymentID,
+		Type:          model.Command_CANCEL_DEPLOYMENT,
+		Commander:     dc.Id,
+		CancelDeployment: &model.Command_CancelDeployment{
+			DeploymentId:  deploymentID,
+			ForceRollback: true,
+		},
+	}, a.logger); err != nil {
+		return status.Error(codes.Internal, "unable to send cancel deployment command to stop this deployment")
+	}
+	return nil
 }
 
 // ReportDeploymentCompleted used by piped to update the status

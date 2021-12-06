@@ -14,10 +14,22 @@
 
 package model
 
+import "fmt"
+
 func (b *ChainBlock) IsCompleted() bool {
 	switch b.Status {
 	case ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS,
 		ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE,
+		ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED:
+		return true
+	default:
+		return false
+	}
+}
+
+func (b *ChainBlock) IsUnsuccessfullyCompleted() bool {
+	switch b.Status {
+	case ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE,
 		ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED:
 		return true
 	default:
@@ -73,4 +85,16 @@ func (b *ChainBlock) DesiredStatus() ChainBlockStatus {
 	}
 	// Otherwise, the block status is remained.
 	return b.Status
+}
+
+func (b *ChainBlock) GetNodeByDeploymentID(deploymentID string) (*ChainNode, error) {
+	for _, node := range b.Nodes {
+		if node.DeploymentRef == nil {
+			continue
+		}
+		if node.DeploymentRef.DeploymentId == deploymentID {
+			return node, nil
+		}
+	}
+	return nil, fmt.Errorf("unable to find node with the given deployment id (%s)", deploymentID)
 }
