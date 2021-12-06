@@ -524,7 +524,7 @@ func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *piped
 // If the current block is marked as finished with one of FAILURE | CANCELLED status, cancel the
 // current deployment immediately by sending a CANCEL_DEPLOYMENT command to its piped.
 // Note: In case the current block is finished with SUCCESS status, the deployment should not in any
-// of running states (all DeploymentStatus other than SUCCESS).
+// of other status than SUCCESS too.
 func (a *PipedAPI) sendCancelDeploymentCommandIfNecessary(ctx context.Context, pipedID, deploymentID, deploymentChainID string, blockIndex uint32) error {
 	// In case the deployment does not belong to any chain, return immediately.
 	if deploymentChainID == "" {
@@ -546,9 +546,9 @@ func (a *PipedAPI) sendCancelDeploymentCommandIfNecessary(ctx context.Context, p
 	}
 
 	block := dc.Blocks[blockIndex]
-	// If the current block is not yet finished with FAILURE | CANCELLED status, should not
+	// If the current block has not yet finished, should not
 	// cancel the current running deployment.
-	if !block.IsUnsuccessfullyCompleted() {
+	if !block.IsCompleted() {
 		return nil
 	}
 

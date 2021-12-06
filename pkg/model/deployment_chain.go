@@ -27,16 +27,6 @@ func (b *ChainBlock) IsCompleted() bool {
 	}
 }
 
-func (b *ChainBlock) IsUnsuccessfullyCompleted() bool {
-	switch b.Status {
-	case ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE,
-		ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED:
-		return true
-	default:
-		return false
-	}
-}
-
 func (b *ChainBlock) DesiredStatus() ChainBlockStatus {
 	if b.IsCompleted() {
 		return b.Status
