@@ -20,6 +20,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -1112,6 +1113,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 				},
 			},
 		},
+		Status:    model.ChainBlockStatus_DEPLOYMENT_BLOCK_PENDING,
 		StartedAt: time.Now().Unix(),
 	})
 
@@ -1125,6 +1127,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 		blockAppsMap[i+1] = blockApps
 		chainBlocks = append(chainBlocks, &model.ChainBlock{
 			Nodes:     nodes,
+			Status:    model.ChainBlockStatus_DEPLOYMENT_BLOCK_PENDING,
 			StartedAt: time.Now().Unix(),
 		})
 	}
@@ -1180,6 +1183,8 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 // An in chain deployment is treated as plannable in case:
 // - It's the first deployment of its deployment chain.
 // - All deployments of its previous block in chain are at DEPLOYMENT_SUCCESS state.
+// In case the previous block is finished with unsuccessfully status, cancelled flag will be returned
+// so that the in charge piped will be aware and stop that deployment.
 func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedservice.InChainDeploymentPlannableRequest) (*pipedservice.InChainDeploymentPlannableResponse, error) {
 	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
@@ -1194,6 +1199,19 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 		return nil, status.Error(codes.InvalidArgument, "unable to find the deployment chain which this deployment belongs to")
 	}
 
+	if req.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
+		return nil, status.Error(codes.InvalidArgument, "invalid deployment with chain block index provided")
+	}
+
+	// In case the block is already finished, should cancel the deployment immediately.
+	currentBlock := dc.Blocks[req.DeploymentChainBlockIndex]
+	if currentBlock.IsCompleted() {
+		return &pipedservice.InChainDeploymentPlannableResponse{
+			Cancel:       true,
+			CancelReason: fmt.Sprintf("Block which contains this deployment is finished with %s status", currentBlock.Status.String()),
+		}, nil
+	}
+
 	// Deployment of blocks[0] in the chain means it's the first deployment of the chain;
 	// hence it should be processed without any lock.
 	if req.DeploymentChainBlockIndex == 0 {
@@ -1202,17 +1220,33 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 		}, nil
 	}
 
-	if req.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
-		return nil, status.Error(codes.InvalidArgument, "invalid deployment with chain block index provided")
+	previousBlock := dc.Blocks[req.DeploymentChainBlockIndex-1]
+	// If the previous block has not finished yet, should not plan this deployment to run.
+	if !previousBlock.IsCompleted() {
+		return &pipedservice.InChainDeploymentPlannableResponse{
+			Plannable: false,
+		}, nil
 	}
 
-	prevBlockSuccessfullyCompleted, err := dc.IsSuccessfullyCompletedBlock(req.DeploymentChainBlockIndex - 1)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "unable to process the previous block of this deployment in chain")
+	var (
+		plannable, cancel bool
+		reason            string
+	)
+	switch previousBlock.Status {
+	case model.ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS:
+		plannable = true
+	case model.ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE:
+		cancel = true
+		reason = "Previous block finished with FAILURE status"
+	case model.ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED:
+		cancel = true
+		reason = "Previous block finished with CANCELLED status"
 	}
 
 	return &pipedservice.InChainDeploymentPlannableResponse{
-		Plannable: prevBlockSuccessfullyCompleted,
+		Plannable:    plannable,
+		Cancel:       cancel,
+		CancelReason: reason,
 	}, nil
 }
 

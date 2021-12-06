@@ -32,8 +32,9 @@ var (
 	DeploymentChainAddDeploymentToBlock = func(deployment *model.Deployment) func(*model.DeploymentChain) error {
 		return func(dc *model.DeploymentChain) error {
 			if deployment.DeploymentChainBlockIndex == 0 || deployment.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
-				return fmt.Errorf("invalid block index provided")
+				return fmt.Errorf("invalid block index (%d) provided", deployment.DeploymentChainBlockIndex)
 			}
+
 			block := dc.Blocks[deployment.DeploymentChainBlockIndex]
 			var updated bool
 			for _, node := range block.Nodes {
@@ -46,6 +47,7 @@ var (
 					StatusReason: deployment.StatusReason,
 				}
 				updated = true
+				break
 			}
 			if !updated {
 				return fmt.Errorf("unable to find the right node in chain to assign deployment to")
@@ -59,8 +61,9 @@ var (
 			if blockIndex >= uint32(len(dc.Blocks)) {
 				return fmt.Errorf("invalid block index %d provided", blockIndex)
 			}
-			block := dc.Blocks[blockIndex]
+
 			var updated bool
+			block := dc.Blocks[blockIndex]
 			for _, node := range block.Nodes {
 				if node.DeploymentRef == nil {
 					continue
@@ -71,10 +74,24 @@ var (
 				node.DeploymentRef.Status = status
 				node.DeploymentRef.StatusReason = reason
 				updated = true
+				break
 			}
+
 			if !updated {
 				return fmt.Errorf("unable to find the right node in chain to assign deployment to")
 			}
+
+			// If the block is already finished, keep its finished status.
+			if block.IsCompleted() {
+				return nil
+			}
+
+			// Update block status based on its state after update latest submitted deployment status.
+			block.Status = block.DesiredStatus()
+			if block.IsCompleted() {
+				block.CompletedAt = time.Now().Unix()
+			}
+
 			return nil
 		}
 	}

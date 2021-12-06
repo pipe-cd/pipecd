@@ -14,18 +14,63 @@
 
 package model
 
-import "fmt"
+func (b *ChainBlock) IsCompleted() bool {
+	switch b.Status {
+	case ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS,
+		ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE,
+		ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED:
+		return true
+	default:
+		return false
+	}
+}
 
-func (dc *DeploymentChain) IsSuccessfullyCompletedBlock(blockIndex uint32) (bool, error) {
-	if blockIndex >= uint32(len(dc.Blocks)) {
-		return false, fmt.Errorf("invalid block index %d given", blockIndex)
+func (b *ChainBlock) DesiredStatus() ChainBlockStatus {
+	if b.IsCompleted() {
+		return b.Status
 	}
 
-	block := dc.Blocks[blockIndex]
-	for _, node := range block.Nodes {
-		if !IsSuccessfullyCompletedDeployment(node.DeploymentRef.Status) {
-			return false, nil
+	var (
+		successDeploymentCtn   int
+		failedDeploymentCtn    int
+		cancelledDeploymentCtn int
+		runningDeploymentCtn   int
+	)
+	for _, node := range b.Nodes {
+		if node.DeploymentRef == nil {
+			continue
+		}
+		// Count values to determine block status.
+		switch node.DeploymentRef.Status {
+		case DeploymentStatus_DEPLOYMENT_SUCCESS:
+			successDeploymentCtn++
+		case DeploymentStatus_DEPLOYMENT_FAILURE:
+			failedDeploymentCtn++
+		case DeploymentStatus_DEPLOYMENT_CANCELLED:
+			cancelledDeploymentCtn++
+		case DeploymentStatus_DEPLOYMENT_RUNNING:
+			runningDeploymentCtn++
 		}
 	}
-	return true, nil
+
+	// Determine block status based on its deployments' state.
+	// If all the nodes in block is completed successfully, the block counted as SUCCESS.
+	if successDeploymentCtn == len(b.Nodes) {
+		return ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS
+	}
+	// If one of the node in the block is completed with FAILURE status, the block counted as FAILURE.
+	if failedDeploymentCtn > 0 {
+		return ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE
+	}
+	// If one of the node in the block is completed with CANCELLED status, the block counted as CANCELLED.
+	if cancelledDeploymentCtn > 0 {
+		return ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED
+	}
+	// If there is at least a deployment in chain which has RUNNING status,
+	// and the block passed all above filters, the block counted as RUNNING.
+	if runningDeploymentCtn > 0 {
+		return ChainBlockStatus_DEPLOYMENT_BLOCK_RUNNING
+	}
+	// Otherwise, the block status is remained.
+	return b.Status
 }

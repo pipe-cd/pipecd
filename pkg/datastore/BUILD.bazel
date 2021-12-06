@@ -31,6 +31,7 @@ go_test(
         "apikey_test.go",
         "applicationstore_test.go",
         "commandstore_test.go",
+        "deploymentchainstore_test.go",
         "deploymentstore_test.go",
         "environmentstore_test.go",
         "eventstore_test.go",

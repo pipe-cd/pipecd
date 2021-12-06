@@ -371,13 +371,24 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 	}
 
 	for appID, d := range pendingByApp {
-		plannable, err := c.shouldStartPlanningDeployment(ctx, d)
+		plannable, cancel, cancelReason, err := c.shouldStartPlanningDeployment(ctx, d)
 		if err != nil {
 			c.logger.Error("failed to check deployment plannability",
 				zap.String("deployment", d.Id),
 				zap.String("app", d.ApplicationId),
 				zap.Error(err),
 			)
+			continue
+		}
+
+		if cancel {
+			if err = c.cancelDeployment(ctx, d, cancelReason); err != nil {
+				c.logger.Error("failed to cancel deployment",
+					zap.String("deployment", d.Id),
+					zap.String("app", d.ApplicationId),
+					zap.Error(err),
+				)
+			}
 			continue
 		}
 
@@ -671,9 +682,10 @@ func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, ap
 	return nil, err
 }
 
-func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model.Deployment) (bool, error) {
+func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model.Deployment) (plannable, cancel bool, cancelReason string, err error) {
 	if !d.IsInChainDeployment() {
-		return true, nil
+		plannable = true
+		return
 	}
 	resp, err := c.apiClient.InChainDeploymentPlannable(ctx, &pipedservice.InChainDeploymentPlannableRequest{
 		DeploymentId:              d.Id,
@@ -681,9 +693,36 @@ func (c *controller) shouldStartPlanningDeployment(ctx context.Context, d *model
 		DeploymentChainBlockIndex: d.DeploymentChainBlockIndex,
 	})
 	if err != nil {
-		return false, err
+		return
 	}
-	return resp.Plannable, nil
+	plannable = resp.Plannable
+	cancel = resp.Cancel
+	cancelReason = resp.CancelReason
+	return
+}
+
+func (c *controller) cancelDeployment(ctx context.Context, d *model.Deployment, reason string) error {
+	var (
+		err error
+		req = &pipedservice.ReportDeploymentCompletedRequest{
+			DeploymentId:              d.Id,
+			Status:                    model.DeploymentStatus_DEPLOYMENT_CANCELLED,
+			StatusReason:              reason,
+			StageStatuses:             nil,
+			DeploymentChainId:         d.DeploymentChainId,
+			DeploymentChainBlockIndex: d.DeploymentChainBlockIndex,
+			CompletedAt:               time.Now().Unix(),
+		}
+		retry = pipedservice.NewRetry(10)
+	)
+
+	for retry.WaitNext(ctx) {
+		if _, err = c.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
+			return nil
+		}
+		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+	}
+	return err
 }
 
 type appLiveResourceLister struct {
