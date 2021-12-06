@@ -28,7 +28,6 @@ gomock(
         "ApplicationStore",
         "DeploymentStore",
         "CommandStore",
-        "PipedStatsStore",
     ],
     library = "//pkg/datastore:go_default_library",
     package = "datastoretest",
