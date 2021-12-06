@@ -68,6 +68,7 @@ type WebAPI struct {
 	deploymentProjectCache cache.Cache
 	pipedProjectCache      cache.Cache
 	envProjectCache        cache.Cache
+	pipedStatCache         cache.Cache
 	insightCache           cache.Cache
 	redis                  redis.Redis
 
@@ -84,10 +85,12 @@ func NewWebAPI(
 	alss applicationlivestatestore.Store,
 	cmds commandstore.Store,
 	is insightstore.Store,
+	psc cache.Cache,
 	rd redis.Redis,
 	projs map[string]config.ControlPlaneProject,
 	encrypter encrypter,
-	logger *zap.Logger) *WebAPI {
+	logger *zap.Logger,
+) *WebAPI {
 	a := &WebAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		environmentStore:          datastore.NewEnvironmentStore(ds),
@@ -105,6 +108,7 @@ func NewWebAPI(
 		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		envProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
+		pipedStatCache:            psc,
 		insightCache:              rediscache.NewTTLCache(rd, 3*time.Hour),
 		redis:                     rd,
 		logger:                    logger.Named("web-api"),
@@ -377,7 +381,6 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 		Desc:      req.Desc,
 		ProjectId: claims.Role.ProjectId,
 		EnvIds:    req.EnvIds,
-		Status:    model.Piped_OFFLINE,
 	}
 	if err := piped.AddKey(keyHash, claims.Subject, time.Now()); err != nil {
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("Failed to create key: %v", err))
@@ -498,7 +501,6 @@ func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(c
 	return nil
 }
 
-// TODO: Consider using piped-stats to decide piped connection status.
 func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsRequest) (*webservice.ListPipedsResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
@@ -530,6 +532,18 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 	if err != nil {
 		a.logger.Error("failed to get pipeds", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get pipeds")
+	}
+
+	// Check piped connection status if necessary.
+	// The connection status of piped determined by its submitted stat in pipedStatCache.
+	if req.WithStatus {
+		for i := range pipeds {
+			if _, err := a.pipedStatCache.Get(pipeds[i].Id); err != nil {
+				pipeds[i].Status = model.Piped_OFFLINE
+				continue
+			}
+			pipeds[i].Status = model.Piped_ONLINE
+		}
 	}
 
 	// Redact all sensitive data inside piped message before sending to the client.
