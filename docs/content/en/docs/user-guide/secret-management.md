@@ -15,7 +15,7 @@ Basically, the flow will look like this:
 
 ## Prerequisites
 
-Before using this feature, `Piped` needs to be started with an RSA key pair for secret encryption.
+Before using this feature, `Piped` needs to be started with a key pair for secret encryption.
 
 You can use the following command to generate a key pair:
 
