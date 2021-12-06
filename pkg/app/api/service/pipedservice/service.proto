@@ -33,13 +33,6 @@ import "pkg/model/analysis_result.proto";
 // PipedService contains all RPC definitions for piped.
 // All of these RPCs are only called by piped and authenticated by using PIPED_TOKEN.
 service PipedService {
-    // Ping is periodically sent to report its realtime status/stats to control-plane.
-    // The received stats will be pushed to the metrics collector.
-    // Note: This rpc is deprecated, use ReportStat instead.
-    rpc Ping(PingRequest) returns (PingResponse) {
-        option deprecated = true;
-    }
-
     // ReportStat is periodically sent to report its realtime status/stats to control-plane.
     // The received stats will be pushed to the metrics collector.
     rpc ReportStat(ReportStatRequest) returns (ReportStatResponse) {}
@@ -185,14 +178,6 @@ enum ListOrder {
     NONE = 0;
     ASC = 1;
     DESC = 2;
-}
-
-message PingRequest {
-    pipe.model.PipedStats piped_stats = 1 [(validate.rules).message.required = true, deprecated = true];
-}
-
-message PingResponse {
-    int64 ping_interval = 1 [deprecated = true];
 }
 
 message ReportStatRequest {
