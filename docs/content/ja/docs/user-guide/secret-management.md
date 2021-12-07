@@ -15,7 +15,7 @@ description: >
 
 ## 前提条件
 
-この機能を使う為には RSA の公開鍵と秘密鍵のペアが必要になり、下記のコマンドで作ることができます。
+この機能を使う為には公開鍵と秘密鍵のペアが必要になります。
 
 ``` console
 openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out private-key
