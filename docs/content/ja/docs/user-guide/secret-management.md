@@ -64,7 +64,7 @@ Application リストのページ例
 
 ## 暗号化された機密データを Git へ格納する
 
-暗号化された機密データを利用できるようにする為には Application の `pipe.yaml` 内で指定する必要があります。
+暗号化された機密データを利用できるようにする為には Application の `.pipe.yaml` 内で指定する必要があります。
 
 - `encryptedSecrets` には暗号化された機密情報の文字列を記入します
 - `decryptionTargets` には 暗号化された機密情報が書かれているファイル名を記入します
