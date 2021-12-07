@@ -552,6 +552,7 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 			ps := model.PipedStat{}
 			if err = model.UnmarshalPipedStat(sv, &ps); err != nil {
 				pipeds[i].Status = model.Piped_UNKNOWN
+				a.logger.Error("unable to unmarshal the piped stat", zap.Error(err))
 				continue
 			}
 			if ps.IsStaled(model.PipedStatsRetention) {
