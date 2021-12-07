@@ -95,6 +95,9 @@ const useStyles = makeStyles((theme) => ({
   select: {
     width: "100%",
   },
+  accordionHeader: {
+    marginTop: theme.spacing(2),
+  }
 }));
 
 interface TabPanelProps {
@@ -554,7 +557,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
           <UnregisteredApplicationFilter
             onChange={handleFilterChange}
           />
-          <Accordion disabled>
+          <Accordion disabled className={classes.accordionHeader}>
             <AccordionSummary
               aria-controls="table-header-content"
               id="table-header"
