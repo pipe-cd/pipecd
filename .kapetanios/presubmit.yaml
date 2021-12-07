@@ -70,7 +70,7 @@ spec:
         - key=node_modules
         - path=/workspace/.yarn
     - name: install-dependencies
-      runner: gcr.io/kapetanios/node:12.13.1
+      runner: gcr.io/kapetanios/node:16.13.0
       commands:
         - cd pkg/app/web
         - yarn install --frozen-lockfile
@@ -89,7 +89,7 @@ spec:
         type: PROJECT
     - name: test
       description: Run all web tests
-      runner: gcr.io/kapetanios/node:12.13.1
+      runner: gcr.io/kapetanios/node:16.13.0
       commands:
         - cd pkg/app/web
         - yarn test:coverage --coverageDirectory=/artifact --runInBand
