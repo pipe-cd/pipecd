@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Badge,
   Dialog,
   DialogActions,
   DialogContent,
@@ -13,6 +14,7 @@ import {
   TableCell,
   TableRow,
   Typography,
+  Tooltip,
 } from "@material-ui/core";
 import { MoreVert as MoreVertIcon } from "@material-ui/icons";
 import clsx from "clsx";
@@ -20,6 +22,7 @@ import dayjs from "dayjs";
 import * as React from "react";
 import { FC, memo, useCallback, useState } from "react";
 import { CopyIconButton } from "~/components/copy-icon-button";
+import { PIPED_CONNECTION_STATUS_TEXT } from "~/constants/piped-connection-status-text";
 import { DELETE_OLD_PIPED_KEY_SUCCESS } from "~/constants/toast-text";
 import {
   UI_TEXT_ADD_NEW_KEY,
@@ -33,6 +36,7 @@ import {
   addNewPipedKey,
   deleteOldKey,
   fetchPipeds,
+  Piped,
   selectPipedById,
 } from "~/modules/pipeds";
 import { addToast } from "~/modules/toasts";
@@ -48,6 +52,9 @@ const useStyles = makeStyles((theme) => ({
     "&:hover button": {
       visibility: "visible",
     },
+  },
+  connectionStatus: {
+    paddingLeft: theme.spacing(1.5),
   },
 }));
 
@@ -131,6 +138,17 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
     onDisable(pipedId);
   }, [pipedId, onDisable]);
 
+  const connectionStatusColor = useCallback((status: Piped.ConnectionStatus) => {
+    switch (status) {
+      case Piped.ConnectionStatus.UNKNOWN:
+        return "secondary";
+      case Piped.ConnectionStatus.ONLINE:
+        return "primary";
+      case Piped.ConnectionStatus.OFFLINE:
+        return "error";
+    }
+  }, [piped?.status]);
+
   if (!piped) {
     return null;
   }
@@ -142,7 +160,19 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
         className={clsx({ [classes.disabledItem]: piped.disabled })}
       >
         <TableCell>
-          <Typography variant="subtitle2">{piped.name}</Typography>
+          <Typography variant="subtitle2">
+            {piped.name}
+            <Tooltip
+              className={classes.connectionStatus}
+              placement="top"
+              title={PIPED_CONNECTION_STATUS_TEXT[piped.status]}
+            >
+              <Badge
+                variant="dot"
+                color={connectionStatusColor(piped.status)}
+              />
+            </Tooltip>
+          </Typography>
         </TableCell>
         <TableCell title={piped.id} className={classes.idCell}>
           <Box display="flex" alignItems="center" fontFamily="fontFamilyMono">
