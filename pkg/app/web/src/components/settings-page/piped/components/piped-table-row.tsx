@@ -54,7 +54,7 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   connectionStatus: {
-    paddingLeft: "10px",
+    paddingLeft: theme.spacing(1.5),
   },
 }));
 
