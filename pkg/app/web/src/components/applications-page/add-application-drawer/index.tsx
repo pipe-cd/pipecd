@@ -78,9 +78,7 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
             {...formik}
             title={`Add a new application to "${projectName}" project`}
             onClose={handleClose}
-            onAddFromGit={() => {
-              setShowConfirmToAddFromGit(true);
-            }}
+            onAddFromGit={() => setShowConfirmToAddFromGit(true)}
           />
         </Drawer>
         <Dialog open={showConfirm}>
