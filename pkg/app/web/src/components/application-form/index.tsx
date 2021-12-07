@@ -15,16 +15,14 @@ import {
 } from "@material-ui/core";
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import { FormikProps } from "formik";
-import {FC, memo, ReactElement, useCallback, useState} from "react";
+import { FC, memo, ReactElement, useCallback, useState } from "react";
 import * as yup from "yup";
 import { APPLICATION_KIND_TEXT, APPLICATION_KIND_BY_NAME } from "~/constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE, UI_TEXT_ADD } from "~/constants/ui-text";
 import { useAppSelector } from "~/hooks/redux";
-import {
-  ApplicationKind,
-} from "~/modules/applications";
+import { ApplicationKind } from "~/modules/applications";
 import { selectAllEnvs } from "~/modules/environments";
-import {Piped, selectAllPipeds, selectPipedById, selectPipedsByEnv} from "~/modules/pipeds";
+import { Piped, selectAllPipeds, selectPipedById, selectPipedsByEnv } from "~/modules/pipeds";
 import { ApplicationInfo } from "~/modules/unregistered-applications";
 
 const createCloudProviderListFromPiped = ({
@@ -455,7 +453,7 @@ const UnregisteredApplicationFilter: FC<UnregisteredApplicationFilterProps> = me
   function UnregisteredApplicationFilter({ onChange }) {
     const classes = useStyles();
     const ps = useAppSelector((state) =>
-        selectAllPipeds(state)
+      selectAllPipeds(state)
     );
     const pipeds = ps.filter((piped) => !piped.disabled)
 
@@ -539,11 +537,11 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
     const [selectedKind, setSelectedKind] = useState("");
 
     const handleFilterChange = useCallback(
-     (options: UnregisteredApplicationsFilterOptions) => {
-         setSelectedPipedId(options.pipedId);
-         setSelectedKind(options.kind);
-         // TODO: Set cloud provider as well
-     },
+      (options: UnregisteredApplicationsFilterOptions) => {
+        setSelectedPipedId(options.pipedId);
+        setSelectedKind(options.kind);
+        // TODO: Set cloud provider as well
+      },
       [],
     );
     return (
@@ -552,24 +550,24 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
           Select the application to register
         </Typography>
         <Divider />
-          <UnregisteredApplicationFilter
-            onChange={handleFilterChange}
-          />
-          <Accordion disabled>
-            <AccordionSummary
-                aria-controls="table-header-content"
-                id="table-header"
-            >
-              <Typography>Name (Repository)</Typography>
-            </AccordionSummary>
-          </Accordion>
-          <div>
-            {apps
-              .filter(app =>
-                  app.pipedId === selectedPipedId &&
-                  app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
-              )
-              .map((app, i) => (
+        <UnregisteredApplicationFilter
+          onChange={handleFilterChange}
+        />
+        <Accordion disabled>
+          <AccordionSummary
+            aria-controls="table-header-content"
+            id="table-header"
+          >
+            <Typography>Name (Repository)</Typography>
+          </AccordionSummary>
+        </Accordion>
+        <div>
+          {apps
+            .filter(app =>
+              app.pipedId === selectedPipedId &&
+              app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
+            )
+            .map((app, i) => (
               <Accordion>
                 <AccordionSummary
                   expandIcon={<ExpandMore />}
@@ -626,7 +624,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                         />
                       </div>
                     ))}
-                      <Button
+                    <Button
                       color="primary"
                       type="submit"
                       onClick={onAddFromGit}
@@ -637,7 +635,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                 </AccordionDetails>
               </Accordion>
             ))}
-          </div>
+        </div>
         <Button onClick={onClose}>
           {UI_TEXT_CANCEL}
         </Button>

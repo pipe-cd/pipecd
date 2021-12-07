@@ -29,9 +29,9 @@ const CONFIRM_DIALOG_TITLE = "Quit adding application?";
 const CONFIRM_DIALOG_DESCRIPTION =
   "Form values inputs so far will not be saved.";
 
-const ADD_FROM_GIT_CONFIRM_DIALOG_TITLE = "Add Application?";
+const ADD_FROM_GIT_CONFIRM_DIALOG_TITLE = "Add Application";
 const ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION =
-    "Are you sure you want to add the application?";
+  "Are you sure you want to add the application?";
 
 export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
   function AddApplicationDrawer({
@@ -111,12 +111,12 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
               {UI_TEXT_CANCEL}
             </Button>
             <Button
-                color="primary"
-                onClick={() => {
-                  // TODO: Save the given app actually
-                  setShowConfirmToAddFromGit(false);
-                  onClose();
-                }}
+              color="primary"
+              onClick={() => {
+                // TODO: Save the given app actually
+                setShowConfirmToAddFromGit(false);
+                onClose();
+              }}
             >
               {UI_TEXT_SAVE}
             </Button>

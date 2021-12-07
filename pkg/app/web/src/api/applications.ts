@@ -176,9 +176,9 @@ export const updateDescription = async ({
 };
 
 export const getUnregisteredApplications = ({
-                               }: ListUnregisteredApplicationsRequest.AsObject): Promise<
-    ListUnregisteredApplicationsResponse.AsObject
-    > => {
+}: ListUnregisteredApplicationsRequest.AsObject): Promise<
+  ListUnregisteredApplicationsResponse.AsObject
+> => {
   const req = new ListUnregisteredApplicationsRequest();
   return apiRequest(req, apiClient.listUnregisteredApplications);
 };
