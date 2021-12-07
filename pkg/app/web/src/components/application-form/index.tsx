@@ -557,7 +557,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
           <UnregisteredApplicationFilter
             onChange={handleFilterChange}
           />
-          <Accordion disabled className={classes.accordionHeader}>
+          <Accordion className={classes.accordionHeader} disabled>
             <AccordionSummary
               aria-controls="table-header-content"
               id="table-header"
