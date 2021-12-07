@@ -9,16 +9,21 @@ import {
   Typography,
   Tabs,
   Tab,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails, FormControl, InputLabel, Select,
 } from "@material-ui/core";
+import ExpandMore from '@material-ui/icons/ExpandMore';
 import { FormikProps } from "formik";
-import { FC, memo, ReactElement, useState } from "react";
+import { FC, memo, ReactElement, useCallback, useState } from "react";
 import * as yup from "yup";
-import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
-import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
+import { APPLICATION_KIND_TEXT, APPLICATION_KIND_BY_NAME } from "~/constants/application-kind";
+import { UI_TEXT_CANCEL, UI_TEXT_SAVE, UI_TEXT_ADD } from "~/constants/ui-text";
 import { useAppSelector } from "~/hooks/redux";
 import { ApplicationKind } from "~/modules/applications";
 import { selectAllEnvs } from "~/modules/environments";
-import { Piped, selectPipedById, selectPipedsByEnv } from "~/modules/pipeds";
+import { Piped, selectAllPipeds, selectPipedById, selectPipedsByEnv } from "~/modules/pipeds";
+import { ApplicationInfo } from "~/modules/unregistered-applications";
 
 const createCloudProviderListFromPiped = ({
   kind,
@@ -83,6 +88,16 @@ const useStyles = makeStyles((theme) => ({
     marginTop: -12,
     marginLeft: -12,
   },
+  formItem: {
+    width: "100%",
+    marginTop: theme.spacing(4),
+  },
+  select: {
+    width: "100%",
+  },
+  accordionHeader: {
+    marginTop: theme.spacing(2),
+  }
 }));
 
 interface TabPanelProps {
@@ -93,18 +108,18 @@ interface TabPanelProps {
 
 function TabPanel(props: TabPanelProps): ReactElement {
   return (
-      <div
-          role="tabpanel"
-          hidden={!props.selected}
-          id={`simple-tabpanel-${props.index}`}
-          aria-labelledby={`simple-tab-${props.index}`}
-      >
-        {props.selected && (
-            <Box>
-              <Typography>{props.children}</Typography>
-            </Box>
-        )}
-      </div>
+    <div
+      role="tabpanel"
+      hidden={!props.selected}
+      id={`simple-tabpanel-${props.index}`}
+      aria-labelledby={`simple-tab-${props.index}`}
+    >
+      {props.selected && (
+        <Box>
+          <Typography>{props.children}</Typography>
+        </Box>
+      )}
+    </div>
   );
 }
 
@@ -123,21 +138,20 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
   };
 
   return (
-      <Box width={600}>
-        <Box>
-          <Tabs value={selectedTabIndex} onChange={handleChange} aria-label="basic tabs example">
-            <Tab label="Add manually" {...a11yProps(0)} />
-            <Tab label="Add from Git (Alpha)" {...a11yProps(1)} />
-          </Tabs>
-        </Box>
-        <TabPanel selected={selectedTabIndex === 0} index={0}>
-          <ApplicationForm {...props} />
-        </TabPanel>
-          <TabPanel selected={selectedTabIndex === 1} index={1}>
-          Coming soon...
-          {/** TODO: Show unregistered applications on the ADD FROM GIT tab */}
-        </TabPanel>
+    <Box width={600}>
+      <Box>
+        <Tabs value={selectedTabIndex} onChange={handleChange} aria-label="basic tabs example">
+          <Tab label="Add manually" {...a11yProps(0)} />
+          <Tab label="Add from Git (Alpha)" {...a11yProps(1)} />
+        </Tabs>
       </Box>
+      <TabPanel selected={selectedTabIndex === 0} index={0}>
+        <ApplicationForm {...props} />
+      </TabPanel>
+      <TabPanel selected={selectedTabIndex === 1} index={1}>
+        <UnregisteredApplicationList {...props} />
+      </TabPanel>
+    </Box>
   );
 }
 
@@ -220,6 +234,7 @@ export interface ApplicationFormValue {
 export type ApplicationFormProps = FormikProps<ApplicationFormValue> & {
   title: string;
   onClose: () => void;
+  onAddFromGit: () => void;
   disableGitPath?: boolean;
 };
 
@@ -422,6 +437,214 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
           </Button>
         </form>
       </Box>
+    );
+  }
+);
+
+
+interface UnregisteredApplicationsFilterOptions {
+  pipedId: string;
+  cloudProvider: string;
+  kind: string;
+}
+
+interface UnregisteredApplicationFilterProps {
+  onChange: (options: UnregisteredApplicationsFilterOptions) => void;
+}
+
+const UnregisteredApplicationFilter: FC<UnregisteredApplicationFilterProps> = memo(
+  function UnregisteredApplicationFilter({ onChange }) {
+    const classes = useStyles();
+    const ps = useAppSelector((state) =>
+      selectAllPipeds(state)
+    );
+    const pipeds = ps.filter((piped) => !piped.disabled)
+
+    const [selectedPipedId, setSelectedPipedId] = useState("")
+    const selectedPiped = useAppSelector(selectPipedById(selectedPipedId));
+    const cloudProviders = selectedPiped ? selectedPiped.cloudProvidersList : [];
+
+    var options: UnregisteredApplicationsFilterOptions;
+    const handleUpdateFilterValue = (
+      optionPart: Partial<UnregisteredApplicationsFilterOptions>
+    ): void => {
+      onChange({ ...options, ...optionPart });
+    };
+
+    return (
+      <div className={classes.inputGroup}>
+        <FormControl className={classes.formItem} variant="outlined">
+          <InputLabel id="filter-piped">Piped</InputLabel>
+          <Select
+            labelId="filter-piped"
+            id="filter-piped"
+            label="PipedId"
+            className={classes.select}
+            onChange={(e) => {
+              setSelectedPipedId(e.target.value as string);
+              handleUpdateFilterValue({
+                pipedId: (e.target.value as string)
+              });
+            }}
+          >
+            {pipeds.map((e) => (
+              <MenuItem value={e.id} key={`piped-${e.id}`}>
+                {e.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <div className={classes.inputGroupSpace} />
+        <FormControl className={classes.formItem} variant="outlined">
+          <InputLabel id="filter-cloud-provider">Cloud Provider</InputLabel>
+          <Select
+            labelId="filter-cloud-provider"
+            id="filter-cloud-provider"
+            label="CloudProvider"
+            className={classes.select}
+            disabled={selectedPipedId === ""}
+            onChange={(e) => {
+              const values = (e.target.value as ReadonlyArray<string>);
+              handleUpdateFilterValue({
+                cloudProvider: values[0],
+                kind: values[1],
+                pipedId: selectedPipedId,
+              });
+            }}
+          >
+            {cloudProviders.map((e) => (
+              <MenuItem value={([e.name, e.type] as ReadonlyArray<string>)} key={`cloud-provider-${e.name}`}>
+                {e.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </div>
+    );
+  }
+);
+
+const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
+  function ApplicationForm({
+    onClose,
+    onAddFromGit,
+  }) {
+    const classes = useStyles();
+    // TODO: Call api to fetch all unregisteredApps
+    /*const apps = useAppSelector<ApplicationInfo.AsObject[]>((state) =>
+        fetchUnregisteredApplications()
+    );*/
+    const apps: ApplicationInfo.AsObject[] = [];
+
+    const [selectedPipedId, setSelectedPipedId] = useState("");
+    const [selectedKind, setSelectedKind] = useState("");
+
+    const handleFilterChange = useCallback(
+      (options: UnregisteredApplicationsFilterOptions) => {
+        setSelectedPipedId(options.pipedId);
+        setSelectedKind(options.kind);
+        // TODO: Set cloud provider as well
+      },
+      [],
+    );
+    return (
+      <Box width="100%">
+        <Typography className={classes.title} variant="h6">
+          Select the application to register
+        </Typography>
+        <Divider />
+        <Box width="100%" m={0} px={2}>
+          <UnregisteredApplicationFilter
+            onChange={handleFilterChange}
+          />
+          <Accordion className={classes.accordionHeader} disabled>
+            <AccordionSummary
+              aria-controls="table-header-content"
+              id="table-header"
+            >
+              <Typography>Name (Repository)</Typography>
+            </AccordionSummary>
+          </Accordion>
+          <div>
+            {apps
+              .filter(app =>
+                app.pipedId === selectedPipedId &&
+                app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
+              )
+              .map((app, i) => (
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMore />}
+                    aria-controls={"panel-" + i + "-content"}
+                    id={"panel-" + i + "-header"}
+                  >
+                    <Typography>{app.name} ({app.repoId})</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Typography>
+                      <div className={classes.inputGroup}>
+                        <TextField
+                          id={"kind-" + i}
+                          label="Kind"
+                          margin="dense"
+                          fullWidth
+                          variant="outlined"
+                          disabled
+                          value={APPLICATION_KIND_TEXT[app.kind]}
+                          className={classes.textInput}
+                        />
+                      </div>
+                      <div className={classes.inputGroup}>
+                        <TextField
+                          id={"path-" + i}
+                          label="Path"
+                          margin="dense"
+                          variant="outlined"
+                          disabled
+                          value={app.path}
+                          className={classes.textInput}
+                        />
+                        <div className={classes.inputGroupSpace} />
+                        <TextField
+                          id={"configFilename-" + i}
+                          label="Config Filename"
+                          margin="dense"
+                          variant="outlined"
+                          disabled
+                          value={app.configFilename}
+                          className={classes.textInput}
+                        />
+                      </div>
+                      {app.labelsMap.map((label, j) => (
+                        <div className={classes.inputGroup}>
+                          <TextField
+                            id={"label-" + i + "-" + j}
+                            label={"Label " + j}
+                            margin="dense"
+                            variant="outlined"
+                            disabled
+                            value={label[0] + ": " + label[1]}
+                            className={classes.textInput}
+                          />
+                        </div>
+                      ))}
+                      <Button
+                        color="primary"
+                        type="submit"
+                        onClick={onAddFromGit}
+                      >
+                        {UI_TEXT_ADD}
+                      </Button>
+                    </Typography>
+                  </AccordionDetails>
+                </Accordion>
+              ))}
+          </div>
+          <Button onClick={onClose}>
+            {UI_TEXT_CANCEL}
+          </Button>
+        </Box>
+      </Box >
     );
   }
 );
