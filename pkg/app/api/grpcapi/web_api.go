@@ -545,6 +545,7 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 			}
 			if err != nil {
 				pipeds[i].Status = model.Piped_UNKNOWN
+				a.logger.Error("failed to get piped stat from the cache", zap.Error(err))
 				continue
 			}
 
