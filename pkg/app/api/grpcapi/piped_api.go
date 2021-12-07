@@ -514,6 +514,11 @@ func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *piped
 		return nil, status.Error(codes.Internal, "unable to update deployment ref status of the deployment chain this deployment belongs to")
 	}
 
+	// No need to check the possibility of cancel in case the deployment in ROLLING_BACK status, so return immediately.
+	if req.Status == model.DeploymentStatus_DEPLOYMENT_ROLLING_BACK {
+		return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
+	}
+
 	if err = a.sendCancelDeploymentCommandIfNecessary(ctx, pipedID, req.DeploymentId, req.DeploymentChainId, req.DeploymentChainBlockIndex); err != nil {
 		return nil, err
 	}
