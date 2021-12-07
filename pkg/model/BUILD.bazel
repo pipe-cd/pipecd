@@ -63,6 +63,7 @@ go_library(
         "model.go",
         "notificationevent.go",
         "piped.go",
+        "piped_stat.go",
         "planpreview.go",
         "project.go",
         "stage.go",

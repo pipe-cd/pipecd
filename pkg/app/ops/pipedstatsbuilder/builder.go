@@ -16,19 +16,13 @@ package pipedstatsbuilder
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"io"
-	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/model"
-)
-
-const (
-	pipedStatsRetention = 2 * time.Minute
 )
 
 type PipedStatsBuilder struct {
@@ -55,20 +49,15 @@ func (b *PipedStatsBuilder) Build() (io.Reader, error) {
 	}
 	data := make([][]byte, 0, len(res))
 	for _, v := range res {
-		value, okValue := v.([]byte)
-		if !okValue {
-			err = errors.New("error value not a bulk of string value")
-			b.logger.Error("failed to unmarshal piped stat data", zap.Error(err))
-			return nil, err
-		}
 		ps := model.PipedStat{}
-		if err = json.Unmarshal(value, &ps); err != nil {
+		if err = model.UnmarshalPipedStat(v, &ps); err != nil {
 			b.logger.Error("failed to unmarshal piped stat data", zap.Error(err))
 			return nil, err
 		}
+
 		// Ignore piped stat metrics if passed time from its last committed
 		// timestamp longer than limit live state check.
-		if time.Since(time.Unix(ps.Timestamp, 0)) > pipedStatsRetention {
+		if ps.IsStaled(model.PipedStatsRetention) {
 			continue
 		}
 		data = append(data, ps.Metrics)

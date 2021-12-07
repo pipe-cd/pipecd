@@ -33,8 +33,9 @@ message Piped {
     }
 
     enum ConnectionStatus {
-        ONLINE = 0;
-        OFFLINE = 1;
+        UNKNOWN = 0;
+        ONLINE = 1;
+        OFFLINE = 2;
     }
 
     // The generated unique identifier.

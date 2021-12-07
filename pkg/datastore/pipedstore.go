@@ -30,7 +30,6 @@ var (
 	PipedMetadataUpdater = func(
 		cloudProviders []*model.Piped_CloudProvider,
 		repos []*model.ApplicationGitRepository,
-		status model.Piped_ConnectionStatus,
 		se *model.Piped_SecretEncryption,
 		version string,
 		startedAt int64,
@@ -39,7 +38,6 @@ var (
 		return func(piped *model.Piped) error {
 			piped.CloudProviders = cloudProviders
 			piped.Repositories = repos
-			piped.Status = status
 
 			piped.SecretEncryption = se
 			// Remove the legacy data.

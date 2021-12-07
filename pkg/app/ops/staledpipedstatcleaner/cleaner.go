@@ -16,7 +16,6 @@ package staledpipedstatcleaner
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -78,16 +77,11 @@ func (s *StaledPipedStatCleaner) flushStaledPipedStat() error {
 
 	staled := make([]string, 0)
 	for k, v := range res {
-		value, okValue := v.([]byte)
-		if !okValue {
-			err = errors.New("error value not a bulk of string value")
-			return fmt.Errorf("failed to unmarshal piped stat data: %w", err)
-		}
 		ps := model.PipedStat{}
-		if err = json.Unmarshal(value, &ps); err != nil {
+		if err = model.UnmarshalPipedStat(v, &ps); err != nil {
 			return fmt.Errorf("failed to unmarshal piped stat data: %w", err)
 		}
-		if time.Since(time.Unix(ps.Timestamp, 0)) > pipedStatStaledTimeout {
+		if ps.IsStaled(pipedStatStaledTimeout) {
 			staled = append(staled, k)
 		}
 	}
