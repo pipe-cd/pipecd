@@ -29,10 +29,7 @@ func UnmarshalPipedStat(data interface{}, ps *PipedStat) error {
 	if !okValue {
 		return errors.New("error value not a bulk of string value")
 	}
-	if err := json.Unmarshal(value, ps); err != nil {
-		return err
-	}
-	return nil
+	return json.Unmarshal(value, ps)
 }
 
 func (ps *PipedStat) IsStaled(d time.Duration) bool {
