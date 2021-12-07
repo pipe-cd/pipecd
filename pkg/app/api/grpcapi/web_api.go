@@ -538,8 +538,13 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 	// The connection status of piped determined by its submitted stat in pipedStatCache.
 	if req.WithStatus {
 		for i := range pipeds {
-			if _, err := a.pipedStatCache.Get(pipeds[i].Id); err != nil {
+			_, err := a.pipedStatCache.Get(pipeds[i].Id)
+			if errors.Is(err, cache.ErrNotFound) {
 				pipeds[i].Status = model.Piped_OFFLINE
+				continue
+			}
+			if err != nil {
+				pipeds[i].Status = model.Piped_UNKNOWN
 				continue
 			}
 			pipeds[i].Status = model.Piped_ONLINE
