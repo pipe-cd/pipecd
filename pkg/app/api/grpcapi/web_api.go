@@ -555,6 +555,7 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 			}
 			if model.IsConnectingPiped(&ps) {
 				pipeds[i].Status = model.Piped_ONLINE
+				continue
 			}
 			pipeds[i].Status = model.Piped_OFFLINE
 		}
