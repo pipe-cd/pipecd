@@ -84,8 +84,7 @@ spec:
 ## 暗号化された機密データへのアクセス
 
 Application ディレクトリにある任意のファイルは `.pipe.yaml` に書かれた機密情報にアクセスする為に `.encryptedSecrets` Context を使用することができます。
-
-一例を紹介します。
+いくつかの例を以下にあげます。
 
 - Kubernets の Secret マニフェストへのアクセス
 
