@@ -8,7 +8,7 @@ import {
 } from "@material-ui/core";
 import { useFormik } from "formik";
 import { FC, memo, useCallback, useState } from "react";
-import { UI_TEXT_CANCEL, UI_TEXT_DISCARD } from "~/constants/ui-text";
+import { UI_TEXT_CANCEL, UI_TEXT_DISCARD, UI_TEXT_SAVE } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { addApplication } from "~/modules/applications";
 import { selectProjectName } from "~/modules/me";
@@ -28,6 +28,10 @@ export interface AddApplicationDrawerProps {
 const CONFIRM_DIALOG_TITLE = "Quit adding application?";
 const CONFIRM_DIALOG_DESCRIPTION =
   "Form values inputs so far will not be saved.";
+
+const ADD_FROM_GIT_CONFIRM_DIALOG_TITLE = "Add Application?";
+const ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION =
+    "Are you sure you want to add the application?";
 
 export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
   function AddApplicationDrawer({
@@ -60,6 +64,11 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
       }
     }, [onClose, formik]);
 
+    const [showConfirmToAddFromGit, setShowConfirmToAddFromGit] = useState(false);
+    const handleAddFromGit = useCallback(() => {
+      setShowConfirmToAddFromGit(true);
+    }, []);
+
     return (
       <>
         <Drawer
@@ -72,6 +81,7 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
             {...formik}
             title={`Add a new application to "${projectName}" project`}
             onClose={handleClose}
+            onAddFromGit={handleAddFromGit}
           />
         </Drawer>
         <Dialog open={showConfirm}>
@@ -90,6 +100,25 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
               }}
             >
               {UI_TEXT_DISCARD}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog open={showConfirmToAddFromGit}>
+          <DialogTitle>{ADD_FROM_GIT_CONFIRM_DIALOG_TITLE}</DialogTitle>
+          <DialogContent>{ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION}</DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowConfirmToAddFromGit(false)}>
+              {UI_TEXT_CANCEL}
+            </Button>
+            <Button
+                color="primary"
+                onClick={() => {
+                  // TODO: Save the given app actually
+                  setShowConfirmToAddFromGit(false);
+                  onClose();
+                }}
+            >
+              {UI_TEXT_SAVE}
             </Button>
           </DialogActions>
         </Dialog>

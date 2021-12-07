@@ -20,6 +20,8 @@ import {
   DeleteApplicationResponse,
   UpdateApplicationDescriptionRequest,
   UpdateApplicationDescriptionResponse,
+  ListUnregisteredApplicationsRequest,
+  ListUnregisteredApplicationsResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import { ApplicationGitPath } from "pipe/pkg/app/web/model/common_pb";
 import { ApplicationGitRepository } from "pipe/pkg/app/web/model/common_pb";
@@ -171,4 +173,12 @@ export const updateDescription = async ({
   req.setApplicationId(applicationId);
   req.setDescription(description);
   return apiRequest(req, apiClient.updateApplicationDescription);
+};
+
+export const getUnregisteredApplications = ({
+                               }: ListUnregisteredApplicationsRequest.AsObject): Promise<
+    ListUnregisteredApplicationsResponse.AsObject
+    > => {
+  const req = new ListUnregisteredApplicationsRequest();
+  return apiRequest(req, apiClient.listUnregisteredApplications);
 };
