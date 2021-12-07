@@ -86,7 +86,7 @@ export const Routes: FC = () => {
   useEffect(() => {
     if (me?.isLogin) {
       dispatch(fetchEnvironments());
-      dispatch(fetchPipeds(false));
+      dispatch(fetchPipeds(true));
     }
   }, [dispatch, me]);
   useCommandsStatusChecking();
