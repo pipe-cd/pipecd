@@ -550,96 +550,98 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
           Select the application to register
         </Typography>
         <Divider />
-        <UnregisteredApplicationFilter
-          onChange={handleFilterChange}
-        />
-        <Accordion disabled>
-          <AccordionSummary
-            aria-controls="table-header-content"
-            id="table-header"
-          >
-            <Typography>Name (Repository)</Typography>
-          </AccordionSummary>
-        </Accordion>
-        <div>
-          {apps
-            .filter(app =>
-              app.pipedId === selectedPipedId &&
-              app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
-            )
-            .map((app, i) => (
-              <Accordion>
-                <AccordionSummary
-                  expandIcon={<ExpandMore />}
-                  aria-controls={"panel-" + i + "-content"}
-                  id={"panel-" + i + "-header"}
-                >
-                  <Typography>{app.name} ({app.repoId})</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Typography>
-                    <div className={classes.inputGroup}>
-                      <TextField
-                        id={"kind-" + i}
-                        label="Kind"
-                        margin="dense"
-                        fullWidth
-                        variant="outlined"
-                        disabled
-                        value={APPLICATION_KIND_TEXT[app.kind]}
-                        className={classes.textInput}
-                      />
-                    </div>
-                    <div className={classes.inputGroup}>
-                      <TextField
-                        id={"path-" + i}
-                        label="Path"
-                        margin="dense"
-                        variant="outlined"
-                        disabled
-                        value={app.path}
-                        className={classes.textInput}
-                      />
-                      <div className={classes.inputGroupSpace} />
-                      <TextField
-                        id={"configFilename-" + i}
-                        label="Config Filename"
-                        margin="dense"
-                        variant="outlined"
-                        disabled
-                        value={app.configFilename}
-                        className={classes.textInput}
-                      />
-                    </div>
-                    {app.labelsMap.map((label, j) => (
+        <Box width="100%" m={0} px={2}>
+          <UnregisteredApplicationFilter
+            onChange={handleFilterChange}
+          />
+          <Accordion disabled>
+            <AccordionSummary
+              aria-controls="table-header-content"
+              id="table-header"
+            >
+              <Typography>Name (Repository)</Typography>
+            </AccordionSummary>
+          </Accordion>
+          <div>
+            {apps
+              .filter(app =>
+                app.pipedId === selectedPipedId &&
+                app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
+              )
+              .map((app, i) => (
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMore />}
+                    aria-controls={"panel-" + i + "-content"}
+                    id={"panel-" + i + "-header"}
+                  >
+                    <Typography>{app.name} ({app.repoId})</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Typography>
                       <div className={classes.inputGroup}>
                         <TextField
-                          id={"label-" + i + "-" + j}
-                          label={"Label " + j}
+                          id={"kind-" + i}
+                          label="Kind"
                           margin="dense"
+                          fullWidth
                           variant="outlined"
                           disabled
-                          value={label[0] + ": " + label[1]}
+                          value={APPLICATION_KIND_TEXT[app.kind]}
                           className={classes.textInput}
                         />
                       </div>
-                    ))}
-                    <Button
-                      color="primary"
-                      type="submit"
-                      onClick={onAddFromGit}
-                    >
-                      {UI_TEXT_ADD}
-                    </Button>
-                  </Typography>
-                </AccordionDetails>
-              </Accordion>
-            ))}
-        </div>
-        <Button onClick={onClose}>
-          {UI_TEXT_CANCEL}
-        </Button>
-      </Box>
+                      <div className={classes.inputGroup}>
+                        <TextField
+                          id={"path-" + i}
+                          label="Path"
+                          margin="dense"
+                          variant="outlined"
+                          disabled
+                          value={app.path}
+                          className={classes.textInput}
+                        />
+                        <div className={classes.inputGroupSpace} />
+                        <TextField
+                          id={"configFilename-" + i}
+                          label="Config Filename"
+                          margin="dense"
+                          variant="outlined"
+                          disabled
+                          value={app.configFilename}
+                          className={classes.textInput}
+                        />
+                      </div>
+                      {app.labelsMap.map((label, j) => (
+                        <div className={classes.inputGroup}>
+                          <TextField
+                            id={"label-" + i + "-" + j}
+                            label={"Label " + j}
+                            margin="dense"
+                            variant="outlined"
+                            disabled
+                            value={label[0] + ": " + label[1]}
+                            className={classes.textInput}
+                          />
+                        </div>
+                      ))}
+                      <Button
+                        color="primary"
+                        type="submit"
+                        onClick={onAddFromGit}
+                      >
+                        {UI_TEXT_ADD}
+                      </Button>
+                    </Typography>
+                  </AccordionDetails>
+                </Accordion>
+              ))}
+          </div>
+          <Button onClick={onClose}>
+            {UI_TEXT_CANCEL}
+          </Button>
+        </Box>
+      </Box >
     );
   }
 );
