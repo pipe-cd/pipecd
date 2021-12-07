@@ -125,11 +125,11 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
           {recentlyDeployment ? (
             <>
               <TableCell className={clsx(classes.version)}>
-                {recentlyDeployment.version.includes(',') ? (
-                  recentlyDeployment.version.split(',').map((v) => (
+                {recentlyDeployment.version.includes(",") ? (
+                  recentlyDeployment.version.split(",").map((v) => (
                     <>
                       <span>{v}</span>
-                      <br/>
+                      <br />
                     </>
                   ))
                 ) : (

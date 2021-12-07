@@ -21,7 +21,10 @@ import {
   UI_TEXT_REFRESH,
 } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { clearAddedApplicationId, fetchApplications } from "~/modules/applications";
+import {
+  clearAddedApplicationId,
+  fetchApplications,
+} from "~/modules/applications";
 import { stringifySearchParams, useSearchParams } from "~/utils/search-params";
 import { AddApplicationDrawer } from "./add-application-drawer";
 import { ApplicationFilter } from "./application-filter";

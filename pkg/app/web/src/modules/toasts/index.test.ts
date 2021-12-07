@@ -63,7 +63,12 @@ describe("toastsSlice reducer", () => {
       toastsSlice.reducer(
         {
           entities: {
-            "1": { id: "1", message: "toast message", severity: "error", issuer: "api/rejected" },
+            "1": {
+              id: "1",
+              message: "toast message",
+              severity: "error",
+              issuer: "api/rejected",
+            },
           },
           ids: ["1"],
         },
@@ -78,9 +83,14 @@ describe("toastsSlice reducer", () => {
       )
     ).toEqual({
       entities: {
-        "1": { id: "1", message: "toast message", severity: "error", issuer: "api/rejected" },
+        "1": {
+          id: "1",
+          message: "toast message",
+          severity: "error",
+          issuer: "api/rejected",
+        },
       },
       ids: ["1"],
-    })
+    });
   });
 });

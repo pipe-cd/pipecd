@@ -3,7 +3,11 @@ import { FC, memo, useEffect, useCallback } from "react";
 import { useHistory } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
-import { ApplicationKind, fetchApplications, selectById } from "~/modules/applications";
+import {
+  ApplicationKind,
+  fetchApplications,
+  selectById,
+} from "~/modules/applications";
 import { fetchApplicationCount } from "~/modules/application-counts";
 import { InsightDataPoint } from "~/modules/insight";
 import { ApplicationCounts } from "./application-counts";
@@ -37,10 +41,9 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
     dispatch(fetchApplicationCount());
   }, [dispatch]);
 
-  const updateURL = useCallback((kind: ApplicationKind) => {
-      history.replace(
-        `${PAGE_PATH_APPLICATIONS}?kind=${kind}`
-      );
+  const updateURL = useCallback(
+    (kind: ApplicationKind) => {
+      history.replace(`${PAGE_PATH_APPLICATIONS}?kind=${kind}`);
     },
     [history]
   );

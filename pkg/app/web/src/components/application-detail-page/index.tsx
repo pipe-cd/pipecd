@@ -12,9 +12,7 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
   const dispatch = useAppDispatch();
   const params = useParams<{ applicationId: string }>();
   const applicationId = decodeURIComponent(params.applicationId);
-  const [hasFetchApplicationError] = useAppSelector<
-    [boolean]
-  >((state) => [
+  const [hasFetchApplicationError] = useAppSelector<[boolean]>((state) => [
     state.applications.fetchApplicationError !== null,
   ]);
 

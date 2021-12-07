@@ -30,8 +30,9 @@ export interface ApplicationStateViewProps {
 }
 
 const ERROR_MESSAGE = "It was unable to fetch the latest state of application.";
-const COMING_SOON_MESSAGE = "Live state for this kind of application is not yet available.";
-const FEATURE_STATUS_INTRO = "PipeCD feature status"
+const COMING_SOON_MESSAGE =
+  "Live state for this kind of application is not yet available.";
+const FEATURE_STATUS_INTRO = "PipeCD feature status";
 const DISABLED_APPLICATION_MESSAGE =
   "This application is currently disabled. You can enable it from the application list page.";
 
@@ -74,7 +75,9 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
         }
       },
       // Only fetch kubernetes application.
-      app?.kind === ApplicationKind.KUBERNETES && hasError === false ? FETCH_INTERVAL : null
+      app?.kind === ApplicationKind.KUBERNETES && hasError === false
+        ? FETCH_INTERVAL
+        : null
     );
 
     if (app?.disabled) {

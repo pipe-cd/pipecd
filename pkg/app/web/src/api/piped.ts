@@ -107,7 +107,9 @@ export const updatePiped = ({
 export const updatePipedDesiredVersion = ({
   version,
   pipedIdsList,
-}: UpdatePipedDesiredVersionRequest.AsObject): Promise<UpdatePipedDesiredVersionResponse.AsObject> => {
+}: UpdatePipedDesiredVersionRequest.AsObject): Promise<
+  UpdatePipedDesiredVersionResponse.AsObject
+> => {
   const req = new UpdatePipedDesiredVersionRequest();
   req.setVersion(version);
   req.setPipedIdsList(pipedIdsList);
