@@ -21,8 +21,7 @@ import (
 )
 
 const (
-	pipedStatsRetention    = 2 * time.Minute
-	pipedStatStaledTimeout = 24 * time.Hour
+	PipedStatsRetention = 2 * time.Minute
 )
 
 func UnmarshalPipedStat(data interface{}, ps *PipedStat) error {
@@ -36,10 +35,6 @@ func UnmarshalPipedStat(data interface{}, ps *PipedStat) error {
 	return nil
 }
 
-func (ps *PipedStat) IsStaled() bool {
-	return time.Since(time.Unix(ps.Timestamp, 0)) > pipedStatStaledTimeout
-}
-
-func IsConnectingPiped(ps *PipedStat) bool {
-	return time.Since(time.Unix(ps.Timestamp, 0)) < pipedStatsRetention
+func (ps *PipedStat) IsStaled(d time.Duration) bool {
+	return time.Since(time.Unix(ps.Timestamp, 0)) > d
 }

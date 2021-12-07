@@ -57,7 +57,7 @@ func (b *PipedStatsBuilder) Build() (io.Reader, error) {
 
 		// Ignore piped stat metrics if passed time from its last committed
 		// timestamp longer than limit live state check.
-		if !model.IsConnectingPiped(&ps) {
+		if ps.IsStaled(model.PipedStatsRetention) {
 			continue
 		}
 		data = append(data, ps.Metrics)

@@ -27,7 +27,8 @@ import (
 )
 
 const (
-	interval = 24 * time.Hour
+	pipedStatStaledTimeout = 24 * time.Hour
+	interval               = 24 * time.Hour
 )
 
 type StaledPipedStatCleaner struct {
@@ -80,7 +81,7 @@ func (s *StaledPipedStatCleaner) flushStaledPipedStat() error {
 		if err = model.UnmarshalPipedStat(v, &ps); err != nil {
 			return fmt.Errorf("failed to unmarshal piped stat data: %w", err)
 		}
-		if ps.IsStaled() {
+		if ps.IsStaled(pipedStatStaledTimeout) {
 			staled = append(staled, k)
 		}
 	}

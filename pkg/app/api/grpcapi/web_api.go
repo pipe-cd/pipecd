@@ -553,11 +553,11 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 				pipeds[i].Status = model.Piped_UNKNOWN
 				continue
 			}
-			if model.IsConnectingPiped(&ps) {
-				pipeds[i].Status = model.Piped_ONLINE
+			if ps.IsStaled(model.PipedStatsRetention) {
+				pipeds[i].Status = model.Piped_OFFLINE
 				continue
 			}
-			pipeds[i].Status = model.Piped_OFFLINE
+			pipeds[i].Status = model.Piped_ONLINE
 		}
 	}
 
