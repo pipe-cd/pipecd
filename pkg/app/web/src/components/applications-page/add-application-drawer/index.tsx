@@ -65,9 +65,6 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
     }, [onClose, formik]);
 
     const [showConfirmToAddFromGit, setShowConfirmToAddFromGit] = useState(false);
-    const handleAddFromGit = useCallback(() => {
-      setShowConfirmToAddFromGit(true);
-    }, []);
 
     return (
       <>
@@ -81,7 +78,9 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
             {...formik}
             title={`Add a new application to "${projectName}" project`}
             onClose={handleClose}
-            onAddFromGit={handleAddFromGit}
+            onAddFromGit={() => {
+              setShowConfirmToAddFromGit(true);
+            }}
           />
         </Drawer>
         <Dialog open={showConfirm}>
