@@ -74,6 +74,10 @@ type candidate struct {
 	command     model.ReportableCommand
 }
 
+func (c *candidate) HasCommand() bool {
+	return c.kind == model.TriggerKind_ON_COMMAND || c.kind == model.TriggerKind_ON_CHAIN
+}
+
 type Trigger struct {
 	apiClient         apiClient
 	gitClient         gitClient
@@ -337,7 +341,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 		t.notifyDeploymentTriggered(ctx, appCfg, deployment)
 
 		// Mask command as handled since the deployment has been triggered successfully.
-		if c.kind == model.TriggerKind_ON_COMMAND {
+		if c.HasCommand() {
 			metadata := map[string]string{
 				model.MetadataKeyTriggeredDeploymentID: deployment.Id,
 			}
