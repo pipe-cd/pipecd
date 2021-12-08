@@ -18,6 +18,7 @@ import { sealedSecretSlice } from "./sealed-secret";
 import { stageLogsSlice } from "./stage-logs";
 import { toastsSlice } from "./toasts";
 import { updateApplicationSlice } from "./update-application";
+import { unregisteredApplicationsSlice } from "./unregistered-applications";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
@@ -39,4 +40,5 @@ export const reducers = combineReducers({
   deploymentFrequency: deploymentFrequencySlice.reducer,
   applicationCounts: applicationCountsSlice.reducer,
   deletingEnv: deletingEnvSlice.reducer,
+  unregisteredApplications: unregisteredApplicationsSlice.reducer,
 });
