@@ -18,14 +18,21 @@ import {
 } from "@material-ui/core";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import { FormikProps } from "formik";
-import { FC, memo, ReactElement, useCallback, useState } from "react";
+import {
+  FC,
+  memo,
+  ReactElement,
+  useCallback,
+  useState,
+  useEffect,
+} from "react";
 import * as yup from "yup";
 import {
   APPLICATION_KIND_TEXT,
   APPLICATION_KIND_BY_NAME,
 } from "~/constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE, UI_TEXT_ADD } from "~/constants/ui-text";
-import { useAppSelector } from "~/hooks/redux";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
 import { ApplicationKind } from "~/modules/applications";
 import { selectAllEnvs } from "~/modules/environments";
 import {
@@ -34,7 +41,11 @@ import {
   selectPipedById,
   selectPipedsByEnv,
 } from "~/modules/pipeds";
-import { ApplicationInfo } from "~/modules/unregistered-applications";
+import {
+  ApplicationInfo,
+  selectAllUnregisteredApplications,
+  fetchUnregisteredApplications,
+} from "~/modules/unregistered-applications";
 
 const createCloudProviderListFromPiped = ({
   kind,
@@ -147,7 +158,7 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
   const handleChange = (
-    event: React.ChangeEvent<{}>,
+    event: React.ChangeEvent<Record<string, unknown>>,
     newValue: number
   ): void => {
     setSelectedTabIndex(newValue);
@@ -548,12 +559,15 @@ const UnregisteredApplicationFilter: FC<UnregisteredApplicationFilterProps> = me
 
 const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
   function ApplicationForm({ onClose, onAddFromGit }) {
+    const dispatch = useAppDispatch();
+    useEffect(() => {
+      dispatch(fetchUnregisteredApplications());
+    }, [dispatch]);
+
     const classes = useStyles();
-    // TODO: Call api to fetch all unregisteredApps
-    /*const apps = useAppSelector<ApplicationInfo.AsObject[]>((state) =>
-        fetchUnregisteredApplications()
-    );*/
-    const apps: ApplicationInfo.AsObject[] = [];
+    const apps = useAppSelector<ApplicationInfo.AsObject[]>((state) =>
+      selectAllUnregisteredApplications(state)
+    );
 
     const [selectedPipedId, setSelectedPipedId] = useState("");
     const [selectedKind, setSelectedKind] = useState("");
@@ -590,7 +604,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                   app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
               )
               .map((app, i) => (
-                <Accordion>
+                <Accordion key={app.repoId + app.path + app.configFilename}>
                   <AccordionSummary
                     expandIcon={<ExpandMore />}
                     aria-controls={"panel-" + i + "-content"}
@@ -636,7 +650,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                         />
                       </div>
                       {app.labelsMap.map((label, j) => (
-                        <div className={classes.inputGroup}>
+                        <div className={classes.inputGroup} key={label[0]}>
                           <TextField
                             id={"label-" + i + "-" + j}
                             label={"Label " + j}
