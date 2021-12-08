@@ -122,7 +122,7 @@ func (s *store) sync(ctx context.Context) error {
 	)
 	for _, cmd := range resp.Commands {
 		switch cmd.Type {
-		case model.Command_SYNC_APPLICATION, model.Command_UPDATE_APPLICATION_CONFIG:
+		case model.Command_SYNC_APPLICATION, model.Command_UPDATE_APPLICATION_CONFIG, model.Command_CHAIN_SYNC_APPLICATION:
 			applicationCommands = append(applicationCommands, s.makeReportableCommand(cmd))
 		case model.Command_CANCEL_DEPLOYMENT:
 			deploymentCommands = append(deploymentCommands, s.makeReportableCommand(cmd))
