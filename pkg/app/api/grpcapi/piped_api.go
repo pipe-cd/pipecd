@@ -1123,6 +1123,11 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 				Operator: datastore.OperatorEqual,
 				Value:    projectID,
 			},
+			{
+				Field:    "Disabled",
+				Operator: datastore.OperatorEqual,
+				Value:    false,
+			},
 		}
 
 		if matcher.Name != "" {
