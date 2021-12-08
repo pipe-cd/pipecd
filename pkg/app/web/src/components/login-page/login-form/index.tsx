@@ -127,11 +127,7 @@ export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
             required
           />
           <div className={classes.buttons}>
-            <Button
-              type="reset"
-              color="primary"
-              onClick={handleOnBack}
-            >
+            <Button type="reset" color="primary" onClick={handleOnBack}>
               back
             </Button>
             <Button type="submit" color="primary" variant="contained">

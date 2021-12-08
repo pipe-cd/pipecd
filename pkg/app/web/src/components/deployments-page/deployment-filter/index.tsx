@@ -49,7 +49,9 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
   function DeploymentFilter({ options, onChange, onClear }) {
     const classes = useStyles();
     const envs = useAppSelector(selectAllEnvs);
-    const [localApplications, setLocalApplications] = useState<Application.AsObject[]>([]);
+    const [localApplications, setLocalApplications] = useState<
+      Application.AsObject[]
+    >([]);
     const applications = useAppSelector<Application.AsObject[]>((state) =>
       selectAllApplications(state.applications)
     );
@@ -68,7 +70,9 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
 
     useEffect(() => {
       if (options.applicationName) {
-        setLocalApplications(applications.filter(app => app.name === options.applicationName));
+        setLocalApplications(
+          applications.filter((app) => app.name === options.applicationName)
+        );
       } else {
         setLocalApplications(applications);
       }
@@ -83,7 +87,9 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
         <div className={classes.formItem}>
           <ApplicationAutocomplete
             value={options.applicationName ?? null}
-            onChange={(value) => handleUpdateFilterValue({ applicationName: value })}
+            onChange={(value) =>
+              handleUpdateFilterValue({ applicationName: value })
+            }
           />
         </div>
 
@@ -156,7 +162,11 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
             id="application-select"
             options={localApplications}
             getOptionLabel={(option) => option.id}
-            renderOption={(option) => <span>{option.name} ({option.id})</span>}
+            renderOption={(option) => (
+              <span>
+                {option.name} ({option.id})
+              </span>
+            )}
             value={selectedApp || null}
             onChange={(_, value) => {
               handleUpdateFilterValue({

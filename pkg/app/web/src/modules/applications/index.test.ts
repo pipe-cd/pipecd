@@ -215,7 +215,7 @@ describe("applicationsSlice reducer", () => {
       ).toEqual({
         ...baseState,
         addedApplicationId: dummyApplication.id,
-      })
+      });
     });
 
     it(`should handle ${addApplication.rejected.type}`, () => {

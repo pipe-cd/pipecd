@@ -138,16 +138,19 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
     onDisable(pipedId);
   }, [pipedId, onDisable]);
 
-  const connectionStatusColor = useCallback((status: Piped.ConnectionStatus) => {
-    switch (status) {
-      case Piped.ConnectionStatus.UNKNOWN:
-        return "secondary";
-      case Piped.ConnectionStatus.ONLINE:
-        return "primary";
-      case Piped.ConnectionStatus.OFFLINE:
-        return "error";
-    }
-  }, [piped?.status]);
+  const connectionStatusColor = useCallback(
+    (status: Piped.ConnectionStatus) => {
+      switch (status) {
+        case Piped.ConnectionStatus.UNKNOWN:
+          return "secondary";
+        case Piped.ConnectionStatus.ONLINE:
+          return "primary";
+        case Piped.ConnectionStatus.OFFLINE:
+          return "error";
+      }
+    },
+    [piped?.status]
+  );
 
   if (!piped) {
     return null;
@@ -181,7 +184,10 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
           </Box>
         </TableCell>
         <TableCell>
-          {piped.version}{piped.desiredVersion && piped.desiredVersion !== piped.version ? ` (upgrading to ${piped.desiredVersion})` : ''}
+          {piped.version}
+          {piped.desiredVersion && piped.desiredVersion !== piped.version
+            ? ` (upgrading to ${piped.desiredVersion})`
+            : ""}
         </TableCell>
         <TableCell>
           <Typography variant="body2" color="textSecondary">

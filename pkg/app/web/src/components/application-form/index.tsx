@@ -11,18 +11,29 @@ import {
   Tab,
   Accordion,
   AccordionSummary,
-  AccordionDetails, FormControl, InputLabel, Select,
+  AccordionDetails,
+  FormControl,
+  InputLabel,
+  Select,
 } from "@material-ui/core";
-import ExpandMore from '@material-ui/icons/ExpandMore';
+import ExpandMore from "@material-ui/icons/ExpandMore";
 import { FormikProps } from "formik";
 import { FC, memo, ReactElement, useCallback, useState } from "react";
 import * as yup from "yup";
-import { APPLICATION_KIND_TEXT, APPLICATION_KIND_BY_NAME } from "~/constants/application-kind";
+import {
+  APPLICATION_KIND_TEXT,
+  APPLICATION_KIND_BY_NAME,
+} from "~/constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE, UI_TEXT_ADD } from "~/constants/ui-text";
 import { useAppSelector } from "~/hooks/redux";
 import { ApplicationKind } from "~/modules/applications";
 import { selectAllEnvs } from "~/modules/environments";
-import { Piped, selectAllPipeds, selectPipedById, selectPipedsByEnv } from "~/modules/pipeds";
+import {
+  Piped,
+  selectAllPipeds,
+  selectPipedById,
+  selectPipedsByEnv,
+} from "~/modules/pipeds";
 import { ApplicationInfo } from "~/modules/unregistered-applications";
 
 const createCloudProviderListFromPiped = ({
@@ -48,12 +59,14 @@ const createRepoListFromPiped = (
   piped?: Piped.AsObject
 ): Array<{ name: string; value: string; branch: string; remote: string }> => {
   if (!piped) {
-    return [{
-      name: "None",
-      value: "",
-      branch: "",
-      remote: "",
-    }];
+    return [
+      {
+        name: "None",
+        value: "",
+        branch: "",
+        remote: "",
+      },
+    ];
   }
 
   return piped.repositoriesList.map((repo) => ({
@@ -62,7 +75,7 @@ const createRepoListFromPiped = (
     branch: repo.branch,
     remote: repo.remote,
   }));
-}
+};
 
 const useStyles = makeStyles((theme) => ({
   title: {
@@ -97,7 +110,7 @@ const useStyles = makeStyles((theme) => ({
   },
   accordionHeader: {
     marginTop: theme.spacing(2),
-  }
+  },
 }));
 
 interface TabPanelProps {
@@ -123,24 +136,31 @@ function TabPanel(props: TabPanelProps): ReactElement {
   );
 }
 
-function a11yProps(index: number) {
+function a11yProps(index: number): { id: string; "aria-controls": string } {
   return {
     id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
   };
 }
 
 export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
-  const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+  const handleChange = (
+    event: React.ChangeEvent<{}>,
+    newValue: number
+  ): void => {
     setSelectedTabIndex(newValue);
   };
 
   return (
     <Box width={600}>
       <Box>
-        <Tabs value={selectedTabIndex} onChange={handleChange} aria-label="basic tabs example">
+        <Tabs
+          value={selectedTabIndex}
+          onChange={handleChange}
+          aria-label="basic tabs example"
+        >
           <Tab label="Add manually" {...a11yProps(0)} />
           <Tab label="Add from Git (Alpha)" {...a11yProps(1)} />
         </Tabs>
@@ -153,7 +173,7 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
       </TabPanel>
     </Box>
   );
-}
+};
 
 function FormSelectInput<T extends { name: string; value: string }>({
   id,
@@ -441,7 +461,6 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
   }
 );
 
-
 interface UnregisteredApplicationsFilterOptions {
   pipedId: string;
   cloudProvider: string;
@@ -455,16 +474,16 @@ interface UnregisteredApplicationFilterProps {
 const UnregisteredApplicationFilter: FC<UnregisteredApplicationFilterProps> = memo(
   function UnregisteredApplicationFilter({ onChange }) {
     const classes = useStyles();
-    const ps = useAppSelector((state) =>
-      selectAllPipeds(state)
-    );
-    const pipeds = ps.filter((piped) => !piped.disabled)
+    const ps = useAppSelector((state) => selectAllPipeds(state));
+    const pipeds = ps.filter((piped) => !piped.disabled);
 
-    const [selectedPipedId, setSelectedPipedId] = useState("")
+    const [selectedPipedId, setSelectedPipedId] = useState("");
     const selectedPiped = useAppSelector(selectPipedById(selectedPipedId));
-    const cloudProviders = selectedPiped ? selectedPiped.cloudProvidersList : [];
+    const cloudProviders = selectedPiped
+      ? selectedPiped.cloudProvidersList
+      : [];
 
-    var options: UnregisteredApplicationsFilterOptions;
+    let options: UnregisteredApplicationsFilterOptions;
     const handleUpdateFilterValue = (
       optionPart: Partial<UnregisteredApplicationsFilterOptions>
     ): void => {
@@ -483,7 +502,7 @@ const UnregisteredApplicationFilter: FC<UnregisteredApplicationFilterProps> = me
             onChange={(e) => {
               setSelectedPipedId(e.target.value as string);
               handleUpdateFilterValue({
-                pipedId: (e.target.value as string)
+                pipedId: e.target.value as string,
               });
             }}
           >
@@ -504,7 +523,7 @@ const UnregisteredApplicationFilter: FC<UnregisteredApplicationFilterProps> = me
             className={classes.select}
             disabled={selectedPipedId === ""}
             onChange={(e) => {
-              const values = (e.target.value as ReadonlyArray<string>);
+              const values = e.target.value as ReadonlyArray<string>;
               handleUpdateFilterValue({
                 cloudProvider: values[0],
                 kind: values[1],
@@ -513,7 +532,10 @@ const UnregisteredApplicationFilter: FC<UnregisteredApplicationFilterProps> = me
             }}
           >
             {cloudProviders.map((e) => (
-              <MenuItem value={([e.name, e.type] as ReadonlyArray<string>)} key={`cloud-provider-${e.name}`}>
+              <MenuItem
+                value={[e.name, e.type] as ReadonlyArray<string>}
+                key={`cloud-provider-${e.name}`}
+              >
                 {e.name}
               </MenuItem>
             ))}
@@ -525,10 +547,7 @@ const UnregisteredApplicationFilter: FC<UnregisteredApplicationFilterProps> = me
 );
 
 const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
-  function ApplicationForm({
-    onClose,
-    onAddFromGit,
-  }) {
+  function ApplicationForm({ onClose, onAddFromGit }) {
     const classes = useStyles();
     // TODO: Call api to fetch all unregisteredApps
     /*const apps = useAppSelector<ApplicationInfo.AsObject[]>((state) =>
@@ -545,7 +564,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
         setSelectedKind(options.kind);
         // TODO: Set cloud provider as well
       },
-      [],
+      []
     );
     return (
       <Box width="100%">
@@ -554,9 +573,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
         </Typography>
         <Divider />
         <Box width="100%" m={0} px={2}>
-          <UnregisteredApplicationFilter
-            onChange={handleFilterChange}
-          />
+          <UnregisteredApplicationFilter onChange={handleFilterChange} />
           <Accordion className={classes.accordionHeader} disabled>
             <AccordionSummary
               aria-controls="table-header-content"
@@ -567,9 +584,10 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
           </Accordion>
           <div>
             {apps
-              .filter(app =>
-                app.pipedId === selectedPipedId &&
-                app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
+              .filter(
+                (app) =>
+                  app.pipedId === selectedPipedId &&
+                  app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
               )
               .map((app, i) => (
                 <Accordion>
@@ -578,7 +596,9 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                     aria-controls={"panel-" + i + "-content"}
                     id={"panel-" + i + "-header"}
                   >
-                    <Typography>{app.name} ({app.repoId})</Typography>
+                    <Typography>
+                      {app.name} ({app.repoId})
+                    </Typography>
                   </AccordionSummary>
                   <AccordionDetails>
                     <Typography>
@@ -640,11 +660,9 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                 </Accordion>
               ))}
           </div>
-          <Button onClick={onClose}>
-            {UI_TEXT_CANCEL}
-          </Button>
+          <Button onClick={onClose}>{UI_TEXT_CANCEL}</Button>
         </Box>
-      </Box >
+      </Box>
     );
   }
 );

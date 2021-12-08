@@ -24,7 +24,8 @@ const useStyles = makeStyles((theme) => ({
 const TEXT = {
   TITLE: "Congratulation!",
   MESSAGE: "Your application has been added successfully.",
-  NOTE: "Please ensure that your application directory in Git is containing a deployment config file (.pipe.yaml) since PipeCD needs it to know how to run the application's deployments.",
+  NOTE:
+    "Please ensure that your application directory in Git is containing a deployment config file (.pipe.yaml) since PipeCD needs it to know how to run the application's deployments.",
 };
 
 export interface ApplicationAddedViewProps {
@@ -45,9 +46,7 @@ export const ApplicationAddedView: FC<ApplicationAddedViewProps> = memo(
 
         <Box p={2}>
           <Box className={classes.contentBox}>
-            <Typography variant="subtitle1">
-              {TEXT.MESSAGE}
-            </Typography>
+            <Typography variant="subtitle1">{TEXT.MESSAGE}</Typography>
             <Typography variant="body2" className={classes.note}>
               {TEXT.NOTE}
             </Typography>
@@ -59,7 +58,7 @@ export const ApplicationAddedView: FC<ApplicationAddedViewProps> = memo(
             </Button>
           </Box>
         </Box>
-      </Box >
+      </Box>
     );
   }
 );

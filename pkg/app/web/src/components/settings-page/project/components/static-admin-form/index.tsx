@@ -100,9 +100,7 @@ const StaticAdminDialog: FC<{
           <Button
             type="submit"
             color="primary"
-            disabled={
-              formik.isValid === false
-            }
+            disabled={formik.isValid === false}
           >
             {UI_TEXT_SAVE}
           </Button>

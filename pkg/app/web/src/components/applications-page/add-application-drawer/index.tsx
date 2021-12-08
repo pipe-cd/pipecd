@@ -8,7 +8,11 @@ import {
 } from "@material-ui/core";
 import { useFormik } from "formik";
 import { FC, memo, useCallback, useState } from "react";
-import { UI_TEXT_CANCEL, UI_TEXT_DISCARD, UI_TEXT_SAVE } from "~/constants/ui-text";
+import {
+  UI_TEXT_CANCEL,
+  UI_TEXT_DISCARD,
+  UI_TEXT_SAVE,
+} from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { addApplication } from "~/modules/applications";
 import { selectProjectName } from "~/modules/me";
@@ -64,7 +68,9 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
       }
     }, [onClose, formik]);
 
-    const [showConfirmToAddFromGit, setShowConfirmToAddFromGit] = useState(false);
+    const [showConfirmToAddFromGit, setShowConfirmToAddFromGit] = useState(
+      false
+    );
 
     return (
       <>
@@ -102,7 +108,9 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
         </Dialog>
         <Dialog open={showConfirmToAddFromGit}>
           <DialogTitle>{ADD_FROM_GIT_CONFIRM_DIALOG_TITLE}</DialogTitle>
-          <DialogContent>{ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION}</DialogContent>
+          <DialogContent>
+            {ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION}
+          </DialogContent>
           <DialogActions>
             <Button onClick={() => setShowConfirmToAddFromGit(false)}>
               {UI_TEXT_CANCEL}

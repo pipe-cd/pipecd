@@ -95,7 +95,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   );
 
   const [isUpgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
-  const handleUpgradeDialogClose = () => setUpgradeDialogOpen(false);
+  const handleUpgradeDialogClose = (): void => setUpgradeDialogOpen(false);
 
   const registeredPiped = useAppSelector<RegisteredPiped | null>(
     (state) => state.pipeds.registeredPiped
@@ -205,7 +205,11 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
 
       <AddPipedDrawer open={isOpenForm} onClose={handleClose} />
       <EditPipedDrawer pipedId={editPipedId} onClose={handleEditClose} />
-      <UpgradePipedDialog open={isUpgradeDialogOpen} pipeds={pipeds} onClose={handleUpgradeDialogClose} />
+      <UpgradePipedDialog
+        open={isUpgradeDialogOpen}
+        pipeds={pipeds}
+        onClose={handleUpgradeDialogClose}
+      />
 
       <Dialog fullWidth open={Boolean(registeredPiped)}>
         <DialogTitle>

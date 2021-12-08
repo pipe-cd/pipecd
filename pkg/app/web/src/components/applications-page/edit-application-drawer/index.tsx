@@ -70,7 +70,13 @@ export const EditApplicationDrawer: FC<EditApplicationDrawerProps> = memo(
           {...formik}
           title={`Edit "${app?.name}"`}
           onClose={handleClose}
-          onAddFromGit={() => void {/** NOTE: Give noop function for now as the edit form will be removed soon */}}
+          onAddFromGit={() =>
+            void (
+              {
+                /** NOTE: Give noop function for now as the edit form will be removed soon */
+              }
+            )
+          }
           disableGitPath
         />
       </Drawer>

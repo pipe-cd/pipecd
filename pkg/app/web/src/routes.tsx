@@ -1,7 +1,13 @@
 import loadable from "@loadable/component";
 import { EntityId } from "@reduxjs/toolkit";
 import { FC, useEffect } from "react";
-import { Redirect, Route, Switch, useLocation, RouteComponentProps } from "react-router-dom";
+import {
+  Redirect,
+  Route,
+  Switch,
+  useLocation,
+  RouteComponentProps,
+} from "react-router-dom";
 import { ApplicationIndexPage } from "~/components/applications-page";
 import { DeploymentIndexPage } from "~/components/deployments-page";
 import { Header } from "~/components/header";
@@ -79,7 +85,7 @@ const useCommandsStatusChecking = (): void => {
   );
 };
 
-const REDIRECT_PATH_KEY = 'redirect_path';
+const REDIRECT_PATH_KEY = "redirect_path";
 export const Routes: FC = () => {
   const dispatch = useAppDispatch();
   const me = useAppSelector((state) => state.me);
@@ -118,8 +124,13 @@ export const Routes: FC = () => {
           <Route
             path={PAGE_PATH_TOP}
             component={(props: RouteComponentProps) => {
-              localStorage.setItem(REDIRECT_PATH_KEY, `${props.location.pathname}${props.location.search}`);
-              return <Redirect to={`${PAGE_PATH_LOGIN}${props.location.search}`} />
+              localStorage.setItem(
+                REDIRECT_PATH_KEY,
+                `${props.location.pathname}${props.location.search}`
+              );
+              return (
+                <Redirect to={`${PAGE_PATH_LOGIN}${props.location.search}`} />
+              );
             }}
           />
         </Switch>
@@ -156,7 +167,8 @@ export const Routes: FC = () => {
         <Route
           path={PAGE_PATH_TOP}
           component={() => {
-            const path = localStorage.getItem(REDIRECT_PATH_KEY) || PAGE_PATH_APPLICATIONS;
+            const path =
+              localStorage.getItem(REDIRECT_PATH_KEY) || PAGE_PATH_APPLICATIONS;
             localStorage.removeItem(REDIRECT_PATH_KEY);
             return <Redirect to={path} />;
           }}
