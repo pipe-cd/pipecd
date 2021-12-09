@@ -77,7 +77,7 @@ export const EditApplicationDrawer: FC<EditApplicationDrawerProps> = memo(
               }
             )
           }
-          disableGitPath
+          disableApplicationInfo
         />
       </Drawer>
     );
