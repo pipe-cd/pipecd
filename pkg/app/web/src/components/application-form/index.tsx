@@ -705,6 +705,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                               pipedId: app.pipedId,
                               repo: {
                                 id: app.repoId,
+                                // TODO: Populate repo info from state
                                 remote: "",
                                 branch: "",
                               } as ApplicationGitRepository.AsObject,
