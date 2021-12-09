@@ -277,7 +277,7 @@ export interface ApplicationFormValue {
 export type ApplicationFormProps = FormikProps<ApplicationFormValue> & {
   title: string;
   onClose: () => void;
-  disableGitPath?: boolean;
+  disableApplicationInfo?: boolean;
 };
 
 export const emptyFormValues: ApplicationFormValue = {
@@ -307,7 +307,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
     setFieldValue,
     setValues,
     onClose,
-    disableGitPath = false,
+    disableApplicationInfo = false,
   }) {
     const classes = useStyles();
 
@@ -343,7 +343,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
             value={values.name}
             fullWidth
             required
-            disabled={isSubmitting}
+            disabled={isSubmitting || disableApplicationInfo}
             className={classes.textInput}
           />
 
@@ -356,7 +356,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
               value: key,
             }))}
             onChange={({ value }) => setFieldValue("kind", parseInt(value, 10))}
-            disabled={isSubmitting}
+            disabled={isSubmitting || disableApplicationInfo}
           />
 
           <div className={classes.inputGroup}>
@@ -373,7 +373,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
                   env: item.value,
                 });
               }}
-              disabled={isSubmitting}
+              disabled={isSubmitting || disableApplicationInfo}
             />
             <div className={classes.inputGroupSpace} />
             <FormSelectInput
@@ -414,7 +414,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
                 selectedPiped === undefined ||
                 repositories.length === 0 ||
                 isSubmitting ||
-                disableGitPath
+                disableApplicationInfo
               }
             />
 
@@ -427,7 +427,9 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
               variant="outlined"
               margin="dense"
               disabled={
-                selectedPiped === undefined || isSubmitting || disableGitPath
+                selectedPiped === undefined ||
+                isSubmitting ||
+                disableApplicationInfo
               }
               onChange={handleChange}
               value={values.repoPath}
@@ -443,7 +445,9 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
             variant="outlined"
             margin="dense"
             disabled={
-              selectedPiped === undefined || isSubmitting || disableGitPath
+              selectedPiped === undefined ||
+              isSubmitting ||
+              disableApplicationInfo
             }
             onChange={handleChange}
             value={values.configFilename}

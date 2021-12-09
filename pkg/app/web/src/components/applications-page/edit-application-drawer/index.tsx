@@ -70,7 +70,7 @@ export const EditApplicationDrawer: FC<EditApplicationDrawerProps> = memo(
           {...formik}
           title={`Edit "${app?.name}"`}
           onClose={handleClose}
-          disableGitPath
+          disableApplicationInfo
         />
       </Drawer>
     );
