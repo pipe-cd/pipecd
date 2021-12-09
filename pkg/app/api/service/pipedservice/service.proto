@@ -26,7 +26,6 @@ import "pkg/model/environment.proto";
 import "pkg/model/deployment.proto";
 import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
-import "pkg/model/piped_stats.proto";
 import "pkg/model/event.proto";
 import "pkg/model/analysis_result.proto";
 

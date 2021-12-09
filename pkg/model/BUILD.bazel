@@ -19,7 +19,6 @@ proto_library(
         "notificationevent.proto",
         "piped.proto",
         "piped_stat.proto",
-        "piped_stats.proto",
         "planpreview.proto",
         "project.proto",
         "role.proto",
