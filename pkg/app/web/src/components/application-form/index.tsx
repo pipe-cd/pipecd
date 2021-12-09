@@ -15,6 +15,10 @@ import {
   FormControl,
   InputLabel,
   Select,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@material-ui/core";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import { FormikProps } from "formik";
@@ -46,6 +50,14 @@ import {
   selectAllUnregisteredApplications,
   fetchUnregisteredApplications,
 } from "~/modules/unregistered-applications";
+import {
+  addApplication,
+  ApplicationGitRepository,
+} from "~/modules/applications";
+
+const ADD_FROM_GIT_CONFIRM_DIALOG_TITLE = "Add Application";
+const ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION =
+  "Are you sure you want to add the application?";
 
 const createCloudProviderListFromPiped = ({
   kind,
@@ -265,7 +277,6 @@ export interface ApplicationFormValue {
 export type ApplicationFormProps = FormikProps<ApplicationFormValue> & {
   title: string;
   onClose: () => void;
-  onAddFromGit: () => void;
   disableGitPath?: boolean;
 };
 
@@ -558,7 +569,7 @@ const UnregisteredApplicationFilter: FC<UnregisteredApplicationFilterProps> = me
 );
 
 const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
-  function ApplicationForm({ onClose, onAddFromGit }) {
+  function ApplicationForm({ onClose }) {
     const dispatch = useAppDispatch();
     useEffect(() => {
       dispatch(fetchUnregisteredApplications());
@@ -571,112 +582,169 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
 
     const [selectedPipedId, setSelectedPipedId] = useState("");
     const [selectedKind, setSelectedKind] = useState("");
+    const [selectedCloudProvider, setSelectedCloudProvider] = useState("");
+
+    const [showConfirm, setShowConfirm] = useState(false);
+
+    const [appToAdd, setAppToAdd] = useState({
+      name: "",
+      env: "",
+      pipedId: "",
+      repo: {} as ApplicationGitRepository.AsObject,
+      repoPath: "",
+      configPath: "",
+      configFilename: "",
+      kind: ApplicationKind.KUBERNETES,
+      cloudProvider: "",
+    });
 
     const handleFilterChange = useCallback(
       (options: UnregisteredApplicationsFilterOptions) => {
         setSelectedPipedId(options.pipedId);
         setSelectedKind(options.kind);
-        // TODO: Set cloud provider as well
+        setSelectedCloudProvider(options.cloudProvider);
       },
       []
     );
     return (
-      <Box width="100%">
-        <Typography className={classes.title} variant="h6">
-          Select the application to register
-        </Typography>
-        <Divider />
-        <Box width="100%" m={0} px={2}>
-          <UnregisteredApplicationFilter onChange={handleFilterChange} />
-          <Accordion className={classes.accordionHeader} disabled>
-            <AccordionSummary
-              aria-controls="table-header-content"
-              id="table-header"
-            >
-              <Typography>Name (Repository)</Typography>
-            </AccordionSummary>
-          </Accordion>
-          <div>
-            {apps
-              .filter(
-                (app) =>
-                  app.pipedId === selectedPipedId &&
-                  app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
-              )
-              .map((app, i) => (
-                <Accordion key={app.repoId + app.path + app.configFilename}>
-                  <AccordionSummary
-                    expandIcon={<ExpandMore />}
-                    aria-controls={"panel-" + i + "-content"}
-                    id={"panel-" + i + "-header"}
-                  >
-                    <Typography>
-                      {app.name} ({app.repoId})
-                    </Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <Typography>
-                      <div className={classes.inputGroup}>
-                        <TextField
-                          id={"kind-" + i}
-                          label="Kind"
-                          margin="dense"
-                          fullWidth
-                          variant="outlined"
-                          disabled
-                          value={APPLICATION_KIND_TEXT[app.kind]}
-                          className={classes.textInput}
-                        />
-                      </div>
-                      <div className={classes.inputGroup}>
-                        <TextField
-                          id={"path-" + i}
-                          label="Path"
-                          margin="dense"
-                          variant="outlined"
-                          disabled
-                          value={app.path}
-                          className={classes.textInput}
-                        />
-                        <div className={classes.inputGroupSpace} />
-                        <TextField
-                          id={"configFilename-" + i}
-                          label="Config Filename"
-                          margin="dense"
-                          variant="outlined"
-                          disabled
-                          value={app.configFilename}
-                          className={classes.textInput}
-                        />
-                      </div>
-                      {app.labelsMap.map((label, j) => (
-                        <div className={classes.inputGroup} key={label[0]}>
+      <>
+        <Box width="100%">
+          <Typography className={classes.title} variant="h6">
+            Select the application to register
+          </Typography>
+          <Divider />
+          <Box width="100%" m={0} px={2}>
+            <UnregisteredApplicationFilter onChange={handleFilterChange} />
+            <Accordion className={classes.accordionHeader} disabled>
+              <AccordionSummary
+                aria-controls="table-header-content"
+                id="table-header"
+              >
+                <Typography>Name (Repository)</Typography>
+              </AccordionSummary>
+            </Accordion>
+            <div>
+              {/** TODO: Do not show apps registered right before */}
+              {apps
+                .filter(
+                  (app) =>
+                    app.pipedId === selectedPipedId &&
+                    app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
+                )
+                .map((app, i) => (
+                  <Accordion key={app.repoId + app.path + app.configFilename}>
+                    <AccordionSummary
+                      expandIcon={<ExpandMore />}
+                      aria-controls={"panel-" + i + "-content"}
+                      id={"panel-" + i + "-header"}
+                    >
+                      <Typography>
+                        {app.name} ({app.repoId})
+                      </Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Typography>
+                        <div className={classes.inputGroup}>
                           <TextField
-                            id={"label-" + i + "-" + j}
-                            label={"Label " + j}
+                            id={"kind-" + i}
+                            label="Kind"
                             margin="dense"
+                            fullWidth
                             variant="outlined"
                             disabled
-                            value={label[0] + ": " + label[1]}
+                            value={APPLICATION_KIND_TEXT[app.kind]}
                             className={classes.textInput}
                           />
                         </div>
-                      ))}
-                      <Button
-                        color="primary"
-                        type="submit"
-                        onClick={onAddFromGit}
-                      >
-                        {UI_TEXT_ADD}
-                      </Button>
-                    </Typography>
-                  </AccordionDetails>
-                </Accordion>
-              ))}
-          </div>
-          <Button onClick={onClose}>{UI_TEXT_CANCEL}</Button>
+                        <div className={classes.inputGroup}>
+                          <TextField
+                            id={"path-" + i}
+                            label="Path"
+                            margin="dense"
+                            variant="outlined"
+                            disabled
+                            value={app.path}
+                            className={classes.textInput}
+                          />
+                          <div className={classes.inputGroupSpace} />
+                          <TextField
+                            id={"configFilename-" + i}
+                            label="Config Filename"
+                            margin="dense"
+                            variant="outlined"
+                            disabled
+                            value={app.configFilename}
+                            className={classes.textInput}
+                          />
+                        </div>
+                        {app.labelsMap.map((label, j) => (
+                          <div className={classes.inputGroup} key={label[0]}>
+                            <TextField
+                              id={"label-" + i + "-" + j}
+                              label={"Label " + j}
+                              margin="dense"
+                              variant="outlined"
+                              disabled
+                              value={label[0] + ": " + label[1]}
+                              className={classes.textInput}
+                            />
+                          </div>
+                        ))}
+                        <Button
+                          color="primary"
+                          type="submit"
+                          onClick={() => {
+                            // TODO: Enable to register labels via dispatch
+                            setAppToAdd({
+                              name: app.name,
+                              env: "",
+                              pipedId: app.pipedId,
+                              repo: {
+                                id: app.repoId,
+                                remote: "",
+                                branch: "",
+                              } as ApplicationGitRepository.AsObject,
+                              repoPath: app.path,
+                              configPath: "",
+                              configFilename: app.configFilename,
+                              kind: app.kind,
+                              cloudProvider: selectedCloudProvider,
+                            });
+                            setShowConfirm(true);
+                          }}
+                        >
+                          {UI_TEXT_ADD}
+                        </Button>
+                      </Typography>
+                    </AccordionDetails>
+                  </Accordion>
+                ))}
+            </div>
+            <Button onClick={onClose}>{UI_TEXT_CANCEL}</Button>
+          </Box>
         </Box>
-      </Box>
+        <Dialog open={showConfirm}>
+          <DialogTitle>{ADD_FROM_GIT_CONFIRM_DIALOG_TITLE}</DialogTitle>
+          <DialogContent>
+            {ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowConfirm(false)}>
+              {UI_TEXT_CANCEL}
+            </Button>
+            <Button
+              color="primary"
+              onClick={() => {
+                dispatch(addApplication(appToAdd));
+                setShowConfirm(false);
+                onClose();
+              }}
+            >
+              {UI_TEXT_SAVE}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </>
     );
   }
 );

@@ -268,4 +268,5 @@ export {
 export {
   ApplicationKind,
   ApplicationActiveStatus,
+  ApplicationGitRepository,
 } from "pipe/pkg/app/web/model/common_pb";
