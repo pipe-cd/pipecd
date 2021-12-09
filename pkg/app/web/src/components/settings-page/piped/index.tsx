@@ -33,6 +33,7 @@ import {
   UI_TEXT_UPGRADE,
 } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+import { useInterval } from "~/hooks/use-interval";
 import {
   clearRegisteredPipedInfo,
   disablePiped,
@@ -79,6 +80,8 @@ const selectFilteredPipeds = createSelector<
 
 const OLD_KEY_ALERT_MESSAGE =
   "The old key is still there.\nDo not forget to delete it once you update your Piped to use this new key.";
+
+const FETCH_INTERVAL = 30000;
 
 export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const classes = useStyles();
@@ -134,6 +137,10 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const handleEditClose = useCallback(() => {
     setEditPipedId(null);
   }, []);
+
+  useInterval(() => {
+    dispatch(fetchPipeds(true));
+  }, FETCH_INTERVAL);
 
   return (
     <>
