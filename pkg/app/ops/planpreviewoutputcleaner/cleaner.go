@@ -50,7 +50,7 @@ func NewCleaner(s store, logger *zap.Logger) *Cleaner {
 }
 
 func (c *Cleaner) Run(ctx context.Context) error {
-	c.logger.Info("start running planpreview ouput cleaner")
+	c.logger.Info("start running planpreview output cleaner")
 
 	cr := cron.New()
 	if _, err := cr.AddFunc(cronSchedule, func() { c.clean(ctx) }); err != nil {

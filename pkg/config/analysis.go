@@ -63,13 +63,13 @@ type AnalysisMetrics struct {
 	// This can be used only for PREVIOUS, CANARY_BASELINE or CANARY_PRIMARY. Defaults to EITHER.
 	Deviation string `json:"deviation" default:"EITHER"`
 	// The custom arguments to be populated for the Canary query.
-	// They can be reffered as {{ .VariantArgs.xxx }}.
+	// They can be referred as {{ .VariantArgs.xxx }}.
 	CanaryArgs map[string]string `json:"canaryArgs"`
 	// The custom arguments to be populated for the Baseline query.
-	// They can be reffered as {{ .VariantArgs.xxx }}.
+	// They can be referred as {{ .VariantArgs.xxx }}.
 	BaselineArgs map[string]string `json:"baselineArgs"`
 	// The custom arguments to be populated for the Primary query.
-	// They can be reffered as {{ .VariantArgs.xxx }}.
+	// They can be referred as {{ .VariantArgs.xxx }}.
 	PrimaryArgs map[string]string `json:"primaryArgs"`
 }
 

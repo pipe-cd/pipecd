@@ -160,7 +160,7 @@ func (t Input) CustomMetricsHandlerFor(reg prometheus.Gatherer, mb MetricsBuilde
 		}
 
 		// Currently, use the encoder with default format expfmt.FmtText as of
-		// the prometheous exporter handler will returns that format in case
+		// the prometheus exporter handler will returns that format in case
 		// no specific format type is set.
 		enc := expfmt.NewEncoder(w, expfmt.FmtText)
 		for _, mf := range mfs {

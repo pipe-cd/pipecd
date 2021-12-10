@@ -552,7 +552,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 		handledCommands = append(handledCommands, commandID)
 	}
 
-	// Fetch ouput data to build results.
+	// Fetch output data to build results.
 	for _, commandID := range handledCommands {
 		data, err := a.commandOutputGetter.Get(ctx, commandID)
 		if err != nil {

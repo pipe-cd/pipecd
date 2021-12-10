@@ -187,7 +187,7 @@ type K8sResourcePatch struct {
 type K8sResourcePatchTarget struct {
 	K8sResourceReference
 	// In case you want to manipulate the YAML or JSON data specified in a field
-	// of the manfiest, specify that field's path. The string value of that field
+	// of the manifest, specify that field's path. The string value of that field
 	// will be used as input for the patch operations.
 	// Otherwise, the whole manifest will be the target of patch operations.
 	DocumentRoot string `json:"documentRoot"`

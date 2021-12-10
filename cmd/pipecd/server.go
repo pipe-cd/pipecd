@@ -160,7 +160,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 
 		}
 	}()
-	input.Logger.Info("succesfully connected to data store")
+	input.Logger.Info("successfully connected to data store")
 
 	fs, err := createFilestore(ctx, cfg, input.Logger)
 	if err != nil {
