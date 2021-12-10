@@ -13,11 +13,11 @@ export const unregisteredApplicationsAdapter = createEntityAdapter<
   ApplicationInfo.AsObject
 >({});
 
-const { selectAll } = unregisteredApplicationsAdapter.getSelectors();
-
 export const selectAllUnregisteredApplications = (
   state: AppState
-): ApplicationInfo.AsObject[] => selectAll(state.unregisteredApplications);
+): ApplicationInfo.AsObject[] => {
+  return state.unregisteredApplications.apps;
+};
 
 export const fetchUnregisteredApplications = createAsyncThunk<
   ApplicationInfo.AsObject[]
@@ -32,10 +32,8 @@ export { ApplicationInfo } from "pipe/pkg/app/web/model/common_pb";
 
 export const unregisteredApplicationsSlice = createSlice({
   name: MODULE_NAME,
-  initialState: unregisteredApplicationsAdapter.getInitialState<{
-    apps: ApplicationInfo | null;
-  }>({
-    apps: null,
+  initialState: unregisteredApplicationsAdapter.getInitialState({
+    apps: [] as ApplicationInfo.AsObject[],
   }),
   reducers: {},
   extraReducers: (builder) => {
@@ -43,7 +41,7 @@ export const unregisteredApplicationsSlice = createSlice({
       fetchUnregisteredApplications.fulfilled,
       (state, action) => {
         unregisteredApplicationsAdapter.removeAll(state);
-        unregisteredApplicationsAdapter.addMany(state, action.payload);
+        state.apps = action.payload;
       }
     );
   },
