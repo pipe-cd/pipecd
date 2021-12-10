@@ -384,12 +384,15 @@ func (r *Reporter) readApplicationInfo(repoDir, repoID, cfgRelPath string) (*mod
 		return nil, fmt.Errorf("unsupported application kind %q", cfg.Kind)
 	}
 
-	if spec.Name == "" {
-		return nil, fmt.Errorf("missing application name: %w", errMissingRequiredField)
-	}
 	kind, ok := cfg.Kind.ToApplicationKind()
 	if !ok {
 		return nil, fmt.Errorf("%q is not application config kind", cfg.Kind)
+	}
+	if spec.Name == "" {
+		return nil, fmt.Errorf("missing application name: %w", errMissingRequiredField)
+	}
+	if spec.EnvName == "" {
+		return nil, fmt.Errorf("missing environment name: %w", errMissingRequiredField)
 	}
 	return &model.ApplicationInfo{
 		Name:           spec.Name,
@@ -399,5 +402,6 @@ func (r *Reporter) readApplicationInfo(repoDir, repoID, cfgRelPath string) (*mod
 		Path:           filepath.Dir(cfgRelPath),
 		ConfigFilename: filepath.Base(cfgRelPath),
 		PipedId:        r.config.PipedID,
+		EnvName:        spec.EnvName,
 	}, nil
 }
