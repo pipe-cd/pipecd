@@ -248,7 +248,7 @@ func makePaginationCursorValues(opts datastore.ListOptions) ([]interface{}, erro
 	if err != nil {
 		return nil, err
 	}
-	// Encode cursor data string to map[string]interface{} format for futher process.
+	// Encode cursor data string to map[string]interface{} format for further process.
 	obj := make(map[string]interface{})
 	if err := json.Unmarshal(data, &obj); err != nil {
 		return nil, err

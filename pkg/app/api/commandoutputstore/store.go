@@ -52,7 +52,7 @@ func (s *store) Get(ctx context.Context, commandID string) ([]byte, error) {
 		if err == filestore.ErrNotFound {
 			return nil, ErrNotFound
 		}
-		s.logger.Error("failed to get command ouput from filestore",
+		s.logger.Error("failed to get command output from filestore",
 			zap.String("command", commandID),
 			zap.Error(err),
 		)

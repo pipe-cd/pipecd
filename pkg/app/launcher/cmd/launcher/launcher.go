@@ -337,7 +337,7 @@ func (l *launcher) cleanOldPiped(cmd *command, workingDir string, logger *zap.Lo
 	if cmd != nil {
 		if err := cmd.GracefulStop(l.gracePeriod); err != nil {
 			// We just log the error and continue to the next part
-			// because the process was killed after all even if an error occured.
+			// because the process was killed after all even if an error occurred.
 			logger.Warn("LAUNCHER: received an error while shutting down old Piped", zap.Error(err))
 		}
 		logger.Info("LAUNCHER: piped has been stopped")
