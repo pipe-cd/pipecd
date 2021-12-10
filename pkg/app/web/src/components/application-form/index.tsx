@@ -523,7 +523,7 @@ const UnregisteredApplicationFilter: FC<UnregisteredApplicationFilterProps> = me
           <Select
             labelId="filter-piped"
             id="filter-piped"
-            label="PipedId"
+            label="Piped"
             className={classes.select}
             onChange={(e) => {
               setSelectedPipedId(e.target.value as string);
@@ -534,7 +534,7 @@ const UnregisteredApplicationFilter: FC<UnregisteredApplicationFilterProps> = me
           >
             {pipeds.map((e) => (
               <MenuItem value={e.id} key={`piped-${e.id}`}>
-                {e.name}
+                {e.name} ({e.id})
               </MenuItem>
             ))}
           </Select>
@@ -718,16 +718,13 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                           color="primary"
                           type="submit"
                           onClick={() => {
-                            // TODO: Enable to register labels via dispatch
+                            // NOTE: Repo remote and branch aren't needed because they are populated by API.
                             setAppToAdd({
                               name: app.name,
                               env: envsMap.get(app.envName) as string,
                               pipedId: app.pipedId,
                               repo: {
                                 id: app.repoId,
-                                // TODO: Populate repo info from state
-                                remote: "",
-                                branch: "",
                               } as ApplicationGitRepository.AsObject,
                               repoPath: app.path,
                               configPath: "",
