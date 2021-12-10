@@ -104,6 +104,7 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: app-1
+  envName: dev
   labels:
     key-1: value-1`)},
 				},
@@ -129,6 +130,7 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: new-app-1
+  envName: dev
   labels:
     key-1: value-1`)},
 				},
@@ -147,6 +149,7 @@ spec:
 					Path:           "app-1",
 					ConfigFilename: ".pipe.yaml",
 					PipedId:        "piped-1",
+					EnvName:        "dev",
 				},
 			},
 			wantErr: false,
@@ -237,6 +240,7 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: app-1
+  envName: dev
   labels:
     key-1: value-1`)},
 				},
@@ -255,6 +259,7 @@ spec:
 					Path:           "app-1",
 					ConfigFilename: ".pipe.yaml",
 					PipedId:        "piped-1",
+					EnvName:        "dev",
 				},
 			},
 			wantErr: false,
@@ -270,6 +275,7 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: app-1
+  envName: dev
   labels:
     key-1: value-1`)},
 				},
@@ -288,6 +294,7 @@ spec:
 					Path:           "app-1",
 					ConfigFilename: "dev.pipecd.yaml",
 					PipedId:        "piped-1",
+					EnvName:        "dev",
 				},
 			},
 			wantErr: false,

@@ -610,6 +610,13 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
       },
       []
     );
+
+    const environments = useAppSelector(selectAllEnvs);
+    const envsMap = new Map<string, string>();
+    environments.forEach((env) => {
+      envsMap.set(env.name, env.id);
+    });
+
     return (
       <>
         <Box width="100%">
@@ -633,7 +640,8 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                 .filter(
                   (app) =>
                     app.pipedId === selectedPipedId &&
-                    app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
+                    app.kind === APPLICATION_KIND_BY_NAME[selectedKind] &&
+                    envsMap.has(app.envName)
                 )
                 .map((app, i) => (
                   <Accordion key={app.repoId + app.path + app.configFilename}>
@@ -657,6 +665,18 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                             variant="outlined"
                             disabled
                             value={APPLICATION_KIND_TEXT[app.kind]}
+                            className={classes.textInput}
+                          />
+                        </div>
+                        <div className={classes.inputGroup}>
+                          <TextField
+                            id={"env-" + i}
+                            label="Environment"
+                            margin="dense"
+                            fullWidth
+                            variant="outlined"
+                            disabled
+                            value={app.envName}
                             className={classes.textInput}
                           />
                         </div>
@@ -701,7 +721,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                             // TODO: Enable to register labels via dispatch
                             setAppToAdd({
                               name: app.name,
-                              env: "",
+                              env: envsMap.get(app.envName) as string,
                               pipedId: app.pipedId,
                               repo: {
                                 id: app.repoId,
