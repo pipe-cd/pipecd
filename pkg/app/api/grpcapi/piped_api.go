@@ -848,7 +848,7 @@ func (a *PipedAPI) ReportApplicationLiveState(ctx context.Context, req *pipedser
 // Control plane uses the received events to update the state of application-resource-tree.
 // We want to start by a simple solution at this initial stage of development,
 // so the API server just handles as below:
-// - loads the releated application-resource-tree from filestore
+// - loads the related application-resource-tree from filestore
 // - checks and builds new state for the application-resource-tree
 // - updates new state into fielstore and cache (cache data is for reading while handling web requests)
 // In the future, we may want to redesign the behavior of this RPC by using pubsub/queue pattern.
