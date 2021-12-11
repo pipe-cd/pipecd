@@ -10,7 +10,16 @@ PipeCD uses Git as a single source of truth; all application resources are defin
 
 PipeCD applies the proposed changes to running resources in the cluster by triggering needed deployments for applications. The deployment mission is syncing all running resources of the application in the cluster to the state specified in the newest commit in Git.
 
-By default, when a new merged pull request touches an application, a new deployment for that application will be triggered to execute the sync process. But users can configure the application to control when a new deployment should be triggered or not. For example, using [`onOutOfSync`](/docs/user-guide/configuration-reference/#deploymenttrigger) to enable the ability to attempt to resolve `OUT_OF_SYNC` state whenever a configuration drift has been detected. 
+By default, when a new merged pull request touches an application, a new deployment for that application will be triggered to execute the sync process. But users can configure the application to control when a new deployment should be triggered or not. For example, using [`onOutOfSync`](#trigger-configuration) to enable the ability to attempt to resolve `OUT_OF_SYNC` state whenever a configuration drift has been detected. 
+
+### Trigger configuration
+
+Configuration for the trigger used to determine whether we trigger a new deployment. There are several configurable types:
+- `onCommit`: Controls triggering new deployment when new Git commits touched the application.
+- `onCommand`: Controls triggering new deployment when received a new `SYNC` command.
+- `onOutOfSync`: Controls triggering new deployment when application is at `OUT_OF_SYNC` state.
+
+See [Configuration Reference](/docs/user-guide/configuration-reference/#deploymenttrigger) for the full configuration.
 
 After a new deployment was triggered, it will be queued to handle by the appropriate `piped`. And at this time the deployment pipeline was not decided yet.
 `piped` schedules all deployments of applications to ensure that for each application only one deployment will be executed at the same time.
