@@ -1781,3 +1781,11 @@ func (a *WebAPI) GetInsightApplicationCount(ctx context.Context, req *webservice
 		UpdatedAt: c.UpdatedAt,
 	}, nil
 }
+
+func (a *WebAPI) ListDeploymentChains(ctx context.Context, req *webservice.ListDeploymentChainsRequest) (*webservice.ListDeploymentChainsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "not yet implemented")
+}
+
+func (a *WebAPI) GetDeploymentChain(ctx context.Context, req *webservice.GetDeploymentChainRequest) (*webservice.GetDeploymentChainResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "not yet implemented")
+}

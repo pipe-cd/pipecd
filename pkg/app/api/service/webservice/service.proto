@@ -25,6 +25,7 @@ import "pkg/model/application_live_state.proto";
 import "pkg/model/command.proto";
 import "pkg/model/environment.proto";
 import "pkg/model/deployment.proto";
+import "pkg/model/deployment_chain.proto";
 import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
 import "pkg/model/role.proto";
@@ -97,6 +98,10 @@ service WebService {
     // Insights
     rpc GetInsightData(GetInsightDataRequest) returns (GetInsightDataResponse) {}
     rpc GetInsightApplicationCount(GetInsightApplicationCountRequest) returns (GetInsightApplicationCountResponse) {}
+
+    // DeploymentChain
+    rpc ListDeploymentChains(ListDeploymentChainsRequest) returns (ListDeploymentChainsResponse) {}
+    rpc GetDeploymentChain(GetDeploymentChainRequest) returns (GetDeploymentChainResponse) {}
 }
 
 message AddEnvironmentResponse {
@@ -505,4 +510,20 @@ message GetInsightApplicationCountRequest {
 message GetInsightApplicationCountResponse {
     int64 updated_at = 1;
     repeated pipe.model.InsightApplicationCount counts = 2;
+}
+
+message ListDeploymentChainsRequest {
+}
+
+message ListDeploymentChainsResponse {
+    repeated pipe.model.DeploymentChain deployment_chains = 1;
+    string cursor = 2;
+}
+
+message GetDeploymentChainRequest {
+    string deployment_chain_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetDeploymentChainResponse {
+    pipe.model.DeploymentChain deployment_chain = 1;
 }
