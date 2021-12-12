@@ -1,0 +1,14 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  input:
+    manifests:
+      - deployment.yaml
+      - service.yaml
+    kubectlVersion: 1.18.0
+    namespace: khanhtc-dev
+  postSync:
+    chain:
+      applications:
+        - name: simple-b
+        - name: simple-c
