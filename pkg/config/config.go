@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/creasty/defaults"
 	"sigs.k8s.io/yaml"
@@ -70,7 +71,13 @@ const (
 // ToApplicationKind converts itself into model.ApplicationKind if it's for an application config.
 // Return false as a second returned value if it's not an application config.
 func (k Kind) ToApplicationKind() (model.ApplicationKind, bool) {
-	return model.ToApplicationKind(string(k))
+	upper := strings.ToUpper(string(k))
+	kind := strings.TrimSuffix(upper, "APP")
+	appKind, ok := model.ApplicationKind_value[kind]
+	if !ok {
+		return -1, false
+	}
+	return model.ApplicationKind(appKind), true
 }
 
 var (
