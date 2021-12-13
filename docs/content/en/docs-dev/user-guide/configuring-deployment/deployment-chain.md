@@ -37,6 +37,10 @@ In the context of the deployment chain in PipeCD, a chain is made up of many `bl
 
 See [Examples](/docs/examples/#deployment-chain) for more specific.
 
+__Tip__:
+
+If you followed all the configuration references and built your deployment chain configuration, but some deployments in your defined chain are not triggered as you want, please re-check those deployments [`trigger configuration`](/docs/user-guide/triggering-a-deployment/#trigger-configuration). The `onChain` trigger is __disabled by default__; you need to enable that configuration to enable your deployment to be triggered as a node in the deployment chain.
+
 ## Deployment chain characteristic
 
 Something you need to care about while creating your deployment chain with PipeCD
@@ -51,4 +55,4 @@ TBD
 
 ## Reference
 
-See [Configuration Reference](/docs/user-guide/configuration-reference/) for the full configuration.
+See [Configuration Reference](/docs/user-guide/configuration-reference/#postsync) for the full configuration.
