@@ -50,6 +50,9 @@ func TestTerraformApplicationtConfig(t *testing.T) {
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
 						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
+						},
 					},
 				},
 				Input: TerraformDeploymentInput{},
@@ -73,6 +76,9 @@ func TestTerraformApplicationtConfig(t *testing.T) {
 						OnOutOfSync: OnOutOfSync{
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
 						},
 					},
 				},
@@ -100,6 +106,9 @@ func TestTerraformApplicationtConfig(t *testing.T) {
 						OnOutOfSync: OnOutOfSync{
 							Disabled:  newBoolPointer(false),
 							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
 						},
 					},
 					Encryption: &SecretEncryption{
@@ -156,6 +165,9 @@ func TestTerraformApplicationtConfig(t *testing.T) {
 						OnOutOfSync: OnOutOfSync{
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
 						},
 					},
 				},

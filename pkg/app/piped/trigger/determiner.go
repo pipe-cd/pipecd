@@ -77,7 +77,7 @@ func NewOnChainDeterminer() *OnChainDeterminer {
 }
 
 func (d *OnChainDeterminer) ShouldTrigger(_ context.Context, _ *model.Application, appCfg *config.GenericApplicationSpec) (bool, error) {
-	if appCfg.Trigger.OnChain.Disabled {
+	if *appCfg.Trigger.OnChain.Disabled {
 		return false, nil
 	}
 	return true, nil
