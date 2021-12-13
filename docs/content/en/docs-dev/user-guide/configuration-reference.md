@@ -202,6 +202,7 @@ One of `yamlField` or `regex` is required.
 | onCommit | [OnCommit](#oncommit) | Controls triggering new deployment when new Git commits touched the application. | No |
 | onCommand | [OnCommand](#oncommand) | Controls triggering new deployment when received a new `SYNC` command. | No |
 | onOutOfSync | [OnOutOfSync](#onoutofsync) | Controls triggering new deployment when application is at `OUT_OF_SYNC` state. | No |
+| onChain | [onChain](#onchain) | Controls triggering new deployment when the application is counted as a node of some chains. | No |
 
 ## OnCommit
 
@@ -222,6 +223,12 @@ One of `yamlField` or `regex` is required.
 |-|-|-|-|
 | disabled | bool | Whether to exclude application from triggering target when application is at `OUT_OF_SYNC` state. Default is `true`. | No |
 | minWindow | duration | Minimum amount of time must be elapsed since the last deployment. This can be used to avoid triggering unnecessary continuous deployments based on `OUT_OF_SYNC` status. Default is `5m`. | No |
+
+## OnChain
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| disabled | bool | Whether to exclude application from triggering target when application is counted as a node of some chains. Default is `false`. | No |
 
 ## Pipeline
 
