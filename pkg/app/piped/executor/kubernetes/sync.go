@@ -45,8 +45,8 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
-	if e.deployCfg.QuickSync.AddVariantLabelToSelector {
-		workloads := findWorkloadManifests(manifests, e.deployCfg.Workloads)
+	if e.appCfg.QuickSync.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(manifests, e.appCfg.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
 				e.LogPersister.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableLogString(), err)
@@ -71,11 +71,11 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 
 	// Start applying all manifests to add or update running resources.
-	if err := applyManifests(ctx, e.provider, manifests, e.deployCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, e.provider, manifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !e.deployCfg.QuickSync.Prune {
+	if !e.appCfg.QuickSync.Prune {
 		e.LogPersister.Info("Resource GC was skipped because sync.prune was not configured")
 		return model.StageStatus_STAGE_SUCCESS
 	}

@@ -40,9 +40,9 @@ const (
 type deployExecutor struct {
 	executor.Input
 
-	commit    string
-	deployCfg *config.KubernetesDeploymentSpec
-	provider  provider.Provider
+	commit   string
+	appCfg   *config.KubernetesApplicationSpec
+	provider provider.Provider
 }
 
 type registerer interface {
@@ -83,20 +83,20 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	e.deployCfg = ds.DeploymentConfig.KubernetesDeploymentSpec
-	if e.deployCfg == nil {
-		e.LogPersister.Error("Malformed deployment configuration: missing KubernetesDeploymentSpec")
+	e.appCfg = ds.ApplicationConfig.KubernetesApplicationSpec
+	if e.appCfg == nil {
+		e.LogPersister.Error("Malformed application configuration: missing KubernetesApplicationSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if e.deployCfg.Input.HelmChart != nil {
-		chartRepoName := e.deployCfg.Input.HelmChart.Repository
+	if e.appCfg.Input.HelmChart != nil {
+		chartRepoName := e.appCfg.Input.HelmChart.Repository
 		if chartRepoName != "" {
-			e.deployCfg.Input.HelmChart.Insecure = e.PipedConfig.IsInsecureChartRepository(chartRepoName)
+			e.appCfg.Input.HelmChart.Insecure = e.PipedConfig.IsInsecureChartRepository(chartRepoName)
 		}
 	}
 
-	e.provider = provider.NewProvider(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, e.deployCfg.Input, e.GitClient, e.Logger)
+	e.provider = provider.NewProvider(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, e.appCfg.Input, e.GitClient, e.Logger)
 	e.Logger.Info("start executing kubernetes stage",
 		zap.String("stage-name", e.Stage.Name),
 		zap.String("app-dir", ds.AppDir),
@@ -156,7 +156,7 @@ func (e *deployExecutor) loadRunningManifests(ctx context.Context) (manifests []
 				ds.AppDir,
 				ds.RepoDir,
 				e.Deployment.GitPath.ConfigFilename,
-				e.deployCfg.Input,
+				e.appCfg.Input,
 				e.GitClient,
 				e.Logger,
 			)

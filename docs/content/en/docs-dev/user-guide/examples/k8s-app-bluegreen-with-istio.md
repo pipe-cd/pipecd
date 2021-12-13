@@ -11,7 +11,7 @@ Similar to [canary deployment](/docs/user-guide/examples/k8s-app-canary-with-ist
 In both canary and blue-green strategies, the old version and the new version of the application get deployed at the same time.
 But while the canary strategy slowly routes the traffic to the new version, the blue-green strategy quickly routes all traffic to one of the versions.
 
-In this guide, we will show you how to configure the deployment configuration file to apply the blue-green strategy.
+In this guide, we will show you how to configure the application configuration file to apply the blue-green strategy.
 
 Complete source code for this example is hosted in [pipe-cd/examples](https://github.com/pipe-cd/examples/tree/master/kubernetes/mesh-istio-bluegreen) repository.
 
@@ -99,7 +99,7 @@ Deployment Details Page
 
 ## Understanding what happened
 
-In this example, you configured the deployment configuration file (`.pipe.yaml`) to switch all traffic from an old to a new version of the application using Istio's weighted routing feature.
+In this example, you configured the application configuration file (`.pipe.yaml`) to switch all traffic from an old to a new version of the application using Istio's weighted routing feature.
 
 - Stage 1: `K8S_CANARY_ROLLOUT` ensures that the workloads of canary variant (new version) should be deployed. But at this time, they still handle nothing, all traffic is handled by workloads of primary variant.
 The number of workloads (e.g. pod) for canary variant is configured to be 100% of the replicas number of primary varant.

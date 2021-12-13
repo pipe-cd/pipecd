@@ -226,7 +226,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			continue
 		}
 
-		appCfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), app)
+		appCfg, err := loadApplicationConfiguration(gitRepo.GetPath(), app)
 		if err != nil {
 			t.logger.Error("failed to load application config file",
 				zap.String("app", app.Name),
@@ -468,7 +468,7 @@ func (t *Trigger) GetLastTriggeredCommitGetter() LastTriggeredCommitGetter {
 	return t.commitStore
 }
 
-func (t *Trigger) notifyDeploymentTriggered(ctx context.Context, appCfg *config.GenericDeploymentSpec, d *model.Deployment) {
+func (t *Trigger) notifyDeploymentTriggered(ctx context.Context, appCfg *config.GenericApplicationSpec, d *model.Deployment) {
 	var mentions []string
 	if n := appCfg.DeploymentNotification; n != nil {
 		mentions = n.FindSlackAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED)
@@ -486,7 +486,7 @@ func (t *Trigger) notifyDeploymentTriggered(ctx context.Context, appCfg *config.
 	}
 }
 
-func (t *Trigger) notifyDeploymentTriggerFailed(app *model.Application, appCfg *config.GenericDeploymentSpec, reason string, commit git.Commit) {
+func (t *Trigger) notifyDeploymentTriggerFailed(app *model.Application, appCfg *config.GenericApplicationSpec, reason string, commit git.Commit) {
 	var mentions []string
 	if n := appCfg.DeploymentNotification; n != nil {
 		mentions = n.FindSlackAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED)
@@ -504,9 +504,9 @@ func (t *Trigger) notifyDeploymentTriggerFailed(app *model.Application, appCfg *
 	})
 }
 
-func loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.GenericDeploymentSpec, error) {
+func loadApplicationConfiguration(repoPath string, app *model.Application) (*config.GenericApplicationSpec, error) {
 	var (
-		relPath = app.GitPath.GetDeploymentConfigFilePath()
+		relPath = app.GitPath.GetApplicationConfigFilePath()
 		absPath = filepath.Join(repoPath, relPath)
 	)
 
@@ -518,10 +518,10 @@ func loadDeploymentConfiguration(repoPath string, app *model.Application) (*conf
 		return nil, err
 	}
 	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
-		return nil, fmt.Errorf("invalid application kind in the deployment config file, got: %s, expected: %s", appKind, app.Kind)
+		return nil, fmt.Errorf("invalid application kind in the application config file, got: %s, expected: %s", appKind, app.Kind)
 	}
 
-	spec, ok := cfg.GetGenericDeployment()
+	spec, ok := cfg.GetGenericApplication()
 	if !ok {
 		return nil, fmt.Errorf("unsupported application kind: %s", app.Kind)
 	}

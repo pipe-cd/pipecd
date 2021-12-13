@@ -110,9 +110,9 @@ func loadKubernetesManifests(ctx context.Context, app model.Application, dsp dep
 		return nil, err
 	}
 
-	deployCfg := ds.DeploymentConfig.KubernetesDeploymentSpec
-	if deployCfg == nil {
-		return nil, fmt.Errorf("malformed deployment configuration file")
+	appCfg := ds.ApplicationConfig.KubernetesApplicationSpec
+	if appCfg == nil {
+		return nil, fmt.Errorf("malformed application configuration file")
 	}
 
 	loader := provider.NewManifestLoader(
@@ -120,7 +120,7 @@ func loadKubernetesManifests(ctx context.Context, app model.Application, dsp dep
 		ds.AppDir,
 		ds.RepoDir,
 		app.GitPath.ConfigFilename,
-		deployCfg.Input,
+		appCfg.Input,
 		gc,
 		logger,
 	)

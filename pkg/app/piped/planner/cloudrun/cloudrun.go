@@ -48,9 +48,9 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
-	cfg := ds.DeploymentConfig.CloudRunDeploymentSpec
+	cfg := ds.ApplicationConfig.CloudRunApplicationSpec
 	if cfg == nil {
-		err = fmt.Errorf("missing CloudRunDeploymentSpec in deployment configuration")
+		err = fmt.Errorf("missing CloudRunApplicationSpec in application configuration")
 		return
 	}
 

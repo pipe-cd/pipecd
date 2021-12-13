@@ -98,7 +98,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 
 	// Start rolling out the resources for CANARY variant.
 	e.LogPersister.Info("Start rolling out CANARY variant...")
-	if err := applyManifests(ctx, e.provider, canaryManifests, e.deployCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, e.provider, canaryManifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -127,7 +127,7 @@ func (e *deployExecutor) generateCanaryManifests(manifests []provider.Manifest, 
 		suffix = opts.Suffix
 	}
 
-	workloads := findWorkloadManifests(manifests, e.deployCfg.Workloads)
+	workloads := findWorkloadManifests(manifests, e.appCfg.Workloads)
 	if len(workloads) == 0 {
 		return nil, fmt.Errorf("unable to find any workload manifests for CANARY variant")
 	}
@@ -136,7 +136,7 @@ func (e *deployExecutor) generateCanaryManifests(manifests []provider.Manifest, 
 
 	// Find service manifests and duplicate them for CANARY variant.
 	if opts.CreateService {
-		serviceName := e.deployCfg.Service.Name
+		serviceName := e.appCfg.Service.Name
 		services := findManifests(provider.KindService, serviceName, manifests)
 		if len(services) == 0 {
 			return nil, fmt.Errorf("unable to find any service for name=%q", serviceName)

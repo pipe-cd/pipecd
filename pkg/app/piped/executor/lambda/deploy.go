@@ -32,7 +32,7 @@ type deployExecutor struct {
 	executor.Input
 
 	deploySource      *deploysource.DeploySource
-	deployCfg         *config.LambdaDeploymentSpec
+	appCfg            *config.LambdaApplicationSpec
 	cloudProviderName string
 	cloudProviderCfg  *config.CloudProviderLambdaConfig
 }
@@ -46,9 +46,9 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 
 	e.deploySource = ds
-	e.deployCfg = ds.DeploymentConfig.LambdaDeploymentSpec
-	if e.deployCfg == nil {
-		e.LogPersister.Errorf("Malformed deployment configuration: missing LambdaDeploymentSpec")
+	e.appCfg = ds.ApplicationConfig.LambdaApplicationSpec
+	if e.appCfg == nil {
+		e.LogPersister.Errorf("Malformed application configuration: missing LambdaApplicationSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -79,7 +79,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 }
 
 func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
-	fm, ok := loadFunctionManifest(&e.Input, e.deployCfg.Input.FunctionManifestFile, e.deploySource)
+	fm, ok := loadFunctionManifest(&e.Input, e.appCfg.Input.FunctionManifestFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -104,7 +104,7 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 		e.Logger.Error("failed to save routing percentages to metadata", zap.Error(err))
 	}
 
-	fm, ok := loadFunctionManifest(&e.Input, e.deployCfg.Input.FunctionManifestFile, e.deploySource)
+	fm, ok := loadFunctionManifest(&e.Input, e.appCfg.Input.FunctionManifestFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -117,7 +117,7 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 }
 
 func (e *deployExecutor) ensureRollout(ctx context.Context) model.StageStatus {
-	fm, ok := loadFunctionManifest(&e.Input, e.deployCfg.Input.FunctionManifestFile, e.deploySource)
+	fm, ok := loadFunctionManifest(&e.Input, e.appCfg.Input.FunctionManifestFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}

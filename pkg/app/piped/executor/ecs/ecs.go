@@ -110,10 +110,10 @@ func loadTaskDefinition(in *executor.Input, taskDefinitionFile string, ds *deplo
 	return taskDefinition, true
 }
 
-func loadTargetGroups(in *executor.Input, deployCfg *config.ECSDeploymentSpec, ds *deploysource.DeploySource) (*types.LoadBalancer, *types.LoadBalancer, bool) {
+func loadTargetGroups(in *executor.Input, appCfg *config.ECSApplicationSpec, ds *deploysource.DeploySource) (*types.LoadBalancer, *types.LoadBalancer, bool) {
 	in.LogPersister.Infof("Loading target groups config at the commit %s", ds.Revision)
 
-	primary, canary, err := provider.LoadTargetGroups(deployCfg.Input.TargetGroups)
+	primary, canary, err := provider.LoadTargetGroups(appCfg.Input.TargetGroups)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to load TargetGroups (%v)", err)
 		return nil, nil, false

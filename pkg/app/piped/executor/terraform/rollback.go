@@ -63,30 +63,30 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	deployCfg := ds.DeploymentConfig.TerraformDeploymentSpec
-	if deployCfg == nil {
-		e.LogPersister.Error("Malformed deployment configuration: missing TerraformDeploymentSpec")
+	appCfg := ds.ApplicationConfig.TerraformApplicationSpec
+	if appCfg == nil {
+		e.LogPersister.Error("Malformed application configuration: missing TerraformApplicationSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	terraformPath, ok := findTerraform(ctx, deployCfg.Input.TerraformVersion, e.LogPersister)
+	terraformPath, ok := findTerraform(ctx, appCfg.Input.TerraformVersion, e.LogPersister)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	vars := make([]string, 0, len(cloudProviderCfg.Vars)+len(deployCfg.Input.Vars))
+	vars := make([]string, 0, len(cloudProviderCfg.Vars)+len(appCfg.Input.Vars))
 	vars = append(vars, cloudProviderCfg.Vars...)
-	vars = append(vars, deployCfg.Input.Vars...)
+	vars = append(vars, appCfg.Input.Vars...)
 
 	e.LogPersister.Infof("Start rolling back to the state defined at commit %s", e.Deployment.RunningCommitHash)
 	var (
-		flags = deployCfg.Input.CommandFlags
-		envs  = deployCfg.Input.CommandEnvs
+		flags = appCfg.Input.CommandFlags
+		envs  = appCfg.Input.CommandEnvs
 		cmd   = provider.NewTerraform(
 			terraformPath,
 			ds.AppDir,
 			provider.WithVars(vars),
-			provider.WithVarFiles(deployCfg.Input.VarFiles),
+			provider.WithVarFiles(appCfg.Input.VarFiles),
 			provider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
 			provider.WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
 		)
@@ -101,7 +101,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if ok := selectWorkspace(ctx, cmd, deployCfg.Input.Workspace, e.LogPersister); !ok {
+	if ok := selectWorkspace(ctx, cmd, appCfg.Input.Workspace, e.LogPersister); !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

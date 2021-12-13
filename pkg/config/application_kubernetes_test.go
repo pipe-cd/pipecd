@@ -20,9 +20,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func TestCloudRunDeploymentConfig(t *testing.T) {
+func TestKubernetesApplicationConfig(t *testing.T) {
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind
@@ -31,11 +33,51 @@ func TestCloudRunDeploymentConfig(t *testing.T) {
 		expectedError      error
 	}{
 		{
-			fileName:           "testdata/application/cloudrun-app.yaml",
-			expectedKind:       KindCloudRunApp,
+			fileName:           "testdata/application/k8s-app-bluegreen.yaml",
+			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &CloudRunDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{
+			expectedSpec: &KubernetesApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
+					Planner: DeploymentPlanner{
+						AlwaysUsePipeline: true,
+					},
+					Pipeline: &DeploymentPipeline{
+						Stages: []PipelineStage{
+							{
+								Name: model.StageK8sCanaryRollout,
+								K8sCanaryRolloutStageOptions: &K8sCanaryRolloutStageOptions{
+									Replicas: Replicas{
+										Number:       100,
+										IsPercentage: true,
+									},
+								},
+							},
+							{
+								Name: model.StageK8sTrafficRouting,
+								K8sTrafficRoutingStageOptions: &K8sTrafficRoutingStageOptions{
+									Canary: Percentage{
+										Number: 100,
+									},
+								},
+							},
+							{
+								Name:                          model.StageK8sPrimaryRollout,
+								K8sPrimaryRolloutStageOptions: &K8sPrimaryRolloutStageOptions{},
+							},
+							{
+								Name: model.StageK8sTrafficRouting,
+								K8sTrafficRoutingStageOptions: &K8sTrafficRoutingStageOptions{
+									Primary: Percentage{
+										Number: 100,
+									},
+								},
+							},
+							{
+								Name:                       model.StageK8sCanaryClean,
+								K8sCanaryCleanStageOptions: &K8sCanaryCleanStageOptions{},
+							},
+						},
+					},
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnCommit: OnCommit{
@@ -50,8 +92,11 @@ func TestCloudRunDeploymentConfig(t *testing.T) {
 						},
 					},
 				},
-				Input: CloudRunDeploymentInput{
+				Input: KubernetesDeploymentInput{
 					AutoRollback: newBoolPointer(true),
+				},
+				TrafficRouting: &KubernetesTrafficRouting{
+					Method: KubernetesTrafficRoutingMethodPodSelector,
 				},
 			},
 			expectedError: nil,

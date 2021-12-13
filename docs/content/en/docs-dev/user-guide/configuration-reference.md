@@ -3,7 +3,7 @@ title: "Configuration reference"
 linkTitle: "Configuration reference"
 weight: 22
 description: >
-  This page describes all configurable fields in the deployment configuration and analysis template.
+  This page describes all configurable fields in the application configuration and analysis template.
 ---
 
 ## Kubernetes Application

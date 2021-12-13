@@ -24,13 +24,13 @@ See [Configuration Reference](/docs/user-guide/configuration-reference/#deployme
 After a new deployment was triggered, it will be queued to handle by the appropriate `piped`. And at this time the deployment pipeline was not decided yet.
 `piped` schedules all deployments of applications to ensure that for each application only one deployment will be executed at the same time.
 When no deployment of an application is running, `piped` picks queueing one to plan the deploying pipeline.
-`piped` plans the deploying pipeline based on the deployment configuration and the diff between the running state and the specified state in the newest commit.
+`piped` plans the deploying pipeline based on the application configuration and the diff between the running state and the specified state in the newest commit.
 For example:
 
 - when the merged pull request updated a Deployment's container image or updated a mounting ConfigMap or Secret, `piped` planner will decide that the deployment should use the specified pipeline to do a progressive deployment.
 - when the merged pull request just updated the `replicas` number, `piped` planner will decide to use a quick sync to scale the resources.
 
-You can force `piped` planner to decide to use the [QuickSync](/docs/concepts/#quick-sync) or the specified pipeline based on the commit message by configuring [CommitMatcher](/docs/user-guide/configuration-reference/#commitmatcher) in the deployment configuration.
+You can force `piped` planner to decide to use the [QuickSync](/docs/concepts/#quick-sync) or the specified pipeline based on the commit message by configuring [CommitMatcher](/docs/user-guide/configuration-reference/#commitmatcher) in the application configuration.
 
 After being planned, the deployment will be executed as the decided pipeline. The deployment execution including the state of each stage as well as their logs can be viewed in realtime at the deployment details page.
 

@@ -100,7 +100,7 @@ func TestEnsureSync(t *testing.T) {
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
 					return p
 				}(),
-				deployCfg: &config.KubernetesDeploymentSpec{
+				appCfg: &config.KubernetesApplicationSpec{
 					QuickSync: config.K8sSyncStageOptions{
 						AddVariantLabelToSelector: true,
 					},
@@ -140,7 +140,7 @@ func TestEnsureSync(t *testing.T) {
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
 					return p
 				}(),
-				deployCfg: &config.KubernetesDeploymentSpec{
+				appCfg: &config.KubernetesApplicationSpec{
 					QuickSync: config.K8sSyncStageOptions{
 						AddVariantLabelToSelector: true,
 					},

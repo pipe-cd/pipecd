@@ -48,9 +48,9 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
-	cfg := ds.DeploymentConfig.ECSDeploymentSpec
+	cfg := ds.ApplicationConfig.ECSApplicationSpec
 	if cfg == nil {
-		err = fmt.Errorf("missing ECSDeploymentSpec in deployment configuration")
+		err = fmt.Errorf("missing ECSApplicationSpec in application configuration")
 		return
 	}
 

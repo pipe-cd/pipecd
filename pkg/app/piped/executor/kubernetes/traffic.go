@@ -45,7 +45,7 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	method := config.DetermineKubernetesTrafficRoutingMethod(e.deployCfg.TrafficRouting)
+	method := config.DetermineKubernetesTrafficRoutingMethod(e.appCfg.TrafficRouting)
 
 	// Load the manifests at the triggered commit.
 	e.LogPersister.Infof("Loading manifests at commit %s for handling", commitHash)
@@ -73,7 +73,7 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 	e.saveTrafficRoutingMetadata(ctx, primaryPercent, canaryPercent, baselinePercent)
 
 	// Find traffic routing manifests.
-	trafficRoutingManifests, err := findTrafficRoutingManifests(manifests, e.deployCfg.Service.Name, e.deployCfg.TrafficRouting)
+	trafficRoutingManifests, err := findTrafficRoutingManifests(manifests, e.appCfg.Service.Name, e.appCfg.TrafficRouting)
 	if err != nil {
 		e.LogPersister.Errorf("Failed while finding traffic routing manifest: (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -111,7 +111,7 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 		primaryPercent,
 		canaryPercent,
 		baselinePercent,
-		e.deployCfg.TrafficRouting,
+		e.appCfg.TrafficRouting,
 	)
 	if err != nil {
 		e.LogPersister.Errorf("Unable generate traffic routing manifest: (%v)", err)
@@ -132,7 +132,7 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 		canaryPercent,
 		baselinePercent,
 	)
-	if err := applyManifests(ctx, e.provider, []provider.Manifest{trafficRoutingManifest}, e.deployCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, e.provider, []provider.Manifest{trafficRoutingManifest}, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

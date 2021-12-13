@@ -27,19 +27,19 @@ import (
 func TestHasStage(t *testing.T) {
 	testcases := []struct {
 		name  string
-		s     GenericDeploymentSpec
+		s     GenericApplicationSpec
 		stage model.Stage
 		want  bool
 	}{
 		{
 			name:  "no pipeline configured",
-			s:     GenericDeploymentSpec{},
+			s:     GenericApplicationSpec{},
 			stage: model.StageK8sSync,
 			want:  false,
 		},
 		{
 			name: "given one doesn't exist",
-			s: GenericDeploymentSpec{
+			s: GenericApplicationSpec{
 				Pipeline: &DeploymentPipeline{
 					Stages: []PipelineStage{
 						{
@@ -53,7 +53,7 @@ func TestHasStage(t *testing.T) {
 		},
 		{
 			name: "given one exists",
-			s: GenericDeploymentSpec{
+			s: GenericApplicationSpec{
 				Pipeline: &DeploymentPipeline{
 					Stages: []PipelineStage{
 						{
@@ -294,8 +294,8 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 			fileName:           "testdata/application/generic-trigger.yaml",
 			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &KubernetesDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{
+			expectedSpec: &KubernetesApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnCommit: OnCommit{
@@ -342,8 +342,8 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 			fileName:           "testdata/application/truebydefaultbool-not-specified.yaml",
 			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &KubernetesDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{
+			expectedSpec: &KubernetesApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnOutOfSync: OnOutOfSync{
@@ -362,8 +362,8 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 			fileName:           "testdata/application/truebydefaultbool-false-explicitly.yaml",
 			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &KubernetesDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{
+			expectedSpec: &KubernetesApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnOutOfSync: OnOutOfSync{
@@ -382,8 +382,8 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 			fileName:           "testdata/application/truebydefaultbool-true-explicitly.yaml",
 			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &KubernetesDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{
+			expectedSpec: &KubernetesApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnOutOfSync: OnOutOfSync{
@@ -424,8 +424,8 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 			fileName:           "testdata/application/generic-postsync.yaml",
 			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &KubernetesDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{
+			expectedSpec: &KubernetesApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnOutOfSync: OnOutOfSync{

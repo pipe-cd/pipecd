@@ -14,9 +14,9 @@
 
 package config
 
-// LambdaDeploymentSpec represents a deployment configuration for Lambda application.
-type LambdaDeploymentSpec struct {
-	GenericDeploymentSpec
+// LambdaApplicationSpec represents an application configuration for Lambda application.
+type LambdaApplicationSpec struct {
+	GenericApplicationSpec
 	// Input for Lambda deployment such as where to fetch source code...
 	Input LambdaDeploymentInput `json:"input"`
 	// Configuration for quick sync.
@@ -24,8 +24,8 @@ type LambdaDeploymentSpec struct {
 }
 
 // Validate returns an error if any wrong configuration value was found.
-func (s *LambdaDeploymentSpec) Validate() error {
-	if err := s.GenericDeploymentSpec.Validate(); err != nil {
+func (s *LambdaApplicationSpec) Validate() error {
+	if err := s.GenericApplicationSpec.Validate(); err != nil {
 		return err
 	}
 	return nil

@@ -52,7 +52,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 	e.LogPersister.Successf("Successfully loaded %d manifests", len(manifests))
 
 	var primaryManifests []provider.Manifest
-	routingMethod := config.DetermineKubernetesTrafficRoutingMethod(e.deployCfg.TrafficRouting)
+	routingMethod := config.DetermineKubernetesTrafficRoutingMethod(e.appCfg.TrafficRouting)
 
 	switch routingMethod {
 	// In case of routing by Pod selector,
@@ -65,7 +65,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 	// Other manifests can be used as primary manifests.
 	case config.KubernetesTrafficRoutingMethodIstio:
 		// Firstly, find the VirtualService manifests.
-		istioCfg := e.deployCfg.TrafficRouting.Istio
+		istioCfg := e.appCfg.TrafficRouting.Istio
 		if istioCfg == nil {
 			istioCfg = &config.IstioTrafficRouting{}
 		}
@@ -93,8 +93,8 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 	// Check if the variant selector is in the workloads.
 	if !options.AddVariantLabelToSelector &&
 		routingMethod == config.KubernetesTrafficRoutingMethodPodSelector &&
-		e.deployCfg.HasStage(model.StageK8sTrafficRouting) {
-		workloads := findWorkloadManifests(primaryManifests, e.deployCfg.Workloads)
+		e.appCfg.HasStage(model.StageK8sTrafficRouting) {
+		workloads := findWorkloadManifests(primaryManifests, e.appCfg.Workloads)
 		var invalid bool
 		for _, m := range workloads {
 			if err := checkVariantSelectorInWorkload(m, primaryVariant); err != nil {
@@ -132,7 +132,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 
 	// Start applying all manifests to add or update running resources.
 	e.LogPersister.Info("Start rolling out PRIMARY variant...")
-	if err := applyManifests(ctx, e.provider, primaryManifests, e.deployCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, e.provider, primaryManifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 	e.LogPersister.Success("Successfully rolled out PRIMARY variant")
@@ -161,7 +161,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	removeKeys := findRemoveManifests(runningManifests, manifests, e.deployCfg.Input.Namespace)
+	removeKeys := findRemoveManifests(runningManifests, manifests, e.appCfg.Input.Namespace)
 	if len(removeKeys) == 0 {
 		e.LogPersister.Info("There are no live resources should be removed")
 		return model.StageStatus_STAGE_SUCCESS
@@ -211,7 +211,7 @@ func (e *deployExecutor) generatePrimaryManifests(manifests []provider.Manifest,
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
 	if opts.AddVariantLabelToSelector {
-		workloads := findWorkloadManifests(manifests, e.deployCfg.Workloads)
+		workloads := findWorkloadManifests(manifests, e.appCfg.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
 				return nil, fmt.Errorf("unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableLogString(), err)
@@ -221,7 +221,7 @@ func (e *deployExecutor) generatePrimaryManifests(manifests []provider.Manifest,
 
 	// Find service manifests and duplicate them for PRIMARY variant.
 	if opts.CreateService {
-		serviceName := e.deployCfg.Service.Name
+		serviceName := e.appCfg.Service.Name
 		services := findManifests(provider.KindService, serviceName, manifests)
 		if len(services) == 0 {
 			return nil, fmt.Errorf("unable to find any service for name=%q", serviceName)

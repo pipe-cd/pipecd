@@ -43,14 +43,15 @@ Each application must belong to one and only one environment. While each piped m
 A deployment is a process that does transition from the current state (running state) to the desired state (specified state in Git) of a specific application.
 When the deployment is success, it means the running state is synced with the desired state specified in the target commit.
 
-### Deployment Configuration
+### Application Configuration
 
-A `.pipe.yaml` yaml file that contains configuration data to define how to deploy the application.
-Each application requires one deployment configuration file at application directory in the Git repository.
+A yaml file that contains configuration data to define how to deploy the application.
+Each application requires one application configuration file at application directory in the Git repository.
+The default file name is `.pipe.yaml`.
 
 ### Application Directory
 
-A directory in Git repository containing deployment configuration file (`.pipe.yaml`) and application manifests.
+A directory in Git repository containing application configuration file (`.pipe.yaml`) and application manifests.
 Each application must have one application directory.
 
 ### Quick Sync
@@ -62,7 +63,7 @@ Quick sync is a fast way to sync application to the state specified in a Git com
 
 ### Pipeline
 
-A list of stages specified by user in the deployment configuration file that tells `piped` how the application should be deployed. If the pipeline is not specified, the application will be deployed by Quick Sync way.
+A list of stages specified by user in the application configuration file that tells `piped` how the application should be deployed. If the pipeline is not specified, the application will be deployed by Quick Sync way.
 
 ### Stage
 
