@@ -16,9 +16,9 @@ package config
 
 import "encoding/json"
 
-// ECSDeploymentSpec represents a deployment configuration for ECS application.
-type ECSDeploymentSpec struct {
-	GenericDeploymentSpec
+// ECSApplicationSpec represents an application configuration for ECS application.
+type ECSApplicationSpec struct {
+	GenericApplicationSpec
 	// Input for ECS deployment such as where to fetch source code...
 	Input ECSDeploymentInput `json:"input"`
 	// Configuration for quick sync.
@@ -26,8 +26,8 @@ type ECSDeploymentSpec struct {
 }
 
 // Validate returns an error if any wrong configuration value was found.
-func (s *ECSDeploymentSpec) Validate() error {
-	if err := s.GenericDeploymentSpec.Validate(); err != nil {
+func (s *ECSApplicationSpec) Validate() error {
+	if err := s.GenericApplicationSpec.Validate(); err != nil {
 		return err
 	}
 	return nil

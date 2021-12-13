@@ -14,9 +14,9 @@
 
 package config
 
-// KubernetesDeploymentSpec represents a deployment configuration for Kubernetes application.
-type KubernetesDeploymentSpec struct {
-	GenericDeploymentSpec
+// KubernetesApplicationSpec represents an application configuration for Kubernetes application.
+type KubernetesApplicationSpec struct {
+	GenericApplicationSpec
 	// Input for Kubernetes deployment such as kubectl version, helm version, manifests filter...
 	Input KubernetesDeploymentInput `json:"input"`
 	// Configuration for quick sync.
@@ -37,8 +37,8 @@ type KubernetesDeploymentSpec struct {
 }
 
 // Validate returns an error if any wrong configuration value was found.
-func (s *KubernetesDeploymentSpec) Validate() error {
-	if err := s.GenericDeploymentSpec.Validate(); err != nil {
+func (s *KubernetesApplicationSpec) Validate() error {
+	if err := s.GenericApplicationSpec.Validate(); err != nil {
 		return err
 	}
 	return nil

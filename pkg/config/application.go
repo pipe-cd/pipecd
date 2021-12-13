@@ -28,7 +28,7 @@ const (
 	allEventsSymbol             = "*"
 )
 
-type GenericDeploymentSpec struct {
+type GenericApplicationSpec struct {
 	Name    string            `json:"name"`
 	EnvName string            `json:"envName"`
 	Labels  map[string]string `json:"labels"`
@@ -110,11 +110,11 @@ type OnOutOfSync struct {
 type OnChain struct {
 	// Whether to exclude application from triggering target
 	// when received a new CHAIN_SYNC command.
-	// Default is false.
-	Disabled bool `json:"disabled,omitempty"`
+	// Default is true.
+	Disabled *bool `json:"disabled,omitempty" default:"true"`
 }
 
-func (s *GenericDeploymentSpec) Validate() error {
+func (s *GenericApplicationSpec) Validate() error {
 	if s.Pipeline != nil {
 		for _, stage := range s.Pipeline.Stages {
 			if stage.AnalysisStageOptions != nil {
@@ -153,7 +153,7 @@ func (s *GenericDeploymentSpec) Validate() error {
 	return nil
 }
 
-func (s GenericDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
+func (s GenericApplicationSpec) GetStage(index int32) (PipelineStage, bool) {
 	if s.Pipeline == nil {
 		return PipelineStage{}, false
 	}
@@ -164,7 +164,7 @@ func (s GenericDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
 }
 
 // HasStage checks if the given stage is included in the pipeline.
-func (s GenericDeploymentSpec) HasStage(stage model.Stage) bool {
+func (s GenericApplicationSpec) HasStage(stage model.Stage) bool {
 	if s.Pipeline == nil {
 		return false
 	}

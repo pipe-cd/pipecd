@@ -30,7 +30,7 @@ import (
 )
 
 type Determiner interface {
-	ShouldTrigger(ctx context.Context, app *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error)
+	ShouldTrigger(ctx context.Context, app *model.Application, appCfg *config.GenericApplicationSpec) (bool, error)
 }
 
 type determiners struct {
@@ -61,7 +61,7 @@ func NewOnCommandDeterminer() *OnCommandDeterminer {
 }
 
 // ShouldTrigger decides whether a given application should be triggered or not.
-func (d *OnCommandDeterminer) ShouldTrigger(_ context.Context, _ *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
+func (d *OnCommandDeterminer) ShouldTrigger(_ context.Context, _ *model.Application, appCfg *config.GenericApplicationSpec) (bool, error) {
 	if appCfg.Trigger.OnCommand.Disabled {
 		return false, nil
 	}
@@ -76,8 +76,8 @@ func NewOnChainDeterminer() *OnChainDeterminer {
 	return &OnChainDeterminer{}
 }
 
-func (d *OnChainDeterminer) ShouldTrigger(_ context.Context, _ *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
-	if appCfg.Trigger.OnChain.Disabled {
+func (d *OnChainDeterminer) ShouldTrigger(_ context.Context, _ *model.Application, appCfg *config.GenericApplicationSpec) (bool, error) {
+	if *appCfg.Trigger.OnChain.Disabled {
 		return false, nil
 	}
 	return true, nil
@@ -94,7 +94,7 @@ func NewOnOutOfSyncDeterminer(client apiClient) *OnOutOfSyncDeterminer {
 }
 
 // ShouldTrigger decides whether a given application should be triggered or not.
-func (d *OnOutOfSyncDeterminer) ShouldTrigger(ctx context.Context, app *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
+func (d *OnOutOfSyncDeterminer) ShouldTrigger(ctx context.Context, app *model.Application, appCfg *config.GenericApplicationSpec) (bool, error) {
 	if *appCfg.Trigger.OnOutOfSync.Disabled {
 		return false, nil
 	}
@@ -151,7 +151,7 @@ func NewOnCommitDeterminer(repo git.Repo, targetCommit string, cg LastTriggeredC
 }
 
 // ShouldTrigger decides whether a given application should be triggered or not.
-func (d *OnCommitDeterminer) ShouldTrigger(ctx context.Context, app *model.Application, appCfg *config.GenericDeploymentSpec) (bool, error) {
+func (d *OnCommitDeterminer) ShouldTrigger(ctx context.Context, app *model.Application, appCfg *config.GenericApplicationSpec) (bool, error) {
 	logger := d.logger.With(
 		zap.String("app", app.Name),
 		zap.String("app-id", app.Id),

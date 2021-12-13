@@ -48,9 +48,9 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
-	cfg := ds.DeploymentConfig.LambdaDeploymentSpec
+	cfg := ds.ApplicationConfig.LambdaApplicationSpec
 	if cfg == nil {
-		err = fmt.Errorf("missing LambdaDeploymentSpec in deployment configuration")
+		err = fmt.Errorf("missing LambdaApplicationSpec in application configuration")
 		return
 	}
 

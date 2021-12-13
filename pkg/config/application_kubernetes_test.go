@@ -24,7 +24,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func TestKubernetesDeploymentConfig(t *testing.T) {
+func TestKubernetesApplicationConfig(t *testing.T) {
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind
@@ -36,8 +36,8 @@ func TestKubernetesDeploymentConfig(t *testing.T) {
 			fileName:           "testdata/application/k8s-app-bluegreen.yaml",
 			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &KubernetesDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{
+			expectedSpec: &KubernetesApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
 					Planner: DeploymentPlanner{
 						AlwaysUsePipeline: true,
 					},
@@ -89,6 +89,9 @@ func TestKubernetesDeploymentConfig(t *testing.T) {
 						OnOutOfSync: OnOutOfSync{
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
 						},
 					},
 				},

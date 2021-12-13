@@ -13,7 +13,7 @@ Quick sync for a Terraform deployment does `terraform plan` and if there are any
 
 ## Sync with the specified pipeline
 
-The [pipeline](/docs/user-guide/configuration-reference/#terraform-application) field in the deployment configuration is used to customize the way to do the deployment.
+The [pipeline](/docs/user-guide/configuration-reference/#terraform-application) field in the application configuration is used to customize the way to do the deployment.
 You can add a manual approval before doing `terraform apply` or add an analysis stage after applying the changes to determine the impact of those changes.
 
 These are the provided stages for Terraform application you can use to build your pipeline:

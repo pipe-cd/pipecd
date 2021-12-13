@@ -6,16 +6,16 @@ description: >
   Specific guide for configuring Kubernetes deployment.
 ---
 
-Based on the deployment configuration and the pull request changes, PipeCD plans how to execute the deployment: doing quick sync or doing progressive sync with the specified pipeline.
+Based on the application configuration and the pull request changes, PipeCD plans how to execute the deployment: doing quick sync or doing progressive sync with the specified pipeline.
 
 ## Quick sync
 
 Quick sync is a fast way to sync application to the state specified in the target Git commit without any progressive strategy. It just applies all the defined manifiests to sync the application.
 The quick sync will be planned in one of the following cases:
-- no pipeline was specified in the deployment configuration file
+- no pipeline was specified in the application configuration file
 - [pipeline](/docs/user-guide/configuration-reference/#pipeline) was specified but the PR did not make any changes on workload (e.g. Deployment's pod template) or config (e.g. ConfigMap, Secret)
 
-For example, the deployment configuration as below is missing the pipeline field. This means any pull request touches the application will trigger a quick sync deployment.
+For example, the application configuration as below is missing the pipeline field. This means any pull request touches the application will trigger a quick sync deployment.
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
@@ -32,7 +32,7 @@ In another case, even when the pipeline was specified, a PR that just changes th
 
 ## Sync with the specified pipeline
 
-The `pipeline` field in the deployment configuration is used to customize the way to do deployment by specifying and configuring the execution stages. You may want to configure those stages to enable a progressive deployment with a strategy like canary, blue-green, a manual approval, an analysis stage.
+The `pipeline` field in the application configuration is used to customize the way to do deployment by specifying and configuring the execution stages. You may want to configure those stages to enable a progressive deployment with a strategy like canary, blue-green, a manual approval, an analysis stage.
 
 To enable customization, PipeCD defines three variants for each Kubernetes application: primary (aka stable), baseline and canary.
 - `primary` runs the current version of code and configuration.

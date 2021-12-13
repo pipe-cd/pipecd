@@ -41,7 +41,7 @@ func TestUnmarshalConfig(t *testing.T) {
 		}
   }
 }`,
-			wantSpec: &KubernetesDeploymentSpec{
+			wantSpec: &KubernetesApplicationSpec{
 				Input: KubernetesDeploymentInput{
 					Namespace: "default",
 				},
@@ -60,7 +60,7 @@ func TestUnmarshalConfig(t *testing.T) {
 		"unknown": {}
   }
 }`,
-			wantSpec: &KubernetesDeploymentSpec{
+			wantSpec: &KubernetesApplicationSpec{
 				Input: KubernetesDeploymentInput{
 					Namespace: "default",
 				},

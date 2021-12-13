@@ -12,7 +12,7 @@ description: >
 With Istio, we can accomplish this goal by configuring a sequence of rules that route a percentage of traffic to each [variant](/docs/user-guide/configuring-deployment/kubernetes/#sync-with-the-specified-pipeline) of the application.
 And with PipeCD, you can enable and automate the canary strategy for your Kubernetes application even easier.
 
-In this guide, we will show you how to configure the deployment configuration file to send 10% of traffic to the new version and keep 90% to the primary variant. Then after waiting for manual approval, you will complete the migration by sending 100% of traffic to the new version.
+In this guide, we will show you how to configure the application configuration file to send 10% of traffic to the new version and keep 90% to the primary variant. Then after waiting for manual approval, you will complete the migration by sending 100% of traffic to the new version.
 
 Complete source code for this example is hosted in [pipe-cd/examples](https://github.com/pipe-cd/examples/tree/master/kubernetes/mesh-istio-canary) repository.
 
@@ -98,7 +98,7 @@ Deployment Details Page
 
 ## Understanding what happened
 
-In this example, you configured the deployment configuration file (`.pipe.yaml`) to migrate traffic from an old to a new version of the application using Istio's weighted routing feature.
+In this example, you configured the application configuration file (`.pipe.yaml`) to migrate traffic from an old to a new version of the application using Istio's weighted routing feature.
 
 - Stage 1: `K8S_CANARY_ROLLOUT` ensures that the workloads of canary variant (new version) should be deployed. But at this time, they still handle nothing, all traffic are handled by workloads of primary variant.
 The number of workloads (e.g. pod) for canary variant is configured to be 50% of the replicas number of primary varant.

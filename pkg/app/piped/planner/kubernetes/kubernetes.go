@@ -58,9 +58,9 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		err = fmt.Errorf("error while preparing deploy source data (%v)", err)
 		return
 	}
-	cfg := ds.DeploymentConfig.KubernetesDeploymentSpec
+	cfg := ds.ApplicationConfig.KubernetesApplicationSpec
 	if cfg == nil {
-		err = fmt.Errorf("missing KubernetesDeploymentSpec in deployment configuration")
+		err = fmt.Errorf("missing KubernetesApplicationSpec in application configuration")
 		return
 	}
 

@@ -105,7 +105,7 @@ Quick sync for a Lambda deployment will roll out the new version and switch all 
 
 ## Sync with the specified pipeline
 
-The [pipeline](/docs/user-guide/configuration-reference/#lambda-application) field in the deployment configuration is used to customize the way to do the deployment.
+The [pipeline](/docs/user-guide/configuration-reference/#lambda-application) field in the application configuration is used to customize the way to do the deployment.
 You can add a manual approval before routing traffic to the new version or add an analysis stage the do some smoke tests against the new version before allowing them to receive the real traffic.
 
 These are the provided stages for Lambda application you can use to build your pipeline:

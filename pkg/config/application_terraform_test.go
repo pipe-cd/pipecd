@@ -24,7 +24,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func TestTerraformDeploymentConfig(t *testing.T) {
+func TestTerraformApplicationtConfig(t *testing.T) {
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind
@@ -36,8 +36,8 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 			fileName:           "testdata/application/terraform-app-empty.yaml",
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &TerraformDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{
+			expectedSpec: &TerraformApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnCommit: OnCommit{
@@ -49,6 +49,9 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 						OnOutOfSync: OnOutOfSync{
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
 						},
 					},
 				},
@@ -60,8 +63,8 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 			fileName:           "testdata/application/terraform-app.yaml",
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &TerraformDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{
+			expectedSpec: &TerraformApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnCommit: OnCommit{
@@ -73,6 +76,9 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 						OnOutOfSync: OnOutOfSync{
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
 						},
 					},
 				},
@@ -87,8 +93,8 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 			fileName:           "testdata/application/terraform-app-secret-management.yaml",
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &TerraformDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{
+			expectedSpec: &TerraformApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnCommit: OnCommit{
@@ -100,6 +106,9 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 						OnOutOfSync: OnOutOfSync{
 							Disabled:  newBoolPointer(false),
 							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
 						},
 					},
 					Encryption: &SecretEncryption{
@@ -122,8 +131,8 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 			fileName:           "testdata/application/terraform-app-with-approval.yaml",
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &TerraformDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{
+			expectedSpec: &TerraformApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
 					Pipeline: &DeploymentPipeline{
 						Stages: []PipelineStage{
 							{
@@ -156,6 +165,9 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 						OnOutOfSync: OnOutOfSync{
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
 						},
 					},
 				},

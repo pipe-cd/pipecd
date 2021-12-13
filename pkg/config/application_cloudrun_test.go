@@ -15,7 +15,6 @@
 package config
 
 import (
-	"encoding/json"
 	"testing"
 	"time"
 
@@ -23,7 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestECSDeploymentConfig(t *testing.T) {
+func TestCloudRunApplicationConfig(t *testing.T) {
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind
@@ -32,11 +31,11 @@ func TestECSDeploymentConfig(t *testing.T) {
 		expectedError      error
 	}{
 		{
-			fileName:           "testdata/application/ecs-app.yaml",
-			expectedKind:       KindECSApp,
+			fileName:           "testdata/application/cloudrun-app.yaml",
+			expectedKind:       KindCloudRunApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &ECSDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{
+			expectedSpec: &CloudRunApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnCommit: OnCommit{
@@ -49,14 +48,12 @@ func TestECSDeploymentConfig(t *testing.T) {
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
 						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
+						},
 					},
 				},
-				Input: ECSDeploymentInput{
-					ServiceDefinitionFile: "/path/to/servicedef.yaml",
-					TaskDefinitionFile:    "/path/to/taskdef.yaml",
-					TargetGroups: ECSTargetGroups{
-						Primary: json.RawMessage(`{"containerName":"web","containerPort":80,"targetGroupArn":"arn:aws:elasticloadbalancing:xyz"}`),
-					},
+				Input: CloudRunDeploymentInput{
 					AutoRollback: newBoolPointer(true),
 				},
 			},

@@ -71,13 +71,13 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	deployCfg := runningDS.DeploymentConfig.CloudRunDeploymentSpec
-	if deployCfg == nil {
-		e.LogPersister.Error("Malformed deployment configuration: missing CloudRunDeploymentSpec")
+	appCfg := runningDS.ApplicationConfig.CloudRunApplicationSpec
+	if appCfg == nil {
+		e.LogPersister.Error("Malformed application configuration: missing CloudRunApplicationSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	sm, ok := loadServiceManifest(&e.Input, deployCfg.Input.ServiceManifestFile, runningDS)
+	sm, ok := loadServiceManifest(&e.Input, appCfg.Input.ServiceManifestFile, runningDS)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}

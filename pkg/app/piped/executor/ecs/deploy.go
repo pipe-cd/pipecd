@@ -27,7 +27,7 @@ type deployExecutor struct {
 	executor.Input
 
 	deploySource      *deploysource.DeploySource
-	deployCfg         *config.ECSDeploymentSpec
+	appCfg            *config.ECSApplicationSpec
 	cloudProviderName string
 	cloudProviderCfg  *config.CloudProviderECSConfig
 }
@@ -41,9 +41,9 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 
 	e.deploySource = ds
-	e.deployCfg = ds.DeploymentConfig.ECSDeploymentSpec
-	if e.deployCfg == nil {
-		e.LogPersister.Errorf("Malformed deployment configuration: missing ECSDeploymentSpec")
+	e.appCfg = ds.ApplicationConfig.ECSApplicationSpec
+	if e.appCfg == nil {
+		e.LogPersister.Errorf("Malformed application configuration: missing ECSApplicationSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -78,16 +78,16 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 }
 
 func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
-	taskDefinition, ok := loadTaskDefinition(&e.Input, e.deployCfg.Input.TaskDefinitionFile, e.deploySource)
+	taskDefinition, ok := loadTaskDefinition(&e.Input, e.appCfg.Input.TaskDefinitionFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
-	servicedefinition, ok := loadServiceDefinition(&e.Input, e.deployCfg.Input.ServiceDefinitionFile, e.deploySource)
+	servicedefinition, ok := loadServiceDefinition(&e.Input, e.appCfg.Input.ServiceDefinitionFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	primary, _, ok := loadTargetGroups(&e.Input, e.deployCfg, e.deploySource)
+	primary, _, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -100,16 +100,16 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 }
 
 func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
-	taskDefinition, ok := loadTaskDefinition(&e.Input, e.deployCfg.Input.TaskDefinitionFile, e.deploySource)
+	taskDefinition, ok := loadTaskDefinition(&e.Input, e.appCfg.Input.TaskDefinitionFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
-	servicedefinition, ok := loadServiceDefinition(&e.Input, e.deployCfg.Input.ServiceDefinitionFile, e.deploySource)
+	servicedefinition, ok := loadServiceDefinition(&e.Input, e.appCfg.Input.ServiceDefinitionFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	primary, _, ok := loadTargetGroups(&e.Input, e.deployCfg, e.deploySource)
+	primary, _, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -122,16 +122,16 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 }
 
 func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
-	taskDefinition, ok := loadTaskDefinition(&e.Input, e.deployCfg.Input.TaskDefinitionFile, e.deploySource)
+	taskDefinition, ok := loadTaskDefinition(&e.Input, e.appCfg.Input.TaskDefinitionFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
-	servicedefinition, ok := loadServiceDefinition(&e.Input, e.deployCfg.Input.ServiceDefinitionFile, e.deploySource)
+	servicedefinition, ok := loadServiceDefinition(&e.Input, e.appCfg.Input.ServiceDefinitionFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	_, canary, ok := loadTargetGroups(&e.Input, e.deployCfg, e.deploySource)
+	_, canary, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -148,7 +148,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 }
 
 func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
-	primary, canary, ok := loadTargetGroups(&e.Input, e.deployCfg, e.deploySource)
+	primary, canary, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}

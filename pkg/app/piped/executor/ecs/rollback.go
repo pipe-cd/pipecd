@@ -62,9 +62,9 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	deployCfg := runningDS.DeploymentConfig.ECSDeploymentSpec
-	if deployCfg == nil {
-		e.LogPersister.Errorf("Malformed deployment configuration: missing ECSDeploymentSpec")
+	appCfg := runningDS.ApplicationConfig.ECSApplicationSpec
+	if appCfg == nil {
+		e.LogPersister.Errorf("Malformed application configuration: missing ECSApplicationSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -73,16 +73,16 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	taskDefinition, ok := loadTaskDefinition(&e.Input, deployCfg.Input.TaskDefinitionFile, runningDS)
+	taskDefinition, ok := loadTaskDefinition(&e.Input, appCfg.Input.TaskDefinitionFile, runningDS)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
-	serviceDefinition, ok := loadServiceDefinition(&e.Input, deployCfg.Input.ServiceDefinitionFile, runningDS)
+	serviceDefinition, ok := loadServiceDefinition(&e.Input, appCfg.Input.ServiceDefinitionFile, runningDS)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	primary, _, ok := loadTargetGroups(&e.Input, deployCfg, runningDS)
+	primary, _, ok := loadTargetGroups(&e.Input, appCfg, runningDS)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}

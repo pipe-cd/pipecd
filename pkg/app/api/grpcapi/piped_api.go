@@ -1138,7 +1138,19 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 			})
 		}
 
-		// TODO: Support find node apps by appKind and appLabels.
+		if matcher.Kind != "" {
+			kind, ok := model.ApplicationKind_value[matcher.Kind]
+			if !ok {
+				return nil, nil, status.Error(codes.InvalidArgument, "invalid application kind given as application matcher value")
+			}
+			filters = append(filters, datastore.ListFilter{
+				Field:    "Kind",
+				Operator: datastore.OperatorEqual,
+				Value:    kind,
+			})
+		}
+
+		// TODO: Support find node apps by appLabels.
 
 		apps, _, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
 			Filters: filters,

@@ -8,7 +8,7 @@ description: >
 
 In the `piped` configuration file, we specify the list of Git repositories should be handled by the `piped`.
 A Git repository contains one or more deployable applications where each application is put inside a directory called as [application directory](/docs/concepts/#application-configuration-directory).
-That directory contains a deployment configuration file (.pipe.yaml) as well as application manifests.
+That directory contains a application configuration file (.pipe.yaml) as well as application manifests.
 The `piped` periodically checks the new commits and fetches the needed manifests from those repositories for executing the deployment.
 
 A single `piped` can be configured to handle one or more Git repositories.

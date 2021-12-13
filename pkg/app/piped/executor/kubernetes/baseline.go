@@ -83,7 +83,7 @@ func (e *deployExecutor) ensureBaselineRollout(ctx context.Context) model.StageS
 
 	// Start rolling out the resources for BASELINE variant.
 	e.LogPersister.Info("Start rolling out BASELINE variant...")
-	if err := applyManifests(ctx, e.provider, baselineManifests, e.deployCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, e.provider, baselineManifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -112,7 +112,7 @@ func (e *deployExecutor) generateBaselineManifests(manifests []provider.Manifest
 		suffix = opts.Suffix
 	}
 
-	workloads := findWorkloadManifests(manifests, e.deployCfg.Workloads)
+	workloads := findWorkloadManifests(manifests, e.appCfg.Workloads)
 	if len(workloads) == 0 {
 		return nil, fmt.Errorf("unable to find any workload manifests for BASELINE variant")
 	}
@@ -121,7 +121,7 @@ func (e *deployExecutor) generateBaselineManifests(manifests []provider.Manifest
 
 	// Find service manifests and duplicate them for BASELINE variant.
 	if opts.CreateService {
-		serviceName := e.deployCfg.Service.Name
+		serviceName := e.appCfg.Service.Name
 		services := findManifests(provider.KindService, serviceName, manifests)
 		if len(services) == 0 {
 			return nil, fmt.Errorf("unable to find any service for name=%q", serviceName)
