@@ -83,7 +83,7 @@ func IsApplicationConfigFile(filename string) bool {
 }
 
 func ToApplicationKind(k string) (ApplicationKind, bool) {
-	appKind, ok := ApplicationKind_value[strings.ToUpper(string(k))]
+	appKind, ok := ApplicationKind_value[k]
 	if !ok {
 		return -1, false
 	}

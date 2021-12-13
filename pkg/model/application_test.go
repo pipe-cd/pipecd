@@ -108,31 +108,31 @@ func TestToApplicationKind(t *testing.T) {
 	}{
 		{
 			name:         "KubernetesApp passed",
-			kind:         "KubernetesApp",
+			kind:         "KUBERNETESAPP",
 			expectedKind: -1,
 			valid:        false,
 		},
 		{
 			name:         "Kubernetes passed",
-			kind:         "Kubernetes",
+			kind:         "KUBERNETES",
 			expectedKind: ApplicationKind_KUBERNETES,
 			valid:        true,
 		},
 		{
 			name:         "Terraform passed",
-			kind:         "Terraform",
+			kind:         "TERRAFORM",
 			expectedKind: ApplicationKind_TERRAFORM,
 			valid:        true,
 		},
 		{
 			name:         "Cloudrun passed",
-			kind:         "Cloudrun",
+			kind:         "CLOUDRUN",
 			expectedKind: ApplicationKind_CLOUDRUN,
 			valid:        true,
 		},
 		{
 			name:         "Lambda passed",
-			kind:         "Lambda",
+			kind:         "LAMBDA",
 			expectedKind: ApplicationKind_LAMBDA,
 			valid:        true,
 		},
@@ -144,7 +144,7 @@ func TestToApplicationKind(t *testing.T) {
 		},
 		{
 			name:         "Invalid app kind passed",
-			kind:         "Kubernetest",
+			kind:         "INVALIDAPP",
 			expectedKind: -1,
 			valid:        false,
 		},
