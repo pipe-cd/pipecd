@@ -73,11 +73,7 @@ const (
 func (k Kind) ToApplicationKind() (model.ApplicationKind, bool) {
 	upper := strings.ToUpper(string(k))
 	kind := strings.TrimSuffix(upper, "APP")
-	appKind, ok := model.ApplicationKind_value[kind]
-	if !ok {
-		return -1, false
-	}
-	return model.ApplicationKind(appKind), true
+	return model.ToApplicationKind(kind)
 }
 
 var (
