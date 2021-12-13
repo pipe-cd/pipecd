@@ -308,6 +308,9 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
 						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
+						},
 					},
 				},
 				Input: KubernetesDeploymentInput{
@@ -350,6 +353,9 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
 						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
+						},
 					},
 				},
 				Input: KubernetesDeploymentInput{
@@ -370,6 +376,9 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 							Disabled:  newBoolPointer(false),
 							MinWindow: Duration(5 * time.Minute),
 						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
+						},
 					},
 				},
 				Input: KubernetesDeploymentInput{
@@ -389,6 +398,9 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 						OnOutOfSync: OnOutOfSync{
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
 						},
 					},
 				},
@@ -431,6 +443,9 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 						OnOutOfSync: OnOutOfSync{
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
 						},
 					},
 					PostSync: &PostSync{

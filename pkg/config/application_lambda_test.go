@@ -50,6 +50,9 @@ func TestLambdaApplicationConfig(t *testing.T) {
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
 						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
+						},
 					},
 				},
 				Input: LambdaDeploymentInput{
@@ -97,6 +100,9 @@ func TestLambdaApplicationConfig(t *testing.T) {
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
 						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
+						},
 					},
 				},
 				Input: LambdaDeploymentInput{
@@ -134,6 +140,9 @@ func TestLambdaApplicationConfig(t *testing.T) {
 						OnOutOfSync: OnOutOfSync{
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
 						},
 					},
 				},

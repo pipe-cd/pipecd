@@ -90,6 +90,9 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 							Disabled:  newBoolPointer(true),
 							MinWindow: Duration(5 * time.Minute),
 						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
+						},
 					},
 				},
 				Input: KubernetesDeploymentInput{
