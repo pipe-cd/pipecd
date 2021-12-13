@@ -15,10 +15,10 @@
 package resource
 
 type Deployment struct {
-	Spec ApplicationSpec
+	Spec DeploymentSpec
 }
 
-type ApplicationSpec struct {
+type DeploymentSpec struct {
 	Replicas int
 	Template PodTemplateSpec
 }

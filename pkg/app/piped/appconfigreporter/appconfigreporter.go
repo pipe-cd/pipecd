@@ -379,7 +379,7 @@ func (r *Reporter) readApplicationInfo(repoDir, repoID, cfgRelPath string) (*mod
 		return nil, fmt.Errorf("failed to decode configuration file: %w", err)
 	}
 
-	spec, ok := cfg.GetGenericDeployment()
+	spec, ok := cfg.GetGenericApplication()
 	if !ok {
 		return nil, fmt.Errorf("unsupported application kind %q", cfg.Kind)
 	}

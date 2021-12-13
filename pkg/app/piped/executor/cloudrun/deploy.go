@@ -136,13 +136,13 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	runningappCfg := runningDS.ApplicationConfig.CloudRunApplicationSpec
-	if runningappCfg == nil {
+	runningAppCfg := runningDS.ApplicationConfig.CloudRunApplicationSpec
+	if runningAppCfg == nil {
 		e.LogPersister.Error("Malformed application configuration in running commit: missing CloudRunApplicationSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	lastDeployedSM, ok := loadServiceManifest(&e.Input, runningappCfg.Input.ServiceManifestFile, runningDS)
+	lastDeployedSM, ok := loadServiceManifest(&e.Input, runningAppCfg.Input.ServiceManifestFile, runningDS)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}

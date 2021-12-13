@@ -164,7 +164,7 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 		return nil, err
 	}
 
-	gdc, ok := cfg.GetGenericDeployment()
+	gac, ok := cfg.GetGenericApplication()
 	if !ok {
 		fmt.Fprintf(lw, "Invalid application kind %s\n", cfg.Kind)
 		return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
@@ -172,12 +172,12 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	fmt.Fprintln(lw, "Successfully loaded the application configuration file")
 
 	// Decrypt the sealed secrets if needed.
-	if gdc.Encryption != nil && p.secretDecrypter != nil && len(gdc.Encryption.DecryptionTargets) > 0 {
-		if err := sourcedecrypter.DecryptSecrets(appDir, *gdc.Encryption, p.secretDecrypter); err != nil {
+	if gac.Encryption != nil && p.secretDecrypter != nil && len(gac.Encryption.DecryptionTargets) > 0 {
+		if err := sourcedecrypter.DecryptSecrets(appDir, *gac.Encryption, p.secretDecrypter); err != nil {
 			fmt.Fprintf(lw, "Unable to decrypt the secrets (%v)\n", err)
 			return nil, err
 		}
-		fmt.Fprintf(lw, "Successfully decrypted secrets: %v\n", gdc.Encryption.DecryptionTargets)
+		fmt.Fprintf(lw, "Successfully decrypted secrets: %v\n", gac.Encryption.DecryptionTargets)
 	}
 
 	return &DeploySource{
@@ -185,7 +185,7 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 		AppDir:                   appDir,
 		Revision:                 p.revision,
 		ApplicationConfig:        cfg,
-		GenericApplicationConfig: gdc,
+		GenericApplicationConfig: gac,
 	}, nil
 }
 

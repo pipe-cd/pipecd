@@ -221,7 +221,7 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 			return nil, fmt.Errorf("failed to load application configuration: %w", err)
 		}
 
-		gds, ok := cfg.GetGenericDeployment()
+		gds, ok := cfg.GetGenericApplication()
 		if !ok {
 			return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
 		}

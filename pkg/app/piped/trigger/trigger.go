@@ -521,7 +521,7 @@ func loadApplicationConfiguration(repoPath string, app *model.Application) (*con
 		return nil, fmt.Errorf("invalid application kind in the application config file, got: %s, expected: %s", appKind, app.Kind)
 	}
 
-	spec, ok := cfg.GetGenericDeployment()
+	spec, ok := cfg.GetGenericApplication()
 	if !ok {
 		return nil, fmt.Errorf("unsupported application kind: %s", app.Kind)
 	}

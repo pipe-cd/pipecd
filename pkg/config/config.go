@@ -259,7 +259,7 @@ func ToApplicationKind(k Kind) (model.ApplicationKind, bool) {
 	return model.ApplicationKind_KUBERNETES, false
 }
 
-func (c *Config) GetGenericDeployment() (GenericApplicationSpec, bool) {
+func (c *Config) GetGenericApplication() (GenericApplicationSpec, bool) {
 	switch c.Kind {
 	case KindKubernetesApp:
 		return c.KubernetesApplicationSpec.GenericApplicationSpec, true
