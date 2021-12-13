@@ -491,8 +491,13 @@ message ReportUnregisteredApplicationConfigurationsResponse {
 }
 
 message CreateDeploymentChainRequest {
+    // Note: The matcher use AND operator to merge all conditions used to determine
+    // which apps should be trigger as node in chain.
     message ApplicationMatcher {
         string name = 1;
+        // The kind is one of: Kubernetes, Terraform, Cloudrun, Lambda, ECS.
+        // This kind will be cast to model.ApplicationKind and we use string to use
+        // empty string as default value in case this matcher field is not set.
         string kind = 2;
         map<string,string> labels = 3;
     }

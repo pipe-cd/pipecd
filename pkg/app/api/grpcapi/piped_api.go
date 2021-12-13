@@ -37,7 +37,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
-	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -1140,9 +1139,9 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 		}
 
 		if matcher.Kind != "" {
-			kind, valid := config.Kind(matcher.Kind).ToApplicationKind()
+			kind, valid := model.ToApplicationKind(matcher.Kind)
 			if !valid {
-				return nil, nil, status.Error(codes.InvalidArgument, "invalid application kind passed as application matcher value")
+				return nil, nil, status.Error(codes.InvalidArgument, "invalid application kind given as application matcher value")
 			}
 			filters = append(filters, datastore.ListFilter{
 				Field:    "Kind",
