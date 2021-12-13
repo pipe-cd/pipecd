@@ -81,3 +81,13 @@ func (a *Application) IsOutOfSync() bool {
 func IsApplicationConfigFile(filename string) bool {
 	return filename == DefaultApplicationConfigFilename || strings.HasSuffix(filename, applicationConfigFileExtention)
 }
+
+func ToApplicationKind(kind string) (ApplicationKind, bool) {
+	upper := strings.ToUpper(string(kind))
+	k := strings.TrimSuffix(upper, "APP")
+	appKind, ok := ApplicationKind_value[k]
+	if !ok {
+		return -1, false
+	}
+	return ApplicationKind(appKind), true
+}
