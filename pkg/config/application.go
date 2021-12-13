@@ -110,8 +110,8 @@ type OnOutOfSync struct {
 type OnChain struct {
 	// Whether to exclude application from triggering target
 	// when received a new CHAIN_SYNC command.
-	// Default is false.
-	Disabled bool `json:"disabled,omitempty"`
+	// Default is true.
+	Disabled *bool `json:"disabled,omitempty" default:"true"`
 }
 
 func (s *GenericApplicationSpec) Validate() error {

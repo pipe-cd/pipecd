@@ -65,7 +65,6 @@ genrule(
 # gazelle:exclude pkg/model/notificationevent.pb.validate.go
 # gazelle:exclude pkg/model/piped.pb.validate.go
 # gazelle:exclude pkg/model/piped_stat.pb.validate.go
-# gazelle:exclude pkg/model/piped_stats.pb.validate.go
 # gazelle:exclude pkg/model/planpreview.pb.validate.go
 # gazelle:exclude pkg/model/project.pb.validate.go
 # gazelle:exclude pkg/model/role.pb.validate.go
