@@ -495,7 +495,7 @@ message CreateDeploymentChainRequest {
     // which apps should be trigger as node in chain.
     message ApplicationMatcher {
         string name = 1;
-        // The kind is one of: Kubernetes, Terraform, Cloudrun, Lambda, ECS.
+        // The kind is one of: KUBERNETES, TERRAFORM, CLOUDRUN, LAMBDA, ECS.
         // This kind will be cast to model.ApplicationKind and we use string to use
         // empty string as default value in case this matcher field is not set.
         string kind = 2;
