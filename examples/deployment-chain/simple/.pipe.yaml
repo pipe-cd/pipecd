@@ -9,9 +9,9 @@ spec:
   postSync:
     chain:
       applications:
-        # The below will match application named `simple` of kind `KUBERNETES`.
-        - name: simple
-          kind: KUBERNETES
         # The below will match application named `simple` of kind `CLOUDRUN`.
         - name: simple
           kind: CLOUDRUN
+        # The below will match application named `simple` of kind `LAMBDA`.
+        - name: simple
+          kind: LAMBDA
