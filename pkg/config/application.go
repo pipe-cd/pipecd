@@ -29,9 +29,14 @@ const (
 )
 
 type GenericApplicationSpec struct {
-	Name    string            `json:"name"`
-	EnvName string            `json:"envName"`
-	Labels  map[string]string `json:"labels"`
+	// The application name.
+	// This is required if you set the application through the application configuration file.
+	Name string `json:"name"`
+	// The environment name. You need to make sure that the environment name is unique in your project.
+	// This is required if you set the application through the application configuration file.
+	EnvName string `json:"envName"`
+	// Additional attributes to identify applications.
+	Labels map[string]string `json:"labels"`
 
 	// Configuration used while planning deployment.
 	Planner DeploymentPlanner `json:"planner"`
