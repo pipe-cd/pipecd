@@ -6,7 +6,6 @@ spec:
       - deployment.yaml
       - service.yaml
     kubectlVersion: 1.18.0
-    namespace: khanhtc-dev
   postSync:
     chain:
       applications:

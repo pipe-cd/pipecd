@@ -202,7 +202,7 @@ One of `yamlField` or `regex` is required.
 | onCommit | [OnCommit](#oncommit) | Controls triggering new deployment when new Git commits touched the application. | No |
 | onCommand | [OnCommand](#oncommand) | Controls triggering new deployment when received a new `SYNC` command. | No |
 | onOutOfSync | [OnOutOfSync](#onoutofsync) | Controls triggering new deployment when application is at `OUT_OF_SYNC` state. | No |
-| onChain | [onChain](#onchain) | Controls triggering new deployment when the application is counted as a node of some chains. | No |
+| onChain | [OnChain](#onchain) | Controls triggering new deployment when the application is counted as a node of some chains. | No |
 
 ## OnCommit
 
@@ -228,7 +228,7 @@ One of `yamlField` or `regex` is required.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| disabled | bool | Whether to exclude application from triggering target when application is counted as a node of some chains. Default is `false`. | No |
+| disabled | bool | Whether to exclude application from triggering target when application is counted as a node of some chains. Default is `true`. | No |
 
 ## Pipeline
 
@@ -580,6 +580,7 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The name of PipeCD application, note that application name is not unique in PipeCD datastore | No |
+| kind | string | The kind of the PipeCD application, which should be triggered as a node in deployment chain. The value will be one of: KUBERNETES, TERRAFORM, CLOUDRUN, LAMBDA, ECS. | No |
 
 ## PipeCD rich defined types
 
