@@ -18,7 +18,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestMakeApplicationURL(t *testing.T) {
@@ -95,65 +94,6 @@ func TestApplication_ContainLabels(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got := tc.app.ContainLabels(tc.labels)
 			assert.Equal(t, tc.want, got)
-		})
-	}
-}
-
-func TestToApplicationKind(t *testing.T) {
-	testcases := []struct {
-		name         string
-		kind         string
-		expectedKind ApplicationKind
-		valid        bool
-	}{
-		{
-			name:         "KubernetesApp passed",
-			kind:         "KUBERNETESAPP",
-			expectedKind: -1,
-			valid:        false,
-		},
-		{
-			name:         "Kubernetes passed",
-			kind:         "KUBERNETES",
-			expectedKind: ApplicationKind_KUBERNETES,
-			valid:        true,
-		},
-		{
-			name:         "Terraform passed",
-			kind:         "TERRAFORM",
-			expectedKind: ApplicationKind_TERRAFORM,
-			valid:        true,
-		},
-		{
-			name:         "Cloudrun passed",
-			kind:         "CLOUDRUN",
-			expectedKind: ApplicationKind_CLOUDRUN,
-			valid:        true,
-		},
-		{
-			name:         "Lambda passed",
-			kind:         "LAMBDA",
-			expectedKind: ApplicationKind_LAMBDA,
-			valid:        true,
-		},
-		{
-			name:         "ECS passed",
-			kind:         "ECS",
-			expectedKind: ApplicationKind_ECS,
-			valid:        true,
-		},
-		{
-			name:         "Invalid app kind passed",
-			kind:         "INVALIDAPP",
-			expectedKind: -1,
-			valid:        false,
-		},
-	}
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			oKind, valid := ToApplicationKind(tc.kind)
-			require.Equal(t, tc.valid, valid)
-			assert.Equal(t, tc.expectedKind, oKind)
 		})
 	}
 }

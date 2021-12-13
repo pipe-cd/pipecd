@@ -1139,8 +1139,8 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 		}
 
 		if matcher.Kind != "" {
-			kind, valid := model.ToApplicationKind(matcher.Kind)
-			if !valid {
+			kind, ok := model.ApplicationKind_value[matcher.Kind]
+			if !ok {
 				return nil, nil, status.Error(codes.InvalidArgument, "invalid application kind given as application matcher value")
 			}
 			filters = append(filters, datastore.ListFilter{
