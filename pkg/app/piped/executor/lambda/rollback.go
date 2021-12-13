@@ -59,9 +59,9 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	deployCfg := runningDS.DeploymentConfig.LambdaDeploymentSpec
-	if deployCfg == nil {
-		e.LogPersister.Errorf("Malformed deployment configuration: missing LambdaDeploymentSpec")
+	appCfg := runningDS.ApplicationConfig.LambdaApplicationSpec
+	if appCfg == nil {
+		e.LogPersister.Errorf("Malformed application configuration: missing LambdaApplicationSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -70,7 +70,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	fm, ok := loadFunctionManifest(&e.Input, deployCfg.Input.FunctionManifestFile, runningDS)
+	fm, ok := loadFunctionManifest(&e.Input, appCfg.Input.FunctionManifestFile, runningDS)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}

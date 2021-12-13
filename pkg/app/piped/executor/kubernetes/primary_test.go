@@ -126,7 +126,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
 					return p
 				}(),
-				deployCfg: &config.KubernetesDeploymentSpec{},
+				appCfg: &config.KubernetesApplicationSpec{},
 			},
 		},
 		{
@@ -176,7 +176,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
 					return p
 				}(),
-				deployCfg: &config.KubernetesDeploymentSpec{
+				appCfg: &config.KubernetesApplicationSpec{
 					Service: config.K8sResourceReference{
 						Kind: "Service",
 						Name: "foo",
@@ -222,7 +222,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					}, nil)
 					return p
 				}(),
-				deployCfg: &config.KubernetesDeploymentSpec{
+				appCfg: &config.KubernetesApplicationSpec{
 					TrafficRouting: &config.KubernetesTrafficRouting{
 						Method: config.KubernetesTrafficRoutingMethodIstio,
 					},
@@ -267,8 +267,8 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					}, nil)
 					return p
 				}(),
-				deployCfg: &config.KubernetesDeploymentSpec{
-					GenericDeploymentSpec: config.GenericDeploymentSpec{
+				appCfg: &config.KubernetesApplicationSpec{
+					GenericApplicationSpec: config.GenericApplicationSpec{
 						Pipeline: &config.DeploymentPipeline{
 							Stages: []config.PipelineStage{
 								{

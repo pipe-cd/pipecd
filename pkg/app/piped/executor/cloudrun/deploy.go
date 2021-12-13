@@ -33,7 +33,7 @@ type deployExecutor struct {
 	executor.Input
 
 	deploySource *deploysource.DeploySource
-	deployCfg    *config.CloudRunDeploymentSpec
+	appCfg       *config.CloudRunApplicationSpec
 	client       provider.Client
 }
 
@@ -46,9 +46,9 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 
 	e.deploySource = ds
-	e.deployCfg = ds.DeploymentConfig.CloudRunDeploymentSpec
-	if e.deployCfg == nil {
-		e.LogPersister.Error("Malformed deployment configuration: missing CloudRunDeploymentSpec")
+	e.appCfg = ds.ApplicationConfig.CloudRunApplicationSpec
+	if e.appCfg == nil {
+		e.LogPersister.Error("Malformed application configuration: missing CloudRunApplicationSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -84,7 +84,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 }
 
 func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
-	sm, ok := loadServiceManifest(&e.Input, e.deployCfg.Input.ServiceManifestFile, e.deploySource)
+	sm, ok := loadServiceManifest(&e.Input, e.appCfg.Input.ServiceManifestFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -136,13 +136,13 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	runningDeployCfg := runningDS.DeploymentConfig.CloudRunDeploymentSpec
-	if runningDeployCfg == nil {
-		e.LogPersister.Error("Malformed deployment configuration in running commit: missing CloudRunDeploymentSpec")
+	runningappCfg := runningDS.ApplicationConfig.CloudRunApplicationSpec
+	if runningappCfg == nil {
+		e.LogPersister.Error("Malformed application configuration in running commit: missing CloudRunApplicationSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	lastDeployedSM, ok := loadServiceManifest(&e.Input, runningDeployCfg.Input.ServiceManifestFile, runningDS)
+	lastDeployedSM, ok := loadServiceManifest(&e.Input, runningappCfg.Input.ServiceManifestFile, runningDS)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -153,7 +153,7 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 	}
 
 	// Load the service manifest at the target commit.
-	sm, ok := loadServiceManifest(&e.Input, e.deployCfg.Input.ServiceManifestFile, e.deploySource)
+	sm, ok := loadServiceManifest(&e.Input, e.appCfg.Input.ServiceManifestFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}

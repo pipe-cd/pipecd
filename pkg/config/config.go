@@ -37,18 +37,18 @@ const (
 type Kind string
 
 const (
-	// KindKubernetesApp represents deployment configuration for a Kubernetes application.
+	// KindKubernetesApp represents application configuration for a Kubernetes application.
 	// This application can be a group of plain-YAML Kubernetes manifests,
 	// or kustomization manifests or helm manifests.
 	KindKubernetesApp Kind = "KubernetesApp"
-	// KindTerraformApp represents deployment configuration for a Terraform application.
+	// KindTerraformApp represents application configuration for a Terraform application.
 	// This application contains a single workspace of a terraform root module.
 	KindTerraformApp Kind = "TerraformApp"
-	// KindLambdaApp represents deployment configuration for an AWS Lambda application.
+	// KindLambdaApp represents application configuration for an AWS Lambda application.
 	KindLambdaApp Kind = "LambdaApp"
-	// KindCloudRunApp represents deployment configuration for a CloudRun application.
+	// KindCloudRunApp represents application configuration for a CloudRun application.
 	KindCloudRunApp Kind = "CloudRunApp"
-	// KindECSApp represents deployment configuration for an AWS ECS.
+	// KindECSApp represents application configuration for an AWS ECS.
 	KindECSApp Kind = "ECSApp"
 	// KindSealedSecret represents a sealed secret.
 	KindSealedSecret Kind = "SealedSecret"
@@ -91,11 +91,11 @@ type Config struct {
 	APIVersion string
 	spec       interface{}
 
-	KubernetesDeploymentSpec *KubernetesDeploymentSpec
-	TerraformDeploymentSpec  *TerraformDeploymentSpec
-	CloudRunDeploymentSpec   *CloudRunDeploymentSpec
-	LambdaDeploymentSpec     *LambdaDeploymentSpec
-	ECSDeploymentSpec        *ECSDeploymentSpec
+	KubernetesApplicationSpec *KubernetesApplicationSpec
+	TerraformApplicationSpec  *TerraformApplicationSpec
+	CloudRunApplicationSpec   *CloudRunApplicationSpec
+	LambdaApplicationSpec     *LambdaApplicationSpec
+	ECSApplicationSpec        *ECSApplicationSpec
 
 	PipedSpec            *PipedSpec
 	ControlPlaneSpec     *ControlPlaneSpec
@@ -117,24 +117,24 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 
 	switch kind {
 	case KindKubernetesApp:
-		c.KubernetesDeploymentSpec = &KubernetesDeploymentSpec{}
-		c.spec = c.KubernetesDeploymentSpec
+		c.KubernetesApplicationSpec = &KubernetesApplicationSpec{}
+		c.spec = c.KubernetesApplicationSpec
 
 	case KindTerraformApp:
-		c.TerraformDeploymentSpec = &TerraformDeploymentSpec{}
-		c.spec = c.TerraformDeploymentSpec
+		c.TerraformApplicationSpec = &TerraformApplicationSpec{}
+		c.spec = c.TerraformApplicationSpec
 
 	case KindCloudRunApp:
-		c.CloudRunDeploymentSpec = &CloudRunDeploymentSpec{}
-		c.spec = c.CloudRunDeploymentSpec
+		c.CloudRunApplicationSpec = &CloudRunApplicationSpec{}
+		c.spec = c.CloudRunApplicationSpec
 
 	case KindLambdaApp:
-		c.LambdaDeploymentSpec = &LambdaDeploymentSpec{}
-		c.spec = c.LambdaDeploymentSpec
+		c.LambdaApplicationSpec = &LambdaApplicationSpec{}
+		c.spec = c.LambdaApplicationSpec
 
 	case KindECSApp:
-		c.ECSDeploymentSpec = &ECSDeploymentSpec{}
-		c.spec = c.ECSDeploymentSpec
+		c.ECSApplicationSpec = &ECSApplicationSpec{}
+		c.spec = c.ECSApplicationSpec
 
 	case KindPiped:
 		c.PipedSpec = &PipedSpec{}
@@ -259,18 +259,18 @@ func ToApplicationKind(k Kind) (model.ApplicationKind, bool) {
 	return model.ApplicationKind_KUBERNETES, false
 }
 
-func (c *Config) GetGenericDeployment() (GenericDeploymentSpec, bool) {
+func (c *Config) GetGenericDeployment() (GenericApplicationSpec, bool) {
 	switch c.Kind {
 	case KindKubernetesApp:
-		return c.KubernetesDeploymentSpec.GenericDeploymentSpec, true
+		return c.KubernetesApplicationSpec.GenericApplicationSpec, true
 	case KindTerraformApp:
-		return c.TerraformDeploymentSpec.GenericDeploymentSpec, true
+		return c.TerraformApplicationSpec.GenericApplicationSpec, true
 	case KindCloudRunApp:
-		return c.CloudRunDeploymentSpec.GenericDeploymentSpec, true
+		return c.CloudRunApplicationSpec.GenericApplicationSpec, true
 	case KindLambdaApp:
-		return c.LambdaDeploymentSpec.GenericDeploymentSpec, true
+		return c.LambdaApplicationSpec.GenericApplicationSpec, true
 	case KindECSApp:
-		return c.ECSDeploymentSpec.GenericDeploymentSpec, true
+		return c.ECSApplicationSpec.GenericApplicationSpec, true
 	}
-	return GenericDeploymentSpec{}, false
+	return GenericApplicationSpec{}, false
 }

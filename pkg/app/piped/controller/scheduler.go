@@ -66,8 +66,8 @@ type scheduler struct {
 	// because the deployment model is readonly to avoid data race.
 	// We may need a mutex for this field in the future
 	// when the stages can be executed concurrently.
-	stageStatuses           map[string]model.StageStatus
-	genericDeploymentConfig config.GenericDeploymentSpec
+	stageStatuses            map[string]model.StageStatus
+	genericApplicationConfig config.GenericApplicationSpec
 
 	done                 atomic.Bool
 	doneTimestamp        time.Time
@@ -239,10 +239,10 @@ func (s *scheduler) Run(ctx context.Context) error {
 		)
 	}
 
-	// We use another deploy source provider to load the deployment configuration at the target commit.
+	// We use another deploy source provider to load the application configuration at the target commit.
 	// This provider is configured with a nil secretDecrypter
 	// because decrypting the sealed secrets is not required.
-	// We need only the deployment configuration spec.
+	// We need only the application configuration spec.
 	configDSP := deploysource.NewProvider(
 		filepath.Join(s.workingDir, "target-config"),
 		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "target", s.deployment.Trigger.Commit.Hash),
@@ -252,13 +252,13 @@ func (s *scheduler) Run(ctx context.Context) error {
 	ds, err := configDSP.GetReadOnly(ctx, io.Discard)
 	if err != nil {
 		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-		statusReason = fmt.Sprintf("Unable to prepare deployment configuration source data at target commit (%v)", err)
+		statusReason = fmt.Sprintf("Unable to prepare application configuration source data at target commit (%v)", err)
 		s.reportDeploymentCompleted(ctx, deploymentStatus, statusReason, "")
 		return err
 	}
-	s.genericDeploymentConfig = ds.GenericDeploymentConfig
+	s.genericApplicationConfig = ds.GenericApplicationConfig
 
-	timer := time.NewTimer(s.genericDeploymentConfig.Timeout.Duration())
+	timer := time.NewTimer(s.genericApplicationConfig.Timeout.Duration())
 	defer timer.Stop()
 
 	// Iterate all the stages and execute the uncompleted ones.
@@ -444,7 +444,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	if ps.Predefined {
 		stageConfig, stageConfigFound = pln.GetPredefinedStage(ps.Id)
 	} else {
-		stageConfig, stageConfigFound = s.genericDeploymentConfig.GetStage(ps.Index)
+		stageConfig, stageConfigFound = s.genericApplicationConfig.GetStage(ps.Index)
 	}
 
 	if !stageConfigFound {

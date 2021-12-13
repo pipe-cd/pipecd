@@ -15,7 +15,7 @@
 package resource
 
 type StatefulSet struct {
-	Spec DeploymentSpec
+	Spec ApplicationSpec
 }
 
 type StatefulSetSpec struct {

@@ -47,14 +47,14 @@ func (b *builder) terraformDiff(
 		return nil, err
 	}
 
-	deployCfg := ds.DeploymentConfig.TerraformDeploymentSpec
-	if deployCfg == nil {
-		err := fmt.Errorf("missing Terraform spec field in deployment configuration")
+	appCfg := ds.ApplicationConfig.TerraformApplicationSpec
+	if appCfg == nil {
+		err := fmt.Errorf("missing Terraform spec field in application configuration")
 		fmt.Fprintln(buf, err.Error())
 		return nil, err
 	}
 
-	version := deployCfg.Input.TerraformVersion
+	version := appCfg.Input.TerraformVersion
 	terraformPath, installed, err := toolregistry.DefaultRegistry().Terraform(ctx, version)
 	if err != nil {
 		fmt.Fprintf(buf, "unable to find the specified terraform version %q (%v)\n", version, err)
@@ -64,18 +64,18 @@ func (b *builder) terraformDiff(
 		b.logger.Info(fmt.Sprintf("terraform %q has just been installed to %q because of no pre-installed binary for that version", version, terraformPath))
 	}
 
-	vars := make([]string, 0, len(cpCfg.Vars)+len(deployCfg.Input.Vars))
+	vars := make([]string, 0, len(cpCfg.Vars)+len(appCfg.Input.Vars))
 	vars = append(vars, cpCfg.Vars...)
-	vars = append(vars, deployCfg.Input.Vars...)
-	flags := deployCfg.Input.CommandFlags
-	envs := deployCfg.Input.CommandEnvs
+	vars = append(vars, appCfg.Input.Vars...)
+	flags := appCfg.Input.CommandFlags
+	envs := appCfg.Input.CommandEnvs
 
 	executor := terraformprovider.NewTerraform(
 		terraformPath,
 		ds.AppDir,
 		terraformprovider.WithoutColor(),
 		terraformprovider.WithVars(vars),
-		terraformprovider.WithVarFiles(deployCfg.Input.VarFiles),
+		terraformprovider.WithVarFiles(appCfg.Input.VarFiles),
 		terraformprovider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
 		terraformprovider.WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
 	)
@@ -85,7 +85,7 @@ func (b *builder) terraformDiff(
 		return nil, err
 	}
 
-	if ws := deployCfg.Input.Workspace; ws != "" {
+	if ws := appCfg.Input.Workspace; ws != "" {
 		if err := executor.SelectWorkspace(ctx, ws); err != nil {
 			fmt.Fprintf(buf, "failed to select workspace %q (%v). You might need to create the workspace before using by command %q\n",
 				ws,

@@ -61,20 +61,20 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	deployCfg := ds.DeploymentConfig.KubernetesDeploymentSpec
-	if deployCfg == nil {
-		e.LogPersister.Error("Malformed deployment configuration: missing KubernetesDeploymentSpec")
+	appCfg := ds.ApplicationConfig.KubernetesApplicationSpec
+	if appCfg == nil {
+		e.LogPersister.Error("Malformed application configuration: missing KubernetesApplicationSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if deployCfg.Input.HelmChart != nil {
-		chartRepoName := deployCfg.Input.HelmChart.Repository
+	if appCfg.Input.HelmChart != nil {
+		chartRepoName := appCfg.Input.HelmChart.Repository
 		if chartRepoName != "" {
-			deployCfg.Input.HelmChart.Insecure = e.PipedConfig.IsInsecureChartRepository(chartRepoName)
+			appCfg.Input.HelmChart.Insecure = e.PipedConfig.IsInsecureChartRepository(chartRepoName)
 		}
 	}
 
-	p := provider.NewProvider(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, deployCfg.Input, e.GitClient, e.Logger)
+	p := provider.NewProvider(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, appCfg.Input, e.GitClient, e.Logger)
 	e.Logger.Info("start executing kubernetes stage",
 		zap.String("stage-name", e.Stage.Name),
 		zap.String("app-dir", ds.AppDir),
@@ -98,8 +98,8 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
-	if deployCfg.QuickSync.AddVariantLabelToSelector {
-		workloads := findWorkloadManifests(manifests, deployCfg.Workloads)
+	if appCfg.QuickSync.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(manifests, appCfg.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
 				e.LogPersister.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableLogString(), err)
@@ -124,7 +124,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	}
 
 	// Start applying all manifests to add or update running resources.
-	if err := applyManifests(ctx, p, manifests, deployCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, p, manifests, appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

@@ -25,9 +25,8 @@ const (
 	applicationConfigFileExtention   = ".pipecd.yaml"
 )
 
-// GetDeploymentConfigFilePath returns the path to deployment configuration file.
-// TODO: Rename all identifiers named DeploymentConfig to ApplicationConfig
-func (p ApplicationGitPath) GetDeploymentConfigFilePath() string {
+// GetApplicationConfigFilePath returns the path to application configuration file.
+func (p ApplicationGitPath) GetApplicationConfigFilePath() string {
 	filename := DefaultApplicationConfigFilename
 	if n := p.ConfigFilename; n != "" {
 		filename = n

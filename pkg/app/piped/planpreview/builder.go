@@ -308,7 +308,7 @@ func (b *builder) cloneHeadCommit(ctx context.Context, headBranch, headCommit st
 func (b *builder) findTriggerApps(ctx context.Context, repo git.Repo, apps []*model.Application, headCommit string) (triggerApps []*model.Application, failedResults []*model.ApplicationPlanPreviewResult, err error) {
 	d := trigger.NewOnCommitDeterminer(repo, headCommit, b.commitGetter, b.logger)
 	determine := func(app *model.Application) (bool, error) {
-		appCfg, err := loadDeploymentConfiguration(repo.GetPath(), app)
+		appCfg, err := loadApplicationConfiguration(repo.GetPath(), app)
 		if err != nil {
 			return false, err
 		}
@@ -423,9 +423,9 @@ func (b *builder) getMostRecentlySuccessfulDeployment(ctx context.Context, appli
 	return deploy.(*model.ApplicationDeploymentReference), nil
 }
 
-func loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.GenericDeploymentSpec, error) {
+func loadApplicationConfiguration(repoPath string, app *model.Application) (*config.GenericApplicationSpec, error) {
 	var (
-		relPath = app.GitPath.GetDeploymentConfigFilePath()
+		relPath = app.GitPath.GetApplicationConfigFilePath()
 		absPath = filepath.Join(repoPath, relPath)
 	)
 
@@ -437,7 +437,7 @@ func loadDeploymentConfiguration(repoPath string, app *model.Application) (*conf
 		return nil, err
 	}
 	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
-		return nil, fmt.Errorf("invalid application kind in the deployment config file, got: %s, expected: %s", appKind, app.Kind)
+		return nil, fmt.Errorf("invalid application kind in the application config file, got: %s, expected: %s", appKind, app.Kind)
 	}
 
 	spec, ok := cfg.GetGenericDeployment()

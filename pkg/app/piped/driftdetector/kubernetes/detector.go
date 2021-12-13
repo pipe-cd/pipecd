@@ -216,9 +216,9 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 	manifests, ok := manifestCache.Get(headCommit.Hash)
 	if !ok {
 		// When the manifests were not in the cache we have to load them.
-		cfg, err := d.loadDeploymentConfiguration(repoDir, app)
+		cfg, err := d.loadApplicationConfiguration(repoDir, app)
 		if err != nil {
-			return nil, fmt.Errorf("failed to load deployment configuration: %w", err)
+			return nil, fmt.Errorf("failed to load application configuration: %w", err)
 		}
 
 		gds, ok := cfg.GetGenericDeployment()
@@ -247,7 +247,7 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 			}
 		}
 
-		loader := provider.NewManifestLoader(app.Name, appDir, repoDir, app.GitPath.ConfigFilename, cfg.KubernetesDeploymentSpec.Input, d.gitClient, d.logger)
+		loader := provider.NewManifestLoader(app.Name, appDir, repoDir, app.GitPath.ConfigFilename, cfg.KubernetesApplicationSpec.Input, d.gitClient, d.logger)
 		manifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			err = fmt.Errorf("failed to load new manifests: %w", err)
@@ -293,20 +293,20 @@ func (d *detector) listGroupedApplication() map[string][]*model.Application {
 	return m
 }
 
-func (d *detector) loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
-	path := filepath.Join(repoPath, app.GitPath.GetDeploymentConfigFilePath())
+func (d *detector) loadApplicationConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
+	path := filepath.Join(repoPath, app.GitPath.GetApplicationConfigFilePath())
 	cfg, err := config.LoadFromYAML(path)
 	if err != nil {
 		return nil, err
 	}
 	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
-		return nil, fmt.Errorf("application in deployment configuration file is not match, got: %s, expected: %s", appKind, app.Kind)
+		return nil, fmt.Errorf("application in application configuration file is not match, got: %s, expected: %s", appKind, app.Kind)
 	}
 
-	if cfg.KubernetesDeploymentSpec != nil && cfg.KubernetesDeploymentSpec.Input.HelmChart != nil {
-		chartRepoName := cfg.KubernetesDeploymentSpec.Input.HelmChart.Repository
+	if cfg.KubernetesApplicationSpec != nil && cfg.KubernetesApplicationSpec.Input.HelmChart != nil {
+		chartRepoName := cfg.KubernetesApplicationSpec.Input.HelmChart.Repository
 		if chartRepoName != "" {
-			cfg.KubernetesDeploymentSpec.Input.HelmChart.Insecure = d.config.IsInsecureChartRepository(chartRepoName)
+			cfg.KubernetesApplicationSpec.Input.HelmChart.Insecure = d.config.IsInsecureChartRepository(chartRepoName)
 		}
 	}
 

@@ -72,7 +72,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 	e.repoDir = ds.RepoDir
-	e.config = ds.DeploymentConfig
+	e.config = ds.ApplicationConfig
 
 	templateCfg, err := config.LoadAnalysisTemplate(e.repoDir)
 	if errors.Is(err, config.ErrNotFound) {
@@ -301,7 +301,7 @@ func (e *Executor) buildAppArgs(customArgs map[string]string) argsTemplate {
 		return args
 	}
 	namespace := "default"
-	if n := e.config.KubernetesDeploymentSpec.Input.Namespace; n != "" {
+	if n := e.config.KubernetesApplicationSpec.Input.Namespace; n != "" {
 		namespace = n
 	}
 	args.K8s.Namespace = namespace

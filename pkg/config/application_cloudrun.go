@@ -14,9 +14,9 @@
 
 package config
 
-// CloudRunDeploymentSpec represents a deployment configuration for CloudRun application.
-type CloudRunDeploymentSpec struct {
-	GenericDeploymentSpec
+// CloudRunApplicationSpec represents an application configuration for CloudRun application.
+type CloudRunApplicationSpec struct {
+	GenericApplicationSpec
 	// Input for CloudRun deployment such as docker image...
 	Input CloudRunDeploymentInput `json:"input"`
 	// Configuration for quick sync.
@@ -24,8 +24,8 @@ type CloudRunDeploymentSpec struct {
 }
 
 // Validate returns an error if any wrong configuration value was found.
-func (s *CloudRunDeploymentSpec) Validate() error {
-	if err := s.GenericDeploymentSpec.Validate(); err != nil {
+func (s *CloudRunApplicationSpec) Validate() error {
+	if err := s.GenericApplicationSpec.Validate(); err != nil {
 		return err
 	}
 	return nil

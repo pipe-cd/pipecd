@@ -11,7 +11,7 @@ description: >
 Automated Deployment Analysis (ADA) evaluates the impact of the deployment you are in the middle of by analyzing the metrics data, log entries, and the responses of the configured HTTP requests.
 The analysis of the newly deployed application is often carried out in a manual, ad-hoc or statistically incorrect manner.
 ADA automates that and helps to build a robust deployment process.
-ADA is available as a [Stage](/docs/concepts/#stage) in the pipeline specified in the deployment configuration file.
+ADA is available as a [Stage](/docs/concepts/#stage) in the pipeline specified in the application configuration file.
 
 ADA does the analysis by periodically performing queries against the [Analysis Provider](/docs/concepts/#analysis-provider) and evaluating the results to know the impact of the deployment. Then based on these evaluating results, the deployment can be rolled back immediately to minimize any negative impacts.
 
@@ -246,7 +246,7 @@ See more the [example](https://github.com/pipe-cd/examples/blob/master/kubernete
 >TBA
 
 ### [Optional] Analysis Template
-Analysis Templating is a feature that allows you to define some shared analysis configurations to be used by multiple applications. These templates must be placed at the `.pipe` directory at the root of the Git repository. Any application in that Git repository can use to the defined template by specifying the name of the template in the deployment configuration file.
+Analysis Templating is a feature that allows you to define some shared analysis configurations to be used by multiple applications. These templates must be placed at the `.pipe` directory at the root of the Git repository. Any application in that Git repository can use to the defined template by specifying the name of the template in the application configuration file.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -264,7 +264,7 @@ spec:
         sum without(status) (rate(http_requests_total{job="{{ .App.Name }}"}[1m]))
 ```
 
-Once the AnalysisTemplate is defined, you can reference from the deployment configuration using the `template` field.
+Once the AnalysisTemplate is defined, you can reference from the application configuration using the `template` field.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1

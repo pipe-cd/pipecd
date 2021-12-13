@@ -163,7 +163,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
 					return p
 				}(),
-				deployCfg: &config.KubernetesDeploymentSpec{},
+				appCfg: &config.KubernetesApplicationSpec{},
 			},
 		},
 		{
@@ -212,7 +212,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
 					return p
 				}(),
-				deployCfg: &config.KubernetesDeploymentSpec{},
+				appCfg: &config.KubernetesApplicationSpec{},
 			},
 		},
 	}

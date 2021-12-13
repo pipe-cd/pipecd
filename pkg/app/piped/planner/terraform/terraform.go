@@ -45,9 +45,9 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
-	cfg := ds.DeploymentConfig.TerraformDeploymentSpec
+	cfg := ds.ApplicationConfig.TerraformApplicationSpec
 	if cfg == nil {
-		err = fmt.Errorf("missing TerraformDeploymentSpec in deployment configuration")
+		err = fmt.Errorf("missing TerraformApplicationSpec in application configuration")
 		return
 	}
 

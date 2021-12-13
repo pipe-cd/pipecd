@@ -29,11 +29,11 @@ import (
 )
 
 type DeploySource struct {
-	RepoDir                 string
-	AppDir                  string
-	Revision                string
-	DeploymentConfig        *config.Config
-	GenericDeploymentConfig config.GenericDeploymentSpec
+	RepoDir                  string
+	AppDir                   string
+	Revision                 string
+	ApplicationConfig        *config.Config
+	GenericApplicationConfig config.GenericApplicationSpec
 }
 
 type Provider interface {
@@ -149,17 +149,17 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	}
 	fmt.Fprintf(lw, "Successfully cloned the %s commit\n", p.revisionName)
 
-	// Load the deployment configuration file.
+	// Load the application configuration file.
 	var (
-		cfgFileRelPath = p.appGitPath.GetDeploymentConfigFilePath()
+		cfgFileRelPath = p.appGitPath.GetApplicationConfigFilePath()
 		cfgFileAbsPath = filepath.Join(repoDir, cfgFileRelPath)
 	)
 	cfg, err := config.LoadFromYAML(cfgFileAbsPath)
 	if err != nil {
-		fmt.Fprintf(lw, "Unable to load the deployment configuration file at %s (%v)\n", cfgFileRelPath, err)
+		fmt.Fprintf(lw, "Unable to load the application configuration file at %s (%v)\n", cfgFileRelPath, err)
 
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("deployment config file %s was not found", cfgFileRelPath)
+			return nil, fmt.Errorf("application config file %s was not found", cfgFileRelPath)
 		}
 		return nil, err
 	}
@@ -169,7 +169,7 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 		fmt.Fprintf(lw, "Invalid application kind %s\n", cfg.Kind)
 		return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
 	}
-	fmt.Fprintln(lw, "Successfully loaded the deployment configuration file")
+	fmt.Fprintln(lw, "Successfully loaded the application configuration file")
 
 	// Decrypt the sealed secrets if needed.
 	if gdc.Encryption != nil && p.secretDecrypter != nil && len(gdc.Encryption.DecryptionTargets) > 0 {
@@ -181,11 +181,11 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	}
 
 	return &DeploySource{
-		RepoDir:                 repoDir,
-		AppDir:                  appDir,
-		Revision:                p.revision,
-		DeploymentConfig:        cfg,
-		GenericDeploymentConfig: gdc,
+		RepoDir:                  repoDir,
+		AppDir:                   appDir,
+		Revision:                 p.revision,
+		ApplicationConfig:        cfg,
+		GenericApplicationConfig: gdc,
 	}, nil
 }
 
@@ -201,10 +201,10 @@ func (p *provider) copy(lw io.Writer) (*DeploySource, error) {
 	}
 
 	return &DeploySource{
-		RepoDir:                 dest,
-		AppDir:                  filepath.Join(dest, p.appGitPath.Path),
-		Revision:                p.revision,
-		DeploymentConfig:        p.source.DeploymentConfig,
-		GenericDeploymentConfig: p.source.GenericDeploymentConfig,
+		RepoDir:                  dest,
+		AppDir:                   filepath.Join(dest, p.appGitPath.Path),
+		Revision:                 p.revision,
+		ApplicationConfig:        p.source.ApplicationConfig,
+		GenericApplicationConfig: p.source.GenericApplicationConfig,
 	}, nil
 }

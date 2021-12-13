@@ -79,8 +79,6 @@ Navigate to the `Application` page, click on the `Add` button. Then give as:
 
 ![](/images/quickstart-adding-application.png)
 
-While you can see the select box for the deployment config template, skip it at this point.
-
 After a bit, the first deployment would be complete automatically to sync the application to the state specified in the current Git commit.
 
 ![](/images/quickstart-first-deployment.png)

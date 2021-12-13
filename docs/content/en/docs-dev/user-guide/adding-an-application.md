@@ -7,9 +7,9 @@ description: >
 ---
 
 An application is a collect of resources and configurations that are managed together.
-It represents the service which you are going to deploy. With PipeCD, all application's manifests and its deployment configuration (`.pipe.yaml`) must be committed into a directory of a Git repository. That directory is called as application directory.
+It represents the service which you are going to deploy. With PipeCD, all application's manifests and its application configuration (`.pipe.yaml`) must be committed into a directory of a Git repository. That directory is called as application directory.
 
-Before deploying an application, the application must be registered from the web UI and a deployment configuration file (`.pipe.yaml`) must be committed to the application directory.
+Before deploying an application, the application must be registered from the web UI and a application configuration file (`.pipe.yaml`) must be committed to the application directory.
 An application must belong to exactly one environment and can be handled by one of the registered `piped`s. Currently, PipeCD is supporting the following kinds of application:
 
 - Kubernetes application
@@ -39,17 +39,17 @@ Here are the list of fields in the register form:
 | Kind | The application kind. Select one of these values: `Kubernetes`, `Terraform`, `CloudRun`, `Lambda` and `ECS`. | Yes |
 | Env | The environment this application should belongs to. Select one of the registered environments at `Settings/Environment` page.  | Yes |
 | Piped | The piped that handles this application. Select one of the registered `piped`s at `Settings/Piped` page. | Yes |
-| Repository | The Git repository contains application configuration and deployment configuration. Select one of the registered repositories in `piped` configuration. | Yes |
-| Path | The relative path from the root of the Git repository to the directory containing application configuration and deployment configuration. Use `./` means repository root. | Yes |
-| Config Filename | The name of deployment configuration file. Default is `.pipe.yaml`. | No |
+| Repository | The Git repository contains application configuration and application configuration. Select one of the registered repositories in `piped` configuration. | Yes |
+| Path | The relative path from the root of the Git repository to the directory containing application configuration and application configuration. Use `./` means repository root. | Yes |
+| Config Filename | The name of application configuration file. Default is `.pipe.yaml`. | No |
 | Cloud Provider | Where the application will be deployed to. Select one of the registered cloud providers in `piped` configuration. | Yes |
 
-## Adding deployment configuration file
+## Adding application configuration file
 
-After registering the application, one more step left is adding the deployment configuration file (`.pipe.yaml`) for that application into the application directory in Git repository.
+After registering the application, one more step left is adding the application configuration file (`.pipe.yaml`) for that application into the application directory in Git repository.
 
-Adding deployment configuration file helps `piped` know how the application should be deployed, such as doing canary/blue-green strategy or requiring a manual approval...
-That deployment configuration file is in `YAML` format as below:
+Adding application configuration file helps `piped` know how the application should be deployed, such as doing canary/blue-green strategy or requiring a manual approval...
+That application configuration file is in `YAML` format as below:
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1

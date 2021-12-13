@@ -30,7 +30,7 @@ type deployExecutor struct {
 	appDir        string
 	vars          []string
 	terraformPath string
-	deployCfg     *config.TerraformDeploymentSpec
+	appCfg        *config.TerraformApplicationSpec
 }
 
 func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
@@ -46,18 +46,18 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	e.deployCfg = ds.DeploymentConfig.TerraformDeploymentSpec
-	if e.deployCfg == nil {
-		e.LogPersister.Error("Malformed deployment configuration: missing TerraformDeploymentSpec")
+	e.appCfg = ds.ApplicationConfig.TerraformApplicationSpec
+	if e.appCfg == nil {
+		e.LogPersister.Error("Malformed application configuration: missing TerraformApplicationSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	e.repoDir = ds.RepoDir
 	e.appDir = ds.AppDir
 
-	e.vars = make([]string, 0, len(cloudProviderCfg.Vars)+len(e.deployCfg.Input.Vars))
+	e.vars = make([]string, 0, len(cloudProviderCfg.Vars)+len(e.appCfg.Input.Vars))
 	e.vars = append(e.vars, cloudProviderCfg.Vars...)
-	e.vars = append(e.vars, e.deployCfg.Input.Vars...)
+	e.vars = append(e.vars, e.appCfg.Input.Vars...)
 
 	var (
 		originalStatus = e.Stage.Status
@@ -65,7 +65,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	)
 
 	var ok bool
-	e.terraformPath, ok = findTerraform(ctx, e.deployCfg.Input.TerraformVersion, e.LogPersister)
+	e.terraformPath, ok = findTerraform(ctx, e.appCfg.Input.TerraformVersion, e.LogPersister)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -90,13 +90,13 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 
 func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	var (
-		flags = e.deployCfg.Input.CommandFlags
-		envs  = e.deployCfg.Input.CommandEnvs
+		flags = e.appCfg.Input.CommandFlags
+		envs  = e.appCfg.Input.CommandEnvs
 		cmd   = provider.NewTerraform(
 			e.terraformPath,
 			e.appDir,
 			provider.WithVars(e.vars),
-			provider.WithVarFiles(e.deployCfg.Input.VarFiles),
+			provider.WithVarFiles(e.appCfg.Input.VarFiles),
 			provider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
 			provider.WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
 		)
@@ -111,7 +111,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if ok := selectWorkspace(ctx, cmd, e.deployCfg.Input.Workspace, e.LogPersister); !ok {
+	if ok := selectWorkspace(ctx, cmd, e.appCfg.Input.Workspace, e.LogPersister); !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -139,13 +139,13 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 
 func (e *deployExecutor) ensurePlan(ctx context.Context) model.StageStatus {
 	var (
-		flags = e.deployCfg.Input.CommandFlags
-		envs  = e.deployCfg.Input.CommandEnvs
+		flags = e.appCfg.Input.CommandFlags
+		envs  = e.appCfg.Input.CommandEnvs
 		cmd   = provider.NewTerraform(
 			e.terraformPath,
 			e.appDir,
 			provider.WithVars(e.vars),
-			provider.WithVarFiles(e.deployCfg.Input.VarFiles),
+			provider.WithVarFiles(e.appCfg.Input.VarFiles),
 			provider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
 			provider.WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
 		)
@@ -160,7 +160,7 @@ func (e *deployExecutor) ensurePlan(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if ok := selectWorkspace(ctx, cmd, e.deployCfg.Input.Workspace, e.LogPersister); !ok {
+	if ok := selectWorkspace(ctx, cmd, e.appCfg.Input.Workspace, e.LogPersister); !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -181,13 +181,13 @@ func (e *deployExecutor) ensurePlan(ctx context.Context) model.StageStatus {
 
 func (e *deployExecutor) ensureApply(ctx context.Context) model.StageStatus {
 	var (
-		flags = e.deployCfg.Input.CommandFlags
-		envs  = e.deployCfg.Input.CommandEnvs
+		flags = e.appCfg.Input.CommandFlags
+		envs  = e.appCfg.Input.CommandEnvs
 		cmd   = provider.NewTerraform(
 			e.terraformPath,
 			e.appDir,
 			provider.WithVars(e.vars),
-			provider.WithVarFiles(e.deployCfg.Input.VarFiles),
+			provider.WithVarFiles(e.appCfg.Input.VarFiles),
 			provider.WithAdditionalFlags(flags.Shared, flags.Init, flags.Plan, flags.Apply),
 			provider.WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
 		)
@@ -202,7 +202,7 @@ func (e *deployExecutor) ensureApply(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if ok := selectWorkspace(ctx, cmd, e.deployCfg.Input.Workspace, e.LogPersister); !ok {
+	if ok := selectWorkspace(ctx, cmd, e.appCfg.Input.Workspace, e.LogPersister); !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

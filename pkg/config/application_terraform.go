@@ -14,9 +14,9 @@
 
 package config
 
-// TerraformDeploymentSpec represents a deployment configuration for Terraform application.
-type TerraformDeploymentSpec struct {
-	GenericDeploymentSpec
+// TerraformApplicationSpec represents an application configuration for Terraform application.
+type TerraformApplicationSpec struct {
+	GenericApplicationSpec
 	// Input for Terraform deployment such as terraform version, workspace...
 	Input TerraformDeploymentInput `json:"input"`
 	// Configuration for quick sync.
@@ -24,8 +24,8 @@ type TerraformDeploymentSpec struct {
 }
 
 // Validate returns an error if any wrong configuration value was found.
-func (s *TerraformDeploymentSpec) Validate() error {
-	if err := s.GenericDeploymentSpec.Validate(); err != nil {
+func (s *TerraformApplicationSpec) Validate() error {
+	if err := s.GenericApplicationSpec.Validate(); err != nil {
 		return err
 	}
 	return nil

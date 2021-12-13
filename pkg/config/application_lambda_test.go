@@ -24,7 +24,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLambdaDeploymentConfig(t *testing.T) {
+func TestLambdaApplicationConfig(t *testing.T) {
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind
@@ -36,8 +36,8 @@ func TestLambdaDeploymentConfig(t *testing.T) {
 			fileName:           "testdata/application/lambda-app.yaml",
 			expectedKind:       KindLambdaApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &LambdaDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{
+			expectedSpec: &LambdaApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
 					Timeout: Duration(6 * time.Hour),
 					Trigger: Trigger{
 						OnCommit: OnCommit{
@@ -63,8 +63,8 @@ func TestLambdaDeploymentConfig(t *testing.T) {
 			fileName:           "testdata/application/lambda-app-canary.yaml",
 			expectedKind:       KindLambdaApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &LambdaDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{
+			expectedSpec: &LambdaApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
 					Timeout: Duration(6 * time.Hour),
 					Pipeline: &DeploymentPipeline{
 						Stages: []PipelineStage{
@@ -110,8 +110,8 @@ func TestLambdaDeploymentConfig(t *testing.T) {
 			fileName:           "testdata/application/lambda-app-bluegreen.yaml",
 			expectedKind:       KindLambdaApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &LambdaDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{
+			expectedSpec: &LambdaApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
 					Timeout: Duration(6 * time.Hour),
 					Pipeline: &DeploymentPipeline{
 						Stages: []PipelineStage{

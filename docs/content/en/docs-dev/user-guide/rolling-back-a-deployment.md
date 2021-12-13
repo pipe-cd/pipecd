@@ -6,7 +6,7 @@ description: >
   This page describes when a deployment is rolled back automatically and how to manually rollback a deployment.
 ---
 
-Rolling back a deployment can be automated by enabling the `autoRollback` field in the deployment configuration of the application. When `autoRollback` is enabled, the deployment will be rolled back if any of the following conditions are met:
+Rolling back a deployment can be automated by enabling the `autoRollback` field in the application configuration of the application. When `autoRollback` is enabled, the deployment will be rolled back if any of the following conditions are met:
 - a stage of the deployment pipeline was failed
 - an analysis stage determined that the deployment had a negative impact
 - any error occurs while deploying
