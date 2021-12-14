@@ -70,5 +70,5 @@ message ApplicationInfo {
     string config_filename = 7;
     string piped_id = 8 [(validate.rules).string.min_len = 1];
     // This field will be no longer needed as labels can be an alternative.
-    string env_name = 14 [(validate.rules).string.min_len = 1, deprecated=true];
+    string env_name = 14 [deprecated=true];
 }
