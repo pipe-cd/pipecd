@@ -34,7 +34,6 @@ const (
 
 type apiClient interface {
 	GetEnvironment(ctx context.Context, in *pipedservice.GetEnvironmentRequest, opts ...grpc.CallOption) (*pipedservice.GetEnvironmentResponse, error)
-	//GetEnvironmentByName(ctx context.Context, in *pipedservice.GetEnvironmentByNameRequest, opts ...grpc.CallOption) (*pipedservice.GetEnvironmentByNameResponse, error)
 }
 
 // Lister helps list and get Environment.
@@ -99,46 +98,4 @@ func (s *Store) Get(ctx context.Context, id string) (*model.Environment, error) 
 		return nil, err
 	}
 	return data.(*model.Environment), nil
-}
-
-// TODO: Implement environmentstore.GetByName
-func (s *Store) GetByName(ctx context.Context, name string) (*model.Environment, error) {
-	/*
-		env, err := s.cacheByName.Get(name)
-		if err == nil {
-			return env.(*model.Environment), nil
-		}
-
-		// Ensure that timeout is configured.
-		ctx, cancel := context.WithTimeout(ctx, defaultAPITimeout)
-		defer cancel()
-
-		// Ensure that only one RPC call is executed for the given key at a time
-		// and the newest data is stored in the cache.
-		data, err, _ := s.callGroup.Do(name, func() (interface{}, error) {
-			req := &pipedservice.GetEnvironmentByNameRequest{
-				Name: name,
-			}
-			resp, err := s.apiClient.GetEnvironmentByName(ctx, req)
-			if err != nil {
-				s.logger.Warn("failed to get environment from control plane",
-					zap.String("name", name),
-					zap.Error(err),
-				)
-				return nil, fmt.Errorf("failed to get environment %s, %w", name, err)
-			}
-
-			if err := s.cacheByName.Put(id, resp.Environment); err != nil {
-				s.logger.Warn("failed to put environment to cache", zap.Error(err))
-			}
-			return resp.Environment, nil
-		})
-
-		if err != nil {
-			return nil, err
-		}
-		return data.(*model.Environment), nil
-	*/
-
-	return nil, fmt.Errorf("not implemented")
 }
