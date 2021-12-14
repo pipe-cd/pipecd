@@ -465,14 +465,18 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		}
 	}
 
-	env, err := c.environmentLister.Get(ctx, d.EnvId)
-	if err != nil {
-		return nil, err
+	var envName string
+	if d.EnvId != "" {
+		env, err := c.environmentLister.Get(ctx, d.EnvId)
+		if err != nil {
+			return nil, err
+		}
+		envName = env.Name
 	}
 
 	planner := newPlanner(
 		d,
-		env.Name,
+		envName,
 		commit,
 		workingDir,
 		c.apiClient,
@@ -611,15 +615,19 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	}
 	logger.Info("created working directory for scheduler", zap.String("working-dir", workingDir))
 
-	env, err := c.environmentLister.Get(ctx, d.EnvId)
-	if err != nil {
-		return nil, err
+	var envName string
+	if d.EnvId != "" {
+		env, err := c.environmentLister.Get(ctx, d.EnvId)
+		if err != nil {
+			return nil, err
+		}
+		envName = env.Name
 	}
 
 	// Create a new scheduler and append to the list for tracking.
 	scheduler := newScheduler(
 		d,
-		env.Name,
+		envName,
 		workingDir,
 		c.apiClient,
 		c.gitClient,

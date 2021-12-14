@@ -640,8 +640,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                 .filter(
                   (app) =>
                     app.pipedId === selectedPipedId &&
-                    app.kind === APPLICATION_KIND_BY_NAME[selectedKind] &&
-                    envsMap.has(app.envName)
+                    app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
                 )
                 .map((app, i) => (
                   <Accordion key={app.repoId + app.path + app.configFilename}>
@@ -721,7 +720,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                             // NOTE: Repo remote and branch aren't needed because they are populated by API.
                             setAppToAdd({
                               name: app.name,
-                              env: envsMap.get(app.envName) as string,
+                              env: envsMap.get(app.envName) as string | "",
                               pipedId: app.pipedId,
                               repo: {
                                 id: app.repoId,
