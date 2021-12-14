@@ -1852,7 +1852,7 @@ func (a *WebAPI) GetDeploymentChain(ctx context.Context, req *webservice.GetDepl
 	}
 
 	if claims.Role.ProjectId != dc.ProjectId {
-		return nil, status.Error(codes.InvalidArgument, "Requested deployment chain does not belong to your project")
+		return nil, status.Error(codes.PermissionDenied, "Requested deployment chain does not belong to your project")
 	}
 
 	return &webservice.GetDeploymentChainResponse{
