@@ -19,6 +19,7 @@ import {
   LOGOUT_ENDPOINT,
   PAGE_PATH_TOP,
   PAGE_PATH_INSIGHTS,
+  PAGE_PATH_DEPLOYMENT_CHAINS,
 } from "~/constants/path";
 import { APP_NAME } from "~/constants/common";
 import { NavLink as RouterLink } from "react-router-dom";
@@ -125,6 +126,15 @@ export const Header: FC = memo(function Header() {
                 to={PAGE_PATH_DEPLOYMENTS}
               >
                 Deployments
+              </Link>
+              <Link
+                component={RouterLink}
+                className={classes.link}
+                activeClassName={classes.activeLink}
+                color="inherit"
+                to={PAGE_PATH_DEPLOYMENT_CHAINS}
+              >
+                Chains
               </Link>
               <Link
                 component={RouterLink}

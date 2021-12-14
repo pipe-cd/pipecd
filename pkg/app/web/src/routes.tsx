@@ -10,12 +10,14 @@ import {
 } from "react-router-dom";
 import { ApplicationIndexPage } from "~/components/applications-page";
 import { DeploymentIndexPage } from "~/components/deployments-page";
+import { DeploymentChainsIndexPage } from "./components/deployment-chains-page";
 import { Header } from "~/components/header";
 import { LoginPage } from "~/components/login-page";
 import { Toasts } from "~/components/toasts";
 import {
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
+  PAGE_PATH_DEPLOYMENT_CHAINS,
   PAGE_PATH_INSIGHTS,
   PAGE_PATH_LOGIN,
   PAGE_PATH_SETTINGS,
@@ -161,6 +163,11 @@ export const Routes: FC = () => {
           exact
           path={`${PAGE_PATH_DEPLOYMENTS}/:deploymentId`}
           component={DeploymentDetailPage}
+        />
+        <Route
+          exact
+          path={PAGE_PATH_DEPLOYMENT_CHAINS}
+          component={DeploymentChainsIndexPage}
         />
         <Route path={PAGE_PATH_SETTINGS} component={SettingsIndexPage} />
         <Route path={PAGE_PATH_INSIGHTS} component={InsightIndexPage} />
