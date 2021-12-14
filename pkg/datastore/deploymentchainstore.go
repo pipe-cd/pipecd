@@ -90,6 +90,7 @@ type DeploymentChainStore interface {
 	AddDeploymentChain(ctx context.Context, d *model.DeploymentChain) error
 	UpdateDeploymentChain(ctx context.Context, id string, updater func(*model.DeploymentChain) error) error
 	GetDeploymentChain(ctx context.Context, id string) (*model.DeploymentChain, error)
+	ListDeploymentChains(ctx context.Context, opts ListOptions) ([]*model.DeploymentChain, string, error)
 }
 
 type deploymentChainStore struct {
@@ -138,4 +139,33 @@ func (s *deploymentChainStore) GetDeploymentChain(ctx context.Context, id string
 		return nil, err
 	}
 	return &entity, nil
+}
+
+func (s *deploymentChainStore) ListDeploymentChains(ctx context.Context, opts ListOptions) ([]*model.DeploymentChain, string, error) {
+	it, err := s.ds.Find(ctx, DeploymentChainModelKind, opts)
+	if err != nil {
+		return nil, "", err
+	}
+	dcs := make([]*model.DeploymentChain, 0)
+	for {
+		var dc model.DeploymentChain
+		err := it.Next(&dc)
+		if err == ErrIteratorDone {
+			break
+		}
+		if err != nil {
+			return nil, "", err
+		}
+		dcs = append(dcs, &dc)
+	}
+
+	// In case there is no more elements found, cursor should be set to empty too.
+	if len(dcs) == 0 {
+		return dcs, "", nil
+	}
+	cursor, err := it.Cursor()
+	if err != nil {
+		return nil, "", err
+	}
+	return dcs, cursor, nil
 }

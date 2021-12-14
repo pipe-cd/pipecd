@@ -54,6 +54,7 @@ type encrypter interface {
 type WebAPI struct {
 	applicationStore          datastore.ApplicationStore
 	environmentStore          datastore.EnvironmentStore
+	deploymentChainStore      datastore.DeploymentChainStore
 	deploymentStore           datastore.DeploymentStore
 	pipedStore                datastore.PipedStore
 	projectStore              datastore.ProjectStore
@@ -94,6 +95,7 @@ func NewWebAPI(
 	a := &WebAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		environmentStore:          datastore.NewEnvironmentStore(ds),
+		deploymentChainStore:      datastore.NewDeploymentChainStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
 		pipedStore:                datastore.NewPipedStore(ds),
 		projectStore:              datastore.NewProjectStore(ds),
@@ -1779,5 +1781,81 @@ func (a *WebAPI) GetInsightApplicationCount(ctx context.Context, req *webservice
 	return &webservice.GetInsightApplicationCountResponse{
 		Counts:    counts,
 		UpdatedAt: c.UpdatedAt,
+	}, nil
+}
+
+func (a *WebAPI) ListDeploymentChains(ctx context.Context, req *webservice.ListDeploymentChainsRequest) (*webservice.ListDeploymentChainsResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	orders := []datastore.Order{
+		{
+			Field:     "UpdatedAt",
+			Direction: datastore.Desc,
+		},
+		{
+			Field:     "Id",
+			Direction: datastore.Asc,
+		},
+	}
+	filters := []datastore.ListFilter{
+		{
+			Field:    "ProjectId",
+			Operator: datastore.OperatorEqual,
+			Value:    claims.Role.ProjectId,
+		},
+		{
+			Field:    "UpdatedAt",
+			Operator: datastore.OperatorGreaterThan,
+			Value:    req.PageMinUpdatedAt,
+		},
+	}
+	// TODO: Support filter list deployment chain with options.
+
+	pageSize := int(req.PageSize)
+	options := datastore.ListOptions{
+		Filters: filters,
+		Orders:  orders,
+		Limit:   pageSize,
+		Cursor:  req.Cursor,
+	}
+
+	deploymentChains, cursor, err := a.deploymentChainStore.ListDeploymentChains(ctx, options)
+	if err != nil {
+		a.logger.Error("failed to list deployment chains", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to list deployment chains")
+	}
+
+	return &webservice.ListDeploymentChainsResponse{
+		DeploymentChains: deploymentChains,
+		Cursor:           cursor,
+	}, nil
+}
+
+func (a *WebAPI) GetDeploymentChain(ctx context.Context, req *webservice.GetDeploymentChainRequest) (*webservice.GetDeploymentChainResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	dc, err := a.deploymentChainStore.GetDeploymentChain(ctx, req.DeploymentChainId)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "Deployment chain is not found")
+	}
+	if err != nil {
+		a.logger.Error("failed to get deployment chain", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get deployment chain")
+	}
+
+	if claims.Role.ProjectId != dc.ProjectId {
+		return nil, status.Error(codes.PermissionDenied, "Requested deployment chain does not belong to your project")
+	}
+
+	return &webservice.GetDeploymentChainResponse{
+		DeploymentChain: dc,
 	}, nil
 }
