@@ -717,13 +717,10 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                           color="primary"
                           type="submit"
                           onClick={() => {
-                            const envId = envsMap.has(app.envName)
-                              ? (envsMap.get(app.envName) as string)
-                              : "";
                             // NOTE: Repo remote and branch aren't needed because they are populated by API.
                             setAppToAdd({
                               name: app.name,
-                              env: envId,
+                              env: envsMap.get(app.envName) as string | "",
                               pipedId: app.pipedId,
                               repo: {
                                 id: app.repoId,

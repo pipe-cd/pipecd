@@ -131,9 +131,11 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
               <Typography className={classes.textMargin} variant="h6">
                 {DEPLOYMENT_STATE_TEXT[deployment.status]}
               </Typography>
-              <Typography variant="subtitle1" className={classes.env}>
-                {env ? env.name : ""}
-              </Typography>
+              {env && (
+                <Typography variant="subtitle1" className={classes.env}>
+                  {env.name}
+                </Typography>
+              )}
               <Typography variant="body1" className={classes.age}>
                 {dayjs(deployment.createdAt * 1000).fromNow()}
               </Typography>
