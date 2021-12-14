@@ -12,7 +12,7 @@ It represents the service which you are going to deploy. With PipeCD, all applic
 Before deploying an application, the application must be registered from either the web UI or the Git repository.
 Registering application helps PipeCD know the basic information about that application, where the application configuration is placing, what `piped` should handle it as well as what cloud the application should be deployed to.
 
-An application must belong to exactly one environment and can be handled by one of the registered `piped`s. Currently, PipeCD is supporting the following kinds of application:
+An application can be handled by one of the registered `piped`s. Currently, PipeCD is supporting the following kinds of application:
 
 - Kubernetes application
 - Terraform application
@@ -35,7 +35,6 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: foo
-  envName: dev
 ```
 
 Visit [here](/user-guide/configuration-reference/) for supported fields.
@@ -64,7 +63,7 @@ Here are the list of fields in the register form:
 |-|-|-|-|
 | Name | The application name | Yes |
 | Kind | The application kind. Select one of these values: `Kubernetes`, `Terraform`, `CloudRun`, `Lambda` and `ECS`. | Yes |
-| Env | The environment this application should belongs to. Select one of the registered environments at `Settings/Environment` page.  | Yes |
+| Env | The environment this application should belongs to. Select one of the registered environments at `Settings/Environment` page.  | No |
 | Piped | The piped that handles this application. Select one of the registered `piped`s at `Settings/Piped` page. | Yes |
 | Repository | The Git repository contains application configuration and application configuration. Select one of the registered repositories in `piped` configuration. | Yes |
 | Path | The relative path from the root of the Git repository to the directory containing application configuration and application configuration. Use `./` means repository root. | Yes |
@@ -101,5 +100,4 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: new-name
-  envName: dev
 ```

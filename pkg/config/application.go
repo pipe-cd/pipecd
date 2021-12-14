@@ -33,7 +33,6 @@ type GenericApplicationSpec struct {
 	// This is required if you set the application through the application configuration file.
 	Name string `json:"name"`
 	// The environment name. You need to make sure that the environment name is unique in your project.
-	// This is required if you set the application through the application configuration file.
 	EnvName string `json:"envName"`
 	// Additional attributes to identify applications.
 	Labels map[string]string `json:"labels"`
