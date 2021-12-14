@@ -1,6 +1,7 @@
 export const PAGE_PATH_TOP = "/";
 export const PAGE_PATH_DEPLOYMENTS = "/deployments";
 export const PAGE_PATH_APPLICATIONS = "/applications";
+export const PAGE_PATH_DEPLOYMENT_CHAINS = "/chains";
 export const PAGE_PATH_INSIGHTS = "/insights";
 export const PAGE_PATH_LOGIN = "/login";
 export const PAGE_PATH_SETTINGS = "/settings";
