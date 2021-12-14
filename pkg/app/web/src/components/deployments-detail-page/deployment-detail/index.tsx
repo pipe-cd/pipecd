@@ -109,7 +109,7 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
         : null
     );
 
-    if (!deployment || !env || !piped) {
+    if (!deployment || !piped) {
       return (
         <Box
           flex={1}
@@ -132,7 +132,7 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
                 {DEPLOYMENT_STATE_TEXT[deployment.status]}
               </Typography>
               <Typography variant="subtitle1" className={classes.env}>
-                {env.name}
+                {env ? env.name : ""}
               </Typography>
               <Typography variant="body1" className={classes.age}>
                 {dayjs(deployment.createdAt * 1000).fromNow()}
