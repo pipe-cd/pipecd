@@ -16,7 +16,7 @@ A canonical configuration look as below:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
-kind: Kubernetes
+kind: TerraformApp
 spec:
   input:
     ...
@@ -25,33 +25,40 @@ spec:
   postSync:
     chain:
       applications:
+        # Find all applications with name `Application 2` and trigger them.
         - name: Application 2
+        # Fill all applications with name `Application 3` of kind `KUBERNETES`
+        # and trigger them.
         - name: Application 3
+          kind: KUBERNETES
 ```
 
 As a result, the above configuration will be used to create a deployment chain like the below figure
 
 ![](/images/deployment-chain-figure.png)
 
-In the context of the deployment chain in PipeCD, a chain is made up of many `blocks`, and each block contains multiple `nodes` which is the reference to a deployment. The first block in the chain always contains only one node, which is the deployment that triggers the whole chain. Other blocks of the chain are built using filters which are configurable via `postSync.chain.applications` field. As for the above example, the second block `Block 2` contains 3 different nodes, which are 3 different PipeCD applications with the same name `Application 2`.
-
-See [Examples](/docs/examples/#deployment-chain) for more specific.
+In the context of the deployment chain in PipeCD, a chain is made up of many `blocks`, and each block contains multiple `nodes` which is the reference to a deployment. The first block in the chain always contains only one node, which is the deployment that triggers the whole chain. Other blocks of the chain are built using filters which are configurable via `postSync.chain.applications` section. As for the above example, the second block `Block 2` contains 3 different nodes, which are 3 different PipeCD applications with the same name `Application 2`.
 
 __Tip__:
 
-If you followed all the configuration references and built your deployment chain configuration, but some deployments in your defined chain are not triggered as you want, please re-check those deployments [`trigger configuration`](/docs/user-guide/triggering-a-deployment/#trigger-configuration). The `onChain` trigger is __disabled by default__; you need to enable that configuration to enable your deployment to be triggered as a node in the deployment chain.
+1. If you followed all the configuration references and built your deployment chain configuration, but some deployments in your defined chain are not triggered as you want, please re-check those deployments [`trigger configuration`](/docs/user-guide/triggering-a-deployment/#trigger-configuration). The `onChain` trigger is __disabled by default__; you need to enable that configuration to enable your deployment to be triggered as a node in the deployment chain.
+2. Values configured under `postSync.chain.applications` - we call it __Application matcher__'s values are merged using `AND` operator. Currently, only `name` and `kind` are supported, but `labels` will also be supported soon.
+
+See [Examples](/docs/examples/#deployment-chain) for more specific.
 
 ## Deployment chain characteristic
 
 Something you need to care about while creating your deployment chain with PipeCD
 
-1. The deployment chain block is run in sequence, one by one. But all nodes in the same block are run in parallel, you should ensure that all deployments in the same block do not depend on each other.
-2. Once a block in the chain is finished with `FAILURE` or `CANCELLED` status, the chain will be set to fail, and all blocks after that finished block will be set to `CANCELLED` status.
-3. Once a node in a block is finished with `FAILURE` or `CANCELLED` status, the block will be set to fail, and all other nodes that are not yet finished will be set to `CANCELLED` status (those nodes will be rolled back if they're in the middle of deploying process).
+1. The deployment chain blocks are run in sequence, one by one. But all nodes in the same block are run in parallel, you should ensure that all nodes(deployments) in the same block do not depend on each other.
+2. Once a block in the chain has finished with `FAILURE` or `CANCELLED` status, the chain will be set to fail, and all blocks after that finished block will be set to `CANCELLED` status.
+3. Once a node in a block has finished with `FAILURE` or `CANCELLED` status, the containing block will be set to fail, and all other nodes which have not yet finished will be set to `CANCELLED` status (those nodes will be rolled back if they're in the middle of its deploying process).
 
 ## Console view
 
-TBD
+![](/images/deployment-chain-console.png)
+
+The UI for this deployment chain feature currently is under deployment, we can only __view deployments in chain one by one__ on the deployments page and deployment detail page as usual.
 
 ## Reference
 
