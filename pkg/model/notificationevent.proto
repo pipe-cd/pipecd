@@ -52,52 +52,52 @@ enum NotificationEventGroup {
 
 message NotificationEventDeploymentTriggered {
     Deployment deployment = 1 [(validate.rules).message.required = true];
-    string env_name = 2 [(validate.rules).string.min_len = 1];
+    string env_name = 2;
     repeated string mentioned_accounts = 3;
 }
 
 message NotificationEventDeploymentPlanned {
     Deployment deployment = 1 [(validate.rules).message.required = true];
-    string env_name = 2 [(validate.rules).string.min_len = 1];
+    string env_name = 2;
     string summary = 3;
     repeated string mentioned_accounts = 4;
 }
 
 message NotificationEventDeploymentApproved {
     Deployment deployment = 1 [(validate.rules).message.required = true];
-    string env_name = 2 [(validate.rules).string.min_len = 1];
+    string env_name = 2;
     string approver = 3;
     repeated string mentioned_accounts = 4;
 }
 
 message NotificationEventDeploymentRollingBack {
     Deployment deployment = 1 [(validate.rules).message.required = true];
-    string env_name = 2 [(validate.rules).string.min_len = 1];
+    string env_name = 2;
 }
 
 message NotificationEventDeploymentSucceeded {
     Deployment deployment = 1 [(validate.rules).message.required = true];
-    string env_name = 2 [(validate.rules).string.min_len = 1];
+    string env_name = 2;
     repeated string mentioned_accounts = 3;
 }
 
 message NotificationEventDeploymentFailed {
     Deployment deployment = 1 [(validate.rules).message.required = true];
-    string env_name = 2 [(validate.rules).string.min_len = 1];
+    string env_name = 2;
     string reason = 3;
     repeated string mentioned_accounts = 4;
 }
 
 message NotificationEventDeploymentCancelled {
     Deployment deployment = 1 [(validate.rules).message.required = true];
-    string env_name = 2 [(validate.rules).string.min_len = 1];
+    string env_name = 2;
     string commander = 3;
     repeated string mentioned_accounts = 4;
 }
 
 message NotificationEventDeploymentWaitApproval {
     Deployment deployment = 1 [(validate.rules).message.required = true];
-    string env_name = 2 [(validate.rules).string.min_len = 1];
+    string env_name = 2;
     repeated string mentioned_accounts = 3;
 }
 
@@ -111,13 +111,13 @@ message NotificationEventDeploymentTriggerFailed {
 
 message NotificationEventApplicationSynced {
     Application application = 1 [(validate.rules).message.required = true];
-    string env_name = 2 [(validate.rules).string.min_len = 1];
+    string env_name = 2;
     ApplicationSyncState state = 3 [(validate.rules).message.required = true];
 }
 
 message NotificationEventApplicationOutOfSync {
     Application application = 1 [(validate.rules).message.required = true];
-    string env_name = 2 [(validate.rules).string.min_len = 1];
+    string env_name = 2;
     ApplicationSyncState state = 3 [(validate.rules).message.required = true];
 }
 
