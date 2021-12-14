@@ -696,7 +696,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 	}
 
 	if piped.ProjectId != claims.Role.ProjectId {
-		return nil, status.Error(codes.InvalidArgument, "Requested piped does not belong to your project")
+		return nil, status.Error(codes.PermissionDenied, "Requested piped does not belong to your project")
 	}
 
 	gitpath, err := makeGitPath(
@@ -778,7 +778,7 @@ func (a *WebAPI) updateApplication(ctx context.Context, id, pipedID string, upda
 		}
 
 		if piped.ProjectId != claims.Role.ProjectId {
-			return status.Error(codes.InvalidArgument, "Requested piped does not belong to your project")
+			return status.Error(codes.PermissionDenied, "Requested piped does not belong to your project")
 		}
 	}
 
@@ -973,7 +973,7 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 	}
 
 	if claims.Role.ProjectId != app.ProjectId {
-		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
+		return nil, status.Error(codes.PermissionDenied, "Requested application does not belong to your project")
 	}
 
 	cmd := model.Command{
@@ -1010,7 +1010,7 @@ func (a *WebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicat
 	}
 
 	if app.ProjectId != claims.Role.ProjectId {
-		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
+		return nil, status.Error(codes.PermissionDenied, "Requested application does not belong to your project")
 	}
 
 	return &webservice.GetApplicationResponse{
@@ -1221,7 +1221,7 @@ func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymen
 	}
 
 	if claims.Role.ProjectId != deployment.ProjectId {
-		return nil, status.Error(codes.InvalidArgument, "Requested deployment does not belong to your project")
+		return nil, status.Error(codes.PermissionDenied, "Requested deployment does not belong to your project")
 	}
 
 	return &webservice.GetDeploymentResponse{
@@ -1291,7 +1291,7 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 	}
 
 	if claims.Role.ProjectId != deployment.ProjectId {
-		return nil, status.Error(codes.InvalidArgument, "Requested deployment does not belong to your project")
+		return nil, status.Error(codes.PermissionDenied, "Requested deployment does not belong to your project")
 	}
 
 	if model.IsCompletedDeployment(deployment.Status) {
@@ -1591,7 +1591,7 @@ func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandReque
 	}
 
 	if claims.Role.ProjectId != cmd.ProjectId {
-		return nil, status.Error(codes.InvalidArgument, "Requested command does not belong to your project")
+		return nil, status.Error(codes.PermissionDenied, "Requested command does not belong to your project")
 	}
 
 	return &webservice.GetCommandResponse{
