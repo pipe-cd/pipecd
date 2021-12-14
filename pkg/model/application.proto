@@ -27,7 +27,7 @@ message Application {
     // The name of the application.
     string name = 2 [(validate.rules).string.min_len = 1];
     // The id of environment this application belongs to.
-    string env_id = 3 [(validate.rules).string.min_len = 1];
+    string env_id = 3;
     // The ID of the piped that should handle this application.
     string piped_id = 4 [(validate.rules).string.min_len = 1];
     // The ID of the project this environment belongs to.
