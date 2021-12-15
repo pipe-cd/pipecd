@@ -62,7 +62,7 @@ spec:
 
 ## Enabling blue-green strategy
 
-- Add the following `.pipe.yaml` file into the application directory in the Git repository.
+- Add the following application configuration file into the application directory in the Git repository.
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
@@ -99,7 +99,7 @@ Deployment Details Page
 
 ## Understanding what happened
 
-In this example, you configured the application configuration file (`.pipe.yaml`) to switch all traffic from an old to a new version of the application using Istio's weighted routing feature.
+In this example, you configured the application configuration file to switch all traffic from an old to a new version of the application using Istio's weighted routing feature.
 
 - Stage 1: `K8S_CANARY_ROLLOUT` ensures that the workloads of canary variant (new version) should be deployed. But at this time, they still handle nothing, all traffic is handled by workloads of primary variant.
 The number of workloads (e.g. pod) for canary variant is configured to be 100% of the replicas number of primary varant.

@@ -63,7 +63,7 @@ spec:
 
 In PipeCD context, manifests defined in Git are the manifests for primary variant, so please note to ensure that your deployment manifest contains `pipecd.dev/variant: primary` label and selector in the spec.
 
-To enable canary strategy for this Kubernetes application, you will update your `.pipe.yaml` file to be as below:
+To enable canary strategy for this Kubernetes application, you will update your application configuration file to be as below:
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1

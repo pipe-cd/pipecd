@@ -128,7 +128,7 @@ spec:
         env: dev
         appName: helloworld
       replacements:
-        - file: helloworld/.pipe.yaml
+        - file: helloworld/app.pipecd.yaml
           yamlField: $.spec.input.helmChart.version
 ```
 

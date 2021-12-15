@@ -286,7 +286,7 @@ export const emptyFormValues: ApplicationFormValue = {
   kind: ApplicationKind.KUBERNETES,
   pipedId: "",
   repoPath: "",
-  configFilename: ".pipe.yaml",
+  configFilename: "app.pipecd.yaml",
   cloudProvider: "",
   repo: {
     id: "",

@@ -62,7 +62,8 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 			name: "no app registered in the repo",
 			reporter: &Reporter{
 				applicationLister: &fakeApplicationLister{apps: []*model.Application{
-					{Id: "id-1", Name: "app-1", Labels: map[string]string{"key-1": "value-1"}, GitPath: &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "different-repo"}, Path: "app-1", ConfigFilename: ".pipe.yaml"}},
+					{Id: "id-1", Name: "app-1", Labels: map[string]string{"key-1": "value-1"}, GitPath: &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "different-repo"}, Path: "app-1", ConfigFilename: "app.pipecd.yaml" +
+						""}},
 				}},
 				logger: zap.NewNop(),
 			},
@@ -77,10 +78,12 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 			name: "invalid app config is contained",
 			reporter: &Reporter{
 				applicationLister: &fakeApplicationLister{apps: []*model.Application{
-					{Id: "id-1", Name: "app-1", Labels: map[string]string{"key-1": "value-1"}, GitPath: &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "repo-1"}, Path: "app-1", ConfigFilename: ".pipe.yaml"}},
+					{Id: "id-1", Name: "app-1", Labels: map[string]string{"key-1": "value-1"}, GitPath: &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "repo-1"}, Path: "app-1", ConfigFilename: "app.pipecd.yaml" +
+						""}},
 				}},
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte("invalid-text")},
+					"path/to/repo-1/app-1/app.pipecd.yaml" +
+						"": &fstest.MapFile{Data: []byte("invalid-text")},
 				},
 				logger: zap.NewNop(),
 			},
@@ -96,10 +99,12 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 			reporter: &Reporter{
 				config: &config.PipedSpec{PipedID: "piped-1"},
 				applicationLister: &fakeApplicationLister{apps: []*model.Application{
-					{Id: "id-1", Name: "app-1", Labels: map[string]string{"key-1": "value-1"}, GitPath: &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "repo-1"}, Path: "app-1", ConfigFilename: ".pipe.yaml"}},
+					{Id: "id-1", Name: "app-1", Labels: map[string]string{"key-1": "value-1"}, GitPath: &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "repo-1"}, Path: "app-1", ConfigFilename: "app.pipecd.yaml" +
+						""}},
 				}},
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte(`
+					"path/to/repo-1/app-1/app.pipecd.yaml" +
+						"": &fstest.MapFile{Data: []byte(`
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
@@ -122,10 +127,12 @@ spec:
 			reporter: &Reporter{
 				config: &config.PipedSpec{PipedID: "piped-1"},
 				applicationLister: &fakeApplicationLister{apps: []*model.Application{
-					{Id: "id-1", Name: "app-1", Labels: map[string]string{"key-1": "value-1"}, GitPath: &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "repo-1"}, Path: "app-1", ConfigFilename: ".pipe.yaml"}},
+					{Id: "id-1", Name: "app-1", Labels: map[string]string{"key-1": "value-1"}, GitPath: &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "repo-1"}, Path: "app-1", ConfigFilename: "app.pipecd.yaml" +
+						""}},
 				}},
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte(`
+					"path/to/repo-1/app-1/app.pipecd.yaml" +
+						"": &fstest.MapFile{Data: []byte(`
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
@@ -142,14 +149,15 @@ spec:
 			},
 			want: []*model.ApplicationInfo{
 				{
-					Id:             "id-1",
-					Name:           "new-app-1",
-					Labels:         map[string]string{"key-1": "value-1"},
-					RepoId:         "repo-1",
-					Path:           "app-1",
-					ConfigFilename: ".pipe.yaml",
-					PipedId:        "piped-1",
-					EnvName:        "dev",
+					Id:     "id-1",
+					Name:   "new-app-1",
+					Labels: map[string]string{"key-1": "value-1"},
+					RepoId: "repo-1",
+					Path:   "app-1",
+					ConfigFilename: "app.pipecd.yaml" +
+						"",
+					PipedId: "piped-1",
+					EnvName: "dev",
 				},
 			},
 			wantErr: false,
@@ -181,7 +189,8 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 			reporter: &Reporter{
 				applicationLister: &fakeApplicationLister{},
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte("")},
+					"path/to/repo-1/app-1/app.pipecd.yaml" +
+						"": &fstest.MapFile{Data: []byte("")},
 				},
 				logger: zap.NewNop(),
 			},
@@ -198,7 +207,8 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 			reporter: &Reporter{
 				applicationLister: &fakeApplicationLister{},
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte("")},
+					"path/to/repo-1/app-1/app.pipecd.yaml" +
+						"": &fstest.MapFile{Data: []byte("")},
 				},
 				logger: zap.NewNop(),
 			},
@@ -206,7 +216,8 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 				repoPath: "path/to/repo-1",
 				repoID:   "repo-1",
 				registeredAppPaths: map[string]string{
-					"repo-1:app-1/.pipe.yaml": "id-1",
+					"repo-1:app-1/app.pipecd.yaml" +
+						"": "id-1",
 				},
 			},
 			want:    []*model.ApplicationInfo{},
@@ -217,7 +228,8 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 			reporter: &Reporter{
 				applicationLister: &fakeApplicationLister{},
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte("invalid-text")},
+					"path/to/repo-1/app-1/app.pipecd.yaml" +
+						"": &fstest.MapFile{Data: []byte("invalid-text")},
 				},
 				logger: zap.NewNop(),
 			},
@@ -235,7 +247,8 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 				config:            &config.PipedSpec{PipedID: "piped-1"},
 				applicationLister: &fakeApplicationLister{},
 				fileSystem: fstest.MapFS{
-					"path/to/repo-1/app-1/.pipe.yaml": &fstest.MapFile{Data: []byte(`
+					"path/to/repo-1/app-1/app.pipecd.yaml" +
+						"": &fstest.MapFile{Data: []byte(`
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
@@ -253,13 +266,14 @@ spec:
 			},
 			want: []*model.ApplicationInfo{
 				{
-					Name:           "app-1",
-					Labels:         map[string]string{"key-1": "value-1"},
-					RepoId:         "repo-1",
-					Path:           "app-1",
-					ConfigFilename: ".pipe.yaml",
-					PipedId:        "piped-1",
-					EnvName:        "dev",
+					Name:   "app-1",
+					Labels: map[string]string{"key-1": "value-1"},
+					RepoId: "repo-1",
+					Path:   "app-1",
+					ConfigFilename: "app.pipecd.yaml" +
+						"",
+					PipedId: "piped-1",
+					EnvName: "dev",
 				},
 			},
 			wantErr: false,
