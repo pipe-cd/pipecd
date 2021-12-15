@@ -183,7 +183,7 @@ func LoadPlainYAMLManifests(dir string, names []string, configFileName string) (
 			if ext != ".yaml" && ext != ".yml" && ext != ".json" {
 				return nil
 			}
-			if f.Name() == model.DefaultApplicationConfigFilename {
+			if model.IsApplicationConfigFile(f.Name()) {
 				return nil
 			}
 			if f.Name() == configFileName {

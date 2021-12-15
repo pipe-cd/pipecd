@@ -114,7 +114,7 @@ Flags:
       --app-kind string           The kind of application. (KUBERNETES|TERRAFORM|LAMBDA|CLOUDRUN)
       --app-name string           The application name.
       --cloud-provider string     The cloud provider name. One of the registered providers in the piped configuration.
-      --config-file-name string   The configuration file name. Default is .pipe.yaml (default ".pipe.yaml")
+      --config-file-name string   The configuration file name. (default "app.pipecd.yaml")
       --env-id string             The ID of environment where this application should belong to.
   -h, --help                      help for add
       --piped-id string           The ID of piped that should handle this applicaiton.

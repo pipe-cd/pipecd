@@ -24,7 +24,7 @@ spec:
 For example, the above snippet enables the official chart repository of PipeCD project. After that, you can configure the Kubernetes application to load a chart from that chart repository for executing the deployment.
 
 ``` yaml
-# .pipe.yaml
+# Application configuration file.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:

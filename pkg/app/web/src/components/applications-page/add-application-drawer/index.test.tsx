@@ -71,7 +71,7 @@ describe("AddApplicationDrawer", () => {
             meta: expect.objectContaining({
               arg: {
                 cloudProvider: "terraform-default",
-                configFilename: ".pipe.yaml",
+                configFilename: "app.pipecd.yaml",
                 env: dummyEnv.id,
                 kind: ApplicationKind.TERRAFORM,
                 name: "App",

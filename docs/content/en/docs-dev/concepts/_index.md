@@ -47,11 +47,11 @@ When the deployment is success, it means the running state is synced with the de
 
 A yaml file that contains configuration data to define how to deploy the application.
 Each application requires one application configuration file at application directory in the Git repository.
-The default file name is `.pipe.yaml`.
+The default file name is `app.pipecd.yaml`.
 
 ### Application Directory
 
-A directory in Git repository containing application configuration file (`.pipe.yaml`) and application manifests.
+A directory in Git repository containing application configuration file and application manifests.
 Each application must have one application directory.
 
 ### Quick Sync

@@ -21,13 +21,16 @@ import (
 )
 
 const (
-	DefaultApplicationConfigFilename = ".pipe.yaml"
-	applicationConfigFileExtention   = ".pipecd.yaml"
+	DefaultApplicationConfigFilename    = "app.pipecd.yaml"
+	oldDefaultApplicationConfigFilename = ".pipe.yaml"
+	applicationConfigFileExtention      = ".pipecd.yaml"
 )
 
 // GetApplicationConfigFilePath returns the path to application configuration file.
 func (p ApplicationGitPath) GetApplicationConfigFilePath() string {
-	filename := DefaultApplicationConfigFilename
+	// The config file name used to allow to be empty until the default name got changed.
+	// So empty means the old default name.
+	filename := oldDefaultApplicationConfigFilename
 	if n := p.ConfigFilename; n != "" {
 		filename = n
 	}
@@ -79,5 +82,5 @@ func (a *Application) IsOutOfSync() bool {
 }
 
 func IsApplicationConfigFile(filename string) bool {
-	return filename == DefaultApplicationConfigFilename || strings.HasSuffix(filename, applicationConfigFileExtention)
+	return filename == DefaultApplicationConfigFilename || strings.HasSuffix(filename, applicationConfigFileExtention) || filename == oldDefaultApplicationConfigFilename
 }

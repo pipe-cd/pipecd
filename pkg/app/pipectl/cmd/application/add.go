@@ -59,7 +59,7 @@ func newAddCommand(root *command) *cobra.Command {
 
 	cmd.Flags().StringVar(&c.repoID, "repo-id", c.repoID, "The repository ID. One the registered repositories in the piped configuration.")
 	cmd.Flags().StringVar(&c.appDir, "app-dir", c.appDir, "The relative path from the root of repository to the application directory.")
-	cmd.Flags().StringVar(&c.configFileName, "config-file-name", c.configFileName, "The configuration file name. Default is .pipe.yaml")
+	cmd.Flags().StringVar(&c.configFileName, "config-file-name", c.configFileName, "The configuration file name")
 	cmd.Flags().StringVar(&c.description, "description", c.description, "The description of the application.")
 
 	cmd.MarkFlagRequired("app-name")
