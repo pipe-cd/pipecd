@@ -87,7 +87,7 @@ export const DeploymentItem: FC<DeploymentItemProps> = memo(
             <Typography variant="h6" component="span">
               {deployment.applicationName}
             </Typography>
-            {env ? (
+            {env && (
               <Typography
                 variant="subtitle2"
                 className={classes.info}
@@ -95,8 +95,6 @@ export const DeploymentItem: FC<DeploymentItemProps> = memo(
               >
                 {env.name}
               </Typography>
-            ) : (
-              <Skeleton height={21} width={80} className={classes.info} />
             )}
             <Typography
               variant="body2"

@@ -667,18 +667,20 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                             className={classes.textInput}
                           />
                         </div>
-                        <div className={classes.inputGroup}>
-                          <TextField
-                            id={"env-" + i}
-                            label="Environment"
-                            margin="dense"
-                            fullWidth
-                            variant="outlined"
-                            disabled
-                            value={app.envName}
-                            className={classes.textInput}
-                          />
-                        </div>
+                        {app.envName.length > 0 && (
+                          <div className={classes.inputGroup}>
+                            <TextField
+                              id={"env-" + i}
+                              label="Environment"
+                              margin="dense"
+                              fullWidth
+                              variant="outlined"
+                              disabled
+                              value={app.envName}
+                              className={classes.textInput}
+                            />
+                          </div>
+                        )}
                         <div className={classes.inputGroup}>
                           <TextField
                             id={"path-" + i}

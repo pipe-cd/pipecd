@@ -25,7 +25,7 @@ const TEXT = {
   TITLE: "Congratulation!",
   MESSAGE: "Your application has been added successfully.",
   NOTE:
-    "Please ensure that your application directory in Git is containing a deployment config file (.pipe.yaml) since PipeCD needs it to know how to run the application's deployments.",
+    "Please ensure that your application directory in Git is containing an application config file since PipeCD needs it to know how to run the application's deployments.",
 };
 
 export interface ApplicationAddedViewProps {
