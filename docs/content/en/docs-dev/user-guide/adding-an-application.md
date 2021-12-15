@@ -7,7 +7,7 @@ description: >
 ---
 
 An application is a collect of resources and configurations that are managed together.
-It represents the service which you are going to deploy. With PipeCD, all application's manifests and its application configuration (`.pipe.yaml`) must be committed into a directory of a Git repository. That directory is called as application directory.
+It represents the service which you are going to deploy. With PipeCD, all application's manifests and its application configuration (`app.pipecd.yaml`) must be committed into a directory of a Git repository. That directory is called as application directory.
 
 Before deploying an application, the application must be registered from either the web UI or the Git repository.
 Registering application helps PipeCD know the basic information about that application, where the application configuration is placing, what `piped` should handle it as well as what cloud the application should be deployed to.
@@ -67,7 +67,7 @@ Here are the list of fields in the register form:
 | Piped | The piped that handles this application. Select one of the registered `piped`s at `Settings/Piped` page. | Yes |
 | Repository | The Git repository contains application configuration and application configuration. Select one of the registered repositories in `piped` configuration. | Yes |
 | Path | The relative path from the root of the Git repository to the directory containing application configuration and application configuration. Use `./` means repository root. | Yes |
-| Config Filename | The name of application configuration file. Default is `.pipe.yaml`. | No |
+| Config Filename | The name of application configuration file. Default is `app.pipecd.yaml`. | No |
 | Cloud Provider | Where the application will be deployed to. Select one of the registered cloud providers in `piped` configuration. | Yes |
 
 ### Adding application configuration file
