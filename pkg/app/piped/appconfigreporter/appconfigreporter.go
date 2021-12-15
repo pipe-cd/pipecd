@@ -72,8 +72,6 @@ type Reporter struct {
 
 	// Whether it already swept all unregistered apps from control-plane.
 	sweptUnregisteredApps bool
-	// The latest unregistered apps for each repository.
-	latestUnregisteredApps map[string][]*model.ApplicationInfo
 }
 
 func NewReporter(
@@ -85,15 +83,14 @@ func NewReporter(
 	logger *zap.Logger,
 ) *Reporter {
 	return &Reporter{
-		apiClient:              apiClient,
-		gitClient:              gitClient,
-		applicationLister:      appLister,
-		config:                 cfg,
-		gracePeriod:            gracePeriod,
-		lastScannedCommits:     make(map[string]string),
-		fileSystem:             &fileSystem{},
-		logger:                 logger.Named("app-config-reporter"),
-		latestUnregisteredApps: make(map[string][]*model.ApplicationInfo),
+		apiClient:          apiClient,
+		gitClient:          gitClient,
+		applicationLister:  appLister,
+		config:             cfg,
+		gracePeriod:        gracePeriod,
+		lastScannedCommits: make(map[string]string),
+		fileSystem:         &fileSystem{},
+		logger:             logger.Named("app-config-reporter"),
 	}
 }
 
@@ -205,23 +202,13 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, headCommits map[str
 func (r *Reporter) updateUnregisteredApps(ctx context.Context, headCommits map[string]string) error {
 	unregisteredApps := make([]*model.ApplicationInfo, 0)
 	for repoID, repo := range r.gitRepos {
-		headCommit := headCommits[repoID]
-		if lc, ok := r.lastScannedCommits[repoID]; ok && headCommit == lc {
-			// Use the cached apps if the head commit is already scanned.
-			// The unregistered apps sent previously aren't persisted, that's why it has to send them again even if it's scanned one.
-			if apps, ok := r.latestUnregisteredApps[repoID]; ok {
-				unregisteredApps = append(unregisteredApps, apps...)
-			}
-			continue
-		}
-
+		// The unregistered apps sent previously aren't persisted, that's why it has to send them again even if it's scanned one.
 		us, err := r.findUnregisteredApps(repo.GetPath(), repoID)
 		if err != nil {
 			return err
 		}
 		r.logger.Info(fmt.Sprintf("found out %d valid unregistered applications in repository %q", len(us), repoID))
 		unregisteredApps = append(unregisteredApps, us...)
-		r.latestUnregisteredApps[repoID] = us
 	}
 
 	// Even if the result is zero, we need to report at least once.
