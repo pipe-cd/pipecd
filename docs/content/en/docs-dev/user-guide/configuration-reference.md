@@ -32,6 +32,7 @@ spec:
 | encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
+| postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
 
 ## Terraform application
 
@@ -55,6 +56,7 @@ spec:
 | encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
+| postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
 
 ## CloudRun application
 
@@ -78,6 +80,7 @@ spec:
 | encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
+| postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
 
 ## Lambda application
 
@@ -99,6 +102,7 @@ spec:
 | encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
+| postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
 
 ## ECS application
 
@@ -121,6 +125,7 @@ spec:
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
+| postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
 
 ## Analysis Template Configuration
 
@@ -197,6 +202,7 @@ One of `yamlField` or `regex` is required.
 | onCommit | [OnCommit](#oncommit) | Controls triggering new deployment when new Git commits touched the application. | No |
 | onCommand | [OnCommand](#oncommand) | Controls triggering new deployment when received a new `SYNC` command. | No |
 | onOutOfSync | [OnOutOfSync](#onoutofsync) | Controls triggering new deployment when application is at `OUT_OF_SYNC` state. | No |
+| onChain | [OnChain](#onchain) | Controls triggering new deployment when the application is counted as a node of some chains. | No |
 
 ## OnCommit
 
@@ -217,6 +223,12 @@ One of `yamlField` or `regex` is required.
 |-|-|-|-|
 | disabled | bool | Whether to exclude application from triggering target when application is at `OUT_OF_SYNC` state. Default is `true`. | No |
 | minWindow | duration | Minimum amount of time must be elapsed since the last deployment. This can be used to avoid triggering unnecessary continuous deployments based on `OUT_OF_SYNC` status. Default is `5m`. | No |
+
+## OnChain
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| disabled | bool | Whether to exclude application from triggering target when application is counted as a node of some chains. Default is `true`. | No |
 
 ## Pipeline
 
@@ -550,6 +562,25 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 |-|-|-|-|
 | duration | duration | Maximum time to perform the analysis. | Yes |
 | metrics | [][AnalysisMetrics](#analysismetrics) | Configuration for analysis by metrics. | No |
+
+## PostSync
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| chain | [DeploymentChain](#deploymentchain) | Deployment chain configuration, used to determine and build deployments that should be triggered once the current deployment is triggered. | No |
+
+### DeploymentChain
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| applications | [][DeploymentChainApplication](#deploymentchainapplication) | The list of applications which should be triggered once deployment of this application rolled out successfully. | Yes |
+
+### DeploymentChainApplication
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| name | string | The name of PipeCD application, note that application name is not unique in PipeCD datastore | No |
+| kind | string | The kind of the PipeCD application, which should be triggered as a node in deployment chain. The value will be one of: KUBERNETES, TERRAFORM, CLOUDRUN, LAMBDA, ECS. | No |
 
 ## PipeCD rich defined types
 

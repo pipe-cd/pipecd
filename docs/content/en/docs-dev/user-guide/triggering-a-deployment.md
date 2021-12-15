@@ -18,6 +18,7 @@ Configuration for the trigger used to determine whether we trigger a new deploym
 - `onCommit`: Controls triggering new deployment when new Git commits touched the application.
 - `onCommand`: Controls triggering new deployment when received a new `SYNC` command.
 - `onOutOfSync`: Controls triggering new deployment when application is at `OUT_OF_SYNC` state.
+- `onChain`: Controls triggering new deployment when the application is counted as a node of some chains.
 
 See [Configuration Reference](/docs/user-guide/configuration-reference/#deploymenttrigger) for the full configuration.
 

@@ -81,3 +81,9 @@ https://github.com/pipe-cd/examples
 | [bluegreen](https://github.com/pipe-cd/examples/tree/master/ecs/bluegreen) | Deployment pipeline with blue-green strategy. |
 | [secret-management](https://github.com/pipe-cd/examples/tree/master/ecs/secret-management) | Demonstrate how to manage sensitive data by using [Secret Management](https://pipecd.dev/docs/user-guide/secret-management/) feature. |
 | [wait-approval](https://github.com/pipe-cd/examples/tree/master/ecs/wait-approval) | Deployment pipeline that contains a manual approval stage. |
+
+### Deployment chain
+
+| Name                                                                        | Description |
+|-----------------------------------------------------------------------------|-------------|
+| [simple](https://github.com/pipe-cd/examples/tree/master/deployment-chain/simple) | Simple deployment chain which uses application name as a filter in chain configuration. |
