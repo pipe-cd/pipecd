@@ -1,6 +1,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: TerraformApp
 spec:
+  name: secret-management
   encryption:
     encryptedSecrets:
       serviceAccount: {ENCRYPTED_DATA_GENERATED_FROM_WEB}

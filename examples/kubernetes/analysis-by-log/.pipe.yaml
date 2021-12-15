@@ -1,6 +1,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
+  name: analysis-by-log
   pipeline:
     stages:
       - name: K8S_CANARY_ROLLOUT

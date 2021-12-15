@@ -3,6 +3,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
+  name: simple
   input:
     manifests:
       - deployment.yaml

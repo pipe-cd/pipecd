@@ -2,6 +2,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
+  name: helm-remote-chart
   input:
     # Helm chart sourced from a Helm Chart Repository.
     helmChart:

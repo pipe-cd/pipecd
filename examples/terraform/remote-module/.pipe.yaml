@@ -1,3 +1,5 @@
 # Deploy application that using remote terraform modules from other Git repositories.
 apiVersion: pipecd.dev/v1beta1
 kind: TerraformApp
+spec:
+  name: remote-module

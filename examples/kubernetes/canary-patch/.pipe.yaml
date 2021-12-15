@@ -1,6 +1,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
+  name: canary-patch
   pipeline:
     stages:
       # Deploy the workloads of CANARY variant. In this case, the replicas number

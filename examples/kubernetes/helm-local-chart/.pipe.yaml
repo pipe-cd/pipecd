@@ -3,8 +3,11 @@
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
-  triggerPaths:
-    - local-modules/helm-charts/helloworld/*
+  name: helm-local-chart
+  trigger:
+    onCommit:
+      paths:
+        - local-modules/helm-charts/helloworld/*
   input:
     # Helm chart sourced from current Git repo.
     helmChart:
