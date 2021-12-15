@@ -212,9 +212,11 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
             <Typography variant="h5">
               {app ? app.name : <Skeleton width={100} />}
             </Typography>
-            <Typography variant="subtitle2" className={classes.env}>
-              {env && env.name}
-            </Typography>
+            {env && (
+              <Typography variant="subtitle2" className={classes.env}>
+                {env.name}
+              </Typography>
+            )}
           </Box>
 
           {app ? (

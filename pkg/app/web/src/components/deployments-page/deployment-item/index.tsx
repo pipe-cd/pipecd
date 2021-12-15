@@ -1,5 +1,4 @@
 import { Box, ListItem, makeStyles, Typography } from "@material-ui/core";
-import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import dayjs from "dayjs";
 import { FC, memo } from "react";
 import { Link as RouterLink } from "react-router-dom";
