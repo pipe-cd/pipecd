@@ -12,7 +12,7 @@ For users who want to use PipeCD to build a complex deployment flow, which conta
 
 The idea of this feature is to trigger the whole deployment chain when a specified deployment is triggered. To enable trigger the deployment chain, we need to add a configuration section named `postSync` which contains all configurations that be used when the deployment is triggered. For this `Deployment Chain` feature, configuration for it is under `postSync.chain` section.
 
-A canonical configuration look as below:
+A canonical configuration looks as below:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -25,11 +25,11 @@ spec:
   postSync:
     chain:
       applications:
-        # Find all applications with name `Application 2` and trigger them.
-        - name: Application 2
-        # Fill all applications with name `Application 3` of kind `KUBERNETES`
+        # Find all applications with name `application-2` and trigger them.
+        - name: application-2
+        # Fill all applications with name `application-3` of kind `KUBERNETES`
         # and trigger them.
-        - name: Application 3
+        - name: application-3
           kind: KUBERNETES
 ```
 
@@ -37,7 +37,7 @@ As a result, the above configuration will be used to create a deployment chain l
 
 ![](/images/deployment-chain-figure.png)
 
-In the context of the deployment chain in PipeCD, a chain is made up of many `blocks`, and each block contains multiple `nodes` which is the reference to a deployment. The first block in the chain always contains only one node, which is the deployment that triggers the whole chain. Other blocks of the chain are built using filters which are configurable via `postSync.chain.applications` section. As for the above example, the second block `Block 2` contains 3 different nodes, which are 3 different PipeCD applications with the same name `Application 2`.
+In the context of the deployment chain in PipeCD, a chain is made up of many `blocks`, and each block contains multiple `nodes` which is the reference to a deployment. The first block in the chain always contains only one node, which is the deployment that triggers the whole chain. Other blocks of the chain are built using filters which are configurable via `postSync.chain.applications` section. As for the above example, the second block `Block 2` contains 2 different nodes, which are 2 different PipeCD applications with the same name `application-2`.
 
 __Tip__:
 
@@ -51,8 +51,7 @@ See [Examples](/docs/examples/#deployment-chain) for more specific.
 Something you need to care about while creating your deployment chain with PipeCD
 
 1. The deployment chain blocks are run in sequence, one by one. But all nodes in the same block are run in parallel, you should ensure that all nodes(deployments) in the same block do not depend on each other.
-2. Once a block in the chain has finished with `FAILURE` or `CANCELLED` status, the chain will be set to fail, and all blocks after that finished block will be set to `CANCELLED` status.
-3. Once a node in a block has finished with `FAILURE` or `CANCELLED` status, the containing block will be set to fail, and all other nodes which have not yet finished will be set to `CANCELLED` status (those nodes will be rolled back if they're in the middle of its deploying process).
+2. Once a node in a block has finished with `FAILURE` or `CANCELLED` status, the containing block will be set to fail, and all other nodes which have not yet finished will be set to `CANCELLED` status (those nodes will be rolled back if they're in the middle of its deploying process). Consequently, all blocks after that failed block will be set to `CANCELLED` status and be stopped.
 
 ## Console view
 
