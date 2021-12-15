@@ -256,6 +256,7 @@ export const validationSchema = yup.object().shape({
     })
     .required(),
   repoPath: yup.string().required(),
+  configFilename: yup.string().required(),
   cloudProvider: yup.string().required(),
 });
 
@@ -452,6 +453,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
             onChange={handleChange}
             value={values.configFilename}
             fullWidth
+            required
             className={classes.textInput}
           />
 
