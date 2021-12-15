@@ -1,3 +1,5 @@
 # Deploy applicaiton that using local terraform models from the same Git repository.
 apiVersion: pipecd.dev/v1beta1
 kind: TerraformApp
+spec:
+  name: local-module

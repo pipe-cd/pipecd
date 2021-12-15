@@ -3,6 +3,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
+  name: wait-approval
   pipeline:
     stages:
       - name: K8S_CANARY_ROLLOUT

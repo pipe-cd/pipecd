@@ -1,6 +1,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
+  name: mesh-istio-canary
   pipeline:
     stages:
       # Deploy the workloads of CANARY variant. In this case, the number of

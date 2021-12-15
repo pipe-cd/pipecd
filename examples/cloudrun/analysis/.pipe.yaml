@@ -1,6 +1,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: CloudRunApp
 spec:
+  name: analysis
   pipeline:
     stages:
       # Promote new version to receive amount of traffic.

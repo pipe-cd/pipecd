@@ -2,6 +2,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: CloudRunApp
 spec:
+  name: wait-approval
   pipeline:
     stages:
       # Promote new version to receive amount of traffic.

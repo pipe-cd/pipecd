@@ -1,3 +1,5 @@
 # Quick sync by rolling out the new version and switching all traffic to it.
 apiVersion: pipecd.dev/v1beta1
 kind: CloudRunApp
+spec:
+  name: simple

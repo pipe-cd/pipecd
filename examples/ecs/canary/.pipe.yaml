@@ -1,6 +1,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: ECSApp
 spec:
+  name: canary
   input:
     serviceDefinitionFile: servicedef.yaml
     taskDefinitionFile: taskdef.yaml

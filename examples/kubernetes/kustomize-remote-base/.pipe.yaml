@@ -3,5 +3,6 @@
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
+  name: kustomize-remote-base
   input:
     kustomizeVersion: 3.5.5
