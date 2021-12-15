@@ -1,7 +1,7 @@
 ---
 title: "Manual Approval Stage の追加"
 linkTitle: "Manual Approval Stage の追加"
-weight: 3
+weight: 4
 description: >
   Manual Approval Stage に関する説明
 ---
