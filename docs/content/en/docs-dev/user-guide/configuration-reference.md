@@ -19,7 +19,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| name | string | The application name. | Yes if you set the application through the application configuration file |
+| name | string | The application name. | Yes (if you want to create PipeCD application through the application configuration file) |
 | envName | string | The environment name. You need to make sure that the environment name is unique in your project. | No |
 | input | [KubernetesDeploymentInput](#kubernetesdeploymentinput) | Input for Kubernetes deployment such as kubectl version, helm version, manifests filter... | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
