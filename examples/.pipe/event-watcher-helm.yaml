@@ -2,7 +2,7 @@ apiVersion: pipecd.dev/v1beta1
 kind: EventWatcher
 spec:
   events:
-    # For those who want to update the deployment config file when releasing a new Helm package.
+    # For those who want to update the application config file when releasing a new Helm package.
     - name: helm-release
       replacements:
         - file: kubernetes/helm-remote-chart/.pipe.yaml

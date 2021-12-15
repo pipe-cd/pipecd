@@ -1,5 +1,4 @@
 import { Box, ListItem, makeStyles, Typography } from "@material-ui/core";
-import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import dayjs from "dayjs";
 import { FC, memo } from "react";
 import { Link as RouterLink } from "react-router-dom";
@@ -87,7 +86,7 @@ export const DeploymentItem: FC<DeploymentItemProps> = memo(
             <Typography variant="h6" component="span">
               {deployment.applicationName}
             </Typography>
-            {env ? (
+            {env && (
               <Typography
                 variant="subtitle2"
                 className={classes.info}
@@ -95,8 +94,6 @@ export const DeploymentItem: FC<DeploymentItemProps> = memo(
               >
                 {env.name}
               </Typography>
-            ) : (
-              <Skeleton height={21} width={80} className={classes.info} />
             )}
             <Typography
               variant="body2"
