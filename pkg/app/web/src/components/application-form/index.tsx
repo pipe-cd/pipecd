@@ -380,7 +380,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
                   ...emptyFormValues,
                   name: values.name,
                   kind: values.kind,
-                  env: item.value == emptyEnvName ? "" : item.value,
+                  env: item.value === emptyEnvName ? "" : item.value,
                 });
               }}
               disabled={isSubmitting || disableApplicationInfo}
