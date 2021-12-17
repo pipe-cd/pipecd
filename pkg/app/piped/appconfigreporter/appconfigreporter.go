@@ -111,6 +111,11 @@ func (r *Reporter) Run(ctx context.Context) error {
 		r.gitRepos[repoCfg.RepoID] = repo
 	}
 
+	// Scan them once first.
+	if err := r.scanAppConfigs(ctx); err != nil {
+		r.logger.Error("failed to check application configurations defined in Git", zap.Error(err))
+	}
+
 	ticker := time.NewTicker(r.config.AppConfigSyncInterval.Duration())
 	defer ticker.Stop()
 
