@@ -203,7 +203,7 @@ function FormSelectInput<T extends { name: string; value: string }>({
   label,
   value,
   items,
-  required,
+  required = true,
   onChange,
   disabled = false,
 }: {
@@ -211,7 +211,7 @@ function FormSelectInput<T extends { name: string; value: string }>({
   label: string;
   value: string;
   items: T[];
-  required: boolean;
+  required?: boolean;
   onChange: (value: T) => void;
   disabled?: boolean;
 }): ReactElement {
@@ -315,12 +315,11 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
     const environments = useAppSelector(selectAllEnvs);
 
     const ps = useAppSelector((state) => selectAllPipeds(state));
-    const allPipeds = ps.filter((piped) => !piped.disabled);
 
     const pipeds = useAppSelector<Piped.AsObject[]>((state) =>
       values.env !== ""
         ? selectPipedsByEnv(state.pipeds, values.env)
-        : allPipeds
+        : ps.filter((piped) => !piped.disabled)
     );
 
     const selectedPiped = useAppSelector(selectPipedById(values.pipedId));
@@ -365,7 +364,6 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
               name: APPLICATION_KIND_TEXT[(key as unknown) as ApplicationKind],
               value: key,
             }))}
-            required={true}
             onChange={({ value }) => setFieldValue("kind", parseInt(value, 10))}
             disabled={isSubmitting || disableApplicationInfo}
           />
@@ -378,12 +376,11 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
               items={envItems}
               required={false}
               onChange={(item) => {
-                const value = item.value == emptyEnvName ? "" : item.value;
                 setValues({
                   ...emptyFormValues,
                   name: values.name,
                   kind: values.kind,
-                  env: value,
+                  env: item.value == emptyEnvName ? "" : item.value,
                 });
               }}
               disabled={isSubmitting || disableApplicationInfo}
@@ -406,7 +403,6 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
                 name: `${piped.name} (${piped.id})`,
                 value: piped.id,
               }))}
-              required={true}
               disabled={isSubmitting || pipeds.length === 0}
             />
           </div>
@@ -424,7 +420,6 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
                 })
               }
               items={repositories}
-              required={true}
               disabled={
                 selectedPiped === undefined ||
                 repositories.length === 0 ||
@@ -477,7 +472,6 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
             value={values.cloudProvider}
             onChange={({ value }) => setFieldValue("cloudProvider", value)}
             items={cloudProviders}
-            required={true}
             disabled={
               selectedPiped === undefined ||
               cloudProviders.length === 0 ||
