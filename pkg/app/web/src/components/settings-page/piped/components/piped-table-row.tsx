@@ -56,6 +56,21 @@ const useStyles = makeStyles((theme) => ({
   connectionStatus: {
     paddingLeft: theme.spacing(1.5),
   },
+  onlineStatus: {
+    "& span": {
+      backgroundColor: "green",
+    },
+  },
+  offlineStatus: {
+    "& span": {
+      backgroundColor: "red",
+    },
+  },
+  unknownStatus: {
+    "& span": {
+      backgroundColor: "grey",
+    },
+  },
 }));
 
 interface Props {
@@ -138,20 +153,6 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
     onDisable(pipedId);
   }, [pipedId, onDisable]);
 
-  const connectionStatusColor = useCallback(
-    (status: Piped.ConnectionStatus) => {
-      switch (status) {
-        case Piped.ConnectionStatus.UNKNOWN:
-          return "secondary";
-        case Piped.ConnectionStatus.ONLINE:
-          return "primary";
-        case Piped.ConnectionStatus.OFFLINE:
-          return "error";
-      }
-    },
-    [piped?.status]
-  );
-
   if (!piped) {
     return null;
   }
@@ -172,7 +173,14 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
             >
               <Badge
                 variant="dot"
-                color={connectionStatusColor(piped.status)}
+                className={clsx({
+                  [classes.onlineStatus]:
+                    piped.status === Piped.ConnectionStatus.ONLINE,
+                  [classes.offlineStatus]:
+                    piped.status === Piped.ConnectionStatus.OFFLINE,
+                  [classes.unknownStatus]:
+                    piped.status === Piped.ConnectionStatus.UNKNOWN,
+                })}
               />
             </Tooltip>
           </Typography>
