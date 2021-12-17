@@ -19,7 +19,7 @@ For example, the deployment configuration as below is missing the pipeline field
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
-kind: Kubernetes
+kind: KubernetesApp
 spec:
   input:
     helmChart:

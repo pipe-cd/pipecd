@@ -19,7 +19,7 @@ For example, the application configuration as below is missing the pipeline fiel
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
-kind: Kubernetes
+kind: KubernetesApp
 spec:
   input:
     helmChart:
