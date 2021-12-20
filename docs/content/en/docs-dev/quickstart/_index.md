@@ -72,9 +72,9 @@ Go to the `ADD FROM GIT` tab, then select:
 - Piped: `dev` (you just registered)
 - CloudProvider: `kubernetes-default`
 
-You should see a lot of application suggestions.
+You should see a lot of suggested applications.
 
-Click the `canary` row. Make sure Kind is set to KUBENETES, and then click the ADD button.
+Select the `canary` application and click the `ADD`button to register.
 
 ![](/images/quickstart-adding-application.png)
 
