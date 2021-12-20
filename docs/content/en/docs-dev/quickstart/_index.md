@@ -66,7 +66,7 @@ helm install piped pipecd/piped -n pipecd \
 ```
 
 ### 4. Registering a kubernetes application
-Navigate to the `Application` page, click on the `Add` button on the top left corner.
+Navigate to the `Applications` page, click on the `Add` button on the top left corner.
 
 Go to the `ADD FROM GIT` tab, then select:
 - Piped: `dev` (you just registered)
