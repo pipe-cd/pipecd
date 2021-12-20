@@ -100,3 +100,5 @@ kind: KubernetesApp
 spec:
   name: new-name
 ```
+
+Refer to [configuration reference](/user-guide/configuration-reference/) to see the full list of configurable fields.
