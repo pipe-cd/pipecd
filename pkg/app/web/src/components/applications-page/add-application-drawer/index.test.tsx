@@ -82,6 +82,7 @@ describe("AddApplicationDrawer", () => {
                   remote: "git@github.com:pipe-cd/debug.git",
                 },
                 repoPath: "path",
+                labels: [],
               },
             }),
           },

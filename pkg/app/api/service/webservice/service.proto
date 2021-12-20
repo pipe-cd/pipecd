@@ -234,6 +234,7 @@ message AddApplicationRequest {
     model.ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
     string cloud_provider = 6 [(validate.rules).string.min_len = 1];
     string description = 7;
+    map<string, string> labels = 8;
 }
 
 message AddApplicationResponse {
