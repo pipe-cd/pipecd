@@ -40,16 +40,7 @@ Enter the project name, username and password. Be sure to give the following:
 - Username: `hello-pipecd`
 - Password: `hello-pipecd`
 
-### 3. Adding an environment
-Go to the `Environment` tab at `Settings` page and click on the `Add` button to add a new [Environment](/docs/concepts/#environment) to the project.
-
-Then you give the environment name and its description as shown below:
-
-![](/images/quickstart-adding-environment.png)
-
-After filling out the form, click on the `Save` button.
-
-### 4. Installing a `piped`
+### 3. Installing a `piped`
 Before running a piped, you have to register it on the web and take the generated ID and Key strings.
 
 Navigate to the `Piped` tab on the same page as before, click on the `Add` button. Then you enter as:
@@ -74,8 +65,16 @@ helm install piped pipecd/piped -n pipecd \
   --set secret.pipedKey.data={YOUR_PIPED_SECRET_KEY}
 ```
 
-### 5. Configuring a kubernetes application
-Navigate to the `Application` page, click on the `Add` button. Then give as:
+### 4. Registering a kubernetes application
+Navigate to the `Applications` page, click on the `Add` button on the top left corner.
+
+Go to the `ADD FROM GIT` tab, then select:
+- Piped: `dev` (you just registered)
+- CloudProvider: `kubernetes-default`
+
+You should see a lot of suggested applications.
+
+Select the `canary` application and click the `ADD` button to register.
 
 ![](/images/quickstart-adding-application.png)
 
@@ -83,7 +82,7 @@ After a bit, the first deployment would be complete automatically to sync the ap
 
 ![](/images/quickstart-first-deployment.png)
 
-### 6. Let's deploy!
+### 5. Let's deploy!
 Let's get started with deployment! All you have to do is to make a PR to update the image tag, scale the replicas, or change the manifests.
 
 For instance, open the `kubernetes/canary/deployment.yaml` under the forked examples' repository, then change the tag from `v0.1.0` to `v0.2.0`.
@@ -94,7 +93,7 @@ After a short wait, a new deployment will be started to update to `v0.2.0`.
 
 ![](/images/quickstart-deploying.png)
 
-### 7. Cleanup
+### 6. Cleanup
 When you’re finished experimenting with PipeCD, you can uninstall with:
 
 ``` console
