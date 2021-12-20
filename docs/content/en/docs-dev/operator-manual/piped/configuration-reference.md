@@ -25,7 +25,7 @@ spec:
 | pipedKeyData | string | Base64 encoded string of Piped key. Either pipedKeyFile or pipedKeyData must be set. | Yes |
 | apiAddress | string | The address used to connect to the control-plane's API. | Yes |
 | syncInterval | duration | How often to check whether an application should be synced. Default is `1m`. | No |
-| appConfigSyncInterval | duration | How often to check whether application configuration files should be synced. Default is `5m`. | No |
+| appConfigSyncInterval | duration | How often to check whether application configuration files should be synced. Default is `1m`. | No |
 | git | [Git](#git) | Git configuration needed for Git commands. | No |
 | repositories | [][Repository](/docs/operator-manual/piped/configuration-reference/#gitrepository) | List of Git repositories this piped will handle. | No |
 | chartRepositories | [][ChartRepository](/docs/operator-manual/piped/configuration-reference/#chartrepository) | List of Helm chart repositories that should be added while starting up. | No |

@@ -50,8 +50,8 @@ type PipedSpec struct {
 	// Default is 1m.
 	SyncInterval Duration `json:"syncInterval" default:"1m"`
 	// How often to check whether an application configuration file should be synced.
-	// Default is 5m.
-	AppConfigSyncInterval Duration `json:"appConfigSyncInterval" default:"5m"`
+	// Default is 1m.
+	AppConfigSyncInterval Duration `json:"appConfigSyncInterval" default:"1m"`
 	// Git configuration needed for git commands.
 	Git PipedGit `json:"git"`
 	// List of git repositories this piped will handle.
