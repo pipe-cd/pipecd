@@ -283,6 +283,7 @@ export interface ApplicationFormValue {
     remote: string;
     branch: string;
   };
+  labels: Array<[string, string]>;
 }
 
 export type ApplicationFormProps = FormikProps<ApplicationFormValue> & {
@@ -304,6 +305,7 @@ export const emptyFormValues: ApplicationFormValue = {
     remote: "",
     branch: "",
   },
+  labels: new Array<[string, string]>(),
 };
 
 export const ApplicationForm: FC<ApplicationFormProps> = memo(
@@ -627,6 +629,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
       configFilename: "",
       kind: ApplicationKind.KUBERNETES,
       cloudProvider: "",
+      labels: new Array<[string, string]>(),
     });
 
     const handleFilterChange = useCallback(
@@ -772,6 +775,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                                   configFilename: app.configFilename,
                                   kind: app.kind,
                                   cloudProvider: selectedCloudProvider,
+                                  labels: app.labelsMap,
                                 });
                                 setShowConfirm(true);
                               }}

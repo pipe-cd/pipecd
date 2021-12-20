@@ -108,6 +108,7 @@ export const addApplication = createAsyncThunk<
     configFilename?: string;
     kind: ApplicationKind;
     cloudProvider: string;
+    labels: Array<[string, string]>;
   }
 >(`${MODULE_NAME}/add`, async (props) => {
   const { applicationId } = await applicationsAPI.addApplication({
@@ -124,6 +125,7 @@ export const addApplication = createAsyncThunk<
     cloudProvider: props.cloudProvider,
     kind: props.kind,
     description: "",
+    labelsMap: props.labels,
   });
 
   return applicationId;
