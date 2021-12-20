@@ -39,7 +39,7 @@ spec:
 
 Visit [here](/user-guide/configuration-reference/) for supported fields.
 
-After waiting for a while (it depends on the Piped's setting), click the `+ADD` button at the top of the application list page and then go to the `ADD FROM GIT` tab.
+After waiting for a while (it depends on the Piped's setting), click the `+ADD` button at the top left corner of the application list page and then go to the `ADD FROM GIT` tab.
 Select the Piped and Cloud Provider that you deploy to, and the application you have just selected should appear as a candidate.
 Click `ADD` to complete the registration.
 
