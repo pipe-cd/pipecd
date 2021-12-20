@@ -76,25 +76,10 @@ Usage:
   pipectl [command]
 
 Available Commands:
-  application  Manage application resources.
-  deployment   Manage deployment resources.
-  encrypt      Encrypt the plaintext entered in either stdin or the --input-file flag.
-  event        Manage event resources.
-  help         Help about any command
-  piped        Manage piped resources.
-  plan-preview Show plan preview against the specified commit.
-  version      Print the information of current binary.
-
-Flags:
-  -h, --help                               help for pipectl
-      --log-encoding string                The encoding type for logger [json|console|humanize]. (default "humanize")
-      --log-level string                   The minimum enabled logging level. (default "info")
-      --metrics                            Whether metrics is enabled or not. (default true)
-      --profile                            If true enables uploading the profiles to Stackdriver.
-      --profile-debug-logging              If true enables logging debug information of profiler.
-      --profiler-credentials-file string   The path to the credentials file using while sending profiles to Stackdriver.
-
-Use "pipectl [command] --help" for more information about a command.
+  application Manage application resources.
+  deployment  Manage deployment resources.
+  help        Help about any command
+  version     Print the information of current binary.
 ```
 
 ### Adding a new application
@@ -129,11 +114,10 @@ Flags:
       --app-kind string           The kind of application. (KUBERNETES|TERRAFORM|LAMBDA|CLOUDRUN)
       --app-name string           The application name.
       --cloud-provider string     The cloud provider name. One of the registered providers in the piped configuration.
-      --config-file-name string   The configuration file name (default "app.pipecd.yaml")
-      --description string        The description of the application.
+      --config-file-name string   The configuration file name. Default is .pipe.yaml (default ".pipe.yaml")
       --env-id string             The ID of environment where this application should belong to.
   -h, --help                      help for add
-      --piped-id string           The ID of piped that should handle this application.
+      --piped-id string           The ID of piped that should handle this applicaiton.
       --repo-id string            The repository ID. One the registered repositories in the piped configuration.
 
 Global Flags:
@@ -144,10 +128,6 @@ Global Flags:
       --insecure                           Whether disabling transport security while connecting to control-plane.
       --log-encoding string                The encoding type for logger [json|console|humanize]. (default "humanize")
       --log-level string                   The minimum enabled logging level. (default "info")
-      --metrics                            Whether metrics is enabled or not. (default true)
-      --profile                            If true enables uploading the profiles to Stackdriver.
-      --profile-debug-logging              If true enables logging debug information of profiler.
-      --profiler-credentials-file string   The path to the credentials file using while sending profiles to Stackdriver.
 ```
 
 ### Syncing an application
