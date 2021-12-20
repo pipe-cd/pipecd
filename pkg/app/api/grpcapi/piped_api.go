@@ -1210,6 +1210,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 	dc := model.DeploymentChain{
 		Id:        uuid.New().String(),
 		ProjectId: projectID,
+		Status:    model.ChainStatus_DEPLOYMENT_CHAIN_PENDING,
 		Blocks:    chainBlocks,
 	}
 
