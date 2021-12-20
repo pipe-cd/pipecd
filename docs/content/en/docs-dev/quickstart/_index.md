@@ -74,7 +74,7 @@ Go to the `ADD FROM GIT` tab, then select:
 
 You should see a lot of suggested applications.
 
-Select the `canary` application and click the `ADD`button to register.
+Select the `canary` application and click the `ADD` button to register.
 
 ![](/images/quickstart-adding-application.png)
 
