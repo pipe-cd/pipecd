@@ -66,10 +66,13 @@ helm install piped pipecd/piped -n pipecd \
 ```
 
 ### 4. Registering a kubernetes application
-Navigate to the `Application` page, click on the `Add` button.
+Navigate to the `Application` page, click on the `Add` button on the top left corner.
 
-Then go to the `ADD FROM GIT` tab, select Piped that you just registered, and select `kubernetes-default` as the Cloud Provider.
-Then you should see a lot of application suggestions (you may not see them yet if you have just installed Piped).
+Go to the `ADD FROM GIT` tab, then select:
+- Piped: `dev` (you just registered)
+- CloudProvider: `kubernetes-default`
+
+You should see a lot of application suggestions.
 
 Click the `canary` row. Make sure Kind is set to KUBENETES, and then click the ADD button.
 
