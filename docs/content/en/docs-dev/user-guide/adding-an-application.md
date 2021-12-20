@@ -9,10 +9,10 @@ description: >
 An application is a collect of resources and configurations that are managed together.
 It represents the service which you are going to deploy. With PipeCD, all application's manifests and its application configuration (`app.pipecd.yaml`) must be committed into a directory of a Git repository. That directory is called as application directory.
 
-Before deploying an application, the application must be registered from either the web UI or an application configuration file defined in your Git repository.
-Registering application helps PipeCD know the basic information about that application, where the application configuration is placing, what `piped` should handle it as well as what cloud the application should be deployed to.
+Before deploying an application, it must be registered via the web console.
+Registering application helps PipeCD know where the application configuration is placed, which `piped` should handle it as well as which cloud the application should be deployed to.
 
-An application can be handled by one of the registered `piped`s. Currently, PipeCD is supporting the following kinds of application:
+Each application can be handled by one and only one `piped`. Currently, PipeCD is supporting the following application kinds:
 
 - Kubernetes application
 - Terraform application
@@ -21,8 +21,8 @@ An application can be handled by one of the registered `piped`s. Currently, Pipe
 - ECS application
 
 There are two ways to register an application:
-- From the application configuration in your Git repository (recommended)
-- From the web UI
+- Scanning the unused application configuration files in Git to add (recommended)
+- Manually configure application information
 
 ## From the application configuration in your Git repository (recommended)
 In this way, you define all information in the application configuration defined in the Git repository and use it as a single source of truth.
@@ -92,8 +92,7 @@ Please refer [pipecd/examples](/docs/user-guide/examples/) for the deployments b
 The [next section](/docs/user-guide/configuring-deployment/) guides you how to configure the deployment for each specific application kinds.
 
 ## Updating an application
-Regardless of which method you use to register an application, you need to update the application via the application configuration file (that's why registering from Git is recommended).
-Refer to [the supported field](/user-guide/configuration-reference/) and make revisions where you need to update.
+Regardless of which method you used to register the application, the web console can only be used to disable/enable/delete the application, besides the adding operation. All updates on application information must be done via the application configuration file stored in Git.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
