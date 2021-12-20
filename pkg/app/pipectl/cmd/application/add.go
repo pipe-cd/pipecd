@@ -64,7 +64,6 @@ func newAddCommand(root *command) *cobra.Command {
 
 	cmd.MarkFlagRequired("app-name")
 	cmd.MarkFlagRequired("app-kind")
-	cmd.MarkFlagRequired("env-id")
 	cmd.MarkFlagRequired("piped-id")
 	cmd.MarkFlagRequired("cloud-provider")
 	cmd.MarkFlagRequired("repo-id")

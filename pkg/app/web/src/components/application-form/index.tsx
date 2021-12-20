@@ -203,6 +203,7 @@ function FormSelectInput<T extends { name: string; value: string }>({
   label,
   value,
   items,
+  required = true,
   onChange,
   disabled = false,
 }: {
@@ -210,6 +211,7 @@ function FormSelectInput<T extends { name: string; value: string }>({
   label: string;
   value: string;
   items: T[];
+  required?: boolean;
   onChange: (value: T) => void;
   disabled?: boolean;
 }): ReactElement {
@@ -219,7 +221,7 @@ function FormSelectInput<T extends { name: string; value: string }>({
       name={id}
       label={label}
       fullWidth
-      required
+      required={required}
       select
       disabled={disabled}
       variant="outlined"
@@ -245,8 +247,6 @@ function FormSelectInput<T extends { name: string; value: string }>({
 export const validationSchema = yup.object().shape({
   name: yup.string().required(),
   kind: yup.number().required(),
-  // TODO: Make all environment fields in the form in optional
-  env: yup.string().required(),
   pipedId: yup.string().required(),
   repo: yup
     .object({
@@ -314,8 +314,12 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
 
     const environments = useAppSelector(selectAllEnvs);
 
+    const ps = useAppSelector((state) => selectAllPipeds(state));
+
     const pipeds = useAppSelector<Piped.AsObject[]>((state) =>
-      values.env !== "" ? selectPipedsByEnv(state.pipeds, values.env) : []
+      values.env !== ""
+        ? selectPipedsByEnv(state.pipeds, values.env)
+        : ps.filter((piped) => !piped.disabled)
     );
 
     const selectedPiped = useAppSelector(selectPipedById(values.pipedId));
@@ -326,6 +330,10 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
     });
 
     const repositories = createRepoListFromPiped(selectedPiped);
+
+    const emptyEnvName = "(empty)";
+    const envItems = environments.map((v) => ({ name: v.name, value: v.id }));
+    envItems.push({ name: emptyEnvName, value: emptyEnvName });
 
     return (
       <Box width="100%">
@@ -365,13 +373,14 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
               id="env"
               label="Environment"
               value={values.env}
-              items={environments.map((v) => ({ name: v.name, value: v.id }))}
+              items={envItems}
+              required={false}
               onChange={(item) => {
                 setValues({
                   ...emptyFormValues,
                   name: values.name,
                   kind: values.kind,
-                  env: item.value,
+                  env: item.value === emptyEnvName ? "" : item.value,
                 });
               }}
               disabled={isSubmitting || disableApplicationInfo}
@@ -394,7 +403,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
                 name: `${piped.name} (${piped.id})`,
                 value: piped.id,
               }))}
-              disabled={isSubmitting || !values.env || pipeds.length === 0}
+              disabled={isSubmitting || pipeds.length === 0}
             />
           </div>
 
