@@ -81,6 +81,12 @@ var (
 				block.CompletedAt = time.Now().Unix()
 			}
 
+			// Update chain status based on its updated blocks state.
+			dc.Status = dc.DesiredStatus()
+			if dc.IsCompleted() {
+				dc.CompletedAt = time.Now().Unix()
+			}
+
 			return nil
 		}
 	}

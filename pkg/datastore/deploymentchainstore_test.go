@@ -32,11 +32,13 @@ func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
 		deploymentStatus model.DeploymentStatus
 
 		expectedBlockStatus model.ChainBlockStatus
+		expectedChainStatus model.ChainStatus
 		expectedErr         error
 	}{
 		{
 			name: "invalid blockIndex given",
 			deploymentChain: model.DeploymentChain{
+				Status: model.ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
 				Blocks: []*model.ChainBlock{
 					{
 						Nodes: []*model.ChainNode{
@@ -58,6 +60,7 @@ func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
 		{
 			name: "deployment id not found in the block",
 			deploymentChain: model.DeploymentChain{
+				Status: model.ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
 				Blocks: []*model.ChainBlock{
 					{
 						Nodes: []*model.ChainNode{
@@ -79,6 +82,7 @@ func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
 		{
 			name: "try to update a finished block",
 			deploymentChain: model.DeploymentChain{
+				Status: model.ChainStatus_DEPLOYMENT_CHAIN_FAILURE,
 				Blocks: []*model.ChainBlock{
 					{
 						Status: model.ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE,
@@ -103,10 +107,12 @@ func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
 			deploymentID:        "deploy-1",
 			deploymentStatus:    model.DeploymentStatus_DEPLOYMENT_CANCELLED,
 			expectedBlockStatus: model.ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE,
+			expectedChainStatus: model.ChainStatus_DEPLOYMENT_CHAIN_FAILURE,
 		},
 		{
 			name: "block reaches SUCCESS status after update its last deployment with SUCCESS status",
 			deploymentChain: model.DeploymentChain{
+				Status: model.ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
 				Blocks: []*model.ChainBlock{
 					{
 						Nodes: []*model.ChainNode{
@@ -131,10 +137,12 @@ func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
 			deploymentID:        "deploy-1",
 			deploymentStatus:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
 			expectedBlockStatus: model.ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS,
+			expectedChainStatus: model.ChainStatus_DEPLOYMENT_CHAIN_SUCCESS,
 		},
 		{
 			name: "block is marked as FAILURE after update its deployment with FAILURE status",
 			deploymentChain: model.DeploymentChain{
+				Status: model.ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
 				Blocks: []*model.ChainBlock{
 					{
 						Nodes: []*model.ChainNode{
@@ -159,10 +167,12 @@ func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
 			deploymentID:        "deploy-1",
 			deploymentStatus:    model.DeploymentStatus_DEPLOYMENT_FAILURE,
 			expectedBlockStatus: model.ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE,
+			expectedChainStatus: model.ChainStatus_DEPLOYMENT_CHAIN_FAILURE,
 		},
 		{
 			name: "block is marked CANCELLED status after update its deployment with CANCELLED status",
 			deploymentChain: model.DeploymentChain{
+				Status: model.ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
 				Blocks: []*model.ChainBlock{
 					{
 						Nodes: []*model.ChainNode{
@@ -187,10 +197,12 @@ func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
 			deploymentID:        "deploy-1",
 			deploymentStatus:    model.DeploymentStatus_DEPLOYMENT_CANCELLED,
 			expectedBlockStatus: model.ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED,
+			expectedChainStatus: model.ChainStatus_DEPLOYMENT_CHAIN_CANCELLED,
 		},
 		{
 			name: "block keep it status on update not the first started deployment status to RUNNING",
 			deploymentChain: model.DeploymentChain{
+				Status: model.ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
 				Blocks: []*model.ChainBlock{
 					{
 						Nodes: []*model.ChainNode{
@@ -221,10 +233,12 @@ func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
 			deploymentID:        "deploy-1",
 			deploymentStatus:    model.DeploymentStatus_DEPLOYMENT_RUNNING,
 			expectedBlockStatus: model.ChainBlockStatus_DEPLOYMENT_BLOCK_RUNNING,
+			expectedChainStatus: model.ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
 		},
 		{
 			name: "block keep it status on update not the first started deployment status to SUCCESS",
 			deploymentChain: model.DeploymentChain{
+				Status: model.ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
 				Blocks: []*model.ChainBlock{
 					{
 						Nodes: []*model.ChainNode{
@@ -255,10 +269,12 @@ func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
 			deploymentID:        "deploy-2",
 			deploymentStatus:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
 			expectedBlockStatus: model.ChainBlockStatus_DEPLOYMENT_BLOCK_RUNNING,
+			expectedChainStatus: model.ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
 		},
 		{
 			name: "block changes its status as RUNNING once the it has one RUNNING deployment",
 			deploymentChain: model.DeploymentChain{
+				Status: model.ChainStatus_DEPLOYMENT_CHAIN_PENDING,
 				Blocks: []*model.ChainBlock{
 					{
 						Nodes: []*model.ChainNode{
@@ -289,6 +305,7 @@ func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
 			deploymentID:        "deploy-1",
 			deploymentStatus:    model.DeploymentStatus_DEPLOYMENT_RUNNING,
 			expectedBlockStatus: model.ChainBlockStatus_DEPLOYMENT_BLOCK_RUNNING,
+			expectedChainStatus: model.ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
 		},
 	}
 
@@ -305,6 +322,7 @@ func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
 				return
 			}
 			assert.Equal(t, tc.expectedBlockStatus, tc.deploymentChain.Blocks[tc.blockIndex].Status)
+			assert.Equal(t, tc.expectedChainStatus, tc.deploymentChain.Status)
 		})
 	}
 }
