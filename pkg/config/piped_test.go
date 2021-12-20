@@ -43,7 +43,7 @@ func TestPipedConfig(t *testing.T) {
 				APIAddress:            "your-pipecd.domain",
 				WebAddress:            "https://your-pipecd.domain",
 				SyncInterval:          Duration(time.Minute),
-				AppConfigSyncInterval: Duration(5 * time.Minute),
+				AppConfigSyncInterval: Duration(time.Minute),
 				Git: PipedGit{
 					Username:   "username",
 					Email:      "username@email.com",
