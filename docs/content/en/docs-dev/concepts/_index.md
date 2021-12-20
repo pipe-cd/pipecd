@@ -8,7 +8,7 @@ description: >
 
 ### Piped
 
-`piped` (the ’d’ is short for ’daemon’) is a single binary component you run in your cluster, your local network to handle the deployment tasks.
+`piped` is a single binary component you run as an agent in your cluster, your local network to handle the deployment tasks.
 It can be run inside a Kubernetes cluster by simply starting a Pod or a Deployment.
 This component is designed to be stateless, so it can also be run in a single VM or even your local machine.
 
