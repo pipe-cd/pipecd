@@ -625,7 +625,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
         setSelectedPipedId(options.pipedId);
         setSelectedKind(options.kind);
         setSelectedCloudProvider(options.cloudProvider);
-        options.cloudProvider ? setActiveStep(1) : setActiveStep(0);
+        setActiveStep(options.cloudProvider ? 1 : 0);
       },
       []
     );
