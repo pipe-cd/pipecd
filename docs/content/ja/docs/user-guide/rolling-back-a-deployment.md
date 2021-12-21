@@ -1,7 +1,7 @@
 ---
 title: "Deployment のロールバック"
 linkTitle: "Deployment のロールバック"
-weight: 2
+weight: 3
 description: >
   Deployment の自動ロールバックのタイミングや手動でのロールバックについて
 ---
