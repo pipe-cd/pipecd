@@ -148,6 +148,9 @@ const useStyles = makeStyles((theme) => ({
   tab: {
     flexDirection: "row-reverse",
   },
+  labelIcon: {
+    "min-height": 0,
+  },
 }));
 
 interface TabPanelProps {
@@ -200,12 +203,19 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
           onChange={handleChange}
           aria-label="basic tabs example"
         >
-          <Tab label="Add manually" {...a11yProps(0)} />
           <Tab
-            classes={{ wrapper: classes.tab }}
+            classes={{ wrapper: classes.tab, labelIcon: classes.labelIcon }}
+            label="Add manually"
+            icon=" "
+            {...a11yProps(0)}
+          />
+          <Tab
+            classes={{ wrapper: classes.tab, labelIcon: classes.labelIcon }}
+            label="ADD FROM GIT"
             icon={
               <IconButton
                 size="small"
+                edge="start"
                 href="https://pipecd.dev/docs/user-guide/adding-an-application/#from-the-application-configuration-in-your-git-repository-recommended"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -213,7 +223,6 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
                 <Help fontSize="small" />
               </IconButton>
             }
-            label="ADD FROM GIT"
             {...a11yProps(1)}
           />
         </Tabs>
