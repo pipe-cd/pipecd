@@ -23,8 +23,9 @@ import {
   Step,
   StepLabel,
   StepContent,
+  IconButton,
 } from "@material-ui/core";
-import ExpandMore from "@material-ui/icons/ExpandMore";
+import { ExpandMore, Help } from "@material-ui/icons";
 import { FormikProps } from "formik";
 import {
   FC,
@@ -144,6 +145,15 @@ const useStyles = makeStyles((theme) => ({
   actionsContainer: {
     marginBottom: theme.spacing(2),
   },
+  tabLabel: {
+    minHeight: 0,
+    "& .MuiTab-wrapper": {
+      flexDirection: "row-reverse",
+    },
+    "& .MuiTab-wrapper > *:first-child": {
+      marginBottom: 0,
+    },
+  },
 }));
 
 interface TabPanelProps {
@@ -177,6 +187,8 @@ function a11yProps(index: number): { id: string; "aria-controls": string } {
 }
 
 export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
+  const classes = useStyles();
+
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
   const handleChange = (
@@ -194,8 +206,28 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
           onChange={handleChange}
           aria-label="basic tabs example"
         >
-          <Tab label="Add manually" {...a11yProps(0)} />
-          <Tab label="Add from Git (Alpha)" {...a11yProps(1)} />
+          <Tab
+            className={classes.tabLabel}
+            label="Add manually"
+            icon=" "
+            {...a11yProps(0)}
+          />
+          <Tab
+            className={classes.tabLabel}
+            label="ADD FROM GIT"
+            icon={
+              <IconButton
+                size="small"
+                edge="start"
+                href="https://pipecd.dev/docs/user-guide/adding-an-application/#from-the-application-configuration-in-your-git-repository-recommended"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Help fontSize="small" />
+              </IconButton>
+            }
+            {...a11yProps(1)}
+          />
         </Tabs>
       </Box>
       <TabPanel selected={selectedTabIndex === 0} index={0}>
