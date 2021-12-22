@@ -1,7 +1,7 @@
 ---
 title: "Deployment のキャンセル"
 linkTitle: "Deployment のキャンセル"
-weight: 3
+weight: 4
 description: >
   Deployment のキャンセル方法についての説明
 ---

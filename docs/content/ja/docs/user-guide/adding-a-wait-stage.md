@@ -1,7 +1,7 @@
 ---
 title: "Wait Stage の追加"
 linkTitle: "Wait Stage の追加"
-weight: 5
+weight: 6
 description: >
   Wait Stage に関する説明
 ---
