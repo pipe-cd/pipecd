@@ -145,11 +145,14 @@ const useStyles = makeStyles((theme) => ({
   actionsContainer: {
     marginBottom: theme.spacing(2),
   },
-  tab: {
-    flexDirection: "row-reverse",
-  },
-  labelIcon: {
-    "min-height": 0,
+  tabLabel: {
+    minHeight: 0,
+    "& .MuiTab-wrapper": {
+      flexDirection: "row-reverse",
+    },
+    "& .MuiTab-wrapper > *:first-child": {
+      marginBottom: 0,
+    },
   },
 }));
 
@@ -204,13 +207,13 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
           aria-label="basic tabs example"
         >
           <Tab
-            classes={{ wrapper: classes.tab, labelIcon: classes.labelIcon }}
+            className={classes.tabLabel}
             label="Add manually"
             icon=" "
             {...a11yProps(0)}
           />
           <Tab
-            classes={{ wrapper: classes.tab, labelIcon: classes.labelIcon }}
+            className={classes.tabLabel}
             label="ADD FROM GIT"
             icon={
               <IconButton
