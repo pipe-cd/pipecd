@@ -35,7 +35,7 @@ Deployment 詳細ページ例
 </p>
 
 先述したようにデフォルトでは全ての Deployment はマージされたコミットを確認することで自動でトリガーされますが、Web コンソールから手動で新しい Deployment をトリガーすることもできます。
-Application 詳細ページの `SYNC` ボタンをクリックすると、 master （デフォルト）ブランチの最新のコミットの状態と差分をなくす為に新しい Deployment をトリガーします。
+Application 詳細ページの `SYNC` ボタンをクリックすると、 デフォルトブランチの最新のコミットの状態と差分をなくす為に新しい Deployment をトリガーします。
 
 ![](/images/application-details.png)
 <p style="text-align: center;">
