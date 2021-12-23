@@ -31,7 +31,7 @@ Once installed, use `kubectl port-forward` to expose the web console on your loc
 kubectl -n pipecd port-forward svc/pipecd 8080
 ```
 
-Then point your web browser to [http://localhost:8080](http://localhost:8080) to login with the configured static admin account as below:
+The PipeCD web console will be available at [http://localhost:8080](http://localhost:8080). To login, you can use the configured static admin account as below:
 - project name: `quickstart`
 - username: `hello-pipecd`
 - password: `hello-pipecd`
