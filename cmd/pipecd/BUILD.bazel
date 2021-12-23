@@ -1,5 +1,7 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+load("@io_bazel_rules_docker//container:container.bzl", "container_bundle")
+load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 
 go_library(
     name = "go_default_library",
@@ -74,4 +76,16 @@ go_image(
     base = "@pipecd-base//image",
     binary = ":pipecd",
     visibility = ["//visibility:public"],
+)
+
+container_bundle(
+    name = "pipecd_app_bundle",
+    images = {
+        "$(DOCKER_REGISTRY)/pipecd:{STABLE_VERSION}": ":pipecd_app_image",
+    },
+)
+
+docker_push(
+    name = "pipecd_app_push",
+    bundle = ":pipecd_app_bundle",
 )
