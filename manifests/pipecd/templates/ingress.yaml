@@ -1,5 +1,5 @@
 {{- if .Values.ingress.enabled -}}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "pipecd.fullname" . }}
@@ -14,27 +14,37 @@ metadata:
   {{- end }}
 spec:
   {{- if .Values.service.internalPort }}
-  backend:
-    serviceName: {{ include "pipecd.fullname" . }}
-    servicePort: {{ .Values.service.internalPort }}
+  defaultBackend:
+    service:
+      name: {{ include "pipecd.fullname" . }}
+      port:
+        number: {{ .Values.service.internalPort }}
   rules:
   - http:
       paths:
       - path: /hook
         backend:
-          serviceName: {{ include "pipecd.fullname" . }}
-          servicePort: {{ .Values.service.port }}
+          service:
+            name: {{ include "pipecd.fullname" . }}
+            port:
+              number: {{ .Values.service.port }}
       - path: /pipe.api.service.pipedservice.PipedService/*
         backend:
-          serviceName: {{ include "pipecd.fullname" . }}
-          servicePort: {{ .Values.service.port }}
+          service:
+            name: {{ include "pipecd.fullname" . }}
+            port:
+              number: {{ .Values.service.port }}
       - path: /pipe.api.service.apiservice.APIService/*
         backend:
-          serviceName: {{ include "pipecd.fullname" . }}
-          servicePort: {{ .Values.service.port }}
+          service:
+            name: {{ include "pipecd.fullname" . }}
+            port:
+              number: {{ .Values.service.port }}
   {{ else }}
-  backend:
-    serviceName: {{ include "pipecd.fullname" . }}
-    servicePort: {{ .Values.service.port }}
+  defaultBackend:
+    service:
+      name: {{ include "pipecd.fullname" . }}
+      port:
+        number: {{ .Values.service.port }}
   {{- end }}
 {{- end }}
