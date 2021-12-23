@@ -118,6 +118,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Support GCP [GCS](https://cloud.google.com/storage) as file store | Beta |
 | Support AWS [S3](https://aws.amazon.com/s3/) as file store | Beta |
 | Support [Minio](https://github.com/minio/minio) as file store | Beta |
+| Support using file storage such as GCS, S3, Minio for both data store and file store (It means no database is required to run control plane) | Incubating |
 | [Insights](/docs/user-guide/insights/) - Show the delivery performance of a team or an application | Incubating |
 | Deployment Chain - Allow rolling out to multiple clusters gradually or promoting across environments | Alpha |
 | [Metrics](/docs/operator-manual/control-plane/metrics/) - Dashboards for PipeCD and Piped metrics | Beta |
