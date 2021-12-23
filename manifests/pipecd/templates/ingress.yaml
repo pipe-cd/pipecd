@@ -22,19 +22,15 @@ spec:
   rules:
   - http:
       paths:
-      - path: /hook
+      - path: /pipe.api.service.pipedservice.PipedService/
+        pathType: Prefix
         backend:
           service:
             name: {{ include "pipecd.fullname" . }}
             port:
               number: {{ .Values.service.port }}
-      - path: /pipe.api.service.pipedservice.PipedService/*
-        backend:
-          service:
-            name: {{ include "pipecd.fullname" . }}
-            port:
-              number: {{ .Values.service.port }}
-      - path: /pipe.api.service.apiservice.APIService/*
+      - path: /pipe.api.service.apiservice.APIService/
+        pathType: Prefix
         backend:
           service:
             name: {{ include "pipecd.fullname" . }}
