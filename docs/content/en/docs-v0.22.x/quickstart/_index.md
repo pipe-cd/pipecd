@@ -71,7 +71,7 @@ You can complete the installation by running the following after replacing `{YOU
 ``` console
 helm install piped pipecd/piped -n pipecd \
   --values https://raw.githubusercontent.com/pipe-cd/manifests/{{< blocks/latest_version >}}/quickstart/piped-values.yaml \
-  --set secret.pipedKey.data={YOUR_PIPED_SECRET_KEY}
+  --set secret.data.piped-key={YOUR_PIPED_SECRET_KEY}
 ```
 
 ### 5. Configuring a kubernetes application
