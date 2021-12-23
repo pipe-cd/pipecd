@@ -6,7 +6,9 @@ description: >
   This page describes how to quickly get started with PipeCD on Kubernetes.
 ---
 
-This guides you to install PipeCD in your kubernetes and deploy a `helloworld` application to that Kubernetes cluster. For further reading about PipeCD's ideas, please visit [overview](/docs/overview/) and [concepts](/docs/concepts/).
+This page is a guideline for installing PipeCD in your Kubernetes cluster and deploying a "hello world" application to that same Kubernetes cluster.
+
+Note that it __does not require installing PipeCD to all clusters where you deploy your applications typically__, we do it here just for the simplicity of this guideline. For further reading about PipeCD's ideas, please visit [overview](/docs/overview/) and [concepts](/docs/concepts/).
 
 ### Prerequisites
 - Having a Kubernetes cluster
@@ -19,28 +21,26 @@ This guides you to install PipeCD in your kubernetes and deploy a `helloworld` a
 ``` console
 helm repo add pipecd https://charts.pipecd.dev
 
-helm install pipecd pipecd/pipecd -n pipecd --dependency-update --create-namespace \
+helm install pipecd pipecd/pipecd -n pipecd \
+  --create-namespace \
+  --dependency-update \
   --values https://raw.githubusercontent.com/pipe-cd/manifests/{{< blocks/latest_version >}}/quickstart/control-plane-values.yaml
 ```
 
-### 2. Accessing the PipeCD web
-PipeCD comes with an embedded web-based UI.
-First up, using kubectl port-forward to expose the installed control-plane on your localhost:
+Once installed, use `kubectl port-forward` to expose the web console on your localhost:
 
 ``` console
 kubectl -n pipecd port-forward svc/pipecd 8080
 ```
 
-Point your web browser to [http://localhost:8080](http://localhost:8080) to login with the configured static admin account.
+The PipeCD web console will be available at [http://localhost:8080](http://localhost:8080). To login, you can use the configured static admin account as below:
+- project name: `quickstart`
+- username: `hello-pipecd`
+- password: `hello-pipecd`
 
 ![](/images/quickstart-login.png)
 
-Enter the project name, username and password. Be sure to give the following:
-- Project Name: `quickstart`
-- Username: `hello-pipecd`
-- Password: `hello-pipecd`
-
-### 3. Installing a `piped`
+### 2. Installing a `piped`
 Before running a piped, you have to register it on the web and take the generated ID and Key strings.
 
 Navigate to the `Piped` tab on the same page as before, click on the `Add` button. Then you enter as:
@@ -65,7 +65,7 @@ helm install piped pipecd/piped -n pipecd \
   --set secret.data.piped-key={YOUR_PIPED_SECRET_KEY}
 ```
 
-### 4. Registering a kubernetes application
+### 3. Registering a kubernetes application
 Navigate to the `Applications` page, click on the `Add` button on the top left corner.
 
 Go to the `ADD FROM GIT` tab, then select:
@@ -82,7 +82,7 @@ After a bit, the first deployment would be complete automatically to sync the ap
 
 ![](/images/quickstart-first-deployment.png)
 
-### 5. Let's deploy!
+### 4. Let's deploy!
 Let's get started with deployment! All you have to do is to make a PR to update the image tag, scale the replicas, or change the manifests.
 
 For instance, open the `kubernetes/canary/deployment.yaml` under the forked examples' repository, then change the tag from `v0.1.0` to `v0.2.0`.
@@ -93,7 +93,7 @@ After a short wait, a new deployment will be started to update to `v0.2.0`.
 
 ![](/images/quickstart-deploying.png)
 
-### 6. Cleanup
+### 5. Cleanup
 When you’re finished experimenting with PipeCD, you can uninstall with:
 
 ``` console
