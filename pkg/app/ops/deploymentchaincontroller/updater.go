@@ -89,6 +89,11 @@ func (u *updater) Run(ctx context.Context) error {
 			}
 			deployment, err := u.deploymentStore.GetDeployment(ctx, deploymentRef.DeploymentId)
 			if err != nil {
+				u.logger.Error("failed while update deployment chain: can not get deployment",
+					zap.String("deploymentChainId", u.deploymentChainID),
+					zap.String("deploymentId", deploymentRef.DeploymentId),
+					zap.Error(err),
+				)
 				return err
 			}
 			// Update the deployment state in deployment chain model in case
@@ -101,6 +106,11 @@ func (u *updater) Run(ctx context.Context) error {
 						deployment.Status,
 						deployment.StatusReason),
 				); err != nil {
+					u.logger.Error("failed to update state of deployment in chain",
+						zap.String("deploymentChainId", u.deploymentChainID),
+						zap.String("deploymentId", deployment.Id),
+						zap.Error(err),
+					)
 					return err
 				}
 				// Update updater's deploymentRefs.
@@ -131,6 +141,11 @@ func (u *updater) Run(ctx context.Context) error {
 				u.deploymentChainID,
 				datastore.DeploymentChainAddDeploymentToBlock(deployment),
 			); err != nil {
+				u.logger.Error("failed to link deployments to its chain",
+					zap.String("deploymentChainId", u.deploymentChainID),
+					zap.String("deploymentId", deployment.Id),
+					zap.Error(err),
+				)
 				return err
 			}
 			// Store deployment ref to the updater's deploymentRefs.
@@ -165,6 +180,10 @@ func (u *updater) listAllMissingDeployments(ctx context.Context) ([]*model.Deplo
 	}
 	deployments, _, err := u.deploymentStore.ListDeployments(ctx, options)
 	if err != nil {
+		u.logger.Error("failed to fetch all deployments in chain",
+			zap.String("deploymentChainId", u.deploymentChainID),
+			zap.Error(err),
+		)
 		return nil, err
 	}
 

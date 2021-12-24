@@ -17,7 +17,6 @@ package deploymentchaincontroller
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -27,7 +26,11 @@ import (
 )
 
 const (
+	// interval represents time to sync state for all deployment chain.
 	interval = time.Minute
+	// updaterWorkerNum represents the maximum number of updaters which can be
+	// run at the same time.
+	maxUpdaterWorkerNum = 10
 )
 
 type DeploymentChainController struct {
@@ -37,8 +40,6 @@ type DeploymentChainController struct {
 	// Map from deployment chain ID to the updater
 	// who in charge for the deployment chain updating.
 	updaters map[string]*updater
-	// WaitGroup for waiting all deployment chain updaters to be completed.
-	wg sync.WaitGroup
 
 	logger *zap.Logger
 }
@@ -109,24 +110,36 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 		}
 	}
 
-	d.logger.Info(fmt.Sprintf("there are %d running deployment chain updaters", len(d.updaters)))
-
-	for chainID := range d.updaters {
-		updater := d.updaters[chainID]
-		d.wg.Add(1)
-		go func() {
-			defer d.wg.Done()
-			if err := updater.Run(ctx); err != nil {
-				d.logger.Error("failed to update deployment chain",
-					zap.String("deploymentChainId", updater.deploymentChainID),
-					zap.Error(err),
-				)
-			}
-		}()
+	var (
+		dcUpdatersCtn = len(d.updaters)
+		updatersCh    = make(chan *updater, dcUpdatersCtn)
+		resultCh      = make(chan error, dcUpdatersCtn)
+	)
+	updaterWorkerNum := maxUpdaterWorkerNum
+	if updaterWorkerNum > dcUpdatersCtn {
+		updaterWorkerNum = dcUpdatersCtn
 	}
 
+	d.logger.Info(fmt.Sprintf("there are %d running deployment chain updaters", dcUpdatersCtn))
+	for w := 0; w < updaterWorkerNum; w++ {
+		go func(wid int) {
+			d.logger.Info(fmt.Sprintf("worker id (%d) is handling deployment chain updaters", wid))
+			for updater := range updatersCh {
+				resultCh <- updater.Run(ctx)
+			}
+			d.logger.Info(fmt.Sprintf("worker id (%d) has stopped", wid))
+		}(w)
+	}
+
+	for chainID := range d.updaters {
+		updatersCh <- d.updaters[chainID]
+	}
+	close(updatersCh)
+
 	d.logger.Info("waiting for all updaters to finish")
-	d.wg.Wait()
+	for i := 0; i < dcUpdatersCtn; i++ {
+		<-resultCh
+	}
 
 	return nil
 }
