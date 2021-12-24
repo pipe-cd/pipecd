@@ -146,32 +146,35 @@ func (u *updater) Run(ctx context.Context) error {
 }
 
 func (u *updater) listAllMissingDeployments(ctx context.Context) ([]*model.Deployment, error) {
-	noDeploymentApps := make([]string, 0, len(u.applicationRefs))
+	noDeploymentApps := make(map[string]interface{}, len(u.applicationRefs))
 	for _, appRef := range u.applicationRefs {
 		if _, ok := u.deploymentRefs[appRef.ApplicationId]; !ok {
-			noDeploymentApps = append(noDeploymentApps, appRef.ApplicationId)
+			noDeploymentApps[appRef.ApplicationId] = nil
 		}
 	}
 
-	deployments := make([]*model.Deployment, 0, len(noDeploymentApps))
-	// TODO: Find a better way to fetch applications in batch.
-	for _, appID := range noDeploymentApps {
-		app, err := u.applicationStore.GetApplication(ctx, appID)
-		if err != nil {
-			return nil, err
-		}
-		// If the most recent triggered deployment does not exist, ignore it.
-		if app.MostRecentlyTriggeredDeployment == nil {
-			continue
-		}
-
-		deployment, err := u.deploymentStore.GetDeployment(ctx, app.MostRecentlyTriggeredDeployment.DeploymentId)
-		if err != nil {
-			return nil, err
-		}
-		deployments = append(deployments, deployment)
+	// Fetch all available deployments in chain.
+	options := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "DeploymentChainId",
+				Operator: datastore.OperatorEqual,
+				Value:    u.deploymentChainID,
+			},
+		},
 	}
-	return deployments, nil
+	deployments, _, err := u.deploymentStore.ListDeployments(ctx, options)
+	if err != nil {
+		return nil, err
+	}
+
+	missingDeployments := make([]*model.Deployment, 0, len(noDeploymentApps))
+	for _, deployment := range deployments {
+		if _, ok := noDeploymentApps[deployment.ApplicationId]; ok {
+			missingDeployments = append(missingDeployments, deployment)
+		}
+	}
+	return missingDeployments, nil
 }
 
 func (u *updater) isAllInChainDeploymentsCompleted() bool {

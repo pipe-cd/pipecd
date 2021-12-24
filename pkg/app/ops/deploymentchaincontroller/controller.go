@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	interval = 1 * time.Minute
+	interval = time.Minute
 )
 
 type DeploymentChainController struct {
