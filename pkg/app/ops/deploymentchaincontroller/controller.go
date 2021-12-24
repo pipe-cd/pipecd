@@ -62,17 +62,22 @@ func (d *DeploymentChainController) Run(ctx context.Context) error {
 	t := time.NewTicker(interval)
 	defer t.Stop()
 	d.logger.Info("start syncing updaters")
-	defer d.logger.Info("deploymentChainController has been stopped")
+
 	for {
 		select {
 		case <-ctx.Done():
+			d.logger.Info("deploymentChainController has been stopped")
 			return nil
 
 		case <-t.C:
-			d.syncUpdaters(ctx)
+			start := time.Now()
+			if err := d.syncUpdaters(ctx); err != nil {
+				d.logger.Error("failed to sync deployment chains", zap.Error(err))
+				continue
+			}
+			d.logger.Info("successfully sync all deployment chains", zap.Duration("duration", time.Since(start)))
 		}
 	}
-	return nil
 }
 
 func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
