@@ -153,7 +153,7 @@ func (u *updater) listAllMissingDeployments(ctx context.Context) ([]*model.Deplo
 		}
 	}
 
-	deployments := make([]*model.Deployment, len(noDeploymentApps))
+	deployments := make([]*model.Deployment, 0, len(noDeploymentApps))
 	// TODO: Find a better way to fetch applications in batch.
 	for _, appID := range noDeploymentApps {
 		app, err := u.applicationStore.GetApplication(ctx, appID)
