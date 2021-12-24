@@ -26,6 +26,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipe/pkg/admin"
+	"github.com/pipe-cd/pipe/pkg/app/ops/deploymentchaincontroller"
 	"github.com/pipe-cd/pipe/pkg/app/ops/firestoreindexensurer"
 	"github.com/pipe-cd/pipe/pkg/app/ops/handler"
 	"github.com/pipe-cd/pipe/pkg/app/ops/insightcollector"
@@ -165,6 +166,14 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 		cleaner := planpreviewoutputcleaner.NewCleaner(fs, input.Logger)
 		group.Go(func() error {
 			return cleaner.Run(ctx)
+		})
+	}
+
+	// Start deployment chain controller.
+	{
+		controller := deploymentchaincontroller.NewDeploymentChainController(ds, input.Logger)
+		group.Go(func() error {
+			return controller.Run(ctx)
 		})
 	}
 

@@ -44,15 +44,13 @@ type deploymentChainController struct {
 }
 
 func NewDeploymentChainController(
-	as datastore.ApplicationStore,
-	ds datastore.DeploymentStore,
-	dcs datastore.DeploymentChainStore,
+	ds datastore.DataStore,
 	logger *zap.Logger,
 ) *deploymentChainController {
 	return &deploymentChainController{
-		applicationStore:     as,
-		deploymentStore:      ds,
-		deploymentChainStore: dcs,
+		applicationStore:     datastore.NewApplicationStore(ds),
+		deploymentStore:      datastore.NewDeploymentStore(ds),
+		deploymentChainStore: datastore.NewDeploymentChainStore(ds),
 		updaters:             make(map[string]*updater),
 		logger:               logger.Named("deployment-chain-controller"),
 	}
