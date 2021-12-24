@@ -30,7 +30,7 @@ const (
 	interval = 1 * time.Minute
 )
 
-type deploymentChainController struct {
+type DeploymentChainController struct {
 	applicationStore     datastore.ApplicationStore
 	deploymentStore      datastore.DeploymentStore
 	deploymentChainStore datastore.DeploymentChainStore
@@ -46,8 +46,8 @@ type deploymentChainController struct {
 func NewDeploymentChainController(
 	ds datastore.DataStore,
 	logger *zap.Logger,
-) *deploymentChainController {
-	return &deploymentChainController{
+) *DeploymentChainController {
+	return &DeploymentChainController{
 		applicationStore:     datastore.NewApplicationStore(ds),
 		deploymentStore:      datastore.NewDeploymentStore(ds),
 		deploymentChainStore: datastore.NewDeploymentChainStore(ds),
@@ -56,7 +56,7 @@ func NewDeploymentChainController(
 	}
 }
 
-func (d *deploymentChainController) Run(ctx context.Context) error {
+func (d *DeploymentChainController) Run(ctx context.Context) error {
 	d.logger.Info("start running DeploymentChainController")
 
 	t := time.NewTicker(interval)
@@ -78,7 +78,7 @@ L:
 	return nil
 }
 
-func (d *deploymentChainController) syncUpdaters(ctx context.Context) error {
+func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 	// Remove done updater of completed deployment chain.
 	for id, u := range d.updaters {
 		if u.IsDone() {
