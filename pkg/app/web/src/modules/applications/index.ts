@@ -35,6 +35,9 @@ export interface ApplicationsFilterOptions {
   envId?: string;
   syncStatus?: string;
   name?: string;
+  // Suppose to be like ["key-1:value-1"]
+  // sindresorhus/query-string doesn't support multidimensional arrays, that's why the format is a bit tricky.
+  labels?: Array<string>;
 }
 
 export const fetchApplications = createAsyncThunk<
@@ -42,7 +45,14 @@ export const fetchApplications = createAsyncThunk<
   ApplicationsFilterOptions | undefined,
   { state: AppState }
 >(`${MODULE_NAME}/fetchList`, async (options = {}) => {
-  const { applicationsList } = await applicationsAPI.getApplications({
+  const labels = new Array<[string, string]>();
+  if (options.labels) {
+    for (const label of options.labels) {
+      const pair = label.split(":");
+      pair.length === 2 && labels.push([pair[0], pair[1]]);
+    }
+  }
+  const req = {
     options: {
       envIdsList: options.envId ? [options.envId] : [],
       kindsList: options.kind
@@ -55,9 +65,10 @@ export const fetchApplications = createAsyncThunk<
       enabled: options.activeStatus
         ? { value: options.activeStatus === "enabled" }
         : undefined,
-      labelsMap: [], // TODO: Specify labels for ListApplications
+      labelsMap: labels,
     },
-  });
+  };
+  const { applicationsList } = await applicationsAPI.getApplications(req);
   return applicationsList as Application.AsObject[];
 });
 
