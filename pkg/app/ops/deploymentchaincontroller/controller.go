@@ -89,6 +89,7 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 	// Find all not completed deployment chains and create updater if does not exist.
 	notCompletedChains, err := listNotCompletedDeploymentChain(ctx, d.deploymentChainStore)
 	if err != nil {
+		d.logger.Error("failed to fetch all not completed deployment chain", zap.Error(err))
 		return err
 	}
 	for _, c := range notCompletedChains {
