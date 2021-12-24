@@ -146,7 +146,7 @@ func (u *updater) Run(ctx context.Context) error {
 }
 
 func (u *updater) listAllMissingDeployments(ctx context.Context) ([]*model.Deployment, error) {
-	noDeploymentApps := make([]string, len(u.applicationsRef))
+	noDeploymentApps := make([]string, 0, len(u.applicationsRef))
 	for _, appRef := range u.applicationsRef {
 		if _, ok := u.deploymentsRef[appRef.ApplicationId]; !ok {
 			noDeploymentApps = append(noDeploymentApps, appRef.ApplicationId)
