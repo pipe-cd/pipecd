@@ -104,9 +104,7 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 		}
 	}
 
-	d.logger.Info(fmt.Sprintf("there are %d running deployment chain updaters", len(d.updaters)),
-		zap.Int("count", len(d.updaters)),
-	)
+	d.logger.Info(fmt.Sprintf("there are %d running deployment chain updaters", len(d.updaters)))
 
 	for chainID := range d.updaters {
 		updater := d.updaters[chainID]
