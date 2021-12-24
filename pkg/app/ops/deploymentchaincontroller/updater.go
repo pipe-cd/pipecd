@@ -29,13 +29,13 @@ import (
 // its deployments.
 type updater struct {
 	deploymentChainID string
-	// applicationsRef contains list of all applications of
+	// applicationRefs contains list of all applications of
 	// the current handling deployment chain.
-	applicationsRef []*model.ChainApplicationRef
-	// deploymentsRef is a map with key is the application id and
+	applicationRefs []*model.ChainApplicationRef
+	// deploymentRefs is a map with key is the application id and
 	// value is the last state of deployment ref to the deployment
 	// of that in chain application.
-	deploymentsRef map[string]*model.ChainDeploymentRef
+	deploymentRefs map[string]*model.ChainDeploymentRef
 
 	applicationStore     datastore.ApplicationStore
 	deploymentStore      datastore.DeploymentStore
@@ -57,8 +57,8 @@ func newUpdater(
 ) *updater {
 	return &updater{
 		deploymentChainID:    dc.Id,
-		applicationsRef:      dc.ListAllInChainApplications(),
-		deploymentsRef:       dc.ListAllInChainApplicationDeploymentsMap(),
+		applicationRefs:      dc.ListAllInChainApplications(),
+		deploymentRefs:       dc.ListAllInChainApplicationDeploymentsMap(),
 		applicationStore:     as,
 		deploymentStore:      ds,
 		deploymentChainStore: dcs,
@@ -81,8 +81,8 @@ func (u *updater) Run(ctx context.Context) error {
 	}
 
 	// Check state of all deployment which existed from previous interval.
-	if len(u.deploymentsRef) != 0 {
-		for _, deploymentRef := range u.deploymentsRef {
+	if len(u.deploymentRefs) != 0 {
+		for _, deploymentRef := range u.deploymentRefs {
 			// Ignore finished deployment.
 			if model.IsCompletedDeployment(deploymentRef.Status) {
 				continue
@@ -103,7 +103,7 @@ func (u *updater) Run(ctx context.Context) error {
 				); err != nil {
 					return err
 				}
-				// Update updater's deploymentsRef.
+				// Update updater's deploymentRefs.
 				deploymentRef.Status = deployment.Status
 				deploymentRef.StatusReason = deployment.StatusReason
 			}
@@ -112,7 +112,7 @@ func (u *updater) Run(ctx context.Context) error {
 
 	// If not all applications in chain has its deployment ref
 	// fetch all missing deployments and link the deployment ref to them.
-	if len(u.deploymentsRef) != len(u.applicationsRef) {
+	if len(u.deploymentRefs) != len(u.applicationRefs) {
 		deployments, err := u.listAllMissingDeployments(ctx)
 		if err != nil {
 			return err
@@ -133,8 +133,8 @@ func (u *updater) Run(ctx context.Context) error {
 			); err != nil {
 				return err
 			}
-			// Store deployment ref to the updater's deploymentsRef.
-			u.deploymentsRef[deployment.ApplicationId] = &model.ChainDeploymentRef{
+			// Store deployment ref to the updater's deploymentRefs.
+			u.deploymentRefs[deployment.ApplicationId] = &model.ChainDeploymentRef{
 				DeploymentId: deployment.Id,
 				Status:       deployment.Status,
 				StatusReason: deployment.StatusReason,
@@ -146,9 +146,9 @@ func (u *updater) Run(ctx context.Context) error {
 }
 
 func (u *updater) listAllMissingDeployments(ctx context.Context) ([]*model.Deployment, error) {
-	noDeploymentApps := make([]string, 0, len(u.applicationsRef))
-	for _, appRef := range u.applicationsRef {
-		if _, ok := u.deploymentsRef[appRef.ApplicationId]; !ok {
+	noDeploymentApps := make([]string, 0, len(u.applicationRefs))
+	for _, appRef := range u.applicationRefs {
+		if _, ok := u.deploymentRefs[appRef.ApplicationId]; !ok {
 			noDeploymentApps = append(noDeploymentApps, appRef.ApplicationId)
 		}
 	}
@@ -175,11 +175,11 @@ func (u *updater) listAllMissingDeployments(ctx context.Context) ([]*model.Deplo
 }
 
 func (u *updater) isAllInChainDeploymentsCompleted() bool {
-	if len(u.applicationsRef) != len(u.deploymentsRef) {
+	if len(u.applicationRefs) != len(u.deploymentRefs) {
 		return false
 	}
 	allDeploymentCompleted := true
-	for _, dr := range u.deploymentsRef {
+	for _, dr := range u.deploymentRefs {
 		if !model.IsCompletedDeployment(dr.Status) {
 			allDeploymentCompleted = false
 			break
