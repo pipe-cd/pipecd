@@ -87,13 +87,14 @@ func (d *DeploymentChainController) Run(ctx context.Context) error {
 func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 	// Remove done updater of completed deployment chain.
 	for id, u := range d.updaters {
-		if u.IsDone() {
-			d.logger.Info("remove done updater of deployment chain",
-				zap.String("id", id),
-				zap.Time("completed_at", u.doneTimestamp),
-			)
-			delete(d.updaters, id)
+		if !u.IsDone() {
+			continue
 		}
+		d.logger.Info("remove done updater of deployment chain",
+			zap.String("id", id),
+			zap.Time("completed_at", u.doneTimestamp),
+		)
+		delete(d.updaters, id)
 	}
 
 	// Find all not completed deployment chains and create updater if does not exist.
@@ -103,15 +104,17 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 		return err
 	}
 	for _, c := range notCompletedChains {
-		if _, ok := d.updaters[c.Id]; !ok {
-			d.updaters[c.Id] = newUpdater(
-				c,
-				d.applicationStore,
-				d.deploymentStore,
-				d.deploymentChainStore,
-				d.logger,
-			)
+		// Ignore in case there is updater for that deployment chain existed.
+		if _, ok := d.updaters[c.Id]; ok {
+			continue
 		}
+		d.updaters[c.Id] = newUpdater(
+			c,
+			d.applicationStore,
+			d.deploymentStore,
+			d.deploymentChainStore,
+			d.logger,
+		)
 	}
 
 	return nil
@@ -119,20 +122,20 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 
 func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) error {
 	var (
-		dcUpdatersNum = len(d.updaters)
-		updatersCh    = make(chan *updater, dcUpdatersNum)
-		resultCh      = make(chan error, dcUpdatersNum)
+		updatersNum = len(d.updaters)
+		updaterCh   = make(chan *updater, updatersNum)
+		resultCh    = make(chan error, updatersNum)
 	)
 	updaterWorkerNum := maxUpdaterWorkerNum
-	if updaterWorkerNum > dcUpdatersNum {
-		updaterWorkerNum = dcUpdatersNum
+	if updaterWorkerNum > updatersNum {
+		updaterWorkerNum = updatersNum
 	}
 
-	d.logger.Info(fmt.Sprintf("there are %d running deployment chain updaters", dcUpdatersNum))
+	d.logger.Info(fmt.Sprintf("there are %d running deployment chain updaters", updatersNum))
 	for w := 0; w < updaterWorkerNum; w++ {
 		go func(wid int) {
 			d.logger.Info(fmt.Sprintf("worker id (%d) is handling deployment chain updaters", wid))
-			for updater := range updatersCh {
+			for updater := range updaterCh {
 				resultCh <- updater.Run(ctx)
 			}
 			d.logger.Info(fmt.Sprintf("worker id (%d) has stopped", wid))
@@ -144,12 +147,12 @@ func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) er
 		if d.updaters[chainID].IsDone() {
 			continue
 		}
-		updatersCh <- d.updaters[chainID]
+		updaterCh <- d.updaters[chainID]
 	}
-	close(updatersCh)
+	close(updaterCh)
 
 	d.logger.Info("waiting for all updaters to finish")
-	for i := 0; i < dcUpdatersNum; i++ {
+	for i := 0; i < updatersNum; i++ {
 		<-resultCh
 	}
 
