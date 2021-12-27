@@ -17,6 +17,7 @@ package deploymentchaincontroller
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -26,8 +27,10 @@ import (
 )
 
 const (
-	// interval represents time to sync state for all deployment chain.
-	interval = time.Minute
+	// syncDeploymentChainsInterval represents time to sync state for all controlling deployment chains.
+	syncDeploymentChainsInterval = 15 * time.Second
+	// syncUpdatersInterval represents time to update list of controlling deployment chain updaters.
+	syncUpdatersInterval = time.Minute
 	// updaterWorkerNum represents the maximum number of updaters which can be
 	// run at the same time.
 	maxUpdaterWorkerNum = 10
@@ -40,6 +43,8 @@ type DeploymentChainController struct {
 	// Map from deployment chain ID to the updater
 	// who in charge for the deployment chain updating.
 	updaters map[string]*updater
+	// WaitGroup for waiting the fetcher and updaters to stop.
+	wg sync.WaitGroup
 
 	logger *zap.Logger
 }
@@ -58,20 +63,45 @@ func NewDeploymentChainController(
 }
 
 func (d *DeploymentChainController) Run(ctx context.Context) error {
-	t := time.NewTicker(interval)
-	defer t.Stop()
+	syncDeploymentChainsTicker := time.NewTicker(syncDeploymentChainsInterval)
+	defer syncDeploymentChainsTicker.Stop()
+	syncUpdatersTicker := time.NewTicker(syncUpdatersInterval)
+	defer syncUpdatersTicker.Stop()
 
 	d.logger.Info("start running deployment chain controller")
-	defer d.logger.Info("deployment chain controller has been stopped")
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
 
-		case <-t.C:
-			d.syncUpdaters(ctx)
+	d.wg.Add(1)
+	go func() {
+		defer d.wg.Done()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+
+			case <-syncUpdatersTicker.C:
+				d.syncUpdaters(ctx)
+			}
 		}
-	}
+	}()
+
+	d.wg.Add(1)
+	go func() {
+		defer d.wg.Done()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+
+			case <-syncDeploymentChainsTicker.C:
+				d.syncDeploymentChains(ctx)
+			}
+		}
+	}()
+
+	d.wg.Wait()
+	d.logger.Info("deployment chain controller has been stopped")
+
+	return nil
 }
 
 func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
@@ -104,17 +134,21 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 		}
 	}
 
+	return nil
+}
+
+func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) error {
 	var (
-		dcUpdatersCtn = len(d.updaters)
-		updatersCh    = make(chan *updater, dcUpdatersCtn)
-		resultCh      = make(chan error, dcUpdatersCtn)
+		dcUpdatersNum = len(d.updaters)
+		updatersCh    = make(chan *updater, dcUpdatersNum)
+		resultCh      = make(chan error, dcUpdatersNum)
 	)
 	updaterWorkerNum := maxUpdaterWorkerNum
-	if updaterWorkerNum > dcUpdatersCtn {
-		updaterWorkerNum = dcUpdatersCtn
+	if updaterWorkerNum > dcUpdatersNum {
+		updaterWorkerNum = dcUpdatersNum
 	}
 
-	d.logger.Info(fmt.Sprintf("there are %d running deployment chain updaters", dcUpdatersCtn))
+	d.logger.Info(fmt.Sprintf("there are %d running deployment chain updaters", dcUpdatersNum))
 	for w := 0; w < updaterWorkerNum; w++ {
 		go func(wid int) {
 			d.logger.Info(fmt.Sprintf("worker id (%d) is handling deployment chain updaters", wid))
@@ -131,7 +165,7 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 	close(updatersCh)
 
 	d.logger.Info("waiting for all updaters to finish")
-	for i := 0; i < dcUpdatersCtn; i++ {
+	for i := 0; i < dcUpdatersNum; i++ {
 		<-resultCh
 	}
 

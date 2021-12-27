@@ -75,8 +75,10 @@ func (u *updater) Run(ctx context.Context) error {
 	// In case all in chain applications' deployments are completed
 	// mark the updater as done and return immediately.
 	if u.isAllInChainDeploymentsCompleted() {
-		u.done = true
-		u.doneTimestamp = u.nowFunc()
+		if !u.done {
+			u.done = true
+			u.doneTimestamp = u.nowFunc()
+		}
 		return nil
 	}
 
