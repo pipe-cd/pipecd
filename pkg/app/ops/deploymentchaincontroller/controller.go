@@ -17,10 +17,10 @@ package deploymentchaincontroller
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -43,8 +43,6 @@ type DeploymentChainController struct {
 	// Map from deployment chain ID to the updater
 	// who in charge for the deployment chain updating.
 	updaters map[string]*updater
-	// WaitGroup for waiting the fetcher and updaters to stop.
-	wg sync.WaitGroup
 
 	logger *zap.Logger
 }
@@ -63,44 +61,43 @@ func NewDeploymentChainController(
 }
 
 func (d *DeploymentChainController) Run(ctx context.Context) error {
-	syncDeploymentChainsTicker := time.NewTicker(syncDeploymentChainsInterval)
-	defer syncDeploymentChainsTicker.Stop()
-	syncUpdatersTicker := time.NewTicker(syncUpdatersInterval)
-	defer syncUpdatersTicker.Stop()
-
 	d.logger.Info("start running deployment chain controller")
+	group, ctx := errgroup.WithContext(ctx)
 
-	d.wg.Add(1)
-	go func() {
-		defer d.wg.Done()
+	group.Go(func() error {
+		syncUpdatersTicker := time.NewTicker(syncUpdatersInterval)
+		defer syncUpdatersTicker.Stop()
 		for {
 			select {
 			case <-ctx.Done():
-				return
+				return nil
 
 			case <-syncUpdatersTicker.C:
 				d.syncUpdaters(ctx)
 			}
 		}
-	}()
+	})
 
-	d.wg.Add(1)
-	go func() {
-		defer d.wg.Done()
+	group.Go(func() error {
+		syncDeploymentChainsTicker := time.NewTicker(syncDeploymentChainsInterval)
+		defer syncDeploymentChainsTicker.Stop()
 		for {
 			select {
 			case <-ctx.Done():
-				return
+				return nil
 
 			case <-syncDeploymentChainsTicker.C:
 				d.syncDeploymentChains(ctx)
 			}
 		}
-	}()
+	})
 
-	d.wg.Wait()
+	// Wait until all components have finished.
+	if err := group.Wait(); err != nil {
+		d.logger.Info("deployment chain controller failed while running", zap.Error(err))
+		return err
+	}
 	d.logger.Info("deployment chain controller has been stopped")
-
 	return nil
 }
 
