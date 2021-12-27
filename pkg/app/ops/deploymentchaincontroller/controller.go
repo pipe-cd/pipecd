@@ -17,6 +17,7 @@ package deploymentchaincontroller
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -124,7 +125,7 @@ func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) er
 	var (
 		updatersNum = len(d.updaters)
 		updaterCh   = make(chan *updater, updatersNum)
-		resultCh    = make(chan error, updatersNum)
+		wg          sync.WaitGroup
 	)
 	updaterWorkerNum := maxUpdaterWorkerNum
 	if updaterWorkerNum > updatersNum {
@@ -133,10 +134,13 @@ func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) er
 
 	d.logger.Info(fmt.Sprintf("there are %d running deployment chain updaters", updatersNum))
 	for w := 0; w < updaterWorkerNum; w++ {
+		wg.Add(1)
 		go func(wid int) {
 			d.logger.Info(fmt.Sprintf("worker id (%d) is handling deployment chain updaters", wid))
+			defer wg.Done()
+
 			for updater := range updaterCh {
-				resultCh <- updater.Run(ctx)
+				updater.Run(ctx)
 			}
 			d.logger.Info(fmt.Sprintf("worker id (%d) has stopped", wid))
 		}(w)
@@ -152,9 +156,7 @@ func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) er
 	close(updaterCh)
 
 	d.logger.Info("waiting for all updaters to finish")
-	for i := 0; i < updatersNum; i++ {
-		<-resultCh
-	}
+	wg.Wait()
 
 	return nil
 }
