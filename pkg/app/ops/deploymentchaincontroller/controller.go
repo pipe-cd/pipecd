@@ -147,10 +147,6 @@ func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) er
 	}
 
 	for chainID := range d.updaters {
-		// Ignore updaters which be marked as done.
-		if d.updaters[chainID].IsDone() {
-			continue
-		}
 		updaterCh <- d.updaters[chainID]
 	}
 	close(updaterCh)
