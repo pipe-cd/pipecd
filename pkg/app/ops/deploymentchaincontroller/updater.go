@@ -202,12 +202,10 @@ func (u *updater) isAllInChainDeploymentsCompleted() bool {
 	if len(u.applicationRefs) != len(u.deploymentRefs) {
 		return false
 	}
-	allDeploymentCompleted := true
 	for _, dr := range u.deploymentRefs {
 		if !model.IsCompletedDeployment(dr.Status) {
-			allDeploymentCompleted = false
-			break
+			return false
 		}
 	}
-	return allDeploymentCompleted
+	return true
 }
