@@ -16,6 +16,13 @@ package model
 
 import "fmt"
 
+func GetNotCompletedDeploymentChainStatuses() []ChainStatus {
+	return []ChainStatus{
+		ChainStatus_DEPLOYMENT_CHAIN_PENDING,
+		ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
+	}
+}
+
 func (dc *DeploymentChain) IsCompleted() bool {
 	switch dc.Status {
 	case ChainStatus_DEPLOYMENT_CHAIN_SUCCESS,
@@ -70,6 +77,28 @@ func (dc *DeploymentChain) DesiredStatus() ChainStatus {
 	}
 	// Otherwise, the status of deployment chain is remained.
 	return dc.Status
+}
+
+func (dc *DeploymentChain) ListAllInChainApplicationDeploymentsMap() map[string]*ChainDeploymentRef {
+	deployments := make(map[string]*ChainDeploymentRef, 0)
+	for _, block := range dc.Blocks {
+		for _, node := range block.Nodes {
+			if node.DeploymentRef != nil {
+				deployments[node.ApplicationRef.ApplicationId] = node.DeploymentRef
+			}
+		}
+	}
+	return deployments
+}
+
+func (dc *DeploymentChain) ListAllInChainApplications() []*ChainApplicationRef {
+	applications := make([]*ChainApplicationRef, 0)
+	for _, block := range dc.Blocks {
+		for _, node := range block.Nodes {
+			applications = append(applications, node.ApplicationRef)
+		}
+	}
+	return applications
 }
 
 func (b *ChainBlock) IsCompleted() bool {
