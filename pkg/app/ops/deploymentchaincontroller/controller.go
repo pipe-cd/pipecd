@@ -105,6 +105,17 @@ func (d *DeploymentChainController) Run(ctx context.Context) error {
 }
 
 func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
+	// Remove done updater of completed deployment chain.
+	for id, u := range d.updaters {
+		if u.IsDone() {
+			d.logger.Info("remove done updater of deployment chain",
+				zap.String("id", id),
+				zap.Time("completed_at", u.doneTimestamp),
+			)
+			delete(d.updaters, id)
+		}
+	}
+
 	// Find all not completed deployment chains and create updater if does not exist.
 	notCompletedChains, err := listNotCompletedDeploymentChain(ctx, d.deploymentChainStore)
 	if err != nil {
@@ -127,20 +138,6 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 }
 
 func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) error {
-	// Remove done updater of completed deployment chain.
-	// Note: we should do remove done updater here to ensure that
-	// there will be no updaters which be removed by syncUpdaters while
-	// it's running.
-	for id, u := range d.updaters {
-		if u.IsDone() {
-			d.logger.Info("remove done updater of deployment chain",
-				zap.String("id", id),
-				zap.Time("completed_at", u.doneTimestamp),
-			)
-			delete(d.updaters, id)
-		}
-	}
-
 	var (
 		dcUpdatersNum = len(d.updaters)
 		updatersCh    = make(chan *updater, dcUpdatersNum)
@@ -163,6 +160,10 @@ func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) er
 	}
 
 	for chainID := range d.updaters {
+		// Ignore updater which be marked as done.
+		if d.updaters[chainID].IsDone() {
+			continue
+		}
 		updatersCh <- d.updaters[chainID]
 	}
 	close(updatersCh)
