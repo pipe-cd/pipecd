@@ -17,10 +17,10 @@ package deploymentchaincontroller
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -43,6 +43,8 @@ type DeploymentChainController struct {
 	// Map from deployment chain ID to the updater
 	// who in charge for the deployment chain updating.
 	updaters map[string]*updater
+	// mu controls lock on the updaters list.
+	mu sync.RWMutex
 
 	logger *zap.Logger
 }
@@ -61,44 +63,28 @@ func NewDeploymentChainController(
 }
 
 func (d *DeploymentChainController) Run(ctx context.Context) error {
+	syncUpdatersTicker := time.NewTicker(syncUpdatersInterval)
+	defer syncUpdatersTicker.Stop()
+	syncDeploymentChainsTicker := time.NewTicker(syncDeploymentChainsInterval)
+	defer syncDeploymentChainsTicker.Stop()
+
 	d.logger.Info("start running deployment chain controller")
-	group, ctx := errgroup.WithContext(ctx)
+	defer d.logger.Info("deployment chain controller has been stopped")
 
-	group.Go(func() error {
-		syncUpdatersTicker := time.NewTicker(syncUpdatersInterval)
-		defer syncUpdatersTicker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return nil
-
-			case <-syncUpdatersTicker.C:
-				d.syncUpdaters(ctx)
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-syncUpdatersTicker.C:
+			if err := d.syncUpdaters(ctx); err != nil {
+				d.logger.Error("failed while sync controller updaters", zap.Error(err))
+			}
+		case <-syncDeploymentChainsTicker.C:
+			if err := d.syncDeploymentChains(ctx); err != nil {
+				d.logger.Error("failed while sync deployment chains", zap.Error(err))
 			}
 		}
-	})
-
-	group.Go(func() error {
-		syncDeploymentChainsTicker := time.NewTicker(syncDeploymentChainsInterval)
-		defer syncDeploymentChainsTicker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return nil
-
-			case <-syncDeploymentChainsTicker.C:
-				d.syncDeploymentChains(ctx)
-			}
-		}
-	})
-
-	// Wait until all components have finished.
-	if err := group.Wait(); err != nil {
-		d.logger.Info("deployment chain controller failed while running", zap.Error(err))
-		return err
 	}
-	d.logger.Info("deployment chain controller has been stopped")
-	return nil
 }
 
 func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
@@ -109,7 +95,9 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 				zap.String("id", id),
 				zap.Time("completed_at", u.doneTimestamp),
 			)
+			d.mu.Lock()
 			delete(d.updaters, id)
+			d.mu.Unlock()
 		}
 	}
 
@@ -121,6 +109,7 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 	}
 	for _, c := range notCompletedChains {
 		if _, ok := d.updaters[c.Id]; !ok {
+			d.mu.Lock()
 			d.updaters[c.Id] = newUpdater(
 				c,
 				d.applicationStore,
@@ -128,6 +117,7 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 				d.deploymentChainStore,
 				d.logger,
 			)
+			d.mu.Unlock()
 		}
 	}
 
@@ -157,11 +147,12 @@ func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) er
 	}
 
 	for chainID := range d.updaters {
+		d.mu.RLock()
 		// Ignore updater which be marked as done.
-		if d.updaters[chainID].IsDone() {
-			continue
+		if !d.updaters[chainID].IsDone() {
+			updatersCh <- d.updaters[chainID]
 		}
-		updatersCh <- d.updaters[chainID]
+		d.mu.RUnlock()
 	}
 	close(updatersCh)
 
