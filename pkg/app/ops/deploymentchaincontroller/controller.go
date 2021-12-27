@@ -17,7 +17,6 @@ package deploymentchaincontroller
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -43,8 +42,6 @@ type DeploymentChainController struct {
 	// Map from deployment chain ID to the updater
 	// who in charge for the deployment chain updating.
 	updaters map[string]*updater
-	// mu controls lock on the updaters list.
-	mu sync.RWMutex
 
 	logger *zap.Logger
 }
@@ -95,9 +92,7 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 				zap.String("id", id),
 				zap.Time("completed_at", u.doneTimestamp),
 			)
-			d.mu.Lock()
 			delete(d.updaters, id)
-			d.mu.Unlock()
 		}
 	}
 
@@ -109,7 +104,6 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 	}
 	for _, c := range notCompletedChains {
 		if _, ok := d.updaters[c.Id]; !ok {
-			d.mu.Lock()
 			d.updaters[c.Id] = newUpdater(
 				c,
 				d.applicationStore,
@@ -117,7 +111,6 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 				d.deploymentChainStore,
 				d.logger,
 			)
-			d.mu.Unlock()
 		}
 	}
 
@@ -147,12 +140,11 @@ func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) er
 	}
 
 	for chainID := range d.updaters {
-		d.mu.RLock()
-		// Ignore updater which be marked as done.
-		if !d.updaters[chainID].IsDone() {
-			updatersCh <- d.updaters[chainID]
+		// Ignore updaters which be marked as done.
+		if d.updaters[chainID].IsDone() {
+			continue
 		}
-		d.mu.RUnlock()
+		updatersCh <- d.updaters[chainID]
 	}
 	close(updatersCh)
 
