@@ -382,7 +382,7 @@
     "queryScope": "COLLECTION",
     "fields": [
       {
-        "fieldPath": "Status",
+        "fieldPath": "ProjectId",
         "order": "ASCENDING",
         "arrayConfig": ""
       },
@@ -403,7 +403,7 @@
     "queryScope": "COLLECTION",
     "fields": [
       {
-        "fieldPath": "ProjectId",
+        "fieldPath": "Status",
         "order": "ASCENDING",
         "arrayConfig": ""
       },
