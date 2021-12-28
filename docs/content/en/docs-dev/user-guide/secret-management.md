@@ -1,7 +1,7 @@
 ---
 title: "Secret management"
 linkTitle: "Secret management"
-weight: 11
+weight: 12
 description: >
   Storing secrets safely in the Git repository.
 ---
