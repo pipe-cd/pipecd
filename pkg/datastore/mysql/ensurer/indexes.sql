@@ -76,6 +76,10 @@ CREATE INDEX deployment_status_updated_at_desc ON Deployment (Status, UpdatedAt 
 ALTER TABLE Deployment ADD COLUMN PipedId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.piped_id") VIRTUAL NOT NULL;
 CREATE INDEX deployment_piped_id ON Deployment (PipedId);
 
+-- index on `DeploymentChainId` ASC and `UpdatedAt` DESC
+ALTER TABLE Deployment ADD COLUMN DeploymentChainId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.deployment_chain_id") VIRTUAL NOT NULL;
+CREATE INDEX deployment_chain_id_updated_at_desc ON Deployment (DeploymentChainId, UpdatedAt DESC);
+
 --
 -- Event table indexes
 --
@@ -101,3 +105,7 @@ CREATE INDEX piped_project_id_env_ids_asc ON Piped (ProjectId, (CAST(EnvIds AS C
 
 -- index on `ProjectId` ASC and `UpdatedAt` DESC
 CREATE INDEX deploymentchain_project_id_updated_at_desc ON DeploymentChain (ProjectId, UpdatedAt DESC);
+
+-- index on `Status` ASC and `UpdatedAt` DESC
+ALTER TABLE DeploymentChain ADD COLUMN Status INT GENERATED ALWAYS AS (IFNULL(data->>"$.status", 0)) VIRTUAL NOT NULL;
+CREATE INDEX deploymentchain_status_updated_at_desc ON Deployment (Status, UpdatedAt DESC);
