@@ -1,7 +1,7 @@
 ---
 title: "Plan preview"
 linkTitle: "Plan preview"
-weight: 14
+weight: 15
 description: >
   Enables the ability to preview the deployment plan against a given commit before merging.
 ---
