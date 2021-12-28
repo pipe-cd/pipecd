@@ -101,7 +101,7 @@ func newBuilder(
 func (b *builder) Build(ctx context.Context, id string, cmd model.Command_BuildPlanPreview) (results []*model.ApplicationPlanPreviewResult, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("an unexpected panic occurred (%w)", r)
+			err = fmt.Errorf("an unexpected panic occurred (%v)", r)
 			b.logger.Error("unexpected panic", zap.Error(err))
 		}
 	}()
