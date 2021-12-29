@@ -10,13 +10,13 @@ spec:
   postSync:
     chain:
       applications:
-        # The below will match application named `simple` of kind `CLOUDRUN`.
+        # The below will match application named `inchain-simple-cloudrun` of kind `CLOUDRUN`.
         # which means the app that it's configuration is at
-        # https://github.com/pipe-cd/examples/blob/master/cloudrun/simple
-        - name: simple
+        # https://github.com/pipe-cd/examples/blob/master/deployment-chain/simple/simple-cloudrun
+        - name: inchain-simple-cloudrun
           kind: CLOUDRUN
-        # The below will match application named `simple` of kind `LAMBDA`.
+        # The below will match application named `inchain-simple-lambda` of kind `LAMBDA`.
         # which means the app that it's configuration is at
-        # https://github.com/pipe-cd/examples/tree/master/lambda/simple
-        - name: simple
+        # https://github.com/pipe-cd/examples/tree/master/deployment-chain/simple/simple-lambda
+        - name: inchain-simple-lambda
           kind: LAMBDA
