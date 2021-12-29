@@ -12,9 +12,9 @@ description: >
 PipeCD provides a unified continuous delivery solution for multiple application kinds on multi-cloud that empowers engineers to deploy faster with more confidence, a GitOps tool that enables doing deployment operations by pull request on Git.
 {{% /pageinfo %}}
 
-![](/images/architecture-overview.png)
+![](/images/pipecd-explanation.png)
 <p style="text-align: center;">
-Component Architecture
+PipeCD - a Gitops style continuous delivery solution
 </p>
 
 ## Why PipeCD?
