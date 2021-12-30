@@ -50,6 +50,8 @@ PipeCD provides a unified continuous delivery solution for multiple application 
 
 ## Where should I go next?
 
+For a good understanding of the PipeCD's components, see the [Concepts](/docs/concepts) page.
+
 If you are an **operator** wanting to install and configure PipeCD for other developers.
 - [Quickstart](/docs/quickstart/)
 - [Operating Control Plane](/docs/operator-manual/control-plane/)
