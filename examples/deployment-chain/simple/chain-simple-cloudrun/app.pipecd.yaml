@@ -2,7 +2,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: CloudRunApp
 spec:
-  name: inchain-simple-cloudrun
+  name: chain-simple-cloudrun
   trigger:
     onChain:
       disabled: false

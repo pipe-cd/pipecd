@@ -3,7 +3,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: LambdaApp
 spec:
-  name: inchain-simple-lambda
+  name: chain-simple-lambda
   trigger:
     onChain:
       disabled: false
