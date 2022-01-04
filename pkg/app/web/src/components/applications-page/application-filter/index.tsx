@@ -228,7 +228,7 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
                 variant="outlined"
                 label="Labels"
                 margin="dense"
-                placeholder="Labels"
+                placeholder="key:value"
                 fullWidth
               />
             )}
