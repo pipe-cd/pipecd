@@ -9,15 +9,17 @@ description: >
 An application is a collection of resources and configurations that are managed together.
 It represents the service which you are going to deploy. With PipeCD, all application's manifests and its application configuration (`app.pipecd.yaml`) must be committed into a directory of a Git repository. That directory is called as application directory.
 
-Before deploying an application, it must be registered via the web console to help PipeCD know
+Each application can be handled by one and only one `piped`. Currently, PipeCD is supporting 5 kinds of application: Kubernetes, Terraform, CloudRun, Lambda, ECS.
+
+Before deploying an application, it must be registered to help PipeCD know
 - where the application configuration is placed
 - which `piped` should handle it and which cloud the application should be deployed to
 
-Each application can be handled by one and only one `piped`. Currently, PipeCD is supporting 5 kinds of application: Kubernetes, Terraform, CloudRun, Lambda, ECS.
-
-There are two ways to register an application:
-- Picking from a list of unused apps suggested by Pipeds while scanning Git repositories (Recommended way)
+Through the web console, you can register a new application in one of the following ways:
+- Picking from a list of unused apps suggested by Pipeds while scanning Git repositories (Recommended)
 - Manually configuring application information
+
+(If you prefer to use [`pipectl`](/docs/user-guide/command-line-tool/#adding-a-new-application) command-line tool, see its usage for the details.)
 
 ## Picking from a list of unused apps suggested by Pipeds
 In this way, you define all information in the application configuration defined in the Git repository and use it as a single source of truth.
@@ -65,10 +67,7 @@ Here are the list of fields in the register form:
 | Config Filename | The name of application configuration file. Default is `app.pipecd.yaml`. | No |
 | Cloud Provider | Where the application will be deployed to. Select one of the registered cloud providers in `piped` configuration. | Yes |
 
-After registering the application, one more step left is adding the application configuration file for that application into the application directory in Git repository.
-
-Adding application configuration file helps `piped` know how the application should be deployed, such as doing canary/blue-green strategy or requiring a manual approval...
-That application configuration file is in `YAML` format as below:
+After registering the application, one more step left is adding the application configuration file for that application into the application directory in Git repository. That application configuration file helps `piped` know how the application should be deployed, such as doing canary/blue-green strategy or requiring a manual approval... It is in `YAML` format as below:
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
@@ -77,12 +76,10 @@ spec:
   ...
 ```
 
-- `kind` is the application kind. As explained before, supporting kinds of application are: `Kubernetes`, `Terrform`, `CloudRun`, `Lambda` and `ECS`.
-- `spec` is the specific configuration for each application kind.
+- `kind` is the application kind and must be one of `KubernetesApp`, `TerraformApp`, `CloudRunApp`, `LambdaApp`, `ECSApp`
+- `spec` is the specific configuration for each application kind
 
 Please refer [pipecd/examples](/docs/user-guide/examples/) for the deployments being supported.
-
-The [next section](/docs/user-guide/configuring-deployment/) guides you how to configure the deployment for each specific application kinds.
 
 ## Updating an application
 Regardless of which method you used to register the application, the web console can only be used to disable/enable/delete the application, besides the adding operation. All updates on application information must be done via the application configuration file stored in Git.
