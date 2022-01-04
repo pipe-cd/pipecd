@@ -6,7 +6,7 @@ description: >
   This page describes how to add a new application.
 ---
 
-An application is a collect of resources and configurations that are managed together.
+An application is a collection of resources and configurations that are managed together.
 It represents the service which you are going to deploy. With PipeCD, all application's manifests and its application configuration (`app.pipecd.yaml`) must be committed into a directory of a Git repository. That directory is called as application directory.
 
 Before deploying an application, it must be registered via the web console to help PipeCD know
