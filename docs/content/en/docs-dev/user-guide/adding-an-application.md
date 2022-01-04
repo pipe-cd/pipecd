@@ -11,7 +11,7 @@ It represents the service which you are going to deploy. With PipeCD, all applic
 
 Each application can be handled by one and only one `piped`. Currently, PipeCD is supporting 5 kinds of application: Kubernetes, Terraform, CloudRun, Lambda, ECS.
 
-Before deploying an application, it must be registered to help PipeCD know
+Before deploying an application, it must be registered to help PipeCD knows
 - where the application configuration is placed
 - which `piped` should handle it and which cloud the application should be deployed to
 
