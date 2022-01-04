@@ -1,7 +1,7 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: inchain-simple-cloudrun
+  name: chain-simple-cloudrun
 spec:
   template:
     metadata:

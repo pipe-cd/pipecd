@@ -1,7 +1,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: LambdaFunction
 spec:
-  name: InChainSimpleFunction
+  name: ChainSimpleFunction
   role: arn:aws:iam::76xxxxxxx:role/lambda-role
   image: ecr.ap-northeast-1.amazonaws.com/lambda-test:v0.0.1
   memory: 512
