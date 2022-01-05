@@ -214,6 +214,7 @@ export const DeploymentIndexPage: FC = () => {
               )}
             </Button>
           )}
+          {/* TODO: Show how many days have been read */}
         </ol>
         {openFilter && (
           <DeploymentFilter
