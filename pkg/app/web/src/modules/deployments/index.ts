@@ -182,14 +182,6 @@ export const cancelDeployment = createAsyncThunk<
   }
 );
 
-export const updateMinUpdatedAt = createAsyncThunk<
-  void,
-  void,
-  { state: AppState }
->("deployments/updateMinUpdate", async (_) => {
-  return;
-});
-
 export const deploymentsSlice = createSlice({
   name: "deployments",
   initialState,
@@ -233,10 +225,15 @@ export const deploymentsSlice = createSlice({
       .addCase(fetchMoreDeployments.fulfilled, (state, action) => {
         state.status = "succeeded";
         deploymentsAdapter.upsertMany(state, action.payload.deployments);
-        state.hasMore =
-          action.payload.deployments.length < FETCH_MORE_ITEMS_PER_PAGE
-            ? false
-            : true;
+        const deployments = action.payload.deployments;
+        if (deployments.length < FETCH_MORE_ITEMS_PER_PAGE) {
+          state.hasMore = false;
+          state.minUpdatedAt =
+            deployments[deployments.length - 1].updatedAt -
+            TIME_RANGE_LIMIT_IN_SECONDS;
+        } else {
+          state.hasMore = true;
+        }
         state.cursor = action.payload.cursor;
       })
       .addCase(fetchMoreDeployments.rejected, (state) => {
@@ -253,9 +250,6 @@ export const deploymentsSlice = createSlice({
         ) {
           state.canceling[action.payload.deploymentId] = false;
         }
-      })
-      .addCase(updateMinUpdatedAt.fulfilled, (state) => {
-        state.minUpdatedAt -= TIME_RANGE_LIMIT_IN_SECONDS;
       });
   },
 });

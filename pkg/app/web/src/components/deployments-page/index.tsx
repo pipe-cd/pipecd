@@ -35,7 +35,6 @@ import {
   fetchMoreDeployments,
   selectById as selectDeploymentById,
   selectIds as selectDeploymentIds,
-  updateMinUpdatedAt,
 } from "~/modules/deployments";
 import { useStyles as useButtonStyles } from "~/styles/button";
 import { stringifySearchParams, useSearchParams } from "~/utils/search-params";
@@ -135,7 +134,6 @@ export const DeploymentIndexPage: FC = () => {
   }, [dispatch, filterOptions]);
 
   const handleMoreClick = useCallback(() => {
-    dispatch(updateMinUpdatedAt());
     dispatch(fetchMoreDeployments(filterOptions));
   }, [dispatch, filterOptions]);
 
