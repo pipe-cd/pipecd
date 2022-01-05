@@ -54,6 +54,9 @@ export const getApplications = ({
       enabled.setValue((options.enabled.value as unknown) as boolean);
       o.setEnabled(enabled);
     }
+    for (const label of options.labelsMap) {
+      o.getLabelsMap().set(label[0], label[1]);
+    }
     req.setOptions(o);
   }
   return apiRequest(req, apiClient.listApplications);

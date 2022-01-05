@@ -25,7 +25,11 @@ import {
   clearAddedApplicationId,
   fetchApplications,
 } from "~/modules/applications";
-import { stringifySearchParams, useSearchParams } from "~/utils/search-params";
+import {
+  stringifySearchParams,
+  useSearchParams,
+  arrayFormat,
+} from "~/utils/search-params";
 import { AddApplicationDrawer } from "./add-application-drawer";
 import { ApplicationFilter } from "./application-filter";
 import { ApplicationList } from "./application-list";
@@ -77,9 +81,10 @@ export const ApplicationIndexPage: FC = () => {
   const updateURL = useCallback(
     (options: Record<string, string | number | boolean | undefined>) => {
       history.replace(
-        `${PAGE_PATH_APPLICATIONS}?${stringifySearchParams({
-          ...options,
-        })}`
+        `${PAGE_PATH_APPLICATIONS}?${stringifySearchParams(
+          { ...options },
+          { arrayFormat: arrayFormat }
+        )}`
       );
     },
     [history]
