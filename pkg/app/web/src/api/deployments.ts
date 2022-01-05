@@ -22,6 +22,7 @@ export const getDeployments = ({
   options,
   pageSize,
   cursor,
+  pageMinUpdatedAt,
 }: ListDeploymentsRequest.AsObject): Promise<
   ListDeploymentsResponse.AsObject
 > => {
@@ -36,6 +37,7 @@ export const getDeployments = ({
     req.setOptions(opts);
     req.setPageSize(pageSize);
     req.setCursor(cursor);
+    req.setPageMinUpdatedAt(pageMinUpdatedAt);
   }
   return apiRequest(req, apiClient.listDeployments);
 };

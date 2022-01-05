@@ -20,6 +20,8 @@ import { ApplicationKind } from "../applications";
 export type Stage = Required<PipelineStage.AsObject>;
 export type DeploymentStatusKey = keyof typeof DeploymentStatus;
 
+// 30 days
+const TIME_RANGE_LIMIT_IN_SECONDS = 2592000;
 const ITEMS_PER_PAGE = 50;
 const FETCH_MORE_ITEMS_PER_PAGE = 30;
 
@@ -73,12 +75,14 @@ const initialState = deploymentsAdapter.getInitialState<{
   canceling: Record<string, boolean>;
   hasMore: boolean;
   cursor: string;
+  minUpdatedAt: number;
 }>({
   status: "idle",
   loading: {},
   canceling: {},
   hasMore: true,
   cursor: "",
+  minUpdatedAt: Math.round(Date.now() / 1000 - TIME_RANGE_LIMIT_IN_SECONDS),
 });
 
 export const fetchDeploymentById = createAsyncThunk<
@@ -113,12 +117,13 @@ export const fetchDeployments = createAsyncThunk<
   { deployments: Deployment.AsObject[]; cursor: string },
   DeploymentFilterOptions,
   { state: AppState }
->("deployments/fetchList", async (options) => {
+>("deployments/fetchList", async (options, thunkAPI) => {
+  const { deployments } = thunkAPI.getState();
   const { deploymentsList, cursor } = await deploymentsApi.getDeployments({
     options: convertFilterOptions({ ...options }),
     pageSize: ITEMS_PER_PAGE,
     cursor: "",
-    pageMinUpdatedAt: 0, // TODO Specify pageMinUpdatedAt for ListDeployments
+    pageMinUpdatedAt: deployments.minUpdatedAt,
   });
 
   return {
@@ -140,7 +145,7 @@ export const fetchMoreDeployments = createAsyncThunk<
     options: convertFilterOptions({ ...options }),
     pageSize: FETCH_MORE_ITEMS_PER_PAGE,
     cursor: deployments.cursor,
-    pageMinUpdatedAt: 0, // TODO Specify pageMinUpdatedAt for ListDeployments
+    pageMinUpdatedAt: deployments.minUpdatedAt,
   });
 
   return {
@@ -176,6 +181,14 @@ export const cancelDeployment = createAsyncThunk<
     await thunkAPI.dispatch(fetchCommand(commandId));
   }
 );
+
+export const updateMinUpdatedAt = createAsyncThunk<
+  void,
+  void,
+  { state: AppState }
+>("deployments/updateMinUpdate", async (_) => {
+  return;
+});
 
 export const deploymentsSlice = createSlice({
   name: "deployments",
@@ -222,6 +235,11 @@ export const deploymentsSlice = createSlice({
         deploymentsAdapter.upsertMany(state, action.payload.deployments);
         if (action.payload.deployments.length < FETCH_MORE_ITEMS_PER_PAGE) {
           state.hasMore = false;
+          state.minUpdatedAt =
+            action.payload.deployments[action.payload.deployments.length - 1]
+              .updatedAt - TIME_RANGE_LIMIT_IN_SECONDS;
+        } else {
+          state.hasMore = true;
         }
         state.cursor = action.payload.cursor;
       })
@@ -239,6 +257,9 @@ export const deploymentsSlice = createSlice({
         ) {
           state.canceling[action.payload.deploymentId] = false;
         }
+      })
+      .addCase(updateMinUpdatedAt.fulfilled, (state) => {
+        state.minUpdatedAt -= TIME_RANGE_LIMIT_IN_SECONDS;
       });
   },
 });

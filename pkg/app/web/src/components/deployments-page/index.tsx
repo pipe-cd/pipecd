@@ -20,6 +20,7 @@ import {
   UI_TEXT_FILTER,
   UI_TEXT_HIDE_FILTER,
   UI_TEXT_REFRESH,
+  UI_TEXT_MORE,
 } from "~/constants/ui-text";
 import {
   useAppDispatch,
@@ -34,6 +35,7 @@ import {
   fetchMoreDeployments,
   selectById as selectDeploymentById,
   selectIds as selectDeploymentIds,
+  updateMinUpdatedAt,
 } from "~/modules/deployments";
 import { useStyles as useButtonStyles } from "~/styles/button";
 import { stringifySearchParams, useSearchParams } from "~/utils/search-params";
@@ -132,6 +134,11 @@ export const DeploymentIndexPage: FC = () => {
     dispatch(fetchDeployments(filterOptions));
   }, [dispatch, filterOptions]);
 
+  const handleMoreClick = useCallback(() => {
+    dispatch(updateMinUpdatedAt());
+    dispatch(fetchMoreDeployments(filterOptions));
+  }, [dispatch, filterOptions]);
+
   const dates = Object.keys(groupedDeployments).sort(sortComp);
 
   return (
@@ -189,6 +196,24 @@ export const DeploymentIndexPage: FC = () => {
             </li>
           ))}
           {status === "succeeded" && <div ref={ref} />}
+          {!hasMore && (
+            <Button
+              color="primary"
+              variant="outlined"
+              size="large"
+              fullWidth
+              onClick={handleMoreClick}
+              disabled={isLoading}
+            >
+              {UI_TEXT_MORE}
+              {isLoading && (
+                <CircularProgress
+                  size={24}
+                  className={buttonClasses.progress}
+                />
+              )}
+            </Button>
+          )}
         </ol>
         {openFilter && (
           <DeploymentFilter
