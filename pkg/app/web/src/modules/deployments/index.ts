@@ -233,14 +233,10 @@ export const deploymentsSlice = createSlice({
       .addCase(fetchMoreDeployments.fulfilled, (state, action) => {
         state.status = "succeeded";
         deploymentsAdapter.upsertMany(state, action.payload.deployments);
-        if (action.payload.deployments.length < FETCH_MORE_ITEMS_PER_PAGE) {
-          state.hasMore = false;
-          state.minUpdatedAt =
-            action.payload.deployments[action.payload.deployments.length - 1]
-              .updatedAt - TIME_RANGE_LIMIT_IN_SECONDS;
-        } else {
-          state.hasMore = true;
-        }
+        state.hasMore =
+          action.payload.deployments.length < FETCH_MORE_ITEMS_PER_PAGE
+            ? false
+            : true;
         state.cursor = action.payload.cursor;
       })
       .addCase(fetchMoreDeployments.rejected, (state) => {
