@@ -1,3 +1,5 @@
+global.Date.now = jest.fn(() => 0);
+
 import { LoadingStatus } from "~/types/module";
 import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
 import { Command, fetchCommand, CommandStatus } from "../commands";
@@ -17,6 +19,7 @@ const initialState = {
   canceling: {},
   entities: {},
   hasMore: true,
+  minUpdatedAt: 0,
   ids: [],
   status: "idle" as LoadingStatus,
   loading: {},
@@ -54,7 +57,10 @@ describe("deploymentsSlice reducer", () => {
       deploymentsSlice.reducer(undefined, {
         type: "TEST_ACTION",
       })
-    ).toEqual(initialState);
+    ).toEqual({
+      ...initialState,
+      minUpdatedAt: -2592000,
+    });
   });
 
   describe("fetchDeploymentById", () => {
@@ -214,6 +220,7 @@ describe("deploymentsSlice reducer", () => {
         entities: { [dummyDeployment.id]: dummyDeployment },
         status: "succeeded",
         cursor: "next cursor",
+        minUpdatedAt: dummyDeployment.updatedAt - 2592000,
       });
     });
   });

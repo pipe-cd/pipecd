@@ -20,6 +20,7 @@ import {
   UI_TEXT_FILTER,
   UI_TEXT_HIDE_FILTER,
   UI_TEXT_REFRESH,
+  UI_TEXT_MORE,
 } from "~/constants/ui-text";
 import {
   useAppDispatch,
@@ -139,6 +140,10 @@ export const DeploymentIndexPage: FC = () => {
     dispatch(fetchDeployments(filterOptions));
   }, [dispatch, filterOptions]);
 
+  const handleMoreClick = useCallback(() => {
+    dispatch(fetchMoreDeployments(filterOptions));
+  }, [dispatch, filterOptions]);
+
   const dates = Object.keys(groupedDeployments).sort(sortComp);
 
   return (
@@ -196,6 +201,25 @@ export const DeploymentIndexPage: FC = () => {
             </li>
           ))}
           {status === "succeeded" && <div ref={ref} />}
+          {!hasMore && (
+            <Button
+              color="primary"
+              variant="outlined"
+              size="large"
+              fullWidth
+              onClick={handleMoreClick}
+              disabled={isLoading}
+            >
+              {UI_TEXT_MORE}
+              {isLoading && (
+                <CircularProgress
+                  size={24}
+                  className={buttonClasses.progress}
+                />
+              )}
+            </Button>
+          )}
+          {/* TODO: Show how many days have been read */}
         </ol>
         {openFilter && (
           <DeploymentFilter
