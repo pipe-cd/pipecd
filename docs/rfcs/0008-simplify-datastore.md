@@ -15,6 +15,41 @@ As mentioned above, the current implementation of PipeCD allows us to just store
 - How should we implement lock effectively in case we need to update the stored data objects
 - How should we index/store the data objects so that we can read stored data fast enough to not make our users anger because of the slow response console.
 
+
+### Some approaches we can take a look
+
+1. Single ambassador for write (e.g. using ops for handling all write operations)
+
+Issues:
+
+    - Downtime due to single point of failure
+    - Performance on get since there is only one reader
+
+2. Distributed locking (optimistic)
+
+Issues:
+
+    - Use a version field in record to ensure that correct version was used before writing
+    - Depends on which file store being used
+
+3. Distributed locking (pessimistic)
+
+Issues:
+
+    - Rely on an external system that holds the lock for all actors
+    - The key owner doesn't release, owner dies, timeout causes race condition
+
+4. Split data to ensure that each file is only owned by one writer
+
+Issues:
+
+    - Must keep a single writer for each object (or file in case we separate object to multiple files) and narrow down the number of possible features we can do
+
+
+### Making file stores object directly and keep single writter for each object file approach.
+
+![image](assets/simplify-datastore-idea.png)
+
 # Things to concern
 
 In some cases, when we have objects that is be able to be updated by multiple "writers", it's hard to control the write ordering between those writers. Or else, we have to keep in mind to avoid complex objects which possible be updated by multiple writers, which limits the number of possibilities we can choose when designing the feature.
