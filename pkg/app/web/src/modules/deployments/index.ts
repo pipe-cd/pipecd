@@ -29,6 +29,9 @@ export interface DeploymentFilterOptions {
   applicationId?: string;
   envId?: string;
   applicationName?: string;
+  // Suppose to be like ["key-1:value-1"]
+  // sindresorhus/query-string doesn't support multidimensional arrays, that's why the format is a bit tricky.
+  labels?: Array<string>;
 }
 
 export const isDeploymentRunning = (
@@ -92,6 +95,13 @@ export const fetchDeploymentById = createAsyncThunk<
 const convertFilterOptions = (
   options: DeploymentFilterOptions
 ): ListDeploymentsRequest.Options.AsObject => {
+  const labels = new Array<[string, string]>();
+  if (options.labels) {
+    for (const label of options.labels) {
+      const pair = label.split(":");
+      pair.length === 2 && labels.push([pair[0], pair[1]]);
+    }
+  }
   return {
     applicationName: options.applicationName ?? "",
     applicationIdsList: options.applicationId ? [options.applicationId] : [],
@@ -102,7 +112,7 @@ const convertFilterOptions = (
     statusesList: options.status
       ? [parseInt(options.status, 10) as DeploymentStatus]
       : [],
-    labelsMap: [], // TODO: Specify labels for ListDeployments
+    labelsMap: labels,
   };
 };
 
