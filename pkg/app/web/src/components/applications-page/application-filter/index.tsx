@@ -205,7 +205,7 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
             multiple
             autoHighlight
             id="labels"
-            noOptionsText="Invalid label"
+            noOptionsText="No selectable labels"
             options={labelOptions}
             value={options.labels ?? selectedLabels}
             onInputChange={(_, value) => {
