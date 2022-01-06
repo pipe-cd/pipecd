@@ -234,7 +234,7 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
             id="labels"
             noOptionsText="Invalid label"
             options={labelOptions}
-            value={selectedLabels}
+            value={options.labels ?? selectedLabels}
             onInputChange={(_, value) => {
               const label = value.split(":");
               if (label.length !== 2) return;
