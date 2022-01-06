@@ -37,7 +37,11 @@ import {
   selectIds as selectDeploymentIds,
 } from "~/modules/deployments";
 import { useStyles as useButtonStyles } from "~/styles/button";
-import { stringifySearchParams, useSearchParams } from "~/utils/search-params";
+import {
+  stringifySearchParams,
+  useSearchParams,
+  arrayFormat,
+} from "~/utils/search-params";
 import { DeploymentFilter } from "./deployment-filter";
 import { DeploymentItem } from "./deployment-item";
 
@@ -120,7 +124,10 @@ export const DeploymentIndexPage: FC = () => {
   const handleFilterChange = useCallback(
     (options: DeploymentFilterOptions) => {
       history.replace(
-        `${PAGE_PATH_DEPLOYMENTS}?${stringifySearchParams(options)}`
+        `${PAGE_PATH_DEPLOYMENTS}?${stringifySearchParams(
+          { ...options },
+          { arrayFormat: arrayFormat }
+        )}`
       );
     },
     [history]

@@ -38,6 +38,9 @@ export const getDeployments = ({
     req.setPageSize(pageSize);
     req.setCursor(cursor);
     req.setPageMinUpdatedAt(pageMinUpdatedAt);
+    for (const label of options.labelsMap) {
+      opts.getLabelsMap().set(label[0], label[1]);
+    }
   }
   return apiRequest(req, apiClient.listDeployments);
 };
