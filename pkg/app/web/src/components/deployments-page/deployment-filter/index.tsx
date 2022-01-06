@@ -232,7 +232,7 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
             multiple
             autoHighlight
             id="labels"
-            noOptionsText="Invalid label"
+            noOptionsText="No selectable labels"
             options={labelOptions}
             value={options.labels ?? selectedLabels}
             onInputChange={(_, value) => {
