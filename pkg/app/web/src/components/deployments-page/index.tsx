@@ -20,6 +20,7 @@ import {
   UI_TEXT_FILTER,
   UI_TEXT_HIDE_FILTER,
   UI_TEXT_REFRESH,
+  UI_TEXT_MORE,
 } from "~/constants/ui-text";
 import {
   useAppDispatch,
@@ -36,7 +37,11 @@ import {
   selectIds as selectDeploymentIds,
 } from "~/modules/deployments";
 import { useStyles as useButtonStyles } from "~/styles/button";
-import { stringifySearchParams, useSearchParams } from "~/utils/search-params";
+import {
+  stringifySearchParams,
+  useSearchParams,
+  arrayFormat,
+} from "~/utils/search-params";
 import { DeploymentFilter } from "./deployment-filter";
 import { DeploymentItem } from "./deployment-item";
 
@@ -119,7 +124,10 @@ export const DeploymentIndexPage: FC = () => {
   const handleFilterChange = useCallback(
     (options: DeploymentFilterOptions) => {
       history.replace(
-        `${PAGE_PATH_DEPLOYMENTS}?${stringifySearchParams(options)}`
+        `${PAGE_PATH_DEPLOYMENTS}?${stringifySearchParams(
+          { ...options },
+          { arrayFormat: arrayFormat }
+        )}`
       );
     },
     [history]
@@ -130,6 +138,10 @@ export const DeploymentIndexPage: FC = () => {
 
   const handleRefreshClick = useCallback(() => {
     dispatch(fetchDeployments(filterOptions));
+  }, [dispatch, filterOptions]);
+
+  const handleMoreClick = useCallback(() => {
+    dispatch(fetchMoreDeployments(filterOptions));
   }, [dispatch, filterOptions]);
 
   const dates = Object.keys(groupedDeployments).sort(sortComp);
@@ -189,6 +201,25 @@ export const DeploymentIndexPage: FC = () => {
             </li>
           ))}
           {status === "succeeded" && <div ref={ref} />}
+          {!hasMore && (
+            <Button
+              color="primary"
+              variant="outlined"
+              size="large"
+              fullWidth
+              onClick={handleMoreClick}
+              disabled={isLoading}
+            >
+              {UI_TEXT_MORE}
+              {isLoading && (
+                <CircularProgress
+                  size={24}
+                  className={buttonClasses.progress}
+                />
+              )}
+            </Button>
+          )}
+          {/* TODO: Show how many days have been read */}
         </ol>
         {openFilter && (
           <DeploymentFilter

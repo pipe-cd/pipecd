@@ -78,6 +78,9 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
       }
     }, [applications, options]);
 
+    const [labelOptions, setLabelOptions] = useState(new Array<string>());
+    const [selectedLabels, setSelectedLabels] = useState(new Array<string>());
+
     return (
       <FilterView
         onClear={() => {
@@ -222,6 +225,41 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
               </MenuItem>
             ))}
           </Select>
+        </FormControl>
+
+        <FormControl className={classes.formItem} variant="outlined">
+          <Autocomplete
+            multiple
+            autoHighlight
+            id="labels"
+            noOptionsText="No selectable labels"
+            options={labelOptions}
+            value={options.labels ?? selectedLabels}
+            onInputChange={(_, value) => {
+              const label = value.split(":");
+              if (label.length !== 2) return;
+              if (label[0].length === 0) return;
+              if (label[1].length === 0) return;
+              setLabelOptions([value]);
+            }}
+            onChange={(_, newValue) => {
+              setLabelOptions([]);
+              setSelectedLabels(newValue);
+              handleUpdateFilterValue({
+                labels: newValue,
+              });
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                label="Labels"
+                margin="dense"
+                placeholder="key:value"
+                fullWidth
+              />
+            )}
+          />
         </FormControl>
       </FilterView>
     );

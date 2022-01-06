@@ -6,6 +6,7 @@ export const UI_TEXT_DISCARD = "Discard";
 export const UI_TEXT_DISABLE = "Disable";
 export const UI_TEXT_ENABLE = "Enable";
 export const UI_TEXT_REFRESH = "REFRESH";
+export const UI_TEXT_MORE = "MORE";
 export const UI_TEXT_CLOSE = "Close";
 export const UI_TEXT_DELETE = "Delete";
 export const UI_TEXT_FILTER = "FILTER";

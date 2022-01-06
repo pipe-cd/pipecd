@@ -1,0 +1,22 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: simple
+  input:
+    manifests:
+      - deployment.yaml
+      - service.yaml
+    kubectlVersion: 1.18.0
+  postSync:
+    chain:
+      applications:
+        # The below will match application named `chain-simple-cloudrun` of kind `CLOUDRUN`.
+        # which means the app that it's configuration is at
+        # https://github.com/pipe-cd/examples/blob/master/deployment-chain/chain-simple-cloudrun
+        - name: chain-simple-cloudrun
+          kind: CLOUDRUN
+        # The below will match application named `chain-simple-lambda` of kind `LAMBDA`.
+        # which means the app that it's configuration is at
+        # https://github.com/pipe-cd/examples/tree/master/deployment-chain/chain-simple-lambda
+        - name: chain-simple-lambda
+          kind: LAMBDA

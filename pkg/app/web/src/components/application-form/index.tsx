@@ -19,8 +19,13 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Stepper,
+  Step,
+  StepLabel,
+  StepContent,
+  IconButton,
 } from "@material-ui/core";
-import ExpandMore from "@material-ui/icons/ExpandMore";
+import { ExpandMore, Help } from "@material-ui/icons";
 import { FormikProps } from "formik";
 import {
   FC,
@@ -131,8 +136,23 @@ const useStyles = makeStyles((theme) => ({
   select: {
     width: "100%",
   },
-  accordionHeader: {
-    marginTop: theme.spacing(2),
+  accordionDetail: {
+    width: "100%",
+  },
+  button: {
+    margin: theme.spacing(2),
+  },
+  actionsContainer: {
+    marginBottom: theme.spacing(2),
+  },
+  tabLabel: {
+    minHeight: 0,
+    "& .MuiTab-wrapper": {
+      flexDirection: "row-reverse",
+    },
+    "& .MuiTab-wrapper > *:first-child": {
+      marginBottom: 0,
+    },
   },
 }));
 
@@ -167,6 +187,8 @@ function a11yProps(index: number): { id: string; "aria-controls": string } {
 }
 
 export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
+  const classes = useStyles();
+
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
   const handleChange = (
@@ -184,8 +206,28 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
           onChange={handleChange}
           aria-label="basic tabs example"
         >
-          <Tab label="Add manually" {...a11yProps(0)} />
-          <Tab label="Add from Git (Alpha)" {...a11yProps(1)} />
+          <Tab
+            className={classes.tabLabel}
+            label="Add manually"
+            icon=" "
+            {...a11yProps(0)}
+          />
+          <Tab
+            className={classes.tabLabel}
+            label="ADD FROM GIT"
+            icon={
+              <IconButton
+                size="small"
+                edge="start"
+                href="https://pipecd.dev/docs/user-guide/adding-an-application/#from-the-application-configuration-in-your-git-repository-recommended"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Help fontSize="small" />
+              </IconButton>
+            }
+            {...a11yProps(1)}
+          />
         </Tabs>
       </Box>
       <TabPanel selected={selectedTabIndex === 0} index={0}>
@@ -203,6 +245,7 @@ function FormSelectInput<T extends { name: string; value: string }>({
   label,
   value,
   items,
+  required = true,
   onChange,
   disabled = false,
 }: {
@@ -210,6 +253,7 @@ function FormSelectInput<T extends { name: string; value: string }>({
   label: string;
   value: string;
   items: T[];
+  required?: boolean;
   onChange: (value: T) => void;
   disabled?: boolean;
 }): ReactElement {
@@ -219,7 +263,7 @@ function FormSelectInput<T extends { name: string; value: string }>({
       name={id}
       label={label}
       fullWidth
-      required
+      required={required}
       select
       disabled={disabled}
       variant="outlined"
@@ -245,8 +289,6 @@ function FormSelectInput<T extends { name: string; value: string }>({
 export const validationSchema = yup.object().shape({
   name: yup.string().required(),
   kind: yup.number().required(),
-  // TODO: Make all environment fields in the form in optional
-  env: yup.string().required(),
   pipedId: yup.string().required(),
   repo: yup
     .object({
@@ -273,6 +315,7 @@ export interface ApplicationFormValue {
     remote: string;
     branch: string;
   };
+  labels: Array<[string, string]>;
 }
 
 export type ApplicationFormProps = FormikProps<ApplicationFormValue> & {
@@ -294,6 +337,7 @@ export const emptyFormValues: ApplicationFormValue = {
     remote: "",
     branch: "",
   },
+  labels: new Array<[string, string]>(),
 };
 
 export const ApplicationForm: FC<ApplicationFormProps> = memo(
@@ -314,8 +358,12 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
 
     const environments = useAppSelector(selectAllEnvs);
 
+    const ps = useAppSelector((state) => selectAllPipeds(state));
+
     const pipeds = useAppSelector<Piped.AsObject[]>((state) =>
-      values.env !== "" ? selectPipedsByEnv(state.pipeds, values.env) : []
+      values.env !== ""
+        ? selectPipedsByEnv(state.pipeds, values.env)
+        : ps.filter((piped) => !piped.disabled)
     );
 
     const selectedPiped = useAppSelector(selectPipedById(values.pipedId));
@@ -326,6 +374,10 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
     });
 
     const repositories = createRepoListFromPiped(selectedPiped);
+
+    const emptyEnvName = "(empty)";
+    const envItems = environments.map((v) => ({ name: v.name, value: v.id }));
+    envItems.push({ name: emptyEnvName, value: emptyEnvName });
 
     return (
       <Box width="100%">
@@ -365,13 +417,14 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
               id="env"
               label="Environment"
               value={values.env}
-              items={environments.map((v) => ({ name: v.name, value: v.id }))}
+              items={envItems}
+              required={false}
               onChange={(item) => {
                 setValues({
                   ...emptyFormValues,
                   name: values.name,
                   kind: values.kind,
-                  env: item.value,
+                  env: item.value === emptyEnvName ? "" : item.value,
                 });
               }}
               disabled={isSubmitting || disableApplicationInfo}
@@ -394,7 +447,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
                 name: `${piped.name} (${piped.id})`,
                 value: piped.id,
               }))}
-              disabled={isSubmitting || !values.env || pipeds.length === 0}
+              disabled={isSubmitting || pipeds.length === 0}
             />
           </div>
 
@@ -575,7 +628,7 @@ const UnregisteredApplicationFilter: FC<UnregisteredApplicationFilterProps> = me
 );
 
 const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
-  function ApplicationForm({ onClose }) {
+  function ApplicationForm({ title, onClose }) {
     const dispatch = useAppDispatch();
     useEffect(() => {
       dispatch(fetchUnregisteredApplications());
@@ -590,6 +643,12 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
     const [selectedKind, setSelectedKind] = useState("");
     const [selectedCloudProvider, setSelectedCloudProvider] = useState("");
 
+    const filteredApps = apps.filter(
+      (app) =>
+        app.pipedId === selectedPipedId &&
+        app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
+    );
+
     const [showConfirm, setShowConfirm] = useState(false);
 
     const [appToAdd, setAppToAdd] = useState({
@@ -602,6 +661,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
       configFilename: "",
       kind: ApplicationKind.KUBERNETES,
       cloudProvider: "",
+      labels: new Array<[string, string]>(),
     });
 
     const handleFilterChange = useCallback(
@@ -609,6 +669,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
         setSelectedPipedId(options.pipedId);
         setSelectedKind(options.kind);
         setSelectedCloudProvider(options.cloudProvider);
+        setActiveStep(options.cloudProvider ? 1 : 0);
       },
       []
     );
@@ -619,134 +680,157 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
       envsMap.set(env.name, env.id);
     });
 
+    const [activeStep, setActiveStep] = useState(0);
+
     return (
       <>
         <Box width="100%">
           <Typography className={classes.title} variant="h6">
-            Select the application to register
+            {title}
           </Typography>
           <Divider />
-          <Box width="100%" m={0} px={2}>
-            <UnregisteredApplicationFilter onChange={handleFilterChange} />
-            <Accordion className={classes.accordionHeader} disabled>
-              <AccordionSummary
-                aria-controls="table-header-content"
-                id="table-header"
-              >
-                <Typography>Name (Repository)</Typography>
-              </AccordionSummary>
-            </Accordion>
-            <div>
-              {/** TODO: Do not show apps registered right before */}
-              {apps
-                .filter(
-                  (app) =>
-                    app.pipedId === selectedPipedId &&
-                    app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
-                )
-                .map((app, i) => (
-                  <Accordion key={app.repoId + app.path + app.configFilename}>
-                    <AccordionSummary
-                      expandIcon={<ExpandMore />}
-                      aria-controls={"panel-" + i + "-content"}
-                      id={"panel-" + i + "-header"}
-                    >
-                      <Typography>
-                        {app.name} ({app.repoId})
-                      </Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Typography>
-                        <div className={classes.inputGroup}>
-                          <TextField
-                            id={"kind-" + i}
-                            label="Kind"
-                            margin="dense"
-                            fullWidth
-                            variant="outlined"
-                            disabled
-                            value={APPLICATION_KIND_TEXT[app.kind]}
-                            className={classes.textInput}
-                          />
-                        </div>
-                        {app.envName.length > 0 && (
-                          <div className={classes.inputGroup}>
-                            <TextField
-                              id={"env-" + i}
-                              label="Environment"
-                              margin="dense"
-                              fullWidth
-                              variant="outlined"
-                              disabled
-                              value={app.envName}
-                              className={classes.textInput}
-                            />
-                          </div>
-                        )}
-                        <div className={classes.inputGroup}>
-                          <TextField
-                            id={"path-" + i}
-                            label="Path"
-                            margin="dense"
-                            variant="outlined"
-                            disabled
-                            value={app.path}
-                            className={classes.textInput}
-                          />
-                          <div className={classes.inputGroupSpace} />
-                          <TextField
-                            id={"configFilename-" + i}
-                            label="Config Filename"
-                            margin="dense"
-                            variant="outlined"
-                            disabled
-                            value={app.configFilename}
-                            className={classes.textInput}
-                          />
-                        </div>
-                        {app.labelsMap.map((label, j) => (
-                          <div className={classes.inputGroup} key={label[0]}>
-                            <TextField
-                              id={"label-" + i + "-" + j}
-                              label={"Label " + j}
-                              margin="dense"
-                              variant="outlined"
-                              disabled
-                              value={label[0] + ": " + label[1]}
-                              className={classes.textInput}
-                            />
-                          </div>
-                        ))}
-                        <Button
-                          color="primary"
-                          type="submit"
-                          onClick={() => {
-                            // NOTE: Repo remote and branch aren't needed because they are populated by API.
-                            setAppToAdd({
-                              name: app.name,
-                              env: envsMap.get(app.envName) as string | "",
-                              pipedId: app.pipedId,
-                              repo: {
-                                id: app.repoId,
-                              } as ApplicationGitRepository.AsObject,
-                              repoPath: app.path,
-                              configPath: "",
-                              configFilename: app.configFilename,
-                              kind: app.kind,
-                              cloudProvider: selectedCloudProvider,
-                            });
-                            setShowConfirm(true);
-                          }}
+          <Stepper activeStep={activeStep} orientation="vertical">
+            <Step key="Select Piped and Cloud provider" active>
+              <StepLabel>Select Piped and Cloud provider</StepLabel>
+              <StepContent>
+                <div className={classes.actionsContainer}>
+                  <div>
+                    <UnregisteredApplicationFilter
+                      onChange={handleFilterChange}
+                    />
+                  </div>
+                </div>
+              </StepContent>
+            </Step>
+            <Step key="Select the application to add">
+              <StepLabel>Select the application to add</StepLabel>
+              <StepContent>
+                <Typography>
+                  Found {filteredApps.length} application(s) that match the
+                  Piped and Cloud Provider you selected.
+                </Typography>
+                <div className={classes.actionsContainer}>
+                  <div>
+                    {/** TODO: Do not show apps registered right before */}
+                    {filteredApps.map((app, i) => (
+                      <Accordion
+                        key={app.repoId + app.path + app.configFilename}
+                      >
+                        <AccordionSummary
+                          expandIcon={<ExpandMore />}
+                          aria-controls={"panel-" + i + "-content"}
+                          id={"panel-" + i + "-header"}
                         >
-                          {UI_TEXT_ADD}
-                        </Button>
-                      </Typography>
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
-            </div>
-            <Button onClick={onClose}>{UI_TEXT_CANCEL}</Button>
-          </Box>
+                          <Typography>
+                            name: {app.name}, repo: {app.repoId}
+                          </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Typography className={classes.accordionDetail}>
+                            <div className={classes.inputGroup}>
+                              <TextField
+                                id={"kind-" + i}
+                                label="Kind"
+                                margin="dense"
+                                fullWidth
+                                variant="outlined"
+                                disabled
+                                value={APPLICATION_KIND_TEXT[app.kind]}
+                                className={classes.textInput}
+                              />
+                            </div>
+                            {app.envName.length > 0 && (
+                              <div className={classes.inputGroup}>
+                                <TextField
+                                  id={"env-" + i}
+                                  label="Environment"
+                                  margin="dense"
+                                  fullWidth
+                                  variant="outlined"
+                                  disabled
+                                  value={app.envName}
+                                  className={classes.textInput}
+                                />
+                              </div>
+                            )}
+                            <div className={classes.inputGroup}>
+                              <TextField
+                                id={"path-" + i}
+                                label="Path"
+                                margin="dense"
+                                variant="outlined"
+                                disabled
+                                value={app.path}
+                                className={classes.textInput}
+                              />
+                              <div className={classes.inputGroupSpace} />
+                              <TextField
+                                id={"configFilename-" + i}
+                                label="Config Filename"
+                                margin="dense"
+                                variant="outlined"
+                                disabled
+                                value={app.configFilename}
+                                className={classes.textInput}
+                              />
+                            </div>
+                            {app.labelsMap.map((label, j) => (
+                              <div
+                                className={classes.inputGroup}
+                                key={label[0]}
+                              >
+                                <TextField
+                                  id={"label-" + i + "-" + j}
+                                  label={"Label " + j}
+                                  margin="dense"
+                                  variant="outlined"
+                                  disabled
+                                  value={label[0] + ": " + label[1]}
+                                  className={classes.textInput}
+                                />
+                              </div>
+                            ))}
+                            <Button
+                              color="primary"
+                              type="submit"
+                              onClick={() => {
+                                // NOTE: Repo remote and branch aren't needed because they are populated by API.
+                                setAppToAdd({
+                                  name: app.name,
+                                  env: envsMap.get(app.envName) as string | "",
+                                  pipedId: app.pipedId,
+                                  repo: {
+                                    id: app.repoId,
+                                  } as ApplicationGitRepository.AsObject,
+                                  repoPath: app.path,
+                                  configPath: "",
+                                  configFilename: app.configFilename,
+                                  kind: app.kind,
+                                  cloudProvider: selectedCloudProvider,
+                                  labels: app.labelsMap,
+                                });
+                                setShowConfirm(true);
+                              }}
+                            >
+                              {UI_TEXT_ADD}
+                            </Button>
+                          </Typography>
+                        </AccordionDetails>
+                      </Accordion>
+                    ))}
+                  </div>
+                </div>
+              </StepContent>
+            </Step>
+          </Stepper>
+
+          <Button
+            variant="contained"
+            onClick={onClose}
+            className={classes.button}
+          >
+            {UI_TEXT_CANCEL}
+          </Button>
         </Box>
         <Dialog open={showConfirm}>
           <DialogTitle>{ADD_FROM_GIT_CONFIRM_DIALOG_TITLE}</DialogTitle>

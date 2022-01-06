@@ -20,14 +20,35 @@ option go_package = "github.com/pipe-cd/pipe/pkg/model";
 import "validate/validate.proto";
 import "pkg/model/deployment.proto";
 
+// ChainStatus represents the current status of deployment chain.
+enum ChainStatus {
+    // DEPLOYMENT_CHAIN_PENDING means the chain just initialized,
+    // all block deployments have not been initialized or still at PENDING.
+    DEPLOYMENT_CHAIN_PENDING = 0;
+    // DEPLOYMENT_CHAIN_RUNNING means at least one block has node, which has
+    // its deploymentRef and that deployment is RUNNING or after that state.
+    DEPLOYMENT_CHAIN_RUNNING = 1;
+    // DEPLOYMENT_CHAIN_SUCCESS means all blocks in the chain had finished with
+    // DEPLOYMENT_BLOCK_SUCCESS status.
+    DEPLOYMENT_CHAIN_SUCCESS = 2;
+    // DEPLOYMENT_CHAIN_FAILURE means one of the chain's blocks had finished with
+    // DEPLOYMENT_BLOCK_FAILURE status.
+    DEPLOYMENT_CHAIN_FAILURE = 3;
+    // DEPLOYMENT_CHAIN_CANCELLED means one of the chain's blocks had finished with
+    // DEPLOYMENT_BLOCK_CANCELLED status.
+    DEPLOYMENT_CHAIN_CANCELLED = 4;
+}
+
 message DeploymentChain {
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
     // The ID of the project this environment belongs to.
     string project_id = 2 [(validate.rules).string.min_len = 1];
+    // Status of this deployment chain.
+    ChainStatus status = 3 [(validate.rules).enum.defined_only = true];
     // List of all deployment block in the chain which contains all
     // configuration required to perform deployment(s).
-    repeated ChainBlock blocks = 3;
+    repeated ChainBlock blocks = 4;
     // Unix time when all the applications in this chain are deployed.
     int64 completed_at = 100 [(validate.rules).int64.gte = 0];
     // Unix time when the deployment chain is created.

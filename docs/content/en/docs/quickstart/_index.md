@@ -6,7 +6,7 @@ description: >
   This page describes how to quickly get started with PipeCD on Kubernetes.
 ---
 
-This guides you to install PipeCD in your kubernetes and deploy a `helloworld` application to that Kubernetes cluster. For further reading about PipeCD's ideas, please visit [overview](/docs/overview/) and [concepts](/docs/concepts/).
+This page is a guideline for installing PipeCD in your Kubernetes cluster and deploying a "hello world" application to that same Kubernetes cluster.
 
 ### Prerequisites
 - Having a Kubernetes cluster
@@ -19,37 +19,26 @@ This guides you to install PipeCD in your kubernetes and deploy a `helloworld` a
 ``` console
 helm repo add pipecd https://charts.pipecd.dev
 
-helm install pipecd pipecd/pipecd -n pipecd --dependency-update --create-namespace \
+helm install pipecd pipecd/pipecd -n pipecd \
+  --create-namespace \
+  --dependency-update \
   --values https://raw.githubusercontent.com/pipe-cd/manifests/{{< blocks/latest_version >}}/quickstart/control-plane-values.yaml
 ```
 
-### 2. Accessing the PipeCD web
-PipeCD comes with an embedded web-based UI.
-First up, using kubectl port-forward to expose the installed control-plane on your localhost:
+Once installed, use `kubectl port-forward` to expose the web console on your localhost:
 
 ``` console
 kubectl -n pipecd port-forward svc/pipecd 8080
 ```
 
-Point your web browser to [http://localhost:8080](http://localhost:8080) to login with the configured static admin account.
+The PipeCD web console will be available at [http://localhost:8080](http://localhost:8080). To login, you can use the configured static admin account as below:
+- project name: `quickstart`
+- username: `hello-pipecd`
+- password: `hello-pipecd`
 
 ![](/images/quickstart-login.png)
 
-Enter the project name, username and password. Be sure to give the following:
-- Project Name: `quickstart`
-- Username: `hello-pipecd`
-- Password: `hello-pipecd`
-
-### 3. Adding an environment
-Go to the `Environment` tab at `Settings` page and click on the `Add` button to add a new [Environment](/docs/concepts/#environment) to the project.
-
-Then you give the environment name and its description as shown below:
-
-![](/images/quickstart-adding-environment.png)
-
-After filling out the form, click on the `Save` button.
-
-### 4. Installing a `piped`
+### 2. Installing a `piped`
 Before running a piped, you have to register it on the web and take the generated ID and Key strings.
 
 Navigate to the `Piped` tab on the same page as before, click on the `Add` button. Then you enter as:
@@ -71,21 +60,27 @@ You can complete the installation by running the following after replacing `{YOU
 ``` console
 helm install piped pipecd/piped -n pipecd \
   --values https://raw.githubusercontent.com/pipe-cd/manifests/{{< blocks/latest_version >}}/quickstart/piped-values.yaml \
-  --set secret.pipedKey.data={YOUR_PIPED_SECRET_KEY}
+  --set secret.data.piped-key={YOUR_PIPED_SECRET_KEY}
 ```
 
-### 5. Configuring a kubernetes application
-Navigate to the `Application` page, click on the `Add` button. Then give as:
+### 3. Registering a kubernetes application
+Navigate to the `Applications` page, click on the `Add` button on the top left corner.
 
-![](/images/quickstart-adding-application.png)
+Go to the `ADD FROM GIT` tab, then select:
+- Piped: `dev` (you just registered)
+- CloudProvider: `kubernetes-default`
 
-While you can see the select box for the deployment config template, skip it at this point.
+You should see a lot of suggested applications.
+
+Select the `canary` application and click the `ADD` button to register.
+
+![](/images/quickstart-adding-application-from-git.png)
 
 After a bit, the first deployment would be complete automatically to sync the application to the state specified in the current Git commit.
 
 ![](/images/quickstart-first-deployment.png)
 
-### 6. Let's deploy!
+### 4. Let's deploy!
 Let's get started with deployment! All you have to do is to make a PR to update the image tag, scale the replicas, or change the manifests.
 
 For instance, open the `kubernetes/canary/deployment.yaml` under the forked examples' repository, then change the tag from `v0.1.0` to `v0.2.0`.
@@ -96,7 +91,7 @@ After a short wait, a new deployment will be started to update to `v0.2.0`.
 
 ![](/images/quickstart-deploying.png)
 
-### 7. Cleanup
+### 5. Cleanup
 When you’re finished experimenting with PipeCD, you can uninstall with:
 
 ``` console

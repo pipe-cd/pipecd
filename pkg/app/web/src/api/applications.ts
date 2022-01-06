@@ -54,6 +54,9 @@ export const getApplications = ({
       enabled.setValue((options.enabled.value as unknown) as boolean);
       o.setEnabled(enabled);
     }
+    for (const label of options.labelsMap) {
+      o.getLabelsMap().set(label[0], label[1]);
+    }
     req.setOptions(o);
   }
   return apiRequest(req, apiClient.listApplications);
@@ -76,6 +79,7 @@ export const addApplication = async ({
   cloudProvider,
   kind,
   gitPath,
+  labelsMap,
 }: Required<AddApplicationRequest.AsObject>): Promise<
   AddApplicationResponse.AsObject
 > => {
@@ -98,6 +102,9 @@ export const addApplication = async ({
     appGitPath.setConfigFilename(gitPath.configFilename);
   }
   req.setGitPath(appGitPath);
+  labelsMap.forEach((label) => {
+    req.getLabelsMap().set(label[0], label[1]);
+  });
   return apiRequest(req, apiClient.addApplication);
 };
 

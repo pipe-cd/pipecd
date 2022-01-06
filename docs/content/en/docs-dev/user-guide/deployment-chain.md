@@ -1,7 +1,7 @@
 ---
-title: "Deployment Chain"
-linkTitle: "Deployment Chain"
-weight: 99
+title: "Deployment chain"
+linkTitle: "Deployment chain"
+weight: 9
 description: >
   Specific guide for configuring chain of deployments.
 ---

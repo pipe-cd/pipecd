@@ -1,7 +1,7 @@
 ---
 title: "Secret management"
 linkTitle: "Secret management"
-weight: 11
+weight: 12
 description: >
   Storing secrets safely in the Git repository.
 ---
@@ -66,7 +66,7 @@ The form for encrypting secret data
 
 ## Storing encrypted secrets in Git
 
-To make encrypted secrets available to an application, they must be specified in the `.pipe.yaml` file of that application.
+To make encrypted secrets available to an application, they must be specified in the application configuration file of that application.
 
 - `encryptedSecrets` contains a list of the encrypted secrets.
 - `decryptionTargets` contains a list of files that are using one of the encrypted secrets and should be decrypted by `Piped`.
@@ -85,7 +85,7 @@ spec:
 
 ## Accessing encrypted secrets
 
-Any file in the application directory can use `.encryptedSecrets` context to access secrets you have encrypted and stored in `.pipe.yaml`.
+Any file in the application directory can use `.encryptedSecrets` context to access secrets you have encrypted and stored in the application configuration.
 
 For example,
 

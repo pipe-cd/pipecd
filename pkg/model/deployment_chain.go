@@ -16,6 +16,91 @@ package model
 
 import "fmt"
 
+func GetNotCompletedDeploymentChainStatuses() []ChainStatus {
+	return []ChainStatus{
+		ChainStatus_DEPLOYMENT_CHAIN_PENDING,
+		ChainStatus_DEPLOYMENT_CHAIN_RUNNING,
+	}
+}
+
+func (dc *DeploymentChain) IsCompleted() bool {
+	switch dc.Status {
+	case ChainStatus_DEPLOYMENT_CHAIN_SUCCESS,
+		ChainStatus_DEPLOYMENT_CHAIN_FAILURE,
+		ChainStatus_DEPLOYMENT_CHAIN_CANCELLED:
+		return true
+	default:
+		return false
+	}
+}
+
+func (dc *DeploymentChain) DesiredStatus() ChainStatus {
+	if dc.IsCompleted() {
+		return dc.Status
+	}
+
+	var (
+		successBlockCtn   int
+		failedBlockCtn    int
+		cancelledBlockCtn int
+		runningBlockCtn   int
+	)
+	for _, block := range dc.Blocks {
+		switch block.Status {
+		case ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS:
+			successBlockCtn++
+		case ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE:
+			failedBlockCtn++
+		case ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED:
+			cancelledBlockCtn++
+		case ChainBlockStatus_DEPLOYMENT_BLOCK_RUNNING:
+			runningBlockCtn++
+		}
+	}
+
+	// Determine desired deployment chain status based on counted blocks' status.
+	// If all blocks have finished with SUCCESS status, the chain counted as SUCCESS.
+	if successBlockCtn == len(dc.Blocks) {
+		return ChainStatus_DEPLOYMENT_CHAIN_SUCCESS
+	}
+	// If one of the chain's blocks has finished with FAILURE status, the chain counted as FAILURE.
+	if failedBlockCtn > 0 {
+		return ChainStatus_DEPLOYMENT_CHAIN_FAILURE
+	}
+	// If one of the chain's blocks has finished with CANCELLED status, the chain counted as CANCELLED.
+	if cancelledBlockCtn > 0 {
+		return ChainStatus_DEPLOYMENT_CHAIN_CANCELLED
+	}
+	// If one of the chain's blocks is at RUNNING status, the chain counted as RUNNING.
+	if runningBlockCtn > 0 {
+		return ChainStatus_DEPLOYMENT_CHAIN_RUNNING
+	}
+	// Otherwise, the status of deployment chain is remained.
+	return dc.Status
+}
+
+func (dc *DeploymentChain) ListAllInChainApplicationDeploymentsMap() map[string]*ChainDeploymentRef {
+	deployments := make(map[string]*ChainDeploymentRef, 0)
+	for _, block := range dc.Blocks {
+		for _, node := range block.Nodes {
+			if node.DeploymentRef != nil {
+				deployments[node.ApplicationRef.ApplicationId] = node.DeploymentRef
+			}
+		}
+	}
+	return deployments
+}
+
+func (dc *DeploymentChain) ListAllInChainApplications() []*ChainApplicationRef {
+	applications := make([]*ChainApplicationRef, 0)
+	for _, block := range dc.Blocks {
+		for _, node := range block.Nodes {
+			applications = append(applications, node.ApplicationRef)
+		}
+	}
+	return applications
+}
+
 func (b *ChainBlock) IsCompleted() bool {
 	switch b.Status {
 	case ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS,

@@ -1,7 +1,7 @@
 ---
 title: "Event watcher"
 linkTitle: "Event watcher"
-weight: 13
+weight: 14
 description: >
   A helper facility to automatically update files when it finds out a new event.
 ---
@@ -128,7 +128,7 @@ spec:
         env: dev
         appName: helloworld
       replacements:
-        - file: helloworld/.pipe.yaml
+        - file: helloworld/app.pipecd.yaml
           yamlField: $.spec.input.helmChart.version
 ```
 

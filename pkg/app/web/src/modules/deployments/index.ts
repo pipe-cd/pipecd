@@ -20,6 +20,8 @@ import { ApplicationKind } from "../applications";
 export type Stage = Required<PipelineStage.AsObject>;
 export type DeploymentStatusKey = keyof typeof DeploymentStatus;
 
+// 30 days
+const TIME_RANGE_LIMIT_IN_SECONDS = 2592000;
 const ITEMS_PER_PAGE = 50;
 const FETCH_MORE_ITEMS_PER_PAGE = 30;
 
@@ -29,6 +31,9 @@ export interface DeploymentFilterOptions {
   applicationId?: string;
   envId?: string;
   applicationName?: string;
+  // Suppose to be like ["key-1:value-1"]
+  // sindresorhus/query-string doesn't support multidimensional arrays, that's why the format is a bit tricky.
+  labels?: Array<string>;
 }
 
 export const isDeploymentRunning = (
@@ -73,12 +78,14 @@ const initialState = deploymentsAdapter.getInitialState<{
   canceling: Record<string, boolean>;
   hasMore: boolean;
   cursor: string;
+  minUpdatedAt: number;
 }>({
   status: "idle",
   loading: {},
   canceling: {},
   hasMore: true,
   cursor: "",
+  minUpdatedAt: Math.round(Date.now() / 1000 - TIME_RANGE_LIMIT_IN_SECONDS),
 });
 
 export const fetchDeploymentById = createAsyncThunk<
@@ -92,6 +99,13 @@ export const fetchDeploymentById = createAsyncThunk<
 const convertFilterOptions = (
   options: DeploymentFilterOptions
 ): ListDeploymentsRequest.Options.AsObject => {
+  const labels = new Array<[string, string]>();
+  if (options.labels) {
+    for (const label of options.labels) {
+      const pair = label.split(":");
+      pair.length === 2 && labels.push([pair[0], pair[1]]);
+    }
+  }
   return {
     applicationName: options.applicationName ?? "",
     applicationIdsList: options.applicationId ? [options.applicationId] : [],
@@ -102,7 +116,7 @@ const convertFilterOptions = (
     statusesList: options.status
       ? [parseInt(options.status, 10) as DeploymentStatus]
       : [],
-    labelsMap: [], // TODO: Specify labels for ListDeployments
+    labelsMap: labels,
   };
 };
 
@@ -113,12 +127,13 @@ export const fetchDeployments = createAsyncThunk<
   { deployments: Deployment.AsObject[]; cursor: string },
   DeploymentFilterOptions,
   { state: AppState }
->("deployments/fetchList", async (options) => {
+>("deployments/fetchList", async (options, thunkAPI) => {
+  const { deployments } = thunkAPI.getState();
   const { deploymentsList, cursor } = await deploymentsApi.getDeployments({
     options: convertFilterOptions({ ...options }),
     pageSize: ITEMS_PER_PAGE,
     cursor: "",
-    pageMinUpdatedAt: 0, // TODO Specify pageMinUpdatedAt for ListDeployments
+    pageMinUpdatedAt: deployments.minUpdatedAt,
   });
 
   return {
@@ -140,7 +155,7 @@ export const fetchMoreDeployments = createAsyncThunk<
     options: convertFilterOptions({ ...options }),
     pageSize: FETCH_MORE_ITEMS_PER_PAGE,
     cursor: deployments.cursor,
-    pageMinUpdatedAt: 0, // TODO Specify pageMinUpdatedAt for ListDeployments
+    pageMinUpdatedAt: deployments.minUpdatedAt,
   });
 
   return {
@@ -220,8 +235,14 @@ export const deploymentsSlice = createSlice({
       .addCase(fetchMoreDeployments.fulfilled, (state, action) => {
         state.status = "succeeded";
         deploymentsAdapter.upsertMany(state, action.payload.deployments);
-        if (action.payload.deployments.length < FETCH_MORE_ITEMS_PER_PAGE) {
+        const deployments = action.payload.deployments;
+        if (deployments.length < FETCH_MORE_ITEMS_PER_PAGE) {
           state.hasMore = false;
+          state.minUpdatedAt =
+            deployments[deployments.length - 1].updatedAt -
+            TIME_RANGE_LIMIT_IN_SECONDS;
+        } else {
+          state.hasMore = true;
         }
         state.cursor = action.payload.cursor;
       })

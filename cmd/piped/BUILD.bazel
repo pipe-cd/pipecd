@@ -2,6 +2,8 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_docker//container:container.bzl", "container_bundle", "container_image", "container_layer")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
+load("@io_bazel_rules_docker//container:container.bzl", "container_bundle")
+load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 
 go_library(
     name = "go_default_library",
@@ -46,6 +48,18 @@ container_image(
         "/launcher": "/app/cmd/launcher/launcher",
     },
     visibility = ["//visibility:public"],
+)
+
+container_bundle(
+    name = "piped_app_bundle",
+    images = {
+        "$(DOCKER_REGISTRY)/piped:{STABLE_VERSION}": ":piped_app_image",
+    },
+)
+
+docker_push(
+    name = "piped_app_push",
+    bundle = ":piped_app_bundle",
 )
 
 # Piped app for OKD
