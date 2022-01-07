@@ -5,6 +5,7 @@ import {
   makeStyles,
   Paper,
   Typography,
+  Chip,
 } from "@material-ui/core";
 import SyncIcon from "@material-ui/icons/Cached";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
@@ -74,6 +75,9 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: theme.spacing(2),
   },
   latestDeploymentLink: {
+    marginLeft: theme.spacing(1),
+  },
+  labelChip: {
     marginLeft: theme.spacing(1),
   },
 }));
@@ -217,6 +221,14 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
                 {env.name}
               </Typography>
             )}
+            {app?.labelsMap.map((label, i) => (
+              <Chip
+                label={label[0] + ":" + label[1]}
+                className={classes.labelChip}
+                variant="outlined"
+                key={i}
+              />
+            ))}
           </Box>
 
           {app ? (
