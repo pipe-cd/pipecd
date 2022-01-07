@@ -98,6 +98,7 @@ The deployment triggering of each application can be configured with the followi
 * `onCommit`: controls triggering new deployment when newly added Git commits touched the application.
 * `onCommand`: controls triggering new deployment when received a new `SYNC` command from the web console or `pipectl`
 * `onOutOfSync`: controls triggering new deployment when application is at `OUT_OF_SYNC` state. Enabling this will force Piped to always attempt to keep the application as synced as possible.
+* `onChain`: controls triggering new deployment when the application is counted as a node of a deployment chain.
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
@@ -109,6 +110,8 @@ spec:
     onCommand:
       disabled: false
     onOutOfSync:
+      disabled: true
+    onChain:
       disabled: true
 ```
 
