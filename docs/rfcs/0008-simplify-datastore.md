@@ -84,7 +84,7 @@ Cons:
 
 ## To handle (2), there are some things we have to be aware of
 - Filter option interface <1>
-- Query bulk (fetch list) and quere by id (fetch single object) <2>
+- Query bulk (fetch list) and query by id (fetch single object) <2>
 - Read complex object which required to fetch multiple files then build up before return <3>
 
 #### <1> Filter option interface
