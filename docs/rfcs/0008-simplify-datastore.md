@@ -15,7 +15,7 @@ As mentioned above, the current implementation of PipeCD allows us to just store
 1. How to ensure the correctness to avoid data corruption, data loss, inconsistency from being handled by concurrent processes.
 2. How should we index/store the data objects so that we can read stored data fast enough to not make our users anger because of the slow response console.
 
-To handle (1) we have two approaches:
+## To handle (1) we have two approaches:
 - Achieve by implement __lock__
 - Achieve by avoid concurrent processes data as much as possible
 
