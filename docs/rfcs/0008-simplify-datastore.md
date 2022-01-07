@@ -97,7 +97,7 @@ Since we will use filestore as PipeCD database, we should implement filestore wi
 
 Objects such as: deployment, command, event, deployment-chain, etc are only be created once and once they finished their life time (state or status changed to SUCCESS|FAILURE|CANCELLED), they will no more be updated. Those kinds of objects should be stored in `chunk` and mostly will be used to shown as list from deployment list view, for example. 
 
-On the opposite side, objects like pipelines, projects, applications, etc. have fewer numbers and are updated frequently throughout their lifetime; they should therefore be stored in hot storage.
+On the opposite side, objects like piped, project, application, etc have fewer numbers and are updated frequently throughout their lifetime; they should therefore be stored in hot storage.
 
 To implement this hot & cold storage pattern, we will
 - Introduce another storage controller to the ops. It will intervaly fetch file objects from hot storage, migrate objects to the cold storage in some conditions (based on objects state and timestamp)
