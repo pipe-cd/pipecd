@@ -101,7 +101,7 @@ On the opposite side, objects like piped, project, application, etc have fewer n
 
 To implement this hot & cold storage pattern, we will
 - Introduce another storage controller to the ops. It will intervaly fetch file objects from hot storage, migrate objects to the cold storage in some conditions (based on objects state and timestamp)
-- Make data objects in cold storage stored in 2 different ways for 2 different purposes:\
+- Make data objects in cold storage stored in 2 different ways for 2 different purposes
     + In chunk: used when request to get a list of objects (fetch bulk)
     + In individual files: just like we stored in the hot storage, used when request to get object by id (fetch single object)
 
