@@ -80,7 +80,7 @@ Pros:
 
 Cons:
 
-    - Must keep a single writer for each object (or file in case we separate object to multiple files) and narrow down the number of possible features we can do
+    - Must keep a single writer for each object (or file in case we separate object to multiple files) and narrow down the number of possible features we can do.
 
 ## To handle (2), there are some things we have to be aware of
 - Filter option interface <1>
