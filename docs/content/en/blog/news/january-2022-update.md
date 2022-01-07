@@ -9,7 +9,7 @@ author: Le Van Nghia ([@nghialv](https://twitter.com/nghialv2607))
 
 _Published by the PipeCD dev team every month, this update will provide you with news and updates about the project! Please click [here](/blog/2021/11/01/november-2021-update/) if you want to see the last status update._
 
-#### Happy New Year
+### Happy New Year
 ---
 First of all, PipeCD team would like to wish you all a very Happy New Year. 🥳
 
@@ -19,12 +19,12 @@ First of all, PipeCD team would like to wish you all a very Happy New Year. 🥳
 
 Stepping into 2022, PipeCD team looks forward to contributing even more to make PipeCD project better and more useful for many users in our OSS community.
 
-#### What's changed
+### What's changed
 ---
 
 Since the last report, PipeCD team has introduced 2 releases ([v0.22.0](https://github.com/pipe-cd/pipe/releases/tag/v0.22.0), [v0.23.0](https://github.com/pipe-cd/pipe/releases/tag/v0.23.0)). These releases bring many updates to help PipeCD becomes more stable as well as introduce some interesting features. In this blog post, we will recap those new features. For all other changes, please check out each release note to see.
 
-##### Deployment chain
+#### Deployment chain
 
 As you know, each application in PipeCD contains a group of resources that are managed together and be deployed to a single cloud provider such as a Kubernetes cluster. The application works independently of each other since there is no connection between them.
 
@@ -50,7 +50,7 @@ Currently, in-chain applications can be specified only by `name`, `kind` but fin
 
 For more details, please check out its [documentation](https://pipecd.dev/docs/user-guide/deployment-chain/) page.
 
-##### Environment is no longer required and will be replaced by Label
+#### Environment is no longer required and will be replaced by Label
 
 Environment was changed to be optional while registering Piped or Application. You still can use it from the web console or specify the environment for an application via the `envName` field in the application configuration file, but we are planning to completely remove the environment concept in the near future. As an alternative, a new `Label` concept has been introduced, and `Environment` can be imagined as a particular label.
 
@@ -70,7 +70,7 @@ spec:
 
 Filtering application or deployment by the label is being implemeted currently. We hope that it will be shipped in the next release.
 
-##### Simplifying the way of registering an application
+#### Simplifying the way of registering an application
 
 Before [v0.23.0](https://github.com/pipe-cd/pipe/releases/tag/v0.23.0), while registering a new application user has to configure the application information manually via a registration form. For now, most of the information can be specified in the application configuration file. And Piped agents automatically find the un-registered applications to suggest to users. It means that all you have to do is just a few clicks on the web console.
 
@@ -81,13 +81,13 @@ Picking from the suggested application list to register
 
 Please note that to be suggested, the application configuration file must be suffixed by `.pipecd.yaml`. And the default name of that file has been changed to `app.pipecd.yaml` instead of `.pipe.yaml` as before.
 
-##### Showing the connection status of Pipeds
+#### Showing the connection status of Pipeds
 
 The connection status of Piped agents to the control plane is shown on the Settings page in real-time. This gives the operator a quick look at the current status of a particular Piped agent is.
 
 ![](/images/january-2022-piped-connection-status.png)
 
-##### More controls on triggering the deployment
+#### More controls on triggering the deployment
 
 By default, when a new merged pull request touches an application, a new deployment for that application will be triggered to execute the sync process.
 
@@ -115,7 +115,7 @@ spec:
       disabled: true
 ```
 
-#### What are next
+### What are next
 ---
 
 The team continues actively working on improving the PipeCD product. Besides fixing the reported issues, enhancing the existing features, here are some new features the team is currently working on:

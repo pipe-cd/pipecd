@@ -9,12 +9,12 @@ author: Le Van Nghia ([@nghialv](https://twitter.com/nghialv2607))
 
 _Published by the PipeCD dev team every month, this update will provide you with news and updates about the project! Please click [here](/blog/2021/11/01/november-2021-update/) if you want to see the last status update._
 
-#### What's changed
+### What's changed
 ---
 
 Last month, PipeCD team has introduced 4 releases ([v0.20.0](https://github.com/pipe-cd/pipe/releases/tag/v0.20.0), [v0.20.1](https://github.com/pipe-cd/pipe/releases/tag/v0.20.1), [v0.20.2](https://github.com/pipe-cd/pipe/releases/tag/v0.20.2), [v0.21.0](https://github.com/pipe-cd/pipe/releases/tag/v0.21.0)). Those releases bring many updates to help PipeCD becomes more stable as well as introduce some interesting features. In this blog post, we will recap those new features. For all other changes, please check out each release note to see.
 
-##### Lambda Deployment
+#### Lambda Deployment
 
 Before `v0.20.0`, PipeCD only supports deploying an AWS Lambda function by using container image as the input. It means that to run a Lambda function, you have to prepare its container image by building the source code and storing its image in a container registry. That preparation is normally considered as a responsibility of a CI system. That way is straightforward and has been highly recommended recently in the Cloud Native development process.
 
@@ -54,7 +54,7 @@ spec:
 
 Check out its [documentation](/docs/user-guide/configuring-deployment/lambda) for more details.
 
-##### Automated Deployment Analysis (ADA)
+#### Automated Deployment Analysis (ADA)
 
 ADA is a good way to automate the process of evaluating the impact of a deployment during its lifetime to help building a robust release process. Any application can be configured to analyze its deployments based on its metrics data, log messages, or results from directly emitting requests to the application.
 
@@ -109,7 +109,7 @@ Sum up, you can choose one of the following four strategies which fits your use 
 
 Check out its [documentation](/docs/user-guide/automated-deployment-analysis/#strategies) for more details.
 
-##### Notification
+#### Notification
 
 Any PipeCD event (deployment triggered, planned, analysis completed...) can be configured to send to external services like Slack or a Webhook service. While forwarding those events to a chat service helps developers have a quick and convenient way to know the deployment’s current status, forwarding to a Webhook service may be useful for triggering other related tasks.
 
@@ -138,7 +138,7 @@ spec:
           - slack-user-id-3
 ```
 
-##### Piped Operation
+#### Piped Operation
 
 As you know, PipeCD is designed with `control-plane` and `agent` model (see [component architecture diagram](/docs/overview/)). Piped is a single binary agent you run in your cluster, your local network to handle the deployment tasks related to that cluster. It can be run as a Pod inside a Kubernetes cluster, as a process in a virtual machine, or even on your local machine. Piped is stateless so that it can be restarted without worrying about data loss. That helps the product team reduce the cost of maintaining their Pipeds. You can see those [installation guides](https://pipecd.dev/docs/operator-manual/piped/installation/) to know how to install Piped on each environment.
 
@@ -149,7 +149,7 @@ From `v0.20.0`, managing Piped has become even easier than ever. With [Remote-Up
 Select a list of Pipeds to upgrade from Settings page
 </p>
 
-#### Talks
+### Talks
 ---
 
 Two members from PipeCD team did talk about PipeCD at some local events in Japan.
@@ -163,7 +163,7 @@ Two members from PipeCD team did talk about PipeCD at some local events in Japan
     _JAWS-UG コンテナ支部, by [@khanhtc](https://twitter.com/khanhtc1202) (Youtube [video](https://www.youtube.com/watch?v=CQ_XppWnLyg) in Japanese)_
 
 
-#### What are next
+### What are next
 ---
 
 The team continues actively working on improving PipeCD product. Besides fixing the reported issues, enhancing the existing features, here are some new features the team is currently working on:
