@@ -117,7 +117,7 @@ For objects of `applications` model, we may need to treat them a bit differently
 
 To store object for applications model, we plan to split it to 3 parts based on its updating rates. As a consequence, when we need to read objects of applications model, we need to fetch its 3 parts and build up in the datastore layer before return.
 
-With the above splitting application models idea implemented, we will have the file structure for the hot storage looks like this
+With the above splitting application models idea implemented, we will have the file structure for the hot storage looks like this.
 
 ![image](assets/simplify-datastore-idea.png)
 
