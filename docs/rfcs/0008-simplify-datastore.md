@@ -41,7 +41,7 @@ Cons:
 
 #### <2> Using external service which controls locks (pessimistic locking)
 
-Use a external service or Cache (the current Cache component) to store lock for all objects. Whenever we need to write (create or update) objects, add one more step to ask the lock controlling service to get lock for the object.
+Use an external service or Cache (the current Cache component) to store lock for all objects. Whenever we need to write (create or update) objects, add one more step to ask the lock controlling service to get a lock for the object.
 This approach is known as pessimistic locking.
 
 Pros:
