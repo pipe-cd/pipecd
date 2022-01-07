@@ -22,6 +22,7 @@ const useStyles = makeStyles({
     flexDirection: "column",
     alignItems: "stretch",
     flex: 1,
+    overflow: "auto",
   },
 });
 
