@@ -17,7 +17,7 @@ First of all, PipeCD team would like to wish you all a very Happy New Year. 🥳
 
 ![](/images/january-2022-contributor-list.png)
 
-Stepping into 2021, PipeCD team looks forward to contributing even more to make PipeCD project better and more useful for many users in our OSS community.
+Stepping into 2022, PipeCD team looks forward to contributing even more to make PipeCD project better and more useful for many users in our OSS community.
 
 #### What's changed
 ---
@@ -52,7 +52,7 @@ For more details, please check out its [documentation](https://pipecd.dev/docs/u
 
 ##### Environment is no longer required and will be replaced by Label
 
-Environment was changed to be optional while registering Piped or Application. You still can use it from the web console or specify the environment for an application via the `envName` field in the application configuration file, but we are planning to completely remove the environment concept in the future. As an alternative, a new `Label` concept has been introduced and `Environment` will be just a special label.
+Environment was changed to be optional while registering Piped or Application. You still can use it from the web console or specify the environment for an application via the `envName` field in the application configuration file, but we are planning to completely remove the environment concept in the near future. As an alternative, a new `Label` concept has been introduced, and `Environment` can be imagined as a particular label.
 
 An application can contain one or more labels in its application configuration file as below:
 
@@ -70,9 +70,9 @@ spec:
 
 Filtering application or deployment by the label is being implemeted currently. We hope that it will be shipped in the next release.
 
-##### Simplifying the way of registering application
+##### Simplifying the way of registering an application
 
-Before [v0.23.0](https://github.com/pipe-cd/pipe/releases/tag/v0.23.0), while registering a new application user has to configure the application information manually. But now most of the information can be specified in the application configuration file. And Piped agents automatically find the un-registered applications to suggest to users. It means that all you have to do is just a few clicks on the web console.
+Before [v0.23.0](https://github.com/pipe-cd/pipe/releases/tag/v0.23.0), while registering a new application user has to configure the application information manually via a registration form. For now, most of the information can be specified in the application configuration file. And Piped agents automatically find the un-registered applications to suggest to users. It means that all you have to do is just a few clicks on the web console.
 
 ![](/images/registering-an-application-from-git.png)
 <p style="text-align: center;">
