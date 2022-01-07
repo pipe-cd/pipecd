@@ -66,7 +66,7 @@ Pros:
 
 Cons:
 
-    - Depends on which file store being used, the filestore has to support sync state between regions/environment. Currently, only GSC is supporting features to implement this.
+    - Depends on which file store being used, the filestore has to support sync state between regions/environment. Currently, only GCS is supporting features to implement this.
 
 ### Achieve by avoid concurrent processes data as much as possible
 
