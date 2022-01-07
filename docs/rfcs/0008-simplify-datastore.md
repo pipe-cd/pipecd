@@ -36,7 +36,7 @@ Use a single process to handling lock, we can achieve that by introducing a new 
 Cons:
 
     - Downtime due to single point of failure.
-    - Performance on get since there is only one writer which handle all PipeCD components write requests.
+    - Performance on writing since there is only one writer which handles all PipeCD components write operations.
     - Have one more component which we need to handle ourself.
 
 #### <2> Using external service which controls locks (pessimistic locking)
