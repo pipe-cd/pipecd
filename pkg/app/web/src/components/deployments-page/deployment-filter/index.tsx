@@ -81,6 +81,18 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
     const [labelOptions, setLabelOptions] = useState(new Array<string>());
     const [selectedLabels, setSelectedLabels] = useState(new Array<string>());
 
+    useEffect(() => {
+      const allLabels = new Array<string>();
+      applications
+        .filter((app) => app.labelsMap.length > 0)
+        .map((app) => {
+          app.labelsMap.map((label) => {
+            allLabels.push(`${label[0]}:${label[1]}`);
+          });
+        });
+      setLabelOptions(allLabels);
+    }, [applications]);
+
     return (
       <FilterView
         onClear={() => {

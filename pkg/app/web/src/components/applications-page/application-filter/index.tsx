@@ -7,17 +7,19 @@ import {
   TextField,
 } from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import { FC, memo, useState } from "react";
+import { FC, memo, useState, useEffect } from "react";
 import { FilterView } from "~/components/filter-view";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { APPLICATION_SYNC_STATUS_TEXT } from "~/constants/application-sync-status-text";
 import { useAppSelector } from "~/hooks/redux";
 import {
+  Application,
   ApplicationKind,
   ApplicationKindKey,
   ApplicationsFilterOptions,
   ApplicationSyncStatus,
   ApplicationSyncStatusKey,
+  selectAll as selectAllApplications,
 } from "~/modules/applications";
 import { selectAllEnvs } from "~/modules/environments";
 import { ApplicationAutocomplete } from "./application-autocomplete";
@@ -47,6 +49,9 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
   function ApplicationFilter({ options, onChange, onClear }) {
     const classes = useStyles();
     const envs = useAppSelector(selectAllEnvs);
+    const applications = useAppSelector<Application.AsObject[]>((state) =>
+      selectAllApplications(state.applications)
+    );
 
     const handleUpdateFilterValue = (
       optionPart: Partial<ApplicationsFilterOptions>
@@ -55,8 +60,19 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
     };
 
     const [labelOptions, setLabelOptions] = useState(new Array<string>());
-
     const [selectedLabels, setSelectedLabels] = useState(new Array<string>());
+
+    useEffect(() => {
+      const allLabels = new Array<string>();
+      applications
+        .filter((app) => app.labelsMap.length > 0)
+        .map((app) => {
+          app.labelsMap.map((label) => {
+            allLabels.push(`${label[0]}:${label[1]}`);
+          });
+        });
+      setLabelOptions(allLabels);
+    }, [applications]);
 
     return (
       <FilterView
