@@ -51,7 +51,9 @@ Pros:
 
 Cons:
 
-    - Rely on an external system that holds the lock for all actors. Even in case we just use the current Cache component, it's designed to be faultable, it can be down but not effect the whole system. Making it controls locks means the Cache is must and become a high availability component -> increase the cost of operating.
+    - Rely on an external system that holds the lock for all actors.\
+      Even in case we just use the current Cache component, it's designed to be faultable, it can be down but not affect the whole system.\
+      Making it controls locks means the Cache is a must and becomes a high availability component -> increase the cost of operating.
     - In some cases, when the lock isn't released successfully, such as owner/writer faulted before free the lock on objects, we have to implement timeout or such -> increase the complexity and maintain cost to the system.
 
 #### <3> Using version field as data object properties (optimistic locking)
