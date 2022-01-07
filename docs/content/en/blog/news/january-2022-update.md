@@ -13,7 +13,7 @@ _Published by the PipeCD dev team every month, this update will provide you with
 ---
 First of all, PipeCD team would like to wish you all a very Happy New Year. 🥳
 
-2020 has been a great year for both PipeCD project and PipeCD team. Many features have been introduced by more than 2000 pull requests from 33 contributors. We would like to thank all those wonderful contributors.
+2021 has been a great year for both PipeCD project and PipeCD team. Many features have been introduced by more than 2000 pull requests from 33 contributors. We would like to thank all those wonderful contributors.
 
 ![](/images/january-2022-contributor-list.png)
 
