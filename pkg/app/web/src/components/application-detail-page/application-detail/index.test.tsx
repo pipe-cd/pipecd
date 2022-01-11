@@ -59,7 +59,6 @@ const baseState: Partial<AppState> = {
     syncing: {},
     addedApplicationId: null,
     fetchApplicationError: null,
-    allLabels: {},
   },
   applicationLiveState: {
     ids: [dummyApplicationLiveState.applicationId],

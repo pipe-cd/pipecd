@@ -21,7 +21,6 @@ const dummyStore: Partial<AppState> = {
     loading: false,
     addedApplicationId: null,
     fetchApplicationError: null,
-    allLabels: {},
   },
   environments: {
     entities: {

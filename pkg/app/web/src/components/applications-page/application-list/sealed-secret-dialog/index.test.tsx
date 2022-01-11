@@ -79,7 +79,6 @@ test("Generate sealed secret", async () => {
       syncing: {},
       addedApplicationId: null,
       fetchApplicationError: null,
-      allLabels: {},
     },
   });
 
