@@ -59,19 +59,23 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
       onChange({ ...options, ...optionPart });
     };
 
-    const [labelOptions, setLabelOptions] = useState(new Array<string>());
+    const [allLabels, setAllLabels] = useState(new Array<string>());
     const [selectedLabels, setSelectedLabels] = useState(new Array<string>());
 
     useEffect(() => {
-      const allLabels = new Array<string>();
+      const seen = new Map<string, true>();
+      const labels = new Array<string>();
       applications
         .filter((app) => app.labelsMap.length > 0)
         .map((app) => {
           app.labelsMap.map((label) => {
-            allLabels.push(`${label[0]}:${label[1]}`);
+            const s = `${label[0]}:${label[1]}`;
+            if (seen.get(s)) return;
+            labels.push(s);
+            seen.set(s, true);
           });
         });
-      setLabelOptions(allLabels);
+      setAllLabels(labels);
     }, [applications]);
 
     return (
@@ -222,17 +226,17 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
             autoHighlight
             id="labels"
             noOptionsText="No selectable labels"
-            options={labelOptions}
+            options={allLabels}
             value={options.labels ?? selectedLabels}
             onInputChange={(_, value) => {
               const label = value.split(":");
               if (label.length !== 2) return;
               if (label[0].length === 0) return;
               if (label[1].length === 0) return;
-              setLabelOptions([value]);
+              setAllLabels([value]);
             }}
             onChange={(_, newValue) => {
-              setLabelOptions([]);
+              setAllLabels([]);
               setSelectedLabels(newValue);
               handleUpdateFilterValue({
                 labels: newValue,
