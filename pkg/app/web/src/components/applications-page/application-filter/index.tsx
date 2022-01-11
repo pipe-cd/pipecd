@@ -68,9 +68,7 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
         .filter((app) => app.labelsMap.length > 0)
         .map((app) => {
           app.labelsMap.map((label) => {
-            const s = `${label[0]}:${label[1]}`;
-            if (labels.has(s)) return;
-            labels.add(s);
+            labels.add(`${label[0]}:${label[1]}`);
           });
         });
       setAllLabels(Array.from(labels));
