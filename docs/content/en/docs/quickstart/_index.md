@@ -50,16 +50,22 @@ Be sure to keep a copy for later use.
 
 ![](/images/quickstart-piped-registered.png)
 
-
-Open [`./quickstart/piped-values.yaml`](https://github.com/pipe-cd/manifests/blob/master/quickstart/piped-values.yaml) with your editor and:
+The above two values will be used as Piped configuration values. Next, open [`piped-values.yaml`](https://raw.githubusercontent.com/pipe-cd/manifests/{{< blocks/latest_version >}}/quickstart/piped-values.yaml) on your editor and:
 - replace `FORKED_REPO_URL` with forked repository of [Examples](https://github.com/pipe-cd/examples), such as `https://github.com/YOUR_ORG/examples.git`
 - replace `YOUR_PIPED_ID` with the piped-id you have copied before
 
-You can complete the installation by running the following after replacing `{YOUR_PIPED_SECRET_KEY}` with what you just got:
+Or you can use this single command with your `{YOUR_PIPED_ID}` and `{FORKED_REPO_URL}` values replaced:
+
+``` console
+curl https://raw.githubusercontent.com/pipe-cd/manifests/{{< blocks/latest_version >}}/quickstart/piped-values.yaml \
+| sed -e 's/YOUR_PIPED_ID/{YOUR_PIPED_ID}/g; s/FORKED_REPO_URL/{FORKED_REPO_URL}/g' > piped-values.yaml
+```
+
+After prepared your Piped configuration, you can complete the installation by running the following command with your `{YOUR_PIPED_SECRET_KEY}` value replaced:
 
 ``` console
 helm install piped pipecd/piped -n pipecd \
-  --values https://raw.githubusercontent.com/pipe-cd/manifests/{{< blocks/latest_version >}}/quickstart/piped-values.yaml \
+  --values ./piped-values.yaml \
   --set secret.data.piped-key={YOUR_PIPED_SECRET_KEY}
 ```
 
