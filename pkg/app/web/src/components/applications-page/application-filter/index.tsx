@@ -7,17 +7,19 @@ import {
   TextField,
 } from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import { FC, memo, useState } from "react";
+import { FC, memo, useState, useEffect } from "react";
 import { FilterView } from "~/components/filter-view";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { APPLICATION_SYNC_STATUS_TEXT } from "~/constants/application-sync-status-text";
 import { useAppSelector } from "~/hooks/redux";
 import {
+  Application,
   ApplicationKind,
   ApplicationKindKey,
   ApplicationsFilterOptions,
   ApplicationSyncStatus,
   ApplicationSyncStatusKey,
+  selectAll as selectAllApplications,
 } from "~/modules/applications";
 import { selectAllEnvs } from "~/modules/environments";
 import { ApplicationAutocomplete } from "./application-autocomplete";
@@ -47,6 +49,9 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
   function ApplicationFilter({ options, onChange, onClear }) {
     const classes = useStyles();
     const envs = useAppSelector(selectAllEnvs);
+    const applications = useAppSelector<Application.AsObject[]>((state) =>
+      selectAllApplications(state.applications)
+    );
 
     const handleUpdateFilterValue = (
       optionPart: Partial<ApplicationsFilterOptions>
@@ -54,9 +59,20 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
       onChange({ ...options, ...optionPart });
     };
 
-    const [labelOptions, setLabelOptions] = useState(new Array<string>());
-
+    const [allLabels, setAllLabels] = useState(new Array<string>());
     const [selectedLabels, setSelectedLabels] = useState(new Array<string>());
+
+    useEffect(() => {
+      const labels = new Set<string>();
+      applications
+        .filter((app) => app.labelsMap.length > 0)
+        .map((app) => {
+          app.labelsMap.map((label) => {
+            labels.add(`${label[0]}:${label[1]}`);
+          });
+        });
+      setAllLabels(Array.from(labels));
+    }, [applications]);
 
     return (
       <FilterView
@@ -206,17 +222,17 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
             autoHighlight
             id="labels"
             noOptionsText="No selectable labels"
-            options={labelOptions}
+            options={allLabels}
             value={options.labels ?? selectedLabels}
             onInputChange={(_, value) => {
               const label = value.split(":");
               if (label.length !== 2) return;
               if (label[0].length === 0) return;
               if (label[1].length === 0) return;
-              setLabelOptions([value]);
+              setAllLabels([value]);
             }}
             onChange={(_, newValue) => {
-              setLabelOptions([]);
+              setAllLabels([]);
               setSelectedLabels(newValue);
               handleUpdateFilterValue({
                 labels: newValue,
