@@ -26,15 +26,15 @@ const (
 	defaultWaitApprovalTimeout  = Duration(6 * time.Hour)
 	defaultAnalysisQueryTimeout = Duration(30 * time.Second)
 	allEventsSymbol             = "*"
+	EnvLabelKey                 = "env"
 )
 
 type GenericApplicationSpec struct {
 	// The application name.
 	// This is required if you set the application through the application configuration file.
 	Name string `json:"name"`
-	// The environment name. You need to make sure that the environment name is unique in your project.
-	EnvName string `json:"envName"`
 	// Additional attributes to identify applications.
+	// Use "env" as a key then it will be recognized as the Environment of this app.
 	Labels map[string]string `json:"labels"`
 
 	// Configuration used while planning deployment.
