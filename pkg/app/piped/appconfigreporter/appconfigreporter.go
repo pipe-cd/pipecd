@@ -383,7 +383,7 @@ func (r *Reporter) readApplicationInfo(repoDir, repoID, cfgRelPath string) (*mod
 	if spec.Name == "" {
 		return nil, fmt.Errorf("missing application name: %w", errMissingRequiredField)
 	}
-	envName := ""
+	envName := spec.EnvName
 	if e, ok := spec.Labels[config.EnvLabelKey]; ok {
 		envName = e
 	}

@@ -20,6 +20,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The application name. | Yes (if you want to create PipeCD application through the application configuration file) |
+| envName | string | The environment name. You need to make sure that the environment name is unique in your project. Deprecated. | No |
 | labels | map[string]string | Additional attributes to identify applications. Use "env" as a key then it will be recognized as the Environment of this app. | No |
 | input | [KubernetesDeploymentInput](#kubernetesdeploymentinput) | Input for Kubernetes deployment such as kubectl version, helm version, manifests filter... | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
@@ -50,6 +51,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The application name. | Yes if you set the application through the application configuration file |
+| envName | string | The environment name. You need to make sure that the environment name is unique in your project. Deprecated. | No |
 | labels | map[string]string | Additional attributes to identify applications. Use "env" as a key then it will be recognized as the Environment of this app. | No |
 | input | [TerraformDeploymentInput](#terraformdeploymentinput) | Input for Terraform deployment such as terraform version, workspace... | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
@@ -76,6 +78,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The application name. | Yes if you set the application through the application configuration file |
+| envName | string | The environment name. You need to make sure that the environment name is unique in your project. Deprecated. | No |
 | labels | map[string]string | Additional attributes to identify applications. Use "env" as a key then it will be recognized as the Environment of this app. | No |
 | input | [CloudRunDeploymentInput](#cloudrundeploymentinput) | Input for CloudRun deployment such as docker image... | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
@@ -101,6 +104,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The application name. | Yes if you set the application through the application configuration file |
+| envName | string | The environment name. You need to make sure that the environment name is unique in your project. Deprecated. | No |
 | labels | map[string]string | Additional attributes to identify applications. Use "env" as a key then it will be recognized as the Environment of this app. | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
@@ -126,6 +130,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The application name. | Yes if you set the application through the application configuration file |
+| envName | string | The environment name. You need to make sure that the environment name is unique in your project. Deprecated. | No |
 | labels | map[string]string | Additional attributes to identify applications. Use "env" as a key then it will be recognized as the Environment of this app. | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
 | input | [ECSDeploymentInput](#ecsdeploymentinput) | Input for ECS deployment such as TaskDefinition, Service... | Yes |
