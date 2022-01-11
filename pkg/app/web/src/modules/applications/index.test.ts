@@ -41,6 +41,7 @@ const baseState: ApplicationsState = {
   loading: false,
   syncing: {},
   fetchApplicationError: null,
+  allLabels: {},
 };
 
 describe("fetchApplications", () => {

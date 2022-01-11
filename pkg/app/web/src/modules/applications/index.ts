@@ -170,6 +170,7 @@ const initialState = applicationsAdapter.getInitialState<{
   syncing: Record<string, boolean>;
   disabling: Record<string, boolean>;
   fetchApplicationError: SerializedError | null;
+  allLabels: Record<string, boolean>;
 }>({
   adding: false,
   loading: false,
@@ -177,6 +178,7 @@ const initialState = applicationsAdapter.getInitialState<{
   syncing: {},
   disabling: {},
   fetchApplicationError: null,
+  allLabels: {},
 });
 
 export type ApplicationsState = typeof initialState;
@@ -259,6 +261,14 @@ export const applicationsSlice = createSlice({
             action.payload.filter((app) => app.deleted === false)
           );
           state.loading = false;
+          state.allLabels = {};
+          action.payload
+            .filter((app) => app.deleted === false && app.labelsMap.length > 0)
+            .map((app) => {
+              app.labelsMap.map((label) => {
+                state.allLabels[`${label[0]}:${label[1]}`] = true;
+              });
+            });
         }
       );
   },

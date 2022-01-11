@@ -54,6 +54,7 @@ const initialState = {
     ids: [dummyApplication.id],
     syncing: {},
     disabling: {},
+    allLabels: {},
   },
 };
 
