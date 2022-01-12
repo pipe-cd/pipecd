@@ -26,6 +26,8 @@ const (
 	defaultWaitApprovalTimeout  = Duration(6 * time.Hour)
 	defaultAnalysisQueryTimeout = Duration(30 * time.Second)
 	allEventsSymbol             = "*"
+
+	EnvLabelKey = "pipecd.dev/env"
 )
 
 type GenericApplicationSpec struct {
@@ -33,8 +35,11 @@ type GenericApplicationSpec struct {
 	// This is required if you set the application through the application configuration file.
 	Name string `json:"name"`
 	// The environment name. You need to make sure that the environment name is unique in your project.
+	// Deprecated.
 	EnvName string `json:"envName"`
 	// Additional attributes to identify applications.
+	// PipeCD reserves all keys prefixed by `pipecd.dev/`.
+	// The label `pipecd.dev/env` will be recognized as the Environment of this application.
 	Labels map[string]string `json:"labels"`
 
 	// Configuration used while planning deployment.
