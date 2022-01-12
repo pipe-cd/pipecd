@@ -126,12 +126,15 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
             <>
               <TableCell className={clsx(classes.version)}>
                 {recentlyDeployment.version.includes(",") ? (
-                  recentlyDeployment.version.split(",").map((v) => (
-                    <>
-                      <span>{v}</span>
-                      <br />
-                    </>
-                  ))
+                  recentlyDeployment.version
+                    .split(",")
+                    .filter((item, index, arr) => arr.indexOf(item) === index)
+                    .map((v) => (
+                      <>
+                        <span>{v}</span>
+                        <br />
+                      </>
+                    ))
                 ) : (
                   <span>{recentlyDeployment.version}</span>
                 )}
