@@ -77,6 +77,8 @@ data:
                         grpc:
                       route:
                         cluster: grpc-web-service
+                    # TODO: Remove this route for WebService.
+                    # We don't have to keep this old schema for WebService once its gRPC package name is updated.
                     - match:
                         prefix: /pipe.api.service.webservice.WebService/
                         grpc:
