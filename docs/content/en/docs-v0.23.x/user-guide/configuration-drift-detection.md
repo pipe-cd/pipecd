@@ -37,7 +37,7 @@ This status is shown by a red "Out of Sync" mark on the application details page
 Application is in OUT_OF_SYNC state
 </p>
 
-Click on the "SHOW DETAILS" button to see more details about why the application is in the `OUT_OF_SYNC` status. In the below example, the replicas number of a Deployment was not matching, it was `2` in Git but `3` in the cluster.
+Click on the "SHOW DETAILS" button to see more details about why the application is in the `OUT_OF_SYNC` status. In the below example, the replicas number of a Deployment was not matching, it was `300` in Git but `3` in the cluster.
 
 ![](/images/application-out-of-sync-details.png)
 <p style="text-align: center;">
