@@ -121,14 +121,16 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
             </Link>
           </TableCell>
           <TableCell>{APPLICATION_KIND_TEXT[app.kind]}</TableCell>
-          <TableCell>{env?.name}</TableCell>
+          <TableCell>{env ? env.name : "-"}</TableCell>
           <TableCell>
-            {app.labelsMap.map((label) => (
-              <>
-                <span>{label[0] + ":" + label[1]}</span>
-                <br />
-              </>
-            ))}
+            {app.labelsMap.length !== 0
+              ? app.labelsMap.map((label) => (
+                  <>
+                    <span>{label[0] + ":" + label[1]}</span>
+                    <br />
+                  </>
+                ))
+              : "-"}
           </TableCell>
           {recentlyDeployment ? (
             <>
