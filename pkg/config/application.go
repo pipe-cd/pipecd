@@ -41,6 +41,8 @@ type GenericApplicationSpec struct {
 	// PipeCD reserves all keys prefixed by `pipecd.dev/`.
 	// The label `pipecd.dev/env` will be recognized as the Environment of this application.
 	Labels map[string]string `json:"labels"`
+	// Notes on the Application.
+	Description string `json:"description"`
 
 	// Configuration used while planning deployment.
 	Planner DeploymentPlanner `json:"planner"`

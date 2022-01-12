@@ -290,6 +290,9 @@ func (r *Reporter) isSynced(appInfo *model.ApplicationInfo, app *model.Applicati
 	if appInfo.Name != app.Name {
 		return false
 	}
+	if appInfo.Description != app.Description {
+		return false
+	}
 	if len(appInfo.Labels) != len(app.Labels) {
 		return false
 	}
@@ -395,6 +398,7 @@ func (r *Reporter) readApplicationInfo(repoDir, repoID, cfgRelPath string) (*mod
 		Path:           filepath.Dir(cfgRelPath),
 		ConfigFilename: filepath.Base(cfgRelPath),
 		PipedId:        r.config.PipedID,
+		Description:    spec.Description,
 		EnvName:        envName,
 	}, nil
 }
