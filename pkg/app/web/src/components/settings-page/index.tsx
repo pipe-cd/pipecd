@@ -84,7 +84,7 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
                 <ListItemText primary={text} />
                 {link === PAGE_PATH_SETTINGS_ENV && (
                   <ListItemIcon className={classes.listItemIcon}>
-                    <Tooltip title="Deprecated">
+                    <Tooltip title="Deprecated. Please use Label instead.">
                       <Warning fontSize="small" />
                     </Tooltip>
                   </ListItemIcon>
