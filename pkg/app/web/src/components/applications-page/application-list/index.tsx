@@ -9,7 +9,9 @@ import {
   TableHead,
   TablePagination,
   TableRow,
+  Tooltip,
 } from "@material-ui/core";
+import { Warning } from "@material-ui/icons";
 import { FC, memo, useCallback, useState } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
@@ -27,6 +29,10 @@ import { SealedSecretDialog } from "./sealed-secret-dialog";
 const useStyles = makeStyles(() => ({
   container: {
     flex: 1,
+  },
+  tooltip: {
+    paddingTop: 2,
+    paddingLeft: 2,
   },
 }));
 
@@ -137,7 +143,13 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
                 <TableCell>Status</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Kind</TableCell>
-                <TableCell>Environment</TableCell>
+                <TableCell>
+                  Environment
+                  <Tooltip title="Deprecated. Please use Label instead." className={classes.tooltip}>
+                    <Warning fontSize="small" />
+                  </Tooltip>
+                </TableCell>
+                <TableCell>Labels</TableCell>
                 <TableCell>Running Version</TableCell>
                 <TableCell>Running Commit</TableCell>
                 <TableCell>Deployed By</TableCell>
