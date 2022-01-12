@@ -285,7 +285,7 @@ spec:
           configMap:
             name: {{ include "pipecd.configMapName" . }}
 
-{{- if .Values.quickstart}}
+{{- if .Values.quickstart.enabled }}
 ---
 # MySQL datastore
 apiVersion: apps/v1

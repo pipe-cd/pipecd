@@ -10,8 +10,7 @@ This page is a guideline for installing PipeCD in your Kubernetes cluster and de
 
 ### Prerequisites
 - Having a Kubernetes cluster
-- Installed [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-- Installed [helm3](https://helm.sh/docs/intro/install/)
+- Installed [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) and [helm3](https://helm.sh/docs/intro/install/)
 - Forked the [Examples](https://github.com/pipe-cd/examples) repository
 
 ### 1. Installing control plane
@@ -50,17 +49,14 @@ Be sure to keep a copy for later use.
 
 ![](/images/quickstart-piped-registered.png)
 
-
-Open [`./quickstart/piped-values.yaml`](https://github.com/pipe-cd/manifests/blob/master/quickstart/piped-values.yaml) with your editor and:
-- replace `FORKED_REPO_URL` with forked repository of [Examples](https://github.com/pipe-cd/examples), such as `https://github.com/YOUR_ORG/examples.git`
-- replace `YOUR_PIPED_ID` with the piped-id you have copied before
-
-You can complete the installation by running the following after replacing `{YOUR_PIPED_SECRET_KEY}` with what you just got:
+Then complete the installation by running the following command after replacing `{PIPED_ID}`, `{PIPED_KEY}`, `{FORKED_GITHUB_ORG}` with what you just got:
 
 ``` console
 helm install piped pipecd/piped -n pipecd \
-  --values https://raw.githubusercontent.com/pipe-cd/manifests/{{< blocks/latest_version >}}/quickstart/piped-values.yaml \
-  --set secret.data.piped-key={YOUR_PIPED_SECRET_KEY}
+  --set quickstart.enabled=true \
+  --set quickstart.pipedId={PIPED_ID} \
+  --set secret.data.piped-key={PIPED_KEY} \
+  --set quickstart.gitRepoRemote=https://github.com/{FORKED_GITHUB_ORG}/examples.git
 ```
 
 ### 3. Registering a kubernetes application

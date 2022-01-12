@@ -116,7 +116,7 @@ spec:
     {{- include "pipecd.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: ops
 
-{{- if .Values.quickstart}}
+{{- if .Values.quickstart.enabled }}
 ---
 apiVersion: v1
 kind: Service
