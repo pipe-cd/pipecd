@@ -146,6 +146,9 @@ A set of args for Launcher.
 - --log-encoding={{ .Values.args.logEncoding }}
 - --add-login-user-to-passwd={{ .Values.args.addLoginUserToPasswd }}
 {{- end }}
+{{- if .Values.quickstart.enabled }}
+- --insecure=true
+{{- end }}
 
 {{/*
 A set of args for Piped.

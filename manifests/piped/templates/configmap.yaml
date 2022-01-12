@@ -6,6 +6,22 @@ metadata:
   labels:
     {{- include "piped.labels" . | nindent 4 }}
 data:
+{{- if .Values.quickstart.enabled }}
+  {{ .Values.config.fileName }}: |-
+    apiVersion: pipecd.dev/v1beta1
+    kind: Piped
+    spec:
+      projectID: quickstart
+      pipedID: {{ .Values.quickstart.pipedId }}
+      pipedKeyFile: /etc/piped-secret/piped-key
+      apiAddress: pipecd:8080
+      syncInterval: 1m
+      repositories:
+        - repoId: examples
+          remote: {{ .Values.quickstart.gitRepoRemote }}
+          branch: master
+{{- else }}
   {{ .Values.config.fileName }}: |-
 {{ tpl .Values.config.data . | indent 4 }}
+{{- end }}
 {{- end }}

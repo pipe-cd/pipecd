@@ -1,4 +1,5 @@
-quickstart: true
+quickstart:
+  enabled: true
 
 config:
   data: |

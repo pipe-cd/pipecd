@@ -126,7 +126,8 @@ cors:
   allowOrigins:
     - "http://localhost:9090"
 
-quickstart: false
+quickstart:
+  enabled: false
 
 monitoring:
   # If true, prometheus and grafana sub-charts will be installed
