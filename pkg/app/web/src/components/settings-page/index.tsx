@@ -3,9 +3,12 @@ import {
   List,
   ListItem,
   ListItemText,
+  ListItemIcon,
   makeStyles,
   Toolbar,
+  Tooltip,
 } from "@material-ui/core";
+import { Warning } from "@material-ui/icons";
 import { FC, memo } from "react";
 import { NavLink, Redirect, Route, Switch } from "react-router-dom";
 import {
@@ -46,6 +49,9 @@ const useStyles = makeStyles((theme) => ({
   activeNav: {
     backgroundColor: theme.palette.action.selected,
   },
+  listItemIcon: {
+    minWidth: 110,
+  },
 }));
 
 const MENU_ITEMS = [
@@ -76,6 +82,13 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
                 activeClassName={classes.activeNav}
               >
                 <ListItemText primary={text} />
+                {link === PAGE_PATH_SETTINGS_ENV && (
+                  <ListItemIcon className={classes.listItemIcon}>
+                    <Tooltip title="Deprecated">
+                      <Warning fontSize="small" />
+                    </Tooltip>
+                  </ListItemIcon>
+                )}
               </ListItem>
             ))}
           </List>
