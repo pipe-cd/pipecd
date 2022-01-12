@@ -26,7 +26,8 @@ const (
 	defaultWaitApprovalTimeout  = Duration(6 * time.Hour)
 	defaultAnalysisQueryTimeout = Duration(30 * time.Second)
 	allEventsSymbol             = "*"
-	EnvLabelKey                 = "env"
+
+	EnvLabelKey = "pipecd.dev/env"
 )
 
 type GenericApplicationSpec struct {

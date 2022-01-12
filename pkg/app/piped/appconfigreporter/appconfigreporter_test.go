@@ -96,7 +96,7 @@ func TestReporter_findRegisteredApps(t *testing.T) {
 			reporter: &Reporter{
 				config: &config.PipedSpec{PipedID: "piped-1"},
 				applicationLister: &fakeApplicationLister{apps: []*model.Application{
-					{Id: "id-1", Name: "app-1", Labels: map[string]string{"key-1": "value-1", "env": "dev"}, GitPath: &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "repo-1"}, Path: "app-1", ConfigFilename: "app.pipecd.yaml"}},
+					{Id: "id-1", Name: "app-1", Labels: map[string]string{"key-1": "value-1", "pipecd.dev/env": "dev"}, GitPath: &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "repo-1"}, Path: "app-1", ConfigFilename: "app.pipecd.yaml"}},
 				}},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte(`
@@ -105,7 +105,7 @@ kind: KubernetesApp
 spec:
   name: app-1
   labels:
-    env: dev
+    pipecd.dev/env: dev
     key-1: value-1`)},
 				},
 				logger: zap.NewNop(),
@@ -122,7 +122,7 @@ spec:
 			reporter: &Reporter{
 				config: &config.PipedSpec{PipedID: "piped-1"},
 				applicationLister: &fakeApplicationLister{apps: []*model.Application{
-					{Id: "id-1", Name: "app-1", Labels: map[string]string{"key-1": "value-1", "env": "dev"}, GitPath: &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "repo-1"}, Path: "app-1", ConfigFilename: "app.pipecd.yaml"}},
+					{Id: "id-1", Name: "app-1", Labels: map[string]string{"key-1": "value-1", "pipecd.dev/env": "dev"}, GitPath: &model.ApplicationGitPath{Repo: &model.ApplicationGitRepository{Id: "repo-1"}, Path: "app-1", ConfigFilename: "app.pipecd.yaml"}},
 				}},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte(`
@@ -131,7 +131,7 @@ kind: KubernetesApp
 spec:
   name: new-app-1
   labels:
-    env: dev
+    pipecd.dev/env: dev
     key-1: value-1`)},
 				},
 				logger: zap.NewNop(),
@@ -144,7 +144,7 @@ spec:
 				{
 					Id:             "id-1",
 					Name:           "new-app-1",
-					Labels:         map[string]string{"key-1": "value-1", "env": "dev"},
+					Labels:         map[string]string{"key-1": "value-1", "pipecd.dev/env": "dev"},
 					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: "app.pipecd.yaml",
@@ -241,7 +241,7 @@ kind: KubernetesApp
 spec:
   name: app-1
   labels:
-    env: dev
+    pipecd.dev/env: dev
     key-1: value-1`)},
 				},
 				logger: zap.NewNop(),
@@ -254,7 +254,7 @@ spec:
 			want: []*model.ApplicationInfo{
 				{
 					Name:           "app-1",
-					Labels:         map[string]string{"key-1": "value-1", "env": "dev"},
+					Labels:         map[string]string{"key-1": "value-1", "pipecd.dev/env": "dev"},
 					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: "app.pipecd.yaml",
@@ -276,7 +276,7 @@ kind: KubernetesApp
 spec:
   name: app-1
   labels:
-    env: dev
+    pipecd.dev/env: dev
     key-1: value-1`)},
 				},
 				logger: zap.NewNop(),
@@ -289,7 +289,7 @@ spec:
 			want: []*model.ApplicationInfo{
 				{
 					Name:           "app-1",
-					Labels:         map[string]string{"key-1": "value-1", "env": "dev"},
+					Labels:         map[string]string{"key-1": "value-1", "pipecd.dev/env": "dev"},
 					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: "dev.pipecd.yaml",
