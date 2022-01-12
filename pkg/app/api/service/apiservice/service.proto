@@ -74,7 +74,7 @@ message GetApplicationRequest {
 }
 
 message GetApplicationResponse {
-    pipe.model.Application application = 1;
+    model.Application application = 1;
 }
 
 message ListApplicationsRequest {
@@ -88,7 +88,7 @@ message ListApplicationsRequest {
 }
 
 message ListApplicationsResponse {
-    repeated pipe.model.Application applications = 1;
+    repeated model.Application applications = 1;
     string cursor = 2;
 }
 
@@ -97,7 +97,7 @@ message GetDeploymentRequest {
 }
 
 message GetDeploymentResponse {
-    pipe.model.Deployment deployment = 1;
+    model.Deployment deployment = 1;
 }
 
 message GetCommandRequest {
@@ -105,7 +105,7 @@ message GetCommandRequest {
 }
 
 message GetCommandResponse {
-    pipe.model.Command command = 1;
+    model.Command command = 1;
 }
 
 message EnablePipedRequest {
@@ -151,7 +151,7 @@ message GetPlanPreviewResultsRequest {
 }
 
 message GetPlanPreviewResultsResponse {
-    repeated pipe.model.PlanPreviewCommandResult results = 1;
+    repeated model.PlanPreviewCommandResult results = 1;
 }
 
 message EncryptRequest {
