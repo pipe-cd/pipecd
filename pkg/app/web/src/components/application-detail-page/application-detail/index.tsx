@@ -221,9 +221,9 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
                 {env.name}
               </Typography>
             )}
-            {app?.labelsMap.map((label, i) => (
+            {app?.labelsMap.map(([key, value], i) => (
               <Chip
-                label={label[0] + ":" + label[1]}
+                label={key + ": " + value}
                 className={classes.labelChip}
                 variant="outlined"
                 key={i}

@@ -124,9 +124,9 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
           <TableCell>{env ? env.name : "-"}</TableCell>
           <TableCell>
             {app.labelsMap.length !== 0
-              ? app.labelsMap.map((label) => (
+              ? app.labelsMap.map(([key, value]) => (
                   <>
-                    <span>{label[0] + ":" + label[1]}</span>
+                    <span>{key + ":" + value}</span>
                     <br />
                   </>
                 ))
