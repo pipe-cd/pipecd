@@ -38,7 +38,8 @@ type GenericApplicationSpec struct {
 	// Deprecated.
 	EnvName string `json:"envName"`
 	// Additional attributes to identify applications.
-	// Use "env" as a key then it will be recognized as the Environment of this app.
+	// PipeCD reserves all keys prefixed by `pipecd.dev/`.
+	// The label `pipecd.dev/env` will be recognized as the Environment of this application.
 	Labels map[string]string `json:"labels"`
 
 	// Configuration used while planning deployment.
