@@ -1,0 +1,17 @@
+version: v1
+kind: Plugin
+spec:
+  # A plugin that collects coverage profiles then
+  # compares and shows coverage reports for each pull request.
+  # See more: https://kapetanios.dev/docs/plugins/coverage
+  coverage:
+    enabled: true
+    groups:
+    - name: golang
+      build: test
+      step: collect-coverage
+    - name: javascript
+      build: web-test
+      step: test
+      artifact: lcov.info
+      trimSourceFilePrefix: /workspace/src/github.com/pipe-cd/pipecd/

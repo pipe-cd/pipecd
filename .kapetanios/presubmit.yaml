@@ -36,14 +36,14 @@ spec:
       - name: bazel_cache_service_account
         type: PROJECT
 
-    # - name: collect-coverage
-    #   description: Collect coverage profiles
-    #   runner: kapetanios@collect-go-cover-profiles
-    #   params:
-    #     - root-path=bazel-testlogs
-    #     - profile-matcher="**/coverage.dat"
-    #     - source-exclude-matcher="**/*.mock.go,**/*.pb.go,**/*.validate.go,**/*.embed.go,**/*.deepcopy.go"
-    #     - base-import-path=github.com/pipe-cd/pipe
+    - name: collect-coverage
+      description: Collect coverage profiles
+      runner: kapetanios@collect-go-cover-profiles
+      params:
+        - root-path=bazel-testlogs
+        - profile-matcher="**/coverage.dat"
+        - source-exclude-matcher="**/*.mock.go,**/*.pb.go,**/*.validate.go,**/*.embed.go,**/*.deepcopy.go"
+        - base-import-path=github.com/pipe-cd/pipecd
 
   - name: integration-test
     timeout: 15m

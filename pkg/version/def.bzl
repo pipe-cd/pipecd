@@ -14,7 +14,7 @@
 
 def version_x_defs():
     stamp_pkgs = [
-        "github.com/pipe-cd/pipe/pkg/version",
+        "github.com/pipe-cd/pipecd/pkg/version",
     ]
 
     # This should match the list of vars set in hack/print-workspace-status.sh.
