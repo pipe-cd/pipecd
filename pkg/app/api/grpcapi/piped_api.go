@@ -970,7 +970,6 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 	}
 
 	opts := datastore.ListOptions{
-		Limit: 1,
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
@@ -989,17 +988,17 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 		a.logger.Error("failed to get environments", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get environments")
 	}
-	envsMap := make(map[string]string, len(envs))
+	envMap := make(map[string]string, len(envs))
 	for _, env := range envs {
 		// It is assumed that the env name is kept unique by the user.
-		envsMap[env.Name] = env.Id
+		envMap[env.Name] = env.Id
 	}
 
 	for _, appInfo := range req.Applications {
 		envID := ""
 		if appInfo.EnvName != "" {
 			var ok bool
-			envID, ok = envsMap[appInfo.EnvName]
+			envID, ok = envMap[appInfo.EnvName]
 			if !ok {
 				a.logger.Error("unknown environment name given",
 					zap.String("env", appInfo.EnvName),
