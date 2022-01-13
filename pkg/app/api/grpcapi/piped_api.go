@@ -37,7 +37,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
-	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -969,50 +968,46 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 			return nil, err
 		}
 	}
+
+	opts := datastore.ListOptions{
+		Limit: 1,
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    projectID,
+			},
+			{
+				Field:    "Deleted",
+				Operator: datastore.OperatorEqual,
+				Value:    false,
+			},
+		},
+	}
+	envs, err := a.environmentStore.ListEnvironments(ctx, opts)
+	if err != nil {
+		a.logger.Error("failed to get environments", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get environments")
+	}
+	envsMap := make(map[string]string, len(envs))
+	for _, env := range envs {
+		// It is assumed that the env name is kept unique by the user.
+		envsMap[env.Name] = env.Id
+	}
+
 	for _, appInfo := range req.Applications {
-		// Retrieve env id by env name.
 		envID := ""
-		for key, value := range appInfo.Labels {
-			if key != config.EnvLabelKey {
-				continue
-			}
-			opts := datastore.ListOptions{
-				Limit: 1,
-				Filters: []datastore.ListFilter{
-					{
-						Field:    "ProjectId",
-						Operator: datastore.OperatorEqual,
-						Value:    projectID,
-					},
-					{
-						Field:    "Name",
-						Operator: datastore.OperatorEqual,
-						Value:    value,
-					},
-					{
-						Field:    "Deleted",
-						Operator: datastore.OperatorEqual,
-						Value:    false,
-					},
-				},
-			}
-			envs, err := a.environmentStore.ListEnvironments(ctx, opts)
-			if err != nil {
-				a.logger.Error("failed to get environments", zap.Error(err))
-				return nil, status.Error(codes.Internal, "Failed to get environments")
-			}
-			if len(envs) == 0 {
+		if appInfo.EnvName != "" {
+			var ok bool
+			envID, ok = envsMap[appInfo.EnvName]
+			if !ok {
 				a.logger.Error("unknown environment name given",
-					zap.String("env", value),
+					zap.String("env", appInfo.EnvName),
 					zap.Error(err),
 				)
-				return nil, status.Errorf(codes.Internal, "Unknown environment name %q given", value)
+				return nil, status.Errorf(codes.InvalidArgument, "Unknown environment name %q given", appInfo.EnvName)
 			}
-			// It is assumed that the env name is kept unique by the user.
-			envID = envs[0].Id
-			break
 		}
-
 		updater := func(app *model.Application) error {
 			app.Name = appInfo.Name
 			app.Labels = appInfo.Labels
