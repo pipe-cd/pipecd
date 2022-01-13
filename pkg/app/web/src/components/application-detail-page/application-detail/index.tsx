@@ -13,8 +13,9 @@ import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import { SerializedError } from "@reduxjs/toolkit";
 import clsx from "clsx";
 import dayjs from "dayjs";
-import { FC, memo, useCallback } from "react";
+import { FC, memo } from "react";
 import { Link as RouterLink } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 import { AppSyncStatus } from "~/components/app-sync-status";
 import { DetailTableRow } from "~/components/detail-table-row";
 import { SplitButton } from "~/components/split-button";
@@ -28,13 +29,11 @@ import {
   fetchApplication,
   selectById as selectApplicationById,
   syncApplication,
-  updateDescription,
 } from "~/modules/applications";
 import { SyncStrategy } from "~/modules/deployments";
 import { selectEnvById } from "~/modules/environments";
 import { selectPipedById } from "~/modules/pipeds";
 import { AppLiveState } from "./app-live-state";
-import { ApplicationDescription } from "./description";
 import { SyncStateReason } from "./sync-state-reason";
 
 const useStyles = makeStyles((theme) => ({
@@ -80,6 +79,7 @@ const useStyles = makeStyles((theme) => ({
   labelChip: {
     marginLeft: theme.spacing(1),
   },
+  markdown: { flex: 1 },
 }));
 
 export interface ApplicationDetailProps {
@@ -160,13 +160,6 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
     const env = useAppSelector(selectEnvById(app?.envId));
     const piped = useAppSelector(selectPipedById(app?.pipedId));
     const isSyncing = useIsSyncingApplication(app?.id);
-
-    const handleDescriptionEdit = useCallback(
-      async (description: string) => {
-        dispatch(updateDescription({ applicationId, description }));
-      },
-      [dispatch, applicationId]
-    );
 
     const handleSync = (index: number): void => {
       if (app) {
@@ -300,10 +293,16 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
         </Box>
 
         {app && (
-          <ApplicationDescription
-            description={app.description}
-            onUpdate={handleDescriptionEdit}
-          />
+          <Box
+            borderLeft="2px solid"
+            borderColor="divider"
+            pl={2}
+            display="flex"
+          >
+            <ReactMarkdown linkTarget="_blank" className={classes.markdown}>
+              {app.description}
+            </ReactMarkdown>
+          </Box>
         )}
 
         <Box top={0} right={0} pr={2} pt={2} position="absolute">

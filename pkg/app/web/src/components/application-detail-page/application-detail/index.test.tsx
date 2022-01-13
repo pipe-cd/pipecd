@@ -179,27 +179,4 @@ describe("ApplicationDetail", () => {
       );
     });
   });
-
-  test("edit description", async () => {
-    const store = createReduxStore(baseState);
-    render(
-      <MemoryRouter>
-        <ApplicationDetail applicationId={dummyApplication.id} />
-      </MemoryRouter>,
-      {
-        store,
-      }
-    );
-
-    userEvent.click(screen.getByRole("button", { name: /edit description/i }));
-    userEvent.type(
-      screen.getByRole("textbox", { name: /Description/i }),
-      "# Awesome application"
-    );
-    userEvent.click(screen.getByRole("button", { name: /Save description/i }));
-
-    await waitFor(() =>
-      expect(screen.getByText("Awesome application")).toBeInTheDocument()
-    );
-  });
 });

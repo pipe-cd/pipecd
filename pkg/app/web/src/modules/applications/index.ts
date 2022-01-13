@@ -156,13 +156,6 @@ export const enableApplication = createAsyncThunk<
   await applicationsAPI.enableApplication(props);
 });
 
-export const updateDescription = createAsyncThunk<
-  void,
-  { applicationId: string; description: string }
->(`${MODULE_NAME}/updateDescription`, async (props) => {
-  await applicationsAPI.updateDescription(props);
-});
-
 const initialState = applicationsAdapter.getInitialState<{
   adding: boolean;
   loading: boolean;
@@ -241,14 +234,6 @@ export const applicationsSlice = createSlice({
       })
       .addCase(disableApplication.rejected, (state, action) => {
         state.disabling[action.meta.arg.applicationId] = false;
-      })
-      .addCase(updateDescription.fulfilled, (state, action) => {
-        applicationsAdapter.updateOne(state, {
-          id: action.meta.arg.applicationId,
-          changes: {
-            description: action.meta.arg.description,
-          },
-        });
       })
       .addMatcher(
         isFulfilled(fetchApplications, fetchApplicationsByEnv),
