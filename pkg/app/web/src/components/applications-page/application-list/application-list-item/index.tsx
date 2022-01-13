@@ -54,7 +54,6 @@ const EmptyDeploymentData: FC<{ displayAllProperties: boolean }> = ({
     <>
       <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
       <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
-      <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
     </>
   );
 
@@ -136,9 +135,7 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
             </Link>
           </TableCell>
           <TableCell>{APPLICATION_KIND_TEXT[app.kind]}</TableCell>
-          {displayAllProperties && (
-            <TableCell>{env ? env.name : "-"}</TableCell>
-          )}
+          <TableCell>{env ? env.name : "-"}</TableCell>
           <TableCell>
             {app.labelsMap.length !== 0
               ? app.labelsMap.map(([key, value]) => (
@@ -172,11 +169,13 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
                     UI_TEXT_NOT_AVAILABLE_TEXT}
                 </TableCell>
               )}
-              <TableCell className={classes.deployedBy}>
-                {recentlyDeployment.trigger?.commander ||
-                  recentlyDeployment.trigger?.commit?.author ||
-                  UI_TEXT_NOT_AVAILABLE_TEXT}
-              </TableCell>
+              {displayAllProperties && (
+                <TableCell className={classes.deployedBy}>
+                  {recentlyDeployment.trigger?.commander ||
+                    recentlyDeployment.trigger?.commit?.author ||
+                    UI_TEXT_NOT_AVAILABLE_TEXT}
+                </TableCell>
+              )}
               <TableCell>
                 {dayjs(recentlyDeployment.startedAt * 1000).fromNow()}
               </TableCell>

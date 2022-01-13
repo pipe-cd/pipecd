@@ -34,6 +34,9 @@ const useStyles = makeStyles(() => ({
     paddingLeft: 2,
     marginBottom: -4,
   },
+  environment: {
+    minWidth: 150,
+  },
 }));
 
 const PAGER_ROWS_PER_PAGE = [20, 50, { label: "All", value: -1 }];
@@ -157,21 +160,19 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
                 <TableCell>Status</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Kind</TableCell>
-                {!isSmallScreen && (
-                  <TableCell>
-                    Environment
-                    <Tooltip
-                      title="Deprecated. Please use Label instead."
-                      className={classes.tooltip}
-                    >
-                      <Warning fontSize="small" />
-                    </Tooltip>
-                  </TableCell>
-                )}
+                <TableCell className={classes.environment}>
+                  Environment
+                  <Tooltip
+                    title="Deprecated. Please use Label instead."
+                    className={classes.tooltip}
+                  >
+                    <Warning fontSize="small" />
+                  </Tooltip>
+                </TableCell>
                 <TableCell>Labels</TableCell>
                 <TableCell>Running Version</TableCell>
                 {!isSmallScreen && <TableCell>Running Commit</TableCell>}
-                <TableCell>Deployed By</TableCell>
+                {!isSmallScreen && <TableCell>Deployed By</TableCell>}
                 <TableCell>Deployed At</TableCell>
                 <TableCell />
               </TableRow>
