@@ -20,7 +20,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The application name. | Yes (if you want to create PipeCD application through the application configuration file) |
-| envName | string | The environment name. You need to make sure that the environment name is unique in your project. Deprecated. | No |
+| envName | string | The environment name. You need to make sure that the environment name is unique in your project. | No (deprecated) |
 | labels | map[string]string | Additional attributes to identify applications. PipeCD reserves all keys prefixed by `pipecd.dev/`. The label `pipecd.dev/env` will be recognized as the Environment of this application. | No |
 | description | string | Notes on the Application. | No |
 | input | [KubernetesDeploymentInput](#kubernetesdeploymentinput) | Input for Kubernetes deployment such as kubectl version, helm version, manifests filter... | No |
@@ -32,7 +32,7 @@ spec:
 | service | [KubernetesService](#kubernetesservice) | Which Kubernetes resource should be considered as the Service of application. Empty means the first Service resource will be used. | No |
 | workloads | [][KubernetesWorkload](#kubernetesworkload) | Which Kubernetes resources should be considered as the Workloads of application. Empty means all Deployment resources. | No |
 | trafficRouting | [KubernetesTrafficRouting](#kubernetestrafficrouting) | How to change traffic routing percentages. | No |
-| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No |
+| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No (deprecated) |
 | encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
@@ -52,7 +52,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The application name. | Yes if you set the application through the application configuration file |
-| envName | string | The environment name. You need to make sure that the environment name is unique in your project. Deprecated. | No |
+| envName | string | The environment name. You need to make sure that the environment name is unique in your project. | No (deprecated) |
 | labels | map[string]string | Additional attributes to identify applications. PipeCD reserves all keys prefixed by `pipecd.dev/`. The label `pipecd.dev/env` will be recognized as the Environment of this application. | No |
 | description | string | Notes on the Application. | No |
 | input | [TerraformDeploymentInput](#terraformdeploymentinput) | Input for Terraform deployment such as terraform version, workspace... | No |
@@ -60,7 +60,7 @@ spec:
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [TerraformQuickSync](#terraformquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
-| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No |
+| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No (deprecated) |
 | encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
@@ -80,7 +80,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The application name. | Yes if you set the application through the application configuration file |
-| envName | string | The environment name. You need to make sure that the environment name is unique in your project. Deprecated. | No |
+| envName | string | The environment name. You need to make sure that the environment name is unique in your project. | No (deprecated) |
 | labels | map[string]string | Additional attributes to identify applications. PipeCD reserves all keys prefixed by `pipecd.dev/`. The label `pipecd.dev/env` will be recognized as the Environment of this application. | No |
 | description | string | Notes on the Application. | No |
 | input | [CloudRunDeploymentInput](#cloudrundeploymentinput) | Input for CloudRun deployment such as docker image... | No |
@@ -88,7 +88,7 @@ spec:
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [CloudRunQuickSync](#cloudrunquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
-| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No |
+| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No (deprecated) |
 | encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
@@ -107,14 +107,14 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The application name. | Yes if you set the application through the application configuration file |
-| envName | string | The environment name. You need to make sure that the environment name is unique in your project. Deprecated. | No |
+| envName | string | The environment name. You need to make sure that the environment name is unique in your project. | No (deprecated) |
 | labels | map[string]string | Additional attributes to identify applications. PipeCD reserves all keys prefixed by `pipecd.dev/`. The label `pipecd.dev/env` will be recognized as the Environment of this application. | No |
 | description | string | Notes on the Application. | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [LambdaQuickSync](#lambdaquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
-| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No |
+| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No (deprecated) |
 | encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
@@ -134,7 +134,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The application name. | Yes if you set the application through the application configuration file |
-| envName | string | The environment name. You need to make sure that the environment name is unique in your project. Deprecated. | No |
+| envName | string | The environment name. You need to make sure that the environment name is unique in your project. | No (deprecated) |
 | labels | map[string]string | Additional attributes to identify applications. PipeCD reserves all keys prefixed by `pipecd.dev/`. The label `pipecd.dev/env` will be recognized as the Environment of this application. | No |
 | description | string | Notes on the Application. | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
@@ -142,7 +142,7 @@ spec:
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [ECSQuickSync](#ecsquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
-| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No |
+| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No (deprecated) |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
