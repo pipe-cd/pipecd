@@ -34,6 +34,10 @@ const useStyles = makeStyles((theme) => ({
     maxWidth: 300,
     wordBreak: "break-word",
   },
+  deployedBy: {
+    maxWidth: 300,
+    wordBreak: "break-word",
+  },
 }));
 
 const EmptyDeploymentData: FC<{ displayAllProperties: boolean }> = ({
@@ -147,7 +151,7 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
           </TableCell>
           {recentlyDeployment ? (
             <>
-              <TableCell className={clsx(classes.version)}>
+              <TableCell className={classes.version}>
                 {recentlyDeployment.version.includes(",") ? (
                   recentlyDeployment.version
                     .split(",")
@@ -168,7 +172,7 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
                     UI_TEXT_NOT_AVAILABLE_TEXT}
                 </TableCell>
               )}
-              <TableCell>
+              <TableCell className={classes.deployedBy}>
                 {recentlyDeployment.trigger?.commander ||
                   recentlyDeployment.trigger?.commit?.author ||
                   UI_TEXT_NOT_AVAILABLE_TEXT}

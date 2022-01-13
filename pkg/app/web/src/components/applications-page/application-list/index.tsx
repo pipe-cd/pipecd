@@ -31,8 +31,8 @@ const useStyles = makeStyles(() => ({
     flex: 1,
   },
   tooltip: {
-    paddingTop: 2,
     paddingLeft: 2,
+    marginBottom: -4,
   },
 }));
 
