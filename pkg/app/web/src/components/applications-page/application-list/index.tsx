@@ -12,7 +12,7 @@ import {
   Tooltip,
 } from "@material-ui/core";
 import { Warning } from "@material-ui/icons";
-import { FC, memo, useCallback, useState } from "react";
+import { FC, memo, useCallback, useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
   Application,
@@ -34,9 +34,13 @@ const useStyles = makeStyles(() => ({
     paddingLeft: 2,
     marginBottom: -4,
   },
+  environment: {
+    minWidth: 150,
+  },
 }));
 
 const PAGER_ROWS_PER_PAGE = [20, 50, { label: "All", value: -1 }];
+const SMALL_SCREEN_SIZE = 1440;
 
 export interface ApplicationListProps {
   currentPage: number;
@@ -134,6 +138,19 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
       [dialogState]
     );
 
+    const [isSmallScreen, setIsSmallScreen] = useState(
+      window.innerWidth <= SMALL_SCREEN_SIZE
+    );
+
+    const checkSmallScreen = (): void => {
+      setIsSmallScreen(window.innerWidth <= SMALL_SCREEN_SIZE);
+    };
+
+    useEffect(() => {
+      window.addEventListener("resize", checkSmallScreen);
+      return () => window.removeEventListener("resize", checkSmallScreen);
+    });
+
     return (
       <>
         <TableContainer component={Paper} className={classes.container} square>
@@ -143,7 +160,7 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
                 <TableCell>Status</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Kind</TableCell>
-                <TableCell>
+                <TableCell className={classes.environment}>
                   Environment
                   <Tooltip
                     title="Deprecated. Please use Label instead."
@@ -154,8 +171,8 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
                 </TableCell>
                 <TableCell>Labels</TableCell>
                 <TableCell>Running Version</TableCell>
-                <TableCell>Running Commit</TableCell>
-                <TableCell>Deployed By</TableCell>
+                {!isSmallScreen && <TableCell>Running Commit</TableCell>}
+                {!isSmallScreen && <TableCell>Deployed By</TableCell>}
                 <TableCell>Deployed At</TableCell>
                 <TableCell />
               </TableRow>
@@ -171,6 +188,7 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
                 <ApplicationListItem
                   key={`app-${app.id}`}
                   applicationId={app.id}
+                  displayAllProperties={!isSmallScreen}
                   onEdit={handleEditClick}
                   onDisable={handleDisableClick}
                   onEnable={handleEnableClick}

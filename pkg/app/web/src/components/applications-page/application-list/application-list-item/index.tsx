@@ -34,19 +34,32 @@ const useStyles = makeStyles((theme) => ({
     maxWidth: 300,
     wordBreak: "break-word",
   },
+  deployedBy: {
+    maxWidth: 300,
+    wordBreak: "break-word",
+  },
 }));
 
-const EmptyDeploymentData: FC = () => (
-  <>
-    <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
-    <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
-    <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
-    <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
-  </>
-);
+const EmptyDeploymentData: FC<{ displayAllProperties: boolean }> = ({
+  displayAllProperties,
+}) =>
+  displayAllProperties ? (
+    <>
+      <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+      <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+      <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+      <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+    </>
+  ) : (
+    <>
+      <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+      <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+    </>
+  );
 
 export interface ApplicationListItemProps {
   applicationId: string;
+  displayAllProperties?: boolean;
   onEdit: (id: string) => void;
   onEnable: (id: string) => void;
   onDisable: (id: string) => void;
@@ -57,6 +70,7 @@ export interface ApplicationListItemProps {
 export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
   function ApplicationListItem({
     applicationId,
+    displayAllProperties = true,
     onDisable,
     onEdit,
     onEnable,
@@ -134,7 +148,7 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
           </TableCell>
           {recentlyDeployment ? (
             <>
-              <TableCell className={clsx(classes.version)}>
+              <TableCell className={classes.version}>
                 {recentlyDeployment.version.includes(",") ? (
                   recentlyDeployment.version
                     .split(",")
@@ -149,21 +163,25 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
                   <span>{recentlyDeployment.version}</span>
                 )}
               </TableCell>
-              <TableCell>
-                {recentlyDeployment.trigger?.commit?.hash.slice(0, 8) ??
-                  UI_TEXT_NOT_AVAILABLE_TEXT}
-              </TableCell>
-              <TableCell>
-                {recentlyDeployment.trigger?.commander ||
-                  recentlyDeployment.trigger?.commit?.author ||
-                  UI_TEXT_NOT_AVAILABLE_TEXT}
-              </TableCell>
+              {displayAllProperties && (
+                <TableCell>
+                  {recentlyDeployment.trigger?.commit?.hash.slice(0, 8) ??
+                    UI_TEXT_NOT_AVAILABLE_TEXT}
+                </TableCell>
+              )}
+              {displayAllProperties && (
+                <TableCell className={classes.deployedBy}>
+                  {recentlyDeployment.trigger?.commander ||
+                    recentlyDeployment.trigger?.commit?.author ||
+                    UI_TEXT_NOT_AVAILABLE_TEXT}
+                </TableCell>
+              )}
               <TableCell>
                 {dayjs(recentlyDeployment.startedAt * 1000).fromNow()}
               </TableCell>
             </>
           ) : (
-            <EmptyDeploymentData />
+            <EmptyDeploymentData displayAllProperties={displayAllProperties} />
           )}
           <TableCell align="right">
             <IconButton
