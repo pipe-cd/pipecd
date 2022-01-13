@@ -36,17 +36,27 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const EmptyDeploymentData: FC = () => (
-  <>
-    <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
-    <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
-    <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
-    <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
-  </>
-);
+const EmptyDeploymentData: FC<{ displayAllProperties: boolean }> = ({
+  displayAllProperties,
+}) =>
+  displayAllProperties ? (
+    <>
+      <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+      <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+      <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+      <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+    </>
+  ) : (
+    <>
+      <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+      <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+      <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+    </>
+  );
 
 export interface ApplicationListItemProps {
   applicationId: string;
+  displayAllProperties?: boolean;
   onEdit: (id: string) => void;
   onEnable: (id: string) => void;
   onDisable: (id: string) => void;
@@ -57,6 +67,7 @@ export interface ApplicationListItemProps {
 export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
   function ApplicationListItem({
     applicationId,
+    displayAllProperties = true,
     onDisable,
     onEdit,
     onEnable,
@@ -121,7 +132,9 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
             </Link>
           </TableCell>
           <TableCell>{APPLICATION_KIND_TEXT[app.kind]}</TableCell>
-          <TableCell>{env ? env.name : "-"}</TableCell>
+          {displayAllProperties && (
+            <TableCell>{env ? env.name : "-"}</TableCell>
+          )}
           <TableCell>
             {app.labelsMap.length !== 0
               ? app.labelsMap.map(([key, value]) => (
@@ -149,10 +162,12 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
                   <span>{recentlyDeployment.version}</span>
                 )}
               </TableCell>
-              <TableCell>
-                {recentlyDeployment.trigger?.commit?.hash.slice(0, 8) ??
-                  UI_TEXT_NOT_AVAILABLE_TEXT}
-              </TableCell>
+              {displayAllProperties && (
+                <TableCell>
+                  {recentlyDeployment.trigger?.commit?.hash.slice(0, 8) ??
+                    UI_TEXT_NOT_AVAILABLE_TEXT}
+                </TableCell>
+              )}
               <TableCell>
                 {recentlyDeployment.trigger?.commander ||
                   recentlyDeployment.trigger?.commit?.author ||
@@ -163,7 +178,7 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
               </TableCell>
             </>
           ) : (
-            <EmptyDeploymentData />
+            <EmptyDeploymentData displayAllProperties={displayAllProperties} />
           )}
           <TableCell align="right">
             <IconButton
