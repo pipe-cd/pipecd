@@ -117,7 +117,7 @@ message ListEnvironmentsRequest {
 }
 
 message ListEnvironmentsResponse {
-    repeated pipe.model.Environment environments = 1;
+    repeated model.Environment environments = 1;
 }
 
 message EnableEnvironmentRequest {
@@ -295,7 +295,7 @@ message ListApplicationsRequest {
 }
 
 message ListApplicationsResponse {
-    repeated pipe.model.Application applications = 1;
+    repeated model.Application applications = 1;
 }
 
 message SyncApplicationRequest {
@@ -312,7 +312,7 @@ message GetApplicationRequest {
 }
 
 message GetApplicationResponse {
-    pipe.model.Application application = 1;
+    model.Application application = 1;
 }
 
 message GenerateApplicationSealedSecretRequest {
@@ -351,7 +351,7 @@ message ListDeploymentsRequest {
 }
 
 message ListDeploymentsResponse {
-    repeated pipe.model.Deployment deployments = 1;
+    repeated model.Deployment deployments = 1;
     string cursor = 2;
 }
 
@@ -360,7 +360,7 @@ message GetDeploymentRequest {
 }
 
 message GetDeploymentResponse {
-    pipe.model.Deployment deployment = 1;
+    model.Deployment deployment = 1;
 }
 
 message GetStageLogRequest {
@@ -371,7 +371,7 @@ message GetStageLogRequest {
 }
 
 message GetStageLogResponse {
-    repeated pipe.model.LogBlock blocks = 1;
+    repeated model.LogBlock blocks = 1;
     bool completed = 2;
 }
 
@@ -399,7 +399,7 @@ message GetApplicationLiveStateRequest {
 }
 
 message GetApplicationLiveStateResponse {
-    pipe.model.ApplicationLiveStateSnapshot snapshot= 1;
+    model.ApplicationLiveStateSnapshot snapshot= 1;
 }
 
 message GetProjectRequest {
@@ -451,7 +451,7 @@ message GetMeResponse {
     string subject = 1;
     string avatar_url = 2;
     string project_id = 3;
-    pipe.model.Role.ProjectRole project_role = 4;
+    model.Role.ProjectRole project_role = 4;
 }
 
 message GetCommandRequest {
@@ -459,7 +459,7 @@ message GetCommandRequest {
 }
 
 message GetCommandResponse {
-    pipe.model.Command command = 1;
+    model.Command command = 1;
 }
 
 message GenerateAPIKeyRequest {
@@ -490,8 +490,8 @@ message ListAPIKeysResponse {
 }
 
 message GetInsightDataRequest {
-    pipe.model.InsightMetricsKind metrics_kind = 1 [(validate.rules).enum.defined_only = true];
-    pipe.model.InsightStep step = 2 [(validate.rules).enum.defined_only = true];
+    model.InsightMetricsKind metrics_kind = 1 [(validate.rules).enum.defined_only = true];
+    model.InsightStep step = 2 [(validate.rules).enum.defined_only = true];
     int64 range_from = 3 [(validate.rules).int64.gt = 0];
     int64 data_point_count = 4 [(validate.rules).int64.gt = 0];
     string application_id = 5;
@@ -499,8 +499,8 @@ message GetInsightDataRequest {
 
 message GetInsightDataResponse {
     int64 updated_at = 1;
-    repeated pipe.model.InsightDataPoint data_points = 2 [deprecated = true];
-    pipe.model.InsightResultType type = 3;
+    repeated model.InsightDataPoint data_points = 2 [deprecated = true];
+    model.InsightResultType type = 3;
     repeated model.InsightSample vector = 4;
     repeated model.InsightSampleStream matrix = 5;
 }
@@ -510,7 +510,7 @@ message GetInsightApplicationCountRequest {
 
 message GetInsightApplicationCountResponse {
     int64 updated_at = 1;
-    repeated pipe.model.InsightApplicationCount counts = 2;
+    repeated model.InsightApplicationCount counts = 2;
 }
 
 message ListDeploymentChainsRequest {
@@ -525,7 +525,7 @@ message ListDeploymentChainsRequest {
 }
 
 message ListDeploymentChainsResponse {
-    repeated pipe.model.DeploymentChain deployment_chains = 1;
+    repeated model.DeploymentChain deployment_chains = 1;
     string cursor = 2;
 }
 
@@ -534,5 +534,5 @@ message GetDeploymentChainRequest {
 }
 
 message GetDeploymentChainResponse {
-    pipe.model.DeploymentChain deployment_chain = 1;
+    model.DeploymentChain deployment_chain = 1;
 }

@@ -190,9 +190,9 @@ message ReportStatResponse {
 
 message ReportPipedMetaRequest {
     string version = 1;
-    repeated pipe.model.Piped.CloudProvider cloud_providers = 2;
-    repeated pipe.model.ApplicationGitRepository repositories = 3;
-    pipe.model.Piped.SecretEncryption secret_encryption = 4;
+    repeated model.Piped.CloudProvider cloud_providers = 2;
+    repeated model.ApplicationGitRepository repositories = 3;
+    model.Piped.SecretEncryption secret_encryption = 4;
 }
 
 message ReportPipedMetaResponse {
@@ -205,19 +205,19 @@ message GetEnvironmentRequest {
 }
 
 message GetEnvironmentResponse {
-    pipe.model.Environment environment = 1 [(validate.rules).message.required = true];
+    model.Environment environment = 1 [(validate.rules).message.required = true];
 }
 
 message ListApplicationsRequest {
 }
 
 message ListApplicationsResponse {
-    repeated pipe.model.Application applications = 1;
+    repeated model.Application applications = 1;
 }
 
 message ReportApplicationSyncStateRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
-    pipe.model.ApplicationSyncState state = 2 [(validate.rules).message.required = true];
+    model.ApplicationSyncState state = 2 [(validate.rules).message.required = true];
 }
 
 message ReportApplicationSyncStateResponse {
@@ -233,8 +233,8 @@ message ReportApplicationDeployingStatusResponse {
 
 message ReportApplicationMostRecentDeploymentRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
-    pipe.model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
-    pipe.model.ApplicationDeploymentReference deployment = 3 [(validate.rules).message.required = true];
+    model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
+    model.ApplicationDeploymentReference deployment = 3 [(validate.rules).message.required = true];
 }
 
 message ReportApplicationMostRecentDeploymentResponse {
@@ -242,11 +242,11 @@ message ReportApplicationMostRecentDeploymentResponse {
 
 message GetApplicationMostRecentDeploymentRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
-    pipe.model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
+    model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
 }
 
 message GetApplicationMostRecentDeploymentResponse {
-    pipe.model.ApplicationDeploymentReference deployment = 1 [(validate.rules).message.required = true];
+    model.ApplicationDeploymentReference deployment = 1 [(validate.rules).message.required = true];
 }
 
 message GetDeploymentRequest {
@@ -254,19 +254,19 @@ message GetDeploymentRequest {
 }
 
 message GetDeploymentResponse {
-    pipe.model.Deployment deployment = 1 [(validate.rules).message.required = true];
+    model.Deployment deployment = 1 [(validate.rules).message.required = true];
 }
 
 message ListNotCompletedDeploymentsRequest {
 }
 
 message ListNotCompletedDeploymentsResponse {
-    repeated pipe.model.Deployment deployments = 1;
+    repeated model.Deployment deployments = 1;
     string cursor = 2;
 }
 
 message CreateDeploymentRequest {
-    pipe.model.Deployment deployment = 1 [(validate.rules).message.required = true];
+    model.Deployment deployment = 1 [(validate.rules).message.required = true];
 }
 
 message CreateDeploymentResponse {
@@ -285,7 +285,7 @@ message ReportDeploymentPlannedRequest {
     string version = 5;
     // The planned stages.
     // Empty means nothing has changed compared to when the deployment was created.
-    repeated pipe.model.PipelineStage stages = 6;
+    repeated model.PipelineStage stages = 6;
     // DeploymentChainId represents the deployment chain id which the deployment
     // belongs to. Empty means this deployment does not belong to any chain.
     string deployment_chain_id = 7;
@@ -300,7 +300,7 @@ message ReportDeploymentPlannedResponse {
 message ReportDeploymentStatusChangedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     // We only accept RUNNING or ROLLING_BACK.
-    pipe.model.DeploymentStatus status = 2 [(validate.rules).enum = {in: [2,3]}];
+    model.DeploymentStatus status = 2 [(validate.rules).enum = {in: [2,3]}];
     // The human-readable description why the deployment is at current status.
     string status_reason = 3;
     // DeploymentChainId represents the deployment chain id which the deployment
@@ -317,7 +317,7 @@ message ReportDeploymentStatusChangedResponse {
 message ReportDeploymentCompletedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     // The status of deployment.
-    pipe.model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
+    model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
     // The human-readable description why the deployment is at current status.
     string status_reason = 3;
     // The completed statuses of all stages.
@@ -356,7 +356,7 @@ message ReportStageLogsRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
     int32 retried_count = 3;
-    repeated pipe.model.LogBlock blocks = 4;
+    repeated model.LogBlock blocks = 4;
 }
 
 message ReportStageLogsResponse {
@@ -366,7 +366,7 @@ message ReportStageLogsFromLastCheckpointRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
     int32 retried_count = 3;
-    repeated pipe.model.LogBlock blocks = 4;
+    repeated model.LogBlock blocks = 4;
     bool completed = 5;
 }
 
@@ -376,7 +376,7 @@ message ReportStageLogsFromLastCheckpointResponse {
 message ReportStageStatusChangedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
-    pipe.model.StageStatus status = 3 [(validate.rules).enum.defined_only = true];
+    model.StageStatus status = 3 [(validate.rules).enum.defined_only = true];
     // The human-readable description why the stage is at current status.
     string status_reason = 4;
     repeated string requires = 5;
@@ -392,12 +392,12 @@ message ListUnhandledCommandsRequest {
 }
 
 message ListUnhandledCommandsResponse {
-    repeated pipe.model.Command commands = 1;
+    repeated model.Command commands = 1;
 }
 
 message ReportCommandHandledRequest {
     string command_id = 1 [(validate.rules).string.min_len = 1];
-    pipe.model.CommandStatus status = 2 [(validate.rules).enum.defined_only = true];
+    model.CommandStatus status = 2 [(validate.rules).enum.defined_only = true];
     map<string,string> metadata = 3;
     int64 handled_at = 4 [(validate.rules).int64.gt = 0];
     // Additional output data to be stored in filestore.
@@ -408,14 +408,14 @@ message ReportCommandHandledResponse {
 }
 
 message ReportApplicationLiveStateRequest {
-    pipe.model.ApplicationLiveStateSnapshot snapshot = 1 [(validate.rules).message.required = true];
+    model.ApplicationLiveStateSnapshot snapshot = 1 [(validate.rules).message.required = true];
 }
 
 message ReportApplicationLiveStateResponse {
 }
 
 message ReportApplicationLiveStateEventsRequest {
-    repeated pipe.model.KubernetesResourceStateEvent kubernetes_events = 1;
+    repeated model.KubernetesResourceStateEvent kubernetes_events = 1;
 }
 
 message ReportApplicationLiveStateEventsResponse {
@@ -428,7 +428,7 @@ message GetLatestEventRequest {
 }
 
 message GetLatestEventResponse {
-    pipe.model.Event event = 1 [(validate.rules).message.required = true];
+    model.Event event = 1 [(validate.rules).message.required = true];
 }
 
 
@@ -439,7 +439,7 @@ message ListEventsRequest {
 }
 
 message ListEventsResponse {
-    repeated pipe.model.Event events = 1;
+    repeated model.Event events = 1;
 }
 
 message ReportEventsHandledRequest {
@@ -454,12 +454,12 @@ message GetLatestAnalysisResultRequest {
 }
 
 message GetLatestAnalysisResultResponse {
-    pipe.model.AnalysisResult analysis_result = 1 [(validate.rules).message.required = true];
+    model.AnalysisResult analysis_result = 1 [(validate.rules).message.required = true];
 }
 
 message PutLatestAnalysisResultRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
-    pipe.model.AnalysisResult analysis_result = 2 [(validate.rules).message.required = true];
+    model.AnalysisResult analysis_result = 2 [(validate.rules).message.required = true];
 }
 
 message PutLatestAnalysisResultResponse {
@@ -475,7 +475,7 @@ message GetDesiredVersionResponse {
 
 message UpdateApplicationConfigurationsRequest {
     // The application configurations that should be updated.
-    repeated pipe.model.ApplicationInfo applications = 1;
+    repeated model.ApplicationInfo applications = 1;
 }
 
 message UpdateApplicationConfigurationsResponse {
@@ -484,7 +484,7 @@ message UpdateApplicationConfigurationsResponse {
 message ReportUnregisteredApplicationConfigurationsRequest {
     // All the latest application configurations that isn't registered yet.
     // Note that ALL configs are always be contained every time.
-    repeated pipe.model.ApplicationInfo applications = 1;
+    repeated model.ApplicationInfo applications = 1;
 }
 
 message ReportUnregisteredApplicationConfigurationsResponse {
@@ -502,7 +502,7 @@ message CreateDeploymentChainRequest {
         map<string,string> labels = 3;
     }
 
-    pipe.model.Deployment first_deployment = 1 [(validate.rules).message.required = true];
+    model.Deployment first_deployment = 1 [(validate.rules).message.required = true];
     repeated ApplicationMatcher matchers = 2;
 }
 

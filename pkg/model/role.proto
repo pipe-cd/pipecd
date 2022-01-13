@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 
-package pipe.model;
+package model;
 option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
 import "google/protobuf/descriptor.proto";
