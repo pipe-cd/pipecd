@@ -37,6 +37,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -958,7 +959,7 @@ func (a *PipedAPI) GetDesiredVersion(ctx context.Context, _ *pipedservice.GetDes
 }
 
 func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pipedservice.UpdateApplicationConfigurationsRequest) (*pipedservice.UpdateApplicationConfigurationsResponse, error) {
-	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	projectID, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -969,11 +970,54 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 		}
 	}
 	for _, appInfo := range req.Applications {
+		// Retrieve env id by env name.
+		envID := ""
+		for key, value := range appInfo.Labels {
+			if key != config.EnvLabelKey {
+				continue
+			}
+			opts := datastore.ListOptions{
+				Limit: 1,
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "ProjectId",
+						Operator: datastore.OperatorEqual,
+						Value:    projectID,
+					},
+					{
+						Field:    "Name",
+						Operator: datastore.OperatorEqual,
+						Value:    value,
+					},
+					{
+						Field:    "Deleted",
+						Operator: datastore.OperatorEqual,
+						Value:    false,
+					},
+				},
+			}
+			envs, err := a.environmentStore.ListEnvironments(ctx, opts)
+			if err != nil {
+				a.logger.Error("failed to get environments", zap.Error(err))
+				return nil, status.Error(codes.Internal, "Failed to get environments")
+			}
+			if len(envs) == 0 {
+				a.logger.Error("unknown environment name given",
+					zap.String("env", value),
+					zap.Error(err),
+				)
+				return nil, status.Errorf(codes.Internal, "Unknown environment name %q given", value)
+			}
+			// It is assumed that the env name is kept unique by the user.
+			envID = envs[0].Id
+			break
+		}
+
 		updater := func(app *model.Application) error {
 			app.Name = appInfo.Name
 			app.Labels = appInfo.Labels
 			app.Description = appInfo.Description
-			// TODO: Enable to update env via PipedAPI
+			app.EnvId = envID
 			return nil
 		}
 		if err := a.applicationStore.UpdateApplication(ctx, appInfo.Id, updater); err != nil {
