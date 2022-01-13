@@ -38,7 +38,6 @@ import (
 	"google.golang.org/grpc/credentials"
 
 	"github.com/pipe-cd/pipe/pkg/admin"
-	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/analysisresultstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/applicationstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/commandstore"
@@ -60,6 +59,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/statsreporter"
 	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipe/pkg/app/piped/trigger"
+	"github.com/pipe-cd/pipe/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/config"

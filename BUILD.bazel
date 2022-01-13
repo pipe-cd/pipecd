@@ -46,10 +46,9 @@ genrule(
     outs = ["pipectl"],
     cmd = "cp $< $@",
 )
-# gazelle:exclude pkg/app/helloworld/service/service.pb.validate.go
-# gazelle:exclude pkg/app/api/service/webservice/service.pb.validate.go
-# gazelle:exclude pkg/app/api/service/pipedservice/service.pb.validate.go
-# gazelle:exclude pkg/app/api/service/apiservice/service.pb.validate.go
+# gazelle:exclude pkg/app/server/service/webservice/service.pb.validate.go
+# gazelle:exclude pkg/app/server/service/pipedservice/service.pb.validate.go
+# gazelle:exclude pkg/app/server/service/apiservice/service.pb.validate.go
 # gazelle:exclude pkg/model/analysis_result.pb.validate.go
 # gazelle:exclude pkg/model/apikey.pb.validate.go
 # gazelle:exclude pkg/model/application.pb.validate.go
@@ -69,6 +68,7 @@ genrule(
 # gazelle:exclude pkg/model/project.pb.validate.go
 # gazelle:exclude pkg/model/role.pb.validate.go
 # gazelle:exclude pkg/model/user.pb.validate.go
+# gazelle:exclude pkg/app/helloworld/service/service.pb.validate.go
 # gazelle:exclude pkg/datastore/mysql/ensurer/sql.embed.go
 # gazelle:exclude pkg/app/ops/handler/templates.embed.go
 # gazelle:exclude pkg/app/ops/firestoreindexensurer/indexes.embed.go

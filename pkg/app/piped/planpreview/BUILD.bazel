@@ -11,7 +11,6 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/planpreview",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/app/api/service/pipedservice:go_default_library",
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
         "//pkg/app/piped/cloudprovider/terraform:go_default_library",
         "//pkg/app/piped/deploysource:go_default_library",
@@ -20,6 +19,7 @@ go_library(
         "//pkg/app/piped/planpreview/planpreviewmetrics:go_default_library",
         "//pkg/app/piped/toolregistry:go_default_library",
         "//pkg/app/piped/trigger:go_default_library",
+        "//pkg/app/server/service/pipedservice:go_default_library",
         "//pkg/backoff:go_default_library",
         "//pkg/cache:go_default_library",
         "//pkg/config:go_default_library",

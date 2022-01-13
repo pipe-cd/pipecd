@@ -6,7 +6,7 @@ load(":jest.bzl", "jest_test")
 
 ts_proto_library(
     name = "api_proto",
-    proto = "//pkg/app/api/service/webservice:webservice_proto",
+    proto = "//pkg/app/server/service/webservice:webservice_proto",
 )
 
 ts_proto_library(

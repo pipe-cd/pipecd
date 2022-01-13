@@ -7,7 +7,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/admin:go_default_library",
-        "//pkg/app/api/service/pipedservice:go_default_library",
         "//pkg/app/piped/apistore/analysisresultstore:go_default_library",
         "//pkg/app/piped/apistore/applicationstore:go_default_library",
         "//pkg/app/piped/apistore/commandstore:go_default_library",
@@ -31,6 +30,7 @@ go_library(
         "//pkg/app/piped/statsreporter:go_default_library",
         "//pkg/app/piped/toolregistry:go_default_library",
         "//pkg/app/piped/trigger:go_default_library",
+        "//pkg/app/server/service/pipedservice:go_default_library",
         "//pkg/cache/memorycache:go_default_library",
         "//pkg/cli:go_default_library",
         "//pkg/config:go_default_library",

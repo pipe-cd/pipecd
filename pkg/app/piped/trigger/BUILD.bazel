@@ -12,7 +12,7 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/trigger",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/app/api/service/pipedservice:go_default_library",
+        "//pkg/app/server/service/pipedservice:go_default_library",
         "//pkg/cache:go_default_library",
         "//pkg/cache/memorycache:go_default_library",
         "//pkg/config:go_default_library",

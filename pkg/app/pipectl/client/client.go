@@ -23,7 +23,7 @@ import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/pipe-cd/pipe/pkg/app/api/service/apiservice"
+	"github.com/pipe-cd/pipe/pkg/app/server/service/apiservice"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcclient"

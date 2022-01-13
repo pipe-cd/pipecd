@@ -23,7 +23,7 @@ import (
 	"golang.org/x/sync/singleflight"
 	"google.golang.org/grpc"
 
-	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
+	"github.com/pipe-cd/pipe/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/model"
 )

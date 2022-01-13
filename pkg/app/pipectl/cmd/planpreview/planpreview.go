@@ -27,8 +27,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/pipe-cd/pipe/pkg/app/api/service/apiservice"
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/client"
+	"github.com/pipe-cd/pipe/pkg/app/server/service/apiservice"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/model"
 )

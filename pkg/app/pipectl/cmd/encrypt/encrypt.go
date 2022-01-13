@@ -23,8 +23,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/pipe-cd/pipe/pkg/app/api/service/apiservice"
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/client"
+	"github.com/pipe-cd/pipe/pkg/app/server/service/apiservice"
 	"github.com/pipe-cd/pipe/pkg/cli"
 )
 
