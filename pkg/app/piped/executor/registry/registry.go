@@ -18,16 +18,16 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor/analysis"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor/cloudrun"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor/ecs"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor/kubernetes"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor/lambda"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor/terraform"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor/wait"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor/waitapproval"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/analysis"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/cloudrun"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/ecs"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/lambda"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/terraform"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/wait"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/waitapproval"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type Registry interface {

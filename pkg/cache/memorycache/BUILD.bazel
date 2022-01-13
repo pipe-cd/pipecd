@@ -7,7 +7,7 @@ go_library(
         "lru_cache.go",
         "ttl_cache.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/cache/memorycache",
+    importpath = "github.com/pipe-cd/pipecd/pkg/cache/memorycache",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/cache:go_default_library",

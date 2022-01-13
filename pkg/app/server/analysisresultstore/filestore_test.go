@@ -22,9 +22,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/pipe-cd/pipe/pkg/filestore"
-	"github.com/pipe-cd/pipe/pkg/filestore/filestoretest"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/filestore"
+	"github.com/pipe-cd/pipecd/pkg/filestore/filestoretest"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestFileStoreGet(t *testing.T) {

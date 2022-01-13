@@ -29,9 +29,9 @@ import (
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 
-	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
-	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/kubernetes/kubernetesmetrics"
-	"github.com/pipe-cd/pipe/pkg/config"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/kubernetes/kubernetesmetrics"
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 var (

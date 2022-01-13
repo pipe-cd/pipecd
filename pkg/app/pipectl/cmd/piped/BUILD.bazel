@@ -7,7 +7,7 @@ go_library(
         "enable.go",
         "piped.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/piped",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/piped",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/pipectl/client:go_default_library",

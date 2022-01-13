@@ -25,12 +25,12 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
-	"github.com/pipe-cd/pipe/pkg/cache"
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/git"
-	"github.com/pipe-cd/pipe/pkg/model"
-	"github.com/pipe-cd/pipe/pkg/regexpool"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/cache"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/git"
+	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/regexpool"
 )
 
 type Planner interface {

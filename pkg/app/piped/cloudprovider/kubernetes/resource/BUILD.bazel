@@ -7,6 +7,6 @@ go_library(
         "pod.go",
         "statefulset.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/resource",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes/resource",
     visibility = ["//visibility:public"],
 )

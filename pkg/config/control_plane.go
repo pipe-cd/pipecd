@@ -21,7 +21,7 @@ import (
 
 	"github.com/golang/protobuf/jsonpb"
 
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // ControlPlaneSpec defines all configuration for all control-plane components.

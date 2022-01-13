@@ -21,8 +21,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/app/server/service/apiservice"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // WaitDeploymentStatuses waits a given deployment until it reaches one of the specified statuses.

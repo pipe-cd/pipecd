@@ -29,7 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func MakeKubernetesResourceState(uid string, key ResourceKey, obj *unstructured.Unstructured, now time.Time) model.KubernetesResourceState {

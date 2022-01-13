@@ -7,7 +7,7 @@ go_library(
         "option.go",
         "request_validation_interceptor.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/rpc/rpcclient",
+    importpath = "github.com/pipe-cd/pipecd/pkg/rpc/rpcclient",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/rpc/rpcauth:go_default_library",

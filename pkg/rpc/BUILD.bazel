@@ -8,7 +8,7 @@ go_library(
         "request_validation_interceptor.go",
         "server.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/rpc",
+    importpath = "github.com/pipe-cd/pipecd/pkg/rpc",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/jwt:go_default_library",

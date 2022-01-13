@@ -7,7 +7,7 @@ go_library(
         "renderer.go",
         "result.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/diff",
+    importpath = "github.com/pipe-cd/pipecd/pkg/diff",
     visibility = ["//visibility:public"],
     deps = ["@io_k8s_apimachinery//pkg/apis/meta/v1/unstructured:go_default_library"],
 )

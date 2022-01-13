@@ -18,5 +18,5 @@ import (
 	_ "github.com/golang/mock/gomock"
 	_ "github.com/gomodule/redigo/redis"
 
-	_ "github.com/pipe-cd/pipe/pkg/redis"
+	_ "github.com/pipe-cd/pipecd/pkg/redis"
 )

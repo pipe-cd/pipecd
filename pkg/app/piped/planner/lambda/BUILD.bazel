@@ -6,7 +6,7 @@ go_library(
         "lambda.go",
         "pipeline.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/planner/lambda",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/planner/lambda",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider/lambda:go_default_library",

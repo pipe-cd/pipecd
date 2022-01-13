@@ -18,8 +18,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/pipe-cd/pipe/pkg/cache"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/cache"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type commandCache struct {

@@ -8,7 +8,7 @@ go_library(
         "cloudrun.go",
         "servicemanifest.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/cloudrun",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/cloudrun",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/cache:go_default_library",

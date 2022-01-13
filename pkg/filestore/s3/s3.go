@@ -28,7 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/filestore"
+	"github.com/pipe-cd/pipecd/pkg/filestore"
 )
 
 type Store struct {

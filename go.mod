@@ -1,4 +1,4 @@
-module github.com/pipe-cd/pipe
+module github.com/pipe-cd/pipecd
 
 go 1.16
 

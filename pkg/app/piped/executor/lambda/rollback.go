@@ -18,10 +18,10 @@ import (
 	"context"
 	"fmt"
 
-	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/model"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/lambda"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type rollbackExecutor struct {

@@ -15,7 +15,7 @@
 syntax = "proto3";
 
 package pipe.helloworld.service;
-option go_package = "github.com/pipe-cd/pipe/pkg/app/helloworld/service";
+option go_package = "github.com/pipe-cd/pipecd/pkg/app/helloworld/service";
 
 import "validate/validate.proto";
 

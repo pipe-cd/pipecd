@@ -20,7 +20,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/datastore/mysql/ensurer"
+	"github.com/pipe-cd/pipecd/pkg/datastore/mysql/ensurer"
 )
 
 type mysqlEnsurer struct {

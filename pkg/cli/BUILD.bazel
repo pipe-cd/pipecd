@@ -6,7 +6,7 @@ go_library(
         "app.go",
         "cmd.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/cli",
+    importpath = "github.com/pipe-cd/pipecd/pkg/cli",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/log:go_default_library",

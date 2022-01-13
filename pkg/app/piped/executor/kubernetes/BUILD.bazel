@@ -11,7 +11,7 @@ go_library(
         "sync.go",
         "traffic.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/executor/kubernetes",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/executor/kubernetes",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",

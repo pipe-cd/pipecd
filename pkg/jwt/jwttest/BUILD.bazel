@@ -6,7 +6,7 @@ go_library(
         "jwt.mock.go",
         "mock.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/jwt/jwttest",
+    importpath = "github.com/pipe-cd/pipecd/pkg/jwt/jwttest",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/jwt:go_default_library",

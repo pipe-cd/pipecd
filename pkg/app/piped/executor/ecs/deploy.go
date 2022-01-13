@@ -17,10 +17,10 @@ package ecs
 import (
 	"context"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type deployExecutor struct {

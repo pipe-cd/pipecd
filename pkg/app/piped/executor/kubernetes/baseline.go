@@ -19,10 +19,10 @@ import (
 	"fmt"
 	"strings"
 
-	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/model"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 const (

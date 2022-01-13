@@ -25,8 +25,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type fakeProjectGetter struct {

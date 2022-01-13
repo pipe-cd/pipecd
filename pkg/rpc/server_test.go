@@ -25,10 +25,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/app/helloworld/api"
-	"github.com/pipe-cd/pipe/pkg/app/helloworld/service"
-	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
-	"github.com/pipe-cd/pipe/pkg/rpc/rpcclient"
+	"github.com/pipe-cd/pipecd/pkg/app/helloworld/api"
+	"github.com/pipe-cd/pipecd/pkg/app/helloworld/service"
+	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
+	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
 )
 
 func TestMain(m *testing.M) {

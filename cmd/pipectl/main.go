@@ -18,13 +18,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/application"
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/deployment"
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/encrypt"
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/event"
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/piped"
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/planpreview"
-	"github.com/pipe-cd/pipe/pkg/cli"
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/application"
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/deployment"
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/encrypt"
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/event"
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/piped"
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/planpreview"
+	"github.com/pipe-cd/pipecd/pkg/cli"
 )
 
 func main() {

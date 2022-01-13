@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // DeployFrequency represents a data point that shows the deployment frequency metrics.

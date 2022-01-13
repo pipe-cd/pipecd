@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 func TestResourceMatcher(t *testing.T) {

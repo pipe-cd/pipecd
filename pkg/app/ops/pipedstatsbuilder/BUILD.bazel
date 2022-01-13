@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["builder.go"],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/ops/pipedstatsbuilder",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/ops/pipedstatsbuilder",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/cache:go_default_library",

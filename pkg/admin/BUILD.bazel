@@ -6,7 +6,7 @@ go_library(
         "admin.go",
         "doc.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/admin",
+    importpath = "github.com/pipe-cd/pipecd/pkg/admin",
     visibility = ["//visibility:public"],
     deps = ["@org_uber_go_zap//:go_default_library"],
 )

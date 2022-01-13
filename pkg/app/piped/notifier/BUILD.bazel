@@ -8,7 +8,7 @@ go_library(
         "slack.go",
         "webhook.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/notifier",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/notifier",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/config:go_default_library",

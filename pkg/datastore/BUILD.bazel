@@ -15,7 +15,7 @@ go_library(
         "pipedstore.go",
         "projectstore.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/datastore",
+    importpath = "github.com/pipe-cd/pipecd/pkg/datastore",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/model:go_default_library",

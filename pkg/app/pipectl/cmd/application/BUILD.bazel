@@ -9,7 +9,7 @@ go_library(
         "list.go",
         "sync.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/application",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/application",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/pipectl/client:go_default_library",

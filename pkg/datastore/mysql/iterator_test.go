@@ -20,7 +20,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/datastore"
 )
 
 type dummyDoc struct {

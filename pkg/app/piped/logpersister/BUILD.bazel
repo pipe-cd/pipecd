@@ -6,7 +6,7 @@ go_library(
         "persister.go",
         "stagelogpersister.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/logpersister",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/logpersister",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/server/service/pipedservice:go_default_library",

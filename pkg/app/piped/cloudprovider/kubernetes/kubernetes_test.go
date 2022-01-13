@@ -21,7 +21,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 )
 
 func TestMain(m *testing.M) {

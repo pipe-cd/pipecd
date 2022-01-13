@@ -25,12 +25,12 @@ import (
 	"path/filepath"
 	"time"
 
-	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda"
-	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipe/pkg/backoff"
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/model"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/lambda"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/backoff"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type registerer interface {

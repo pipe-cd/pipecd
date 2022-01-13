@@ -8,7 +8,7 @@ go_library(
         "httpapi.go",
         "login.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/server/httpapi",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/server/httpapi",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/server/httpapi/httpapimetrics:go_default_library",

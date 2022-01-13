@@ -27,10 +27,10 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/client"
-	"github.com/pipe-cd/pipe/pkg/app/server/service/apiservice"
-	"github.com/pipe-cd/pipe/pkg/cli"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/client"
+	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
+	"github.com/pipe-cd/pipecd/pkg/cli"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 const (

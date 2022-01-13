@@ -24,7 +24,7 @@ import (
 	"golang.org/x/oauth2"
 	oauth2github "golang.org/x/oauth2/github"
 
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // OAuthClient is a oauth client for github.

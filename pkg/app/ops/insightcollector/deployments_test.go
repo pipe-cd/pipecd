@@ -24,12 +24,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/datastore"
-	"github.com/pipe-cd/pipe/pkg/datastore/datastoretest"
-	"github.com/pipe-cd/pipe/pkg/filestore/filestoretest"
-	"github.com/pipe-cd/pipe/pkg/insight"
-	"github.com/pipe-cd/pipe/pkg/insight/insightstore"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/datastore/datastoretest"
+	"github.com/pipe-cd/pipecd/pkg/filestore/filestoretest"
+	"github.com/pipe-cd/pipecd/pkg/insight"
+	"github.com/pipe-cd/pipecd/pkg/insight/insightstore"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestUpdateDataPoints(t *testing.T) {

@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
-	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 func loadTargetGroups(targetGroups config.ECSTargetGroups) (*types.LoadBalancer, *types.LoadBalancer, error) {

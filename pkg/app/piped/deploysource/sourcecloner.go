@@ -17,8 +17,8 @@ package deploysource
 import (
 	"context"
 
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/git"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/git"
 )
 
 type SourceCloner interface {

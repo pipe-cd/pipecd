@@ -6,7 +6,7 @@ go_library(
         "filestore.go",
         "store.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/server/analysisresultstore",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/server/analysisresultstore",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/filestore:go_default_library",

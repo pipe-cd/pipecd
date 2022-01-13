@@ -21,7 +21,7 @@ import (
 
 	jwtgo "github.com/golang-jwt/jwt"
 
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 const (

@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/pipe-cd/pipe/pkg/insight"
+	"github.com/pipe-cd/pipecd/pkg/insight"
 )
 
 // LoadApplicationCounts loads ApplicationCounts data for a specific project from file store.

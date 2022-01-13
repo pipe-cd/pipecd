@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["store.go"],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/metadatastore",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/metadatastore",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/server/service/pipedservice:go_default_library",

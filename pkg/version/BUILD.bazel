@@ -4,7 +4,7 @@ load("//pkg/version:def.bzl", "version_x_defs")
 go_library(
     name = "go_default_library",
     srcs = ["version.go"],
-    importpath = "github.com/pipe-cd/pipe/pkg/version",
+    importpath = "github.com/pipe-cd/pipecd/pkg/version",
     visibility = ["//visibility:public"],
     x_defs = version_x_defs(),
 )

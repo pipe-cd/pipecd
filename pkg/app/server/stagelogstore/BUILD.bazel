@@ -7,7 +7,7 @@ go_library(
         "filestore.go",
         "store.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/server/stagelogstore",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/server/stagelogstore",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/cache:go_default_library",

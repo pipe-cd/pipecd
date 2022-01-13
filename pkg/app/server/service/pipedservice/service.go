@@ -20,7 +20,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/pipe-cd/pipe/pkg/backoff"
+	"github.com/pipe-cd/pipecd/pkg/backoff"
 )
 
 // Retriable checks whether the caller should retry the api call for the given error.

@@ -22,7 +22,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/pipe-cd/pipe/pkg/diff"
+	"github.com/pipe-cd/pipecd/pkg/diff"
 )
 
 const (

@@ -6,7 +6,7 @@ go_library(
         "kubernetes.go",
         "pipeline.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/planner/kubernetes",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/planner/kubernetes",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",

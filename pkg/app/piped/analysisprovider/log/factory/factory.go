@@ -20,10 +20,10 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/log"
-	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/log/stackdriver"
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/log"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/log/stackdriver"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // NewProvider generates an appropriate provider according to analysis provider config.

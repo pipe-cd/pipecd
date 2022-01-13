@@ -6,7 +6,7 @@ go_library(
         "planner.go",
         "predefined_stages.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/planner",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/planner",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/deploysource:go_default_library",

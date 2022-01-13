@@ -6,7 +6,7 @@ go_library(
         "cache.go",
         "store.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/server/commandstore",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/server/commandstore",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/cache:go_default_library",

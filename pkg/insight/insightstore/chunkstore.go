@@ -21,10 +21,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/cache"
-	"github.com/pipe-cd/pipe/pkg/filestore"
-	"github.com/pipe-cd/pipe/pkg/insight"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/cache"
+	"github.com/pipe-cd/pipecd/pkg/filestore"
+	"github.com/pipe-cd/pipecd/pkg/insight"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type store struct {

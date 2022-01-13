@@ -22,8 +22,8 @@ import (
 	"github.com/fsouza/fake-gcs-server/fakestorage"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/pipe-cd/pipe/pkg/filestore"
-	"github.com/pipe-cd/pipe/pkg/filestore/gcs"
+	"github.com/pipe-cd/pipecd/pkg/filestore"
+	"github.com/pipe-cd/pipecd/pkg/filestore/gcs"
 )
 
 func newEmulator(bucket string, objects map[string]string, now time.Time) (*fakestorage.Server, error) {

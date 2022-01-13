@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/model"
 
 	"github.com/stretchr/testify/assert"
 )

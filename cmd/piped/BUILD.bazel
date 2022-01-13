@@ -8,7 +8,7 @@ load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "github.com/pipe-cd/pipe/cmd/piped",
+    importpath = "github.com/pipe-cd/pipecd/cmd/piped",
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/app/piped/cmd/piped:go_default_library",

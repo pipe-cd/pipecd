@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 var DefaultKubernetesCloudProvider = PipedCloudProvider{

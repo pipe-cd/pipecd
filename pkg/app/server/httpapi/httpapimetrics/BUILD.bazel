@@ -6,7 +6,7 @@ go_library(
         "delegator.go",
         "handler.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/server/httpapi/httpapimetrics",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/server/httpapi/httpapimetrics",
     visibility = ["//visibility:public"],
     deps = ["@com_github_prometheus_client_golang//prometheus:go_default_library"],
 )

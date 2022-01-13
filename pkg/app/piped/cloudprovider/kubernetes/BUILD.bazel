@@ -15,7 +15,7 @@ go_library(
         "resourcekey.go",
         "state.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/chartrepo:go_default_library",

@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 const (

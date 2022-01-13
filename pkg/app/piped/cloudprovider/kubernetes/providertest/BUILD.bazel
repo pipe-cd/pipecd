@@ -6,7 +6,7 @@ go_library(
         "mock.go",
         "provider.mock.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/providertest",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes/providertest",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",

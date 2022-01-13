@@ -25,9 +25,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/chartrepo"
-	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
-	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/chartrepo"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 type Helm struct {

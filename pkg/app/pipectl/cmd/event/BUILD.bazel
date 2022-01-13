@@ -6,7 +6,7 @@ go_library(
         "event.go",
         "register.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/event",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/event",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/pipectl/client:go_default_library",

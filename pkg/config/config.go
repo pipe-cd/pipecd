@@ -25,7 +25,7 @@ import (
 	"github.com/creasty/defaults"
 	"sigs.k8s.io/yaml"
 
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 const (

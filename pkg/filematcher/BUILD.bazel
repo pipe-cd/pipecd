@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["filematcher.go"],
-    importpath = "github.com/pipe-cd/pipe/pkg/filematcher",
+    importpath = "github.com/pipe-cd/pipecd/pkg/filematcher",
     visibility = ["//visibility:public"],
 )
 

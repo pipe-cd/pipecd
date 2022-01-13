@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["regexpool.go"],
-    importpath = "github.com/pipe-cd/pipe/pkg/regexpool",
+    importpath = "github.com/pipe-cd/pipecd/pkg/regexpool",
     visibility = ["//visibility:public"],
     deps = ["//pkg/cache/memorycache:go_default_library"],
 )

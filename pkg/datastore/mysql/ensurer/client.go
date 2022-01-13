@@ -23,7 +23,7 @@ import (
 	driver "github.com/go-sql-driver/mysql"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/datastore/mysql"
+	"github.com/pipe-cd/pipecd/pkg/datastore/mysql"
 )
 
 var (

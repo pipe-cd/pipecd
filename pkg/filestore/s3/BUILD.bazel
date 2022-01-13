@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["s3.go"],
-    importpath = "github.com/pipe-cd/pipe/pkg/filestore/s3",
+    importpath = "github.com/pipe-cd/pipecd/pkg/filestore/s3",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/filestore:go_default_library",

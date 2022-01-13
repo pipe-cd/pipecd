@@ -8,7 +8,7 @@ go_library(
         "mysql.go",
         "query.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/datastore/mysql",
+    importpath = "github.com/pipe-cd/pipecd/pkg/datastore/mysql",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/datastore:go_default_library",

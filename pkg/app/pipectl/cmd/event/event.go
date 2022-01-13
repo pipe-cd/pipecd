@@ -17,7 +17,7 @@ package event
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/client"
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/client"
 )
 
 type command struct {

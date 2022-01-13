@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["minio.go"],
-    importpath = "github.com/pipe-cd/pipe/pkg/filestore/minio",
+    importpath = "github.com/pipe-cd/pipecd/pkg/filestore/minio",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/filestore:go_default_library",

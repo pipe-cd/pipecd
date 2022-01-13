@@ -17,8 +17,8 @@ package main
 import (
 	"log"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/cmd/piped"
-	"github.com/pipe-cd/pipe/pkg/cli"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/cmd/piped"
+	"github.com/pipe-cd/pipecd/pkg/cli"
 )
 
 func main() {

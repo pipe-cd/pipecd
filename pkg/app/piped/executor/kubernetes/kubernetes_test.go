@@ -24,10 +24,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
-	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/providertest"
-	"github.com/pipe-cd/pipe/pkg/app/piped/metadatastore"
-	"github.com/pipe-cd/pipe/pkg/config"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes/providertest"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/metadatastore"
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 type fakeLogPersister struct{}

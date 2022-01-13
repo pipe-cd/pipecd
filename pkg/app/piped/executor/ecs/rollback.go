@@ -20,11 +20,11 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider"
-	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/ecs"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/ecs"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type rollbackExecutor struct {

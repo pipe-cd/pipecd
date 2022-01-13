@@ -8,7 +8,7 @@ go_library(
         "lambda.go",
         "routing_traffic.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/lambda",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/backoff:go_default_library",

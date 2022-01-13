@@ -17,10 +17,10 @@ package terraform
 import (
 	"context"
 
-	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/terraform"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/model"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/terraform"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type deployExecutor struct {

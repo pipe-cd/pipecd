@@ -20,10 +20,10 @@ import (
 	"fmt"
 	"io"
 
-	terraformprovider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/terraform"
-	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
-	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
-	"github.com/pipe-cd/pipe/pkg/model"
+	terraformprovider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/terraform"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func (b *builder) terraformDiff(

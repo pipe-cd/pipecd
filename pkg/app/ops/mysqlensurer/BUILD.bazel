@@ -6,7 +6,7 @@ go_library(
         "client.go",
         "sqlsensurer.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/ops/mysqlensurer",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/ops/mysqlensurer",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/datastore/mysql/ensurer:go_default_library",

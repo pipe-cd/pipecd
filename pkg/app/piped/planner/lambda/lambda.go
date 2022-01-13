@@ -22,9 +22,9 @@ import (
 
 	"go.uber.org/zap"
 
-	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda"
-	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
-	"github.com/pipe-cd/pipe/pkg/model"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/lambda"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/planner"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // Planner plans the deployment pipeline for Lambda application.

@@ -19,8 +19,8 @@ import (
 
 	redigo "github.com/gomodule/redigo/redis"
 
-	"github.com/pipe-cd/pipe/pkg/cache"
-	"github.com/pipe-cd/pipe/pkg/redis"
+	"github.com/pipe-cd/pipecd/pkg/cache"
+	"github.com/pipe-cd/pipecd/pkg/redis"
 )
 
 type RedisHashCache struct {

@@ -24,7 +24,7 @@ import (
 	"golang.org/x/sync/singleflight"
 	"google.golang.org/api/run/v1"
 
-	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 const (

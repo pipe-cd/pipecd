@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["metrics.go"],
-    importpath = "github.com/pipe-cd/pipe/pkg/cache/cachemetrics",
+    importpath = "github.com/pipe-cd/pipecd/pkg/cache/cachemetrics",
     visibility = ["//visibility:public"],
     deps = ["@com_github_prometheus_client_golang//prometheus:go_default_library"],
 )
