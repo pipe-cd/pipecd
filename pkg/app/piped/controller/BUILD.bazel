@@ -10,7 +10,6 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/controller",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/app/api/service/pipedservice:go_default_library",
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
         "//pkg/app/piped/deploysource:go_default_library",
         "//pkg/app/piped/executor:go_default_library",
@@ -19,6 +18,7 @@ go_library(
         "//pkg/app/piped/metadatastore:go_default_library",
         "//pkg/app/piped/planner:go_default_library",
         "//pkg/app/piped/planner/registry:go_default_library",
+        "//pkg/app/server/service/pipedservice:go_default_library",
         "//pkg/cache:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/git:go_default_library",

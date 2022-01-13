@@ -19,9 +19,9 @@ go_test(
     srcs = ["waitapproval_test.go"],
     embed = [":go_default_library"],
     deps = [
-        "//pkg/app/api/service/pipedservice:go_default_library",
         "//pkg/app/piped/executor:go_default_library",
         "//pkg/app/piped/metadatastore:go_default_library",
+        "//pkg/app/server/service/pipedservice:go_default_library",
         "//pkg/model:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
         "@org_golang_google_grpc//:go_default_library",

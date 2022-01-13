@@ -21,7 +21,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/app/api/service/apiservice"
+	"github.com/pipe-cd/pipe/pkg/app/server/service/apiservice"
 	"github.com/pipe-cd/pipe/pkg/cli"
 )
 

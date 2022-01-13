@@ -10,7 +10,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/admin:go_default_library",
-        "//pkg/app/api/service/pipedservice:go_default_library",
+        "//pkg/app/server/service/pipedservice:go_default_library",
         "//pkg/cli:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/git:go_default_library",

@@ -35,7 +35,7 @@ import (
 	"google.golang.org/grpc/credentials"
 
 	"github.com/pipe-cd/pipe/pkg/admin"
-	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
+	"github.com/pipe-cd/pipe/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"

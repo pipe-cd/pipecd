@@ -1,0 +1,166 @@
+// Copyright 2020 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package pipe.api.service.apiservice;
+option go_package = "github.com/pipe-cd/pipe/pkg/app/server/service/apiservice";
+
+import "validate/validate.proto";
+import "pkg/model/common.proto";
+import "pkg/model/application.proto";
+import "pkg/model/deployment.proto";
+import "pkg/model/command.proto";
+import "pkg/model/planpreview.proto";
+
+// APIService contains all RPC definitions for external service, pipectl.
+// All of these RPCs are authenticated by using API key.
+service APIService {
+    rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {}
+    rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
+    rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {}
+    rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
+
+    rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
+
+    rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
+
+    rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {}
+    rpc DisablePiped(DisablePipedRequest) returns (DisablePipedResponse) {}
+
+    rpc RegisterEvent(RegisterEventRequest) returns (RegisterEventResponse) {}
+
+    rpc RequestPlanPreview(RequestPlanPreviewRequest) returns (RequestPlanPreviewResponse) {}
+    rpc GetPlanPreviewResults(GetPlanPreviewResultsRequest) returns (GetPlanPreviewResultsResponse) {}
+
+    rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
+}
+
+message AddApplicationRequest {
+    string name = 1 [(validate.rules).string.min_len = 1];
+    string env_id = 2;
+    string piped_id = 3 [(validate.rules).string.min_len = 1];
+    model.ApplicationGitPath git_path = 4 [(validate.rules).message.required = true];
+    model.ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
+    string cloud_provider = 6 [(validate.rules).string.min_len = 1];
+    string description = 7;
+}
+
+message AddApplicationResponse {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message SyncApplicationRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message SyncApplicationResponse {
+    string command_id = 1;
+}
+
+message GetApplicationRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetApplicationResponse {
+    model.Application application = 1;
+}
+
+message ListApplicationsRequest {
+    string name = 1;
+    string kind = 2;
+    string env_id = 3;
+    bool disabled = 4;
+    string env_name = 5;
+    // TODO: Enable to filter by labels
+    string cursor = 10;
+}
+
+message ListApplicationsResponse {
+    repeated model.Application applications = 1;
+    string cursor = 2;
+}
+
+message GetDeploymentRequest {
+    string deployment_id = 1;
+}
+
+message GetDeploymentResponse {
+    model.Deployment deployment = 1;
+}
+
+message GetCommandRequest {
+    string command_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetCommandResponse {
+    model.Command command = 1;
+}
+
+message EnablePipedRequest {
+    string piped_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message EnablePipedResponse {
+}
+
+message DisablePipedRequest {
+    string piped_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message DisablePipedResponse {
+}
+message RegisterEventRequest {
+    string name = 1 [(validate.rules).string.min_len = 1];
+    string data = 2 [(validate.rules).string.min_len = 1];
+    map<string,string> labels = 3 [(validate.rules).map.keys.string.min_len = 1, (validate.rules).map.values.string.min_len = 1];
+}
+
+message RegisterEventResponse {
+    string event_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message RequestPlanPreviewRequest {
+    string repo_remote_url = 1 [(validate.rules).string.min_len = 1];
+    string head_branch = 2 [(validate.rules).string.min_len = 1];
+    string head_commit = 3 [(validate.rules).string.min_len = 1];
+    string base_branch = 4 [(validate.rules).string.min_len = 1];
+    // Maximum number of seconds a Piped can take to handle a command.
+    int64 timeout = 5 [(validate.rules).int64.gte = 0];
+}
+
+message RequestPlanPreviewResponse {
+    repeated string commands = 1;
+}
+
+message GetPlanPreviewResultsRequest {
+    repeated string commands = 1;
+    // Maximum number of seconds a Piped can take to handle a command.
+    int64 command_handle_timeout = 2;
+}
+
+message GetPlanPreviewResultsResponse {
+    repeated model.PlanPreviewCommandResult results = 1;
+}
+
+message EncryptRequest {
+    string plaintext = 1 [(validate.rules).string.min_len = 1];
+    string piped_id = 2 [(validate.rules).string.min_len = 1];
+    // Whether the data should be base64 encoded before encrypting or not.
+    bool base64_encoding = 3;
+}
+
+message EncryptResponse {
+    string ciphertext = 1 [(validate.rules).string.min_len = 1];
+}
