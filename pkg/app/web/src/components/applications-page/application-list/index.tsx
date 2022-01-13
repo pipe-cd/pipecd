@@ -31,7 +31,7 @@ const useStyles = makeStyles(() => ({
     flex: 1,
   },
   tooltip: {
-    paddingTop: 2,
+    paddingTop: 7,
     paddingLeft: 2,
   },
 }));
@@ -145,7 +145,10 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
                 <TableCell>Kind</TableCell>
                 <TableCell>
                   Environment
-                  <Tooltip title="Deprecated. Please use Label instead." className={classes.tooltip}>
+                  <Tooltip
+                    title="Deprecated. Please use Label instead."
+                    className={classes.tooltip}
+                  >
                     <Warning fontSize="small" />
                   </Tooltip>
                 </TableCell>
