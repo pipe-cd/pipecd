@@ -12,13 +12,7 @@ import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { dummyApplicationLiveState } from "~/__fixtures__/dummy-application-live-state";
 import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
-import {
-  createReduxStore,
-  createStore,
-  render,
-  screen,
-  waitFor,
-} from "~~/test-utils";
+import { createStore, render, screen, waitFor } from "~~/test-utils";
 import { ApplicationDetail } from ".";
 
 beforeAll(() => {
