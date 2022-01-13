@@ -34,7 +34,7 @@ A collect of resources (containers, services, infrastructure components...) and 
 PipeCD supports multiple kinds of applications such as `KUBERNETES`, `TERRAFORM`, `ECS`, `CLOUDRUN`, `LAMBDA`...
 
 ### Environment
->Deprecated: Please use Labels instead.
+> Deprecated: Please use Labels instead.
 
 An environment is a logical group of applications of a project. A project can have multiple environments.
 Each application must belong to one and only one environment. While each piped must belong to at least one environment.

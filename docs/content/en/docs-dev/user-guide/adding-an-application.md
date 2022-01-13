@@ -69,7 +69,7 @@ Here are the list of fields in the register form:
 | Config Filename | The name of application configuration file. Default is `app.pipecd.yaml`. | No |
 | Cloud Provider | Where the application will be deployed to. Select one of the registered cloud providers in `piped` configuration. | Yes |
 
->Note: Labels couldn't be set via this form. If you want, try the way to register via the application configuration defined in the Git repository
+> Note: Labels couldn't be set via this form. If you want, try the way to register via the application configuration defined in the Git repository.
 
 After registering the application, one more step left is adding the application configuration file for that application into the application directory in Git repository. That application configuration file helps `piped` know how the application should be deployed, such as doing canary/blue-green strategy or requiring a manual approval... It is in `YAML` format as below:
 

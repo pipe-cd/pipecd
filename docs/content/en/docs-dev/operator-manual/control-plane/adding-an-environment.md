@@ -6,7 +6,7 @@ description: >
   This page describes how to add a new environment to a project.
 ---
 
->Deprecated: Please use Labels instead.
+> Deprecated: Please use Labels instead.
 
 An environment is a logical group of applications, pipeds inside a project. A project can have multiple environments.
 Each application must belong to one and only one environment. While each piped must belong to at least one environment.
