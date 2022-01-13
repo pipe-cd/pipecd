@@ -24,11 +24,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/pipe-cd/pipe/pkg/app/server/commandstore"
-	"github.com/pipe-cd/pipe/pkg/crypto"
-	"github.com/pipe-cd/pipe/pkg/datastore"
-	"github.com/pipe-cd/pipe/pkg/git"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/app/server/commandstore"
+	"github.com/pipe-cd/pipecd/pkg/crypto"
+	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/git"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type commandOutputGetter interface {

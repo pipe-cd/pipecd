@@ -15,8 +15,8 @@
 package webservice
 
 import (
-	"github.com/pipe-cd/pipe/pkg/model"
-	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
+	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
 
 type authorizer struct{}

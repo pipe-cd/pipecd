@@ -7,7 +7,7 @@ go_library(
         "ecs.go",
         "rollback.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/executor/ecs",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/executor/ecs",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider:go_default_library",

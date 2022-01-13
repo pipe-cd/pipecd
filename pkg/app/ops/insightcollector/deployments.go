@@ -21,10 +21,10 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/datastore"
-	"github.com/pipe-cd/pipe/pkg/filestore"
-	"github.com/pipe-cd/pipe/pkg/insight"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/filestore"
+	"github.com/pipe-cd/pipecd/pkg/insight"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 const limit = 50

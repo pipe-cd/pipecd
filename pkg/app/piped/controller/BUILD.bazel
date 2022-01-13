@@ -7,7 +7,7 @@ go_library(
         "planner.go",
         "scheduler.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/controller",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/controller",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",

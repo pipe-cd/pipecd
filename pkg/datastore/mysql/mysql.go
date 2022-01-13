@@ -24,7 +24,7 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/datastore"
 )
 
 const mysqlErrorCodeDuplicateEntry = 1062

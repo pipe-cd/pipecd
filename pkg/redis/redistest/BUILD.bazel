@@ -6,7 +6,7 @@ go_library(
         "mock.go",
         "redis.mock.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/redis/redistest",
+    importpath = "github.com/pipe-cd/pipecd/pkg/redis/redistest",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/redis:go_default_library",

@@ -28,7 +28,7 @@ import (
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider"
 )
 
 type client struct {

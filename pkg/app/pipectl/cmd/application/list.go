@@ -24,9 +24,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/pipe-cd/pipe/pkg/app/server/service/apiservice"
-	"github.com/pipe-cd/pipe/pkg/cli"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
+	"github.com/pipe-cd/pipecd/pkg/cli"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type list struct {

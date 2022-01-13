@@ -17,9 +17,9 @@ package cloudrun
 import (
 	"context"
 
-	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/cloudrun"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipe/pkg/model"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/cloudrun"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type rollbackExecutor struct {

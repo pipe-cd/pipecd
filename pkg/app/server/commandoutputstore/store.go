@@ -21,7 +21,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/filestore"
+	"github.com/pipe-cd/pipecd/pkg/filestore"
 )
 
 var (

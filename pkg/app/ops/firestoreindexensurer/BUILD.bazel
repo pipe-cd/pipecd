@@ -8,7 +8,7 @@ go_library(
         "indexes.go",
         ":indexes.embed",  #keep
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/ops/firestoreindexensurer",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/ops/firestoreindexensurer",
     visibility = ["//visibility:public"],
     deps = ["@org_uber_go_zap//:go_default_library"],
 )

@@ -8,7 +8,7 @@ go_library(
         "reflector.go",
         "store.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/kubernetes",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/kubernetes",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",

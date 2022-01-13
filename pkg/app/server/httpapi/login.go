@@ -24,8 +24,8 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/net/xsrftoken"
 
-	"github.com/pipe-cd/pipe/pkg/jwt"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/jwt"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // handleSSOLogin is called when an user requested to login via SSO.

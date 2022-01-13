@@ -6,7 +6,7 @@ go_library(
         "fake_client.go",
         "prometheus.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics/prometheus",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/metrics/prometheus",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/analysisprovider/metrics:go_default_library",

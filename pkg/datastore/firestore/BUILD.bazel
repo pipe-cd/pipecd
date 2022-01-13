@@ -6,7 +6,7 @@ go_library(
         "firestore.go",
         "iterator.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/datastore/firestore",
+    importpath = "github.com/pipe-cd/pipecd/pkg/datastore/firestore",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/datastore:go_default_library",

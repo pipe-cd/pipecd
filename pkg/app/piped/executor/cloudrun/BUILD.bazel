@@ -7,7 +7,7 @@ go_library(
         "deploy.go",
         "rollback.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/executor/cloudrun",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/executor/cloudrun",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider/cloudrun:go_default_library",

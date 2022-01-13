@@ -6,7 +6,7 @@ go_library(
         "ecs.go",
         "pipeline.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/planner/ecs",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/planner/ecs",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider/ecs:go_default_library",

@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/planner"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func buildQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineStage {

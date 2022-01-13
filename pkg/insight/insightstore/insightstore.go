@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/insight"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/insight"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type Store interface {

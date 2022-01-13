@@ -34,18 +34,18 @@ import (
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/pipe-cd/pipe/pkg/admin"
-	"github.com/pipe-cd/pipe/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipe/pkg/cli"
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/git"
-	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
-	"github.com/pipe-cd/pipe/pkg/rpc/rpcclient"
-	"github.com/pipe-cd/pipe/pkg/version"
+	"github.com/pipe-cd/pipecd/pkg/admin"
+	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
+	"github.com/pipe-cd/pipecd/pkg/cli"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/git"
+	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
+	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
+	"github.com/pipe-cd/pipecd/pkg/version"
 )
 
 const (
-	pipedDownloadURL    = "https://github.com/pipe-cd/pipe/releases/download/%s/piped_%s_%s_amd64"
+	pipedDownloadURL    = "https://github.com/pipe-cd/pipecd/releases/download/%s/piped_%s_%s_amd64"
 	pipedBinaryFileName = "piped"
 	pipedConfigFileName = "piped-config.yaml"
 )

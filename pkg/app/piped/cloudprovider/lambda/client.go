@@ -29,7 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/backoff"
+	"github.com/pipe-cd/pipecd/pkg/backoff"
 )
 
 const (

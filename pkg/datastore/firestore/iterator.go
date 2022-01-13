@@ -21,7 +21,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 
-	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/datastore"
 )
 
 type dataConverter interface {

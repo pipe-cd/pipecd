@@ -25,16 +25,16 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor/registry"
-	"github.com/pipe-cd/pipe/pkg/app/piped/logpersister"
-	"github.com/pipe-cd/pipe/pkg/app/piped/metadatastore"
-	pln "github.com/pipe-cd/pipe/pkg/app/piped/planner"
-	"github.com/pipe-cd/pipe/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipe/pkg/cache"
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/registry"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/logpersister"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/metadatastore"
+	pln "github.com/pipe-cd/pipecd/pkg/app/piped/planner"
+	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
+	"github.com/pipe-cd/pipecd/pkg/cache"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // scheduler is a dedicated object for a specific deployment of a single application.

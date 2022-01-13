@@ -20,9 +20,9 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/pipe-cd/pipe/pkg/datastore"
-	"github.com/pipe-cd/pipe/pkg/insight/insightstore"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/insight/insightstore"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 const (

@@ -6,7 +6,7 @@ go_library(
         "cache.go",
         "hashcache.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/cache/rediscache",
+    importpath = "github.com/pipe-cd/pipecd/pkg/cache/rediscache",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/cache:go_default_library",

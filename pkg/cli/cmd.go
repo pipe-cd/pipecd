@@ -31,8 +31,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/api/option"
 
-	"github.com/pipe-cd/pipe/pkg/log"
-	"github.com/pipe-cd/pipe/pkg/version"
+	"github.com/pipe-cd/pipecd/pkg/log"
+	"github.com/pipe-cd/pipecd/pkg/version"
 )
 
 type Input struct {

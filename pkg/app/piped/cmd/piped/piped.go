@@ -37,43 +37,43 @@ import (
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/pipe-cd/pipe/pkg/admin"
-	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/analysisresultstore"
-	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/applicationstore"
-	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/commandstore"
-	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/deploymentstore"
-	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/environmentstore"
-	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/eventstore"
-	"github.com/pipe-cd/pipe/pkg/app/piped/appconfigreporter"
-	"github.com/pipe-cd/pipe/pkg/app/piped/chartrepo"
-	k8scloudprovidermetrics "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/kubernetesmetrics"
-	"github.com/pipe-cd/pipe/pkg/app/piped/controller"
-	"github.com/pipe-cd/pipe/pkg/app/piped/driftdetector"
-	"github.com/pipe-cd/pipe/pkg/app/piped/eventwatcher"
-	"github.com/pipe-cd/pipe/pkg/app/piped/livestatereporter"
-	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore"
-	k8slivestatestoremetrics "github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/kubernetes/kubernetesmetrics"
-	"github.com/pipe-cd/pipe/pkg/app/piped/notifier"
-	"github.com/pipe-cd/pipe/pkg/app/piped/planpreview"
-	"github.com/pipe-cd/pipe/pkg/app/piped/planpreview/planpreviewmetrics"
-	"github.com/pipe-cd/pipe/pkg/app/piped/statsreporter"
-	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
-	"github.com/pipe-cd/pipe/pkg/app/piped/trigger"
-	"github.com/pipe-cd/pipe/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
-	"github.com/pipe-cd/pipe/pkg/cli"
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/crypto"
-	"github.com/pipe-cd/pipe/pkg/git"
-	"github.com/pipe-cd/pipe/pkg/model"
-	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
-	"github.com/pipe-cd/pipe/pkg/rpc/rpcclient"
-	"github.com/pipe-cd/pipe/pkg/version"
+	"github.com/pipe-cd/pipecd/pkg/admin"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/analysisresultstore"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/applicationstore"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/commandstore"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/deploymentstore"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/environmentstore"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/eventstore"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/appconfigreporter"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/chartrepo"
+	k8scloudprovidermetrics "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes/kubernetesmetrics"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/controller"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/eventwatcher"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatereporter"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore"
+	k8slivestatestoremetrics "github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/kubernetes/kubernetesmetrics"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/notifier"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/planpreview"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/planpreview/planpreviewmetrics"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/statsreporter"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/trigger"
+	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
+	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
+	"github.com/pipe-cd/pipecd/pkg/cli"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/crypto"
+	"github.com/pipe-cd/pipecd/pkg/git"
+	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
+	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
+	"github.com/pipe-cd/pipecd/pkg/version"
 
 	// Import to preload all built-in executors to the default registry.
-	_ "github.com/pipe-cd/pipe/pkg/app/piped/executor/registry"
+	_ "github.com/pipe-cd/pipecd/pkg/app/piped/executor/registry"
 	// Import to preload all planners to the default registry.
-	_ "github.com/pipe-cd/pipe/pkg/app/piped/planner/registry"
+	_ "github.com/pipe-cd/pipecd/pkg/app/piped/planner/registry"
 )
 
 type piped struct {
@@ -665,7 +665,7 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 // to get the operation done.
 //
 // This is a workaround to deal with OpenShift less than 4.2
-// See more: https://github.com/pipe-cd/pipe/issues/1905
+// See more: https://github.com/pipe-cd/pipecd/issues/1905
 func (p *piped) insertLoginUserToPasswd(ctx context.Context) error {
 	var stdout, stderr bytes.Buffer
 

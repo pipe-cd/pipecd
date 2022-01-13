@@ -1,5 +1,5 @@
 workspace(
-    name = "pipe",
+    name = "pipecd",
     managed_directories = {"@npm": ["pkg/app/web/node_modules"]},
 )
 

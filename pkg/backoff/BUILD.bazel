@@ -7,7 +7,7 @@ go_library(
         "constant.go",
         "exponential.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/backoff",
+    importpath = "github.com/pipe-cd/pipecd/pkg/backoff",
     visibility = ["//visibility:public"],
 )
 

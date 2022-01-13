@@ -25,9 +25,9 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/net/xsrftoken"
 
-	"github.com/pipe-cd/pipe/pkg/jwt"
-	"github.com/pipe-cd/pipe/pkg/model"
-	"github.com/pipe-cd/pipe/pkg/oauth/github"
+	"github.com/pipe-cd/pipecd/pkg/jwt"
+	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/oauth/github"
 )
 
 func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {

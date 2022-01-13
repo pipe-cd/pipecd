@@ -30,7 +30,7 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/filestore"
+	"github.com/pipe-cd/pipecd/pkg/filestore"
 )
 
 type Store struct {

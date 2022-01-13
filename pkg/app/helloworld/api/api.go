@@ -22,7 +22,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	"github.com/pipe-cd/pipe/pkg/app/helloworld/service"
+	"github.com/pipe-cd/pipecd/pkg/app/helloworld/service"
 )
 
 var (

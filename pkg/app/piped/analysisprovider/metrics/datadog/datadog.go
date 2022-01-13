@@ -23,7 +23,7 @@ import (
 	"github.com/DataDog/datadog-api-client-go/api/v1/datadog"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/metrics"
 )
 
 const (

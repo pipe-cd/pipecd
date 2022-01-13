@@ -8,7 +8,7 @@ go_library(
         "insightstore.go",
         "milestonestore.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/insight/insightstore",
+    importpath = "github.com/pipe-cd/pipecd/pkg/insight/insightstore",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/cache:go_default_library",

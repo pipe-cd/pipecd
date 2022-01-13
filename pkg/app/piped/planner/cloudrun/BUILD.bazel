@@ -6,7 +6,7 @@ go_library(
         "cloudrun.go",
         "pipeline.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/planner/cloudrun",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/planner/cloudrun",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider/cloudrun:go_default_library",

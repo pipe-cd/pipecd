@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/datastore"
 )
 
 var operatorMap = map[datastore.Operator]string{

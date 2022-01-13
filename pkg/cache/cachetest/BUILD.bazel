@@ -6,7 +6,7 @@ go_library(
         "cache.mock.go",
         "mock.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/cache/cachetest",
+    importpath = "github.com/pipe-cd/pipecd/pkg/cache/cachetest",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/cache:go_default_library",

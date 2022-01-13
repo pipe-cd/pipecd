@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 func TestResourceMatcher(t *testing.T) {
@@ -34,10 +34,10 @@ func TestResourceMatcher(t *testing.T) {
 			name: "empty config",
 			cfg:  config.KubernetesAppStateInformer{},
 			gvks: map[schema.GroupVersionKind]bool{
-				schema.GroupVersionKind{"pipecd.dev", "v1beta1", "Foo"}:       false,
-				schema.GroupVersionKind{"", "v1", "Foo"}:                      false,
-				schema.GroupVersionKind{"", "v1", "Service"}:                  true,
-				schema.GroupVersionKind{"networking.k8s.io", "v1", "Ingress"}: true,
+				{"pipecd.dev", "v1beta1", "Foo"}:       false,
+				{"", "v1", "Foo"}:                      false,
+				{"", "v1", "Service"}:                  true,
+				{"networking.k8s.io", "v1", "Ingress"}: true,
 			},
 		},
 		{
@@ -49,9 +49,9 @@ func TestResourceMatcher(t *testing.T) {
 				},
 			},
 			gvks: map[schema.GroupVersionKind]bool{
-				schema.GroupVersionKind{"pipecd.dev", "v1beta1", "Foo"}:  true,
-				schema.GroupVersionKind{"pipecd.dev", "v1alpha1", "Foo"}: true,
-				schema.GroupVersionKind{"pipecd.dev", "v1alpha1", "Bar"}: false,
+				{"pipecd.dev", "v1beta1", "Foo"}:  true,
+				{"pipecd.dev", "v1alpha1", "Foo"}: true,
+				{"pipecd.dev", "v1alpha1", "Bar"}: false,
 			},
 		},
 		{
@@ -63,9 +63,9 @@ func TestResourceMatcher(t *testing.T) {
 				},
 			},
 			gvks: map[schema.GroupVersionKind]bool{
-				schema.GroupVersionKind{"apps", "v1", "ReplicaSet"}:           true,
-				schema.GroupVersionKind{"apps", "v1", "Deployment"}:           false,
-				schema.GroupVersionKind{"networking.k8s.io", "v1", "Ingress"}: false,
+				{"apps", "v1", "ReplicaSet"}:           true,
+				{"apps", "v1", "Deployment"}:           false,
+				{"networking.k8s.io", "v1", "Ingress"}: false,
 			},
 		},
 	}

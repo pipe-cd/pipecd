@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pipe-cd/pipe/pkg/filematcher"
+	"github.com/pipe-cd/pipecd/pkg/filematcher"
 )
 
 type EventWatcherSpec struct {

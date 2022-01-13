@@ -21,10 +21,10 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/app/server/httpapi/httpapimetrics"
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/jwt"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/app/server/httpapi/httpapimetrics"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/jwt"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // NewHandler gives back an HTTP handler for serving PipeCD SPA.

@@ -10,7 +10,7 @@ go_library(
         "ops.go",
         "server.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/cmd/pipecd",
+    importpath = "github.com/pipe-cd/pipecd/cmd/pipecd",
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/admin:go_default_library",

@@ -4,7 +4,7 @@ load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "github.com/pipe-cd/pipe/cmd/launcher",
+    importpath = "github.com/pipe-cd/pipecd/cmd/launcher",
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/app/launcher/cmd/launcher:go_default_library",

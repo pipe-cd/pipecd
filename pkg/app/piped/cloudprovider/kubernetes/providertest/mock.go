@@ -17,5 +17,5 @@ package providertest
 import (
 	_ "github.com/golang/mock/gomock"
 
-	_ "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	_ "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
 )

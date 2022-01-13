@@ -10,7 +10,7 @@ go_library(
         "target_groups.go",
         "task.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/ecs",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/ecs",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider:go_default_library",

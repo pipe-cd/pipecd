@@ -18,14 +18,14 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // wrapModel attaches an extra field named `_extra` to JSON data.
 // Currently, on MySQL v8, functional indexes are not hit on `LIKE` queries,
 // this added `_extra` field will be shadowed by table column `extra` so that
 // we could create indexes (FULLTEXT or normal) on that column for search features.
-// ref: https://github.com/pipe-cd/pipe/blob/master/docs/rfcs/0003-sql-datastore.md#text-search-operations-on-specific-json-field
+// ref: https://github.com/pipe-cd/pipecd/blob/master/docs/rfcs/0003-sql-datastore.md#text-search-operations-on-specific-json-field
 func wrapModel(entity interface{}) (interface{}, error) {
 	switch e := entity.(type) {
 	case *model.Project:

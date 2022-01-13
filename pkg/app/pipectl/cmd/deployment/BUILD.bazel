@@ -6,7 +6,7 @@ go_library(
         "deployment.go",
         "waitstatus.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/deployment",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/deployment",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/pipectl/client:go_default_library",

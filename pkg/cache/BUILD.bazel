@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["cache.go"],
-    importpath = "github.com/pipe-cd/pipe/pkg/cache",
+    importpath = "github.com/pipe-cd/pipecd/pkg/cache",
     visibility = ["//visibility:public"],
 )
 

@@ -27,7 +27,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/datastore"
 )
 
 const (

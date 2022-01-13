@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["redis.go"],
-    importpath = "github.com/pipe-cd/pipe/pkg/redis",
+    importpath = "github.com/pipe-cd/pipecd/pkg/redis",
     visibility = ["//visibility:public"],
     deps = ["@com_github_gomodule_redigo//redis:go_default_library"],
 )

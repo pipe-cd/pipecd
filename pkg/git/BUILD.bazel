@@ -9,7 +9,7 @@ go_library(
         "ssh_config.go",
         "url.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/git",
+    importpath = "github.com/pipe-cd/pipecd/pkg/git",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/config:go_default_library",

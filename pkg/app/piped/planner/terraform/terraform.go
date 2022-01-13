@@ -20,8 +20,8 @@ import (
 	"io"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/planner"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // Planner plans the deployment pipeline for terraform application.

@@ -7,7 +7,7 @@ go_library(
         "rollback.go",
         "terraform.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/executor/terraform",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/executor/terraform",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider/terraform:go_default_library",

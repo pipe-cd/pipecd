@@ -21,9 +21,9 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	helloworldservice "github.com/pipe-cd/pipe/pkg/app/helloworld/service"
-	"github.com/pipe-cd/pipe/pkg/cli"
-	"github.com/pipe-cd/pipe/pkg/rpc/rpcclient"
+	helloworldservice "github.com/pipe-cd/pipecd/pkg/app/helloworld/service"
+	"github.com/pipe-cd/pipecd/pkg/cli"
+	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
 )
 
 type samplecli struct {

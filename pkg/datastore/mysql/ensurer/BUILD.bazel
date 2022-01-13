@@ -7,7 +7,7 @@ go_library(
         "sql.embed",  #keep
         "sqlsensurer.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/datastore/mysql/ensurer",
+    importpath = "github.com/pipe-cd/pipecd/pkg/datastore/mysql/ensurer",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/datastore/mysql:go_default_library",

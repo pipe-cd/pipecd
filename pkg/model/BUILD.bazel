@@ -37,7 +37,7 @@ load("//bazel:pgv_go_proto.bzl", "pgv_go_proto_library")
 pgv_go_proto_library(
     name = "model_go_proto",
     compilers = ["@io_bazel_rules_go//proto:go_proto"],
-    importpath = "github.com/pipe-cd/pipe/pkg/model",
+    importpath = "github.com/pipe-cd/pipecd/pkg/model",
     proto = ":model_proto",
     visibility = ["//visibility:public"],
 )
@@ -68,7 +68,7 @@ go_library(
         "stage.go",
     ],
     embed = [":model_go_proto"],
-    importpath = "github.com/pipe-cd/pipe/pkg/model",
+    importpath = "github.com/pipe-cd/pipecd/pkg/model",
     visibility = ["//visibility:public"],
     deps = [
         "@org_golang_google_protobuf//proto:go_default_library",

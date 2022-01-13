@@ -17,7 +17,7 @@ package insight
 import (
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type ApplicationCounts struct {

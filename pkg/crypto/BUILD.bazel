@@ -9,7 +9,7 @@ go_library(
         "key.go",
         "rsa.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/crypto",
+    importpath = "github.com/pipe-cd/pipecd/pkg/crypto",
     visibility = ["//visibility:public"],
 )
 

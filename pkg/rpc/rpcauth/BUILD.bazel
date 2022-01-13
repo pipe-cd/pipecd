@@ -7,7 +7,7 @@ go_library(
         "interceptor.go",
         "wrapper.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/rpc/rpcauth",
+    importpath = "github.com/pipe-cd/pipecd/pkg/rpc/rpcauth",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/jwt:go_default_library",

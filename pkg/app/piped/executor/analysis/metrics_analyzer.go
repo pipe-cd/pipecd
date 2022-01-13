@@ -24,11 +24,11 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics"
-	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/analysisresultstore"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipe/pkg/app/piped/executor/analysis/mannwhitney"
-	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/metrics"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/analysisresultstore"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/analysis/mannwhitney"
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 const (

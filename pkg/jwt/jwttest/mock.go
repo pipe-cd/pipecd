@@ -17,5 +17,5 @@ package jwttest
 import (
 	_ "github.com/golang/mock/gomock"
 
-	_ "github.com/pipe-cd/pipe/pkg/jwt"
+	_ "github.com/pipe-cd/pipecd/pkg/jwt"
 )

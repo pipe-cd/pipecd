@@ -10,7 +10,7 @@ go_library(
         "milestone.go",
         "utils.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/insight",
+    importpath = "github.com/pipe-cd/pipecd/pkg/insight",
     visibility = ["//visibility:public"],
     deps = ["//pkg/model:go_default_library"],
 )

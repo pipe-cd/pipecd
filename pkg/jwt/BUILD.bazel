@@ -7,7 +7,7 @@ go_library(
         "signer.go",
         "verifier.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/jwt",
+    importpath = "github.com/pipe-cd/pipecd/pkg/jwt",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/model:go_default_library",

@@ -20,7 +20,7 @@ import (
 	"regexp"
 	"sync"
 
-	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
+	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 )
 
 var (

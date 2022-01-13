@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 const APIKeyModelKind = "APIKey"

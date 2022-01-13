@@ -23,13 +23,13 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	metrics "github.com/pipe-cd/pipe/pkg/app/piped/planpreview/planpreviewmetrics"
-	"github.com/pipe-cd/pipe/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipe/pkg/cache"
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/git"
-	"github.com/pipe-cd/pipe/pkg/model"
-	"github.com/pipe-cd/pipe/pkg/regexpool"
+	metrics "github.com/pipe-cd/pipecd/pkg/app/piped/planpreview/planpreviewmetrics"
+	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
+	"github.com/pipe-cd/pipecd/pkg/cache"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/git"
+	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/regexpool"
 )
 
 const (

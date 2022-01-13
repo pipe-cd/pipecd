@@ -7,7 +7,7 @@ go_library(
         "analyzer.go",
         "metrics_analyzer.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/executor/analysis",
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/executor/analysis",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/analysisprovider/http:go_default_library",

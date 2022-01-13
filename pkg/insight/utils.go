@@ -17,7 +17,7 @@ package insight
 import (
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func NormalizeTime(from time.Time, step model.InsightStep) time.Time {

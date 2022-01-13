@@ -20,7 +20,7 @@ go_library(
         "replicas.go",
         "sealed_secret.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/config",
+    importpath = "github.com/pipe-cd/pipecd/pkg/config",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/filematcher:go_default_library",

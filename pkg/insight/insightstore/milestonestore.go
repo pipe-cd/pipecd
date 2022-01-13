@@ -18,7 +18,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/pipe-cd/pipe/pkg/insight"
+	"github.com/pipe-cd/pipecd/pkg/insight"
 )
 
 const milestonePath = "insights/milestone.json"
