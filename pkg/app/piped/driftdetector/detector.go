@@ -27,9 +27,9 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
-	"github.com/pipe-cd/pipe/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/app/piped/driftdetector/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore"
+	"github.com/pipe-cd/pipe/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
