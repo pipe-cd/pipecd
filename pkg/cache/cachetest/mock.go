@@ -14,7 +14,6 @@
 
 package cachetest
 
-
 import (
 	_ "github.com/golang/mock/gomock"
 
