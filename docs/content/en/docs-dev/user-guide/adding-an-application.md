@@ -32,6 +32,8 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: foo
+  labels:
+    team: bar
 ```
 
 Visit [here](/docs/user-guide/configuration-reference/) for supported fields.
@@ -60,12 +62,14 @@ Here are the list of fields in the register form:
 |-|-|-|-|
 | Name | The application name | Yes |
 | Kind | The application kind. Select one of these values: `Kubernetes`, `Terraform`, `CloudRun`, `Lambda` and `ECS`. | Yes |
-| Env | The environment this application should belongs to. Select one of the registered environments at `Settings/Environment` page.  | No |
+| Env (deprecated) | The environment this application should belongs to. Select one of the registered environments at `Settings/Environment` page.  | No |
 | Piped | The piped that handles this application. Select one of the registered `piped`s at `Settings/Piped` page. | Yes |
 | Repository | The Git repository contains application configuration and application configuration. Select one of the registered repositories in `piped` configuration. | Yes |
 | Path | The relative path from the root of the Git repository to the directory containing application configuration and application configuration. Use `./` means repository root. | Yes |
 | Config Filename | The name of application configuration file. Default is `app.pipecd.yaml`. | No |
 | Cloud Provider | Where the application will be deployed to. Select one of the registered cloud providers in `piped` configuration. | Yes |
+
+>Note: Labels couldn't be set via this form. If you want, try the way to register via the application configuration defined in the Git repository
 
 After registering the application, one more step left is adding the application configuration file for that application into the application directory in Git repository. That application configuration file helps `piped` know how the application should be deployed, such as doing canary/blue-green strategy or requiring a manual approval... It is in `YAML` format as below:
 
@@ -89,6 +93,8 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: new-name
+  labels:
+    team: new-team
 ```
 
 Refer to [configuration reference](/docs/user-guide/configuration-reference/) to see the full list of configurable fields.
