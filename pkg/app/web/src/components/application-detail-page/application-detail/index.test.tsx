@@ -12,13 +12,7 @@ import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { dummyApplicationLiveState } from "~/__fixtures__/dummy-application-live-state";
 import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
-import {
-  createReduxStore,
-  createStore,
-  render,
-  screen,
-  waitFor,
-} from "~~/test-utils";
+import { createStore, render, screen, waitFor } from "~~/test-utils";
 import { ApplicationDetail } from ".";
 
 beforeAll(() => {
@@ -178,28 +172,5 @@ describe("ApplicationDetail", () => {
         ])
       );
     });
-  });
-
-  test("edit description", async () => {
-    const store = createReduxStore(baseState);
-    render(
-      <MemoryRouter>
-        <ApplicationDetail applicationId={dummyApplication.id} />
-      </MemoryRouter>,
-      {
-        store,
-      }
-    );
-
-    userEvent.click(screen.getByRole("button", { name: /edit description/i }));
-    userEvent.type(
-      screen.getByRole("textbox", { name: /Description/i }),
-      "# Awesome application"
-    );
-    userEvent.click(screen.getByRole("button", { name: /Save description/i }));
-
-    await waitFor(() =>
-      expect(screen.getByText("Awesome application")).toBeInTheDocument()
-    );
   });
 });
