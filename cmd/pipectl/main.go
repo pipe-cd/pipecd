@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/appconfig"
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/application"
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/deployment"
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/encrypt"
@@ -40,6 +41,7 @@ func main() {
 		planpreview.NewCommand(),
 		piped.NewCommand(),
 		encrypt.NewCommand(),
+		appconfig.NewCommand(),
 	)
 
 	if err := app.Run(); err != nil {

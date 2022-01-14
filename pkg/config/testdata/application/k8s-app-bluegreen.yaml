@@ -3,6 +3,9 @@
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
+  description: |
+    application description first string
+    application description second string
   planner:
     alwaysUsePipeline: true
   trigger:

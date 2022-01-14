@@ -38,6 +38,7 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &KubernetesApplicationSpec{
 				GenericApplicationSpec: GenericApplicationSpec{
+					Description: "application description first string\napplication description second string\n",
 					Planner: DeploymentPlanner{
 						AlwaysUsePipeline: true,
 					},
