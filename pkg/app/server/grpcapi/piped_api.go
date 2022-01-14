@@ -958,7 +958,7 @@ func (a *PipedAPI) GetDesiredVersion(ctx context.Context, _ *pipedservice.GetDes
 }
 
 func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pipedservice.UpdateApplicationConfigurationsRequest) (*pipedservice.UpdateApplicationConfigurationsResponse, error) {
-	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	projectID, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -968,12 +968,46 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 			return nil, err
 		}
 	}
+
+	opts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    projectID,
+			},
+			{
+				Field:    "Deleted",
+				Operator: datastore.OperatorEqual,
+				Value:    false,
+			},
+		},
+	}
+	envs, err := a.environmentStore.ListEnvironments(ctx, opts)
+	if err != nil {
+		a.logger.Error("failed to get environments", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get environments")
+	}
+	envMap := make(map[string]string, len(envs))
+	for _, env := range envs {
+		// It is assumed that the env name is kept unique by the user.
+		envMap[env.Name] = env.Id
+	}
+
 	for _, appInfo := range req.Applications {
+		envID := ""
+		if appInfo.EnvName != "" {
+			var ok bool
+			envID, ok = envMap[appInfo.EnvName]
+			if !ok {
+				a.logger.Warn(fmt.Sprintf("unknown environment name %q given", appInfo.EnvName))
+			}
+		}
 		updater := func(app *model.Application) error {
 			app.Name = appInfo.Name
 			app.Labels = appInfo.Labels
 			app.Description = appInfo.Description
-			// TODO: Enable to update env via PipedAPI
+			app.EnvId = envID
 			return nil
 		}
 		if err := a.applicationStore.UpdateApplication(ctx, appInfo.Id, updater); err != nil {
