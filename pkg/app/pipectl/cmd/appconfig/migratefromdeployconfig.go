@@ -28,7 +28,6 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
 	"github.com/pipe-cd/pipecd/pkg/cli"
-	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type migrateFromDeployConfig struct {
@@ -72,7 +71,7 @@ func (m *migrateFromDeployConfig) run(ctx context.Context, _ cli.Input) error {
 	fmt.Fprintln(m.stdout, "Start finding and migrating deployment configuration files to application configuration files...")
 
 	var cursor string
-	var count int
+	var appConfigs = make(map[string][]byte, 0)
 	for {
 		req := &apiservice.ListApplicationsRequest{
 			EnvName: m.envName,
@@ -87,10 +86,18 @@ func (m *migrateFromDeployConfig) run(ctx context.Context, _ cli.Input) error {
 			if app.GitPath.Repo.Id != m.repoID {
 				continue
 			}
-			if err := m.migrate(ctx, app); err != nil {
+
+			path := filepath.Join(m.repoRootPath, app.GitPath.GetApplicationConfigFilePath())
+			oriData, err := os.ReadFile(path)
+			if err != nil {
 				return err
 			}
-			count++
+
+			newData, err := convert(oriData, app.Name, m.envName, app.Description)
+			if err != nil {
+				return err
+			}
+			appConfigs[path] = newData
 		}
 		if resp.Cursor == "" {
 			break
@@ -98,27 +105,23 @@ func (m *migrateFromDeployConfig) run(ctx context.Context, _ cli.Input) error {
 		cursor = resp.Cursor
 	}
 
-	fmt.Fprintf(m.stdout, "Successfully migrated %d applications\n", count)
+	if len(appConfigs) == 0 {
+		fmt.Println("There is no applications to migrate")
+		return nil
+	}
+
+	for p, data := range appConfigs {
+		info, err := os.Stat(p)
+		if err != nil {
+			return err
+		}
+		if err := os.WriteFile(p, data, info.Mode()); err != nil {
+			return err
+		}
+	}
+
+	fmt.Fprintf(m.stdout, "Successfully migrated %d applications\n", len(appConfigs))
 	return nil
-}
-
-func (m *migrateFromDeployConfig) migrate(app *model.Application) error {
-	configFilePath := filepath.Join(m.repoRootPath, app.GitPath.GetApplicationConfigFilePath())
-	oriData, err := os.ReadFile(configFilePath)
-	if err != nil {
-		return err
-	}
-
-	newData, err := convert(oriData, app.Name, m.envName, app.Description)
-	if err != nil {
-		return err
-	}
-
-	info, err := os.Stat(configFilePath)
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(configFilePath, newData, info.Mode())
 }
 
 func convert(data []byte, name, env, description string) ([]byte, error) {
