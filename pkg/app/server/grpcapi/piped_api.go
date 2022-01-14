@@ -973,7 +973,6 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 			app.Name = appInfo.Name
 			app.Labels = appInfo.Labels
 			app.Description = appInfo.Description
-			// TODO: Enable to update env via PipedAPI
 			return nil
 		}
 		if err := a.applicationStore.UpdateApplication(ctx, appInfo.Id, updater); err != nil {

@@ -26,8 +26,6 @@ const (
 	defaultWaitApprovalTimeout  = Duration(6 * time.Hour)
 	defaultAnalysisQueryTimeout = Duration(30 * time.Second)
 	allEventsSymbol             = "*"
-
-	EnvLabelKey = "env"
 )
 
 type GenericApplicationSpec struct {
@@ -38,8 +36,6 @@ type GenericApplicationSpec struct {
 	// Deprecated.
 	EnvName string `json:"envName"`
 	// Additional attributes to identify applications.
-	// PipeCD reserves all keys prefixed by `pipecd.dev/`.
-	// The label `env` will be recognized as the Environment of this application.
 	Labels map[string]string `json:"labels"`
 	// Notes on the Application.
 	Description string `json:"description"`
