@@ -674,12 +674,6 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
       []
     );
 
-    const environments = useAppSelector(selectAllEnvs);
-    const envsMap = new Map<string, string>();
-    environments.forEach((env) => {
-      envsMap.set(env.name, env.id);
-    });
-
     const [activeStep, setActiveStep] = useState(0);
 
     return (
@@ -739,20 +733,6 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                                 className={classes.textInput}
                               />
                             </div>
-                            {app.envName.length > 0 && (
-                              <div className={classes.inputGroup}>
-                                <TextField
-                                  id={"env-" + i}
-                                  label="Environment"
-                                  margin="dense"
-                                  fullWidth
-                                  variant="outlined"
-                                  disabled
-                                  value={app.envName}
-                                  className={classes.textInput}
-                                />
-                              </div>
-                            )}
                             <div className={classes.inputGroup}>
                               <TextField
                                 id={"path-" + i}
@@ -797,7 +777,7 @@ const UnregisteredApplicationList: FC<ApplicationFormProps> = memo(
                                 // NOTE: Repo remote and branch aren't needed because they are populated by API.
                                 setAppToAdd({
                                   name: app.name,
-                                  env: envsMap.get(app.envName) as string | "",
+                                  env: "",
                                   pipedId: app.pipedId,
                                   repo: {
                                     id: app.repoId,
