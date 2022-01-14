@@ -102,7 +102,7 @@ func (m *migrateFromDeployConfig) run(ctx context.Context, _ cli.Input) error {
 	return nil
 }
 
-func (m *migrateFromDeployConfig) migrate(ctx context.Context, app *model.Application) error {
+func (m *migrateFromDeployConfig) migrate(app *model.Application) error {
 	configFilePath := filepath.Join(m.repoRootPath, app.GitPath.GetApplicationConfigFilePath())
 	oriData, err := os.ReadFile(configFilePath)
 	if err != nil {
