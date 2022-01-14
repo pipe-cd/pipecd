@@ -2,7 +2,6 @@ import { StatusCode } from "grpc-web";
 import {
   ListEnvironmentsResponse,
   DeleteEnvironmentResponse,
-  AddEnvironmentResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import {
   createEnvFromObject,
@@ -23,13 +22,6 @@ export const listEnvironmentHandler = createHandler<ListEnvironmentsResponse>(
   }
 );
 
-export const addEnvironmentHandler = createHandler<AddEnvironmentResponse>(
-  "/AddEnvironment",
-  () => {
-    return new AddEnvironmentResponse();
-  }
-);
-
 export const deleteEnvironmentHandler = createHandler<
   DeleteEnvironmentResponse
 >("/DeleteEnvironment", () => {
@@ -44,5 +36,4 @@ export const deleteEnvironmentFailedHandler = createHandlerWithError(
 export const environmentHandlers = [
   listEnvironmentHandler,
   deleteEnvironmentHandler,
-  addEnvironmentHandler,
 ];

@@ -1,17 +1,11 @@
-import { createReduxStore, createStore } from "~~/test-utils";
+import { createReduxStore } from "~~/test-utils";
 import { server } from "~/mocks/server";
 import {
-  addEnvironmentHandler,
   deleteEnvironmentHandler,
   listEnvironmentHandler,
 } from "~/mocks/services/environment";
 import { dummyEnv } from "~/__fixtures__/dummy-environment";
-import {
-  environmentsSlice,
-  fetchEnvironments,
-  addEnvironment,
-  deleteEnvironment,
-} from ".";
+import { environmentsSlice, fetchEnvironments, deleteEnvironment } from ".";
 
 beforeAll(() => {
   server.listen();
@@ -63,22 +57,6 @@ describe("async actions", () => {
       entities: { [dummyEnv.id]: dummyEnv },
       ids: [dummyEnv.id],
     });
-  });
-
-  test("addEnvironment", async () => {
-    const store = createStore();
-
-    server.use(addEnvironmentHandler);
-
-    await store.dispatch(addEnvironment({ name: "env", desc: "description" }));
-    expect(store.getActions()).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ type: addEnvironment.pending.type }),
-        expect.objectContaining({
-          type: addEnvironment.fulfilled.type,
-        }),
-      ])
-    );
   });
 
   test("deleteEnvironment", async () => {

@@ -37,7 +37,6 @@ import "google/protobuf/wrappers.proto";
 // All of these RPCs are only called by web client and authenticated by using ID_TOKEN.
 service WebService {
     // Environment
-    rpc AddEnvironment(AddEnvironmentRequest) returns (AddEnvironmentResponse) {}
     rpc UpdateEnvironmentDesc(UpdateEnvironmentDescRequest) returns (UpdateEnvironmentDescResponse) {}
     rpc ListEnvironments(ListEnvironmentsRequest) returns (ListEnvironmentsResponse) {}
     rpc EnableEnvironment(EnableEnvironmentRequest) returns (EnableEnvironmentResponse) {}
@@ -102,9 +101,6 @@ service WebService {
     // DeploymentChain
     rpc ListDeploymentChains(ListDeploymentChainsRequest) returns (ListDeploymentChainsResponse) {}
     rpc GetDeploymentChain(GetDeploymentChainRequest) returns (GetDeploymentChainResponse) {}
-}
-
-message AddEnvironmentResponse {
 }
 
 message UpdateEnvironmentDescRequest {
@@ -219,12 +215,6 @@ message UpdatePipedDesiredVersionRequest {
 
 message UpdatePipedDesiredVersionResponse {
 }
-
-message AddEnvironmentRequest {
-    string name = 1 [(validate.rules).string.min_len = 1];
-    string desc = 2;
-}
-
 
 message AddApplicationRequest {
     string name = 1 [(validate.rules).string.min_len = 1];
