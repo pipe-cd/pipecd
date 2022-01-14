@@ -7,6 +7,7 @@ go_library(
     importpath = "github.com/pipe-cd/pipecd/cmd/pipectl",
     visibility = ["//visibility:private"],
     deps = [
+        "//pkg/app/pipectl/cmd/appconfig:go_default_library",
         "//pkg/app/pipectl/cmd/application:go_default_library",
         "//pkg/app/pipectl/cmd/deployment:go_default_library",
         "//pkg/app/pipectl/cmd/encrypt:go_default_library",
