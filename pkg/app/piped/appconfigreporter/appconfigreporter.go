@@ -386,10 +386,6 @@ func (r *Reporter) readApplicationInfo(repoDir, repoID, cfgRelPath string) (*mod
 	if spec.Name == "" {
 		return nil, fmt.Errorf("missing application name: %w", errMissingRequiredField)
 	}
-	envName := spec.EnvName
-	if e, ok := spec.Labels[config.EnvLabelKey]; ok {
-		envName = e
-	}
 	return &model.ApplicationInfo{
 		Name:           spec.Name,
 		Kind:           kind,
@@ -399,6 +395,5 @@ func (r *Reporter) readApplicationInfo(repoDir, repoID, cfgRelPath string) (*mod
 		ConfigFilename: filepath.Base(cfgRelPath),
 		PipedId:        r.config.PipedID,
 		Description:    spec.Description,
-		EnvName:        envName,
 	}, nil
 }
