@@ -42,13 +42,6 @@ export const fetchEnvironments = createAsyncThunk<Environment.AsObject[], void>(
   }
 );
 
-export const addEnvironment = createAsyncThunk<
-  void,
-  { name: string; desc: string }
->(`${MODULE_NAME}/add`, async (props) => {
-  await envsApi.addEnvironment(props);
-});
-
 export const deleteEnvironment = createAsyncThunk<
   void,
   { environmentId: string }

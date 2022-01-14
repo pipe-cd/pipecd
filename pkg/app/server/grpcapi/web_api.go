@@ -123,31 +123,6 @@ func (a *WebAPI) Register(server *grpc.Server) {
 	webservice.RegisterWebServiceServer(server, a)
 }
 
-func (a *WebAPI) AddEnvironment(ctx context.Context, req *webservice.AddEnvironmentRequest) (*webservice.AddEnvironmentResponse, error) {
-	claims, err := rpcauth.ExtractClaims(ctx)
-	if err != nil {
-		a.logger.Error("failed to authenticate the current user", zap.Error(err))
-		return nil, err
-	}
-
-	env := model.Environment{
-		Id:        uuid.New().String(),
-		Name:      req.Name,
-		Desc:      req.Desc,
-		ProjectId: claims.Role.ProjectId,
-	}
-	err = a.environmentStore.AddEnvironment(ctx, &env)
-	if errors.Is(err, datastore.ErrAlreadyExists) {
-		return nil, status.Error(codes.AlreadyExists, "The environment already exists")
-	}
-	if err != nil {
-		a.logger.Error("failed to create environment", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to create environment")
-	}
-
-	return &webservice.AddEnvironmentResponse{}, nil
-}
-
 func (a *WebAPI) UpdateEnvironmentDesc(ctx context.Context, req *webservice.UpdateEnvironmentDescRequest) (*webservice.UpdateEnvironmentDescResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
