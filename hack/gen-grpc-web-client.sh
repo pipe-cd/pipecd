@@ -15,7 +15,7 @@
 # limitations under the License.
 
 ROOT=$(dirname ${BASH_SOURCE})/..
-PROTO_FILE_DIR=${ROOT}/pkg/app/api/service
+PROTO_FILE_DIR=${ROOT}/pkg/app/server/service
 OUTPUT_DIR=${ROOT}/pkg/app/web/src/service/
 mkdir -p ${OUTPUT_DIR}
 protoc -I=${PROTO_FILE_DIR} service.proto \
