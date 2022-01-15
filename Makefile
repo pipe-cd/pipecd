@@ -76,7 +76,7 @@ clean:
 
 .PHONY: expose-generated-go
 expose-generated-go:
-	./hack/expose-generated-go.sh pipe-cd pipe
+	./hack/expose-generated-go.sh pipe-cd pipecd
 
 .PHONY: site
 site:
