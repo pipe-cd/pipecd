@@ -1,4 +1,4 @@
-// Copyright 2021 The PipeCD Authors.
+// Copyright 2022 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,7 +41,23 @@ func TestDiff(t *testing.T) {
 	require.Empty(t, got)
 }
 
-func TestDiff_Render(t *testing.T) {
+func TestDiffResult_NoChange(t *testing.T) {
+	old, err := loadServiceManifest("testdata/old_manifest.yaml")
+	require.NoError(t, err)
+	require.NotEmpty(t, old)
+
+	new, err := loadServiceManifest("testdata/new_manifest.yaml")
+	require.NoError(t, err)
+	require.NotEmpty(t, new)
+
+	result, err := Diff(old, new)
+	require.NoError(t, err)
+
+	got := result.NoChange()
+	require.False(t, got)
+}
+
+func TestDiffResult_Render(t *testing.T) {
 	old, err := loadServiceManifest("testdata/old_manifest.yaml")
 	require.NoError(t, err)
 
