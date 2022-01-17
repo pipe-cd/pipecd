@@ -51,7 +51,7 @@ func NewFileDB(fs filestore.Store, opts ...Option) (*FileDB, error) {
 }
 
 func (f *FileDB) Find(ctx context.Context, kind string, opts datastore.ListOptions) (datastore.Iterator, error) {
-	return nil, nil
+	return nil, datastore.ErrUnimplemented
 }
 
 func (f *FileDB) Get(ctx context.Context, kind, id string, v interface{}) error {
