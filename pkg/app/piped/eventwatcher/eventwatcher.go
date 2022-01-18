@@ -248,7 +248,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 		eventResults = append(eventResults, &pipedservice.ReportEventStatusesRequest_Event{
 			Id:                latestEvent.Id,
 			Status:            model.EventStatus_EVENT_SUCCESS,
-			StatusDescription: fmt.Sprintf("Successfully handled by %q piped", w.config.PipedID),
+			StatusDescription: fmt.Sprintf("Successfully updated %d files", len(e.Replacements)),
 		})
 	}
 
