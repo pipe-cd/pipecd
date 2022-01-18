@@ -14,7 +14,9 @@
 
 package filedb
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // buildHotPath returns path the object with secified id.
 // The returned path is known as path on filedb hot storage.

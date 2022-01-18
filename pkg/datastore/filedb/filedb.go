@@ -22,6 +22,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/filestore"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type FileDB struct {
@@ -55,14 +56,12 @@ func (f *FileDB) Find(ctx context.Context, kind string, opts datastore.ListOptio
 }
 
 func (f *FileDB) Get(ctx context.Context, kind, id string, v interface{}) error {
-	// TODO: Find a better way to avoid knowledge leak about Application kind.
 	var path string
-	switch kind {
-	case datastore.ApplicationModelKind:
-		return datastore.ErrUnimplemented
-	default:
+	mul, _ := v.(model.FileStorable).DivideToMulti()
+	if !mul {
 		path = buildHotPath(kind, id)
 	}
+	// TODO: Handle request multiple file paths.
 
 	raw, err := f.backend.Get(ctx, path)
 	if err == filestore.ErrNotFound {
@@ -89,14 +88,12 @@ func (f *FileDB) Get(ctx context.Context, kind, id string, v interface{}) error 
 }
 
 func (f *FileDB) Create(ctx context.Context, kind, id string, entity interface{}) error {
-	// TODO: Find a better way to avoid knowledge leak about Application kind.
 	var path string
-	switch kind {
-	case datastore.ApplicationModelKind:
-		return datastore.ErrUnimplemented
-	default:
+	mul, _ := entity.(model.FileStorable).DivideToMulti()
+	if !mul {
 		path = buildHotPath(kind, id)
 	}
+	// TODO: Handle request multiple file paths.
 
 	// Note: To enable the current check existence logic works, the filestore
 	// bucket need to be created with `Retention policy` configuration.
@@ -141,14 +138,12 @@ func (f *FileDB) Create(ctx context.Context, kind, id string, entity interface{}
 }
 
 func (f *FileDB) Put(ctx context.Context, kind, id string, entity interface{}) error {
-	// TODO: Find a better way to avoid knowledge leak about Application kind.
 	var path string
-	switch kind {
-	case datastore.ApplicationModelKind:
-		return datastore.ErrUnimplemented
-	default:
+	mul, _ := entity.(model.FileStorable).DivideToMulti()
+	if !mul {
 		path = buildHotPath(kind, id)
 	}
+	// TODO: Handle request multiple file paths.
 
 	val, err := json.Marshal(entity)
 	if err != nil {
@@ -176,14 +171,13 @@ func (f *FileDB) Update(ctx context.Context, kind, id string, factory datastore.
 	// there will be no two or more processes which try to update
 	// a specified object at once, so we don't need to open transaction here.
 
-	// TODO: Find a better way to avoid knowledge leak about Application kind.
+	entity := factory()
 	var path string
-	switch kind {
-	case datastore.ApplicationModelKind:
-		return datastore.ErrUnimplemented
-	default:
+	mul, _ := entity.(model.FileStorable).DivideToMulti()
+	if !mul {
 		path = buildHotPath(kind, id)
 	}
+	// TODO: Handle request multiple file paths.
 
 	raw, err := f.backend.Get(ctx, path)
 	if err == filestore.ErrNotFound {
@@ -198,7 +192,6 @@ func (f *FileDB) Update(ctx context.Context, kind, id string, factory datastore.
 		return err
 	}
 
-	entity := factory()
 	if err = json.Unmarshal(raw, entity); err != nil {
 		f.logger.Error("failed to update entity: failed to decode entity",
 			zap.String("id", id),
