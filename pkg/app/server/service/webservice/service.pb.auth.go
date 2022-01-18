@@ -42,93 +42,93 @@ func isViewer(r model.Role) bool {
 // Todo: Auto generate this file from protobuf.
 func (a *authorizer) Authorize(method string, r model.Role) bool {
 	switch method {
-	case "/pipe.api.service.webservice.WebService/AddEnvironment":
+	case "/grpc.service.webservice.WebService/AddEnvironment":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/UpdateEnvironmentDesc":
+	case "/grpc.service.webservice.WebService/UpdateEnvironmentDesc":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/DeleteEnvironment":
+	case "/grpc.service.webservice.WebService/DeleteEnvironment":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/RegisterPiped":
+	case "/grpc.service.webservice.WebService/RegisterPiped":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/UpdatePiped":
+	case "/grpc.service.webservice.WebService/UpdatePiped":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/RecreatePipedKey":
+	case "/grpc.service.webservice.WebService/RecreatePipedKey":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/DeleteOldPipedKeys":
+	case "/grpc.service.webservice.WebService/DeleteOldPipedKeys":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/EnablePiped":
+	case "/grpc.service.webservice.WebService/EnablePiped":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/DisablePiped":
+	case "/grpc.service.webservice.WebService/DisablePiped":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/UpdatePipedDesiredVersion":
+	case "/grpc.service.webservice.WebService/UpdatePipedDesiredVersion":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/UpdateProjectStaticAdmin":
+	case "/grpc.service.webservice.WebService/UpdateProjectStaticAdmin":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/EnableStaticAdmin":
+	case "/grpc.service.webservice.WebService/EnableStaticAdmin":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/DisableStaticAdmin":
+	case "/grpc.service.webservice.WebService/DisableStaticAdmin":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/UpdateProjectSSOConfig":
+	case "/grpc.service.webservice.WebService/UpdateProjectSSOConfig":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/UpdateProjectRBACConfig":
+	case "/grpc.service.webservice.WebService/UpdateProjectRBACConfig":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/GenerateAPIKey":
+	case "/grpc.service.webservice.WebService/GenerateAPIKey":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/DisableAPIKey":
+	case "/grpc.service.webservice.WebService/DisableAPIKey":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/ListAPIKeys":
+	case "/grpc.service.webservice.WebService/ListAPIKeys":
 		return isAdmin(r)
 
-	case "/pipe.api.service.webservice.WebService/AddApplication":
+	case "/grpc.service.webservice.WebService/AddApplication":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/UpdateApplication":
+	case "/grpc.service.webservice.WebService/UpdateApplication":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/UpdateApplicationDescription":
+	case "/grpc.service.webservice.WebService/UpdateApplicationDescription":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/EnableApplication":
+	case "/grpc.service.webservice.WebService/EnableApplication":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/DisableApplication":
+	case "/grpc.service.webservice.WebService/DisableApplication":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/DeleteApplication":
+	case "/grpc.service.webservice.WebService/DeleteApplication":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/SyncApplication":
+	case "/grpc.service.webservice.WebService/SyncApplication":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/CancelDeployment":
+	case "/grpc.service.webservice.WebService/CancelDeployment":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/ApproveStage":
+	case "/grpc.service.webservice.WebService/ApproveStage":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/GenerateApplicationSealedSecret":
+	case "/grpc.service.webservice.WebService/GenerateApplicationSealedSecret":
 		return isAdmin(r) || isEditor(r)
 
-	case "/pipe.api.service.webservice.WebService/GetApplicationLiveState":
+	case "/grpc.service.webservice.WebService/GetApplicationLiveState":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
-	case "/pipe.api.service.webservice.WebService/GetProject":
+	case "/grpc.service.webservice.WebService/GetProject":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
-	case "/pipe.api.service.webservice.WebService/GetCommand":
+	case "/grpc.service.webservice.WebService/GetCommand":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
-	case "/pipe.api.service.webservice.WebService/ListEnvironments":
+	case "/grpc.service.webservice.WebService/ListEnvironments":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
-	case "/pipe.api.service.webservice.WebService/ListPipeds":
+	case "/grpc.service.webservice.WebService/ListPipeds":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
-	case "/pipe.api.service.webservice.WebService/GetPiped":
+	case "/grpc.service.webservice.WebService/GetPiped":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
-	case "/pipe.api.service.webservice.WebService/ListApplications":
+	case "/grpc.service.webservice.WebService/ListApplications":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
-	case "/pipe.api.service.webservice.WebService/GetApplication":
+	case "/grpc.service.webservice.WebService/GetApplication":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
-	case "/pipe.api.service.webservice.WebService/ListDeployments":
+	case "/grpc.service.webservice.WebService/ListDeployments":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
-	case "/pipe.api.service.webservice.WebService/GetDeployment":
+	case "/grpc.service.webservice.WebService/GetDeployment":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
-	case "/pipe.api.service.webservice.WebService/GetStageLog":
+	case "/grpc.service.webservice.WebService/GetStageLog":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
-	case "/pipe.api.service.webservice.WebService/GetMe":
+	case "/grpc.service.webservice.WebService/GetMe":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
-	case "/pipe.api.service.webservice.WebService/GetInsightData":
+	case "/grpc.service.webservice.WebService/GetInsightData":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
-	case "/pipe.api.service.webservice.WebService/GetInsightApplicationCount":
+	case "/grpc.service.webservice.WebService/GetInsightApplicationCount":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
-	case "/pipe.api.service.webservice.WebService/ListUnregisteredApplications":
+	case "/grpc.service.webservice.WebService/ListUnregisteredApplications":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
 	}
 
