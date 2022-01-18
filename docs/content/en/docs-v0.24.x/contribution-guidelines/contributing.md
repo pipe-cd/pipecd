@@ -10,7 +10,7 @@ PipeCD is an open source project that anyone in the community can use, improve, 
 
 ## Contributor License Agreement
 
-Contributions to this project must be accompanied by a Contributor License Agreement ("CLA") described at [pipe-cd/pipe/master/CLA.md](https://github.com/pipe-cd/pipe/blob/master/CLA.md). You (or your employer) retain the copyright to your contribution; this simply gives us permission to use and redistribute your contributions as part of the project.
+Contributions to this project must be accompanied by a Contributor License Agreement ("CLA") described at [pipe-cd/pipecd/master/CLA.md](https://github.com/pipe-cd/pipecd/blob/master/CLA.md). You (or your employer) retain the copyright to your contribution; this simply gives us permission to use and redistribute your contributions as part of the project.
 
 You generally only need to sign a CLA once, so if you've already signed one, you probably don't need to do it again.
 
@@ -18,11 +18,11 @@ In case you have not signed yet, [pipecd-bot](https://github.com/pipecd-bot) wil
 
 ## Creating an issue
 
-If you've found a problem, please create an issue in the [pipe-cd/pipe](https://github.com/pipe-cd/pipe/issues) repository.
+If you've found a problem, please create an issue in the [pipe-cd/pipe](https://github.com/pipe-cd/pipecd/issues) repository.
 
 ## Creating a pull request
 
-Look at our [help wanted issues](https://github.com/pipe-cd/pipe/issues?q=is%3Aissue+is%3Aopen+label%3A"help+wanted") or our [good first issues](https://github.com/pipe-cd/pipe/issues?q=is%3Aissue+is%3Aopen+label%3A"good+first+issue") for finding some good issues for your first pull request.
+Look at our [help wanted issues](https://github.com/pipe-cd/pipecd/issues?q=is%3Aissue+is%3Aopen+label%3A"help+wanted") or our [good first issues](https://github.com/pipe-cd/pipecd/issues?q=is%3Aissue+is%3Aopen+label%3A"good+first+issue") for finding some good issues for your first pull request.
 
 ### Small tips
 

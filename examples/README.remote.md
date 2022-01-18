@@ -2,7 +2,7 @@
 
 A repository contains some examples for PipeCD.
 
-**NOTE**: This repository is automatically synced from the examples directory of [pipe-cd/pipe](https://github.com/pipe-cd/pipe/tree/master/examples) repository. If you want to make a pull request, please send it to [pipe-cd/pipe](https://github.com/pipe-cd/pipe) repository.
+**NOTE**: This repository is automatically synced from the examples directory of [pipe-cd/pipe](https://github.com/pipe-cd/pipecd/tree/master/examples) repository. If you want to make a pull request, please send it to [pipe-cd/pipe](https://github.com/pipe-cd/pipe) repository.
 
 </br>
 

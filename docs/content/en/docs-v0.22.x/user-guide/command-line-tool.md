@@ -13,14 +13,14 @@ You can use pipectl to add and sync applications, wait for a deployment status.
 
 ### Binary
 
-1. Download the appropriate version for your platform from [PipeCD Releases](https://github.com/pipe-cd/pipe/releases).
+1. Download the appropriate version for your platform from [PipeCD Releases](https://github.com/pipe-cd/pipecd/releases).
 
     We recommend using the latest version of pipectl to avoid unforeseen issues.
     Please set `{VERSION}` to the same format like `v0.9.15`.
     And `{OS}` can be replaced with either `linux` or `darwin`.
 
     ``` console
-    curl -Lo ./pipectl https://github.com/pipe-cd/pipe/releases/download/{VERSION}/pipectl_{VERSION}_{OS}_amd64
+    curl -Lo ./pipectl https://github.com/pipe-cd/pipecd/releases/download/{VERSION}/pipectl_{VERSION}_{OS}_amd64
     ```
 
 2. Make the pipectl binary executable.
@@ -43,7 +43,7 @@ You can use pipectl to add and sync applications, wait for a deployment status.
 
 ### Docker
 We are storing every version of docker image for pipectl on Google Cloud Container Registry.
-Available versions are [here](https://github.com/pipe-cd/pipe/releases).
+Available versions are [here](https://github.com/pipe-cd/pipecd/releases).
 
 ```
 docker run --rm gcr.io/pipecd/pipectl:{VERSION} -h
@@ -226,4 +226,4 @@ You can encrypt it the same way you do [from the web](/docs/user-guide/secret-ma
 
 ### You want more?
 
-We always want to add more needed commands into pipectl. Please let us know what command you want to add by creating issues in the [pipe-cd/pipe ](https://github.com/pipe-cd/pipe/issues) repository. We also welcome your pull request to add the command.
+We always want to add more needed commands into pipectl. Please let us know what command you want to add by creating issues in the [pipe-cd/pipe ](https://github.com/pipe-cd/pipecd/issues) repository. We also welcome your pull request to add the command.
