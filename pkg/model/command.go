@@ -14,7 +14,10 @@
 
 package model
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 const (
 	MetadataKeyTriggeredDeploymentID = "TriggeredDeploymentID"
@@ -35,4 +38,17 @@ func (c *Command) IsSyncApplicationCmd() bool {
 
 func (c *Command) IsChainSyncApplicationCmd() bool {
 	return c.GetChainSyncApplication() != nil
+}
+
+func (c *Command) Filename() string {
+	// TODO: Think about pattern of storing object under {piped-id}_{command_id}.json name.
+	return fmt.Sprintf("%s.json", c.Id)
+}
+
+func (c *Command) DivideToMulti() (bool, []string) {
+	return false, nil
+}
+
+func (c *Command) ColdStorable() bool {
+	return true
 }

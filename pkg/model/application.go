@@ -81,6 +81,22 @@ func (a *Application) IsOutOfSync() bool {
 	return a.SyncState.Status == ApplicationSyncStatus_OUT_OF_SYNC
 }
 
+func (a *Application) Filename() string {
+	return fmt.Sprintf("%s.json", a.Id)
+}
+
+func (a *Application) DivideToMulti() (bool, []string) {
+	return true, []string{
+		fmt.Sprintf("%s-basic.json", a.Id),
+		fmt.Sprintf("%s-info.json", a.Id),
+		fmt.Sprintf("%s-status.json", a.Id),
+	}
+}
+
+func (a *Application) ColdStorable() bool {
+	return false
+}
+
 func IsApplicationConfigFile(filename string) bool {
 	return filename == DefaultApplicationConfigFilename || strings.HasSuffix(filename, applicationConfigFileExtention) || filename == oldDefaultApplicationConfigFilename
 }

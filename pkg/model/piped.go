@@ -139,6 +139,18 @@ func (p *Piped) RedactSensitiveData() {
 	}
 }
 
+func (p *Piped) Filename() string {
+	return fmt.Sprintf("%s.json", p.Id)
+}
+
+func (p *Piped) DivideToMulti() (bool, []string) {
+	return false, nil
+}
+
+func (p *Piped) ColdStorable() bool {
+	return false
+}
+
 func MakePipedURL(baseURL, pipedID string) string {
 	return fmt.Sprintf("%s/settings/piped", strings.TrimSuffix(baseURL, "/"))
 }

@@ -50,3 +50,19 @@ func GenerateRandomString(n int) string {
 
 	return *(*string)(unsafe.Pointer(&b))
 }
+
+type FileStorable interface {
+	// Filename returns the file name which should be used to store object data.
+	Filename() string
+	// DivideToMulti is used to determine should the object be stored as a single file
+	// or it should be divided into multiple files. The second returned value is a list
+	// of filenames that be used to store object data.
+	DivideToMulti() (bool, []string)
+	// ColdStorable is used to determine should the object be stored in cold storage or not.
+	// ref: https://github.com/pipe-cd/pipe/blob/master/docs/rfcs/0008-simplify-datastore.md#2-query-bulk-fetch-list-and-quere-by-id-fetch-single-object
+	ColdStorable() bool
+}
+
+type Model interface {
+	FileStorable
+}

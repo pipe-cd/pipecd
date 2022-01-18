@@ -101,6 +101,18 @@ func (dc *DeploymentChain) ListAllInChainApplications() []*ChainApplicationRef {
 	return applications
 }
 
+func (dc *DeploymentChain) Filename() string {
+	return fmt.Sprintf("%s.json", dc.Id)
+}
+
+func (dc *DeploymentChain) DivideToMulti() (bool, []string) {
+	return false, nil
+}
+
+func (dc *DeploymentChain) ColdStorable() bool {
+	return true
+}
+
 func (b *ChainBlock) IsCompleted() bool {
 	switch b.Status {
 	case ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS,

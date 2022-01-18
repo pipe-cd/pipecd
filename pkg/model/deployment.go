@@ -225,3 +225,15 @@ func (d *Deployment) ContainLabels(labels map[string]string) bool {
 func (d *Deployment) IsInChainDeployment() bool {
 	return d.DeploymentChainId != ""
 }
+
+func (d *Deployment) Filename() string {
+	return fmt.Sprintf("%s.json", d.Id)
+}
+
+func (d *Deployment) DivideToMulti() (bool, []string) {
+	return false, nil
+}
+
+func (d *Deployment) ColdStorable() bool {
+	return true
+}

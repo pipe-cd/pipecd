@@ -50,3 +50,16 @@ func MakeEventKey(name string, labels map[string]string) string {
 	h.Write([]byte(b.String()))
 	return hex.EncodeToString(h.Sum(nil))
 }
+
+func (e *Event) Filename() string {
+	// TODO: Think about pattern of storing object under {piped-id}_{event_id}.json name.
+	return fmt.Sprintf("%s.json", e.Id)
+}
+
+func (e *Event) DivideToMulti() (bool, []string) {
+	return false, nil
+}
+
+func (e *Event) ColdStorable() bool {
+	return true
+}

@@ -59,6 +59,18 @@ func (p *Project) RedactSensitiveData() {
 	}
 }
 
+func (p *Project) Filename() string {
+	return fmt.Sprintf("%s.json", p.Id)
+}
+
+func (p *Project) DivideToMulti() (bool, []string) {
+	return false, nil
+}
+
+func (p *Project) ColdStorable() bool {
+	return false
+}
+
 // RedactSensitiveData redacts sensitive data.
 func (p *ProjectStaticUser) RedactSensitiveData() {
 	p.PasswordHash = redactedMessage

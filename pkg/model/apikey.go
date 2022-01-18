@@ -67,3 +67,15 @@ func (k *APIKey) CompareKey(key string) error {
 func (k *APIKey) RedactSensitiveData() {
 	k.KeyHash = redactedMessage
 }
+
+func (k *APIKey) Filename() string {
+	return fmt.Sprintf("%s.json", k.Id)
+}
+
+func (k *APIKey) DivideToMulti() (bool, []string) {
+	return false, nil
+}
+
+func (k *APIKey) ColdStorable() bool {
+	return false
+}
