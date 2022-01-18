@@ -34,7 +34,7 @@ Although the developer can check the plan-preview result from the log of the CI 
 
 **Architecture design:**
 
-![](https://github.com/pipe-cd/pipe/blob/master/docs/static/images/rfc-plan-preview-architecture.png)
+![](https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/rfc-plan-preview-architecture.png)
 
 1. CI job or user runs `pipectl plan-preview` to request a plan-preview result for the head commit of the pull request.
 2. Server lists all pipeds that are configured to handle the repository and emits a command for each piped into the datastore.

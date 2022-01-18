@@ -62,20 +62,38 @@ data:
 {{- end }}
                   routes:
                     - match:
+                        prefix: /grpc.service.pipedservice.PipedService/
+                        grpc:
+                      route:
+                        cluster: grpc-piped-service
+                    - match:
                         prefix: /pipe.api.service.pipedservice.PipedService/
                         grpc:
                       route:
                         cluster: grpc-piped-service
+                        prefix_rewrite: /grpc.service.pipedservice.PipedService/
+                    - match:
+                        prefix: /grpc.service.webservice.WebService/
+                        grpc:
+                      route:
+                        cluster: grpc-web-service
                     - match:
                         prefix: /pipe.api.service.webservice.WebService/
                         grpc:
                       route:
                         cluster: grpc-web-service
+                        prefix_rewrite: /grpc.service.webservice.WebService/
+                    - match:
+                        prefix: /grpc.service.apiservice.APIService/
+                        grpc:
+                      route:
+                        cluster: grpc-api-service
                     - match:
                         prefix: /pipe.api.service.apiservice.APIService/
                         grpc:
                       route:
                         cluster: grpc-api-service
+                        prefix_rewrite: /grpc.service.apiservice.APIService/
                     - match:
                         prefix: /
                       route:

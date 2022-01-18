@@ -226,7 +226,7 @@ func ParseManifests(data string) ([]Manifest, error) {
 	)
 
 	for _, part := range parts {
-		//	Ignore all the cases where no content between separator.
+		// Ignore all the cases where no content between separator.
 		part = strings.TrimSpace(part)
 		if len(part) == 0 {
 			continue

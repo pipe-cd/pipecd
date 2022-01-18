@@ -219,10 +219,10 @@ One of `yamlField` or `regex` is required.
 | Field | Type | Description | Required |
 |-|-|-|-|
 | manifests | []string | List of manifest files in the application directory used to deploy. Empty means all manifest files in the directory will be used. | No |
-| kubectlVersion | string | Version of kubectl will be used. Empty means the [default version](https://github.com/pipe-cd/pipe/blob/master/dockers/piped-base/install-kubectl.sh#L34) will be used. | No |
-| kustomizeVersion | string | Version of kustomize will be used. Empty means the [default version](https://github.com/pipe-cd/pipe/blob/master/dockers/piped-base/install-kustomize.sh#L34) will be used. | No |
+| kubectlVersion | string | Version of kubectl will be used. Empty means the [default version](https://github.com/pipe-cd/pipecd/blob/master/dockers/piped-base/install-kubectl.sh#L34) will be used. | No |
+| kustomizeVersion | string | Version of kustomize will be used. Empty means the [default version](https://github.com/pipe-cd/pipecd/blob/master/dockers/piped-base/install-kustomize.sh#L34) will be used. | No |
 | kustomizeOptions | map[string]string | List of options that should be used by Kustomize commands. | No |
-| helmVersion | string | Version of helm will be used. Empty means the [default version](https://github.com/pipe-cd/pipe/blob/master/dockers/piped-base/install-helm.sh#L35) will be used. | No |
+| helmVersion | string | Version of helm will be used. Empty means the [default version](https://github.com/pipe-cd/pipecd/blob/master/dockers/piped-base/install-helm.sh#L35) will be used. | No |
 | helmChart | [HelmChart](/docs/user-guide/configuration-reference/#helmchart) | Where to fetch helm chart. | No |
 | helmOptions | [HelmOptions](/docs/user-guide/configuration-reference/#helmoptions) | Configurable parameters for helm commands. | No |
 | namespace | string | The namespace where manifests will be applied. | No |

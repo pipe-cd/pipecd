@@ -46,7 +46,7 @@ Component Architecture
 **Open Source**
 
 - Released as an Open Source project
-- Under APACHE 2.0 license, see [LICENSE](https://github.com/pipe-cd/pipe/blob/master/LICENSE)
+- Under APACHE 2.0 license, see [LICENSE](https://github.com/pipe-cd/pipecd/blob/master/LICENSE)
 
 ## Where should I go next?
 

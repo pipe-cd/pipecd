@@ -112,6 +112,6 @@ spec:
 
   cla:
     enabled: true
-    url: "https://github.com/pipe-cd/pipe/blob/master/CLA.md"
+    url: "https://github.com/pipe-cd/pipecd/blob/master/CLA.md"
     skipUsers:
       - pipecd-bot

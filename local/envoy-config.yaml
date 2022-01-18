@@ -43,12 +43,12 @@ static_resources:
                 expose_headers: custom-header-1,grpc-status,grpc-message
               routes:
                 - match:
-                    prefix: /pipe.api.service.pipedservice.PipedService/
+                    prefix: /grpc.service.pipedservice.PipedService/
                     grpc:
                   route:
                     cluster: server-piped-api
                 - match:
-                    prefix: /pipe.api.service.webservice.WebService/
+                    prefix: /grpc.service.webservice.WebService/
                     grpc:
                   route:
                     cluster: server-web-api

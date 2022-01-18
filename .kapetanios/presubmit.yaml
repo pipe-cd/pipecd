@@ -36,14 +36,14 @@ spec:
       - name: bazel_cache_service_account
         type: PROJECT
 
-    # - name: collect-coverage
-    #   description: Collect coverage profiles
-    #   runner: kapetanios@collect-go-cover-profiles
-    #   params:
-    #     - root-path=bazel-testlogs
-    #     - profile-matcher="**/coverage.dat"
-    #     - source-exclude-matcher="**/*.mock.go,**/*.pb.go,**/*.validate.go,**/*.embed.go,**/*.deepcopy.go"
-    #     - base-import-path=github.com/pipe-cd/pipecd
+    - name: collect-coverage
+      description: Collect coverage profiles
+      runner: kapetanios@collect-go-cover-profiles
+      params:
+        - root-path=bazel-testlogs
+        - profile-matcher="**/coverage.dat"
+        - source-exclude-matcher="**/*.mock.go,**/*.pb.go,**/*.validate.go,**/*.embed.go,**/*.deepcopy.go"
+        - base-import-path=github.com/pipe-cd/pipecd
 
   - name: integration-test
     timeout: 15m
@@ -70,7 +70,7 @@ spec:
         - key=node_modules
         - path=/workspace/.yarn
     - name: install-dependencies
-      runner: gcr.io/kapetanios/node:12.13.1
+      runner: gcr.io/kapetanios/node:16.13.1
       commands:
         - cd pkg/app/web
         - yarn install --frozen-lockfile
@@ -89,7 +89,7 @@ spec:
         type: PROJECT
     - name: test
       description: Run all web tests
-      runner: gcr.io/kapetanios/node:12.13.1
+      runner: gcr.io/kapetanios/node:16.13.1
       commands:
         - cd pkg/app/web
         - yarn test:coverage --coverageDirectory=/artifact --runInBand

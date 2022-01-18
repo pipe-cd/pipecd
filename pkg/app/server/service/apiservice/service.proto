@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 
-package pipe.api.service.apiservice;
+package grpc.service.apiservice;
 option go_package = "github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice";
 
 import "validate/validate.proto";
