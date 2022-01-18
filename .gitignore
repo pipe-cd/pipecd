@@ -17,6 +17,7 @@
 /bazel-bin
 /bazel-genfiles
 /bazel-pipe
+/bazel-pipecd
 /bazel-out
 /bazel-testlogs
 /BUILD.bazel.generated
