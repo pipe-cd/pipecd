@@ -46,4 +46,4 @@ PipeCDはGitOpsを用いてデプロイメントを安全かつ高速に行う�
 **Open Source**
 
 - オープンソースプロジェクトとして開発
-- ライセンスはAPACHE 2.0 licenseを使用。詳しくは[こちらへ](https://github.com/pipe-cd/pipe/blob/master/LICENSE)
+- ライセンスはAPACHE 2.0 licenseを使用。詳しくは[こちらへ](https://github.com/pipe-cd/pipecd/blob/master/LICENSE)

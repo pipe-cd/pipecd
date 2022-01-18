@@ -22,7 +22,7 @@ Stepping into 2022, PipeCD team looks forward to contributing even more to make 
 ### What's changed
 ---
 
-Since the last report, PipeCD team has introduced 2 releases ([v0.22.0](https://github.com/pipe-cd/pipe/releases/tag/v0.22.0), [v0.23.0](https://github.com/pipe-cd/pipe/releases/tag/v0.23.0)). These releases bring many updates to help PipeCD becomes more stable as well as introduce some interesting features. In this blog post, we will recap those new features. For all other changes, please check out each release note to see.
+Since the last report, PipeCD team has introduced 2 releases ([v0.22.0](https://github.com/pipe-cd/pipecd/releases/tag/v0.22.0), [v0.23.0](https://github.com/pipe-cd/pipecd/releases/tag/v0.23.0)). These releases bring many updates to help PipeCD becomes more stable as well as introduce some interesting features. In this blog post, we will recap those new features. For all other changes, please check out each release note to see.
 
 #### Deployment chain
 
@@ -30,7 +30,7 @@ As you know, each application in PipeCD contains a group of resources that are m
 
 But in some use cases, you might want to build a more complex deployment flow where the connection between applications is required. That feature has been requested from a number of PipeCD users.
 
-By [v0.23.0](https://github.com/pipe-cd/pipe/releases/tag/v0.23.0), PipeCD team has brought that feature to reality. It will allow you to roll out applications to multiple clusters/regions gradually or to promote applications across environments. Those deployment strategies can be done simply by specifying a chain of applications in the `postSync` field of the first application.
+By [v0.23.0](https://github.com/pipe-cd/pipecd/releases/tag/v0.23.0), PipeCD team has brought that feature to reality. It will allow you to roll out applications to multiple clusters/regions gradually or to promote applications across environments. Those deployment strategies can be done simply by specifying a chain of applications in the `postSync` field of the first application.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -72,7 +72,7 @@ Filtering application or deployment by the label is being implemeted currently. 
 
 #### Simplifying the way of registering an application
 
-Before [v0.23.0](https://github.com/pipe-cd/pipe/releases/tag/v0.23.0), while registering a new application user has to configure the application information manually via a registration form. For now, most of the information can be specified in the application configuration file. And Piped agents automatically find the un-registered applications to suggest to users. It means that all you have to do is just a few clicks on the web console.
+Before [v0.23.0](https://github.com/pipe-cd/pipecd/releases/tag/v0.23.0), while registering a new application user has to configure the application information manually via a registration form. For now, most of the information can be specified in the application configuration file. And Piped agents automatically find the un-registered applications to suggest to users. It means that all you have to do is just a few clicks on the web console.
 
 ![](/images/registering-an-application-from-git.png)
 <p style="text-align: center;">
@@ -123,7 +123,7 @@ The team continues actively working on improving the PipeCD product. Besides fix
 - Reduce the maintenance cost of the control plane by supporting using file storage (such as GCS, S3, Minio) for both data store and file store. It means **no database** is required to run the control plane.
 - Automated configuration drift detection for CloudRun application
 
-If you have any features want to request or find out a problem, please let us know by creating issues to the [pipe-cd/pipe](https://github.com/pipe-cd/pipe/issues) repository.
+If you have any features want to request or find out a problem, please let us know by creating issues to the [pipe-cd/pipe](https://github.com/pipe-cd/pipecd/issues) repository.
 
 
 ---

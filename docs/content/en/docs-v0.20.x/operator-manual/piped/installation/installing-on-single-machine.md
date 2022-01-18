@@ -20,7 +20,7 @@ description: >
 
 - Downloading the latest `piped` binary for your machine
 
-  https://github.com/pipe-cd/pipe/releases
+  https://github.com/pipe-cd/pipecd/releases
 
 - Preparing a piped configuration file as the following:
 

@@ -1,6 +1,6 @@
 # Documentation
 
-The source files for the documentation is placing in [content](https://github.com/pipe-cd/pipe/tree/master/docs/content) directory.
+The source files for the documentation is placing in [content](https://github.com/pipe-cd/pipecd/tree/master/docs/content) directory.
 
 # Website
 

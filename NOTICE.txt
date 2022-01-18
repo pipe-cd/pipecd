@@ -1,4 +1,4 @@
-pipe
+pipecd
 ===============
 
 This product contains a modified part of docsy-example, distributed by google/docsy:

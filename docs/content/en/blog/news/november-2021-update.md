@@ -12,7 +12,7 @@ _Published by the PipeCD dev team every month, this update will provide you with
 ### What's changed
 ---
 
-Last month, PipeCD team has introduced 4 releases ([v0.20.0](https://github.com/pipe-cd/pipe/releases/tag/v0.20.0), [v0.20.1](https://github.com/pipe-cd/pipe/releases/tag/v0.20.1), [v0.20.2](https://github.com/pipe-cd/pipe/releases/tag/v0.20.2), [v0.21.0](https://github.com/pipe-cd/pipe/releases/tag/v0.21.0)). Those releases bring many updates to help PipeCD becomes more stable as well as introduce some interesting features. In this blog post, we will recap those new features. For all other changes, please check out each release note to see.
+Last month, PipeCD team has introduced 4 releases ([v0.20.0](https://github.com/pipe-cd/pipecd/releases/tag/v0.20.0), [v0.20.1](https://github.com/pipe-cd/pipecd/releases/tag/v0.20.1), [v0.20.2](https://github.com/pipe-cd/pipecd/releases/tag/v0.20.2), [v0.21.0](https://github.com/pipe-cd/pipecd/releases/tag/v0.21.0)). Those releases bring many updates to help PipeCD becomes more stable as well as introduce some interesting features. In this blog post, we will recap those new features. For all other changes, please check out each release note to see.
 
 #### Lambda Deployment
 
@@ -171,7 +171,7 @@ The team continues actively working on improving PipeCD product. Besides fixing 
 - Deployment Chain - Allow rolling out to multiple clusters gradually or promoting across environments
 - Resource Tagging - A better way to group and filter PipeCD resources such as applications, deployments
 
-If you have any features want to request or find out a problem, please let us know by creating issues to the [pipe-cd/pipe](https://github.com/pipe-cd/pipe/issues) repository.
+If you have any features want to request or find out a problem, please let us know by creating issues to the [pipe-cd/pipe](https://github.com/pipe-cd/pipecd/issues) repository.
 
 
 ---

@@ -8,9 +8,9 @@ description: >
 
 ## Source code structure
 
-- [pkg/app/piped](https://github.com/pipe-cd/pipe/tree/master/pkg/app/piped): contains source code for only `piped`.
-- [cmd/piped](https://github.com/pipe-cd/pipe/tree/master/cmd/piped): entrypoint for `piped` binary.
-- [pkg](https://github.com/pipe-cd/pipe/tree/master/pkg): contains shared source code for all components of both `piped` and `control-plane`.
+- [pkg/app/piped](https://github.com/pipe-cd/pipecd/tree/master/pkg/app/piped): contains source code for only `piped`.
+- [cmd/piped](https://github.com/pipe-cd/pipecd/tree/master/cmd/piped): entrypoint for `piped` binary.
+- [pkg](https://github.com/pipe-cd/pipecd/tree/master/pkg): contains shared source code for all components of both `piped` and `control-plane`.
 
 ## How to run it locally
 

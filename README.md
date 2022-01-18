@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/pipe-cd/pipe/blob/master/docs/static/images/logo.png" width="180"/>
+  <img src="https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/logo.png" width="180"/>
 </p>
 
 <p align="center">
@@ -10,13 +10,13 @@
 
 #
 
-![](https://github.com/pipe-cd/pipe/blob/master/docs/static/images/deployment-details.png)
+![](https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/deployment-details.png)
 
 ### Overview
 
 PipeCD provides a unified continuous delivery solution for multiple application kinds on multi-cloud that empowers engineers to deploy faster with more confidence, a GitOps tool that enables doing deployment operations by pull request on Git.
 
-![](https://github.com/pipe-cd/pipe/blob/master/docs/static/images/architecture-overview.png)
+![](https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/architecture-overview.png)
 
 **Visibility**
 - Deployment pipeline UI shows clarify what is happening
@@ -46,7 +46,7 @@ PipeCD provides a unified continuous delivery solution for multiple application 
 
 ### License
 
-Apache License 2.0, see [LICENSE](https://github.com/pipe-cd/pipe/blob/master/LICENSE).
+Apache License 2.0, see [LICENSE](https://github.com/pipe-cd/pipecd/blob/master/LICENSE).
 
 #
 
