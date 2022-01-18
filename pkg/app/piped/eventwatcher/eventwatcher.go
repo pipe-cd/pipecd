@@ -191,7 +191,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 				)
 				continue
 			}
-			if err := w.updateValues(ctx, repo, cfg.Events, commitMsg); err != nil {
+			if err := w.updateValues(ctx, repo, repoCfg.RepoID, cfg.Events, commitMsg); err != nil {
 				w.logger.Error("failed to update the values",
 					zap.String("repo-id", repoCfg.RepoID),
 					zap.Error(err),
@@ -215,7 +215,7 @@ func (w *watcher) cloneRepo(ctx context.Context, repoCfg config.PipedRepository)
 }
 
 // updateValues inspects all Event-definition and pushes the changes to git repo if there is.
-func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []config.EventWatcherEvent, commitMsg string) error {
+func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string, events []config.EventWatcherEvent, commitMsg string) error {
 	// Copy the repo to another directory to modify local file to avoid reverting previous changes.
 	tmpDir, err := os.MkdirTemp(w.workingDir, "repo")
 	if err != nil {
@@ -248,7 +248,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 		eventResults = append(eventResults, &pipedservice.ReportEventStatusesRequest_Event{
 			Id:                latestEvent.Id,
 			Status:            model.EventStatus_EVENT_SUCCESS,
-			StatusDescription: fmt.Sprintf("Successfully updated %d files", len(e.Replacements)),
+			StatusDescription: fmt.Sprintf("Successfully updated %d files in the %q repository", len(e.Replacements), repoID),
 		})
 	}
 
