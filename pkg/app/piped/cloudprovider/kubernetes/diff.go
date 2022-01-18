@@ -194,7 +194,7 @@ func diffByCommand(command string, old, new Manifest) ([]byte, error) {
 		return nil, fmt.Errorf("failed to run diff, err = %w, %s", err, stderr.String())
 	}
 
-	// Remote two-line header from output.
+	// Remove two-line header from output.
 	data := bytes.TrimSpace(stdout.Bytes())
 	rows := bytes.SplitN(data, []byte("\n"), 3)
 	if len(rows) == 3 {

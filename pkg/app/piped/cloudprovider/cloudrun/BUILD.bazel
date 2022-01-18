@@ -6,6 +6,7 @@ go_library(
         "cache.go",
         "client.go",
         "cloudrun.go",
+        "diff.go",
         "servicemanifest.go",
     ],
     importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/cloudrun",
@@ -13,6 +14,7 @@ go_library(
     deps = [
         "//pkg/cache:go_default_library",
         "//pkg/config:go_default_library",
+        "//pkg/diff:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1/unstructured:go_default_library",
         "@io_k8s_apimachinery//pkg/runtime:go_default_library",
         "@io_k8s_sigs_yaml//:go_default_library",
@@ -27,6 +29,14 @@ go_library(
 go_test(
     name = "go_default_test",
     size = "small",
-    srcs = ["servicemanifest_test.go"],
+    srcs = [
+        "diff_test.go",
+        "servicemanifest_test.go",
+    ],
+    data = glob(["testdata/**"]),
     embed = [":go_default_library"],
+    deps = [
+        "@com_github_stretchr_testify//assert:go_default_library",
+        "@com_github_stretchr_testify//require:go_default_library",
+    ],
 )
