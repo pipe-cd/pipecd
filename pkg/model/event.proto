@@ -41,7 +41,7 @@ message Event {
     // A fixed-length identifier consists of its own name and labels.
     string event_key = 6 [(validate.rules).string.min_len = 1];
     // True if it have been handled.
-    bool handled = 7;
+    bool handled = 7 [deprecated = true];
     // The handle status of event.
     EventStatus status = 8 [(validate.rules).enum.defined_only = true];
     string status_description = 9;

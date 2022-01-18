@@ -24,6 +24,10 @@ import (
 
 var hashFunc = sha256.New
 
+func (e *Event) IsHandled() bool {
+	return e.Status == EventStatus_EVENT_SUCCESS || e.Status == EventStatus_EVENT_FAILURE
+}
+
 // MakeEventKey builds a fixed-length identifier based on the given name
 // and labels. It returns the exact same string as long as both are the same.
 func MakeEventKey(name string, labels map[string]string) string {

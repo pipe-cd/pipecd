@@ -88,9 +88,10 @@ func (s *eventStore) UpdateEventStatus(ctx context.Context, eventID string, stat
 		event := e.(*model.Event)
 		event.Status = status
 		event.StatusDescription = statusDescription
-		if status == model.EventStatus_EVENT_SUCCESS || status == model.EventStatus_EVENT_FAILURE {
-			event.Handled = true
+		if event.IsHandled() {
 			event.HandledAt = s.nowFunc().Unix()
+			// For older Piped agents, this is required.
+			event.Handled = true
 		}
 		return nil
 	})

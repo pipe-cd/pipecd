@@ -233,7 +233,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 		if !ok {
 			continue
 		}
-		if latestEvent.Handled {
+		if latestEvent.IsHandled() {
 			continue
 		}
 		if err := w.commitFiles(ctx, latestEvent.Data, e, tmpRepo, commitMsg); err != nil {
