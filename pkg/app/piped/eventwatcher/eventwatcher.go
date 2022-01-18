@@ -32,6 +32,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
+	"github.com/pipe-cd/pipecd/pkg/backoff"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -43,6 +44,9 @@ const (
 	// The latest value and Event name are supposed.
 	defaultCommitMessageFormat = "Replace values with %q set by Event %q"
 	defaultCheckInterval       = time.Minute
+
+	retryPushNum      = 3
+	retryPushInterval = 5 * time.Second
 )
 
 type Watcher interface {
@@ -58,7 +62,7 @@ type gitClient interface {
 }
 
 type apiClient interface {
-	ReportEventsHandled(ctx context.Context, req *pipedservice.ReportEventsHandledRequest, opts ...grpc.CallOption) (*pipedservice.ReportEventsHandledResponse, error)
+	ReportEventStatuses(ctx context.Context, req *pipedservice.ReportEventStatusesRequest, opts ...grpc.CallOption) (*pipedservice.ReportEventStatusesResponse, error)
 }
 
 type watcher struct {
@@ -223,7 +227,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 	}
 	defer tmpRepo.Clean()
 
-	handledEventIDs := make([]string, 0, len(events))
+	eventResults := make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(events))
 	for _, e := range events {
 		latestEvent, ok := w.eventGetter.GetLatest(ctx, e.Name, e.Labels)
 		if !ok {
@@ -234,17 +238,49 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 		}
 		if err := w.commitFiles(ctx, latestEvent.Data, e, tmpRepo, commitMsg); err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
+			eventResults = append(eventResults, &pipedservice.ReportEventStatusesRequest_Event{
+				Id:                latestEvent.Id,
+				Status:            model.EventStatus_EVENT_FAILURE,
+				StatusDescription: fmt.Sprintf("Failed to change files: %v", err),
+			})
 			continue
 		}
-		handledEventIDs = append(handledEventIDs, latestEvent.Id)
+		eventResults = append(eventResults, &pipedservice.ReportEventStatusesRequest_Event{
+			Id:                latestEvent.Id,
+			Status:            model.EventStatus_EVENT_SUCCESS,
+			StatusDescription: fmt.Sprintf("Successfully handled by %q piped", w.config.PipedID),
+		})
 	}
-	if err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch()); err != nil {
-		return fmt.Errorf("failed to push commits: %w", err)
+
+	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
+	_, err = retry.Do(ctx, func() (interface{}, error) {
+		err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch())
+		return nil, err
+	})
+	if err == nil {
+		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: eventResults}); err != nil {
+			return fmt.Errorf("failed to report event statuses: %w", err)
+		}
+		return nil
 	}
-	if _, err := w.apiClient.ReportEventsHandled(ctx, &pipedservice.ReportEventsHandledRequest{EventIds: handledEventIDs}); err != nil {
-		return fmt.Errorf("failed to report that events are handled: %w", err)
+
+	// If push fails, re-set all statuses to FAILURE.
+	newResults := make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventResults))
+	for _, e := range eventResults {
+		if e.Status == model.EventStatus_EVENT_FAILURE {
+			newResults = append(newResults, e)
+			continue
+		}
+		newResults = append(newResults, &pipedservice.ReportEventStatusesRequest_Event{
+			Id:                e.Id,
+			Status:            model.EventStatus_EVENT_FAILURE,
+			StatusDescription: fmt.Sprintf("Failed to push change files: %v", err),
+		})
 	}
-	return nil
+	if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: newResults}); err != nil {
+		return fmt.Errorf("failed to report event statuses: %w", err)
+	}
+	return fmt.Errorf("failed to push commits: %w", err)
 }
 
 // commitFiles commits changes if the data in Git is different from the latest event.

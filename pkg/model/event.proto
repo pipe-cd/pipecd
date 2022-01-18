@@ -19,6 +19,13 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 
 import "validate/validate.proto";
 
+enum EventStatus {
+    EVENT_NOT_HANDLED = 0;
+    EVENT_SUCCESS = 1;
+    EVENT_FAILURE = 2;
+    EVENT_OUTDATED = 3;
+}
+
 message Event {
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
@@ -35,6 +42,9 @@ message Event {
     string event_key = 6 [(validate.rules).string.min_len = 1];
     // True if it have been handled.
     bool handled = 7;
+    // The handle status of event.
+    EventStatus status = 8 [(validate.rules).enum.defined_only = true];
+    string status_description = 9;
 
     // Unix time when the event was handled.
     int64 handled_at = 13;
