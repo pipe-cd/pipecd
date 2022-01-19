@@ -89,7 +89,7 @@ func (s *eventStore) UpdateEventStatus(ctx context.Context, eventID string, stat
 		event.Status = status
 		event.StatusDescription = statusDescription
 		if event.IsHandled() {
-			now = s.nowFunc().Unix()
+			now := s.nowFunc().Unix()
 			event.HandledAt = now
 			event.UpdatedAt = now
 			// For older Piped agents, this is required.
