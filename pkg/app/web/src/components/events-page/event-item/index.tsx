@@ -1,9 +1,7 @@
 import { Box, ListItem, makeStyles, Typography, Chip } from "@material-ui/core";
 import dayjs from "dayjs";
 import { FC, memo } from "react";
-import { Link as RouterLink } from "react-router-dom";
 import { EVENT_STATE_TEXT } from "~/constants/event-status-text";
-import { PAGE_PATH_EVENTS } from "~/constants/path";
 import { useAppSelector } from "~/hooks/redux";
 import { Event, selectById as selectEventById } from "~/modules/events";
 import { ellipsis } from "~/styles/text";
