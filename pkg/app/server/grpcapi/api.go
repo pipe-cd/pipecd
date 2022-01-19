@@ -400,12 +400,14 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 	id := uuid.New().String()
 
 	err = a.eventStore.AddEvent(ctx, model.Event{
-		Id:        id,
-		Name:      req.Name,
-		Data:      req.Data,
-		Labels:    req.Labels,
-		EventKey:  model.MakeEventKey(req.Name, req.Labels),
-		ProjectId: key.ProjectId,
+		Id:                id,
+		Name:              req.Name,
+		Data:              req.Data,
+		Labels:            req.Labels,
+		EventKey:          model.MakeEventKey(req.Name, req.Labels),
+		ProjectId:         key.ProjectId,
+		Status:            model.EventStatus_EVENT_NOT_HANDLED,
+		StatusDescription: fmt.Sprintf("It is going to be replaced by %s", req.Data),
 	})
 	if errors.Is(err, datastore.ErrAlreadyExists) {
 		return nil, status.Error(codes.AlreadyExists, "The event already exists")
