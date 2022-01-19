@@ -1835,3 +1835,7 @@ func (a *WebAPI) GetDeploymentChain(ctx context.Context, req *webservice.GetDepl
 		DeploymentChain: dc,
 	}, nil
 }
+
+func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsRequest) (*webservice.ListEventsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "Not implemented")
+}
