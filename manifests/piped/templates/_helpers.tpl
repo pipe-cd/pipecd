@@ -142,12 +142,13 @@ A set of args for Launcher.
 {{- end }}
 - --metrics={{ .Values.args.metrics }}
 - --enable-default-kubernetes-cloud-provider={{ .Values.args.enableDefaultKubernetesCloudProvider }}
-- --insecure={{ .Values.args.insecure }}
 - --log-encoding={{ .Values.args.logEncoding }}
 - --add-login-user-to-passwd={{ .Values.args.addLoginUserToPasswd }}
-{{- end }}
 {{- if .Values.quickstart.enabled }}
 - --insecure=true
+{{- else }}
+- --insecure={{ .Values.args.insecure }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -158,7 +159,11 @@ A set of args for Piped.
 - --config-file=/etc/piped-config/{{ .Values.config.fileName }}
 - --metrics={{ .Values.args.metrics }}
 - --enable-default-kubernetes-cloud-provider={{ .Values.args.enableDefaultKubernetesCloudProvider }}
-- --insecure={{ .Values.args.insecure }}
 - --log-encoding={{ .Values.args.logEncoding }}
 - --add-login-user-to-passwd={{ .Values.args.addLoginUserToPasswd }}
+{{- if .Values.quickstart.enabled }}
+- --insecure=true
+{{- else }}
+- --insecure={{ .Values.args.insecure }}
+{{- end }}
 {{- end }}
