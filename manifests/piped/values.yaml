@@ -4,6 +4,7 @@ image:
 args:
   metrics: true
   enableDefaultKubernetesCloudProvider: true
+  insecure: false
   # One of "humanize", "json", or "console" is available.
   logEncoding: humanize
   # Specifies whether it adds logged-in user to /etc/passwd at runtime.
