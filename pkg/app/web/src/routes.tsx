@@ -19,6 +19,7 @@ import {
   PAGE_PATH_DEPLOYMENTS,
   PAGE_PATH_DEPLOYMENT_CHAINS,
   PAGE_PATH_INSIGHTS,
+  PAGE_PATH_EVENTS,
   PAGE_PATH_LOGIN,
   PAGE_PATH_SETTINGS,
   PAGE_PATH_TOP,
@@ -44,6 +45,13 @@ const InsightIndexPage = loadable(
   () => import(/* webpackChunkName: "insight" */ "~/components/insight-page"),
   {
     resolveComponent: (components) => components.InsightIndexPage,
+  }
+);
+
+const EventIndexPage = loadable(
+  () => import(/* webpackChunkName: "events" */ "~/components/events-page"),
+  {
+    resolveComponent: (components) => components.EventIndexPage,
   }
 );
 
@@ -171,6 +179,7 @@ export const Routes: FC = () => {
         />
         <Route path={PAGE_PATH_SETTINGS} component={SettingsIndexPage} />
         <Route path={PAGE_PATH_INSIGHTS} component={InsightIndexPage} />
+        <Route path={PAGE_PATH_EVENTS} component={EventIndexPage} />
         <Route
           path={PAGE_PATH_TOP}
           component={() => {

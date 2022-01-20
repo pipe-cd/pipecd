@@ -19,6 +19,7 @@ import { stageLogsSlice } from "./stage-logs";
 import { toastsSlice } from "./toasts";
 import { updateApplicationSlice } from "./update-application";
 import { unregisteredApplicationsSlice } from "./unregistered-applications";
+import { eventsSlice } from "./events";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
@@ -41,4 +42,5 @@ export const reducers = combineReducers({
   applicationCounts: applicationCountsSlice.reducer,
   deletingEnv: deletingEnvSlice.reducer,
   unregisteredApplications: unregisteredApplicationsSlice.reducer,
+  events: eventsSlice.reducer,
 });
