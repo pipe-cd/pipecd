@@ -108,6 +108,41 @@ func (c *client) Update(ctx context.Context, sm ServiceManifest) (*Service, erro
 	return (*Service)(service), nil
 }
 
+func (c *client) List(ctx context.Context, options *ListOptions) ([]*Service, string, error) {
+	var (
+		svc    = run.NewNamespacesServicesService(c.client)
+		parent = makeCloudRunParent(c.projectID)
+		call   = svc.List(parent)
+	)
+	call.Context(ctx)
+	if options.Limit != 0 {
+		call.Limit(options.Limit)
+	}
+	if options.LabelSelector != "" {
+		call.LabelSelector(options.LabelSelector)
+	}
+	if options.Cursor != "" {
+		call.Continue(options.Cursor)
+	}
+
+	resp, err := call.Do()
+	if err != nil {
+		return nil, "", err
+	}
+	var cursor string
+	if resp.Metadata != nil {
+		cursor = resp.Metadata.Continue
+	}
+
+	svcs := make([]*Service, 0, len(resp.Items))
+	for i := range resp.Items {
+		svc := (*Service)(resp.Items[i])
+		svcs = append(svcs, svc)
+	}
+
+	return svcs, cursor, nil
+}
+
 func (c *client) GetRevision(ctx context.Context, name string) (*Revision, error) {
 	var (
 		svc  = run.NewNamespacesRevisionsService(c.client)

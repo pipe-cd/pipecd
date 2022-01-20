@@ -44,7 +44,14 @@ type (
 type Client interface {
 	Create(ctx context.Context, sm ServiceManifest) (*Service, error)
 	Update(ctx context.Context, sm ServiceManifest) (*Service, error)
+	List(ctx context.Context, params *ListOptions) ([]*Service, string, error)
 	GetRevision(ctx context.Context, name string) (*Revision, error)
+}
+
+type ListOptions struct {
+	Limit         int64
+	LabelSelector string
+	Cursor        string
 }
 
 type Registry interface {
