@@ -47,6 +47,24 @@ type Client interface {
 	GetRevision(ctx context.Context, name string) (*Revision, error)
 }
 
+type ListServicesParams struct {
+	Limit         int64
+	LabelSelector string
+	PageSize      string
+}
+
+func (l *ListServicesParams) ValidLimit() bool {
+	return l.Limit != 0
+}
+
+func (l *ListServicesParams) ValidLabelSelector() bool {
+	return l.LabelSelector != ""
+}
+
+func (l *ListServicesParams) ValidPageSize() bool {
+	return l.PageSize != ""
+}
+
 type Registry interface {
 	Client(ctx context.Context, name string, cfg *config.CloudProviderCloudRunConfig, logger *zap.Logger) (Client, error)
 }
