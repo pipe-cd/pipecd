@@ -70,12 +70,12 @@ func (m ServiceManifest) AddLabels(labels map[string]string) {
 	}
 
 	lbls := m.u.GetLabels()
-	if lbls != nil {
-		for k, v := range labels {
-			lbls[k] = v
-		}
-	} else {
-		lbls = labels
+	if lbls == nil {
+		m.u.SetLabels(labels)
+		return
+	}
+	for k, v := range labels {
+		lbls[k] = v
 	}
 	m.u.SetLabels(lbls)
 }
