@@ -31,7 +31,7 @@ var (
 
 type EventStore interface {
 	AddEvent(ctx context.Context, e model.Event) error
-	ListEvents(ctx context.Context, opts ListOptions) ([]*model.Event, error)
+	ListEvents(ctx context.Context, opts ListOptions) ([]*model.Event, string, error)
 	UpdateEventStatus(ctx context.Context, eventID string, status model.EventStatus, statusDescription string) error
 }
 
@@ -63,10 +63,10 @@ func (s *eventStore) AddEvent(ctx context.Context, e model.Event) error {
 	return s.ds.Create(ctx, EventModelKind, e.Id, &e)
 }
 
-func (s *eventStore) ListEvents(ctx context.Context, opts ListOptions) ([]*model.Event, error) {
+func (s *eventStore) ListEvents(ctx context.Context, opts ListOptions) ([]*model.Event, string, error) {
 	it, err := s.ds.Find(ctx, EventModelKind, opts)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	es := make([]*model.Event, 0)
 	for {
@@ -76,11 +76,20 @@ func (s *eventStore) ListEvents(ctx context.Context, opts ListOptions) ([]*model
 			break
 		}
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		es = append(es, &e)
 	}
-	return es, nil
+
+	// In case there is no more elements found, cursor should be set to empty too.
+	if len(es) == 0 {
+		return es, "", nil
+	}
+	cursor, err := it.Cursor()
+	if err != nil {
+		return nil, "", err
+	}
+	return es, cursor, nil
 }
 
 func (s *eventStore) UpdateEventStatus(ctx context.Context, eventID string, status model.EventStatus, statusDescription string) error {

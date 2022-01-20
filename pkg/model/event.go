@@ -28,6 +28,24 @@ func (e *Event) IsHandled() bool {
 	return e.Status == EventStatus_EVENT_SUCCESS || e.Status == EventStatus_EVENT_FAILURE
 }
 
+// ContainLabels checks if it has all the given labels.
+func (d *Event) ContainLabels(labels map[string]string) bool {
+	if len(d.Labels) < len(labels) {
+		return false
+	}
+
+	for k, v := range labels {
+		value, ok := d.Labels[k]
+		if !ok {
+			return false
+		}
+		if value != v {
+			return false
+		}
+	}
+	return true
+}
+
 // MakeEventKey builds a fixed-length identifier based on the given name
 // and labels. It returns the exact same string as long as both are the same.
 func MakeEventKey(name string, labels map[string]string) string {
