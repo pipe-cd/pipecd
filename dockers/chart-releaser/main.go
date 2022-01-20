@@ -68,20 +68,16 @@ func main() {
 }
 
 func run() error {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	pctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
-
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	defer signal.Stop(ch)
+	ctx, stop := signal.NotifyContext(pctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	defer stop()
 
 	go func() {
-		select {
-		case <-ch:
-			cancel()
-		case <-ctx.Done():
-			return
-		}
+		log.Println("Waiting for signals...")
+		<-ctx.Done()
+		log.Println("Received signal, exiting...")
+		stop()
 	}()
 
 	// Initialize gcs client.
