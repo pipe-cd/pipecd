@@ -51,7 +51,7 @@
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^6.2.10",
     "html-webpack-plugin": "^5.3.1",
-    "jest": "^27.0.5",
+    "jest": "27.4",
     "jest-environment-jsdom": "^27.0.5",
     "msw": "^0.21.2",
     "prettier": "^2.0.5",
