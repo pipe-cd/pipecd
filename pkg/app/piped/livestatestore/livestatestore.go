@@ -41,7 +41,7 @@ type applicationLister interface {
 
 type Getter interface {
 	CloudRunGetter(cloudProvider string) (cloudrun.Getter, bool)
-	ECSRunGetter(cloudProvider string) (cloudrun.Getter, bool)
+	ECSRunGetter(cloudProvider string) (ecs.Getter, bool)
 	KubernetesGetter(cloudProvider string) (kubernetes.Getter, bool)
 	LambdaGetter(cloudProvider string) (lambda.Getter, bool)
 	TerraformGetter(cloudProvider string) (terraform.Getter, bool)
@@ -187,7 +187,7 @@ func (s *store) CloudRunGetter(cloudProvider string) (cloudrun.Getter, bool) {
 	return ks, ok
 }
 
-func (s *store) ECSRunGetter(cloudProvider string) (cloudrun.Getter, bool) {
+func (s *store) ECSRunGetter(cloudProvider string) (ecs.Getter, bool) {
 	ks, ok := s.ecsStores[cloudProvider]
 	return ks, ok
 }
