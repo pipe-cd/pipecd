@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
   statusText: {
     marginLeft: theme.spacing(1),
     lineHeight: "1.5rem",
-    // Fix width to prevent misalignment of application name.
+    // Fixed width to prevent misalignment of application name.
     width: "100px",
   },
   description: {
