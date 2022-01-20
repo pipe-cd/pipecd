@@ -62,6 +62,12 @@ func init() {
 }
 
 func main() {
+	if err := run(); err != nil {
+		log.Fatal(err.Error())
+	}
+}
+
+func run() error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
