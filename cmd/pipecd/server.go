@@ -271,7 +271,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			return err
 		}
 
-		service := grpcapi.NewWebAPI(ctx, ds, fs, sls, alss, cmds, is, statCache, rd, cfg.ProjectMap(), encryptDecrypter, input.Logger)
+		service := grpcapi.NewWebAPI(ctx, ds, sls, alss, cmds, is, statCache, rd, cfg.ProjectMap(), encryptDecrypter, input.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),

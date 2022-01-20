@@ -801,7 +801,7 @@ func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLate
 			},
 		},
 	}
-	events, err := a.eventStore.ListEvents(ctx, opts)
+	events, _, err := a.eventStore.ListEvents(ctx, opts)
 	if err != nil {
 		a.logger.Error("failed to list events", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to list event")
@@ -871,7 +871,7 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 		}
 	}
 
-	events, err := a.eventStore.ListEvents(ctx, opts)
+	events, _, err := a.eventStore.ListEvents(ctx, opts)
 	if err != nil {
 		a.logger.Error("failed to list events", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to list events")
