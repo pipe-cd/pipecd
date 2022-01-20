@@ -97,6 +97,9 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	// Add builtin labels for tracking application live state
+	addBuiltinLabels(sm, e.PipedConfig.PipedID)
+
 	if !apply(ctx, e.client, sm, e.LogPersister) {
 		return model.StageStatus_STAGE_FAILURE
 	}

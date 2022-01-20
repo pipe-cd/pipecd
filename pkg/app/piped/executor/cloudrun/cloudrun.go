@@ -147,3 +147,11 @@ func revisionExists(ctx context.Context, client provider.Client, revisionName st
 	lp.Errorf("Failed while checking the existence of revision %s (%v)", revisionName, err)
 	return false, err
 }
+
+func addBuiltinLabels(sm provider.ServiceManifest, pipedID string) {
+	labels := map[string]string{
+		provider.LabelManagedBy: provider.ManagedByPiped,
+		provider.LabelPiped:     pipedID,
+	}
+	sm.AddLabels(labels)
+}
