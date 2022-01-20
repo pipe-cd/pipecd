@@ -108,21 +108,21 @@ func (c *client) Update(ctx context.Context, sm ServiceManifest) (*Service, erro
 	return (*Service)(service), nil
 }
 
-func (c *client) List(ctx context.Context, params *ListServicesParams) ([]*Service, string, error) {
+func (c *client) List(ctx context.Context, options *ListOptions) ([]*Service, string, error) {
 	var (
 		svc    = run.NewNamespacesServicesService(c.client)
 		parent = makeCloudRunParent(c.projectID)
 		call   = svc.List(parent)
 	)
 	call.Context(ctx)
-	if params.ValidLimit() {
-		call.Limit(params.Limit)
+	if options.Limit != 0 {
+		call.Limit(options.Limit)
 	}
-	if params.ValidLabelSelector() {
-		call.LabelSelector(params.LabelSelector)
+	if options.LabelSelector != "" {
+		call.LabelSelector(options.LabelSelector)
 	}
-	if params.ValidPageSize() {
-		call.Continue(params.PageSize)
+	if options.Cursor != "" {
+		call.Continue(options.Cursor)
 	}
 
 	resp, err := call.Do()

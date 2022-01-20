@@ -44,26 +44,14 @@ type (
 type Client interface {
 	Create(ctx context.Context, sm ServiceManifest) (*Service, error)
 	Update(ctx context.Context, sm ServiceManifest) (*Service, error)
-	List(ctx context.Context, params *ListServicesParams) ([]*Service, string, error)
+	List(ctx context.Context, params *ListOptions) ([]*Service, string, error)
 	GetRevision(ctx context.Context, name string) (*Revision, error)
 }
 
-type ListServicesParams struct {
+type ListOptions struct {
 	Limit         int64
 	LabelSelector string
-	PageSize      string
-}
-
-func (l *ListServicesParams) ValidLimit() bool {
-	return l.Limit != 0
-}
-
-func (l *ListServicesParams) ValidLabelSelector() bool {
-	return l.LabelSelector != ""
-}
-
-func (l *ListServicesParams) ValidPageSize() bool {
-	return l.PageSize != ""
+	Cursor        string
 }
 
 type Registry interface {
