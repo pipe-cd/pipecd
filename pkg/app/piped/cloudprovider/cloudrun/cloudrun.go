@@ -44,6 +44,7 @@ type (
 type Client interface {
 	Create(ctx context.Context, sm ServiceManifest) (*Service, error)
 	Update(ctx context.Context, sm ServiceManifest) (*Service, error)
+	List(ctx context.Context, params *ListServicesParams) ([]*Service, string, error)
 	GetRevision(ctx context.Context, name string) (*Revision, error)
 }
 
