@@ -105,7 +105,8 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 
 	// Add builtin labels for tracking application live state
-	addBuiltinLabels(sm, e.PipedConfig.PipedID)
+	commit := e.Deployment.CommitHash()
+	addBuiltinLabels(sm, commit, e.PipedConfig.PipedID, e.Deployment.ApplicationId)
 
 	if !apply(ctx, e.client, sm, e.LogPersister) {
 		return model.StageStatus_STAGE_FAILURE

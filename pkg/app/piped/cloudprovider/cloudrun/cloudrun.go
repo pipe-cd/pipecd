@@ -42,9 +42,11 @@ type (
 )
 
 const (
-	LabelManagedBy = "pipecd-dev-managed-by" // Always be piped.
-	LabelPiped     = "pipecd-dev-piped"      // The id of piped handling this application.
-	ManagedByPiped = "piped"
+	LabelManagedBy   = "pipecd-dev-managed-by"  // Always be piped.
+	LabelPiped       = "pipecd-dev-piped"       // The id of piped handling this application.
+	LabelApplication = "pipecd-dev-application" // The application this resource belongs to.
+	LabelCommitHash  = "pipecd-dev-commit-hash" // Hash value of the deployed commit.
+	ManagedByPiped   = "piped"
 )
 
 type Client interface {
