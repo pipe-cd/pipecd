@@ -41,6 +41,14 @@ type (
 	Revision run.Revision
 )
 
+const (
+	LabelManagedBy   = "pipecd-dev-managed-by"  // Always be piped.
+	LabelPiped       = "pipecd-dev-piped"       // The id of piped handling this application.
+	LabelApplication = "pipecd-dev-application" // The application this resource belongs to.
+	LabelCommitHash  = "pipecd-dev-commit-hash" // Hash value of the deployed commit.
+	ManagedByPiped   = "piped"
+)
+
 type Client interface {
 	Create(ctx context.Context, sm ServiceManifest) (*Service, error)
 	Update(ctx context.Context, sm ServiceManifest) (*Service, error)
