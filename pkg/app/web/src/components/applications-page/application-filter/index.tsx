@@ -78,6 +78,7 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
       <FilterView
         onClear={() => {
           onClear();
+          setSelectedLabels([]);
         }}
       >
         <div className={classes.formItem}>
