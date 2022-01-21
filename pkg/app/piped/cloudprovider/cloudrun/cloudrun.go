@@ -52,7 +52,7 @@ const (
 type Client interface {
 	Create(ctx context.Context, sm ServiceManifest) (*Service, error)
 	Update(ctx context.Context, sm ServiceManifest) (*Service, error)
-	List(ctx context.Context, params *ListOptions) ([]*Service, string, error)
+	List(ctx context.Context, options *ListOptions) ([]*Service, string, error)
 	GetRevision(ctx context.Context, name string) (*Revision, error)
 }
 
