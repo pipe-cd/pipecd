@@ -22,29 +22,29 @@ spec:
   rules:
   - http:
       paths:
-      - path: /grpc.service.pipedservice.PipedService/
-        pathType: Prefix
+      - path: /grpc.service.pipedservice.PipedService/*
+        pathType: ImplementationSpecific
         backend:
           service:
             name: {{ include "pipecd.fullname" . }}
             port:
               number: {{ .Values.service.port }}
-      - path: /pipe.api.service.pipedservice.PipedService/
-        pathType: Prefix
+      - path: /pipe.api.service.pipedservice.PipedService/*
+        pathType: ImplementationSpecific
         backend:
           service:
             name: {{ include "pipecd.fullname" . }}
             port:
               number: {{ .Values.service.port }}
-      - path: /grpc.service.apiservice.APIService/
-        pathType: Prefix
+      - path: /grpc.service.apiservice.APIService/*
+        pathType: ImplementationSpecific
         backend:
           service:
             name: {{ include "pipecd.fullname" . }}
             port:
               number: {{ .Values.service.port }}
-      - path: /pipe.api.service.apiservice.APIService/
-        pathType: Prefix
+      - path: /pipe.api.service.apiservice.APIService/*
+        pathType: ImplementationSpecific
         backend:
           service:
             name: {{ include "pipecd.fullname" . }}
