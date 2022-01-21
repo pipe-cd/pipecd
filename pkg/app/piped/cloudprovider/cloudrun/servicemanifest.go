@@ -64,6 +64,10 @@ func (m ServiceManifest) YamlBytes() ([]byte, error) {
 	return yaml.Marshal(m.u)
 }
 
+func (m ServiceManifest) Labels() map[string]string {
+	return m.u.GetLabels()
+}
+
 func (m ServiceManifest) AddLabels(labels map[string]string) {
 	if len(labels) == 0 {
 		return
