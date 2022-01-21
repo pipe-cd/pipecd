@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 
-package pipe.helloworld.service;
+package grpc.service.helloworldservice;
 option go_package = "github.com/pipe-cd/pipecd/pkg/app/helloworld/service";
 
 import "validate/validate.proto";
