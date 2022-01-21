@@ -4,8 +4,10 @@ import {
   createSlice,
 } from "@reduxjs/toolkit";
 import { Event, EventStatus } from "pipe/pkg/app/web/model/event_pb";
+import * as eventsApi from "~/api/events";
 import type { AppState } from "~/store";
 import { LoadingStatus } from "~/types/module";
+import { ListEventsRequest } from "pipe/pkg/app/web/api_client/service_pb";
 
 export type EventStatusKey = keyof typeof EventStatus;
 
@@ -42,6 +44,25 @@ const initialState = eventsAdapter.getInitialState<{
   minUpdatedAt: Math.round(Date.now() / 1000 - TIME_RANGE_LIMIT_IN_SECONDS),
 });
 
+const convertFilterOptions = (
+  options: EventFilterOptions
+): ListEventsRequest.Options.AsObject => {
+  const labels = new Array<[string, string]>();
+  if (options.labels) {
+    for (const label of options.labels) {
+      const pair = label.split(":");
+      pair.length === 2 && labels.push([pair[0], pair[1]]);
+    }
+  }
+  return {
+    name: options.name ?? "",
+    statusesList: options.status
+      ? [parseInt(options.status, 10) as EventStatus]
+      : [],
+    labelsMap: labels,
+  };
+};
+
 /**
  * This action will clear old items and add items.
  */
@@ -49,70 +70,18 @@ export const fetchEvents = createAsyncThunk<
   { events: Event.AsObject[]; cursor: string },
   EventFilterOptions,
   { state: AppState }
->(`${MODULE_NAME}/fetchList`, async () => {
-  // TODO: Call ListEvents to fetch events
-  return {
-    events: [
-      {
-        id: "964a6694-bf3e-4c82-addf-7c8b140cf958",
-        name: "push-image",
-        data: "v0.2.1",
-        projectId: "project-id",
-        labelsMap: new Array<[string, string]>(["app", "foo"], ["env", "dev"]),
-        eventKey: "push-image:app:foo:env:dev",
-        handled: false,
-        status: EventStatus.EVENT_NOT_HANDLED,
-        statusDescription: "It is going to be replaced by v0.2.1",
-        handledAt: 0,
-        createdAt: 1642574083,
-        updatedAt: 1642574083,
-      },
-      {
-        id: "3d681c85-ab28-458b-9c14-0ddf77634b75",
-        name: "helm-release",
-        data: "v0.1.0",
-        projectId: "project-id",
-        labelsMap: new Array<[string, string]>(["app", "bar"]),
-        eventKey: "helm-release:app:bar",
-        handled: true,
-        status: EventStatus.EVENT_SUCCESS,
-        statusDescription:
-          "Successfully updated 2 files in the repo-1 repository",
-        handledAt: 1642574082,
-        createdAt: 1642574073,
-        updatedAt: 1642574073,
-      },
-      {
-        id: "2a681c85-ab28-458b-9c14-0ddf77634b75",
-        name: "helm-release",
-        data: "v0.1.0",
-        projectId: "project-id",
-        labelsMap: new Array<[string, string]>(["app", "bar"]),
-        eventKey: "helm-release:app:bar",
-        handled: true,
-        status: EventStatus.EVENT_FAILURE,
-        statusDescription:
-          "Failed to change files: failed to get value at $.spec.template.spec.containers[0]version in /path/to/repo/foo/deployment.yaml",
-        handledAt: 1642143308,
-        createdAt: 1642143305,
-        updatedAt: 1642143305,
-      },
-      {
-        id: "8e681c85-ab28-458b-9c14-0ddf77634b75",
-        name: "helm-release",
-        data: "v0.1.0",
-        projectId: "project-id",
-        labelsMap: new Array<[string, string]>(["app", "bar"]),
-        eventKey: "helm-release:app:bar",
-        handled: false,
-        status: EventStatus.EVENT_OUTDATED,
-        statusDescription: "The new event has been created",
-        handledAt: 1642142208,
-        createdAt: 1642142205,
-        updatedAt: 1642142205,
-      },
-    ] as Event.AsObject[],
+>(`${MODULE_NAME}/fetchList`, async (options, thunkAPI) => {
+  const { events } = thunkAPI.getState();
+  const { eventsList, cursor } = await eventsApi.getEvents({
+    options: convertFilterOptions({ ...options }),
+    pageSize: ITEMS_PER_PAGE,
     cursor: "",
+    pageMinUpdatedAt: events.minUpdatedAt,
+  });
+
+  return {
+    events: (eventsList as Event.AsObject[]) || [],
+    cursor,
   };
 });
 
@@ -123,27 +92,18 @@ export const fetchMoreEvents = createAsyncThunk<
   { events: Event.AsObject[]; cursor: string },
   EventFilterOptions,
   { state: AppState }
->(`${MODULE_NAME}/fetchMoreList`, async () => {
-  // TODO: Call ListEvents to fetch more events
+>(`${MODULE_NAME}/fetchMoreList`, async (options, thunkAPI) => {
+  const { events } = thunkAPI.getState();
+  const { eventsList, cursor } = await eventsApi.getEvents({
+    options: convertFilterOptions({ ...options }),
+    pageSize: FETCH_MORE_ITEMS_PER_PAGE,
+    cursor: events.cursor,
+    pageMinUpdatedAt: events.minUpdatedAt,
+  });
+
   return {
-    events: [
-      {
-        id: "a84b1c85-ab28-458b-9c14-0ddf77634b75",
-        name: "helm-release",
-        data: "v0.1.0",
-        projectId: "project-id",
-        labelsMap: new Array<[string, string]>(["app", "bar"]),
-        eventKey: "helm-release:app:bar",
-        handled: true,
-        status: EventStatus.EVENT_FAILURE,
-        statusDescription:
-          "Failed to change files: failed to get value at $.spec.template.spec.containers[0]version in /path/to/repo/foo/deployment.yaml",
-        handledAt: 1642111308,
-        createdAt: 1642111305,
-        updatedAt: 1642111305,
-      },
-    ] as Event.AsObject[],
-    cursor: "",
+    events: (eventsList as Event.AsObject[]) || [],
+    cursor,
   };
 });
 
@@ -181,6 +141,7 @@ export const eventsSlice = createSlice({
         const events = action.payload.events;
         if (events.length < FETCH_MORE_ITEMS_PER_PAGE) {
           state.hasMore = false;
+          // TODO: Enable to fetch more Events even if the last response is none
           state.minUpdatedAt =
             events[events.length - 1].updatedAt - TIME_RANGE_LIMIT_IN_SECONDS;
         } else {
