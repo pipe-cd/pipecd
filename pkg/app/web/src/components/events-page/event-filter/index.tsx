@@ -53,9 +53,18 @@ export const EventFilter: FC<EventFilterProps> = memo(function EventFilter({
   const events = useAppSelector<Event.AsObject[]>((state) =>
     selectAllEvents(state.events)
   );
+
+  const [allNames, setAllNames] = useState(new Array<string>());
+  useEffect(() => {
+    const names = new Set<string>();
+    events.map((app) => {
+      names.add(app.name);
+    });
+    setAllNames(Array.from(names));
+  }, [events]);
+
   const [allLabels, setAllLabels] = useState(new Array<string>());
   const [selectedLabels, setSelectedLabels] = useState(new Array<string>());
-
   useEffect(() => {
     const labels = new Set<string>();
     events
@@ -72,23 +81,35 @@ export const EventFilter: FC<EventFilterProps> = memo(function EventFilter({
     <FilterView
       onClear={() => {
         onClear();
+        setSelectedLabels([]);
       }}
     >
-      {/* TODO: Suggest possible event names on the event filter */}
       <FormControl className={classes.formItem} variant="outlined">
-        <TextField
+        <Autocomplete
+          autoHighlight
           id="filter-event-name"
-          value={options.name ?? ""}
-          label="Name"
-          className={classes.select}
-          variant="outlined"
-          onChange={(e) => {
+          noOptionsText="No selectable name"
+          options={allNames}
+          value={options.name}
+          onInputChange={(_, value) => {
+            setAllNames([value]);
+          }}
+          onChange={(_, newValue) => {
+            setAllNames([]);
             handleUpdateFilterValue({
-              name:
-                e.target.value === ALL_VALUE ? undefined : `${e.target.value}`,
+              name: newValue !== null ? newValue : "",
             });
           }}
-        ></TextField>
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant="outlined"
+              label="Name"
+              margin="dense"
+              fullWidth
+            />
+          )}
+        />
       </FormControl>
 
       <FormControl className={classes.formItem} variant="outlined">
