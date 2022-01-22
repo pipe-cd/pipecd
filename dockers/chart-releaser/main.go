@@ -68,17 +68,9 @@ func main() {
 }
 
 func run() error {
-	pctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
-	ctx, stop := signal.NotifyContext(pctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	defer stop()
-
-	go func() {
-		log.Println("Waiting for signals...")
-		<-ctx.Done()
-		log.Println("Received signal, exiting...")
-		stop()
-	}()
+	ctx, _ = signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 
 	// Initialize gcs client.
 	var options []option.ClientOption
@@ -95,6 +87,7 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("unable to create a temporary working directory: %v", err)
 	}
+	defer os.RemoveAll(workingDir)
 	log.Printf("Successfully created a temporary working directory: %s", workingDir)
 
 	// Download current index.yaml file from storage.
