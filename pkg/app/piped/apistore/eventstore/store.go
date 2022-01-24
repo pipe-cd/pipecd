@@ -32,7 +32,7 @@ import (
 // Getter helps get an event. All objects returned here must be treated as read-only.
 type Getter interface {
 	// GetLatest returns the latest event that meets the given conditions.
-	GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool)
+	GetLatest(ctx context.Context, name string, labels map[string]string, forceRefresh bool) (event *model.Event, cacheUsed bool, ok bool)
 }
 
 type Store interface {
@@ -142,13 +142,16 @@ func (s *store) Getter() Getter {
 	return s
 }
 
-func (s *store) GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool) {
+func (s *store) GetLatest(ctx context.Context, name string, labels map[string]string, forceRefresh bool) (event *model.Event, cacheUsed bool, ok bool) {
 	key := model.MakeEventKey(name, labels)
-	s.mu.RLock()
-	event, ok := s.latestEvents[key]
-	s.mu.RUnlock()
-	if ok {
-		return event, true
+
+	if !forceRefresh {
+		s.mu.RLock()
+		event, ok = s.latestEvents[key]
+		s.mu.RUnlock()
+		if ok {
+			return event, true, true
+		}
 	}
 
 	// If not found in the cache, fetch from the control-plane.
@@ -161,19 +164,15 @@ func (s *store) GetLatest(ctx context.Context, name string, labels map[string]st
 			zap.String("event-name", name),
 			zap.Any("labels", labels),
 		)
-		return nil, false
+		return nil, false, false
 	}
 	if err != nil {
 		s.logger.Error("failed to get the latest event", zap.Error(err))
-		return nil, false
+		return nil, false, false
 	}
 
 	s.mu.Lock()
-	defer s.mu.Unlock()
-	cached, ok := s.latestEvents[key]
-	if ok && cached.CreatedAt > event.CreatedAt {
-		return resp.Event, true
-	}
 	s.latestEvents[key] = resp.Event
-	return resp.Event, true
+	s.mu.Unlock()
+	return resp.Event, false, true
 }
