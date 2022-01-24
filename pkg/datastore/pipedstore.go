@@ -21,12 +21,20 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-const PipedModelKind = "Piped"
+type pipedCollection struct {
+}
 
-var (
-	pipedFactory = func() interface{} {
+func (p *pipedCollection) Kind() string {
+	return "Piped"
+}
+
+func (p *pipedCollection) Factory() Factory {
+	return func() interface{} {
 		return &model.Piped{}
 	}
+}
+
+var (
 	PipedMetadataUpdater = func(
 		cloudProviders []*model.Piped_CloudProvider,
 		repos []*model.ApplicationGitRepository,
@@ -62,14 +70,15 @@ type PipedStore interface {
 }
 
 type pipedStore struct {
-	backend
+	backend CollectionStore
 	nowFunc func() time.Time
 }
 
 func NewPipedStore(ds DataStore) PipedStore {
 	return &pipedStore{
-		backend: backend{
-			ds: ds,
+		backend: &collectionStore{
+			col: &pipedCollection{},
+			ds:  ds,
 		},
 		nowFunc: time.Now,
 	}
@@ -86,19 +95,19 @@ func (s *pipedStore) AddPiped(ctx context.Context, piped *model.Piped) error {
 	if err := piped.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, PipedModelKind, piped.Id, piped)
+	return s.backend.Create(ctx, piped.Id, piped)
 }
 
 func (s *pipedStore) GetPiped(ctx context.Context, id string) (*model.Piped, error) {
 	var entity model.Piped
-	if err := s.ds.Get(ctx, PipedModelKind, id, &entity); err != nil {
+	if err := s.backend.Get(ctx, id, &entity); err != nil {
 		return nil, err
 	}
 	return &entity, nil
 }
 
 func (s *pipedStore) ListPipeds(ctx context.Context, opts ListOptions) ([]*model.Piped, error) {
-	it, err := s.ds.Find(ctx, PipedModelKind, opts)
+	it, err := s.backend.Find(ctx, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +128,7 @@ func (s *pipedStore) ListPipeds(ctx context.Context, opts ListOptions) ([]*model
 
 func (s *pipedStore) UpdatePiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, PipedModelKind, id, pipedFactory, func(e interface{}) error {
+	return s.backend.Update(ctx, id, func(e interface{}) error {
 		p := e.(*model.Piped)
 		if err := updater(p); err != nil {
 			return err

@@ -21,10 +21,17 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-const CommandModelKind = "Command"
+type commandCollection struct {
+}
 
-var commandFactory = func() interface{} {
-	return &model.Command{}
+func (c *commandCollection) Kind() string {
+	return "Command"
+}
+
+func (c *commandCollection) Factory() Factory {
+	return func() interface{} {
+		return &model.Command{}
+	}
 }
 
 var (
@@ -46,14 +53,15 @@ type CommandStore interface {
 }
 
 type commandStore struct {
-	backend
+	backend CollectionStore
 	nowFunc func() time.Time
 }
 
 func NewCommandStore(ds DataStore) CommandStore {
 	return &commandStore{
-		backend: backend{
-			ds: ds,
+		backend: &collectionStore{
+			col: &commandCollection{},
+			ds:  ds,
 		},
 		nowFunc: time.Now,
 	}
@@ -70,12 +78,12 @@ func (s *commandStore) AddCommand(ctx context.Context, cmd *model.Command) error
 	if err := cmd.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, CommandModelKind, cmd.Id, cmd)
+	return s.backend.Create(ctx, cmd.Id, cmd)
 }
 
 func (s *commandStore) UpdateCommand(ctx context.Context, id string, updater func(piped *model.Command) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, CommandModelKind, id, commandFactory, func(e interface{}) error {
+	return s.backend.Update(ctx, id, func(e interface{}) error {
 		p := e.(*model.Command)
 		if err := updater(p); err != nil {
 			return err
@@ -86,7 +94,7 @@ func (s *commandStore) UpdateCommand(ctx context.Context, id string, updater fun
 }
 
 func (s *commandStore) ListCommands(ctx context.Context, opts ListOptions) ([]*model.Command, error) {
-	it, err := s.ds.Find(ctx, CommandModelKind, opts)
+	it, err := s.backend.Find(ctx, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +115,7 @@ func (s *commandStore) ListCommands(ctx context.Context, opts ListOptions) ([]*m
 
 func (s *commandStore) GetCommand(ctx context.Context, id string) (*model.Command, error) {
 	var entity model.Command
-	if err := s.ds.Get(ctx, CommandModelKind, id, &entity); err != nil {
+	if err := s.backend.Get(ctx, id, &entity); err != nil {
 		return nil, err
 	}
 	return &entity, nil

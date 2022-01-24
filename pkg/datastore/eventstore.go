@@ -21,13 +21,18 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-const EventModelKind = "Event"
+type eventCollection struct {
+}
 
-var (
-	eventFactory = func() interface{} {
+func (e *eventCollection) Kind() string {
+	return "Event"
+}
+
+func (e *eventCollection) Factory() Factory {
+	return func() interface{} {
 		return &model.Event{}
 	}
-)
+}
 
 type EventStore interface {
 	AddEvent(ctx context.Context, e model.Event) error
@@ -36,14 +41,15 @@ type EventStore interface {
 }
 
 type eventStore struct {
-	backend
+	backend CollectionStore
 	nowFunc func() time.Time
 }
 
 func NewEventStore(ds DataStore) EventStore {
 	return &eventStore{
-		backend: backend{
-			ds: ds,
+		backend: &collectionStore{
+			col: &eventCollection{},
+			ds:  ds,
 		},
 		nowFunc: time.Now,
 	}
@@ -60,11 +66,11 @@ func (s *eventStore) AddEvent(ctx context.Context, e model.Event) error {
 	if err := e.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, EventModelKind, e.Id, &e)
+	return s.backend.Create(ctx, e.Id, &e)
 }
 
 func (s *eventStore) ListEvents(ctx context.Context, opts ListOptions) ([]*model.Event, string, error) {
-	it, err := s.ds.Find(ctx, EventModelKind, opts)
+	it, err := s.backend.Find(ctx, opts)
 	if err != nil {
 		return nil, "", err
 	}
@@ -93,7 +99,7 @@ func (s *eventStore) ListEvents(ctx context.Context, opts ListOptions) ([]*model
 }
 
 func (s *eventStore) UpdateEventStatus(ctx context.Context, eventID string, status model.EventStatus, statusDescription string) error {
-	return s.ds.Update(ctx, EventModelKind, eventID, eventFactory, func(e interface{}) error {
+	return s.backend.Update(ctx, eventID, func(e interface{}) error {
 		event := e.(*model.Event)
 		event.Status = status
 		event.StatusDescription = statusDescription

@@ -22,10 +22,17 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-const EnvironmentModelKind = "Environment"
+type environmentCollection struct {
+}
 
-var environmentFactory = func() interface{} {
-	return &model.Environment{}
+func (e *environmentCollection) Kind() string {
+	return "Environment"
+}
+
+func (e *environmentCollection) Factory() Factory {
+	return func() interface{} {
+		return &model.Environment{}
+	}
 }
 
 type EnvironmentStore interface {
@@ -38,14 +45,15 @@ type EnvironmentStore interface {
 }
 
 type environmentStore struct {
-	backend
+	backend CollectionStore
 	nowFunc func() time.Time
 }
 
 func NewEnvironmentStore(ds DataStore) EnvironmentStore {
 	return &environmentStore{
-		backend: backend{
-			ds: ds,
+		backend: &collectionStore{
+			col: &environmentCollection{},
+			ds:  ds,
 		},
 		nowFunc: time.Now,
 	}
@@ -62,11 +70,11 @@ func (s *environmentStore) AddEnvironment(ctx context.Context, env *model.Enviro
 	if err := env.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, EnvironmentModelKind, env.Id, env)
+	return s.backend.Create(ctx, env.Id, env)
 }
 
 func (s *environmentStore) EnableEnvironment(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, EnvironmentModelKind, id, environmentFactory, func(e interface{}) error {
+	return s.backend.Update(ctx, id, func(e interface{}) error {
 		env := e.(*model.Environment)
 		if env.Deleted {
 			return errors.New("unable to enable a deleted environment")
@@ -78,7 +86,7 @@ func (s *environmentStore) EnableEnvironment(ctx context.Context, id string) err
 }
 
 func (s *environmentStore) DisableEnvironment(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, EnvironmentModelKind, id, environmentFactory, func(e interface{}) error {
+	return s.backend.Update(ctx, id, func(e interface{}) error {
 		env := e.(*model.Environment)
 		if env.Deleted {
 			return errors.New("unable to disable a deleted environment")
@@ -90,7 +98,7 @@ func (s *environmentStore) DisableEnvironment(ctx context.Context, id string) er
 }
 
 func (s *environmentStore) DeleteEnvironment(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, EnvironmentModelKind, id, environmentFactory, func(e interface{}) error {
+	return s.backend.Update(ctx, id, func(e interface{}) error {
 		now := s.nowFunc().Unix()
 		env := e.(*model.Environment)
 		env.Deleted = true
@@ -103,14 +111,14 @@ func (s *environmentStore) DeleteEnvironment(ctx context.Context, id string) err
 
 func (s *environmentStore) GetEnvironment(ctx context.Context, id string) (*model.Environment, error) {
 	var entity model.Environment
-	if err := s.ds.Get(ctx, EnvironmentModelKind, id, &entity); err != nil {
+	if err := s.backend.Get(ctx, id, &entity); err != nil {
 		return nil, err
 	}
 	return &entity, nil
 }
 
 func (s *environmentStore) ListEnvironments(ctx context.Context, opts ListOptions) ([]*model.Environment, error) {
-	it, err := s.ds.Find(ctx, EnvironmentModelKind, opts)
+	it, err := s.backend.Find(ctx, opts)
 	if err != nil {
 		return nil, err
 	}

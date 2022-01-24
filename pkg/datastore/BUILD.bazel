@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "apikey.go",
         "applicationstore.go",
+        "collectionstore.go",
         "commandstore.go",
         "datastore.go",
         "deploymentchainstore.go",

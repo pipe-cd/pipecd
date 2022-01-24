@@ -22,10 +22,17 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-const ApplicationModelKind = "Application"
+type applicationCollection struct {
+}
 
-var applicationFactory = func() interface{} {
-	return &model.Application{}
+func (a *applicationCollection) Kind() string {
+	return "Application"
+}
+
+func (a *applicationCollection) Factory() Factory {
+	return func() interface{} {
+		return &model.Application{}
+	}
 }
 
 type ApplicationStore interface {
@@ -41,14 +48,15 @@ type ApplicationStore interface {
 }
 
 type applicationStore struct {
-	backend
+	backend CollectionStore
 	nowFunc func() time.Time
 }
 
 func NewApplicationStore(ds DataStore) ApplicationStore {
 	return &applicationStore{
-		backend: backend{
-			ds: ds,
+		backend: &collectionStore{
+			col: &applicationCollection{},
+			ds:  ds,
 		},
 		nowFunc: time.Now,
 	}
@@ -65,11 +73,11 @@ func (s *applicationStore) AddApplication(ctx context.Context, app *model.Applic
 	if err := app.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, ApplicationModelKind, app.Id, app)
+	return s.backend.Create(ctx, app.Id, app)
 }
 
 func (s *applicationStore) EnableApplication(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, ApplicationModelKind, id, applicationFactory, func(e interface{}) error {
+	return s.backend.Update(ctx, id, func(e interface{}) error {
 		app := e.(*model.Application)
 		if app.Deleted {
 			return fmt.Errorf("cannot enable a deleted application: %w", ErrInvalidArgument)
@@ -81,7 +89,7 @@ func (s *applicationStore) EnableApplication(ctx context.Context, id string) err
 }
 
 func (s *applicationStore) DisableApplication(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, ApplicationModelKind, id, applicationFactory, func(e interface{}) error {
+	return s.backend.Update(ctx, id, func(e interface{}) error {
 		app := e.(*model.Application)
 		if app.Deleted {
 			return fmt.Errorf("cannot disable a deleted application: %w", ErrInvalidArgument)
@@ -93,7 +101,7 @@ func (s *applicationStore) DisableApplication(ctx context.Context, id string) er
 }
 
 func (s *applicationStore) DeleteApplication(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, ApplicationModelKind, id, applicationFactory, func(e interface{}) error {
+	return s.backend.Update(ctx, id, func(e interface{}) error {
 		now := s.nowFunc().Unix()
 		app := e.(*model.Application)
 		app.Deleted = true
@@ -106,14 +114,14 @@ func (s *applicationStore) DeleteApplication(ctx context.Context, id string) err
 
 func (s *applicationStore) GetApplication(ctx context.Context, id string) (*model.Application, error) {
 	var entity model.Application
-	if err := s.ds.Get(ctx, ApplicationModelKind, id, &entity); err != nil {
+	if err := s.backend.Get(ctx, id, &entity); err != nil {
 		return nil, err
 	}
 	return &entity, nil
 }
 
 func (s *applicationStore) ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, string, error) {
-	it, err := s.ds.Find(ctx, ApplicationModelKind, opts)
+	it, err := s.backend.Find(ctx, opts)
 	if err != nil {
 		return nil, "", err
 	}
@@ -143,7 +151,7 @@ func (s *applicationStore) ListApplications(ctx context.Context, opts ListOption
 
 func (s *applicationStore) UpdateApplication(ctx context.Context, id string, updater func(*model.Application) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, ApplicationModelKind, id, applicationFactory, func(e interface{}) error {
+	return s.backend.Update(ctx, id, func(e interface{}) error {
 		a := e.(*model.Application)
 		if a.Deleted {
 			return fmt.Errorf("cannot update a deleted application: %w", ErrInvalidArgument)
