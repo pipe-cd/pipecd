@@ -17,6 +17,7 @@ package cloudrun
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,7 +25,7 @@ func TestMakeCloudRunParent(t *testing.T) {
 	const projectID = "projectID"
 	got := makeCloudRunParent(projectID)
 	want := "namespaces/projectID"
-	require.Equal(t, want, got)
+	assert.Equal(t, want, got)
 }
 
 func TestMakeCloudRunServiceName(t *testing.T) {
@@ -34,7 +35,7 @@ func TestMakeCloudRunServiceName(t *testing.T) {
 	)
 	got := makeCloudRunServiceName(projectID, serviceID)
 	want := "namespaces/projectID/services/serviceID"
-	require.Equal(t, want, got)
+	assert.Equal(t, want, got)
 }
 
 func TestMakeCloudRunRevisionName(t *testing.T) {
@@ -44,7 +45,7 @@ func TestMakeCloudRunRevisionName(t *testing.T) {
 	)
 	got := makeCloudRunRevisionName(projectID, revisionID)
 	want := "namespaces/projectID/revisions/revisionID"
-	require.Equal(t, want, got)
+	assert.Equal(t, want, got)
 }
 
 func TestManifestToRunService(t *testing.T) {
@@ -54,7 +55,7 @@ func TestManifestToRunService(t *testing.T) {
 
 	got, err := manifestToRunService(sm)
 	require.NoError(t, err)
-	require.NotEmpty(t, got)
+	assert.NotEmpty(t, got)
 }
 
 func TestService(t *testing.T) {
@@ -67,5 +68,5 @@ func TestService(t *testing.T) {
 	s := (*Service)(svc)
 	got, err := s.ServiceManifest()
 	require.NoError(t, err)
-	require.Equal(t, sm, got)
+	assert.Equal(t, sm, got)
 }
