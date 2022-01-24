@@ -17,6 +17,7 @@ package cloudrun
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -28,15 +29,15 @@ func TestLoadServiceManifest(t *testing.T) {
 	// Success
 	got, err := LoadServiceManifest(appDir, serviceFile)
 	require.NoError(t, err)
-	require.NotEmpty(t, got)
+	assert.NotEmpty(t, got)
 
 	// Failure
 	_, err = LoadServiceManifest(appDir, "")
-	require.Error(t, err)
+	assert.Error(t, err)
 }
 
-func TestNewManagedByPipedLabel(t *testing.T) {
+func TestMakeManagedByPipedLabel(t *testing.T) {
 	want := "pipecd-dev-managed-by=piped"
-	got := NewManagedByPipedLabel()
-	require.Equal(t, want, got)
+	got := MakeManagedByPipedLabel()
+	assert.Equal(t, want, got)
 }

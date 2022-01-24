@@ -113,6 +113,6 @@ func (r *registry) Client(ctx context.Context, name string, cfg *config.CloudPro
 	return client, nil
 }
 
-func NewManagedByPipedLabel() string {
+func MakeManagedByPipedLabel() string {
 	return fmt.Sprintf("%s=%s", LabelManagedBy, ManagedByPiped)
 }
