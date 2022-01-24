@@ -95,17 +95,6 @@ func TestServiceManifest(t *testing.T) {
 	require.Len(t, sm.Labels(), 4)
 }
 
-func TestLoadServiceManifest(t *testing.T) {
-	// Success
-	sm, err := loadServiceManifest("testdata/new_manifest.yaml")
-	require.NoError(t, err)
-	require.NotEmpty(t, sm)
-
-	// Failure
-	_, err = loadServiceManifest("testdata/not_found")
-	require.Error(t, err)
-}
-
 func TestParseServiceManifest(t *testing.T) {
 	// Success
 	data := []byte(manifest)

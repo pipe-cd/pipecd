@@ -17,6 +17,7 @@ package cloudrun
 import (
 	"context"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"sync"
 
@@ -110,4 +111,8 @@ func (r *registry) Client(ctx context.Context, name string, cfg *config.CloudPro
 	r.mu.Unlock()
 
 	return client, nil
+}
+
+func MakeManagedByPipedLabel() string {
+	return fmt.Sprintf("%s=%s", LabelManagedBy, ManagedByPiped)
 }
