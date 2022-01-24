@@ -141,9 +141,7 @@ export const eventsSlice = createSlice({
         const events = action.payload.events;
         if (events.length < FETCH_MORE_ITEMS_PER_PAGE) {
           state.hasMore = false;
-          // TODO: Enable to fetch more Events even if the last response is none
-          state.minUpdatedAt =
-            events[events.length - 1].updatedAt - TIME_RANGE_LIMIT_IN_SECONDS;
+          state.minUpdatedAt = state.minUpdatedAt - TIME_RANGE_LIMIT_IN_SECONDS;
         } else {
           state.hasMore = true;
         }
