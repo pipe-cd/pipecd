@@ -31,6 +31,7 @@ go_test(
     size = "small",
     srcs = [
         "client_test.go",
+        "cloudrun_test.go",
         "diff_test.go",
         "servicemanifest_test.go",
     ],
