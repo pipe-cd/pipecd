@@ -30,6 +30,7 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
+        "client_test.go",
         "diff_test.go",
         "servicemanifest_test.go",
     ],
