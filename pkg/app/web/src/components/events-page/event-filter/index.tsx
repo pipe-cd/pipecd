@@ -57,8 +57,8 @@ export const EventFilter: FC<EventFilterProps> = memo(function EventFilter({
   const [allNames, setAllNames] = useState(new Array<string>());
   useEffect(() => {
     const names = new Set<string>();
-    events.map((app) => {
-      names.add(app.name);
+    events.map((event) => {
+      names.add(event.name);
     });
     setAllNames(Array.from(names));
   }, [events]);
