@@ -32,7 +32,7 @@ import (
 // Getter helps get an event. All objects returned here must be treated as read-only.
 type Getter interface {
 	// GetLatest returns the latest event that meets the given conditions.
-	GetLatest(ctx context.Context, name string, labels map[string]string, forceRefresh bool) (event *model.Event, cacheUsed bool, ok bool)
+	GetLatest(ctx context.Context, name string, labels map[string]string, notUsingCache bool) (event *model.Event, cacheUsed bool, ok bool)
 }
 
 type Store interface {
@@ -142,10 +142,10 @@ func (s *store) Getter() Getter {
 	return s
 }
 
-func (s *store) GetLatest(ctx context.Context, name string, labels map[string]string, forceRefresh bool) (event *model.Event, cacheUsed bool, ok bool) {
+func (s *store) GetLatest(ctx context.Context, name string, labels map[string]string, notUsingCache bool) (event *model.Event, cacheUsed bool, ok bool) {
 	key := model.MakeEventKey(name, labels)
 
-	if !forceRefresh {
+	if !notUsingCache {
 		s.mu.RLock()
 		event, ok = s.latestEvents[key]
 		s.mu.RUnlock()

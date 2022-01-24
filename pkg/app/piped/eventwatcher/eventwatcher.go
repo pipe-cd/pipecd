@@ -54,7 +54,7 @@ type Watcher interface {
 }
 
 type eventGetter interface {
-	GetLatest(ctx context.Context, name string, labels map[string]string, forceRefresh bool) (event *model.Event, cacheUsed bool, ok bool)
+	GetLatest(ctx context.Context, name string, labels map[string]string, notUsingCache bool) (event *model.Event, cacheUsed bool, ok bool)
 }
 
 type gitClient interface {
