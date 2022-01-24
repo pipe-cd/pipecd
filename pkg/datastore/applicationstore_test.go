@@ -61,7 +61,7 @@ func TestAddApplication(t *testing.T) {
 			},
 			dsFactory: func(d *model.Application) DataStore {
 				ds := NewMockDataStore(ctrl)
-				ds.EXPECT().Create(gomock.Any(), "Application", d.Id, d)
+				ds.EXPECT().Create(gomock.Any(), gomock.Any(), d.Id, d)
 				return ds
 			},
 			wantErr: false,
@@ -93,7 +93,7 @@ func TestGetApplication(t *testing.T) {
 			ds: func() DataStore {
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Get(gomock.Any(), "Application", "id", &model.Application{}).
+					Get(gomock.Any(), gomock.Any(), "id", &model.Application{}).
 					Return(nil)
 				return ds
 			}(),
@@ -105,7 +105,7 @@ func TestGetApplication(t *testing.T) {
 			ds: func() DataStore {
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Get(gomock.Any(), "Application", "id", &model.Application{}).
+					Get(gomock.Any(), gomock.Any(), "id", &model.Application{}).
 					Return(fmt.Errorf("err"))
 				return ds
 			}(),
@@ -143,7 +143,7 @@ func TestListApplications(t *testing.T) {
 
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Find(gomock.Any(), "Application", ListOptions{}).
+					Find(gomock.Any(), gomock.Any(), ListOptions{}).
 					Return(it, nil)
 				return ds
 			}(),
@@ -160,7 +160,7 @@ func TestListApplications(t *testing.T) {
 
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Find(gomock.Any(), "Application", ListOptions{}).
+					Find(gomock.Any(), gomock.Any(), ListOptions{}).
 					Return(it, nil)
 				return ds
 			}(),

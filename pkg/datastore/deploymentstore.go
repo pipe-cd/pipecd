@@ -22,10 +22,17 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-const DeploymentModelKind = "Deployment"
+type deploymentCollection struct {
+}
 
-var deploymentFactory = func() interface{} {
-	return &model.Deployment{}
+func (d *deploymentCollection) Kind() string {
+	return "Deployment"
+}
+
+func (d *deploymentCollection) Factory() Factory {
+	return func() interface{} {
+		return &model.Deployment{}
+	}
 }
 
 var (
@@ -105,7 +112,8 @@ type deploymentStore struct {
 func NewDeploymentStore(ds DataStore) DeploymentStore {
 	return &deploymentStore{
 		backend: backend{
-			ds: ds,
+			ds:  ds,
+			col: &deploymentCollection{},
 		},
 		nowFunc: time.Now,
 	}
@@ -122,12 +130,12 @@ func (s *deploymentStore) AddDeployment(ctx context.Context, d *model.Deployment
 	if err := d.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, DeploymentModelKind, d.Id, d)
+	return s.ds.Create(ctx, s.col, d.Id, d)
 }
 
 func (s *deploymentStore) UpdateDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, DeploymentModelKind, id, deploymentFactory, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
 		d := e.(*model.Deployment)
 		if err := updater(d); err != nil {
 			return err
@@ -139,7 +147,7 @@ func (s *deploymentStore) UpdateDeployment(ctx context.Context, id string, updat
 
 func (s *deploymentStore) PutDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, DeploymentModelKind, id, deploymentFactory, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
 		d := e.(*model.Deployment)
 		d.Metadata = mergeMetadata(d.Metadata, metadata)
 		d.UpdatedAt = now
@@ -149,7 +157,7 @@ func (s *deploymentStore) PutDeploymentMetadata(ctx context.Context, id string, 
 
 func (s *deploymentStore) PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, DeploymentModelKind, deploymentID, deploymentFactory, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, deploymentID, func(e interface{}) error {
 		d := e.(*model.Deployment)
 		for _, stage := range d.Stages {
 			if stage.Id == stageID {
@@ -174,7 +182,7 @@ func mergeMetadata(ori map[string]string, new map[string]string) map[string]stri
 }
 
 func (s *deploymentStore) ListDeployments(ctx context.Context, opts ListOptions) ([]*model.Deployment, string, error) {
-	it, err := s.ds.Find(ctx, DeploymentModelKind, opts)
+	it, err := s.ds.Find(ctx, s.col, opts)
 	if err != nil {
 		return nil, "", err
 	}
@@ -204,7 +212,7 @@ func (s *deploymentStore) ListDeployments(ctx context.Context, opts ListOptions)
 
 func (s *deploymentStore) GetDeployment(ctx context.Context, id string) (*model.Deployment, error) {
 	var entity model.Deployment
-	if err := s.ds.Get(ctx, DeploymentModelKind, id, &entity); err != nil {
+	if err := s.ds.Get(ctx, s.col, id, &entity); err != nil {
 		return nil, err
 	}
 	return &entity, nil

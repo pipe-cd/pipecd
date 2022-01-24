@@ -54,7 +54,7 @@ func TestAddPiped(t *testing.T) {
 			},
 			dsFactory: func(d *model.Piped) DataStore {
 				ds := NewMockDataStore(ctrl)
-				ds.EXPECT().Create(gomock.Any(), "Piped", d.Id, d)
+				ds.EXPECT().Create(gomock.Any(), gomock.Any(), d.Id, d)
 				return ds
 			},
 			wantErr: false,
@@ -86,7 +86,7 @@ func TestGetPiped(t *testing.T) {
 			ds: func() DataStore {
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Get(gomock.Any(), "Piped", "id", &model.Piped{}).
+					Get(gomock.Any(), gomock.Any(), "id", &model.Piped{}).
 					Return(nil)
 				return ds
 			}(),
@@ -98,7 +98,7 @@ func TestGetPiped(t *testing.T) {
 			ds: func() DataStore {
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Get(gomock.Any(), "Piped", "id", &model.Piped{}).
+					Get(gomock.Any(), gomock.Any(), "id", &model.Piped{}).
 					Return(fmt.Errorf("err"))
 				return ds
 			}(),
@@ -136,7 +136,7 @@ func TestListPipeds(t *testing.T) {
 
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Find(gomock.Any(), "Piped", ListOptions{}).
+					Find(gomock.Any(), gomock.Any(), ListOptions{}).
 					Return(it, nil)
 				return ds
 			}(),
@@ -153,7 +153,7 @@ func TestListPipeds(t *testing.T) {
 
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Find(gomock.Any(), "Piped", ListOptions{}).
+					Find(gomock.Any(), gomock.Any(), ListOptions{}).
 					Return(it, nil)
 				return ds
 			}(),

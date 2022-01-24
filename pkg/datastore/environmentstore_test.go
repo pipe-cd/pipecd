@@ -53,7 +53,7 @@ func TestAddEnvironment(t *testing.T) {
 			},
 			dsFactory: func(d *model.Environment) DataStore {
 				ds := NewMockDataStore(ctrl)
-				ds.EXPECT().Create(gomock.Any(), "Environment", d.Id, d)
+				ds.EXPECT().Create(gomock.Any(), gomock.Any(), d.Id, d)
 				return ds
 			},
 			wantErr: false,
@@ -85,7 +85,7 @@ func TestGetEnvironment(t *testing.T) {
 			ds: func() DataStore {
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Get(gomock.Any(), "Environment", "id", &model.Environment{}).
+					Get(gomock.Any(), gomock.Any(), "id", &model.Environment{}).
 					Return(nil)
 				return ds
 			}(),
@@ -97,7 +97,7 @@ func TestGetEnvironment(t *testing.T) {
 			ds: func() DataStore {
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Get(gomock.Any(), "Environment", "id", &model.Environment{}).
+					Get(gomock.Any(), gomock.Any(), "id", &model.Environment{}).
 					Return(fmt.Errorf("err"))
 				return ds
 			}(),
@@ -135,7 +135,7 @@ func TestListEnvironment(t *testing.T) {
 
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Find(gomock.Any(), "Environment", ListOptions{}).
+					Find(gomock.Any(), gomock.Any(), ListOptions{}).
 					Return(it, nil)
 				return ds
 			}(),
@@ -152,7 +152,7 @@ func TestListEnvironment(t *testing.T) {
 
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Find(gomock.Any(), "Environment", ListOptions{}).
+					Find(gomock.Any(), gomock.Any(), ListOptions{}).
 					Return(it, nil)
 				return ds
 			}(),

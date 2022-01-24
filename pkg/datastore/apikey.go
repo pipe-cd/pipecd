@@ -22,13 +22,18 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-const APIKeyModelKind = "APIKey"
+type apiKeyCollection struct {
+}
 
-var (
-	apiKeyFactory = func() interface{} {
+func (a *apiKeyCollection) Kind() string {
+	return "APIKey"
+}
+
+func (a *apiKeyCollection) Factory() Factory {
+	return func() interface{} {
 		return &model.APIKey{}
 	}
-)
+}
 
 type APIKeyStore interface {
 	AddAPIKey(ctx context.Context, k *model.APIKey) error
@@ -45,7 +50,8 @@ type apiKeyStore struct {
 func NewAPIKeyStore(ds DataStore) APIKeyStore {
 	return &apiKeyStore{
 		backend: backend{
-			ds: ds,
+			ds:  ds,
+			col: &apiKeyCollection{},
 		},
 		nowFunc: time.Now,
 	}
@@ -62,19 +68,19 @@ func (s *apiKeyStore) AddAPIKey(ctx context.Context, k *model.APIKey) error {
 	if err := k.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, APIKeyModelKind, k.Id, k)
+	return s.ds.Create(ctx, s.col, k.Id, k)
 }
 
 func (s *apiKeyStore) GetAPIKey(ctx context.Context, id string) (*model.APIKey, error) {
 	var entity model.APIKey
-	if err := s.ds.Get(ctx, APIKeyModelKind, id, &entity); err != nil {
+	if err := s.ds.Get(ctx, s.col, id, &entity); err != nil {
 		return nil, err
 	}
 	return &entity, nil
 }
 
 func (s *apiKeyStore) ListAPIKeys(ctx context.Context, opts ListOptions) ([]*model.APIKey, error) {
-	it, err := s.ds.Find(ctx, APIKeyModelKind, opts)
+	it, err := s.ds.Find(ctx, s.col, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +101,7 @@ func (s *apiKeyStore) ListAPIKeys(ctx context.Context, opts ListOptions) ([]*mod
 
 func (s *apiKeyStore) DisableAPIKey(ctx context.Context, id, projectID string) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, APIKeyModelKind, id, apiKeyFactory, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
 		k := e.(*model.APIKey)
 		if k.ProjectId != projectID {
 			return fmt.Errorf("invalid project id, expected %s, got %s", k.ProjectId, projectID)
