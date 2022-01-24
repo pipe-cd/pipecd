@@ -15,13 +15,13 @@ export const getEvents = ({
     const opts = new ListEventsRequest.Options();
     opts.setStatusesList(options.statusesList);
     opts.setName(options.name);
+    options.labelsMap.forEach((label) => {
+      opts.getLabelsMap().set(label[0], label[1]);
+    });
     req.setOptions(opts);
     req.setPageSize(pageSize);
     req.setCursor(cursor);
     req.setPageMinUpdatedAt(pageMinUpdatedAt);
-    options.labelsMap.forEach((label) => {
-      opts.getLabelsMap().set(label[0], label[1]);
-    });
   }
   return apiRequest(req, apiClient.listEvents);
 };
