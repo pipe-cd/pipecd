@@ -34,14 +34,14 @@ metadata:
 spec:
   template:
     metadata:
-      name: helloworld-v050-0b13751
+      name: helloworld-v010-1234567
       annotations:
         autoscaling.knative.dev/maxScale: '1'
     spec:
       containerConcurrency: 80
       timeoutSeconds: 300
       containers:
-      - image: gcr.io/pipecd/helloworld:v0.5.0
+      - image: gcr.io/pipecd/helloworld:v0.1.0
         args:
         - server
         ports:
@@ -52,7 +52,7 @@ spec:
             cpu: 1000m
             memory: 128Mi
   traffic:
-  - revisionName: helloworld-v050-0b13751
+  - revisionName: helloworld-v010-1234567
     percent: 100
 `
 
@@ -62,17 +62,17 @@ func TestServiceManifest(t *testing.T) {
 	require.NotEmpty(t, sm)
 
 	// SetRevision
-	err = sm.SetRevision("helloworld-v050-0b13751")
+	err = sm.SetRevision("helloworld-v010-1234567")
 	require.NoError(t, err)
 
 	// UpdateTraffic
 	traffics := []RevisionTraffic{
 		{
-			RevisionName: "helloworld-v050-0b13751",
+			RevisionName: "helloworld-v010-1234567",
 			Percent:      50,
 		},
 		{
-			RevisionName: "helloworld-v050-cb01dce",
+			RevisionName: "helloworld-v011-2345678",
 			Percent:      50,
 		},
 	}
@@ -101,8 +101,8 @@ func TestLoadServiceManifest(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, sm)
 
-	// Failed
-	sm, err = loadServiceManifest("testdata/not_found")
+	// Failure
+	_, err = loadServiceManifest("testdata/not_found")
 	require.Error(t, err)
 }
 
@@ -113,7 +113,7 @@ func TestParseServiceManifest(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "helloworld", sm.Name)
 
-	// Failed
+	// Failure
 	data = []byte("error")
 	_, err = ParseServiceManifest(data)
 	require.Error(t, err)
@@ -124,9 +124,9 @@ func TestDecideRevisionName(t *testing.T) {
 	sm, err := ParseServiceManifest(data)
 	require.NoError(t, err)
 
-	name, err := DecideRevisionName(sm, "bbdc2ed674ce4fd987")
+	name, err := DecideRevisionName(sm, "12345678912345678")
 	require.NoError(t, err)
-	require.Equal(t, "helloworld-v050-bbdc2ed", name)
+	require.Equal(t, "helloworld-v010-1234567", name)
 }
 
 func TestFindImageTag(t *testing.T) {
@@ -152,14 +152,14 @@ metadata:
 spec:
   template:
     metadata:
-      name: helloworld-v050-0b13751
+      name: helloworld-v010-1234567
       annotations:
         autoscaling.knative.dev/maxScale: '1'
     spec:
       containerConcurrency: 80
       timeoutSeconds: 300
       containers:
-      - image: gcr.io/pipecd/helloworld:v0.5.0
+      - image: gcr.io/pipecd/helloworld:v0.1.0
         args:
         - server
         ports:
@@ -170,10 +170,10 @@ spec:
             cpu: 1000m
             memory: 128Mi
   traffic:
-  - revisionName: helloworld-v050-0b13751
+  - revisionName: helloworld-v010-1234567
     percent: 100
 `,
-			want:    "v0.5.0",
+			want:    "v0.1.0",
 			wantErr: false,
 		},
 		{
@@ -186,7 +186,7 @@ metadata:
 spec:
   template:
     metadata:
-      name: helloworld-v050-0b13751
+      name: helloworld-v010-1234567
       annotations:
         autoscaling.knative.dev/maxScale: '1'
     spec:
@@ -212,7 +212,7 @@ metadata:
 spec:
   template:
     metadata:
-      name: helloworld-v050-0b13751
+      name: helloworld-v010-1234567
       annotations:
         autoscaling.knative.dev/maxScale: '1'
     spec:
@@ -229,7 +229,7 @@ spec:
             cpu: 1000m
             memory: 128Mi
   traffic:
-  - revisionName: helloworld-v050-0b13751
+  - revisionName: helloworld-v010-1234567
     percent: 100
 `,
 			want:    "",
