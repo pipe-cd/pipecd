@@ -5,6 +5,7 @@ RUN apk --no-cache add curl bash
 RUN /installer/install-helm.sh
 RUN cd /pipecd && \
     go mod init pipecd.dev/chart-releaser && \
+    go mod tidy && \
     go build -o chart-releaser main.go
 
 FROM alpine:3.10
