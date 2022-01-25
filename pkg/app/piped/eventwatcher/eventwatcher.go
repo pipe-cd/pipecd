@@ -29,9 +29,7 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
 
-	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/backoff"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
@@ -53,37 +51,32 @@ type Watcher interface {
 	Run(context.Context) error
 }
 
-type eventGetter interface {
+type eventStore interface {
 	GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool)
+	UpdateStatuses(ctx context.Context, events []model.Event) error
 }
 
 type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
-type apiClient interface {
-	ReportEventStatuses(ctx context.Context, req *pipedservice.ReportEventStatusesRequest, opts ...grpc.CallOption) (*pipedservice.ReportEventStatusesResponse, error)
-}
-
 type watcher struct {
-	config      *config.PipedSpec
-	eventGetter eventGetter
-	gitClient   gitClient
-	apiClient   apiClient
-	logger      *zap.Logger
-	wg          sync.WaitGroup
+	config     *config.PipedSpec
+	eventStore eventStore
+	gitClient  gitClient
+	logger     *zap.Logger
+	wg         sync.WaitGroup
 
 	// All cloned repository will be placed under this.
 	workingDir string
 }
 
-func NewWatcher(cfg *config.PipedSpec, eventGetter eventGetter, gitClient gitClient, apiClient apiClient, logger *zap.Logger) Watcher {
+func NewWatcher(cfg *config.PipedSpec, eventStore eventStore, gitClient gitClient, logger *zap.Logger) Watcher {
 	return &watcher{
-		config:      cfg,
-		eventGetter: eventGetter,
-		gitClient:   gitClient,
-		apiClient:   apiClient,
-		logger:      logger.Named("event-watcher"),
+		config:     cfg,
+		eventStore: eventStore,
+		gitClient:  gitClient,
+		logger:     logger.Named("event-watcher"),
 	}
 }
 
@@ -215,7 +208,7 @@ func (w *watcher) cloneRepo(ctx context.Context, repoCfg config.PipedRepository)
 }
 
 // updateValues inspects all Event-definition and pushes the changes to git repo if there is.
-func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string, events []config.EventWatcherEvent, commitMsg string) error {
+func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string, eventCfgs []config.EventWatcherEvent, commitMsg string) error {
 	// Copy the repo to another directory to modify local file to avoid reverting previous changes.
 	tmpDir, err := os.MkdirTemp(w.workingDir, "repo")
 	if err != nil {
@@ -227,29 +220,26 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	}
 	defer tmpRepo.Clean()
 
-	eventResults := make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(events))
-	for _, e := range events {
-		latestEvent, ok := w.eventGetter.GetLatest(ctx, e.Name, e.Labels)
+	newEvents := make([]model.Event, 0, len(eventCfgs))
+	for _, e := range eventCfgs {
+		latestEvent, ok := w.eventStore.GetLatest(ctx, e.Name, e.Labels)
 		if !ok {
 			continue
 		}
 		if latestEvent.IsHandled() {
 			continue
 		}
+		le := *latestEvent
 		if err := w.commitFiles(ctx, latestEvent.Data, e, tmpRepo, commitMsg); err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
-			eventResults = append(eventResults, &pipedservice.ReportEventStatusesRequest_Event{
-				Id:                latestEvent.Id,
-				Status:            model.EventStatus_EVENT_FAILURE,
-				StatusDescription: fmt.Sprintf("Failed to change files: %v", err),
-			})
+			le.Status = model.EventStatus_EVENT_FAILURE
+			le.StatusDescription = fmt.Sprintf("Failed to change files: %v", err)
+			newEvents = append(newEvents, le)
 			continue
 		}
-		eventResults = append(eventResults, &pipedservice.ReportEventStatusesRequest_Event{
-			Id:                latestEvent.Id,
-			Status:            model.EventStatus_EVENT_SUCCESS,
-			StatusDescription: fmt.Sprintf("Successfully updated %d files in the %q repository", len(e.Replacements), repoID),
-		})
+		le.Status = model.EventStatus_EVENT_SUCCESS
+		le.StatusDescription = fmt.Sprintf("Successfully updated %d files in the %q repository", len(e.Replacements), repoID)
+		newEvents = append(newEvents, le)
 	}
 
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
@@ -258,27 +248,22 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		return nil, err
 	})
 	if err == nil {
-		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: eventResults}); err != nil {
-			return fmt.Errorf("failed to report event statuses: %w", err)
+		if err := w.eventStore.UpdateStatuses(ctx, newEvents); err != nil {
+			return err
 		}
 		return nil
 	}
 
 	// If push fails, re-set all statuses to FAILURE.
-	newResults := make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventResults))
-	for _, e := range eventResults {
-		if e.Status == model.EventStatus_EVENT_FAILURE {
-			newResults = append(newResults, e)
+	for i := range newEvents {
+		if newEvents[i].Status == model.EventStatus_EVENT_FAILURE {
 			continue
 		}
-		newResults = append(newResults, &pipedservice.ReportEventStatusesRequest_Event{
-			Id:                e.Id,
-			Status:            model.EventStatus_EVENT_FAILURE,
-			StatusDescription: fmt.Sprintf("Failed to push change files: %v", err),
-		})
+		newEvents[i].Status = model.EventStatus_EVENT_FAILURE
+		newEvents[i].StatusDescription = fmt.Sprintf("Failed to push changed files: %v", err)
 	}
-	if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: newResults}); err != nil {
-		return fmt.Errorf("failed to report event statuses: %w", err)
+	if err := w.eventStore.UpdateStatuses(ctx, newEvents); err != nil {
+		return err
 	}
 	return fmt.Errorf("failed to push commits: %w", err)
 }

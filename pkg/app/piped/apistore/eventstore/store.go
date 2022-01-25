@@ -29,22 +29,21 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-// Getter helps get an event. All objects returned here must be treated as read-only.
-type Getter interface {
-	// GetLatest returns the latest event that meets the given conditions.
-	GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool)
-}
-
 type Store interface {
 	// Run starts syncing the event list with the control-plane.
 	Run(ctx context.Context) error
-	// Getter returns a getter for retrieving an event.
-	Getter() Getter
+	// GetLatest returns the latest event that meets the given conditions.
+	// All objects returned here must be treated as read-only.
+	GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool)
+	// GetLatest updates the status of the latest events.
+	// The second arg supposed to be the latest event. If it's not the latest, it will be ignored.
+	UpdateStatuses(ctx context.Context, latestEvents []model.Event) error
 }
 
 type apiClient interface {
 	GetLatestEvent(ctx context.Context, req *pipedservice.GetLatestEventRequest, opts ...grpc.CallOption) (*pipedservice.GetLatestEventResponse, error)
 	ListEvents(ctx context.Context, req *pipedservice.ListEventsRequest, opts ...grpc.CallOption) (*pipedservice.ListEventsResponse, error)
+	ReportEventStatuses(ctx context.Context, req *pipedservice.ReportEventStatusesRequest, opts ...grpc.CallOption) (*pipedservice.ReportEventStatusesResponse, error)
 }
 
 type store struct {
@@ -138,10 +137,6 @@ func (s *store) sync(ctx context.Context) error {
 	return nil
 }
 
-func (s *store) Getter() Getter {
-	return s
-}
-
 func (s *store) GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool) {
 	key := model.MakeEventKey(name, labels)
 	s.mu.RLock()
@@ -176,4 +171,33 @@ func (s *store) GetLatest(ctx context.Context, name string, labels map[string]st
 	}
 	s.latestEvents[key] = resp.Event
 	return resp.Event, true
+}
+
+func (s *store) UpdateStatuses(ctx context.Context, latestEvents []model.Event) error {
+	es := make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(latestEvents))
+	for _, e := range latestEvents {
+		es = append(es, &pipedservice.ReportEventStatusesRequest_Event{
+			Id:                e.Id,
+			Status:            e.Status,
+			StatusDescription: e.StatusDescription,
+		})
+	}
+	if _, err := s.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: es}); err != nil {
+		return fmt.Errorf("failed to report event statuses: %w", err)
+	}
+
+	// Update cached events.
+	for _, e := range latestEvents {
+		s.mu.RLock()
+		cached, ok := s.latestEvents[e.EventKey]
+		s.mu.RUnlock()
+		if ok && cached.Id != e.Id {
+			// There is already an event newer than the given one.
+			continue
+		}
+		s.mu.Lock()
+		s.latestEvents[e.EventKey] = &e
+		s.mu.Unlock()
+	}
+	return nil
 }
