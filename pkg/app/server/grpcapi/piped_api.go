@@ -911,7 +911,6 @@ func (a *PipedAPI) ReportEventStatuses(ctx context.Context, req *pipedservice.Re
 		return nil, err
 	}
 	for _, e := range req.Events {
-		// TODO: For success status, change all previous events with the same event key to OUTDATED
 		if err := a.eventStore.UpdateEventStatus(ctx, e.Id, e.Status, e.StatusDescription); err != nil {
 			switch err {
 			case datastore.ErrNotFound:

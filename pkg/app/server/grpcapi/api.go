@@ -399,12 +399,13 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 	}
 	id := uuid.New().String()
 
+	eventKey := model.MakeEventKey(req.Name, req.Labels)
 	err = a.eventStore.AddEvent(ctx, model.Event{
 		Id:                id,
 		Name:              req.Name,
 		Data:              req.Data,
 		Labels:            req.Labels,
-		EventKey:          model.MakeEventKey(req.Name, req.Labels),
+		EventKey:          eventKey,
 		ProjectId:         key.ProjectId,
 		Status:            model.EventStatus_EVENT_NOT_HANDLED,
 		StatusDescription: fmt.Sprintf("It is going to be replaced by %s", req.Data),
@@ -415,6 +416,50 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 	if err != nil {
 		a.logger.Error("failed to register event", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to register event")
+	}
+
+	// Make the previous event's status outdated.
+	opts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    key.ProjectId,
+			},
+			{
+				Field:    "EventKey",
+				Operator: datastore.OperatorEqual,
+				Value:    eventKey,
+			},
+			{
+				Field:    "Status",
+				Operator: datastore.OperatorEqual,
+				Value:    model.EventStatus_EVENT_NOT_HANDLED,
+			},
+		},
+		Orders: []datastore.Order{
+			{
+				Field:     "CreatedAt",
+				Direction: datastore.Desc,
+			},
+		},
+		Limit: 10,
+	}
+	outdatedEvents, _, err := a.eventStore.ListEvents(ctx, opts)
+	if err != nil {
+		a.logger.Error("failed to list events", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to list events")
+	}
+	if len(outdatedEvents) == 0 {
+		return &apiservice.RegisterEventResponse{
+			EventId: id,
+		}, nil
+	}
+	for _, e := range outdatedEvents {
+		if err := a.eventStore.UpdateEventStatus(ctx, e.Id, model.EventStatus_EVENT_OUTDATED, "The new event has been created"); err != nil {
+			a.logger.Error("failed to update event status", zap.Error(err))
+			return nil, status.Error(codes.Internal, "Failed to update event status")
+		}
 	}
 
 	return &apiservice.RegisterEventResponse{
