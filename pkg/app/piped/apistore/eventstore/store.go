@@ -188,14 +188,13 @@ func (s *store) UpdateStatuses(ctx context.Context, latestEvents []model.Event) 
 
 	// Update cached events.
 	for _, e := range latestEvents {
-		s.mu.RLock()
+		s.mu.Lock()
 		cached, ok := s.latestEvents[e.EventKey]
-		s.mu.RUnlock()
 		if ok && cached.Id != e.Id {
 			// There is already an event newer than the given one.
+			s.mu.Unlock()
 			continue
 		}
-		s.mu.Lock()
 		s.latestEvents[e.EventKey] = &e
 		s.mu.Unlock()
 	}
