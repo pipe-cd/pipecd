@@ -114,7 +114,11 @@ func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationL
 			s.terraformStores[cp.Name] = store
 
 		case model.CloudProviderCloudRun:
-			store := cloudrun.NewStore(ctx, cp.CloudRunConfig, cp.Name, appLister, logger)
+			store, err := cloudrun.NewStore(ctx, cp.CloudRunConfig, cp.Name, logger)
+			if err != nil {
+				logger.Error("failed to create a new cloudrun's livestatestore: %v", zap.Error(err))
+				continue
+			}
 			s.cloudrunStores[cp.Name] = store
 
 		case model.CloudProviderLambda:

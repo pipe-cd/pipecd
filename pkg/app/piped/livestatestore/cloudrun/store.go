@@ -16,31 +16,20 @@ package cloudrun
 
 import (
 	"context"
-	"sync"
 	"sync/atomic"
 
 	"go.uber.org/zap"
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/cloudrun"
-	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 type store struct {
-	config        *config.CloudProviderCloudRunConfig
-	cloudProvider string
-	apps          atomic.Value
-	mu            sync.RWMutex
-	logger        *zap.Logger
-	client        provider.Client
+	apps   atomic.Value
+	logger *zap.Logger
+	client provider.Client
 }
 
 func (s *store) run(ctx context.Context) error {
-	client, err := provider.DefaultRegistry().Client(ctx, s.cloudProvider, s.config, s.logger)
-	if err != nil {
-		s.logger.Error("failed to new cloudrun client: %v", zap.Error(err))
-		return err
-	}
-
 	const maxLimit = 500
 	var cursor string
 	svc := make([]*provider.Service, 0, maxLimit)
@@ -52,7 +41,7 @@ func (s *store) run(ctx context.Context) error {
 		}
 		// Cloud Run Admin API rate Limits.
 		// https://cloud.google.com/run/quotas#api
-		v, next, err := client.List(ctx, ops)
+		v, next, err := s.client.List(ctx, ops)
 		if err != nil {
 			s.logger.Error("failed to list cloudrun services: %v", zap.Error(err))
 			return err

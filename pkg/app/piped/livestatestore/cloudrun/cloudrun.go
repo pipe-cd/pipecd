@@ -34,19 +34,25 @@ type Getter interface {
 	GetServiceManifest(appID string) provider.ServiceManifest
 }
 
-func NewStore(cfg *config.CloudProviderCloudRunConfig, cloudProvider string, logger *zap.Logger) *Store {
+func NewStore(ctx context.Context, cfg *config.CloudProviderCloudRunConfig, cloudProvider string, logger *zap.Logger) (*Store, error) {
 	logger = logger.Named("cloudrun").
 		With(zap.String("cloud-provider", cloudProvider))
 
-	return &Store{
+	client, err := provider.DefaultRegistry().Client(ctx, cloudProvider, cfg, logger)
+	if err != nil {
+		return nil, err
+	}
+
+	store := &Store{
 		store: &store{
-			config:        cfg,
-			cloudProvider: cloudProvider,
-			logger:        logger.Named("store"),
+			client: client,
+			logger: logger.Named("store"),
 		},
 		interval: 15 * time.Second,
 		logger:   logger,
 	}
+
+	return store, nil
 }
 
 func (s *Store) Run(ctx context.Context) error {
