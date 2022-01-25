@@ -34,7 +34,7 @@ type Store struct {
 type Getter interface {
 }
 
-func NewStore(cfg *config.CloudProviderCloudRunConfig, cloudProvider string, appLister applicationLister, logger *zap.Logger) *Store {
+func NewStore(_ context.Context, cfg *config.CloudProviderCloudRunConfig, cloudProvider string, appLister applicationLister, logger *zap.Logger) *Store {
 	logger = logger.Named("cloudrun").
 		With(zap.String("cloud-provider", cloudProvider))
 

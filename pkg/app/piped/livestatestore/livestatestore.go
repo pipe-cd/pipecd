@@ -90,7 +90,7 @@ type store struct {
 	logger      *zap.Logger
 }
 
-func NewStore(cfg *config.PipedSpec, appLister applicationLister, gracePeriod time.Duration, logger *zap.Logger) Store {
+func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationLister, gracePeriod time.Duration, logger *zap.Logger) Store {
 	logger = logger.Named("livestatestore")
 
 	s := &store{
@@ -113,7 +113,7 @@ func NewStore(cfg *config.PipedSpec, appLister applicationLister, gracePeriod ti
 			s.terraformStores[cp.Name] = store
 
 		case model.CloudProviderCloudRun:
-			store := cloudrun.NewStore(cp.CloudRunConfig, cp.Name, appLister, logger)
+			store := cloudrun.NewStore(ctx, cp.CloudRunConfig, cp.Name, appLister, logger)
 			s.cloudrunStores[cp.Name] = store
 
 		case model.CloudProviderLambda:
