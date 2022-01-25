@@ -16,36 +16,80 @@ package cloudrun
 
 import (
 	"context"
+	"sync"
 
-	"go.uber.org/zap"
-
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/config"
-	"github.com/pipe-cd/pipecd/pkg/model"
+	"go.uber.org/zap"
 )
 
-type applicationLister interface {
-	List() []*model.Application
+type store struct {
+	config        *config.CloudProviderCloudRunConfig
+	cloudProvider string
+	apps          map[string]provider.ServiceManifest
+	mu            sync.RWMutex
+	logger        *zap.Logger
+	client        provider.Client
 }
 
-type Store struct {
-	logger *zap.Logger
-}
-
-type Getter interface {
-}
-
-func NewStore(_ context.Context, cfg *config.CloudProviderCloudRunConfig, cloudProvider string, appLister applicationLister, logger *zap.Logger) *Store {
-	logger = logger.Named("cloudrun").
-		With(zap.String("cloud-provider", cloudProvider))
-
-	return &Store{
-		logger: logger,
+func (s *store) addApp(sm provider.ServiceManifest) {
+	appID := sm.Labels()[provider.LabelApplication]
+	if appID == "" {
+		return
 	}
+	s.mu.Lock()
+	s.apps[appID] = sm
+	s.mu.Unlock()
 }
 
-func (s *Store) Run(ctx context.Context) error {
-	s.logger.Info("start running cloudrun app state store")
+func (s *store) run(ctx context.Context) error {
+	client, err := provider.DefaultRegistry().Client(ctx, s.cloudProvider, s.config, s.logger)
+	if err != nil {
+		s.logger.Error("failed to new cloudrun client: %v", zap.Error(err))
+		return err
+	}
 
-	s.logger.Info("cloudrun app state store has been stopped")
+	const maxLimit = 500
+	var cursor string
+	svc := make([]*provider.Service, 0, maxLimit)
+	for {
+		ops := &provider.ListOptions{
+			Limit:         maxLimit,
+			LabelSelector: provider.MakeManagedByPipedLabel(),
+			Cursor:        cursor,
+		}
+		// Cloud Run Admin API rate Limits
+		// https://cloud.google.com/run/quotas#api
+		v, next, err := client.List(ctx, ops)
+		if err != nil {
+			s.logger.Error("failed to list cloudrun services: %v", zap.Error(err))
+			return err
+		}
+		svc = append(svc, v...)
+		if next == "" {
+			break
+		}
+		cursor = next
+	}
+	for i := range svc {
+		sm, err := svc[i].ServiceManifest()
+		if err != nil {
+			s.logger.Error("failed to load cloudrun service into service manifest: %v", zap.Error(err))
+			continue
+		}
+		s.addApp(sm)
+	}
 	return nil
+}
+
+func (s *store) GetAppLiveServiceManifest(appID string) provider.ServiceManifest {
+	s.mu.RLock()
+	sv, ok := s.apps[appID]
+	s.mu.RUnlock()
+
+	if !ok {
+		return provider.ServiceManifest{}
+	}
+
+	return sv
 }

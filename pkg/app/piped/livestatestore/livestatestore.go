@@ -63,6 +63,7 @@ type terraformStore interface {
 
 type cloudRunStore interface {
 	Run(ctx context.Context) error
+	cloudrun.Getter
 }
 
 type lambdaStore interface {
