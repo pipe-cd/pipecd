@@ -308,7 +308,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	var liveStateGetter livestatestore.Getter
 	// Start running application live state store.
 	{
-		s := livestatestore.NewStore(cfg, applicationLister, p.gracePeriod, input.Logger)
+		s := livestatestore.NewStore(ctx, cfg, applicationLister, p.gracePeriod, input.Logger)
 		group.Go(func() error {
 			return s.Run(ctx)
 		})
