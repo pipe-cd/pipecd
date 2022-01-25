@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["updater.go"],
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/ops/eventstatusupdater",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/datastore:go_default_library",
+        "//pkg/model:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
+)
