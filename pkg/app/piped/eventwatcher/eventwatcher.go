@@ -54,7 +54,7 @@ type Watcher interface {
 }
 
 type eventGetter interface {
-	GetLatest(ctx context.Context, name string, labels map[string]string, forceRefresh bool) (event *model.Event, cacheUsed bool, ok bool)
+	GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool)
 }
 
 type gitClient interface {
@@ -229,24 +229,13 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 
 	eventResults := make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(events))
 	for _, e := range events {
-		latestEvent, cacheUsed, ok := w.eventGetter.GetLatest(ctx, e.Name, e.Labels, false)
+		latestEvent, ok := w.eventGetter.GetLatest(ctx, e.Name, e.Labels)
 		if !ok {
 			continue
 		}
 		if latestEvent.IsHandled() {
 			continue
 		}
-		if cacheUsed {
-			// Refresh cache because the status of cached Events is likely to be out of date.
-			latestEvent, _, ok = w.eventGetter.GetLatest(ctx, e.Name, e.Labels, true)
-			if !ok {
-				continue
-			}
-		}
-		if latestEvent.IsHandled() {
-			continue
-		}
-
 		if err := w.commitFiles(ctx, latestEvent.Data, e, tmpRepo, commitMsg); err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
 			eventResults = append(eventResults, &pipedservice.ReportEventStatusesRequest_Event{
