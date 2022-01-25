@@ -17,29 +17,21 @@ package cloudrun
 import (
 	"context"
 	"sync"
+	"sync/atomic"
+
+	"go.uber.org/zap"
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/config"
-	"go.uber.org/zap"
 )
 
 type store struct {
 	config        *config.CloudProviderCloudRunConfig
 	cloudProvider string
-	apps          map[string]provider.ServiceManifest
+	apps          atomic.Value
 	mu            sync.RWMutex
 	logger        *zap.Logger
 	client        provider.Client
-}
-
-func (s *store) addApp(sm provider.ServiceManifest) {
-	appID := sm.Labels()[provider.LabelApplication]
-	if appID == "" {
-		return
-	}
-	s.mu.Lock()
-	s.apps[appID] = sm
-	s.mu.Unlock()
 }
 
 func (s *store) run(ctx context.Context) error {
@@ -58,7 +50,7 @@ func (s *store) run(ctx context.Context) error {
 			LabelSelector: provider.MakeManagedByPipedLabel(),
 			Cursor:        cursor,
 		}
-		// Cloud Run Admin API rate Limits
+		// Cloud Run Admin API rate Limits.
 		// https://cloud.google.com/run/quotas#api
 		v, next, err := client.List(ctx, ops)
 		if err != nil {
@@ -71,25 +63,46 @@ func (s *store) run(ctx context.Context) error {
 		}
 		cursor = next
 	}
+
+	// Update apps to the latest.
+	s.setApps(svc)
+
+	return nil
+}
+
+func (s *store) setApps(svc []*provider.Service) {
+	apps := make(map[string]provider.ServiceManifest, len(svc))
 	for i := range svc {
 		sm, err := svc[i].ServiceManifest()
 		if err != nil {
 			s.logger.Error("failed to load cloudrun service into service manifest: %v", zap.Error(err))
 			continue
 		}
-		s.addApp(sm)
+		appID := sm.Labels()[provider.LabelApplication]
+		apps[appID] = sm
 	}
-	return nil
+	s.apps.Store(apps)
 }
 
-func (s *store) GetAppLiveServiceManifest(appID string) provider.ServiceManifest {
-	s.mu.RLock()
-	sv, ok := s.apps[appID]
-	s.mu.RUnlock()
+func (s *store) loadApps() map[string]provider.ServiceManifest {
+	apps := s.apps.Load()
+	if apps == nil {
+		return nil
+	}
+	return apps.(map[string]provider.ServiceManifest)
+}
 
+func (s *store) GetServiceManifest(appID string) provider.ServiceManifest {
+	apps := s.loadApps()
+	if apps == nil {
+		s.logger.Error("failed to load apps")
+		return provider.ServiceManifest{}
+	}
+	sm, ok := apps[appID]
 	if !ok {
+		s.logger.Info("this app was not found: %s", zap.String("app-id", appID))
 		return provider.ServiceManifest{}
 	}
 
-	return sv
+	return sm
 }

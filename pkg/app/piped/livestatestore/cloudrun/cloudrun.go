@@ -22,12 +22,7 @@ import (
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/config"
-	"github.com/pipe-cd/pipecd/pkg/model"
 )
-
-type applicationLister interface {
-	List() []*model.Application
-}
 
 type Store struct {
 	store    *store
@@ -36,17 +31,18 @@ type Store struct {
 }
 
 type Getter interface {
-	GetAppLiveServiceManifest(appID string) provider.ServiceManifest
+	GetServiceManifest(appID string) provider.ServiceManifest
 }
 
-func NewStore(cfg *config.CloudProviderCloudRunConfig, cloudProvider string, appLister applicationLister, logger *zap.Logger) *Store {
+func NewStore(cfg *config.CloudProviderCloudRunConfig, cloudProvider string, logger *zap.Logger) *Store {
 	logger = logger.Named("cloudrun").
 		With(zap.String("cloud-provider", cloudProvider))
 
 	return &Store{
 		store: &store{
-			apps:   make(map[string]provider.ServiceManifest),
-			logger: logger.Named("store"),
+			config:        cfg,
+			cloudProvider: cloudProvider,
+			logger:        logger.Named("store"),
 		},
 		interval: 15 * time.Second,
 		logger:   logger,
@@ -59,24 +55,20 @@ func (s *Store) Run(ctx context.Context) error {
 	tick := time.NewTicker(s.interval)
 	defer tick.Stop()
 
-L:
 	for {
 		select {
 		case <-ctx.Done():
-			break L
+			s.logger.Info("cloudrun app state store has been stopped")
+			return nil
 
 		case <-tick.C:
-			if err := s.store.run(ctx); err != nil {
-				continue
+			if err := s.store.run(ctx); err == nil {
+				s.logger.Info("successfully synced all cloudrun services")
 			}
-			s.logger.Info("successfully synced all cloudrun services")
 		}
 	}
-
-	s.logger.Info("cloudrun app state store has been stopped")
-	return nil
 }
 
-func (s *Store) GetAppLiveServiceManifest(appID string) provider.ServiceManifest {
-	return s.store.GetAppLiveServiceManifest(appID)
+func (s *Store) GetServiceManifest(appID string) provider.ServiceManifest {
+	return s.store.GetServiceManifest(appID)
 }
