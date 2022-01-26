@@ -37,7 +37,7 @@ type rename struct {
 	envName              string
 	before               string
 	after                string
-	updateAtLocal        bool
+	updateOnLocal        bool
 	updateOnControlPlane bool
 	stdout               io.Writer
 }
@@ -58,7 +58,7 @@ func newRenameCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&c.envName, "env-name", c.envName, "The environment name.")
 	cmd.Flags().StringVar(&c.before, "before", c.before, "The current name of configuration file.")
 	cmd.Flags().StringVar(&c.after, "after", c.after, "The new name of configuration file.")
-	cmd.Flags().BoolVar(&c.updateAtLocal, "update-at-local", c.updateAtLocal, "Whether to rename files in Git locally.")
+	cmd.Flags().BoolVar(&c.updateOnLocal, "update-on-local", c.updateOnLocal, "Whether to rename files in Git locally.")
 	cmd.Flags().BoolVar(&c.updateOnControlPlane, "update-on-control-plane", c.updateOnControlPlane, "Whether to update application information on control plane to use the new name.")
 
 	cmd.MarkFlagRequired("repo-root-path")
@@ -70,8 +70,8 @@ func newRenameCommand(root *command) *cobra.Command {
 }
 
 func (c *rename) run(ctx context.Context, _ cli.Input) error {
-	if !c.updateAtLocal && !c.updateOnControlPlane {
-		fmt.Fprintln(c.stdout, "Nothing to do since both --update-at-local and --update-on-control-plane were set to false.")
+	if !c.updateOnLocal && !c.updateOnControlPlane {
+		fmt.Fprintln(c.stdout, "Nothing to do since both --update-on-local and --update-on-control-plane were set to false.")
 		return nil
 	}
 
@@ -117,7 +117,7 @@ func (c *rename) run(ctx context.Context, _ cli.Input) error {
 		return nil
 	}
 
-	if c.updateAtLocal {
+	if c.updateOnLocal {
 		for i, app := range targets {
 			// Ensure the existence of the current configuration file.
 			var (
