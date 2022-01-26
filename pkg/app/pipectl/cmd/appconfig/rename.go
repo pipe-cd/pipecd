@@ -83,8 +83,10 @@ func (c *rename) run(ctx context.Context, _ cli.Input) error {
 
 	fmt.Fprintln(c.stdout, "Start finding applications to rename their configuration files...")
 
-	var cursor string
-	var targets = make([]*model.Application, 0, 0)
+	var (
+		cursor  string
+		targets []*model.Application
+	)
 
 	for {
 		req := &apiservice.ListApplicationsRequest{
