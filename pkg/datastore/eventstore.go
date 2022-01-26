@@ -21,18 +21,23 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-const EventModelKind = "Event"
+type eventCollection struct {
+}
 
-var (
-	eventFactory = func() interface{} {
+func (e *eventCollection) Kind() string {
+	return "Event"
+}
+
+func (e *eventCollection) Factory() Factory {
+	return func() interface{} {
 		return &model.Event{}
 	}
-)
+}
 
 type EventStore interface {
 	AddEvent(ctx context.Context, e model.Event) error
-	ListEvents(ctx context.Context, opts ListOptions) ([]*model.Event, error)
-	MarkEventHandled(ctx context.Context, eventID string) error
+	ListEvents(ctx context.Context, opts ListOptions) ([]*model.Event, string, error)
+	UpdateEventStatus(ctx context.Context, eventID string, status model.EventStatus, statusDescription string) error
 }
 
 type eventStore struct {
@@ -43,7 +48,8 @@ type eventStore struct {
 func NewEventStore(ds DataStore) EventStore {
 	return &eventStore{
 		backend: backend{
-			ds: ds,
+			ds:  ds,
+			col: &eventCollection{},
 		},
 		nowFunc: time.Now,
 	}
@@ -60,13 +66,13 @@ func (s *eventStore) AddEvent(ctx context.Context, e model.Event) error {
 	if err := e.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, EventModelKind, e.Id, &e)
+	return s.ds.Create(ctx, s.col, e.Id, &e)
 }
 
-func (s *eventStore) ListEvents(ctx context.Context, opts ListOptions) ([]*model.Event, error) {
-	it, err := s.ds.Find(ctx, EventModelKind, opts)
+func (s *eventStore) ListEvents(ctx context.Context, opts ListOptions) ([]*model.Event, string, error) {
+	it, err := s.ds.Find(ctx, s.col, opts)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	es := make([]*model.Event, 0)
 	for {
@@ -76,18 +82,34 @@ func (s *eventStore) ListEvents(ctx context.Context, opts ListOptions) ([]*model
 			break
 		}
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		es = append(es, &e)
 	}
-	return es, nil
+
+	// In case there is no more elements found, cursor should be set to empty too.
+	if len(es) == 0 {
+		return es, "", nil
+	}
+	cursor, err := it.Cursor()
+	if err != nil {
+		return nil, "", err
+	}
+	return es, cursor, nil
 }
 
-func (s *eventStore) MarkEventHandled(ctx context.Context, eventID string) error {
-	return s.ds.Update(ctx, EventModelKind, eventID, eventFactory, func(e interface{}) error {
+func (s *eventStore) UpdateEventStatus(ctx context.Context, eventID string, status model.EventStatus, statusDescription string) error {
+	return s.ds.Update(ctx, s.col, eventID, func(e interface{}) error {
 		event := e.(*model.Event)
-		event.Handled = true
-		event.HandledAt = s.nowFunc().Unix()
+		event.Status = status
+		event.StatusDescription = statusDescription
+		if event.IsHandled() {
+			now := s.nowFunc().Unix()
+			event.HandledAt = now
+			event.UpdatedAt = now
+			// For older Piped agents, this is required.
+			event.Handled = true
+		}
 		return nil
 	})
 }

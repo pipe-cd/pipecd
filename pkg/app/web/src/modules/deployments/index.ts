@@ -238,9 +238,7 @@ export const deploymentsSlice = createSlice({
         const deployments = action.payload.deployments;
         if (deployments.length < FETCH_MORE_ITEMS_PER_PAGE) {
           state.hasMore = false;
-          state.minUpdatedAt =
-            deployments[deployments.length - 1].updatedAt -
-            TIME_RANGE_LIMIT_IN_SECONDS;
+          state.minUpdatedAt = state.minUpdatedAt - TIME_RANGE_LIMIT_IN_SECONDS;
         } else {
           state.hasMore = true;
         }

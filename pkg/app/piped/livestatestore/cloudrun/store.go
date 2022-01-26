@@ -16,36 +16,82 @@ package cloudrun
 
 import (
 	"context"
+	"fmt"
+	"sync/atomic"
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
-	"github.com/pipe-cd/pipecd/pkg/model"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/cloudrun"
 )
 
-type applicationLister interface {
-	List() []*model.Application
-}
-
-type Store struct {
+type store struct {
+	apps   atomic.Value
 	logger *zap.Logger
+	client provider.Client
 }
 
-type Getter interface {
-}
-
-func NewStore(cfg *config.CloudProviderCloudRunConfig, cloudProvider string, appLister applicationLister, logger *zap.Logger) *Store {
-	logger = logger.Named("cloudrun").
-		With(zap.String("cloud-provider", cloudProvider))
-
-	return &Store{
-		logger: logger,
+func (s *store) run(ctx context.Context) error {
+	const maxLimit = 500
+	var cursor string
+	svc := make([]*provider.Service, 0, maxLimit)
+	for {
+		ops := &provider.ListOptions{
+			Limit:         maxLimit,
+			LabelSelector: provider.MakeManagedByPipedLabel(),
+			Cursor:        cursor,
+		}
+		// Cloud Run Admin API rate Limits.
+		// https://cloud.google.com/run/quotas#api
+		v, next, err := s.client.List(ctx, ops)
+		if err != nil {
+			return fmt.Errorf("failed to list cloudrun services: %w", err)
+		}
+		svc = append(svc, v...)
+		if next == "" {
+			break
+		}
+		cursor = next
 	}
+
+	// Update apps to the latest.
+	s.setApps(svc)
+
+	return nil
 }
 
-func (s *Store) Run(ctx context.Context) error {
-	s.logger.Info("start running cloudrun app state store")
+func (s *store) setApps(svc []*provider.Service) {
+	apps := make(map[string]provider.ServiceManifest, len(svc))
+	for i := range svc {
+		sm, err := svc[i].ServiceManifest()
+		if err != nil {
+			s.logger.Error("failed to load cloudrun service into service manifest", zap.Error(err))
+			continue
+		}
+		appID := sm.Labels()[provider.LabelApplication]
+		apps[appID] = sm
+	}
+	s.apps.Store(apps)
+}
 
-	s.logger.Info("cloudrun app state store has been stopped")
-	return nil
+func (s *store) loadApps() map[string]provider.ServiceManifest {
+	apps := s.apps.Load()
+	if apps == nil {
+		return nil
+	}
+	return apps.(map[string]provider.ServiceManifest)
+}
+
+func (s *store) GetServiceManifest(appID string) (provider.ServiceManifest, bool) {
+	apps := s.loadApps()
+	if apps == nil {
+		s.logger.Error("failed to load cloudrun apps")
+		return provider.ServiceManifest{}, false
+	}
+
+	sm, ok := apps[appID]
+	if !ok {
+		return provider.ServiceManifest{}, false
+	}
+
+	return sm, true
 }

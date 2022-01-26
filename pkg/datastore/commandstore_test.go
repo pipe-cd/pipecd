@@ -52,7 +52,7 @@ func TestAddCommand(t *testing.T) {
 			},
 			dsFactory: func(d *model.Command) DataStore {
 				ds := NewMockDataStore(ctrl)
-				ds.EXPECT().Create(gomock.Any(), "Command", d.Id, d)
+				ds.EXPECT().Create(gomock.Any(), gomock.Any(), d.Id, d)
 				return ds
 			},
 			wantErr: false,
@@ -84,7 +84,7 @@ func TestGetCommand(t *testing.T) {
 			ds: func() DataStore {
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Get(gomock.Any(), "Command", "id", &model.Command{}).
+					Get(gomock.Any(), gomock.Any(), "id", &model.Command{}).
 					Return(nil)
 				return ds
 			}(),
@@ -96,7 +96,7 @@ func TestGetCommand(t *testing.T) {
 			ds: func() DataStore {
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Get(gomock.Any(), "Command", "id", &model.Command{}).
+					Get(gomock.Any(), gomock.Any(), "id", &model.Command{}).
 					Return(fmt.Errorf("err"))
 				return ds
 			}(),
@@ -134,7 +134,7 @@ func TestListCommands(t *testing.T) {
 
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Find(gomock.Any(), "Command", ListOptions{}).
+					Find(gomock.Any(), gomock.Any(), ListOptions{}).
 					Return(it, nil)
 				return ds
 			}(),
@@ -151,7 +151,7 @@ func TestListCommands(t *testing.T) {
 
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Find(gomock.Any(), "Command", ListOptions{}).
+					Find(gomock.Any(), gomock.Any(), ListOptions{}).
 					Return(it, nil)
 				return ds
 			}(),

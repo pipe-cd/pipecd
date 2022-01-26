@@ -801,7 +801,7 @@ func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLate
 			},
 		},
 	}
-	events, err := a.eventStore.ListEvents(ctx, opts)
+	events, _, err := a.eventStore.ListEvents(ctx, opts)
 	if err != nil {
 		a.logger.Error("failed to list events", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to list event")
@@ -871,7 +871,7 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 		}
 	}
 
-	events, err := a.eventStore.ListEvents(ctx, opts)
+	events, _, err := a.eventStore.ListEvents(ctx, opts)
 	if err != nil {
 		a.logger.Error("failed to list events", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to list events")
@@ -881,14 +881,15 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 	}, nil
 }
 
+// Deprecated. This is only for the old Piped agents.
 func (a *PipedAPI) ReportEventsHandled(ctx context.Context, req *pipedservice.ReportEventsHandledRequest) (*pipedservice.ReportEventsHandledResponse, error) {
-	_, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, id := range req.EventIds {
-		if err := a.eventStore.MarkEventHandled(ctx, id); err != nil {
+		if err := a.eventStore.UpdateEventStatus(ctx, id, model.EventStatus_EVENT_SUCCESS, fmt.Sprintf("successfully handled by %q piped", pipedID)); err != nil {
 			switch err {
 			case datastore.ErrNotFound:
 				return nil, status.Errorf(codes.NotFound, "event %q is not found", id)
@@ -902,6 +903,29 @@ func (a *PipedAPI) ReportEventsHandled(ctx context.Context, req *pipedservice.Re
 		}
 	}
 	return &pipedservice.ReportEventsHandledResponse{}, nil
+}
+
+func (a *PipedAPI) ReportEventStatuses(ctx context.Context, req *pipedservice.ReportEventStatusesRequest) (*pipedservice.ReportEventStatusesResponse, error) {
+	_, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, e := range req.Events {
+		// TODO: For success status, change all previous events with the same event key to OUTDATED
+		if err := a.eventStore.UpdateEventStatus(ctx, e.Id, e.Status, e.StatusDescription); err != nil {
+			switch err {
+			case datastore.ErrNotFound:
+				return nil, status.Errorf(codes.NotFound, "event %q is not found", e.Id)
+			default:
+				a.logger.Error("failed to update event status",
+					zap.String("event-id", e.Id),
+					zap.Error(err),
+				)
+				return nil, status.Errorf(codes.Internal, "failed to update event status %q", e.Id)
+			}
+		}
+	}
+	return &pipedservice.ReportEventStatusesResponse{}, nil
 }
 
 func (a *PipedAPI) GetLatestAnalysisResult(ctx context.Context, req *pipedservice.GetLatestAnalysisResultRequest) (*pipedservice.GetLatestAnalysisResultResponse, error) {

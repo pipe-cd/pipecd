@@ -97,6 +97,7 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
       <FilterView
         onClear={() => {
           onClear();
+          setSelectedLabels([]);
         }}
       >
         <div className={classes.formItem}>

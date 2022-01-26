@@ -31,6 +31,7 @@ import "pkg/model/piped.proto";
 import "pkg/model/role.proto";
 import "pkg/model/project.proto";
 import "pkg/model/apikey.proto";
+import "pkg/model/event.proto";
 import "google/protobuf/wrappers.proto";
 
 // WebService contains all RPC definitions for web client.
@@ -101,6 +102,9 @@ service WebService {
     // DeploymentChain
     rpc ListDeploymentChains(ListDeploymentChainsRequest) returns (ListDeploymentChainsResponse) {}
     rpc GetDeploymentChain(GetDeploymentChainRequest) returns (GetDeploymentChainResponse) {}
+
+    // Events
+    rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
 }
 
 message UpdateEnvironmentDescRequest {
@@ -238,6 +242,7 @@ message UpdateApplicationRequest {
     string piped_id = 4 [(validate.rules).string.min_len = 1];
     model.ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
     string cloud_provider = 7 [(validate.rules).string.min_len = 1];
+    string config_filename = 8;
 }
 
 message UpdateApplicationResponse {
@@ -525,4 +530,23 @@ message GetDeploymentChainRequest {
 
 message GetDeploymentChainResponse {
     model.DeploymentChain deployment_chain = 1;
+}
+
+message ListEventsRequest {
+    message Options {
+        string name = 1;
+        repeated model.EventStatus statuses = 2;
+        map<string, string> labels = 3;
+    }
+    Options options = 1;
+    int32 page_size = 2;
+    string cursor = 3;
+    // It will not return any data older than this timestamp, even if it does not meet the page size.
+    // This aims to prevent the server from scanning the entire database to look for deployments that have the specified fields in spite of nothing.
+    int64 page_min_updated_at = 4;
+}
+
+message ListEventsResponse {
+   repeated model.Event events = 1;
+   string cursor = 2;
 }

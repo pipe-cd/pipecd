@@ -35,7 +35,6 @@ message Application {
     // What kind of this application.
     ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
     // The path to the git directory of this application.
-    // TODO: Make this field immutable.
     ApplicationGitPath git_path = 7 [(validate.rules).message.required = true];
     // The name of cloud provider where to deploy this application.
     // This must be one of the provider names registered in the piped.

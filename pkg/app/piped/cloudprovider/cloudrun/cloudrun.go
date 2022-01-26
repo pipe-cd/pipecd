@@ -17,6 +17,7 @@ package cloudrun
 import (
 	"context"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"sync"
 
@@ -41,10 +42,25 @@ type (
 	Revision run.Revision
 )
 
+const (
+	LabelManagedBy   = "pipecd-dev-managed-by"  // Always be piped.
+	LabelPiped       = "pipecd-dev-piped"       // The id of piped handling this application.
+	LabelApplication = "pipecd-dev-application" // The application this resource belongs to.
+	LabelCommitHash  = "pipecd-dev-commit-hash" // Hash value of the deployed commit.
+	ManagedByPiped   = "piped"
+)
+
 type Client interface {
 	Create(ctx context.Context, sm ServiceManifest) (*Service, error)
 	Update(ctx context.Context, sm ServiceManifest) (*Service, error)
+	List(ctx context.Context, options *ListOptions) ([]*Service, string, error)
 	GetRevision(ctx context.Context, name string) (*Revision, error)
+}
+
+type ListOptions struct {
+	Limit         int64
+	LabelSelector string
+	Cursor        string
 }
 
 type Registry interface {
@@ -95,4 +111,8 @@ func (r *registry) Client(ctx context.Context, name string, cfg *config.CloudPro
 	r.mu.Unlock()
 
 	return client, nil
+}
+
+func MakeManagedByPipedLabel() string {
+	return fmt.Sprintf("%s=%s", LabelManagedBy, ManagedByPiped)
 }

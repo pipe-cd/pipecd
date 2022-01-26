@@ -310,6 +310,34 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 	}, nil
 }
 
+func (a *API) RenameApplicationConfigFile(ctx context.Context, req *apiservice.RenameApplicationConfigFileRequest) (*apiservice.RenameApplicationConfigFileResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, appID := range req.ApplicationIds {
+		var denied bool
+		err := a.applicationStore.UpdateApplication(ctx, appID, func(app *model.Application) error {
+			if app.ProjectId != key.ProjectId {
+				denied = true
+				return fmt.Errorf("Requested application %s does not belong to your project", appID)
+			}
+			app.GitPath.ConfigFilename = req.NewFilename
+			return nil
+		})
+		if err != nil {
+			if denied {
+				return nil, status.Error(codes.PermissionDenied, err.Error())
+			}
+			a.logger.Error("failed to update application", zap.Error(err))
+			return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to update application %s", appID))
+		}
+	}
+
+	return &apiservice.RenameApplicationConfigFileResponse{}, nil
+}
+
 func (a *API) GetDeployment(ctx context.Context, req *apiservice.GetDeploymentRequest) (*apiservice.GetDeploymentResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
 	if err != nil {
@@ -400,12 +428,14 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 	id := uuid.New().String()
 
 	err = a.eventStore.AddEvent(ctx, model.Event{
-		Id:        id,
-		Name:      req.Name,
-		Data:      req.Data,
-		Labels:    req.Labels,
-		EventKey:  model.MakeEventKey(req.Name, req.Labels),
-		ProjectId: key.ProjectId,
+		Id:                id,
+		Name:              req.Name,
+		Data:              req.Data,
+		Labels:            req.Labels,
+		EventKey:          model.MakeEventKey(req.Name, req.Labels),
+		ProjectId:         key.ProjectId,
+		Status:            model.EventStatus_EVENT_NOT_HANDLED,
+		StatusDescription: fmt.Sprintf("It is going to be replaced by %s", req.Data),
 	})
 	if errors.Is(err, datastore.ErrAlreadyExists) {
 		return nil, status.Error(codes.AlreadyExists, "The event already exists")

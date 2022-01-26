@@ -59,6 +59,7 @@ type WebAPI struct {
 	pipedStore                datastore.PipedStore
 	projectStore              datastore.ProjectStore
 	apiKeyStore               datastore.APIKeyStore
+	eventStore                datastore.EventStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
@@ -81,7 +82,6 @@ type WebAPI struct {
 func NewWebAPI(
 	ctx context.Context,
 	ds datastore.DataStore,
-	fs filestore.Store,
 	sls stagelogstore.Store,
 	alss applicationlivestatestore.Store,
 	cmds commandstore.Store,
@@ -100,6 +100,7 @@ func NewWebAPI(
 		pipedStore:                datastore.NewPipedStore(ds),
 		projectStore:              datastore.NewProjectStore(ds),
 		apiKeyStore:               datastore.NewAPIKeyStore(ds),
+		eventStore:                datastore.NewEventStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
 		commandStore:              cmds,
@@ -720,6 +721,7 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 		app.PipedId = req.PipedId
 		app.Kind = req.Kind
 		app.CloudProvider = req.CloudProvider
+		app.GitPath.ConfigFilename = req.ConfigFilename
 		return nil
 	}
 
@@ -1833,5 +1835,120 @@ func (a *WebAPI) GetDeploymentChain(ctx context.Context, req *webservice.GetDepl
 
 	return &webservice.GetDeploymentChainResponse{
 		DeploymentChain: dc,
+	}, nil
+}
+
+func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsRequest) (*webservice.ListEventsResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	orders := []datastore.Order{
+		{
+			Field:     "UpdatedAt",
+			Direction: datastore.Desc,
+		},
+		{
+			Field:     "Id",
+			Direction: datastore.Asc,
+		},
+	}
+	filters := []datastore.ListFilter{
+		{
+			Field:    "ProjectId",
+			Operator: datastore.OperatorEqual,
+			Value:    claims.Role.ProjectId,
+		},
+		{
+			Field:    "UpdatedAt",
+			Operator: datastore.OperatorGreaterThanOrEqual,
+			Value:    req.PageMinUpdatedAt,
+		},
+	}
+	if o := req.Options; o != nil {
+		if o.Name != "" {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "Name",
+				Operator: datastore.OperatorEqual,
+				Value:    o.Name,
+			})
+		}
+		// Allowing multiple so that it can do In Query later.
+		// Currently only the first value is used.
+		if len(o.Statuses) > 0 {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "Status",
+				Operator: datastore.OperatorEqual,
+				Value:    o.Statuses[0],
+			})
+		}
+	}
+
+	pageSize := int(req.PageSize)
+	options := datastore.ListOptions{
+		Filters: filters,
+		Orders:  orders,
+		Limit:   pageSize,
+		Cursor:  req.Cursor,
+	}
+	events, cursor, err := a.eventStore.ListEvents(ctx, options)
+	if err != nil {
+		a.logger.Error("failed to get events", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get events")
+	}
+	labels := req.Options.Labels
+	if len(labels) == 0 || len(events) == 0 {
+		return &webservice.ListEventsResponse{
+			Events: events,
+			Cursor: cursor,
+		}, nil
+	}
+
+	// Start filtering them by labels.
+	//
+	// NOTE: Filtering by labels is done by the application-side because we need to create composite indexes for every combination in the filter.
+	// We don't want to depend on any other search engine, that's why it filters here.
+	filtered := make([]*model.Event, 0, len(events))
+	for _, e := range events {
+		if e.ContainLabels(labels) {
+			filtered = append(filtered, e)
+		}
+	}
+	// Stop running additional queries for more data, and return filtered events immediately with
+	// current cursor if the size before filtering is already less than the page size.
+	if len(events) < pageSize {
+		return &webservice.ListEventsResponse{
+			Events: filtered,
+			Cursor: cursor,
+		}, nil
+	}
+	// Repeat the query until the number of filtered events reaches the page size,
+	// or until it finishes scanning to page_min_updated_at.
+	for len(filtered) < pageSize {
+		options.Cursor = cursor
+		events, cursor, err = a.eventStore.ListEvents(ctx, options)
+		if err != nil {
+			a.logger.Error("failed to get events", zap.Error(err))
+			return nil, status.Error(codes.Internal, "Failed to get events")
+		}
+		if len(events) == 0 {
+			break
+		}
+		for _, e := range events {
+			if e.ContainLabels(labels) {
+				filtered = append(filtered, e)
+			}
+		}
+		// We've already specified UpdatedAt >= req.PageMinUpdatedAt, so we need to check just equality.
+		if events[len(events)-1].UpdatedAt == req.PageMinUpdatedAt {
+			break
+		}
+	}
+	// TODO: Think about possibility that the response of ListEvents exceeds the page size
+	return &webservice.ListEventsResponse{
+		Events: filtered,
+		Cursor: cursor,
 	}, nil
 }

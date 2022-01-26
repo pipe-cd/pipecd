@@ -58,7 +58,7 @@ func TestAddEvent(t *testing.T) {
 			ds: func() DataStore {
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Create(gomock.Any(), "Event", event.Id, &event).
+					Create(gomock.Any(), gomock.Any(), event.Id, &event).
 					Return(nil)
 				return ds
 			}(),

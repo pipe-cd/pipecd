@@ -32,8 +32,21 @@ type Entity struct {
 	Name string
 }
 
+type collection struct {
+	kind    string
+	factory datastore.Factory
+}
+
+func (c *collection) Kind() string {
+	return c.kind
+}
+
+func (c *collection) Factory() datastore.Factory {
+	return c.factory
+}
+
 func TestGet(t *testing.T) {
-	kind := "GetEntity"
+	col := &collection{kind: "GetEntity"}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -42,7 +55,7 @@ func TestGet(t *testing.T) {
 	require.NoError(t, err)
 	defer store.Close()
 
-	err = store.Create(ctx, kind, "id", &Entity{Name: "name"})
+	err = store.Create(ctx, col, "id", &Entity{Name: "name"})
 	require.NoError(t, err)
 
 	testcases := []struct {
@@ -67,7 +80,7 @@ func TestGet(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			got := &Entity{}
-			err := store.Get(ctx, kind, tc.id, got)
+			err := store.Get(ctx, col, tc.id, got)
 			assert.Equal(t, tc.wantErr, err)
 			assert.Equal(t, tc.want, got)
 		})
@@ -75,7 +88,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestFind(t *testing.T) {
-	kind := "FindEntity"
+	col := &collection{kind: "FindEntity"}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -84,9 +97,9 @@ func TestFind(t *testing.T) {
 	require.NoError(t, err)
 	defer store.Close()
 
-	err = store.Create(ctx, kind, "id-1", &Entity{Name: "name-1"})
+	err = store.Create(ctx, col, "id-1", &Entity{Name: "name-1"})
 	require.NoError(t, err)
-	err = store.Create(ctx, kind, "id-2", &Entity{Name: "name-2"})
+	err = store.Create(ctx, col, "id-2", &Entity{Name: "name-2"})
 	require.NoError(t, err)
 
 	testcases := []struct {
@@ -136,7 +149,7 @@ func TestFind(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			it, err := store.Find(ctx, kind, tc.opts)
+			it, err := store.Find(ctx, col, tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
 			got, err := listEntities(it)
 			require.NoError(t, err)
@@ -165,7 +178,7 @@ func listEntities(it datastore.Iterator) ([]*Entity, error) {
 }
 
 func TestCreate(t *testing.T) {
-	kind := "CreateEntity"
+	col := &collection{kind: "CreateEntity"}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -174,7 +187,7 @@ func TestCreate(t *testing.T) {
 	require.NoError(t, err)
 	defer store.Close()
 
-	err = store.Create(ctx, kind, "id", &Entity{Name: "name"})
+	err = store.Create(ctx, col, "id", &Entity{Name: "name"})
 	require.NoError(t, err)
 
 	testcases := []struct {
@@ -195,14 +208,14 @@ func TestCreate(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := store.Create(ctx, kind, tc.id, &Entity{Name: "name"})
+			err := store.Create(ctx, col, tc.id, &Entity{Name: "name"})
 			assert.Equal(t, tc.wantErr, err)
 		})
 	}
 }
 
 func TestPut(t *testing.T) {
-	kind := "PutEntity"
+	col := &collection{kind: "PutEntity"}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -211,7 +224,7 @@ func TestPut(t *testing.T) {
 	require.NoError(t, err)
 	defer store.Close()
 
-	err = store.Create(ctx, kind, "id", &Entity{Name: "name"})
+	err = store.Create(ctx, col, "id", &Entity{Name: "name"})
 	require.NoError(t, err)
 
 	testcases := []struct {
@@ -232,16 +245,18 @@ func TestPut(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := store.Put(ctx, kind, tc.id, &Entity{Name: "name"})
+			err := store.Put(ctx, col, tc.id, &Entity{Name: "name"})
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
 }
 
 func TestUpdate(t *testing.T) {
-	kind := "UpdateEntity"
-	entityFactory := func() interface{} {
-		return &Entity{}
+	col := &collection{
+		kind: "UpdateEntity",
+		factory: func() interface{} {
+			return &Entity{}
+		},
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -251,7 +266,7 @@ func TestUpdate(t *testing.T) {
 	require.NoError(t, err)
 	defer store.Close()
 
-	err = store.Create(ctx, kind, "id", &Entity{Name: "name"})
+	err = store.Create(ctx, col, "id", &Entity{Name: "name"})
 	require.NoError(t, err)
 
 	testcases := []struct {
@@ -286,7 +301,7 @@ func TestUpdate(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := store.Update(ctx, kind, tc.id, entityFactory, tc.updater)
+			err := store.Update(ctx, col, tc.id, tc.updater)
 			assert.Equal(t, tc.wantErr, err)
 		})
 	}

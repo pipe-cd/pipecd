@@ -291,13 +291,11 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	}
 
 	// Start running event store.
-	var eventGetter eventstore.Getter
+	eventStore := eventstore.NewStore(apiClient, p.gracePeriod, input.Logger)
 	{
-		store := eventstore.NewStore(apiClient, p.gracePeriod, input.Logger)
 		group.Go(func() error {
-			return store.Run(ctx)
+			return eventStore.Run(ctx)
 		})
-		eventGetter = store.Getter()
 	}
 
 	analysisResultStore := analysisresultstore.NewStore(apiClient, input.Logger)
@@ -308,7 +306,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	var liveStateGetter livestatestore.Getter
 	// Start running application live state store.
 	{
-		s := livestatestore.NewStore(cfg, applicationLister, p.gracePeriod, input.Logger)
+		s := livestatestore.NewStore(ctx, cfg, applicationLister, p.gracePeriod, input.Logger)
 		group.Go(func() error {
 			return s.Run(ctx)
 		})
@@ -399,9 +397,8 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	{
 		w := eventwatcher.NewWatcher(
 			cfg,
-			eventGetter,
+			eventStore,
 			gitClient,
-			apiClient,
 			input.Logger,
 		)
 		group.Go(func() error {

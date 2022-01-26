@@ -64,6 +64,26 @@ func (m ServiceManifest) YamlBytes() ([]byte, error) {
 	return yaml.Marshal(m.u)
 }
 
+func (m ServiceManifest) Labels() map[string]string {
+	return m.u.GetLabels()
+}
+
+func (m ServiceManifest) AddLabels(labels map[string]string) {
+	if len(labels) == 0 {
+		return
+	}
+
+	lbls := m.u.GetLabels()
+	if lbls == nil {
+		m.u.SetLabels(labels)
+		return
+	}
+	for k, v := range labels {
+		lbls[k] = v
+	}
+	m.u.SetLabels(lbls)
+}
+
 func loadServiceManifest(path string) (ServiceManifest, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {

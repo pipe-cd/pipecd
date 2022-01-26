@@ -66,12 +66,12 @@ func (m Manifest) AddAnnotations(annotations map[string]string) {
 	}
 
 	annos := m.u.GetAnnotations()
-	if annos != nil {
-		for k, v := range annotations {
-			annos[k] = v
-		}
-	} else {
-		annos = annotations
+	if annos == nil {
+		m.u.SetAnnotations(annotations)
+		return
+	}
+	for k, v := range annotations {
+		annos[k] = v
 	}
 	m.u.SetAnnotations(annos)
 }
@@ -107,11 +107,10 @@ func (m Manifest) AddStringMapValues(values map[string]string, fields ...string)
 	}
 
 	if curMap == nil {
-		curMap = values
-	} else {
-		for k, v := range values {
-			curMap[k] = v
-		}
+		return unstructured.SetNestedStringMap(m.u.Object, values, fields...)
+	}
+	for k, v := range values {
+		curMap[k] = v
 	}
 	return unstructured.SetNestedStringMap(m.u.Object, curMap, fields...)
 }

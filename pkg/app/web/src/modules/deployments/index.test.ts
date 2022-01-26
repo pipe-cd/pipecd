@@ -220,7 +220,7 @@ describe("deploymentsSlice reducer", () => {
         entities: { [dummyDeployment.id]: dummyDeployment },
         status: "succeeded",
         cursor: "next cursor",
-        minUpdatedAt: dummyDeployment.updatedAt - 2592000,
+        minUpdatedAt: -2592000,
       });
     });
   });

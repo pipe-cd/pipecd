@@ -8,7 +8,7 @@ import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import { createStore, render, screen, waitFor } from "~~/test-utils";
 import { AddApplicationDrawer } from ".";
 
-jest.setTimeout(20_000);
+jest.setTimeout(50_000);
 
 beforeAll(() => {
   server.listen();

@@ -41,7 +41,7 @@ type applicationLister interface {
 
 type Getter interface {
 	CloudRunGetter(cloudProvider string) (cloudrun.Getter, bool)
-	ECSRunGetter(cloudProvider string) (cloudrun.Getter, bool)
+	ECSRunGetter(cloudProvider string) (ecs.Getter, bool)
 	KubernetesGetter(cloudProvider string) (kubernetes.Getter, bool)
 	LambdaGetter(cloudProvider string) (lambda.Getter, bool)
 	TerraformGetter(cloudProvider string) (terraform.Getter, bool)
@@ -63,6 +63,7 @@ type terraformStore interface {
 
 type cloudRunStore interface {
 	Run(ctx context.Context) error
+	cloudrun.Getter
 }
 
 type lambdaStore interface {
@@ -90,7 +91,7 @@ type store struct {
 	logger      *zap.Logger
 }
 
-func NewStore(cfg *config.PipedSpec, appLister applicationLister, gracePeriod time.Duration, logger *zap.Logger) Store {
+func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationLister, gracePeriod time.Duration, logger *zap.Logger) Store {
 	logger = logger.Named("livestatestore")
 
 	s := &store{
@@ -113,7 +114,11 @@ func NewStore(cfg *config.PipedSpec, appLister applicationLister, gracePeriod ti
 			s.terraformStores[cp.Name] = store
 
 		case model.CloudProviderCloudRun:
-			store := cloudrun.NewStore(cp.CloudRunConfig, cp.Name, appLister, logger)
+			store, err := cloudrun.NewStore(ctx, cp.CloudRunConfig, cp.Name, logger)
+			if err != nil {
+				logger.Error("failed to create a new cloudrun's livestatestore", zap.Error(err))
+				continue
+			}
 			s.cloudrunStores[cp.Name] = store
 
 		case model.CloudProviderLambda:
@@ -187,7 +192,7 @@ func (s *store) CloudRunGetter(cloudProvider string) (cloudrun.Getter, bool) {
 	return ks, ok
 }
 
-func (s *store) ECSRunGetter(cloudProvider string) (cloudrun.Getter, bool) {
+func (s *store) ECSRunGetter(cloudProvider string) (ecs.Getter, bool) {
 	ks, ok := s.ecsStores[cloudProvider]
 	return ks, ok
 }

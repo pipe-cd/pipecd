@@ -103,7 +103,8 @@ func WithCollectionNamePrefix(prefix string) Option {
 	}
 }
 
-func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOptions) (datastore.Iterator, error) {
+func (s *FireStore) Find(ctx context.Context, col datastore.Collection, opts datastore.ListOptions) (datastore.Iterator, error) {
+	kind := col.Kind()
 	if opts.Cursor != "" && len(opts.Orders) == 0 {
 		return nil, errors.New("opts.Cursor also requires Orders to be set")
 	}
@@ -141,7 +142,8 @@ func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOp
 	}, nil
 }
 
-func (s *FireStore) Get(ctx context.Context, kind, id string, v interface{}) error {
+func (s *FireStore) Get(ctx context.Context, col datastore.Collection, id string, v interface{}) error {
+	kind := col.Kind()
 	colName := makeCollectionName(s.collectionNamePrefix, kind)
 	ds, err := s.client.Collection(s.namespace).Doc(s.environment).Collection(colName).Doc(id).Get(ctx)
 	if err != nil {
@@ -167,7 +169,8 @@ func (s *FireStore) Get(ctx context.Context, kind, id string, v interface{}) err
 	return nil
 }
 
-func (s *FireStore) Create(ctx context.Context, kind, id string, entity interface{}) error {
+func (s *FireStore) Create(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {
+	kind := col.Kind()
 	colName := makeCollectionName(s.collectionNamePrefix, kind)
 	ref := s.client.Collection(s.namespace).Doc(s.environment).Collection(colName).Doc(id)
 	err := s.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
@@ -196,10 +199,11 @@ func (s *FireStore) Create(ctx context.Context, kind, id string, entity interfac
 	return nil
 }
 
-func (s *FireStore) Put(ctx context.Context, kind, id string, entity interface{}) error {
+func (s *FireStore) Put(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {
+	kind := col.Kind()
 	colName := makeCollectionName(s.collectionNamePrefix, kind)
-	col := s.client.Collection(s.namespace).Doc(s.environment).Collection(colName)
-	if _, err := col.Doc(id).Set(ctx, entity); err != nil {
+	collection := s.client.Collection(s.namespace).Doc(s.environment).Collection(colName)
+	if _, err := collection.Doc(id).Set(ctx, entity); err != nil {
 		s.logger.Info("failed to put entity",
 			zap.String("id", id),
 			zap.String("kind", kind),
@@ -210,11 +214,12 @@ func (s *FireStore) Put(ctx context.Context, kind, id string, entity interface{}
 	return nil
 }
 
-func (s *FireStore) Update(ctx context.Context, kind, id string, factory datastore.Factory, updater datastore.Updater) error {
+func (s *FireStore) Update(ctx context.Context, col datastore.Collection, id string, updater datastore.Updater) error {
+	kind := col.Kind()
 	colName := makeCollectionName(s.collectionNamePrefix, kind)
 	ref := s.client.Collection(s.namespace).Doc(s.environment).Collection(colName).Doc(id)
 	err := s.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
-		entity := factory()
+		entity := col.Factory()()
 		ds, err := tx.Get(ref)
 		if err != nil {
 			if s, ok := status.FromError(err); ok && s.Code() == codes.NotFound {

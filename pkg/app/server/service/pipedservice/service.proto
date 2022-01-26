@@ -146,7 +146,10 @@ service PipedService {
     // ListEvents returns a list of Events inside the given range.
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
     // ReportEventHandled marks the given all events as handled.
+    // Deprecated. This is only for the old Piped agents.
     rpc ReportEventsHandled(ReportEventsHandledRequest) returns (ReportEventsHandledResponse) {}
+    // ReportEventStatuses reports a status list of events.
+    rpc ReportEventStatuses(ReportEventStatusesRequest) returns (ReportEventStatusesResponse) {}
 
     // GetLatestAnalysisResult returns the most successful analysis result.
     rpc GetLatestAnalysisResult(GetLatestAnalysisResultRequest) returns (GetLatestAnalysisResultResponse) {}
@@ -447,6 +450,18 @@ message ReportEventsHandledRequest {
 }
 
 message ReportEventsHandledResponse {
+}
+
+message ReportEventStatusesRequest {
+    message Event {
+        string id = 1 [(validate.rules).string.min_len = 1];
+        model.EventStatus status = 2 [(validate.rules).enum.defined_only = true];
+        string status_description = 3 [(validate.rules).string.min_len = 1];
+    }
+    repeated Event events = 1;
+}
+
+message ReportEventStatusesResponse {
 }
 
 message GetLatestAnalysisResultRequest {

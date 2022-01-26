@@ -78,7 +78,8 @@ func NewMySQL(url, database string, opts ...Option) (*MySQL, error) {
 }
 
 // Find implementation for MySQL
-func (m *MySQL) Find(ctx context.Context, kind string, opts datastore.ListOptions) (datastore.Iterator, error) {
+func (m *MySQL) Find(ctx context.Context, col datastore.Collection, opts datastore.ListOptions) (datastore.Iterator, error) {
+	kind := col.Kind()
 	query, err := buildFindQuery(kind, opts)
 	if err != nil {
 		m.logger.Error("failed to build find entities query",
@@ -112,7 +113,8 @@ func (m *MySQL) Find(ctx context.Context, kind string, opts datastore.ListOption
 }
 
 // Get implementation for MySQL
-func (m *MySQL) Get(ctx context.Context, kind, id string, v interface{}) error {
+func (m *MySQL) Get(ctx context.Context, col datastore.Collection, id string, v interface{}) error {
+	kind := col.Kind()
 	row := m.client.QueryRowContext(ctx, buildGetQuery(kind), makeRowID(id))
 	var val string
 	err := row.Scan(&val)
@@ -132,7 +134,8 @@ func (m *MySQL) Get(ctx context.Context, kind, id string, v interface{}) error {
 }
 
 // Create implementation for MySQL
-func (m *MySQL) Create(ctx context.Context, kind, id string, entity interface{}) error {
+func (m *MySQL) Create(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {
+	kind := col.Kind()
 	stmt, err := m.client.PrepareContext(ctx, buildCreateQuery(kind))
 	if err != nil {
 		m.logger.Error("failed to create entity: failed to prepare query",
@@ -170,7 +173,8 @@ func (m *MySQL) Create(ctx context.Context, kind, id string, entity interface{})
 }
 
 // Put implementation for MySQL
-func (m *MySQL) Put(ctx context.Context, kind, id string, entity interface{}) error {
+func (m *MySQL) Put(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {
+	kind := col.Kind()
 	stmt, err := m.client.PrepareContext(ctx, buildPutQuery(kind))
 	if err != nil {
 		m.logger.Error("failed to put entity: failed to prepare query",
@@ -205,7 +209,8 @@ func (m *MySQL) Put(ctx context.Context, kind, id string, entity interface{}) er
 }
 
 // Update implementation for MySQL
-func (m *MySQL) Update(ctx context.Context, kind, id string, factory datastore.Factory, updater datastore.Updater) error {
+func (m *MySQL) Update(ctx context.Context, col datastore.Collection, id string, updater datastore.Updater) error {
+	kind := col.Kind()
 	// Start transaction with default isolation level.
 	tx, err := m.client.BeginTx(ctx, nil)
 	if err != nil {
@@ -234,7 +239,7 @@ func (m *MySQL) Update(ctx context.Context, kind, id string, factory datastore.F
 		return err
 	}
 
-	entity := factory()
+	entity := col.Factory()()
 	if err := decodeJSONValue(val, entity); err != nil {
 		m.logger.Error("failed to update entity: failed to decode data",
 			zap.String("id", id),
