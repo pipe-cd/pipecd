@@ -35,7 +35,7 @@ type Store interface {
 	// GetLatest returns the latest event that meets the given conditions.
 	// All objects returned here must be treated as read-only.
 	GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool)
-	// GetLatest updates the status of the latest events.
+	// UpdateStatuses updates the status of the latest events.
 	// The second arg supposed to be the latest event. If it's not the latest, it will be ignored.
 	UpdateStatuses(ctx context.Context, latestEvents []model.Event) error
 }
