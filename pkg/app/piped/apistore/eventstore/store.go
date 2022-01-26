@@ -190,12 +190,18 @@ func (s *store) UpdateStatuses(ctx context.Context, latestEvents []model.Event) 
 	for _, e := range latestEvents {
 		s.mu.Lock()
 		cached, ok := s.latestEvents[e.EventKey]
-		if ok && cached.Id != e.Id {
+		if !ok {
+			s.latestEvents[e.EventKey] = &e
+			s.mu.Unlock()
+			continue
+		}
+		if cached.Id != e.Id {
 			// There is already an event newer than the given one.
 			s.mu.Unlock()
 			continue
 		}
-		s.latestEvents[e.EventKey] = &e
+		s.latestEvents[e.EventKey].Status = e.Status
+		s.latestEvents[e.EventKey].StatusDescription = e.StatusDescription
 		s.mu.Unlock()
 	}
 	return nil
