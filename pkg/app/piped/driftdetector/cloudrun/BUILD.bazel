@@ -5,4 +5,15 @@ go_library(
     srcs = ["detector.go"],
     importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector/cloudrun",
     visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/app/piped/cloudprovider/cloudrun:go_default_library",
+        "//pkg/app/piped/livestatestore/cloudrun:go_default_library",
+        "//pkg/app/piped/sourcedecrypter:go_default_library",
+        "//pkg/cache:go_default_library",
+        "//pkg/config:go_default_library",
+        "//pkg/diff:go_default_library",
+        "//pkg/git:go_default_library",
+        "//pkg/model:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
 )
