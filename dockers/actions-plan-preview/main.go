@@ -75,14 +75,6 @@ func main() {
 		log.Printf("Successfully commented plan-preview result on pull request\n%s\n", *comment.HTMLURL)
 	}
 
-	doMinimizeComment := func(commentID githubv4.ID) {
-		err := minimizeComment(ctx, ghClientV4, commentID, "OUTDATED")
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("Successfully minimized last plan-preview result on pull request\n")
-	}
-
 	if event.PRClosed {
 		doComment(failureBadgeURL + "Unable to run plan-preview for a closed pull request.")
 		return
@@ -128,6 +120,14 @@ func main() {
 
 	body := makeCommentBody(event, result)
 	doComment(body)
+
+	doMinimizeComment := func(commentID githubv4.ID) {
+		err := minimizeComment(ctx, ghClientV4, commentID, "OUTDATED")
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("Successfully minimized last plan-preview result on pull request\n")
+	}
 
 	// here, error is only errNotFound
 	// so dereferencing comment after check err is safe
