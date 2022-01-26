@@ -356,6 +356,27 @@
         "arrayConfig": ""
       },
       {
+        "fieldPath": "CreatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Event",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "ProjectId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
         "fieldPath": "Status",
         "order": "ASCENDING",
         "arrayConfig": ""

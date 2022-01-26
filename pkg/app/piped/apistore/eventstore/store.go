@@ -62,6 +62,10 @@ type store struct {
 
 const (
 	defaultSyncInterval = time.Minute
+	// A week.
+	durationToFetchAtStartUp = 168 * time.Hour
+
+	numToMakeOutdated = 10
 )
 
 // NewStore creates a new event store instance.
@@ -85,8 +89,10 @@ func (s *store) Run(ctx context.Context) error {
 	defer syncTicker.Stop()
 
 	// Do first sync without waiting the first ticker.
-	s.milestone = time.Now().Add(-time.Hour).Unix()
-	s.sync(ctx)
+	s.milestone = time.Now().Add(-durationToFetchAtStartUp).Unix()
+	if err := s.sync(ctx); err != nil {
+		return fmt.Errorf("failed to sync events first time: %w", err)
+	}
 
 	for {
 		select {
@@ -105,9 +111,10 @@ func (s *store) Run(ctx context.Context) error {
 // sync fetches a list of events newly created after its own milestone,
 // and updates the cache of latest events.
 func (s *store) sync(ctx context.Context) error {
+	// Fetch events in descending order.
 	resp, err := s.apiClient.ListEvents(ctx, &pipedservice.ListEventsRequest{
 		From:  s.milestone,
-		Order: pipedservice.ListOrder_ASC,
+		Order: pipedservice.ListOrder_DESC,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to list events: %w", err)
@@ -116,19 +123,37 @@ func (s *store) sync(ctx context.Context) error {
 		return nil
 	}
 
-	// Eliminate events that have duplicated key.
-	filtered := make(map[string]*model.Event, len(resp.Events))
+	// Group the events by key, sorted by newest.
+	eventsByKey := make(map[string][]*model.Event, len(resp.Events))
 	for _, e := range resp.Events {
-		filtered[e.EventKey] = e
+		eventsByKey[e.EventKey] = append(eventsByKey[e.EventKey], e)
 	}
+	// Ensure that the 10 least recent entries get outdated.
+	// NOTE: We don't support batch update, that's why we have a constant number of updates to make.
+	outdated := make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
+	for _, es := range eventsByKey {
+		for i := 1; i < len(es) && i <= numToMakeOutdated; i++ {
+			if es[i].Status != model.EventStatus_EVENT_NOT_HANDLED {
+				continue
+			}
+			outdated = append(outdated, &pipedservice.ReportEventStatusesRequest_Event{
+				Id:                es[i].Id,
+				Status:            model.EventStatus_EVENT_OUTDATED,
+				StatusDescription: fmt.Sprintf("The new event %q has been created", es[0].Id),
+			})
+		}
+	}
+	if len(outdated) > 0 {
+		if _, err := s.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: outdated}); err != nil {
+			return fmt.Errorf("failed to report event statuses: %w", err)
+		}
+		s.logger.Info(fmt.Sprintf("successfully made %d events OUTDATED", len(outdated)))
+	}
+
 	// Make the cache up-to-date.
 	s.mu.Lock()
-	for key, event := range filtered {
-		cached, ok := s.latestEvents[key]
-		if ok && cached.CreatedAt > event.CreatedAt {
-			continue
-		}
-		s.latestEvents[key] = event
+	for key, es := range eventsByKey {
+		s.latestEvents[key] = es[0]
 	}
 	s.mu.Unlock()
 
