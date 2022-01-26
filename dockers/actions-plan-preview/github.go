@@ -193,10 +193,11 @@ func findLatestPlanPreviewComment(ctx context.Context, client *githubv4.Client, 
 // Expect comments to be sorted in ascending order by created_at
 func findLatestPlanPreviewCommentHelper(comments []issueComment) *issueComment {
 	const planPreviewCommentStart = "<!-- pipecd-plan-preview-->"
+	const commentLogin = "github-actions"
 
 	for i := range comments {
 		comment := comments[len(comments)-i-1]
-		if strings.HasPrefix(string(comment.Body), planPreviewCommentStart) {
+		if strings.HasPrefix(string(comment.Body), planPreviewCommentStart) && comment.Author.Login == commentLogin {
 			return &comment
 		}
 	}
