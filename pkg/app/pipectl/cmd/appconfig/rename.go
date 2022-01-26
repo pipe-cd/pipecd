@@ -71,7 +71,7 @@ func newRenameCommand(root *command) *cobra.Command {
 
 func (c *rename) run(ctx context.Context, _ cli.Input) error {
 	if !c.updateAtLocal && !c.updateOnControlPlane {
-		fmt.Fprintln(c.stdout, "Nothing to do since both --update-at-local and --update-on-control-plane were not set.")
+		fmt.Fprintln(c.stdout, "Nothing to do since both --update-at-local and --update-on-control-plane were set to false.")
 		return nil
 	}
 
