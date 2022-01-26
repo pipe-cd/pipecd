@@ -16,6 +16,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -25,6 +26,7 @@ import (
 	"time"
 
 	"github.com/google/go-github/v36/github"
+	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
 
@@ -48,9 +50,10 @@ func main() {
 		&oauth2.Token{AccessToken: args.Token},
 	)
 	tc := oauth2.NewClient(ctx, ts)
-	ghClient := github.NewClient(tc)
+	ghClientV3 := github.NewClient(tc)
+	ghClientV4 := githubv4.NewClient(tc)
 
-	event, err := parseGitHubEvent(ctx, ghClient)
+	event, err := parseGitHubEvent(ctx, ghClientV3)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,7 +62,7 @@ func main() {
 	doComment := func(body string) {
 		comment, err := sendComment(
 			ctx,
-			ghClient,
+			ghClientV3,
 			event.Owner,
 			event.Repo,
 			event.PRNumber,
@@ -70,6 +73,14 @@ func main() {
 		}
 
 		log.Printf("Successfully commented plan-preview result on pull request\n%s\n", *comment.HTMLURL)
+	}
+
+	doMinimizeComment := func(commentID githubv4.ID) {
+		err := minimizeComment(ctx, ghClientV4, commentID, "OUTDATED")
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("Successfully minimized last plan-preview result on pull request\n")
 	}
 
 	if event.PRClosed {
@@ -99,7 +110,7 @@ func main() {
 
 	// Maybe the PR is already closed so Piped could not clone the source code.
 	if result.HasError() {
-		pr, err := getPullRequest(ctx, ghClient, event.Owner, event.Repo, event.PRNumber)
+		pr, err := getPullRequest(ctx, ghClientV3, event.Owner, event.Repo, event.PRNumber)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -109,8 +120,22 @@ func main() {
 		}
 	}
 
+	// find comment before we send
+	comment, err := findLatestPlanPreviewComment(ctx, ghClientV4, event.Owner, event.Repo, event.PRNumber)
+	if err != nil && !errors.Is(err, errNotFound) {
+		log.Fatal(err)
+	}
+
 	body := makeCommentBody(event, result)
 	doComment(body)
+
+	// here, error is only errNotFound
+	// so dereferencing comment after check err is safe
+	if errors.Is(err, errNotFound) || bool(comment.IsMinimized) {
+		log.Printf("There are no previous plan-preview comment, or last plan-preview comment has already minimized. So we don't minimize any comment")
+	} else {
+		doMinimizeComment(comment.ID)
+	}
 }
 
 type arguments struct {
