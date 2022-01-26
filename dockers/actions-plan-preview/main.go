@@ -50,10 +50,10 @@ func main() {
 		&oauth2.Token{AccessToken: args.Token},
 	)
 	tc := oauth2.NewClient(ctx, ts)
-	ghClientV3 := github.NewClient(tc)
-	ghClientV4 := githubv4.NewClient(tc)
+	ghClient := github.NewClient(tc)
+	ghGraphQLClient := githubv4.NewClient(tc)
 
-	event, err := parseGitHubEvent(ctx, ghClientV3)
+	event, err := parseGitHubEvent(ctx, ghClient)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func main() {
 	doComment := func(body string) {
 		comment, err := sendComment(
 			ctx,
-			ghClientV3,
+			ghClient,
 			event.Owner,
 			event.Repo,
 			event.PRNumber,
@@ -102,7 +102,7 @@ func main() {
 
 	// Maybe the PR is already closed so Piped could not clone the source code.
 	if result.HasError() {
-		pr, err := getPullRequest(ctx, ghClientV3, event.Owner, event.Repo, event.PRNumber)
+		pr, err := getPullRequest(ctx, ghClient, event.Owner, event.Repo, event.PRNumber)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -113,7 +113,7 @@ func main() {
 	}
 
 	// Find comments we sent before
-	comment, err := findLatestPlanPreviewComment(ctx, ghClientV4, event.Owner, event.Repo, event.PRNumber)
+	comment, err := findLatestPlanPreviewComment(ctx, ghGraphQLClient, event.Owner, event.Repo, event.PRNumber)
 	if err != nil && !errors.Is(err, errNotFound) {
 		log.Fatal(err)
 	}
@@ -122,7 +122,7 @@ func main() {
 	doComment(body)
 
 	doMinimizeComment := func(commentID githubv4.ID) {
-		err := minimizeComment(ctx, ghClientV4, commentID, "OUTDATED")
+		err := minimizeComment(ctx, ghGraphQLClient, commentID, "OUTDATED")
 		if err != nil {
 			log.Printf("warning: cannot minimize comment: %s", err.Error())
 		} else {
