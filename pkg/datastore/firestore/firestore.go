@@ -199,21 +199,6 @@ func (s *FireStore) Create(ctx context.Context, col datastore.Collection, id str
 	return nil
 }
 
-func (s *FireStore) Put(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {
-	kind := col.Kind()
-	colName := makeCollectionName(s.collectionNamePrefix, kind)
-	collection := s.client.Collection(s.namespace).Doc(s.environment).Collection(colName)
-	if _, err := collection.Doc(id).Set(ctx, entity); err != nil {
-		s.logger.Info("failed to put entity",
-			zap.String("id", id),
-			zap.String("kind", kind),
-			zap.Error(err),
-		)
-		return err
-	}
-	return nil
-}
-
 func (s *FireStore) Update(ctx context.Context, col datastore.Collection, id string, updater datastore.Updater) error {
 	kind := col.Kind()
 	colName := makeCollectionName(s.collectionNamePrefix, kind)
