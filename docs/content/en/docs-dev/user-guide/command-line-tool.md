@@ -255,8 +255,8 @@ You can encrypt it the same way you do [from the web](/docs/user-guide/secret-ma
       --env-name={ENV_NAME} \ # Optional.
       --before=.pipe.yaml \
       --after=app.pipecd.yaml \
-      --update-at-local=true \ # Whether to rename files in Git locally.
-      --update-at-control-plane=false # Whether to update application information on control plane to use the new name.
+      --update-on-local=true \ # Whether to rename files in Git locally.
+      --update-on-control-plane=false # Whether to update application information on control plane to use the new name.
   ```
 
 ### Migrating deployment configuration files to application configuration files
