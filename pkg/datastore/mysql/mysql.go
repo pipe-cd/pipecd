@@ -172,42 +172,6 @@ func (m *MySQL) Create(ctx context.Context, col datastore.Collection, id string,
 	return nil
 }
 
-// Put implementation for MySQL
-func (m *MySQL) Put(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {
-	kind := col.Kind()
-	stmt, err := m.client.PrepareContext(ctx, buildPutQuery(kind))
-	if err != nil {
-		m.logger.Error("failed to put entity: failed to prepare query",
-			zap.String("id", id),
-			zap.String("kind", kind),
-			zap.Error(err),
-		)
-		return err
-	}
-	defer stmt.Close()
-
-	data, err := encodeJSONValue(entity)
-	if err != nil {
-		m.logger.Error("failed to put entity: failed to encode json data",
-			zap.String("id", id),
-			zap.String("kind", kind),
-			zap.Error(err),
-		)
-		return err
-	}
-
-	_, err = stmt.ExecContext(ctx, makeRowID(id), data, data)
-	if err != nil {
-		m.logger.Error("failed to put entity",
-			zap.String("id", id),
-			zap.String("kind", kind),
-			zap.Error(err),
-		)
-		return err
-	}
-	return nil
-}
-
 // Update implementation for MySQL
 func (m *MySQL) Update(ctx context.Context, col datastore.Collection, id string, updater datastore.Updater) error {
 	kind := col.Kind()

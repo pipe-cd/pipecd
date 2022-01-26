@@ -78,9 +78,6 @@ type DataStore interface {
 	// Create saves a new entity to the datastore.
 	// If an entity with the same ID is already existing, ErrAlreadyExists will be returned.
 	Create(ctx context.Context, col Collection, id string, entity interface{}) error
-	// Put saves the entity into the datastore with a given id and kind.
-	// Put does not check the existence of the entity with same ID.
-	Put(ctx context.Context, col Collection, id string, entity interface{}) error
 	// Update updates an existing entity in the datastore.
 	// If updating entity was not found in the datastore, ErrNotFound will be returned.
 	Update(ctx context.Context, col Collection, id string, updater Updater) error
