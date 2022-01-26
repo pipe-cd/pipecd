@@ -31,7 +31,7 @@ type Store struct {
 }
 
 type Getter interface {
-	GetServiceManifest(appID string) provider.ServiceManifest
+	GetServiceManifest(appID string) (provider.ServiceManifest, bool)
 }
 
 func NewStore(ctx context.Context, cfg *config.CloudProviderCloudRunConfig, cloudProvider string, logger *zap.Logger) (*Store, error) {
@@ -77,6 +77,6 @@ func (s *Store) Run(ctx context.Context) error {
 	}
 }
 
-func (s *Store) GetServiceManifest(appID string) provider.ServiceManifest {
+func (s *Store) GetServiceManifest(appID string) (provider.ServiceManifest, bool) {
 	return s.store.GetServiceManifest(appID)
 }

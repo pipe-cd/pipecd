@@ -81,17 +81,17 @@ func (s *store) loadApps() map[string]provider.ServiceManifest {
 	return apps.(map[string]provider.ServiceManifest)
 }
 
-func (s *store) GetServiceManifest(appID string) provider.ServiceManifest {
+func (s *store) GetServiceManifest(appID string) (provider.ServiceManifest, bool) {
 	apps := s.loadApps()
 	if apps == nil {
-		s.logger.Error("failed to load apps")
-		return provider.ServiceManifest{}
-	}
-	sm, ok := apps[appID]
-	if !ok {
-		s.logger.Info("this app was not found", zap.String("app-id", appID))
-		return provider.ServiceManifest{}
+		s.logger.Error("failed to load cloudrun apps")
+		return provider.ServiceManifest{}, false
 	}
 
-	return sm
+	sm, ok := apps[appID]
+	if !ok {
+		return provider.ServiceManifest{}, false
+	}
+
+	return sm, true
 }
