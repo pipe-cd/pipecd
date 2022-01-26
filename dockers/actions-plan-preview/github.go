@@ -184,7 +184,7 @@ func findLatestPlanPreviewComment(ctx context.Context, client *githubv4.Client, 
 		if !pageinfo.HasPreviousPage {
 			return nil, errNotFound
 		}
-		variables["commentsCursor"] = pageinfo.StartCursor
+		variables["commentsCursor"] = githubv4.NewString(pageinfo.StartCursor)
 	}
 
 	return nil, ctx.Err()
