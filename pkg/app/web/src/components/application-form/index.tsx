@@ -498,11 +498,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
             label="Config Filename"
             variant="outlined"
             margin="dense"
-            disabled={
-              selectedPiped === undefined ||
-              isSubmitting ||
-              disableApplicationInfo
-            }
+            disabled={selectedPiped === undefined || isSubmitting}
             onChange={handleChange}
             value={values.configFilename}
             fullWidth

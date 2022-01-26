@@ -721,6 +721,7 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 		app.PipedId = req.PipedId
 		app.Kind = req.Kind
 		app.CloudProvider = req.CloudProvider
+		app.GitPath.ConfigFilename = req.ConfigFilename
 		return nil
 	}
 

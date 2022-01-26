@@ -242,6 +242,7 @@ message UpdateApplicationRequest {
     string piped_id = 4 [(validate.rules).string.min_len = 1];
     model.ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
     string cloud_provider = 7 [(validate.rules).string.min_len = 1];
+    string config_filename = 8;
 }
 
 message UpdateApplicationResponse {

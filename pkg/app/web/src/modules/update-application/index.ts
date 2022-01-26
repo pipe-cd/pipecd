@@ -37,6 +37,7 @@ export const updateApplication = createAsyncThunk<
     pipedId: values.pipedId,
     cloudProvider: values.cloudProvider,
     kind: values.kind,
+    configFilename: values.configFilename || "",
   });
 });
 
