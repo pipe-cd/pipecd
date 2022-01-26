@@ -128,7 +128,7 @@ func getPullRequest(ctx context.Context, client *github.Client, owner, repo stri
 	return pr, err
 }
 
-type issueComment struct {
+type issueCommentQuery struct {
 	ID     githubv4.ID
 	Author struct {
 		Login githubv4.String
@@ -137,16 +137,18 @@ type issueComment struct {
 	IsMinimized githubv4.Boolean
 }
 
+type issueCommentsQuery struct {
+	Nodes    []issueCommentQuery
+	PageInfo struct {
+		HasPreviousPage githubv4.Boolean
+		StartCursor     githubv4.String
+	}
+}
+
 type pullRequestCommentQuery struct {
 	Repository struct {
 		PullRequest struct {
-			Comments struct {
-				Nodes    []issueComment
-				PageInfo struct {
-					HasPreviousPage githubv4.Boolean
-					StartCursor     githubv4.String
-				}
-			} `graphql:"comments(last: 100, before: $commentsCursor)"`
+			Comments issueCommentsQuery `graphql:"comments(last: 100, before: $commentsCursor)"`
 		} `graphql:"pullRequest(number: $prNumber)"`
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 }
@@ -155,7 +157,7 @@ var errNotFound = errors.New("not found")
 
 // find the latest plan preview comment in the specified issue
 // if there is no plan preview comment, return errNotFound err
-func findLatestPlanPreviewComment(ctx context.Context, client *githubv4.Client, owner, repo string, prNumber int) (*issueComment, error) {
+func findLatestPlanPreviewComment(ctx context.Context, client *githubv4.Client, owner, repo string, prNumber int) (*issueCommentQuery, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -191,7 +193,7 @@ func findLatestPlanPreviewComment(ctx context.Context, client *githubv4.Client, 
 }
 
 // Expect comments to be sorted in ascending order by created_at
-func findLatestPlanPreviewCommentHelper(comments []issueComment) *issueComment {
+func findLatestPlanPreviewCommentHelper(comments []issueCommentQuery) *issueCommentQuery {
 	const planPreviewCommentStart = "<!-- pipecd-plan-preview-->"
 	const commentLogin = "github-actions"
 
