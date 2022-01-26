@@ -248,7 +248,7 @@ func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Repo
 		if d.secretDecrypter != nil && gds.Encryption != nil {
 			appDir, err = d.getDecryptingDirPath(app, repo)
 			if err != nil {
-				return provider.ServiceManifest{}, err
+				return provider.ServiceManifest{}, fmt.Errorf("failed to get decrypting directory path: %w", err)
 			}
 
 			if err := sourcedecrypter.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
