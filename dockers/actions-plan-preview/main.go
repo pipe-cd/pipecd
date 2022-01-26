@@ -120,7 +120,7 @@ func main() {
 		}
 	}
 
-	// find comment before we send
+	// Find comments we sent before
 	comment, err := findLatestPlanPreviewComment(ctx, ghClientV4, event.Owner, event.Repo, event.PRNumber)
 	if err != nil && !errors.Is(err, errNotFound) {
 		log.Fatal(err)
