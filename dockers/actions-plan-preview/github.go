@@ -16,10 +16,14 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/google/go-github/v36/github"
+	"github.com/shurcooL/githubv4"
 )
 
 type githubEvent struct {
@@ -122,4 +126,107 @@ func sendComment(ctx context.Context, client *github.Client, owner, repo string,
 func getPullRequest(ctx context.Context, client *github.Client, owner, repo string, prNum int) (*github.PullRequest, error) {
 	pr, _, err := client.PullRequests.Get(ctx, owner, repo, prNum)
 	return pr, err
+}
+
+type issueComment struct {
+	ID     githubv4.ID
+	Author struct {
+		Login githubv4.String
+	}
+	Body        githubv4.String
+	IsMinimized githubv4.Boolean
+}
+
+type pullRequestCommentQuery struct {
+	Repository struct {
+		PullRequest struct {
+			Comments struct {
+				Nodes    []issueComment
+				PageInfo struct {
+					HasPreviousPage githubv4.Boolean
+					StartCursor     githubv4.String
+				}
+			} `graphql:"comments(last: 100, before: $commentsCursor)"`
+		} `graphql:"pullRequest(number: $prNumber)"`
+	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
+}
+
+var errNotFound = errors.New("not found")
+
+// find the latest plan preview comment in the specified issue
+// if there is no plan preview comment, return errNotFound err
+func findLatestPlanPreviewComment(ctx context.Context, client *githubv4.Client, owner, repo string, prNumber int) (*issueComment, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	variables := map[string]interface{}{
+		"repositoryOwner": githubv4.String(owner),
+		"repositoryName":  githubv4.String(repo),
+		"prNumber":        githubv4.Int(prNumber),
+		"commentsCursor":  (*githubv4.String)(nil),
+	}
+
+	var q pullRequestCommentQuery
+	for ctx.Err() == nil {
+		err := client.Query(ctx, &q, variables)
+		if err != nil {
+			return nil, err
+		}
+
+		pageinfo := q.Repository.PullRequest.Comments.PageInfo
+		comments := q.Repository.PullRequest.Comments.Nodes
+
+		comment := findLatestPlanPreviewCommentHelper(comments)
+		if comment != nil {
+			return comment, nil
+		}
+
+		if !pageinfo.HasPreviousPage {
+			return nil, errNotFound
+		}
+		variables["commentsCursor"] = pageinfo.StartCursor
+	}
+
+	return nil, ctx.Err()
+}
+
+// Expect comments to be sorted in ascending order by created_at
+func findLatestPlanPreviewCommentHelper(comments []issueComment) *issueComment {
+	const planPreviewCommentStart = "<!-- pipecd-plan-preview-->"
+
+	for i := range comments {
+		comment := comments[len(comments)-i-1]
+		if strings.HasPrefix(string(comment.Body), planPreviewCommentStart) {
+			return &comment
+		}
+	}
+
+	return nil
+}
+
+type minimizeCommentMutation struct {
+	MinimizeComment struct {
+		MinimizedComment struct {
+			IsMinimized bool
+		}
+	} `graphql:"minimizeComment(input: $input)"`
+}
+
+func minimizeComment(ctx context.Context, client *githubv4.Client, id githubv4.ID, classifier string) error {
+	var m minimizeCommentMutation
+	input := githubv4.MinimizeCommentInput{
+		SubjectID:        id,
+		Classifier:       githubv4.ReportedContentClassifiers(classifier),
+		ClientMutationID: nil,
+	}
+	err := client.Mutate(ctx, &m, input, nil)
+	if err != nil {
+		return err
+	}
+
+	if !m.MinimizeComment.MinimizedComment.IsMinimized {
+		return fmt.Errorf("cannot minimize comment. id: %s, classifier: %s", id, classifier)
+	}
+
+	return nil
 }
