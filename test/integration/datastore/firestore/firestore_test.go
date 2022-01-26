@@ -214,43 +214,6 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-func TestPut(t *testing.T) {
-	col := &collection{kind: "PutEntity"}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	store, err := firestore.NewFireStore(ctx, "project", "namespace", "environment")
-	require.NoError(t, err)
-	defer store.Close()
-
-	err = store.Create(ctx, col, "id", &Entity{Name: "name"})
-	require.NoError(t, err)
-
-	testcases := []struct {
-		name    string
-		id      string
-		wantErr bool
-	}{
-		{
-			name:    "put existing one",
-			id:      "id",
-			wantErr: false,
-		},
-		{
-			name:    "put new one",
-			id:      "id-new",
-			wantErr: false,
-		},
-	}
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			err := store.Put(ctx, col, tc.id, &Entity{Name: "name"})
-			assert.Equal(t, tc.wantErr, err != nil)
-		})
-	}
-}
-
 func TestUpdate(t *testing.T) {
 	col := &collection{
 		kind: "UpdateEntity",

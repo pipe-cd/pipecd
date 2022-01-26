@@ -141,20 +141,6 @@ func (mr *MockDataStoreMockRecorder) Get(ctx, col, id, entity interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockDataStore)(nil).Get), ctx, col, id, entity)
 }
 
-// Put mocks base method.
-func (m *MockDataStore) Put(ctx context.Context, col Collection, id string, entity interface{}) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Put", ctx, col, id, entity)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Put indicates an expected call of Put.
-func (mr *MockDataStoreMockRecorder) Put(ctx, col, id, entity interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Put", reflect.TypeOf((*MockDataStore)(nil).Put), ctx, col, id, entity)
-}
-
 // Update mocks base method.
 func (m *MockDataStore) Update(ctx context.Context, col Collection, id string, updater Updater) error {
 	m.ctrl.T.Helper()
