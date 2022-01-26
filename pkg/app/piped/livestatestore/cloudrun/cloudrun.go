@@ -68,9 +68,11 @@ func (s *Store) Run(ctx context.Context) error {
 			return nil
 
 		case <-tick.C:
-			if err := s.store.run(ctx); err == nil {
-				s.logger.Info("successfully synced all cloudrun services")
+			if err := s.store.run(ctx); err != nil {
+				s.logger.Error("failed to sync cloudrun services", zap.Error(err))
+				continue
 			}
+			s.logger.Info("successfully synced all cloudrun services")
 		}
 	}
 }

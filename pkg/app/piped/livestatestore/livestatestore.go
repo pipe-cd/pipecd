@@ -116,7 +116,7 @@ func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationL
 		case model.CloudProviderCloudRun:
 			store, err := cloudrun.NewStore(ctx, cp.CloudRunConfig, cp.Name, logger)
 			if err != nil {
-				logger.Error("failed to create a new cloudrun's livestatestore: %v", zap.Error(err))
+				logger.Error("failed to create a new cloudrun's livestatestore", zap.Error(err))
 				continue
 			}
 			s.cloudrunStores[cp.Name] = store

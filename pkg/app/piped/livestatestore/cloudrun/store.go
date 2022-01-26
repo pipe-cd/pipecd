@@ -16,6 +16,7 @@ package cloudrun
 
 import (
 	"context"
+	"fmt"
 	"sync/atomic"
 
 	"go.uber.org/zap"
@@ -43,8 +44,7 @@ func (s *store) run(ctx context.Context) error {
 		// https://cloud.google.com/run/quotas#api
 		v, next, err := s.client.List(ctx, ops)
 		if err != nil {
-			s.logger.Error("failed to list cloudrun services: %v", zap.Error(err))
-			return err
+			return fmt.Errorf("failed to list cloudrun services: %w", err)
 		}
 		svc = append(svc, v...)
 		if next == "" {
@@ -64,7 +64,7 @@ func (s *store) setApps(svc []*provider.Service) {
 	for i := range svc {
 		sm, err := svc[i].ServiceManifest()
 		if err != nil {
-			s.logger.Error("failed to load cloudrun service into service manifest: %v", zap.Error(err))
+			s.logger.Error("failed to load cloudrun service into service manifest", zap.Error(err))
 			continue
 		}
 		appID := sm.Labels()[provider.LabelApplication]
@@ -89,7 +89,7 @@ func (s *store) GetServiceManifest(appID string) provider.ServiceManifest {
 	}
 	sm, ok := apps[appID]
 	if !ok {
-		s.logger.Info("this app was not found: %s", zap.String("app-id", appID))
+		s.logger.Info("this app was not found", zap.String("app-id", appID))
 		return provider.ServiceManifest{}
 	}
 
