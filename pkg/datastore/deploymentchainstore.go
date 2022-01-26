@@ -22,10 +22,17 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-const DeploymentChainModelKind = "DeploymentChain"
+type deploymentChainCollection struct {
+}
 
-var deploymentChainFactory = func() interface{} {
-	return &model.DeploymentChain{}
+func (d *deploymentChainCollection) Kind() string {
+	return "DeploymentChain"
+}
+
+func (d *deploymentChainCollection) Factory() Factory {
+	return func() interface{} {
+		return &model.DeploymentChain{}
+	}
 }
 
 var (
@@ -107,7 +114,8 @@ type deploymentChainStore struct {
 func NewDeploymentChainStore(ds DataStore) DeploymentChainStore {
 	return &deploymentChainStore{
 		backend: backend{
-			ds: ds,
+			ds:  ds,
+			col: &deploymentChainCollection{},
 		},
 		nowFunc: time.Now,
 	}
@@ -124,12 +132,12 @@ func (s *deploymentChainStore) AddDeploymentChain(ctx context.Context, dc *model
 	if err := dc.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, DeploymentChainModelKind, dc.Id, dc)
+	return s.ds.Create(ctx, s.col, dc.Id, dc)
 }
 
 func (s *deploymentChainStore) UpdateDeploymentChain(ctx context.Context, id string, updater func(*model.DeploymentChain) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, DeploymentChainModelKind, id, deploymentChainFactory, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
 		dc := e.(*model.DeploymentChain)
 		if err := updater(dc); err != nil {
 			return err
@@ -141,14 +149,14 @@ func (s *deploymentChainStore) UpdateDeploymentChain(ctx context.Context, id str
 
 func (s *deploymentChainStore) GetDeploymentChain(ctx context.Context, id string) (*model.DeploymentChain, error) {
 	var entity model.DeploymentChain
-	if err := s.ds.Get(ctx, DeploymentChainModelKind, id, &entity); err != nil {
+	if err := s.ds.Get(ctx, s.col, id, &entity); err != nil {
 		return nil, err
 	}
 	return &entity, nil
 }
 
 func (s *deploymentChainStore) ListDeploymentChains(ctx context.Context, opts ListOptions) ([]*model.DeploymentChain, string, error) {
-	it, err := s.ds.Find(ctx, DeploymentChainModelKind, opts)
+	it, err := s.ds.Find(ctx, s.col, opts)
 	if err != nil {
 		return nil, "", err
 	}

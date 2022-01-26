@@ -54,7 +54,7 @@ func TestAddProject(t *testing.T) {
 			},
 			dsFactory: func(d *model.Project) DataStore {
 				ds := NewMockDataStore(ctrl)
-				ds.EXPECT().Create(gomock.Any(), "Project", d.Id, d)
+				ds.EXPECT().Create(gomock.Any(), gomock.Any(), d.Id, d)
 				return ds
 			},
 			wantErr: false,
@@ -86,7 +86,7 @@ func TestGetProject(t *testing.T) {
 			ds: func() DataStore {
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Get(gomock.Any(), "Project", "id", &model.Project{}).
+					Get(gomock.Any(), gomock.Any(), "id", &model.Project{}).
 					Return(nil)
 				return ds
 			}(),
@@ -98,7 +98,7 @@ func TestGetProject(t *testing.T) {
 			ds: func() DataStore {
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Get(gomock.Any(), "Project", "id", &model.Project{}).
+					Get(gomock.Any(), gomock.Any(), "id", &model.Project{}).
 					Return(fmt.Errorf("err"))
 				return ds
 			}(),
@@ -136,7 +136,7 @@ func TestListProjects(t *testing.T) {
 
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Find(gomock.Any(), "Project", ListOptions{}).
+					Find(gomock.Any(), gomock.Any(), ListOptions{}).
 					Return(it, nil)
 				return ds
 			}(),
@@ -153,7 +153,7 @@ func TestListProjects(t *testing.T) {
 
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Find(gomock.Any(), "Project", ListOptions{}).
+					Find(gomock.Any(), gomock.Any(), ListOptions{}).
 					Return(it, nil)
 				return ds
 			}(),
