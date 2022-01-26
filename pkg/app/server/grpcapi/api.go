@@ -310,6 +310,34 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 	}, nil
 }
 
+func (a *API) RenameApplicationConfigFile(ctx context.Context, req *apiservice.RenameApplicationConfigFileRequest) (*apiservice.RenameApplicationConfigFileResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, appID := range req.ApplicationIds {
+		var denied bool
+		err := a.applicationStore.UpdateApplication(ctx, appID, func(app *model.Application) error {
+			if app.ProjectId != key.ProjectId {
+				denied = true
+				return fmt.Errorf("Requested application %s does not belong to your project", appID)
+			}
+			app.GitPath.ConfigFilename = req.NewFilename
+			return nil
+		})
+		if err != nil {
+			if denied {
+				return nil, status.Error(codes.PermissionDenied, err.Error())
+			}
+			a.logger.Error("failed to update application", zap.Error(err))
+			return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to update application %s", appID))
+		}
+	}
+
+	return &apiservice.RenameApplicationConfigFileResponse{}, nil
+}
+
 func (a *API) GetDeployment(ctx context.Context, req *apiservice.GetDeploymentRequest) (*apiservice.GetDeploymentResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
 	if err != nil {

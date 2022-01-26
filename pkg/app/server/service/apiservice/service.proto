@@ -31,6 +31,7 @@ service APIService {
     rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
     rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {}
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
+    rpc RenameApplicationConfigFile(RenameApplicationConfigFileRequest) returns (RenameApplicationConfigFileResponse) {}
 
     rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
 
@@ -90,6 +91,16 @@ message ListApplicationsRequest {
 message ListApplicationsResponse {
     repeated model.Application applications = 1;
     string cursor = 2;
+}
+
+message RenameApplicationConfigFileRequest {
+    // Maximum number of applications that can be updated in one request is 50.
+    // To update more than that, break them and send in multiple requests.
+    repeated string application_ids = 1 [(validate.rules).repeated = {min_items: 1, max_items: 50}];
+    string new_filename = 2 [(validate.rules).string.min_len = 1];
+}
+
+message RenameApplicationConfigFileResponse {
 }
 
 message GetDeploymentRequest {
