@@ -124,9 +124,10 @@ func main() {
 	doMinimizeComment := func(commentID githubv4.ID) {
 		err := minimizeComment(ctx, ghClientV4, commentID, "OUTDATED")
 		if err != nil {
-			log.Fatal(err)
+			log.Printf("warning: cannot minimize comment: %s", err.Error())
+		} else {
+			log.Printf("Successfully minimized last plan-preview result on pull request\n")
 		}
-		log.Printf("Successfully minimized last plan-preview result on pull request\n")
 	}
 
 	// here, error is only errNotFound
