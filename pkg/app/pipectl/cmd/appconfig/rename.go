@@ -133,7 +133,7 @@ func (c *rename) run(ctx context.Context, _ cli.Input) error {
 			)
 			_, err := os.Stat(newPath)
 			if err == nil {
-				return fmt.Errorf("Unable to use the new name %q since it will override %s", c.after, newPath)
+				return fmt.Errorf("unable to use the new name %q since it will override %s", c.after, newPath)
 			}
 			if !errors.Is(err, os.ErrNotExist) {
 				return err
