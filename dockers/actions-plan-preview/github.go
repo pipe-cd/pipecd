@@ -165,14 +165,11 @@ func findLatestPlanPreviewComment(ctx context.Context, client *githubv4.Client, 
 		return nil, err
 	}
 
-	comments := q.Repository.PullRequest.Comments.Nodes
-
-	comment := filterLatestPlanPreviewComment(comments)
-	if comment != nil {
-		return comment, nil
-	} else {
+	comment := filterLatestPlanPreviewComment(q.Repository.PullRequest.Comments.Nodes)
+	if comment == nil {
 		return nil, errNotFound
 	}
+	return comment, nil
 }
 
 // Expect comments to be sorted in ascending order by created_at
