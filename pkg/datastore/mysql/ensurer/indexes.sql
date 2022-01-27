@@ -86,10 +86,26 @@ CREATE INDEX deployment_chain_id_updated_at_desc ON Deployment (DeploymentChainI
 
 -- index on `ProjectId` ASC and `CreatedAt` ASC
 CREATE INDEX event_project_id_created_at_asc ON Event (ProjectId, CreatedAt);
+-- index on `ProjectId` ASC and `CreatedAt` DESC
+CREATE INDEX event_project_id_created_at_desc ON Event (ProjectId, CreatedAt DESC);
+-- index on `ProjectId` ASC and `UpdatedAt` DESC
+CREATE INDEX event_project_id_updated_at_desc ON Event (ProjectId, UpdatedAt DESC);
 
 -- index on `EventKey` ASC, `Name` ASC, `ProjectId` ASC and `CreatedAt` DESC
 ALTER TABLE Event ADD COLUMN EventKey VARCHAR(64) GENERATED ALWAYS AS (data->>"$.event_key") VIRTUAL NOT NULL, ADD COLUMN Name VARCHAR(50) GENERATED ALWAYS AS (data->>"$.name") VIRTUAL NOT NULL;
 CREATE INDEX event_key_name_project_id_created_at_desc ON Event (EventKey, Name, ProjectId, CreatedAt DESC);
+
+-- index on `ProjectId` ASC, `Status` ASC, UpdatedAt DESC
+ALTER TABLE Event ADD COLUMN Status INT GENERATED ALWAYS AS (data->>"$.status") VIRTUAL NOT NULL;
+CREATE INDEX project_id_status_updated_at_desc ON Event (ProjectId, Status, CreatedAt DESC);
+
+-- index on `Name` ASC, `ProjectId` ASC, `UpdatedAt` DESC
+ALTER TABLE Event ADD COLUMN Name VARCHAR(50) GENERATED ALWAYS AS (data->>"$.name") VIRTUAL NOT NULL;
+CREATE INDEX event_key_name_project_id_created_at_desc ON Event (Name, ProjectId, UpdatedAt DESC);
+
+-- index on `Name` ASC, `ProjectId` ASC, `Status` ASC, UpdatedAt DESC
+ALTER TABLE Event ADD COLUMN Name VARCHAR(50) GENERATED ALWAYS AS (data->>"$.name") VIRTUAL NOT NULL, ADD COLUMN Status INT GENERATED ALWAYS AS (data->>"$.status") VIRTUAL NOT NULL;
+CREATE INDEX name_project_id_status_updated_at_desc ON Event (Name, ProjectId, Status, UpdatedAt DESC);
 
 --
 -- Piped table indexes
