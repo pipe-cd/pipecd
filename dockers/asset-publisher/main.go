@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-github/v32/github"
+	"github.com/google/go-github/v42/github"
 	"golang.org/x/oauth2"
 )
 

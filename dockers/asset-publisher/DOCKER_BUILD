@@ -1,2 +1,2 @@
-version: 0.0.1
+version: 0.1.0
 registry: gcr.io/pipecd/asset-publisher
