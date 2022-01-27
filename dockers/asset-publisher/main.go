@@ -30,7 +30,7 @@ import (
 
 var (
 	org             = flag.String("org", "pipe-cd", "The name of GitHub organization")
-	repo            = flag.String("repo", "pipe", "The name of GitHub repository")
+	repo            = flag.String("repo", "pipecd", "The name of GitHub repository")
 	releaseTag      = flag.String("release-tag", "", "The release tag where asset should be uploaded to")
 	assetNameSuffix = flag.String("asset-name-suffix", "", "The suffix name of the asset")
 	assetFile       = flag.String("asset-file", "", "The path to the asset file")
