@@ -105,7 +105,7 @@ func (s *store) GetCommand(ctx context.Context, id string) (*model.Command, erro
 
 func (s *store) UpdateCommandHandled(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, unhandledAt int64) error {
 	updater := datastore.CommandHandledUpdater(status, metadata, unhandledAt)
-	if err := s.backend.UpdateCommand(ctx, id, updater); err != nil {
+	if err := s.backend.UpdateCommand(ctx, datastore.PipedWriter, id, updater); err != nil {
 		return err
 	}
 

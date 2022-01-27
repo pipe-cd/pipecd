@@ -214,7 +214,7 @@ func (m *MySQL) Update(ctx context.Context, col datastore.Collection, id string,
 		return err
 	}
 
-	if err := updater(entity); err != nil {
+	if err := updater.UpdateFunc()(entity); err != nil {
 		m.logger.Error("failed to update entity: failed to apply updater",
 			zap.String("id", id),
 			zap.String("kind", kind),

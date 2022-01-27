@@ -137,7 +137,7 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 	}
 
 	now := time.Now().Unix()
-	if err = a.pipedStore.UpdatePiped(ctx, pipedID, datastore.PipedMetadataUpdater(req.CloudProviders, req.Repositories, req.SecretEncryption, req.Version, now)); err != nil {
+	if err = a.pipedStore.UpdatePiped(ctx, datastore.PipedWriter, pipedID, datastore.PipedMetadataUpdater(req.CloudProviders, req.Repositories, req.SecretEncryption, req.Version, now)); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
 			return nil, status.Error(codes.InvalidArgument, "piped is not found")
@@ -234,7 +234,7 @@ func (a *PipedAPI) ReportApplicationSyncState(ctx context.Context, req *pipedser
 		return nil, err
 	}
 
-	err = a.applicationStore.PutApplicationSyncState(ctx, req.ApplicationId, req.State)
+	err = a.applicationStore.PutApplicationSyncState(ctx, datastore.PipedWriter, req.ApplicationId, req.State)
 	if err != nil {
 		switch err {
 		case datastore.ErrNotFound:
@@ -262,7 +262,7 @@ func (a *PipedAPI) ReportApplicationDeployingStatus(ctx context.Context, req *pi
 		return nil, err
 	}
 
-	err = a.applicationStore.UpdateApplication(ctx, req.ApplicationId, func(app *model.Application) error {
+	err = a.applicationStore.UpdateApplication(ctx, datastore.PipedWriter, req.ApplicationId, func(app *model.Application) error {
 		app.Deploying = req.Deploying
 		return nil
 	})
@@ -295,7 +295,7 @@ func (a *PipedAPI) ReportApplicationMostRecentDeployment(ctx context.Context, re
 		return nil, err
 	}
 
-	err = a.applicationStore.PutApplicationMostRecentDeployment(ctx, req.ApplicationId, req.Status, req.Deployment)
+	err = a.applicationStore.PutApplicationMostRecentDeployment(ctx, datastore.PipedWriter, req.ApplicationId, req.Status, req.Deployment)
 	if err != nil {
 		switch err {
 		case datastore.ErrNotFound:
@@ -437,7 +437,7 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 	}
 
 	updater := datastore.DeploymentToPlannedUpdater(req.Summary, req.StatusReason, req.RunningCommitHash, req.Version, req.Stages)
-	err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
+	err = a.deploymentStore.UpdateDeployment(ctx, datastore.PipedWriter, req.DeploymentId, updater)
 	if err != nil {
 		switch err {
 		case datastore.ErrNotFound:
@@ -468,7 +468,7 @@ func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *piped
 	}
 
 	updater := datastore.DeploymentStatusUpdater(req.Status, req.StatusReason)
-	err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
+	err = a.deploymentStore.UpdateDeployment(ctx, datastore.PipedWriter, req.DeploymentId, updater)
 	if err != nil {
 		switch err {
 		case datastore.ErrNotFound:
@@ -499,7 +499,7 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 	}
 
 	updater := datastore.DeploymentToCompletedUpdater(req.Status, req.StageStatuses, req.StatusReason, req.CompletedAt)
-	err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
+	err = a.deploymentStore.UpdateDeployment(ctx, datastore.PipedWriter, req.DeploymentId, updater)
 	if err != nil {
 		switch err {
 		case datastore.ErrNotFound:
@@ -528,7 +528,7 @@ func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice
 		return nil, err
 	}
 
-	err = a.deploymentStore.PutDeploymentMetadata(ctx, req.DeploymentId, req.Metadata)
+	err = a.deploymentStore.PutDeploymentMetadata(ctx, datastore.PipedWriter, req.DeploymentId, req.Metadata)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.InvalidArgument, "deployment is not found")
 	}
@@ -553,7 +553,7 @@ func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.Save
 		return nil, err
 	}
 
-	err = a.deploymentStore.PutDeploymentStageMetadata(ctx, req.DeploymentId, req.StageId, req.Metadata)
+	err = a.deploymentStore.PutDeploymentStageMetadata(ctx, datastore.PipedWriter, req.DeploymentId, req.StageId, req.Metadata)
 	if err != nil {
 		switch errors.Unwrap(err) {
 		case datastore.ErrNotFound:
@@ -626,7 +626,7 @@ func (a *PipedAPI) ReportStageStatusChanged(ctx context.Context, req *pipedservi
 	}
 
 	updater := datastore.StageStatusChangedUpdater(req.StageId, req.Status, req.StatusReason, req.Requires, req.Visible, req.RetriedCount, req.CompletedAt)
-	err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
+	err = a.deploymentStore.UpdateDeployment(ctx, datastore.PipedWriter, req.DeploymentId, updater)
 	if err != nil {
 		switch err {
 		case datastore.ErrNotFound:
@@ -889,7 +889,7 @@ func (a *PipedAPI) ReportEventsHandled(ctx context.Context, req *pipedservice.Re
 	}
 
 	for _, id := range req.EventIds {
-		if err := a.eventStore.UpdateEventStatus(ctx, id, model.EventStatus_EVENT_SUCCESS, fmt.Sprintf("successfully handled by %q piped", pipedID)); err != nil {
+		if err := a.eventStore.UpdateEventStatus(ctx, datastore.PipedWriter, id, model.EventStatus_EVENT_SUCCESS, fmt.Sprintf("successfully handled by %q piped", pipedID)); err != nil {
 			switch err {
 			case datastore.ErrNotFound:
 				return nil, status.Errorf(codes.NotFound, "event %q is not found", id)
@@ -912,7 +912,7 @@ func (a *PipedAPI) ReportEventStatuses(ctx context.Context, req *pipedservice.Re
 	}
 	for _, e := range req.Events {
 		// TODO: For success status, change all previous events with the same event key to OUTDATED
-		if err := a.eventStore.UpdateEventStatus(ctx, e.Id, e.Status, e.StatusDescription); err != nil {
+		if err := a.eventStore.UpdateEventStatus(ctx, datastore.PipedWriter, e.Id, e.Status, e.StatusDescription); err != nil {
 			switch err {
 			case datastore.ErrNotFound:
 				return nil, status.Errorf(codes.NotFound, "event %q is not found", e.Id)
@@ -999,7 +999,7 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 			app.Description = appInfo.Description
 			return nil
 		}
-		if err := a.applicationStore.UpdateApplication(ctx, appInfo.Id, updater); err != nil {
+		if err := a.applicationStore.UpdateApplication(ctx, datastore.PipedWriter, appInfo.Id, updater); err != nil {
 			a.logger.Error("failed to update application", zap.Error(err))
 			return nil, status.Error(codes.Internal, "failed to update application")
 		}

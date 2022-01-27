@@ -264,7 +264,7 @@ func TestUpdate(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := store.Update(ctx, col, tc.id, tc.updater)
+			err := store.Update(ctx, col, tc.id, datastore.NewUpdater("", tc.updater))
 			assert.Equal(t, tc.wantErr, err)
 		})
 	}

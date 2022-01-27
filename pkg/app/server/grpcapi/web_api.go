@@ -246,7 +246,7 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 		if app.ProjectId != claims.Role.ProjectId {
 			continue
 		}
-		err := a.applicationStore.DeleteApplication(ctx, app.Id)
+		err := a.applicationStore.DeleteApplication(ctx, datastore.WebWriter, app.Id)
 		if err == nil {
 			continue
 		}
@@ -264,7 +264,7 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 		}
 	}
 
-	if err := a.environmentStore.DeleteEnvironment(ctx, req.EnvironmentId); err != nil {
+	if err := a.environmentStore.DeleteEnvironment(ctx, datastore.WebWriter, req.EnvironmentId); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
 			return nil, status.Error(codes.NotFound, "The environment is not found")
@@ -293,14 +293,14 @@ func (a *WebAPI) updateEnvironmentEnable(ctx context.Context, envID string, enab
 		return err
 	}
 
-	var updater func(context.Context, string) error
+	var updater func(context.Context, datastore.Writer, string) error
 	if enable {
 		updater = a.environmentStore.EnableEnvironment
 	} else {
 		updater = a.environmentStore.DisableEnvironment
 	}
 
-	if err := updater(ctx, envID); err != nil {
+	if err := updater(ctx, datastore.WebWriter, envID); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
 			return status.Error(codes.NotFound, "The environment is not found")
@@ -379,8 +379,8 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 }
 
 func (a *WebAPI) UpdatePiped(ctx context.Context, req *webservice.UpdatePipedRequest) (*webservice.UpdatePipedResponse, error) {
-	updater := func(ctx context.Context, pipedID string) error {
-		return a.pipedStore.UpdatePiped(ctx, req.PipedId, func(p *model.Piped) error {
+	updater := func(ctx context.Context, w datastore.Writer, pipedID string) error {
+		return a.pipedStore.UpdatePiped(ctx, w, req.PipedId, func(p *model.Piped) error {
 			p.Name = req.Name
 			p.Desc = req.Desc
 			p.EnvIds = req.EnvIds
@@ -407,8 +407,8 @@ func (a *WebAPI) RecreatePipedKey(ctx context.Context, req *webservice.RecreateP
 		return nil, status.Error(codes.Internal, "Failed to generate the piped key")
 	}
 
-	updater := func(ctx context.Context, pipedID string) error {
-		return a.pipedStore.AddKey(ctx, pipedID, keyHash, claims.Subject, time.Now())
+	updater := func(ctx context.Context, w datastore.Writer, pipedID string) error {
+		return a.pipedStore.AddKey(ctx, w, pipedID, keyHash, claims.Subject, time.Now())
 	}
 	if err := a.updatePiped(ctx, req.Id, updater); err != nil {
 		return nil, err
@@ -425,8 +425,8 @@ func (a *WebAPI) DeleteOldPipedKeys(ctx context.Context, req *webservice.DeleteO
 		return nil, err
 	}
 
-	updater := func(ctx context.Context, pipedID string) error {
-		return a.pipedStore.DeleteOldKeys(ctx, pipedID)
+	updater := func(ctx context.Context, w datastore.Writer, pipedID string) error {
+		return a.pipedStore.DeleteOldKeys(ctx, w, pipedID)
 	}
 	if err := a.updatePiped(ctx, req.PipedId, updater); err != nil {
 		return nil, err
@@ -449,7 +449,7 @@ func (a *WebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePipedR
 	return &webservice.DisablePipedResponse{}, nil
 }
 
-func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(context.Context, string) error) error {
+func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(context.Context, datastore.Writer, string) error) error {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
 		a.logger.Error("failed to authenticate the current user", zap.Error(err))
@@ -460,7 +460,7 @@ func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(c
 		return err
 	}
 
-	if err := updater(ctx, pipedID); err != nil {
+	if err := updater(ctx, datastore.WebWriter, pipedID); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
 			return status.Error(codes.InvalidArgument, "The piped is not found")
@@ -575,8 +575,8 @@ func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) 
 }
 
 func (a *WebAPI) UpdatePipedDesiredVersion(ctx context.Context, req *webservice.UpdatePipedDesiredVersionRequest) (*webservice.UpdatePipedDesiredVersionResponse, error) {
-	updater := func(ctx context.Context, pipedID string) error {
-		return a.pipedStore.UpdatePiped(ctx, pipedID, func(p *model.Piped) error {
+	updater := func(ctx context.Context, w datastore.Writer, pipedID string) error {
+		return a.pipedStore.UpdatePiped(ctx, w, pipedID, func(p *model.Piped) error {
 			p.DesiredVersion = req.Version
 			return nil
 		})
@@ -762,7 +762,7 @@ func (a *WebAPI) updateApplication(ctx context.Context, id, pipedID string, upda
 		}
 	}
 
-	err = a.applicationStore.UpdateApplication(ctx, id, updater)
+	err = a.applicationStore.UpdateApplication(ctx, datastore.WebWriter, id, updater)
 	if err != nil {
 		a.logger.Error("failed to update application", zap.Error(err))
 		return status.Error(codes.Internal, "Failed to update application")
@@ -796,7 +796,7 @@ func (a *WebAPI) DeleteApplication(ctx context.Context, req *webservice.DeleteAp
 		return nil, err
 	}
 
-	if err := a.applicationStore.DeleteApplication(ctx, req.ApplicationId); err != nil {
+	if err := a.applicationStore.DeleteApplication(ctx, datastore.WebWriter, req.ApplicationId); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
 			return nil, status.Error(codes.NotFound, "The application is not found")
@@ -825,14 +825,14 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 		return err
 	}
 
-	var updater func(context.Context, string) error
+	var updater func(context.Context, datastore.Writer, string) error
 	if enable {
 		updater = a.applicationStore.EnableApplication
 	} else {
 		updater = a.applicationStore.DisableApplication
 	}
 
-	if err := updater(ctx, appID); err != nil {
+	if err := updater(ctx, datastore.WebWriter, appID); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
 			return status.Error(codes.NotFound, "The application is not found")
@@ -1454,7 +1454,7 @@ func (a *WebAPI) UpdateProjectStaticAdmin(ctx context.Context, req *webservice.U
 		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
 	}
 
-	if err := a.projectStore.UpdateProjectStaticAdmin(ctx, claims.Role.ProjectId, req.Username, req.Password); err != nil {
+	if err := a.projectStore.UpdateProjectStaticAdmin(ctx, datastore.WebWriter, claims.Role.ProjectId, req.Username, req.Password); err != nil {
 		a.logger.Error("failed to update static admin", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to update static admin")
 	}
@@ -1473,7 +1473,7 @@ func (a *WebAPI) EnableStaticAdmin(ctx context.Context, req *webservice.EnableSt
 		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
 	}
 
-	if err := a.projectStore.EnableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
+	if err := a.projectStore.EnableStaticAdmin(ctx, datastore.WebWriter, claims.Role.ProjectId); err != nil {
 		a.logger.Error("failed to enable static admin login", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to enable static admin login")
 	}
@@ -1492,7 +1492,7 @@ func (a *WebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.Disable
 		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
 	}
 
-	if err := a.projectStore.DisableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
+	if err := a.projectStore.DisableStaticAdmin(ctx, datastore.WebWriter, claims.Role.ProjectId); err != nil {
 		a.logger.Error("failed to disenable static admin login", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to disenable static admin login")
 	}
@@ -1516,7 +1516,7 @@ func (a *WebAPI) UpdateProjectSSOConfig(ctx context.Context, req *webservice.Upd
 		return nil, status.Error(codes.Internal, "Failed to encrypt sensitive data in sso configurations")
 	}
 
-	if err := a.projectStore.UpdateProjectSSOConfig(ctx, claims.Role.ProjectId, req.Sso); err != nil {
+	if err := a.projectStore.UpdateProjectSSOConfig(ctx, datastore.WebWriter, claims.Role.ProjectId, req.Sso); err != nil {
 		a.logger.Error("failed to update project single sign on settings", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to update project single sign on settings")
 	}
@@ -1535,7 +1535,7 @@ func (a *WebAPI) UpdateProjectRBACConfig(ctx context.Context, req *webservice.Up
 		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
 	}
 
-	if err := a.projectStore.UpdateProjectRBACConfig(ctx, claims.Role.ProjectId, req.Rbac); err != nil {
+	if err := a.projectStore.UpdateProjectRBACConfig(ctx, datastore.WebWriter, claims.Role.ProjectId, req.Rbac); err != nil {
 		a.logger.Error("failed to update project single sign on settings", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to update project single sign on settings")
 	}
@@ -1623,7 +1623,7 @@ func (a *WebAPI) DisableAPIKey(ctx context.Context, req *webservice.DisableAPIKe
 		return nil, err
 	}
 
-	if err := a.apiKeyStore.DisableAPIKey(ctx, req.Id, claims.Role.ProjectId); err != nil {
+	if err := a.apiKeyStore.DisableAPIKey(ctx, datastore.WebWriter, req.Id, claims.Role.ProjectId); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
 			return nil, status.Error(codes.InvalidArgument, "The API key is not found")

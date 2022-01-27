@@ -36,12 +36,12 @@ func (p *projectCollection) Factory() Factory {
 
 type ProjectStore interface {
 	AddProject(ctx context.Context, proj *model.Project) error
-	UpdateProject(ctx context.Context, id string, updater func(project *model.Project) error) error
-	UpdateProjectStaticAdmin(ctx context.Context, id, username, password string) error
-	EnableStaticAdmin(ctx context.Context, id string) error
-	DisableStaticAdmin(ctx context.Context, id string) error
-	UpdateProjectSSOConfig(ctx context.Context, id string, sso *model.ProjectSSOConfig) error
-	UpdateProjectRBACConfig(ctx context.Context, id string, sso *model.ProjectRBACConfig) error
+	UpdateProject(ctx context.Context, w Writer, id string, updater func(project *model.Project) error) error
+	UpdateProjectStaticAdmin(ctx context.Context, w Writer, id, username, password string) error
+	EnableStaticAdmin(ctx context.Context, w Writer, id string) error
+	DisableStaticAdmin(ctx context.Context, w Writer, id string) error
+	UpdateProjectSSOConfig(ctx context.Context, w Writer, id string, sso *model.ProjectSSOConfig) error
+	UpdateProjectRBACConfig(ctx context.Context, w Writer, id string, sso *model.ProjectRBACConfig) error
 	GetProject(ctx context.Context, id string) (*model.Project, error)
 	ListProjects(ctx context.Context, opts ListOptions) ([]model.Project, error)
 }
@@ -75,21 +75,21 @@ func (s *projectStore) AddProject(ctx context.Context, proj *model.Project) erro
 	return s.ds.Create(ctx, s.col, proj.Id, proj)
 }
 
-func (s *projectStore) UpdateProject(ctx context.Context, id string, updater func(project *model.Project) error) error {
+func (s *projectStore) UpdateProject(ctx context.Context, w Writer, id string, updater func(project *model.Project) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, NewUpdater(w, func(e interface{}) error {
 		p := e.(*model.Project)
 		if err := updater(p); err != nil {
 			return err
 		}
 		p.UpdatedAt = now
 		return p.Validate()
-	})
+	}))
 }
 
 // UpdateProjectStaticAdmin updates the static admin user settings.
-func (s *projectStore) UpdateProjectStaticAdmin(ctx context.Context, id, username, password string) error {
-	return s.UpdateProject(ctx, id, func(p *model.Project) error {
+func (s *projectStore) UpdateProjectStaticAdmin(ctx context.Context, w Writer, id, username, password string) error {
+	return s.UpdateProject(ctx, w, id, func(p *model.Project) error {
 		if p.StaticAdmin == nil {
 			p.StaticAdmin = &model.ProjectStaticUser{}
 		}
@@ -98,24 +98,24 @@ func (s *projectStore) UpdateProjectStaticAdmin(ctx context.Context, id, usernam
 }
 
 // EnableStaticAdmin enables static admin login.
-func (s *projectStore) EnableStaticAdmin(ctx context.Context, id string) error {
-	return s.UpdateProject(ctx, id, func(p *model.Project) error {
+func (s *projectStore) EnableStaticAdmin(ctx context.Context, w Writer, id string) error {
+	return s.UpdateProject(ctx, w, id, func(p *model.Project) error {
 		p.StaticAdminDisabled = false
 		return nil
 	})
 }
 
 // DisableStaticAdmin disables static admin login.
-func (s *projectStore) DisableStaticAdmin(ctx context.Context, id string) error {
-	return s.UpdateProject(ctx, id, func(p *model.Project) error {
+func (s *projectStore) DisableStaticAdmin(ctx context.Context, w Writer, id string) error {
+	return s.UpdateProject(ctx, w, id, func(p *model.Project) error {
 		p.StaticAdminDisabled = true
 		return nil
 	})
 }
 
 // UpdateProjectSSOConfig updates project single sign on settings.
-func (s *projectStore) UpdateProjectSSOConfig(ctx context.Context, id string, sso *model.ProjectSSOConfig) error {
-	return s.UpdateProject(ctx, id, func(p *model.Project) error {
+func (s *projectStore) UpdateProjectSSOConfig(ctx context.Context, w Writer, id string, sso *model.ProjectSSOConfig) error {
+	return s.UpdateProject(ctx, w, id, func(p *model.Project) error {
 		if p.Sso == nil {
 			p.Sso = &model.ProjectSSOConfig{}
 		}
@@ -125,8 +125,8 @@ func (s *projectStore) UpdateProjectSSOConfig(ctx context.Context, id string, ss
 }
 
 // UpdateProjectRBACConfig updates project single sign on settings.
-func (s *projectStore) UpdateProjectRBACConfig(ctx context.Context, id string, rbac *model.ProjectRBACConfig) error {
-	return s.UpdateProject(ctx, id, func(p *model.Project) error {
+func (s *projectStore) UpdateProjectRBACConfig(ctx context.Context, w Writer, id string, rbac *model.ProjectRBACConfig) error {
+	return s.UpdateProject(ctx, w, id, func(p *model.Project) error {
 		p.Rbac = rbac
 		return nil
 	})

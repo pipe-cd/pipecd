@@ -37,14 +37,14 @@ func (a *applicationCollection) Factory() Factory {
 
 type ApplicationStore interface {
 	AddApplication(ctx context.Context, app *model.Application) error
-	EnableApplication(ctx context.Context, id string) error
-	DisableApplication(ctx context.Context, id string) error
-	DeleteApplication(ctx context.Context, id string) error
+	EnableApplication(ctx context.Context, w Writer, id string) error
+	DisableApplication(ctx context.Context, w Writer, id string) error
+	DeleteApplication(ctx context.Context, w Writer, id string) error
 	GetApplication(ctx context.Context, id string) (*model.Application, error)
 	ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, string, error)
-	UpdateApplication(ctx context.Context, id string, updater func(*model.Application) error) error
-	PutApplicationSyncState(ctx context.Context, id string, syncState *model.ApplicationSyncState) error
-	PutApplicationMostRecentDeployment(ctx context.Context, id string, status model.DeploymentStatus, deployment *model.ApplicationDeploymentReference) error
+	UpdateApplication(ctx context.Context, w Writer, id string, updater func(*model.Application) error) error
+	PutApplicationSyncState(ctx context.Context, w Writer, id string, syncState *model.ApplicationSyncState) error
+	PutApplicationMostRecentDeployment(ctx context.Context, w Writer, id string, status model.DeploymentStatus, deployment *model.ApplicationDeploymentReference) error
 }
 
 type applicationStore struct {
@@ -76,8 +76,8 @@ func (s *applicationStore) AddApplication(ctx context.Context, app *model.Applic
 	return s.ds.Create(ctx, s.col, app.Id, app)
 }
 
-func (s *applicationStore) EnableApplication(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+func (s *applicationStore) EnableApplication(ctx context.Context, w Writer, id string) error {
+	return s.ds.Update(ctx, s.col, id, NewUpdater(w, func(e interface{}) error {
 		app := e.(*model.Application)
 		if app.Deleted {
 			return fmt.Errorf("cannot enable a deleted application: %w", ErrInvalidArgument)
@@ -85,11 +85,11 @@ func (s *applicationStore) EnableApplication(ctx context.Context, id string) err
 		app.Disabled = false
 		app.UpdatedAt = s.nowFunc().Unix()
 		return nil
-	})
+	}))
 }
 
-func (s *applicationStore) DisableApplication(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+func (s *applicationStore) DisableApplication(ctx context.Context, w Writer, id string) error {
+	return s.ds.Update(ctx, s.col, id, NewUpdater(w, func(e interface{}) error {
 		app := e.(*model.Application)
 		if app.Deleted {
 			return fmt.Errorf("cannot disable a deleted application: %w", ErrInvalidArgument)
@@ -97,11 +97,11 @@ func (s *applicationStore) DisableApplication(ctx context.Context, id string) er
 		app.Disabled = true
 		app.UpdatedAt = s.nowFunc().Unix()
 		return nil
-	})
+	}))
 }
 
-func (s *applicationStore) DeleteApplication(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+func (s *applicationStore) DeleteApplication(ctx context.Context, w Writer, id string) error {
+	return s.ds.Update(ctx, s.col, id, NewUpdater(w, func(e interface{}) error {
 		now := s.nowFunc().Unix()
 		app := e.(*model.Application)
 		app.Deleted = true
@@ -109,7 +109,7 @@ func (s *applicationStore) DeleteApplication(ctx context.Context, id string) err
 		app.DeletedAt = now
 		app.UpdatedAt = now
 		return nil
-	})
+	}))
 }
 
 func (s *applicationStore) GetApplication(ctx context.Context, id string) (*model.Application, error) {
@@ -149,9 +149,9 @@ func (s *applicationStore) ListApplications(ctx context.Context, opts ListOption
 	return apps, cursor, nil
 }
 
-func (s *applicationStore) UpdateApplication(ctx context.Context, id string, updater func(*model.Application) error) error {
+func (s *applicationStore) UpdateApplication(ctx context.Context, w Writer, id string, updater func(*model.Application) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, NewUpdater(w, func(e interface{}) error {
 		a := e.(*model.Application)
 		if a.Deleted {
 			return fmt.Errorf("cannot update a deleted application: %w", ErrInvalidArgument)
@@ -161,18 +161,18 @@ func (s *applicationStore) UpdateApplication(ctx context.Context, id string, upd
 		}
 		a.UpdatedAt = now
 		return a.Validate()
-	})
+	}))
 }
 
-func (s *applicationStore) PutApplicationSyncState(ctx context.Context, id string, syncState *model.ApplicationSyncState) error {
-	return s.UpdateApplication(ctx, id, func(a *model.Application) error {
+func (s *applicationStore) PutApplicationSyncState(ctx context.Context, w Writer, id string, syncState *model.ApplicationSyncState) error {
+	return s.UpdateApplication(ctx, w, id, func(a *model.Application) error {
 		a.SyncState = syncState
 		return nil
 	})
 }
 
-func (s *applicationStore) PutApplicationMostRecentDeployment(ctx context.Context, id string, status model.DeploymentStatus, deployment *model.ApplicationDeploymentReference) error {
-	return s.UpdateApplication(ctx, id, func(a *model.Application) error {
+func (s *applicationStore) PutApplicationMostRecentDeployment(ctx context.Context, w Writer, id string, status model.DeploymentStatus, deployment *model.ApplicationDeploymentReference) error {
+	return s.UpdateApplication(ctx, w, id, func(a *model.Application) error {
 		switch status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
 			a.MostRecentlySuccessfulDeployment = deployment

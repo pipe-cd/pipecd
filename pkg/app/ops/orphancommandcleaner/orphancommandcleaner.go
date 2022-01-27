@@ -94,7 +94,7 @@ func (c *OrphanCommandCleaner) updateOrphanCommandsStatus(ctx context.Context) e
 	}
 
 	for _, command := range commands {
-		err := c.commandstore.UpdateCommand(ctx, command.Id, func(cmd *model.Command) error {
+		err := c.commandstore.UpdateCommand(ctx, datastore.OpsWriter, command.Id, func(cmd *model.Command) error {
 			cmd.Status = model.CommandStatus_COMMAND_TIMEOUT
 			return nil
 		})

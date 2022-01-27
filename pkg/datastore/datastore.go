@@ -51,6 +51,21 @@ const (
 	OperatorContains
 )
 
+type Writer string
+
+const (
+	// WebWriter indicates that the writer is web.
+	WebWriter Writer = "web"
+	// PipedWriter indicates that the writer is piped.
+	PipedWriter Writer = "piped"
+	// PipectlWriter indicates that the writer is pipectl.
+	PipectlWriter Writer = "pipectl"
+	// ServerWriter indicates that the writer is server.
+	ServerWriter Writer = "server"
+	// OpsWriter indicates that the writer is ops component.
+	OpsWriter Writer = "ops"
+)
+
 var (
 	ErrNotFound        = errors.New("not found")
 	ErrInvalidArgument = errors.New("invalid argument")
@@ -62,7 +77,32 @@ var (
 )
 
 type Factory func() interface{}
-type Updater func(interface{}) error
+type UpdateFunc func(interface{}) error
+
+type Updater interface {
+	Writer() Writer
+	UpdateFunc() UpdateFunc
+}
+
+type updater struct {
+	writer     Writer
+	updateFunc UpdateFunc
+}
+
+func NewUpdater(w Writer, f UpdateFunc) Updater {
+	return &updater{
+		writer:     w,
+		updateFunc: f,
+	}
+}
+
+func (u *updater) Writer() Writer {
+	return u.writer
+}
+
+func (u *updater) UpdateFunc() UpdateFunc {
+	return u.updateFunc
+}
 
 type Collection interface {
 	Kind() string

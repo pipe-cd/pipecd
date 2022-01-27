@@ -47,7 +47,7 @@ var (
 
 type CommandStore interface {
 	AddCommand(ctx context.Context, cmd *model.Command) error
-	UpdateCommand(ctx context.Context, id string, updater func(piped *model.Command) error) error
+	UpdateCommand(ctx context.Context, w Writer, id string, updater func(piped *model.Command) error) error
 	ListCommands(ctx context.Context, opts ListOptions) ([]*model.Command, error)
 	GetCommand(ctx context.Context, id string) (*model.Command, error)
 }
@@ -81,16 +81,16 @@ func (s *commandStore) AddCommand(ctx context.Context, cmd *model.Command) error
 	return s.ds.Create(ctx, s.col, cmd.Id, cmd)
 }
 
-func (s *commandStore) UpdateCommand(ctx context.Context, id string, updater func(piped *model.Command) error) error {
+func (s *commandStore) UpdateCommand(ctx context.Context, w Writer, id string, updater func(piped *model.Command) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, NewUpdater(w, func(e interface{}) error {
 		p := e.(*model.Command)
 		if err := updater(p); err != nil {
 			return err
 		}
 		p.UpdatedAt = now
 		return p.Validate()
-	})
+	}))
 }
 
 func (s *commandStore) ListCommands(ctx context.Context, opts ListOptions) ([]*model.Command, error) {

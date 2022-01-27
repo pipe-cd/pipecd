@@ -101,7 +101,7 @@ var (
 
 type DeploymentChainStore interface {
 	AddDeploymentChain(ctx context.Context, d *model.DeploymentChain) error
-	UpdateDeploymentChain(ctx context.Context, id string, updater func(*model.DeploymentChain) error) error
+	UpdateDeploymentChain(ctx context.Context, w Writer, id string, updater func(*model.DeploymentChain) error) error
 	GetDeploymentChain(ctx context.Context, id string) (*model.DeploymentChain, error)
 	ListDeploymentChains(ctx context.Context, opts ListOptions) ([]*model.DeploymentChain, string, error)
 }
@@ -135,16 +135,16 @@ func (s *deploymentChainStore) AddDeploymentChain(ctx context.Context, dc *model
 	return s.ds.Create(ctx, s.col, dc.Id, dc)
 }
 
-func (s *deploymentChainStore) UpdateDeploymentChain(ctx context.Context, id string, updater func(*model.DeploymentChain) error) error {
+func (s *deploymentChainStore) UpdateDeploymentChain(ctx context.Context, w Writer, id string, updater func(*model.DeploymentChain) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, NewUpdater(w, func(e interface{}) error {
 		dc := e.(*model.DeploymentChain)
 		if err := updater(dc); err != nil {
 			return err
 		}
 		dc.UpdatedAt = now
 		return dc.Validate()
-	})
+	}))
 }
 
 func (s *deploymentChainStore) GetDeploymentChain(ctx context.Context, id string) (*model.DeploymentChain, error) {

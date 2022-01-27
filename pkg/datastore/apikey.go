@@ -38,7 +38,7 @@ func (a *apiKeyCollection) Factory() Factory {
 type APIKeyStore interface {
 	AddAPIKey(ctx context.Context, k *model.APIKey) error
 	GetAPIKey(ctx context.Context, id string) (*model.APIKey, error)
-	DisableAPIKey(ctx context.Context, id, projectID string) error
+	DisableAPIKey(ctx context.Context, w Writer, id, projectID string) error
 	ListAPIKeys(ctx context.Context, opts ListOptions) ([]*model.APIKey, error)
 }
 
@@ -99,9 +99,9 @@ func (s *apiKeyStore) ListAPIKeys(ctx context.Context, opts ListOptions) ([]*mod
 	return ks, nil
 }
 
-func (s *apiKeyStore) DisableAPIKey(ctx context.Context, id, projectID string) error {
+func (s *apiKeyStore) DisableAPIKey(ctx context.Context, w Writer, id, projectID string) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, NewUpdater(w, func(e interface{}) error {
 		k := e.(*model.APIKey)
 		if k.ProjectId != projectID {
 			return fmt.Errorf("invalid project id, expected %s, got %s", k.ProjectId, projectID)
@@ -110,5 +110,5 @@ func (s *apiKeyStore) DisableAPIKey(ctx context.Context, id, projectID string) e
 		k.Disabled = true
 		k.UpdatedAt = now
 		return k.Validate()
-	})
+	}))
 }

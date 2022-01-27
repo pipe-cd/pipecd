@@ -62,11 +62,11 @@ type PipedStore interface {
 	AddPiped(ctx context.Context, piped *model.Piped) error
 	GetPiped(ctx context.Context, id string) (*model.Piped, error)
 	ListPipeds(ctx context.Context, opts ListOptions) ([]*model.Piped, error)
-	UpdatePiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error
-	EnablePiped(ctx context.Context, id string) error
-	DisablePiped(ctx context.Context, id string) error
-	AddKey(ctx context.Context, id, keyHash, creator string, createdAt time.Time) error
-	DeleteOldKeys(ctx context.Context, id string) error
+	UpdatePiped(ctx context.Context, w Writer, id string, updater func(piped *model.Piped) error) error
+	EnablePiped(ctx context.Context, w Writer, id string) error
+	DisablePiped(ctx context.Context, w Writer, id string) error
+	AddKey(ctx context.Context, w Writer, id, keyHash, creator string, createdAt time.Time) error
+	DeleteOldKeys(ctx context.Context, w Writer, id string) error
 }
 
 type pipedStore struct {
@@ -126,43 +126,43 @@ func (s *pipedStore) ListPipeds(ctx context.Context, opts ListOptions) ([]*model
 	return ps, nil
 }
 
-func (s *pipedStore) UpdatePiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error {
+func (s *pipedStore) UpdatePiped(ctx context.Context, w Writer, id string, updater func(piped *model.Piped) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, NewUpdater(w, func(e interface{}) error {
 		p := e.(*model.Piped)
 		if err := updater(p); err != nil {
 			return err
 		}
 		p.UpdatedAt = now
 		return p.Validate()
-	})
+	}))
 }
 
-func (s *pipedStore) EnablePiped(ctx context.Context, id string) error {
-	return s.UpdatePiped(ctx, id, func(piped *model.Piped) error {
+func (s *pipedStore) EnablePiped(ctx context.Context, w Writer, id string) error {
+	return s.UpdatePiped(ctx, w, id, func(piped *model.Piped) error {
 		piped.Disabled = false
 		piped.UpdatedAt = time.Now().Unix()
 		return nil
 	})
 }
 
-func (s *pipedStore) DisablePiped(ctx context.Context, id string) error {
-	return s.UpdatePiped(ctx, id, func(piped *model.Piped) error {
+func (s *pipedStore) DisablePiped(ctx context.Context, w Writer, id string) error {
+	return s.UpdatePiped(ctx, w, id, func(piped *model.Piped) error {
 		piped.Disabled = true
 		piped.UpdatedAt = time.Now().Unix()
 		return nil
 	})
 }
 
-func (s *pipedStore) AddKey(ctx context.Context, id, keyHash, creator string, createdAt time.Time) error {
-	return s.UpdatePiped(ctx, id, func(piped *model.Piped) error {
+func (s *pipedStore) AddKey(ctx context.Context, w Writer, id, keyHash, creator string, createdAt time.Time) error {
+	return s.UpdatePiped(ctx, w, id, func(piped *model.Piped) error {
 		piped.UpdatedAt = time.Now().Unix()
 		return piped.AddKey(keyHash, creator, createdAt)
 	})
 }
 
-func (s *pipedStore) DeleteOldKeys(ctx context.Context, id string) error {
-	return s.UpdatePiped(ctx, id, func(piped *model.Piped) error {
+func (s *pipedStore) DeleteOldKeys(ctx context.Context, w Writer, id string) error {
+	return s.UpdatePiped(ctx, w, id, func(piped *model.Piped) error {
 		piped.DeleteOldPipedKeys()
 		piped.UpdatedAt = time.Now().Unix()
 		return nil

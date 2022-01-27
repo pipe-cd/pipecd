@@ -225,7 +225,7 @@ func (s *FireStore) Update(ctx context.Context, col datastore.Collection, id str
 			)
 			return err
 		}
-		if err := updater(entity); err != nil {
+		if err := updater.UpdateFunc()(entity); err != nil {
 			s.logger.Error("failed to run updater to update entity",
 				zap.String("id", id),
 				zap.String("kind", kind),

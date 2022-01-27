@@ -97,9 +97,9 @@ var (
 
 type DeploymentStore interface {
 	AddDeployment(ctx context.Context, d *model.Deployment) error
-	UpdateDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error
-	PutDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error
-	PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error
+	UpdateDeployment(ctx context.Context, w Writer, id string, updater func(*model.Deployment) error) error
+	PutDeploymentMetadata(ctx context.Context, w Writer, id string, metadata map[string]string) error
+	PutDeploymentStageMetadata(ctx context.Context, w Writer, deploymentID, stageID string, metadata map[string]string) error
 	ListDeployments(ctx context.Context, opts ListOptions) ([]*model.Deployment, string, error)
 	GetDeployment(ctx context.Context, id string) (*model.Deployment, error)
 }
@@ -133,31 +133,31 @@ func (s *deploymentStore) AddDeployment(ctx context.Context, d *model.Deployment
 	return s.ds.Create(ctx, s.col, d.Id, d)
 }
 
-func (s *deploymentStore) UpdateDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error {
+func (s *deploymentStore) UpdateDeployment(ctx context.Context, w Writer, id string, updater func(*model.Deployment) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, NewUpdater(w, func(e interface{}) error {
 		d := e.(*model.Deployment)
 		if err := updater(d); err != nil {
 			return err
 		}
 		d.UpdatedAt = now
 		return d.Validate()
-	})
+	}))
 }
 
-func (s *deploymentStore) PutDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error {
+func (s *deploymentStore) PutDeploymentMetadata(ctx context.Context, w Writer, id string, metadata map[string]string) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, id, NewUpdater(w, func(e interface{}) error {
 		d := e.(*model.Deployment)
 		d.Metadata = mergeMetadata(d.Metadata, metadata)
 		d.UpdatedAt = now
 		return nil
-	})
+	}))
 }
 
-func (s *deploymentStore) PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error {
+func (s *deploymentStore) PutDeploymentStageMetadata(ctx context.Context, w Writer, deploymentID, stageID string, metadata map[string]string) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, deploymentID, func(e interface{}) error {
+	return s.ds.Update(ctx, s.col, deploymentID, NewUpdater(w, func(e interface{}) error {
 		d := e.(*model.Deployment)
 		for _, stage := range d.Stages {
 			if stage.Id == stageID {
@@ -167,7 +167,7 @@ func (s *deploymentStore) PutDeploymentStageMetadata(ctx context.Context, deploy
 			}
 		}
 		return fmt.Errorf("stage %s is not found: %w", stageID, ErrInvalidArgument)
-	})
+	}))
 }
 
 func mergeMetadata(ori map[string]string, new map[string]string) map[string]string {

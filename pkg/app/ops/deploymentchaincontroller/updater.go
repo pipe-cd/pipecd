@@ -101,7 +101,7 @@ func (u *updater) Run(ctx context.Context) error {
 			// Update the deployment state in deployment chain model in case
 			// the deployment state is changed.
 			if deployment.Status != deploymentRef.Status {
-				if err = u.deploymentChainStore.UpdateDeploymentChain(ctx, u.deploymentChainID,
+				if err = u.deploymentChainStore.UpdateDeploymentChain(ctx, datastore.OpsWriter, u.deploymentChainID,
 					datastore.DeploymentChainNodeDeploymentStatusUpdater(
 						deployment.DeploymentChainBlockIndex,
 						deployment.Id,
@@ -140,6 +140,7 @@ func (u *updater) Run(ctx context.Context) error {
 			// Connect missing deployment to the chain.
 			if err := u.deploymentChainStore.UpdateDeploymentChain(
 				ctx,
+				datastore.OpsWriter,
 				u.deploymentChainID,
 				datastore.DeploymentChainAddDeploymentToBlock(deployment),
 			); err != nil {

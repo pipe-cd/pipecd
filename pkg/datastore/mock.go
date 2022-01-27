@@ -10,6 +10,57 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
+// MockUpdater is a mock of Updater interface.
+type MockUpdater struct {
+	ctrl     *gomock.Controller
+	recorder *MockUpdaterMockRecorder
+}
+
+// MockUpdaterMockRecorder is the mock recorder for MockUpdater.
+type MockUpdaterMockRecorder struct {
+	mock *MockUpdater
+}
+
+// NewMockUpdater creates a new mock instance.
+func NewMockUpdater(ctrl *gomock.Controller) *MockUpdater {
+	mock := &MockUpdater{ctrl: ctrl}
+	mock.recorder = &MockUpdaterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUpdater) EXPECT() *MockUpdaterMockRecorder {
+	return m.recorder
+}
+
+// UpdateFunc mocks base method.
+func (m *MockUpdater) UpdateFunc() UpdateFunc {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateFunc")
+	ret0, _ := ret[0].(UpdateFunc)
+	return ret0
+}
+
+// UpdateFunc indicates an expected call of UpdateFunc.
+func (mr *MockUpdaterMockRecorder) UpdateFunc() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateFunc", reflect.TypeOf((*MockUpdater)(nil).UpdateFunc))
+}
+
+// Writer mocks base method.
+func (m *MockUpdater) Writer() Writer {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Writer")
+	ret0, _ := ret[0].(Writer)
+	return ret0
+}
+
+// Writer indicates an expected call of Writer.
+func (mr *MockUpdaterMockRecorder) Writer() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Writer", reflect.TypeOf((*MockUpdater)(nil).Writer))
+}
+
 // MockCollection is a mock of Collection interface.
 type MockCollection struct {
 	ctrl     *gomock.Controller

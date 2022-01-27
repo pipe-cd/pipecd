@@ -318,7 +318,7 @@ func (a *API) RenameApplicationConfigFile(ctx context.Context, req *apiservice.R
 
 	for _, appID := range req.ApplicationIds {
 		var denied bool
-		err := a.applicationStore.UpdateApplication(ctx, appID, func(app *model.Application) error {
+		err := a.applicationStore.UpdateApplication(ctx, datastore.PipectlWriter, appID, func(app *model.Application) error {
 			if app.ProjectId != key.ProjectId {
 				denied = true
 				return fmt.Errorf("Requested application %s does not belong to your project", appID)
@@ -388,7 +388,7 @@ func (a *API) DisablePiped(ctx context.Context, req *apiservice.DisablePipedRequ
 	return &apiservice.DisablePipedResponse{}, nil
 }
 
-func (a *API) updatePiped(ctx context.Context, pipedID string, updater func(context.Context, string) error) error {
+func (a *API) updatePiped(ctx context.Context, pipedID string, updater func(context.Context, datastore.Writer, string) error) error {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
 	if err != nil {
 		return err
@@ -403,7 +403,7 @@ func (a *API) updatePiped(ctx context.Context, pipedID string, updater func(cont
 		return status.Error(codes.PermissionDenied, "Requested piped doesn't belong to your project")
 	}
 
-	if err := updater(ctx, pipedID); err != nil {
+	if err := updater(ctx, datastore.PipectlWriter, pipedID); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
 			return status.Error(codes.InvalidArgument, "The piped is not found")
