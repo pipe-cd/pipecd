@@ -29,7 +29,9 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 
+	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/backoff"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
@@ -45,6 +47,8 @@ const (
 
 	retryPushNum      = 3
 	retryPushInterval = 5 * time.Second
+
+	numToMakeOutdated = 10
 )
 
 type Watcher interface {
@@ -53,6 +57,8 @@ type Watcher interface {
 
 type eventStore interface {
 	GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool)
+	// Gives back not-handled event list which is sorted by newest.
+	ListNotHandled(name string, labels map[string]string, limit int) []*model.Event
 	UpdateStatuses(ctx context.Context, events []model.Event) error
 }
 
@@ -60,10 +66,15 @@ type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
+type apiClient interface {
+	ReportEventStatuses(ctx context.Context, req *pipedservice.ReportEventStatusesRequest, opts ...grpc.CallOption) (*pipedservice.ReportEventStatusesResponse, error)
+}
+
 type watcher struct {
 	config     *config.PipedSpec
 	eventStore eventStore
 	gitClient  gitClient
+	apiClient  apiClient
 	logger     *zap.Logger
 	wg         sync.WaitGroup
 
@@ -71,11 +82,12 @@ type watcher struct {
 	workingDir string
 }
 
-func NewWatcher(cfg *config.PipedSpec, eventStore eventStore, gitClient gitClient, logger *zap.Logger) Watcher {
+func NewWatcher(cfg *config.PipedSpec, eventStore eventStore, gitClient gitClient, apiClient apiClient, logger *zap.Logger) Watcher {
 	return &watcher{
 		config:     cfg,
 		eventStore: eventStore,
 		gitClient:  gitClient,
+		apiClient:  apiClient,
 		logger:     logger.Named("event-watcher"),
 	}
 }
@@ -220,7 +232,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	}
 	defer tmpRepo.Clean()
 
-	newEvents := make([]model.Event, 0, len(eventCfgs))
+	handledEvents := make([]model.Event, 0, len(eventCfgs))
 	for _, e := range eventCfgs {
 		latestEvent, ok := w.eventStore.GetLatest(ctx, e.Name, e.Labels)
 		if !ok {
@@ -234,12 +246,35 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
 			le.Status = model.EventStatus_EVENT_FAILURE
 			le.StatusDescription = fmt.Sprintf("Failed to change files: %v", err)
-			newEvents = append(newEvents, le)
+			handledEvents = append(handledEvents, le)
 			continue
 		}
 		le.Status = model.EventStatus_EVENT_SUCCESS
 		le.StatusDescription = fmt.Sprintf("Successfully updated %d files in the %q repository", len(e.Replacements), repoID)
-		newEvents = append(newEvents, le)
+		handledEvents = append(handledEvents, le)
+	}
+	if len(handledEvents) == 0 {
+		return nil
+	}
+
+	// Ensure that the 10 least recent entries get outdated.
+	// NOTE: We don't support batch update, that's why we have a constant number of updates to make.
+	outdated := make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
+	for _, e := range handledEvents {
+		es := w.eventStore.ListNotHandled(e.Name, e.Labels, numToMakeOutdated)
+		for i := range es {
+			outdated = append(outdated, &pipedservice.ReportEventStatusesRequest_Event{
+				Id:                es[i].Id,
+				Status:            model.EventStatus_EVENT_OUTDATED,
+				StatusDescription: fmt.Sprintf("The new event has been created"),
+			})
+		}
+	}
+	if len(outdated) > 0 {
+		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: outdated}); err != nil {
+			return fmt.Errorf("failed to report event statuses: %w", err)
+		}
+		w.logger.Info(fmt.Sprintf("successfully made %d events OUTDATED", len(outdated)))
 	}
 
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
@@ -248,21 +283,21 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		return nil, err
 	})
 	if err == nil {
-		if err := w.eventStore.UpdateStatuses(ctx, newEvents); err != nil {
+		if err := w.eventStore.UpdateStatuses(ctx, handledEvents); err != nil {
 			return err
 		}
 		return nil
 	}
 
 	// If push fails, re-set all statuses to FAILURE.
-	for i := range newEvents {
-		if newEvents[i].Status == model.EventStatus_EVENT_FAILURE {
+	for i := range handledEvents {
+		if handledEvents[i].Status == model.EventStatus_EVENT_FAILURE {
 			continue
 		}
-		newEvents[i].Status = model.EventStatus_EVENT_FAILURE
-		newEvents[i].StatusDescription = fmt.Sprintf("Failed to push changed files: %v", err)
+		handledEvents[i].Status = model.EventStatus_EVENT_FAILURE
+		handledEvents[i].StatusDescription = fmt.Sprintf("Failed to push changed files: %v", err)
 	}
-	if err := w.eventStore.UpdateStatuses(ctx, newEvents); err != nil {
+	if err := w.eventStore.UpdateStatuses(ctx, handledEvents); err != nil {
 		return err
 	}
 	return fmt.Errorf("failed to push commits: %w", err)

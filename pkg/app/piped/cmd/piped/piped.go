@@ -404,6 +404,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			cfg,
 			eventStore,
 			gitClient,
+			apiClient,
 			input.Logger,
 		)
 		group.Go(func() error {

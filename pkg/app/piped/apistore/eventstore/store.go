@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"go.uber.org/zap"
@@ -29,9 +30,16 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
+const (
+	defaultSyncInterval = time.Minute
+	cacheTTL            = 24 * time.Hour
+)
+
 type Store interface {
 	// Run starts syncing the event list with the control-plane.
 	Run(ctx context.Context) error
+	// List gives back the not-handled event list which is sorted by newest.
+	ListNotHandled(name string, labels map[string]string, limit int) []*model.Event
 	// GetLatest returns the latest event that meets the given conditions.
 	// All objects returned here must be treated as read-only.
 	GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool)
@@ -52,32 +60,26 @@ type store struct {
 	gracePeriod  time.Duration
 	logger       *zap.Logger
 
-	// Mark that it has handled all events that was created before this UNIX time.
-	milestone int64
-	mu        sync.RWMutex
-	// The key is supposed to be a string consists of name and labels.
-	// And the value is the address to the latest Event.
-	latestEvents map[string]*model.Event
+	mu sync.RWMutex
+	// A list of events that are not being handled in spite of not the latest.
+	// Only events created within 24h is cached.
+	// They are grouped by key, sorted by newest.
+	notHandledEvents atomic.Value
+	latestEvents     map[string]*model.Event
 }
-
-const (
-	defaultSyncInterval = time.Minute
-	// A week.
-	durationToFetchAtStartUp = 168 * time.Hour
-
-	numToMakeOutdated = 10
-)
 
 // NewStore creates a new event store instance.
 // This syncs with the control plane to keep the list of events for this runner up-to-date.
 func NewStore(apiClient apiClient, gracePeriod time.Duration, logger *zap.Logger) Store {
-	return &store{
+	s := &store{
 		apiClient:    apiClient,
 		syncInterval: defaultSyncInterval,
 		gracePeriod:  gracePeriod,
 		latestEvents: make(map[string]*model.Event),
 		logger:       logger.Named("event-store"),
 	}
+	s.notHandledEvents.Store(make(map[string][]*model.Event))
+	return s
 }
 
 // Run starts runner that periodically makes the Events in the cache up-to-date
@@ -89,7 +91,6 @@ func (s *store) Run(ctx context.Context) error {
 	defer syncTicker.Stop()
 
 	// Do first sync without waiting the first ticker.
-	s.milestone = time.Now().Add(-durationToFetchAtStartUp).Unix()
 	if err := s.sync(ctx); err != nil {
 		return fmt.Errorf("failed to sync events first time: %w", err)
 	}
@@ -113,7 +114,7 @@ func (s *store) Run(ctx context.Context) error {
 func (s *store) sync(ctx context.Context) error {
 	// Fetch events in descending order.
 	resp, err := s.apiClient.ListEvents(ctx, &pipedservice.ListEventsRequest{
-		From:  s.milestone,
+		From:  time.Now().Add(-cacheTTL).Unix(),
 		Order: pipedservice.ListOrder_DESC,
 	})
 	if err != nil {
@@ -123,43 +124,47 @@ func (s *store) sync(ctx context.Context) error {
 		return nil
 	}
 
-	// Group the events by key, sorted by newest.
-	eventsByKey := make(map[string][]*model.Event, len(resp.Events))
+	eventsByKey := make(map[string][]*model.Event, 0)
 	for _, e := range resp.Events {
 		eventsByKey[e.EventKey] = append(eventsByKey[e.EventKey], e)
 	}
-	// Ensure that the 10 least recent entries get outdated.
-	// NOTE: We don't support batch update, that's why we have a constant number of updates to make.
-	outdated := make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
-	for _, es := range eventsByKey {
-		for i := 1; i < len(es) && i <= numToMakeOutdated; i++ {
+	// Update two types of cache.
+	notHandledEvents := make(map[string][]*model.Event)
+	latestEvents := make(map[string]*model.Event, len(eventsByKey))
+	for key, es := range eventsByKey {
+		latestEvents[key] = es[0]
+		if len(es) == 1 {
+			continue
+		}
+		for i := 1; i < len(es); i++ {
 			if es[i].Status != model.EventStatus_EVENT_NOT_HANDLED {
 				continue
 			}
-			outdated = append(outdated, &pipedservice.ReportEventStatusesRequest_Event{
-				Id:                es[i].Id,
-				Status:            model.EventStatus_EVENT_OUTDATED,
-				StatusDescription: fmt.Sprintf("The new event %q has been created", es[0].Id),
-			})
+			notHandledEvents[key] = append(notHandledEvents[key], es[i])
 		}
 	}
-	if len(outdated) > 0 {
-		if _, err := s.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: outdated}); err != nil {
-			return fmt.Errorf("failed to report event statuses: %w", err)
-		}
-		s.logger.Info(fmt.Sprintf("successfully made %d events OUTDATED", len(outdated)))
-	}
-
-	// Make the cache up-to-date.
 	s.mu.Lock()
-	for key, es := range eventsByKey {
-		s.latestEvents[key] = es[0]
-	}
+	s.latestEvents = latestEvents
 	s.mu.Unlock()
+	s.notHandledEvents.Store(notHandledEvents)
 
-	// Set the latest one within the result as the next time's "from".
-	s.milestone = resp.Events[len(resp.Events)-1].CreatedAt + 1
 	return nil
+}
+
+func (s *store) ListNotHandled(name string, labels map[string]string, limit int) []*model.Event {
+	if limit == 0 {
+		return []*model.Event{}
+	}
+	key := model.MakeEventKey(name, labels)
+	notHandledEvents := s.notHandledEvents.Load()
+	if notHandledEvents == nil {
+		return []*model.Event{}
+	}
+	events := notHandledEvents.(map[string][]*model.Event)[key]
+	if len(events) < limit {
+		return events
+	}
+	return events[:limit]
 }
 
 func (s *store) GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool) {
@@ -192,6 +197,7 @@ func (s *store) GetLatest(ctx context.Context, name string, labels map[string]st
 	defer s.mu.Unlock()
 	cached, ok := s.latestEvents[key]
 	if ok && cached.CreatedAt > event.CreatedAt {
+		// Prevent overwriting even though a more recent Event has been synced immediately before.
 		return resp.Event, true
 	}
 	s.latestEvents[key] = resp.Event
@@ -211,6 +217,8 @@ func (s *store) UpdateStatuses(ctx context.Context, latestEvents []model.Event) 
 		return fmt.Errorf("failed to report event statuses: %w", err)
 	}
 
+	// TODO: Stop updating latest event cache whenever reporting
+	//   and change s.latestEvents to be atomic.Value
 	// Update cached events.
 	for _, e := range latestEvents {
 		s.mu.Lock()
