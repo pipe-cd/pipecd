@@ -121,21 +121,12 @@ func main() {
 	body := makeCommentBody(event, result)
 	doComment(body)
 
-	doMinimizeComment := func(commentID githubv4.ID) {
-		err := minimizeComment(ctx, ghGraphQLClient, commentID, "OUTDATED")
-		if err != nil {
+	if comment != nil && bool(comment.IsMinimized) {
+		if err := minimizeComment(ctx, ghGraphQLClient, comment.ID, "OUTDATED"); err != nil {
 			log.Printf("warning: cannot minimize comment: %s", err.Error())
 		} else {
 			log.Printf("Successfully minimized last plan-preview result on pull request\n")
 		}
-	}
-
-	// here, error is only errNotFound
-	// so dereferencing comment after check err is safe
-	if errors.Is(err, errNotFound) || bool(comment.IsMinimized) {
-		log.Printf("There are no previous plan-preview comment, or last plan-preview comment has already minimized. So we don't minimize any comment")
-	} else {
-		doMinimizeComment(comment.ID)
 	}
 }
 
