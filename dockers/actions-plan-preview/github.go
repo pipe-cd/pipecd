@@ -178,7 +178,7 @@ func findLatestPlanPreviewComment(ctx context.Context, client *githubv4.Client, 
 		pageinfo := q.Repository.PullRequest.Comments.PageInfo
 		comments := q.Repository.PullRequest.Comments.Nodes
 
-		comment := findLatestPlanPreviewCommentHelper(comments)
+		comment := filterLatestPlanPreviewComment(comments)
 		if comment != nil {
 			return comment, nil
 		}
@@ -193,7 +193,7 @@ func findLatestPlanPreviewComment(ctx context.Context, client *githubv4.Client, 
 }
 
 // Expect comments to be sorted in ascending order by created_at
-func findLatestPlanPreviewCommentHelper(comments []issueCommentQuery) *issueCommentQuery {
+func filterLatestPlanPreviewComment(comments []issueCommentQuery) *issueCommentQuery {
 	const planPreviewCommentStart = "<!-- pipecd-plan-preview-->"
 	const commentLogin = "github-actions"
 
