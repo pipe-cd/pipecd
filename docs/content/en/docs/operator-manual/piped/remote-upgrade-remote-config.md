@@ -8,8 +8,6 @@ description: >
 
 ## Remote upgrade
 
-> NOTE: This feature is currently under Alpha status.
-
 The remote upgrade is the ability to restart the currently running Piped with another version from the web console.
 This reduces the effort involved in updating Piped to newer versions.
 All Pipeds that are running by the provided Piped container image can be enabled to use this feature.
@@ -27,8 +25,6 @@ Select a list of Pipeds to upgrade from Settings page
 </p>
 
 ## Remote config
-
-> NOTE: This feature is currently under Alpha status.
 
 Although the remote-upgrade allows you remotely restart your Pipeds to run any new version you want, if your Piped is loading its config locally where Piped is running, you still need to manually restart Piped after adding any change on that config data. Remote-config is for you to remove that kind of manual operation.
 
