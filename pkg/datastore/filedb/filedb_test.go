@@ -36,33 +36,6 @@ func TestFileDBGet(t *testing.T) {
 	assert.Equal(t, env.Data, "v1.1")
 }
 
-func _TestFileDBPut(t *testing.T) {
-	ctx := context.Background()
-	db, err := NewFileDB(newFileStore(ctx), []Option{}...)
-	assert.Nil(t, err)
-	assert.NotNil(t, db)
-	assert.NotNil(t, db.backend)
-
-	data := `{
-"data": "v1.2",
-"event_key": "552614db6e72c994dcd0338d43bdba9b10a3a94af037fc219bb0b16c989a7d5e",
-"id": "077babca-c175-4da4-81e8-d5196f8697e0",
-"labels": {
-  "app": "foo",
-  "env": "dev"
-},
-"name": "image-update",
-"project_id": "pipecd",
-"created_at": 1621330102,
-"updated_at": 1621330102
-}`
-	env := &model.Event{}
-	err = json.Unmarshal([]byte(data), env)
-	assert.Nil(t, err)
-	err = db.Put(ctx, datastore.EventModelKind, "077babca-c175-4da4-81e8-d5196f8697e0", env)
-	assert.Nil(t, err)
-}
-
 func _TestFileDBCreate(t *testing.T) {
 	ctx := context.Background()
 	db, err := NewFileDB(newFileStore(ctx), []Option{}...)

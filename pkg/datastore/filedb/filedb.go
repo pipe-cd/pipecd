@@ -137,35 +137,6 @@ func (f *FileDB) Create(ctx context.Context, kind, id string, entity interface{}
 	return nil
 }
 
-func (f *FileDB) Put(ctx context.Context, kind, id string, entity interface{}) error {
-	var path string
-	mul, _ := entity.(model.FileStorable).DivideToMulti()
-	if !mul {
-		path = buildHotPath(kind, id)
-	}
-	// TODO: Handle request multiple file paths.
-
-	val, err := json.Marshal(entity)
-	if err != nil {
-		f.logger.Error("failed to put entity: failed to encode entity",
-			zap.String("id", id),
-			zap.String("kind", kind),
-			zap.Error(err),
-		)
-		return err
-	}
-
-	if err = f.backend.Put(ctx, path, val); err != nil {
-		f.logger.Error("failed to put entity",
-			zap.String("id", id),
-			zap.String("kind", kind),
-			zap.Error(err),
-		)
-		return err
-	}
-	return nil
-}
-
 func (f *FileDB) Update(ctx context.Context, kind, id string, factory datastore.Factory, updater datastore.Updater) error {
 	// Note: PipeCD follows `single writer pattern`, which means
 	// there will be no two or more processes which try to update
