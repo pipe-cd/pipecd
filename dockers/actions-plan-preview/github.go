@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/google/go-github/v36/github"
 	"github.com/shurcooL/githubv4"
@@ -138,17 +137,13 @@ type issueCommentQuery struct {
 }
 
 type issueCommentsQuery struct {
-	Nodes    []issueCommentQuery
-	PageInfo struct {
-		HasPreviousPage githubv4.Boolean
-		StartCursor     githubv4.String
-	}
+	Nodes []issueCommentQuery
 }
 
 type pullRequestCommentQuery struct {
 	Repository struct {
 		PullRequest struct {
-			Comments issueCommentsQuery `graphql:"comments(last: 100, before: $commentsCursor)"`
+			Comments issueCommentsQuery `graphql:"comments(last: 100)"`
 		} `graphql:"pullRequest(number: $prNumber)"`
 	} `graphql:"repository(owner: $repositoryOwner, name: $repositoryName)"`
 }
@@ -158,38 +153,26 @@ var errNotFound = errors.New("not found")
 // find the latest plan preview comment in the specified issue
 // if there is no plan preview comment, return errNotFound err
 func findLatestPlanPreviewComment(ctx context.Context, client *githubv4.Client, owner, repo string, prNumber int) (*issueCommentQuery, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
 	variables := map[string]interface{}{
 		"repositoryOwner": githubv4.String(owner),
 		"repositoryName":  githubv4.String(repo),
 		"prNumber":        githubv4.Int(prNumber),
-		"commentsCursor":  (*githubv4.String)(nil),
 	}
 
 	var q pullRequestCommentQuery
-	for ctx.Err() == nil {
-		err := client.Query(ctx, &q, variables)
-		if err != nil {
-			return nil, err
-		}
-
-		pageinfo := q.Repository.PullRequest.Comments.PageInfo
-		comments := q.Repository.PullRequest.Comments.Nodes
-
-		comment := filterLatestPlanPreviewComment(comments)
-		if comment != nil {
-			return comment, nil
-		}
-
-		if !pageinfo.HasPreviousPage {
-			return nil, errNotFound
-		}
-		variables["commentsCursor"] = githubv4.NewString(pageinfo.StartCursor)
+	err := client.Query(ctx, &q, variables)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, ctx.Err()
+	comments := q.Repository.PullRequest.Comments.Nodes
+
+	comment := filterLatestPlanPreviewComment(comments)
+	if comment != nil {
+		return comment, nil
+	} else {
+		return nil, errNotFound
+	}
 }
 
 // Expect comments to be sorted in ascending order by created_at
