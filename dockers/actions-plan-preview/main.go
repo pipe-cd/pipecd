@@ -114,8 +114,8 @@ func main() {
 
 	// Find comments we sent before
 	comment, err := findLatestPlanPreviewComment(ctx, ghGraphQLClient, event.Owner, event.Repo, event.PRNumber)
-	if err != nil && !errors.Is(err, errNotFound) {
-		log.Fatal(err)
+	if err != nil {
+		log.Printf("Unable to find the previous comment to minimize (%v)", err)
 	}
 
 	body := makeCommentBody(event, result)
