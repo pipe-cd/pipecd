@@ -58,23 +58,26 @@ func NewStore(ctx context.Context, cfg *config.CloudProviderCloudRunConfig, clou
 func (s *Store) Run(ctx context.Context) error {
 	s.logger.Info("start running cloudrun app state store")
 
-	tick := time.NewTicker(s.interval)
-	defer tick.Stop()
+	// tick := time.NewTicker(s.interval)
+	// defer tick.Stop()
 
-	for {
-		select {
-		case <-ctx.Done():
-			s.logger.Info("cloudrun app state store has been stopped")
-			return nil
+	// for {
+	// 	select {
+	// 	case <-ctx.Done():
+	// 		s.logger.Info("cloudrun app state store has been stopped")
+	// 		return nil
 
-		case <-tick.C:
-			if err := s.store.run(ctx); err != nil {
-				s.logger.Error("failed to sync cloudrun services", zap.Error(err))
-				continue
-			}
-			s.logger.Info("successfully synced all cloudrun services")
-		}
-	}
+	// 	case <-tick.C:
+	// 		if err := s.store.run(ctx); err != nil {
+	// 			s.logger.Error("failed to sync cloudrun services", zap.Error(err))
+	// 			continue
+	// 		}
+	// 		s.logger.Info("successfully synced all cloudrun services")
+	// 	}
+	// }
+
+	s.logger.Info("cloudrun app state store has been stopped")
+	return nil
 }
 
 func (s *Store) GetServiceManifest(appID string) (provider.ServiceManifest, bool) {
