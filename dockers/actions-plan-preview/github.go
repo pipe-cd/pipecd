@@ -160,8 +160,7 @@ func findLatestPlanPreviewComment(ctx context.Context, client *githubv4.Client, 
 	}
 
 	var q pullRequestCommentQuery
-	err := client.Query(ctx, &q, variables)
-	if err != nil {
+	if err := client.Query(ctx, &q, variables); err != nil {
 		return nil, err
 	}
 
@@ -202,8 +201,7 @@ func minimizeComment(ctx context.Context, client *githubv4.Client, id githubv4.I
 		Classifier:       githubv4.ReportedContentClassifiers(classifier),
 		ClientMutationID: nil,
 	}
-	err := client.Mutate(ctx, &m, input, nil)
-	if err != nil {
+	if err := client.Mutate(ctx, &m, input, nil); err != nil {
 		return err
 	}
 
