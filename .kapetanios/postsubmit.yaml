@@ -37,10 +37,10 @@ spec:
       - name: bazel_cache_service_account
         type: PROJECT
     - description: Publish piped
-      runner: gcr.io/pipecd/asset-publisher:0.1.0
+      runner: gcr.io/pipecd/asset-publisher:0.2.0
       commands:
-        - /asset-publisher --asset-name-suffix=linux_amd64 --asset-file=bazel-bin/piped
-        - /asset-publisher --asset-name-suffix=linux_amd64 --asset-file=bazel-bin/pipectl
+        - /asset-publisher --org=pipe-cd --repo=pipecd --asset-name-suffix=linux_amd64 --asset-file=bazel-bin/piped
+        - /asset-publisher --org=pipe-cd --repo=pipecd --asset-name-suffix=linux_amd64 --asset-file=bazel-bin/pipectl
       secrets:
       - name: github_token
         type: PROJECT
@@ -61,10 +61,10 @@ spec:
       - name: bazel_cache_service_account
         type: PROJECT
     - description: Publish piped
-      runner: gcr.io/pipecd/asset-publisher:0.1.0
+      runner: gcr.io/pipecd/asset-publisher:0.2.0
       commands:
-        - /asset-publisher --asset-name-suffix=darwin_amd64 --asset-file=bazel-bin/piped
-        - /asset-publisher --asset-name-suffix=darwin_amd64 --asset-file=bazel-bin/pipectl
+        - /asset-publisher --org=pipe-cd --repo=pipecd --asset-name-suffix=darwin_amd64 --asset-file=bazel-bin/piped
+        - /asset-publisher --org=pipe-cd --repo=pipecd --asset-name-suffix=darwin_amd64 --asset-file=bazel-bin/pipectl
       secrets:
       - name: github_token
         type: PROJECT

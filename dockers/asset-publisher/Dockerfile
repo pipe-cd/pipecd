@@ -1,8 +1,6 @@
-FROM golang:1.17.3-alpine3.15 as builder
+FROM golang:1.17.3-alpine3.15 AS builder
 WORKDIR /tool
-COPY main.go .
-COPY go.mod .
-COPY go.sum .
+COPY main.go go.mod go.sum ./
 RUN go build -o asset-publisher main.go
 
 FROM alpine:3.15
