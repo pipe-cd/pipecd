@@ -28,13 +28,17 @@ const (
 
 // GetApplicationConfigFilePath returns the path to application configuration file.
 func (p ApplicationGitPath) GetApplicationConfigFilePath() string {
+	return filepath.Join(p.Path, p.GetApplicationConfigFilename())
+}
+
+func (p ApplicationGitPath) GetApplicationConfigFilename() string {
 	// The config file name used to allow to be empty until the default name got changed.
 	// So empty means the old default name.
 	filename := oldDefaultApplicationConfigFilename
 	if n := p.ConfigFilename; n != "" {
 		filename = n
 	}
-	return filepath.Join(p.Path, filename)
+	return filename
 }
 
 // HasChanged checks whether the content of sync state has been changed.

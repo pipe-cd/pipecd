@@ -39,7 +39,7 @@ type migrateFromDeployConfig struct {
 	stdout       io.Writer
 }
 
-func newListCommand(root *command) *cobra.Command {
+func newMigrateCommand(root *command) *cobra.Command {
 	m := &migrateFromDeployConfig{
 		root:   root,
 		stdout: os.Stdout,
