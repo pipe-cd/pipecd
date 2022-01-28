@@ -46,18 +46,39 @@ if [ "${running}" != 'true' ]; then
 fi
 
 # Create a cluster with the local registry enabled in containerd
+REG_CONFIG_DIR="/etc/containerd/certs.d"
 cat <<EOF | kind create cluster --name ${CLUSTER} --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 containerdConfigPatches:
 - |-
-  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:${REG_PORT}"]
-    endpoint = ["http://${REG_NAME}:${REG_PORT}"]
+  [plugins."io.containerd.grpc.v1.cri".registry]
+    config_path = "${REG_CONFIG_DIR}"
 EOF
+
+docker network connect "kind" "${REG_NAME}" || true
+
+# Create containerd config files in cluster
+NODE=$(kind get nodes --name ${CLUSTER})
+docker exec "$NODE" /bin/bash -c "
+set -o errexit
+set -o nounset
+set -o pipefail
+
+mkdir -p  \"${REG_CONFIG_DIR}/localhost:${REG_PORT}\"
+cat <<EOF >> \"${REG_CONFIG_DIR}/localhost:${REG_PORT}/hosts.toml\"
+server = \"https://localhost:${REG_PORT}\"
+
+[host.\"http://${REG_NAME}:${REG_PORT}\"]
+  capabilities = [\"pull\", \"resolve\", \"push\"]
+  skip_verify = true
+  plain-http = true
+EOF
+systemctl restart containerd
+"
 
 # Connect the registry to the cluster network
 # (the network may already be connected)
-docker network connect "kind" "${REG_NAME}" || true
 
 # Document the local registry
 # https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry
