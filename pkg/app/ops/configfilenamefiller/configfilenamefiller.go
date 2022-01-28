@@ -73,7 +73,7 @@ func (c *Filler) Run(ctx context.Context) error {
 			return err
 		}
 
-		c.logger.Info(fmt.Sprintf("found %d applications to fill", len()))
+		c.logger.Info(fmt.Sprintf("found %d applications to fill", len(apps)))
 		for _, app := range apps {
 			c.logger.Info(fmt.Sprintf("will fill config filename for application %s", app.Id))
 
