@@ -56,6 +56,8 @@ containerdConfigPatches:
     config_path = "${REG_CONFIG_DIR}"
 EOF
 
+# Connect the registry to the cluster network
+# (the network may already be connected)
 docker network connect "kind" "${REG_NAME}" || true
 
 # Create containerd config files in cluster
@@ -76,9 +78,6 @@ server = \"https://localhost:${REG_PORT}\"
 EOF
 systemctl restart containerd
 "
-
-# Connect the registry to the cluster network
-# (the network may already be connected)
 
 # Document the local registry
 # https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry
