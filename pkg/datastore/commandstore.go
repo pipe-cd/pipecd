@@ -47,9 +47,9 @@ var (
 
 type CommandStore interface {
 	AddCommand(ctx context.Context, cmd *model.Command) error
-	UpdateCommand(ctx context.Context, id string, updater func(piped *model.Command) error) error
-	ListCommands(ctx context.Context, opts ListOptions) ([]*model.Command, error)
 	GetCommand(ctx context.Context, id string) (*model.Command, error)
+	ListCommands(ctx context.Context, opts ListOptions) ([]*model.Command, error)
+	UpdateCommand(ctx context.Context, id string, updater func(piped *model.Command) error) error
 }
 
 type commandStore struct {

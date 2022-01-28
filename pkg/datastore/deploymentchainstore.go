@@ -101,9 +101,9 @@ var (
 
 type DeploymentChainStore interface {
 	AddDeploymentChain(ctx context.Context, d *model.DeploymentChain) error
-	UpdateDeploymentChain(ctx context.Context, id string, updater func(*model.DeploymentChain) error) error
 	GetDeploymentChain(ctx context.Context, id string) (*model.DeploymentChain, error)
 	ListDeploymentChains(ctx context.Context, opts ListOptions) ([]*model.DeploymentChain, string, error)
+	UpdateDeploymentChain(ctx context.Context, id string, updater func(*model.DeploymentChain) error) error
 }
 
 type deploymentChainStore struct {
