@@ -44,7 +44,7 @@ func Diff(old, new ServiceManifest, opts ...diff.Option) (*DiffResult, error) {
 		return nil, err
 	}
 	if !d.HasDiff() {
-		return &DiffResult{}, nil
+		return &DiffResult{Diff: d}, nil
 	}
 	ret := &DiffResult{
 		Old:  old,
