@@ -67,6 +67,10 @@ pipectl event register \
     --data=gcr.io/pipecd/helloworld:v0.2.0
 ```
 
+You can see the status on the event list page.
+
+![](/images/event-list-page.png)
+
 
 After a while, Piped will create a commit as shown below:
 
