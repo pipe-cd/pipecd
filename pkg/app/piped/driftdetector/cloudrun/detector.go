@@ -257,7 +257,12 @@ func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Repo
 			}
 		}
 
-		manifest, err = provider.LoadServiceManifest(appDir, app.GitPath.ConfigFilename)
+		var manifestFile string
+		if cfg.CloudRunApplicationSpec != nil {
+			manifestFile = cfg.CloudRunApplicationSpec.Input.ServiceManifestFile
+		}
+
+		manifest, err = provider.LoadServiceManifest(appDir, manifestFile)
 		if err != nil {
 			return provider.ServiceManifest{}, fmt.Errorf("failed to load new service manifest: %w", err)
 		}
