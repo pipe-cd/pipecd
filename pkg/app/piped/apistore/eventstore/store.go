@@ -121,6 +121,7 @@ func (s *store) sync(ctx context.Context) error {
 		return fmt.Errorf("failed to list events: %w", err)
 	}
 	if len(resp.Events) == 0 {
+		s.notHandledEvents.Store(make(map[string][]*model.Event))
 		return nil
 	}
 
