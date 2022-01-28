@@ -69,6 +69,7 @@ We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/
 <a href="https://github.com/TaKO8Ki"><img src="https://avatars.githubusercontent.com/u/41065217?v=4" title="TaKO8Ki" width="80" height="80"></a>
 <a href="https://github.com/chaspy"><img src="https://avatars.githubusercontent.com/u/10370988?v=4" title="chaspy" width="80" height="80"></a>
 <a href="https://github.com/tnqv"><img src="https://avatars.githubusercontent.com/u/23372024?v=4" title="tnqv" width="80" height="80"></a>
+<a href="https://github.com/Hosshii"><img src="https://avatars.githubusercontent.com/u/49914427?v=4" title="Hosshii" width="80" height="80"></a>
 <a href="https://github.com/tennashi"><img src="https://avatars.githubusercontent.com/u/10219626?v=4" title="tennashi" width="80" height="80"></a>
 <a href="https://github.com/p0tr3c"><img src="https://avatars.githubusercontent.com/u/12850042?v=4" title="p0tr3c" width="80" height="80"></a>
 <a href="https://github.com/gotyoooo"><img src="https://avatars.githubusercontent.com/u/6133219?v=4" title="Lennie" width="80" height="80"></a>
