@@ -11,6 +11,7 @@ import {
   MenuItem,
   Menu,
 } from "@material-ui/core";
+import { MoreVert } from "@material-ui/icons";
 import {
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
@@ -20,6 +21,7 @@ import {
   PAGE_PATH_TOP,
   PAGE_PATH_INSIGHTS,
   PAGE_PATH_DEPLOYMENT_CHAINS,
+  PAGE_PATH_EVENTS,
 } from "~/constants/path";
 import { APP_NAME } from "~/constants/common";
 import { NavLink as RouterLink } from "react-router-dom";
@@ -74,16 +76,20 @@ const useStyles = makeStyles((theme) => ({
   activeLink: {
     borderBottom: `4px solid ${theme.palette.background.paper}`,
   },
+  iconButton: {
+    padding: 0,
+  },
 }));
 
 export const Header: FC = memo(function Header() {
   const classes = useStyles();
   const me = useAppSelector((state) => state.me);
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-
-  const handleClose = (): void => {
-    setAnchorEl(null);
-  };
+  const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>(
+    null
+  );
+  const [moreAnchorEl, setMoreAnchorEl] = useState<HTMLButtonElement | null>(
+    null
+  );
 
   return (
     <AppBar position="static" className={classes.root}>
@@ -136,29 +142,22 @@ export const Header: FC = memo(function Header() {
               >
                 Chains
               </Link>
-              <Link
-                component={RouterLink}
-                className={classes.link}
-                activeClassName={classes.activeLink}
+              <IconButton
                 color="inherit"
-                to={PAGE_PATH_INSIGHTS}
+                className={classes.iconButton}
+                aria-label="More Menu"
+                aria-controls="more-menu"
+                aria-haspopup="true"
+                size="small"
+                onClick={(e) => setMoreAnchorEl(e.currentTarget)}
               >
-                Insights
-              </Link>
-              <Link
-                component={RouterLink}
-                className={classes.link}
-                activeClassName={classes.activeLink}
-                color="inherit"
-                to={PAGE_PATH_SETTINGS}
-              >
-                Settings
-              </Link>
+                <MoreVert />
+              </IconButton>
               <IconButton
                 aria-label="User Menu"
                 aria-controls="user-menu"
                 aria-haspopup="true"
-                onClick={(e) => setAnchorEl(e.currentTarget)}
+                onClick={(e) => setUserAnchorEl(e.currentTarget)}
               >
                 <Avatar className={classes.userAvatar} src={me.avatarUrl} />
               </IconButton>
@@ -178,12 +177,33 @@ export const Header: FC = memo(function Header() {
 
       <Menu
         id="user-menu"
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
+        anchorEl={userAnchorEl}
+        open={Boolean(userAnchorEl)}
+        onClose={(): void => {
+          setUserAnchorEl(null);
+        }}
       >
         <MenuItem component={Link} href={LOGOUT_ENDPOINT}>
           Logout
+        </MenuItem>
+      </Menu>
+
+      <Menu
+        id="more-menu"
+        anchorEl={moreAnchorEl}
+        open={Boolean(moreAnchorEl)}
+        onClose={(): void => {
+          setMoreAnchorEl(null);
+        }}
+      >
+        <MenuItem component={Link} href={PAGE_PATH_INSIGHTS}>
+          Insights
+        </MenuItem>
+        <MenuItem component={Link} href={PAGE_PATH_EVENTS}>
+          Events
+        </MenuItem>
+        <MenuItem component={Link} href={PAGE_PATH_SETTINGS}>
+          Settings
         </MenuItem>
       </Menu>
     </AppBar>

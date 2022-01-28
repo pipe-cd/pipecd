@@ -44,10 +44,6 @@ func buildUpdateQuery(table string) string {
 	return fmt.Sprintf("UPDATE %s SET Data = ? WHERE Id = UUID_TO_BIN(?,true)", table)
 }
 
-func buildPutQuery(table string) string {
-	return fmt.Sprintf("INSERT INTO %s (Id, Data) VALUE (UUID_TO_BIN(?,true), ?) ON DUPLICATE KEY UPDATE Data = ?", table)
-}
-
 func buildCreateQuery(table string) string {
 	return fmt.Sprintf("INSERT INTO %s (Id, Data) VALUE (UUID_TO_BIN(?,true), ?)", table)
 }

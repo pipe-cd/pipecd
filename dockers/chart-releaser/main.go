@@ -62,21 +62,15 @@ func init() {
 }
 
 func main() {
+	if err := run(); err != nil {
+		log.Fatalf("Failed to run: %s", err.Error())
+	}
+}
+
+func run() error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
-
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	defer signal.Stop(ch)
-
-	go func() {
-		select {
-		case <-ch:
-			cancel()
-		case <-ctx.Done():
-			return
-		}
-	}()
+	ctx, _ = signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 
 	// Initialize gcs client.
 	var options []option.ClientOption
@@ -85,20 +79,20 @@ func main() {
 	}
 	client, err := storage.NewClient(ctx, options...)
 	if err != nil {
-		log.Fatalf("Unable to create GCS client: %v", err)
+		return fmt.Errorf("unable to create GCS client: %v", err)
 	}
 
 	// Make a temporary working directory.
 	workingDir, err := os.MkdirTemp("", "charts")
 	if err != nil {
-		log.Fatalf("Unable to create a temporary working directory: %v", err)
+		return fmt.Errorf("unable to create a temporary working directory: %v", err)
 	}
-	//defer os.RemoveAll(workingDir)
+	defer os.RemoveAll(workingDir)
 	log.Printf("Successfully created a temporary working directory: %s", workingDir)
 
 	// Download current index.yaml file from storage.
 	if err := downloadIndexFile(ctx, client, filepath.Join(workingDir, indexFileName)); err != nil {
-		log.Fatalf("Unable to download current index file: %v", err)
+		return fmt.Errorf("unable to download current index file: %v", err)
 	}
 	log.Printf("Successfully downloaded current index file")
 
@@ -106,14 +100,14 @@ func main() {
 	for _, chart := range charts {
 		chartPath := filepath.Join(manifestsDir, chart)
 		if err := packageHelmChart(ctx, chartPath, workingDir); err != nil {
-			log.Fatalf("Unable to package chart %s: %v", chart, err)
+			return fmt.Errorf("unable to package chart %s: %v", chart, err)
 		}
 		log.Printf("Successfully packaged chart %s", chart)
 	}
 
 	// Generate new index.yaml file by merging new charts.
 	if err := generateNewIndex(ctx, workingDir); err != nil {
-		log.Fatalf("Unable to update index file: %v", err)
+		return fmt.Errorf("unable to update index file: %v", err)
 	}
 	log.Printf("Successfully updated index file")
 
@@ -136,14 +130,15 @@ func main() {
 		return storeFile(ctx, client, path, false)
 	})
 	if err != nil {
-		log.Fatalf("Unable to store chart packages: %v", err)
+		return fmt.Errorf("unable to store chart packages: %v", err)
 	}
 
 	if err := storeFile(ctx, client, filepath.Join(workingDir, indexFileName), true); err != nil {
-		log.Fatalf("Unable to store index file: %v", err)
+		return fmt.Errorf("unable to store index file: %v", err)
 	}
 
 	log.Printf("Successfully stored all packages and index file")
+	return nil
 }
 
 func packageHelmChart(ctx context.Context, chartPath, dest string) error {

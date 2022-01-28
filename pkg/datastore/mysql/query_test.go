@@ -86,27 +86,6 @@ func TestBuildCreateQuery(t *testing.T) {
 	}
 }
 
-func TestBuildPutQuery(t *testing.T) {
-	testcases := []struct {
-		name          string
-		kind          string
-		expectedQuery string
-	}{
-		{
-			name:          "query for Project kind",
-			kind:          "Project",
-			expectedQuery: "INSERT INTO Project (Id, Data) VALUE (UUID_TO_BIN(?,true), ?) ON DUPLICATE KEY UPDATE Data = ?",
-		},
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			query := buildPutQuery(tc.kind)
-			assert.Equal(t, tc.expectedQuery, query)
-		})
-	}
-}
-
 func TestBuildFindQuery(t *testing.T) {
 	testcases := []struct {
 		name          string
