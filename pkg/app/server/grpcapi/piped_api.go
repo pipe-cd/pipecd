@@ -234,7 +234,7 @@ func (a *PipedAPI) ReportApplicationSyncState(ctx context.Context, req *pipedser
 		return nil, err
 	}
 
-	err = a.applicationStore.PutApplicationSyncState(ctx, req.ApplicationId, req.State)
+	err = a.applicationStore.UpdateApplicationSyncState(ctx, req.ApplicationId, req.State)
 	if err != nil {
 		switch err {
 		case datastore.ErrNotFound:
@@ -295,7 +295,7 @@ func (a *PipedAPI) ReportApplicationMostRecentDeployment(ctx context.Context, re
 		return nil, err
 	}
 
-	err = a.applicationStore.PutApplicationMostRecentDeployment(ctx, req.ApplicationId, req.Status, req.Deployment)
+	err = a.applicationStore.UpdateApplicationMostRecentDeployment(ctx, req.ApplicationId, req.Status, req.Deployment)
 	if err != nil {
 		switch err {
 		case datastore.ErrNotFound:
@@ -528,7 +528,7 @@ func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice
 		return nil, err
 	}
 
-	err = a.deploymentStore.PutDeploymentMetadata(ctx, req.DeploymentId, req.Metadata)
+	err = a.deploymentStore.UpdateDeploymentMetadata(ctx, req.DeploymentId, req.Metadata)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.InvalidArgument, "deployment is not found")
 	}
@@ -553,7 +553,7 @@ func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.Save
 		return nil, err
 	}
 
-	err = a.deploymentStore.PutDeploymentStageMetadata(ctx, req.DeploymentId, req.StageId, req.Metadata)
+	err = a.deploymentStore.UpdateDeploymentStageMetadata(ctx, req.DeploymentId, req.StageId, req.Metadata)
 	if err != nil {
 		switch errors.Unwrap(err) {
 		case datastore.ErrNotFound:

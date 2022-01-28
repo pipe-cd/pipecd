@@ -36,14 +36,14 @@ func (p *projectCollection) Factory() Factory {
 
 type ProjectStore interface {
 	AddProject(ctx context.Context, proj *model.Project) error
+	GetProject(ctx context.Context, id string) (*model.Project, error)
+	ListProjects(ctx context.Context, opts ListOptions) ([]model.Project, error)
 	UpdateProject(ctx context.Context, id string, updater func(project *model.Project) error) error
 	UpdateProjectStaticAdmin(ctx context.Context, id, username, password string) error
 	EnableStaticAdmin(ctx context.Context, id string) error
 	DisableStaticAdmin(ctx context.Context, id string) error
 	UpdateProjectSSOConfig(ctx context.Context, id string, sso *model.ProjectSSOConfig) error
 	UpdateProjectRBACConfig(ctx context.Context, id string, sso *model.ProjectRBACConfig) error
-	GetProject(ctx context.Context, id string) (*model.Project, error)
-	ListProjects(ctx context.Context, opts ListOptions) ([]model.Project, error)
 }
 
 type projectStore struct {

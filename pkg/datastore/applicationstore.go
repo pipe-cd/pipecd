@@ -37,14 +37,14 @@ func (a *applicationCollection) Factory() Factory {
 
 type ApplicationStore interface {
 	AddApplication(ctx context.Context, app *model.Application) error
+	GetApplication(ctx context.Context, id string) (*model.Application, error)
+	ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, string, error)
 	EnableApplication(ctx context.Context, id string) error
 	DisableApplication(ctx context.Context, id string) error
 	DeleteApplication(ctx context.Context, id string) error
-	GetApplication(ctx context.Context, id string) (*model.Application, error)
-	ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, string, error)
 	UpdateApplication(ctx context.Context, id string, updater func(*model.Application) error) error
-	PutApplicationSyncState(ctx context.Context, id string, syncState *model.ApplicationSyncState) error
-	PutApplicationMostRecentDeployment(ctx context.Context, id string, status model.DeploymentStatus, deployment *model.ApplicationDeploymentReference) error
+	UpdateApplicationSyncState(ctx context.Context, id string, syncState *model.ApplicationSyncState) error
+	UpdateApplicationMostRecentDeployment(ctx context.Context, id string, status model.DeploymentStatus, deployment *model.ApplicationDeploymentReference) error
 }
 
 type applicationStore struct {
@@ -164,14 +164,14 @@ func (s *applicationStore) UpdateApplication(ctx context.Context, id string, upd
 	})
 }
 
-func (s *applicationStore) PutApplicationSyncState(ctx context.Context, id string, syncState *model.ApplicationSyncState) error {
+func (s *applicationStore) UpdateApplicationSyncState(ctx context.Context, id string, syncState *model.ApplicationSyncState) error {
 	return s.UpdateApplication(ctx, id, func(a *model.Application) error {
 		a.SyncState = syncState
 		return nil
 	})
 }
 
-func (s *applicationStore) PutApplicationMostRecentDeployment(ctx context.Context, id string, status model.DeploymentStatus, deployment *model.ApplicationDeploymentReference) error {
+func (s *applicationStore) UpdateApplicationMostRecentDeployment(ctx context.Context, id string, status model.DeploymentStatus, deployment *model.ApplicationDeploymentReference) error {
 	return s.UpdateApplication(ctx, id, func(a *model.Application) error {
 		switch status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:

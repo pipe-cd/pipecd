@@ -38,8 +38,8 @@ func (a *apiKeyCollection) Factory() Factory {
 type APIKeyStore interface {
 	AddAPIKey(ctx context.Context, k *model.APIKey) error
 	GetAPIKey(ctx context.Context, id string) (*model.APIKey, error)
-	DisableAPIKey(ctx context.Context, id, projectID string) error
 	ListAPIKeys(ctx context.Context, opts ListOptions) ([]*model.APIKey, error)
+	DisableAPIKey(ctx context.Context, id, projectID string) error
 }
 
 type apiKeyStore struct {

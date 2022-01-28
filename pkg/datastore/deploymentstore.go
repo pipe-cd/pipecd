@@ -97,11 +97,11 @@ var (
 
 type DeploymentStore interface {
 	AddDeployment(ctx context.Context, d *model.Deployment) error
-	UpdateDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error
-	PutDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error
-	PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error
-	ListDeployments(ctx context.Context, opts ListOptions) ([]*model.Deployment, string, error)
 	GetDeployment(ctx context.Context, id string) (*model.Deployment, error)
+	ListDeployments(ctx context.Context, opts ListOptions) ([]*model.Deployment, string, error)
+	UpdateDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error
+	UpdateDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error
+	UpdateDeploymentStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error
 }
 
 type deploymentStore struct {
@@ -145,7 +145,7 @@ func (s *deploymentStore) UpdateDeployment(ctx context.Context, id string, updat
 	})
 }
 
-func (s *deploymentStore) PutDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error {
+func (s *deploymentStore) UpdateDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error {
 	now := s.nowFunc().Unix()
 	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
 		d := e.(*model.Deployment)
@@ -155,7 +155,7 @@ func (s *deploymentStore) PutDeploymentMetadata(ctx context.Context, id string, 
 	})
 }
 
-func (s *deploymentStore) PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error {
+func (s *deploymentStore) UpdateDeploymentStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error {
 	now := s.nowFunc().Unix()
 	return s.ds.Update(ctx, s.col, deploymentID, func(e interface{}) error {
 		d := e.(*model.Deployment)

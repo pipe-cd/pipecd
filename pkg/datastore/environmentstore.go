@@ -37,11 +37,11 @@ func (e *environmentCollection) Factory() Factory {
 
 type EnvironmentStore interface {
 	AddEnvironment(ctx context.Context, env *model.Environment) error
+	GetEnvironment(ctx context.Context, id string) (*model.Environment, error)
+	ListEnvironments(ctx context.Context, opts ListOptions) ([]*model.Environment, error)
 	EnableEnvironment(ctx context.Context, id string) error
 	DisableEnvironment(ctx context.Context, id string) error
 	DeleteEnvironment(ctx context.Context, id string) error
-	GetEnvironment(ctx context.Context, id string) (*model.Environment, error)
-	ListEnvironments(ctx context.Context, opts ListOptions) ([]*model.Environment, error)
 }
 
 type environmentStore struct {
