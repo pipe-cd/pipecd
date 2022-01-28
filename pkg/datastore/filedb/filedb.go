@@ -22,7 +22,6 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/filestore"
-	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type FileDB struct {
@@ -51,16 +50,14 @@ func NewFileDB(fs filestore.Store, opts ...Option) (*FileDB, error) {
 	return fd, nil
 }
 
-func (f *FileDB) Find(ctx context.Context, kind string, opts datastore.ListOptions) (datastore.Iterator, error) {
+func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datastore.ListOptions) (datastore.Iterator, error) {
 	return nil, datastore.ErrUnimplemented
 }
 
-func (f *FileDB) Get(ctx context.Context, kind, id string, v interface{}) error {
+func (f *FileDB) Get(ctx context.Context, col datastore.Collection, id string, v interface{}) error {
+	kind := col.Kind()
+
 	var path string
-	mul, _ := v.(model.FileStorable).DivideToMulti()
-	if !mul {
-		path = buildHotPath(kind, id)
-	}
 	// TODO: Handle request multiple file paths.
 
 	raw, err := f.backend.Get(ctx, path)
@@ -87,12 +84,10 @@ func (f *FileDB) Get(ctx context.Context, kind, id string, v interface{}) error 
 	return nil
 }
 
-func (f *FileDB) Create(ctx context.Context, kind, id string, entity interface{}) error {
+func (f *FileDB) Create(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {
+	kind := col.Kind()
+
 	var path string
-	mul, _ := entity.(model.FileStorable).DivideToMulti()
-	if !mul {
-		path = buildHotPath(kind, id)
-	}
 	// TODO: Handle request multiple file paths.
 
 	// Note: To enable the current check existence logic works, the filestore
@@ -137,17 +132,15 @@ func (f *FileDB) Create(ctx context.Context, kind, id string, entity interface{}
 	return nil
 }
 
-func (f *FileDB) Update(ctx context.Context, kind, id string, factory datastore.Factory, updater datastore.Updater) error {
+func (f *FileDB) Update(ctx context.Context, col datastore.Collection, id string, updater datastore.Updater) error {
 	// Note: PipeCD follows `single writer pattern`, which means
 	// there will be no two or more processes which try to update
 	// a specified object at once, so we don't need to open transaction here.
 
-	entity := factory()
+	kind := col.Kind()
+	entity := col.Factory()()
+
 	var path string
-	mul, _ := entity.(model.FileStorable).DivideToMulti()
-	if !mul {
-		path = buildHotPath(kind, id)
-	}
 	// TODO: Handle request multiple file paths.
 
 	raw, err := f.backend.Get(ctx, path)
