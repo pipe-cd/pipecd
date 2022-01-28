@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/google/go-github/v36/github"
+	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
 
@@ -49,6 +50,7 @@ func main() {
 	)
 	tc := oauth2.NewClient(ctx, ts)
 	ghClient := github.NewClient(tc)
+	ghGraphQLClient := githubv4.NewClient(tc)
 
 	event, err := parseGitHubEvent(ctx, ghClient)
 	if err != nil {
@@ -109,8 +111,22 @@ func main() {
 		}
 	}
 
+	// Find comments we sent before
+	comment, err := findLatestPlanPreviewComment(ctx, ghGraphQLClient, event.Owner, event.Repo, event.PRNumber)
+	if err != nil {
+		log.Printf("Unable to find the previous comment to minimize (%v)", err)
+	}
+
 	body := makeCommentBody(event, result)
 	doComment(body)
+
+	if comment != nil && bool(comment.IsMinimized) {
+		if err := minimizeComment(ctx, ghGraphQLClient, comment.ID, "OUTDATED"); err != nil {
+			log.Printf("warning: cannot minimize comment: %s", err.Error())
+		} else {
+			log.Printf("Successfully minimized last plan-preview result on pull request\n")
+		}
+	}
 }
 
 type arguments struct {
