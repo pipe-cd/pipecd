@@ -43,7 +43,6 @@ func (c *Filler) Run(ctx context.Context) error {
 	var limit, count = 50, 0
 	var sleepInternal = 100 * time.Millisecond
 	var cursor string
-	var minCreatedAt int64
 
 	for {
 		apps, next, err := c.applicationStore.ListApplications(ctx, datastore.ListOptions{
@@ -52,11 +51,6 @@ func (c *Filler) Run(ctx context.Context) error {
 					Field:    "Deleted",
 					Operator: datastore.OperatorEqual,
 					Value:    false,
-				},
-				{
-					Field:    "CreatedAt",
-					Operator: datastore.OperatorGreaterThanOrEqual,
-					Value:    minCreatedAt,
 				},
 			},
 			Orders: []datastore.Order{
