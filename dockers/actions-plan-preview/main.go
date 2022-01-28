@@ -114,19 +114,27 @@ func main() {
 	// Find comments we sent before
 	comment, err := findLatestPlanPreviewComment(ctx, ghGraphQLClient, event.Owner, event.Repo, event.PRNumber)
 	if err != nil {
-		log.Printf("Unable to find the previous comment to minimize (%v)", err)
+		log.Printf("Unable to find the previous comment to minimize (%v)\n", err)
 	}
 
 	body := makeCommentBody(event, result)
 	doComment(body)
 
-	if comment != nil && bool(comment.IsMinimized) {
-		if err := minimizeComment(ctx, ghGraphQLClient, comment.ID, "OUTDATED"); err != nil {
-			log.Printf("warning: cannot minimize comment: %s", err.Error())
-		} else {
-			log.Printf("Successfully minimized last plan-preview result on pull request\n")
-		}
+	if comment == nil {
+		return
 	}
+
+	if bool(comment.IsMinimized) {
+		log.Printf("Previous plan-preview comment has already minimized. So don't minimize anything\n")
+		return
+	}
+
+	if err := minimizeComment(ctx, ghGraphQLClient, comment.ID, "OUTDATED"); err != nil {
+		log.Printf("warning: cannot minimize comment: %s\n", err.Error())
+		return
+	}
+
+	log.Printf("Successfully minimized last plan-preview result on pull request\n")
 }
 
 type arguments struct {
