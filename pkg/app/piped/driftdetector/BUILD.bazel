@@ -6,6 +6,7 @@ go_library(
     importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/app/piped/driftdetector/cloudrun:go_default_library",
         "//pkg/app/piped/driftdetector/kubernetes:go_default_library",
         "//pkg/app/piped/livestatestore:go_default_library",
         "//pkg/app/server/service/pipedservice:go_default_library",

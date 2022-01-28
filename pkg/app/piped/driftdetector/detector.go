@@ -27,6 +27,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
+	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
@@ -91,15 +92,35 @@ func NewDetector(
 		logger:     logger.Named("drift-detector"),
 	}
 
+	const format = "unable to find live state getter for cloud provider: %s"
+
 	for _, cp := range cfg.CloudProviders {
 		switch cp.Type {
 		case model.CloudProviderKubernetes:
 			sg, ok := stateGetter.KubernetesGetter(cp.Name)
 			if !ok {
-				d.logger.Error(fmt.Sprintf("unable to find live state getter for cloud provider: %s", cp.Name))
+				d.logger.Error(fmt.Sprintf(format, cp.Name))
 				continue
 			}
 			d.detectors = append(d.detectors, kubernetes.NewDetector(
+				cp,
+				appLister,
+				gitClient,
+				sg,
+				d,
+				appManifestsCache,
+				cfg,
+				sd,
+				logger,
+			))
+
+		case model.CloudProviderCloudRun:
+			sg, ok := stateGetter.CloudRunGetter(cp.Name)
+			if !ok {
+				d.logger.Error(fmt.Sprintf(format, cp.Name))
+				continue
+			}
+			d.detectors = append(d.detectors, cloudrun.NewDetector(
 				cp,
 				appLister,
 				gitClient,
