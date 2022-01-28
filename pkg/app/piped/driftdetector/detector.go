@@ -74,6 +74,7 @@ type providerDetector interface {
 	ProviderName() string
 }
 
+// TODO: this function have to return an error and stop piped immediately if it exists.
 func NewDetector(
 	appLister applicationLister,
 	gitClient gitClient,
