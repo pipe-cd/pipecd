@@ -92,6 +92,14 @@ func wrapModel(entity interface{}) (interface{}, error) {
 			Event: *e,
 			Extra: e.Name,
 		}, nil
+	case *model.DeploymentChain:
+		if e == nil {
+			return nil, fmt.Errorf("nil entity given")
+		}
+		return &deploymentChain{
+			DeploymentChain: *e,
+			Extra:           e.Id,
+		}, nil
 	default:
 		return nil, fmt.Errorf("%T is not supported", e)
 	}
@@ -151,4 +159,9 @@ type apiKey struct {
 type event struct {
 	model.Event `json:",inline"`
 	Extra       string `json:"_extra"`
+}
+
+type deploymentChain struct {
+	model.DeploymentChain `json:",inline"`
+	Extra                 string `json:"_extra"`
 }
