@@ -36,12 +36,13 @@ func (d *deploymentCollection) Factory() Factory {
 }
 
 var (
-	DeploymentToPlannedUpdater = func(summary, statusReason, runningCommitHash, version string, stages []*model.PipelineStage) func(*model.Deployment) error {
+	DeploymentToPlannedUpdater = func(summary, statusReason, runningCommitHash, runningConfigFilename, version string, stages []*model.PipelineStage) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
 			d.Status = model.DeploymentStatus_DEPLOYMENT_PLANNED
 			d.Summary = summary
 			d.StatusReason = statusReason
 			d.RunningCommitHash = runningCommitHash
+			d.RunningConfigFilename = runningConfigFilename
 			d.Version = version
 			d.Stages = stages
 			return nil

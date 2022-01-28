@@ -436,7 +436,14 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 		return nil, err
 	}
 
-	updater := datastore.DeploymentToPlannedUpdater(req.Summary, req.StatusReason, req.RunningCommitHash, req.Version, req.Stages)
+	updater := datastore.DeploymentToPlannedUpdater(
+		req.Summary,
+		req.StatusReason,
+		req.RunningCommitHash,
+		req.RunningConfigFilename,
+		req.Version,
+		req.Stages,
+	)
 	err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
 	if err != nil {
 		switch err {
