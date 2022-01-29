@@ -38,7 +38,7 @@ func TestDiff(t *testing.T) {
 	// Don't have diff.
 	got, err = Diff(old, old)
 	require.NoError(t, err)
-	require.Empty(t, got)
+	require.NotEmpty(t, got)
 }
 
 func TestDiffResult_NoChange(t *testing.T) {
