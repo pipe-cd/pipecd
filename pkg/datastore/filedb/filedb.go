@@ -31,7 +31,7 @@ type Option func(*FileDB)
 
 func WithLogger(logger *zap.Logger) Option {
 	return func(f *FileDB) {
-		m.logger = logger
+		f.logger = logger
 	}
 }
 
