@@ -30,7 +30,7 @@ type FileDB struct {
 type Option func(*FileDB)
 
 func WithLogger(logger *zap.Logger) Option {
-	return func(m *FileDB) {
+	return func(f *FileDB) {
 		m.logger = logger
 	}
 }
