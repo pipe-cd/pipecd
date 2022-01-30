@@ -78,6 +78,7 @@ CREATE INDEX deployment_piped_id ON Deployment (PipedId);
 
 -- index on `DeploymentChainId` ASC and `UpdatedAt` DESC
 ALTER TABLE Deployment ADD COLUMN DeploymentChainId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.deployment_chain_id") VIRTUAL NOT NULL;
+ALTER TABLE Deployment MODIFY DeploymentChainId VARCHAR(36) GENERATED ALWAYS AS (IFNULL(data->>"$.deployment_chain_id", "")) VIRTUAL NOT NULL;
 CREATE INDEX deployment_chain_id_updated_at_desc ON Deployment (DeploymentChainId, UpdatedAt DESC);
 
 --
