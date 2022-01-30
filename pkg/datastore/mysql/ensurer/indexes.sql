@@ -7,6 +7,7 @@ CREATE INDEX application_disabled_updated_at_desc ON Application (Disabled, Upda
 
 -- index on `EnvId` ASC and `UpdatedAt` DESC
 ALTER TABLE Application ADD COLUMN EnvId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.env_id") VIRTUAL NOT NULL;
+ALTER TABLE Application MODIFY EnvId VARCHAR(36) GENERATED ALWAYS AS (IFNULL(data->>"$.env_id", "")) VIRTUAL NOT NULL;
 CREATE INDEX application_env_id_updated_at_desc ON Application (EnvId, UpdatedAt DESC);
 
 -- index on `Name` ASC and `UpdatedAt` DESC
@@ -62,6 +63,7 @@ CREATE INDEX deployment_project_id_updated_at_desc ON Deployment (ProjectId, Upd
 
 -- index on `EnvId` ASC and `UpdatedAt` DESC
 ALTER TABLE Deployment ADD COLUMN EnvId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.env_id") VIRTUAL NOT NULL;
+ALTER TABLE Deployment MODIFY EnvId VARCHAR(36) GENERATED ALWAYS AS (IFNULL(data->>"$.env_id", "")) VIRTUAL NOT NULL;
 CREATE INDEX deployment_env_id_updated_at_desc ON Deployment (EnvId, UpdatedAt DESC);
 
 -- index on `Kind` ASC and `UpdatedAt` DESC
