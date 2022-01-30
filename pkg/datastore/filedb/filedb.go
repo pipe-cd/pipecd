@@ -17,9 +17,10 @@ package filedb
 import (
 	"context"
 
+	"go.uber.org/zap"
+
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/filestore"
-	"go.uber.org/zap"
 )
 
 type FileDB struct {
