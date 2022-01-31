@@ -58,6 +58,10 @@ func (c *Filler) Run(ctx context.Context) error {
 					Field:     "CreatedAt",
 					Direction: datastore.Asc,
 				},
+				{
+					Field:     "Id",
+					Direction: datastore.Asc,
+				},
 			},
 			Cursor: cursor,
 			Limit:  limit,
