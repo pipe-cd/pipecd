@@ -59,7 +59,6 @@ type secretDecrypter interface {
 
 type Detector interface {
 	Run(ctx context.Context) error
-	ReportApplicationSyncState(ctx context.Context, appID string, state model.ApplicationSyncState) error
 }
 
 type detector struct {
