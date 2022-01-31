@@ -59,6 +59,7 @@ type secretDecrypter interface {
 
 type Detector interface {
 	Run(ctx context.Context) error
+	ReportApplicationSyncState(ctx context.Context, appID string, state model.ApplicationSyncState) error
 }
 
 type detector struct {
@@ -83,7 +84,7 @@ func NewDetector(
 	cfg *config.PipedSpec,
 	sd secretDecrypter,
 	logger *zap.Logger,
-) (*detector, error) {
+) (Detector, error) {
 
 	d := &detector{
 		apiClient:  apiClient,

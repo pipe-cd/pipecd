@@ -50,6 +50,11 @@ type reporter interface {
 	ReportApplicationSyncState(ctx context.Context, appID string, state model.ApplicationSyncState) error
 }
 
+type Detector interface {
+	Run(ctx context.Context) error
+	ProviderName() string
+}
+
 type detector struct {
 	provider          config.PipedCloudProvider
 	appLister         applicationLister
@@ -76,7 +81,7 @@ func NewDetector(
 	cfg *config.PipedSpec,
 	sd secretDecrypter,
 	logger *zap.Logger,
-) *detector {
+) Detector {
 
 	logger = logger.Named("kubernetes-detector").With(
 		zap.String("cloud-provider", cp.Name),
