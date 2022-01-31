@@ -191,6 +191,22 @@ func getEncriptionKey(se *model.Piped_SecretEncryption) ([]byte, error) {
 	}
 }
 
+func gRPCErrorForEntityOperation(err error, op string, a ...interface{}) error {
+	if err == nil {
+		return nil
+	}
+	switch err {
+	case datastore.ErrNotFound:
+		return status.Error(codes.NotFound, fmt.Sprintf("Entity was not found to "+op, a...))
+	case datastore.ErrInvalidArgument:
+		return status.Error(codes.InvalidArgument, fmt.Sprintf("Invalid argument to "+op, a...))
+	case datastore.ErrAlreadyExists:
+		return status.Error(codes.AlreadyExists, fmt.Sprintf("Entity already exists to "+op, a...))
+	default:
+		return status.Error(codes.Internal, fmt.Sprintf("Failed to "+op, a...))
+	}
+}
+
 func makeUnregisteredAppsCacheKey(projectID string) string {
 	return fmt.Sprintf("HASHKEY:UNREGISTERED_APPS:%s", projectID)
 }

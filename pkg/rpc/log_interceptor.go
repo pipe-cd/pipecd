@@ -21,6 +21,7 @@ import (
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
@@ -31,10 +32,19 @@ func LogUnaryServerInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 		resp, err := handler(ctx, req)
 		code := status.Code(err)
 
-		logger.Info(fmt.Sprintf("handled an unary gRPC request: %s", info.FullMethod),
-			zap.String("code", code.String()),
-			zap.Duration("duration", time.Since(start)),
-		)
+		switch code {
+		case codes.Internal:
+			logger.Error(fmt.Sprintf("failed to handle an unary gRPC request: %s", info.FullMethod),
+				zap.Error(err),
+				zap.Duration("duration", time.Since(start)),
+			)
+		default:
+			logger.Info(fmt.Sprintf("handled an unary gRPC request: %s", info.FullMethod),
+				zap.String("code", code.String()),
+				zap.Error(err),
+				zap.Duration("duration", time.Since(start)),
+			)
+		}
 		return resp, err
 	}
 }

@@ -146,8 +146,7 @@ func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvir
 	}
 	envs, err := a.environmentStore.ListEnvironments(ctx, opts)
 	if err != nil {
-		a.logger.Error("failed to get environments", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get environments")
+		return nil, gRPCErrorForEntityOperation(err, "list environments")
 	}
 
 	return &webservice.ListEnvironmentsResponse{
@@ -246,37 +245,13 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 		if app.ProjectId != claims.Role.ProjectId {
 			continue
 		}
-		err := a.applicationStore.DeleteApplication(ctx, app.Id)
-		if err == nil {
-			continue
-		}
-		switch err {
-		case datastore.ErrNotFound:
-			return nil, status.Error(codes.Internal, "The application is not found")
-		case datastore.ErrInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, "Invalid value to delete")
-		default:
-			a.logger.Error("failed to delete the application",
-				zap.String("application-id", app.Id),
-				zap.Error(err),
-			)
-			return nil, status.Error(codes.Internal, "Failed to delete the application")
+		if err := a.applicationStore.DeleteApplication(ctx, app.Id); err != nil {
+			return nil, gRPCErrorForEntityOperation(err, "delete application %s", app.Id)
 		}
 	}
 
 	if err := a.environmentStore.DeleteEnvironment(ctx, req.EnvironmentId); err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return nil, status.Error(codes.NotFound, "The environment is not found")
-		case datastore.ErrInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, "Invalid value to delete")
-		default:
-			a.logger.Error("failed to delete the environment",
-				zap.String("env-id", req.EnvironmentId),
-				zap.Error(err),
-			)
-			return nil, status.Error(codes.Internal, "Failed to delete the environment")
-		}
+		return nil, gRPCErrorForEntityOperation(err, "delete environment %s", req.EnvironmentId)
 	}
 
 	return &webservice.DeleteEnvironmentResponse{}, nil
@@ -301,19 +276,9 @@ func (a *WebAPI) updateEnvironmentEnable(ctx context.Context, envID string, enab
 	}
 
 	if err := updater(ctx, envID); err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return status.Error(codes.NotFound, "The environment is not found")
-		case datastore.ErrInvalidArgument:
-			return status.Error(codes.InvalidArgument, "Invalid value for update")
-		default:
-			a.logger.Error("failed to update the environment",
-				zap.String("env-id", envID),
-				zap.Error(err),
-			)
-			return status.Error(codes.Internal, "Failed to update the environment")
-		}
+		return gRPCErrorForEntityOperation(err, "update environment %s", envID)
 	}
+
 	return nil
 }
 
@@ -364,14 +329,10 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("Failed to create key: %v", err))
 	}
 
-	err = a.pipedStore.AddPiped(ctx, &piped)
-	if errors.Is(err, datastore.ErrAlreadyExists) {
-		return nil, status.Error(codes.AlreadyExists, "The piped already exists")
+	if err = a.pipedStore.AddPiped(ctx, &piped); err != nil {
+		return nil, gRPCErrorForEntityOperation(err, "add piped %s", piped.Id)
 	}
-	if err != nil {
-		a.logger.Error("failed to register piped", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to register piped")
-	}
+
 	return &webservice.RegisterPipedResponse{
 		Id:  piped.Id,
 		Key: key,
@@ -461,20 +422,7 @@ func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(c
 	}
 
 	if err := updater(ctx, pipedID); err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return status.Error(codes.InvalidArgument, "The piped is not found")
-		case datastore.ErrInvalidArgument:
-			return status.Error(codes.InvalidArgument, "Invalid value for update")
-		default:
-			a.logger.Error("failed to update the piped",
-				zap.String("piped-id", pipedID),
-				zap.Error(err),
-			)
-			// TODO: Improve error handling, instead of considering all as Internal error like this
-			// we should check the error type to decide to pass its message to the web client or just a generic message.
-			return status.Error(codes.Internal, "Failed to update the piped")
-		}
+		return gRPCErrorForEntityOperation(err, "update piped %s", pipedID)
 	}
 	return nil
 }
@@ -508,8 +456,7 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 
 	pipeds, err := a.pipedStore.ListPipeds(ctx, opts)
 	if err != nil {
-		a.logger.Error("failed to get pipeds", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get pipeds")
+		return nil, gRPCErrorForEntityOperation(err, "list pipeds")
 	}
 
 	// Check piped connection status if necessary.
@@ -700,13 +647,8 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		Description:   req.Description,
 		Labels:        req.Labels,
 	}
-	err = a.applicationStore.AddApplication(ctx, &app)
-	if errors.Is(err, datastore.ErrAlreadyExists) {
-		return nil, status.Error(codes.AlreadyExists, "The application already exists")
-	}
-	if err != nil {
-		a.logger.Error("failed to create application", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to create application")
+	if err = a.applicationStore.AddApplication(ctx, &app); err != nil {
+		return nil, gRPCErrorForEntityOperation(err, "add application %s", app.Id)
 	}
 
 	return &webservice.AddApplicationResponse{
@@ -724,10 +666,10 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 		app.GitPath.ConfigFilename = req.ConfigFilename
 		return nil
 	}
-
 	if err := a.updateApplication(ctx, req.ApplicationId, req.PipedId, updater); err != nil {
 		return nil, err
 	}
+
 	return &webservice.UpdateApplicationResponse{}, nil
 }
 
@@ -736,10 +678,10 @@ func (a *WebAPI) UpdateApplicationDescription(ctx context.Context, req *webservi
 		app.Description = req.Description
 		return nil
 	}
-
 	if err := a.updateApplication(ctx, req.ApplicationId, "", updater); err != nil {
 		return nil, err
 	}
+
 	return &webservice.UpdateApplicationDescriptionResponse{}, nil
 }
 
@@ -762,10 +704,8 @@ func (a *WebAPI) updateApplication(ctx context.Context, id, pipedID string, upda
 		}
 	}
 
-	err = a.applicationStore.UpdateApplication(ctx, id, updater)
-	if err != nil {
-		a.logger.Error("failed to update application", zap.Error(err))
-		return status.Error(codes.Internal, "Failed to update application")
+	if err = a.applicationStore.UpdateApplication(ctx, id, updater); err != nil {
+		return gRPCErrorForEntityOperation(err, "update application %s", id)
 	}
 
 	return nil
@@ -797,18 +737,7 @@ func (a *WebAPI) DeleteApplication(ctx context.Context, req *webservice.DeleteAp
 	}
 
 	if err := a.applicationStore.DeleteApplication(ctx, req.ApplicationId); err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return nil, status.Error(codes.NotFound, "The application is not found")
-		case datastore.ErrInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, "Invalid value to delete")
-		default:
-			a.logger.Error("failed to delete the application",
-				zap.String("application-id", req.ApplicationId),
-				zap.Error(err),
-			)
-			return nil, status.Error(codes.Internal, "Failed to delete the application")
-		}
+		return nil, gRPCErrorForEntityOperation(err, "delete application %s", req.ApplicationId)
 	}
 
 	return &webservice.DeleteApplicationResponse{}, nil
@@ -833,18 +762,7 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 	}
 
 	if err := updater(ctx, appID); err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return status.Error(codes.NotFound, "The application is not found")
-		case datastore.ErrInvalidArgument:
-			return status.Error(codes.InvalidArgument, "Invalid value for update")
-		default:
-			a.logger.Error("failed to update the application",
-				zap.String("application-id", appID),
-				zap.Error(err),
-			)
-			return status.Error(codes.Internal, "Failed to update the application")
-		}
+		return gRPCErrorForEntityOperation(err, "enable/disable application %s", appID)
 	}
 	return nil
 }
@@ -918,8 +836,7 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		Orders:  orders,
 	})
 	if err != nil {
-		a.logger.Error("failed to get applications", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get applications")
+		return nil, gRPCErrorForEntityOperation(err, "list applications")
 	}
 
 	if len(req.Options.Labels) == 0 {
@@ -1393,6 +1310,7 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 		a.logger.Error("failed to get application live state", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get application live state")
 	}
+
 	return &webservice.GetApplicationLiveStateResponse{
 		Snapshot: snapshot,
 	}, nil
@@ -1432,13 +1350,10 @@ func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Proje
 	}
 
 	project, err := a.projectStore.GetProject(ctx, projectID)
-	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "The project is not found")
-	}
 	if err != nil {
-		a.logger.Error("failed to get project", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get project")
+		return nil, gRPCErrorForEntityOperation(err, "get project %s", projectID)
 	}
+
 	return project, nil
 }
 
@@ -1602,13 +1517,8 @@ func (a *WebAPI) GenerateAPIKey(ctx context.Context, req *webservice.GenerateAPI
 		Creator:   claims.Subject,
 	}
 
-	err = a.apiKeyStore.AddAPIKey(ctx, &apiKey)
-	if errors.Is(err, datastore.ErrAlreadyExists) {
-		return nil, status.Error(codes.AlreadyExists, "The API key already exists")
-	}
-	if err != nil {
-		a.logger.Error("failed to create API key", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to create API key")
+	if err = a.apiKeyStore.AddAPIKey(ctx, &apiKey); err != nil {
+		return nil, gRPCErrorForEntityOperation(err, "add API key %s", apiKey.Id)
 	}
 
 	return &webservice.GenerateAPIKeyResponse{
@@ -1624,18 +1534,7 @@ func (a *WebAPI) DisableAPIKey(ctx context.Context, req *webservice.DisableAPIKe
 	}
 
 	if err := a.apiKeyStore.DisableAPIKey(ctx, req.Id, claims.Role.ProjectId); err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return nil, status.Error(codes.InvalidArgument, "The API key is not found")
-		case datastore.ErrInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, "Invalid value for update")
-		default:
-			a.logger.Error("failed to disable the API key",
-				zap.String("apikey-id", req.Id),
-				zap.Error(err),
-			)
-			return nil, status.Error(codes.Internal, "Failed to disable the API key")
-		}
+		return nil, gRPCErrorForEntityOperation(err, "disable API key %s", req.Id)
 	}
 
 	return &webservice.DisableAPIKeyResponse{}, nil
@@ -1670,8 +1569,7 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 
 	apiKeys, err := a.apiKeyStore.ListAPIKeys(ctx, opts)
 	if err != nil {
-		a.logger.Error("failed to list API keys", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to list API keys")
+		return nil, gRPCErrorForEntityOperation(err, "list API keys")
 	}
 
 	// Redact all sensitive data inside API key before sending to the client.
@@ -1803,8 +1701,7 @@ func (a *WebAPI) ListDeploymentChains(ctx context.Context, req *webservice.ListD
 
 	deploymentChains, cursor, err := a.deploymentChainStore.ListDeploymentChains(ctx, options)
 	if err != nil {
-		a.logger.Error("failed to list deployment chains", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to list deployment chains")
+		return nil, gRPCErrorForEntityOperation(err, "list deployment chains")
 	}
 
 	return &webservice.ListDeploymentChainsResponse{
@@ -1821,12 +1718,8 @@ func (a *WebAPI) GetDeploymentChain(ctx context.Context, req *webservice.GetDepl
 	}
 
 	dc, err := a.deploymentChainStore.GetDeploymentChain(ctx, req.DeploymentChainId)
-	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "Deployment chain is not found")
-	}
 	if err != nil {
-		a.logger.Error("failed to get deployment chain", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get deployment chain")
+		return nil, gRPCErrorForEntityOperation(err, "get deployment chain %s", req.DeploymentChainId)
 	}
 
 	if claims.Role.ProjectId != dc.ProjectId {
@@ -1895,9 +1788,9 @@ func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsReque
 	}
 	events, cursor, err := a.eventStore.ListEvents(ctx, options)
 	if err != nil {
-		a.logger.Error("failed to get events", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get events")
+		return nil, gRPCErrorForEntityOperation(err, "list events")
 	}
+
 	labels := req.Options.Labels
 	if len(labels) == 0 || len(events) == 0 {
 		return &webservice.ListEventsResponse{
