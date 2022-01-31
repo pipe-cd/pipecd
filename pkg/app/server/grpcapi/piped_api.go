@@ -733,6 +733,24 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 			Value:    req.To,
 		})
 	}
+	if req.Status != pipedservice.ListEventsRequest_ALL {
+		var status model.EventStatus
+		switch req.Status {
+		case pipedservice.ListEventsRequest_NOT_HANDLED:
+			status = model.EventStatus_EVENT_NOT_HANDLED
+		case pipedservice.ListEventsRequest_SUCCESS:
+			status = model.EventStatus_EVENT_SUCCESS
+		case pipedservice.ListEventsRequest_FAILURE:
+			status = model.EventStatus_EVENT_FAILURE
+		case pipedservice.ListEventsRequest_OUTDATED:
+			status = model.EventStatus_EVENT_OUTDATED
+		}
+		opts.Filters = append(opts.Filters, datastore.ListFilter{
+			Field:    "Status",
+			Operator: datastore.OperatorEqual,
+			Value:    status,
+		})
+	}
 	switch req.Order {
 	case pipedservice.ListOrder_ASC:
 		opts.Orders = []datastore.Order{

@@ -438,9 +438,17 @@ message GetLatestEventResponse {
 
 
 message ListEventsRequest {
+    enum Status {
+        ALL = 0;
+        NOT_HANDLED = 1;
+        SUCCESS = 2;
+        FAILURE = 3;
+        OUTDATED = 4;
+    }
     int64 from = 1;
     int64 to = 2;
     ListOrder order = 3 [(validate.rules).enum.defined_only = true];
+    Status status = 4 [(validate.rules).enum.defined_only = true];
 }
 
 message ListEventsResponse {

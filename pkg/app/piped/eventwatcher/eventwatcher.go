@@ -48,6 +48,7 @@ const (
 	retryPushNum      = 3
 	retryPushInterval = 5 * time.Second
 
+	// NOTE: We don't support batch update, that's why we have a constant number of updates to make.
 	numToMakeOutdated = 10
 )
 
@@ -55,11 +56,9 @@ type Watcher interface {
 	Run(context.Context) error
 }
 
-type eventStore interface {
-	GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool)
+type eventLister interface {
 	// Gives back not-handled event list which is sorted by newest.
-	ListNotHandled(name string, labels map[string]string, limit int) []*model.Event
-	UpdateStatuses(ctx context.Context, events []model.Event) error
+	ListNotHandled(name string, labels map[string]string, minCreatedAt int64, limit int) []*model.Event
 }
 
 type gitClient interface {
@@ -67,28 +66,32 @@ type gitClient interface {
 }
 
 type apiClient interface {
+	GetLatestEvent(ctx context.Context, req *pipedservice.GetLatestEventRequest, opts ...grpc.CallOption) (*pipedservice.GetLatestEventResponse, error)
 	ReportEventStatuses(ctx context.Context, req *pipedservice.ReportEventStatusesRequest, opts ...grpc.CallOption) (*pipedservice.ReportEventStatusesResponse, error)
 }
 
 type watcher struct {
-	config     *config.PipedSpec
-	eventStore eventStore
-	gitClient  gitClient
-	apiClient  apiClient
-	logger     *zap.Logger
-	wg         sync.WaitGroup
+	config      *config.PipedSpec
+	eventLister eventLister
+	gitClient   gitClient
+	apiClient   apiClient
+	logger      *zap.Logger
+	wg          sync.WaitGroup
 
 	// All cloned repository will be placed under this.
 	workingDir string
+	// Maximum timestamp of the last Event read.
+	// A map from repo-id to the UNIX timestamp that has been read.
+	milestoneMap sync.Map
 }
 
-func NewWatcher(cfg *config.PipedSpec, eventStore eventStore, gitClient gitClient, apiClient apiClient, logger *zap.Logger) Watcher {
+func NewWatcher(cfg *config.PipedSpec, eventLister eventLister, gitClient gitClient, apiClient apiClient, logger *zap.Logger) Watcher {
 	return &watcher{
-		config:     cfg,
-		eventStore: eventStore,
-		gitClient:  gitClient,
-		apiClient:  apiClient,
-		logger:     logger.Named("event-watcher"),
+		config:      cfg,
+		eventLister: eventLister,
+		gitClient:   gitClient,
+		apiClient:   apiClient,
+		logger:      logger.Named("event-watcher"),
 	}
 }
 
@@ -232,50 +235,60 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	}
 	defer tmpRepo.Clean()
 
-	handledEvents := make([]model.Event, 0, len(eventCfgs))
+	milestone, ok := w.milestoneMap.Load(repoID)
+	if !ok {
+		milestone = 0
+	}
+	var maxTimestamp int64
+	handledEvents := make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventCfgs))
 	for _, e := range eventCfgs {
-		latestEvent, ok := w.eventStore.GetLatest(ctx, e.Name, e.Labels)
-		if !ok {
+		notHandledEvents := w.eventLister.ListNotHandled(e.Name, e.Labels, milestone.(int64)+1, numToMakeOutdated)
+		if len(notHandledEvents) == 0 {
 			continue
 		}
-		if latestEvent.IsHandled() {
-			continue
+		if len(notHandledEvents) > 1 {
+			// Ensure that the least recent entries get outdated.
+			if err := w.makeEventsOutdated(ctx, notHandledEvents[1:]); err != nil {
+				return err
+			}
 		}
-		le := *latestEvent
+
+		if milestone == 0 {
+			// Avoid handling event that isn't the latest.
+			resp, err := w.apiClient.GetLatestEvent(ctx, &pipedservice.GetLatestEventRequest{
+				Name:   e.Name,
+				Labels: e.Labels,
+			})
+			if err != nil {
+				return err
+			}
+			if resp.Event.CreatedAt > notHandledEvents[0].CreatedAt {
+				continue
+			}
+		}
+		latestEvent := notHandledEvents[0]
 		if err := w.commitFiles(ctx, latestEvent.Data, e, tmpRepo, commitMsg); err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
-			le.Status = model.EventStatus_EVENT_FAILURE
-			le.StatusDescription = fmt.Sprintf("Failed to change files: %v", err)
-			handledEvents = append(handledEvents, le)
+			handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
+				Id:                latestEvent.Id,
+				Status:            model.EventStatus_EVENT_FAILURE,
+				StatusDescription: fmt.Sprintf("Failed to change files: %v", err),
+			})
 			continue
 		}
-		le.Status = model.EventStatus_EVENT_SUCCESS
-		le.StatusDescription = fmt.Sprintf("Successfully updated %d files in the %q repository", len(e.Replacements), repoID)
-		handledEvents = append(handledEvents, le)
+		handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
+			Id:                latestEvent.Id,
+			Status:            model.EventStatus_EVENT_SUCCESS,
+			StatusDescription: fmt.Sprintf("Successfully updated %d files in the %q repository", len(e.Replacements), repoID),
+		})
+		if latestEvent.CreatedAt > maxTimestamp {
+			maxTimestamp = latestEvent.CreatedAt
+		}
 	}
 	if len(handledEvents) == 0 {
 		return nil
 	}
-
-	// Ensure that the 10 least recent entries get outdated.
-	// NOTE: We don't support batch update, that's why we have a constant number of updates to make.
-	outdated := make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
-	for _, e := range handledEvents {
-		es := w.eventStore.ListNotHandled(e.Name, e.Labels, numToMakeOutdated)
-		for i := range es {
-			outdated = append(outdated, &pipedservice.ReportEventStatusesRequest_Event{
-				Id:                es[i].Id,
-				Status:            model.EventStatus_EVENT_OUTDATED,
-				StatusDescription: fmt.Sprintf("The new event has been created"),
-			})
-		}
-	}
-	if len(outdated) > 0 {
-		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: outdated}); err != nil {
-			return fmt.Errorf("failed to report event statuses: %w", err)
-		}
-		w.logger.Info(fmt.Sprintf("successfully made %d events OUTDATED", len(outdated)))
-	}
+	w.milestoneMap.Store(repoID, maxTimestamp)
 
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
 	_, err = retry.Do(ctx, func() (interface{}, error) {
@@ -283,8 +296,8 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		return nil, err
 	})
 	if err == nil {
-		if err := w.eventStore.UpdateStatuses(ctx, handledEvents); err != nil {
-			return err
+		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
+			return fmt.Errorf("failed to report event statuses: %w", err)
 		}
 		return nil
 	}
@@ -297,10 +310,29 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		handledEvents[i].Status = model.EventStatus_EVENT_FAILURE
 		handledEvents[i].StatusDescription = fmt.Sprintf("Failed to push changed files: %v", err)
 	}
-	if err := w.eventStore.UpdateStatuses(ctx, handledEvents); err != nil {
-		return err
+	if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
+		return fmt.Errorf("failed to report event statuses: %w", err)
 	}
 	return fmt.Errorf("failed to push commits: %w", err)
+}
+
+func (w *watcher) makeEventsOutdated(ctx context.Context, events []*model.Event) error {
+	if len(events) == 0 {
+		return nil
+	}
+	outdated := make([]*pipedservice.ReportEventStatusesRequest_Event, len(events))
+	for i := 1; i < len(events); i++ {
+		outdated = append(outdated, &pipedservice.ReportEventStatusesRequest_Event{
+			Id:                events[i].Id,
+			Status:            model.EventStatus_EVENT_OUTDATED,
+			StatusDescription: fmt.Sprintf("The new event %q has been created", events[i].Id),
+		})
+	}
+	if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: outdated}); err != nil {
+		return fmt.Errorf("failed to report event statuses: %w", err)
+	}
+	w.logger.Info(fmt.Sprintf("successfully made %d events OUTDATED", len(outdated)))
+	return nil
 }
 
 // commitFiles commits changes if the data in Git is different from the latest event.
