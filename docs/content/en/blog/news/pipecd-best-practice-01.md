@@ -21,7 +21,7 @@ Component Architecture
 At a glance, PipeCD is composed of 2 components, the Control Plane and the Piped(s). As the figure above, depending on your task/role, you need to work with different components of PipeCD.
 
 1. As a operator - platform team, most of your time working with PipeCD is to operate the PipeCD Control Plane. You may also need to cooperate with the product team, helping them install Piped(s) to their applications running cluster depending on your company team's structure. The space surrounded by a <span style="color: green;">green border</span> shows the operators working area.
-2. As a developer - product team, most of your time working with PipeCD is to control your applications' development via the PipeCD application configuration files. You may also need to cooperate with the platform team to install Piped(s) to your applications running cluster if necessary. The space surrounded by a <span style="color: blue;">blue border</span> shows the developers working area.
+2. As a developer - product team, most of your time working with PipeCD is to deploy, manage and observe your applications via application configuration files and PipeCD web console. You may also need to cooperate with the platform team to install Piped(s) to your applications running cluster if necessary. The space surrounded by a <span style="color: blue;">blue border</span> shows the developers working area.
 
 ### Tips to operate PipeCD cluster
 
