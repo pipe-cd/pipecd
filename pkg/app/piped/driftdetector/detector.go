@@ -74,7 +74,6 @@ type providerDetector interface {
 	ProviderName() string
 }
 
-// TODO: NewDetector have to return an error and stop piped immediately if it exists.
 func NewDetector(
 	appLister applicationLister,
 	gitClient gitClient,
@@ -84,7 +83,7 @@ func NewDetector(
 	cfg *config.PipedSpec,
 	sd secretDecrypter,
 	logger *zap.Logger,
-) *detector {
+) (Detector, error) {
 
 	d := &detector{
 		apiClient:  apiClient,
@@ -100,8 +99,7 @@ func NewDetector(
 		case model.CloudProviderKubernetes:
 			sg, ok := stateGetter.KubernetesGetter(cp.Name)
 			if !ok {
-				d.logger.Error(fmt.Sprintf(format, cp.Name))
-				continue
+				return nil, fmt.Errorf(format, cp.Name)
 			}
 			d.detectors = append(d.detectors, kubernetes.NewDetector(
 				cp,
@@ -118,8 +116,7 @@ func NewDetector(
 		case model.CloudProviderCloudRun:
 			sg, ok := stateGetter.CloudRunGetter(cp.Name)
 			if !ok {
-				d.logger.Error(fmt.Sprintf(format, cp.Name))
-				continue
+				return nil, fmt.Errorf(format, cp.Name)
 			}
 			d.detectors = append(d.detectors, cloudrun.NewDetector(
 				cp,
@@ -137,7 +134,7 @@ func NewDetector(
 		}
 	}
 
-	return d
+	return d, nil
 }
 
 func (d *detector) Run(ctx context.Context) error {
