@@ -356,6 +356,11 @@
         "arrayConfig": ""
       },
       {
+        "fieldPath": "Status",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
         "fieldPath": "CreatedAt",
         "order": "DESCENDING",
         "arrayConfig": ""

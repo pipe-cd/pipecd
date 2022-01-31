@@ -744,6 +744,8 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 			status = model.EventStatus_EVENT_FAILURE
 		case pipedservice.ListEventsRequest_OUTDATED:
 			status = model.EventStatus_EVENT_OUTDATED
+		default:
+			return nil, fmt.Errorf("unknown status %v given", req.Status)
 		}
 		opts.Filters = append(opts.Filters, datastore.ListFilter{
 			Field:    "Status",

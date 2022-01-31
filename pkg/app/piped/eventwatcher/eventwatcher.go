@@ -239,34 +239,42 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	if !ok {
 		milestone = 0
 	}
-	var maxTimestamp int64
-	handledEvents := make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventCfgs))
+	var (
+		firstRead      = !ok
+		handledEvents  = make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventCfgs))
+		outDatedEvents = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
+		maxTimestamp   int64
+	)
 	for _, e := range eventCfgs {
 		notHandledEvents := w.eventLister.ListNotHandled(e.Name, e.Labels, milestone.(int64)+1, numToMakeOutdated)
 		if len(notHandledEvents) == 0 {
 			continue
 		}
 		if len(notHandledEvents) > 1 {
-			// Ensure that the least recent entries get outdated.
-			if err := w.makeEventsOutdated(ctx, notHandledEvents[1:]); err != nil {
-				return err
+			// Events other than the latest will be OUTDATED.
+			for i := 1; i < len(notHandledEvents[1:]); i++ {
+				outDatedEvents = append(outDatedEvents, &pipedservice.ReportEventStatusesRequest_Event{
+					Id:                notHandledEvents[i].Id,
+					Status:            model.EventStatus_EVENT_OUTDATED,
+					StatusDescription: fmt.Sprintf("The new event %q has been created", notHandledEvents[i].Id),
+				})
 			}
 		}
 
-		if milestone == 0 {
+		latestEvent := notHandledEvents[0]
+		if firstRead {
 			// Avoid handling event that isn't the latest.
 			resp, err := w.apiClient.GetLatestEvent(ctx, &pipedservice.GetLatestEventRequest{
 				Name:   e.Name,
 				Labels: e.Labels,
 			})
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to get the latest event: %w", err)
 			}
-			if resp.Event.CreatedAt > notHandledEvents[0].CreatedAt {
+			if resp.Event.CreatedAt > latestEvent.CreatedAt {
 				continue
 			}
 		}
-		latestEvent := notHandledEvents[0]
 		if err := w.commitFiles(ctx, latestEvent.Data, e, tmpRepo, commitMsg); err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
 			handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
@@ -284,6 +292,12 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		if latestEvent.CreatedAt > maxTimestamp {
 			maxTimestamp = latestEvent.CreatedAt
 		}
+	}
+	if len(outDatedEvents) > 0 {
+		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: outDatedEvents}); err != nil {
+			return fmt.Errorf("failed to report event statuses: %w", err)
+		}
+		w.logger.Info(fmt.Sprintf("successfully made %d events OUTDATED", len(outDatedEvents)))
 	}
 	if len(handledEvents) == 0 {
 		return nil
@@ -314,25 +328,6 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		return fmt.Errorf("failed to report event statuses: %w", err)
 	}
 	return fmt.Errorf("failed to push commits: %w", err)
-}
-
-func (w *watcher) makeEventsOutdated(ctx context.Context, events []*model.Event) error {
-	if len(events) == 0 {
-		return nil
-	}
-	outdated := make([]*pipedservice.ReportEventStatusesRequest_Event, len(events))
-	for i := 1; i < len(events); i++ {
-		outdated = append(outdated, &pipedservice.ReportEventStatusesRequest_Event{
-			Id:                events[i].Id,
-			Status:            model.EventStatus_EVENT_OUTDATED,
-			StatusDescription: fmt.Sprintf("The new event %q has been created", events[i].Id),
-		})
-	}
-	if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: outdated}); err != nil {
-		return fmt.Errorf("failed to report event statuses: %w", err)
-	}
-	w.logger.Info(fmt.Sprintf("successfully made %d events OUTDATED", len(outdated)))
-	return nil
 }
 
 // commitFiles commits changes if the data in Git is different from the latest event.

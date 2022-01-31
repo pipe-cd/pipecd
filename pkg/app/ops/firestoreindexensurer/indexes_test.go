@@ -380,6 +380,11 @@ func TestParseIndexes(t *testing.T) {
 					ArrayConfig: "",
 				},
 				{
+					FieldPath:   "Status",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
 					FieldPath:   "CreatedAt",
 					Order:       "DESCENDING",
 					ArrayConfig: "",
