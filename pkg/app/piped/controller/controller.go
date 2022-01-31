@@ -137,7 +137,8 @@ type controller struct {
 	// of the done schedulers.
 	doneSchedulers map[string]time.Time
 	// Map from application ID to its most recently successful commit hash.
-	mostRecentlySuccessfulCommits map[string]string
+	mostRecentlySuccessfulCommits         map[string]string
+	mostRecentlySuccessfulConfigFilenames map[string]string
 	// WaitGroup for waiting the completions of all planners, schedulers.
 	wg sync.WaitGroup
 
@@ -184,11 +185,12 @@ func NewController(
 		pipedConfig:         pipedConfig,
 		logPersister:        lp,
 
-		planners:                      make(map[string]*planner),
-		donePlanners:                  make(map[string]time.Time),
-		schedulers:                    make(map[string]*scheduler),
-		doneSchedulers:                make(map[string]time.Time),
-		mostRecentlySuccessfulCommits: make(map[string]string),
+		planners:                              make(map[string]*planner),
+		donePlanners:                          make(map[string]time.Time),
+		schedulers:                            make(map[string]*scheduler),
+		doneSchedulers:                        make(map[string]time.Time),
+		mostRecentlySuccessfulCommits:         make(map[string]string),
+		mostRecentlySuccessfulConfigFilenames: make(map[string]string),
 
 		syncInternal: 10 * time.Second,
 		gracePeriod:  gracePeriod,
@@ -451,15 +453,22 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	// The most recent successful commit is saved in memory.
 	// But when the piped is restarted that data will be cleared too.
 	// So in that case, we have to use the API to check.
-	commit := c.mostRecentlySuccessfulCommits[d.ApplicationId]
-	if commit == "" {
-		mostRecent, err := c.getMostRecentlySuccessfulDeployment(ctx, d.ApplicationId)
+	var (
+		commitHash     = c.mostRecentlySuccessfulCommits[d.ApplicationId]
+		configFilename = c.mostRecentlySuccessfulConfigFilenames[d.ApplicationId]
+	)
+	if commitHash == "" {
+		dref, err := c.getMostRecentlySuccessfulDeployment(ctx, d.ApplicationId)
 		switch {
 		case err == nil:
-			commit = mostRecent.Trigger.Commit.Hash
-			c.mostRecentlySuccessfulCommits[d.ApplicationId] = commit
+			commitHash = dref.Trigger.Commit.Hash
+			configFilename = dref.ConfigFilename
+			c.mostRecentlySuccessfulCommits[d.ApplicationId] = commitHash
+			c.mostRecentlySuccessfulConfigFilenames[d.ApplicationId] = configFilename
+
 		case status.Code(err) == codes.NotFound:
 			logger.Info("there is no previous successful commit for this application")
+
 		default:
 			return nil, fmt.Errorf("failed to get the most recently successful deployment (%w)", err)
 		}
@@ -477,7 +486,8 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	planner := newPlanner(
 		d,
 		envName,
-		commit,
+		commitHash,
+		configFilename,
 		workingDir,
 		c.apiClient,
 		c.gitClient,
@@ -520,6 +530,7 @@ func (c *controller) syncSchedulers(ctx context.Context) error {
 			continue
 		}
 		c.mostRecentlySuccessfulCommits[id] = s.CommitHash()
+		c.mostRecentlySuccessfulConfigFilenames[id] = s.ConfigFilename()
 	}
 
 	// Remove done schedulers.

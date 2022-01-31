@@ -17,6 +17,7 @@ export const dummyDeployment: Deployment.AsObject = {
   applicationName: dummyApplication.name,
   applicationId: dummyApplication.id,
   runningCommitHash: randomUUID().slice(0, 8),
+  runningConfigFilename: ".pipe.yaml",
   stagesList: dummyPipeline,
   status: DeploymentStatus.DEPLOYMENT_SUCCESS,
   statusReason: "good",

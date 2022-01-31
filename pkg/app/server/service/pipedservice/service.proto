@@ -284,6 +284,8 @@ message ReportDeploymentPlannedRequest {
     string status_reason = 3;
     // Hash value of the most recently successfully deployed commit.
     string running_commit_hash = 4;
+    // The config file name used by the last successful deployment.
+    string running_config_filename = 9;
     // The application version this deployment is trying to deploy.
     string version = 5;
     // The planned stages.

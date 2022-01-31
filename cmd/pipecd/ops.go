@@ -26,6 +26,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipecd/pkg/admin"
+	"github.com/pipe-cd/pipecd/pkg/app/ops/configfilenamefiller"
 	"github.com/pipe-cd/pipecd/pkg/app/ops/deploymentchaincontroller"
 	"github.com/pipe-cd/pipecd/pkg/app/ops/firestoreindexensurer"
 	"github.com/pipe-cd/pipecd/pkg/app/ops/handler"
@@ -158,6 +159,15 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 		cleaner := orphancommandcleaner.NewOrphanCommandCleaner(ds, input.Logger)
 		group.Go(func() error {
 			return cleaner.Run(ctx)
+		})
+	}
+
+	// TODO: Remove this configfilenamefiller once the migration task completed.
+	// Start running configfilenamefiller.
+	{
+		filler := configfilenamefiller.NewFiller(ds, input.Logger)
+		group.Go(func() error {
+			return filler.Run(ctx)
 		})
 	}
 

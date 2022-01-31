@@ -45,6 +45,7 @@ type ApplicationStore interface {
 	UpdateApplication(ctx context.Context, id string, updater func(*model.Application) error) error
 	UpdateApplicationSyncState(ctx context.Context, id string, syncState *model.ApplicationSyncState) error
 	UpdateApplicationMostRecentDeployment(ctx context.Context, id string, status model.DeploymentStatus, deployment *model.ApplicationDeploymentReference) error
+	FillConfigFilenameToDeploymentReference(ctx context.Context, id string) error
 }
 
 type applicationStore struct {
@@ -178,6 +179,16 @@ func (s *applicationStore) UpdateApplicationMostRecentDeployment(ctx context.Con
 			a.MostRecentlySuccessfulDeployment = deployment
 		case model.DeploymentStatus_DEPLOYMENT_PENDING:
 			a.MostRecentlyTriggeredDeployment = deployment
+		}
+		return nil
+	})
+}
+
+// TODO: Remove this function once the migration task completed.
+func (s *applicationStore) FillConfigFilenameToDeploymentReference(ctx context.Context, id string) error {
+	return s.UpdateApplication(ctx, id, func(a *model.Application) error {
+		if a.MostRecentlySuccessfulDeployment != nil && a.MostRecentlySuccessfulDeployment.ConfigFilename == "" {
+			a.MostRecentlySuccessfulDeployment.ConfigFilename = a.GitPath.GetApplicationConfigFilename()
 		}
 		return nil
 	})

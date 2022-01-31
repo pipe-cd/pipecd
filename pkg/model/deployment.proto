@@ -72,13 +72,15 @@ message Deployment {
     map<string, string> labels = 10;
 
     DeploymentTrigger trigger = 20 [(validate.rules).message.required = true];
-    // Hash value of the most recently successfully deployed commit.
-    string running_commit_hash = 21;
     // Simple description about what this deployment does.
     // e.g. Scale from 10 to 100 replicas.
     // e.g. Update image from v1.5.0 to v1.6.0.
     string summary = 22;
     string version = 23;
+
+    // Hash value of the most recently successfully deployed commit.
+    string running_commit_hash = 21;
+    string running_config_filename = 60;
 
     DeploymentStatus status = 30 [(validate.rules).enum.defined_only = true];
     // The human-readable description why the deployment is at current status.

@@ -14,6 +14,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/admin:go_default_library",
+        "//pkg/app/ops/configfilenamefiller:go_default_library",
         "//pkg/app/ops/deploymentchaincontroller:go_default_library",
         "//pkg/app/ops/firestoreindexensurer:go_default_library",
         "//pkg/app/ops/handler:go_default_library",

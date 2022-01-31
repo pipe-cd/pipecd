@@ -148,6 +148,11 @@ func (s *scheduler) CommitHash() string {
 	return s.deployment.CommitHash()
 }
 
+// ConfigFilename returns the config filename of the deployment.
+func (s *scheduler) ConfigFilename() string {
+	return s.deployment.GitPath.GetApplicationConfigFilename()
+}
+
 // IsDone tells whether this scheduler is done it tasks or not.
 // Returning true means this scheduler can be removable.
 func (s *scheduler) IsDone() bool {
@@ -231,10 +236,13 @@ func (s *scheduler) Run(ctx context.Context) error {
 	)
 
 	if s.deployment.RunningCommitHash != "" {
+		gp := *s.deployment.GitPath
+		gp.ConfigFilename = s.deployment.RunningConfigFilename
+
 		s.runningDSP = deploysource.NewProvider(
 			filepath.Join(s.workingDir, "running-deploysource"),
 			deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "running", s.deployment.RunningCommitHash),
-			*s.deployment.GitPath,
+			gp,
 			s.secretDecrypter,
 		)
 	}
@@ -675,12 +683,13 @@ func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) 
 			ApplicationId: s.deployment.ApplicationId,
 			Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,
 			Deployment: &model.ApplicationDeploymentReference{
-				DeploymentId: s.deployment.Id,
-				Trigger:      s.deployment.Trigger,
-				Summary:      s.deployment.Summary,
-				Version:      s.deployment.Version,
-				StartedAt:    s.deployment.CreatedAt,
-				CompletedAt:  s.deployment.CompletedAt,
+				DeploymentId:   s.deployment.Id,
+				Trigger:        s.deployment.Trigger,
+				Summary:        s.deployment.Summary,
+				Version:        s.deployment.Version,
+				ConfigFilename: s.deployment.GitPath.GetApplicationConfigFilename(),
+				StartedAt:      s.deployment.CreatedAt,
+				CompletedAt:    s.deployment.CompletedAt,
 			},
 		}
 		retry = pipedservice.NewRetry(10)

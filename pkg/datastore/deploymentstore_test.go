@@ -30,11 +30,12 @@ import (
 
 func TestDeploymentToPlannedUpdater(t *testing.T) {
 	var (
-		expectedDesc              = "updated-summary"
-		expectedStatusDesc        = "update-status-desc"
-		expectedRunningCommitHash = "update-running-commit-hash"
-		expectedVersion           = "update-version"
-		expectedStages            = []*model.PipelineStage{
+		expectedDesc                  = "updated-summary"
+		expectedStatusDesc            = "update-status-desc"
+		expectedRunningCommitHash     = "update-running-commit-hash"
+		expectedRunningConfigFilename = "update-running-config-filename"
+		expectedVersion               = "update-version"
+		expectedStages                = []*model.PipelineStage{
 			{
 				Id:    "stage-id1",
 				Name:  "stage1",
@@ -60,6 +61,7 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 			expectedDesc,
 			expectedStatusDesc,
 			expectedRunningCommitHash,
+			expectedRunningConfigFilename,
 			expectedVersion,
 			expectedStages,
 		)
@@ -71,6 +73,7 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 	assert.Equal(t, expectedDesc, d.Summary)
 	assert.Equal(t, expectedStatusDesc, d.StatusReason)
 	assert.Equal(t, expectedRunningCommitHash, d.RunningCommitHash)
+	assert.Equal(t, expectedRunningConfigFilename, d.RunningConfigFilename)
 	assert.Equal(t, expectedVersion, d.Version)
 	assert.Equal(t, expectedStages, d.Stages)
 }

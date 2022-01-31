@@ -43,19 +43,20 @@ import (
 // - Update the pipeline stages and change the deployment status to PLANNED
 type planner struct {
 	// Readonly deployment model.
-	deployment               *model.Deployment
-	envName                  string
-	lastSuccessfulCommitHash string
-	workingDir               string
-	apiClient                apiClient
-	gitClient                gitClient
-	metadataStore            metadatastore.MetadataStore
-	notifier                 notifier
-	secretDecrypter          secretDecrypter
-	plannerRegistry          registry.Registry
-	pipedConfig              *config.PipedSpec
-	appManifestsCache        cache.Cache
-	logger                   *zap.Logger
+	deployment                   *model.Deployment
+	envName                      string
+	lastSuccessfulCommitHash     string
+	lastSuccessfulConfigFilename string
+	workingDir                   string
+	apiClient                    apiClient
+	gitClient                    gitClient
+	metadataStore                metadatastore.MetadataStore
+	notifier                     notifier
+	secretDecrypter              secretDecrypter
+	plannerRegistry              registry.Registry
+	pipedConfig                  *config.PipedSpec
+	appManifestsCache            cache.Cache
+	logger                       *zap.Logger
 
 	done                 atomic.Bool
 	doneTimestamp        time.Time
@@ -70,6 +71,7 @@ func newPlanner(
 	d *model.Deployment,
 	envName string,
 	lastSuccessfulCommitHash string,
+	lastSuccessfulConfigFilename string,
 	workingDir string,
 	apiClient apiClient,
 	gitClient gitClient,
@@ -90,22 +92,23 @@ func newPlanner(
 	)
 
 	p := &planner{
-		deployment:               d,
-		envName:                  envName,
-		lastSuccessfulCommitHash: lastSuccessfulCommitHash,
-		workingDir:               workingDir,
-		apiClient:                apiClient,
-		gitClient:                gitClient,
-		metadataStore:            metadatastore.NewMetadataStore(apiClient, d),
-		notifier:                 notifier,
-		secretDecrypter:          sd,
-		pipedConfig:              pipedConfig,
-		plannerRegistry:          registry.DefaultRegistry(),
-		appManifestsCache:        appManifestsCache,
-		doneDeploymentStatus:     d.Status,
-		cancelledCh:              make(chan *model.ReportableCommand, 1),
-		nowFunc:                  time.Now,
-		logger:                   logger,
+		deployment:                   d,
+		envName:                      envName,
+		lastSuccessfulCommitHash:     lastSuccessfulCommitHash,
+		lastSuccessfulConfigFilename: lastSuccessfulConfigFilename,
+		workingDir:                   workingDir,
+		apiClient:                    apiClient,
+		gitClient:                    gitClient,
+		metadataStore:                metadatastore.NewMetadataStore(apiClient, d),
+		notifier:                     notifier,
+		secretDecrypter:              sd,
+		pipedConfig:                  pipedConfig,
+		plannerRegistry:              registry.DefaultRegistry(),
+		appManifestsCache:            appManifestsCache,
+		doneDeploymentStatus:         d.Status,
+		cancelledCh:                  make(chan *model.ReportableCommand, 1),
+		nowFunc:                      time.Now,
+		logger:                       logger,
 	}
 	return p
 }
@@ -177,10 +180,13 @@ func (p *planner) Run(ctx context.Context) error {
 	)
 
 	if p.lastSuccessfulCommitHash != "" {
+		gp := *p.deployment.GitPath
+		gp.ConfigFilename = p.lastSuccessfulConfigFilename
+
 		in.RunningDSP = deploysource.NewProvider(
 			filepath.Join(p.workingDir, "running-deploysource"),
 			deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "running", p.lastSuccessfulCommitHash),
-			*p.deployment.GitPath,
+			gp,
 			p.secretDecrypter,
 		)
 	}
@@ -212,10 +218,10 @@ func (p *planner) Run(ctx context.Context) error {
 	}
 
 	p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_PLANNED
-	return p.reportDeploymentPlanned(ctx, p.lastSuccessfulCommitHash, out)
+	return p.reportDeploymentPlanned(ctx, out)
 }
 
-func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash string, out pln.Output) error {
+func (p *planner) reportDeploymentPlanned(ctx context.Context, out pln.Output) error {
 	var (
 		err   error
 		retry = pipedservice.NewRetry(10)
@@ -223,7 +229,8 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash
 			DeploymentId:              p.deployment.Id,
 			Summary:                   out.Summary,
 			StatusReason:              "The deployment has been planned",
-			RunningCommitHash:         runningCommitHash,
+			RunningCommitHash:         p.lastSuccessfulCommitHash,
+			RunningConfigFilename:     p.lastSuccessfulConfigFilename,
 			Version:                   out.Version,
 			Stages:                    out.Stages,
 			DeploymentChainId:         p.deployment.DeploymentChainId,
