@@ -329,7 +329,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Start running application application drift detector.
 	{
-		d := driftdetector.NewDetector(
+		d, err := driftdetector.NewDetector(
 			applicationLister,
 			gitClient,
 			liveStateGetter,
@@ -339,6 +339,11 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			decrypter,
 			input.Logger,
 		)
+		if err != nil {
+			input.Logger.Error("failed to initialize application drift detector", zap.Error(err))
+			return err
+		}
+
 		group.Go(func() error {
 			return d.Run(ctx)
 		})
