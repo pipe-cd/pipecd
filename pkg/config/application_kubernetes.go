@@ -34,6 +34,19 @@ type KubernetesApplicationSpec struct {
 	Workloads []K8sResourceReference `json:"workloads"`
 	// Which method should be used for traffic routing.
 	TrafficRouting *KubernetesTrafficRouting `json:"trafficRouting"`
+
+	// The label key of an used by selector.
+	// Default is pipecd.dev/variant.
+	VariantLabelKey string `json:"variantLabelKey"`
+	// The label value of an used by selector for PRIMARY variant.
+	// Default is primary.
+	VariantLabelPrimary string `json:"variantLabelPrimary"`
+	// The label value of an used by selector for BASELINE variant.
+	// Default is baseline.
+	VariantLabelBaseline string `json:"variantLabelBaseline"`
+	// The label value of an used by selector for CANARY variant.
+	// Default is canary.
+	VariantLabelCanary string `json:"variantLabelCanary"`
 }
 
 // Validate returns an error if any wrong configuration value was found.
