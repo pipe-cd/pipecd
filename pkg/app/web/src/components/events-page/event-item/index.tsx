@@ -4,7 +4,6 @@ import { FC, memo } from "react";
 import { EVENT_STATE_TEXT } from "~/constants/event-status-text";
 import { useAppSelector } from "~/hooks/redux";
 import { Event, selectById as selectEventById } from "~/modules/events";
-import { ellipsis } from "~/styles/text";
 import { EventStatusIcon } from "~/components/event-status-icon";
 
 const useStyles = makeStyles((theme) => ({
@@ -26,7 +25,6 @@ const useStyles = makeStyles((theme) => ({
     width: "100px",
   },
   description: {
-    ...ellipsis,
     color: theme.palette.text.hint,
   },
   labelChip: {
@@ -64,10 +62,11 @@ export const EventItem: FC<EventItemProps> = memo(function EventItem({ id }) {
       </Box>
       <Box
         display="flex"
+        height={72}
         flexDirection="column"
         flex={1}
         pl={2}
-        overflow="hidden"
+        overflow="scroll"
       >
         <Box display="flex" alignItems="baseline">
           <Typography variant="h6" component="span">
@@ -89,7 +88,6 @@ export const EventItem: FC<EventItemProps> = memo(function EventItem({ id }) {
           </Typography>
         </Box>
         <Typography variant="body1" className={classes.description}>
-          {/* TODO: Show status description even if that is too long */}
           {event.statusDescription || NO_DESCRIPTION}
         </Typography>
       </Box>
