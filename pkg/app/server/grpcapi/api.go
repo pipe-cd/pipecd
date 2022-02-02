@@ -47,6 +47,7 @@ type API struct {
 	commandOutputGetter commandOutputGetter
 
 	encryptionKeyCache cache.Cache
+	pipedStatCache     cache.Cache
 
 	webBaseURL string
 	logger     *zap.Logger
@@ -58,6 +59,7 @@ func NewAPI(
 	ds datastore.DataStore,
 	cmds commandstore.Store,
 	cog commandOutputGetter,
+	psc cache.Cache,
 	webBaseURL string,
 	logger *zap.Logger,
 ) *API {
@@ -71,6 +73,7 @@ func NewAPI(
 		commandOutputGetter: cog,
 		// Public key is variable but likely to be accessed multiple times in a short period.
 		encryptionKeyCache: memorycache.NewTTLCache(ctx, 5*time.Minute, 5*time.Minute),
+		pipedStatCache:     psc,
 		webBaseURL:         webBaseURL,
 		logger:             logger.Named("api"),
 	}
@@ -560,6 +563,20 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 		if cmd.Type != model.Command_BUILD_PLAN_PREVIEW {
 			return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("Command %s is not a plan preview command", commandID))
 		}
+		pipedStatus, err := getPipedStatus(a.pipedStatCache, cmd.PipedId)
+		if err != nil {
+			a.logger.Error("failed to get or unmarshal piped stat", zap.Error(err))
+			pipedStatus = model.Piped_UNKNOWN
+		}
+
+		if pipedStatus != model.Piped_ONLINE {
+			results = append(results, &model.PlanPreviewCommandResult{
+				CommandId: cmd.Id,
+				PipedId:   cmd.PipedId,
+				Error:     "Maybe Piped is offline currently.",
+			})
+			continue
+		}
 
 		if !cmd.IsHandled() {
 			if time.Since(time.Unix(cmd.CreatedAt, 0)) <= commandHandleTimeout {
@@ -666,4 +683,23 @@ func requireAPIKey(ctx context.Context, role model.APIKey_Role, logger *zap.Logg
 		logger.Warn("detected an API key that has an invalid role", zap.String("key", key.Id))
 		return nil, status.Error(codes.PermissionDenied, "Invalid role")
 	}
+}
+
+func getPipedStatus(cs cache.Cache, id string) (model.Piped_ConnectionStatus, error) {
+	pipedStatus, err := cs.Get(id)
+	if errors.Is(err, cache.ErrNotFound) {
+		return model.Piped_OFFLINE, nil
+	}
+	if err != nil {
+		return model.Piped_UNKNOWN, err
+	}
+
+	ps := model.PipedStat{}
+	if err = model.UnmarshalPipedStat(pipedStatus, &ps); err != nil {
+		return model.Piped_UNKNOWN, err
+	}
+	if ps.IsStaled(model.PipedStatsRetention) {
+		return model.Piped_OFFLINE, nil
+	}
+	return model.Piped_ONLINE, nil
 }
