@@ -145,7 +145,7 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 		now,
 	))
 	if err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "update metadata of piped %s", pipedID)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("update metadata of piped %s", pipedID))
 	}
 
 	piped, err := getPiped(ctx, a.pipedStore, pipedID, a.logger)
@@ -170,7 +170,7 @@ func (a *PipedAPI) GetEnvironment(ctx context.Context, req *pipedservice.GetEnvi
 
 	env, err := a.environmentStore.GetEnvironment(ctx, req.Id)
 	if err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "get environment %s", req.Id)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("get environment %s", req.Id))
 	}
 
 	return &pipedservice.GetEnvironmentResponse{
@@ -228,7 +228,7 @@ func (a *PipedAPI) ReportApplicationSyncState(ctx context.Context, req *pipedser
 	}
 
 	if err := a.applicationStore.UpdateApplicationSyncState(ctx, req.ApplicationId, req.State); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "update sync state of application %s", req.ApplicationId)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("update sync state of application %s", req.ApplicationId))
 	}
 
 	return &pipedservice.ReportApplicationSyncStateResponse{}, nil
@@ -249,7 +249,7 @@ func (a *PipedAPI) ReportApplicationDeployingStatus(ctx context.Context, req *pi
 		return nil
 	})
 	if err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "update deploying status of application %s", req.ApplicationId)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("update deploying status of application %s", req.ApplicationId))
 	}
 
 	return &pipedservice.ReportApplicationDeployingStatusResponse{}, nil
@@ -268,7 +268,7 @@ func (a *PipedAPI) ReportApplicationMostRecentDeployment(ctx context.Context, re
 
 	err = a.applicationStore.UpdateApplicationMostRecentDeployment(ctx, req.ApplicationId, req.Status, req.Deployment)
 	if err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "update deployment reference of application %s", req.ApplicationId)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("update deployment reference of application %s", req.ApplicationId))
 	}
 	return &pipedservice.ReportApplicationMostRecentDeploymentResponse{}, nil
 }
@@ -285,7 +285,7 @@ func (a *PipedAPI) GetApplicationMostRecentDeployment(ctx context.Context, req *
 
 	app, err := a.applicationStore.GetApplication(ctx, req.ApplicationId)
 	if err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "get application %s", req.ApplicationId)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("get application %s", req.ApplicationId))
 	}
 
 	if req.Status == model.DeploymentStatus_DEPLOYMENT_SUCCESS && app.MostRecentlySuccessfulDeployment != nil {
@@ -348,7 +348,7 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 
 	deployments, cursor, err := a.deploymentStore.ListDeployments(ctx, opts)
 	if err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "list deployments of piped %s", pipedID)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("list deployments of piped %s", pipedID))
 	}
 
 	return &pipedservice.ListNotCompletedDeploymentsResponse{
@@ -370,7 +370,7 @@ func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.Creat
 	}
 
 	if err := a.deploymentStore.AddDeployment(ctx, req.Deployment); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "add deployment %s", req.Deployment.Id)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("add deployment %s", req.Deployment.Id))
 	}
 	return &pipedservice.CreateDeploymentResponse{}, nil
 }
@@ -395,7 +395,7 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 		req.Stages,
 	)
 	if err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "update deployment %s as planned", req.DeploymentId)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("update deployment %s as planned", req.DeploymentId))
 	}
 	return &pipedservice.ReportDeploymentPlannedResponse{}, nil
 }
@@ -416,7 +416,7 @@ func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *piped
 		req.StatusReason,
 	)
 	if err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "update status of deployment %s", req.DeploymentId)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("update status of deployment %s", req.DeploymentId))
 	}
 	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
 }
@@ -439,7 +439,7 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 		req.CompletedAt,
 	)
 	if err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "update deployment %s as completed", req.DeploymentId)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("update deployment %s as completed", req.DeploymentId))
 	}
 	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
 }
@@ -455,7 +455,7 @@ func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice
 	}
 
 	if err = a.deploymentStore.UpdateDeploymentMetadata(ctx, req.DeploymentId, req.Metadata); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "update metadata of deployment %s", req.DeploymentId)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("update metadata of deployment %s", req.DeploymentId))
 	}
 	return &pipedservice.SaveDeploymentMetadataResponse{}, nil
 }
@@ -472,7 +472,7 @@ func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.Save
 	}
 
 	if err = a.deploymentStore.UpdateDeploymentStageMetadata(ctx, req.DeploymentId, req.StageId, req.Metadata); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "update stage metadata of deployment %s", req.DeploymentId)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("update stage metadata of deployment %s", req.DeploymentId))
 	}
 	return &pipedservice.SaveStageMetadataResponse{}, nil
 }
@@ -540,7 +540,7 @@ func (a *PipedAPI) ReportStageStatusChanged(ctx context.Context, req *pipedservi
 		req.CompletedAt,
 	)
 	if err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "update stage status of deployment %s", req.DeploymentId)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("update stage status of deployment %s", req.DeploymentId))
 	}
 
 	return &pipedservice.ReportStageStatusChangedResponse{}, nil
@@ -562,7 +562,7 @@ func (a *PipedAPI) ListUnhandledCommands(ctx context.Context, req *pipedservice.
 
 	cmds, err := a.commandStore.ListUnhandledCommands(ctx, pipedID)
 	if err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "list unhandled commands of piped %s", pipedID)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("list unhandled commands of piped %s", pipedID))
 	}
 
 	return &pipedservice.ListUnhandledCommandsResponse{
@@ -598,7 +598,7 @@ func (a *PipedAPI) ReportCommandHandled(ctx context.Context, req *pipedservice.R
 	}
 
 	if err = a.commandStore.UpdateCommandHandled(ctx, req.CommandId, req.Status, req.Metadata, req.HandledAt); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "update command %s as handled", req.CommandId)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("update command %s as handled", req.CommandId))
 	}
 
 	return &pipedservice.ReportCommandHandledResponse{}, nil
@@ -607,7 +607,7 @@ func (a *PipedAPI) ReportCommandHandled(ctx context.Context, req *pipedservice.R
 func (a *PipedAPI) getCommand(ctx context.Context, commandID string) (*model.Command, error) {
 	cmd, err := a.commandStore.GetCommand(ctx, commandID)
 	if err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "get command %s", commandID)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("get command %s", commandID))
 	}
 	return cmd, nil
 }
@@ -777,7 +777,7 @@ func (a *PipedAPI) ReportEventsHandled(ctx context.Context, req *pipedservice.Re
 
 	for _, id := range req.EventIds {
 		if err := a.eventStore.UpdateEventStatus(ctx, id, model.EventStatus_EVENT_SUCCESS, fmt.Sprintf("successfully handled by %q piped", pipedID)); err != nil {
-			return nil, gRPCErrorForEntityOperation(err, "update event %s as handled", id)
+			return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("update event %s as handled", id))
 		}
 	}
 
@@ -792,7 +792,7 @@ func (a *PipedAPI) ReportEventStatuses(ctx context.Context, req *pipedservice.Re
 	for _, e := range req.Events {
 		// TODO: For success status, change all previous events with the same event key to OUTDATED
 		if err := a.eventStore.UpdateEventStatus(ctx, e.Id, e.Status, e.StatusDescription); err != nil {
-			return nil, gRPCErrorForEntityOperation(err, "update status of event %s", e.Id)
+			return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("update status of event %s", e.Id))
 		}
 	}
 	return &pipedservice.ReportEventStatusesResponse{}, nil
@@ -874,7 +874,7 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 			return nil
 		}
 		if err := a.applicationStore.UpdateApplication(ctx, appInfo.Id, updater); err != nil {
-			return nil, gRPCErrorForEntityOperation(err, "update config of application %s", appInfo.Id)
+			return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("update config of application %s", appInfo.Id))
 		}
 	}
 
@@ -1138,7 +1138,7 @@ func (a *PipedAPI) validateAppBelongsToPiped(ctx context.Context, appID, pipedID
 
 	app, err := a.applicationStore.GetApplication(ctx, appID)
 	if err != nil {
-		return gRPCErrorForEntityOperation(err, "get application %s", appID)
+		return gRPCErrorForEntityOperation(err, fmt.Sprintf("get application %s", appID))
 	}
 
 	a.appPipedCache.Put(appID, app.PipedId)
@@ -1162,7 +1162,7 @@ func (a *PipedAPI) validateDeploymentBelongsToPiped(ctx context.Context, deploym
 
 	deployment, err := a.deploymentStore.GetDeployment(ctx, deploymentID)
 	if err != nil {
-		return gRPCErrorForEntityOperation(err, "get deployment %s", deploymentID)
+		return gRPCErrorForEntityOperation(err, fmt.Sprintf("get deployment %s", deploymentID))
 	}
 
 	a.deploymentPipedCache.Put(deploymentID, deployment.PipedId)
@@ -1187,7 +1187,7 @@ func (a *PipedAPI) validateEnvBelongsToProject(ctx context.Context, envID, proje
 
 	env, err := a.environmentStore.GetEnvironment(ctx, envID)
 	if err != nil {
-		return gRPCErrorForEntityOperation(err, "get environment %s", envID)
+		return gRPCErrorForEntityOperation(err, fmt.Sprintf("get environment %s", envID))
 	}
 
 	a.envProjectCache.Put(envID, env.ProjectId)

@@ -246,12 +246,12 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 			continue
 		}
 		if err := a.applicationStore.DeleteApplication(ctx, app.Id); err != nil {
-			return nil, gRPCErrorForEntityOperation(err, "delete application %s", app.Id)
+			return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("delete application %s", app.Id))
 		}
 	}
 
 	if err := a.environmentStore.DeleteEnvironment(ctx, req.EnvironmentId); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "delete environment %s", req.EnvironmentId)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("delete environment %s", req.EnvironmentId))
 	}
 
 	return &webservice.DeleteEnvironmentResponse{}, nil
@@ -276,7 +276,7 @@ func (a *WebAPI) updateEnvironmentEnable(ctx context.Context, envID string, enab
 	}
 
 	if err := updater(ctx, envID); err != nil {
-		return gRPCErrorForEntityOperation(err, "update environment %s", envID)
+		return gRPCErrorForEntityOperation(err, fmt.Sprintf("update environment %s", envID))
 	}
 
 	return nil
@@ -330,7 +330,7 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 	}
 
 	if err = a.pipedStore.AddPiped(ctx, &piped); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "add piped %s", piped.Id)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("add piped %s", piped.Id))
 	}
 
 	return &webservice.RegisterPipedResponse{
@@ -422,7 +422,7 @@ func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(c
 	}
 
 	if err := updater(ctx, pipedID); err != nil {
-		return gRPCErrorForEntityOperation(err, "update piped %s", pipedID)
+		return gRPCErrorForEntityOperation(err, fmt.Sprintf("update piped %s", pipedID))
 	}
 	return nil
 }
@@ -648,7 +648,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		Labels:        req.Labels,
 	}
 	if err = a.applicationStore.AddApplication(ctx, &app); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "add application %s", app.Id)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("add application %s", app.Id))
 	}
 
 	return &webservice.AddApplicationResponse{
@@ -705,7 +705,7 @@ func (a *WebAPI) updateApplication(ctx context.Context, id, pipedID string, upda
 	}
 
 	if err = a.applicationStore.UpdateApplication(ctx, id, updater); err != nil {
-		return gRPCErrorForEntityOperation(err, "update application %s", id)
+		return gRPCErrorForEntityOperation(err, fmt.Sprintf("update application %s", id))
 	}
 
 	return nil
@@ -737,7 +737,7 @@ func (a *WebAPI) DeleteApplication(ctx context.Context, req *webservice.DeleteAp
 	}
 
 	if err := a.applicationStore.DeleteApplication(ctx, req.ApplicationId); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "delete application %s", req.ApplicationId)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("delete application %s", req.ApplicationId))
 	}
 
 	return &webservice.DeleteApplicationResponse{}, nil
@@ -762,7 +762,7 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 	}
 
 	if err := updater(ctx, appID); err != nil {
-		return gRPCErrorForEntityOperation(err, "enable/disable application %s", appID)
+		return gRPCErrorForEntityOperation(err, fmt.Sprintf("enable/disable application %s", appID))
 	}
 	return nil
 }
@@ -1351,7 +1351,7 @@ func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Proje
 
 	project, err := a.projectStore.GetProject(ctx, projectID)
 	if err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "get project %s", projectID)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("get project %s", projectID))
 	}
 
 	return project, nil
@@ -1518,7 +1518,7 @@ func (a *WebAPI) GenerateAPIKey(ctx context.Context, req *webservice.GenerateAPI
 	}
 
 	if err = a.apiKeyStore.AddAPIKey(ctx, &apiKey); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "add API key %s", apiKey.Id)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("add API key %s", apiKey.Id))
 	}
 
 	return &webservice.GenerateAPIKeyResponse{
@@ -1534,7 +1534,7 @@ func (a *WebAPI) DisableAPIKey(ctx context.Context, req *webservice.DisableAPIKe
 	}
 
 	if err := a.apiKeyStore.DisableAPIKey(ctx, req.Id, claims.Role.ProjectId); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "disable API key %s", req.Id)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("disable API key %s", req.Id))
 	}
 
 	return &webservice.DisableAPIKeyResponse{}, nil
@@ -1719,7 +1719,7 @@ func (a *WebAPI) GetDeploymentChain(ctx context.Context, req *webservice.GetDepl
 
 	dc, err := a.deploymentChainStore.GetDeploymentChain(ctx, req.DeploymentChainId)
 	if err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "get deployment chain %s", req.DeploymentChainId)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("get deployment chain %s", req.DeploymentChainId))
 	}
 
 	if claims.Role.ProjectId != dc.ProjectId {

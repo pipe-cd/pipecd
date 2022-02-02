@@ -119,7 +119,7 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 		Description:   req.Description,
 	}
 	if err := a.applicationStore.AddApplication(ctx, &app); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "add application %s", app.Id)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("add application %s", app.Id))
 	}
 
 	return &apiservice.AddApplicationResponse{
@@ -398,7 +398,7 @@ func (a *API) updatePiped(ctx context.Context, pipedID string, updater func(cont
 	}
 
 	if err := updater(ctx, pipedID); err != nil {
-		return gRPCErrorForEntityOperation(err, "update piped %s", pipedID)
+		return gRPCErrorForEntityOperation(err, fmt.Sprintf("update piped %s", pipedID))
 	}
 	return nil
 }
@@ -421,7 +421,7 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 		StatusDescription: fmt.Sprintf("It is going to be replaced by %s", req.Data),
 	}
 	if err = a.eventStore.AddEvent(ctx, event); err != nil {
-		return nil, gRPCErrorForEntityOperation(err, "add event %s", id)
+		return nil, gRPCErrorForEntityOperation(err, fmt.Sprintf("add event %s", id))
 	}
 
 	return &apiservice.RegisterEventResponse{EventId: id}, nil
