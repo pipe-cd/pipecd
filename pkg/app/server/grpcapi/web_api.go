@@ -516,28 +516,12 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 	// The connection status of piped determined by its submitted stat in pipedStatCache.
 	if req.WithStatus {
 		for i := range pipeds {
-			sv, err := a.pipedStatCache.Get(pipeds[i].Id)
-			if errors.Is(err, cache.ErrNotFound) {
-				pipeds[i].Status = model.Piped_OFFLINE
-				continue
-			}
+			pipedStatus, err := getPipedStatus(a.pipedStatCache, pipeds[i].Id)
 			if err != nil {
-				pipeds[i].Status = model.Piped_UNKNOWN
-				a.logger.Error("failed to get piped stat from the cache", zap.Error(err))
-				continue
+				a.logger.Error("failed to get or unmarshal piped stat", zap.Error(err))
+				pipedStatus = model.Piped_UNKNOWN
 			}
-
-			ps := model.PipedStat{}
-			if err = model.UnmarshalPipedStat(sv, &ps); err != nil {
-				pipeds[i].Status = model.Piped_UNKNOWN
-				a.logger.Error("unable to unmarshal the piped stat", zap.Error(err))
-				continue
-			}
-			if ps.IsStaled(model.PipedStatsRetention) {
-				pipeds[i].Status = model.Piped_OFFLINE
-				continue
-			}
-			pipeds[i].Status = model.Piped_ONLINE
+			pipeds[i].Status = pipedStatus
 		}
 	}
 
