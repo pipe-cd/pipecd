@@ -291,7 +291,6 @@ One of `yamlField` or `regex` is required.
 
 ## KubernetesVariantLabel
 
-
 | Field | Type | Description | Required |
 |-|-|-|-|
 | key | string | The key of the label. Default is `pipecd.dev/variant`. | No |
