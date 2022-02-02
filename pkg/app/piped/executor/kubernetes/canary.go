@@ -26,12 +26,15 @@ import (
 )
 
 const (
-	canaryVariant                   = "canary"
 	addedCanaryResourcesMetadataKey = "canary-resources"
 )
 
 func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
-	options := e.StageConfig.K8sCanaryRolloutStageOptions
+	var (
+		options       = e.StageConfig.K8sCanaryRolloutStageOptions
+		variantLabel  = e.appCfg.VariantLabelKey
+		canaryVariant = e.appCfg.VariantLabelCanary
+	)
 	if options == nil {
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
@@ -69,7 +72,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 	}
 
 	// Find and generate workload & service manifests for CANARY variant.
-	canaryManifests, err := e.generateCanaryManifests(manifests, *options)
+	canaryManifests, err := e.generateCanaryManifests(manifests, *options, variantLabel, canaryVariant)
 	if err != nil {
 		e.LogPersister.Errorf("Unable to generate manifests for CANARY variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -78,6 +81,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 	// Add builtin annotations for tracking application live state.
 	addBuiltinAnnontations(
 		canaryManifests,
+		variantLabel,
 		canaryVariant,
 		e.commit,
 		e.PipedConfig.PipedID,
@@ -121,8 +125,8 @@ func (e *deployExecutor) ensureCanaryClean(ctx context.Context) model.StageStatu
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *deployExecutor) generateCanaryManifests(manifests []provider.Manifest, opts config.K8sCanaryRolloutStageOptions) ([]provider.Manifest, error) {
-	suffix := canaryVariant
+func (e *deployExecutor) generateCanaryManifests(manifests []provider.Manifest, opts config.K8sCanaryRolloutStageOptions, variantLabel, variant string) ([]provider.Manifest, error) {
+	suffix := variant
 	if opts.Suffix != "" {
 		suffix = opts.Suffix
 	}
@@ -145,7 +149,7 @@ func (e *deployExecutor) generateCanaryManifests(manifests []provider.Manifest, 
 		// so we duplicate them to avoid updating the shared manifests data in cache.
 		services = duplicateManifests(services, "")
 
-		generatedServices, err := generateVariantServiceManifests(services, canaryVariant, suffix)
+		generatedServices, err := generateVariantServiceManifests(services, variantLabel, variant, suffix)
 		if err != nil {
 			return nil, err
 		}
@@ -174,7 +178,7 @@ func (e *deployExecutor) generateCanaryManifests(manifests []provider.Manifest, 
 	// We don't need to duplicate the workload manifests
 	// because generateVariantWorkloadManifests function is already making a duplicate while decoding.
 	// workloads = duplicateManifests(workloads, suffix)
-	generatedWorkloads, err := generateVariantWorkloadManifests(workloads, configMaps, secrets, canaryVariant, suffix, replicasCalculator)
+	generatedWorkloads, err := generateVariantWorkloadManifests(workloads, configMaps, secrets, variantLabel, variant, suffix, replicasCalculator)
 	if err != nil {
 		return nil, err
 	}

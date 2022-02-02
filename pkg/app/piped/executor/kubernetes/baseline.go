@@ -26,14 +26,15 @@ import (
 )
 
 const (
-	baselineVariant                   = "baseline"
 	addedBaselineResourcesMetadataKey = "baseline-resources"
 )
 
 func (e *deployExecutor) ensureBaselineRollout(ctx context.Context) model.StageStatus {
 	var (
-		runningCommit = e.Deployment.RunningCommitHash
-		options       = e.StageConfig.K8sBaselineRolloutStageOptions
+		runningCommit   = e.Deployment.RunningCommitHash
+		options         = e.StageConfig.K8sBaselineRolloutStageOptions
+		variantLabel    = e.appCfg.VariantLabelKey
+		baselineVariant = e.appCfg.VariantLabelBaseline
 	)
 	if options == nil {
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
@@ -54,7 +55,7 @@ func (e *deployExecutor) ensureBaselineRollout(ctx context.Context) model.StageS
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	baselineManifests, err := e.generateBaselineManifests(manifests, *options)
+	baselineManifests, err := e.generateBaselineManifests(manifests, *options, variantLabel, baselineVariant)
 	if err != nil {
 		e.LogPersister.Errorf("Unable to generate manifests for BASELINE variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -63,6 +64,7 @@ func (e *deployExecutor) ensureBaselineRollout(ctx context.Context) model.StageS
 	// Add builtin annotations for tracking application live state.
 	addBuiltinAnnontations(
 		baselineManifests,
+		variantLabel,
 		baselineVariant,
 		runningCommit,
 		e.PipedConfig.PipedID,
@@ -106,8 +108,8 @@ func (e *deployExecutor) ensureBaselineClean(ctx context.Context) model.StageSta
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *deployExecutor) generateBaselineManifests(manifests []provider.Manifest, opts config.K8sBaselineRolloutStageOptions) ([]provider.Manifest, error) {
-	suffix := baselineVariant
+func (e *deployExecutor) generateBaselineManifests(manifests []provider.Manifest, opts config.K8sBaselineRolloutStageOptions, variantLabel, variant string) ([]provider.Manifest, error) {
+	suffix := variant
 	if opts.Suffix != "" {
 		suffix = opts.Suffix
 	}
@@ -130,7 +132,7 @@ func (e *deployExecutor) generateBaselineManifests(manifests []provider.Manifest
 		// so we duplicate them to avoid updating the shared manifests data in cache.
 		services = duplicateManifests(services, "")
 
-		generatedServices, err := generateVariantServiceManifests(services, baselineVariant, suffix)
+		generatedServices, err := generateVariantServiceManifests(services, variantLabel, variant, suffix)
 		if err != nil {
 			return nil, err
 		}
@@ -146,7 +148,7 @@ func (e *deployExecutor) generateBaselineManifests(manifests []provider.Manifest
 		num := opts.Replicas.Calculate(int(*cur), 1)
 		return int32(num)
 	}
-	generatedWorkloads, err := generateVariantWorkloadManifests(workloads, nil, nil, baselineVariant, suffix, replicasCalculator)
+	generatedWorkloads, err := generateVariantWorkloadManifests(workloads, nil, nil, variantLabel, variant, suffix, replicasCalculator)
 	if err != nil {
 		return nil, err
 	}

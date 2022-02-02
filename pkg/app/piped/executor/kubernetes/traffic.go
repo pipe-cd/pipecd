@@ -38,8 +38,10 @@ const (
 
 func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	var (
-		commitHash = e.Deployment.Trigger.Commit.Hash
-		options    = e.StageConfig.K8sTrafficRoutingStageOptions
+		commitHash     = e.Deployment.Trigger.Commit.Hash
+		options        = e.StageConfig.K8sTrafficRoutingStageOptions
+		variantLabel   = e.appCfg.VariantLabelKey
+		primaryVariant = e.appCfg.VariantLabelPrimary
 	)
 	if options == nil {
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
@@ -96,7 +98,7 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 
 	// In case we are routing by PodSelector, the service manifest must contain variantLabel inside its selector.
 	if method == config.KubernetesTrafficRoutingMethodPodSelector {
-		if err := checkVariantSelectorInService(trafficRoutingManifest, primaryVariant); err != nil {
+		if err := checkVariantSelectorInService(trafficRoutingManifest, variantLabel, primaryVariant); err != nil {
 			e.LogPersister.Errorf("Traffic routing by PodSelector requires %q inside the selector of Service manifest but it was unable to check that field in manifest %s (%v)",
 				variantLabel+": "+primaryVariant,
 				trafficRoutingManifest.Key.ReadableLogString(),
@@ -111,7 +113,6 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 		primaryPercent,
 		canaryPercent,
 		baselinePercent,
-		e.appCfg.TrafficRouting,
 	)
 	if err != nil {
 		e.LogPersister.Errorf("Unable generate traffic routing manifest: (%v)", err)
@@ -121,6 +122,7 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 	// Add builtin annotations for tracking application live state.
 	addBuiltinAnnontations(
 		[]provider.Manifest{trafficRoutingManifest},
+		variantLabel,
 		primaryVariant,
 		commitHash,
 		e.PipedConfig.PipedID,
@@ -159,7 +161,7 @@ func findTrafficRoutingManifests(manifests []provider.Manifest, serviceName stri
 	}
 }
 
-func (e *deployExecutor) generateTrafficRoutingManifest(manifest provider.Manifest, primaryPercent, canaryPercent, baselinePercent int, cfg *config.KubernetesTrafficRouting) (provider.Manifest, error) {
+func (e *deployExecutor) generateTrafficRoutingManifest(manifest provider.Manifest, primaryPercent, canaryPercent, baselinePercent int) (provider.Manifest, error) {
 	// Because the loaded manifests are read-only
 	// so we duplicate them to avoid updating the shared manifests data in cache.
 	manifest = duplicateManifest(manifest, "")
@@ -171,6 +173,7 @@ func (e *deployExecutor) generateTrafficRoutingManifest(manifest provider.Manife
 		return manifest, nil
 	}
 
+	cfg := e.appCfg.TrafficRouting
 	if cfg != nil && cfg.Method == config.KubernetesTrafficRoutingMethodIstio {
 		istioConfig := cfg.Istio
 		if istioConfig == nil {
@@ -178,22 +181,23 @@ func (e *deployExecutor) generateTrafficRoutingManifest(manifest provider.Manife
 		}
 
 		if strings.HasPrefix(manifest.Key.APIVersion, "v1alpha3") {
-			return generateVirtualServiceManifestV1Alpha3(manifest, istioConfig.Host, istioConfig.EditableRoutes, int32(canaryPercent), int32(baselinePercent))
+			return e.generateVirtualServiceManifestV1Alpha3(manifest, istioConfig.Host, istioConfig.EditableRoutes, int32(canaryPercent), int32(baselinePercent))
 		}
-		return generateVirtualServiceManifest(manifest, istioConfig.Host, istioConfig.EditableRoutes, int32(canaryPercent), int32(baselinePercent))
+		return e.generateVirtualServiceManifest(manifest, istioConfig.Host, istioConfig.EditableRoutes, int32(canaryPercent), int32(baselinePercent))
 	}
 
 	// Determine which variant will receive 100% percent of traffic.
 	var variant string
 	switch {
 	case primaryPercent == 100:
-		variant = primaryVariant
+		variant = e.appCfg.VariantLabelPrimary
 	case canaryPercent == 100:
-		variant = canaryVariant
+		variant = e.appCfg.VariantLabelCanary
 	default:
 		return manifest, fmt.Errorf("traffic routing by pod requires either PRIMARY or CANARY must be 100 (primary=%d, canary=%d)", primaryPercent, canaryPercent)
 	}
 
+	variantLabel := e.appCfg.VariantLabelKey
 	if err := manifest.AddStringMapValues(map[string]string{variantLabel: variant}, "spec", "selector"); err != nil {
 		return manifest, fmt.Errorf("unable to update selector for service %q because of: %v", manifest.Key.Name, err)
 	}
@@ -239,7 +243,7 @@ func findIstioVirtualServiceManifests(manifests []provider.Manifest, ref config.
 	return out, nil
 }
 
-func generateVirtualServiceManifest(m provider.Manifest, host string, editableRoutes []string, canaryPercent, baselinePercent int32) (provider.Manifest, error) {
+func (e *deployExecutor) generateVirtualServiceManifest(m provider.Manifest, host string, editableRoutes []string, canaryPercent, baselinePercent int32) (provider.Manifest, error) {
 	// Because the loaded manifests are read-only
 	// so we duplicate them to avoid updating the shared manifests data in cache.
 	m = duplicateManifest(m, "")
@@ -292,7 +296,7 @@ func generateVirtualServiceManifest(m provider.Manifest, host string, editableRo
 		routes = append(routes, &istiov1beta1.HTTPRouteDestination{
 			Destination: &istiov1beta1.Destination{
 				Host:   host,
-				Subset: primaryVariant,
+				Subset: e.appCfg.VariantLabelPrimary,
 			},
 			Weight: primaryWeight,
 		})
@@ -300,7 +304,7 @@ func generateVirtualServiceManifest(m provider.Manifest, host string, editableRo
 			routes = append(routes, &istiov1beta1.HTTPRouteDestination{
 				Destination: &istiov1beta1.Destination{
 					Host:   host,
-					Subset: canaryVariant,
+					Subset: e.appCfg.VariantLabelCanary,
 				},
 				Weight: canaryWeight,
 			})
@@ -309,7 +313,7 @@ func generateVirtualServiceManifest(m provider.Manifest, host string, editableRo
 			routes = append(routes, &istiov1beta1.HTTPRouteDestination{
 				Destination: &istiov1beta1.Destination{
 					Host:   host,
-					Subset: baselineVariant,
+					Subset: e.appCfg.VariantLabelBaseline,
 				},
 				Weight: baselineWeight,
 			})
@@ -325,7 +329,7 @@ func generateVirtualServiceManifest(m provider.Manifest, host string, editableRo
 	return m, nil
 }
 
-func generateVirtualServiceManifestV1Alpha3(m provider.Manifest, host string, editableRoutes []string, canaryPercent, baselinePercent int32) (provider.Manifest, error) {
+func (e *deployExecutor) generateVirtualServiceManifestV1Alpha3(m provider.Manifest, host string, editableRoutes []string, canaryPercent, baselinePercent int32) (provider.Manifest, error) {
 	// Because the loaded manifests are read-only
 	// so we duplicate them to avoid updating the shared manifests data in cache.
 	m = duplicateManifest(m, "")
@@ -378,7 +382,7 @@ func generateVirtualServiceManifestV1Alpha3(m provider.Manifest, host string, ed
 		routes = append(routes, &istiov1alpha3.HTTPRouteDestination{
 			Destination: &istiov1alpha3.Destination{
 				Host:   host,
-				Subset: primaryVariant,
+				Subset: e.appCfg.VariantLabelPrimary,
 			},
 			Weight: primaryWeight,
 		})
@@ -386,7 +390,7 @@ func generateVirtualServiceManifestV1Alpha3(m provider.Manifest, host string, ed
 			routes = append(routes, &istiov1alpha3.HTTPRouteDestination{
 				Destination: &istiov1alpha3.Destination{
 					Host:   host,
-					Subset: canaryVariant,
+					Subset: e.appCfg.VariantLabelCanary,
 				},
 				Weight: canaryWeight,
 			})
@@ -395,7 +399,7 @@ func generateVirtualServiceManifestV1Alpha3(m provider.Manifest, host string, ed
 			routes = append(routes, &istiov1alpha3.HTTPRouteDestination{
 				Destination: &istiov1alpha3.Destination{
 					Host:   host,
-					Subset: baselineVariant,
+					Subset: e.appCfg.VariantLabelBaseline,
 				},
 				Weight: baselineWeight,
 			})
@@ -411,7 +415,7 @@ func generateVirtualServiceManifestV1Alpha3(m provider.Manifest, host string, ed
 	return m, nil
 }
 
-func checkVariantSelectorInService(m provider.Manifest, variant string) error {
+func checkVariantSelectorInService(m provider.Manifest, variantLabel, variant string) error {
 	selector, err := m.GetNestedStringMap("spec", "selector")
 	if err != nil {
 		return err

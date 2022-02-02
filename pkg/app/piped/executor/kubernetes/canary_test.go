@@ -37,6 +37,12 @@ func TestEnsureCanaryRollout(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	appCfg := &config.KubernetesApplicationSpec{
+		VariantLabelKey:      "pipecd.dev/variant",
+		VariantLabelPrimary:  "primary",
+		VariantLabelBaseline: "baseline",
+		VariantLabelCanary:   "canary",
+	}
 	testcases := []struct {
 		name     string
 		executor *deployExecutor
@@ -56,6 +62,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					LogPersister: &fakeLogPersister{},
 					Logger:       zap.NewNop(),
 				},
+				appCfg: appCfg,
 			},
 		},
 		{
@@ -85,6 +92,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					p.EXPECT().LoadManifests(gomock.Any()).Return(nil, fmt.Errorf("error"))
 					return p
 				}(),
+				appCfg: appCfg,
 			},
 		},
 		{
@@ -115,6 +123,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{}, nil)
 					return p
 				}(),
+				appCfg: appCfg,
 			},
 		},
 		{

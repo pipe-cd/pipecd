@@ -33,10 +33,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/yamlprocessor"
 )
 
-const (
-	variantLabel = "pipecd.dev/variant" // Variant name: primary, stage, baseline
-)
-
 type deployExecutor struct {
 	executor.Input
 
@@ -195,7 +191,7 @@ func loadManifests(ctx context.Context, appID, commit string, manifestsCache cac
 	return manifests, nil
 }
 
-func addBuiltinAnnontations(manifests []provider.Manifest, variant, hash, pipedID, appID string) {
+func addBuiltinAnnontations(manifests []provider.Manifest, variantLabel, variant, hash, pipedID, appID string) {
 	for i := range manifests {
 		manifests[i].AddAnnotations(map[string]string{
 			provider.LabelManagedBy:          provider.ManagedByPiped,
@@ -326,7 +322,7 @@ func duplicateManifest(m provider.Manifest, nameSuffix string) provider.Manifest
 	return m.Duplicate(name)
 }
 
-func generateVariantServiceManifests(services []provider.Manifest, variant, nameSuffix string) ([]provider.Manifest, error) {
+func generateVariantServiceManifests(services []provider.Manifest, variantLabel, variant, nameSuffix string) ([]provider.Manifest, error) {
 	manifests := make([]provider.Manifest, 0, len(services))
 	updateService := func(s *corev1.Service) {
 		s.Name = makeSuffixedName(s.Name, nameSuffix)
@@ -359,7 +355,7 @@ func generateVariantServiceManifests(services []provider.Manifest, variant, name
 	return manifests, nil
 }
 
-func generateVariantWorkloadManifests(workloads, configmaps, secrets []provider.Manifest, variant, nameSuffix string, replicasCalculator func(*int32) int32) ([]provider.Manifest, error) {
+func generateVariantWorkloadManifests(workloads, configmaps, secrets []provider.Manifest, variantLabel, variant, nameSuffix string, replicasCalculator func(*int32) int32) ([]provider.Manifest, error) {
 	manifests := make([]provider.Manifest, 0, len(workloads))
 
 	cmNames := make(map[string]struct{}, len(configmaps))
@@ -461,7 +457,7 @@ func generateVariantWorkloadManifests(workloads, configmaps, secrets []provider.
 	return manifests, nil
 }
 
-func checkVariantSelectorInWorkload(m provider.Manifest, variant string) error {
+func checkVariantSelectorInWorkload(m provider.Manifest, variantLabel, variant string) error {
 	var (
 		matchLabelsFields = []string{"spec", "selector", "matchLabels"}
 		labelsFields      = []string{"spec", "template", "metadata", "labels"}
@@ -494,7 +490,7 @@ func checkVariantSelectorInWorkload(m provider.Manifest, variant string) error {
 	return nil
 }
 
-func ensureVariantSelectorInWorkload(m provider.Manifest, variant string) error {
+func ensureVariantSelectorInWorkload(m provider.Manifest, variantLabel, variant string) error {
 	variantMap := map[string]string{
 		variantLabel: variant,
 	}
