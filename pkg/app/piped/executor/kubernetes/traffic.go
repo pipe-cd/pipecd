@@ -40,8 +40,8 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 	var (
 		commitHash     = e.Deployment.Trigger.Commit.Hash
 		options        = e.StageConfig.K8sTrafficRoutingStageOptions
-		variantLabel   = e.appCfg.VariantLabelKey
-		primaryVariant = e.appCfg.VariantLabelPrimary
+		variantLabel   = e.appCfg.VariantLabel.Key
+		primaryVariant = e.appCfg.VariantLabel.PrimaryValue
 	)
 	if options == nil {
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
@@ -190,14 +190,14 @@ func (e *deployExecutor) generateTrafficRoutingManifest(manifest provider.Manife
 	var variant string
 	switch {
 	case primaryPercent == 100:
-		variant = e.appCfg.VariantLabelPrimary
+		variant = e.appCfg.VariantLabel.PrimaryValue
 	case canaryPercent == 100:
-		variant = e.appCfg.VariantLabelCanary
+		variant = e.appCfg.VariantLabel.CanaryValue
 	default:
 		return manifest, fmt.Errorf("traffic routing by pod requires either PRIMARY or CANARY must be 100 (primary=%d, canary=%d)", primaryPercent, canaryPercent)
 	}
 
-	variantLabel := e.appCfg.VariantLabelKey
+	variantLabel := e.appCfg.VariantLabel.Key
 	if err := manifest.AddStringMapValues(map[string]string{variantLabel: variant}, "spec", "selector"); err != nil {
 		return manifest, fmt.Errorf("unable to update selector for service %q because of: %v", manifest.Key.Name, err)
 	}
@@ -296,7 +296,7 @@ func (e *deployExecutor) generateVirtualServiceManifest(m provider.Manifest, hos
 		routes = append(routes, &istiov1beta1.HTTPRouteDestination{
 			Destination: &istiov1beta1.Destination{
 				Host:   host,
-				Subset: e.appCfg.VariantLabelPrimary,
+				Subset: e.appCfg.VariantLabel.PrimaryValue,
 			},
 			Weight: primaryWeight,
 		})
@@ -304,7 +304,7 @@ func (e *deployExecutor) generateVirtualServiceManifest(m provider.Manifest, hos
 			routes = append(routes, &istiov1beta1.HTTPRouteDestination{
 				Destination: &istiov1beta1.Destination{
 					Host:   host,
-					Subset: e.appCfg.VariantLabelCanary,
+					Subset: e.appCfg.VariantLabel.CanaryValue,
 				},
 				Weight: canaryWeight,
 			})
@@ -313,7 +313,7 @@ func (e *deployExecutor) generateVirtualServiceManifest(m provider.Manifest, hos
 			routes = append(routes, &istiov1beta1.HTTPRouteDestination{
 				Destination: &istiov1beta1.Destination{
 					Host:   host,
-					Subset: e.appCfg.VariantLabelBaseline,
+					Subset: e.appCfg.VariantLabel.BaselineValue,
 				},
 				Weight: baselineWeight,
 			})
@@ -382,7 +382,7 @@ func (e *deployExecutor) generateVirtualServiceManifestV1Alpha3(m provider.Manif
 		routes = append(routes, &istiov1alpha3.HTTPRouteDestination{
 			Destination: &istiov1alpha3.Destination{
 				Host:   host,
-				Subset: e.appCfg.VariantLabelPrimary,
+				Subset: e.appCfg.VariantLabel.PrimaryValue,
 			},
 			Weight: primaryWeight,
 		})
@@ -390,7 +390,7 @@ func (e *deployExecutor) generateVirtualServiceManifestV1Alpha3(m provider.Manif
 			routes = append(routes, &istiov1alpha3.HTTPRouteDestination{
 				Destination: &istiov1alpha3.Destination{
 					Host:   host,
-					Subset: e.appCfg.VariantLabelCanary,
+					Subset: e.appCfg.VariantLabel.CanaryValue,
 				},
 				Weight: canaryWeight,
 			})
@@ -399,7 +399,7 @@ func (e *deployExecutor) generateVirtualServiceManifestV1Alpha3(m provider.Manif
 			routes = append(routes, &istiov1alpha3.HTTPRouteDestination{
 				Destination: &istiov1alpha3.Destination{
 					Host:   host,
-					Subset: e.appCfg.VariantLabelBaseline,
+					Subset: e.appCfg.VariantLabel.BaselineValue,
 				},
 				Weight: baselineWeight,
 			})

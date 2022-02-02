@@ -45,8 +45,10 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
-	variantLabel := e.appCfg.VariantLabelKey
-	primaryVariant := e.appCfg.VariantLabelPrimary
+	var (
+		variantLabel   = e.appCfg.VariantLabel.Key
+		primaryVariant = e.appCfg.VariantLabel.PrimaryValue
+	)
 	if e.appCfg.QuickSync.AddVariantLabelToSelector {
 		workloads := findWorkloadManifests(manifests, e.appCfg.Workloads)
 		for _, m := range workloads {

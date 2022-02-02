@@ -32,8 +32,8 @@ const (
 func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 	var (
 		options       = e.StageConfig.K8sCanaryRolloutStageOptions
-		variantLabel  = e.appCfg.VariantLabelKey
-		canaryVariant = e.appCfg.VariantLabelCanary
+		variantLabel  = e.appCfg.VariantLabel.Key
+		canaryVariant = e.appCfg.VariantLabel.CanaryValue
 	)
 	if options == nil {
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)

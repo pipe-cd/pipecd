@@ -27,8 +27,8 @@ import (
 func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 	var (
 		options        = e.StageConfig.K8sPrimaryRolloutStageOptions
-		variantLabel   = e.appCfg.VariantLabelKey
-		primaryVariant = e.appCfg.VariantLabelPrimary
+		variantLabel   = e.appCfg.VariantLabel.Key
+		primaryVariant = e.appCfg.VariantLabel.PrimaryValue
 	)
 	if options == nil {
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)

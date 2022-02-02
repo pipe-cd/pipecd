@@ -98,8 +98,10 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
-	variantLabel := appCfg.VariantLabelKey
-	primaryVariant := appCfg.VariantLabelPrimary
+	var (
+		variantLabel   = appCfg.VariantLabel.Key
+		primaryVariant = appCfg.VariantLabel.PrimaryValue
+	)
 	if appCfg.QuickSync.AddVariantLabelToSelector {
 		workloads := findWorkloadManifests(manifests, appCfg.Workloads)
 		for _, m := range workloads {

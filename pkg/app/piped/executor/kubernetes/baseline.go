@@ -33,8 +33,8 @@ func (e *deployExecutor) ensureBaselineRollout(ctx context.Context) model.StageS
 	var (
 		runningCommit   = e.Deployment.RunningCommitHash
 		options         = e.StageConfig.K8sBaselineRolloutStageOptions
-		variantLabel    = e.appCfg.VariantLabelKey
-		baselineVariant = e.appCfg.VariantLabelBaseline
+		variantLabel    = e.appCfg.VariantLabel.Key
+		baselineVariant = e.appCfg.VariantLabel.BaselineValue
 	)
 	if options == nil {
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
