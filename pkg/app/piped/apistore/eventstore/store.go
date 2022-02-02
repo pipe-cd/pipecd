@@ -137,16 +137,16 @@ func (s *store) ListNotHandled(name string, labels map[string]string, minCreated
 
 	events := notHandledEvents.(map[string][]*model.Event)[key]
 	out := make([]*model.Event, 0, len(events))
-	for _, e := range events {
+	for i, e := range events {
 		if e.CreatedAt < minCreatedAt {
+			break
+		}
+		if i >= limit {
 			break
 		}
 		out = append(out, e)
 	}
-	if len(out) < limit {
-		return out
-	}
-	return out[:limit]
+	return out
 }
 
 func (s *store) Lister() Lister {

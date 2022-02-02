@@ -252,18 +252,17 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		}
 		if len(notHandledEvents) > 1 {
 			// Events other than the latest will be OUTDATED.
-			for i := 1; i < len(notHandledEvents[1:]); i++ {
+			for _, e := range notHandledEvents[1:] {
 				outDatedEvents = append(outDatedEvents, &pipedservice.ReportEventStatusesRequest_Event{
-					Id:                notHandledEvents[i].Id,
+					Id:                e.Id,
 					Status:            model.EventStatus_EVENT_OUTDATED,
-					StatusDescription: fmt.Sprintf("The new event %q has been created", notHandledEvents[i].Id),
+					StatusDescription: fmt.Sprintf("The new event %q has been created", notHandledEvents[0].Id),
 				})
 			}
 		}
 
 		latestEvent := notHandledEvents[0]
 		if firstRead {
-			// Avoid handling event that isn't the latest.
 			resp, err := w.apiClient.GetLatestEvent(ctx, &pipedservice.GetLatestEventRequest{
 				Name:   e.Name,
 				Labels: e.Labels,
@@ -271,7 +270,13 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 			if err != nil {
 				return fmt.Errorf("failed to get the latest event: %w", err)
 			}
+			// The case where the latest event has already been handled.
 			if resp.Event.CreatedAt > latestEvent.CreatedAt {
+				outDatedEvents = append(outDatedEvents, &pipedservice.ReportEventStatusesRequest_Event{
+					Id:                notHandledEvents[0].Id,
+					Status:            model.EventStatus_EVENT_OUTDATED,
+					StatusDescription: fmt.Sprintf("The new event %q has been created", resp.Event.Id),
+				})
 				continue
 			}
 		}
@@ -302,7 +307,6 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	if len(handledEvents) == 0 {
 		return nil
 	}
-	w.milestoneMap.Store(repoID, maxTimestamp)
 
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
 	_, err = retry.Do(ctx, func() (interface{}, error) {
@@ -313,6 +317,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
 			return fmt.Errorf("failed to report event statuses: %w", err)
 		}
+		w.milestoneMap.Store(repoID, maxTimestamp)
 		return nil
 	}
 
@@ -327,6 +332,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
 		return fmt.Errorf("failed to report event statuses: %w", err)
 	}
+	w.milestoneMap.Store(repoID, maxTimestamp)
 	return fmt.Errorf("failed to push commits: %w", err)
 }
 
