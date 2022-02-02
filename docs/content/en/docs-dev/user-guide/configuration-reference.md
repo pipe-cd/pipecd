@@ -36,6 +36,10 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
+| variantLabelKey | string | The label will be configured to variant manifests used to distinguish them. Default is pipecd.dev/variant. | No |
+| variantLabelPrimary | string | The value for PRIMARY variant. Default is primary. | No |
+| variantLabelBaseline | string | The value for BASELINE variant. Default is baseline. | No |
+| variantLabelCanary | string | The value for CANARY variant. Default is canary. | No |
 
 ## Terraform application
 
