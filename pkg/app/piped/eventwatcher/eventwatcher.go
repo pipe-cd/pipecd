@@ -237,7 +237,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 
 	milestone, ok := w.milestoneMap.Load(repoID)
 	if !ok {
-		milestone = 0
+		milestone = int64(0)
 	}
 	var (
 		firstRead      = !ok
