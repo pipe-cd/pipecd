@@ -235,18 +235,19 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	}
 	defer tmpRepo.Clean()
 
-	milestone, ok := w.milestoneMap.Load(repoID)
-	if !ok {
-		milestone = int64(0)
+	var milestone int64 = 0
+	firstRead := true
+	if v, ok := w.milestoneMap.Load(repoID); ok {
+		milestone = v.(int64)
+		firstRead = false
 	}
 	var (
-		firstRead      = !ok
 		handledEvents  = make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventCfgs))
 		outDatedEvents = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
 		maxTimestamp   int64
 	)
 	for _, e := range eventCfgs {
-		notHandledEvents := w.eventLister.ListNotHandled(e.Name, e.Labels, milestone.(int64)+1, numToMakeOutdated)
+		notHandledEvents := w.eventLister.ListNotHandled(e.Name, e.Labels, milestone+1, numToMakeOutdated)
 		if len(notHandledEvents) == 0 {
 			continue
 		}
