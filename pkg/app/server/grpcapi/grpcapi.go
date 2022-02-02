@@ -191,7 +191,7 @@ func getEncriptionKey(se *model.Piped_SecretEncryption) ([]byte, error) {
 	}
 }
 
-func gRPCErrorForEntityOperation(err error, msg string) error {
+func gRPCEntityOperationError(err error, msg string) error {
 	switch err {
 	case nil:
 		return nil
