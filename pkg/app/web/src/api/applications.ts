@@ -145,6 +145,7 @@ export const updateApplication = async ({
   kind,
   name,
   pipedId,
+  configFilename,
 }: Required<UpdateApplicationRequest.AsObject>): Promise<
   UpdateApplicationResponse.AsObject
 > => {
@@ -155,6 +156,7 @@ export const updateApplication = async ({
   req.setPipedId(pipedId);
   req.setCloudProvider(cloudProvider);
   req.setKind(kind);
+  req.setConfigFilename(configFilename);
   return apiRequest(req, apiClient.updateApplication);
 };
 
