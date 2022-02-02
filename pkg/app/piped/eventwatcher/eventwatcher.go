@@ -235,7 +235,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 	}
 	defer tmpRepo.Clean()
 
-	var milestone int64 = 0
+	var milestone int64
 	firstRead := true
 	if v, ok := w.milestoneMap.Load(repoID); ok {
 		milestone = v.(int64)
