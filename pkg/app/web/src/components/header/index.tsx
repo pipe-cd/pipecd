@@ -76,6 +76,9 @@ const useStyles = makeStyles((theme) => ({
   activeLink: {
     borderBottom: `4px solid ${theme.palette.background.paper}`,
   },
+  activeLinkItem: {
+    backgroundColor: "gray",
+  },
   iconButton: {
     padding: 0,
   },
@@ -196,14 +199,32 @@ export const Header: FC = memo(function Header() {
           setMoreAnchorEl(null);
         }}
       >
-        <MenuItem component={Link} href={PAGE_PATH_INSIGHTS}>
-          Insights
+        <MenuItem>
+          <Link
+            component={RouterLink}
+            activeClassName={classes.activeLinkItem}
+            to={PAGE_PATH_INSIGHTS}
+          >
+            Insights
+          </Link>
         </MenuItem>
-        <MenuItem component={Link} href={PAGE_PATH_EVENTS}>
-          Events
+        <MenuItem>
+          <Link
+            component={RouterLink}
+            activeClassName={classes.activeLinkItem}
+            to={PAGE_PATH_EVENTS}
+          >
+            Events
+          </Link>
         </MenuItem>
-        <MenuItem component={Link} href={PAGE_PATH_SETTINGS}>
-          Settings
+        <MenuItem>
+          <Link
+            component={RouterLink}
+            activeClassName={classes.activeLinkItem}
+            to={PAGE_PATH_SETTINGS}
+          >
+            Settings
+          </Link>
         </MenuItem>
       </Menu>
     </AppBar>
