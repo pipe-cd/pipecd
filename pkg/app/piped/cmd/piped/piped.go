@@ -291,11 +291,13 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	}
 
 	// Start running event store.
-	eventStore := eventstore.NewStore(apiClient, p.gracePeriod, input.Logger)
+	var eventLister eventstore.Lister
 	{
+		store := eventstore.NewStore(apiClient, p.gracePeriod, input.Logger)
 		group.Go(func() error {
-			return eventStore.Run(ctx)
+			return store.Run(ctx)
 		})
+		eventLister = store.Lister()
 	}
 
 	analysisResultStore := analysisresultstore.NewStore(apiClient, input.Logger)
@@ -402,8 +404,9 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	{
 		w := eventwatcher.NewWatcher(
 			cfg,
-			eventStore,
+			eventLister,
 			gitClient,
+			apiClient,
 			input.Logger,
 		)
 		group.Go(func() error {

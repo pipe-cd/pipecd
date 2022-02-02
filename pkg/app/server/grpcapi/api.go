@@ -17,7 +17,6 @@ package grpcapi
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
@@ -122,13 +121,8 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 		CloudProvider: req.CloudProvider,
 		Description:   req.Description,
 	}
-	err = a.applicationStore.AddApplication(ctx, &app)
-	if errors.Is(err, datastore.ErrAlreadyExists) {
-		return nil, status.Error(codes.AlreadyExists, "The application already exists")
-	}
-	if err != nil {
-		a.logger.Error("failed to create application", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to create application")
+	if err := a.applicationStore.AddApplication(ctx, &app); err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add application %s", app.Id))
 	}
 
 	return &apiservice.AddApplicationResponse{
@@ -407,18 +401,7 @@ func (a *API) updatePiped(ctx context.Context, pipedID string, updater func(cont
 	}
 
 	if err := updater(ctx, pipedID); err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return status.Error(codes.InvalidArgument, "The piped is not found")
-		case datastore.ErrInvalidArgument:
-			return status.Error(codes.InvalidArgument, "Invalid value for update")
-		default:
-			a.logger.Error("failed to update the piped",
-				zap.String("piped-id", pipedID),
-				zap.Error(err),
-			)
-			return status.Error(codes.Internal, "Failed to update the piped")
-		}
+		return gRPCEntityOperationError(err, fmt.Sprintf("update piped %s", pipedID))
 	}
 	return nil
 }
@@ -430,7 +413,7 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 	}
 	id := uuid.New().String()
 
-	err = a.eventStore.AddEvent(ctx, model.Event{
+	event := model.Event{
 		Id:                id,
 		Name:              req.Name,
 		Data:              req.Data,
@@ -439,18 +422,12 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 		ProjectId:         key.ProjectId,
 		Status:            model.EventStatus_EVENT_NOT_HANDLED,
 		StatusDescription: fmt.Sprintf("It is going to be replaced by %s", req.Data),
-	})
-	if errors.Is(err, datastore.ErrAlreadyExists) {
-		return nil, status.Error(codes.AlreadyExists, "The event already exists")
 	}
-	if err != nil {
-		a.logger.Error("failed to register event", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to register event")
+	if err = a.eventStore.AddEvent(ctx, event); err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add event %s", id))
 	}
 
-	return &apiservice.RegisterEventResponse{
-		EventId: id,
-	}, nil
+	return &apiservice.RegisterEventResponse{EventId: id}, nil
 }
 
 func (a *API) RequestPlanPreview(ctx context.Context, req *apiservice.RequestPlanPreviewRequest) (*apiservice.RequestPlanPreviewResponse, error) {
@@ -476,11 +453,7 @@ func (a *API) RequestPlanPreview(ctx context.Context, req *apiservice.RequestPla
 		},
 	})
 	if err != nil {
-		a.logger.Error("failed to list pipeds to request planpreview",
-			zap.String("project", key.ProjectId),
-			zap.Error(err),
-		)
-		return nil, status.Error(codes.Internal, "Failed to list pipeds")
+		return nil, gRPCEntityOperationError(err, "list pipeds")
 	}
 
 	repositories := make(map[string]string, len(pipeds))

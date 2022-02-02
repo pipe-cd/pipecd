@@ -17,33 +17,34 @@ package eventstore
 import (
 	"context"
 	"fmt"
-	"sync"
+	"sync/atomic"
 	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
+const (
+	defaultSyncInterval = time.Minute
+	cacheTTL            = 24 * time.Hour
+)
+
+type Lister interface {
+	// List gives back the not-handled event list which is sorted by newest.
+	ListNotHandled(name string, labels map[string]string, minCreatedAt int64, limit int) []*model.Event
+}
+
 type Store interface {
 	// Run starts syncing the event list with the control-plane.
 	Run(ctx context.Context) error
-	// GetLatest returns the latest event that meets the given conditions.
-	// All objects returned here must be treated as read-only.
-	GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool)
-	// UpdateStatuses updates the status of the latest events.
-	// The second arg supposed to be the latest event. If it's not the latest, it will be ignored.
-	UpdateStatuses(ctx context.Context, latestEvents []model.Event) error
+	Lister() Lister
 }
 
 type apiClient interface {
-	GetLatestEvent(ctx context.Context, req *pipedservice.GetLatestEventRequest, opts ...grpc.CallOption) (*pipedservice.GetLatestEventResponse, error)
 	ListEvents(ctx context.Context, req *pipedservice.ListEventsRequest, opts ...grpc.CallOption) (*pipedservice.ListEventsResponse, error)
-	ReportEventStatuses(ctx context.Context, req *pipedservice.ReportEventStatusesRequest, opts ...grpc.CallOption) (*pipedservice.ReportEventStatusesResponse, error)
 }
 
 type store struct {
@@ -52,28 +53,23 @@ type store struct {
 	gracePeriod  time.Duration
 	logger       *zap.Logger
 
-	// Mark that it has handled all events that was created before this UNIX time.
-	milestone int64
-	mu        sync.RWMutex
-	// The key is supposed to be a string consists of name and labels.
-	// And the value is the address to the latest Event.
-	latestEvents map[string]*model.Event
+	// A list of events that are not being handled in spite of not the latest.
+	// Only events created within 24h is cached.
+	// They are grouped by key, sorted by newest.
+	notHandledEvents atomic.Value
 }
-
-const (
-	defaultSyncInterval = time.Minute
-)
 
 // NewStore creates a new event store instance.
 // This syncs with the control plane to keep the list of events for this runner up-to-date.
 func NewStore(apiClient apiClient, gracePeriod time.Duration, logger *zap.Logger) Store {
-	return &store{
+	s := &store{
 		apiClient:    apiClient,
 		syncInterval: defaultSyncInterval,
 		gracePeriod:  gracePeriod,
-		latestEvents: make(map[string]*model.Event),
 		logger:       logger.Named("event-store"),
 	}
+	s.notHandledEvents.Store(make(map[string][]*model.Event))
+	return s
 }
 
 // Run starts runner that periodically makes the Events in the cache up-to-date
@@ -85,8 +81,9 @@ func (s *store) Run(ctx context.Context) error {
 	defer syncTicker.Stop()
 
 	// Do first sync without waiting the first ticker.
-	s.milestone = time.Now().Add(-time.Hour).Unix()
-	s.sync(ctx)
+	if err := s.sync(ctx); err != nil {
+		return fmt.Errorf("failed to sync events first time: %w", err)
+	}
 
 	for {
 		select {
@@ -105,104 +102,53 @@ func (s *store) Run(ctx context.Context) error {
 // sync fetches a list of events newly created after its own milestone,
 // and updates the cache of latest events.
 func (s *store) sync(ctx context.Context) error {
+	// Fetch events in descending order.
 	resp, err := s.apiClient.ListEvents(ctx, &pipedservice.ListEventsRequest{
-		From:  s.milestone,
-		Order: pipedservice.ListOrder_ASC,
+		From:   time.Now().Add(-cacheTTL).Unix(),
+		Order:  pipedservice.ListOrder_DESC,
+		Status: pipedservice.ListEventsRequest_NOT_HANDLED,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to list events: %w", err)
 	}
 	if len(resp.Events) == 0 {
+		s.notHandledEvents.Store(make(map[string][]*model.Event))
 		return nil
 	}
 
-	// Eliminate events that have duplicated key.
-	filtered := make(map[string]*model.Event, len(resp.Events))
+	notHandledEvents := make(map[string][]*model.Event)
 	for _, e := range resp.Events {
-		filtered[e.EventKey] = e
+		notHandledEvents[e.EventKey] = append(notHandledEvents[e.EventKey], e)
 	}
-	// Make the cache up-to-date.
-	s.mu.Lock()
-	for key, event := range filtered {
-		cached, ok := s.latestEvents[key]
-		if ok && cached.CreatedAt > event.CreatedAt {
-			continue
-		}
-		s.latestEvents[key] = event
-	}
-	s.mu.Unlock()
+	s.notHandledEvents.Store(notHandledEvents)
 
-	// Set the latest one within the result as the next time's "from".
-	s.milestone = resp.Events[len(resp.Events)-1].CreatedAt + 1
 	return nil
 }
 
-func (s *store) GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool) {
+func (s *store) ListNotHandled(name string, labels map[string]string, minCreatedAt int64, limit int) []*model.Event {
+	if limit == 0 {
+		return []*model.Event{}
+	}
 	key := model.MakeEventKey(name, labels)
-	s.mu.RLock()
-	event, ok := s.latestEvents[key]
-	s.mu.RUnlock()
-	if ok {
-		return event, true
+	notHandledEvents := s.notHandledEvents.Load()
+	if notHandledEvents == nil {
+		return []*model.Event{}
 	}
 
-	// If not found in the cache, fetch from the control-plane.
-	resp, err := s.apiClient.GetLatestEvent(ctx, &pipedservice.GetLatestEventRequest{
-		Name:   name,
-		Labels: labels,
-	})
-	if status.Code(err) == codes.NotFound {
-		s.logger.Info("event not found in control-plane",
-			zap.String("event-name", name),
-			zap.Any("labels", labels),
-		)
-		return nil, false
+	events := notHandledEvents.(map[string][]*model.Event)[key]
+	out := make([]*model.Event, 0, len(events))
+	for i, e := range events {
+		if e.CreatedAt < minCreatedAt {
+			break
+		}
+		if i >= limit {
+			break
+		}
+		out = append(out, e)
 	}
-	if err != nil {
-		s.logger.Error("failed to get the latest event", zap.Error(err))
-		return nil, false
-	}
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	cached, ok := s.latestEvents[key]
-	if ok && cached.CreatedAt > event.CreatedAt {
-		return resp.Event, true
-	}
-	s.latestEvents[key] = resp.Event
-	return resp.Event, true
+	return out
 }
 
-func (s *store) UpdateStatuses(ctx context.Context, latestEvents []model.Event) error {
-	es := make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(latestEvents))
-	for _, e := range latestEvents {
-		es = append(es, &pipedservice.ReportEventStatusesRequest_Event{
-			Id:                e.Id,
-			Status:            e.Status,
-			StatusDescription: e.StatusDescription,
-		})
-	}
-	if _, err := s.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: es}); err != nil {
-		return fmt.Errorf("failed to report event statuses: %w", err)
-	}
-
-	// Update cached events.
-	for _, e := range latestEvents {
-		s.mu.Lock()
-		cached, ok := s.latestEvents[e.EventKey]
-		if !ok {
-			s.latestEvents[e.EventKey] = &e
-			s.mu.Unlock()
-			continue
-		}
-		if cached.Id != e.Id {
-			// There is already an event newer than the given one.
-			s.mu.Unlock()
-			continue
-		}
-		s.latestEvents[e.EventKey].Status = e.Status
-		s.latestEvents[e.EventKey].StatusDescription = e.StatusDescription
-		s.mu.Unlock()
-	}
-	return nil
+func (s *store) Lister() Lister {
+	return s
 }

@@ -137,19 +137,15 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 	}
 
 	now := time.Now().Unix()
-	if err = a.pipedStore.UpdatePiped(ctx, pipedID, datastore.PipedMetadataUpdater(req.CloudProviders, req.Repositories, req.SecretEncryption, req.Version, now)); err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return nil, status.Error(codes.InvalidArgument, "piped is not found")
-		case datastore.ErrInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
-		default:
-			a.logger.Error("failed to update the piped metadata",
-				zap.String("piped-id", pipedID),
-				zap.Error(err),
-			)
-			return nil, status.Error(codes.Internal, "failed to update the piped metadata")
-		}
+	err = a.pipedStore.UpdatePiped(ctx, pipedID, datastore.PipedMetadataUpdater(
+		req.CloudProviders,
+		req.Repositories,
+		req.SecretEncryption,
+		req.Version,
+		now,
+	))
+	if err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update metadata of piped %s", pipedID))
 	}
 
 	piped, err := getPiped(ctx, a.pipedStore, pipedID, a.logger)
@@ -173,13 +169,10 @@ func (a *PipedAPI) GetEnvironment(ctx context.Context, req *pipedservice.GetEnvi
 	}
 
 	env, err := a.environmentStore.GetEnvironment(ctx, req.Id)
-	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "environment is not found")
-	}
 	if err != nil {
-		a.logger.Error("failed to get environment", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to get environment")
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("get environment %s", req.Id))
 	}
+
 	return &pipedservice.GetEnvironmentResponse{
 		Environment: env,
 	}, nil
@@ -216,9 +209,9 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 	// TODO: Support pagination in ListApplications
 	apps, _, err := a.applicationStore.ListApplications(ctx, opts)
 	if err != nil {
-		a.logger.Error("failed to fetch applications", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to fetch applications")
+		return nil, gRPCEntityOperationError(err, "fetch applications")
 	}
+
 	return &pipedservice.ListApplicationsResponse{
 		Applications: apps,
 	}, nil
@@ -234,21 +227,10 @@ func (a *PipedAPI) ReportApplicationSyncState(ctx context.Context, req *pipedser
 		return nil, err
 	}
 
-	err = a.applicationStore.UpdateApplicationSyncState(ctx, req.ApplicationId, req.State)
-	if err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return nil, status.Error(codes.InvalidArgument, "application is not found")
-		case datastore.ErrInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
-		default:
-			a.logger.Error("failed to update application sync state",
-				zap.String("application-id", req.ApplicationId),
-				zap.Error(err),
-			)
-			return nil, status.Error(codes.Internal, "failed to update the application sync state")
-		}
+	if err := a.applicationStore.UpdateApplicationSyncState(ctx, req.ApplicationId, req.State); err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update sync state of application %s", req.ApplicationId))
 	}
+
 	return &pipedservice.ReportApplicationSyncStateResponse{}, nil
 }
 
@@ -266,22 +248,11 @@ func (a *PipedAPI) ReportApplicationDeployingStatus(ctx context.Context, req *pi
 		app.Deploying = req.Deploying
 		return nil
 	})
-	if err == nil {
-		return &pipedservice.ReportApplicationDeployingStatusResponse{}, nil
+	if err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update deploying status of application %s", req.ApplicationId))
 	}
 
-	switch err {
-	case datastore.ErrNotFound:
-		return nil, status.Error(codes.InvalidArgument, "application is not found")
-	case datastore.ErrInvalidArgument:
-		return nil, status.Error(codes.InvalidArgument, "invalid value for update")
-	default:
-		a.logger.Error("failed to update deploying status of application",
-			zap.String("application-id", req.ApplicationId),
-			zap.Error(err),
-		)
-		return nil, status.Error(codes.Internal, "failed to update deploying status of application")
-	}
+	return &pipedservice.ReportApplicationDeployingStatusResponse{}, nil
 }
 
 // ReportApplicationMostRecentDeployment is used to update the basic information about
@@ -297,18 +268,7 @@ func (a *PipedAPI) ReportApplicationMostRecentDeployment(ctx context.Context, re
 
 	err = a.applicationStore.UpdateApplicationMostRecentDeployment(ctx, req.ApplicationId, req.Status, req.Deployment)
 	if err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return nil, status.Error(codes.InvalidArgument, "application is not found")
-		case datastore.ErrInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
-		default:
-			a.logger.Error("failed to update application completed deployment",
-				zap.String("application-id", req.ApplicationId),
-				zap.Error(err),
-			)
-			return nil, status.Error(codes.Internal, "failed to update the application completed deployment")
-		}
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update deployment reference of application %s", req.ApplicationId))
 	}
 	return &pipedservice.ReportApplicationMostRecentDeploymentResponse{}, nil
 }
@@ -324,12 +284,8 @@ func (a *PipedAPI) GetApplicationMostRecentDeployment(ctx context.Context, req *
 	}
 
 	app, err := a.applicationStore.GetApplication(ctx, req.ApplicationId)
-	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "application is not found")
-	}
 	if err != nil {
-		a.logger.Error("failed to get application", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to get application")
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("get application %s", req.ApplicationId))
 	}
 
 	if req.Status == model.DeploymentStatus_DEPLOYMENT_SUCCESS && app.MostRecentlySuccessfulDeployment != nil {
@@ -392,9 +348,9 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 
 	deployments, cursor, err := a.deploymentStore.ListDeployments(ctx, opts)
 	if err != nil {
-		a.logger.Error("failed to fetch deployments", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to fetch deployments")
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("list deployments of piped %s", pipedID))
 	}
+
 	return &pipedservice.ListNotCompletedDeploymentsResponse{
 		Deployments: deployments,
 		Cursor:      cursor,
@@ -413,15 +369,9 @@ func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.Creat
 		return nil, err
 	}
 
-	err = a.deploymentStore.AddDeployment(ctx, req.Deployment)
-	if errors.Is(err, datastore.ErrAlreadyExists) {
-		return nil, status.Error(codes.AlreadyExists, "deployment already exists")
+	if err := a.deploymentStore.AddDeployment(ctx, req.Deployment); err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add deployment %s", req.Deployment.Id))
 	}
-	if err != nil {
-		a.logger.Error("failed to create deployment", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to create deployment")
-	}
-
 	return &pipedservice.CreateDeploymentResponse{}, nil
 }
 
@@ -444,22 +394,9 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 		req.Version,
 		req.Stages,
 	)
-	err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
-	if err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return nil, status.Error(codes.InvalidArgument, "deployment is not found")
-		case datastore.ErrInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
-		default:
-			a.logger.Error("failed to update deployment to be planned",
-				zap.String("deployment-id", req.DeploymentId),
-				zap.Error(err),
-			)
-			return nil, status.Error(codes.Internal, "failed to update deployment to be planned")
-		}
+	if err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater); err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update deployment %s as planned", req.DeploymentId))
 	}
-
 	return &pipedservice.ReportDeploymentPlannedResponse{}, nil
 }
 
@@ -474,23 +411,13 @@ func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *piped
 		return nil, err
 	}
 
-	updater := datastore.DeploymentStatusUpdater(req.Status, req.StatusReason)
-	err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
-	if err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return nil, status.Error(codes.InvalidArgument, "deployment is not found")
-		case datastore.ErrInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
-		default:
-			a.logger.Error("failed to update deployment status",
-				zap.String("deployment-id", req.DeploymentId),
-				zap.Error(err),
-			)
-			return nil, status.Error(codes.Internal, "failed to update deployment status")
-		}
+	updater := datastore.DeploymentStatusUpdater(
+		req.Status,
+		req.StatusReason,
+	)
+	if err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater); err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update status of deployment %s", req.DeploymentId))
 	}
-
 	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
 }
 
@@ -505,23 +432,15 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 		return nil, err
 	}
 
-	updater := datastore.DeploymentToCompletedUpdater(req.Status, req.StageStatuses, req.StatusReason, req.CompletedAt)
-	err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
-	if err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return nil, status.Error(codes.InvalidArgument, "deployment is not found")
-		case datastore.ErrInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
-		default:
-			a.logger.Error("failed to update deployment to be completed",
-				zap.String("deployment-id", req.DeploymentId),
-				zap.Error(err),
-			)
-			return nil, status.Error(codes.Internal, "failed to update deployment to be completed")
-		}
+	updater := datastore.DeploymentToCompletedUpdater(
+		req.Status,
+		req.StageStatuses,
+		req.StatusReason,
+		req.CompletedAt,
+	)
+	if err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater); err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update deployment %s as completed", req.DeploymentId))
 	}
-
 	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
 }
 
@@ -535,16 +454,8 @@ func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice
 		return nil, err
 	}
 
-	err = a.deploymentStore.UpdateDeploymentMetadata(ctx, req.DeploymentId, req.Metadata)
-	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.InvalidArgument, "deployment is not found")
-	}
-	if err != nil {
-		a.logger.Error("failed to save deployment metadata",
-			zap.String("deployment-id", req.DeploymentId),
-			zap.Error(err),
-		)
-		return nil, status.Error(codes.Internal, "failed to save deployment metadata")
+	if err = a.deploymentStore.UpdateDeploymentMetadata(ctx, req.DeploymentId, req.Metadata); err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update metadata of deployment %s", req.DeploymentId))
 	}
 	return &pipedservice.SaveDeploymentMetadataResponse{}, nil
 }
@@ -560,21 +471,8 @@ func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.Save
 		return nil, err
 	}
 
-	err = a.deploymentStore.UpdateDeploymentStageMetadata(ctx, req.DeploymentId, req.StageId, req.Metadata)
-	if err != nil {
-		switch errors.Unwrap(err) {
-		case datastore.ErrNotFound:
-			return nil, status.Error(codes.InvalidArgument, "deployment is not found")
-		case datastore.ErrInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
-		default:
-			a.logger.Error("failed to save deployment stage metadata",
-				zap.String("deployment-id", req.DeploymentId),
-				zap.String("stage-id", req.StageId),
-				zap.Error(err),
-			)
-			return nil, status.Error(codes.Internal, "failed to save deployment stage metadata")
-		}
+	if err = a.deploymentStore.UpdateDeploymentStageMetadata(ctx, req.DeploymentId, req.StageId, req.Metadata); err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update stage metadata of deployment %s", req.DeploymentId))
 	}
 	return &pipedservice.SaveStageMetadataResponse{}, nil
 }
@@ -632,23 +530,19 @@ func (a *PipedAPI) ReportStageStatusChanged(ctx context.Context, req *pipedservi
 		return nil, err
 	}
 
-	updater := datastore.StageStatusChangedUpdater(req.StageId, req.Status, req.StatusReason, req.Requires, req.Visible, req.RetriedCount, req.CompletedAt)
-	err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
-	if err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return nil, status.Error(codes.InvalidArgument, "deployment is not found")
-		case datastore.ErrInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
-		default:
-			a.logger.Error("failed to update stage status",
-				zap.String("deployment-id", req.DeploymentId),
-				zap.String("stage-id", req.StageId),
-				zap.Error(err),
-			)
-			return nil, status.Error(codes.Internal, "failed to update stage status")
-		}
+	updater := datastore.StageStatusChangedUpdater(
+		req.StageId,
+		req.Status,
+		req.StatusReason,
+		req.Requires,
+		req.Visible,
+		req.RetriedCount,
+		req.CompletedAt,
+	)
+	if err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater); err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update stage status of deployment %s", req.DeploymentId))
 	}
+
 	return &pipedservice.ReportStageStatusChangedResponse{}, nil
 }
 
@@ -668,9 +562,9 @@ func (a *PipedAPI) ListUnhandledCommands(ctx context.Context, req *pipedservice.
 
 	cmds, err := a.commandStore.ListUnhandledCommands(ctx, pipedID)
 	if err != nil {
-		a.logger.Error("failed to fetch unhandled commands", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to unhandled commands")
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("list unhandled commands of piped %s", pipedID))
 	}
+
 	return &pipedservice.ListUnhandledCommandsResponse{
 		Commands: cmds,
 	}, nil
@@ -703,31 +597,17 @@ func (a *PipedAPI) ReportCommandHandled(ctx context.Context, req *pipedservice.R
 		}
 	}
 
-	err = a.commandStore.UpdateCommandHandled(ctx, req.CommandId, req.Status, req.Metadata, req.HandledAt)
-	if err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return nil, status.Error(codes.NotFound, "command is not found")
-		case datastore.ErrInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
-		default:
-			a.logger.Error("failed to update command",
-				zap.String("command-id", req.CommandId),
-				zap.Error(err),
-			)
-			return nil, status.Error(codes.Internal, "failed to update command")
-		}
+	if err = a.commandStore.UpdateCommandHandled(ctx, req.CommandId, req.Status, req.Metadata, req.HandledAt); err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update command %s as handled", req.CommandId))
 	}
+
 	return &pipedservice.ReportCommandHandledResponse{}, nil
 }
 
-func (a *PipedAPI) getCommand(ctx context.Context, pipedID string) (*model.Command, error) {
-	cmd, err := a.commandStore.GetCommand(ctx, pipedID)
-	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "command is not found")
-	}
+func (a *PipedAPI) getCommand(ctx context.Context, commandID string) (*model.Command, error) {
+	cmd, err := a.commandStore.GetCommand(ctx, commandID)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to get command")
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("get command %s", commandID))
 	}
 	return cmd, nil
 }
@@ -853,6 +733,26 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 			Value:    req.To,
 		})
 	}
+	if req.Status != pipedservice.ListEventsRequest_ALL {
+		var status model.EventStatus
+		switch req.Status {
+		case pipedservice.ListEventsRequest_NOT_HANDLED:
+			status = model.EventStatus_EVENT_NOT_HANDLED
+		case pipedservice.ListEventsRequest_SUCCESS:
+			status = model.EventStatus_EVENT_SUCCESS
+		case pipedservice.ListEventsRequest_FAILURE:
+			status = model.EventStatus_EVENT_FAILURE
+		case pipedservice.ListEventsRequest_OUTDATED:
+			status = model.EventStatus_EVENT_OUTDATED
+		default:
+			return nil, fmt.Errorf("unknown status %v given", req.Status)
+		}
+		opts.Filters = append(opts.Filters, datastore.ListFilter{
+			Field:    "Status",
+			Operator: datastore.OperatorEqual,
+			Value:    status,
+		})
+	}
 	switch req.Order {
 	case pipedservice.ListOrder_ASC:
 		opts.Orders = []datastore.Order{
@@ -880,9 +780,9 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 
 	events, _, err := a.eventStore.ListEvents(ctx, opts)
 	if err != nil {
-		a.logger.Error("failed to list events", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to list events")
+		return nil, gRPCEntityOperationError(err, "list events")
 	}
+
 	return &pipedservice.ListEventsResponse{
 		Events: events,
 	}, nil
@@ -897,18 +797,10 @@ func (a *PipedAPI) ReportEventsHandled(ctx context.Context, req *pipedservice.Re
 
 	for _, id := range req.EventIds {
 		if err := a.eventStore.UpdateEventStatus(ctx, id, model.EventStatus_EVENT_SUCCESS, fmt.Sprintf("successfully handled by %q piped", pipedID)); err != nil {
-			switch err {
-			case datastore.ErrNotFound:
-				return nil, status.Errorf(codes.NotFound, "event %q is not found", id)
-			default:
-				a.logger.Error("failed to mark event as handled",
-					zap.String("event-id", id),
-					zap.Error(err),
-				)
-				return nil, status.Errorf(codes.Internal, "failed to mark event %q as handled", id)
-			}
+			return nil, gRPCEntityOperationError(err, fmt.Sprintf("update event %s as handled", id))
 		}
 	}
+
 	return &pipedservice.ReportEventsHandledResponse{}, nil
 }
 
@@ -920,16 +812,7 @@ func (a *PipedAPI) ReportEventStatuses(ctx context.Context, req *pipedservice.Re
 	for _, e := range req.Events {
 		// TODO: For success status, change all previous events with the same event key to OUTDATED
 		if err := a.eventStore.UpdateEventStatus(ctx, e.Id, e.Status, e.StatusDescription); err != nil {
-			switch err {
-			case datastore.ErrNotFound:
-				return nil, status.Errorf(codes.NotFound, "event %q is not found", e.Id)
-			default:
-				a.logger.Error("failed to update event status",
-					zap.String("event-id", e.Id),
-					zap.Error(err),
-				)
-				return nil, status.Errorf(codes.Internal, "failed to update event status %q", e.Id)
-			}
+			return nil, gRPCEntityOperationError(err, fmt.Sprintf("update status of event %s", e.Id))
 		}
 	}
 	return &pipedservice.ReportEventStatusesResponse{}, nil
@@ -952,6 +835,7 @@ func (a *PipedAPI) GetLatestAnalysisResult(ctx context.Context, req *pipedservic
 		a.logger.Error("failed to get the most recent analysis result", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to get the most recent analysis result")
 	}
+
 	return &pipedservice.GetLatestAnalysisResultResponse{
 		AnalysisResult: result,
 	}, nil
@@ -971,6 +855,7 @@ func (a *PipedAPI) PutLatestAnalysisResult(ctx context.Context, req *pipedservic
 		a.logger.Error("failed to put the most recent analysis result", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to put the most recent analysis result")
 	}
+
 	return &pipedservice.PutLatestAnalysisResultResponse{}, nil
 }
 
@@ -979,10 +864,12 @@ func (a *PipedAPI) GetDesiredVersion(ctx context.Context, _ *pipedservice.GetDes
 	if err != nil {
 		return nil, err
 	}
+
 	piped, err := getPiped(ctx, a.pipedStore, pipedID, a.logger)
 	if err != nil {
 		return nil, err
 	}
+
 	return &pipedservice.GetDesiredVersionResponse{
 		Version: piped.DesiredVersion,
 	}, nil
@@ -1007,10 +894,10 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 			return nil
 		}
 		if err := a.applicationStore.UpdateApplication(ctx, appInfo.Id, updater); err != nil {
-			a.logger.Error("failed to update application", zap.Error(err))
-			return nil, status.Error(codes.Internal, "failed to update application")
+			return nil, gRPCEntityOperationError(err, fmt.Sprintf("update config of application %s", appInfo.Id))
 		}
 	}
+
 	return &pipedservice.UpdateApplicationConfigurationsResponse{}, nil
 }
 
@@ -1270,13 +1157,10 @@ func (a *PipedAPI) validateAppBelongsToPiped(ctx context.Context, appID, pipedID
 	}
 
 	app, err := a.applicationStore.GetApplication(ctx, appID)
-	if errors.Is(err, datastore.ErrNotFound) {
-		return status.Error(codes.NotFound, "the application is not found")
-	}
 	if err != nil {
-		a.logger.Error("failed to get application", zap.Error(err))
-		return status.Error(codes.Internal, "failed to get application")
+		return gRPCEntityOperationError(err, fmt.Sprintf("get application %s", appID))
 	}
+
 	a.appPipedCache.Put(appID, app.PipedId)
 
 	if app.PipedId != pipedID {
@@ -1297,18 +1181,16 @@ func (a *PipedAPI) validateDeploymentBelongsToPiped(ctx context.Context, deploym
 	}
 
 	deployment, err := a.deploymentStore.GetDeployment(ctx, deploymentID)
-	if errors.Is(err, datastore.ErrNotFound) {
-		return status.Error(codes.NotFound, "the deployment is not found")
-	}
 	if err != nil {
-		a.logger.Error("failed to get deployment", zap.Error(err))
-		return status.Error(codes.Internal, "failed to get deployment")
+		return gRPCEntityOperationError(err, fmt.Sprintf("get deployment %s", deploymentID))
 	}
+
 	a.deploymentPipedCache.Put(deploymentID, deployment.PipedId)
 
 	if deployment.PipedId != pipedID {
 		return status.Error(codes.PermissionDenied, "requested deployment doesn't belong to the piped")
 	}
+
 	return nil
 }
 
@@ -1324,13 +1206,10 @@ func (a *PipedAPI) validateEnvBelongsToProject(ctx context.Context, envID, proje
 	}
 
 	env, err := a.environmentStore.GetEnvironment(ctx, envID)
-	if errors.Is(err, datastore.ErrNotFound) {
-		return status.Error(codes.NotFound, "the environment is not found")
-	}
 	if err != nil {
-		a.logger.Error("failed to get environment", zap.Error(err))
-		return status.Error(codes.Internal, "failed to get environment")
+		return gRPCEntityOperationError(err, fmt.Sprintf("get environment %s", envID))
 	}
+
 	a.envProjectCache.Put(envID, env.ProjectId)
 
 	if env.ProjectId != projectID {

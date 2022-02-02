@@ -73,8 +73,12 @@ func (c *Filler) Run(ctx context.Context) error {
 
 		c.logger.Info(fmt.Sprintf("found %d applications to fill", len(apps)))
 		for _, app := range apps {
-			c.logger.Info(fmt.Sprintf("will fill config filename for application %s", app.Id))
+			if app.MostRecentlySuccessfulDeployment == nil || app.MostRecentlySuccessfulDeployment.ConfigFilename != "" {
+				c.logger.Info(fmt.Sprintf("there is no need to fill config filename for application %s", app.Id))
+				continue
+			}
 
+			c.logger.Info(fmt.Sprintf("will fill config filename for application %s", app.Id))
 			if err := c.applicationStore.FillConfigFilenameToDeploymentReference(ctx, app.Id); err != nil {
 				c.logger.Error(fmt.Sprintf("failed to fill config filename for application %s", app.Id), zap.Error(err))
 				return err

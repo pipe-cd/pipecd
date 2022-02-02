@@ -102,6 +102,10 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 				TrafficRouting: &KubernetesTrafficRouting{
 					Method: KubernetesTrafficRoutingMethodPodSelector,
 				},
+				VariantLabelKey:      "pipecd.dev/variant",
+				VariantLabelPrimary:  "primary",
+				VariantLabelBaseline: "baseline",
+				VariantLabelCanary:   "canary",
 			},
 			expectedError: nil,
 		},
