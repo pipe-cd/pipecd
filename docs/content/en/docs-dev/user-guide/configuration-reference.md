@@ -36,10 +36,7 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
-| variantLabelKey | string | The label will be configured to variant manifests used to distinguish them. Default is pipecd.dev/variant. | No |
-| variantLabelPrimary | string | The value for PRIMARY variant. Default is primary. | No |
-| variantLabelBaseline | string | The value for BASELINE variant. Default is baseline. | No |
-| variantLabelCanary | string | The value for CANARY variant. Default is canary. | No |
+| variantLabel | [KubernetesVariantLabel](#kubernetesvariantlabel) | The label will be configured to variant manifests used to distinguish them. | No |
 
 ## Terraform application
 
@@ -291,6 +288,16 @@ One of `yamlField` or `regex` is required.
 | helmOptions | [HelmOptions](#helmoptions) | Configurable parameters for helm commands. | No |
 | namespace | string | The namespace where manifests will be applied. | No |
 | autoRollback | bool | Automatically reverts all deployment changes on failure. Default is `true`. | No |
+
+## KubernetesVariantLabel
+
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| key | string | The key of the label. Default is `pipecd.dev/variant`. | No |
+| primaryValue | string | The label value for PRIMARY variant. Default is `primary`. | No |
+| canaryValue | string | The label value for CANARY variant. Default is `canary`. | No |
+| baselineValue | string | The label value for BASELINE variant. Default is `baseline`. | No |
 
 ## HelmChart
 

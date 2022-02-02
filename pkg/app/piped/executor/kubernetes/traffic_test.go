@@ -28,10 +28,12 @@ import (
 func TestGenerateVirtualServiceManifest(t *testing.T) {
 	exec := &deployExecutor{
 		appCfg: &config.KubernetesApplicationSpec{
-			VariantLabelKey:      "pipecd.dev/variant",
-			VariantLabelPrimary:  "primary",
-			VariantLabelBaseline: "baseline",
-			VariantLabelCanary:   "canary",
+			VariantLabel: config.KubernetesVariantLabel{
+				Key:           "pipecd.dev/variant",
+				PrimaryValue:  "primary",
+				BaselineValue: "baseline",
+				CanaryValue:   "canary",
+			},
 		},
 	}
 	testcases := []struct {
