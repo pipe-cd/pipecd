@@ -192,10 +192,9 @@ func getEncriptionKey(se *model.Piped_SecretEncryption) ([]byte, error) {
 }
 
 func gRPCErrorForEntityOperation(err error, op string, a ...interface{}) error {
-	if err == nil {
-		return nil
-	}
 	switch err {
+	case nil:
+	        return nil
 	case datastore.ErrNotFound:
 		return status.Error(codes.NotFound, fmt.Sprintf("Entity was not found to "+op, a...))
 	case datastore.ErrInvalidArgument:
