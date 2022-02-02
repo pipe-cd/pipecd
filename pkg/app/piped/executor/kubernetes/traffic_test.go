@@ -22,9 +22,18 @@ import (
 	"github.com/stretchr/testify/require"
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 func TestGenerateVirtualServiceManifest(t *testing.T) {
+	exec := &deployExecutor{
+		appCfg: &config.KubernetesApplicationSpec{
+			VariantLabelKey:      "pipecd.dev/variant",
+			VariantLabelPrimary:  "primary",
+			VariantLabelBaseline: "baseline",
+			VariantLabelCanary:   "canary",
+		},
+	}
 	testcases := []struct {
 		name           string
 		manifestFile   string
@@ -49,7 +58,7 @@ func TestGenerateVirtualServiceManifest(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, 1, len(manifests))
 
-			generatedManifest, err := generateVirtualServiceManifest(manifests[0], "helloworld", tc.editableRoutes, 30, 20)
+			generatedManifest, err := exec.generateVirtualServiceManifest(manifests[0], "helloworld", tc.editableRoutes, 30, 20)
 			assert.NoError(t, err)
 
 			expectedManifests, err := provider.LoadManifestsFromYAMLFile(tc.expectedFile)
@@ -67,6 +76,10 @@ func TestGenerateVirtualServiceManifest(t *testing.T) {
 }
 
 func TestCheckVariantSelectorInService(t *testing.T) {
+	const (
+		variantLabel   = "pipecd.dev/variant"
+		primaryVariant = "primary"
+	)
 	testcases := []struct {
 		name     string
 		manifest string
@@ -120,7 +133,7 @@ spec:
 			require.NoError(t, err)
 			require.Equal(t, 1, len(manifests))
 
-			err = checkVariantSelectorInService(manifests[0], primaryVariant)
+			err = checkVariantSelectorInService(manifests[0], variantLabel, primaryVariant)
 			assert.Equal(t, tc.expected, err)
 		})
 	}

@@ -24,12 +24,12 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-const (
-	primaryVariant = "primary"
-)
-
 func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
-	options := e.StageConfig.K8sPrimaryRolloutStageOptions
+	var (
+		options        = e.StageConfig.K8sPrimaryRolloutStageOptions
+		variantLabel   = e.appCfg.VariantLabelKey
+		primaryVariant = e.appCfg.VariantLabelPrimary
+	)
 	if options == nil {
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
@@ -97,7 +97,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 		workloads := findWorkloadManifests(primaryManifests, e.appCfg.Workloads)
 		var invalid bool
 		for _, m := range workloads {
-			if err := checkVariantSelectorInWorkload(m, primaryVariant); err != nil {
+			if err := checkVariantSelectorInWorkload(m, variantLabel, primaryVariant); err != nil {
 				invalid = true
 				e.LogPersister.Errorf("Missing %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableLogString(), err)
 			}
@@ -109,7 +109,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 
 	// Generate the manifests for applying.
 	e.LogPersister.Info("Start generating manifests for PRIMARY variant")
-	if primaryManifests, err = e.generatePrimaryManifests(primaryManifests, *options); err != nil {
+	if primaryManifests, err = e.generatePrimaryManifests(primaryManifests, *options, variantLabel, primaryVariant); err != nil {
 		e.LogPersister.Errorf("Unable to generate manifests for PRIMARY variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -118,6 +118,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 	// Add builtin annotations for tracking application live state.
 	addBuiltinAnnontations(
 		primaryManifests,
+		variantLabel,
 		primaryVariant,
 		e.commit,
 		e.PipedConfig.PipedID,
@@ -198,8 +199,8 @@ func findRemoveManifests(prevs []provider.Manifest, curs []provider.Manifest, na
 	return removeKeys
 }
 
-func (e *deployExecutor) generatePrimaryManifests(manifests []provider.Manifest, opts config.K8sPrimaryRolloutStageOptions) ([]provider.Manifest, error) {
-	suffix := primaryVariant
+func (e *deployExecutor) generatePrimaryManifests(manifests []provider.Manifest, opts config.K8sPrimaryRolloutStageOptions, variantLabel, variant string) ([]provider.Manifest, error) {
+	suffix := variant
 	if opts.Suffix != "" {
 		suffix = opts.Suffix
 	}
@@ -213,8 +214,8 @@ func (e *deployExecutor) generatePrimaryManifests(manifests []provider.Manifest,
 	if opts.AddVariantLabelToSelector {
 		workloads := findWorkloadManifests(manifests, e.appCfg.Workloads)
 		for _, m := range workloads {
-			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
-				return nil, fmt.Errorf("unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableLogString(), err)
+			if err := ensureVariantSelectorInWorkload(m, variantLabel, variant); err != nil {
+				return nil, fmt.Errorf("unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+variant, m.Key.ReadableLogString(), err)
 			}
 		}
 	}
@@ -228,7 +229,7 @@ func (e *deployExecutor) generatePrimaryManifests(manifests []provider.Manifest,
 		}
 		services = duplicateManifests(services, "")
 
-		generatedServices, err := generateVariantServiceManifests(services, primaryVariant, suffix)
+		generatedServices, err := generateVariantServiceManifests(services, variantLabel, variant, suffix)
 		if err != nil {
 			return nil, err
 		}

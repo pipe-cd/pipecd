@@ -78,7 +78,7 @@ func TestGenerateServiceManifests(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))
 
-			generatedManifests, err := generateVariantServiceManifests(manifests[:1], "canary-variant", "canary")
+			generatedManifests, err := generateVariantServiceManifests(manifests[:1], "pipecd.dev/variant", "canary-variant", "canary")
 			require.NoError(t, err)
 			require.Equal(t, 1, len(generatedManifests))
 
@@ -88,6 +88,10 @@ func TestGenerateServiceManifests(t *testing.T) {
 }
 
 func TestGenerateVariantWorkloadManifests(t *testing.T) {
+	const (
+		variantLabel  = "pipecd.dev/variant"
+		canaryVariant = "canary-variant"
+	)
 	testcases := []struct {
 		name           string
 		manifestsFile  string
@@ -121,9 +125,18 @@ func TestGenerateVariantWorkloadManifests(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			generatedManifests, err := generateVariantWorkloadManifests(manifests[:1], configmaps, secrets, "canary-variant", "canary", func(r *int32) int32 {
+			calculator := func(r *int32) int32 {
 				return *r - 1
-			})
+			}
+			generatedManifests, err := generateVariantWorkloadManifests(
+				manifests[:1],
+				configmaps,
+				secrets,
+				variantLabel,
+				canaryVariant,
+				"canary",
+				calculator,
+			)
 			require.NoError(t, err)
 			require.Equal(t, 1, len(generatedManifests))
 
@@ -133,6 +146,10 @@ func TestGenerateVariantWorkloadManifests(t *testing.T) {
 }
 
 func TestCheckVariantSelectorInWorkload(t *testing.T) {
+	const (
+		variantLabel   = "pipecd.dev/variant"
+		primaryVariant = "primary"
+	)
 	testcases := []struct {
 		name     string
 		manifest string
@@ -262,10 +279,10 @@ spec:
 			require.NoError(t, err)
 			require.Equal(t, 1, len(manifests))
 
-			err = checkVariantSelectorInWorkload(manifests[0], primaryVariant)
+			err = checkVariantSelectorInWorkload(manifests[0], variantLabel, primaryVariant)
 			assert.Equal(t, tc.expected, err)
 
-			err = ensureVariantSelectorInWorkload(manifests[0], primaryVariant)
+			err = ensureVariantSelectorInWorkload(manifests[0], variantLabel, primaryVariant)
 			assert.NoError(t, err)
 			assert.Equal(t, generatedManifests[0], manifests[0])
 		})

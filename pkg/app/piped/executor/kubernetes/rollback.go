@@ -98,10 +98,12 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
+	variantLabel := appCfg.VariantLabelKey
+	primaryVariant := appCfg.VariantLabelPrimary
 	if appCfg.QuickSync.AddVariantLabelToSelector {
 		workloads := findWorkloadManifests(manifests, appCfg.Workloads)
 		for _, m := range workloads {
-			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
+			if err := ensureVariantSelectorInWorkload(m, variantLabel, primaryVariant); err != nil {
 				e.LogPersister.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableLogString(), err)
 				return model.StageStatus_STAGE_FAILURE
 			}
@@ -111,6 +113,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	// Add builtin annotations for tracking application live state.
 	addBuiltinAnnontations(
 		manifests,
+		variantLabel,
 		primaryVariant,
 		e.Deployment.RunningCommitHash,
 		e.PipedConfig.PipedID,
