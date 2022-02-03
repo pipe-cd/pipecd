@@ -25,6 +25,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandstore"
+	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/git"
@@ -208,4 +209,23 @@ func gRPCEntityOperationError(err error, msg string) error {
 
 func makeUnregisteredAppsCacheKey(projectID string) string {
 	return fmt.Sprintf("HASHKEY:UNREGISTERED_APPS:%s", projectID)
+}
+
+func getPipedStatus(cs cache.Cache, id string) (model.Piped_ConnectionStatus, error) {
+	pipedStatus, err := cs.Get(id)
+	if errors.Is(err, cache.ErrNotFound) {
+		return model.Piped_OFFLINE, nil
+	}
+	if err != nil {
+		return model.Piped_UNKNOWN, err
+	}
+
+	ps := model.PipedStat{}
+	if err = model.UnmarshalPipedStat(pipedStatus, &ps); err != nil {
+		return model.Piped_UNKNOWN, err
+	}
+	if ps.IsStaled(model.PipedStatsRetention) {
+		return model.Piped_OFFLINE, nil
+	}
+	return model.Piped_ONLINE, nil
 }

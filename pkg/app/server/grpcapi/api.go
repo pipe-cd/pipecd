@@ -46,6 +46,7 @@ type API struct {
 	commandOutputGetter commandOutputGetter
 
 	encryptionKeyCache cache.Cache
+	pipedStatCache     cache.Cache
 
 	webBaseURL string
 	logger     *zap.Logger
@@ -57,6 +58,7 @@ func NewAPI(
 	ds datastore.DataStore,
 	cmds commandstore.Store,
 	cog commandOutputGetter,
+	psc cache.Cache,
 	webBaseURL string,
 	logger *zap.Logger,
 ) *API {
@@ -70,6 +72,7 @@ func NewAPI(
 		commandOutputGetter: cog,
 		// Public key is variable but likely to be accessed multiple times in a short period.
 		encryptionKeyCache: memorycache.NewTTLCache(ctx, 5*time.Minute, 5*time.Minute),
+		pipedStatCache:     psc,
 		webBaseURL:         webBaseURL,
 		logger:             logger.Named("api"),
 	}
@@ -535,9 +538,25 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 		}
 
 		if !cmd.IsHandled() {
+			pipedStatus, err := getPipedStatus(a.pipedStatCache, cmd.PipedId)
+			if err != nil {
+				a.logger.Error("failed to get or unmarshal piped stat", zap.Error(err))
+				pipedStatus = model.Piped_UNKNOWN
+			}
+
+			if pipedStatus != model.Piped_ONLINE {
+				results = append(results, &model.PlanPreviewCommandResult{
+					CommandId: cmd.Id,
+					PipedId:   cmd.PipedId,
+					Error:     "Maybe Piped is offline currently.",
+				})
+				continue
+			}
+
 			if time.Since(time.Unix(cmd.CreatedAt, 0)) <= commandHandleTimeout {
 				return nil, status.Error(codes.NotFound, fmt.Sprintf("Waiting for result of command %s from piped %s", commandID, cmd.PipedId))
 			}
+
 			results = append(results, &model.PlanPreviewCommandResult{
 				CommandId: cmd.Id,
 				PipedId:   cmd.PipedId,
