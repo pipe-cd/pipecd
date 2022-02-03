@@ -40,7 +40,7 @@ func (c *Filler) Run(ctx context.Context) error {
 	c.logger.Info("start running Filler")
 	defer c.logger.Info("Filler has been stopped")
 
-	var limit, count = 50, 0
+	var limit, scans, fills = 50, 0, 0
 	var sleepInternal = 100 * time.Millisecond
 	var cursor string
 
@@ -73,6 +73,7 @@ func (c *Filler) Run(ctx context.Context) error {
 
 		c.logger.Info(fmt.Sprintf("found %d applications to fill", len(apps)))
 		for _, app := range apps {
+			scans++
 			if app.MostRecentlySuccessfulDeployment == nil || app.MostRecentlySuccessfulDeployment.ConfigFilename != "" {
 				c.logger.Info(fmt.Sprintf("there is no need to fill config filename for application %s", app.Id))
 				continue
@@ -84,13 +85,13 @@ func (c *Filler) Run(ctx context.Context) error {
 				return err
 			}
 
-			count++
+			fills++
 			c.logger.Info(fmt.Sprintf("filled config filename for application %s", app.Id))
 			time.Sleep(sleepInternal)
 		}
 
 		if next == "" {
-			c.logger.Info(fmt.Sprintf("successfully filled config filename to all %d applications", count))
+			c.logger.Info(fmt.Sprintf("successfully scanned %d apps and filled config filename for %d applications", scans, fills))
 			return nil
 		}
 		cursor = next
