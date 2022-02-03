@@ -17,7 +17,6 @@ package grpcapi
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
@@ -658,23 +657,4 @@ func requireAPIKey(ctx context.Context, role model.APIKey_Role, logger *zap.Logg
 		logger.Warn("detected an API key that has an invalid role", zap.String("key", key.Id))
 		return nil, status.Error(codes.PermissionDenied, "Invalid role")
 	}
-}
-
-func getPipedStatus(cs cache.Cache, id string) (model.Piped_ConnectionStatus, error) {
-	pipedStatus, err := cs.Get(id)
-	if errors.Is(err, cache.ErrNotFound) {
-		return model.Piped_OFFLINE, nil
-	}
-	if err != nil {
-		return model.Piped_UNKNOWN, err
-	}
-
-	ps := model.PipedStat{}
-	if err = model.UnmarshalPipedStat(pipedStatus, &ps); err != nil {
-		return model.Piped_UNKNOWN, err
-	}
-	if ps.IsStaled(model.PipedStatsRetention) {
-		return model.Piped_OFFLINE, nil
-	}
-	return model.Piped_ONLINE, nil
 }
