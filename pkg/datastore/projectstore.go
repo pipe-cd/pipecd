@@ -35,9 +35,9 @@ func (p *projectCollection) Factory() Factory {
 }
 
 type ProjectStore interface {
-	AddProject(ctx context.Context, proj *model.Project) error
-	GetProject(ctx context.Context, id string) (*model.Project, error)
-	ListProjects(ctx context.Context, opts ListOptions) ([]model.Project, error)
+	Add(ctx context.Context, proj *model.Project) error
+	Get(ctx context.Context, id string) (*model.Project, error)
+	List(ctx context.Context, opts ListOptions) ([]model.Project, error)
 	UpdateProject(ctx context.Context, id string, updater func(project *model.Project) error) error
 	UpdateProjectStaticAdmin(ctx context.Context, id, username, password string) error
 	EnableStaticAdmin(ctx context.Context, id string) error
@@ -61,7 +61,7 @@ func NewProjectStore(ds DataStore) ProjectStore {
 	}
 }
 
-func (s *projectStore) AddProject(ctx context.Context, proj *model.Project) error {
+func (s *projectStore) Add(ctx context.Context, proj *model.Project) error {
 	now := s.nowFunc().Unix()
 	if proj.CreatedAt == 0 {
 		proj.CreatedAt = now
@@ -73,6 +73,34 @@ func (s *projectStore) AddProject(ctx context.Context, proj *model.Project) erro
 		return err
 	}
 	return s.ds.Create(ctx, s.col, proj.Id, proj)
+}
+
+func (s *projectStore) Get(ctx context.Context, id string) (*model.Project, error) {
+	var entity model.Project
+	if err := s.ds.Get(ctx, s.col, id, &entity); err != nil {
+		return nil, err
+	}
+	return &entity, nil
+}
+
+func (s *projectStore) List(ctx context.Context, opts ListOptions) ([]model.Project, error) {
+	it, err := s.ds.Find(ctx, s.col, opts)
+	if err != nil {
+		return nil, err
+	}
+	ps := make([]model.Project, 0)
+	for {
+		var p model.Project
+		err := it.Next(&p)
+		if err == ErrIteratorDone {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		ps = append(ps, p)
+	}
+	return ps, nil
 }
 
 func (s *projectStore) UpdateProject(ctx context.Context, id string, updater func(project *model.Project) error) error {
@@ -130,32 +158,4 @@ func (s *projectStore) UpdateProjectRBACConfig(ctx context.Context, id string, r
 		p.Rbac = rbac
 		return nil
 	})
-}
-
-func (s *projectStore) GetProject(ctx context.Context, id string) (*model.Project, error) {
-	var entity model.Project
-	if err := s.ds.Get(ctx, s.col, id, &entity); err != nil {
-		return nil, err
-	}
-	return &entity, nil
-}
-
-func (s *projectStore) ListProjects(ctx context.Context, opts ListOptions) ([]model.Project, error) {
-	it, err := s.ds.Find(ctx, s.col, opts)
-	if err != nil {
-		return nil, err
-	}
-	ps := make([]model.Project, 0)
-	for {
-		var p model.Project
-		err := it.Next(&p)
-		if err == ErrIteratorDone {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-		ps = append(ps, p)
-	}
-	return ps, nil
 }

@@ -62,7 +62,7 @@ func TestAddCommand(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := NewCommandStore(tc.dsFactory(tc.command))
-			err := s.AddCommand(context.Background(), tc.command)
+			err := s.Add(context.Background(), tc.command)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
@@ -107,7 +107,7 @@ func TestGetCommand(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := NewCommandStore(tc.ds)
-			_, err := s.GetCommand(context.Background(), tc.id)
+			_, err := s.Get(context.Background(), tc.id)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
@@ -162,7 +162,7 @@ func TestListCommands(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := NewCommandStore(tc.ds)
-			_, err := s.ListCommands(context.Background(), tc.opts)
+			_, err := s.List(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}

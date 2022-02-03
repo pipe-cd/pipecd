@@ -25,50 +25,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-func TestAddEnvironment(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	testcases := []struct {
-		name        string
-		environment *model.Environment
-		dsFactory   func(*model.Environment) DataStore
-		wantErr     bool
-	}{
-		{
-			name:        "Invalid environment",
-			environment: &model.Environment{},
-			dsFactory:   func(d *model.Environment) DataStore { return nil },
-			wantErr:     true,
-		},
-		{
-			name: "Valid environment",
-			environment: &model.Environment{
-				Id:        "id",
-				Name:      "name",
-				ProjectId: "project-id",
-
-				CreatedAt: 1,
-				UpdatedAt: 1,
-			},
-			dsFactory: func(d *model.Environment) DataStore {
-				ds := NewMockDataStore(ctrl)
-				ds.EXPECT().Create(gomock.Any(), gomock.Any(), d.Id, d)
-				return ds
-			},
-			wantErr: false,
-		},
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			s := NewEnvironmentStore(tc.dsFactory(tc.environment))
-			err := s.AddEnvironment(context.Background(), tc.environment)
-			assert.Equal(t, tc.wantErr, err != nil)
-		})
-	}
-}
-
 func TestGetEnvironment(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -108,7 +64,7 @@ func TestGetEnvironment(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := NewEnvironmentStore(tc.ds)
-			_, err := s.GetEnvironment(context.Background(), tc.id)
+			_, err := s.Get(context.Background(), tc.id)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
@@ -163,7 +119,7 @@ func TestListEnvironment(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := NewEnvironmentStore(tc.ds)
-			_, err := s.ListEnvironments(context.Background(), tc.opts)
+			_, err := s.List(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}

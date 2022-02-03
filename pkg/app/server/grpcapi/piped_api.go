@@ -168,7 +168,7 @@ func (a *PipedAPI) GetEnvironment(ctx context.Context, req *pipedservice.GetEnvi
 		return nil, err
 	}
 
-	env, err := a.environmentStore.GetEnvironment(ctx, req.Id)
+	env, err := a.environmentStore.Get(ctx, req.Id)
 	if err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("get environment %s", req.Id))
 	}
@@ -207,7 +207,7 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 		},
 	}
 	// TODO: Support pagination in ListApplications
-	apps, _, err := a.applicationStore.ListApplications(ctx, opts)
+	apps, _, err := a.applicationStore.List(ctx, opts)
 	if err != nil {
 		return nil, gRPCEntityOperationError(err, "fetch applications")
 	}
@@ -283,7 +283,7 @@ func (a *PipedAPI) GetApplicationMostRecentDeployment(ctx context.Context, req *
 		return nil, err
 	}
 
-	app, err := a.applicationStore.GetApplication(ctx, req.ApplicationId)
+	app, err := a.applicationStore.Get(ctx, req.ApplicationId)
 	if err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("get application %s", req.ApplicationId))
 	}
@@ -346,7 +346,7 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 		},
 	}
 
-	deployments, cursor, err := a.deploymentStore.ListDeployments(ctx, opts)
+	deployments, cursor, err := a.deploymentStore.List(ctx, opts)
 	if err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("list deployments of piped %s", pipedID))
 	}
@@ -369,7 +369,7 @@ func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.Creat
 		return nil, err
 	}
 
-	if err := a.deploymentStore.AddDeployment(ctx, req.Deployment); err != nil {
+	if err := a.deploymentStore.Add(ctx, req.Deployment); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add deployment %s", req.Deployment.Id))
 	}
 	return &pipedservice.CreateDeploymentResponse{}, nil
@@ -688,7 +688,7 @@ func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLate
 			},
 		},
 	}
-	events, _, err := a.eventStore.ListEvents(ctx, opts)
+	events, _, err := a.eventStore.List(ctx, opts)
 	if err != nil {
 		a.logger.Error("failed to list events", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to list event")
@@ -778,7 +778,7 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 		}
 	}
 
-	events, _, err := a.eventStore.ListEvents(ctx, opts)
+	events, _, err := a.eventStore.List(ctx, opts)
 	if err != nil {
 		return nil, gRPCEntityOperationError(err, "list events")
 	}
@@ -971,7 +971,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 
 		// TODO: Support find node apps by appLabels.
 
-		apps, _, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
+		apps, _, err := a.applicationStore.List(ctx, datastore.ListOptions{
 			Filters: filters,
 		})
 		if err != nil {
@@ -1034,14 +1034,14 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 	}
 
 	// Create a new deployment chain instance to control newly triggered deployment chain.
-	if err := a.deploymentChainStore.AddDeploymentChain(ctx, &dc); err != nil {
+	if err := a.deploymentChainStore.Add(ctx, &dc); err != nil {
 		a.logger.Error("failed to create deployment chain", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to trigger new deployment chain")
 	}
 
 	firstDeployment.DeploymentChainId = dc.Id
 	// Trigger new deployment for the first application by store first deployment to datastore.
-	if err := a.deploymentStore.AddDeployment(ctx, firstDeployment); err != nil {
+	if err := a.deploymentStore.Add(ctx, firstDeployment); err != nil {
 		a.logger.Error("failed to create deployment", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to trigger new deployment for the first application in chain")
 	}
@@ -1089,7 +1089,7 @@ func (a *PipedAPI) InChainDeploymentPlannable(ctx context.Context, req *pipedser
 		return nil, err
 	}
 
-	dc, err := a.deploymentChainStore.GetDeploymentChain(ctx, req.DeploymentChainId)
+	dc, err := a.deploymentChainStore.Get(ctx, req.DeploymentChainId)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "unable to find the deployment chain which this deployment belongs to")
 	}
@@ -1156,7 +1156,7 @@ func (a *PipedAPI) validateAppBelongsToPiped(ctx context.Context, appID, pipedID
 		return nil
 	}
 
-	app, err := a.applicationStore.GetApplication(ctx, appID)
+	app, err := a.applicationStore.Get(ctx, appID)
 	if err != nil {
 		return gRPCEntityOperationError(err, fmt.Sprintf("get application %s", appID))
 	}
@@ -1180,7 +1180,7 @@ func (a *PipedAPI) validateDeploymentBelongsToPiped(ctx context.Context, deploym
 		return nil
 	}
 
-	deployment, err := a.deploymentStore.GetDeployment(ctx, deploymentID)
+	deployment, err := a.deploymentStore.Get(ctx, deploymentID)
 	if err != nil {
 		return gRPCEntityOperationError(err, fmt.Sprintf("get deployment %s", deploymentID))
 	}
@@ -1205,7 +1205,7 @@ func (a *PipedAPI) validateEnvBelongsToProject(ctx context.Context, envID, proje
 		return nil
 	}
 
-	env, err := a.environmentStore.GetEnvironment(ctx, envID)
+	env, err := a.environmentStore.Get(ctx, envID)
 	if err != nil {
 		return gRPCEntityOperationError(err, fmt.Sprintf("get environment %s", envID))
 	}

@@ -45,7 +45,7 @@ func (c *Filler) Run(ctx context.Context) error {
 	var cursor string
 
 	for {
-		apps, next, err := c.applicationStore.ListApplications(ctx, datastore.ListOptions{
+		apps, next, err := c.applicationStore.List(ctx, datastore.ListOptions{
 			Filters: []datastore.ListFilter{
 				{
 					Field:    "Deleted",

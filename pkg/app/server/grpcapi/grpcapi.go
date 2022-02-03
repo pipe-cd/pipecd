@@ -41,7 +41,7 @@ type commandOutputPutter interface {
 }
 
 func getPiped(ctx context.Context, store datastore.PipedStore, id string, logger *zap.Logger) (*model.Piped, error) {
-	piped, err := store.GetPiped(ctx, id)
+	piped, err := store.Get(ctx, id)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "Piped is not found")
 	}
@@ -54,7 +54,7 @@ func getPiped(ctx context.Context, store datastore.PipedStore, id string, logger
 }
 
 func getApplication(ctx context.Context, store datastore.ApplicationStore, id string, logger *zap.Logger) (*model.Application, error) {
-	app, err := store.GetApplication(ctx, id)
+	app, err := store.Get(ctx, id)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "Application is not found")
 	}
@@ -67,7 +67,7 @@ func getApplication(ctx context.Context, store datastore.ApplicationStore, id st
 }
 
 func listApplications(ctx context.Context, store datastore.ApplicationStore, opts datastore.ListOptions, logger *zap.Logger) ([]*model.Application, string, error) {
-	apps, cursor, err := store.ListApplications(ctx, opts)
+	apps, cursor, err := store.List(ctx, opts)
 	if err != nil {
 		logger.Error("failed to list applications", zap.Error(err))
 		return nil, "", status.Error(codes.Internal, "Failed to list applications")
@@ -77,7 +77,7 @@ func listApplications(ctx context.Context, store datastore.ApplicationStore, opt
 }
 
 func getDeployment(ctx context.Context, store datastore.DeploymentStore, id string, logger *zap.Logger) (*model.Deployment, error) {
-	deployment, err := store.GetDeployment(ctx, id)
+	deployment, err := store.Get(ctx, id)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "Deployment is not found")
 	}
@@ -138,7 +138,7 @@ func makeGitPath(repoID, path, cfgFilename string, piped *model.Piped, logger *z
 }
 
 func listEnvironments(ctx context.Context, store datastore.EnvironmentStore, opts datastore.ListOptions, logger *zap.Logger) ([]*model.Environment, error) {
-	envs, err := store.ListEnvironments(ctx, opts)
+	envs, err := store.List(ctx, opts)
 	if err != nil {
 		logger.Error("failed to list environments", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to list environments")
@@ -148,7 +148,7 @@ func listEnvironments(ctx context.Context, store datastore.EnvironmentStore, opt
 }
 
 func getEnvironment(ctx context.Context, store datastore.EnvironmentStore, id string, logger *zap.Logger) (*model.Environment, error) {
-	env, err := store.GetEnvironment(ctx, id)
+	env, err := store.Get(ctx, id)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "Environment is not found")
 	}

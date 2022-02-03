@@ -144,7 +144,7 @@ func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvir
 			},
 		},
 	}
-	envs, err := a.environmentStore.ListEnvironments(ctx, opts)
+	envs, err := a.environmentStore.List(ctx, opts)
 	if err != nil {
 		return nil, gRPCEntityOperationError(err, "list environments")
 	}
@@ -181,7 +181,7 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 		return nil, err
 	}
 	// Check if no Piped has permission to the given environment.
-	pipeds, err := a.pipedStore.ListPipeds(ctx, datastore.ListOptions{
+	pipeds, err := a.pipedStore.List(ctx, datastore.ListOptions{
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
@@ -220,7 +220,7 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 	}
 
 	// Delete all applications that belongs to the given env.
-	apps, _, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
+	apps, _, err := a.applicationStore.List(ctx, datastore.ListOptions{
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
@@ -245,12 +245,12 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 		if app.ProjectId != claims.Role.ProjectId {
 			continue
 		}
-		if err := a.applicationStore.DeleteApplication(ctx, app.Id); err != nil {
+		if err := a.applicationStore.Delete(ctx, app.Id); err != nil {
 			return nil, gRPCEntityOperationError(err, fmt.Sprintf("delete application %s", app.Id))
 		}
 	}
 
-	if err := a.environmentStore.DeleteEnvironment(ctx, req.EnvironmentId); err != nil {
+	if err := a.environmentStore.Delete(ctx, req.EnvironmentId); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("delete environment %s", req.EnvironmentId))
 	}
 
@@ -329,7 +329,7 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("Failed to create key: %v", err))
 	}
 
-	if err = a.pipedStore.AddPiped(ctx, &piped); err != nil {
+	if err = a.pipedStore.Add(ctx, &piped); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add piped %s", piped.Id))
 	}
 
@@ -454,7 +454,7 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 		}
 	}
 
-	pipeds, err := a.pipedStore.ListPipeds(ctx, opts)
+	pipeds, err := a.pipedStore.List(ctx, opts)
 	if err != nil {
 		return nil, gRPCEntityOperationError(err, "list pipeds")
 	}
@@ -631,7 +631,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		Description:   req.Description,
 		Labels:        req.Labels,
 	}
-	if err = a.applicationStore.AddApplication(ctx, &app); err != nil {
+	if err = a.applicationStore.Add(ctx, &app); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add application %s", app.Id))
 	}
 
@@ -720,7 +720,7 @@ func (a *WebAPI) DeleteApplication(ctx context.Context, req *webservice.DeleteAp
 		return nil, err
 	}
 
-	if err := a.applicationStore.DeleteApplication(ctx, req.ApplicationId); err != nil {
+	if err := a.applicationStore.Delete(ctx, req.ApplicationId); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("delete application %s", req.ApplicationId))
 	}
 
@@ -815,7 +815,7 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		}
 	}
 
-	apps, _, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
+	apps, _, err := a.applicationStore.List(ctx, datastore.ListOptions{
 		Filters: filters,
 		Orders:  orders,
 	})
@@ -1029,7 +1029,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		Limit:   pageSize,
 		Cursor:  req.Cursor,
 	}
-	deployments, cursor, err := a.deploymentStore.ListDeployments(ctx, options)
+	deployments, cursor, err := a.deploymentStore.List(ctx, options)
 	if err != nil {
 		a.logger.Error("failed to get deployments", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get deployments")
@@ -1064,7 +1064,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 	// or until it finishes scanning to page_min_updated_at.
 	for len(filtered) < pageSize {
 		options.Cursor = cursor
-		deployments, cursor, err = a.deploymentStore.ListDeployments(ctx, options)
+		deployments, cursor, err = a.deploymentStore.List(ctx, options)
 		if err != nil {
 			a.logger.Error("failed to get deployments", zap.Error(err))
 			return nil, status.Error(codes.Internal, "Failed to get deployments")
@@ -1333,7 +1333,7 @@ func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Proje
 		}, nil
 	}
 
-	project, err := a.projectStore.GetProject(ctx, projectID)
+	project, err := a.projectStore.Get(ctx, projectID)
 	if err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("get project %s", projectID))
 	}
@@ -1501,7 +1501,7 @@ func (a *WebAPI) GenerateAPIKey(ctx context.Context, req *webservice.GenerateAPI
 		Creator:   claims.Subject,
 	}
 
-	if err = a.apiKeyStore.AddAPIKey(ctx, &apiKey); err != nil {
+	if err = a.apiKeyStore.Add(ctx, &apiKey); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add API key %s", apiKey.Id))
 	}
 
@@ -1551,7 +1551,7 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 		}
 	}
 
-	apiKeys, err := a.apiKeyStore.ListAPIKeys(ctx, opts)
+	apiKeys, err := a.apiKeyStore.List(ctx, opts)
 	if err != nil {
 		return nil, gRPCEntityOperationError(err, "list API keys")
 	}
@@ -1683,7 +1683,7 @@ func (a *WebAPI) ListDeploymentChains(ctx context.Context, req *webservice.ListD
 		Cursor:  req.Cursor,
 	}
 
-	deploymentChains, cursor, err := a.deploymentChainStore.ListDeploymentChains(ctx, options)
+	deploymentChains, cursor, err := a.deploymentChainStore.List(ctx, options)
 	if err != nil {
 		return nil, gRPCEntityOperationError(err, "list deployment chains")
 	}
@@ -1701,7 +1701,7 @@ func (a *WebAPI) GetDeploymentChain(ctx context.Context, req *webservice.GetDepl
 		return nil, err
 	}
 
-	dc, err := a.deploymentChainStore.GetDeploymentChain(ctx, req.DeploymentChainId)
+	dc, err := a.deploymentChainStore.Get(ctx, req.DeploymentChainId)
 	if err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("get deployment chain %s", req.DeploymentChainId))
 	}
@@ -1770,7 +1770,7 @@ func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsReque
 		Limit:   pageSize,
 		Cursor:  req.Cursor,
 	}
-	events, cursor, err := a.eventStore.ListEvents(ctx, options)
+	events, cursor, err := a.eventStore.List(ctx, options)
 	if err != nil {
 		return nil, gRPCEntityOperationError(err, "list events")
 	}
@@ -1805,7 +1805,7 @@ func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsReque
 	// or until it finishes scanning to page_min_updated_at.
 	for len(filtered) < pageSize {
 		options.Cursor = cursor
-		events, cursor, err = a.eventStore.ListEvents(ctx, options)
+		events, cursor, err = a.eventStore.List(ctx, options)
 		if err != nil {
 			a.logger.Error("failed to get events", zap.Error(err))
 			return nil, status.Error(codes.Internal, "Failed to get events")

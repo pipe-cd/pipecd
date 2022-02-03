@@ -78,7 +78,7 @@ func (i *insightMetricsCollector) collectApplicationCount() (map[string]map[stri
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
-	projects, err := i.projectStore.ListProjects(ctx, datastore.ListOptions{})
+	projects, err := i.projectStore.List(ctx, datastore.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

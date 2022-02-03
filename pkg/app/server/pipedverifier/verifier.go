@@ -28,11 +28,11 @@ import (
 )
 
 type projectGetter interface {
-	GetProject(ctx context.Context, id string) (*model.Project, error)
+	Get(ctx context.Context, id string) (*model.Project, error)
 }
 
 type pipedGetter interface {
-	GetPiped(ctx context.Context, id string) (*model.Piped, error)
+	Get(ctx context.Context, id string) (*model.Piped, error)
 }
 
 type Verifier struct {
@@ -90,7 +90,7 @@ func (v *Verifier) Verify(ctx context.Context, projectID, pipedID, pipedKey stri
 
 	// If the cache data was not found or stale,
 	// we have to retrieve from datastore and save it to the cache.
-	piped, err = v.pipedStore.GetPiped(ctx, pipedID)
+	piped, err = v.pipedStore.Get(ctx, pipedID)
 	if err != nil {
 		return fmt.Errorf("unable to find piped %s from datastore, %w", pipedID, err)
 	}
@@ -125,7 +125,7 @@ func (v *Verifier) verifyProject(ctx context.Context, projectID, pipedID string)
 		return nil
 	}
 
-	if _, err := v.projectStore.GetProject(ctx, projectID); err != nil {
+	if _, err := v.projectStore.Get(ctx, projectID); err != nil {
 		return fmt.Errorf("project %s for piped %s was not found", projectID, pipedID)
 	}
 

@@ -36,12 +36,12 @@ func (a *applicationCollection) Factory() Factory {
 }
 
 type ApplicationStore interface {
-	AddApplication(ctx context.Context, app *model.Application) error
-	GetApplication(ctx context.Context, id string) (*model.Application, error)
-	ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, string, error)
+	Add(ctx context.Context, app *model.Application) error
+	Get(ctx context.Context, id string) (*model.Application, error)
+	List(ctx context.Context, opts ListOptions) ([]*model.Application, string, error)
+	Delete(ctx context.Context, id string) error
 	EnableApplication(ctx context.Context, id string) error
 	DisableApplication(ctx context.Context, id string) error
-	DeleteApplication(ctx context.Context, id string) error
 	UpdateApplication(ctx context.Context, id string, updater func(*model.Application) error) error
 	UpdateApplicationSyncState(ctx context.Context, id string, syncState *model.ApplicationSyncState) error
 	UpdateApplicationMostRecentDeployment(ctx context.Context, id string, status model.DeploymentStatus, deployment *model.ApplicationDeploymentReference) error
@@ -63,7 +63,7 @@ func NewApplicationStore(ds DataStore) ApplicationStore {
 	}
 }
 
-func (s *applicationStore) AddApplication(ctx context.Context, app *model.Application) error {
+func (s *applicationStore) Add(ctx context.Context, app *model.Application) error {
 	now := s.nowFunc().Unix()
 	if app.CreatedAt == 0 {
 		app.CreatedAt = now
@@ -77,43 +77,7 @@ func (s *applicationStore) AddApplication(ctx context.Context, app *model.Applic
 	return s.ds.Create(ctx, s.col, app.Id, app)
 }
 
-func (s *applicationStore) EnableApplication(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
-		app := e.(*model.Application)
-		if app.Deleted {
-			return fmt.Errorf("cannot enable a deleted application: %w", ErrInvalidArgument)
-		}
-		app.Disabled = false
-		app.UpdatedAt = s.nowFunc().Unix()
-		return nil
-	})
-}
-
-func (s *applicationStore) DisableApplication(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
-		app := e.(*model.Application)
-		if app.Deleted {
-			return fmt.Errorf("cannot disable a deleted application: %w", ErrInvalidArgument)
-		}
-		app.Disabled = true
-		app.UpdatedAt = s.nowFunc().Unix()
-		return nil
-	})
-}
-
-func (s *applicationStore) DeleteApplication(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
-		now := s.nowFunc().Unix()
-		app := e.(*model.Application)
-		app.Deleted = true
-		app.Disabled = true
-		app.DeletedAt = now
-		app.UpdatedAt = now
-		return nil
-	})
-}
-
-func (s *applicationStore) GetApplication(ctx context.Context, id string) (*model.Application, error) {
+func (s *applicationStore) Get(ctx context.Context, id string) (*model.Application, error) {
 	var entity model.Application
 	if err := s.ds.Get(ctx, s.col, id, &entity); err != nil {
 		return nil, err
@@ -121,7 +85,7 @@ func (s *applicationStore) GetApplication(ctx context.Context, id string) (*mode
 	return &entity, nil
 }
 
-func (s *applicationStore) ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, string, error) {
+func (s *applicationStore) List(ctx context.Context, opts ListOptions) ([]*model.Application, string, error) {
 	it, err := s.ds.Find(ctx, s.col, opts)
 	if err != nil {
 		return nil, "", err
@@ -148,6 +112,42 @@ func (s *applicationStore) ListApplications(ctx context.Context, opts ListOption
 		return nil, "", err
 	}
 	return apps, cursor, nil
+}
+
+func (s *applicationStore) Delete(ctx context.Context, id string) error {
+	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+		now := s.nowFunc().Unix()
+		app := e.(*model.Application)
+		app.Deleted = true
+		app.Disabled = true
+		app.DeletedAt = now
+		app.UpdatedAt = now
+		return nil
+	})
+}
+
+func (s *applicationStore) EnableApplication(ctx context.Context, id string) error {
+	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+		app := e.(*model.Application)
+		if app.Deleted {
+			return fmt.Errorf("cannot enable a deleted application: %w", ErrInvalidArgument)
+		}
+		app.Disabled = false
+		app.UpdatedAt = s.nowFunc().Unix()
+		return nil
+	})
+}
+
+func (s *applicationStore) DisableApplication(ctx context.Context, id string) error {
+	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+		app := e.(*model.Application)
+		if app.Deleted {
+			return fmt.Errorf("cannot disable a deleted application: %w", ErrInvalidArgument)
+		}
+		app.Disabled = true
+		app.UpdatedAt = s.nowFunc().Unix()
+		return nil
+	})
 }
 
 func (s *applicationStore) UpdateApplication(ctx context.Context, id string, updater func(*model.Application) error) error {

@@ -81,7 +81,7 @@ func (c *Collector) findDeploymentsCreatedInRange(ctx context.Context, from, to 
 	var deployments []*model.Deployment
 	maxCreatedAt := to
 	for {
-		d, _, err := c.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+		d, _, err := c.deploymentStore.List(ctx, datastore.ListOptions{
 			Limit: limit,
 			Filters: append(filters, datastore.ListFilter{
 				Field:    "CreatedAt",
@@ -121,7 +121,7 @@ func (c *Collector) findDeploymentsCompletedInRange(ctx context.Context, from, t
 	var deployments []*model.Deployment
 	maxCompletedAt := to
 	for {
-		d, _, err := c.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+		d, _, err := c.deploymentStore.List(ctx, datastore.ListOptions{
 			Limit: limit,
 			Filters: append(filters, datastore.ListFilter{
 				Field:    "CompletedAt",

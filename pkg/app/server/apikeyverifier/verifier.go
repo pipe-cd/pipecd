@@ -27,7 +27,7 @@ import (
 )
 
 type apiKeyGetter interface {
-	GetAPIKey(ctx context.Context, id string) (*model.APIKey, error)
+	Get(ctx context.Context, id string) (*model.APIKey, error)
 }
 
 type Verifier struct {
@@ -62,7 +62,7 @@ func (v *Verifier) Verify(ctx context.Context, key string) (*model.APIKey, error
 
 	// If the cache data was not found,
 	// we have to retrieve from datastore and save it to the cache.
-	apiKey, err = v.apiKeyStore.GetAPIKey(ctx, keyID)
+	apiKey, err = v.apiKeyStore.Get(ctx, keyID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find API key %s from datastore, %w", keyID, err)
 	}

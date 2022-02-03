@@ -34,7 +34,7 @@ type fakeProjectGetter struct {
 	projects map[string]*model.Project
 }
 
-func (g *fakeProjectGetter) GetProject(_ context.Context, id string) (*model.Project, error) {
+func (g *fakeProjectGetter) Get(_ context.Context, id string) (*model.Project, error) {
 	g.calls++
 	p, ok := g.projects[id]
 	if ok {
@@ -49,7 +49,7 @@ type fakePipedGetter struct {
 	pipeds map[string]*model.Piped
 }
 
-func (g *fakePipedGetter) GetPiped(_ context.Context, id string) (*model.Piped, error) {
+func (g *fakePipedGetter) Get(_ context.Context, id string) (*model.Piped, error) {
 	g.calls++
 	p, ok := g.pipeds[id]
 	if ok {

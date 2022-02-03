@@ -32,7 +32,7 @@ type fakeAPIKeyGetter struct {
 	apiKeys map[string]*model.APIKey
 }
 
-func (g *fakeAPIKeyGetter) GetAPIKey(_ context.Context, id string) (*model.APIKey, error) {
+func (g *fakeAPIKeyGetter) Get(_ context.Context, id string) (*model.APIKey, error) {
 	g.calls++
 	p, ok := g.apiKeys[id]
 	if ok {

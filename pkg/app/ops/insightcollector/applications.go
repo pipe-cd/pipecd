@@ -59,7 +59,7 @@ func (c *Collector) listApplications(ctx context.Context, to time.Time) ([]*mode
 	var applications []*model.Application
 
 	for {
-		apps, next, err := c.applicationStore.ListApplications(ctx, datastore.ListOptions{
+		apps, next, err := c.applicationStore.List(ctx, datastore.ListOptions{
 			Filters: []datastore.ListFilter{
 				{
 					Field:    "Deleted",

@@ -97,9 +97,9 @@ var (
 )
 
 type DeploymentStore interface {
-	AddDeployment(ctx context.Context, d *model.Deployment) error
-	GetDeployment(ctx context.Context, id string) (*model.Deployment, error)
-	ListDeployments(ctx context.Context, opts ListOptions) ([]*model.Deployment, string, error)
+	Add(ctx context.Context, d *model.Deployment) error
+	Get(ctx context.Context, id string) (*model.Deployment, error)
+	List(ctx context.Context, opts ListOptions) ([]*model.Deployment, string, error)
 	UpdateDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error
 	UpdateDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error
 	UpdateDeploymentStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error
@@ -120,7 +120,7 @@ func NewDeploymentStore(ds DataStore) DeploymentStore {
 	}
 }
 
-func (s *deploymentStore) AddDeployment(ctx context.Context, d *model.Deployment) error {
+func (s *deploymentStore) Add(ctx context.Context, d *model.Deployment) error {
 	now := s.nowFunc().Unix()
 	if d.CreatedAt == 0 {
 		d.CreatedAt = now
@@ -132,6 +132,43 @@ func (s *deploymentStore) AddDeployment(ctx context.Context, d *model.Deployment
 		return err
 	}
 	return s.ds.Create(ctx, s.col, d.Id, d)
+}
+
+func (s *deploymentStore) Get(ctx context.Context, id string) (*model.Deployment, error) {
+	var entity model.Deployment
+	if err := s.ds.Get(ctx, s.col, id, &entity); err != nil {
+		return nil, err
+	}
+	return &entity, nil
+}
+
+func (s *deploymentStore) List(ctx context.Context, opts ListOptions) ([]*model.Deployment, string, error) {
+	it, err := s.ds.Find(ctx, s.col, opts)
+	if err != nil {
+		return nil, "", err
+	}
+	ds := make([]*model.Deployment, 0)
+	for {
+		var d model.Deployment
+		err := it.Next(&d)
+		if err == ErrIteratorDone {
+			break
+		}
+		if err != nil {
+			return nil, "", err
+		}
+		ds = append(ds, &d)
+	}
+
+	// In case there is no more elements found, cursor should be set to empty too.
+	if len(ds) == 0 {
+		return ds, "", nil
+	}
+	cursor, err := it.Cursor()
+	if err != nil {
+		return nil, "", err
+	}
+	return ds, cursor, nil
 }
 
 func (s *deploymentStore) UpdateDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error {
@@ -180,41 +217,4 @@ func mergeMetadata(ori map[string]string, new map[string]string) map[string]stri
 		out[k] = v
 	}
 	return out
-}
-
-func (s *deploymentStore) ListDeployments(ctx context.Context, opts ListOptions) ([]*model.Deployment, string, error) {
-	it, err := s.ds.Find(ctx, s.col, opts)
-	if err != nil {
-		return nil, "", err
-	}
-	ds := make([]*model.Deployment, 0)
-	for {
-		var d model.Deployment
-		err := it.Next(&d)
-		if err == ErrIteratorDone {
-			break
-		}
-		if err != nil {
-			return nil, "", err
-		}
-		ds = append(ds, &d)
-	}
-
-	// In case there is no more elements found, cursor should be set to empty too.
-	if len(ds) == 0 {
-		return ds, "", nil
-	}
-	cursor, err := it.Cursor()
-	if err != nil {
-		return nil, "", err
-	}
-	return ds, cursor, nil
-}
-
-func (s *deploymentStore) GetDeployment(ctx context.Context, id string) (*model.Deployment, error) {
-	var entity model.Deployment
-	if err := s.ds.Get(ctx, s.col, id, &entity); err != nil {
-		return nil, err
-	}
-	return &entity, nil
 }

@@ -89,7 +89,7 @@ func (u *updater) Run(ctx context.Context) error {
 			if model.IsCompletedDeployment(deploymentRef.Status) {
 				continue
 			}
-			deployment, err := u.deploymentStore.GetDeployment(ctx, deploymentRef.DeploymentId)
+			deployment, err := u.deploymentStore.Get(ctx, deploymentRef.DeploymentId)
 			if err != nil {
 				u.logger.Error("failed while update deployment chain: can not get deployment",
 					zap.String("deploymentChainId", u.deploymentChainID),
@@ -180,7 +180,7 @@ func (u *updater) listAllMissingDeployments(ctx context.Context) ([]*model.Deplo
 			},
 		},
 	}
-	deployments, _, err := u.deploymentStore.ListDeployments(ctx, options)
+	deployments, _, err := u.deploymentStore.List(ctx, options)
 	if err != nil {
 		u.logger.Error("failed to fetch all deployments in chain",
 			zap.String("deploymentChainId", u.deploymentChainID),

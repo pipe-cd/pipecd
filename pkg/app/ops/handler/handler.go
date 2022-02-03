@@ -39,8 +39,8 @@ var (
 )
 
 type projectStore interface {
-	AddProject(ctx context.Context, proj *model.Project) error
-	ListProjects(ctx context.Context, opts datastore.ListOptions) ([]model.Project, error)
+	Add(ctx context.Context, proj *model.Project) error
+	List(ctx context.Context, opts datastore.ListOptions) ([]model.Project, error)
 }
 
 type Handler struct {
@@ -129,7 +129,7 @@ func (h *Handler) handleListProjects(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	projects, err := h.projectStore.ListProjects(ctx, datastore.ListOptions{})
+	projects, err := h.projectStore.List(ctx, datastore.ListOptions{})
 	if err != nil {
 		h.logger.Error("failed to retrieve the list of projects", zap.Error(err))
 		http.Error(w, "Unable to retrieve projects", http.StatusInternalServerError)
@@ -210,7 +210,7 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := h.projectStore.AddProject(ctx, project); err != nil {
+	if err := h.projectStore.Add(ctx, project); err != nil {
 		h.logger.Error("failed to add a new project",
 			zap.String("id", id),
 			zap.Error(err),
@@ -241,7 +241,7 @@ func (h *Handler) handleApplicationCounts(w http.ResponseWriter, r *http.Request
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	projects, err := h.projectStore.ListProjects(ctx, datastore.ListOptions{})
+	projects, err := h.projectStore.List(ctx, datastore.ListOptions{})
 	if err != nil {
 		h.logger.Error("failed to retrieve the list of projects", zap.Error(err))
 		http.Error(w, "Unable to retrieve projects", http.StatusInternalServerError)

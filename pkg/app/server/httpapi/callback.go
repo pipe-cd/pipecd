@@ -53,7 +53,7 @@ func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	proj, err := h.projectGetter.GetProject(ctx, projectID)
+	proj, err := h.projectGetter.Get(ctx, projectID)
 	if err != nil {
 		h.handleError(w, r, fmt.Sprintf("Unable to find project %s", projectID), err)
 		return

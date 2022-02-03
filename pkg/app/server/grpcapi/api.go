@@ -121,7 +121,7 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 		CloudProvider: req.CloudProvider,
 		Description:   req.Description,
 	}
-	if err := a.applicationStore.AddApplication(ctx, &app); err != nil {
+	if err := a.applicationStore.Add(ctx, &app); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add application %s", app.Id))
 	}
 
@@ -423,7 +423,7 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 		Status:            model.EventStatus_EVENT_NOT_HANDLED,
 		StatusDescription: fmt.Sprintf("It is going to be replaced by %s", req.Data),
 	}
-	if err = a.eventStore.AddEvent(ctx, event); err != nil {
+	if err = a.eventStore.Add(ctx, event); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add event %s", id))
 	}
 
@@ -438,7 +438,7 @@ func (a *API) RequestPlanPreview(ctx context.Context, req *apiservice.RequestPla
 
 	// TODO: We may need to cache the list of pipeds to reduce load on database.
 	// Adding the cache after understanding the real situation from our metrics data.
-	pipeds, err := a.pipedStore.ListPipeds(ctx, datastore.ListOptions{
+	pipeds, err := a.pipedStore.List(ctx, datastore.ListOptions{
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
