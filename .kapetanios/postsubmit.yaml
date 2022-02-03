@@ -80,7 +80,7 @@ spec:
     steps:
     - name: build
       description: Build static files
-      runner: gcr.io/pipecd/hugo:1.1.0
+      runner: gcr.io/pipecd/hugo:1.2.0
       commands:
         - cd docs
         - npm install autoprefixer
