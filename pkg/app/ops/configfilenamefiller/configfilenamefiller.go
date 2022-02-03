@@ -67,11 +67,11 @@ func (c *Filler) Run(ctx context.Context) error {
 			Limit:  limit,
 		})
 		if err != nil {
-			c.logger.Error("failed to list applications", zap.Error(err))
+			c.logger.Error("failed to list apps", zap.Error(err))
 			return err
 		}
 
-		c.logger.Info(fmt.Sprintf("found %d applications to fill", len(apps)))
+		c.logger.Info(fmt.Sprintf("found %d apps to fill", len(apps)))
 		for _, app := range apps {
 			scans++
 			if app.MostRecentlySuccessfulDeployment == nil || app.MostRecentlySuccessfulDeployment.ConfigFilename != "" {
@@ -91,7 +91,7 @@ func (c *Filler) Run(ctx context.Context) error {
 		}
 
 		if next == "" {
-			c.logger.Info(fmt.Sprintf("successfully scanned %d apps and filled config filename for %d applications", scans, fills))
+			c.logger.Info(fmt.Sprintf("successfully scanned %d apps and filled config filename for %d apps", scans, fills))
 			return nil
 		}
 		cursor = next
