@@ -196,7 +196,7 @@ data:
         metric_relabel_configs:
           - source_labels: [grpc_service]
             target_label: pipecd_grpc_service
-            regex: pipe.api.service.(.+)service.(.+)
+            regex: grpc.service.(.+)service.(.+)
             replacement: $1
 
       - job_name: pipecd-ops
