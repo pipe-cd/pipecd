@@ -36,9 +36,9 @@ func (a *apiKeyCollection) Factory() Factory {
 }
 
 type APIKeyStore interface {
-	AddAPIKey(ctx context.Context, k *model.APIKey) error
-	GetAPIKey(ctx context.Context, id string) (*model.APIKey, error)
-	ListAPIKeys(ctx context.Context, opts ListOptions) ([]*model.APIKey, error)
+	Add(ctx context.Context, k *model.APIKey) error
+	Get(ctx context.Context, id string) (*model.APIKey, error)
+	List(ctx context.Context, opts ListOptions) ([]*model.APIKey, error)
 	DisableAPIKey(ctx context.Context, id, projectID string) error
 }
 
@@ -57,7 +57,7 @@ func NewAPIKeyStore(ds DataStore) APIKeyStore {
 	}
 }
 
-func (s *apiKeyStore) AddAPIKey(ctx context.Context, k *model.APIKey) error {
+func (s *apiKeyStore) Add(ctx context.Context, k *model.APIKey) error {
 	now := s.nowFunc().Unix()
 	if k.CreatedAt == 0 {
 		k.CreatedAt = now
@@ -71,7 +71,7 @@ func (s *apiKeyStore) AddAPIKey(ctx context.Context, k *model.APIKey) error {
 	return s.ds.Create(ctx, s.col, k.Id, k)
 }
 
-func (s *apiKeyStore) GetAPIKey(ctx context.Context, id string) (*model.APIKey, error) {
+func (s *apiKeyStore) Get(ctx context.Context, id string) (*model.APIKey, error) {
 	var entity model.APIKey
 	if err := s.ds.Get(ctx, s.col, id, &entity); err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (s *apiKeyStore) GetAPIKey(ctx context.Context, id string) (*model.APIKey, 
 	return &entity, nil
 }
 
-func (s *apiKeyStore) ListAPIKeys(ctx context.Context, opts ListOptions) ([]*model.APIKey, error) {
+func (s *apiKeyStore) List(ctx context.Context, opts ListOptions) ([]*model.APIKey, error) {
 	it, err := s.ds.Find(ctx, s.col, opts)
 	if err != nil {
 		return nil, err

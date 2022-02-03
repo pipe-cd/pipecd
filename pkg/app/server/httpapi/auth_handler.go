@@ -55,7 +55,7 @@ const (
 )
 
 type projectGetter interface {
-	GetProject(ctx context.Context, id string) (*model.Project, error)
+	Get(ctx context.Context, id string) (*model.Project, error)
 }
 
 type decrypter interface {

@@ -59,9 +59,9 @@ var (
 )
 
 type PipedStore interface {
-	AddPiped(ctx context.Context, piped *model.Piped) error
-	GetPiped(ctx context.Context, id string) (*model.Piped, error)
-	ListPipeds(ctx context.Context, opts ListOptions) ([]*model.Piped, error)
+	Add(ctx context.Context, piped *model.Piped) error
+	Get(ctx context.Context, id string) (*model.Piped, error)
+	List(ctx context.Context, opts ListOptions) ([]*model.Piped, error)
 	UpdatePiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error
 	EnablePiped(ctx context.Context, id string) error
 	DisablePiped(ctx context.Context, id string) error
@@ -84,7 +84,7 @@ func NewPipedStore(ds DataStore) PipedStore {
 	}
 }
 
-func (s *pipedStore) AddPiped(ctx context.Context, piped *model.Piped) error {
+func (s *pipedStore) Add(ctx context.Context, piped *model.Piped) error {
 	now := s.nowFunc().Unix()
 	if piped.CreatedAt == 0 {
 		piped.CreatedAt = now
@@ -98,7 +98,7 @@ func (s *pipedStore) AddPiped(ctx context.Context, piped *model.Piped) error {
 	return s.ds.Create(ctx, s.col, piped.Id, piped)
 }
 
-func (s *pipedStore) GetPiped(ctx context.Context, id string) (*model.Piped, error) {
+func (s *pipedStore) Get(ctx context.Context, id string) (*model.Piped, error) {
 	var entity model.Piped
 	if err := s.ds.Get(ctx, s.col, id, &entity); err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (s *pipedStore) GetPiped(ctx context.Context, id string) (*model.Piped, err
 	return &entity, nil
 }
 
-func (s *pipedStore) ListPipeds(ctx context.Context, opts ListOptions) ([]*model.Piped, error) {
+func (s *pipedStore) List(ctx context.Context, opts ListOptions) ([]*model.Piped, error) {
 	it, err := s.ds.Find(ctx, s.col, opts)
 	if err != nil {
 		return nil, err

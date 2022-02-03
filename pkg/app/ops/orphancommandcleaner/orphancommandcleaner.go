@@ -82,7 +82,7 @@ func (c *OrphanCommandCleaner) updateOrphanCommandsStatus(ctx context.Context) e
 			},
 		},
 	}
-	commands, err := c.commandstore.ListCommands(ctx, opts)
+	commands, err := c.commandstore.List(ctx, opts)
 	if err != nil {
 		c.logger.Error("failed to list not-handled commands", zap.Error(err))
 		return err

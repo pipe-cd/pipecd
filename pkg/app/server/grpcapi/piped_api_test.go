@@ -83,7 +83,7 @@ func TestValidateAppBelongsToPiped(t *testing.T) {
 			applicationStore: func() datastore.ApplicationStore {
 				s := datastoretest.NewMockApplicationStore(ctrl)
 				s.EXPECT().
-					GetApplication(gomock.Any(), "appID").Return(&model.Application{PipedId: "pipedID"}, nil)
+					Get(gomock.Any(), "appID").Return(&model.Application{PipedId: "pipedID"}, nil)
 				return s
 			}(),
 			wantErr: false,
@@ -103,7 +103,7 @@ func TestValidateAppBelongsToPiped(t *testing.T) {
 			applicationStore: func() datastore.ApplicationStore {
 				s := datastoretest.NewMockApplicationStore(ctrl)
 				s.EXPECT().
-					GetApplication(gomock.Any(), "appID").Return(&model.Application{PipedId: "pipedID"}, nil)
+					Get(gomock.Any(), "appID").Return(&model.Application{PipedId: "pipedID"}, nil)
 				return s
 			}(),
 			wantErr: true,
@@ -175,7 +175,7 @@ func TestValidateDeploymentBelongsToPiped(t *testing.T) {
 			deploymentStore: func() datastore.DeploymentStore {
 				s := datastoretest.NewMockDeploymentStore(ctrl)
 				s.EXPECT().
-					GetDeployment(gomock.Any(), "deploymentID").Return(&model.Deployment{PipedId: "pipedID"}, nil)
+					Get(gomock.Any(), "deploymentID").Return(&model.Deployment{PipedId: "pipedID"}, nil)
 				return s
 			}(),
 			wantErr: false,
@@ -195,7 +195,7 @@ func TestValidateDeploymentBelongsToPiped(t *testing.T) {
 			deploymentStore: func() datastore.DeploymentStore {
 				s := datastoretest.NewMockDeploymentStore(ctrl)
 				s.EXPECT().
-					GetDeployment(gomock.Any(), "deploymentID").Return(&model.Deployment{PipedId: "pipedID"}, nil)
+					Get(gomock.Any(), "deploymentID").Return(&model.Deployment{PipedId: "pipedID"}, nil)
 				return s
 			}(),
 			wantErr: true,
@@ -267,7 +267,7 @@ func TestValidateEnvBelongsToProject(t *testing.T) {
 			environmentStore: func() datastore.EnvironmentStore {
 				s := datastoretest.NewMockEnvironmentStore(ctrl)
 				s.EXPECT().
-					GetEnvironment(gomock.Any(), "envID").Return(&model.Environment{ProjectId: "projectID"}, nil)
+					Get(gomock.Any(), "envID").Return(&model.Environment{ProjectId: "projectID"}, nil)
 				return s
 			}(),
 			wantErr: false,
@@ -287,7 +287,7 @@ func TestValidateEnvBelongsToProject(t *testing.T) {
 			environmentStore: func() datastore.EnvironmentStore {
 				s := datastoretest.NewMockEnvironmentStore(ctrl)
 				s.EXPECT().
-					GetEnvironment(gomock.Any(), "envID").Return(&model.Environment{ProjectId: "projectID"}, nil)
+					Get(gomock.Any(), "envID").Return(&model.Environment{ProjectId: "projectID"}, nil)
 				return s
 			}(),
 			wantErr: true,

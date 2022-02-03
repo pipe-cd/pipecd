@@ -36,12 +36,11 @@ func (e *environmentCollection) Factory() Factory {
 }
 
 type EnvironmentStore interface {
-	AddEnvironment(ctx context.Context, env *model.Environment) error
-	GetEnvironment(ctx context.Context, id string) (*model.Environment, error)
-	ListEnvironments(ctx context.Context, opts ListOptions) ([]*model.Environment, error)
+	Get(ctx context.Context, id string) (*model.Environment, error)
+	List(ctx context.Context, opts ListOptions) ([]*model.Environment, error)
+	Delete(ctx context.Context, id string) error
 	EnableEnvironment(ctx context.Context, id string) error
 	DisableEnvironment(ctx context.Context, id string) error
-	DeleteEnvironment(ctx context.Context, id string) error
 }
 
 type environmentStore struct {
@@ -59,18 +58,44 @@ func NewEnvironmentStore(ds DataStore) EnvironmentStore {
 	}
 }
 
-func (s *environmentStore) AddEnvironment(ctx context.Context, env *model.Environment) error {
-	now := s.nowFunc().Unix()
-	if env.CreatedAt == 0 {
-		env.CreatedAt = now
+func (s *environmentStore) Get(ctx context.Context, id string) (*model.Environment, error) {
+	var entity model.Environment
+	if err := s.ds.Get(ctx, s.col, id, &entity); err != nil {
+		return nil, err
 	}
-	if env.UpdatedAt == 0 {
+	return &entity, nil
+}
+
+func (s *environmentStore) List(ctx context.Context, opts ListOptions) ([]*model.Environment, error) {
+	it, err := s.ds.Find(ctx, s.col, opts)
+	if err != nil {
+		return nil, err
+	}
+	envs := make([]*model.Environment, 0)
+	for {
+		var env model.Environment
+		err := it.Next(&env)
+		if err == ErrIteratorDone {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		envs = append(envs, &env)
+	}
+	return envs, nil
+}
+
+func (s *environmentStore) Delete(ctx context.Context, id string) error {
+	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
+		now := s.nowFunc().Unix()
+		env := e.(*model.Environment)
+		env.Deleted = true
+		env.Disabled = true
+		env.DeletedAt = now
 		env.UpdatedAt = now
-	}
-	if err := env.Validate(); err != nil {
-		return err
-	}
-	return s.ds.Create(ctx, s.col, env.Id, env)
+		return nil
+	})
 }
 
 func (s *environmentStore) EnableEnvironment(ctx context.Context, id string) error {
@@ -95,44 +120,4 @@ func (s *environmentStore) DisableEnvironment(ctx context.Context, id string) er
 		env.UpdatedAt = s.nowFunc().Unix()
 		return nil
 	})
-}
-
-func (s *environmentStore) DeleteEnvironment(ctx context.Context, id string) error {
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
-		now := s.nowFunc().Unix()
-		env := e.(*model.Environment)
-		env.Deleted = true
-		env.Disabled = true
-		env.DeletedAt = now
-		env.UpdatedAt = now
-		return nil
-	})
-}
-
-func (s *environmentStore) GetEnvironment(ctx context.Context, id string) (*model.Environment, error) {
-	var entity model.Environment
-	if err := s.ds.Get(ctx, s.col, id, &entity); err != nil {
-		return nil, err
-	}
-	return &entity, nil
-}
-
-func (s *environmentStore) ListEnvironments(ctx context.Context, opts ListOptions) ([]*model.Environment, error) {
-	it, err := s.ds.Find(ctx, s.col, opts)
-	if err != nil {
-		return nil, err
-	}
-	envs := make([]*model.Environment, 0)
-	for {
-		var env model.Environment
-		err := it.Next(&env)
-		if err == ErrIteratorDone {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
-		envs = append(envs, &env)
-	}
-	return envs, nil
 }

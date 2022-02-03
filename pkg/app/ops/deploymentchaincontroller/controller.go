@@ -168,6 +168,6 @@ func listNotCompletedDeploymentChain(ctx context.Context, dcs datastore.Deployme
 		},
 	}
 
-	chains, _, err := dcs.ListDeploymentChains(ctx, opts)
+	chains, _, err := dcs.List(ctx, opts)
 	return chains, err
 }

@@ -35,8 +35,8 @@ func (e *eventCollection) Factory() Factory {
 }
 
 type EventStore interface {
-	AddEvent(ctx context.Context, e model.Event) error
-	ListEvents(ctx context.Context, opts ListOptions) ([]*model.Event, string, error)
+	Add(ctx context.Context, e model.Event) error
+	List(ctx context.Context, opts ListOptions) ([]*model.Event, string, error)
 	UpdateEventStatus(ctx context.Context, eventID string, status model.EventStatus, statusDescription string) error
 }
 
@@ -55,7 +55,7 @@ func NewEventStore(ds DataStore) EventStore {
 	}
 }
 
-func (s *eventStore) AddEvent(ctx context.Context, e model.Event) error {
+func (s *eventStore) Add(ctx context.Context, e model.Event) error {
 	now := s.nowFunc().Unix()
 	if e.CreatedAt == 0 {
 		e.CreatedAt = now
@@ -69,7 +69,7 @@ func (s *eventStore) AddEvent(ctx context.Context, e model.Event) error {
 	return s.ds.Create(ctx, s.col, e.Id, &e)
 }
 
-func (s *eventStore) ListEvents(ctx context.Context, opts ListOptions) ([]*model.Event, string, error) {
+func (s *eventStore) List(ctx context.Context, opts ListOptions) ([]*model.Event, string, error) {
 	it, err := s.ds.Find(ctx, s.col, opts)
 	if err != nil {
 		return nil, "", err

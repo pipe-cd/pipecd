@@ -477,7 +477,7 @@ func TestFindDeploymentsCreatedInRange(t *testing.T) {
 				to:   time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
 			},
 			prepareMockDataStoreFn: func(m *datastoretest.MockDeploymentStore) {
-				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
+				m.EXPECT().List(gomock.Any(), datastore.ListOptions{
 					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{
@@ -511,7 +511,7 @@ func TestFindDeploymentsCreatedInRange(t *testing.T) {
 						CreatedAt: time.Date(2020, 1, 3, 10, 0, 0, 0, time.UTC).Unix(),
 					},
 				}, "", nil)
-				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
+				m.EXPECT().List(gomock.Any(), datastore.ListOptions{
 					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{
@@ -545,7 +545,7 @@ func TestFindDeploymentsCreatedInRange(t *testing.T) {
 						CreatedAt: time.Date(2020, 1, 3, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 				}, "", nil)
-				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
+				m.EXPECT().List(gomock.Any(), datastore.ListOptions{
 					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{
@@ -602,7 +602,7 @@ func TestFindDeploymentsCreatedInRange(t *testing.T) {
 				to:   time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
 			},
 			prepareMockDataStoreFn: func(m *datastoretest.MockDeploymentStore) {
-				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
+				m.EXPECT().List(gomock.Any(), datastore.ListOptions{
 					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{
@@ -673,7 +673,7 @@ func TestFindDeploymentsCompletedInRange(t *testing.T) {
 				to:   time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
 			},
 			prepareMockDataStoreFn: func(m *datastoretest.MockDeploymentStore) {
-				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
+				m.EXPECT().List(gomock.Any(), datastore.ListOptions{
 					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{
@@ -707,7 +707,7 @@ func TestFindDeploymentsCompletedInRange(t *testing.T) {
 						CompletedAt: time.Date(2020, 1, 3, 10, 0, 0, 0, time.UTC).Unix(),
 					},
 				}, "", nil)
-				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
+				m.EXPECT().List(gomock.Any(), datastore.ListOptions{
 					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{
@@ -741,7 +741,7 @@ func TestFindDeploymentsCompletedInRange(t *testing.T) {
 						CompletedAt: time.Date(2020, 1, 3, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 				}, "", nil)
-				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
+				m.EXPECT().List(gomock.Any(), datastore.ListOptions{
 					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{
@@ -798,7 +798,7 @@ func TestFindDeploymentsCompletedInRange(t *testing.T) {
 				to:   time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
 			},
 			prepareMockDataStoreFn: func(m *datastoretest.MockDeploymentStore) {
-				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
+				m.EXPECT().List(gomock.Any(), datastore.ListOptions{
 					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{

@@ -63,7 +63,7 @@ func (s *store) ListUnhandledCommands(ctx context.Context, pipedID string) ([]*m
 			},
 		},
 	}
-	commands, err := s.backend.ListCommands(ctx, opts)
+	commands, err := s.backend.List(ctx, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (s *store) ListUnhandledCommands(ctx context.Context, pipedID string) ([]*m
 }
 
 func (s *store) AddCommand(ctx context.Context, command *model.Command) error {
-	if err := s.backend.AddCommand(ctx, command); err != nil {
+	if err := s.backend.Add(ctx, command); err != nil {
 		s.logger.Error("failed to put command to datastore", zap.Error(err))
 		return err
 	}
@@ -91,7 +91,7 @@ func (s *store) GetCommand(ctx context.Context, id string) (*model.Command, erro
 		return cacheResp, nil
 	}
 
-	dsResp, err := s.backend.GetCommand(ctx, id)
+	dsResp, err := s.backend.Get(ctx, id)
 	if err != nil {
 		s.logger.Error("failed to get command from datastore", zap.Error(err))
 		return nil, err
@@ -109,7 +109,7 @@ func (s *store) UpdateCommandHandled(ctx context.Context, id string, status mode
 		return err
 	}
 
-	cmd, err := s.backend.GetCommand(ctx, id)
+	cmd, err := s.backend.Get(ctx, id)
 	if err != nil {
 		s.logger.Error("failed to get command from datastore", zap.Error(err))
 	}
