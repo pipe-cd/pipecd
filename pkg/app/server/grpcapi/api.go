@@ -537,6 +537,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 		if cmd.Type != model.Command_BUILD_PLAN_PREVIEW {
 			return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("Command %s is not a plan preview command", commandID))
 		}
+
 		pipedStatus, err := getPipedStatus(a.pipedStatCache, cmd.PipedId)
 		if err != nil {
 			a.logger.Error("failed to get or unmarshal piped stat", zap.Error(err))
