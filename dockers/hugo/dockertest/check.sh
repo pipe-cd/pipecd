@@ -1,7 +1,7 @@
 #!/bin/bash
 
 VERSION="$(hugo version)"
-EXPECTED="hugo v0.88.1-5BC54738+extended linux/amd64*"
+EXPECTED="hugo v0.92.1-85E2E862+extended linux/amd64*"
 
 if [[ $VERSION == $EXPECTED ]]; then
     echo -e "PASSED: Correct hugo version."
