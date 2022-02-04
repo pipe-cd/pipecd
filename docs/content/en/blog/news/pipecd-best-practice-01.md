@@ -27,7 +27,7 @@ At a glance, PipeCD is composed of 2 components, the Control Plane and the Piped
 
 1. Only a single Control Plane needs to be installed and will be operated by the operators (platform team). The installed Control Plane doesn't have to be in the same cluster as your applications running cluster or the Piped installed cluster. Just make sure the Piped(s) can connect to the Control Plane via outbound requests is enough.
 
-2. Developers from the product team may need to self-install piped into their applications running cluster (due to some credential-related issues, if the platform team does not manage those credentials).\
+2. Developers from the product team may need to self-install piped into their applications running cluster if the platform team does not manage those credentials.\
 \
 When using PipeCD, developers only need to care about [application configuration](/docs/user-guide/adding-an-application/) - which defines the pipeline so that piped(s) can use them to deploy your applications. Interaction with the applications is mainly done via the PipeCD web console and the configuration files stored on Git.
 
