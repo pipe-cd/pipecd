@@ -298,7 +298,6 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 
 	apps, cursor, err := a.applicationStore.List(ctx, opts)
 	if err != nil {
-		a.logger.Error("failed to list applications", zap.Error(err))
 		return nil, gRPCEntityOperationError(err, "failed to list applications")
 	}
 
