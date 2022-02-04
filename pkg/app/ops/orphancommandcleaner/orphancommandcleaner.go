@@ -52,7 +52,8 @@ func (c *OrphanCommandCleaner) Run(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			break
+			c.logger.Info("orphanCommandCleaner has been stopped")
+			return nil
 
 		case <-t.C:
 			start := time.Now()
@@ -61,9 +62,6 @@ func (c *OrphanCommandCleaner) Run(ctx context.Context) error {
 			}
 		}
 	}
-
-	c.logger.Info("orphanCommandCleaner has been stopped")
-	return nil
 }
 
 func (c *OrphanCommandCleaner) updateOrphanCommandsStatus(ctx context.Context) error {
