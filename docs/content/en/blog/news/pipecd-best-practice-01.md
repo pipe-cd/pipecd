@@ -2,7 +2,7 @@
 date: 2021-12-29
 title: "PipeCD best practice 01 - operate your own PipeCD cluster"
 linkTitle: "PipeCD best practice 01"
-weight: 997
+weight: 996
 description: "This blog is a part of PipeCD best practice series, a guideline for you to operate your own PipeCD cluster."
 author: Khanh Tran ([@khanhtc1202](https://twitter.com/khanhtc1202))
 ---
