@@ -58,7 +58,6 @@ service WebService {
     // Application
     rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {}
     rpc UpdateApplication(UpdateApplicationRequest) returns (UpdateApplicationResponse) {}
-    rpc UpdateApplicationDescription(UpdateApplicationDescriptionRequest) returns (UpdateApplicationDescriptionResponse) {}
     rpc EnableApplication(EnableApplicationRequest) returns (EnableApplicationResponse) {}
     rpc DisableApplication(DisableApplicationRequest) returns (DisableApplicationResponse) {}
     rpc DeleteApplication(DeleteApplicationRequest) returns (DeleteApplicationResponse) {}
@@ -246,14 +245,6 @@ message UpdateApplicationRequest {
 }
 
 message UpdateApplicationResponse {
-}
-
-message UpdateApplicationDescriptionRequest {
-    string application_id = 1 [(validate.rules).string.min_len = 1];
-    string description = 2;
-}
-
-message UpdateApplicationDescriptionResponse {
 }
 
 message EnableApplicationRequest {

@@ -227,7 +227,7 @@ func (a *PipedAPI) ReportApplicationSyncState(ctx context.Context, req *pipedser
 		return nil, err
 	}
 
-	if err := a.applicationStore.UpdateApplicationSyncState(ctx, req.ApplicationId, req.State); err != nil {
+	if err := a.applicationStore.UpdateSyncState(ctx, req.ApplicationId, req.State); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update sync state of application %s", req.ApplicationId))
 	}
 
@@ -244,11 +244,7 @@ func (a *PipedAPI) ReportApplicationDeployingStatus(ctx context.Context, req *pi
 		return nil, err
 	}
 
-	err = a.applicationStore.UpdateApplication(ctx, req.ApplicationId, func(app *model.Application) error {
-		app.Deploying = req.Deploying
-		return nil
-	})
-	if err != nil {
+	if err = a.applicationStore.UpdateDeployingStatus(ctx, req.ApplicationId, req.Deploying); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update deploying status of application %s", req.ApplicationId))
 	}
 
@@ -266,7 +262,7 @@ func (a *PipedAPI) ReportApplicationMostRecentDeployment(ctx context.Context, re
 		return nil, err
 	}
 
-	err = a.applicationStore.UpdateApplicationMostRecentDeployment(ctx, req.ApplicationId, req.Status, req.Deployment)
+	err = a.applicationStore.UpdateMostRecentDeployment(ctx, req.ApplicationId, req.Status, req.Deployment)
 	if err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update deployment reference of application %s", req.ApplicationId))
 	}
@@ -887,13 +883,7 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 		}
 	}
 	for _, appInfo := range req.Applications {
-		updater := func(app *model.Application) error {
-			app.Name = appInfo.Name
-			app.Labels = appInfo.Labels
-			app.Description = appInfo.Description
-			return nil
-		}
-		if err := a.applicationStore.UpdateApplication(ctx, appInfo.Id, updater); err != nil {
+		if err := a.applicationStore.UpdateBasicInfo(ctx, appInfo.Id, appInfo.Name, appInfo.Description, appInfo.Labels); err != nil {
 			return nil, gRPCEntityOperationError(err, fmt.Sprintf("update config of application %s", appInfo.Id))
 		}
 	}

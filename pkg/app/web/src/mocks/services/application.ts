@@ -7,7 +7,6 @@ import {
   GetApplicationResponse,
   ListApplicationsResponse,
   SyncApplicationResponse,
-  UpdateApplicationDescriptionResponse,
   UpdateApplicationResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import { ApplicationKind } from "~/modules/applications";
@@ -54,12 +53,6 @@ export const applicationHandlers = [
   createHandler<DeleteApplicationResponse>("/DeleteApplication", () => {
     return new DeleteApplicationResponse();
   }),
-  createHandler<UpdateApplicationDescriptionResponse>(
-    "/UpdateApplicationDescription",
-    () => {
-      return new UpdateApplicationDescriptionResponse();
-    }
-  ),
   updateApplicationHandler,
   createHandler<AddApplicationResponse>("/AddApplication", () => {
     const response = new AddApplicationResponse();

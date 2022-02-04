@@ -296,9 +296,9 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 		Cursor:  req.Cursor,
 	}
 
-	apps, cursor, err := listApplications(ctx, a.applicationStore, opts, a.logger)
+	apps, cursor, err := a.applicationStore.List(ctx, opts)
 	if err != nil {
-		return nil, err
+		return nil, gRPCEntityOperationError(err, "failed to list applications")
 	}
 
 	return &apiservice.ListApplicationsResponse{
@@ -314,21 +314,15 @@ func (a *API) RenameApplicationConfigFile(ctx context.Context, req *apiservice.R
 	}
 
 	for _, appID := range req.ApplicationIds {
-		var denied bool
-		err := a.applicationStore.UpdateApplication(ctx, appID, func(app *model.Application) error {
-			if app.ProjectId != key.ProjectId {
-				denied = true
-				return fmt.Errorf("Requested application %s does not belong to your project", appID)
-			}
-			app.GitPath.ConfigFilename = req.NewFilename
-			return nil
-		})
+		app, err := a.applicationStore.Get(ctx, appID)
 		if err != nil {
-			if denied {
-				return nil, status.Error(codes.PermissionDenied, err.Error())
-			}
-			a.logger.Error("failed to update application", zap.Error(err))
-			return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to update application %s", appID))
+			return nil, gRPCEntityOperationError(err, fmt.Sprintf("failed to get application %s", appID))
+		}
+		if app.ProjectId != key.ProjectId {
+			return nil, status.Error(codes.PermissionDenied, fmt.Sprintf("requested application %s does not belong to your project", appID))
+		}
+		if err = a.applicationStore.UpdateConfigFilename(ctx, appID, req.NewFilename); err != nil {
+			return nil, gRPCEntityOperationError(err, fmt.Sprintf("failed to update application %s config file name", appID))
 		}
 	}
 

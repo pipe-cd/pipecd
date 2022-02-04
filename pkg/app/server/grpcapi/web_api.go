@@ -641,70 +641,58 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 }
 
 func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateApplicationRequest) (*webservice.UpdateApplicationResponse, error) {
-	updater := func(app *model.Application) error {
-		app.Name = req.Name
-		app.EnvId = req.EnvId
-		app.PipedId = req.PipedId
-		app.Kind = req.Kind
-		app.CloudProvider = req.CloudProvider
-		app.GitPath.ConfigFilename = req.ConfigFilename
-		return nil
-	}
-	if err := a.updateApplication(ctx, req.ApplicationId, req.PipedId, updater); err != nil {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
 		return nil, err
+	}
+
+	piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
+	if err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("failed to get piped %s", req.PipedId))
+	}
+
+	if piped.ProjectId != claims.Role.ProjectId {
+		return nil, status.Error(codes.PermissionDenied, "Requested piped does not belong to your project")
+	}
+
+	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.CloudProvider, req.ConfigFilename); err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("failed to update application %s", req.ApplicationId))
 	}
 
 	return &webservice.UpdateApplicationResponse{}, nil
 }
 
-func (a *WebAPI) UpdateApplicationDescription(ctx context.Context, req *webservice.UpdateApplicationDescriptionRequest) (*webservice.UpdateApplicationDescriptionResponse, error) {
-	updater := func(app *model.Application) error {
-		app.Description = req.Description
-		return nil
-	}
-	if err := a.updateApplication(ctx, req.ApplicationId, "", updater); err != nil {
-		return nil, err
-	}
-
-	return &webservice.UpdateApplicationDescriptionResponse{}, nil
-}
-
-func (a *WebAPI) updateApplication(ctx context.Context, id, pipedID string, updater func(app *model.Application) error) error {
+func (a *WebAPI) EnableApplication(ctx context.Context, req *webservice.EnableApplicationRequest) (*webservice.EnableApplicationResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
 		a.logger.Error("failed to authenticate the current user", zap.Error(err))
-		return err
-	}
-
-	// Ensure that the specified piped is assignable for this application.
-	if pipedID != "" {
-		piped, err := getPiped(ctx, a.pipedStore, pipedID, a.logger)
-		if err != nil {
-			return err
-		}
-
-		if piped.ProjectId != claims.Role.ProjectId {
-			return status.Error(codes.PermissionDenied, "Requested piped does not belong to your project")
-		}
-	}
-
-	if err = a.applicationStore.UpdateApplication(ctx, id, updater); err != nil {
-		return gRPCEntityOperationError(err, fmt.Sprintf("update application %s", id))
-	}
-
-	return nil
-}
-
-func (a *WebAPI) EnableApplication(ctx context.Context, req *webservice.EnableApplicationRequest) (*webservice.EnableApplicationResponse, error) {
-	if err := a.updateApplicationEnable(ctx, req.ApplicationId, true); err != nil {
 		return nil, err
+	}
+
+	if err := a.validateAppBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+		return nil, err
+	}
+
+	if err := a.applicationStore.Enable(ctx, req.ApplicationId); err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("enable application %s", req.ApplicationId))
 	}
 	return &webservice.EnableApplicationResponse{}, nil
 }
 
 func (a *WebAPI) DisableApplication(ctx context.Context, req *webservice.DisableApplicationRequest) (*webservice.DisableApplicationResponse, error) {
-	if err := a.updateApplicationEnable(ctx, req.ApplicationId, false); err != nil {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
 		return nil, err
+	}
+
+	if err := a.validateAppBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+		return nil, err
+	}
+
+	if err := a.applicationStore.Disable(ctx, req.ApplicationId); err != nil {
+		return nil, gRPCEntityOperationError(err, fmt.Sprintf("disable application %s", req.ApplicationId))
 	}
 	return &webservice.DisableApplicationResponse{}, nil
 }
@@ -725,30 +713,6 @@ func (a *WebAPI) DeleteApplication(ctx context.Context, req *webservice.DeleteAp
 	}
 
 	return &webservice.DeleteApplicationResponse{}, nil
-}
-
-func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enable bool) error {
-	claims, err := rpcauth.ExtractClaims(ctx)
-	if err != nil {
-		a.logger.Error("failed to authenticate the current user", zap.Error(err))
-		return err
-	}
-
-	if err := a.validateAppBelongsToProject(ctx, appID, claims.Role.ProjectId); err != nil {
-		return err
-	}
-
-	var updater func(context.Context, string) error
-	if enable {
-		updater = a.applicationStore.EnableApplication
-	} else {
-		updater = a.applicationStore.DisableApplication
-	}
-
-	if err := updater(ctx, appID); err != nil {
-		return gRPCEntityOperationError(err, fmt.Sprintf("enable/disable application %s", appID))
-	}
-	return nil
 }
 
 func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListApplicationsRequest) (*webservice.ListApplicationsResponse, error) {
@@ -1517,7 +1481,7 @@ func (a *WebAPI) DisableAPIKey(ctx context.Context, req *webservice.DisableAPIKe
 		return nil, err
 	}
 
-	if err := a.apiKeyStore.DisableAPIKey(ctx, req.Id, claims.Role.ProjectId); err != nil {
+	if err := a.apiKeyStore.Disable(ctx, req.Id, claims.Role.ProjectId); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("disable API key %s", req.Id))
 	}
 
