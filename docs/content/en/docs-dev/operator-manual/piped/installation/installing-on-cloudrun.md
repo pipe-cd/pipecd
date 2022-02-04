@@ -68,7 +68,7 @@ description: >
   gcloud secrets create cloudrun-piped-config --data-file={PATH_TO_CONFIG_FILE}
   ```
 
-  then make sure that Cloud Run has the ability to access that secret as [this guide](https://cloud.google.com/run/docs/configuring/secrets#access-secret).
+  then make sure that CloudRun has the ability to access that secret as [this guide](https://cloud.google.com/run/docs/configuring/secrets#access-secret).
 
 - Running Piped in CloudRun
 
