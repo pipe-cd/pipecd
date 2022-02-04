@@ -94,10 +94,7 @@ func (c *OrphanCommandCleaner) updateOrphanCommandsStatus(ctx context.Context) e
 	}
 
 	for _, command := range commands {
-		err := c.commandstore.UpdateCommand(ctx, command.Id, func(cmd *model.Command) error {
-			cmd.Status = model.CommandStatus_COMMAND_TIMEOUT
-			return nil
-		})
+		err := c.commandstore.MarkAsTimeOut(ctx, command.Id)
 		if err != nil {
 			c.logger.Error("failed to mark orphan command as timed out",
 				zap.String("id", command.Id),
