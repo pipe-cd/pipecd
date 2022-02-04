@@ -110,6 +110,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Rendering deployment pipeline in realtime | Beta |
 | Canceling a deployment from console | Beta |
 | Triggering a deployment manually from console | Beta |
+| RBAC on PipeCD resources such as Application, Piped... | Incubating |
 | Authentication by username/password for static admin | Beta |
 | GitHub & GitHub Enterprise SSO | Beta |
 | Google SSO | Incubating |
