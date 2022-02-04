@@ -152,7 +152,7 @@ func (s *applicationStore) Disable(ctx context.Context, id string) error {
 	})
 }
 
-func (s *applicationStore) updateApplication(ctx context.Context, id string, updater func(*model.Application) error) error {
+func (s *applicationStore) update(ctx context.Context, id string, updater func(*model.Application) error) error {
 	now := s.nowFunc().Unix()
 	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
 		a := e.(*model.Application)
@@ -168,14 +168,14 @@ func (s *applicationStore) updateApplication(ctx context.Context, id string, upd
 }
 
 func (s *applicationStore) UpdateSyncState(ctx context.Context, id string, syncState *model.ApplicationSyncState) error {
-	return s.updateApplication(ctx, id, func(a *model.Application) error {
+	return s.update(ctx, id, func(a *model.Application) error {
 		a.SyncState = syncState
 		return nil
 	})
 }
 
 func (s *applicationStore) UpdateMostRecentDeployment(ctx context.Context, id string, status model.DeploymentStatus, deployment *model.ApplicationDeploymentReference) error {
-	return s.updateApplication(ctx, id, func(a *model.Application) error {
+	return s.update(ctx, id, func(a *model.Application) error {
 		switch status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
 			a.MostRecentlySuccessfulDeployment = deployment
@@ -187,21 +187,21 @@ func (s *applicationStore) UpdateMostRecentDeployment(ctx context.Context, id st
 }
 
 func (s *applicationStore) UpdateConfigFilename(ctx context.Context, id, configFilename string) error {
-	return s.updateApplication(ctx, id, func(app *model.Application) error {
+	return s.update(ctx, id, func(app *model.Application) error {
 		app.GitPath.ConfigFilename = configFilename
 		return nil
 	})
 }
 
 func (s *applicationStore) UpdateDeployingStatus(ctx context.Context, id string, deploying bool) error {
-	return s.updateApplication(ctx, id, func(app *model.Application) error {
+	return s.update(ctx, id, func(app *model.Application) error {
 		app.Deploying = deploying
 		return nil
 	})
 }
 
 func (s *applicationStore) UpdateBasicInfo(ctx context.Context, id, name, description string, labels map[string]string) error {
-	return s.updateApplication(ctx, id, func(app *model.Application) error {
+	return s.update(ctx, id, func(app *model.Application) error {
 		app.Name = name
 		app.Description = description
 		app.Labels = labels
@@ -210,7 +210,7 @@ func (s *applicationStore) UpdateBasicInfo(ctx context.Context, id, name, descri
 }
 
 func (s *applicationStore) UpdateConfiguration(ctx context.Context, id, pipedID, cloudProvider, configFilename string) error {
-	return s.updateApplication(ctx, id, func(app *model.Application) error {
+	return s.update(ctx, id, func(app *model.Application) error {
 		app.PipedId = pipedID
 		app.CloudProvider = cloudProvider
 		app.GitPath.ConfigFilename = configFilename
