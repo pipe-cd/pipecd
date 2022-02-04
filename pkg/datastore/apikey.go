@@ -39,7 +39,7 @@ type APIKeyStore interface {
 	Add(ctx context.Context, k *model.APIKey) error
 	Get(ctx context.Context, id string) (*model.APIKey, error)
 	List(ctx context.Context, opts ListOptions) ([]*model.APIKey, error)
-	DisableAPIKey(ctx context.Context, id, projectID string) error
+	Disable(ctx context.Context, id, projectID string) error
 }
 
 type apiKeyStore struct {
@@ -99,7 +99,7 @@ func (s *apiKeyStore) List(ctx context.Context, opts ListOptions) ([]*model.APIK
 	return ks, nil
 }
 
-func (s *apiKeyStore) DisableAPIKey(ctx context.Context, id, projectID string) error {
+func (s *apiKeyStore) Disable(ctx context.Context, id, projectID string) error {
 	now := s.nowFunc().Unix()
 	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
 		k := e.(*model.APIKey)
