@@ -34,22 +34,12 @@ func (c *commandCollection) Factory() Factory {
 	}
 }
 
-var (
-	CommandHandledUpdater = func(status model.CommandStatus, metadata map[string]string, handledAt int64) func(*model.Command) error {
-		return func(cmd *model.Command) error {
-			cmd.Status = status
-			cmd.Metadata = metadata
-			cmd.HandledAt = handledAt
-			return nil
-		}
-	}
-)
-
 type CommandStore interface {
 	Add(ctx context.Context, cmd *model.Command) error
 	Get(ctx context.Context, id string) (*model.Command, error)
 	List(ctx context.Context, opts ListOptions) ([]*model.Command, error)
-	UpdateCommand(ctx context.Context, id string, updater func(piped *model.Command) error) error
+	MarkAsTimeOut(ctx context.Context, id string) error
+	UpdateHandleState(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error
 }
 
 type commandStore struct {
@@ -109,7 +99,7 @@ func (s *commandStore) List(ctx context.Context, opts ListOptions) ([]*model.Com
 	return cmds, nil
 }
 
-func (s *commandStore) UpdateCommand(ctx context.Context, id string, updater func(piped *model.Command) error) error {
+func (s *commandStore) update(ctx context.Context, id string, updater func(piped *model.Command) error) error {
 	now := s.nowFunc().Unix()
 	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
 		p := e.(*model.Command)
@@ -118,5 +108,21 @@ func (s *commandStore) UpdateCommand(ctx context.Context, id string, updater fun
 		}
 		p.UpdatedAt = now
 		return p.Validate()
+	})
+}
+
+func (s *commandStore) MarkAsTimeOut(ctx context.Context, id string) error {
+	return s.update(ctx, id, func(c *model.Command) error {
+		c.Status = model.CommandStatus_COMMAND_TIMEOUT
+		return nil
+	})
+}
+
+func (s *commandStore) UpdateHandleState(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error {
+	return s.update(ctx, id, func(c *model.Command) error {
+		c.Status = status
+		c.Metadata = metadata
+		c.HandledAt = handledAt
+		return nil
 	})
 }
