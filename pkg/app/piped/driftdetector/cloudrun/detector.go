@@ -247,10 +247,20 @@ func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Repo
 		}
 
 		if d.secretDecrypter != nil && gds.Encryption != nil {
-			appDir, err = d.getDecryptingDirPath(app, repo)
+			// We have to copy repository into another directory because
+			// decrypting the sealed secrets might change the git repository.
+			dir, err := os.MkdirTemp("", "detector-git-decrypt")
 			if err != nil {
-				return provider.ServiceManifest{}, fmt.Errorf("failed to get decrypting directory path: %w", err)
+				return provider.ServiceManifest{}, fmt.Errorf("failed to prepare a temporary directory for git repository (%w)", err)
 			}
+			defer os.RemoveAll(dir)
+
+			repo, err = repo.Copy(filepath.Join(dir, "repo"))
+			if err != nil {
+				return provider.ServiceManifest{}, fmt.Errorf("failed to copy the cloned git repository (%w)", err)
+			}
+			repoDir := repo.GetPath()
+			appDir = filepath.Join(repoDir, app.GitPath.Path)
 
 			if err := sourcedecrypter.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
 				return provider.ServiceManifest{}, fmt.Errorf("failed to decrypt secrets (%w)", err)
@@ -269,23 +279,6 @@ func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Repo
 		manifestCache.Put(headCommit.Hash, manifest)
 	}
 	return manifest, nil
-}
-
-// We have to copy repository into another directory because
-// decrypting the sealed secrets might change the git repository.
-func (d *detector) getDecryptingDirPath(app *model.Application, repo git.Repo) (string, error) {
-	dir, err := os.MkdirTemp("", "detector-git-decrypt")
-	if err != nil {
-		return "", fmt.Errorf("failed to prepare a temporary directory for git repository (%w)", err)
-	}
-	defer os.RemoveAll(dir)
-
-	repo, err = repo.Copy(filepath.Join(dir, "repo"))
-	if err != nil {
-		return "", fmt.Errorf("failed to copy the cloned git repository (%w)", err)
-	}
-	repoDir := repo.GetPath()
-	return filepath.Join(repoDir, app.GitPath.Path), nil
 }
 
 func (d *detector) loadApplicationConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
