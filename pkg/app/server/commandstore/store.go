@@ -103,9 +103,8 @@ func (s *store) GetCommand(ctx context.Context, id string) (*model.Command, erro
 	return dsResp, nil
 }
 
-func (s *store) UpdateCommandHandled(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, unhandledAt int64) error {
-	updater := datastore.CommandHandledUpdater(status, metadata, unhandledAt)
-	if err := s.backend.UpdateCommand(ctx, id, updater); err != nil {
+func (s *store) UpdateCommandHandled(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error {
+	if err := s.backend.UpdateStatus(ctx, id, status, metadata, handledAt); err != nil {
 		return err
 	}
 
