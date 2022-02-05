@@ -38,8 +38,7 @@ type CommandStore interface {
 	Add(ctx context.Context, cmd *model.Command) error
 	Get(ctx context.Context, id string) (*model.Command, error)
 	List(ctx context.Context, opts ListOptions) ([]*model.Command, error)
-	MarkAsTimeOut(ctx context.Context, id string) error
-	UpdateHandleState(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error
+	UpdateStatus(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error
 }
 
 type commandStore struct {
@@ -111,14 +110,7 @@ func (s *commandStore) update(ctx context.Context, id string, updater func(piped
 	})
 }
 
-func (s *commandStore) MarkAsTimeOut(ctx context.Context, id string) error {
-	return s.update(ctx, id, func(c *model.Command) error {
-		c.Status = model.CommandStatus_COMMAND_TIMEOUT
-		return nil
-	})
-}
-
-func (s *commandStore) UpdateHandleState(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error {
+func (s *commandStore) UpdateStatus(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error {
 	return s.update(ctx, id, func(c *model.Command) error {
 		c.Status = status
 		c.Metadata = metadata

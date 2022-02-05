@@ -104,7 +104,7 @@ func (s *store) GetCommand(ctx context.Context, id string) (*model.Command, erro
 }
 
 func (s *store) UpdateCommandHandled(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error {
-	if err := s.backend.UpdateHandleState(ctx, id, status, metadata, handledAt); err != nil {
+	if err := s.backend.UpdateStatus(ctx, id, status, metadata, handledAt); err != nil {
 		return err
 	}
 
