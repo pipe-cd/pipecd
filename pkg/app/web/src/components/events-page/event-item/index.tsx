@@ -12,7 +12,6 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     display: "flex",
     alignItems: "center",
-    height: 72,
     backgroundColor: theme.palette.background.paper,
   },
   info: {
@@ -60,14 +59,7 @@ export const EventItem: FC<EventItemProps> = memo(function EventItem({ id }) {
           {EVENT_STATE_TEXT[event.status]}
         </Typography>
       </Box>
-      <Box
-        display="flex"
-        height={72}
-        flexDirection="column"
-        flex={1}
-        pl={2}
-        overflow="scroll"
-      >
+      <Box display="flex" flexDirection="column" flex={1} pl={2}>
         <Box display="flex" alignItems="baseline">
           <Typography variant="h6" component="span">
             {event.name}
