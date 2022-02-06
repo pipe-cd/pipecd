@@ -36,7 +36,7 @@ func (d *deploymentCollection) Factory() Factory {
 }
 
 var (
-	DeploymentToPlannedUpdater = func(summary, statusReason, runningCommitHash, runningConfigFilename, version string, stages []*model.PipelineStage) func(*model.Deployment) error {
+	toPlannedUpdateFunc = func(summary, statusReason, runningCommitHash, runningConfigFilename, version string, stages []*model.PipelineStage) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
 			d.Status = model.DeploymentStatus_DEPLOYMENT_PLANNED
 			d.Summary = summary
@@ -49,15 +49,7 @@ var (
 		}
 	}
 
-	DeploymentStatusUpdater = func(status model.DeploymentStatus, statusReason string) func(*model.Deployment) error {
-		return func(d *model.Deployment) error {
-			d.Status = status
-			d.StatusReason = statusReason
-			return nil
-		}
-	}
-
-	DeploymentToCompletedUpdater = func(status model.DeploymentStatus, statuses map[string]model.StageStatus, statusReason string, completedAt int64) func(*model.Deployment) error {
+	toCompletedUpdateFunc = func(status model.DeploymentStatus, stageStatuses map[string]model.StageStatus, statusReason string, completedAt int64) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
 			if !model.IsCompletedDeployment(status) {
 				return fmt.Errorf("deployment status %s is not completed value: %w", status, ErrInvalidArgument)
@@ -68,7 +60,7 @@ var (
 			d.CompletedAt = completedAt
 			for i := range d.Stages {
 				stageID := d.Stages[i].Id
-				if status, ok := statuses[stageID]; ok {
+				if status, ok := stageStatuses[stageID]; ok {
 					d.Stages[i].Status = status
 				}
 			}
@@ -76,7 +68,15 @@ var (
 		}
 	}
 
-	StageStatusChangedUpdater = func(stageID string, status model.StageStatus, statusReason string, requires []string, visible bool, retriedCount int32, completedAt int64) func(*model.Deployment) error {
+	statusUpdateFunc = func(status model.DeploymentStatus, statusReason string) func(*model.Deployment) error {
+		return func(d *model.Deployment) error {
+			d.Status = status
+			d.StatusReason = statusReason
+			return nil
+		}
+	}
+
+	stageStatusUpdateFunc = func(stageID string, status model.StageStatus, statusReason string, requires []string, visible bool, retriedCount int32, completedAt int64) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
 			for _, s := range d.Stages {
 				if s.Id == stageID {
@@ -100,9 +100,12 @@ type DeploymentStore interface {
 	Add(ctx context.Context, d *model.Deployment) error
 	Get(ctx context.Context, id string) (*model.Deployment, error)
 	List(ctx context.Context, opts ListOptions) ([]*model.Deployment, string, error)
-	UpdateDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error
-	UpdateDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error
-	UpdateDeploymentStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error
+	UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename, version string, stages []*model.PipelineStage) error
+	UpdateToCompleted(ctx context.Context, id string, status model.DeploymentStatus, stageStatuses map[string]model.StageStatus, reason string, completedAt int64) error
+	UpdateStatus(ctx context.Context, id string, status model.DeploymentStatus, reason string) error
+	UpdateStageStatus(ctx context.Context, id, stageID string, status model.StageStatus, reason string, requires []string, visible bool, retriedCount int32, completedAt int64) error
+	UpdateMetadata(ctx context.Context, id string, metadata map[string]string) error
+	UpdateStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error
 }
 
 type deploymentStore struct {
@@ -171,7 +174,7 @@ func (s *deploymentStore) List(ctx context.Context, opts ListOptions) ([]*model.
 	return ds, cursor, nil
 }
 
-func (s *deploymentStore) UpdateDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error {
+func (s *deploymentStore) update(ctx context.Context, id string, updater func(*model.Deployment) error) error {
 	now := s.nowFunc().Unix()
 	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
 		d := e.(*model.Deployment)
@@ -183,24 +186,38 @@ func (s *deploymentStore) UpdateDeployment(ctx context.Context, id string, updat
 	})
 }
 
-func (s *deploymentStore) UpdateDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error {
-	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
-		d := e.(*model.Deployment)
+func (s *deploymentStore) UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename, version string, stages []*model.PipelineStage) error {
+	updater := toPlannedUpdateFunc(summary, reason, runningCommitHash, runningConfigFilename, version, stages)
+	return s.update(ctx, id, updater)
+}
+
+func (s *deploymentStore) UpdateToCompleted(ctx context.Context, id string, status model.DeploymentStatus, stageStatuses map[string]model.StageStatus, reason string, completedAt int64) error {
+	updater := toCompletedUpdateFunc(status, stageStatuses, reason, completedAt)
+	return s.update(ctx, id, updater)
+}
+
+func (s *deploymentStore) UpdateStatus(ctx context.Context, id string, status model.DeploymentStatus, reason string) error {
+	updater := statusUpdateFunc(status, reason)
+	return s.update(ctx, id, updater)
+}
+
+func (s *deploymentStore) UpdateStageStatus(ctx context.Context, id, stageID string, status model.StageStatus, reason string, requires []string, visible bool, retriedCount int32, completedAt int64) error {
+	updater := stageStatusUpdateFunc(stageID, status, reason, requires, visible, retriedCount, completedAt)
+	return s.update(ctx, id, updater)
+}
+
+func (s *deploymentStore) UpdateMetadata(ctx context.Context, id string, metadata map[string]string) error {
+	return s.update(ctx, id, func(d *model.Deployment) error {
 		d.Metadata = mergeMetadata(d.Metadata, metadata)
-		d.UpdatedAt = now
 		return nil
 	})
 }
 
-func (s *deploymentStore) UpdateDeploymentStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error {
-	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, deploymentID, func(e interface{}) error {
-		d := e.(*model.Deployment)
+func (s *deploymentStore) UpdateStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error {
+	return s.update(ctx, deploymentID, func(d *model.Deployment) error {
 		for _, stage := range d.Stages {
 			if stage.Id == stageID {
 				stage.Metadata = mergeMetadata(stage.Metadata, metadata)
-				d.UpdatedAt = now
 				return nil
 			}
 		}

@@ -57,7 +57,7 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 			Stages:       []*model.PipelineStage{},
 		}
 
-		updater = DeploymentToPlannedUpdater(
+		updater = toPlannedUpdateFunc(
 			expectedDesc,
 			expectedStatusDesc,
 			expectedRunningCommitHash,
@@ -89,7 +89,7 @@ func TestDeploymentStatusUpdater(t *testing.T) {
 		}
 	)
 
-	updater := DeploymentStatusUpdater(expectedStatus, expectedStatusDesc)
+	updater := statusUpdateFunc(expectedStatus, expectedStatusDesc)
 	err := updater(&d)
 	require.NoError(t, err)
 	assert.Equal(t, expectedStatus, d.Status)
@@ -184,7 +184,7 @@ func TestDeploymentToCompletedUpdater(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			updater := DeploymentToCompletedUpdater(tc.status, tc.stageStatuses, tc.statusDesc, tc.completedAt)
+			updater := toCompletedUpdateFunc(tc.status, tc.stageStatuses, tc.statusDesc, tc.completedAt)
 			err := updater(&tc.deployment)
 			if err != nil {
 				if tc.expectedErr == nil {
@@ -283,7 +283,7 @@ func TestStageStatusChangedUpdater(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			updater := StageStatusChangedUpdater(tc.stageID, tc.status, tc.statusDesc, tc.requires, tc.visible, tc.retriedCount, tc.completedAt)
+			updater := stageStatusUpdateFunc(tc.stageID, tc.status, tc.statusDesc, tc.requires, tc.visible, tc.retriedCount, tc.completedAt)
 			err := updater(&tc.deployment)
 			if err != nil {
 				if tc.expectedErr == nil {
