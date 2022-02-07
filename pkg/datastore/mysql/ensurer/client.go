@@ -32,8 +32,9 @@ var (
 )
 
 const (
-	mysqlErrorCodeDuplicateColumnName = 1060
-	mysqlErrorCodeDuplicateKeyName    = 1061
+	mysqlErrorCodeDuplicateColumnName  = 1060
+	mysqlErrorCodeDuplicateKeyName     = 1061
+	mysqlErrorCodeColumnOrKeyNotExists = 1091
 )
 
 type mysqlEnsurer struct {
@@ -62,8 +63,12 @@ func NewMySQLEnsurer(url, database, usernameFile, passwordFile string, logger *z
 func (m *mysqlEnsurer) EnsureIndexes(ctx context.Context) error {
 	for _, stmt := range makeCreateIndexStatements(mysqlDatabaseIndexes) {
 		_, err := m.client.ExecContext(ctx, stmt)
-		// Ignore in case error duplicate key name or column name occurred.
-		if mysqlErr, ok := err.(*driver.MySQLError); ok && (mysqlErr.Number == mysqlErrorCodeDuplicateKeyName || mysqlErr.Number == mysqlErrorCodeDuplicateColumnName) {
+		// Ignore in case error inc case:
+		// - Duplicate key name or column name occurred.
+		// - Try to remove not exists column or key.
+		if mysqlErr, ok := err.(*driver.MySQLError); ok && (mysqlErr.Number == mysqlErrorCodeDuplicateKeyName ||
+			mysqlErr.Number == mysqlErrorCodeDuplicateColumnName ||
+			mysqlErr.Number == mysqlErrorCodeColumnOrKeyNotExists) {
 			continue
 		}
 		if err != nil {
