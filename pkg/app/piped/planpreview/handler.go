@@ -182,19 +182,16 @@ func (h *Handler) Run(ctx context.Context) error {
 	commandTicker := time.NewTicker(h.options.commandCheckInterval)
 	defer commandTicker.Stop()
 
-L:
 	for {
 		select {
 		case <-ctx.Done():
-			break L
+			h.logger.Info("planpreview handler has been stopped")
+			return nil
 
 		case <-commandTicker.C:
 			h.enqueueNewCommands(ctx)
 		}
 	}
-
-	h.logger.Info("planpreview handler has been stopped")
-	return nil
 }
 
 func (h *Handler) enqueueNewCommands(ctx context.Context) {

@@ -60,11 +60,11 @@ func (r *reporter) Run(ctx context.Context) error {
 	ticker := time.NewTicker(r.interval)
 	defer ticker.Stop()
 
-L:
 	for {
 		select {
 		case <-ctx.Done():
-			break L
+			r.logger.Info("stats reporter has been stopped")
+			return nil
 
 		case now := <-ticker.C:
 			if err := r.report(ctx); err != nil {
@@ -75,9 +75,6 @@ L:
 			)
 		}
 	}
-
-	r.logger.Info("stats reporter has been stopped")
-	return nil
 }
 
 func (r *reporter) report(ctx context.Context) error {

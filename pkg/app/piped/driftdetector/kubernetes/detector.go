@@ -108,19 +108,16 @@ func (d *detector) Run(ctx context.Context) error {
 	ticker := time.NewTicker(d.interval)
 	defer ticker.Stop()
 
-L:
 	for {
 		select {
 		case <-ticker.C:
 			d.check(ctx)
 
 		case <-ctx.Done():
-			break L
+			d.logger.Info("drift detector for kubernetes applications has been stopped")
+			return nil
 		}
 	}
-
-	d.logger.Info("drift detector for kubernetes applications has been stopped")
-	return nil
 }
 
 func (d *detector) check(ctx context.Context) error {

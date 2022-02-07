@@ -86,24 +86,25 @@ func (p *persister) Run(ctx context.Context) error {
 	ticker := time.NewTicker(p.flushInterval)
 	defer ticker.Stop()
 
-L:
 	for {
 		select {
 		case <-ticker.C:
 			p.flush(ctx)
 
 		case <-ctx.Done():
-			break L
+			p.shutdown()
+			return nil
 		}
 	}
+}
 
+func (p *persister) shutdown() {
 	p.logger.Info("flush all logs before stopping")
 	ctx, cancel := context.WithTimeout(context.Background(), p.gracePeriod)
 	defer cancel()
 	p.flushAll(ctx)
 
 	p.logger.Info("log persister has been stopped")
-	return nil
 }
 
 // StageLogPersister creates a child persister instance for a specific stage.

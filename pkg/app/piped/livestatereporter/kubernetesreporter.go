@@ -79,7 +79,6 @@ func (r *kubernetesReporter) Run(ctx context.Context) error {
 	ticker := time.NewTicker(r.flushInterval)
 	defer ticker.Stop()
 
-L:
 	for {
 		select {
 		case <-snapshotTicker.C:
@@ -89,12 +88,10 @@ L:
 			r.flushEvents(ctx)
 
 		case <-ctx.Done():
-			break L
+			r.logger.Info("app live state reporter has been stopped")
+			return nil
 		}
 	}
-
-	r.logger.Info("app live state reporter has been stopped")
-	return nil
 }
 
 func (r *kubernetesReporter) flushSnapshots(ctx context.Context) error {
