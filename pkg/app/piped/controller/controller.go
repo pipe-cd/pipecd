@@ -229,11 +229,10 @@ func (c *controller) Run(ctx context.Context) error {
 	defer ticker.Stop()
 	c.logger.Info("start syncing planners and schedulers")
 
-L:
 	for {
 		select {
 		case <-ctx.Done():
-			break L
+			return c.shutdown(lpCancel, lpStoppedCh)
 
 		case <-ticker.C:
 			// syncSchedulers must be called before syncPlanners because
@@ -243,13 +242,15 @@ L:
 			c.checkCommands()
 		}
 	}
+}
 
+func (c *controller) shutdown(cancel func(), stoppedCh <-chan error) error {
 	c.logger.Info("waiting for stopping all planners and schedulers")
 	c.wg.Wait()
 
 	// Stop log persiter and wait for its stopping.
-	lpCancel()
-	err = <-lpStoppedCh
+	cancel()
+	err := <-stoppedCh
 
 	c.logger.Info("controller has been stopped")
 	return err
