@@ -15,7 +15,7 @@ afterAll(() => {
 });
 
 describe("AddApplicationDrawer", () => {
-  it("should pass");
+  it.todo("should pass");
 
   // TODO: Move all these tests into application-form component
   //
