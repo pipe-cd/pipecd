@@ -94,6 +94,10 @@ web-dev:
 web-test:
 	cd pkg/app/web; yarn test:coverage --runInBand
 
+.PHONY: web-lint
+web-lint:
+	cd pkg/app/web; yarn lint:fix
+
 .PHONY: generate-test-tls
 generate-test-tls:
 	openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \

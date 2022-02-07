@@ -679,8 +679,8 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
           </Typography>
           <Divider />
           <Stepper activeStep={activeStep} orientation="vertical">
-            <Step key="Select Piped and Cloud provider" active>
-              <StepLabel>Select Piped and Cloud provider</StepLabel>
+            <Step key="Select where to deploy application" active>
+              <StepLabel>Select where to deploy application</StepLabel>
               <StepContent>
                 <div className={classes.actionsContainer}>
                   <div>
@@ -690,10 +690,10 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
               </StepContent>
             </Step>
             <Step
-              key="Select the application to add"
+              key="Select application to add"
               expanded={activeStep !== 0}
             >
-              <StepLabel>Select the application to add</StepLabel>
+              <StepLabel>Select application to add</StepLabel>
               <StepContent>
                 <FormControl className={classes.formItem} variant="outlined">
                   <InputLabel id="filter-app">Application</InputLabel>
@@ -719,9 +719,9 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
                 </FormControl>
               </StepContent>
             </Step>
-            <Step key="Confirm application information before adding">
+            <Step key="Confirm information before adding">
               <StepLabel>
-                Confirm application information before adding
+                Confirm information before adding
               </StepLabel>
               <StepContent>
                 {selectedApp && (
