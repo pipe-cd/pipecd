@@ -10,7 +10,6 @@ import { SyncStrategy } from "~/modules/deployments";
 import type { AppState } from "~/store";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { dummyApplicationLiveState } from "~/__fixtures__/dummy-application-live-state";
-import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import { createStore, render, screen, waitFor } from "~~/test-utils";
 import { ApplicationDetail } from ".";
@@ -62,12 +61,6 @@ const baseState: Partial<AppState> = {
     loading: {},
     hasError: {},
   },
-  environments: {
-    entities: {
-      [dummyEnv.id]: dummyEnv,
-    },
-    ids: [dummyEnv.id],
-  },
   pipeds: {
     entities: {
       [dummyPiped.id]: dummyPiped,
@@ -92,7 +85,6 @@ describe("ApplicationDetail", () => {
 
     expect(screen.getByText(dummyApplication.name)).toBeInTheDocument();
     expect(screen.getByText(dummyPiped.name)).toBeInTheDocument();
-    expect(screen.getByText(dummyEnv.name)).toBeInTheDocument();
     expect(screen.getByText("Healthy")).toBeInTheDocument();
     expect(screen.getByText("Synced")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /sync$/i })).toBeInTheDocument();

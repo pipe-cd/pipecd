@@ -2,7 +2,6 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { cancelDeployment, DeploymentStatus } from "~/modules/deployments";
 import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
-import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import { createStore, render, screen } from "~~/test-utils";
 import { DeploymentDetail } from ".";
@@ -14,12 +13,6 @@ const baseState = {
     },
     ids: [dummyDeployment.id],
     canceling: {},
-  },
-  environments: {
-    entities: {
-      [dummyEnv.id]: dummyEnv,
-    },
-    ids: [dummyEnv.id],
   },
   pipeds: {
     entities: {

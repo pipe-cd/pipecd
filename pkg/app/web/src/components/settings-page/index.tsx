@@ -3,23 +3,18 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemIcon,
   makeStyles,
   Toolbar,
-  Tooltip,
 } from "@material-ui/core";
-import { Warning } from "@material-ui/icons";
 import { FC, memo } from "react";
 import { NavLink, Redirect, Route, Switch } from "react-router-dom";
 import {
   PAGE_PATH_SETTINGS,
   PAGE_PATH_SETTINGS_API_KEY,
-  PAGE_PATH_SETTINGS_ENV,
   PAGE_PATH_SETTINGS_PIPED,
   PAGE_PATH_SETTINGS_PROJECT,
 } from "~/constants/path";
 import { APIKeyPage } from "./api-key";
-import { SettingsEnvironmentPage } from "./environment";
 import { SettingsPipedPage } from "./piped";
 import { SettingsProjectPage } from "./project";
 
@@ -56,7 +51,6 @@ const useStyles = makeStyles((theme) => ({
 
 const MENU_ITEMS = [
   ["Piped", PAGE_PATH_SETTINGS_PIPED],
-  ["Environment", PAGE_PATH_SETTINGS_ENV],
   ["Project", PAGE_PATH_SETTINGS_PROJECT],
   ["API Key", PAGE_PATH_SETTINGS_API_KEY],
 ];
@@ -82,13 +76,6 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
                 activeClassName={classes.activeNav}
               >
                 <ListItemText primary={text} />
-                {link === PAGE_PATH_SETTINGS_ENV && (
-                  <ListItemIcon className={classes.listItemIcon}>
-                    <Tooltip title="Deprecated. Please use Label instead.">
-                      <Warning fontSize="small" />
-                    </Tooltip>
-                  </ListItemIcon>
-                )}
               </ListItem>
             ))}
           </List>
@@ -105,11 +92,6 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
             exact
             path={PAGE_PATH_SETTINGS_PIPED}
             component={SettingsPipedPage}
-          />
-          <Route
-            exact
-            path={PAGE_PATH_SETTINGS_ENV}
-            component={SettingsEnvironmentPage}
           />
           <Route
             exact

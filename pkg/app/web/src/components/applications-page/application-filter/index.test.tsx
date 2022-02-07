@@ -2,15 +2,10 @@ import userEvent from "@testing-library/user-event";
 import { UI_TEXT_CLEAR } from "~/constants/ui-text";
 import { ApplicationKind, ApplicationSyncStatus } from "~/modules/applications";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
-import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { render, screen } from "~~/test-utils";
 import { ApplicationFilter } from ".";
 
 const initialState = {
-  environments: {
-    ids: [dummyEnv.id],
-    entities: { [dummyEnv.id]: dummyEnv },
-  },
   applications: {
     ids: [dummyApplication.id],
     entities: { [dummyApplication.id]: dummyApplication },
@@ -33,12 +28,6 @@ test("Change filter values", () => {
   userEvent.click(screen.getByRole("option", { name: dummyApplication.name }));
 
   expect(onChange).toHaveBeenCalledWith({ name: dummyApplication.name });
-  onChange.mockClear();
-
-  userEvent.click(screen.getByRole("button", { name: /environment/i }));
-  userEvent.click(screen.getByRole("option", { name: dummyEnv.name }));
-
-  expect(onChange).toHaveBeenCalledWith({ envId: dummyEnv.id });
   onChange.mockClear();
 
   userEvent.click(screen.getByRole("button", { name: /kind/i }));

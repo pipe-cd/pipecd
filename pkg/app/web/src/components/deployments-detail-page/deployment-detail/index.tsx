@@ -25,7 +25,6 @@ import {
   selectById as selectDeploymentById,
   selectDeploymentIsCanceling,
 } from "~/modules/deployments";
-import { selectEnvById } from "~/modules/environments";
 import { selectPipedById } from "~/modules/pipeds";
 import { fetchStageLog } from "~/modules/stage-logs";
 
@@ -85,7 +84,6 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
       (state) => selectDeploymentById(state.deployments, deploymentId)
     );
     const activeStage = useAppSelector((state) => state.activeStage);
-    const env = useAppSelector(selectEnvById(deployment?.envId));
     const piped = useAppSelector(selectPipedById(deployment?.pipedId));
     const isCanceling = useAppSelector(
       selectDeploymentIsCanceling(deploymentId)
@@ -131,11 +129,6 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
               <Typography className={classes.textMargin} variant="h6">
                 {DEPLOYMENT_STATE_TEXT[deployment.status]}
               </Typography>
-              {env && (
-                <Typography variant="subtitle1" className={classes.env}>
-                  {env.name}
-                </Typography>
-              )}
               <Typography variant="body1" className={classes.age}>
                 {dayjs(deployment.createdAt * 1000).fromNow()}
               </Typography>

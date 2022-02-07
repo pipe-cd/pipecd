@@ -1,5 +1,4 @@
 import { Story } from "@storybook/react";
-import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
 import { AddApplicationDrawer, AddApplicationDrawerProps } from ".";
@@ -9,12 +8,6 @@ export default {
   component: AddApplicationDrawer,
   decorators: [
     createDecoratorRedux({
-      environments: {
-        entities: {
-          [dummyEnv.id]: dummyEnv,
-        },
-        ids: [dummyEnv.id],
-      },
       pipeds: {
         entities: {
           [dummyPiped.id]: dummyPiped,

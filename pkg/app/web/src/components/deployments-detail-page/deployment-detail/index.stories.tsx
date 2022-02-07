@@ -1,7 +1,6 @@
 import { Story } from "@storybook/react";
 import { DeploymentStatus } from "~/modules/deployments";
 import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
-import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
 import { DeploymentDetail, DeploymentDetailProps } from ".";
@@ -23,12 +22,6 @@ export default {
         },
         ids: [dummyDeployment.id],
         loading: {},
-      },
-      environments: {
-        entities: {
-          [dummyEnv.id]: dummyEnv,
-        },
-        ids: [dummyEnv.id],
       },
       pipeds: {
         entities: {

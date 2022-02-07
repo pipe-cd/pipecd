@@ -6,10 +6,8 @@ import { applicationsSlice } from "./applications";
 import { applicationLiveStateSlice } from "./applications-live-state";
 import { commandsSlice } from "./commands";
 import { deleteApplicationSlice } from "./delete-application";
-import { deletingEnvSlice } from "./deleting-env";
 import { deploymentFrequencySlice } from "./deployment-frequency";
 import { deploymentsSlice } from "./deployments";
-import { environmentsSlice } from "./environments";
 import { insightSlice } from "./insight";
 import { meSlice } from "./me";
 import { pipedsSlice } from "./pipeds";
@@ -30,7 +28,6 @@ export const reducers = combineReducers({
   stageLogs: stageLogsSlice.reducer,
   activeStage: activeStageSlice.reducer,
   pipeds: pipedsSlice.reducer,
-  environments: environmentsSlice.reducer,
   commands: commandsSlice.reducer,
   toasts: toastsSlice.reducer,
   me: meSlice.reducer,
@@ -40,7 +37,6 @@ export const reducers = combineReducers({
   insight: insightSlice.reducer,
   deploymentFrequency: deploymentFrequencySlice.reducer,
   applicationCounts: applicationCountsSlice.reducer,
-  deletingEnv: deletingEnvSlice.reducer,
   unregisteredApplications: unregisteredApplicationsSlice.reducer,
   events: eventsSlice.reducer,
 });

@@ -31,7 +31,6 @@ import {
   fetchCommand,
   selectIds as selectCommandIds,
 } from "~/modules/commands";
-import { fetchEnvironments } from "~/modules/environments";
 import { fetchPipeds } from "~/modules/pipeds";
 
 const SettingsIndexPage = loadable(
@@ -101,7 +100,6 @@ export const Routes: FC = () => {
   const me = useAppSelector((state) => state.me);
   useEffect(() => {
     if (me?.isLogin) {
-      dispatch(fetchEnvironments());
       dispatch(fetchPipeds(true));
     }
   }, [dispatch, me]);

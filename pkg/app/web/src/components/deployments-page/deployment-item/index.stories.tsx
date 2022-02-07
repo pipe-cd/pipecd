@@ -2,7 +2,6 @@ import { Story } from "@storybook/react";
 import { Provider } from "react-redux";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
-import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { createStore } from "~~/test-utils";
 import { DeploymentItem } from ".";
 
@@ -25,12 +24,6 @@ export const Overview: Story = () => (
           [dummyApplication.id]: dummyApplication,
         },
         ids: [dummyApplication.id],
-      },
-      environments: {
-        entities: {
-          [dummyEnv.id]: dummyEnv,
-        },
-        ids: [dummyEnv.id],
       },
     })}
   >
@@ -55,12 +48,6 @@ export const noDescription: Story = () => (
           [dummyApplication.id]: dummyApplication,
         },
         ids: [dummyApplication.id],
-      },
-      environments: {
-        entities: {
-          [dummyEnv.id]: dummyEnv,
-        },
-        ids: [dummyEnv.id],
       },
     })}
   >
