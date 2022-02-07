@@ -689,10 +689,7 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
                 </div>
               </StepContent>
             </Step>
-            <Step
-              key="Select application to add"
-              expanded={activeStep !== 0}
-            >
+            <Step key="Select application to add" expanded={activeStep !== 0}>
               <StepLabel>Select application to add</StepLabel>
               <StepContent>
                 <FormControl className={classes.formItem} variant="outlined">
@@ -720,9 +717,7 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
               </StepContent>
             </Step>
             <Step key="Confirm information before adding">
-              <StepLabel>
-                Confirm information before adding
-              </StepLabel>
+              <StepLabel>Confirm information before adding</StepLabel>
               <StepContent>
                 {selectedApp && (
                   <Typography className={classes.accordionDetail}>
