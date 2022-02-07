@@ -15,7 +15,7 @@ afterAll(() => {
 });
 
 describe("AddApplicationDrawer", () => {
-  it("should pass", () => { });
+  it("should pass");
 
   // TODO: Move all these tests into application-form component
   //
@@ -33,7 +33,6 @@ describe("AddApplicationDrawer", () => {
   //   render(<AddApplicationDrawer open onClose={jest.fn()} />, {
   //     store,
   //   });
-
 
   //   userEvent.type(screen.getByRole("textbox", { name: "Name" }), "App");
   //   userEvent.click(screen.getByRole("button", { name: /Kind/ }));
@@ -90,7 +89,6 @@ describe("AddApplicationDrawer", () => {
   //     expect(screen.queryByDisplayValue("App")).not.toBeInTheDocument();
   //   });
   // });
-
 
   // it("should clear depended fields if change environment", async () => {
   //   const altEnv = { ...dummyEnv, id: "env-2", name: "env-2" };
