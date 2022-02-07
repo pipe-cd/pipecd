@@ -347,10 +347,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
   }) {
     const classes = useStyles();
     const ps = useAppSelector((state) => selectAllPipeds(state));
-
-    const pipeds = useAppSelector<Piped.AsObject[]>((state) =>
-      ps.filter((piped) => !piped.disabled)
-    );
+    const pipeds = ps.filter((piped) => !piped.disabled);
 
     const selectedPiped = useAppSelector(selectPipedById(values.pipedId));
 
