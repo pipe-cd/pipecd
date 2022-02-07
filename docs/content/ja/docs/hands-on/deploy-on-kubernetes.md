@@ -35,12 +35,7 @@ Control-planeにアクセスし、Static adminとしてログインしてくだ�
 ### Pipedの登録
 
 Pipedをインストールする前に、Pipedがcontrol-planeと通信するための認証情報をWeb UIから取得します。
-
-まず、Pipedが属する[Environment](/docs/concepts/#environment)を作成し、その後Pipedを登録します。
-Environmentとはアプリケーションを論理的にグルーピングするためのものです。通常、アプリケーションの実行環境に応じて `dev`, `stg`, `prod` などが利用されます。
-
-- `https://{CONTROL_PLANE_ADDRESS}/settings/environment` を開き、+ADDボタンを押してEnvironmentを作成してください。
-- `https://{CONTROL_PLANE_ADDRESS}/settings/piped` を開き、+ADDボタンを押してPipedを登録してください。作成後に表示されるpiped-idとpiped-keyは後ほど利用するので控えておいてください。
+`https://{CONTROL_PLANE_ADDRESS}/settings/piped` を開き、+ADDボタンを押してPipedを登録してください。作成後に表示されるpiped-idとpiped-keyは後ほど利用するので控えておいてください。
 
 ### SSH keyの登録
 PipeCDにおけるデプロイフローは、PipedがConfig-repoを監視することから始まります。Config-repoが更新されたら（例えばDeploymentマニフェストの更新）Pipedはデプロイメントを開始します。
