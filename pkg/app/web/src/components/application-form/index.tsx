@@ -58,7 +58,8 @@ import {
 } from "~/modules/applications";
 
 const ADD_FROM_GIT_CONFIRM_DIALOG_TITLE = "Add Application";
-const ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION = "Are you sure you want to add the application?";
+const ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION =
+  "Are you sure you want to add the application?";
 
 const createCloudProviderListFromPiped = ({
   kind,
@@ -632,7 +633,10 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
     const [selectedPipedId, setSelectedPipedId] = useState("");
     const [selectedKind, setSelectedKind] = useState("");
     const [selectedCloudProvider, setSelectedCloudProvider] = useState("");
-    const [selectedApp, setSelectedApp] = useState<ApplicationInfo.AsObject | null>();
+    const [
+      selectedApp,
+      setSelectedApp,
+    ] = useState<ApplicationInfo.AsObject | null>();
 
     const filteredApps = apps.filter(
       (app) =>
@@ -680,14 +684,15 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
               <StepContent>
                 <div className={classes.actionsContainer}>
                   <div>
-                    <CloudProviderFilter
-                      onChange={handleFilterChange}
-                    />
+                    <CloudProviderFilter onChange={handleFilterChange} />
                   </div>
                 </div>
               </StepContent>
             </Step>
-            <Step key="Select the application to add" expanded={activeStep !== 0}>
+            <Step
+              key="Select the application to add"
+              expanded={activeStep !== 0}
+            >
               <StepLabel>Select the application to add</StepLabel>
               <StepContent>
                 <FormControl className={classes.formItem} variant="outlined">
@@ -698,12 +703,15 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
                     label="Application"
                     className={classes.select}
                     onChange={(e) => {
-                      setSelectedApp(filteredApps[e.target.value as number])
+                      setSelectedApp(filteredApps[e.target.value as number]);
                       setActiveStep(2);
                     }}
                   >
                     {filteredApps.map((app, i) => (
-                      <MenuItem value={i} key={`app-${i}-${app.name}-${app.repoId}`}>
+                      <MenuItem
+                        value={i}
+                        key={`app-${i}-${app.name}-${app.repoId}`}
+                      >
                         name: {app.name}, repo: {app.repoId}
                       </MenuItem>
                     ))}
@@ -712,7 +720,9 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
               </StepContent>
             </Step>
             <Step key="Confirm application information before adding">
-              <StepLabel>Confirm application information before adding</StepLabel>
+              <StepLabel>
+                Confirm application information before adding
+              </StepLabel>
               <StepContent>
                 {selectedApp && (
                   <Typography className={classes.accordionDetail}>
@@ -725,9 +735,7 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
                         variant="outlined"
                         value={APPLICATION_KIND_TEXT[selectedApp.kind]}
                         className={classes.textInput}
-                        inputProps={
-                          { readOnly: true, }
-                        }
+                        inputProps={{ readOnly: true }}
                       />
                     </div>
                     <div className={classes.inputGroup}>
@@ -738,9 +746,7 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
                         variant="outlined"
                         value={selectedApp.path}
                         className={classes.textInput}
-                        inputProps={
-                          { readOnly: true, }
-                        }
+                        inputProps={{ readOnly: true }}
                       />
                       <div className={classes.inputGroupSpace} />
                       <TextField
@@ -750,16 +756,11 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
                         variant="outlined"
                         value={selectedApp.configFilename}
                         className={classes.textInput}
-                        inputProps={
-                          { readOnly: true, }
-                        }
+                        inputProps={{ readOnly: true }}
                       />
                     </div>
                     {selectedApp.labelsMap.map((label, j) => (
-                      <div
-                        className={classes.inputGroup}
-                        key={label[0]}
-                      >
+                      <div className={classes.inputGroup} key={label[0]}>
                         <TextField
                           id={"label-" + "-" + j}
                           label={"Label " + j}
@@ -767,9 +768,7 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
                           variant="outlined"
                           value={label[0] + ": " + label[1]}
                           className={classes.textInput}
-                          inputProps={
-                            { readOnly: true, }
-                          }
+                          inputProps={{ readOnly: true }}
                         />
                       </div>
                     ))}
@@ -804,17 +803,11 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
               {UI_TEXT_SAVE}
             </Button>
           ) : (
-            <Button
-              color="primary"
-              type="submit"
-              disabled
-            >
+            <Button color="primary" type="submit" disabled>
               {UI_TEXT_SAVE}
             </Button>
           )}
-          <Button onClick={onClose}>
-            {UI_TEXT_CANCEL}
-          </Button>
+          <Button onClick={onClose}>{UI_TEXT_CANCEL}</Button>
         </Box>
         <Dialog open={showConfirm}>
           <DialogTitle>{ADD_FROM_GIT_CONFIRM_DIALOG_TITLE}</DialogTitle>
