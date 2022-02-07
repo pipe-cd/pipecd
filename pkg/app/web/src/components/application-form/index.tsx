@@ -633,6 +633,7 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
     const [selectedPipedId, setSelectedPipedId] = useState("");
     const [selectedKind, setSelectedKind] = useState("");
     const [selectedCloudProvider, setSelectedCloudProvider] = useState("");
+    const [selectedAppIndex, setSelectedAppIndex] = useState(-1);
     const [
       selectedApp,
       setSelectedApp,
@@ -669,6 +670,7 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
     const handleFilterChange = useCallback(
       (options: CloudProviderFilterOptions) => {
         setSelectedApp(null);
+        setSelectedAppIndex(-1);
         setSelectedPipedId(options.pipedId);
         setSelectedKind(options.kind);
         setSelectedCloudProvider(options.cloudProvider);
@@ -707,8 +709,11 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
                     id="filter-app"
                     label="Application"
                     className={classes.select}
+                    value={selectedAppIndex}
                     onChange={(e) => {
-                      setSelectedApp(filteredApps[e.target.value as number]);
+                      const appIndex = e.target.value as number;
+                      setSelectedApp(filteredApps[appIndex]);
+                      setSelectedAppIndex(appIndex);
                       setActiveStep(2);
                     }}
                   >
