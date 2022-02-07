@@ -246,6 +246,7 @@ func ensureSQLDatabase(ctx context.Context, cfg *config.ControlPlaneSpec, logger
 		}
 	}()
 
+	logger.Info("start running SQL schema and indexes ensurer")
 	if err = mysqlEnsurer.Run(ctx); err != nil {
 		logger.Error("failed to ensure SQL schema and indexes", zap.Error(err))
 		return err
