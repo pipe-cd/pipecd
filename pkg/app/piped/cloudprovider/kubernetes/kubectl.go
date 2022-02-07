@@ -17,6 +17,7 @@ package kubernetes
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -24,6 +25,11 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes/kubernetesmetrics"
+)
+
+var (
+	errorReplaceNotFound = errors.New("specified resource is not found")
+	errorNotFoundLiteral = "Error from server (NotFound)"
 )
 
 type Kubectl struct {
@@ -126,10 +132,15 @@ func (c *Kubectl) Replace(ctx context.Context, namespace string, manifest Manife
 	cmd.Stdin = r
 
 	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("failed to replace: %s (%v)", string(out), err)
+	if err == nil {
+		return nil
 	}
-	return nil
+
+	if strings.HasPrefix(err.Error(), errorNotFoundLiteral) {
+		return errorReplaceNotFound
+	}
+
+	return fmt.Errorf("failed to replace: %s (%v)", string(out), err)
 
 }
 
