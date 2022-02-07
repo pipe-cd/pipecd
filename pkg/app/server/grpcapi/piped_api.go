@@ -382,15 +382,16 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 		return nil, err
 	}
 
-	updater := datastore.DeploymentToPlannedUpdater(
+	if err = a.deploymentStore.UpdateToPlanned(
+		ctx,
+		req.DeploymentId,
 		req.Summary,
 		req.StatusReason,
 		req.RunningCommitHash,
 		req.RunningConfigFilename,
 		req.Version,
 		req.Stages,
-	)
-	if err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater); err != nil {
+	); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update deployment %s as planned", req.DeploymentId))
 	}
 	return &pipedservice.ReportDeploymentPlannedResponse{}, nil
@@ -407,11 +408,7 @@ func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *piped
 		return nil, err
 	}
 
-	updater := datastore.DeploymentStatusUpdater(
-		req.Status,
-		req.StatusReason,
-	)
-	if err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater); err != nil {
+	if err = a.deploymentStore.UpdateStatus(ctx, req.DeploymentId, req.Status, req.StatusReason); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update status of deployment %s", req.DeploymentId))
 	}
 	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
@@ -428,13 +425,7 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 		return nil, err
 	}
 
-	updater := datastore.DeploymentToCompletedUpdater(
-		req.Status,
-		req.StageStatuses,
-		req.StatusReason,
-		req.CompletedAt,
-	)
-	if err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater); err != nil {
+	if err = a.deploymentStore.UpdateToCompleted(ctx, req.DeploymentId, req.Status, req.StageStatuses, req.StatusReason, req.CompletedAt); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update deployment %s as completed", req.DeploymentId))
 	}
 	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
@@ -450,7 +441,7 @@ func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice
 		return nil, err
 	}
 
-	if err = a.deploymentStore.UpdateDeploymentMetadata(ctx, req.DeploymentId, req.Metadata); err != nil {
+	if err = a.deploymentStore.UpdateMetadata(ctx, req.DeploymentId, req.Metadata); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update metadata of deployment %s", req.DeploymentId))
 	}
 	return &pipedservice.SaveDeploymentMetadataResponse{}, nil
@@ -467,7 +458,7 @@ func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.Save
 		return nil, err
 	}
 
-	if err = a.deploymentStore.UpdateDeploymentStageMetadata(ctx, req.DeploymentId, req.StageId, req.Metadata); err != nil {
+	if err = a.deploymentStore.UpdateStageMetadata(ctx, req.DeploymentId, req.StageId, req.Metadata); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update stage metadata of deployment %s", req.DeploymentId))
 	}
 	return &pipedservice.SaveStageMetadataResponse{}, nil
@@ -526,7 +517,9 @@ func (a *PipedAPI) ReportStageStatusChanged(ctx context.Context, req *pipedservi
 		return nil, err
 	}
 
-	updater := datastore.StageStatusChangedUpdater(
+	if err = a.deploymentStore.UpdateStageStatus(
+		ctx,
+		req.DeploymentId,
 		req.StageId,
 		req.Status,
 		req.StatusReason,
@@ -534,8 +527,7 @@ func (a *PipedAPI) ReportStageStatusChanged(ctx context.Context, req *pipedservi
 		req.Visible,
 		req.RetriedCount,
 		req.CompletedAt,
-	)
-	if err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater); err != nil {
+	); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update stage status of deployment %s", req.DeploymentId))
 	}
 
