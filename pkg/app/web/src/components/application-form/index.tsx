@@ -679,8 +679,8 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
           </Typography>
           <Divider />
           <Stepper activeStep={activeStep} orientation="vertical">
-            <Step key="Select where to deploy application" active>
-              <StepLabel>Select where to deploy application</StepLabel>
+            <Step key="Select piped and cloud provider" active>
+              <StepLabel>Select piped and cloud provider</StepLabel>
               <StepContent>
                 <div className={classes.actionsContainer}>
                   <div>
