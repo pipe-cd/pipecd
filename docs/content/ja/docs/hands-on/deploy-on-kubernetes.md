@@ -17,7 +17,7 @@ description: >
 
 このセクションでは、お使いのKubernetesクラスタ上でPiped Podが正常に実行されることを目指します。
 
-[Piped](/docs/concepts/#piped)（「d」は「daemon」の略）とは、デプロイメントタスクを処理する単一のバイナリコンポーネントです。このコンポーネントはステートレスに設計されているので、単一のVMやローカルマシンでも実行できます。
+[Piped](/docs/concepts/#piped)とは、デプロイメントタスクを処理する単一のバイナリコンポーネントです。このコンポーネントはステートレスに設計されているので、単一のVMやローカルマシンでも実行できます。
 
 ### ログイン
 Control-plane operatorにプロジェクトの作成を依頼し、以下の情報を聞いてください（あなたがControl-plane operatorである場合は、[ガイド](/docs/operator-manual/control-plane/adding-a-project)に従ってプロジェクトを作成してください）
