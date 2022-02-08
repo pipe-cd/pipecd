@@ -249,8 +249,16 @@ func (p *provider) ReplaceManifest(ctx context.Context, manifest Manifest) error
 	if p.initErr != nil {
 		return p.initErr
 	}
+	err := p.kubectl.Replace(ctx, p.getNamespaceToRun(manifest.Key), manifest)
+	if err == nil {
+		return nil
+	}
 
-	return p.kubectl.Replace(ctx, p.getNamespaceToRun(manifest.Key), manifest)
+	if errors.Is(err, errorReplaceNotFound) {
+		return ErrNotFound
+	}
+
+	return err
 }
 
 // Delete deletes the given resource from Kubernetes cluster.
