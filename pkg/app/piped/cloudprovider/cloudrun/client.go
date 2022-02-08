@@ -194,3 +194,12 @@ func (s *Service) ServiceManifest() (ServiceManifest, error) {
 	}
 	return ParseServiceManifest(data)
 }
+
+func (r *Revision) RevisionManifest() (RevisionManifest, error) {
+	rev := (*run.Revision)(r)
+	data, err := rev.MarshalJSON()
+	if err != nil {
+		return RevisionManifest{}, err
+	}
+	return ParseRevisionManifest(data)
+}

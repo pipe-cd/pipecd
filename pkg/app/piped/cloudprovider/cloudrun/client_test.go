@@ -19,6 +19,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/api/run/v1"
+	"sigs.k8s.io/yaml"
 )
 
 func TestMakeCloudRunParent(t *testing.T) {
@@ -69,4 +71,23 @@ func TestService(t *testing.T) {
 	got, err := s.ServiceManifest()
 	require.NoError(t, err)
 	assert.Equal(t, sm, got)
+}
+
+func TestRevision(t *testing.T) {
+	rm, err := ParseRevisionManifest([]byte(revisionManifest))
+	require.NoError(t, err)
+	require.NotEmpty(t, rm)
+
+	data, err := yaml.Marshal(rm.u)
+	require.NoError(t, err)
+	require.NotEmpty(t, data)
+
+	var rev run.Revision
+	err = yaml.Unmarshal(data, &rev)
+	require.NoError(t, err)
+
+	r := (*Revision)(&rev)
+	got, err := r.RevisionManifest()
+	require.NoError(t, err)
+	assert.Equal(t, rm, got)
 }
