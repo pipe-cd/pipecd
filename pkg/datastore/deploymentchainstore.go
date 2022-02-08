@@ -36,7 +36,7 @@ func (d *deploymentChainCollection) Factory() Factory {
 }
 
 var (
-	DeploymentChainAddDeploymentToBlock = func(deployment *model.Deployment) func(*model.DeploymentChain) error {
+	addDeploymentToBlockUpdateFunc = func(deployment *model.Deployment) func(*model.DeploymentChain) error {
 		return func(dc *model.DeploymentChain) error {
 			if deployment.DeploymentChainBlockIndex >= uint32(len(dc.Blocks)) {
 				return fmt.Errorf("invalid block index (%d) provided", deployment.DeploymentChainBlockIndex)
@@ -63,7 +63,7 @@ var (
 		}
 	}
 
-	DeploymentChainNodeDeploymentStatusUpdater = func(blockIndex uint32, deploymentID string, status model.DeploymentStatus, reason string) func(*model.DeploymentChain) error {
+	nodeDeploymentStatusUpdateFunc = func(blockIndex uint32, deploymentID string, status model.DeploymentStatus, reason string) func(*model.DeploymentChain) error {
 		return func(dc *model.DeploymentChain) error {
 			if blockIndex >= uint32(len(dc.Blocks)) {
 				return fmt.Errorf("invalid block index %d provided", blockIndex)
@@ -103,7 +103,8 @@ type DeploymentChainStore interface {
 	Add(ctx context.Context, d *model.DeploymentChain) error
 	Get(ctx context.Context, id string) (*model.DeploymentChain, error)
 	List(ctx context.Context, opts ListOptions) ([]*model.DeploymentChain, string, error)
-	UpdateDeploymentChain(ctx context.Context, id string, updater func(*model.DeploymentChain) error) error
+	AddNodeDeployment(ctx context.Context, chainID string, deployment *model.Deployment) error
+	UpdateNodeDeploymentStatus(ctx context.Context, chainID string, blockIndex uint32, deploymentID string, status model.DeploymentStatus, reason string) error
 }
 
 type deploymentChainStore struct {
@@ -172,7 +173,7 @@ func (s *deploymentChainStore) List(ctx context.Context, opts ListOptions) ([]*m
 	return dcs, cursor, nil
 }
 
-func (s *deploymentChainStore) UpdateDeploymentChain(ctx context.Context, id string, updater func(*model.DeploymentChain) error) error {
+func (s *deploymentChainStore) update(ctx context.Context, id string, updater func(*model.DeploymentChain) error) error {
 	now := s.nowFunc().Unix()
 	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
 		dc := e.(*model.DeploymentChain)
@@ -182,4 +183,14 @@ func (s *deploymentChainStore) UpdateDeploymentChain(ctx context.Context, id str
 		dc.UpdatedAt = now
 		return dc.Validate()
 	})
+}
+
+func (s *deploymentChainStore) AddNodeDeployment(ctx context.Context, chainID string, deployment *model.Deployment) error {
+	updater := addDeploymentToBlockUpdateFunc(deployment)
+	return s.update(ctx, chainID, updater)
+}
+
+func (s *deploymentChainStore) UpdateNodeDeploymentStatus(ctx context.Context, chainID string, blockIndex uint32, deploymentID string, status model.DeploymentStatus, reason string) error {
+	updater := nodeDeploymentStatusUpdateFunc(blockIndex, deploymentID, status, reason)
+	return s.update(ctx, chainID, updater)
 }

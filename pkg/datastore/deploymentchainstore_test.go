@@ -311,7 +311,7 @@ func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			updater := DeploymentChainNodeDeploymentStatusUpdater(tc.blockIndex, tc.deploymentID, tc.deploymentStatus, "")
+			updater := nodeDeploymentStatusUpdateFunc(tc.blockIndex, tc.deploymentID, tc.deploymentStatus, "")
 			err := updater(&tc.deploymentChain)
 			if err != nil {
 				if tc.expectedErr == nil {
