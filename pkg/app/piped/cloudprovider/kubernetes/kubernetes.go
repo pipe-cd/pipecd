@@ -244,6 +244,7 @@ func (p *provider) CreateManifest(ctx context.Context, manifest Manifest) error 
 	return p.kubectl.Create(ctx, p.getNamespaceToRun(manifest.Key), manifest)
 }
 
+// ReplaceManifest uses kubectl to replace the given manifests.
 func (p *provider) ReplaceManifest(ctx context.Context, manifest Manifest) error {
 	p.initOnce.Do(func() { p.init(ctx) })
 	if p.initErr != nil {
