@@ -103,7 +103,7 @@ type DeploymentChainStore interface {
 	Add(ctx context.Context, d *model.DeploymentChain) error
 	Get(ctx context.Context, id string) (*model.DeploymentChain, error)
 	List(ctx context.Context, opts ListOptions) ([]*model.DeploymentChain, string, error)
-	AddDeploymentToBlock(ctx context.Context, chainID string, deployment *model.Deployment) error
+	AddNodeDeployment(ctx context.Context, chainID string, deployment *model.Deployment) error
 	UpdateNodeDeploymentStatus(ctx context.Context, chainID string, blockIndex uint32, deploymentID string, status model.DeploymentStatus, reason string) error
 }
 
@@ -185,7 +185,7 @@ func (s *deploymentChainStore) update(ctx context.Context, id string, updater fu
 	})
 }
 
-func (s *deploymentChainStore) AddDeploymentToBlock(ctx context.Context, chainID string, deployment *model.Deployment) error {
+func (s *deploymentChainStore) AddNodeDeployment(ctx context.Context, chainID string, deployment *model.Deployment) error {
 	updater := addDeploymentToBlockUpdateFunc(deployment)
 	return s.update(ctx, chainID, updater)
 }

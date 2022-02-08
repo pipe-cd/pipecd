@@ -139,7 +139,7 @@ func (u *updater) Run(ctx context.Context) error {
 		// they been added here in this interval.
 		for _, deployment := range deployments {
 			// Connect missing deployment to the chain.
-			if err := u.deploymentChainStore.AddDeploymentToBlock(ctx, u.deploymentChainID, deployment); err != nil {
+			if err := u.deploymentChainStore.AddNodeDeployment(ctx, u.deploymentChainID, deployment); err != nil {
 				u.logger.Error("failed to link deployments to its chain",
 					zap.String("deploymentChainId", u.deploymentChainID),
 					zap.String("deploymentId", deployment.Id),
