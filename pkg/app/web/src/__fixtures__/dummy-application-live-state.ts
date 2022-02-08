@@ -66,7 +66,7 @@ export const dummyApplicationLiveState: ApplicationLiveState = {
   pipedId: dummyPiped.id,
   version: { index: 1, timestamp: 0 },
   projectId: "project-1",
-  cloudrun: {},
+  cloudrun: { resourcesList: [] },
   lambda: {},
   terraform: {},
   kubernetes: { resourcesList },
