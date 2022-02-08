@@ -49,7 +49,7 @@ func TestMakeCloudRunRevisionName(t *testing.T) {
 }
 
 func TestManifestToRunService(t *testing.T) {
-	sm, err := ParseServiceManifest([]byte(manifest))
+	sm, err := ParseServiceManifest([]byte(serviceManifest))
 	require.NoError(t, err)
 	require.NotEmpty(t, sm)
 
@@ -59,7 +59,7 @@ func TestManifestToRunService(t *testing.T) {
 }
 
 func TestService(t *testing.T) {
-	sm, err := ParseServiceManifest([]byte(manifest))
+	sm, err := ParseServiceManifest([]byte(serviceManifest))
 	require.NoError(t, err)
 
 	svc, err := manifestToRunService(sm)
