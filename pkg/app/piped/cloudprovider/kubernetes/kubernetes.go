@@ -72,6 +72,10 @@ type Applier interface {
 	Apply(ctx context.Context) error
 	// ApplyManifest does applying the given manifest.
 	ApplyManifest(ctx context.Context, manifest Manifest) error
+	// CreateManifest does creating resource from given manifest.
+	CreateManifest(ctx context.Context, manifest Manifest) error
+	// ReplaceManifest does replacing resource from given manifest.
+	ReplaceManifest(ctx context.Context, manifest Manifest) error
 	// Delete deletes the given resource from Kubernetes cluster.
 	Delete(ctx context.Context, key ResourceKey) error
 }
@@ -229,6 +233,34 @@ func (p *provider) ApplyManifest(ctx context.Context, manifest Manifest) error {
 	}
 
 	return p.kubectl.Apply(ctx, p.getNamespaceToRun(manifest.Key), manifest)
+}
+
+// CreateManifest uses kubectl to create the given manifests.
+func (p *provider) CreateManifest(ctx context.Context, manifest Manifest) error {
+	p.initOnce.Do(func() { p.init(ctx) })
+	if p.initErr != nil {
+		return p.initErr
+	}
+
+	return p.kubectl.Create(ctx, p.getNamespaceToRun(manifest.Key), manifest)
+}
+
+// ReplaceManifest uses kubectl to replace the given manifests.
+func (p *provider) ReplaceManifest(ctx context.Context, manifest Manifest) error {
+	p.initOnce.Do(func() { p.init(ctx) })
+	if p.initErr != nil {
+		return p.initErr
+	}
+	err := p.kubectl.Replace(ctx, p.getNamespaceToRun(manifest.Key), manifest)
+	if err == nil {
+		return nil
+	}
+
+	if errors.Is(err, errorReplaceNotFound) {
+		return ErrNotFound
+	}
+
+	return err
 }
 
 // Delete deletes the given resource from Kubernetes cluster.

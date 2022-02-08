@@ -17,6 +17,7 @@ package kubernetes
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -24,6 +25,11 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes/kubernetesmetrics"
+)
+
+var (
+	errorReplaceNotFound = errors.New("specified resource is not found")
+	errorNotFoundLiteral = "Error from server (NotFound)"
 )
 
 type Kubectl struct {
@@ -68,6 +74,73 @@ func (c *Kubectl) Apply(ctx context.Context, namespace string, manifest Manifest
 		return fmt.Errorf("failed to apply: %s (%v)", string(out), err)
 	}
 	return nil
+}
+
+func (c *Kubectl) Create(ctx context.Context, namespace string, manifest Manifest) (err error) {
+	defer func() {
+		kubernetesmetrics.IncKubectlCallsCounter(
+			c.version,
+			kubernetesmetrics.LabelCreateCommand,
+			err == nil,
+		)
+	}()
+
+	data, err := manifest.YamlBytes()
+	if err != nil {
+		return err
+	}
+
+	args := make([]string, 0, 5)
+	if namespace != "" {
+		args = append(args, "-n", namespace)
+	}
+	args = append(args, "create", "-f", "-")
+
+	cmd := exec.CommandContext(ctx, c.execPath, args...)
+	r := bytes.NewReader(data)
+	cmd.Stdin = r
+
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to create: %s (%w)", string(out), err)
+	}
+	return nil
+}
+
+func (c *Kubectl) Replace(ctx context.Context, namespace string, manifest Manifest) (err error) {
+	defer func() {
+		kubernetesmetrics.IncKubectlCallsCounter(
+			c.version,
+			kubernetesmetrics.LabelReplaceCommand,
+			err == nil,
+		)
+	}()
+
+	data, err := manifest.YamlBytes()
+	if err != nil {
+		return err
+	}
+
+	args := make([]string, 0, 5)
+	if namespace != "" {
+		args = append(args, "-n", namespace)
+	}
+	args = append(args, "replace", "-f", "-")
+
+	cmd := exec.CommandContext(ctx, c.execPath, args...)
+	r := bytes.NewReader(data)
+	cmd.Stdin = r
+
+	out, err := cmd.CombinedOutput()
+	if err == nil {
+		return nil
+	}
+
+	if strings.HasPrefix(err.Error(), errorNotFoundLiteral) {
+		return errorReplaceNotFound
+	}
+
+	return fmt.Errorf("failed to replace: %s (%w)", string(out), err)
 }
 
 func (c *Kubectl) Delete(ctx context.Context, namespace string, r ResourceKey) (err error) {

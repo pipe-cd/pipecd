@@ -34,8 +34,10 @@ const (
 type ToolCommand string
 
 const (
-	LabelApplyCommand  ToolCommand = "apply"
-	LabelDeleteCommand ToolCommand = "delete"
+	LabelApplyCommand   ToolCommand = "apply"
+	LabelCreateCommand  ToolCommand = "create"
+	LabelReplaceCommand ToolCommand = "replace"
+	LabelDeleteCommand  ToolCommand = "delete"
 )
 
 type CommandOutput string
