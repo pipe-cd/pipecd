@@ -140,8 +140,7 @@ func (c *Kubectl) Replace(ctx context.Context, namespace string, manifest Manife
 		return errorReplaceNotFound
 	}
 
-	return fmt.Errorf("failed to replace: %s (%v)", string(out), err)
-
+	return fmt.Errorf("failed to replace: %s (%w)", string(out), err)
 }
 
 func (c *Kubectl) Delete(ctx context.Context, namespace string, r ResourceKey) (err error) {
