@@ -51,10 +51,19 @@ func TestService(t *testing.T) {
 	svc, err := manifestToRunService(sm)
 	require.NoError(t, err)
 
+	// ServiceManifest
 	s := (*Service)(svc)
 	got, err := s.ServiceManifest()
 	require.NoError(t, err)
 	assert.Equal(t, sm, got)
+
+	// UID
+	id := s.UID()
+	assert.Equal(t, "service-uid", id)
+
+	// RevisionNames
+	names := s.RevisionNames()
+	assert.Len(t, names, 1)
 }
 
 func TestRevision(t *testing.T) {

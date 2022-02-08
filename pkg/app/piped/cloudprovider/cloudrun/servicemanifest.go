@@ -68,6 +68,14 @@ func (m ServiceManifest) Labels() map[string]string {
 	return m.u.GetLabels()
 }
 
+func (m ServiceManifest) AppID() string {
+	v := m.Labels()
+	if v == nil {
+		return ""
+	}
+	return v[LabelApplication]
+}
+
 func (m ServiceManifest) AddLabels(labels map[string]string) {
 	if len(labels) == 0 {
 		return

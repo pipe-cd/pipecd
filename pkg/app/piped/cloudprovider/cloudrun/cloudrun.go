@@ -126,6 +126,26 @@ func (s *Service) ServiceManifest() (ServiceManifest, error) {
 	return ParseServiceManifest(data)
 }
 
+func (s *Service) UID() string {
+	if s.Metadata == nil {
+		return ""
+	}
+	return s.Metadata.Uid
+}
+
+// RevisionNames return some revision names which may handle traffic.
+func (s *Service) RevisionNames() []string {
+	if s.Status == nil {
+		return nil
+	}
+	tf := s.Status.Traffic
+	ret := make([]string, len(tf))
+	for i := range tf {
+		ret[i] = tf[i].RevisionName
+	}
+	return ret
+}
+
 func (r *Revision) RevisionManifest() (RevisionManifest, error) {
 	rev := (*run.Revision)(r)
 	data, err := rev.MarshalJSON()
