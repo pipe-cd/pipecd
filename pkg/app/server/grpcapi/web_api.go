@@ -341,12 +341,7 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 
 func (a *WebAPI) UpdatePiped(ctx context.Context, req *webservice.UpdatePipedRequest) (*webservice.UpdatePipedResponse, error) {
 	updater := func(ctx context.Context, pipedID string) error {
-		return a.pipedStore.UpdatePiped(ctx, req.PipedId, func(p *model.Piped) error {
-			p.Name = req.Name
-			p.Desc = req.Desc
-			p.EnvIds = req.EnvIds
-			return nil
-		})
+		return a.pipedStore.UpdateInfo(ctx, req.PipedId, req.Name, req.Desc, req.EnvIds)
 	}
 	if err := a.updatePiped(ctx, req.PipedId, updater); err != nil {
 		return nil, err
@@ -507,10 +502,7 @@ func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) 
 
 func (a *WebAPI) UpdatePipedDesiredVersion(ctx context.Context, req *webservice.UpdatePipedDesiredVersionRequest) (*webservice.UpdatePipedDesiredVersionResponse, error) {
 	updater := func(ctx context.Context, pipedID string) error {
-		return a.pipedStore.UpdatePiped(ctx, pipedID, func(p *model.Piped) error {
-			p.DesiredVersion = req.Version
-			return nil
-		})
+		return a.pipedStore.UpdateDesiredVersion(ctx, pipedID, req.Version)
 	}
 	for _, pipedID := range req.PipedIds {
 		if err := a.updatePiped(ctx, pipedID, updater); err != nil {

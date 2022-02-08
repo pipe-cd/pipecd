@@ -137,14 +137,15 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 	}
 
 	now := time.Now().Unix()
-	err = a.pipedStore.UpdatePiped(ctx, pipedID, datastore.PipedMetadataUpdater(
+	if err = a.pipedStore.UpdateMetadata(
+		ctx,
+		pipedID,
+		req.Version,
 		req.CloudProviders,
 		req.Repositories,
 		req.SecretEncryption,
-		req.Version,
 		now,
-	))
-	if err != nil {
+	); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update metadata of piped %s", pipedID))
 	}
 
@@ -784,7 +785,7 @@ func (a *PipedAPI) ReportEventsHandled(ctx context.Context, req *pipedservice.Re
 	}
 
 	for _, id := range req.EventIds {
-		if err := a.eventStore.UpdateEventStatus(ctx, id, model.EventStatus_EVENT_SUCCESS, fmt.Sprintf("successfully handled by %q piped", pipedID)); err != nil {
+		if err := a.eventStore.UpdateStatus(ctx, id, model.EventStatus_EVENT_SUCCESS, fmt.Sprintf("successfully handled by %q piped", pipedID)); err != nil {
 			return nil, gRPCEntityOperationError(err, fmt.Sprintf("update event %s as handled", id))
 		}
 	}
@@ -799,7 +800,7 @@ func (a *PipedAPI) ReportEventStatuses(ctx context.Context, req *pipedservice.Re
 	}
 	for _, e := range req.Events {
 		// TODO: For success status, change all previous events with the same event key to OUTDATED
-		if err := a.eventStore.UpdateEventStatus(ctx, e.Id, e.Status, e.StatusDescription); err != nil {
+		if err := a.eventStore.UpdateStatus(ctx, e.Id, e.Status, e.StatusDescription); err != nil {
 			return nil, gRPCEntityOperationError(err, fmt.Sprintf("update status of event %s", e.Id))
 		}
 	}

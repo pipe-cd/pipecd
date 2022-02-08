@@ -34,37 +34,15 @@ func (p *pipedCollection) Factory() Factory {
 	}
 }
 
-var (
-	PipedMetadataUpdater = func(
-		cloudProviders []*model.Piped_CloudProvider,
-		repos []*model.ApplicationGitRepository,
-		se *model.Piped_SecretEncryption,
-		version string,
-		startedAt int64,
-	) func(piped *model.Piped) error {
-
-		return func(piped *model.Piped) error {
-			piped.CloudProviders = cloudProviders
-			piped.Repositories = repos
-
-			piped.SecretEncryption = se
-			// Remove the legacy data.
-			piped.SealedSecretEncryption = nil
-
-			piped.Version = version
-			piped.StartedAt = startedAt
-			return nil
-		}
-	}
-)
-
 type PipedStore interface {
 	Add(ctx context.Context, piped *model.Piped) error
 	Get(ctx context.Context, id string) (*model.Piped, error)
 	List(ctx context.Context, opts ListOptions) ([]*model.Piped, error)
-	UpdatePiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error
+	UpdateInfo(ctx context.Context, id, name, desc string, envIds []string) error
 	EnablePiped(ctx context.Context, id string) error
 	DisablePiped(ctx context.Context, id string) error
+	UpdateDesiredVersion(ctx context.Context, id, version string) error
+	UpdateMetadata(ctx context.Context, id, version string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error
 	AddKey(ctx context.Context, id, keyHash, creator string, createdAt time.Time) error
 	DeleteOldKeys(ctx context.Context, id string) error
 }
@@ -126,7 +104,7 @@ func (s *pipedStore) List(ctx context.Context, opts ListOptions) ([]*model.Piped
 	return ps, nil
 }
 
-func (s *pipedStore) UpdatePiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error {
+func (s *pipedStore) update(ctx context.Context, id string, updater func(piped *model.Piped) error) error {
 	now := s.nowFunc().Unix()
 	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
 		p := e.(*model.Piped)
@@ -138,8 +116,17 @@ func (s *pipedStore) UpdatePiped(ctx context.Context, id string, updater func(pi
 	})
 }
 
+func (s *pipedStore) UpdateInfo(ctx context.Context, id, name, desc string, envIds []string) error {
+	return s.update(ctx, id, func(piped *model.Piped) error {
+		piped.Name = name
+		piped.Desc = desc
+		piped.EnvIds = envIds
+		return nil
+	})
+}
+
 func (s *pipedStore) EnablePiped(ctx context.Context, id string) error {
-	return s.UpdatePiped(ctx, id, func(piped *model.Piped) error {
+	return s.update(ctx, id, func(piped *model.Piped) error {
 		piped.Disabled = false
 		piped.UpdatedAt = time.Now().Unix()
 		return nil
@@ -147,22 +134,44 @@ func (s *pipedStore) EnablePiped(ctx context.Context, id string) error {
 }
 
 func (s *pipedStore) DisablePiped(ctx context.Context, id string) error {
-	return s.UpdatePiped(ctx, id, func(piped *model.Piped) error {
+	return s.update(ctx, id, func(piped *model.Piped) error {
 		piped.Disabled = true
 		piped.UpdatedAt = time.Now().Unix()
 		return nil
 	})
 }
 
+func (s *pipedStore) UpdateDesiredVersion(ctx context.Context, id, version string) error {
+	return s.update(ctx, id, func(piped *model.Piped) error {
+		piped.DesiredVersion = version
+		return nil
+	})
+}
+
+func (s *pipedStore) UpdateMetadata(ctx context.Context, id, version string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error {
+	return s.update(ctx, id, func(piped *model.Piped) error {
+		piped.CloudProviders = cps
+		piped.Repositories = repos
+
+		piped.SecretEncryption = se
+		// Remove the legacy data.
+		piped.SealedSecretEncryption = nil
+
+		piped.Version = version
+		piped.StartedAt = startedAt
+		return nil
+	})
+}
+
 func (s *pipedStore) AddKey(ctx context.Context, id, keyHash, creator string, createdAt time.Time) error {
-	return s.UpdatePiped(ctx, id, func(piped *model.Piped) error {
+	return s.update(ctx, id, func(piped *model.Piped) error {
 		piped.UpdatedAt = time.Now().Unix()
 		return piped.AddKey(keyHash, creator, createdAt)
 	})
 }
 
 func (s *pipedStore) DeleteOldKeys(ctx context.Context, id string) error {
-	return s.UpdatePiped(ctx, id, func(piped *model.Piped) error {
+	return s.update(ctx, id, func(piped *model.Piped) error {
 		piped.DeleteOldPipedKeys()
 		piped.UpdatedAt = time.Now().Unix()
 		return nil
