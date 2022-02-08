@@ -40,13 +40,7 @@ import {
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 import { useAppSelector, useAppDispatch } from "~/hooks/redux";
 import { ApplicationKind } from "~/modules/applications";
-import { selectAllEnvs } from "~/modules/environments";
-import {
-  Piped,
-  selectAllPipeds,
-  selectPipedById,
-  selectPipedsByEnv,
-} from "~/modules/pipeds";
+import { Piped, selectAllPipeds, selectPipedById } from "~/modules/pipeds";
 import {
   ApplicationInfo,
   selectAllUnregisteredApplications,
@@ -352,14 +346,8 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
     disableApplicationInfo = false,
   }) {
     const classes = useStyles();
-    const environments = useAppSelector(selectAllEnvs);
     const ps = useAppSelector((state) => selectAllPipeds(state));
-
-    const pipeds = useAppSelector<Piped.AsObject[]>((state) =>
-      values.env !== ""
-        ? selectPipedsByEnv(state.pipeds, values.env)
-        : ps.filter((piped) => !piped.disabled)
-    );
+    const pipeds = ps.filter((piped) => !piped.disabled);
 
     const selectedPiped = useAppSelector(selectPipedById(values.pipedId));
 
@@ -369,10 +357,6 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
     });
 
     const repositories = createRepoListFromPiped(selectedPiped);
-
-    const emptyEnvName = "(empty)";
-    const envItems = environments.map((v) => ({ name: v.name, value: v.id }));
-    envItems.push({ name: emptyEnvName, value: emptyEnvName });
 
     return (
       <Box width="100%">
@@ -395,33 +379,19 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
             className={classes.textInput}
           />
 
-          <FormSelectInput
-            id="kind"
-            label="Kind"
-            value={`${values.kind}`}
-            items={Object.keys(APPLICATION_KIND_TEXT).map((key) => ({
-              name: APPLICATION_KIND_TEXT[(key as unknown) as ApplicationKind],
-              value: key,
-            }))}
-            onChange={({ value }) => setFieldValue("kind", parseInt(value, 10))}
-            disabled={isSubmitting || disableApplicationInfo}
-          />
-
           <div className={classes.inputGroup}>
             <FormSelectInput
-              id="env"
-              label="Environment"
-              value={values.env}
-              items={envItems}
-              required={false}
-              onChange={(item) => {
-                setValues({
-                  ...emptyFormValues,
-                  name: values.name,
-                  kind: values.kind,
-                  env: item.value === emptyEnvName ? "" : item.value,
-                });
-              }}
+              id="kind"
+              label="Kind"
+              value={`${values.kind}`}
+              items={Object.keys(APPLICATION_KIND_TEXT).map((key) => ({
+                name:
+                  APPLICATION_KIND_TEXT[(key as unknown) as ApplicationKind],
+                value: key,
+              }))}
+              onChange={({ value }) =>
+                setFieldValue("kind", parseInt(value, 10))
+              }
               disabled={isSubmitting || disableApplicationInfo}
             />
             <div className={classes.inputGroupSpace} />

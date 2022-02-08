@@ -1,6 +1,5 @@
 import { DeploymentFilter, DeploymentFilterProps } from ".";
 import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
-import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { Story } from "@storybook/react";
 
@@ -9,12 +8,6 @@ export default {
   component: DeploymentFilter,
   decorators: [
     createDecoratorRedux({
-      environments: {
-        entities: {
-          [dummyEnv.id]: dummyEnv,
-        },
-        ids: [dummyEnv.id],
-      },
       applications: {
         entities: {
           [dummyApplication.id]: dummyApplication,

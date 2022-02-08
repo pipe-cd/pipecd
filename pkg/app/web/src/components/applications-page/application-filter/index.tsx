@@ -21,7 +21,6 @@ import {
   ApplicationSyncStatusKey,
   selectAll as selectAllApplications,
 } from "~/modules/applications";
-import { selectAllEnvs } from "~/modules/environments";
 import { ApplicationAutocomplete } from "./application-autocomplete";
 
 const useStyles = makeStyles((theme) => ({
@@ -48,7 +47,6 @@ const ALL_VALUE = "ALL";
 export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
   function ApplicationFilter({ options, onChange, onClear }) {
     const classes = useStyles();
-    const envs = useAppSelector(selectAllEnvs);
     const applications = useAppSelector<Application.AsObject[]>((state) =>
       selectAllApplications(state.applications)
     );
@@ -87,34 +85,6 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
             onChange={(value) => handleUpdateFilterValue({ name: value })}
           />
         </div>
-
-        <FormControl className={classes.formItem} variant="outlined">
-          <InputLabel id="filter-env">Environment</InputLabel>
-          <Select
-            labelId="filter-env"
-            id="filter-env"
-            value={options.envId ?? ALL_VALUE}
-            label="Environment"
-            className={classes.select}
-            onChange={(e) => {
-              handleUpdateFilterValue({
-                envId:
-                  e.target.value === ALL_VALUE
-                    ? undefined
-                    : (e.target.value as string),
-              });
-            }}
-          >
-            <MenuItem value={ALL_VALUE}>
-              <em>All</em>
-            </MenuItem>
-            {envs.map((e) => (
-              <MenuItem value={e.id} key={`env-${e.id}`}>
-                {e.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
 
         <FormControl className={classes.formItem} variant="outlined">
           <InputLabel id="filter-kind">Kind</InputLabel>

@@ -1,5 +1,4 @@
 import { Piped, PipedKey } from "~/modules/pipeds";
-import { dummyEnv } from "./dummy-environment";
 import { createApplicationGitRepository, dummyRepo } from "./dummy-repo";
 import { createRandTimes, randomText, randomUUID } from "./utils";
 
@@ -34,7 +33,7 @@ export const dummyPiped: Piped.AsObject = {
     { hash: "key-1", creator: "user", createdAt: createdAt.unix() },
     { hash: "key-2", creator: "user", createdAt: createdAt.unix() },
   ],
-  envIdsList: [dummyEnv.id],
+  envIdsList: [],
   sealedSecretEncryption: {
     encryptServiceAccount: "",
     publicKey: "",

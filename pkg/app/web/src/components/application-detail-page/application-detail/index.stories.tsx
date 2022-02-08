@@ -4,7 +4,6 @@ import { ApplicationSyncStatus } from "~/modules/applications";
 import type { AppState } from "~/store";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { dummyApplicationLiveState } from "~/__fixtures__/dummy-application-live-state";
-import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import { createStore } from "~~/test-utils";
 import { ApplicationDetail } from ".";
@@ -21,12 +20,6 @@ const dummyStore: Partial<AppState> = {
     loading: false,
     addedApplicationId: null,
     fetchApplicationError: null,
-  },
-  environments: {
-    entities: {
-      [dummyEnv.id]: dummyEnv,
-    },
-    ids: [dummyEnv.id],
   },
   applicationLiveState: {
     entities: {

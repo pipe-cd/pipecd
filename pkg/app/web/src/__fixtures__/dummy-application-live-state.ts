@@ -9,7 +9,6 @@ import {
   ApplicationLiveStateSnapshot,
 } from "~/modules/applications-live-state";
 import { dummyApplication, dummyApps } from "./dummy-application";
-import { dummyEnv } from "./dummy-environment";
 import { dummyPiped } from "./dummy-piped";
 import { createRandTimes, randomUUID } from "./utils";
 
@@ -61,7 +60,7 @@ export const resourcesList: KubernetesResourceState.AsObject[] = [
 export const dummyApplicationLiveState: ApplicationLiveState = {
   applicationId: dummyApplication.id,
   healthStatus: ApplicationLiveStateSnapshot.Status.HEALTHY,
-  envId: dummyEnv.id,
+  envId: "",
   kind: ApplicationKind.KUBERNETES,
   pipedId: dummyPiped.id,
   version: { index: 1, timestamp: 0 },

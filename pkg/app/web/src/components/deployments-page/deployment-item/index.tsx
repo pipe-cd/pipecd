@@ -10,7 +10,6 @@ import {
   Deployment,
   selectById as selectDeploymentById,
 } from "~/modules/deployments";
-import { selectEnvById } from "~/modules/environments";
 import { ellipsis } from "~/styles/text";
 import { DeploymentStatusIcon } from "~/components/deployment-status-icon";
 
@@ -50,7 +49,6 @@ export const DeploymentItem: FC<DeploymentItemProps> = memo(
     const deployment = useAppSelector<Deployment.AsObject | undefined>(
       (state) => selectDeploymentById(state.deployments, id)
     );
-    const env = useAppSelector(selectEnvById(deployment?.envId));
 
     if (!deployment) {
       return null;
@@ -86,15 +84,6 @@ export const DeploymentItem: FC<DeploymentItemProps> = memo(
             <Typography variant="h6" component="span">
               {deployment.applicationName}
             </Typography>
-            {env && (
-              <Typography
-                variant="subtitle2"
-                className={classes.info}
-                component="span"
-              >
-                {env.name}
-              </Typography>
-            )}
             <Typography
               variant="body2"
               color="textSecondary"

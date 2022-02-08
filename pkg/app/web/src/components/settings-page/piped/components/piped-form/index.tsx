@@ -1,24 +1,14 @@
 import {
   Box,
   Button,
-  Checkbox,
   Divider,
   makeStyles,
   TextField,
   Typography,
 } from "@material-ui/core";
-import CheckBoxIcon from "@material-ui/icons/CheckBox";
-import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
-import Autocomplete from "@material-ui/lab/Autocomplete";
 import { FormikProps } from "formik";
 import { FC, memo } from "react";
 import * as yup from "yup";
-import { useAppSelector } from "~/hooks/redux";
-import {
-  Environment,
-  selectAllEnvs,
-  selectEnvEntities,
-} from "~/modules/environments";
 
 const useStyles = makeStyles((theme) => ({
   title: {
@@ -50,14 +40,11 @@ export const PipedForm: FC<PipedFormProps> = memo(function PipedForm({
   onClose,
   handleSubmit,
   handleChange,
-  setFieldValue,
   values,
   isValid,
   isSubmitting,
 }) {
   const classes = useStyles();
-  const envs = useAppSelector(selectAllEnvs);
-  const entities = useAppSelector(selectEnvEntities);
 
   return (
     <Box width={600}>
@@ -89,45 +76,6 @@ export const PipedForm: FC<PipedFormProps> = memo(function PipedForm({
           fullWidth
           required
           disabled={isSubmitting}
-        />
-        <Autocomplete
-          multiple
-          id="environments"
-          options={envs}
-          disableCloseOnSelect
-          value={
-            values.envIds.map((id) => entities[id]) as Environment.AsObject[]
-          }
-          onChange={(_, newValue) => {
-            setFieldValue(
-              "envIds",
-              newValue.map((env) => env.id)
-            );
-          }}
-          getOptionLabel={(option) => option.name}
-          disabled={isSubmitting}
-          renderOption={(option, { selected }) => (
-            <>
-              <Checkbox
-                icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                checkedIcon={<CheckBoxIcon fontSize="small" />}
-                style={{ marginRight: 8 }}
-                checked={selected}
-                color="primary"
-              />
-              {option.name}
-            </>
-          )}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              variant="outlined"
-              label="Environments"
-              margin="dense"
-              placeholder="Environments"
-              fullWidth
-            />
-          )}
         />
         <Button
           color="primary"

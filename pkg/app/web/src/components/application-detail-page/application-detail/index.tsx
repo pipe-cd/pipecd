@@ -31,7 +31,6 @@ import {
   syncApplication,
 } from "~/modules/applications";
 import { SyncStrategy } from "~/modules/deployments";
-import { selectEnvById } from "~/modules/environments";
 import { selectPipedById } from "~/modules/pipeds";
 import { AppLiveState } from "./app-live-state";
 import { SyncStateReason } from "./sync-state-reason";
@@ -157,7 +156,6 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
       state.applications.fetchApplicationError,
     ]);
 
-    const env = useAppSelector(selectEnvById(app?.envId));
     const piped = useAppSelector(selectPipedById(app?.pipedId));
     const isSyncing = useIsSyncingApplication(app?.id);
 
@@ -209,11 +207,6 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
             <Typography variant="h5">
               {app ? app.name : <Skeleton width={100} />}
             </Typography>
-            {env && (
-              <Typography variant="subtitle2" className={classes.env}>
-                {env.name}
-              </Typography>
-            )}
             {app?.labelsMap.map(([key, value], i) => (
               <Chip
                 label={key + ": " + value}

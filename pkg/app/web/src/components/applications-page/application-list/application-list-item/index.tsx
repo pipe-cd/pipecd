@@ -18,7 +18,6 @@ import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
 import { UI_TEXT_NOT_AVAILABLE_TEXT } from "~/constants/ui-text";
 import { useAppSelector } from "~/hooks/redux";
 import { Application, selectById } from "~/modules/applications";
-import { selectEnvById } from "~/modules/environments";
 import { AppSyncStatus } from "~/components/app-sync-status";
 
 const useStyles = makeStyles((theme) => ({
@@ -82,7 +81,6 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
     const app = useAppSelector<Application.AsObject | undefined>((state) =>
       selectById(state.applications, applicationId)
     );
-    const env = useAppSelector(selectEnvById(app?.envId));
 
     const handleEdit = (): void => {
       setAnchorEl(null);
@@ -135,7 +133,6 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
             </Link>
           </TableCell>
           <TableCell>{APPLICATION_KIND_TEXT[app.kind]}</TableCell>
-          <TableCell>{env ? env.name : "-"}</TableCell>
           <TableCell>
             {app.labelsMap.length !== 0
               ? app.labelsMap.map(([key, value]) => (

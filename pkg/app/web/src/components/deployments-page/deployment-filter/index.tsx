@@ -24,7 +24,6 @@ import {
   DeploymentStatus,
   DeploymentStatusKey,
 } from "~/modules/deployments";
-import { selectAllEnvs } from "~/modules/environments";
 import { ApplicationAutocomplete } from "../../applications-page/application-filter/application-autocomplete";
 
 const useStyles = makeStyles((theme) => ({
@@ -48,7 +47,6 @@ export interface DeploymentFilterProps {
 export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
   function DeploymentFilter({ options, onChange, onClear }) {
     const classes = useStyles();
-    const envs = useAppSelector(selectAllEnvs);
     const [localApplications, setLocalApplications] = useState<
       Application.AsObject[]
     >([]);
@@ -108,34 +106,6 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
             }
           />
         </div>
-
-        <FormControl className={classes.formItem} variant="outlined">
-          <InputLabel id="filter-env">Environment</InputLabel>
-          <Select
-            labelId="filter-env"
-            id="filter-env"
-            value={options.envId ?? ALL_VALUE}
-            label="Environment"
-            className={classes.select}
-            onChange={(e) => {
-              handleUpdateFilterValue({
-                envId:
-                  e.target.value === ALL_VALUE
-                    ? undefined
-                    : (e.target.value as string),
-              });
-            }}
-          >
-            <MenuItem value={ALL_VALUE}>
-              <em>All</em>
-            </MenuItem>
-            {envs.map((e) => (
-              <MenuItem value={e.id} key={`env-${e.id}`}>
-                {e.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
 
         <FormControl className={classes.formItem} variant="outlined">
           <InputLabel id="filter-application-kind">Application Kind</InputLabel>

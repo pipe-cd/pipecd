@@ -9,9 +9,7 @@ import {
   TableHead,
   TablePagination,
   TableRow,
-  Tooltip,
 } from "@material-ui/core";
-import { Warning } from "@material-ui/icons";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
@@ -160,15 +158,6 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
                 <TableCell>Status</TableCell>
                 <TableCell>Name</TableCell>
                 <TableCell>Kind</TableCell>
-                <TableCell className={classes.environment}>
-                  Environment
-                  <Tooltip
-                    title="Deprecated. Please use Label instead."
-                    className={classes.tooltip}
-                  >
-                    <Warning fontSize="small" />
-                  </Tooltip>
-                </TableCell>
                 <TableCell>Labels</TableCell>
                 <TableCell>Running Version</TableCell>
                 {!isSmallScreen && <TableCell>Running Commit</TableCell>}

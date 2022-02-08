@@ -6,7 +6,6 @@ import {
   ApplicationSyncStatus,
 } from "~/modules/applications";
 import { createGitPathFromObject } from "./common";
-import { dummyEnv } from "./dummy-environment";
 import { dummyPiped } from "./dummy-piped";
 import { dummyRepo } from "./dummy-repo";
 import { createTriggerFromObject, dummyTrigger } from "./dummy-trigger";
@@ -26,7 +25,7 @@ export const dummyApplication: Application.AsObject = {
   id: randomUUID(),
   cloudProvider: "kubernetes-default",
   disabled: false,
-  envId: dummyEnv.id,
+  envId: "",
   gitPath: {
     configPath: "",
     configFilename: "",

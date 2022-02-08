@@ -2,7 +2,6 @@ import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import { Deployment, DeploymentStatus } from "~/modules/deployments";
 import { createGitPathFromObject } from "./common";
 import { dummyApplication } from "./dummy-application";
-import { dummyEnv } from "./dummy-environment";
 import { dummyPiped } from "./dummy-piped";
 import { createPipelineFromObject, dummyPipeline } from "./dummy-pipeline";
 import { createTriggerFromObject, dummyTrigger } from "./dummy-trigger";
@@ -30,7 +29,7 @@ export const dummyDeployment: Deployment.AsObject = {
   completedAt: completedAt.unix(),
   summary:
     "Quick sync by deploying the new version and configuring all traffic to it because no pipeline was configured",
-  envId: dummyEnv.id,
+  envId: "",
   gitPath: {
     configPath: "",
     configFilename: "",

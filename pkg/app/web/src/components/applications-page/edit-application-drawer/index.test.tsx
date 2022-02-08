@@ -7,7 +7,6 @@ import {
   updateApplicationHandler,
 } from "~/mocks/services/application";
 import { dummyApplication } from "~/__fixtures__/dummy-application";
-import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import { createReduxStore, render, screen } from "~~/test-utils";
 import { EditApplicationDrawer } from ".";
@@ -30,10 +29,6 @@ const initialState = {
   updateApplication: {
     targetId: dummyApplication.id,
     updating: false,
-  },
-  environments: {
-    ids: [dummyEnv.id],
-    entities: { [dummyEnv.id]: dummyEnv },
   },
   pipeds: {
     ids: [dummyPiped.id],
@@ -64,7 +59,6 @@ test("Show target application info ", () => {
   });
 
   expect(screen.getByDisplayValue(dummyApplication.name)).toBeInTheDocument();
-  expect(screen.getByText(dummyEnv.name)).toBeInTheDocument();
   expect(
     screen.getByText(`${dummyPiped.name} (${dummyPiped.id})`)
   ).toBeInTheDocument();
