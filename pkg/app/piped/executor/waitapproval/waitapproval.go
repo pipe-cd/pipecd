@@ -119,7 +119,6 @@ func (e *Executor) reportApproved(approver string) {
 		Type: model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED,
 		Metadata: &model.NotificationEventDeploymentApproved{
 			Deployment:        e.Deployment,
-			EnvName:           e.EnvName,
 			Approver:          approver,
 			MentionedAccounts: accounts,
 		},
@@ -136,7 +135,6 @@ func (e *Executor) reportRequiringApproval() {
 		Type: model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL,
 		Metadata: &model.NotificationEventDeploymentWaitApproval{
 			Deployment:        e.Deployment,
-			EnvName:           e.EnvName,
 			MentionedAccounts: accounts,
 		},
 	})

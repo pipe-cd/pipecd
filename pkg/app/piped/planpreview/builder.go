@@ -59,7 +59,6 @@ type builder struct {
 	gitClient         gitClient
 	apiClient         apiClient
 	applicationLister applicationLister
-	environmentGetter environmentGetter
 	commitGetter      lastTriggeredCommitGetter
 	secretDecrypter   secretDecrypter
 	appManifestsCache cache.Cache
@@ -75,7 +74,6 @@ func newBuilder(
 	gc gitClient,
 	ac apiClient,
 	al applicationLister,
-	eg environmentGetter,
 	cg lastTriggeredCommitGetter,
 	sd secretDecrypter,
 	amc cache.Cache,
@@ -88,7 +86,6 @@ func newBuilder(
 		gitClient:         gc,
 		apiClient:         ac,
 		applicationLister: al,
-		environmentGetter: eg,
 		commitGetter:      cg,
 		secretDecrypter:   sd,
 		appManifestsCache: amc,
@@ -214,14 +211,7 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 
 	logger.Info("will decide sync strategy for an application")
 
-	// We only need the environment name
-	// so the returned error can be ignorable.
-	var envName string
-	if env, err := b.environmentGetter.Get(ctx, app.EnvId); err == nil {
-		envName = env.Name
-	}
-
-	r := model.MakeApplicationPlanPreviewResult(*app, envName)
+	r := model.MakeApplicationPlanPreviewResult(*app)
 
 	var preCommit string
 	// Find the commit of the last successful deployment.
@@ -325,14 +315,7 @@ func (b *builder) findTriggerApps(ctx context.Context, repo git.Repo, apps []*mo
 			continue
 		}
 
-		// We only need the environment name
-		// so the returned error can be ignorable.
-		var envName string
-		if env, err := b.environmentGetter.Get(ctx, app.EnvId); err == nil {
-			envName = env.Name
-		}
-
-		r := model.MakeApplicationPlanPreviewResult(*app, envName)
+		r := model.MakeApplicationPlanPreviewResult(*app)
 		r.Error = fmt.Sprintf("failed while determining the application should be triggered or not, %v", err)
 		failedResults = append(failedResults, r)
 	}

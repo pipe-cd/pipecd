@@ -87,7 +87,6 @@ type Input struct {
 	AnalysisResultStore   AnalysisResultStore
 	Logger                *zap.Logger
 	Notifier              Notifier
-	EnvName               string
 }
 
 func DetermineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.StageStatus {

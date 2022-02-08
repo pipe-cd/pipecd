@@ -42,7 +42,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/applicationstore"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/deploymentstore"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/environmentstore"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/eventstore"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/appconfigreporter"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/chartrepo"
@@ -252,14 +251,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		input.Logger.Info("successfully cleaned gitClient")
 	}()
 
-	// Initialize environment store.
-	environmentStore := environmentstore.NewStore(
-		apiClient,
-		memorycache.NewTTLCache(ctx, 10*time.Minute, time.Minute),
-		memorycache.NewTTLCache(ctx, 10*time.Minute, time.Minute),
-		input.Logger,
-	)
-
 	// Start running application store.
 	var applicationLister applicationstore.Lister
 	{
@@ -359,7 +350,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			deploymentLister,
 			commandLister,
 			applicationLister,
-			environmentStore,
 			livestatestore.LiveResourceLister{Getter: liveStateGetter},
 			analysisResultStore,
 			notifier,
@@ -383,7 +373,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			gitClient,
 			applicationLister,
 			commandLister,
-			environmentStore,
 			notifier,
 			cfg,
 			p.gracePeriod,
@@ -440,7 +429,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			apiClient,
 			commandLister,
 			applicationLister,
-			environmentStore,
 			lastTriggeredCommitGetter,
 			decrypter,
 			appManifestsCache,

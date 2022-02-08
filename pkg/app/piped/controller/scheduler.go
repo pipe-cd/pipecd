@@ -41,7 +41,6 @@ import (
 type scheduler struct {
 	// Readonly deployment model.
 	deployment          *model.Deployment
-	envName             string
 	workingDir          string
 	executorRegistry    registry.Registry
 	apiClient           apiClient
@@ -80,7 +79,6 @@ type scheduler struct {
 
 func newScheduler(
 	d *model.Deployment,
-	envName string,
 	workingDir string,
 	apiClient apiClient,
 	gitClient gitClient,
@@ -107,7 +105,6 @@ func newScheduler(
 
 	s := &scheduler{
 		deployment:           d,
-		envName:              envName,
 		workingDir:           workingDir,
 		executorRegistry:     registry.DefaultRegistry(),
 		apiClient:            apiClient,
@@ -501,7 +498,6 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		AnalysisResultStore:   aStore,
 		Logger:                s.logger,
 		Notifier:              s.notifier,
-		EnvName:               s.envName,
 	}
 
 	// Find the executor for this stage.
@@ -614,7 +610,6 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED,
 				Metadata: &model.NotificationEventDeploymentSucceeded{
 					Deployment:        s.deployment,
-					EnvName:           s.envName,
 					MentionedAccounts: accounts,
 				},
 			})
@@ -628,7 +623,6 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_FAILED,
 				Metadata: &model.NotificationEventDeploymentFailed{
 					Deployment:        s.deployment,
-					EnvName:           s.envName,
 					Reason:            desc,
 					MentionedAccounts: accounts,
 				},
@@ -643,7 +637,6 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED,
 				Metadata: &model.NotificationEventDeploymentCancelled{
 					Deployment:        s.deployment,
-					EnvName:           s.envName,
 					Commander:         cancelCommander,
 					MentionedAccounts: accounts,
 				},

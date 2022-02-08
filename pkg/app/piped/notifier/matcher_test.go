@@ -116,50 +116,6 @@ func TestMatch(t *testing.T) {
 				}: true,
 			},
 		},
-		{
-			name: "filter by env",
-			config: config.NotificationRoute{
-				Envs: []string{
-					"prod",
-				},
-				IgnoreEnvs: []string{
-					"dev",
-				},
-			},
-			matchings: map[model.NotificationEvent]bool{
-				{
-					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
-					Metadata: &model.NotificationEventDeploymentTriggered{
-						Deployment: &model.Deployment{
-							EnvId: "prod-id",
-						},
-						EnvName: "prod",
-					},
-				}: true,
-				{
-					Type: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
-					Metadata: &model.NotificationEventDeploymentTriggered{
-						Deployment: &model.Deployment{
-							EnvId: "dev-id",
-						},
-						EnvName: "dev",
-					},
-				}: false,
-				{
-					Type: model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED,
-					Metadata: &model.NotificationEventDeploymentTriggered{
-						Deployment: &model.Deployment{
-							EnvId: "not-specified",
-						},
-						EnvName: "not-specified",
-					},
-				}: false,
-				{
-					Type:     model.NotificationEventType_EVENT_PIPED_STARTED,
-					Metadata: &model.NotificationEventPipedStarted{},
-				}: true,
-			},
-		},
 	}
 
 	for _, tc := range testcases {
