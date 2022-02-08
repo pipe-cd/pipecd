@@ -38,7 +38,6 @@ import (
 // API implements the behaviors for the gRPC definitions of API.
 type API struct {
 	applicationStore    datastore.ApplicationStore
-	environmentStore    datastore.EnvironmentStore
 	deploymentStore     datastore.DeploymentStore
 	pipedStore          datastore.PipedStore
 	eventStore          datastore.EventStore
@@ -64,7 +63,6 @@ func NewAPI(
 ) *API {
 	a := &API{
 		applicationStore:    datastore.NewApplicationStore(ds),
-		environmentStore:    datastore.NewEnvironmentStore(ds),
 		deploymentStore:     datastore.NewDeploymentStore(ds),
 		pipedStore:          datastore.NewPipedStore(ds),
 		eventStore:          datastore.NewEventStore(ds),
@@ -226,49 +224,6 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			Operator: datastore.OperatorEqual,
 			Value:    req.EnvId,
 		})
-	}
-	// Use env-name as listApplications filter only in case env-id is not set.
-	if req.EnvId == "" && req.EnvName != "" {
-		envListOpts := datastore.ListOptions{
-			Filters: []datastore.ListFilter{
-				{
-					Field:    "ProjectId",
-					Operator: datastore.OperatorEqual,
-					Value:    key.ProjectId,
-				},
-				{
-					Field:    "Name",
-					Operator: datastore.OperatorEqual,
-					Value:    req.EnvName,
-				},
-			},
-			Limit: limit,
-		}
-		envs, err := listEnvironments(ctx, a.environmentStore, envListOpts, a.logger)
-		if err != nil {
-			return nil, err
-		}
-
-		switch len(envs) {
-		case 0:
-			return nil, status.Error(codes.NotFound, fmt.Sprintf("No environment named as %s", req.EnvName))
-		case 1:
-			filters = append(filters, datastore.ListFilter{
-				Field:    "EnvId",
-				Operator: datastore.OperatorEqual,
-				Value:    envs[0].Id,
-			})
-		default:
-			envsID := make([]string, 0, len(envs))
-			for _, env := range envs {
-				envsID = append(envsID, env.Id)
-			}
-			filters = append(filters, datastore.ListFilter{
-				Field:    "EnvId",
-				Operator: datastore.OperatorIn,
-				Value:    envsID,
-			})
-		}
 	}
 
 	if req.Name != "" {

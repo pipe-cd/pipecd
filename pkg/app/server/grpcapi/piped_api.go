@@ -49,7 +49,6 @@ type PipedAPI struct {
 	applicationStore          datastore.ApplicationStore
 	deploymentStore           datastore.DeploymentStore
 	deploymentChainStore      datastore.DeploymentChainStore
-	environmentStore          datastore.EnvironmentStore
 	pipedStore                datastore.PipedStore
 	projectStore              datastore.ProjectStore
 	eventStore                datastore.EventStore
@@ -75,7 +74,6 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
 		deploymentChainStore:      datastore.NewDeploymentChainStore(ds),
-		environmentStore:          datastore.NewEnvironmentStore(ds),
 		pipedStore:                datastore.NewPipedStore(ds),
 		projectStore:              datastore.NewProjectStore(ds),
 		eventStore:                datastore.NewEventStore(ds),
@@ -161,22 +159,7 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 
 // GetEnvironment finds and returns the environment for the specified ID.
 func (a *PipedAPI) GetEnvironment(ctx context.Context, req *pipedservice.GetEnvironmentRequest) (*pipedservice.GetEnvironmentResponse, error) {
-	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if err := a.validateEnvBelongsToProject(ctx, req.Id, projectID); err != nil {
-		return nil, err
-	}
-
-	env, err := a.environmentStore.Get(ctx, req.Id)
-	if err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("get environment %s", req.Id))
-	}
-
-	return &pipedservice.GetEnvironmentResponse{
-		Environment: env,
-	}, nil
+	return nil, status.Error(codes.Unimplemented, "unsupported")
 }
 
 // ListApplications returns a list of registered applications
@@ -1174,29 +1157,5 @@ func (a *PipedAPI) validateDeploymentBelongsToPiped(ctx context.Context, deploym
 		return status.Error(codes.PermissionDenied, "requested deployment doesn't belong to the piped")
 	}
 
-	return nil
-}
-
-// validateEnvBelongsToProject checks if the given environment belongs to the given project.
-// It gives back an error unless the environment belongs to the project.
-func (a *PipedAPI) validateEnvBelongsToProject(ctx context.Context, envID, projectID string) error {
-	pid, err := a.envProjectCache.Get(envID)
-	if err == nil {
-		if pid != projectID {
-			return status.Error(codes.PermissionDenied, "requested environment doesn't belong to the project")
-		}
-		return nil
-	}
-
-	env, err := a.environmentStore.Get(ctx, envID)
-	if err != nil {
-		return gRPCEntityOperationError(err, fmt.Sprintf("get environment %s", envID))
-	}
-
-	a.envProjectCache.Put(envID, env.ProjectId)
-
-	if env.ProjectId != projectID {
-		return status.Error(codes.PermissionDenied, "requested environment doesn't belong to the project")
-	}
 	return nil
 }

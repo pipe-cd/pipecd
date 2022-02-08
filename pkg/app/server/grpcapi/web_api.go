@@ -53,7 +53,6 @@ type encrypter interface {
 // WebAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
 	applicationStore          datastore.ApplicationStore
-	environmentStore          datastore.EnvironmentStore
 	deploymentChainStore      datastore.DeploymentChainStore
 	deploymentStore           datastore.DeploymentStore
 	pipedStore                datastore.PipedStore
@@ -94,7 +93,6 @@ func NewWebAPI(
 ) *WebAPI {
 	a := &WebAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
-		environmentStore:          datastore.NewEnvironmentStore(ds),
 		deploymentChainStore:      datastore.NewDeploymentChainStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
 		pipedStore:                datastore.NewPipedStore(ds),
@@ -125,184 +123,25 @@ func (a *WebAPI) Register(server *grpc.Server) {
 }
 
 func (a *WebAPI) UpdateEnvironmentDesc(ctx context.Context, req *webservice.UpdateEnvironmentDescRequest) (*webservice.UpdateEnvironmentDescResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	return nil, status.Error(codes.Unimplemented, "unsupported")
 }
 
 func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvironmentsRequest) (*webservice.ListEnvironmentsResponse, error) {
-	claims, err := rpcauth.ExtractClaims(ctx)
-	if err != nil {
-		a.logger.Error("failed to authenticate the current user", zap.Error(err))
-		return nil, err
-	}
-
-	opts := datastore.ListOptions{
-		Filters: []datastore.ListFilter{
-			{
-				Field:    "ProjectId",
-				Operator: datastore.OperatorEqual,
-				Value:    claims.Role.ProjectId,
-			},
-		},
-	}
-	envs, err := a.environmentStore.List(ctx, opts)
-	if err != nil {
-		return nil, gRPCEntityOperationError(err, "list environments")
-	}
-
-	return &webservice.ListEnvironmentsResponse{
-		Environments: envs,
-	}, nil
+	return nil, status.Error(codes.Unimplemented, "unsupported")
 }
 
 func (a *WebAPI) EnableEnvironment(ctx context.Context, req *webservice.EnableEnvironmentRequest) (*webservice.EnableEnvironmentResponse, error) {
-	if err := a.updateEnvironmentEnable(ctx, req.EnvironmentId, true); err != nil {
-		return nil, err
-	}
-	return &webservice.EnableEnvironmentResponse{}, nil
+	return nil, status.Error(codes.Unimplemented, "unsupported")
 }
 
 func (a *WebAPI) DisableEnvironment(ctx context.Context, req *webservice.DisableEnvironmentRequest) (*webservice.DisableEnvironmentResponse, error) {
-	if err := a.updateEnvironmentEnable(ctx, req.EnvironmentId, false); err != nil {
-		return nil, err
-	}
-	return &webservice.DisableEnvironmentResponse{}, nil
+	return nil, status.Error(codes.Unimplemented, "unsupported")
 }
 
 // DeleteEnvironment deletes the given environment and all applications that belong to it.
 // It returns a FailedPrecondition error if any Piped is still using that environment.
 func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEnvironmentRequest) (*webservice.DeleteEnvironmentResponse, error) {
-	claims, err := rpcauth.ExtractClaims(ctx)
-	if err != nil {
-		a.logger.Error("failed to authenticate the current user", zap.Error(err))
-		return nil, err
-	}
-
-	if err := a.validateEnvBelongsToProject(ctx, req.EnvironmentId, claims.Role.ProjectId); err != nil {
-		return nil, err
-	}
-	// Check if no Piped has permission to the given environment.
-	pipeds, err := a.pipedStore.List(ctx, datastore.ListOptions{
-		Filters: []datastore.ListFilter{
-			{
-				Field:    "ProjectId",
-				Operator: datastore.OperatorEqual,
-				Value:    claims.Role.ProjectId,
-			},
-			{
-				Field:    "EnvIds",
-				Operator: datastore.OperatorContains,
-				Value:    req.EnvironmentId,
-			},
-			{
-				Field:    "Disabled",
-				Operator: datastore.OperatorEqual,
-				Value:    false,
-			},
-		},
-	})
-	if err != nil {
-		a.logger.Error("failed to fetch Pipeds linked to the given environment",
-			zap.String("env-id", req.EnvironmentId),
-			zap.Error(err),
-		)
-		return nil, status.Error(codes.Internal, "Failed to validate the deletion operation")
-	}
-	if len(pipeds) > 0 {
-		pipedNames := make([]string, 0, len(pipeds))
-		for _, p := range pipeds {
-			pipedNames = append(pipedNames, p.Name)
-		}
-		return nil, status.Errorf(
-			codes.FailedPrecondition,
-			"Found Pipeds linked the environment to be deleted. Please remove this environment from all Pipeds (%s) on the Piped settings page",
-			strings.Join(pipedNames, ","),
-		)
-	}
-
-	// Delete all applications that belongs to the given env.
-	apps, _, err := a.applicationStore.List(ctx, datastore.ListOptions{
-		Filters: []datastore.ListFilter{
-			{
-				Field:    "ProjectId",
-				Operator: datastore.OperatorEqual,
-				Value:    claims.Role.ProjectId,
-			},
-			{
-				Field:    "EnvId",
-				Operator: datastore.OperatorEqual,
-				Value:    req.EnvironmentId,
-			},
-		},
-	})
-	if err != nil {
-		a.logger.Error("failed to fetch applications that belongs to the given environment",
-			zap.String("env-id", req.EnvironmentId),
-			zap.Error(err),
-		)
-		return nil, status.Error(codes.Internal, "Failed to fetch applications that belongs to the given environment")
-	}
-	for _, app := range apps {
-		if app.ProjectId != claims.Role.ProjectId {
-			continue
-		}
-		if err := a.applicationStore.Delete(ctx, app.Id); err != nil {
-			return nil, gRPCEntityOperationError(err, fmt.Sprintf("delete application %s", app.Id))
-		}
-	}
-
-	if err := a.environmentStore.Delete(ctx, req.EnvironmentId); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("delete environment %s", req.EnvironmentId))
-	}
-
-	return &webservice.DeleteEnvironmentResponse{}, nil
-}
-
-func (a *WebAPI) updateEnvironmentEnable(ctx context.Context, envID string, enable bool) error {
-	claims, err := rpcauth.ExtractClaims(ctx)
-	if err != nil {
-		a.logger.Error("failed to authenticate the current user", zap.Error(err))
-		return err
-	}
-
-	if err := a.validateEnvBelongsToProject(ctx, envID, claims.Role.ProjectId); err != nil {
-		return err
-	}
-
-	var updater func(context.Context, string) error
-	if enable {
-		updater = a.environmentStore.EnableEnvironment
-	} else {
-		updater = a.environmentStore.DisableEnvironment
-	}
-
-	if err := updater(ctx, envID); err != nil {
-		return gRPCEntityOperationError(err, fmt.Sprintf("update environment %s", envID))
-	}
-
-	return nil
-}
-
-// validateEnvBelongsToProject checks if the given piped belongs to the given project.
-// It gives back error unless the env belongs to the project.
-func (a *WebAPI) validateEnvBelongsToProject(ctx context.Context, envID, projectID string) error {
-	eid, err := a.envProjectCache.Get(envID)
-	if err == nil {
-		if projectID != eid {
-			return status.Error(codes.PermissionDenied, "Requested environment doesn't belong to the project you logged in")
-		}
-		return nil
-	}
-
-	env, err := getEnvironment(ctx, a.environmentStore, envID, a.logger)
-	if err != nil {
-		return err
-	}
-	a.envProjectCache.Put(envID, env.ProjectId)
-
-	if projectID != env.ProjectId {
-		return status.Error(codes.PermissionDenied, "Requested environment doesn't belong to the project you logged in")
-	}
-	return nil
+	return nil, status.Error(codes.Unimplemented, "unsupported")
 }
 
 func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipedRequest) (*webservice.RegisterPipedResponse, error) {
