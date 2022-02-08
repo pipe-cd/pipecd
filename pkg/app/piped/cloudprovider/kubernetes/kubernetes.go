@@ -234,7 +234,7 @@ func (p *provider) ApplyManifest(ctx context.Context, manifest Manifest) error {
 	return p.kubectl.Apply(ctx, p.getNamespaceToRun(manifest.Key), manifest)
 }
 
-// CreateManifest does applying the given manifest.
+// CreateManifest uses kubectl to create the given manifests.
 func (p *provider) CreateManifest(ctx context.Context, manifest Manifest) error {
 	p.initOnce.Do(func() { p.init(ctx) })
 	if p.initErr != nil {
