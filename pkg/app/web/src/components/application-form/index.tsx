@@ -633,16 +633,24 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
     const [selectedPipedId, setSelectedPipedId] = useState("");
     const [selectedKind, setSelectedKind] = useState("");
     const [selectedCloudProvider, setSelectedCloudProvider] = useState("");
+    const [selectedAppIndex, setSelectedAppIndex] = useState(-1);
     const [
       selectedApp,
       setSelectedApp,
     ] = useState<ApplicationInfo.AsObject | null>();
+    const [filteredApps, setFilteredApps] = useState<
+      ApplicationInfo.AsObject[]
+    >([]);
 
-    const filteredApps = apps.filter(
-      (app) =>
-        app.pipedId === selectedPipedId &&
-        app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
-    );
+    useEffect(() => {
+      setFilteredApps(
+        apps.filter(
+          (app) =>
+            app.pipedId === selectedPipedId &&
+            app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
+        )
+      );
+    }, [apps, selectedPipedId, selectedKind]);
 
     const [showConfirm, setShowConfirm] = useState(false);
 
@@ -661,6 +669,8 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
 
     const handleFilterChange = useCallback(
       (options: CloudProviderFilterOptions) => {
+        setSelectedApp(null);
+        setSelectedAppIndex(-1);
         setSelectedPipedId(options.pipedId);
         setSelectedKind(options.kind);
         setSelectedCloudProvider(options.cloudProvider);
@@ -689,10 +699,7 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
                 </div>
               </StepContent>
             </Step>
-            <Step
-              key="Select application to add"
-              expanded={activeStep !== 0}
-            >
+            <Step key="Select application to add" expanded={activeStep !== 0}>
               <StepLabel>Select application to add</StepLabel>
               <StepContent>
                 <FormControl className={classes.formItem} variant="outlined">
@@ -702,8 +709,11 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
                     id="filter-app"
                     label="Application"
                     className={classes.select}
+                    value={selectedAppIndex}
                     onChange={(e) => {
-                      setSelectedApp(filteredApps[e.target.value as number]);
+                      const appIndex = e.target.value as number;
+                      setSelectedApp(filteredApps[appIndex]);
+                      setSelectedAppIndex(appIndex);
                       setActiveStep(2);
                     }}
                   >
@@ -720,9 +730,7 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
               </StepContent>
             </Step>
             <Step key="Confirm information before adding">
-              <StepLabel>
-                Confirm information before adding
-              </StepLabel>
+              <StepLabel>Confirm information before adding</StepLabel>
               <StepContent>
                 {selectedApp && (
                   <Typography className={classes.accordionDetail}>
