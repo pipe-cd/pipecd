@@ -20,7 +20,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const manifest = `
+const serviceManifest = `
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -57,7 +57,7 @@ spec:
 `
 
 func TestServiceManifest(t *testing.T) {
-	sm, err := ParseServiceManifest([]byte(manifest))
+	sm, err := ParseServiceManifest([]byte(serviceManifest))
 	require.NoError(t, err)
 	require.NotEmpty(t, sm)
 
@@ -97,7 +97,7 @@ func TestServiceManifest(t *testing.T) {
 
 func TestParseServiceManifest(t *testing.T) {
 	// Success
-	data := []byte(manifest)
+	data := []byte(serviceManifest)
 	sm, err := ParseServiceManifest(data)
 	require.NoError(t, err)
 	require.Equal(t, "helloworld", sm.Name)
@@ -109,7 +109,7 @@ func TestParseServiceManifest(t *testing.T) {
 }
 
 func TestDecideRevisionName(t *testing.T) {
-	data := []byte(manifest)
+	data := []byte(serviceManifest)
 	sm, err := ParseServiceManifest(data)
 	require.NoError(t, err)
 
