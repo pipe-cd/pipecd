@@ -185,12 +185,3 @@ func manifestToRunService(sm ServiceManifest) (*run.Service, error) {
 	}
 	return &s, nil
 }
-
-func (s *Service) ServiceManifest() (ServiceManifest, error) {
-	r := (*run.Service)(s)
-	data, err := r.MarshalJSON()
-	if err != nil {
-		return ServiceManifest{}, err
-	}
-	return ParseServiceManifest(data)
-}

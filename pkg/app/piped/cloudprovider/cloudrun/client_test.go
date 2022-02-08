@@ -57,16 +57,3 @@ func TestManifestToRunService(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotEmpty(t, got)
 }
-
-func TestService(t *testing.T) {
-	sm, err := ParseServiceManifest([]byte(serviceManifest))
-	require.NoError(t, err)
-
-	svc, err := manifestToRunService(sm)
-	require.NoError(t, err)
-
-	s := (*Service)(svc)
-	got, err := s.ServiceManifest()
-	require.NoError(t, err)
-	assert.Equal(t, sm, got)
-}

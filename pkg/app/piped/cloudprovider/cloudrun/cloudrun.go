@@ -116,3 +116,21 @@ func (r *registry) Client(ctx context.Context, name string, cfg *config.CloudPro
 func MakeManagedByPipedLabel() string {
 	return fmt.Sprintf("%s=%s", LabelManagedBy, ManagedByPiped)
 }
+
+func (s *Service) ServiceManifest() (ServiceManifest, error) {
+	r := (*run.Service)(s)
+	data, err := r.MarshalJSON()
+	if err != nil {
+		return ServiceManifest{}, err
+	}
+	return ParseServiceManifest(data)
+}
+
+func (r *Revision) RevisionManifest() (RevisionManifest, error) {
+	rev := (*run.Revision)(r)
+	data, err := rev.MarshalJSON()
+	if err != nil {
+		return RevisionManifest{}, err
+	}
+	return ParseRevisionManifest(data)
+}
