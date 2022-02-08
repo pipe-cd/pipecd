@@ -101,12 +101,13 @@ func (u *updater) Run(ctx context.Context) error {
 			// Update the deployment state in deployment chain model in case
 			// the deployment state is changed.
 			if deployment.Status != deploymentRef.Status {
-				if err = u.deploymentChainStore.UpdateDeploymentChain(ctx, u.deploymentChainID,
-					datastore.DeploymentChainNodeDeploymentStatusUpdater(
-						deployment.DeploymentChainBlockIndex,
-						deployment.Id,
-						deployment.Status,
-						deployment.StatusReason),
+				if err = u.deploymentChainStore.UpdateNodeDeploymentStatus(
+					ctx,
+					u.deploymentChainID,
+					deployment.DeploymentChainBlockIndex,
+					deployment.Id,
+					deployment.Status,
+					deployment.StatusReason,
 				); err != nil {
 					u.logger.Error("failed to update state of deployment in chain",
 						zap.String("deploymentChainId", u.deploymentChainID),
@@ -138,11 +139,7 @@ func (u *updater) Run(ctx context.Context) error {
 		// they been added here in this interval.
 		for _, deployment := range deployments {
 			// Connect missing deployment to the chain.
-			if err := u.deploymentChainStore.UpdateDeploymentChain(
-				ctx,
-				u.deploymentChainID,
-				datastore.DeploymentChainAddDeploymentToBlock(deployment),
-			); err != nil {
+			if err := u.deploymentChainStore.AddDeploymentToBlock(ctx, u.deploymentChainID, deployment); err != nil {
 				u.logger.Error("failed to link deployments to its chain",
 					zap.String("deploymentChainId", u.deploymentChainID),
 					zap.String("deploymentId", deployment.Id),
