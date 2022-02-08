@@ -37,7 +37,7 @@ func (e *eventCollection) Factory() Factory {
 type EventStore interface {
 	Add(ctx context.Context, e model.Event) error
 	List(ctx context.Context, opts ListOptions) ([]*model.Event, string, error)
-	UpdateEventStatus(ctx context.Context, eventID string, status model.EventStatus, statusDescription string) error
+	UpdateStatus(ctx context.Context, eventID string, status model.EventStatus, statusDescription string) error
 }
 
 type eventStore struct {
@@ -98,7 +98,7 @@ func (s *eventStore) List(ctx context.Context, opts ListOptions) ([]*model.Event
 	return es, cursor, nil
 }
 
-func (s *eventStore) UpdateEventStatus(ctx context.Context, eventID string, status model.EventStatus, statusDescription string) error {
+func (s *eventStore) UpdateStatus(ctx context.Context, eventID string, status model.EventStatus, statusDescription string) error {
 	return s.ds.Update(ctx, s.col, eventID, func(e interface{}) error {
 		event := e.(*model.Event)
 		event.Status = status
