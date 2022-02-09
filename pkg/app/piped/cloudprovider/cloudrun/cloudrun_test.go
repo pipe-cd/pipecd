@@ -58,11 +58,12 @@ func TestService(t *testing.T) {
 	assert.Equal(t, sm, got)
 
 	// UID
-	id := s.UID()
+	id, ok := s.UID()
+	assert.True(t, ok)
 	assert.Equal(t, "service-uid", id)
 
-	// RevisionNames
-	names := s.RevisionNames()
+	// ActiveRevisionNames
+	names := s.ActiveRevisionNames()
 	assert.Len(t, names, 1)
 }
 

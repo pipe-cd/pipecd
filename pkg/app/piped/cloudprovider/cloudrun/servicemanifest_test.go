@@ -120,7 +120,9 @@ func TestServiceManifest(t *testing.T) {
 	assert.Len(t, sm.Labels(), 4)
 
 	// AppID
-	assert.Equal(t, "foo", sm.AppID())
+	id, ok := sm.AppID()
+	assert.True(t, ok)
+	assert.Equal(t, "foo", id)
 }
 
 func TestParseServiceManifest(t *testing.T) {
