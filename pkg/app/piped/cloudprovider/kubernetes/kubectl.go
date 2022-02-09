@@ -71,7 +71,7 @@ func (c *Kubectl) Apply(ctx context.Context, namespace string, manifest Manifest
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("failed to apply: %s (%v)", string(out), err)
+		return fmt.Errorf("failed to apply: %s (%w)", string(out), err)
 	}
 	return nil
 }
