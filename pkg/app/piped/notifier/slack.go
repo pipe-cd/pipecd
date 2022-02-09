@@ -139,14 +139,13 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		fields            []slackField
 	)
 
-	generateDeploymentEventData := func(d *model.Deployment, envName, accounts string) {
+	generateDeploymentEventData := func(d *model.Deployment, accounts string) {
 		link = fmt.Sprintf("%s/deployments/%s?project=%s", webURL, d.Id, d.ProjectId)
 		fields = []slackField{
 			{"Project", truncateText(d.ProjectId, 8), true},
 			{"Application", makeSlackLink(d.ApplicationName, fmt.Sprintf("%s/applications/%s?project=%s", webURL, d.ApplicationId, d.ProjectId)), true},
 			{"Kind", strings.ToLower(d.Kind.String()), true},
 			{"Deployment", makeSlackLink(truncateText(d.Id, 8), link), true},
-			{"Env", truncateText(envName, 8), true},
 			{"Triggered By", d.TriggeredBy(), true},
 			{"Mention To", accounts, true},
 			{"Started At", makeSlackDate(d.CreatedAt), true},
@@ -182,44 +181,44 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED:
 		md := event.Metadata.(*model.NotificationEventDeploymentTriggered)
 		title = fmt.Sprintf("Triggered a new deployment for %q", md.Deployment.ApplicationName)
-		generateDeploymentEventData(md.Deployment, md.EnvName, getAccountsAsString(md.MentionedAccounts))
+		generateDeploymentEventData(md.Deployment, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED:
 		md := event.Metadata.(*model.NotificationEventDeploymentPlanned)
 		title = fmt.Sprintf("Deployment for %q was planned", md.Deployment.ApplicationName)
 		text = md.Summary
-		generateDeploymentEventData(md.Deployment, md.EnvName, getAccountsAsString(md.MentionedAccounts))
+		generateDeploymentEventData(md.Deployment, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL:
 		md := event.Metadata.(*model.NotificationEventDeploymentWaitApproval)
 		title = fmt.Sprintf("Deployment for %q is waiting for an approval", md.Deployment.ApplicationName)
-		generateDeploymentEventData(md.Deployment, md.EnvName, getAccountsAsString(md.MentionedAccounts))
+		generateDeploymentEventData(md.Deployment, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED:
 		md := event.Metadata.(*model.NotificationEventDeploymentApproved)
 		title = fmt.Sprintf("Deployment for %q was approved", md.Deployment.ApplicationName)
 		text = fmt.Sprintf("Approved by %s", md.Approver)
-		generateDeploymentEventData(md.Deployment, md.EnvName, getAccountsAsString(md.MentionedAccounts))
+		generateDeploymentEventData(md.Deployment, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED:
 		md := event.Metadata.(*model.NotificationEventDeploymentSucceeded)
 		title = fmt.Sprintf("Deployment for %q was completed successfully", md.Deployment.ApplicationName)
 		color = slackSuccessColor
-		generateDeploymentEventData(md.Deployment, md.EnvName, getAccountsAsString(md.MentionedAccounts))
+		generateDeploymentEventData(md.Deployment, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_FAILED:
 		md := event.Metadata.(*model.NotificationEventDeploymentFailed)
 		title = fmt.Sprintf("Deployment for %q was failed", md.Deployment.ApplicationName)
 		text = md.Reason
 		color = slackErrorColor
-		generateDeploymentEventData(md.Deployment, md.EnvName, getAccountsAsString(md.MentionedAccounts))
+		generateDeploymentEventData(md.Deployment, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED:
 		md := event.Metadata.(*model.NotificationEventDeploymentCancelled)
 		title = fmt.Sprintf("Deployment for %q was cancelled", md.Deployment.ApplicationName)
 		text = fmt.Sprintf("Cancelled by %s", md.Commander)
 		color = slackWarnColor
-		generateDeploymentEventData(md.Deployment, md.EnvName, getAccountsAsString(md.MentionedAccounts))
+		generateDeploymentEventData(md.Deployment, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED:
 		md := event.Metadata.(*model.NotificationEventDeploymentTriggerFailed)

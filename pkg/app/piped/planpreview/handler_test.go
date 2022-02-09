@@ -61,7 +61,7 @@ func TestHandler(t *testing.T) {
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 
-	handler := NewHandler(nil, nil, cl, nil, nil, nil, nil, nil, nil,
+	handler := NewHandler(nil, nil, cl, nil, nil, nil, nil, nil,
 		WithWorkerNum(2),
 		// Use a long interval because we will directly call enqueueNewCommands function in this test.
 		WithCommandCheckInterval(time.Hour),

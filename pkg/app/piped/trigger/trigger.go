@@ -60,10 +60,6 @@ type commandLister interface {
 	ListApplicationCommands() []model.ReportableCommand
 }
 
-type environmentLister interface {
-	Get(ctx context.Context, id string) (*model.Environment, error)
-}
-
 type notifier interface {
 	Notify(event model.NotificationEvent)
 }
@@ -83,7 +79,6 @@ type Trigger struct {
 	gitClient         gitClient
 	applicationLister applicationLister
 	commandLister     commandLister
-	environmentLister environmentLister
 	notifier          notifier
 	config            *config.PipedSpec
 	commitStore       *lastTriggeredCommitStore
@@ -97,7 +92,6 @@ func NewTrigger(
 	gitClient gitClient,
 	appLister applicationLister,
 	commandLister commandLister,
-	environmentLister environmentLister,
 	notifier notifier,
 	cfg *config.PipedSpec,
 	gracePeriod time.Duration,
@@ -118,7 +112,6 @@ func NewTrigger(
 		gitClient:         gitClient,
 		applicationLister: appLister,
 		commandLister:     commandLister,
-		environmentLister: environmentLister,
 		notifier:          notifier,
 		config:            cfg,
 		commitStore:       commitStore,
@@ -474,16 +467,13 @@ func (t *Trigger) notifyDeploymentTriggered(ctx context.Context, appCfg *config.
 		mentions = n.FindSlackAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED)
 	}
 
-	if env, err := t.environmentLister.Get(ctx, d.EnvId); err == nil {
-		t.notifier.Notify(model.NotificationEvent{
-			Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
-			Metadata: &model.NotificationEventDeploymentTriggered{
-				Deployment:        d,
-				EnvName:           env.Name,
-				MentionedAccounts: mentions,
-			},
-		})
-	}
+	t.notifier.Notify(model.NotificationEvent{
+		Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+		Metadata: &model.NotificationEventDeploymentTriggered{
+			Deployment:        d,
+			MentionedAccounts: mentions,
+		},
+	})
 }
 
 func (t *Trigger) notifyDeploymentTriggerFailed(app *model.Application, appCfg *config.GenericApplicationSpec, reason string, commit git.Commit) {

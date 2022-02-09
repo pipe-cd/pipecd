@@ -26,8 +26,7 @@ type matcher struct {
 	ignoreGroups map[string]struct{}
 	apps         map[string]struct{}
 	ignoreApps   map[string]struct{}
-	envs         map[string]struct{}
-	ignoreEnvs   map[string]struct{}
+	// TODO: Support Labels matcher.
 }
 
 func newMatcher(cfg config.NotificationRoute) *matcher {
@@ -38,17 +37,11 @@ func newMatcher(cfg config.NotificationRoute) *matcher {
 		ignoreGroups: makeStringMap(cfg.IgnoreGroups, "EVENT"),
 		apps:         makeStringMap(cfg.Apps, ""),
 		ignoreApps:   makeStringMap(cfg.IgnoreApps, ""),
-		envs:         makeStringMap(cfg.Envs, ""),
-		ignoreEnvs:   makeStringMap(cfg.IgnoreEnvs, ""),
 	}
 }
 
 type appNameMetadata interface {
 	GetAppName() string
-}
-
-type envNameMetadata interface {
-	GetEnvName() string
 }
 
 func (m *matcher) Match(event model.NotificationEvent) bool {
@@ -67,14 +60,6 @@ func (m *matcher) Match(event model.NotificationEvent) bool {
 		return false
 	}
 
-	var envName string
-	if md, ok := event.Metadata.(envNameMetadata); ok {
-		envName = md.GetEnvName()
-	}
-	if _, ok := m.ignoreEnvs[envName]; ok && envName != "" {
-		return false
-	}
-
 	if len(m.events) > 0 {
 		if _, ok := m.events[event.Type.String()]; !ok {
 			return false
@@ -87,11 +72,6 @@ func (m *matcher) Match(event model.NotificationEvent) bool {
 	}
 	if len(m.apps) > 0 && appName != "" {
 		if _, ok := m.apps[appName]; !ok {
-			return false
-		}
-	}
-	if len(m.envs) > 0 && envName != "" {
-		if _, ok := m.envs[envName]; !ok {
 			return false
 		}
 	}

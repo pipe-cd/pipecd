@@ -44,7 +44,6 @@ import (
 type planner struct {
 	// Readonly deployment model.
 	deployment                   *model.Deployment
-	envName                      string
 	lastSuccessfulCommitHash     string
 	lastSuccessfulConfigFilename string
 	workingDir                   string
@@ -69,7 +68,6 @@ type planner struct {
 
 func newPlanner(
 	d *model.Deployment,
-	envName string,
 	lastSuccessfulCommitHash string,
 	lastSuccessfulConfigFilename string,
 	workingDir string,
@@ -93,7 +91,6 @@ func newPlanner(
 
 	p := &planner{
 		deployment:                   d,
-		envName:                      envName,
 		lastSuccessfulCommitHash:     lastSuccessfulCommitHash,
 		lastSuccessfulConfigFilename: lastSuccessfulConfigFilename,
 		workingDir:                   workingDir,
@@ -248,7 +245,6 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, out pln.Output) e
 			Type: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
 			Metadata: &model.NotificationEventDeploymentPlanned{
 				Deployment:        p.deployment,
-				EnvName:           p.envName,
 				Summary:           out.Summary,
 				MentionedAccounts: accounts,
 			},
@@ -294,7 +290,6 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) err
 			Type: model.NotificationEventType_EVENT_DEPLOYMENT_FAILED,
 			Metadata: &model.NotificationEventDeploymentFailed{
 				Deployment:        p.deployment,
-				EnvName:           p.envName,
 				Reason:            reason,
 				MentionedAccounts: accounts,
 			},
@@ -340,7 +335,6 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 			Type: model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED,
 			Metadata: &model.NotificationEventDeploymentCancelled{
 				Deployment:        p.deployment,
-				EnvName:           p.envName,
 				Commander:         commander,
 				MentionedAccounts: accounts,
 			},

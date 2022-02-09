@@ -91,10 +91,6 @@ type applicationLister interface {
 	List() []*model.Application
 }
 
-type environmentGetter interface {
-	Get(ctx context.Context, id string) (*model.Environment, error)
-}
-
 type commandLister interface {
 	ListBuildPlanPreviewCommands() []model.ReportableCommand
 }
@@ -120,7 +116,6 @@ func NewHandler(
 	ac apiClient,
 	cl commandLister,
 	al applicationLister,
-	eg environmentGetter,
 	cg lastTriggeredCommitGetter,
 	sd secretDecrypter,
 	appManifestsCache cache.Cache,
@@ -150,7 +145,7 @@ func NewHandler(
 
 	regexPool := regexpool.DefaultPool()
 	h.builderFactory = func() Builder {
-		return newBuilder(gc, ac, al, eg, cg, sd, appManifestsCache, regexPool, cfg, h.logger)
+		return newBuilder(gc, ac, al, cg, sd, appManifestsCache, regexPool, cfg, h.logger)
 	}
 
 	return h
