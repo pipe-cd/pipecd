@@ -26,6 +26,7 @@ type matcher struct {
 	ignoreGroups map[string]struct{}
 	apps         map[string]struct{}
 	ignoreApps   map[string]struct{}
+	// TODO: Support Labels matcher.
 }
 
 func newMatcher(cfg config.NotificationRoute) *matcher {
