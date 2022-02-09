@@ -44,15 +44,58 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
 
+type pipedApiApplicationStore interface {
+	Get(ctx context.Context, id string) (*model.Application, error)
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Application, string, error)
+	UpdateSyncState(ctx context.Context, id string, state *model.ApplicationSyncState) error
+	UpdateDeployingStatus(ctx context.Context, id string, deploying bool) error
+	UpdateBasicInfo(ctx context.Context, id, name, desc string, labels map[string]string) error
+	UpdateMostRecentDeployment(ctx context.Context, id string, status model.DeploymentStatus, d *model.ApplicationDeploymentReference) error
+}
+
+type pipedApiDeploymentStore interface {
+	Add(ctx context.Context, app *model.Deployment) error
+	Get(ctx context.Context, id string) (*model.Deployment, error)
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Deployment, string, error)
+	UpdateToPlanned(ctx context.Context, id, summary, reason, runningCommitHash, runningConfigFilename, version string, stages []*model.PipelineStage) error
+	UpdateToCompleted(ctx context.Context, id string, status model.DeploymentStatus, stageStatuses map[string]model.StageStatus, reason string, completedAt int64) error
+	UpdateStatus(ctx context.Context, id string, status model.DeploymentStatus, reason string) error
+	UpdateStageStatus(ctx context.Context, id, stageID string, status model.StageStatus, reason string, requires []string, visible bool, retriedCount int32, completedAt int64) error
+	UpdateMetadata(ctx context.Context, id string, metadata map[string]string) error
+	UpdateStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error
+}
+
+type pipedApiDeploymentChainStore interface {
+	Add(ctx context.Context, d *model.DeploymentChain) error
+	Get(ctx context.Context, id string) (*model.DeploymentChain, error)
+}
+
+type pipedApiEnvironmentStore interface {
+	Get(ctx context.Context, id string) (*model.Environment, error)
+}
+
+type pipedApiPipedStore interface {
+	Get(ctx context.Context, id string) (*model.Piped, error)
+	UpdateMetadata(ctx context.Context, id, version string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error
+}
+
+type pipedApiEventStore interface {
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Event, string, error)
+	UpdateStatus(ctx context.Context, eventID string, status model.EventStatus, statusDescription string) error
+}
+
+type commandOutputPutter interface {
+	Put(ctx context.Context, commandID string, data []byte) error
+}
+
 // PipedAPI implements the behaviors for the gRPC definitions of PipedAPI.
 type PipedAPI struct {
-	applicationStore          datastore.ApplicationStore
-	deploymentStore           datastore.DeploymentStore
-	deploymentChainStore      datastore.DeploymentChainStore
-	environmentStore          datastore.EnvironmentStore
-	pipedStore                datastore.PipedStore
-	projectStore              datastore.ProjectStore
-	eventStore                datastore.EventStore
+	applicationStore          pipedApiApplicationStore
+	deploymentStore           pipedApiDeploymentStore
+	deploymentChainStore      pipedApiDeploymentChainStore
+	environmentStore          pipedApiEnvironmentStore
+	pipedStore                pipedApiPipedStore
+	eventStore                pipedApiEventStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	analysisResultStore       analysisresultstore.Store
@@ -77,7 +120,6 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.
 		deploymentChainStore:      datastore.NewDeploymentChainStore(ds),
 		environmentStore:          datastore.NewEnvironmentStore(ds),
 		pipedStore:                datastore.NewPipedStore(ds),
-		projectStore:              datastore.NewProjectStore(ds),
 		eventStore:                datastore.NewEventStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
