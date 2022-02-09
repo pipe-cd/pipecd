@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"sync"
 
 	"go.uber.org/zap"
@@ -26,6 +27,7 @@ import (
 	"google.golang.org/api/run/v1"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 const (
@@ -146,6 +148,30 @@ func (s *Service) ActiveRevisionNames() []string {
 	return ret
 }
 
+func (s *Service) HealthStatus() (model.CloudRunResourceState_HealthStatus, string) {
+	var (
+		status     = s.Status
+		errMessage = "Unexpected error while calculating: %s"
+	)
+	if status == nil {
+		msg := fmt.Sprintf(errMessage, "unable to find status")
+		return model.CloudRunResourceState_UNKNOWN, msg
+	}
+
+	conds := status.Conditions
+	for _, c := range conds {
+		isHealthy, err := strconv.ParseBool(c.Status)
+		if err != nil {
+			msg := fmt.Sprintf(errMessage, "unable to parse status: %s", c.Status)
+			return model.CloudRunResourceState_UNKNOWN, msg
+		}
+		if !isHealthy {
+			return model.CloudRunResourceState_OTHER, c.Message
+		}
+	}
+	return model.CloudRunResourceState_HEALTHY, ""
+}
+
 func (r *Revision) RevisionManifest() (RevisionManifest, error) {
 	rev := (*run.Revision)(r)
 	data, err := rev.MarshalJSON()
@@ -153,4 +179,28 @@ func (r *Revision) RevisionManifest() (RevisionManifest, error) {
 		return RevisionManifest{}, err
 	}
 	return ParseRevisionManifest(data)
+}
+
+func (r *Revision) HealthStatus() (model.CloudRunResourceState_HealthStatus, string) {
+	var (
+		status     = r.Status
+		errMessage = "Unexpected error while calculating: %s"
+	)
+	if status == nil {
+		msg := fmt.Sprintf(errMessage, "unable to find status")
+		return model.CloudRunResourceState_UNKNOWN, msg
+	}
+
+	conds := status.Conditions
+	for _, c := range conds {
+		isHealthy, err := strconv.ParseBool(c.Status)
+		if err != nil {
+			msg := fmt.Sprintf(errMessage, "unable to parse status: %s", c.Status)
+			return model.CloudRunResourceState_UNKNOWN, msg
+		}
+		if !isHealthy {
+			return model.CloudRunResourceState_OTHER, c.Message
+		}
+	}
+	return model.CloudRunResourceState_HEALTHY, ""
 }

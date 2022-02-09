@@ -17,6 +17,7 @@ package cloudrun
 import (
 	"testing"
 
+	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/api/run/v1"
@@ -67,6 +68,240 @@ func TestService(t *testing.T) {
 	assert.Len(t, names, 1)
 }
 
+func TestService_HealthStatus(t *testing.T) {
+	testcases := []struct {
+		name     string
+		manifest string
+		want     model.CloudRunResourceState_HealthStatus
+	}{
+		{
+			name: "healthy",
+			manifest: `
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: helloworld
+  uid: service-uid
+  labels:
+    cloud.googleapis.com/location: asia-northeast1
+    pipecd-dev-managed-by: piped
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+spec:
+  template:
+    metadata:
+      name: helloworld-v010-1234567
+      annotations:
+        autoscaling.knative.dev/maxScale: '1'
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+      - image: gcr.io/pipecd/helloworld:v0.1.0
+        args:
+        - server
+        ports:
+        - name: http1
+          containerPort: 9085
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 128Mi
+  traffic:
+  - revisionName: helloworld-v010-1234567
+    percent: 100
+status:
+  observedGeneration: 65
+  conditions:
+  - type: Ready
+    status: 'True'
+    lastTransitionTime: '2021-09-15T06:56:22.222303Z'
+  - type: ConfigurationsReady
+    status: 'True'
+    lastTransitionTime: '2021-09-15T06:55:41.885793Z'
+  - type: RoutesReady
+    status: 'True'
+    lastTransitionTime: '2021-09-15T06:56:22.338031Z'
+  latestReadyRevisionName: helloworld-v010-1234567
+  latestCreatedRevisionName: helloworld-v010-1234567
+  traffic:
+  - revisionName: helloworld-v010-1234567
+    percent: 100
+`,
+			want: model.CloudRunResourceState_HEALTHY,
+		},
+		{
+			name: "unknown: unable to find status",
+			manifest: `
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: helloworld
+  uid: service-uid
+  labels:
+    cloud.googleapis.com/location: asia-northeast1
+    pipecd-dev-managed-by: piped
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+spec:
+  template:
+    metadata:
+      name: helloworld-v010-1234567
+      annotations:
+        autoscaling.knative.dev/maxScale: '1'
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+      - image: gcr.io/pipecd/helloworld:v0.1.0
+        args:
+        - server
+        ports:
+        - name: http1
+          containerPort: 9085
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 128Mi
+  traffic:
+  - revisionName: helloworld-v010-1234567
+    percent: 100
+`,
+			want: model.CloudRunResourceState_UNKNOWN,
+		},
+		{
+			name: "unknown: unable to parse status",
+			manifest: `
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: helloworld
+  uid: service-uid
+  labels:
+    cloud.googleapis.com/location: asia-northeast1
+    pipecd-dev-managed-by: piped
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+spec:
+  template:
+    metadata:
+      name: helloworld-v010-1234567
+      annotations:
+        autoscaling.knative.dev/maxScale: '1'
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+      - image: gcr.io/pipecd/helloworld:v0.1.0
+        args:
+        - server
+        ports:
+        - name: http1
+          containerPort: 9085
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 128Mi
+  traffic:
+  - revisionName: helloworld-v010-1234567
+    percent: 100
+status:
+  observedGeneration: 65
+  conditions:
+  - type: Ready
+    status: 'Unknown'
+    lastTransitionTime: '2021-09-15T06:56:22.222303Z'
+  - type: ConfigurationsReady
+    status: 'False'
+    lastTransitionTime: '2021-09-15T06:55:41.885793Z'
+  - type: RoutesReady
+    status: 'True'
+    lastTransitionTime: '2021-09-15T06:56:22.338031Z'
+  latestReadyRevisionName: helloworld-v010-1234567
+  latestCreatedRevisionName: helloworld-v010-1234567
+  traffic:
+  - revisionName: helloworld-v010-1234567
+    percent: 100
+`,
+			want: model.CloudRunResourceState_UNKNOWN,
+		},
+		{
+			name: "unhealthy",
+			manifest: `
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: helloworld
+  uid: service-uid
+  labels:
+    cloud.googleapis.com/location: asia-northeast1
+    pipecd-dev-managed-by: piped
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+spec:
+  template:
+    metadata:
+      name: helloworld-v010-1234567
+      annotations:
+        autoscaling.knative.dev/maxScale: '1'
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+      - image: gcr.io/pipecd/helloworld:v0.1.0
+        args:
+        - server
+        ports:
+        - name: http1
+          containerPort: 9085
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 128Mi
+  traffic:
+  - revisionName: helloworld-v010-1234567
+    percent: 100
+status:
+  observedGeneration: 65
+  conditions:
+  - type: Ready
+    status: 'False'
+    lastTransitionTime: '2021-09-15T06:56:22.222303Z'
+  - type: ConfigurationsReady
+    status: 'Unknown'
+    lastTransitionTime: '2021-09-15T06:55:41.885793Z'
+  - type: RoutesReady
+    status: 'Unknown'
+    lastTransitionTime: '2021-09-15T06:56:22.338031Z'
+  latestReadyRevisionName: helloworld-v010-1234567
+  latestCreatedRevisionName: helloworld-v010-1234567
+  traffic:
+  - revisionName: helloworld-v010-1234567
+    percent: 100
+`,
+			want: model.CloudRunResourceState_OTHER,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			data := []byte(tc.manifest)
+			sm, err := ParseServiceManifest(data)
+			require.NoError(t, err)
+
+			svc, err := manifestToRunService(sm)
+			require.NoError(t, err)
+
+			s := (*Service)(svc)
+			got, _ := s.HealthStatus()
+			require.Equal(t, tc.want, got)
+		})
+	}
+}
+
 func TestRevision(t *testing.T) {
 	rm, err := ParseRevisionManifest([]byte(revisionManifest))
 	require.NoError(t, err)
@@ -84,4 +319,281 @@ func TestRevision(t *testing.T) {
 	got, err := r.RevisionManifest()
 	require.NoError(t, err)
 	assert.Equal(t, rm, got)
+}
+
+func TestRevision_HealthStatus(t *testing.T) {
+	testcases := []struct {
+		name     string
+		manifest string
+		want     model.CloudRunResourceState_HealthStatus
+	}{
+		{
+			name: "healthy",
+			manifest: `
+apiVersion: serving.knative.dev/v1
+kind: Revision
+metadata:
+  name: helloworld-v010-1234567
+  namespace: '0123456789'
+  selfLink: /apis/serving.knative.dev/v1/namespaces/0123456789/revisions/helloworld-v010-1234567
+  uid: 0123-456-789-101112-13141516
+  resourceVersion: AAAAAAA
+  generation: 1
+  creationTimestamp: '2022-01-28T07:46:53.981805Z'
+  labels:
+    serving.knative.dev/route: helloworld
+    serving.knative.dev/configuration: helloworld
+    serving.knative.dev/configurationGeneration: '3'
+    serving.knative.dev/service: helloworld
+    serving.knative.dev/serviceUid: 0123-456-789-101112-13141516
+    cloud.googleapis.com/location: asia-northeast1
+  annotations:
+    serving.knative.dev/creator: example@foo.iam.gserviceaccount.com
+    autoscaling.knative.dev/maxScale: '1'
+    run.googleapis.com/cpu-throttling: 'true'
+  ownerReferences:
+  - kind: Configuration
+    name: helloworld
+    uid: 0123-456-789-101112-13141516
+    apiVersion: serving.knative.dev/v1
+    controller: true
+    blockOwnerDeletion: true
+spec:
+  containerConcurrency: 80
+  timeoutSeconds: 300
+  serviceAccountName: example@foo.iam.gserviceaccount.com
+  containers:
+  - image: gcr.io/pipecd/helloworld:v0.1.0
+    args:
+    - server
+    ports:
+    - name: http1
+      containerPort: 9085
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 128Mi
+status:
+  observedGeneration: 1
+  conditions:
+  - type: Ready
+    status: 'True'
+    lastTransitionTime: '2022-01-28T07:46:58.929438Z'
+  - type: Active
+    status: 'True'
+    lastTransitionTime: '2022-01-28T07:47:04.722527Z'
+    severity: Info
+  - type: ContainerHealthy
+    status: 'True'
+    lastTransitionTime: '2022-01-28T07:46:58.929438Z'
+  - type: ResourcesAvailable
+    status: 'True'
+    lastTransitionTime: '2022-01-28T07:46:58.150114Z'
+  logUrl: https://console.cloud.google.com/logs
+  imageDigest: gcr.io/pipecd/helloworld@sha256:abcdefg
+`,
+			want: model.CloudRunResourceState_HEALTHY,
+		},
+		{
+			name: "unknown: unable to find status",
+			manifest: `
+apiVersion: serving.knative.dev/v1
+kind: Revision
+metadata:
+  name: helloworld-v010-1234567
+  namespace: '0123456789'
+  selfLink: /apis/serving.knative.dev/v1/namespaces/0123456789/revisions/helloworld-v010-1234567
+  uid: 0123-456-789-101112-13141516
+  resourceVersion: AAAAAAA
+  generation: 1
+  creationTimestamp: '2022-01-28T07:46:53.981805Z'
+  labels:
+    serving.knative.dev/route: helloworld
+    serving.knative.dev/configuration: helloworld
+    serving.knative.dev/configurationGeneration: '3'
+    serving.knative.dev/service: helloworld
+    serving.knative.dev/serviceUid: 0123-456-789-101112-13141516
+    cloud.googleapis.com/location: asia-northeast1
+  annotations:
+    serving.knative.dev/creator: example@foo.iam.gserviceaccount.com
+    autoscaling.knative.dev/maxScale: '1'
+    run.googleapis.com/cpu-throttling: 'true'
+  ownerReferences:
+  - kind: Configuration
+    name: helloworld
+    uid: 0123-456-789-101112-13141516
+    apiVersion: serving.knative.dev/v1
+    controller: true
+    blockOwnerDeletion: true
+spec:
+  containerConcurrency: 80
+  timeoutSeconds: 300
+  serviceAccountName: example@foo.iam.gserviceaccount.com
+  containers:
+  - image: gcr.io/pipecd/helloworld:v0.1.0
+    args:
+    - server
+    ports:
+    - name: http1
+      containerPort: 9085
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 128Mi
+`,
+			want: model.CloudRunResourceState_UNKNOWN,
+		},
+		{
+			name: "unknown: unable to parse status",
+			manifest: `
+apiVersion: serving.knative.dev/v1
+kind: Revision
+metadata:
+  name: helloworld-v010-1234567
+  namespace: '0123456789'
+  selfLink: /apis/serving.knative.dev/v1/namespaces/0123456789/revisions/helloworld-v010-1234567
+  uid: 0123-456-789-101112-13141516
+  resourceVersion: AAAAAAA
+  generation: 1
+  creationTimestamp: '2022-01-28T07:46:53.981805Z'
+  labels:
+    serving.knative.dev/route: helloworld
+    serving.knative.dev/configuration: helloworld
+    serving.knative.dev/configurationGeneration: '3'
+    serving.knative.dev/service: helloworld
+    serving.knative.dev/serviceUid: 0123-456-789-101112-13141516
+    cloud.googleapis.com/location: asia-northeast1
+  annotations:
+    serving.knative.dev/creator: example@foo.iam.gserviceaccount.com
+    autoscaling.knative.dev/maxScale: '1'
+    run.googleapis.com/cpu-throttling: 'true'
+  ownerReferences:
+  - kind: Configuration
+    name: helloworld
+    uid: 0123-456-789-101112-13141516
+    apiVersion: serving.knative.dev/v1
+    controller: true
+    blockOwnerDeletion: true
+spec:
+  containerConcurrency: 80
+  timeoutSeconds: 300
+  serviceAccountName: example@foo.iam.gserviceaccount.com
+  containers:
+  - image: gcr.io/pipecd/helloworld:v0.1.0
+    args:
+    - server
+    ports:
+    - name: http1
+      containerPort: 9085
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 128Mi
+status:
+  observedGeneration: 1
+  conditions:
+  - type: Ready
+    status: 'Unknown'
+    lastTransitionTime: '2022-01-28T07:46:58.929438Z'
+  - type: Active
+    status: 'True'
+    lastTransitionTime: '2022-01-28T07:47:04.722527Z'
+    severity: Info
+  - type: ContainerHealthy
+    status: 'True'
+    lastTransitionTime: '2022-01-28T07:46:58.929438Z'
+  - type: ResourcesAvailable
+    status: 'True'
+    lastTransitionTime: '2022-01-28T07:46:58.150114Z'
+  logUrl: https://console.cloud.google.com/logs
+  imageDigest: gcr.io/pipecd/helloworld@sha256:abcdefg
+`,
+			want: model.CloudRunResourceState_UNKNOWN,
+		},
+		{
+			name: "unhealthy",
+			manifest: `
+apiVersion: serving.knative.dev/v1
+kind: Revision
+metadata:
+  name: helloworld-v010-1234567
+  namespace: '0123456789'
+  selfLink: /apis/serving.knative.dev/v1/namespaces/0123456789/revisions/helloworld-v010-1234567
+  uid: 0123-456-789-101112-13141516
+  resourceVersion: AAAAAAA
+  generation: 1
+  creationTimestamp: '2022-01-28T07:46:53.981805Z'
+  labels:
+    serving.knative.dev/route: helloworld
+    serving.knative.dev/configuration: helloworld
+    serving.knative.dev/configurationGeneration: '3'
+    serving.knative.dev/service: helloworld
+    serving.knative.dev/serviceUid: 0123-456-789-101112-13141516
+    cloud.googleapis.com/location: asia-northeast1
+  annotations:
+    serving.knative.dev/creator: example@foo.iam.gserviceaccount.com
+    autoscaling.knative.dev/maxScale: '1'
+    run.googleapis.com/cpu-throttling: 'true'
+  ownerReferences:
+  - kind: Configuration
+    name: helloworld
+    uid: 0123-456-789-101112-13141516
+    apiVersion: serving.knative.dev/v1
+    controller: true
+    blockOwnerDeletion: true
+spec:
+  containerConcurrency: 80
+  timeoutSeconds: 300
+  serviceAccountName: example@foo.iam.gserviceaccount.com
+  containers:
+  - image: gcr.io/pipecd/helloworld:v0.1.0
+    args:
+    - server
+    ports:
+    - name: http1
+      containerPort: 9085
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 128Mi
+status:
+  observedGeneration: 1
+  conditions:
+  - type: Ready
+    status: 'False'
+    lastTransitionTime: '2022-01-28T07:46:58.929438Z'
+  - type: Active
+    status: 'True'
+    lastTransitionTime: '2022-01-28T07:47:04.722527Z'
+    severity: Info
+  - type: ContainerHealthy
+    status: 'True'
+    lastTransitionTime: '2022-01-28T07:46:58.929438Z'
+  - type: ResourcesAvailable
+    status: 'True'
+    lastTransitionTime: '2022-01-28T07:46:58.150114Z'
+  logUrl: https://console.cloud.google.com/logs
+  imageDigest: gcr.io/pipecd/helloworld@sha256:abcdefg
+`,
+			want: model.CloudRunResourceState_OTHER,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			data := []byte(tc.manifest)
+			rm, err := ParseRevisionManifest(data)
+			require.NoError(t, err)
+
+			v, err := yaml.Marshal(rm.u)
+			require.NoError(t, err)
+
+			var rev run.Revision
+			err = yaml.Unmarshal(v, &rev)
+			require.NoError(t, err)
+
+			r := (*Revision)(&rev)
+			got, _ := r.HealthStatus()
+			require.Equal(t, tc.want, got)
+		})
+	}
 }
