@@ -212,11 +212,25 @@ func applyManifests(ctx context.Context, applier provider.Applier, manifests []p
 		lp.Infof("Start applying %d manifests to %q namespace", len(manifests), namespace)
 	}
 	for _, m := range manifests {
-		if err := applier.ApplyManifest(ctx, m); err != nil {
-			lp.Errorf("Failed to apply manifest: %s (%v)", m.Key.ReadableLogString(), err)
-			return err
+		annotation := m.GetAnnotations()[provider.LabelSyncReplace]
+		if annotation == provider.UserReplaceTrue {
+			err := applier.ReplaceManifest(ctx, m)
+			if errors.Is(err, provider.ErrNotFound) {
+				lp.Infof("Specified resource does not exist, so create the resource: %s (%w)", m.Key.ReadableLogString(), err)
+				err = applier.CreateManifest(ctx, m)
+			}
+			if err != nil {
+				lp.Errorf("Failed to replace or create manifest: %s (%w)", m.Key.ReadableLogString(), err)
+				return err
+			}
+			lp.Successf("- replaced or created manifest: %s", m.Key.ReadableLogString())
+		} else {
+			if err := applier.ApplyManifest(ctx, m); err != nil {
+				lp.Errorf("Failed to apply manifest: %s (%w)", m.Key.ReadableLogString(), err)
+				return err
+			}
+			lp.Successf("- applied manifest: %s", m.Key.ReadableLogString())
 		}
-		lp.Successf("- applied manifest: %s", m.Key.ReadableLogString())
 	}
 	lp.Successf("Successfully applied %d manifests", len(manifests))
 	return nil
