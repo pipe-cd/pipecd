@@ -32,10 +32,17 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
+type applicationStore interface {
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Application, string, error)
+}
+
+type deploymentStore interface {
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Deployment, string, error)
+}
+
 type Collector struct {
-	projectStore     datastore.ProjectStore
-	applicationStore datastore.ApplicationStore
-	deploymentStore  datastore.DeploymentStore
+	applicationStore applicationStore
+	deploymentStore  deploymentStore
 	insightstore     insightstore.Store
 
 	applicationsHandlers              []func(ctx context.Context, applications []*model.Application, target time.Time) error
@@ -48,7 +55,6 @@ type Collector struct {
 
 func NewCollector(ds datastore.DataStore, fs filestore.Store, cfg config.ControlPlaneInsightCollector, logger *zap.Logger) *Collector {
 	c := &Collector{
-		projectStore:     datastore.NewProjectStore(ds),
 		applicationStore: datastore.NewApplicationStore(ds),
 		deploymentStore:  datastore.NewDeploymentStore(ds),
 		insightstore:     insightstore.NewStore(fs),

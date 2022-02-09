@@ -37,9 +37,8 @@ type updater struct {
 	// of that in chain application.
 	deploymentRefs map[string]*model.ChainDeploymentRef
 
-	applicationStore     datastore.ApplicationStore
-	deploymentStore      datastore.DeploymentStore
-	deploymentChainStore datastore.DeploymentChainStore
+	deploymentStore      deploymentStore
+	deploymentChainStore deploymentChainStore
 
 	done          bool
 	doneTimestamp time.Time
@@ -50,16 +49,14 @@ type updater struct {
 
 func newUpdater(
 	dc *model.DeploymentChain,
-	as datastore.ApplicationStore,
-	ds datastore.DeploymentStore,
-	dcs datastore.DeploymentChainStore,
+	ds deploymentStore,
+	dcs deploymentChainStore,
 	lg *zap.Logger,
 ) *updater {
 	return &updater{
 		deploymentChainID:    dc.Id,
 		applicationRefs:      dc.ListAllInChainApplications(),
 		deploymentRefs:       dc.ListAllInChainApplicationDeploymentsMap(),
-		applicationStore:     as,
 		deploymentStore:      ds,
 		deploymentChainStore: dcs,
 		logger:               lg,
