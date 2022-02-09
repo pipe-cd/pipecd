@@ -136,7 +136,7 @@ func (c *Kubectl) Replace(ctx context.Context, namespace string, manifest Manife
 		return nil
 	}
 
-	if strings.HasPrefix(err.Error(), errorNotFoundLiteral) {
+	if strings.Contains(string(out), errorNotFoundLiteral) {
 		return errorReplaceNotFound
 	}
 
