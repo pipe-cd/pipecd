@@ -30,7 +30,6 @@ metadata:
   labels:
     cloud.googleapis.com/location: asia-northeast1
     pipecd-dev-managed-by: piped
-    pipecd-dev-application: application-id
   annotations:
     run.googleapis.com/ingress: all
     run.googleapis.com/ingress-status: all
@@ -121,7 +120,7 @@ func TestServiceManifest(t *testing.T) {
 	assert.Len(t, sm.Labels(), 4)
 
 	// AppID
-	assert.Equal(t, "application-id", sm.AppID())
+	assert.Equal(t, "foo", sm.AppID())
 }
 
 func TestParseServiceManifest(t *testing.T) {
