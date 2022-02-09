@@ -58,25 +58,26 @@ var builtInApiVersions = map[string]struct{}{
 }
 
 const (
-	KindDeployment            = "Deployment"
-	KindStatefulSet           = "StatefulSet"
-	KindDaemonSet             = "DaemonSet"
-	KindReplicaSet            = "ReplicaSet"
-	KindPod                   = "Pod"
-	KindJob                   = "Job"
-	KindCronJob               = "CronJob"
-	KindConfigMap             = "ConfigMap"
-	KindSecret                = "Secret"
-	KindPersistentVolume      = "PersistentVolume"
-	KindPersistentVolumeClaim = "PersistentVolumeClaim"
-	KindService               = "Service"
-	KindIngress               = "Ingress"
-	KindServiceAccount        = "ServiceAccount"
-	KindRole                  = "Role"
-	KindRoleBinding           = "RoleBinding"
-	KindClusterRole           = "ClusterRole"
-	KindClusterRoleBinding    = "ClusterRoleBinding"
-	KindNameSpace             = "NameSpace"
+	KindDeployment               = "Deployment"
+	KindStatefulSet              = "StatefulSet"
+	KindDaemonSet                = "DaemonSet"
+	KindReplicaSet               = "ReplicaSet"
+	KindPod                      = "Pod"
+	KindJob                      = "Job"
+	KindCronJob                  = "CronJob"
+	KindConfigMap                = "ConfigMap"
+	KindSecret                   = "Secret"
+	KindPersistentVolume         = "PersistentVolume"
+	KindPersistentVolumeClaim    = "PersistentVolumeClaim"
+	KindService                  = "Service"
+	KindIngress                  = "Ingress"
+	KindServiceAccount           = "ServiceAccount"
+	KindRole                     = "Role"
+	KindRoleBinding              = "RoleBinding"
+	KindClusterRole              = "ClusterRole"
+	KindClusterRoleBinding       = "ClusterRoleBinding"
+	KindNameSpace                = "NameSpace"
+	KindCustomResourceDefinition = "CustomResourceDefinition"
 
 	DefaultNamespace = "default"
 )
@@ -179,6 +180,18 @@ func (k ResourceKey) IsSecret() bool {
 	if !IsKubernetesBuiltInResource(k.APIVersion) {
 		return false
 	}
+	return true
+}
+
+func (k ResourceKey) IsCRD() bool {
+	if k.Kind != KindCustomResourceDefinition {
+		return false
+	}
+
+	if !IsKubernetesBuiltInResource(k.APIVersion) {
+		return false
+	}
+
 	return true
 }
 
