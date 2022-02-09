@@ -17,6 +17,7 @@ package cloudrun
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -88,4 +89,9 @@ func TestRevisionManifest(t *testing.T) {
 	rm, err := ParseRevisionManifest([]byte(revisionManifest))
 	require.NoError(t, err)
 	require.NotEmpty(t, rm)
+
+	// YamlBytes
+	data, err := rm.YamlBytes()
+	require.NoError(t, err)
+	assert.NotEmpty(t, data)
 }

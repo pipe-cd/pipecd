@@ -35,3 +35,7 @@ func ParseRevisionManifest(data []byte) (RevisionManifest, error) {
 		u:    &obj,
 	}, nil
 }
+
+func (r RevisionManifest) YamlBytes() ([]byte, error) {
+	return yaml.Marshal(r.u)
+}

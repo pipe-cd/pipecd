@@ -17,11 +17,10 @@ package cloudrun
 import (
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/api/run/v1"
-	"sigs.k8s.io/yaml"
+
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestLoadServiceManifest(t *testing.T) {
@@ -307,15 +306,10 @@ func TestRevision(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, rm)
 
-	data, err := yaml.Marshal(rm.u)
-	require.NoError(t, err)
-	require.NotEmpty(t, data)
-
-	var rev run.Revision
-	err = yaml.Unmarshal(data, &rev)
+	rev, err := manifestToRunRevision(rm)
 	require.NoError(t, err)
 
-	r := (*Revision)(&rev)
+	r := (*Revision)(rev)
 	got, err := r.RevisionManifest()
 	require.NoError(t, err)
 	assert.Equal(t, rm, got)
@@ -584,14 +578,10 @@ status:
 			rm, err := ParseRevisionManifest(data)
 			require.NoError(t, err)
 
-			v, err := yaml.Marshal(rm.u)
+			rev, err := manifestToRunRevision(rm)
 			require.NoError(t, err)
 
-			var rev run.Revision
-			err = yaml.Unmarshal(v, &rev)
-			require.NoError(t, err)
-
-			r := (*Revision)(&rev)
+			r := (*Revision)(rev)
 			got, _ := r.HealthStatus()
 			require.Equal(t, tc.want, got)
 		})

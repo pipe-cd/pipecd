@@ -185,3 +185,16 @@ func manifestToRunService(sm ServiceManifest) (*run.Service, error) {
 	}
 	return &s, nil
 }
+
+func manifestToRunRevision(rm RevisionManifest) (*run.Revision, error) {
+	data, err := rm.YamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	var r run.Revision
+	if err := yaml.Unmarshal(data, &r); err != nil {
+		return nil, err
+	}
+	return &r, nil
+}
