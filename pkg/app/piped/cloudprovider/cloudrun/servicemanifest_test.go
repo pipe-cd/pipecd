@@ -17,6 +17,7 @@ package cloudrun
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,6 +26,7 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: helloworld
+  uid: service-uid
   labels:
     cloud.googleapis.com/location: asia-northeast1
     pipecd-dev-managed-by: piped
@@ -51,6 +53,29 @@ spec:
           limits:
             cpu: 1000m
             memory: 128Mi
+  traffic:
+  - revisionName: helloworld-v010-1234567
+    percent: 100
+status:
+  observedGeneration: 5
+  conditions:
+  - type: Ready
+    status: 'False'
+    reason: RevisionFailed
+    message: Revision helloworld-v010-1234567 is not ready.
+    lastTransitionTime: '2022-01-31T06:18:57.242172Z'
+  - type: ConfigurationsReady
+    status: 'False'
+    reason: ContainerMissing
+    message: Image 'gcr.io/pipecd/helloworld:v0.1.0' not found.
+    lastTransitionTime: '2022-01-31T06:18:57.177493Z'
+  - type: RoutesReady
+    status: 'False'
+    reason: RevisionFailed
+    message: Revision helloworld-v010-1234567 is not ready.
+    lastTransitionTime: '2022-01-31T06:18:57.242172Z'
+  latestReadyRevisionName: helloworld-v010-1234567
+  latestCreatedRevisionName: helloworld-v010-1234567
   traffic:
   - revisionName: helloworld-v010-1234567
     percent: 100
@@ -82,7 +107,7 @@ func TestServiceManifest(t *testing.T) {
 	// YamlBytes
 	data, err := sm.YamlBytes()
 	require.NoError(t, err)
-	require.NotEmpty(t, data)
+	assert.NotEmpty(t, data)
 
 	// AddLabels
 	labels := map[string]string{
@@ -92,7 +117,12 @@ func TestServiceManifest(t *testing.T) {
 	sm.AddLabels(labels)
 
 	// Labels
-	require.Len(t, sm.Labels(), 4)
+	assert.Len(t, sm.Labels(), 4)
+
+	// AppID
+	id, ok := sm.AppID()
+	assert.True(t, ok)
+	assert.Equal(t, "foo", id)
 }
 
 func TestParseServiceManifest(t *testing.T) {
