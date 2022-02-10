@@ -124,7 +124,8 @@ func TestMatch(t *testing.T) {
 					"team": "pipecd",
 				},
 				IgnoreLabels: map[string]string{
-					"env": "local",
+					"env":  "local",
+					"team": "not-pipecd",
 				},
 			},
 			matchings: map[model.NotificationEvent]bool{
@@ -134,11 +135,22 @@ func TestMatch(t *testing.T) {
 						Deployment: &model.Deployment{
 							Labels: map[string]string{
 								"team": "pipecd",
-								"env":  "stg",
+								"env":  "dev",
 							},
 						},
 					},
 				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+					Metadata: &model.NotificationEventDeploymentTriggered{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"team": "pipecd",
+								"env":  "prod",
+							},
+						},
+					},
+				}: false,
 				{
 					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
 					Metadata: &model.NotificationEventDeploymentTriggered{

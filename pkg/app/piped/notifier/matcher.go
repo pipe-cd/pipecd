@@ -67,7 +67,6 @@ func (m *matcher) Match(event model.NotificationEvent) bool {
 		return false
 	}
 
-	// Ignore if the current event contains any of ignored labels.
 	labels := make(map[string]string)
 	if md, ok := event.Metadata.(labelsMetadata); ok {
 		labels = md.GetLabels()
@@ -93,14 +92,14 @@ func (m *matcher) Match(event model.NotificationEvent) bool {
 			return false
 		}
 	}
-	// Should count current event as matched if it contains any of listening labels.
 	if len(m.labels) > 0 && len(labels) > 0 {
+		contains := 0
 		for k, v := range m.labels {
 			if labels[k] == v {
-				return true
+				contains++
 			}
 		}
-		return false
+		return contains == len(m.labels)
 	}
 
 	return true
