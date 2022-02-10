@@ -144,6 +144,12 @@ func TestMatch(t *testing.T) {
 				{
 					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
 					Metadata: &model.NotificationEventDeploymentTriggered{
+						Deployment: &model.Deployment{},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+					Metadata: &model.NotificationEventDeploymentTriggered{
 						Deployment: &model.Deployment{
 							Labels: map[string]string{
 								"team": "pipecd",
