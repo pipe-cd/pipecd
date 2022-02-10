@@ -292,7 +292,6 @@ spec:
 
 func TestApplyManifests(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
 
 	testcases := []struct {
 		name      string
@@ -497,7 +496,6 @@ spec:
 
 func TestDeleteResources(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
 
 	testcases := []struct {
 		name      string
