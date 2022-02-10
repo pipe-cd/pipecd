@@ -213,8 +213,7 @@ func applyManifests(ctx context.Context, applier provider.Applier, manifests []p
 	}
 	for _, m := range manifests {
 		annotation := m.GetAnnotations()[provider.LabelSyncReplace]
-		// Do not replace CRD because replace might delete CRD instance
-		if annotation != provider.UseReplaceTrue || m.Key.IsCRD() {
+		if annotation != provider.UseReplaceEnabled {
 			if err := applier.ApplyManifest(ctx, m); err != nil {
 				lp.Errorf("Failed to apply manifest: %s (%w)", m.Key.ReadableLogString(), err)
 				return err

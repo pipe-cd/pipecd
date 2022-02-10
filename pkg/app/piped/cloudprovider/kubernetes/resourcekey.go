@@ -183,18 +183,6 @@ func (k ResourceKey) IsSecret() bool {
 	return true
 }
 
-func (k ResourceKey) IsCRD() bool {
-	if k.Kind != KindCustomResourceDefinition {
-		return false
-	}
-
-	if !IsKubernetesBuiltInResource(k.APIVersion) {
-		return false
-	}
-
-	return true
-}
-
 // IsLess reports whether the key should sort before the given key.
 func (k ResourceKey) IsLess(a ResourceKey) bool {
 	if k.APIVersion < a.APIVersion {
