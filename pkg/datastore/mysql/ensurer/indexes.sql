@@ -99,12 +99,12 @@ ALTER TABLE Event ADD COLUMN EventKey VARCHAR(64) GENERATED ALWAYS AS (data->>"$
 CREATE INDEX event_event_key_name_project_id_created_at_desc ON Event (EventKey, Name, ProjectId, CreatedAt DESC);
 
 -- index on `ProjectId` ASC, `Status` ASC, CreatedAt DESC
-ALTER TABLE Event ADD COLUMN Status INT GENERATED ALWAYS AS (data->>"$.status", 0) VIRTUAL NOT NULL;
+ALTER TABLE Event ADD COLUMN Status INT GENERATED ALWAYS AS (data->>"$.status") VIRTUAL NOT NULL;
 ALTER TABLE Event MODIFY COLUMN Status INT GENERATED ALWAYS AS (IFNULL(data->>"$.status", 0)) VIRTUAL NOT NULL;
 CREATE INDEX event_project_id_status_created_at_desc ON Event (ProjectId, Status, CreatedAt DESC);
 
 -- index on `ProjectId` ASC, `Status` ASC, UpdatedAt DESC
-ALTER TABLE Event ADD COLUMN Status INT GENERATED ALWAYS AS (data->>"$.status", 0) VIRTUAL NOT NULL;
+ALTER TABLE Event ADD COLUMN Status INT GENERATED ALWAYS AS (data->>"$.status") VIRTUAL NOT NULL;
 ALTER TABLE Event MODIFY COLUMN Status INT GENERATED ALWAYS AS (IFNULL(data->>"$.status", 0)) VIRTUAL NOT NULL;
 CREATE INDEX event_project_id_status_updated_at_desc ON Event (ProjectId, Status, UpdatedAt DESC);
 
@@ -113,7 +113,7 @@ ALTER TABLE Event ADD COLUMN Name VARCHAR(50) GENERATED ALWAYS AS (data->>"$.nam
 CREATE INDEX event_name_project_id_updated_at_desc ON Event (Name, ProjectId, UpdatedAt DESC);
 
 -- index on `Name` ASC, `ProjectId` ASC, `Status` ASC, UpdatedAt DESC
-ALTER TABLE Event ADD COLUMN Name VARCHAR(50) GENERATED ALWAYS AS (data->>"$.name") VIRTUAL NOT NULL, ADD COLUMN Status INT GENERATED ALWAYS AS (data->>"$.status", 0) VIRTUAL NOT NULL;
+ALTER TABLE Event ADD COLUMN Name VARCHAR(50) GENERATED ALWAYS AS (data->>"$.name") VIRTUAL NOT NULL, ADD COLUMN Status INT GENERATED ALWAYS AS (data->>"$.status") VIRTUAL NOT NULL;
 ALTER TABLE Event MODIFY COLUMN Status INT GENERATED ALWAYS AS (IFNULL(data->>"$.status", 0)) VIRTUAL NOT NULL;
 CREATE INDEX event_name_project_id_status_updated_at_desc ON Event (Name, ProjectId, Status, UpdatedAt DESC);
 
