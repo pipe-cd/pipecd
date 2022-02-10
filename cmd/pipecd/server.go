@@ -229,7 +229,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 		var (
 			verifier = apikeyverifier.NewVerifier(
 				ctx,
-				datastore.NewAPIKeyStore(ds, datastore.UnknownWriter),
+				datastore.NewAPIKeyStore(ds, datastore.PipectlWriter),
 				input.Logger,
 			)
 
