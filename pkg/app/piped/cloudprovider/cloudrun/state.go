@@ -23,14 +23,14 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-func MakeResourceStates(svc *Service, revs []*Revision, now time.Time) []*model.CloudRunResourceState {
+func MakeResourceStates(svc *Service, revs []*Revision, updatedAt time.Time) []*model.CloudRunResourceState {
 	states := make([]*model.CloudRunResourceState, 0, len(revs)+1)
 
 	// Set service state.
 	sm, err := svc.ServiceManifest()
 	if err == nil {
 		status, desc := svc.HealthStatus()
-		states = append(states, makeResourceState(sm.u, status, desc, now))
+		states = append(states, makeResourceState(sm.u, status, desc, updatedAt))
 	}
 
 	// Set active revision states.
@@ -40,16 +40,13 @@ func MakeResourceStates(svc *Service, revs []*Revision, now time.Time) []*model.
 			continue
 		}
 
-		var (
-			status, desc = r.HealthStatus()
-			state        = makeResourceState(rm.u, status, desc, now)
-		)
-		states = append(states, state)
+		status, desc := r.HealthStatus()
+		states = append(states, makeResourceState(rm.u, status, desc, updatedAt))
 	}
 	return states
 }
 
-func makeResourceState(obj *unstructured.Unstructured, status model.CloudRunResourceState_HealthStatus, desc string, now time.Time) *model.CloudRunResourceState {
+func makeResourceState(obj *unstructured.Unstructured, status model.CloudRunResourceState_HealthStatus, desc string, updatedAt time.Time) *model.CloudRunResourceState {
 	var (
 		owners       = obj.GetOwnerReferences()
 		ownerIDs     = make([]string, 0, len(owners))
@@ -74,7 +71,7 @@ func makeResourceState(obj *unstructured.Unstructured, status model.CloudRunReso
 		HealthDescription: desc,
 
 		CreatedAt: creationTime.Unix(),
-		UpdatedAt: now.Unix(),
+		UpdatedAt: updatedAt.Unix(),
 	}
 
 	return state
