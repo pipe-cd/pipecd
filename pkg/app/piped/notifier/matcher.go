@@ -68,12 +68,12 @@ func (m *matcher) Match(event model.NotificationEvent) bool {
 	}
 
 	var (
-		labels    = make(map[string]string)
-		hasLabels = false
+		labels        = make(map[string]string)
+		supportLabels = false
 	)
 	if md, ok := event.Metadata.(labelsMetadata); ok {
 		labels = md.GetLabels()
-		hasLabels = true
+		supportLabels = true
 	}
 	for k, v := range labels {
 		if m.ignoreLabels[k] == v {
@@ -96,7 +96,7 @@ func (m *matcher) Match(event model.NotificationEvent) bool {
 			return false
 		}
 	}
-	if len(m.labels) > 0 && hasLabels {
+	if len(m.labels) > 0 && supportLabels {
 		if len(labels) < len(m.labels) {
 			return false
 		}
