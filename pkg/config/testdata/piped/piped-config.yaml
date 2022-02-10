@@ -84,15 +84,16 @@ spec:
   notifications:
     routes:
       - name: dev-slack
-        envs:
-          - dev
+        labels:
+          env: dev
+          team: pipecd
         receiver: dev-slack-channel
       - name: prod-slack
         events:
           - DEPLOYMENT_STARTED
           - DEPLOYMENT_COMPLETED
-        envs:
-          - dev
+        labels:
+          env: dev
         receiver: prod-slack-channel
       - name: all-events-to-ci
         receiver: ci-webhook

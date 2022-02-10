@@ -582,16 +582,16 @@ type Notifications struct {
 }
 
 type NotificationRoute struct {
-	Name         string   `json:"name"`
-	Receiver     string   `json:"receiver"`
-	Events       []string `json:"events"`
-	IgnoreEvents []string `json:"ignoreEvents"`
-	Groups       []string `json:"groups"`
-	IgnoreGroups []string `json:"ignoreGroups"`
-	Apps         []string `json:"apps"`
-	IgnoreApps   []string `json:"ignoreApps"`
-	Envs         []string `json:"envs"`
-	IgnoreEnvs   []string `json:"ignoreEnvs"`
+	Name         string            `json:"name"`
+	Receiver     string            `json:"receiver"`
+	Events       []string          `json:"events"`
+	IgnoreEvents []string          `json:"ignoreEvents"`
+	Groups       []string          `json:"groups"`
+	IgnoreGroups []string          `json:"ignoreGroups"`
+	Apps         []string          `json:"apps"`
+	IgnoreApps   []string          `json:"ignoreApps"`
+	Labels       map[string]string `json:"labels"`
+	IgnoreLabels map[string]string `json:"ignoreLabels"`
 }
 
 type NotificationReceiver struct {
