@@ -134,8 +134,9 @@ func TestMatch(t *testing.T) {
 					Metadata: &model.NotificationEventDeploymentTriggered{
 						Deployment: &model.Deployment{
 							Labels: map[string]string{
-								"team": "pipecd",
-								"env":  "dev",
+								"team":    "pipecd",
+								"env":     "dev",
+								"project": "pipecd",
 							},
 						},
 					},
