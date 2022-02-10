@@ -214,26 +214,26 @@ func applyManifests(ctx context.Context, applier provider.Applier, manifests []p
 	for _, m := range manifests {
 		annotation := m.GetAnnotations()[provider.LabelSyncReplace]
 		// Do not replace CRD because replace might delete CRD instance
-                if annotation != provider.UserReplaceTrue || m.Key.IsCRD() {
-	                if err := applier.ApplyManifest(ctx, m); err != nil {
-		                lp.Errorf("Failed to apply manifest: %s (%w)", m.Key.ReadableLogString(), err)
-		                return err
-	                }
-	                lp.Successf("- applied manifest: %s", m.Key.ReadableLogString())
-	                continue
-                }
-                // Always try to replace first and create if it fails due to resource not found error.
-                // This is because we cannot know whether resource already exists before executing command.
-                err := applier.ReplaceManifest(ctx, m)
-                if errors.Is(err, provider.ErrNotFound) {
-	                lp.Infof("Specified resource does not exist, so create the resource: %s (%w)", m.Key.ReadableLogString(), err)
-	                err = applier.CreateManifest(ctx, m)
-                }
-                if err != nil {
-	                lp.Errorf("Failed to replace or create manifest: %s (%w)", m.Key.ReadableLogString(), err)
-	                return err
-                }
-                lp.Successf("- replaced or created manifest: %s", m.Key.ReadableLogString())
+		if annotation != provider.UserReplaceTrue || m.Key.IsCRD() {
+			if err := applier.ApplyManifest(ctx, m); err != nil {
+				lp.Errorf("Failed to apply manifest: %s (%w)", m.Key.ReadableLogString(), err)
+				return err
+			}
+			lp.Successf("- applied manifest: %s", m.Key.ReadableLogString())
+			continue
+		}
+		// Always try to replace first and create if it fails due to resource not found error.
+		// This is because we cannot know whether resource already exists before executing command.
+		err := applier.ReplaceManifest(ctx, m)
+		if errors.Is(err, provider.ErrNotFound) {
+			lp.Infof("Specified resource does not exist, so create the resource: %s (%w)", m.Key.ReadableLogString(), err)
+			err = applier.CreateManifest(ctx, m)
+		}
+		if err != nil {
+			lp.Errorf("Failed to replace or create manifest: %s (%w)", m.Key.ReadableLogString(), err)
+			return err
+		}
+		lp.Successf("- replaced or created manifest: %s", m.Key.ReadableLogString())
 
 	}
 	lp.Successf("Successfully applied %d manifests", len(manifests))
