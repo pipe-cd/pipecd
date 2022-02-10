@@ -48,7 +48,7 @@ func TestService(t *testing.T) {
 	sm, err := ParseServiceManifest([]byte(serviceManifest))
 	require.NoError(t, err)
 
-	svc, err := manifestToRunService(sm)
+	svc, err := sm.RunService()
 	require.NoError(t, err)
 
 	// ServiceManifest
@@ -291,7 +291,7 @@ status:
 			sm, err := ParseServiceManifest(data)
 			require.NoError(t, err)
 
-			svc, err := manifestToRunService(sm)
+			svc, err := sm.RunService()
 			require.NoError(t, err)
 
 			s := (*Service)(svc)
@@ -306,7 +306,7 @@ func TestRevision(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, rm)
 
-	rev, err := manifestToRunRevision(rm)
+	rev, err := rm.RunRevision()
 	require.NoError(t, err)
 
 	r := (*Revision)(rev)
@@ -578,7 +578,7 @@ status:
 			rm, err := ParseRevisionManifest(data)
 			require.NoError(t, err)
 
-			rev, err := manifestToRunRevision(rm)
+			rev, err := rm.RunRevision()
 			require.NoError(t, err)
 
 			r := (*Revision)(rev)

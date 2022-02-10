@@ -154,16 +154,14 @@ func (s *Service) HealthStatus() (model.CloudRunResourceState_HealthStatus, stri
 		errMessage = "Unexpected error while calculating: %s"
 	)
 	if status == nil {
-		msg := fmt.Sprintf(errMessage, "unable to find status")
-		return model.CloudRunResourceState_UNKNOWN, msg
+		return model.CloudRunResourceState_UNKNOWN, fmt.Sprintf(errMessage, "unable to find status")
 	}
 
 	conds := status.Conditions
 	for _, c := range conds {
 		isHealthy, err := strconv.ParseBool(c.Status)
 		if err != nil {
-			msg := fmt.Sprintf(errMessage, "unable to parse status: %s", c.Status)
-			return model.CloudRunResourceState_UNKNOWN, msg
+			return model.CloudRunResourceState_UNKNOWN, fmt.Sprintf(errMessage, "unable to parse status: %s", c.Status)
 		}
 		if !isHealthy {
 			return model.CloudRunResourceState_OTHER, c.Message
@@ -187,16 +185,14 @@ func (r *Revision) HealthStatus() (model.CloudRunResourceState_HealthStatus, str
 		errMessage = "Unexpected error while calculating: %s"
 	)
 	if status == nil {
-		msg := fmt.Sprintf(errMessage, "unable to find status")
-		return model.CloudRunResourceState_UNKNOWN, msg
+		return model.CloudRunResourceState_UNKNOWN, fmt.Sprintf(errMessage, "unable to find status")
 	}
 
 	conds := status.Conditions
 	for _, c := range conds {
 		isHealthy, err := strconv.ParseBool(c.Status)
 		if err != nil {
-			msg := fmt.Sprintf(errMessage, "unable to parse status: %s", c.Status)
-			return model.CloudRunResourceState_UNKNOWN, msg
+			return model.CloudRunResourceState_UNKNOWN, fmt.Sprintf(errMessage, "unable to parse status: %s", c.Status)
 		}
 		if !isHealthy {
 			return model.CloudRunResourceState_OTHER, c.Message

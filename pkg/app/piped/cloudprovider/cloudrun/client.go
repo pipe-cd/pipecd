@@ -24,7 +24,6 @@ import (
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
 	"google.golang.org/api/run/v1"
-	"sigs.k8s.io/yaml"
 )
 
 type client struct {
@@ -63,7 +62,7 @@ func newClient(ctx context.Context, projectID, region, credentialsFile string, l
 }
 
 func (c *client) Create(ctx context.Context, sm ServiceManifest) (*Service, error) {
-	svcCfg, err := manifestToRunService(sm)
+	svcCfg, err := sm.RunService()
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +85,7 @@ func (c *client) Create(ctx context.Context, sm ServiceManifest) (*Service, erro
 }
 
 func (c *client) Update(ctx context.Context, sm ServiceManifest) (*Service, error) {
-	svcCfg, err := manifestToRunService(sm)
+	svcCfg, err := sm.RunService()
 	if err != nil {
 		return nil, err
 	}
@@ -171,30 +170,4 @@ func makeCloudRunServiceName(projectID, serviceID string) string {
 
 func makeCloudRunRevisionName(projectID, revisionID string) string {
 	return fmt.Sprintf("namespaces/%s/revisions/%s", projectID, revisionID)
-}
-
-func manifestToRunService(sm ServiceManifest) (*run.Service, error) {
-	data, err := sm.YamlBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	var s run.Service
-	if err := yaml.Unmarshal(data, &s); err != nil {
-		return nil, err
-	}
-	return &s, nil
-}
-
-func manifestToRunRevision(rm RevisionManifest) (*run.Revision, error) {
-	data, err := rm.YamlBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	var r run.Revision
-	if err := yaml.Unmarshal(data, &r); err != nil {
-		return nil, err
-	}
-	return &r, nil
 }
