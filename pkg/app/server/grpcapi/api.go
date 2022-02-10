@@ -276,8 +276,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 		}
 		envs, err := a.environmentStore.List(ctx, envListOpts)
 		if err != nil {
-			a.logger.Error("failed to list environments", zap.Error(err))
-			return nil, status.Error(codes.Internal, "Failed to list environments")
+			return nil, gRPCEntityOperationError(err, "list environment")
 		}
 
 		switch len(envs) {
