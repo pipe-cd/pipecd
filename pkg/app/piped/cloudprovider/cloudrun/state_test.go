@@ -16,6 +16,7 @@ package cloudrun
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -42,7 +43,7 @@ func TestMakeResourceStates(t *testing.T) {
 
 	// MakeResourceStates
 	rs := []*Revision{r}
-	states := MakeResourceStates(s, rs)
+	states := MakeResourceStates(s, rs, time.Now())
 	require.Len(t, states, 2)
 	assert.Equal(t, model.CloudRunResourceState_OTHER, states[0].HealthStatus)
 	assert.Equal(t, model.CloudRunResourceState_HEALTHY, states[1].HealthStatus)
