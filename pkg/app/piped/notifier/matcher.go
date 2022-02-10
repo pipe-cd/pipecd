@@ -73,7 +73,7 @@ func (m *matcher) Match(event model.NotificationEvent) bool {
 		labels = md.GetLabels()
 	}
 	for k, v := range labels {
-		if iv, ok := m.ignoreLabels[k]; ok && iv == v {
+		if m.ignoreLabels[k] == v {
 			return false
 		}
 	}
@@ -96,7 +96,7 @@ func (m *matcher) Match(event model.NotificationEvent) bool {
 	// Should count current event as matched if it contains any of listening labels.
 	if len(m.labels) > 0 && len(labels) > 0 {
 		for k, v := range m.labels {
-			if ev, ok := labels[k]; ok && ev == v {
+			if labels[k] == v {
 				return true
 			}
 		}
