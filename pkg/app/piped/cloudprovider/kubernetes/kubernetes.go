@@ -45,7 +45,7 @@ const (
 	AnnotationConfigHash      = "pipecd.dev/config-hash"            // The hash value of all mouting config resources.
 	ManagedByPiped            = "piped"
 	IgnoreDriftDetectionTrue  = "true"
-	UserReplaceTrue           = "true"
+	UseReplaceTrue            = "true"
 
 	kustomizationFileName = "kustomization.yaml"
 )
