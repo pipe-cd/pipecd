@@ -18,7 +18,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestMakeCloudRunParent(t *testing.T) {
@@ -46,24 +45,4 @@ func TestMakeCloudRunRevisionName(t *testing.T) {
 	got := makeCloudRunRevisionName(projectID, revisionID)
 	want := "namespaces/projectID/revisions/revisionID"
 	assert.Equal(t, want, got)
-}
-
-func TestManifestToRunService(t *testing.T) {
-	sm, err := ParseServiceManifest([]byte(serviceManifest))
-	require.NoError(t, err)
-	require.NotEmpty(t, sm)
-
-	got, err := sm.RunService()
-	require.NoError(t, err)
-	assert.NotEmpty(t, got)
-}
-
-func TestManifestToRunRevision(t *testing.T) {
-	rm, err := ParseRevisionManifest([]byte(revisionManifest))
-	require.NoError(t, err)
-	require.NotEmpty(t, rm)
-
-	got, err := rm.RunRevision()
-	require.NoError(t, err)
-	assert.NotEmpty(t, got)
 }

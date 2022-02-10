@@ -94,4 +94,9 @@ func TestRevisionManifest(t *testing.T) {
 	data, err := rm.YamlBytes()
 	require.NoError(t, err)
 	assert.NotEmpty(t, data)
+
+	// RunRevision
+	got, err := rm.RunRevision()
+	require.NoError(t, err)
+	assert.NotEmpty(t, got)
 }

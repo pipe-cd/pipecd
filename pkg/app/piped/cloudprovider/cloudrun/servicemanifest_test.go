@@ -123,6 +123,11 @@ func TestServiceManifest(t *testing.T) {
 	id, ok := sm.AppID()
 	assert.True(t, ok)
 	assert.Equal(t, "foo", id)
+
+	// RunService
+	got, err := sm.RunService()
+	require.NoError(t, err)
+	assert.NotEmpty(t, got)
 }
 
 func TestParseServiceManifest(t *testing.T) {
