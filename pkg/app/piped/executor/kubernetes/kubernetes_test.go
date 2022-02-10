@@ -290,9 +290,186 @@ spec:
 
 }
 
+func TestApplyManifests(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	testcases := []struct {
+		name      string
+		applier   provider.Applier
+		manifest  string
+		namespace string
+		wantErr   bool
+	}{
+
+		{
+			name: "unable to apply manifest",
+			applier: func() provider.Applier {
+				p := providertest.NewMockProvider(ctrl)
+				p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(errors.New("unexpected error"))
+				return p
+			}(),
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			namespace: "",
+			wantErr:   true,
+		},
+		{
+			name: "unable to replace manifest",
+			applier: func() provider.Applier {
+				p := providertest.NewMockProvider(ctrl)
+				p.EXPECT().ReplaceManifest(gomock.Any(), gomock.Any()).Return(errors.New("unexpected error"))
+				return p
+			}(),
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+  annotations:
+    pipecd.dev/sync-by-replace: "enabled"
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			namespace: "",
+			wantErr:   true,
+		},
+		{
+			name: "unable to create manifest",
+			applier: func() provider.Applier {
+				p := providertest.NewMockProvider(ctrl)
+				p.EXPECT().ReplaceManifest(gomock.Any(), gomock.Any()).Return(provider.ErrNotFound)
+				p.EXPECT().CreateManifest(gomock.Any(), gomock.Any()).Return(errors.New("unexpected error"))
+				return p
+			}(),
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+  annotations:
+    pipecd.dev/sync-by-replace: "enabled"
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			namespace: "",
+			wantErr:   true,
+		},
+		{
+			name: "successfully apply manifest",
+			applier: func() provider.Applier {
+				p := providertest.NewMockProvider(ctrl)
+				p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
+				return p
+			}(),
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			namespace: "",
+			wantErr:   false,
+		},
+		{
+			name: "successfully replace manifest",
+			applier: func() provider.Applier {
+				p := providertest.NewMockProvider(ctrl)
+				p.EXPECT().ReplaceManifest(gomock.Any(), gomock.Any()).Return(nil)
+				return p
+			}(),
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+  annotations:
+    pipecd.dev/sync-by-replace: "enabled"
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			namespace: "",
+			wantErr:   false,
+		},
+		{
+			name: "successfully create manifest",
+			applier: func() provider.Applier {
+				p := providertest.NewMockProvider(ctrl)
+				p.EXPECT().ReplaceManifest(gomock.Any(), gomock.Any()).Return(provider.ErrNotFound)
+				p.EXPECT().CreateManifest(gomock.Any(), gomock.Any()).Return(nil)
+				return p
+			}(),
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+  annotations:
+    pipecd.dev/sync-by-replace: "enabled"
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			namespace: "",
+			wantErr:   false,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx := context.Background()
+			manifests, err := provider.ParseManifests(tc.manifest)
+			require.NoError(t, err)
+			err = applyManifests(ctx, tc.applier, manifests, tc.namespace, &fakeLogPersister{})
+			assert.Equal(t, tc.wantErr, err != nil)
+		})
+	}
+}
+
 func TestDeleteResources(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
 
 	testcases := []struct {
 		name      string
