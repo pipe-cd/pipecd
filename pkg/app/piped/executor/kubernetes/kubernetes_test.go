@@ -338,7 +338,7 @@ kind: Deployment
 metadata:
   name: simple
   annotations:
-    pipecd.dev/sync-by-replace: "true"
+    pipecd.dev/sync-by-replace: "enabled"
 spec:
   selector:
     matchLabels:
@@ -365,7 +365,7 @@ kind: Deployment
 metadata:
   name: simple
   annotations:
-    pipecd.dev/sync-by-replace: "true"
+    pipecd.dev/sync-by-replace: "enabled"
 spec:
   selector:
     matchLabels:
@@ -403,32 +403,6 @@ spec:
 			wantErr:   false,
 		},
 		{
-			name: "successfully apply crd manifest",
-			applier: func() provider.Applier {
-				p := providertest.NewMockProvider(ctrl)
-				p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
-				return p
-			}(),
-			manifest: `
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  name: simple
-  annotations:
-    pipecd.dev/sync-by-replace: "true"
-spec:
-  selector:
-    matchLabels:
-      app: simple
-  template:
-    metadata:
-      labels:
-        app: simple
-`,
-			namespace: "",
-			wantErr:   false,
-		},
-		{
 			name: "successfully replace manifest",
 			applier: func() provider.Applier {
 				p := providertest.NewMockProvider(ctrl)
@@ -441,7 +415,7 @@ kind: Deployment
 metadata:
   name: simple
   annotations:
-    pipecd.dev/sync-by-replace: "true"
+    pipecd.dev/sync-by-replace: "enabled"
 spec:
   selector:
     matchLabels:
@@ -468,7 +442,7 @@ kind: Deployment
 metadata:
   name: simple
   annotations:
-    pipecd.dev/sync-by-replace: "true"
+    pipecd.dev/sync-by-replace: "enabled"
 spec:
   selector:
     matchLabels:
