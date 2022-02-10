@@ -43,15 +43,17 @@ type CommandStore interface {
 
 type commandStore struct {
 	backend
+	writer  Writer
 	nowFunc func() time.Time
 }
 
-func NewCommandStore(ds DataStore) CommandStore {
+func NewCommandStore(ds DataStore, w Writer) CommandStore {
 	return &commandStore{
 		backend: backend{
 			ds:  ds,
 			col: &commandCollection{},
 		},
+		writer:  w,
 		nowFunc: time.Now,
 	}
 }

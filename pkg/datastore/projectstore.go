@@ -47,15 +47,17 @@ type ProjectStore interface {
 
 type projectStore struct {
 	backend
+	writer  Writer
 	nowFunc func() time.Time
 }
 
-func NewProjectStore(ds DataStore) ProjectStore {
+func NewProjectStore(ds DataStore, w Writer) ProjectStore {
 	return &projectStore{
 		backend: backend{
 			ds:  ds,
 			col: &projectCollection{},
 		},
+		writer:  w,
 		nowFunc: time.Now,
 	}
 }

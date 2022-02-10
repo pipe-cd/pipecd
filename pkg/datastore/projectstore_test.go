@@ -63,7 +63,7 @@ func TestAddProject(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewProjectStore(tc.dsFactory(tc.project))
+			s := NewProjectStore(tc.dsFactory(tc.project), TestWriter)
 			err := s.Add(context.Background(), tc.project)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -108,7 +108,7 @@ func TestGetProject(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewProjectStore(tc.ds)
+			s := NewProjectStore(tc.ds, TestWriter)
 			_, err := s.Get(context.Background(), tc.id)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -163,7 +163,7 @@ func TestListProjects(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewProjectStore(tc.ds)
+			s := NewProjectStore(tc.ds, TestWriter)
 			_, err := s.List(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})

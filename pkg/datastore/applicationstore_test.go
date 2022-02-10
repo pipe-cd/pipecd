@@ -70,7 +70,7 @@ func TestAddApplication(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewApplicationStore(tc.dsFactory(tc.application))
+			s := NewApplicationStore(tc.dsFactory(tc.application), TestWriter)
 			err := s.Add(context.Background(), tc.application)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -115,7 +115,7 @@ func TestGetApplication(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewApplicationStore(tc.ds)
+			s := NewApplicationStore(tc.ds, TestWriter)
 			_, err := s.Get(context.Background(), tc.id)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -170,7 +170,7 @@ func TestListApplications(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewApplicationStore(tc.ds)
+			s := NewApplicationStore(tc.ds, TestWriter)
 			_, _, err := s.List(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})

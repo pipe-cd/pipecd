@@ -44,15 +44,17 @@ type APIKeyStore interface {
 
 type apiKeyStore struct {
 	backend
+	writer  Writer
 	nowFunc func() time.Time
 }
 
-func NewAPIKeyStore(ds DataStore) APIKeyStore {
+func NewAPIKeyStore(ds DataStore, w Writer) APIKeyStore {
 	return &apiKeyStore{
 		backend: backend{
 			ds:  ds,
 			col: &apiKeyCollection{},
 		},
+		writer:  w,
 		nowFunc: time.Now,
 	}
 }

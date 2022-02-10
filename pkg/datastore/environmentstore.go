@@ -45,15 +45,17 @@ type EnvironmentStore interface {
 
 type environmentStore struct {
 	backend
+	writer  Writer
 	nowFunc func() time.Time
 }
 
-func NewEnvironmentStore(ds DataStore) EnvironmentStore {
+func NewEnvironmentStore(ds DataStore, w Writer) EnvironmentStore {
 	return &environmentStore{
 		backend: backend{
 			ds:  ds,
 			col: &environmentCollection{},
 		},
+		writer:  w,
 		nowFunc: time.Now,
 	}
 }

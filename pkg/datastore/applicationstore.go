@@ -52,15 +52,17 @@ type ApplicationStore interface {
 
 type applicationStore struct {
 	backend
+	writer  Writer
 	nowFunc func() time.Time
 }
 
-func NewApplicationStore(ds DataStore) ApplicationStore {
+func NewApplicationStore(ds DataStore, w Writer) ApplicationStore {
 	return &applicationStore{
 		backend: backend{
 			ds:  ds,
 			col: &applicationCollection{},
 		},
+		writer:  w,
 		nowFunc: time.Now,
 	}
 }

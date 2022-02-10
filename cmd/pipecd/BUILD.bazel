@@ -27,7 +27,6 @@ go_library(
         "//pkg/app/server/apikeyverifier:go_default_library",
         "//pkg/app/server/applicationlivestatestore:go_default_library",
         "//pkg/app/server/commandoutputstore:go_default_library",
-        "//pkg/app/server/commandstore:go_default_library",
         "//pkg/app/server/grpcapi:go_default_library",
         "//pkg/app/server/httpapi:go_default_library",
         "//pkg/app/server/httpapi/httpapimetrics:go_default_library",
