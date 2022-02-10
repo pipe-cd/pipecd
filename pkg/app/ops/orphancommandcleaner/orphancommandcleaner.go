@@ -30,8 +30,13 @@ var (
 	interval       = 6 * time.Hour
 )
 
+type commandStore interface {
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Command, error)
+	UpdateStatus(ctx context.Context, id string, status model.CommandStatus, metadata map[string]string, handledAt int64) error
+}
+
 type OrphanCommandCleaner struct {
-	commandstore datastore.CommandStore
+	commandstore commandStore
 	logger       *zap.Logger
 }
 

@@ -36,10 +36,20 @@ const (
 	maxUpdaterWorkerNum = 10
 )
 
+type deploymentStore interface {
+	Get(ctx context.Context, id string) (*model.Deployment, error)
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Deployment, string, error)
+}
+
+type deploymentChainStore interface {
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.DeploymentChain, string, error)
+	AddNodeDeployment(ctx context.Context, chainID string, deployment *model.Deployment) error
+	UpdateNodeDeploymentStatus(ctx context.Context, chainID string, blockIndex uint32, deploymentID string, status model.DeploymentStatus, reason string) error
+}
+
 type DeploymentChainController struct {
-	applicationStore     datastore.ApplicationStore
-	deploymentStore      datastore.DeploymentStore
-	deploymentChainStore datastore.DeploymentChainStore
+	deploymentStore      deploymentStore
+	deploymentChainStore deploymentChainStore
 	// Map from deployment chain ID to the updater
 	// who in charge for the deployment chain updating.
 	updaters map[string]*updater
@@ -52,7 +62,6 @@ func NewDeploymentChainController(
 	logger *zap.Logger,
 ) *DeploymentChainController {
 	return &DeploymentChainController{
-		applicationStore:     datastore.NewApplicationStore(ds),
 		deploymentStore:      datastore.NewDeploymentStore(ds),
 		deploymentChainStore: datastore.NewDeploymentChainStore(ds),
 		updaters:             make(map[string]*updater),
@@ -111,7 +120,6 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 		}
 		d.updaters[c.Id] = newUpdater(
 			c,
-			d.applicationStore,
 			d.deploymentStore,
 			d.deploymentChainStore,
 			d.logger,
@@ -157,7 +165,7 @@ func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) er
 	return nil
 }
 
-func listNotCompletedDeploymentChain(ctx context.Context, dcs datastore.DeploymentChainStore) ([]*model.DeploymentChain, error) {
+func listNotCompletedDeploymentChain(ctx context.Context, dcs deploymentChainStore) ([]*model.DeploymentChain, error) {
 	opts := datastore.ListOptions{
 		Filters: []datastore.ListFilter{
 			{
