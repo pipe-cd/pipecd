@@ -15,6 +15,7 @@
 package cloudrun
 
 import (
+	"google.golang.org/api/run/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
 )
@@ -34,4 +35,21 @@ func ParseRevisionManifest(data []byte) (RevisionManifest, error) {
 		Name: obj.GetName(),
 		u:    &obj,
 	}, nil
+}
+
+func (r RevisionManifest) YamlBytes() ([]byte, error) {
+	return yaml.Marshal(r.u)
+}
+
+func (r RevisionManifest) RunRevision() (*run.Revision, error) {
+	data, err := r.YamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	var rev run.Revision
+	if err := yaml.Unmarshal(data, &rev); err != nil {
+		return nil, err
+	}
+	return &rev, nil
 }

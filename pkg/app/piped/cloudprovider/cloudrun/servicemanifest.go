@@ -19,6 +19,7 @@ import (
 	"os"
 	"strings"
 
+	"google.golang.org/api/run/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/yaml"
@@ -90,6 +91,19 @@ func (m ServiceManifest) AddLabels(labels map[string]string) {
 		lbls[k] = v
 	}
 	m.u.SetLabels(lbls)
+}
+
+func (m ServiceManifest) RunService() (*run.Service, error) {
+	data, err := m.YamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	var s run.Service
+	if err := yaml.Unmarshal(data, &s); err != nil {
+		return nil, err
+	}
+	return &s, nil
 }
 
 func loadServiceManifest(path string) (ServiceManifest, error) {

@@ -53,7 +53,17 @@ func TestManifestToRunService(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, sm)
 
-	got, err := manifestToRunService(sm)
+	got, err := sm.RunService()
+	require.NoError(t, err)
+	assert.NotEmpty(t, got)
+}
+
+func TestManifestToRunRevision(t *testing.T) {
+	rm, err := ParseRevisionManifest([]byte(revisionManifest))
+	require.NoError(t, err)
+	require.NotEmpty(t, rm)
+
+	got, err := rm.RunRevision()
 	require.NoError(t, err)
 	assert.NotEmpty(t, got)
 }
