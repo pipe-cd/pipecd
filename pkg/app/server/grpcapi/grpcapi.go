@@ -32,15 +32,23 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-type commandOutputGetter interface {
-	Get(ctx context.Context, commandID string) ([]byte, error)
+type applicationGetter interface {
+	Get(ctx context.Context, id string) (*model.Application, error)
 }
 
-type commandOutputPutter interface {
-	Put(ctx context.Context, commandID string, data []byte) error
+type deploymentGetter interface {
+	Get(ctx context.Context, id string) (*model.Deployment, error)
 }
 
-func getPiped(ctx context.Context, store datastore.PipedStore, id string, logger *zap.Logger) (*model.Piped, error) {
+type pipedGetter interface {
+	Get(ctx context.Context, id string) (*model.Piped, error)
+}
+
+type environmentGetter interface {
+	Get(ctx context.Context, id string) (*model.Environment, error)
+}
+
+func getPiped(ctx context.Context, store pipedGetter, id string, logger *zap.Logger) (*model.Piped, error) {
 	piped, err := store.Get(ctx, id)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "Piped is not found")
@@ -53,7 +61,7 @@ func getPiped(ctx context.Context, store datastore.PipedStore, id string, logger
 	return piped, nil
 }
 
-func getApplication(ctx context.Context, store datastore.ApplicationStore, id string, logger *zap.Logger) (*model.Application, error) {
+func getApplication(ctx context.Context, store applicationGetter, id string, logger *zap.Logger) (*model.Application, error) {
 	app, err := store.Get(ctx, id)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "Application is not found")
@@ -66,7 +74,7 @@ func getApplication(ctx context.Context, store datastore.ApplicationStore, id st
 	return app, nil
 }
 
-func getDeployment(ctx context.Context, store datastore.DeploymentStore, id string, logger *zap.Logger) (*model.Deployment, error) {
+func getDeployment(ctx context.Context, store deploymentGetter, id string, logger *zap.Logger) (*model.Deployment, error) {
 	deployment, err := store.Get(ctx, id)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "Deployment is not found")
@@ -127,17 +135,7 @@ func makeGitPath(repoID, path, cfgFilename string, piped *model.Piped, logger *z
 	}, nil
 }
 
-func listEnvironments(ctx context.Context, store datastore.EnvironmentStore, opts datastore.ListOptions, logger *zap.Logger) ([]*model.Environment, error) {
-	envs, err := store.List(ctx, opts)
-	if err != nil {
-		logger.Error("failed to list environments", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to list environments")
-	}
-
-	return envs, nil
-}
-
-func getEnvironment(ctx context.Context, store datastore.EnvironmentStore, id string, logger *zap.Logger) (*model.Environment, error) {
+func getEnvironment(ctx context.Context, store environmentGetter, id string, logger *zap.Logger) (*model.Environment, error) {
 	env, err := store.Get(ctx, id)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "Environment is not found")

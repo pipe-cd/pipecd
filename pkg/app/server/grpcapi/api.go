@@ -35,13 +35,43 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
 
+type apiApplicationStore interface {
+	Add(ctx context.Context, app *model.Application) error
+	Get(ctx context.Context, id string) (*model.Application, error)
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Application, string, error)
+	UpdateConfigFilename(ctx context.Context, id, filename string) error
+}
+
+type apiEnvironmentStore interface {
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Environment, error)
+}
+
+type apiDeploymentStore interface {
+	Get(ctx context.Context, id string) (*model.Deployment, error)
+}
+
+type apiPipedStore interface {
+	Get(ctx context.Context, id string) (*model.Piped, error)
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Piped, error)
+	EnablePiped(ctx context.Context, id string) error
+	DisablePiped(ctx context.Context, id string) error
+}
+
+type apiEventStore interface {
+	Add(ctx context.Context, event model.Event) error
+}
+
+type commandOutputGetter interface {
+	Get(ctx context.Context, commandID string) ([]byte, error)
+}
+
 // API implements the behaviors for the gRPC definitions of API.
 type API struct {
-	applicationStore    datastore.ApplicationStore
-	environmentStore    datastore.EnvironmentStore
-	deploymentStore     datastore.DeploymentStore
-	pipedStore          datastore.PipedStore
-	eventStore          datastore.EventStore
+	applicationStore    apiApplicationStore
+	environmentStore    apiEnvironmentStore
+	deploymentStore     apiDeploymentStore
+	pipedStore          apiPipedStore
+	eventStore          apiEventStore
 	commandStore        commandstore.Store
 	commandOutputGetter commandOutputGetter
 
@@ -244,9 +274,9 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			},
 			Limit: limit,
 		}
-		envs, err := listEnvironments(ctx, a.environmentStore, envListOpts, a.logger)
+		envs, err := a.environmentStore.List(ctx, envListOpts)
 		if err != nil {
-			return nil, err
+			return nil, gRPCEntityOperationError(err, "list environment")
 		}
 
 		switch len(envs) {

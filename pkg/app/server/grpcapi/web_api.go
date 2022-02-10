@@ -50,16 +50,75 @@ type encrypter interface {
 	Encrypt(text string) (string, error)
 }
 
+type webApiApplicationStore interface {
+	Add(ctx context.Context, app *model.Application) error
+	Get(ctx context.Context, id string) (*model.Application, error)
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Application, string, error)
+	Delete(ctx context.Context, id string) error
+	UpdateConfiguration(ctx context.Context, id, pipedID, cloudProvider, configFilename string) error
+	Enable(ctx context.Context, id string) error
+	Disable(ctx context.Context, id string) error
+}
+
+type webApiEnvironmentStore interface {
+	Get(ctx context.Context, id string) (*model.Environment, error)
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Environment, error)
+	Delete(ctx context.Context, id string) error
+	EnableEnvironment(ctx context.Context, id string) error
+	DisableEnvironment(ctx context.Context, id string) error
+}
+
+type webApiDeploymentChainStore interface {
+	Get(ctx context.Context, id string) (*model.DeploymentChain, error)
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.DeploymentChain, string, error)
+}
+
+type webApiDeploymentStore interface {
+	Get(ctx context.Context, id string) (*model.Deployment, error)
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Deployment, string, error)
+}
+
+type webApiPipedStore interface {
+	Add(ctx context.Context, piped *model.Piped) error
+	Get(ctx context.Context, id string) (*model.Piped, error)
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Piped, error)
+	AddKey(ctx context.Context, id, keyHash, creator string, createdAt time.Time) error
+	DeleteOldKeys(ctx context.Context, id string) error
+	UpdateInfo(ctx context.Context, id, name, desc string, envIds []string) error
+	EnablePiped(ctx context.Context, id string) error
+	DisablePiped(ctx context.Context, id string) error
+	UpdateDesiredVersion(ctx context.Context, id, version string) error
+}
+
+type webApiProjectStore interface {
+	Get(ctx context.Context, id string) (*model.Project, error)
+	UpdateProjectStaticAdmin(ctx context.Context, id, username, password string) error
+	EnableStaticAdmin(ctx context.Context, id string) error
+	DisableStaticAdmin(ctx context.Context, id string) error
+	UpdateProjectSSOConfig(ctx context.Context, id string, sso *model.ProjectSSOConfig) error
+	UpdateProjectRBACConfig(ctx context.Context, id string, sso *model.ProjectRBACConfig) error
+}
+
+type webApiEventStore interface {
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Event, string, error)
+}
+
+type webApiAPIKeyStore interface {
+	Add(ctx context.Context, k *model.APIKey) error
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.APIKey, error)
+	Disable(ctx context.Context, id, projectID string) error
+}
+
 // WebAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
-	applicationStore          datastore.ApplicationStore
-	environmentStore          datastore.EnvironmentStore
-	deploymentChainStore      datastore.DeploymentChainStore
-	deploymentStore           datastore.DeploymentStore
-	pipedStore                datastore.PipedStore
-	projectStore              datastore.ProjectStore
-	apiKeyStore               datastore.APIKeyStore
-	eventStore                datastore.EventStore
+	applicationStore          webApiApplicationStore
+	environmentStore          webApiEnvironmentStore
+	deploymentChainStore      webApiDeploymentChainStore
+	deploymentStore           webApiDeploymentStore
+	pipedStore                webApiPipedStore
+	projectStore              webApiProjectStore
+	apiKeyStore               webApiAPIKeyStore
+	eventStore                webApiEventStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
