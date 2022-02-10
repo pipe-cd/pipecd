@@ -40,26 +40,9 @@ type app struct {
 }
 
 func (s *store) run(ctx context.Context) error {
-	const maxLimit = 500
-	var cursor string
-	svcs := make([]*provider.Service, 0, maxLimit)
-	for {
-		ops := &provider.ListOptions{
-			Limit:         maxLimit,
-			LabelSelector: provider.MakeManagedByPipedSelector(),
-			Cursor:        cursor,
-		}
-		// Cloud Run Admin API rate Limits.
-		// https://cloud.google.com/run/quotas#api
-		v, next, err := s.client.List(ctx, ops)
-		if err != nil {
-			return fmt.Errorf("failed to list cloudrun services: %w", err)
-		}
-		svcs = append(svcs, v...)
-		if next == "" {
-			break
-		}
-		cursor = next
+	svcs, err := s.getAllServices(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get all cloudrun services: %w", err)
 	}
 
 	revs := make(map[string][]*provider.Revision, len(svcs))
@@ -75,12 +58,12 @@ func (s *store) run(ctx context.Context) error {
 	}
 
 	// Update apps to the latest.
-	s.setApps(ctx, svcs, revs)
+	s.setApps(svcs, revs)
 
 	return nil
 }
 
-func (s *store) setApps(ctx context.Context, svcs []*provider.Service, revs map[string][]*provider.Revision) {
+func (s *store) setApps(svcs []*provider.Service, revs map[string][]*provider.Revision) {
 	apps := make(map[string]*app, len(svcs))
 	for i := range svcs {
 		sm, err := svcs[i].ServiceManifest()
@@ -95,22 +78,41 @@ func (s *store) setApps(ctx context.Context, svcs []*provider.Service, revs map[
 		}
 
 		id, _ := svcs[i].UID()
-		rs, ok := revs[id]
-		if !ok {
-			apps[appID] = &app{service: sm}
-			continue
-		}
-
 		now := time.Now()
 		apps[appID] = &app{
 			service: sm,
-			states:  provider.MakeResourceStates(svcs[i], rs, now),
+			states:  provider.MakeResourceStates(svcs[i], revs[id], now),
 			version: model.ApplicationLiveStateVersion{
 				Timestamp: now.Unix(),
 			},
 		}
 	}
 	s.apps.Store(apps)
+}
+
+func (s *store) getAllServices(ctx context.Context) ([]*provider.Service, error) {
+	const maxLimit = 500
+	var cursor string
+	svcs := make([]*provider.Service, 0, maxLimit)
+	for {
+		ops := &provider.ListOptions{
+			Limit:         maxLimit,
+			LabelSelector: provider.MakeManagedByPipedSelector(),
+			Cursor:        cursor,
+		}
+		// Cloud Run Admin API rate Limits.
+		// https://cloud.google.com/run/quotas#api
+		v, next, err := s.client.List(ctx, ops)
+		if err != nil {
+			return nil, err
+		}
+		svcs = append(svcs, v...)
+		if next == "" {
+			break
+		}
+		cursor = next
+	}
+	return svcs, nil
 }
 
 func (s *store) getMultiRevisions(ctx context.Context, names []string) []*provider.Revision {
