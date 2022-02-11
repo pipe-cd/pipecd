@@ -222,8 +222,8 @@ Must be one of the following structs:
 | ignoreGroups | []string | List of event groups should be ignored. | No |
 | apps | []string | List of applications where their events should be routed to the receiver. | No |
 | ignoreApps | []string | List of applications where their events should be ignored. | No |
-| envs | []string | List of environments where their events should be routed to the receiver. | No |
-| ignoreEnvs | []string | List of environments where their events should be ignored. | No |
+| labels | map[string]string | List of labels where their events should be routed to the receiver. | No |
+| ignoreLabels | map[string]string | List of labels where their events should be ignored. | No |
 
 
 ## NotificationReceiver
