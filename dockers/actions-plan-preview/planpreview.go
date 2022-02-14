@@ -22,8 +22,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 type PlanPreviewResult struct {
@@ -137,6 +139,12 @@ const (
 	noChangeTitleFormat  = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `0` updated application. It means no deployment will be triggered once this pull request got merged.\n"
 	hasChangeTitleFormat = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `%d` updated applications and here are their plan results. Once this pull request got merged their deployments will be triggered to run as these estimations.\n"
 	detailsFormat        = "<details>\n<summary>Details (Click me)</summary>\n<p>\n\n``` %s\n%s\n```\n</p>\n</details>\n"
+	detailsOmitted       = "Details are too long, so omitted"
+
+	ghMessageLenLimit = 65536
+
+	// Limit of details
+	reservedDetailMessagesLen = ghMessageLenLimit - 2000
 )
 
 func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
@@ -161,6 +169,12 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 
 	changedApps, pipelineApps, quickSyncApps := groupApplicationResults(r.Applications)
 
+	sort.SliceStable(changedApps, func(i, j int) bool {
+		return len(changedApps[i].PlanDetails) < len(changedApps[j].PlanDetails)
+	})
+
+	var detailLen int64
+
 	for _, app := range changedApps {
 		fmt.Fprintf(&b, "\n## app: [%s](%s), env: [%s](%s), kind: %s\n", app.ApplicationName, app.ApplicationURL, app.EnvName, app.EnvURL, strings.ToLower(app.ApplicationKind))
 		fmt.Fprintf(&b, "Sync strategy: %s\n", app.SyncStrategy)
@@ -170,6 +184,15 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		if app.ApplicationKind == "TERRAFORM" {
 			lang = "hcl"
 		}
+
+		l := utf8.RuneCountInString(app.PlanDetails)
+		if detailLen+int64(l) > reservedDetailMessagesLen {
+			fmt.Fprint(&b, detailsOmitted)
+			detailLen += int64(utf8.RuneCountInString(detailsOmitted))
+			continue
+		}
+
+		detailLen += int64(l)
 		fmt.Fprintf(&b, detailsFormat, lang, app.PlanDetails)
 	}
 
@@ -200,6 +223,10 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 	if len(r.FailureApplications) > 0 {
 		fmt.Fprintf(&b, "**An error occurred while building plan-preview for the following applications**\n")
 
+		sort.SliceStable(r.FailureApplications, func(i, j int) bool {
+			return len(r.FailureApplications[i].PlanDetails) < len(r.FailureApplications[j].PlanDetails)
+		})
+
 		for _, app := range r.FailureApplications {
 			fmt.Fprintf(&b, "\n## app: [%s](%s), env: [%s](%s), kind: %s\n", app.ApplicationName, app.ApplicationURL, app.EnvName, app.EnvURL, strings.ToLower(app.ApplicationKind))
 			fmt.Fprintf(&b, "Reason: %s\n\n", app.Reason)
@@ -208,6 +235,14 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 			if app.ApplicationKind == "TERRAFORM" {
 				lang = "hcl"
 			}
+
+			l := utf8.RuneCountInString(app.PlanDetails)
+			if detailLen+int64(l) > reservedDetailMessagesLen {
+				fmt.Fprint(&b, detailsOmitted)
+				detailLen += int64(utf8.RuneCountInString(detailsOmitted))
+				continue
+			}
+			detailLen += int64(l)
 			fmt.Fprintf(&b, detailsFormat, lang, app.PlanDetails)
 		}
 	}
