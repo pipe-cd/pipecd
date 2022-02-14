@@ -160,6 +160,41 @@ func (c *client) GetRevision(ctx context.Context, name string) (*Revision, error
 	return (*Revision)(revision), nil
 }
 
+func (c *client) ListRevisions(ctx context.Context, options *ListRevisionsOptions) ([]*Revision, string, error) {
+	var (
+		rev    = run.NewNamespacesRevisionsService(c.client)
+		parent = makeCloudRunParent(c.projectID)
+		call   = rev.List(parent)
+	)
+	call.Context(ctx)
+	if options.Limit != 0 {
+		call.Limit(options.Limit)
+	}
+	if options.LabelSelector != "" {
+		call.LabelSelector(options.LabelSelector)
+	}
+	if options.Cursor != "" {
+		call.Continue(options.Cursor)
+	}
+
+	resp, err := call.Do()
+	if err != nil {
+		return nil, "", err
+	}
+	var cursor string
+	if resp.Metadata != nil {
+		cursor = resp.Metadata.Continue
+	}
+
+	revs := make([]*Revision, 0, len(resp.Items))
+	for i := range resp.Items {
+		rev := (*Revision)(resp.Items[i])
+		revs = append(revs, rev)
+	}
+
+	return revs, cursor, nil
+}
+
 func makeCloudRunParent(projectID string) string {
 	return fmt.Sprintf("namespaces/%s", projectID)
 }

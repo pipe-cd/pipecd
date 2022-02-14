@@ -57,9 +57,16 @@ type Client interface {
 	Update(ctx context.Context, sm ServiceManifest) (*Service, error)
 	List(ctx context.Context, options *ListOptions) ([]*Service, string, error)
 	GetRevision(ctx context.Context, name string) (*Revision, error)
+	ListRevisions(ctx context.Context, options *ListRevisionsOptions) ([]*Revision, string, error)
 }
 
 type ListOptions struct {
+	Limit         int64
+	LabelSelector string
+	Cursor        string
+}
+
+type ListRevisionsOptions struct {
 	Limit         int64
 	LabelSelector string
 	Cursor        string
