@@ -13,7 +13,7 @@ Notification configuration including:
 - a list of `Route`s which used to match events and decide where the event should be sent to
 - a list of `Receiver`s which used to know how to send events to the external service
 
-[Notification Route](/docs/operator-manual/piped/configuration-reference/#notificationroute) matches events based on their metadata like `name`, `group`, `env`, `app`.
+[Notification Route](/docs/operator-manual/piped/configuration-reference/#notificationroute) matches events based on their metadata like `name`, `group`, `app`, `labels`.
 Below is the list of supporting event names and their groups.
 
 | Event | Group | Supported |
@@ -42,18 +42,20 @@ kind: Piped
 spec:
   notifications:
     routes:
-      # Sending all event from development environment to dev-slack-channel.
+      # Sending all event which contains labels `env: dev` to dev-slack-channel.
       - name: dev-slack
-        envs:
-          - dev
+        labels:
+          env: dev
         receiver: dev-slack-channel
-      # Only sending deployment started and completed events to prod-slack-channel.
+      # Only sending deployment started and completed events which contains
+      # labels `env: prod` and `team: pipecd` to prod-slack-channel.
       - name: prod-slack
         events:
           - DEPLOYMENT_STARTED
           - DEPLOYMENT_COMPLETED
-        envs:
-          - dev
+        labels:
+          env: prod
+          team: pipecd
         receiver: prod-slack-channel
     receivers:
       - name: dev-slack-channel
