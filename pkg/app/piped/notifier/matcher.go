@@ -101,13 +101,11 @@ func (m *matcher) Match(event model.NotificationEvent) bool {
 			return false
 		}
 
-		contains := 0
 		for k, v := range m.labels {
-			if labels[k] == v {
-				contains++
+			if labels[k] != v {
+				return false
 			}
 		}
-		return contains == len(m.labels)
 	}
 
 	return true
