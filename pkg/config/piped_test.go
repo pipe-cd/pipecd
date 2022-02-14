@@ -160,13 +160,18 @@ func TestPipedConfig(t *testing.T) {
 				Notifications: Notifications{
 					Routes: []NotificationRoute{
 						{
-							Name:     "dev-slack",
-							Envs:     []string{"dev"},
+							Name: "dev-slack",
+							Labels: map[string]string{
+								"env":  "dev",
+								"team": "pipecd",
+							},
 							Receiver: "dev-slack-channel",
 						},
 						{
-							Name:     "prod-slack",
-							Envs:     []string{"dev"},
+							Name: "prod-slack",
+							Labels: map[string]string{
+								"env": "dev",
+							},
 							Events:   []string{"DEPLOYMENT_STARTED", "DEPLOYMENT_COMPLETED"},
 							Receiver: "prod-slack-channel",
 						},

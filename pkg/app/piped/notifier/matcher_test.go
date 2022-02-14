@@ -116,6 +116,75 @@ func TestMatch(t *testing.T) {
 				}: true,
 			},
 		},
+		{
+			name: "filter by labels",
+			config: config.NotificationRoute{
+				Labels: map[string]string{
+					"env":  "dev",
+					"team": "pipecd",
+				},
+				IgnoreLabels: map[string]string{
+					"env":  "local",
+					"team": "not-pipecd",
+				},
+			},
+			matchings: map[model.NotificationEvent]bool{
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+					Metadata: &model.NotificationEventDeploymentTriggered{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"team":    "pipecd",
+								"env":     "dev",
+								"project": "pipecd",
+							},
+						},
+					},
+				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+					Metadata: &model.NotificationEventDeploymentTriggered{
+						Deployment: &model.Deployment{},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+					Metadata: &model.NotificationEventDeploymentTriggered{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"team": "pipecd",
+								"env":  "prod",
+							},
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+					Metadata: &model.NotificationEventDeploymentTriggered{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env": "stg",
+							},
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+					Metadata: &model.NotificationEventDeploymentTriggered{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env":  "local",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: false,
+				{
+					Type:     model.NotificationEventType_EVENT_PIPED_STARTED,
+					Metadata: &model.NotificationEventPipedStarted{},
+				}: true,
+			},
+		},
 	}
 
 	for _, tc := range testcases {

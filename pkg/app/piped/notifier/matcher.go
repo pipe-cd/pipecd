@@ -26,7 +26,8 @@ type matcher struct {
 	ignoreGroups map[string]struct{}
 	apps         map[string]struct{}
 	ignoreApps   map[string]struct{}
-	// TODO: Support Labels matcher.
+	labels       map[string]string
+	ignoreLabels map[string]string
 }
 
 func newMatcher(cfg config.NotificationRoute) *matcher {
@@ -37,11 +38,17 @@ func newMatcher(cfg config.NotificationRoute) *matcher {
 		ignoreGroups: makeStringMap(cfg.IgnoreGroups, "EVENT"),
 		apps:         makeStringMap(cfg.Apps, ""),
 		ignoreApps:   makeStringMap(cfg.IgnoreApps, ""),
+		labels:       cfg.Labels,
+		ignoreLabels: cfg.IgnoreLabels,
 	}
 }
 
 type appNameMetadata interface {
 	GetAppName() string
+}
+
+type labelsMetadata interface {
+	GetLabels() map[string]string
 }
 
 func (m *matcher) Match(event model.NotificationEvent) bool {
@@ -60,6 +67,20 @@ func (m *matcher) Match(event model.NotificationEvent) bool {
 		return false
 	}
 
+	var (
+		labels        = make(map[string]string)
+		supportLabels = false
+	)
+	if md, ok := event.Metadata.(labelsMetadata); ok {
+		labels = md.GetLabels()
+		supportLabels = true
+	}
+	for k, v := range labels {
+		if m.ignoreLabels[k] == v {
+			return false
+		}
+	}
+
 	if len(m.events) > 0 {
 		if _, ok := m.events[event.Type.String()]; !ok {
 			return false
@@ -73,6 +94,17 @@ func (m *matcher) Match(event model.NotificationEvent) bool {
 	if len(m.apps) > 0 && appName != "" {
 		if _, ok := m.apps[appName]; !ok {
 			return false
+		}
+	}
+	if len(m.labels) > 0 && supportLabels {
+		if len(labels) < len(m.labels) {
+			return false
+		}
+
+		for k, v := range m.labels {
+			if labels[k] != v {
+				return false
+			}
 		}
 	}
 
