@@ -99,7 +99,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 
 	// Add builtin labels for tracking application live state
 	commit := e.Deployment.CommitHash()
-	if !addBuiltinLabels(sm, e.LogPersister, commit, e.PipedConfig.PipedID, e.Deployment.ApplicationId, revision) {
+	if !addBuiltinLabels(sm, commit, e.PipedConfig.PipedID, e.Deployment.ApplicationId, revision, e.LogPersister) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

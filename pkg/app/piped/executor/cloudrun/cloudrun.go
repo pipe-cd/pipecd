@@ -148,7 +148,7 @@ func revisionExists(ctx context.Context, client provider.Client, revisionName st
 	return false, err
 }
 
-func addBuiltinLabels(sm provider.ServiceManifest, lp executor.LogPersister, hash, pipedID, appID, revisionName string) bool {
+func addBuiltinLabels(sm provider.ServiceManifest, hash, pipedID, appID, revisionName string, lp executor.LogPersister) bool {
 	labels := map[string]string{
 		provider.LabelManagedBy:   provider.ManagedByPiped,
 		provider.LabelPiped:       pipedID,
