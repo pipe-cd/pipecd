@@ -99,18 +99,18 @@ func (m ServiceManifest) AddRevisionLabels(labels map[string]string) error {
 	}
 
 	fields := []string{"spec", "template", "metadata", "labels"}
-	lbls, ok, err := unstructured.NestedMap(m.u.Object, fields...)
+	lbls, ok, err := unstructured.NestedStringMap(m.u.Object, fields...)
 	if err != nil {
 		return err
 	}
 	if !ok {
-		return unstructured.SetNestedField(m.u.Object, labels, fields...)
+		return unstructured.SetNestedStringMap(m.u.Object, labels, fields...)
 	}
 
 	for k, v := range labels {
 		lbls[k] = v
 	}
-	return unstructured.SetNestedField(m.u.Object, lbls, fields...)
+	return unstructured.SetNestedStringMap(m.u.Object, lbls, fields...)
 }
 
 func (m ServiceManifest) RunService() (*run.Service, error) {
