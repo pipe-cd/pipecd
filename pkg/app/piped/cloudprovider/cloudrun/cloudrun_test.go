@@ -38,9 +38,16 @@ func TestLoadServiceManifest(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestMakeManagedByPipedLabel(t *testing.T) {
+func TestMakeManagedByPipedSelector(t *testing.T) {
 	want := "pipecd-dev-managed-by=piped"
-	got := MakeManagedByPipedLabel()
+	got := MakeManagedByPipedSelector()
+	assert.Equal(t, want, got)
+}
+
+func TestMakeRevisionNamesSelector(t *testing.T) {
+	names := []string{"test-1", "test-2", "test-3"}
+	got := MakeRevisionNamesSelector(names)
+	want := "pipecd-dev-revision-name in (test-1,test-2,test-3)"
 	assert.Equal(t, want, got)
 }
 

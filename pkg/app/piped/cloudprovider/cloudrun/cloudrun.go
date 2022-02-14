@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 
 	"go.uber.org/zap"
@@ -123,8 +124,12 @@ func (r *registry) Client(ctx context.Context, name string, cfg *config.CloudPro
 	return client, nil
 }
 
-func MakeManagedByPipedLabel() string {
+func MakeManagedByPipedSelector() string {
 	return fmt.Sprintf("%s=%s", LabelManagedBy, ManagedByPiped)
+}
+
+func MakeRevisionNamesSelector(names []string) string {
+	return fmt.Sprintf("%s in (%s)", LabelRevisionName, strings.Join(names, ","))
 }
 
 func (s *Service) ServiceManifest() (ServiceManifest, error) {
