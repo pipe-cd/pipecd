@@ -148,12 +148,21 @@ func revisionExists(ctx context.Context, client provider.Client, revisionName st
 	return false, err
 }
 
-func addBuiltinLabels(sm provider.ServiceManifest, hash, pipedID, appID string) {
+func addBuiltinLabels(sm provider.ServiceManifest, hash, pipedID, appID, revisionName string, lp executor.LogPersister) bool {
 	labels := map[string]string{
 		provider.LabelManagedBy:   provider.ManagedByPiped,
 		provider.LabelPiped:       pipedID,
 		provider.LabelApplication: appID,
 		provider.LabelCommitHash:  hash,
 	}
+	// Set builtinLabels for Service.
 	sm.AddLabels(labels)
+
+	// Set buildinLabels for Revision.
+	labels[provider.LabelRevisionName] = revisionName
+	if err := sm.AddRevisionLabels(labels); err != nil {
+		lp.Errorf("Unable to add revision labels for the service manifest %s (%v)", sm.Name, err)
+		return false
+	}
+	return true
 }

@@ -136,6 +136,10 @@ func TestServiceManifest(t *testing.T) {
 	labels[LabelRevisionName] = "revision"
 	err = sm.AddRevisionLabels(labels)
 	require.NoError(t, err)
+
+	// RevisionLabels
+	v := sm.RevisionLabels()
+	assert.Equal(t, labels, v)
 }
 
 func TestParseServiceManifest(t *testing.T) {

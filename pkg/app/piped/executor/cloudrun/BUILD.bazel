@@ -24,4 +24,9 @@ go_test(
     size = "small",
     srcs = ["cloudrun_test.go"],
     embed = [":go_default_library"],
+    deps = [
+        "//pkg/app/piped/cloudprovider/cloudrun:go_default_library",
+        "@com_github_stretchr_testify//assert:go_default_library",
+        "@com_github_stretchr_testify//require:go_default_library",
+    ],
 )
