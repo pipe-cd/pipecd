@@ -93,6 +93,26 @@ func (m ServiceManifest) AddLabels(labels map[string]string) {
 	m.u.SetLabels(lbls)
 }
 
+func (m ServiceManifest) AddRevisionLabels(labels map[string]string) error {
+	if len(labels) == 0 {
+		return nil
+	}
+
+	fields := []string{"spec", "template", "metadata", "labels"}
+	lbls, ok, err := unstructured.NestedStringMap(m.u.Object, fields...)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return unstructured.SetNestedStringMap(m.u.Object, labels, fields...)
+	}
+
+	for k, v := range labels {
+		lbls[k] = v
+	}
+	return unstructured.SetNestedStringMap(m.u.Object, lbls, fields...)
+}
+
 func (m ServiceManifest) RunService() (*run.Service, error) {
 	data, err := m.YamlBytes()
 	if err != nil {

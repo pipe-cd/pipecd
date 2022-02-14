@@ -128,6 +128,14 @@ func TestServiceManifest(t *testing.T) {
 	got, err := sm.RunService()
 	require.NoError(t, err)
 	assert.NotEmpty(t, got)
+
+	// AddRevisionLabels
+	err = sm.AddRevisionLabels(labels)
+	require.NoError(t, err)
+
+	labels[LabelRevisionName] = "revision"
+	err = sm.AddRevisionLabels(labels)
+	require.NoError(t, err)
 }
 
 func TestParseServiceManifest(t *testing.T) {
