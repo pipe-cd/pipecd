@@ -69,6 +69,11 @@ func (m ServiceManifest) Labels() map[string]string {
 	return m.u.GetLabels()
 }
 
+func (m ServiceManifest) RevisionLabels() map[string]string {
+	v, _, _ := unstructured.NestedStringMap(m.u.Object, "spec", "template", "metadata", "labels")
+	return v
+}
+
 func (m ServiceManifest) AppID() (string, bool) {
 	v := m.Labels()
 	if v == nil || v[LabelApplication] == "" {
