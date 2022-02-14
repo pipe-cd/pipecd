@@ -25,8 +25,8 @@ openssl pkey -in private-key -pubout -out public-key
 作成後、`Piped` の[インストール](http://localhost:1313/docs/operator-manual/piped/installation/#installing-on-a-kubernetes-cluster)時に以下のオプションを追加します。
 
 ``` console
---set-file secret.secretManagementKeyPair.publicKey.data=PATH_TO_PUBLIC_KEY_FILE \
---set-file secret.secretManagementKeyPair.privateKey.data=PATH_TO_PRIVATE_KEY_FILE
+--set-file secret.data.secret-public-key=PATH_TO_PUBLIC_KEY_FILE \
+--set-file secret.data.secret-private-key=PATH_TO_PRIVATE_KEY_FILE
 ```
 
 Piped の設定ファイルに `secretManagement` フィールドを追加すれば準備は完了です。
@@ -40,8 +40,8 @@ spec:
   secretManagement:
     type: KEY_PAIR
     config:
-      privateKeyFile: /etc/piped-secret/secret-management-private-key
-      publicKeyFile: /etc/piped-secret/secret-management-public-key
+      privateKeyFile: /etc/piped-secret/secret-private-key
+      publicKeyFile: /etc/piped-secret/secret-public-key
 ```
 
 ## 機密データの暗号化

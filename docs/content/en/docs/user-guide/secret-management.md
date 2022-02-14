@@ -27,8 +27,8 @@ openssl pkey -in private-key -pubout -out public-key
 Then specify them while [installing](http://localhost:1313/docs/operator-manual/piped/installation/#installing-on-a-kubernetes-cluster) the `Piped` with these options:
 
 ``` console
---set-file secret.secretManagementKeyPair.publicKey.data=PATH_TO_PUBLIC_KEY_FILE \
---set-file secret.secretManagementKeyPair.privateKey.data=PATH_TO_PRIVATE_KEY_FILE
+--set-file secret.data.secret-public-key=PATH_TO_PUBLIC_KEY_FILE \
+--set-file secret.data.secret-private-key=PATH_TO_PRIVATE_KEY_FILE
 ```
 
 Finally, enable this feature in Piped configuration file with `secretManagement` field as below:
@@ -42,8 +42,8 @@ spec:
   secretManagement:
     type: KEY_PAIR
     config:
-      privateKeyFile: /etc/piped-secret/secret-management-private-key
-      publicKeyFile: /etc/piped-secret/secret-management-public-key
+      privateKeyFile: /etc/piped-secret/secret-private-key
+      publicKeyFile: /etc/piped-secret/secret-public-key
 ```
 
 ## Encrypting secret data
