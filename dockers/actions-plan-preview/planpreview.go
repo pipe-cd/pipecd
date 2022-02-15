@@ -187,7 +187,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 
 		l := utf8.RuneCountInString(app.PlanDetails)
 		if detailLen+int64(l) > reservedDetailMessagesLen {
-			fmt.Fprint(&b, detailsOmittedMessage)
+			fmt.Fprintf(&b, detailsFormat, lang, detailsOmittedMessage)
 			detailLen += int64(utf8.RuneCountInString(detailsOmittedMessage))
 			continue
 		}
@@ -238,7 +238,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 
 			l := utf8.RuneCountInString(app.PlanDetails)
 			if detailLen+int64(l) > reservedDetailMessagesLen {
-				fmt.Fprint(&b, detailsOmittedMessage)
+				fmt.Fprintf(&b, detailsFormat, lang, detailsOmittedMessage)
 				detailLen += int64(utf8.RuneCountInString(detailsOmittedMessage))
 				continue
 			}
