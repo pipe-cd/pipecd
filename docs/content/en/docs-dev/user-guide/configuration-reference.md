@@ -317,6 +317,7 @@ One of `yamlField` or `regex` is required.
 | valueFiles | []string | List of value files should be loaded. | No |
 | setFiles | map[string]string | List of file path for values. | No |
 | apiVersions | []string | Kubernetes api versions used for Capabilities.APIVersions. | No |
+| kubeVersion | string | Kubernetes version used for Capabilities.KubeVersion. | No |
 
 ## KubernetesQuickSync
 

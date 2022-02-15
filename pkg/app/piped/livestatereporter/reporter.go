@@ -25,6 +25,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
+	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatereporter/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -54,7 +55,7 @@ type providerReporter interface {
 	ProviderName() string
 }
 
-func NewReporter(appLister applicationLister, stateGetter livestatestore.Getter, apiClient apiClient, cfg *config.PipedSpec, logger *zap.Logger) *reporter {
+func NewReporter(appLister applicationLister, stateGetter livestatestore.Getter, apiClient apiClient, cfg *config.PipedSpec, logger *zap.Logger) Reporter {
 	r := &reporter{
 		reporters: make([]providerReporter, 0, len(cfg.CloudProviders)),
 		logger:    logger.Named("live-state-reporter"),
@@ -68,7 +69,7 @@ func NewReporter(appLister applicationLister, stateGetter livestatestore.Getter,
 				r.logger.Error(fmt.Sprintf("unable to find live state getter for cloud provider: %s", cp.Name))
 				continue
 			}
-			r.reporters = append(r.reporters, newKubernetesReporter(cp, appLister, sg, apiClient, logger))
+			r.reporters = append(r.reporters, kubernetes.NewReporter(cp, appLister, sg, apiClient, logger))
 
 		default:
 		}

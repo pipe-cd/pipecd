@@ -109,16 +109,18 @@ type DeploymentChainStore interface {
 
 type deploymentChainStore struct {
 	backend
-	nowFunc func() time.Time
+	commander Commander
+	nowFunc   func() time.Time
 }
 
-func NewDeploymentChainStore(ds DataStore) DeploymentChainStore {
+func NewDeploymentChainStore(ds DataStore, c Commander) DeploymentChainStore {
 	return &deploymentChainStore{
 		backend: backend{
 			ds:  ds,
 			col: &deploymentChainCollection{},
 		},
-		nowFunc: time.Now,
+		commander: c,
+		nowFunc:   time.Now,
 	}
 }
 

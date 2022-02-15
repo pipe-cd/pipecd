@@ -38,9 +38,9 @@ type store struct {
 	logger  *zap.Logger
 }
 
-func NewStore(ds datastore.DataStore, c cache.Cache, logger *zap.Logger) Store {
+func NewStore(w datastore.Commander, ds datastore.DataStore, c cache.Cache, logger *zap.Logger) Store {
 	return &store{
-		backend: datastore.NewCommandStore(ds),
+		backend: datastore.NewCommandStore(ds, w),
 		cache: &commandCache{
 			backend: c,
 		},

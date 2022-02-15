@@ -33,7 +33,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/apikeyverifier"
 	"github.com/pipe-cd/pipecd/pkg/app/server/applicationlivestatestore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandoutputstore"
-	"github.com/pipe-cd/pipecd/pkg/app/server/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/grpcapi"
 	"github.com/pipe-cd/pipecd/pkg/app/server/httpapi"
 	"github.com/pipe-cd/pipecd/pkg/app/server/httpapi/httpapimetrics"
@@ -184,7 +183,6 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 	sls := stagelogstore.NewStore(fs, cache, input.Logger)
 	alss := applicationlivestatestore.NewStore(fs, cache, input.Logger)
 	las := analysisresultstore.NewStore(fs, input.Logger)
-	cmds := commandstore.NewStore(ds, cache, input.Logger)
 	is := insightstore.NewStore(fs)
 	cmdOutputStore := commandoutputstore.NewStore(fs, input.Logger)
 	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
@@ -195,11 +193,12 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			verifier = pipedverifier.NewVerifier(
 				ctx,
 				cfg,
-				datastore.NewProjectStore(ds),
-				datastore.NewPipedStore(ds),
+				// These stores are used to handle PipedAPI request, thus the writer should be PipedWriter.
+				datastore.NewProjectStore(ds, datastore.PipedCommander),
+				datastore.NewPipedStore(ds, datastore.PipedCommander),
 				input.Logger,
 			)
-			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, las, cmds, statCache, rd, cmdOutputStore, cfg.Address, input.Logger)
+			service = grpcapi.NewPipedAPI(ctx, ds, cache, sls, alss, las, statCache, rd, cmdOutputStore, cfg.Address, input.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),
@@ -230,11 +229,11 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 		var (
 			verifier = apikeyverifier.NewVerifier(
 				ctx,
-				datastore.NewAPIKeyStore(ds),
+				datastore.NewAPIKeyStore(ds, datastore.PipectlCommander),
 				input.Logger,
 			)
 
-			service = grpcapi.NewAPI(ctx, ds, cmds, cmdOutputStore, statCache, cfg.Address, input.Logger)
+			service = grpcapi.NewAPI(ctx, ds, cache, cmdOutputStore, statCache, cfg.Address, input.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.apiPort),
 				rpc.WithGracePeriod(s.gracePeriod),
@@ -271,7 +270,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			return err
 		}
 
-		service := grpcapi.NewWebAPI(ctx, ds, sls, alss, cmds, is, statCache, rd, cfg.ProjectMap(), encryptDecrypter, input.Logger)
+		service := grpcapi.NewWebAPI(ctx, ds, cache, sls, alss, is, statCache, rd, cfg.ProjectMap(), encryptDecrypter, input.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
@@ -314,7 +313,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			cfg.StateKey,
 			cfg.ProjectMap(),
 			cfg.SharedSSOConfigMap(),
-			datastore.NewProjectStore(ds),
+			datastore.NewProjectStore(ds, datastore.WebCommander),
 			!s.insecureCookie,
 			input.Logger,
 		)

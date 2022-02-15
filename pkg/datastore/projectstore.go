@@ -47,16 +47,18 @@ type ProjectStore interface {
 
 type projectStore struct {
 	backend
-	nowFunc func() time.Time
+	commander Commander
+	nowFunc   func() time.Time
 }
 
-func NewProjectStore(ds DataStore) ProjectStore {
+func NewProjectStore(ds DataStore, c Commander) ProjectStore {
 	return &projectStore{
 		backend: backend{
 			ds:  ds,
 			col: &projectCollection{},
 		},
-		nowFunc: time.Now,
+		commander: c,
+		nowFunc:   time.Now,
 	}
 }
 
