@@ -93,9 +93,9 @@ privacy_policy = "https://github.com/pipe-cd/pipecd/blob/master/LICENSE"
 version_menu = ""
 
 # Repository configuration (URLs for in-page links to opening issues and suggesting changes)
-github_repo = "https://github.com/pipe-cd/pipe"
+github_repo = "https://github.com/pipe-cd/pipecd"
 # An optional link to a related project repo. For example, the sibling repository where your product code lives.
-github_project_repo = "https://github.com/pipe-cd/pipe"
+github_project_repo = "https://github.com/pipe-cd/pipecd"
 
 # Specify a value here if your content directory is not in your repo's root directory
 github_subdir = "docs"

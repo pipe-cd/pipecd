@@ -20,7 +20,7 @@ or directly install its [binary](https://github.com/bazelbuild/bazelisk/releases
 For more information, you might want to read the [installation notes of `bazelisk`](https://github.com/bazelbuild/bazelisk#requirements).
 
 ## Repositories
-- [pipe](https://github.com/pipe-cd/pipe): contains all source code and documentation of PipeCD project.
+- [pipecd](https://github.com/pipe-cd/pipecd): contains all source code and documentation of PipeCD project.
 - [manifests](https://github.com/pipe-cd/manifests): contains all automatically generated release manifests for both `piped` and `control-plane` components.
 - [examples](https://github.com/pipe-cd/examples): contains various generated examples to demonstrate how to use PipeCD.
 

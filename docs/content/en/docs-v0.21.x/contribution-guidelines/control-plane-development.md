@@ -31,7 +31,7 @@ This command compiles the local source code to build the docker images for `pipe
 
 ### Rendering the local manifests
 
-Because the `manifests` directory at [pipe-cd/pipe](https://github.com/pipe-cd/pipe) are just containing the manifest templates, they cannot be used to install directly. The following command helps rendering those templates locally. The installable manifests will be stored at `.rendered-manifests` directory.
+Because the `manifests` directory at [pipe-cd/pipecd](https://github.com/pipe-cd/pipecd) are just containing the manifest templates, they cannot be used to install directly. The following command helps rendering those templates locally. The installable manifests will be stored at `.rendered-manifests` directory.
 
 ``` console
 make render-manifests
