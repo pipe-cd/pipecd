@@ -115,6 +115,8 @@ type InputHelmOptions struct {
 	ValueFiles []string `json:"valueFiles"`
 	// List of file path for values.
 	SetFiles map[string]string
+	// Kubernetes version used for Capabilities.KubeVersion
+	KubeVersion string `json"kubeVersion"`
 }
 
 type KubernetesTrafficRoutingMethod string
