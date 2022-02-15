@@ -144,7 +144,7 @@ const (
 	ghMessageLenLimit = 65536
 
 	// Limit of details
-	detailsLenLimit = ghMessageLenLimit - 5000  // 5000 characters could be used for other parts in the comment message.
+	detailsLenLimit = ghMessageLenLimit - 5000 // 5000 characters could be used for other parts in the comment message.
 )
 
 func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
@@ -186,7 +186,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		}
 
 		l := utf8.RuneCountInString(app.PlanDetails)
-		if detailLen+int64(l) > reservedDetailMessagesLen {
+		if detailLen+int64(l) > detailsLenLimit {
 			fmt.Fprintf(&b, detailsFormat, lang, detailsOmittedMessage)
 			detailLen += int64(utf8.RuneCountInString(detailsOmittedMessage))
 			continue
