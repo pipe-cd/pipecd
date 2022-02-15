@@ -168,7 +168,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 
 	changedApps, pipelineApps, quickSyncApps := groupApplicationResults(r.Applications)
 
-	var detailLen int64
+	var detailLen int
 
 	for _, app := range changedApps {
 		fmt.Fprintf(&b, "\n## app: [%s](%s), env: [%s](%s), kind: %s\n", app.ApplicationName, app.ApplicationURL, app.EnvName, app.EnvURL, strings.ToLower(app.ApplicationKind))
@@ -181,13 +181,13 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		}
 
 		l := utf8.RuneCountInString(app.PlanDetails)
-		if detailLen+int64(l) > detailsLenLimit {
+		if detailLen+l > detailsLenLimit {
 			fmt.Fprintf(&b, detailsFormat, lang, detailsOmittedMessage)
-			detailLen += int64(utf8.RuneCountInString(detailsOmittedMessage))
+			detailLen += utf8.RuneCountInString(detailsOmittedMessage)
 			continue
 		}
 
-		detailLen += int64(l)
+		detailLen += l
 		fmt.Fprintf(&b, detailsFormat, lang, app.PlanDetails)
 	}
 
