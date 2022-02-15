@@ -22,7 +22,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sort"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -169,10 +168,6 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 
 	changedApps, pipelineApps, quickSyncApps := groupApplicationResults(r.Applications)
 
-	sort.SliceStable(changedApps, func(i, j int) bool {
-		return len(changedApps[i].PlanDetails) < len(changedApps[j].PlanDetails)
-	})
-
 	var detailLen int64
 
 	for _, app := range changedApps {
@@ -222,10 +217,6 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 
 	if len(r.FailureApplications) > 0 {
 		fmt.Fprintf(&b, "**An error occurred while building plan-preview for the following applications**\n")
-
-		sort.SliceStable(r.FailureApplications, func(i, j int) bool {
-			return len(r.FailureApplications[i].PlanDetails) < len(r.FailureApplications[j].PlanDetails)
-		})
 
 		for _, app := range r.FailureApplications {
 			fmt.Fprintf(&b, "\n## app: [%s](%s), env: [%s](%s), kind: %s\n", app.ApplicationName, app.ApplicationURL, app.EnvName, app.EnvURL, strings.ToLower(app.ApplicationKind))
