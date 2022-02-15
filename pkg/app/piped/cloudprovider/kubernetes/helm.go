@@ -70,7 +70,7 @@ func (c *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 		}
 		for _, v := range opts.APIVersions {
 			args = append(args, "--api-versions", v)
-    }
+		}
 		if opts.KubeVersion != "" {
 			args = append(args, "--kube-version", opts.KubeVersion)
 		}
@@ -160,7 +160,7 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 		}
 		for _, v := range opts.APIVersions {
 			args = append(args, "--api-versions", v)
-    }
+		}
 		if opts.KubeVersion != "" {
 			args = append(args, "--kube-version", opts.KubeVersion)
 		}
