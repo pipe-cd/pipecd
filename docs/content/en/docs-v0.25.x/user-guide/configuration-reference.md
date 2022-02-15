@@ -316,7 +316,7 @@ One of `yamlField` or `regex` is required.
 | releaseName | string | The release name of helm deployment. By default, the release name is equal to the application name. | No |
 | valueFiles | []string | List of value files should be loaded. | No |
 | setFiles | map[string]string | List of file path for values. | No |
-| apiVersion | []string | List of Kubernetes api versions | No |
+| apiVersions | []string | List of Kubernetes api versions | No |
 
 ## KubernetesQuickSync
 
