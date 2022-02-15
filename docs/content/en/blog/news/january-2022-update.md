@@ -3,7 +3,7 @@ date: 2022-01-05
 title: "January 2022 update"
 linkTitle: "January 2022 update"
 weight: 997
-description: "Development status update to recap what happened in January"
+description: "Development status update to recap what happened in December"
 author: Le Van Nghia ([@nghialv](https://twitter.com/nghialv2607))
 ---
 
