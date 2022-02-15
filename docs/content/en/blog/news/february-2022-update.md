@@ -2,7 +2,7 @@
 date: 2022-02-10
 title: "February 2022 update"
 linkTitle: "February 2022 update"
-weight: 996
+weight: 995
 description: "Development status update to recap what happened in January"
 author: Le Van Nghia ([@nghialv](https://twitter.com/nghialv2607))
 ---
@@ -12,7 +12,7 @@ _Published by the PipeCD dev team every month, this update will provide you with
 ### What's changed
 ---
 
-Since the last report, PipeCD team has introduced 4 releases ([v0.24.0](https://github.com/pipe-cd/pipecd/releases/tag/v0.24.0), [v0.24.5](https://github.com/pipe-cd/pipecd/releases/tag/v0.24.5), [v0.25.0](https://github.com/pipe-cd/pipecd/releases/tag/v0.25.0), [v0.25.1](https://github.com/pipe-cd/pipecd/releases/tag/v0.25.1)). This blog post walks you through their notable changes. For all other changes, please check out each release note to see.
+Since the last report, PipeCD team has introduced 4 releases ([v0.24.0](https://github.com/pipe-cd/pipecd/releases/tag/v0.24.0), [v0.24.5](https://github.com/pipe-cd/pipecd/releases/tag/v0.24.5), [v0.25.0](https://github.com/pipe-cd/pipecd/releases/tag/v0.25.0), [v0.25.1](https://github.com/pipe-cd/pipecd/releases/tag/v0.25.1)). This blog post walks you through their notable changes. For all other changes, please check out each release note.
 
 #### Introducing Label mechanism
 
@@ -34,7 +34,7 @@ From `v0.24.0`, application labels are shown on the application list and detail 
 
 #### Environment and Deployment Configuration File were deprecated
 
-Since the Label was introduced as above, Environment was becoming a subset of the Label concept. So we decided to deprecate the Environment concept from `v0.24.0`. Although it is still being displayed on the web console, it will be removed completely from the next release. So make sure to switch to using Label instead.
+Since the Label was introduced, the Environment becomes a subset of the Label concept. So we decided to deprecate the Environment concept from `v0.24.0`. Even though it is still displayed on the web console, it will be removed completely from the next release. So make sure to switch to using Label instead.
 
 The deployment configuration file (`.pipe.yaml`) has been deprecated as well. Please use the application configuration file instead, it has the same format but with some new fields such as `name`, `description`, and `labels`. By using this new config file, all application information can be stored and managed in your Git repository. The new config file also gives PipeCD the ability to detect unregistered applications in Git repository to suggest users to add on the control plane.
 
@@ -60,7 +60,7 @@ spec:
   ...
 ```
 
-If you are having many applications, you can use this [pipectl command](/docs/user-guide/command-line-tool/#migrating-deployment-configuration-files-to-application-configuration-files) to migrate a bunch of your files seamlessly.
+If you are having many applications, you can use this [pipectl command](/docs-v0.25.x/user-guide/command-line-tool/#migrating-deployment-configuration-files-to-application-configuration-files) to migrate a bunch of your files seamlessly.
 
 #### Event list page on web console
 
