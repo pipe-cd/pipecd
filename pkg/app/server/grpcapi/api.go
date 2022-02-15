@@ -86,19 +86,20 @@ type API struct {
 func NewAPI(
 	ctx context.Context,
 	ds datastore.DataStore,
-	cmds commandstore.Store,
+	sc cache.Cache,
 	cog commandOutputGetter,
 	psc cache.Cache,
 	webBaseURL string,
 	logger *zap.Logger,
 ) *API {
+	w := datastore.PipectlCommander
 	a := &API{
-		applicationStore:    datastore.NewApplicationStore(ds),
-		environmentStore:    datastore.NewEnvironmentStore(ds),
-		deploymentStore:     datastore.NewDeploymentStore(ds),
-		pipedStore:          datastore.NewPipedStore(ds),
-		eventStore:          datastore.NewEventStore(ds),
-		commandStore:        cmds,
+		applicationStore:    datastore.NewApplicationStore(ds, w),
+		environmentStore:    datastore.NewEnvironmentStore(ds, w),
+		deploymentStore:     datastore.NewDeploymentStore(ds, w),
+		pipedStore:          datastore.NewPipedStore(ds, w),
+		eventStore:          datastore.NewEventStore(ds, w),
+		commandStore:        commandstore.NewStore(w, ds, sc, logger),
 		commandOutputGetter: cog,
 		// Public key is variable but likely to be accessed multiple times in a short period.
 		encryptionKeyCache: memorycache.NewTTLCache(ctx, 5*time.Minute, 5*time.Minute),

@@ -52,16 +52,18 @@ type ApplicationStore interface {
 
 type applicationStore struct {
 	backend
-	nowFunc func() time.Time
+	commander Commander
+	nowFunc   func() time.Time
 }
 
-func NewApplicationStore(ds DataStore) ApplicationStore {
+func NewApplicationStore(ds DataStore, c Commander) ApplicationStore {
 	return &applicationStore{
 		backend: backend{
 			ds:  ds,
 			col: &applicationCollection{},
 		},
-		nowFunc: time.Now,
+		commander: c,
+		nowFunc:   time.Now,
 	}
 }
 

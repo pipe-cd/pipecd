@@ -61,6 +61,22 @@ var (
 	ErrUnimplemented   = errors.New("unimplemented")
 )
 
+type Commander string
+
+const (
+	// TestCommander indicates that the writer is test.
+	// This writer is dedicated for testing.
+	TestCommander Commander = "test"
+	// WebCommander indicates that the writer is web.
+	WebCommander Commander = "web"
+	// PipectlCommander indicates that the writer is pipectl.
+	PipectlCommander Commander = "pipectl"
+	// PipedCommander indicates that the writer is piped.
+	PipedCommander Commander = "piped"
+	// OpsCommander indicates that the writer is ops component.
+	OpsCommander Commander = "ops"
+)
+
 type Factory func() interface{}
 type Updater func(interface{}) error
 

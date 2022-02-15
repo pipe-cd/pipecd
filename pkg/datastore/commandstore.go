@@ -43,16 +43,18 @@ type CommandStore interface {
 
 type commandStore struct {
 	backend
-	nowFunc func() time.Time
+	commander Commander
+	nowFunc   func() time.Time
 }
 
-func NewCommandStore(ds DataStore) CommandStore {
+func NewCommandStore(ds DataStore, c Commander) CommandStore {
 	return &commandStore{
 		backend: backend{
 			ds:  ds,
 			col: &commandCollection{},
 		},
-		nowFunc: time.Now,
+		commander: c,
+		nowFunc:   time.Now,
 	}
 }
 

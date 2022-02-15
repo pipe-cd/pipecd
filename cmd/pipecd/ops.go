@@ -182,11 +182,11 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 	group.Go(func() error {
 		return ic.Run(ctx)
 	})
-	insightMetricsCollector := insightmetrics.NewInsightMetricsCollector(insightstore.NewStore(fs), datastore.NewProjectStore(ds))
+	insightMetricsCollector := insightmetrics.NewInsightMetricsCollector(insightstore.NewStore(fs), datastore.NewProjectStore(ds, datastore.OpsCommander))
 
 	// Start running HTTP server.
 	{
-		handler := handler.NewHandler(s.httpPort, datastore.NewProjectStore(ds), insightstore.NewStore(fs), cfg.SharedSSOConfigs, s.gracePeriod, input.Logger)
+		handler := handler.NewHandler(s.httpPort, datastore.NewProjectStore(ds, datastore.OpsCommander), insightstore.NewStore(fs), cfg.SharedSSOConfigs, s.gracePeriod, input.Logger)
 		group.Go(func() error {
 			return handler.Run(ctx)
 		})
