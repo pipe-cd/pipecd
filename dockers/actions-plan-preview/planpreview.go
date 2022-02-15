@@ -136,10 +136,10 @@ const (
 
 `
 
-	noChangeTitleFormat  = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `0` updated application. It means no deployment will be triggered once this pull request got merged.\n"
-	hasChangeTitleFormat = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `%d` updated applications and here are their plan results. Once this pull request got merged their deployments will be triggered to run as these estimations.\n"
-	detailsFormat        = "<details>\n<summary>Details (Click me)</summary>\n<p>\n\n``` %s\n%s\n```\n</p>\n</details>\n"
-	detailsOmittedMessage       = "The details are too long to display. Please check the actions log to see full details."
+	noChangeTitleFormat   = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `0` updated application. It means no deployment will be triggered once this pull request got merged.\n"
+	hasChangeTitleFormat  = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `%d` updated applications and here are their plan results. Once this pull request got merged their deployments will be triggered to run as these estimations.\n"
+	detailsFormat         = "<details>\n<summary>Details (Click me)</summary>\n<p>\n\n``` %s\n%s\n```\n</p>\n</details>\n"
+	detailsOmittedMessage = "The details are too long to display. Please check the actions log to see full details."
 
 	ghMessageLenLimit = 65536
 
@@ -187,8 +187,8 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 
 		l := utf8.RuneCountInString(app.PlanDetails)
 		if detailLen+int64(l) > reservedDetailMessagesLen {
-			fmt.Fprint(&b, detailsOmitted)
-			detailLen += int64(utf8.RuneCountInString(detailsOmitted))
+			fmt.Fprint(&b, detailsOmittedMessage)
+			detailLen += int64(utf8.RuneCountInString(detailsOmittedMessage))
 			continue
 		}
 
@@ -238,8 +238,8 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 
 			l := utf8.RuneCountInString(app.PlanDetails)
 			if detailLen+int64(l) > reservedDetailMessagesLen {
-				fmt.Fprint(&b, detailsOmitted)
-				detailLen += int64(utf8.RuneCountInString(detailsOmitted))
+				fmt.Fprint(&b, detailsOmittedMessage)
+				detailLen += int64(utf8.RuneCountInString(detailsOmittedMessage))
 				continue
 			}
 			detailLen += int64(l)
