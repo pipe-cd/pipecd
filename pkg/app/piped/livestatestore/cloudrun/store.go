@@ -37,7 +37,7 @@ func (s *store) run(ctx context.Context) error {
 	for {
 		ops := &provider.ListOptions{
 			Limit:         maxLimit,
-			LabelSelector: provider.MakeManagedByPipedLabel(),
+			LabelSelector: provider.MakeManagedByPipedSelector(),
 			Cursor:        cursor,
 		}
 		// Cloud Run Admin API rate Limits.
