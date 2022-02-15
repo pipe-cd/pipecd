@@ -144,7 +144,7 @@ const (
 	ghMessageLenLimit = 65536
 
 	// Limit of details
-	reservedDetailMessagesLen = ghMessageLenLimit - 2000
+	detailsLenLimit = ghMessageLenLimit - 5000  // 5000 characters could be used for other parts in the comment message.
 )
 
 func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
