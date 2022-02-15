@@ -61,23 +61,20 @@ var (
 	ErrUnimplemented   = errors.New("unimplemented")
 )
 
-type Writer string
+type Commander string
 
 const (
-	// UnknownWriter indicates that the writer is unknown.
-	// This writer is unable to perform any Update operation.
-	UnknownWriter Writer = "unknown"
-	// TestWriter indicates that the writer is test.
+	// TestCommander indicates that the writer is test.
 	// This writer is dedicated for testing.
-	TestWriter Writer = "test"
-	// WebWriter indicates that the writer is web.
-	WebWriter Writer = "web"
-	// PipectlWriter indicates that the writer is pipectl.
-	PipectlWriter Writer = "pipectl"
-	// PipedWriter indicates that the writer is piped.
-	PipedWriter Writer = "piped"
-	// OpsWriter indicates that the writer is ops component.
-	OpsWriter Writer = "ops"
+	TestCommander Commander = "test"
+	// WebCommander indicates that the writer is web.
+	WebCommander Commander = "web"
+	// PipectlCommander indicates that the writer is pipectl.
+	PipectlCommander Commander = "pipectl"
+	// PipedCommander indicates that the writer is piped.
+	PipedCommander Commander = "piped"
+	// OpsCommander indicates that the writer is ops component.
+	OpsCommander Commander = "ops"
 )
 
 type Factory func() interface{}

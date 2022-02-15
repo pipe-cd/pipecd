@@ -42,18 +42,18 @@ type EventStore interface {
 
 type eventStore struct {
 	backend
-	writer  Writer
-	nowFunc func() time.Time
+	commander Commander
+	nowFunc   func() time.Time
 }
 
-func NewEventStore(ds DataStore, w Writer) EventStore {
+func NewEventStore(ds DataStore, c Commander) EventStore {
 	return &eventStore{
 		backend: backend{
 			ds:  ds,
 			col: &eventCollection{},
 		},
-		writer:  w,
-		nowFunc: time.Now,
+		commander: c,
+		nowFunc:   time.Now,
 	}
 }
 

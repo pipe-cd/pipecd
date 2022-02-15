@@ -151,7 +151,7 @@ func NewWebAPI(
 	encrypter encrypter,
 	logger *zap.Logger,
 ) *WebAPI {
-	w := datastore.WebWriter
+	w := datastore.WebCommander
 	a := &WebAPI{
 		applicationStore:          datastore.NewApplicationStore(ds, w),
 		environmentStore:          datastore.NewEnvironmentStore(ds, w),

@@ -114,7 +114,7 @@ type PipedAPI struct {
 
 // NewPipedAPI creates a new PipedAPI instance.
 func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, hc cache.Cache, rd redis.Redis, cop commandOutputPutter, webBaseURL string, logger *zap.Logger) *PipedAPI {
-	w := datastore.PipedWriter
+	w := datastore.PipedCommander
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds, w),
 		deploymentStore:           datastore.NewDeploymentStore(ds, w),

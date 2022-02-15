@@ -194,8 +194,8 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 				ctx,
 				cfg,
 				// These stores are used to handle PipedAPI request, thus the writer should be PipedWriter.
-				datastore.NewProjectStore(ds, datastore.PipedWriter),
-				datastore.NewPipedStore(ds, datastore.PipedWriter),
+				datastore.NewProjectStore(ds, datastore.PipedCommander),
+				datastore.NewPipedStore(ds, datastore.PipedCommander),
 				input.Logger,
 			)
 			service = grpcapi.NewPipedAPI(ctx, ds, cache, sls, alss, las, statCache, rd, cmdOutputStore, cfg.Address, input.Logger)
@@ -229,7 +229,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 		var (
 			verifier = apikeyverifier.NewVerifier(
 				ctx,
-				datastore.NewAPIKeyStore(ds, datastore.PipectlWriter),
+				datastore.NewAPIKeyStore(ds, datastore.PipectlCommander),
 				input.Logger,
 			)
 
@@ -313,7 +313,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			cfg.StateKey,
 			cfg.ProjectMap(),
 			cfg.SharedSSOConfigMap(),
-			datastore.NewProjectStore(ds, datastore.UnknownWriter),
+			datastore.NewProjectStore(ds, datastore.WebCommander),
 			!s.insecureCookie,
 			input.Logger,
 		)

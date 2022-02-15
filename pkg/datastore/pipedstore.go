@@ -49,18 +49,18 @@ type PipedStore interface {
 
 type pipedStore struct {
 	backend
-	writer  Writer
-	nowFunc func() time.Time
+	commander Commander
+	nowFunc   func() time.Time
 }
 
-func NewPipedStore(ds DataStore, w Writer) PipedStore {
+func NewPipedStore(ds DataStore, c Commander) PipedStore {
 	return &pipedStore{
 		backend: backend{
 			ds:  ds,
 			col: &pipedCollection{},
 		},
-		writer:  w,
-		nowFunc: time.Now,
+		commander: c,
+		nowFunc:   time.Now,
 	}
 }
 

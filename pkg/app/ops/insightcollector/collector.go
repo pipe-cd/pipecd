@@ -54,7 +54,7 @@ type Collector struct {
 }
 
 func NewCollector(ds datastore.DataStore, fs filestore.Store, cfg config.ControlPlaneInsightCollector, logger *zap.Logger) *Collector {
-	w := datastore.OpsWriter
+	w := datastore.OpsCommander
 	c := &Collector{
 		applicationStore: datastore.NewApplicationStore(ds, w),
 		deploymentStore:  datastore.NewDeploymentStore(ds, w),

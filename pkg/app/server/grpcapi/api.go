@@ -92,7 +92,7 @@ func NewAPI(
 	webBaseURL string,
 	logger *zap.Logger,
 ) *API {
-	w := datastore.PipectlWriter
+	w := datastore.PipectlCommander
 	a := &API{
 		applicationStore:    datastore.NewApplicationStore(ds, w),
 		environmentStore:    datastore.NewEnvironmentStore(ds, w),

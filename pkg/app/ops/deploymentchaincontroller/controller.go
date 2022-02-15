@@ -61,7 +61,7 @@ func NewDeploymentChainController(
 	ds datastore.DataStore,
 	logger *zap.Logger,
 ) *DeploymentChainController {
-	w := datastore.OpsWriter
+	w := datastore.OpsCommander
 	return &DeploymentChainController{
 		deploymentStore:      datastore.NewDeploymentStore(ds, w),
 		deploymentChainStore: datastore.NewDeploymentChainStore(ds, w),
