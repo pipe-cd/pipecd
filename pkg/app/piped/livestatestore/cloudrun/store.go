@@ -44,18 +44,7 @@ func (s *store) run(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to get all cloudrun services: %w", err)
 	}
-
-	revs := make(map[string][]*provider.Revision, len(svcs))
-	for i := range svcs {
-		id, ok := svcs[i].UID()
-		if !ok {
-			continue
-		}
-		names := svcs[i].ActiveRevisionNames()
-		if rs := s.getMultiRevisions(ctx, names); len(rs) > 0 {
-			revs[id] = rs
-		}
-	}
+	revs := s.listRevisionsFromServices(ctx, svcs)
 
 	// Update apps to the latest.
 	s.setApps(svcs, revs)
@@ -115,17 +104,30 @@ func (s *store) getAllServices(ctx context.Context) ([]*provider.Service, error)
 	return svcs, nil
 }
 
-func (s *store) getMultiRevisions(ctx context.Context, names []string) []*provider.Revision {
-	ret := make([]*provider.Revision, len(names))
-	for i := range names {
-		v, err := s.client.GetRevision(ctx, names[i])
-		if err != nil {
-			s.logger.Error("failed to get cloudrun revision", zap.Error(err))
+func (s *store) listRevisionsFromServices(ctx context.Context, svcs []*provider.Service) map[string][]*provider.Revision {
+	revs := make(map[string][]*provider.Revision, len(svcs))
+	for i := range svcs {
+		id, ok := svcs[i].UID()
+		if !ok {
 			continue
 		}
-		ret = append(ret, v)
+		names := svcs[i].ActiveRevisionNames()
+		if rs := s.getMultiRevisions(ctx, names); len(rs) > 0 {
+			revs[id] = rs
+		}
 	}
-	return ret
+	return revs
+}
+
+func (s *store) getMultiRevisions(ctx context.Context, names []string) []*provider.Revision {
+	ops := &provider.ListRevisionsOptions{
+		LabelSelector: provider.MakeRevisionNamesSelector(names),
+	}
+	v, _, err := s.client.ListRevisions(ctx, ops)
+	if err != nil {
+		s.logger.Error("failed to list cloudrun revisions", zap.Error(err))
+	}
+	return v
 }
 
 func (s *store) loadApps() map[string]*app {
