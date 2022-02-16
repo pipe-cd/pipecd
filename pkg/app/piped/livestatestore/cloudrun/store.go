@@ -47,13 +47,13 @@ func (s *store) run(ctx context.Context) error {
 	revs := s.listRevisionsFromServices(ctx, svcs)
 
 	// Update apps to the latest.
-	s.setApps(svcs, revs)
+	s.storeApps(svcs, revs)
 
 	return nil
 }
 
-func (s *store) setApps(svcs []*provider.Service, revs map[string][]*provider.Revision) {
-	apps := make(map[string]*app, len(svcs))
+func (s *store) storeApps(svcs []*provider.Service, revs map[string][]*provider.Revision) {
+	apps := make(map[string]app, len(svcs))
 	for i := range svcs {
 		sm, err := svcs[i].ServiceManifest()
 		if err != nil {
@@ -68,7 +68,7 @@ func (s *store) setApps(svcs []*provider.Service, revs map[string][]*provider.Re
 
 		id, _ := svcs[i].UID()
 		now := time.Now()
-		apps[appID] = &app{
+		apps[appID] = app{
 			service: sm,
 			states:  provider.MakeResourceStates(svcs[i], revs[id], now),
 			version: model.ApplicationLiveStateVersion{
@@ -130,18 +130,17 @@ func (s *store) getMultiRevisions(ctx context.Context, names []string) []*provid
 	return v
 }
 
-func (s *store) loadApps() map[string]*app {
+func (s *store) loadApps() map[string]app {
 	apps := s.apps.Load()
 	if apps == nil {
 		return nil
 	}
-	return apps.(map[string]*app)
+	return apps.(map[string]app)
 }
 
 func (s *store) getServiceManifest(appID string) (provider.ServiceManifest, bool) {
 	apps := s.loadApps()
 	if apps == nil {
-		s.logger.Error("failed to load cloudrun apps")
 		return provider.ServiceManifest{}, false
 	}
 
@@ -156,7 +155,6 @@ func (s *store) getServiceManifest(appID string) (provider.ServiceManifest, bool
 func (s *store) getState(appID string) (State, bool) {
 	apps := s.loadApps()
 	if apps == nil {
-		s.logger.Error("failed to load cloudrun apps")
 		return State{}, false
 	}
 
