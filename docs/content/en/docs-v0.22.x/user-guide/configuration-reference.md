@@ -56,7 +56,7 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
-## CloudRun application
+## Cloud Run application
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
@@ -69,7 +69,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| input | [CloudRunDeploymentInput](#cloudrundeploymentinput) | Input for CloudRun deployment such as docker image... | No |
+| input | [CloudRunDeploymentInput](#cloudrundeploymentinput) | Input for Cloud Run deployment such as docker image... | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [CloudRunQuickSync](#cloudrunquicksync) | Configuration for quick sync. | No |

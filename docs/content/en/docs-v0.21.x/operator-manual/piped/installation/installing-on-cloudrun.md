@@ -70,7 +70,7 @@ description: >
 
 - Running Piped in CloudRun
 
-  Prepare a CloudRun service manifest file as below.
+  Prepare a Cloud Run service manifest file as below.
 
   {{< tabpane >}}
   {{< tab lang="yaml" header="Piped with Remote-upgrade" >}}
@@ -161,7 +161,7 @@ spec:
   {{< /tab >}}
   {{< /tabpane >}}
 
-  Run Piped service on CloudRun with the following command:
+  Run Piped service on Cloud Run with the following command:
 
   ``` console
   gcloud beta run services replace cloudrun-piped-service.yaml

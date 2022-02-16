@@ -62,7 +62,7 @@ spec:
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
 
-## CloudRun application
+## Cloud Run application
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
@@ -77,7 +77,7 @@ spec:
 |-|-|-|-|
 | name | string | The application name. | Yes if you set the application through the application configuration file |
 | envName | string | The environment name. You need to make sure that the environment name is unique in your project. | No |
-| input | [CloudRunDeploymentInput](#cloudrundeploymentinput) | Input for CloudRun deployment such as docker image... | No |
+| input | [CloudRunDeploymentInput](#cloudrundeploymentinput) | Input for Cloud Run deployment such as docker image... | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [CloudRunQuickSync](#cloudrunquicksync) | Configuration for quick sync. | No |

@@ -55,9 +55,9 @@ spec:
 
 See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudproviderterraformconfig) for the full configuration.
 
-### Configuring CloudRun cloud provider
+### Configuring Cloud Run cloud provider
 
-Adding a CloudRun provider requires the name of the Google Cloud project and the region name where CloudRun service is running. A service account file for accessing to CloudRun is also required if the machine running the piped does not have enough permissions to access.
+Adding a Cloud Run provider requires the name of the Google Cloud project and the region name where Cloud Run service is running. A service account file for accessing to Cloud Run is also required if the machine running the piped does not have enough permissions to access.
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1

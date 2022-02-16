@@ -14,7 +14,7 @@ An application must belong to exactly one environment and can be handled by one 
 
 - Kubernetes application
 - Terraform application
-- CloudRun application
+- Cloud Run application
 - Lambda application
 - ECS application
 

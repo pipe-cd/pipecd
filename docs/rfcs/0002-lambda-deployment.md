@@ -7,7 +7,7 @@ This RFC proposes adding a new service deployment from PipeCD: AWS Lambda deploy
 
 # Motivation
 
-PipeCD aims to support wide range of deployable services, currently [Terraform deployment](https://pipecd.dev/docs/feature-status/#terraform-deployment) and [CloudRun deployment](https://pipecd.dev/docs/feature-status/#cloudrun-deployment) are supported. Lambda deployment is the current missing piece for PipeCD's purpose.
+PipeCD aims to support wide range of deployable services, currently [Terraform deployment](https://pipecd.dev/docs/feature-status/#terraform-deployment) and [Cloud Run deployment](https://pipecd.dev/docs/feature-status/#cloudrun-deployment) are supported. Lambda deployment is the current missing piece for PipeCD's purpose.
 
 # Detailed design
 
@@ -50,7 +50,7 @@ spec:
 
 ### Architecture
 
-Just as current CloudRun but under `pkg/cloudprovider/lambda` package.
+Just as current Cloud Run but under `pkg/cloudprovider/lambda` package.
 
 # Alternatives
 

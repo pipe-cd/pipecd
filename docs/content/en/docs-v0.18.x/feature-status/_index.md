@@ -46,7 +46,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Application live state](/docs/user-guide/application-live-state/) | Incubating |
 | [Plan preview](/docs/user-guide/plan-preview) | Beta |
 
-### CloudRun Deployment
+### Cloud Run Deployment
 
 | Feature | Phase |
 |-|-|
