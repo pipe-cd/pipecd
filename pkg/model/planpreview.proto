@@ -44,14 +44,12 @@ message ApplicationPlanPreviewResult {
     ApplicationKind application_kind = 4 [(validate.rules).enum.defined_only = true];
     string application_directory = 5 [(validate.rules).string.min_len = 1];
 
-    string env_id = 6;
-    string env_name = 7;
-    // Web URL to the environment page.
-    // This is only filled before returning to the client.
-    string env_url = 8;
+    reserved 6, 7, 8;
 
     string piped_id = 9 [(validate.rules).string.min_len = 1];
     string project_id = 10 [(validate.rules).string.min_len = 1];
+
+    map<string, string> labels = 11;
 
     // Target commit information.
     string head_branch = 20 [(validate.rules).string.min_len = 1];
