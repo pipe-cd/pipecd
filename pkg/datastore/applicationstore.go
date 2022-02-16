@@ -23,6 +23,7 @@ import (
 )
 
 type applicationCollection struct {
+	requestedBy Commander
 }
 
 func (a *applicationCollection) Kind() string {
@@ -32,6 +33,30 @@ func (a *applicationCollection) Kind() string {
 func (a *applicationCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.Application{}
+	}
+}
+
+func (a *applicationCollection) GetStoredFileNames(id string) []string {
+	return []string{
+		fmt.Sprintf("%s_api", id),
+		fmt.Sprintf("%s_ops", id),
+		fmt.Sprintf("%s_piped", id),
+	}
+}
+
+func (a *applicationCollection) GetUpdatableFileName(id string) (string, error) {
+	switch a.requestedBy {
+	case TestCommander:
+		// Fixme: Find a way to make the filename dynamically for test commander.
+		fallthrough
+	case WebCommander, PipectlCommander:
+		return fmt.Sprintf("%s_api", id), nil
+	case OpsCommander:
+		return fmt.Sprintf("%s_ops", id), nil
+	case PipedCommander:
+		return fmt.Sprintf("%s_piped", id), nil
+	default:
+		return "", ErrUnsupported
 	}
 }
 
@@ -60,7 +85,7 @@ func NewApplicationStore(ds DataStore, c Commander) ApplicationStore {
 	return &applicationStore{
 		backend: backend{
 			ds:  ds,
-			col: &applicationCollection{},
+			col: &applicationCollection{requestedBy: c},
 		},
 		commander: c,
 		nowFunc:   time.Now,

@@ -59,6 +59,7 @@ var (
 	ErrIteratorDone    = errors.New("iterator is done")
 	ErrInternal        = errors.New("internal")
 	ErrUnimplemented   = errors.New("unimplemented")
+	ErrUnsupported     = errors.New("unsupported")
 )
 
 type Commander string

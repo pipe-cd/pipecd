@@ -22,6 +22,7 @@ import (
 )
 
 type pipedCollection struct {
+	requestedBy Commander
 }
 
 func (p *pipedCollection) Kind() string {
@@ -31,6 +32,21 @@ func (p *pipedCollection) Kind() string {
 func (p *pipedCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.Piped{}
+	}
+}
+
+func (p *pipedCollection) GetStoredFileNames(id string) []string {
+	return []string{id}
+}
+
+func (p *pipedCollection) GetUpdatableFileName(id string) (string, error) {
+	switch p.requestedBy {
+	case TestCommander:
+		fallthrough
+	case WebCommander:
+		return id, nil
+	default:
+		return "", ErrUnsupported
 	}
 }
 
@@ -57,7 +73,7 @@ func NewPipedStore(ds DataStore, c Commander) PipedStore {
 	return &pipedStore{
 		backend: backend{
 			ds:  ds,
-			col: &pipedCollection{},
+			col: &pipedCollection{requestedBy: c},
 		},
 		commander: c,
 		nowFunc:   time.Now,

@@ -23,6 +23,7 @@ import (
 )
 
 type deploymentChainCollection struct {
+	requestedBy Commander
 }
 
 func (d *deploymentChainCollection) Kind() string {
@@ -32,6 +33,21 @@ func (d *deploymentChainCollection) Kind() string {
 func (d *deploymentChainCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.DeploymentChain{}
+	}
+}
+
+func (d *deploymentChainCollection) GetStoredFileNames(id string) []string {
+	return []string{id}
+}
+
+func (d *deploymentChainCollection) GetUpdatableFileName(id string) (string, error) {
+	switch d.requestedBy {
+	case TestCommander:
+		fallthrough
+	case OpsCommander:
+		return id, nil
+	default:
+		return "", ErrUnsupported
 	}
 }
 
@@ -117,7 +133,7 @@ func NewDeploymentChainStore(ds DataStore, c Commander) DeploymentChainStore {
 	return &deploymentChainStore{
 		backend: backend{
 			ds:  ds,
-			col: &deploymentChainCollection{},
+			col: &deploymentChainCollection{requestedBy: c},
 		},
 		commander: c,
 		nowFunc:   time.Now,

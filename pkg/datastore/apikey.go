@@ -23,6 +23,7 @@ import (
 )
 
 type apiKeyCollection struct {
+	requestedBy Commander
 }
 
 func (a *apiKeyCollection) Kind() string {
@@ -32,6 +33,21 @@ func (a *apiKeyCollection) Kind() string {
 func (a *apiKeyCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.APIKey{}
+	}
+}
+
+func (a *apiKeyCollection) GetStoredFileNames(id string) []string {
+	return []string{id}
+}
+
+func (a *apiKeyCollection) GetUpdatableFileName(id string) (string, error) {
+	switch a.requestedBy {
+	case TestCommander:
+		fallthrough
+	case WebCommander:
+		return id, nil
+	default:
+		return "", ErrUnsupported
 	}
 }
 
@@ -52,7 +68,7 @@ func NewAPIKeyStore(ds DataStore, c Commander) APIKeyStore {
 	return &apiKeyStore{
 		backend: backend{
 			ds:  ds,
-			col: &apiKeyCollection{},
+			col: &apiKeyCollection{requestedBy: c},
 		},
 		commander: c,
 		nowFunc:   time.Now,

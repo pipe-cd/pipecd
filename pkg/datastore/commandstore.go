@@ -22,6 +22,7 @@ import (
 )
 
 type commandCollection struct {
+	requestedBy Commander
 }
 
 func (c *commandCollection) Kind() string {
@@ -31,6 +32,21 @@ func (c *commandCollection) Kind() string {
 func (c *commandCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.Command{}
+	}
+}
+
+func (c *commandCollection) GetStoredFileNames(id string) []string {
+	return []string{id}
+}
+
+func (c *commandCollection) GetUpdatableFileName(id string) (string, error) {
+	switch c.requestedBy {
+	case TestCommander:
+		fallthrough
+	case WebCommander, PipectlCommander, PipedCommander, OpsCommander:
+		return id, nil
+	default:
+		return "", ErrUnsupported
 	}
 }
 
@@ -51,7 +67,7 @@ func NewCommandStore(ds DataStore, c Commander) CommandStore {
 	return &commandStore{
 		backend: backend{
 			ds:  ds,
-			col: &commandCollection{},
+			col: &commandCollection{requestedBy: c},
 		},
 		commander: c,
 		nowFunc:   time.Now,
