@@ -47,7 +47,7 @@ func TestMakeCommentBody(t *testing.T) {
 			},
 			result: PlanPreviewResult{
 				Applications: []ApplicationResult{
-					ApplicationResult{
+					{
 						ApplicationInfo: ApplicationInfo{
 							ApplicationID:        "app-id-1",
 							ApplicationName:      "app-name-1",
@@ -72,7 +72,7 @@ func TestMakeCommentBody(t *testing.T) {
 			},
 			result: PlanPreviewResult{
 				Applications: []ApplicationResult{
-					ApplicationResult{
+					{
 						ApplicationInfo: ApplicationInfo{
 							ApplicationID:        "app-id-2",
 							ApplicationName:      "app-name-2",
@@ -86,7 +86,7 @@ func TestMakeCommentBody(t *testing.T) {
 						PlanDetails:  "",
 						NoChange:     true,
 					},
-					ApplicationResult{
+					{
 						ApplicationInfo: ApplicationInfo{
 							ApplicationID:        "app-id-1",
 							ApplicationName:      "app-name-1",
@@ -100,7 +100,7 @@ func TestMakeCommentBody(t *testing.T) {
 						PlanDetails:  "plan-details-1",
 						NoChange:     false,
 					},
-					ApplicationResult{
+					{
 						ApplicationInfo: ApplicationInfo{
 							ApplicationID:        "app-id-3",
 							ApplicationName:      "app-name-3",
@@ -125,7 +125,7 @@ func TestMakeCommentBody(t *testing.T) {
 			},
 			result: PlanPreviewResult{
 				Applications: []ApplicationResult{
-					ApplicationResult{
+					{
 						ApplicationInfo: ApplicationInfo{
 							ApplicationID:        "app-id-1",
 							ApplicationName:      "app-name-1",
@@ -149,7 +149,7 @@ func TestMakeCommentBody(t *testing.T) {
 			},
 			result: PlanPreviewResult{
 				Applications: []ApplicationResult{
-					ApplicationResult{
+					{
 						ApplicationInfo: ApplicationInfo{
 							ApplicationID:        "app-id-1",
 							ApplicationName:      "app-name-1",
@@ -165,7 +165,7 @@ func TestMakeCommentBody(t *testing.T) {
 					},
 				},
 				FailureApplications: []FailureApplication{
-					FailureApplication{
+					{
 						ApplicationInfo: ApplicationInfo{
 							ApplicationID:        "app-id-2",
 							ApplicationName:      "app-name-2",
@@ -188,7 +188,7 @@ func TestMakeCommentBody(t *testing.T) {
 			},
 			result: PlanPreviewResult{
 				Applications: []ApplicationResult{
-					ApplicationResult{
+					{
 						ApplicationInfo: ApplicationInfo{
 							ApplicationID:        "app-id-1",
 							ApplicationName:      "app-name-1",
@@ -204,7 +204,7 @@ func TestMakeCommentBody(t *testing.T) {
 					},
 				},
 				FailurePipeds: []FailurePiped{
-					FailurePiped{
+					{
 						PipedInfo: PipedInfo{
 							PipedID:  "piped-id-1",
 							PipedURL: "piped-url-1",
