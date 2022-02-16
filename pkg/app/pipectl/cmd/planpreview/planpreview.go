@@ -37,6 +37,7 @@ const (
 	defaultTimeout            = 10 * time.Minute
 	defaultPipedHandleTimeout = 5 * time.Minute
 	defaultCheckInterval      = 10 * time.Second
+	labelEnvKey               = "env"
 )
 
 type command struct {
@@ -193,9 +194,7 @@ func convert(results []*model.PlanPreviewCommandResult) ReadableResult {
 				ApplicationURL:       a.ApplicationUrl,
 				ApplicationKind:      a.ApplicationKind.String(),
 				ApplicationDirectory: a.ApplicationDirectory,
-				EnvID:                a.EnvId,
-				EnvName:              a.EnvName,
-				EnvURL:               a.EnvUrl,
+				EnvValue:             a.Labels[labelEnvKey],
 			}
 			if a.Error != "" {
 				out.FailureApplications = append(out.FailureApplications, FailureApplication{
@@ -252,11 +251,9 @@ type ApplicationInfo struct {
 	ApplicationID        string
 	ApplicationName      string
 	ApplicationURL       string
-	EnvID                string
-	EnvName              string
-	EnvURL               string
 	ApplicationKind      string // KUBERNETES, TERRAFORM, CLOUDRUN, LAMBDA, ECS
 	ApplicationDirectory string
+	EnvValue             string
 }
 
 func (r ReadableResult) String() string {
@@ -273,7 +270,12 @@ func (r ReadableResult) String() string {
 			fmt.Fprintf(&b, "\nHere are plan-preview for 1 application:\n")
 		}
 		for i, app := range r.Applications {
-			fmt.Fprintf(&b, "\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.EnvName, app.ApplicationKind)
+			title := fmt.Sprintf("\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.EnvValue, app.ApplicationKind)
+			if app.EnvValue == "" {
+				title = fmt.Sprintf("\n%d. app: %s, kind: %s\n", i+1, app.ApplicationName, app.ApplicationKind)
+			}
+
+			b.WriteString(title)
 			fmt.Fprintf(&b, "  sync strategy: %s\n", app.SyncStrategy)
 			fmt.Fprintf(&b, "  summary: %s\n", app.PlanSummary)
 			fmt.Fprintf(&b, "  details:\n\n  ---DETAILS_BEGIN---\n%s\n  ---DETAILS_END---\n", app.PlanDetails)
@@ -287,7 +289,12 @@ func (r ReadableResult) String() string {
 			fmt.Fprintf(&b, "\nNOTE: An error occurred while building plan-preview for the following application:\n")
 		}
 		for i, app := range r.FailureApplications {
-			fmt.Fprintf(&b, "\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.EnvName, app.ApplicationKind)
+			title := fmt.Sprintf("\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.EnvValue, app.ApplicationKind)
+			if app.EnvValue == "" {
+				title = fmt.Sprintf("\n%d. app: %s, kind: %s\n", i+1, app.ApplicationName, app.ApplicationKind)
+			}
+
+			b.WriteString(title)
 			fmt.Fprintf(&b, "  reason: %s\n", app.Reason)
 			if len(app.PlanDetails) > 0 {
 				fmt.Fprintf(&b, "  details:\n\n  ---DETAILS_BEGIN---\n%s\n  ---DETAILS_END---\n", app.PlanDetails)
