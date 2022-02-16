@@ -74,7 +74,7 @@ You should see a lot of suggested applications.
 
 Select the `canary` application and click the `ADD` button to register.
 
-![](/images/quickstart-adding-application-from-suggestions.png)
+![](/images/quickstart-adding-application-from-git.png)
 
 After a bit, the first deployment would be complete automatically to sync the application to the state specified in the current Git commit.
 
