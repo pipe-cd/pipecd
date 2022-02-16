@@ -71,8 +71,12 @@ func (s *store) run(ctx context.Context) error {
 
 func (s *store) buildAppMap(svcs []*provider.Service, revs map[string][]*provider.Revision) map[string]app {
 	apps := make(map[string]app, len(svcs))
-	for i := range svcs {
-		sm, err := svcs[i].ServiceManifest()
+        now := time.Now()
+        version: model.ApplicationLiveStateVersion{
+                Timestamp: now.Unix(),
+        }
+	for _, svc := range svcs {
+		sm, err := svc.ServiceManifest()
 		if err != nil {
 			s.logger.Error("failed to load cloudrun service into service manifest", zap.Error(err))
 			continue
@@ -83,14 +87,11 @@ func (s *store) buildAppMap(svcs []*provider.Service, revs map[string][]*provide
 			continue
 		}
 
-		id, _ := svcs[i].UID()
-		now := time.Now()
+		id, _ := svc.UID()
 		apps[appID] = app{
 			service: sm,
-			states:  provider.MakeResourceStates(svcs[i], revs[id], now),
-			version: model.ApplicationLiveStateVersion{
-				Timestamp: now.Unix(),
-			},
+			states:  provider.MakeResourceStates(svc, revs[id], now),
+			version: version,
 		}
 	}
 	return apps
