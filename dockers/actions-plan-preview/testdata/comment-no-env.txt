@@ -1,0 +1,18 @@
+<!-- pipecd-plan-preview-->
+[![PLAN_PREVIEW](https://img.shields.io/static/v1?label=PipeCD&message=Plan_Preview&color=success&style=flat)](https://pipecd.dev/docs/user-guide/plan-preview/)
+
+Ran plan-preview against head commit abc of this pull request. PipeCD detected `1` updated applications and here are their plan results. Once this pull request got merged their deployments will be triggered to run as these estimations.
+
+## app: [app-name-1](app-url-1), kind: app-kind-1
+Sync strategy: PIPELINE
+Summary: plan-summary-1
+
+<details>
+<summary>Details (Click me)</summary>
+<p>
+
+``` diff
+plan-details-1
+```
+</p>
+</details>

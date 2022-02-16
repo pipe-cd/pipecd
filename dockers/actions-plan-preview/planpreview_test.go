@@ -119,6 +119,30 @@ func TestMakeCommentBody(t *testing.T) {
 			expected: "testdata/comment-has-no-diff-apps.txt",
 		},
 		{
+			name: "no env",
+			event: githubEvent{
+				HeadCommit: "abc",
+			},
+			result: PlanPreviewResult{
+				Applications: []ApplicationResult{
+					ApplicationResult{
+						ApplicationInfo: ApplicationInfo{
+							ApplicationID:        "app-id-1",
+							ApplicationName:      "app-name-1",
+							ApplicationURL:       "app-url-1",
+							ApplicationKind:      "app-kind-1",
+							ApplicationDirectory: "app-dir-1",
+						},
+						SyncStrategy: "PIPELINE",
+						PlanSummary:  "plan-summary-1",
+						PlanDetails:  "plan-details-1",
+						NoChange:     false,
+					},
+				},
+			},
+			expected: "testdata/comment-no-env.txt",
+		},
+		{
 			name: "has failed app",
 			event: githubEvent{
 				HeadCommit: "abc",
