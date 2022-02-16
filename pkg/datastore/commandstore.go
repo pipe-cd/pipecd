@@ -43,7 +43,7 @@ func (c *commandCollection) GetUpdatableFileName(id string) (string, error) {
 	switch c.requestedBy {
 	case TestCommander:
 		fallthrough
-	case WebCommander, PipectlCommander, PipedCommander, OpsCommander:
+	case PipedCommander, OpsCommander:
 		return id, nil
 	default:
 		return "", ErrUnsupported
