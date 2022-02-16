@@ -3,6 +3,9 @@ apiVersion: pipecd.dev/v1beta1
 kind: TerraformApp
 spec:
   name: autorollback
+  labels:
+    env: example
+    team: infra
   input:
     autoRollback: true
   encryption:

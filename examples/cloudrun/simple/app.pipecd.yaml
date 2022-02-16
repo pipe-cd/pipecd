@@ -1,5 +1,11 @@
-# Quick sync by rolling out the new version and switching all traffic to it.
 apiVersion: pipecd.dev/v1beta1
 kind: CloudRunApp
 spec:
   name: simple
+  labels:
+    env: example
+    team: abc
+  description: |
+    An example application that demonstrate how to deploy a Cloud Run application with [Quick Sync](https://pipecd.dev/docs/concepts/#quick-sync) strategy.\
+    No pipeline is specified then in each deployment PipeCD will roll out the new version and switch all traffic to it immediately.\
+    References: [adding an application](https://pipecd.dev/docs/user-guide/adding-an-application/), [application configuration](https://pipecd.dev/docs/user-guide/configuring-deployment/cloudrun/)

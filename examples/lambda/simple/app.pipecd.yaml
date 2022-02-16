@@ -4,3 +4,6 @@ apiVersion: pipecd.dev/v1beta1
 kind: LambdaApp
 spec:
   name: simple
+  labels:
+    env: example
+    team: abc

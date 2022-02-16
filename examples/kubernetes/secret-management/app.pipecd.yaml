@@ -2,6 +2,9 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: secret-management
+  labels:
+    env: example
+    team: product
   input:
     manifests:
       - deployment.yaml

@@ -3,6 +3,9 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: canary-by-config-change
+  labels:
+    env: example
+    team: product
   input:
     autoRollback: true
   pipeline:

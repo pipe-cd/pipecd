@@ -5,6 +5,9 @@ apiVersion: pipecd.dev/v1beta1
 kind: LambdaApp
 spec:
   name: canary
+  labels:
+    env: example
+    team: abc
   pipeline:
     stages:
       # Deploy workloads of the new version.

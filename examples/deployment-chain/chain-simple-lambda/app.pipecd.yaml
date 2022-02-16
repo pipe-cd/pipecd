@@ -4,6 +4,9 @@ apiVersion: pipecd.dev/v1beta1
 kind: LambdaApp
 spec:
   name: chain-simple-lambda
+  labels:
+    env: example
+    team: abc
   trigger:
     onChain:
       disabled: false
