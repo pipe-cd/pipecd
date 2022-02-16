@@ -60,17 +60,15 @@ helm install piped pipecd/piped -n pipecd \
 ```
 
 ### 3. Registering a kubernetes application
-Navigate to the `Applications` page, click on the `Add` button on the top left corner.
+Navigate to the `Applications` page, click on the `ADD` button on the top left corner.
 
-Go to the `ADD FROM GIT` tab, then select:
+Go to the `ADD FROM SUGGESTIONS` tab, then select:
 - Piped: `dev` (you just registered)
 - CloudProvider: `kubernetes-default`
 
-You should see a lot of suggested applications.
+You should see a lot of suggested applications. Select the `canary` application and click the `SAVE` button to register.
 
-Select the `canary` application and click the `ADD` button to register.
-
-![](/images/quickstart-adding-application-from-git.png)
+![](/images/quickstart-adding-application-from-suggestions.png)
 
 After a bit, the first deployment would be complete automatically to sync the application to the state specified in the current Git commit.
 
