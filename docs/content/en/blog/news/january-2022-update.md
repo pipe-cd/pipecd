@@ -121,7 +121,7 @@ spec:
 The team continues actively working on improving the PipeCD product. Besides fixing the reported issues, enhancing the existing features, here are some new features the team is currently working on:
 
 - Reduce the maintenance cost of the control plane by supporting using file storage (such as GCS, S3, Minio) for both data store and file store. It means **no database** is required to run the control plane.
-- Automated configuration drift detection for CloudRun application
+- Automated configuration drift detection for Cloud Run application
 
 If you have any features want to request or find out a problem, please let us know by creating issues to the [pipe-cd/pipecd](https://github.com/pipe-cd/pipecd/issues) repository.
 

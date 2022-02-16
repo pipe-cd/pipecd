@@ -71,7 +71,7 @@ description: >
 
 - Running Piped in CloudRun
 
-  Prepare a CloudRun service manifest file as below.
+  Prepare a Cloud Run service manifest file as below.
 
   **Note**: Fields which set to `1` are strict to be set with that value to ensure piped work correctly.
 
@@ -113,7 +113,7 @@ description: >
                   key: latest
   ```
 
-  Create Piped service on CloudRun with the following command. Please note to use `no-cpu-throttling` flag to disable CPU throttling on its container.
+  Create Piped service on Cloud Run with the following command. Please note to use `no-cpu-throttling` flag to disable CPU throttling on its container.
 
   ``` console
   gcloud beta run services replace cloudrun-piped-service.yaml --no-cpu-throttling

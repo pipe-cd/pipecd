@@ -14,7 +14,7 @@ Applicationはデプロイされる前に、PipeCDのWebコンソールでの登
 
 - Kubernetes application
 - Terraform application
-- CloudRun application
+- Cloud Run application
 - Lambda application
 - ECS application
 

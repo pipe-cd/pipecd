@@ -39,7 +39,7 @@ description: >
         branch: {GIT_BRANCH}
 
     # Optional
-    # Uncomment this if you want to enable this Piped to handle CloudRun application.
+    # Uncomment this if you want to enable this Piped to handle Cloud Run application.
     # cloudProviders:
     #  - name: cloudrun-in-project
     #    type: CLOUDRUN
@@ -86,7 +86,7 @@ description: >
     --role="roles/logging.logWriter"
 
   # Optional
-  # If you want to use this Piped to handle CloudRun application
+  # If you want to use this Piped to handle Cloud Run application
   # run the following command to give it the needed roles.
   # https://cloud.google.com/run/docs/reference/iam/roles#additional-configuration
   #

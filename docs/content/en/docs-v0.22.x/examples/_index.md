@@ -50,7 +50,7 @@ https://github.com/pipe-cd/examples
 | [autorollback](https://github.com/pipe-cd/examples/tree/master/terraform/auto-rollback) |  Automatically rollback the changes when deployment was failed.  |
 | [secret-management](https://github.com/pipe-cd/examples/tree/master/terraform/secret-management) | Demonstrate how to manage sensitive data by using [Secret Management](https://pipecd.dev/docs/user-guide/secret-management/) feature. |
 
-### CloudRun Applications
+### Cloud Run Applications
 
 | Name                                                                        | Description |
 |-----------------------------------------------------------------------------|-------------|

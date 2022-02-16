@@ -97,9 +97,9 @@ Must be one of the following structs:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| project | string | The GCP project hosting the CloudRun service. | Yes |
-| region | string | The region of running CloudRun service. | Yes |
-| credentialsFile | string | The path to the service account file for accessing CloudRun service. | No |
+| project | string | The GCP project hosting the Cloud Run service. | Yes |
+| region | string | The region of running Cloud Run service. | Yes |
+| credentialsFile | string | The path to the service account file for accessing Cloud Run service. | No |
 
 ### CloudProviderLambdaConfig
 
