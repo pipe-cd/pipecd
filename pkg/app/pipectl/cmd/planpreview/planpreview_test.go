@@ -160,7 +160,6 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 							ApplicationName: "app-4",
 							ApplicationUrl:  "https://pipecd.dev/app-4",
 							ApplicationKind: model.ApplicationKind_CLOUDRUN,
-							Labels:          map[string]string{"env": "env-4"},
 							Error:           "missing key",
 						},
 					},
@@ -198,7 +197,7 @@ NOTE: An error occurred while building plan-preview for the following 2 applicat
 1. app: app-3, env: env-3, kind: TERRAFORM
   reason: wrong application configuration
 
-2. app: app-4, env: env-4, kind: CLOUDRUN
+2. app: app-4, kind: CLOUDRUN
   reason: missing key
 
 NOTE: An error occurred while building plan-preview for applications of the following 2 Pipeds:
