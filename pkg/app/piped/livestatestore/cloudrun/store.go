@@ -46,12 +46,12 @@ func (s *store) run(ctx context.Context) error {
 	}
 
 	revs := make(map[string][]*provider.Revision, len(svcs))
-	for i := range svcs {
-		id, ok := svcs[i].UID()
+	for _, svc := range svcs {
+		id, ok := svc.UID()
 		if !ok {
 			continue
 		}
-		names := svcs[i].ActiveRevisionNames()
+		names := svc.ActiveRevisionNames()
 		rs, err := s.fetchActiveRevisions(ctx, names)
 		if err != nil {
 			return fmt.Errorf("failed to fetch active revisions: %w", err)
