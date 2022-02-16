@@ -69,9 +69,7 @@ type ApplicationInfo struct {
 	ApplicationID        string
 	ApplicationName      string
 	ApplicationURL       string
-	EnvID                string
-	EnvName              string
-	EnvURL               string
+	EnvValue             string
 	ApplicationKind      string // KUBERNETES, TERRAFORM, CLOUDRUN, LAMBDA, ECS
 	ApplicationDirectory string
 }
@@ -135,10 +133,12 @@ const (
 
 `
 
-	noChangeTitleFormat   = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `0` updated application. It means no deployment will be triggered once this pull request got merged.\n"
-	hasChangeTitleFormat  = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `%d` updated applications and here are their plan results. Once this pull request got merged their deployments will be triggered to run as these estimations.\n"
-	detailsFormat         = "<details>\n<summary>Details (Click me)</summary>\n<p>\n\n``` %s\n%s\n```\n</p>\n</details>\n"
-	detailsOmittedMessage = "The details are too long to display. Please check the actions log to see full details."
+	noChangeTitleFormat     = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `0` updated application. It means no deployment will be triggered once this pull request got merged.\n"
+	hasChangeTitleFormat    = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `%d` updated applications and here are their plan results. Once this pull request got merged their deployments will be triggered to run as these estimations.\n"
+	detailsFormat           = "<details>\n<summary>Details (Click me)</summary>\n<p>\n\n``` %s\n%s\n```\n</p>\n</details>\n"
+	detailsOmittedMessage   = "The details are too long to display. Please check the actions log to see full details."
+	appInfoWithEnvFormat    = "app: [%s](%s), env: %s, kind: %s"
+	appInfoWithoutEnvFormat = "app: [%s](%s), kind: %s"
 
 	ghMessageLenLimit = 65536
 
@@ -171,7 +171,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 	var detailLen int
 
 	for _, app := range changedApps {
-		fmt.Fprintf(&b, "\n## app: [%s](%s), env: [%s](%s), kind: %s\n", app.ApplicationName, app.ApplicationURL, app.EnvName, app.EnvURL, strings.ToLower(app.ApplicationKind))
+		fmt.Fprintf(&b, "\n## %s\n", makeTitleText(&app.ApplicationInfo))
 		fmt.Fprintf(&b, "Sync strategy: %s\n", app.SyncStrategy)
 		fmt.Fprintf(&b, "Summary: %s\n\n", app.PlanSummary)
 
@@ -197,14 +197,14 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		if len(pipelineApps) > 0 {
 			b.WriteString("\n###### `PIPELINE`\n")
 			for _, app := range pipelineApps {
-				fmt.Fprintf(&b, "\n- app: [%s](%s), env: [%s](%s), kind: %s\n", app.ApplicationName, app.ApplicationURL, app.EnvName, app.EnvURL, strings.ToLower(app.ApplicationKind))
+				fmt.Fprintf(&b, "\n- %s\n", makeTitleText(&app.ApplicationInfo))
 			}
 		}
 
 		if len(quickSyncApps) > 0 {
 			b.WriteString("\n###### `QUICK_SYNC`\n")
 			for _, app := range quickSyncApps {
-				fmt.Fprintf(&b, "\n- app: [%s](%s), env: [%s](%s), kind: %s\n", app.ApplicationName, app.ApplicationURL, app.EnvName, app.EnvURL, strings.ToLower(app.ApplicationKind))
+				fmt.Fprintf(&b, "\n- %s\n", makeTitleText(&app.ApplicationInfo))
 			}
 		}
 	}
@@ -219,7 +219,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		fmt.Fprintf(&b, "**An error occurred while building plan-preview for the following applications**\n")
 
 		for _, app := range r.FailureApplications {
-			fmt.Fprintf(&b, "\n## app: [%s](%s), env: [%s](%s), kind: %s\n", app.ApplicationName, app.ApplicationURL, app.EnvName, app.EnvURL, strings.ToLower(app.ApplicationKind))
+			fmt.Fprintf(&b, "\n## %s\n", makeTitleText(&app.ApplicationInfo))
 			fmt.Fprintf(&b, "Reason: %s\n\n", app.Reason)
 
 			var lang = "diff"
@@ -256,4 +256,11 @@ func groupApplicationResults(apps []ApplicationResult) (changes, pipelines, quic
 		quicks = append(quicks, app)
 	}
 	return
+}
+
+func makeTitleText(app *ApplicationInfo) string {
+	if app.EnvValue == "" {
+		return fmt.Sprintf(appInfoWithoutEnvFormat, app.ApplicationName, app.ApplicationURL, strings.ToLower(app.ApplicationKind))
+	}
+	return fmt.Sprintf(appInfoWithEnvFormat, app.ApplicationName, app.ApplicationURL, app.EnvValue, strings.ToLower(app.ApplicationKind))
 }
