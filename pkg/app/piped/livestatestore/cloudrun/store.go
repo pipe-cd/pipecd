@@ -40,19 +40,36 @@ type app struct {
 }
 
 func (s *store) run(ctx context.Context) error {
-	svcs, err := s.getAllServices(ctx)
+	svcs, err := s.fetchManagedServices(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to get all cloudrun services: %w", err)
+		return fmt.Errorf("failed to fetch managed services: %w", err)
 	}
-	revs := s.listRevisionsFromServices(ctx, svcs)
+
+	revs := make(map[string][]*provider.Revision, len(svcs))
+	for i := range svcs {
+		id, ok := svcs[i].UID()
+		if !ok {
+			continue
+		}
+		names := svcs[i].ActiveRevisionNames()
+		rs, err := s.fetchActiveRevisions(ctx, names)
+		if err != nil {
+			return fmt.Errorf("failed to fetch active revisions: %w", err)
+		}
+		if len(rs) == 0 {
+			continue
+		}
+		revs[id] = rs
+	}
 
 	// Update apps to the latest.
-	s.storeApps(svcs, revs)
+	apps := s.buildAppMap(svcs, revs)
+	s.apps.Store(apps)
 
 	return nil
 }
 
-func (s *store) storeApps(svcs []*provider.Service, revs map[string][]*provider.Revision) {
+func (s *store) buildAppMap(svcs []*provider.Service, revs map[string][]*provider.Revision) map[string]app {
 	apps := make(map[string]app, len(svcs))
 	for i := range svcs {
 		sm, err := svcs[i].ServiceManifest()
@@ -76,10 +93,10 @@ func (s *store) storeApps(svcs []*provider.Service, revs map[string][]*provider.
 			},
 		}
 	}
-	s.apps.Store(apps)
+	return apps
 }
 
-func (s *store) getAllServices(ctx context.Context) ([]*provider.Service, error) {
+func (s *store) fetchManagedServices(ctx context.Context) ([]*provider.Service, error) {
 	const maxLimit = 500
 	var cursor string
 	svcs := make([]*provider.Service, 0, maxLimit)
@@ -104,30 +121,12 @@ func (s *store) getAllServices(ctx context.Context) ([]*provider.Service, error)
 	return svcs, nil
 }
 
-func (s *store) listRevisionsFromServices(ctx context.Context, svcs []*provider.Service) map[string][]*provider.Revision {
-	revs := make(map[string][]*provider.Revision, len(svcs))
-	for i := range svcs {
-		id, ok := svcs[i].UID()
-		if !ok {
-			continue
-		}
-		names := svcs[i].ActiveRevisionNames()
-		if rs := s.getMultiRevisions(ctx, names); len(rs) > 0 {
-			revs[id] = rs
-		}
-	}
-	return revs
-}
-
-func (s *store) getMultiRevisions(ctx context.Context, names []string) []*provider.Revision {
+func (s *store) fetchActiveRevisions(ctx context.Context, names []string) ([]*provider.Revision, error) {
 	ops := &provider.ListRevisionsOptions{
 		LabelSelector: provider.MakeRevisionNamesSelector(names),
 	}
 	v, _, err := s.client.ListRevisions(ctx, ops)
-	if err != nil {
-		s.logger.Error("failed to list cloudrun revisions", zap.Error(err))
-	}
-	return v
+	return v, err
 }
 
 func (s *store) loadApps() map[string]app {
