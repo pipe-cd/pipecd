@@ -68,6 +68,12 @@ func (c *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 		for k, v := range opts.SetFiles {
 			args = append(args, "--set-file", fmt.Sprintf("%s=%s", k, v))
 		}
+		for _, v := range opts.APIVersions {
+			args = append(args, "--api-versions", v)
+		}
+		if opts.KubeVersion != "" {
+			args = append(args, "--kube-version", opts.KubeVersion)
+		}
 	}
 
 	var stdout, stderr bytes.Buffer
@@ -151,6 +157,12 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 		}
 		for k, v := range opts.SetFiles {
 			args = append(args, "--set-file", fmt.Sprintf("%s=%s", k, v))
+		}
+		for _, v := range opts.APIVersions {
+			args = append(args, "--api-versions", v)
+		}
+		if opts.KubeVersion != "" {
+			args = append(args, "--kube-version", opts.KubeVersion)
 		}
 	}
 

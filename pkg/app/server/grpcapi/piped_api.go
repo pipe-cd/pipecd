@@ -113,18 +113,19 @@ type PipedAPI struct {
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, cs commandstore.Store, hc cache.Cache, rd redis.Redis, cop commandOutputPutter, webBaseURL string, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, hc cache.Cache, rd redis.Redis, cop commandOutputPutter, webBaseURL string, logger *zap.Logger) *PipedAPI {
+	w := datastore.PipedCommander
 	a := &PipedAPI{
-		applicationStore:          datastore.NewApplicationStore(ds),
-		deploymentStore:           datastore.NewDeploymentStore(ds),
-		deploymentChainStore:      datastore.NewDeploymentChainStore(ds),
-		environmentStore:          datastore.NewEnvironmentStore(ds),
-		pipedStore:                datastore.NewPipedStore(ds),
-		eventStore:                datastore.NewEventStore(ds),
+		applicationStore:          datastore.NewApplicationStore(ds, w),
+		deploymentStore:           datastore.NewDeploymentStore(ds, w),
+		deploymentChainStore:      datastore.NewDeploymentChainStore(ds, w),
+		environmentStore:          datastore.NewEnvironmentStore(ds, w),
+		pipedStore:                datastore.NewPipedStore(ds, w),
+		eventStore:                datastore.NewEventStore(ds, w),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
 		analysisResultStore:       las,
-		commandStore:              cs,
+		commandStore:              commandstore.NewStore(w, ds, sc, logger),
 		commandOutputPutter:       cop,
 		appPipedCache:             memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),

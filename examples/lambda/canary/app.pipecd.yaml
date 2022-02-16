@@ -14,9 +14,15 @@ spec:
       - name: LAMBDA_PROMOTE
         with:
           percent: 10
+      - name: WAIT
+        with:
+          duration: 30s
       - name: LAMBDA_PROMOTE
         with:
           percent: 50
+      - name: WAIT
+        with:
+          duration: 30s
       # Promote new version to receive all traffic.
       - name: LAMBDA_PROMOTE
         with:

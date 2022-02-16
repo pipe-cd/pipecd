@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2022 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package livestatereporter
+package kubernetes
 
 import (
 	"context"
@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
@@ -31,7 +32,21 @@ const (
 	maxNumEventsPerRequest = 1000
 )
 
-type kubernetesReporter struct {
+type applicationLister interface {
+	ListByCloudProvider(name string) []*model.Application
+}
+
+type apiClient interface {
+	ReportApplicationLiveState(ctx context.Context, req *pipedservice.ReportApplicationLiveStateRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationLiveStateResponse, error)
+	ReportApplicationLiveStateEvents(ctx context.Context, req *pipedservice.ReportApplicationLiveStateEventsRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationLiveStateEventsResponse, error)
+}
+
+type Reporter interface {
+	Run(ctx context.Context) error
+	ProviderName() string
+}
+
+type reporter struct {
 	provider              config.PipedCloudProvider
 	appLister             applicationLister
 	stateGetter           kubernetes.Getter
@@ -44,11 +59,11 @@ type kubernetesReporter struct {
 	snapshotVersions map[string]model.ApplicationLiveStateVersion
 }
 
-func newKubernetesReporter(cp config.PipedCloudProvider, appLister applicationLister, stateGetter kubernetes.Getter, apiClient apiClient, logger *zap.Logger) *kubernetesReporter {
+func NewReporter(cp config.PipedCloudProvider, appLister applicationLister, stateGetter kubernetes.Getter, apiClient apiClient, logger *zap.Logger) Reporter {
 	logger = logger.Named("kubernetes-reporter").With(
 		zap.String("cloud-provider", cp.Name),
 	)
-	return &kubernetesReporter{
+	return &reporter{
 		provider:              cp,
 		appLister:             appLister,
 		stateGetter:           stateGetter,
@@ -61,7 +76,7 @@ func newKubernetesReporter(cp config.PipedCloudProvider, appLister applicationLi
 	}
 }
 
-func (r *kubernetesReporter) Run(ctx context.Context) error {
+func (r *reporter) Run(ctx context.Context) error {
 	r.logger.Info("start running app live state reporter")
 
 	r.logger.Info("waiting for livestatestore to be ready")
@@ -94,7 +109,7 @@ func (r *kubernetesReporter) Run(ctx context.Context) error {
 	}
 }
 
-func (r *kubernetesReporter) flushSnapshots(ctx context.Context) error {
+func (r *reporter) flushSnapshots(ctx context.Context) error {
 	// TODO: In the future, maybe we should apply worker model for this or
 	// send multiple application states in one request.
 	apps := r.appLister.ListByCloudProvider(r.provider.Name)
@@ -134,7 +149,7 @@ func (r *kubernetesReporter) flushSnapshots(ctx context.Context) error {
 	return nil
 }
 
-func (r *kubernetesReporter) flushEvents(ctx context.Context) error {
+func (r *reporter) flushEvents(ctx context.Context) error {
 	events := r.eventIterator.Next(maxNumEventsPerRequest)
 	if len(events) == 0 {
 		return nil
@@ -166,6 +181,6 @@ func (r *kubernetesReporter) flushEvents(ctx context.Context) error {
 	return nil
 }
 
-func (r *kubernetesReporter) ProviderName() string {
+func (r *reporter) ProviderName() string {
 	return r.provider.Name
 }

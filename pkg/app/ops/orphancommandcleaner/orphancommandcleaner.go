@@ -45,7 +45,7 @@ func NewOrphanCommandCleaner(
 	logger *zap.Logger,
 ) *OrphanCommandCleaner {
 	return &OrphanCommandCleaner{
-		commandstore: datastore.NewCommandStore(ds),
+		commandstore: datastore.NewCommandStore(ds, datastore.OpsCommander),
 		logger:       logger.Named("orphan-command-cleaner"),
 	}
 }

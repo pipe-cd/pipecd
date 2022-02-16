@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 type PlanPreviewResult struct {
@@ -134,9 +135,15 @@ const (
 
 `
 
-	noChangeTitleFormat  = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `0` updated application. It means no deployment will be triggered once this pull request got merged.\n"
-	hasChangeTitleFormat = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `%d` updated applications and here are their plan results. Once this pull request got merged their deployments will be triggered to run as these estimations.\n"
-	detailsFormat        = "<details>\n<summary>Details (Click me)</summary>\n<p>\n\n``` %s\n%s\n```\n</p>\n</details>\n"
+	noChangeTitleFormat   = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `0` updated application. It means no deployment will be triggered once this pull request got merged.\n"
+	hasChangeTitleFormat  = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `%d` updated applications and here are their plan results. Once this pull request got merged their deployments will be triggered to run as these estimations.\n"
+	detailsFormat         = "<details>\n<summary>Details (Click me)</summary>\n<p>\n\n``` %s\n%s\n```\n</p>\n</details>\n"
+	detailsOmittedMessage = "The details are too long to display. Please check the actions log to see full details."
+
+	ghMessageLenLimit = 65536
+
+	// Limit of details
+	detailsLenLimit = ghMessageLenLimit - 5000 // 5000 characters could be used for other parts in the comment message.
 )
 
 func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
@@ -161,6 +168,8 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 
 	changedApps, pipelineApps, quickSyncApps := groupApplicationResults(r.Applications)
 
+	var detailLen int
+
 	for _, app := range changedApps {
 		fmt.Fprintf(&b, "\n## app: [%s](%s), env: [%s](%s), kind: %s\n", app.ApplicationName, app.ApplicationURL, app.EnvName, app.EnvURL, strings.ToLower(app.ApplicationKind))
 		fmt.Fprintf(&b, "Sync strategy: %s\n", app.SyncStrategy)
@@ -170,6 +179,15 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		if app.ApplicationKind == "TERRAFORM" {
 			lang = "hcl"
 		}
+
+		l := utf8.RuneCountInString(app.PlanDetails)
+		if detailLen+l > detailsLenLimit {
+			fmt.Fprintf(&b, detailsFormat, lang, detailsOmittedMessage)
+			detailLen += utf8.RuneCountInString(detailsOmittedMessage)
+			continue
+		}
+
+		detailLen += l
 		fmt.Fprintf(&b, detailsFormat, lang, app.PlanDetails)
 	}
 
@@ -208,6 +226,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 			if app.ApplicationKind == "TERRAFORM" {
 				lang = "hcl"
 			}
+
 			fmt.Fprintf(&b, detailsFormat, lang, app.PlanDetails)
 		}
 	}

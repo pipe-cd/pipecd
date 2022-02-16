@@ -65,7 +65,7 @@ spec:
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
 
-## CloudRun application
+## Cloud Run application
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
@@ -81,7 +81,7 @@ spec:
 | name | string | The application name. | Yes if you set the application through the application configuration file |
 | labels | map[string]string | Additional attributes to identify applications. | No |
 | description | string | Notes on the Application. | No |
-| input | [CloudRunDeploymentInput](#cloudrundeploymentinput) | Input for CloudRun deployment such as docker image... | No |
+| input | [CloudRunDeploymentInput](#cloudrundeploymentinput) | Input for Cloud Run deployment such as docker image... | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [CloudRunQuickSync](#cloudrunquicksync) | Configuration for quick sync. | No |
@@ -316,6 +316,8 @@ One of `yamlField` or `regex` is required.
 | releaseName | string | The release name of helm deployment. By default, the release name is equal to the application name. | No |
 | valueFiles | []string | List of value files should be loaded. | No |
 | setFiles | map[string]string | List of file path for values. | No |
+| apiVersions | []string | Kubernetes api versions used for Capabilities.APIVersions. | No |
+| kubeVersion | string | Kubernetes version used for Capabilities.KubeVersion. | No |
 
 ## KubernetesQuickSync
 

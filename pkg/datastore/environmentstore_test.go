@@ -63,7 +63,7 @@ func TestGetEnvironment(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewEnvironmentStore(tc.ds)
+			s := NewEnvironmentStore(tc.ds, TestCommander)
 			_, err := s.Get(context.Background(), tc.id)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -118,7 +118,7 @@ func TestListEnvironment(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewEnvironmentStore(tc.ds)
+			s := NewEnvironmentStore(tc.ds, TestCommander)
 			_, err := s.List(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})

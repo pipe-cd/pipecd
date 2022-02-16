@@ -110,16 +110,18 @@ type DeploymentStore interface {
 
 type deploymentStore struct {
 	backend
-	nowFunc func() time.Time
+	commander Commander
+	nowFunc   func() time.Time
 }
 
-func NewDeploymentStore(ds DataStore) DeploymentStore {
+func NewDeploymentStore(ds DataStore, c Commander) DeploymentStore {
 	return &deploymentStore{
 		backend: backend{
 			ds:  ds,
 			col: &deploymentCollection{},
 		},
-		nowFunc: time.Now,
+		commander: c,
+		nowFunc:   time.Now,
 	}
 }
 

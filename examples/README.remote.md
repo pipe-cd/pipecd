@@ -2,7 +2,7 @@
 
 A repository contains some examples for PipeCD.
 
-**NOTE**: This repository is automatically synced from the examples directory of [pipe-cd/pipe](https://github.com/pipe-cd/pipecd/tree/master/examples) repository. If you want to make a pull request, please send it to [pipe-cd/pipe](https://github.com/pipe-cd/pipe) repository.
+**NOTE**: This repository is automatically synced from the examples directory of [pipe-cd/pipecd](https://github.com/pipe-cd/pipecd/tree/master/examples) repository. If you want to make a pull request, please send it to [pipe-cd/pipecd](https://github.com/pipe-cd/pipecd) repository.
 
 </br>
 
@@ -43,7 +43,7 @@ A repository contains some examples for PipeCD.
 | [autorollback](https://github.com/pipe-cd/examples/tree/master/terraform/auto-rollback) |  Automatically rollback the changes when deployment was failed.  |
 | [secret-management](https://github.com/pipe-cd/examples/tree/master/terraform/secret-management) | Demonstrate how to manage sensitive data by using [Secret Management](https://pipecd.dev/docs/user-guide/secret-management/) feature. |
 
-### CloudRun Applications
+### Cloud Run Applications
 
 | Name                                                                        | Description |
 |-----------------------------------------------------------------------------|-------------|

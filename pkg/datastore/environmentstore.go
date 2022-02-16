@@ -45,16 +45,18 @@ type EnvironmentStore interface {
 
 type environmentStore struct {
 	backend
-	nowFunc func() time.Time
+	commander Commander
+	nowFunc   func() time.Time
 }
 
-func NewEnvironmentStore(ds DataStore) EnvironmentStore {
+func NewEnvironmentStore(ds DataStore, c Commander) EnvironmentStore {
 	return &environmentStore{
 		backend: backend{
 			ds:  ds,
 			col: &environmentCollection{},
 		},
-		nowFunc: time.Now,
+		commander: c,
+		nowFunc:   time.Now,
 	}
 }
 

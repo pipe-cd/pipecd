@@ -3,10 +3,10 @@ title: "CloudRun"
 linkTitle: "CloudRun"
 weight: 3
 description: >
-  Specific guide for configuring CloudRun deployment.
+  Specific guide for configuring Cloud Run deployment.
 ---
 
-Deploying a CloudRun application requires a `service.yaml` file placing inside the application directory. That file contains the service specification used by CloudRun as following: 
+Deploying a Cloud Run application requires a `service.yaml` file placing inside the application directory. That file contains the service specification used by Cloud Run as following: 
 
 ``` yaml
 apiVersion: serving.knative.dev/v1
@@ -42,7 +42,7 @@ Quick sync for a Cloud Run deployment will roll out the new version and switch a
 The [pipeline](/docs/user-guide/configuration-reference/#cloudrun-application) field in the deployment configuration is used to customize the way to do the deployment.
 You can add a manual approval before routing traffic to the new version or add an analysis stage the do some smoke tests against the new version before allowing them to receive the real traffic.
 
-These are the provided stages for CloudRun application you can use to build your pipeline:
+These are the provided stages for Cloud Run application you can use to build your pipeline:
 
 - `CLOUDRUN_PROMOTE`
   - promote the new version to receive an amount of traffic

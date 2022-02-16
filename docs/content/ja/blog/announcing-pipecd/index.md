@@ -94,7 +94,7 @@ PipeCD team hopes to receive a warm welcome and feedback from the open-source co
 We value every contribution and invite you to join us on GitHub, Slack and Twitter.
 
 - Visit our website and documentation at [https://pipecd.dev](https://pipecd.dev)
-- Check out the code at [https://github.com/pipe-cd/pipe](https://github.com/pipe-cd/pipe) or explore the [examples](https://pipecd.dev/docs/examples/)
+- Check out the code at [https://github.com/pipe-cd/pipecd](https://github.com/pipe-cd/pipecd) or explore the [examples](https://pipecd.dev/docs/examples/)
 - Join us on Slack [@cloud-native/pipecd](https://slack.cncf.io) to chat with other developers
 - Follow us on Twitter [@pipecd_dev](https://twitter.com/pipecd_dev) to get the latest news
 
