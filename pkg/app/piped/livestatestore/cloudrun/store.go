@@ -70,11 +70,10 @@ func (s *store) run(ctx context.Context) error {
 }
 
 func (s *store) buildAppMap(svcs []*provider.Service, revs map[string][]*provider.Revision) map[string]app {
-	apps := make(map[string]app, len(svcs))
-        now := time.Now()
-        version: model.ApplicationLiveStateVersion{
-                Timestamp: now.Unix(),
-        }
+	apps, now := make(map[string]app, len(svcs)), time.Now()
+	version := model.ApplicationLiveStateVersion{
+		Timestamp: now.Unix(),
+	}
 	for _, svc := range svcs {
 		sm, err := svc.ServiceManifest()
 		if err != nil {
