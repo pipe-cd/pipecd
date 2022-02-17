@@ -30,7 +30,6 @@ type add struct {
 
 	appName       string
 	appKind       string
-	envID         string
 	pipedID       string
 	cloudProvider string
 	description   string
@@ -53,7 +52,6 @@ func newAddCommand(root *command) *cobra.Command {
 
 	cmd.Flags().StringVar(&c.appName, "app-name", c.appName, "The application name.")
 	cmd.Flags().StringVar(&c.appKind, "app-kind", c.appKind, "The kind of application. (KUBERNETES|TERRAFORM|LAMBDA|CLOUDRUN)")
-	cmd.Flags().StringVar(&c.envID, "env-id", c.envID, "The ID of environment where this application should belong to.")
 	cmd.Flags().StringVar(&c.pipedID, "piped-id", c.pipedID, "The ID of piped that should handle this application.")
 	cmd.Flags().StringVar(&c.cloudProvider, "cloud-provider", c.cloudProvider, "The cloud provider name. One of the registered providers in the piped configuration.")
 
@@ -86,7 +84,6 @@ func (c *add) run(ctx context.Context, input cli.Input) error {
 
 	req := &apiservice.AddApplicationRequest{
 		Name:    c.appName,
-		EnvId:   c.envID,
 		PipedId: c.pipedID,
 		GitPath: &model.ApplicationGitPath{
 			Repo: &model.ApplicationGitRepository{

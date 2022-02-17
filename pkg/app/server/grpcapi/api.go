@@ -144,7 +144,6 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 	app := model.Application{
 		Id:            uuid.New().String(),
 		Name:          req.Name,
-		EnvId:         req.EnvId,
 		PipedId:       req.PipedId,
 		ProjectId:     key.ProjectId,
 		GitPath:       gitpath,
