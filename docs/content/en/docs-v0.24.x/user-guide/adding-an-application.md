@@ -42,7 +42,7 @@ After waiting for a while (it depends on the Piped's setting), click the `+ADD` 
 Select the Piped and Cloud Provider that you deploy to, and the application you have just selected should appear as a candidate.
 Click `ADD` to complete the registration.
 
-![](/images/registering-an-application-from-git.png)
+![](/images/legacy-registering-an-application-from-git.png)
 <p style="text-align: center;">
 </p>
 
@@ -50,7 +50,7 @@ Click `ADD` to complete the registration.
 In this way, you set the necessary information on the web.
 By clicking on `+ADD` button at the application list page, a popup will be revealed from the right side as below:
 
-![](/images/registering-an-application-from-web.png)
+![](/images/legacy-registering-an-application-from-web.png)
 <p style="text-align: center;">
 </p>
 

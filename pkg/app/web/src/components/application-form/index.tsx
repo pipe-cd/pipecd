@@ -379,22 +379,22 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
             className={classes.textInput}
           />
 
+          <FormSelectInput
+            id="kind"
+            label="Kind"
+            value={`${values.kind}`}
+            items={Object.keys(APPLICATION_KIND_TEXT).map((key) => ({
+              name:
+                APPLICATION_KIND_TEXT[(key as unknown) as ApplicationKind],
+              value: key,
+            }))}
+            onChange={({ value }) =>
+              setFieldValue("kind", parseInt(value, 10))
+            }
+            disabled={isSubmitting || disableApplicationInfo}
+          />
+
           <div className={classes.inputGroup}>
-            <FormSelectInput
-              id="kind"
-              label="Kind"
-              value={`${values.kind}`}
-              items={Object.keys(APPLICATION_KIND_TEXT).map((key) => ({
-                name:
-                  APPLICATION_KIND_TEXT[(key as unknown) as ApplicationKind],
-                value: key,
-              }))}
-              onChange={({ value }) =>
-                setFieldValue("kind", parseInt(value, 10))
-              }
-              disabled={isSubmitting || disableApplicationInfo}
-            />
-            <div className={classes.inputGroupSpace} />
             <FormSelectInput
               id="piped"
               label="Piped"
@@ -413,6 +413,19 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
                 value: piped.id,
               }))}
               disabled={isSubmitting || pipeds.length === 0}
+            />
+            <div className={classes.inputGroupSpace} />
+            <FormSelectInput
+              id="cloudProvider"
+              label="Cloud Provider"
+              value={values.cloudProvider}
+              onChange={({ value }) => setFieldValue("cloudProvider", value)}
+              items={cloudProviders}
+              disabled={
+                selectedPiped === undefined ||
+                cloudProviders.length === 0 ||
+                isSubmitting
+              }
             />
           </div>
 
@@ -471,19 +484,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
             className={classes.textInput}
           />
 
-          <FormSelectInput
-            id="cloudProvider"
-            label="Cloud Provider"
-            value={values.cloudProvider}
-            onChange={({ value }) => setFieldValue("cloudProvider", value)}
-            items={cloudProviders}
-            disabled={
-              selectedPiped === undefined ||
-              cloudProviders.length === 0 ||
-              isSubmitting
-            }
-          />
-
+          <Box m={2} />
           <Button
             color="primary"
             type="submit"

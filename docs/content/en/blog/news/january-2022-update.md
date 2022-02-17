@@ -74,7 +74,7 @@ Filtering application or deployment by the label is being implemeted currently. 
 
 Before [v0.23.0](https://github.com/pipe-cd/pipecd/releases/tag/v0.23.0), while registering a new application user has to configure the application information manually via a registration form. For now, most of the information can be specified in the application configuration file. And Piped agents automatically find the un-registered applications to suggest to users. It means that all you have to do is just a few clicks on the web console.
 
-![](/images/registering-an-application-from-git.png)
+![](/images/legacy-registering-an-application-from-git.png)
 <p style="text-align: center;">
 Picking from the suggested application list to register
 </p>
