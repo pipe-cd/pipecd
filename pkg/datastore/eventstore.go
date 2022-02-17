@@ -36,11 +36,11 @@ func (e *eventCollection) Factory() Factory {
 	}
 }
 
-func (e *eventCollection) GetStoredFileNames(id string) []string {
+func (e *eventCollection) MakeStoredFileNames(id string) []string {
 	return []string{fmt.Sprintf("%s.json", id)}
 }
 
-func (e *eventCollection) GetUpdatableFileName(id string) (string, error) {
+func (e *eventCollection) MakeUpdatableFileName(id string) (string, error) {
 	switch e.requestedBy {
 	case PipedCommander:
 		return fmt.Sprintf("%s.json", id), nil

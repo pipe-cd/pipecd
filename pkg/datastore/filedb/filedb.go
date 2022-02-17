@@ -24,11 +24,11 @@ import (
 )
 
 type FileStorable interface {
-	// GetStoredFileNames returns a list of files' name which object of kind currently storing in.
-	GetStoredFileNames(id string) []string
-	// GetUpdatableFileName returns the name of the file which should be referred to on Updating object of kind.
+	// MakeStoredFileNames returns a list of files' name which object of kind currently storing in.
+	MakeStoredFileNames(id string) []string
+	// MakeUpdatableFileName returns the name of the file which should be referred to on Updating object of kind.
 	// datastore.ErrUnsupported will be returned if there is no such file name exist.
-	GetUpdatableFileName(id string) (string, error)
+	MakeUpdatableFileName(id string) (string, error)
 }
 
 type FileDB struct {

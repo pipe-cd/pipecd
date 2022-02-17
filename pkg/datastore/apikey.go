@@ -36,11 +36,11 @@ func (a *apiKeyCollection) Factory() Factory {
 	}
 }
 
-func (a *apiKeyCollection) GetStoredFileNames(id string) []string {
+func (a *apiKeyCollection) MakeStoredFileNames(id string) []string {
 	return []string{fmt.Sprintf("%s.json", id)}
 }
 
-func (a *apiKeyCollection) GetUpdatableFileName(id string) (string, error) {
+func (a *apiKeyCollection) MakeUpdatableFileName(id string) (string, error) {
 	switch a.requestedBy {
 	case WebCommander:
 		return fmt.Sprintf("%s.json", id), nil

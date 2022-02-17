@@ -36,7 +36,7 @@ func (a *applicationCollection) Factory() Factory {
 	}
 }
 
-func (a *applicationCollection) GetStoredFileNames(id string) []string {
+func (a *applicationCollection) MakeStoredFileNames(id string) []string {
 	return []string{
 		fmt.Sprintf("%s_api.json", id),
 		fmt.Sprintf("%s_ops.json", id),
@@ -44,7 +44,7 @@ func (a *applicationCollection) GetStoredFileNames(id string) []string {
 	}
 }
 
-func (a *applicationCollection) GetUpdatableFileName(id string) (string, error) {
+func (a *applicationCollection) MakeUpdatableFileName(id string) (string, error) {
 	switch a.requestedBy {
 	case WebCommander, PipectlCommander:
 		return fmt.Sprintf("%s_api.json", id), nil

@@ -36,11 +36,11 @@ func (d *deploymentChainCollection) Factory() Factory {
 	}
 }
 
-func (d *deploymentChainCollection) GetStoredFileNames(id string) []string {
+func (d *deploymentChainCollection) MakeStoredFileNames(id string) []string {
 	return []string{fmt.Sprintf("%s.json", id)}
 }
 
-func (d *deploymentChainCollection) GetUpdatableFileName(id string) (string, error) {
+func (d *deploymentChainCollection) MakeUpdatableFileName(id string) (string, error) {
 	switch d.requestedBy {
 	case OpsCommander:
 		return fmt.Sprintf("%s.json", id), nil
