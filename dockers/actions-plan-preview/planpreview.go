@@ -144,7 +144,7 @@ const (
 
 	githubServerURLEnv = "GITHUB_SERVER_URL"
 	githubRepositoryEnv = "GITHUB_REPOSITORY"
-	GITHUB_RUN_ID     = "GITHUB_RUN_ID"
+	githubRunIDEnv     = "GITHUB_RUN_ID"
 )
 
 func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
