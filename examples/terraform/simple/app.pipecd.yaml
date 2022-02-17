@@ -3,6 +3,9 @@ apiVersion: pipecd.dev/v1beta1
 kind: TerraformApp
 spec:
   name: simple
+  labels:
+    env: example
+    team: infra
   input:
     terraformVersion: 1.0.10
   encryption:

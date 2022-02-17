@@ -3,6 +3,9 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: canary
+  labels:
+    env: example
+    team: product
   pipeline:
     stages:
       # Deploy the workloads of CANARY variant. In this case, the number of

@@ -4,6 +4,9 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: helm-remote-git-chart
+  labels:
+    env: example
+    team: product
   input:
     # Helm chart sourced from another Git repository.
     helmChart:

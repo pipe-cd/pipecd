@@ -4,6 +4,9 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: helm-local-chart
+  labels:
+    env: example
+    team: product
   trigger:
     onCommit:
       paths:

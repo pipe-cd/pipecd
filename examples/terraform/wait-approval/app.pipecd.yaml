@@ -3,6 +3,9 @@ apiVersion: pipecd.dev/v1beta1
 kind: TerraformApp
 spec:
   name: wait-approval
+  labels:
+    env: example
+    team: infra
   input:
     workspace: dev
     terraformVersion: 1.0.10

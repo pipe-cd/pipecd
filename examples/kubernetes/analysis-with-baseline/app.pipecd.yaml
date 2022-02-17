@@ -2,6 +2,9 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: analysis-with-baseline
+  labels:
+    env: example
+    team: product
   pipeline:
     stages:
       - name: K8S_CANARY_ROLLOUT

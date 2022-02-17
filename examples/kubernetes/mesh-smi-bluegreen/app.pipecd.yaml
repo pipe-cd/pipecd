@@ -1,0 +1,7 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: mesh-smi-bluegreen
+  labels:
+    env: example
+    team: product

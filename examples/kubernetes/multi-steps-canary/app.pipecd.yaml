@@ -5,6 +5,9 @@ apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: multi-steps-canary
+  labels:
+    env: example
+    team: product
   pipeline:
     stages:
       - name: K8S_CANARY_ROLLOUT
