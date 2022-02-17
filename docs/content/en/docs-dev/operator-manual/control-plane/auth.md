@@ -1,7 +1,7 @@
 ---
 title: "Authentication and authorization"
 linkTitle: "Authentication and authorization"
-weight: 6
+weight: 5
 description: >
   This page describes about PipeCD Authentication and Authorization.
 ---

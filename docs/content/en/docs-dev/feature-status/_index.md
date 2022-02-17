@@ -106,7 +106,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 
 | Feature | Phase |
 |-|-|
-| Project/Environment/Piped/Application/Deployment management | Beta |
+| Project/Piped/Application/Deployment management | Beta |
 | Rendering deployment pipeline in realtime | Beta |
 | Canceling a deployment from console | Beta |
 | Triggering a deployment manually from console | Beta |
