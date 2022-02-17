@@ -22,6 +22,7 @@ import (
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type Store struct {
@@ -31,7 +32,13 @@ type Store struct {
 }
 
 type Getter interface {
+	GetState(appID string) (State, bool)
 	GetServiceManifest(appID string) (provider.ServiceManifest, bool)
+}
+
+type State struct {
+	Resources []*model.CloudRunResourceState
+	Version   model.ApplicationLiveStateVersion
 }
 
 func NewStore(ctx context.Context, cfg *config.CloudProviderCloudRunConfig, cloudProvider string, logger *zap.Logger) (*Store, error) {
@@ -78,5 +85,9 @@ func (s *Store) Run(ctx context.Context) error {
 }
 
 func (s *Store) GetServiceManifest(appID string) (provider.ServiceManifest, bool) {
-	return s.store.GetServiceManifest(appID)
+	return s.store.getServiceManifest(appID)
+}
+
+func (s *Store) GetState(appID string) (State, bool) {
+	return s.store.getState(appID)
 }

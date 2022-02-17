@@ -18,10 +18,12 @@ import (
 	"context"
 	"fmt"
 	"sync/atomic"
+	"time"
 
 	"go.uber.org/zap"
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/cloudrun"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type store struct {
@@ -30,10 +32,74 @@ type store struct {
 	client provider.Client
 }
 
+type app struct {
+	service provider.ServiceManifest
+	// The states of service and all its active revsions which may handle the traffic.
+	states  []*model.CloudRunResourceState
+	version model.ApplicationLiveStateVersion
+}
+
 func (s *store) run(ctx context.Context) error {
+	svcs, err := s.fetchManagedServices(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to fetch managed services: %w", err)
+	}
+
+	revs := make(map[string][]*provider.Revision, len(svcs))
+	for _, svc := range svcs {
+		id, ok := svc.UID()
+		if !ok {
+			continue
+		}
+		names := svc.ActiveRevisionNames()
+		rs, err := s.fetchActiveRevisions(ctx, names)
+		if err != nil {
+			return fmt.Errorf("failed to fetch active revisions: %w", err)
+		}
+		if len(rs) == 0 {
+			continue
+		}
+		revs[id] = rs
+	}
+
+	// Update apps to the latest.
+	apps := s.buildAppMap(svcs, revs)
+	s.apps.Store(apps)
+
+	return nil
+}
+
+func (s *store) buildAppMap(svcs []*provider.Service, revs map[string][]*provider.Revision) map[string]app {
+	apps, now := make(map[string]app, len(svcs)), time.Now()
+	version := model.ApplicationLiveStateVersion{
+		Timestamp: now.Unix(),
+	}
+	for _, svc := range svcs {
+		sm, err := svc.ServiceManifest()
+		if err != nil {
+			s.logger.Error("failed to load cloudrun service into service manifest", zap.Error(err))
+			continue
+		}
+
+		appID, ok := sm.AppID()
+		if !ok {
+			continue
+		}
+
+		id, _ := svc.UID()
+		apps[appID] = app{
+			service: sm,
+			states:  provider.MakeResourceStates(svc, revs[id], now),
+			version: version,
+		}
+	}
+	return apps
+}
+
+func (s *store) fetchManagedServices(ctx context.Context) ([]*provider.Service, error) {
 	const maxLimit = 500
 	var cursor string
-	svc := make([]*provider.Service, 0, maxLimit)
+	svcs := make([]*provider.Service, 0, maxLimit)
 	for {
 		ops := &provider.ListOptions{
 			Limit:         maxLimit,
@@ -44,54 +110,61 @@ func (s *store) run(ctx context.Context) error {
 		// https://cloud.google.com/run/quotas#api
 		v, next, err := s.client.List(ctx, ops)
 		if err != nil {
-			return fmt.Errorf("failed to list cloudrun services: %w", err)
+			return nil, err
 		}
-		svc = append(svc, v...)
+		svcs = append(svcs, v...)
 		if next == "" {
 			break
 		}
 		cursor = next
 	}
-
-	// Update apps to the latest.
-	s.setApps(svc)
-
-	return nil
+	return svcs, nil
 }
 
-func (s *store) setApps(svc []*provider.Service) {
-	apps := make(map[string]provider.ServiceManifest, len(svc))
-	for i := range svc {
-		sm, err := svc[i].ServiceManifest()
-		if err != nil {
-			s.logger.Error("failed to load cloudrun service into service manifest", zap.Error(err))
-			continue
-		}
-		appID := sm.Labels()[provider.LabelApplication]
-		apps[appID] = sm
+func (s *store) fetchActiveRevisions(ctx context.Context, names []string) ([]*provider.Revision, error) {
+	ops := &provider.ListRevisionsOptions{
+		LabelSelector: provider.MakeRevisionNamesSelector(names),
 	}
-	s.apps.Store(apps)
+	v, _, err := s.client.ListRevisions(ctx, ops)
+	return v, err
 }
 
-func (s *store) loadApps() map[string]provider.ServiceManifest {
+func (s *store) loadApps() map[string]app {
 	apps := s.apps.Load()
 	if apps == nil {
 		return nil
 	}
-	return apps.(map[string]provider.ServiceManifest)
+	return apps.(map[string]app)
 }
 
-func (s *store) GetServiceManifest(appID string) (provider.ServiceManifest, bool) {
+func (s *store) getServiceManifest(appID string) (provider.ServiceManifest, bool) {
 	apps := s.loadApps()
 	if apps == nil {
-		s.logger.Error("failed to load cloudrun apps")
 		return provider.ServiceManifest{}, false
 	}
 
-	sm, ok := apps[appID]
+	app, ok := apps[appID]
 	if !ok {
 		return provider.ServiceManifest{}, false
 	}
 
-	return sm, true
+	return app.service, true
+}
+
+func (s *store) getState(appID string) (State, bool) {
+	apps := s.loadApps()
+	if apps == nil {
+		return State{}, false
+	}
+
+	app, ok := apps[appID]
+	if !ok {
+		return State{}, false
+	}
+
+	state := State{
+		Resources: app.states,
+		Version:   app.version,
+	}
+	return state, true
 }
