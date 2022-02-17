@@ -83,6 +83,7 @@ go_test(
     size = "small",
     srcs = [
         "apikey_test.go",
+        "application_live_state_test.go",
         "application_test.go",
         "common_test.go",
         "deployment_chain_test.go",
