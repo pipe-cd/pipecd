@@ -6,8 +6,6 @@ description: >
   A helper facility to automatically update files when it finds out a new event.
 ---
 
->NOTE: This feature is currently alpha status.
-
 ![](/images/diff-by-eventwatcher.png)
 
 The only way to upgrade your application with PipeCD is modifying configuration files managed by the Git repositories.
