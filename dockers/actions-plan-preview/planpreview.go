@@ -142,9 +142,9 @@ const (
 	// Limit of details
 	detailsLenLimit = ghMessageLenLimit - 5000 // 5000 characters could be used for other parts in the comment message.
 
-	githubServerURLEnv = "GITHUB_SERVER_URL"
+	githubServerURLEnv  = "GITHUB_SERVER_URL"
 	githubRepositoryEnv = "GITHUB_REPOSITORY"
-	githubRunIDEnv     = "GITHUB_RUN_ID"
+	githubRunIDEnv      = "GITHUB_RUN_ID"
 )
 
 func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
@@ -157,7 +157,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 	}
 
 	if actionLogURL := getActionsURL(); actionLogURL != "" {
-	        fmt.Fprintf(&b, " ")
+		fmt.Fprintf(&b, " ")
 		fmt.Fprintf(&b, actionBadgeURLFormat, actionLogURL)
 	}
 	b.WriteString("\n\n")
@@ -266,17 +266,17 @@ func groupApplicationResults(apps []ApplicationResult) (changes, pipelines, quic
 }
 
 func getActionsURL() string {
-	serverURL := os.Getenv(GITHUB_SERVER_URL)
+	serverURL := os.Getenv(githubServerURLEnv)
 	if serverURL == "" {
 		return ""
 	}
 
-	repoURL := os.Getenv(GITHUB_REPOSITORY)
+	repoURL := os.Getenv(githubRepositoryEnv)
 	if repoURL == "" {
 		return ""
 	}
 
-	runID := os.Getenv(GITHUB_RUN_ID)
+	runID := os.Getenv(githubRunIDEnv)
 	if runID == "" {
 		return ""
 	}
