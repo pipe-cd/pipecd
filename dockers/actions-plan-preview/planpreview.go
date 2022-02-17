@@ -127,13 +127,10 @@ func retrievePlanPreview(
 
 const (
 	successBadgeURL = `<!-- pipecd-plan-preview-->
-[![PLAN_PREVIEW](https://img.shields.io/static/v1?label=PipeCD&message=Plan_Preview&color=success&style=flat)](https://pipecd.dev/docs/user-guide/plan-preview/)
-
-`
+[![PLAN_PREVIEW](https://img.shields.io/static/v1?label=PipeCD&message=Plan_Preview&color=success&style=flat)](https://pipecd.dev/docs/user-guide/plan-preview/)`
 	failureBadgeURL = `<!-- pipecd-plan-preview-->
-[![PLAN_PREVIEW](https://img.shields.io/static/v1?label=PipeCD&message=Plan_Preview&color=orange&style=flat)](https://pipecd.dev/docs/user-guide/plan-preview/)
-
-`
+[![PLAN_PREVIEW](https://img.shields.io/static/v1?label=PipeCD&message=Plan_Preview&color=orange&style=flat)](https://pipecd.dev/docs/user-guide/plan-preview/)`
+	actionBadgeURLFormat = "[![ACTIONS](https://img.shields.io/static/v1?label=PipeCD&message=Action_Log&style=flat)](%s)"
 
 	noChangeTitleFormat   = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `0` updated application. It means no deployment will be triggered once this pull request got merged.\n"
 	hasChangeTitleFormat  = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `%d` updated applications and here are their plan results. Once this pull request got merged their deployments will be triggered to run as these estimations.\n"
@@ -144,6 +141,10 @@ const (
 
 	// Limit of details
 	detailsLenLimit = ghMessageLenLimit - 5000 // 5000 characters could be used for other parts in the comment message.
+
+	GITHUB_SERVER_URL = "GITHUB_SERVER_URL"
+	GITHUB_REPOSITORY = "GITHUB_REPOSITORY"
+	GITHUB_RUN_ID     = "GITHUB_RUN_ID"
 )
 
 func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
@@ -154,6 +155,12 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 	} else {
 		b.WriteString(failureBadgeURL)
 	}
+
+	b.WriteRune(' ')
+	if actionLogURL := getActionsURL(); actionLogURL != "" {
+		fmt.Fprintf(&b, actionBadgeURLFormat, actionLogURL)
+	}
+	b.WriteString("\n\n")
 
 	if event.IsComment {
 		b.WriteString(fmt.Sprintf("@%s ", event.SenderLogin))
@@ -256,4 +263,23 @@ func groupApplicationResults(apps []ApplicationResult) (changes, pipelines, quic
 		quicks = append(quicks, app)
 	}
 	return
+}
+
+func getActionsURL() string {
+	serverURL := os.Getenv(GITHUB_SERVER_URL)
+	if serverURL == "" {
+		return ""
+	}
+
+	repoURL := os.Getenv(GITHUB_REPOSITORY)
+	if repoURL == "" {
+		return ""
+	}
+
+	runID := os.Getenv(GITHUB_RUN_ID)
+	if runID == "" {
+		return ""
+	}
+
+	return fmt.Sprintf("%s/%s/actions/runs/%s", serverURL, repoURL, runID)
 }
