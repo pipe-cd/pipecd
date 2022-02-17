@@ -8,8 +8,6 @@ description: >
 
 >NOTE: This feature is currently alpha status.
 
-![](/images/diff-by-eventwatcher.png)
-
 The only way to upgrade your application with PipeCD is modifying configuration files managed by the Git repositories.
 It brings benefits quite a bit, but it can be painful to manually update them every time in some cases (e.g. continuous deployment to your development environment for debugging, the latest prerelease to the staging environment).
 
