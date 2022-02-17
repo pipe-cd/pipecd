@@ -36,22 +36,19 @@ func (a *applicationCollection) Factory() Factory {
 	}
 }
 
-func (a *applicationCollection) MakeStoredFileNames(id string) []string {
-	return []string{
-		fmt.Sprintf("%s_api.json", id),
-		fmt.Sprintf("%s_ops.json", id),
-		fmt.Sprintf("%s_piped.json", id),
+func (a *applicationCollection) ListInUsedShards() []Shard {
+	return []Shard{
+		ClientShard,
+		AgentShard,
 	}
 }
 
-func (a *applicationCollection) MakeUpdatableFileName(id string) (string, error) {
+func (a *applicationCollection) GetUpdatableShard() (Shard, error) {
 	switch a.requestedBy {
 	case WebCommander, PipectlCommander:
-		return fmt.Sprintf("%s_api.json", id), nil
-	case OpsCommander:
-		return fmt.Sprintf("%s_ops.json", id), nil
+		return ClientShard, nil
 	case PipedCommander:
-		return fmt.Sprintf("%s_piped.json", id), nil
+		return AgentShard, nil
 	default:
 		return "", ErrUnsupported
 	}

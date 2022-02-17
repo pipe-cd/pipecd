@@ -36,14 +36,16 @@ func (a *apiKeyCollection) Factory() Factory {
 	}
 }
 
-func (a *apiKeyCollection) MakeStoredFileNames(id string) []string {
-	return []string{fmt.Sprintf("%s.json", id)}
+func (a *apiKeyCollection) ListInUsedShards() []Shard {
+	return []Shard{
+		ClientShard,
+	}
 }
 
-func (a *apiKeyCollection) MakeUpdatableFileName(id string) (string, error) {
+func (a *apiKeyCollection) GetUpdatableShard() (Shard, error) {
 	switch a.requestedBy {
 	case WebCommander:
-		return fmt.Sprintf("%s.json", id), nil
+		return ClientShard, nil
 	default:
 		return "", ErrUnsupported
 	}

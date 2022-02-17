@@ -23,14 +23,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/filestore"
 )
 
-type FileStorable interface {
-	// MakeStoredFileNames returns a list of files' name which object of kind currently storing in.
-	MakeStoredFileNames(id string) []string
-	// MakeUpdatableFileName returns the name of the file which should be referred to on Updating object of kind.
-	// datastore.ErrUnsupported will be returned if there is no such file name exist.
-	MakeUpdatableFileName(id string) (string, error)
-}
-
 type FileDB struct {
 	backend filestore.Store
 	logger  *zap.Logger
@@ -58,7 +50,7 @@ func NewFileDB(fs filestore.Store, opts ...Option) (*FileDB, error) {
 }
 
 func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datastore.ListOptions) (datastore.Iterator, error) {
-	_, ok := col.(FileStorable)
+	_, ok := col.(datastore.ShardStorable)
 	if !ok {
 		return nil, datastore.ErrUnsupported
 	}
@@ -66,7 +58,7 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 }
 
 func (f *FileDB) Get(ctx context.Context, col datastore.Collection, id string, v interface{}) error {
-	_, ok := col.(FileStorable)
+	_, ok := col.(datastore.ShardStorable)
 	if !ok {
 		return datastore.ErrUnsupported
 	}
@@ -74,7 +66,7 @@ func (f *FileDB) Get(ctx context.Context, col datastore.Collection, id string, v
 }
 
 func (f *FileDB) Create(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {
-	_, ok := col.(FileStorable)
+	_, ok := col.(datastore.ShardStorable)
 	if !ok {
 		return datastore.ErrUnsupported
 	}
@@ -82,7 +74,7 @@ func (f *FileDB) Create(ctx context.Context, col datastore.Collection, id string
 }
 
 func (f *FileDB) Update(ctx context.Context, col datastore.Collection, id string, updater datastore.Updater) error {
-	_, ok := col.(FileStorable)
+	_, ok := col.(datastore.ShardStorable)
 	if !ok {
 		return datastore.ErrUnsupported
 	}

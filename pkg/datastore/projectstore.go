@@ -16,7 +16,6 @@ package datastore
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -36,14 +35,16 @@ func (p *projectCollection) Factory() Factory {
 	}
 }
 
-func (p *projectCollection) MakeStoredFileNames(id string) []string {
-	return []string{fmt.Sprintf("%s.json", id)}
+func (p *projectCollection) ListInUsedShards() []Shard {
+	return []Shard{
+		ClientShard,
+	}
 }
 
-func (p *projectCollection) MakeUpdatableFileName(id string) (string, error) {
+func (p *projectCollection) GetUpdatableShard() (Shard, error) {
 	switch p.requestedBy {
 	case WebCommander:
-		return fmt.Sprintf("%s.json", id), nil
+		return ClientShard, nil
 	default:
 		return "", ErrUnsupported
 	}

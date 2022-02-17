@@ -36,14 +36,16 @@ func (d *deploymentCollection) Factory() Factory {
 	}
 }
 
-func (d *deploymentCollection) MakeStoredFileNames(id string) []string {
-	return []string{fmt.Sprintf("%s.json", id)}
+func (d *deploymentCollection) ListInUsedShards() []Shard {
+	return []Shard{
+		AgentShard,
+	}
 }
 
-func (d *deploymentCollection) MakeUpdatableFileName(id string) (string, error) {
+func (d *deploymentCollection) GetUpdatableShard() (Shard, error) {
 	switch d.requestedBy {
 	case PipedCommander:
-		return fmt.Sprintf("%s.json", id), nil
+		return AgentShard, nil
 	default:
 		return "", ErrUnsupported
 	}
