@@ -156,8 +156,8 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		b.WriteString(failureBadgeURL)
 	}
 
-	b.WriteRune(' ')
 	if actionLogURL := getActionsURL(); actionLogURL != "" {
+	        fmt.Fprintf(&b, " ")
 		fmt.Fprintf(&b, actionBadgeURLFormat, actionLogURL)
 	}
 	b.WriteString("\n\n")
