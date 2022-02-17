@@ -26,14 +26,17 @@ import (
 )
 
 type Store struct {
-	store    *store
-	logger   *zap.Logger
-	interval time.Duration
+	store         *store
+	logger        *zap.Logger
+	interval      time.Duration
+	firstSyncedCh chan error
 }
 
 type Getter interface {
 	GetState(appID string) (State, bool)
 	GetServiceManifest(appID string) (provider.ServiceManifest, bool)
+
+	WaitForReady(ctx context.Context, timeout time.Duration) error
 }
 
 type State struct {
@@ -55,8 +58,9 @@ func NewStore(ctx context.Context, cfg *config.CloudProviderCloudRunConfig, clou
 			client: client,
 			logger: logger.Named("store"),
 		},
-		interval: 15 * time.Second,
-		logger:   logger,
+		interval:      15 * time.Second,
+		logger:        logger,
+		firstSyncedCh: make(chan error, 1),
 	}
 
 	return store, nil
@@ -67,6 +71,15 @@ func (s *Store) Run(ctx context.Context) error {
 
 	tick := time.NewTicker(s.interval)
 	defer tick.Stop()
+
+	// Run the first sync cloudrun services.
+	if err := s.store.run(ctx); err != nil {
+		s.firstSyncedCh <- err
+		return err
+	}
+
+	s.logger.Info("successfully the first synced all cloudrun services")
+	close(s.firstSyncedCh)
 
 	for {
 		select {
@@ -90,4 +103,16 @@ func (s *Store) GetServiceManifest(appID string) (provider.ServiceManifest, bool
 
 func (s *Store) GetState(appID string) (State, bool) {
 	return s.store.getState(appID)
+}
+
+func (s *Store) WaitForReady(ctx context.Context, timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	select {
+	case <-ctx.Done():
+		return nil
+	case err := <-s.firstSyncedCh:
+		return err
+	}
 }
