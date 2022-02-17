@@ -2,18 +2,15 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["reporter.go"],
-    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/livestatereporter",
+    srcs = ["report.go"],
+    importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/livestatereporter/cloudrun",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/app/piped/livestatereporter/cloudrun:go_default_library",
-        "//pkg/app/piped/livestatereporter/kubernetes:go_default_library",
-        "//pkg/app/piped/livestatestore:go_default_library",
+        "//pkg/app/piped/livestatestore/cloudrun:go_default_library",
         "//pkg/app/server/service/pipedservice:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
         "@org_golang_google_grpc//:go_default_library",
-        "@org_golang_x_sync//errgroup:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )
