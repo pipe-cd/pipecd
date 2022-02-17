@@ -38,20 +38,20 @@ func (a *applicationCollection) Factory() Factory {
 
 func (a *applicationCollection) GetStoredFileNames(id string) []string {
 	return []string{
-		fmt.Sprintf("%s_api", id),
-		fmt.Sprintf("%s_ops", id),
-		fmt.Sprintf("%s_piped", id),
+		fmt.Sprintf("%s_api.json", id),
+		fmt.Sprintf("%s_ops.json", id),
+		fmt.Sprintf("%s_piped.json", id),
 	}
 }
 
 func (a *applicationCollection) GetUpdatableFileName(id string) (string, error) {
 	switch a.requestedBy {
 	case WebCommander, PipectlCommander:
-		return fmt.Sprintf("%s_api", id), nil
+		return fmt.Sprintf("%s_api.json", id), nil
 	case OpsCommander:
-		return fmt.Sprintf("%s_ops", id), nil
+		return fmt.Sprintf("%s_ops.json", id), nil
 	case PipedCommander:
-		return fmt.Sprintf("%s_piped", id), nil
+		return fmt.Sprintf("%s_piped.json", id), nil
 	default:
 		return "", ErrUnsupported
 	}

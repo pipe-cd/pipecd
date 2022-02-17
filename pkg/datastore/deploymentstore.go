@@ -37,13 +37,13 @@ func (d *deploymentCollection) Factory() Factory {
 }
 
 func (d *deploymentCollection) GetStoredFileNames(id string) []string {
-	return []string{id}
+	return []string{fmt.Sprintf("%s.json", id)}
 }
 
 func (d *deploymentCollection) GetUpdatableFileName(id string) (string, error) {
 	switch d.requestedBy {
 	case PipedCommander:
-		return id, nil
+		return fmt.Sprintf("%s.json", id), nil
 	default:
 		return "", ErrUnsupported
 	}
