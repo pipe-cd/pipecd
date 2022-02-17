@@ -69,7 +69,7 @@ type ApplicationInfo struct {
 	ApplicationID        string
 	ApplicationName      string
 	ApplicationURL       string
-	EnvValue             string
+	Env                  string
 	ApplicationKind      string // KUBERNETES, TERRAFORM, CLOUDRUN, LAMBDA, ECS
 	ApplicationDirectory string
 }
@@ -259,8 +259,8 @@ func groupApplicationResults(apps []ApplicationResult) (changes, pipelines, quic
 }
 
 func makeTitleText(app *ApplicationInfo) string {
-	if app.EnvValue == "" {
+	if app.Env == "" {
 		return fmt.Sprintf(appInfoWithoutEnvFormat, app.ApplicationName, app.ApplicationURL, strings.ToLower(app.ApplicationKind))
 	}
-	return fmt.Sprintf(appInfoWithEnvFormat, app.ApplicationName, app.ApplicationURL, app.EnvValue, strings.ToLower(app.ApplicationKind))
+	return fmt.Sprintf(appInfoWithEnvFormat, app.ApplicationName, app.ApplicationURL, app.Env, strings.ToLower(app.ApplicationKind))
 }

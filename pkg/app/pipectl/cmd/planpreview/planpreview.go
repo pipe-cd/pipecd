@@ -194,7 +194,7 @@ func convert(results []*model.PlanPreviewCommandResult) ReadableResult {
 				ApplicationURL:       a.ApplicationUrl,
 				ApplicationKind:      a.ApplicationKind.String(),
 				ApplicationDirectory: a.ApplicationDirectory,
-				EnvValue:             a.Labels[labelEnvKey],
+				Env:                  a.Labels[labelEnvKey],
 			}
 			if a.Error != "" {
 				out.FailureApplications = append(out.FailureApplications, FailureApplication{
@@ -253,7 +253,7 @@ type ApplicationInfo struct {
 	ApplicationURL       string
 	ApplicationKind      string // KUBERNETES, TERRAFORM, CLOUDRUN, LAMBDA, ECS
 	ApplicationDirectory string
-	EnvValue             string
+	Env                  string
 }
 
 func (r ReadableResult) String() string {
@@ -270,8 +270,8 @@ func (r ReadableResult) String() string {
 			fmt.Fprintf(&b, "\nHere are plan-preview for 1 application:\n")
 		}
 		for i, app := range r.Applications {
-			title := fmt.Sprintf("\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.EnvValue, app.ApplicationKind)
-			if app.EnvValue == "" {
+			title := fmt.Sprintf("\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.Env, app.ApplicationKind)
+			if app.Env == "" {
 				title = fmt.Sprintf("\n%d. app: %s, kind: %s\n", i+1, app.ApplicationName, app.ApplicationKind)
 			}
 
@@ -289,8 +289,8 @@ func (r ReadableResult) String() string {
 			fmt.Fprintf(&b, "\nNOTE: An error occurred while building plan-preview for the following application:\n")
 		}
 		for i, app := range r.FailureApplications {
-			title := fmt.Sprintf("\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.EnvValue, app.ApplicationKind)
-			if app.EnvValue == "" {
+			title := fmt.Sprintf("\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.Env, app.ApplicationKind)
+			if app.Env == "" {
 				title = fmt.Sprintf("\n%d. app: %s, kind: %s\n", i+1, app.ApplicationName, app.ApplicationKind)
 			}
 
