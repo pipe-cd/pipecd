@@ -137,7 +137,7 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
             {app.labelsMap.length !== 0
               ? app.labelsMap.map(([key, value]) => (
                   <>
-                    <span>{key + ":" + value}</span>
+                    <span>{key + ": " + value}</span>
                     <br />
                   </>
                 ))
