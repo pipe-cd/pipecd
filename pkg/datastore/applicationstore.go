@@ -46,9 +46,6 @@ func (a *applicationCollection) GetStoredFileNames(id string) []string {
 
 func (a *applicationCollection) GetUpdatableFileName(id string) (string, error) {
 	switch a.requestedBy {
-	case TestCommander:
-		// Fixme: Find a way to make the filename dynamically for test commander.
-		fallthrough
 	case WebCommander, PipectlCommander:
 		return fmt.Sprintf("%s_api", id), nil
 	case OpsCommander:

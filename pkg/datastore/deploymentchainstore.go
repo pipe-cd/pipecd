@@ -42,8 +42,6 @@ func (d *deploymentChainCollection) GetStoredFileNames(id string) []string {
 
 func (d *deploymentChainCollection) GetUpdatableFileName(id string) (string, error) {
 	switch d.requestedBy {
-	case TestCommander:
-		fallthrough
 	case OpsCommander:
 		return id, nil
 	default:

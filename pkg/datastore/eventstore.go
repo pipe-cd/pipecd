@@ -41,8 +41,6 @@ func (e *eventCollection) GetStoredFileNames(id string) []string {
 
 func (e *eventCollection) GetUpdatableFileName(id string) (string, error) {
 	switch e.requestedBy {
-	case TestCommander:
-		fallthrough
 	case PipedCommander:
 		return id, nil
 	default:

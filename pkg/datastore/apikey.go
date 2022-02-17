@@ -42,8 +42,6 @@ func (a *apiKeyCollection) GetStoredFileNames(id string) []string {
 
 func (a *apiKeyCollection) GetUpdatableFileName(id string) (string, error) {
 	switch a.requestedBy {
-	case TestCommander:
-		fallthrough
 	case WebCommander:
 		return id, nil
 	default:

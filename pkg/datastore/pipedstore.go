@@ -41,8 +41,6 @@ func (p *pipedCollection) GetStoredFileNames(id string) []string {
 
 func (p *pipedCollection) GetUpdatableFileName(id string) (string, error) {
 	switch p.requestedBy {
-	case TestCommander:
-		fallthrough
 	case WebCommander:
 		return id, nil
 	default:
