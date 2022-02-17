@@ -143,7 +143,7 @@ const (
 	detailsLenLimit = ghMessageLenLimit - 5000 // 5000 characters could be used for other parts in the comment message.
 
 	githubServerURLEnv = "GITHUB_SERVER_URL"
-	GITHUB_REPOSITORY = "GITHUB_REPOSITORY"
+	githubRepositoryEnv = "GITHUB_REPOSITORY"
 	GITHUB_RUN_ID     = "GITHUB_RUN_ID"
 )
 
