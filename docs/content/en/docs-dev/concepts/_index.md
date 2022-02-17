@@ -33,12 +33,6 @@ There are three types of project roles:
 A collect of resources (containers, services, infrastructure components...) and configurations that are managed together.
 PipeCD supports multiple kinds of applications such as `KUBERNETES`, `TERRAFORM`, `ECS`, `CLOUDRUN`, `LAMBDA`...
 
-### Environment
-> Deprecated: Please use Labels instead.
-
-An environment is a logical group of applications of a project. A project can have multiple environments.
-Each application must belong to one and only one environment. While each piped must belong to at least one environment.
-
 ### Deployment
 
 A deployment is a process that does transition from the current state (running state) to the desired state (specified state in Git) of a specific application.

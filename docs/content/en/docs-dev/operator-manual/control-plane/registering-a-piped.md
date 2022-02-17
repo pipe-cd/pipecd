@@ -1,7 +1,7 @@
 ---
 title: "Registering a piped"
 linkTitle: "Registering a piped"
-weight: 5
+weight: 4
 description: >
   This page describes how to register a new piped to a project.
 ---
