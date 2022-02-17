@@ -23,6 +23,7 @@ import (
 )
 
 type deploymentChainCollection struct {
+	requestedBy Commander
 }
 
 func (d *deploymentChainCollection) Kind() string {
@@ -32,6 +33,21 @@ func (d *deploymentChainCollection) Kind() string {
 func (d *deploymentChainCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.DeploymentChain{}
+	}
+}
+
+func (d *deploymentChainCollection) ListInUsedShards() []Shard {
+	return []Shard{
+		OpsShard,
+	}
+}
+
+func (d *deploymentChainCollection) GetUpdatableShard() (Shard, error) {
+	switch d.requestedBy {
+	case OpsCommander:
+		return OpsShard, nil
+	default:
+		return "", ErrUnsupported
 	}
 }
 
@@ -117,7 +133,7 @@ func NewDeploymentChainStore(ds DataStore, c Commander) DeploymentChainStore {
 	return &deploymentChainStore{
 		backend: backend{
 			ds:  ds,
-			col: &deploymentChainCollection{},
+			col: &deploymentChainCollection{requestedBy: c},
 		},
 		commander: c,
 		nowFunc:   time.Now,

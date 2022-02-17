@@ -22,6 +22,7 @@ import (
 )
 
 type projectCollection struct {
+	requestedBy Commander
 }
 
 func (p *projectCollection) Kind() string {
@@ -31,6 +32,21 @@ func (p *projectCollection) Kind() string {
 func (p *projectCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.Project{}
+	}
+}
+
+func (p *projectCollection) ListInUsedShards() []Shard {
+	return []Shard{
+		ClientShard,
+	}
+}
+
+func (p *projectCollection) GetUpdatableShard() (Shard, error) {
+	switch p.requestedBy {
+	case WebCommander:
+		return ClientShard, nil
+	default:
+		return "", ErrUnsupported
 	}
 }
 
@@ -55,7 +71,7 @@ func NewProjectStore(ds DataStore, c Commander) ProjectStore {
 	return &projectStore{
 		backend: backend{
 			ds:  ds,
-			col: &projectCollection{},
+			col: &projectCollection{requestedBy: c},
 		},
 		commander: c,
 		nowFunc:   time.Now,

@@ -22,6 +22,7 @@ import (
 )
 
 type eventCollection struct {
+	requestedBy Commander
 }
 
 func (e *eventCollection) Kind() string {
@@ -31,6 +32,21 @@ func (e *eventCollection) Kind() string {
 func (e *eventCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.Event{}
+	}
+}
+
+func (e *eventCollection) ListInUsedShards() []Shard {
+	return []Shard{
+		AgentShard,
+	}
+}
+
+func (e *eventCollection) GetUpdatableShard() (Shard, error) {
+	switch e.requestedBy {
+	case PipedCommander:
+		return AgentShard, nil
+	default:
+		return "", ErrUnsupported
 	}
 }
 
@@ -50,7 +66,7 @@ func NewEventStore(ds DataStore, c Commander) EventStore {
 	return &eventStore{
 		backend: backend{
 			ds:  ds,
-			col: &eventCollection{},
+			col: &eventCollection{requestedBy: c},
 		},
 		commander: c,
 		nowFunc:   time.Now,

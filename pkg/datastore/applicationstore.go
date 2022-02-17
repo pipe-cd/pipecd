@@ -23,6 +23,7 @@ import (
 )
 
 type applicationCollection struct {
+	requestedBy Commander
 }
 
 func (a *applicationCollection) Kind() string {
@@ -32,6 +33,24 @@ func (a *applicationCollection) Kind() string {
 func (a *applicationCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.Application{}
+	}
+}
+
+func (a *applicationCollection) ListInUsedShards() []Shard {
+	return []Shard{
+		ClientShard,
+		AgentShard,
+	}
+}
+
+func (a *applicationCollection) GetUpdatableShard() (Shard, error) {
+	switch a.requestedBy {
+	case WebCommander, PipectlCommander:
+		return ClientShard, nil
+	case PipedCommander:
+		return AgentShard, nil
+	default:
+		return "", ErrUnsupported
 	}
 }
 
@@ -60,7 +79,7 @@ func NewApplicationStore(ds DataStore, c Commander) ApplicationStore {
 	return &applicationStore{
 		backend: backend{
 			ds:  ds,
-			col: &applicationCollection{},
+			col: &applicationCollection{requestedBy: c},
 		},
 		commander: c,
 		nowFunc:   time.Now,

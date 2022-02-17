@@ -22,6 +22,7 @@ import (
 )
 
 type commandCollection struct {
+	requestedBy Commander
 }
 
 func (c *commandCollection) Kind() string {
@@ -31,6 +32,24 @@ func (c *commandCollection) Kind() string {
 func (c *commandCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.Command{}
+	}
+}
+
+func (c *commandCollection) ListInUsedShards() []Shard {
+	return []Shard{
+		AgentShard,
+		OpsShard,
+	}
+}
+
+func (c *commandCollection) GetUpdatableShard() (Shard, error) {
+	switch c.requestedBy {
+	case PipedCommander:
+		return AgentShard, nil
+	case OpsCommander:
+		return OpsShard, nil
+	default:
+		return "", ErrUnsupported
 	}
 }
 
@@ -51,7 +70,7 @@ func NewCommandStore(ds DataStore, c Commander) CommandStore {
 	return &commandStore{
 		backend: backend{
 			ds:  ds,
-			col: &commandCollection{},
+			col: &commandCollection{requestedBy: c},
 		},
 		commander: c,
 		nowFunc:   time.Now,

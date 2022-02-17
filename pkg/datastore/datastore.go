@@ -59,6 +59,7 @@ var (
 	ErrIteratorDone    = errors.New("iterator is done")
 	ErrInternal        = errors.New("internal")
 	ErrUnimplemented   = errors.New("unimplemented")
+	ErrUnsupported     = errors.New("unsupported")
 )
 
 type Commander string
@@ -76,6 +77,25 @@ const (
 	// OpsCommander indicates that the writer is ops component.
 	OpsCommander Commander = "ops"
 )
+
+type Shard string
+
+const (
+	// ClientShard indicates that object will be stored in client (web or pipectl) used shard.
+	ClientShard Shard = "client"
+	// AgentShard indicates that object will be stored in agent (piped) used shard.
+	AgentShard Shard = "agent"
+	// OpsShard indicates that object will be stored in ops used shard.
+	OpsShard Shard = "ops"
+)
+
+type ShardStorable interface {
+	// ListInUsedShards returns a list of shard which be used to store object of current collection.
+	ListInUsedShards() []Shard
+	// GetUpdatableShard returns shard which should be referred to on Updating object of current collection.
+	// datastore.ErrUnsupported will be returned if there is no such file name exist.
+	GetUpdatableShard() (Shard, error)
+}
 
 type Factory func() interface{}
 type Updater func(interface{}) error

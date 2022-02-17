@@ -22,6 +22,7 @@ import (
 )
 
 type pipedCollection struct {
+	requestedBy Commander
 }
 
 func (p *pipedCollection) Kind() string {
@@ -31,6 +32,21 @@ func (p *pipedCollection) Kind() string {
 func (p *pipedCollection) Factory() Factory {
 	return func() interface{} {
 		return &model.Piped{}
+	}
+}
+
+func (p *pipedCollection) ListInUsedShards() []Shard {
+	return []Shard{
+		ClientShard,
+	}
+}
+
+func (p *pipedCollection) GetUpdatableShard() (Shard, error) {
+	switch p.requestedBy {
+	case WebCommander:
+		return ClientShard, nil
+	default:
+		return "", ErrUnsupported
 	}
 }
 
@@ -57,7 +73,7 @@ func NewPipedStore(ds DataStore, c Commander) PipedStore {
 	return &pipedStore{
 		backend: backend{
 			ds:  ds,
-			col: &pipedCollection{},
+			col: &pipedCollection{requestedBy: c},
 		},
 		commander: c,
 		nowFunc:   time.Now,

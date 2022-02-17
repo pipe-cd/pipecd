@@ -50,18 +50,34 @@ func NewFileDB(fs filestore.Store, opts ...Option) (*FileDB, error) {
 }
 
 func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datastore.ListOptions) (datastore.Iterator, error) {
+	_, ok := col.(datastore.ShardStorable)
+	if !ok {
+		return nil, datastore.ErrUnsupported
+	}
 	return nil, datastore.ErrUnimplemented
 }
 
 func (f *FileDB) Get(ctx context.Context, col datastore.Collection, id string, v interface{}) error {
+	_, ok := col.(datastore.ShardStorable)
+	if !ok {
+		return datastore.ErrUnsupported
+	}
 	return datastore.ErrUnimplemented
 }
 
 func (f *FileDB) Create(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {
+	_, ok := col.(datastore.ShardStorable)
+	if !ok {
+		return datastore.ErrUnsupported
+	}
 	return datastore.ErrUnimplemented
 }
 
 func (f *FileDB) Update(ctx context.Context, col datastore.Collection, id string, updater datastore.Updater) error {
+	_, ok := col.(datastore.ShardStorable)
+	if !ok {
+		return datastore.ErrUnsupported
+	}
 	return datastore.ErrUnimplemented
 }
 
