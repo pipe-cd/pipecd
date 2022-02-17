@@ -63,9 +63,6 @@ func (s KubernetesResourceState) HasDiff(a KubernetesResourceState) bool {
 // TODO: Determine health state of other than k8s and cloud run app
 func (s *ApplicationLiveStateSnapshot) DetermineAppHealthStatus() {
 	switch s.Kind {
-	case ApplicationKind_TERRAFORM,
-		ApplicationKind_LAMBDA,
-		ApplicationKind_ECS:
 	case ApplicationKind_KUBERNETES:
 		s.determineKubernetesAppHealthStatus()
 	case ApplicationKind_CLOUDRUN:
@@ -75,12 +72,12 @@ func (s *ApplicationLiveStateSnapshot) DetermineAppHealthStatus() {
 }
 
 func (s *ApplicationLiveStateSnapshot) determineKubernetesAppHealthStatus() {
-	k := s.Kubernetes
-	if k == nil {
+	app := s.Kubernetes
+	if app == nil {
 		return
 	}
 	status := ApplicationLiveStateSnapshot_HEALTHY
-	for _, r := range k.Resources {
+	for _, r := range app.Resources {
 		if r.HealthStatus == KubernetesResourceState_OTHER {
 			status = ApplicationLiveStateSnapshot_OTHER
 			break
@@ -90,12 +87,12 @@ func (s *ApplicationLiveStateSnapshot) determineKubernetesAppHealthStatus() {
 }
 
 func (s *ApplicationLiveStateSnapshot) determineCloudRunAppHealthStatus() {
-	c := s.Cloudrun
-	if c == nil {
+	app := s.Cloudrun
+	if app == nil {
 		return
 	}
 	status := ApplicationLiveStateSnapshot_HEALTHY
-	for _, r := range c.Resources {
+	for _, r := range app.Resources {
 		if r.HealthStatus == CloudRunResourceState_OTHER {
 			status = ApplicationLiveStateSnapshot_OTHER
 			break

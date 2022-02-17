@@ -69,7 +69,7 @@ func TestApplicationLiveStateSnapshot_DetermineAppHealthStatus(t *testing.T) {
 		{
 			name: "cloudrun: unhealthy",
 			snapshot: &ApplicationLiveStateSnapshot{
-				Kind: ApplicationKind_KUBERNETES,
+				Kind: ApplicationKind_CLOUDRUN,
 				Cloudrun: &CloudRunApplicationLiveState{
 					Resources: []*CloudRunResourceState{
 						{HealthStatus: CloudRunResourceState_HEALTHY},
