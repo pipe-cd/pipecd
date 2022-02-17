@@ -60,23 +60,43 @@ func (s KubernetesResourceState) HasDiff(a KubernetesResourceState) bool {
 }
 
 // DetermineAppHealthStatus updates its own health status, which is determined based on its resources status.
+// TODO: Determine health state of other than k8s and cloud run app
 func (s *ApplicationLiveStateSnapshot) DetermineAppHealthStatus() {
 	switch s.Kind {
 	case ApplicationKind_KUBERNETES:
-		k := s.Kubernetes
-		if k == nil {
-			return
-		}
-		status := ApplicationLiveStateSnapshot_HEALTHY
-		for _, r := range k.Resources {
-			if r.HealthStatus == KubernetesResourceState_OTHER {
-				status = ApplicationLiveStateSnapshot_OTHER
-				break
-			}
-		}
-		s.HealthStatus = status
-	default:
-		// TODO: Determine health state of other than k8s app
+		s.determineKubernetesAppHealthStatus()
+	case ApplicationKind_CLOUDRUN:
+		s.determineCloudRunAppHealthStatus()
+	}
+	return
+}
+
+func (s *ApplicationLiveStateSnapshot) determineKubernetesAppHealthStatus() {
+	app := s.Kubernetes
+	if app == nil {
 		return
 	}
+	status := ApplicationLiveStateSnapshot_HEALTHY
+	for _, r := range app.Resources {
+		if r.HealthStatus == KubernetesResourceState_OTHER {
+			status = ApplicationLiveStateSnapshot_OTHER
+			break
+		}
+	}
+	s.HealthStatus = status
+}
+
+func (s *ApplicationLiveStateSnapshot) determineCloudRunAppHealthStatus() {
+	app := s.Cloudrun
+	if app == nil {
+		return
+	}
+	status := ApplicationLiveStateSnapshot_HEALTHY
+	for _, r := range app.Resources {
+		if r.HealthStatus == CloudRunResourceState_OTHER {
+			status = ApplicationLiveStateSnapshot_OTHER
+			break
+		}
+	}
+	s.HealthStatus = status
 }
