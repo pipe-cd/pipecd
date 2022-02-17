@@ -156,7 +156,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		b.WriteString(failureBadgeURL)
 	}
 
-	if actionLogURL := getActionsURL(); actionLogURL != "" {
+	if actionLogURL := makeActionLogURL(); actionLogURL != "" {
 		fmt.Fprintf(&b, " ")
 		fmt.Fprintf(&b, actionBadgeURLFormat, actionLogURL)
 	}
@@ -265,7 +265,7 @@ func groupApplicationResults(apps []ApplicationResult) (changes, pipelines, quic
 	return
 }
 
-func getActionsURL() string {
+func makeActionLogURL() string {
 	serverURL := os.Getenv(githubServerURLEnv)
 	if serverURL == "" {
 		return ""
