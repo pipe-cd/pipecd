@@ -81,11 +81,11 @@ const (
 type Shard string
 
 const (
-	// ClientShard indicates that object will be store in client (web or pipectl) used shard.
+	// ClientShard indicates that object will be stored in client (web or pipectl) used shard.
 	ClientShard Shard = "client"
-	// AgentShard indicates that object will be store in agent (piped) used shard.
+	// AgentShard indicates that object will be stored in agent (piped) used shard.
 	AgentShard Shard = "agent"
-	// OpsShard indicates that object will be store in ops used shard.
+	// OpsShard indicates that object will be stored in ops used shard.
 	OpsShard Shard = "ops"
 )
 
