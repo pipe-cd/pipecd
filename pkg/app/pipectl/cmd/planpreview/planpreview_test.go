@@ -49,7 +49,7 @@ There are no updated applications. It means no deployment will be triggered once
 							ApplicationName: "app-1",
 							ApplicationUrl:  "https://pipecd.dev/app-1",
 							ApplicationKind: model.ApplicationKind_KUBERNETES,
-							EnvName:         "env-1",
+							Labels:          map[string]string{"env": "env-1"},
 							SyncStrategy:    model.SyncStrategy_QUICK_SYNC,
 							PlanSummary:     []byte("2 manifests will be added, 1 manifest will be deleted and 5 manifests will be changed"),
 							PlanDetails:     []byte("changes-1"),
@@ -83,7 +83,7 @@ changes-1
 							ApplicationName: "app-2",
 							ApplicationUrl:  "https://pipecd.dev/app-2",
 							ApplicationKind: model.ApplicationKind_TERRAFORM,
-							EnvName:         "env-2",
+							Labels:          map[string]string{"env": "env-2"},
 							Error:           "wrong application configuration",
 						},
 					},
@@ -132,7 +132,7 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 							ApplicationName: "app-1",
 							ApplicationUrl:  "https://pipecd.dev/app-1",
 							ApplicationKind: model.ApplicationKind_KUBERNETES,
-							EnvName:         "env-1",
+							Labels:          map[string]string{"env": "env-1"},
 							SyncStrategy:    model.SyncStrategy_QUICK_SYNC,
 							PlanSummary:     []byte("2 manifests will be added, 1 manifest will be deleted and 5 manifests will be changed"),
 							PlanDetails:     []byte("changes-1"),
@@ -142,7 +142,7 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 							ApplicationName: "app-2",
 							ApplicationUrl:  "https://pipecd.dev/app-2",
 							ApplicationKind: model.ApplicationKind_TERRAFORM,
-							EnvName:         "env-2",
+							Labels:          map[string]string{"env": "env-2"},
 							SyncStrategy:    model.SyncStrategy_PIPELINE,
 							PlanSummary:     []byte("1 to add, 2 to change, 0 to destroy"),
 							PlanDetails:     []byte("changes-2"),
@@ -152,7 +152,7 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 							ApplicationName: "app-3",
 							ApplicationUrl:  "https://pipecd.dev/app-3",
 							ApplicationKind: model.ApplicationKind_TERRAFORM,
-							EnvName:         "env-3",
+							Labels:          map[string]string{"env": "env-3"},
 							Error:           "wrong application configuration",
 						},
 						{
@@ -160,7 +160,6 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 							ApplicationName: "app-4",
 							ApplicationUrl:  "https://pipecd.dev/app-4",
 							ApplicationKind: model.ApplicationKind_CLOUDRUN,
-							EnvName:         "env-4",
 							Error:           "missing key",
 						},
 					},
@@ -198,7 +197,7 @@ NOTE: An error occurred while building plan-preview for the following 2 applicat
 1. app: app-3, env: env-3, kind: TERRAFORM
   reason: wrong application configuration
 
-2. app: app-4, env: env-4, kind: CLOUDRUN
+2. app: app-4, kind: CLOUDRUN
   reason: missing key
 
 NOTE: An error occurred while building plan-preview for applications of the following 2 Pipeds:

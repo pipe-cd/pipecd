@@ -3,6 +3,9 @@ apiVersion: pipecd.dev/v1beta1
 kind: CloudRunApp
 spec:
   name: chain-simple-cloudrun
+  labels:
+    env: example
+    team: abc
   trigger:
     onChain:
       disabled: false

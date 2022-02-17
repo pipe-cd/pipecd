@@ -47,13 +47,12 @@ func TestMakeCommentBody(t *testing.T) {
 			},
 			result: PlanPreviewResult{
 				Applications: []ApplicationResult{
-					ApplicationResult{
+					{
 						ApplicationInfo: ApplicationInfo{
 							ApplicationID:        "app-id-1",
 							ApplicationName:      "app-name-1",
 							ApplicationURL:       "app-url-1",
-							EnvID:                "env-id-1",
-							EnvURL:               "env-url-1",
+							Env:                  "env-1",
 							ApplicationKind:      "app-kind-1",
 							ApplicationDirectory: "app-dir-1",
 						},
@@ -73,13 +72,12 @@ func TestMakeCommentBody(t *testing.T) {
 			},
 			result: PlanPreviewResult{
 				Applications: []ApplicationResult{
-					ApplicationResult{
+					{
 						ApplicationInfo: ApplicationInfo{
 							ApplicationID:        "app-id-2",
 							ApplicationName:      "app-name-2",
 							ApplicationURL:       "app-url-2",
-							EnvID:                "env-id-2",
-							EnvURL:               "env-url-2",
+							Env:                  "env-2",
 							ApplicationKind:      "app-kind-2",
 							ApplicationDirectory: "app-dir-2",
 						},
@@ -88,13 +86,12 @@ func TestMakeCommentBody(t *testing.T) {
 						PlanDetails:  "",
 						NoChange:     true,
 					},
-					ApplicationResult{
+					{
 						ApplicationInfo: ApplicationInfo{
 							ApplicationID:        "app-id-1",
 							ApplicationName:      "app-name-1",
 							ApplicationURL:       "app-url-1",
-							EnvID:                "env-id-1",
-							EnvURL:               "env-url-1",
+							Env:                  "env-1",
 							ApplicationKind:      "app-kind-1",
 							ApplicationDirectory: "app-dir-1",
 						},
@@ -103,13 +100,12 @@ func TestMakeCommentBody(t *testing.T) {
 						PlanDetails:  "plan-details-1",
 						NoChange:     false,
 					},
-					ApplicationResult{
+					{
 						ApplicationInfo: ApplicationInfo{
 							ApplicationID:        "app-id-3",
 							ApplicationName:      "app-name-3",
 							ApplicationURL:       "app-url-3",
-							EnvID:                "env-id-3",
-							EnvURL:               "env-url-3",
+							Env:                  "env-3",
 							ApplicationKind:      "app-kind-3",
 							ApplicationDirectory: "app-dir-3",
 						},
@@ -123,19 +119,42 @@ func TestMakeCommentBody(t *testing.T) {
 			expected: "testdata/comment-has-no-diff-apps.txt",
 		},
 		{
+			name: "no env",
+			event: githubEvent{
+				HeadCommit: "abc",
+			},
+			result: PlanPreviewResult{
+				Applications: []ApplicationResult{
+					{
+						ApplicationInfo: ApplicationInfo{
+							ApplicationID:        "app-id-1",
+							ApplicationName:      "app-name-1",
+							ApplicationURL:       "app-url-1",
+							ApplicationKind:      "app-kind-1",
+							ApplicationDirectory: "app-dir-1",
+						},
+						SyncStrategy: "PIPELINE",
+						PlanSummary:  "plan-summary-1",
+						PlanDetails:  "plan-details-1",
+						NoChange:     false,
+					},
+				},
+			},
+			expected: "testdata/comment-no-env.txt",
+		},
+		{
 			name: "has failed app",
 			event: githubEvent{
 				HeadCommit: "abc",
 			},
 			result: PlanPreviewResult{
 				Applications: []ApplicationResult{
-					ApplicationResult{
+					{
 						ApplicationInfo: ApplicationInfo{
 							ApplicationID:        "app-id-1",
 							ApplicationName:      "app-name-1",
 							ApplicationURL:       "app-url-1",
-							EnvID:                "env-id-1",
-							EnvURL:               "env-url-1",
+							Env:                  "env-1",
 							ApplicationKind:      "app-kind-1",
 							ApplicationDirectory: "app-dir-1",
 						},
@@ -146,13 +165,12 @@ func TestMakeCommentBody(t *testing.T) {
 					},
 				},
 				FailureApplications: []FailureApplication{
-					FailureApplication{
+					{
 						ApplicationInfo: ApplicationInfo{
 							ApplicationID:        "app-id-2",
 							ApplicationName:      "app-name-2",
 							ApplicationURL:       "app-url-2",
-							EnvID:                "env-id-2",
-							EnvURL:               "env-url-2",
+							Env:                  "env-2",
 							ApplicationKind:      "app-kind-2",
 							ApplicationDirectory: "app-dir-2",
 						},
@@ -170,13 +188,12 @@ func TestMakeCommentBody(t *testing.T) {
 			},
 			result: PlanPreviewResult{
 				Applications: []ApplicationResult{
-					ApplicationResult{
+					{
 						ApplicationInfo: ApplicationInfo{
 							ApplicationID:        "app-id-1",
 							ApplicationName:      "app-name-1",
 							ApplicationURL:       "app-url-1",
-							EnvID:                "env-id-1",
-							EnvURL:               "env-url-1",
+							Env:                  "env-1",
 							ApplicationKind:      "app-kind-1",
 							ApplicationDirectory: "app-dir-1",
 						},
@@ -187,7 +204,7 @@ func TestMakeCommentBody(t *testing.T) {
 					},
 				},
 				FailurePipeds: []FailurePiped{
-					FailurePiped{
+					{
 						PipedInfo: PipedInfo{
 							PipedID:  "piped-id-1",
 							PipedURL: "piped-url-1",

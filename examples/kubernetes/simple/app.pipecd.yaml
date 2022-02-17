@@ -1,11 +1,16 @@
-# Deploy plain-yaml manifests in the application directory
-# without using pipeline.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   name: simple
+  labels:
+    env: example
+    team: product
   input:
     manifests:
       - deployment.yaml
       - service.yaml
     kubectlVersion: 1.18.5
+  description: |
+    An example application that demonstrate how to deploy a Kubernetes application with [Quick Sync](https://pipecd.dev/docs/concepts/#quick-sync) strategy.\
+    No pipeline is specified then in each deployment PipeCD will roll out the new version and switch all traffic to it immediately.\
+    References: [adding an application](https://pipecd.dev/docs/user-guide/adding-an-application/), [application configuration](https://pipecd.dev/docs/user-guide/configuring-deployment/kubernetes/)

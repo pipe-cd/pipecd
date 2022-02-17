@@ -20,7 +20,6 @@ func (r *PlanPreviewCommandResult) FillURLs(baseURL string) {
 	r.PipedUrl = MakePipedURL(baseURL, r.PipedId)
 	for _, ar := range r.Results {
 		ar.ApplicationUrl = MakeApplicationURL(baseURL, ar.ApplicationId)
-		ar.EnvUrl = MakeEnvironmentURL(baseURL, ar.EnvId)
 	}
 }
 
@@ -30,7 +29,7 @@ func MakeApplicationPlanPreviewResult(app Application) *ApplicationPlanPreviewRe
 		ApplicationName:      app.Name,
 		ApplicationKind:      app.Kind,
 		ApplicationDirectory: app.GitPath.Path,
-		EnvId:                app.EnvId,
+		Labels:               app.Labels,
 		PipedId:              app.PipedId,
 		ProjectId:            app.ProjectId,
 		CreatedAt:            time.Now().Unix(),

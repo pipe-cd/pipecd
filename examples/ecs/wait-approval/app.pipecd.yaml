@@ -3,6 +3,9 @@ apiVersion: pipecd.dev/v1beta1
 kind: ECSApp
 spec:
   name: wait-approval
+  labels:
+    env: example
+    team: xyz
   pipeline:
     stages:
       # Rollout CANARY variant's workload.
