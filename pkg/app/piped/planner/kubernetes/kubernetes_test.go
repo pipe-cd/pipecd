@@ -492,5 +492,4 @@ func TestCheckImageChange(t *testing.T) {
 			}
 		})
 	}
-
 }
