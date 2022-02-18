@@ -390,7 +390,7 @@ func checkImageChange(ns diff.Nodes) (string, bool) {
 	}
 
 	images := make([]string, 0, len(ns))
-	for _, n := range ns {
+	for _, n := range nodes {
 		beforeImg := parseContainerImage(n.StringX())
 		afterImg := parseContainerImage(n.StringY())
 
