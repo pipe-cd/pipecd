@@ -51,6 +51,22 @@ func NewFileDB(fs filestore.Store, opts ...Option) (*FileDB, error) {
 	return fd, nil
 }
 
+func (f *FileDB) fetch(ctx context.Context, col datastore.Collection, path string) (interface{}, error) {
+	raw, err := f.backend.Get(ctx, path)
+	if err == filestore.ErrNotFound {
+		return nil, datastore.ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	entity := col.Factory()()
+	if err = json.Unmarshal(raw, entity); err != nil {
+		return nil, err
+	}
+	return entity, nil
+}
+
 func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datastore.ListOptions) (datastore.Iterator, error) {
 	_, ok := col.(datastore.ShardStorable)
 	if !ok {
@@ -69,39 +85,18 @@ func (f *FileDB) Get(ctx context.Context, col datastore.Collection, id string, v
 	shards := fcol.ListInUsedShards()
 	paths := make([]string, 0, len(shards))
 	for _, s := range shards {
-		paths = append(paths, makeFileHotPath(kind, id, s))
-	}
-
-	fetcher := func(path string) (interface{}, error) {
-		raw, err := f.backend.Get(ctx, path)
-		if err == filestore.ErrNotFound {
-			return nil, datastore.ErrNotFound
-		}
-		if err != nil {
-			f.logger.Error("failed to get entity",
-				zap.String("id", id),
-				zap.String("kind", kind),
-				zap.Error(err),
-			)
-			return nil, err
-		}
-
-		entity := col.Factory()()
-		if err = json.Unmarshal(raw, entity); err != nil {
-			f.logger.Error("failed to unmarshal entity",
-				zap.String("id", id),
-				zap.String("kind", kind),
-				zap.Error(err),
-			)
-			return nil, err
-		}
-		return entity, nil
+		paths = append(paths, makeHotStorageFilePath(kind, id, s))
 	}
 
 	parts := make([]interface{}, 0, len(paths))
 	for _, path := range paths {
-		part, err := fetcher(path)
+		part, err := f.fetch(ctx, col, path)
 		if err != nil {
+			f.logger.Error("failed to fetch entity",
+				zap.String("id", id),
+				zap.String("kind", kind),
+				zap.Error(err),
+			)
 			return err
 		}
 		parts = append(parts, part)
@@ -136,17 +131,11 @@ func (f *FileDB) Close() error {
 	return f.backend.Close()
 }
 
-func makeFileHotPath(kind, id string, shard datastore.Shard) string {
+func makeHotStorageFilePath(kind, id string, shard datastore.Shard) string {
 	return fmt.Sprintf("%s/%s/%s.json", kind, shard, id)
 }
 
 func dataTo(src, dst interface{}) (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("unexpected error occurred while mapping data")
-		}
-	}()
-
 	tdst := reflect.TypeOf(dst)
 	tsrc := reflect.TypeOf(src)
 	if tdst != tsrc {

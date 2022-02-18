@@ -1,68 +1,57 @@
+// Copyright 2022 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package filedb
 
 import (
-	"context"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
-	"github.com/pipe-cd/pipecd/pkg/datastore"
-	"github.com/pipe-cd/pipecd/pkg/filestore"
-	"github.com/pipe-cd/pipecd/pkg/filestore/gcs"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-func newFileStore(ctx context.Context) filestore.Store {
-	opts := []gcs.Option{
-		gcs.WithCredentialsFile("/Users/s12228/.config/gcloud/application_default_credentials.json"),
+func TestDataTo(t *testing.T) {
+	testcases := []struct {
+		name      string
+		src       interface{}
+		dst       interface{}
+		expectErr bool
+	}{
+		{
+			name:      "returns error on type miss match",
+			src:       &model.Command{},
+			dst:       &model.Event{},
+			expectErr: true,
+		},
+		{
+			name:      "map data successfully",
+			src:       &model.Command{Id: "command-id"},
+			dst:       &model.Command{},
+			expectErr: false,
+		},
 	}
-	s, _ := gcs.NewStore(ctx, "filestore-db-test", opts...)
-	return s
-}
 
-type fakeEventCollection struct {
-}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := dataTo(tc.src, tc.dst)
+			require.Equal(t, tc.expectErr, err != nil)
 
-func (e *fakeEventCollection) Kind() string {
-	return "Event"
-}
-
-func (e *fakeEventCollection) Factory() datastore.Factory {
-	return func() interface{} {
-		return &model.Event{}
+			if err == nil {
+				assert.Equal(t, tc.src, tc.dst)
+			}
+		})
 	}
-}
-
-func (e *fakeEventCollection) ListInUsedShards() []datastore.Shard {
-	return []datastore.Shard{
-		datastore.AgentShard,
-	}
-}
-
-func (e *fakeEventCollection) GetUpdatableShard() (datastore.Shard, error) {
-	return datastore.AgentShard, nil
-}
-
-func TestFileDBGet(t *testing.T) {
-	ctx := context.Background()
-	db, err := NewFileDB(newFileStore(ctx), []Option{}...)
-	assert.Nil(t, err)
-	assert.NotNil(t, db)
-	assert.NotNil(t, db.backend)
-
-	// ctrl := gomock.NewController(t)
-	// col := datastore.NewMockCollection(ctrl)
-	// col.EXPECT().Factory().Return(func() interface{} {
-	// 	return &model.Event{}
-	// })
-	// col.EXPECT().Kind().Return("Event")
-	col := &fakeEventCollection{}
-
-	env := &model.Event{}
-	err = db.Get(ctx, col, "077babca-c175-4da4-81e8-d5196f8697e0", env)
-	fmt.Printf("%v\n", env)
-	assert.Nil(t, err)
-	assert.Equal(t, env.Id, "077babca-c175-4da4-81e8-d5196f8697e0")
-	assert.Equal(t, env.Data, "v1.1")
 }
