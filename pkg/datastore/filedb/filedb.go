@@ -16,6 +16,9 @@ package filedb
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"reflect"
 
 	"go.uber.org/zap"
 
@@ -38,13 +41,12 @@ func WithLogger(logger *zap.Logger) Option {
 
 func NewFileDB(fs filestore.Store, opts ...Option) (*FileDB, error) {
 	fd := &FileDB{
-		logger: zap.NewNop(),
+		backend: fs,
+		logger:  zap.NewNop(),
 	}
 	for _, opt := range opts {
 		opt(fd)
 	}
-
-	fd.backend = fs
 
 	return fd, nil
 }
@@ -58,10 +60,59 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 }
 
 func (f *FileDB) Get(ctx context.Context, col datastore.Collection, id string, v interface{}) error {
-	_, ok := col.(datastore.ShardStorable)
+	fcol, ok := col.(datastore.ShardStorable)
 	if !ok {
 		return datastore.ErrUnsupported
 	}
+
+	kind := col.Kind()
+	shards := fcol.ListInUsedShards()
+	paths := make([]string, 0, len(shards))
+	for _, s := range shards {
+		paths = append(paths, makeFileHotPath(kind, id, s))
+	}
+
+	fetcher := func(path string) (interface{}, error) {
+		raw, err := f.backend.Get(ctx, path)
+		if err == filestore.ErrNotFound {
+			return nil, datastore.ErrNotFound
+		}
+		if err != nil {
+			f.logger.Error("failed to get entity",
+				zap.String("id", id),
+				zap.String("kind", kind),
+				zap.Error(err),
+			)
+			return nil, err
+		}
+
+		entity := col.Factory()()
+		if err = json.Unmarshal(raw, entity); err != nil {
+			f.logger.Error("failed to unmarshal entity",
+				zap.String("id", id),
+				zap.String("kind", kind),
+				zap.Error(err),
+			)
+			return nil, err
+		}
+		return entity, nil
+	}
+
+	parts := make([]interface{}, 0, len(paths))
+	for _, path := range paths {
+		part, err := fetcher(path)
+		if err != nil {
+			return err
+		}
+		parts = append(parts, part)
+	}
+
+	if len(parts) == 1 {
+		return dataTo(parts[0], v)
+	}
+
+	// TODO: Add merge based on UpdatedAt field in case there are multiple parts of object are fetched.
+
 	return datastore.ErrUnimplemented
 }
 
@@ -83,4 +134,25 @@ func (f *FileDB) Update(ctx context.Context, col datastore.Collection, id string
 
 func (f *FileDB) Close() error {
 	return f.backend.Close()
+}
+
+func makeFileHotPath(kind, id string, shard datastore.Shard) string {
+	return fmt.Sprintf("%s/%s/%s.json", kind, shard, id)
+}
+
+func dataTo(src, dst interface{}) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("unexpected error occurred while mapping data")
+		}
+	}()
+
+	tdst := reflect.TypeOf(dst)
+	tsrc := reflect.TypeOf(src)
+	if tdst != tsrc {
+		err = fmt.Errorf("value type missmatched: %v - %v", tdst, tsrc)
+		return
+	}
+	reflect.ValueOf(dst).Elem().Set(reflect.ValueOf(src).Elem())
+	return nil
 }
