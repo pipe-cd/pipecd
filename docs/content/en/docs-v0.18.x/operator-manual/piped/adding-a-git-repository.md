@@ -27,7 +27,7 @@ spec:
       branch: master
 ```
 
-In most of the cases, we want to deal with private Git repositories. For accessing those private repositories, `piped` needs a private SSH key, which can be configured while [installing](/docs/operator-manual/piped/installation/#installing-on-a-kubernetes-cluster) with `secret.sshKey` in the Helm chart.
+In most of the cases, we want to deal with private Git repositories. For accessing those private repositories, `piped` needs a private SSH key, which can be configured while [installing](/docs/operator-manual/piped/installation/installing-on-kubernetes) with `secret.sshKey` in the Helm chart.
 
 ``` console
 helm install dev-piped pipecd/piped --version={VERSION} \

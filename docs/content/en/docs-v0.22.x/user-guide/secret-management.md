@@ -24,7 +24,7 @@ openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out private-key
 openssl pkey -in private-key -pubout -out public-key
 ```
 
-Then specify them while [installing](/docs/operator-manual/piped/installation/#installing-on-a-kubernetes-cluster) the `Piped` with these options:
+Then specify them while [installing](/docs/operator-manual/piped/installation/installing-on-kubernetes) the `Piped` with these options:
 
 ``` console
 --set-file secret.secretManagementKeyPair.publicKey.data=PATH_TO_PUBLIC_KEY_FILE \
