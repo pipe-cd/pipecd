@@ -437,3 +437,59 @@ func TestDetermineVersion(t *testing.T) {
 		})
 	}
 }
+
+func TestCheckImageChange(t *testing.T) {
+	testcases := []struct {
+		name          string
+		oldManifests  string
+		newManifests  string
+		msg           string
+		changed       bool
+		expectedError error
+	}{
+		{
+			name:         "no diff",
+			msg:          "",
+			oldManifests: "testdata/version_multi_containers.yaml",
+			newManifests: "testdata/version_multi_containers.yaml",
+			changed:      false,
+		},
+		{
+			name:         "change only tag",
+			oldManifests: "testdata/check_image_tag/old.yaml",
+			newManifests: "testdata/check_image_tag/new.yaml",
+			msg:          "Sync progressively because of updating image foo from v0.1 to v0.2",
+			changed:      true,
+		},
+		{
+			name:         "change name and tag",
+			oldManifests: "testdata/check_image_name_tag/old.yaml",
+			newManifests: "testdata/check_image_name_tag/new.yaml",
+			msg:          "Sync progressively because of updating image foo:v0.1 to bar:v0.2",
+			changed:      true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			oldManifests, err := provider.LoadManifestsFromYAMLFile(tc.oldManifests)
+			require.NoError(t, err)
+
+			newManifests, err := provider.LoadManifestsFromYAMLFile(tc.newManifests)
+			require.NoError(t, err)
+
+			workloads := findUpdatedWorkloads(oldManifests, newManifests)
+			for _, w := range workloads {
+				diffResult, err := provider.Diff(w.old, w.new)
+				require.NoError(t, err)
+				diffNodes := diffResult.Nodes()
+				templateDiffs := diffNodes.FindByPrefix("spec.template")
+
+				msg, changed := checkImageChange(templateDiffs)
+
+				assert.Equal(t, tc.msg, msg)
+				assert.Equal(t, tc.changed, changed)
+			}
+		})
+	}
+}
