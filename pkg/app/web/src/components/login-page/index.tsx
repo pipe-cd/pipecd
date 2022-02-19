@@ -38,10 +38,14 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "column",
     marginTop: theme.spacing(4),
   },
+  note: {
+    color: "orange",
+    textAlign: "right",
+  },
   buttons: {
     display: "flex",
     justifyContent: "flex-end",
-    marginTop: theme.spacing(4),
+    marginTop: theme.spacing(2),
   },
   loginError: {
     width: CONTENT_WIDTH,
@@ -93,6 +97,9 @@ export const LoginPage: FC = memo(function LoginPage() {
                 value={name}
                 onChange={(e) => setName(e.currentTarget.value)}
               />
+              <div className={classes.note}>
+                Try <strong>play</strong> if you do not have one
+              </div>
             </div>
             <div className={classes.buttons}>
               <Button
