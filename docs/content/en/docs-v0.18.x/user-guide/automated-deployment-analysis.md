@@ -50,7 +50,7 @@ You can change the acceptable number of failures by setting the `failureLimit` f
 
 The full list of configurable `ANALYSIS` stage fields are [here](/docs/user-guide/configuration-reference/#analysisstageoptions).
 
-The canonical use case for this stage is to determine if your canary deployment should proceed. See more the [example](https://github.com/pipe-cd/examples/blob/master/kubernetes/analysis-by-metrics/.pipe.yaml).
+The canonical use case for this stage is to determine if your canary deployment should proceed. See more the [example](https://github.com/pipe-cd/examples/blob/master/kubernetes/analysis-by-metrics/app.pipecd.yaml).
 
 ### [Optional] Analysis Template
 Analysis Templating is a feature that allows you to define some shared analysis configurations to be used by multiple applications. These templates must be placed at the `.pipe` directory at the root of the Git repository. Any application in that Git repository can use to the defined template by specifying the name of the template in the deployment configuration file.
