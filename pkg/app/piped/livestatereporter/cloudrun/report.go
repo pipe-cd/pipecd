@@ -107,7 +107,6 @@ func (r *reporter) flushSnapshots(ctx context.Context) error {
 
 		snapshot := &model.ApplicationLiveStateSnapshot{
 			ApplicationId: app.Id,
-			EnvId:         app.EnvId,
 			PipedId:       app.PipedId,
 			ProjectId:     app.ProjectId,
 			Kind:          app.Kind,
