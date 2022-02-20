@@ -6,7 +6,9 @@ description: >
   This page describes how to quickly get started with PipeCD on Kubernetes.
 ---
 
-This page is a guideline for installing PipeCD in your Kubernetes cluster and deploying a "hello world" application to that same Kubernetes cluster.
+This page is a guideline for installing PipeCD into your Kubernetes cluster and deploying a "hello world" application to that same Kubernetes cluster.
+
+Note: It's not required to install the PipeCD control plane to the cluster your want to deploy your application to. Please read this [blog post](/blog/2021/12/29/pipecd-best-practice-01-operate-your-own-pipecd-cluster/) to understand more about PipeCD in real life usecase.
 
 ### Prerequisites
 - Having a Kubernetes cluster
