@@ -5,7 +5,7 @@ RUN go mod download
 COPY . ./
 RUN go build -o /plan-preview .
 
-FROM gcr.io/pipecd/pipectl:v0.24.0
+FROM gcr.io/pipecd/pipectl:v0.26.0
 COPY --from=builder /plan-preview /
 ENV PATH $PATH:/app/cmd/pipectl
 RUN chmod +x /plan-preview
