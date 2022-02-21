@@ -16,6 +16,8 @@ package filedb
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"go.uber.org/zap"
 
@@ -38,15 +40,25 @@ func WithLogger(logger *zap.Logger) Option {
 
 func NewFileDB(fs filestore.Store, opts ...Option) (*FileDB, error) {
 	fd := &FileDB{
-		logger: zap.NewNop(),
+		backend: fs,
+		logger:  zap.NewNop(),
 	}
 	for _, opt := range opts {
 		opt(fd)
 	}
 
-	fd.backend = fs
-
 	return fd, nil
+}
+
+func (f *FileDB) fetch(ctx context.Context, path string) ([]byte, error) {
+	raw, err := f.backend.Get(ctx, path)
+	if err == filestore.ErrNotFound {
+		return nil, datastore.ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	return raw, nil
 }
 
 func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datastore.ListOptions) (datastore.Iterator, error) {
@@ -58,11 +70,39 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 }
 
 func (f *FileDB) Get(ctx context.Context, col datastore.Collection, id string, v interface{}) error {
-	_, ok := col.(datastore.ShardStorable)
+	fcol, ok := col.(datastore.ShardStorable)
 	if !ok {
 		return datastore.ErrUnsupported
 	}
-	return datastore.ErrUnimplemented
+
+	kind := col.Kind()
+	shards := fcol.ListInUsedShards()
+	paths := make([]string, 0, len(shards))
+	for _, s := range shards {
+		paths = append(paths, makeHotStorageFilePath(kind, id, s))
+	}
+
+	parts := make([][]byte, 0, len(paths))
+	for _, path := range paths {
+		part, err := f.fetch(ctx, path)
+		if err != nil {
+			f.logger.Error("failed to fetch entity",
+				zap.String("id", id),
+				zap.String("kind", kind),
+				zap.Error(err),
+			)
+			return err
+		}
+		parts = append(parts, part)
+	}
+
+	if len(parts) == 1 {
+		return json.Unmarshal(parts[0], v)
+	}
+
+	// TODO: Add merge based on UpdatedAt field in case there are multiple parts of object are fetched.
+
+	return datastore.ErrUnsupported
 }
 
 func (f *FileDB) Create(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {
@@ -83,4 +123,9 @@ func (f *FileDB) Update(ctx context.Context, col datastore.Collection, id string
 
 func (f *FileDB) Close() error {
 	return f.backend.Close()
+}
+
+func makeHotStorageFilePath(kind, id string, shard datastore.Shard) string {
+	// TODO: Find a way to separate files by project to avoid fetch resources cross project.
+	return fmt.Sprintf("%s/%s/%s.json", kind, shard, id)
 }
