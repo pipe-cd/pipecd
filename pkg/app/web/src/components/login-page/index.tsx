@@ -101,7 +101,7 @@ export const LoginPage: FC = memo(function LoginPage() {
               />
               {isPlayEnvironment && (
                 <div className={classes.note}>
-                  Try <strong>play</strong> if you do not have one
+                  Try with <strong>play</strong> name if you want to join the playground environment
                 </div>
               )}
             </div>
