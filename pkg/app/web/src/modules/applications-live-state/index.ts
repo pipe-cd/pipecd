@@ -85,4 +85,5 @@ export const applicationLiveStateSlice = createSlice({
 export {
   ApplicationLiveStateSnapshot,
   KubernetesResourceState,
+  CloudRunResourceState,
 } from "pipe/pkg/app/web/model/application_live_state_pb";
