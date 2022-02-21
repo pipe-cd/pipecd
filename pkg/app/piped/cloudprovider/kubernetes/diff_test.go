@@ -17,9 +17,10 @@ package kubernetes
 import (
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/diff"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pipe-cd/pipecd/pkg/diff"
 )
 
 func TestGroupManifests(t *testing.T) {
