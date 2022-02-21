@@ -17,6 +17,7 @@ package kubernetes
 import (
 	"testing"
 
+	"github.com/pipe-cd/pipecd/pkg/diff"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -181,6 +182,46 @@ func TestDiffByCommand(t *testing.T) {
 				assert.NoError(t, err)
 			}
 			assert.Equal(t, tc.expected, string(got))
+		})
+	}
+}
+
+func TestDiff(t *testing.T) {
+	testcases := []struct {
+		name      string
+		manifests string
+		expected  string
+		diffNum   int
+	}{
+		{
+			name:      "secret no diff",
+			manifests: "testdata/diff_secret.yaml",
+			expected:  "",
+			diffNum:   0,
+		},
+		{
+			name:      "secret no diff override",
+			manifests: "testdata/diff_secret_override.yaml",
+			expected:  "",
+			diffNum:   0,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			manifests, err := LoadManifestsFromYAMLFile(tc.manifests)
+			require.NoError(t, err)
+			require.Equal(t, 2, len(manifests))
+
+			result, err := Diff(manifests[0], manifests[1])
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.diffNum, result.NumNodes())
+
+			renderer := diff.NewRenderer(diff.WithLeftPadding(1))
+			ds := renderer.Render(result.Nodes())
+
+			assert.Equal(t, tc.expected, ds)
 		})
 	}
 }
