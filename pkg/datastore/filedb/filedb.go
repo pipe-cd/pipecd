@@ -132,6 +132,7 @@ func (f *FileDB) Close() error {
 }
 
 func makeHotStorageFilePath(kind, id string, shard datastore.Shard) string {
+	// TODO: Find a way to separate files by project to avoid fetch resources cross project.
 	return fmt.Sprintf("%s/%s/%s.json", kind, shard, id)
 }
 
