@@ -674,6 +674,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 	app := model.Application{
 		Id:            uuid.New().String(),
 		Name:          req.Name,
+		EnvId:         req.EnvId,
 		PipedId:       req.PipedId,
 		ProjectId:     claims.Role.ProjectId,
 		GitPath:       gitpath,
