@@ -57,7 +57,7 @@ If you are an **operator** wanting to install and configure PipeCD for other dev
 - [Operating Control Plane](/docs/operator-manual/control-plane/)
 - [Operating Piped](/docs/operator-manual/piped/)
 
-If you are an **user** using PipeCD to deploy your application/infrastructure:
+If you are a **user** using PipeCD to deploy your application/infrastructure:
 - [User Guide](/docs/user-guide/)
 - [Examples](/docs/user-guide/examples)
 
