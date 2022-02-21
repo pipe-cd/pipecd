@@ -23,6 +23,9 @@ import (
 	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/diff"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 const (
@@ -46,7 +49,11 @@ type DiffListChange struct {
 }
 
 func Diff(old, new Manifest, opts ...diff.Option) (*diff.Result, error) {
-	return diff.DiffUnstructureds(*old.u, *new.u, opts...)
+	modified, err := mergeDataAndStringData(old.u)
+	if err != nil {
+		return nil, err
+	}
+	return diff.DiffUnstructureds(*modified, *new.u, opts...)
 }
 
 func DiffList(olds, news []Manifest, opts ...diff.Option) (*DiffListResult, error) {
@@ -73,6 +80,38 @@ func DiffList(olds, news []Manifest, opts ...diff.Option) (*DiffListResult, erro
 	}
 
 	return cr, nil
+}
+
+func mergeDataAndStringData(in *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+	if in == nil {
+		return in, nil
+	}
+	gvk := in.GroupVersionKind()
+	if gvk.Kind != "Secret" {
+		return in, nil
+	}
+	var secret v1.Secret
+	err := runtime.DefaultUnstructuredConverter.FromUnstructured(in.Object, &secret)
+	if err != nil {
+		return nil, err
+	}
+	if len(secret.StringData) == 0 {
+		return in, nil
+	}
+	if secret.Data == nil {
+		secret.Data = make(map[string][]byte)
+	}
+	for k, v := range secret.StringData {
+		secret.Data[k] = []byte(v)
+	}
+	secret.StringData = nil
+	newObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&secret)
+	if err != nil {
+		return nil, err
+	}
+	unstructured.RemoveNestedField(newObj, "metadata", "creationTimestamp")
+	out := &unstructured.Unstructured{Object: newObj}
+	return out, nil
 }
 
 type DiffRenderOptions struct {
