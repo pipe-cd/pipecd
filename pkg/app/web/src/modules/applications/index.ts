@@ -94,7 +94,6 @@ export const addApplication = createAsyncThunk<
   string,
   {
     name: string;
-    env: string;
     pipedId: string;
     repo: ApplicationGitRepository.AsObject;
     repoPath: string;
@@ -107,7 +106,7 @@ export const addApplication = createAsyncThunk<
 >(`${MODULE_NAME}/add`, async (props) => {
   const { applicationId } = await applicationsAPI.addApplication({
     name: props.name,
-    envId: props.env,
+    envId: "",
     pipedId: props.pipedId,
     gitPath: {
       repo: props.repo,

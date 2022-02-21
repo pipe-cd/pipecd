@@ -35,7 +35,6 @@ export const EditApplicationDrawer: FC<EditApplicationDrawerProps> = memo(
       initialValues: app
         ? {
             name: app.name,
-            env: app.envId,
             kind: app.kind,
             pipedId: app.pipedId,
             repoPath: app.gitPath?.path || "",

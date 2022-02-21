@@ -40,12 +40,12 @@ export const fetchPipeds = createAsyncThunk<Piped.AsObject[], boolean>(
 
 export const addPiped = createAsyncThunk<
   RegisteredPiped,
-  { name: string; desc: string; envIds: string[] }
+  { name: string; desc: string }
 >(`${MODULE_NAME}/add`, async (props) => {
   const res = await pipedsApi.registerPiped({
     desc: props.desc,
     name: props.name,
-    envIdsList: props.envIds,
+    envIdsList: [],
   });
   return { ...res, isNewKey: false };
 });

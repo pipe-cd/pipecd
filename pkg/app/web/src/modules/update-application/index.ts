@@ -20,7 +20,6 @@ export const updateApplication = createAsyncThunk<
   {
     applicationId: string;
     name: string;
-    env: string;
     pipedId: string;
     repo: ApplicationGitRepository.AsObject;
     repoPath: string;
@@ -33,7 +32,7 @@ export const updateApplication = createAsyncThunk<
   await applicationAPI.updateApplication({
     applicationId: values.applicationId,
     name: values.name,
-    envId: values.env,
+    envId: "",
     pipedId: values.pipedId,
     cloudProvider: values.cloudProvider,
     kind: values.kind,

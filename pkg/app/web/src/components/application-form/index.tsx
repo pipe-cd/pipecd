@@ -295,7 +295,6 @@ export const validationSchema = yup.object().shape({
 
 export interface ApplicationFormValue {
   name: string;
-  env: string;
   kind: ApplicationKind;
   pipedId: string;
   repoPath: string;
@@ -317,7 +316,6 @@ export type ApplicationFormProps = FormikProps<ApplicationFormValue> & {
 
 export const emptyFormValues: ApplicationFormValue = {
   name: "",
-  env: "",
   kind: ApplicationKind.KUBERNETES,
   pipedId: "",
   repoPath: "",
@@ -401,7 +399,6 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
                   ...emptyFormValues,
                   name: values.name,
                   kind: values.kind,
-                  env: values.env,
                   pipedId: value,
                 });
               }}
