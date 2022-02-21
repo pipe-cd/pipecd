@@ -33,8 +33,6 @@ type list struct {
 	root *command
 
 	appName  string
-	envID    string
-	envName  string
 	appKind  string
 	disabled bool
 	cursor   string
@@ -52,9 +50,8 @@ func newListCommand(root *command) *cobra.Command {
 		RunE:  cli.WithContext(c.run),
 	}
 
+	// TODO: Support pipectl to list application by Label.
 	cmd.Flags().StringVar(&c.appName, "app-name", c.appName, "The application name.")
-	cmd.Flags().StringVar(&c.envID, "env-id", c.envID, "The environment ID.")
-	cmd.Flags().StringVar(&c.envName, "env-name", c.envName, "The environment name.")
 	cmd.Flags().StringVar(&c.appKind, "app-kind", c.appKind, fmt.Sprintf("The kind of application. (%s)", strings.Join(model.ApplicationKindStrings(), "|")))
 	cmd.Flags().BoolVar(&c.disabled, "disabled", c.disabled, "True to show only disabled applications.")
 	cmd.Flags().StringVar(&c.cursor, "cursor", c.cursor, "The cursor which returned by the previous request applications list.")
@@ -77,8 +74,6 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 
 	req := &apiservice.ListApplicationsRequest{
 		Name:     c.appName,
-		EnvId:    c.envID,
-		EnvName:  c.envName,
 		Kind:     c.appKind,
 		Disabled: c.disabled,
 		Cursor:   c.cursor,
