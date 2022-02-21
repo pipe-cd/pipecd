@@ -59,7 +59,7 @@ message Deployment {
     string id = 1 [(validate.rules).string.min_len = 1];
     string application_id = 2 [(validate.rules).string.min_len = 1];
     string application_name = 3 [(validate.rules).string.min_len = 1];
-    string env_id = 4;
+    string env_id = 4 [deprecated = true];
     string piped_id = 5 [(validate.rules).string.min_len = 1];
     string project_id = 6 [(validate.rules).string.min_len = 1];
     ApplicationKind kind = 7 [(validate.rules).enum.defined_only = true];

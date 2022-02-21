@@ -55,7 +55,6 @@ func TestFileStoreGet(t *testing.T) {
 
 			content: `{
 				"application_id": "application-id",
-				"env_id": "env-id",
 				"piped_id": "piped-id",
 				"project_id": "project-id",
 				"kind": 0,
@@ -89,7 +88,6 @@ func TestFileStoreGet(t *testing.T) {
 
 			expected: &model.ApplicationLiveStateSnapshot{
 				ApplicationId: "application-id",
-				EnvId:         "env-id",
 				PipedId:       "piped-id",
 				ProjectId:     "project-id",
 				Kind:          model.ApplicationKind_KUBERNETES,

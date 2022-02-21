@@ -48,7 +48,6 @@ func TestAddPiped(t *testing.T) {
 				Name:      "name",
 				KeyHash:   "key-hash",
 				ProjectId: "project-id",
-				EnvIds:    []string{"env-id"},
 				CreatedAt: 1,
 				UpdatedAt: 1,
 			},

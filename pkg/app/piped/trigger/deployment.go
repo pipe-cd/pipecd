@@ -75,7 +75,6 @@ func buildDeployment(
 		Id:              uuid.New().String(),
 		ApplicationId:   app.Id,
 		ApplicationName: app.Name,
-		EnvId:           app.EnvId,
 		PipedId:         app.PipedId,
 		ProjectId:       app.ProjectId,
 		Kind:            app.Kind,
