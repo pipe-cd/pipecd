@@ -6,6 +6,11 @@ description: >
   This page describes several core concepts in PipeCD.
 ---
 
+![](/images/architecture-overview.png)
+<p style="text-align: center;">
+Component Architecture
+</p>
+
 ### Piped
 
 `piped` is a single binary component you run as an agent in your cluster, your local network to handle the deployment tasks.
