@@ -47,9 +47,7 @@ describe("fetchApplications", () => {
   it("should get applications by options", async () => {
     const store = createStore({});
 
-    await store.dispatch(
-      fetchApplications({ activeStatus: "enabled", envId: "env-1" })
-    );
+    await store.dispatch(fetchApplications({ activeStatus: "enabled" }));
 
     expect(store.getActions()).toEqual(
       expect.arrayContaining([

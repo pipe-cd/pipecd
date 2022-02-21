@@ -32,7 +32,6 @@ export const { selectAll, selectById } = applicationsAdapter.getSelectors();
 export interface ApplicationsFilterOptions {
   activeStatus?: string;
   kind?: string;
-  envId?: string;
   syncStatus?: string;
   name?: string;
   // Suppose to be like ["key-1:value-1"]
@@ -54,7 +53,7 @@ export const fetchApplications = createAsyncThunk<
   }
   const req = {
     options: {
-      envIdsList: options.envId ? [options.envId] : [],
+      envIdsList: [],
       kindsList: options.kind
         ? [parseInt(options.kind, 10) as ApplicationKind]
         : [],
@@ -69,22 +68,6 @@ export const fetchApplications = createAsyncThunk<
     },
   };
   const { applicationsList } = await applicationsAPI.getApplications(req);
-  return applicationsList as Application.AsObject[];
-});
-
-export const fetchApplicationsByEnv = createAsyncThunk<
-  Application.AsObject[],
-  { envId: string }
->(`${MODULE_NAME}/fetchListByEnv`, async ({ envId }) => {
-  const { applicationsList } = await applicationsAPI.getApplications({
-    options: {
-      envIdsList: [envId],
-      kindsList: [],
-      name: "",
-      syncStatusesList: [],
-      labelsMap: [],
-    },
-  });
   return applicationsList as Application.AsObject[];
 });
 
@@ -235,17 +218,14 @@ export const applicationsSlice = createSlice({
       .addCase(disableApplication.rejected, (state, action) => {
         state.disabling[action.meta.arg.applicationId] = false;
       })
-      .addMatcher(
-        isFulfilled(fetchApplications, fetchApplicationsByEnv),
-        (state, action) => {
-          applicationsAdapter.removeAll(state);
-          applicationsAdapter.upsertMany(
-            state,
-            action.payload.filter((app) => app.deleted === false)
-          );
-          state.loading = false;
-        }
-      );
+      .addMatcher(isFulfilled(fetchApplications), (state, action) => {
+        applicationsAdapter.removeAll(state);
+        applicationsAdapter.upsertMany(
+          state,
+          action.payload.filter((app) => app.deleted === false)
+        );
+        state.loading = false;
+      });
   },
 });
 
