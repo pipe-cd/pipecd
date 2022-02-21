@@ -221,7 +221,7 @@ message UpdatePipedDesiredVersionResponse {
 
 message AddApplicationRequest {
     string name = 1 [(validate.rules).string.min_len = 1];
-    string env_id = 2;
+    string env_id = 2 [deprecated = true];
     string piped_id = 3 [(validate.rules).string.min_len = 1];
     model.ApplicationGitPath git_path = 4 [(validate.rules).message.required = true];
     model.ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
@@ -237,7 +237,7 @@ message AddApplicationResponse {
 message UpdateApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     string name = 2 [(validate.rules).string.min_len = 1];
-    string env_id = 3;
+    string env_id = 3 [deprecated = true];
     string piped_id = 4 [(validate.rules).string.min_len = 1];
     model.ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
     string cloud_provider = 7 [(validate.rules).string.min_len = 1];

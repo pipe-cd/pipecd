@@ -83,7 +83,6 @@ func newPlanner(
 	logger = logger.Named("planner").With(
 		zap.String("deployment-id", d.Id),
 		zap.String("app-id", d.ApplicationId),
-		zap.String("env-id", d.EnvId),
 		zap.String("project-id", d.ProjectId),
 		zap.String("app-kind", d.Kind.String()),
 		zap.String("working-dir", workingDir),

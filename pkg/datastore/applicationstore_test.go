@@ -46,7 +46,6 @@ func TestAddApplication(t *testing.T) {
 			application: &model.Application{
 				Id:        "id",
 				Name:      "name",
-				EnvId:     "env-id",
 				PipedId:   "piped-id",
 				ProjectId: "project-id",
 				Kind:      model.ApplicationKind_KUBERNETES,

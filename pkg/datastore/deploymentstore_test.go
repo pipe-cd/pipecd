@@ -320,7 +320,6 @@ func TestAddDeployment(t *testing.T) {
 				Id:              "id",
 				ApplicationId:   "app-id",
 				ApplicationName: "app-name",
-				EnvId:           "env-id",
 				PipedId:         "piped-id",
 				ProjectId:       "project-id",
 				Kind:            model.ApplicationKind_KUBERNETES,
