@@ -107,7 +107,6 @@ pipectl application add \
     --api-key=API_KEY \
     --app-name=simple \
     --app-kind=KUBERNETES \
-    --env-id=ENV_ID \
     --piped-id=PIPED_ID \
     --cloud-provider=kubernetes-default \
     --repo-id=examples \
@@ -131,7 +130,6 @@ Flags:
       --cloud-provider string     The cloud provider name. One of the registered providers in the piped configuration.
       --config-file-name string   The configuration file name. (default "app.pipecd.yaml")
       --description string        The description of the application.
-      --env-id string             The ID of environment where this application should belong to.
   -h, --help                      help for add
       --piped-id string           The ID of piped that should handle this application.
       --repo-id string            The repository ID. One the registered repositories in the piped configuration.
@@ -192,7 +190,6 @@ pipectl application list \
     --api-key={API_KEY} \
     --app-name={APPLICATION_NAME} \
     --app-kind=KUBERNETES \
-    --env-id=dev
 ```
 
 ### Waiting a deployment status
