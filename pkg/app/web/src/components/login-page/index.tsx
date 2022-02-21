@@ -68,6 +68,8 @@ export const LoginPage: FC = memo(function LoginPage() {
     window.location.href = `${PAGE_PATH_LOGIN}?project=${name}`;
   };
 
+  const isPlayEnvironment = window.location.hostname.includes("play.");
+
   return (
     <div className={classes.root}>
       {me && me.isLogin && <Redirect to={PAGE_PATH_APPLICATIONS} />}
@@ -97,9 +99,11 @@ export const LoginPage: FC = memo(function LoginPage() {
                 value={name}
                 onChange={(e) => setName(e.currentTarget.value)}
               />
-              <div className={classes.note}>
-                Try <strong>play</strong> if you do not have one
-              </div>
+              {isPlayEnvironment && (
+                <div className={classes.note}>
+                  Try <strong>play</strong> if you do not have one
+                </div>
+              )}
             </div>
             <div className={classes.buttons}>
               <Button
