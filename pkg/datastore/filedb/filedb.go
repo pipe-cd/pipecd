@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"reflect"
 
 	"go.uber.org/zap"
 
@@ -51,7 +50,7 @@ func NewFileDB(fs filestore.Store, opts ...Option) (*FileDB, error) {
 	return fd, nil
 }
 
-func (f *FileDB) fetch(ctx context.Context, col datastore.Collection, path string) (interface{}, error) {
+func (f *FileDB) fetch(ctx context.Context, path string) ([]byte, error) {
 	raw, err := f.backend.Get(ctx, path)
 	if err == filestore.ErrNotFound {
 		return nil, datastore.ErrNotFound
@@ -59,12 +58,7 @@ func (f *FileDB) fetch(ctx context.Context, col datastore.Collection, path strin
 	if err != nil {
 		return nil, err
 	}
-
-	entity := col.Factory()()
-	if err = json.Unmarshal(raw, entity); err != nil {
-		return nil, err
-	}
-	return entity, nil
+	return raw, nil
 }
 
 func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datastore.ListOptions) (datastore.Iterator, error) {
@@ -88,9 +82,9 @@ func (f *FileDB) Get(ctx context.Context, col datastore.Collection, id string, v
 		paths = append(paths, makeHotStorageFilePath(kind, id, s))
 	}
 
-	parts := make([]interface{}, 0, len(paths))
+	parts := make([][]byte, 0, len(paths))
 	for _, path := range paths {
-		part, err := f.fetch(ctx, col, path)
+		part, err := f.fetch(ctx, path)
 		if err != nil {
 			f.logger.Error("failed to fetch entity",
 				zap.String("id", id),
@@ -103,12 +97,12 @@ func (f *FileDB) Get(ctx context.Context, col datastore.Collection, id string, v
 	}
 
 	if len(parts) == 1 {
-		return dataTo(parts[0], v)
+		return json.Unmarshal(parts[0], v)
 	}
 
 	// TODO: Add merge based on UpdatedAt field in case there are multiple parts of object are fetched.
 
-	return datastore.ErrUnimplemented
+	return datastore.ErrUnsupported
 }
 
 func (f *FileDB) Create(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {
@@ -134,15 +128,4 @@ func (f *FileDB) Close() error {
 func makeHotStorageFilePath(kind, id string, shard datastore.Shard) string {
 	// TODO: Find a way to separate files by project to avoid fetch resources cross project.
 	return fmt.Sprintf("%s/%s/%s.json", kind, shard, id)
-}
-
-func dataTo(src, dst interface{}) (err error) {
-	tdst := reflect.TypeOf(dst)
-	tsrc := reflect.TypeOf(src)
-	if tdst != tsrc {
-		err = fmt.Errorf("value type missmatched: %v - %v", tdst, tsrc)
-		return
-	}
-	reflect.ValueOf(dst).Elem().Set(reflect.ValueOf(src).Elem())
-	return nil
 }
