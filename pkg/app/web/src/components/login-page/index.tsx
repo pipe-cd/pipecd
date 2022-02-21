@@ -38,10 +38,14 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "column",
     marginTop: theme.spacing(4),
   },
+  note: {
+    color: "orange",
+    textAlign: "right",
+  },
   buttons: {
     display: "flex",
     justifyContent: "flex-end",
-    marginTop: theme.spacing(4),
+    marginTop: theme.spacing(2),
   },
   loginError: {
     width: CONTENT_WIDTH,
@@ -63,6 +67,8 @@ export const LoginPage: FC = memo(function LoginPage() {
   const handleOnContinue = (): void => {
     window.location.href = `${PAGE_PATH_LOGIN}?project=${name}`;
   };
+
+  const isPlayEnvironment = window.location.hostname.includes("play.");
 
   return (
     <div className={classes.root}>
@@ -93,6 +99,11 @@ export const LoginPage: FC = memo(function LoginPage() {
                 value={name}
                 onChange={(e) => setName(e.currentTarget.value)}
               />
+              {isPlayEnvironment && (
+                <div className={classes.note}>
+                  Try with <strong>play</strong> name if you want to join the playground environment
+                </div>
+              )}
             </div>
             <div className={classes.buttons}>
               <Button
