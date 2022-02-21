@@ -62,7 +62,7 @@ func NewReporter(cp config.PipedCloudProvider, appLister applicationLister, stat
 		appLister:             appLister,
 		stateGetter:           stateGetter,
 		apiClient:             apiClient,
-		snapshotFlushInterval: 10 * time.Minute,
+		snapshotFlushInterval: time.Minute,
 		logger:                logger,
 		snapshotVersions:      make(map[string]model.ApplicationLiveStateVersion),
 	}
