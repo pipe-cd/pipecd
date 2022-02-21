@@ -23,7 +23,6 @@ gomock(
     out = "datastore.mock.go",
     interfaces = [
         "ProjectStore",
-        "EnvironmentStore",
         "PipedStore",
         "ApplicationStore",
         "DeploymentStore",

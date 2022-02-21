@@ -22,7 +22,6 @@ import "pkg/model/command.proto";
 import "pkg/model/common.proto";
 import "pkg/model/application.proto";
 import "pkg/model/application_live_state.proto";
-import "pkg/model/environment.proto";
 import "pkg/model/deployment.proto";
 import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
@@ -39,9 +38,6 @@ service PipedService {
     // ReportPipedMeta is sent while starting up to report its metadata
     // such as configured cloud providers.
     rpc ReportPipedMeta(ReportPipedMetaRequest) returns (ReportPipedMetaResponse) {}
-
-    // GetEnvironment finds and returns the environment for the specified ID.
-    rpc GetEnvironment(GetEnvironmentRequest) returns (GetEnvironmentResponse) {}
 
     // ListApplications returns a list of registered applications
     // that should be managed by the requested piped.
@@ -201,14 +197,6 @@ message ReportPipedMetaRequest {
 message ReportPipedMetaResponse {
     string name = 1 [(validate.rules).string.min_len = 1];
     string web_base_url = 2;
-}
-
-message GetEnvironmentRequest {
-    string id = 1 [(validate.rules).string.min_len = 1];
-}
-
-message GetEnvironmentResponse {
-    model.Environment environment = 1 [(validate.rules).message.required = true];
 }
 
 message ListApplicationsRequest {

@@ -23,7 +23,6 @@ import "pkg/model/insight.proto";
 import "pkg/model/application.proto";
 import "pkg/model/application_live_state.proto";
 import "pkg/model/command.proto";
-import "pkg/model/environment.proto";
 import "pkg/model/deployment.proto";
 import "pkg/model/deployment_chain.proto";
 import "pkg/model/logblock.proto";
@@ -37,13 +36,6 @@ import "google/protobuf/wrappers.proto";
 // WebService contains all RPC definitions for web client.
 // All of these RPCs are only called by web client and authenticated by using ID_TOKEN.
 service WebService {
-    // Environment
-    rpc UpdateEnvironmentDesc(UpdateEnvironmentDescRequest) returns (UpdateEnvironmentDescResponse) {}
-    rpc ListEnvironments(ListEnvironmentsRequest) returns (ListEnvironmentsResponse) {}
-    rpc EnableEnvironment(EnableEnvironmentRequest) returns (EnableEnvironmentResponse) {}
-    rpc DisableEnvironment(DisableEnvironmentRequest) returns (DisableEnvironmentResponse) {}
-    rpc DeleteEnvironment(DeleteEnvironmentRequest) returns (DeleteEnvironmentResponse) {}
-
     // Piped
     rpc RegisterPiped(RegisterPipedRequest) returns (RegisterPipedResponse) {}
     rpc UpdatePiped(UpdatePipedRequest) returns (UpdatePipedResponse) {}
@@ -104,40 +96,6 @@ service WebService {
 
     // Events
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
-}
-
-message UpdateEnvironmentDescRequest {
-}
-
-message UpdateEnvironmentDescResponse {
-}
-
-message ListEnvironmentsRequest {
-}
-
-message ListEnvironmentsResponse {
-    repeated model.Environment environments = 1;
-}
-
-message EnableEnvironmentRequest {
-    string environment_id = 1 [(validate.rules).string.min_len = 1];
-}
-
-message EnableEnvironmentResponse {
-}
-
-message DisableEnvironmentRequest {
-    string environment_id = 1 [(validate.rules).string.min_len = 1];
-}
-
-message DisableEnvironmentResponse {
-}
-
-message DeleteEnvironmentRequest {
-    string environment_id = 1 [(validate.rules).string.min_len = 1];
-}
-
-message DeleteEnvironmentResponse {
 }
 
 message RegisterPipedRequest {
