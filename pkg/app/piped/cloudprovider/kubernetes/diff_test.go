@@ -195,22 +195,55 @@ func TestDiff(t *testing.T) {
 		diffNum   int
 	}{
 		{
-			name:      "secret no diff",
-			manifests: "testdata/diff_secret.yaml",
-			expected:  "",
-			diffNum:   0,
+			name: "secret no diff",
+			manifests: `apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  password: hoge
+stringData:
+  foo: bar
+---
+apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  password: hoge
+  foo: YmFy
+`,
+			expected: "",
+			diffNum:  0,
 		},
 		{
-			name:      "secret no diff override",
-			manifests: "testdata/diff_secret_override.yaml",
-			expected:  "",
-			diffNum:   0,
+			name: "secret no diff override",
+			manifests: `apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  password: hoge
+  foo: Zm9v
+stringData:
+  foo: bar
+---
+apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  password: hoge
+  foo: YmFy
+`,
+			expected: "",
+			diffNum:  0,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			manifests, err := LoadManifestsFromYAMLFile(tc.manifests)
+			manifests, err := ParseManifests(tc.manifests)
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))
 
