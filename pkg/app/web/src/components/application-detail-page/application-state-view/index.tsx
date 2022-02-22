@@ -22,6 +22,14 @@ import {
   selectHasError,
 } from "~/modules/applications-live-state";
 import { KubernetesStateView } from "./kubernetes-state-view";
+import { CloudRunStateView } from "./cloudrun-state-view";
+
+const isDisplayLiveState = (app: Application.AsObject | undefined): boolean => {
+  return (
+    app?.kind === ApplicationKind.KUBERNETES ||
+    app?.kind === ApplicationKind.CLOUDRUN
+  );
+};
 
 const FETCH_INTERVAL = 4000;
 
@@ -62,22 +70,20 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
     ]);
 
     useEffect(() => {
-      if (app?.kind === ApplicationKind.KUBERNETES) {
+      if (app && isDisplayLiveState(app)) {
         dispatch(fetchApplicationStateById(app.id));
       }
     }, [app, dispatch]);
 
     useInterval(
       () => {
-        // Only fetch kubernetes application.
-        if (app?.kind === ApplicationKind.KUBERNETES) {
+        // Only fetch kubernetes or cloud run application.
+        if (app && isDisplayLiveState(app)) {
           dispatch(fetchApplicationStateById(app.id));
         }
       },
-      // Only fetch kubernetes application.
-      app?.kind === ApplicationKind.KUBERNETES && hasError === false
-        ? FETCH_INTERVAL
-        : null
+      // Only fetch kubernetes or cloud run application.
+      isDisplayLiveState(app) && hasError === false ? FETCH_INTERVAL : null
     );
 
     if (app?.disabled) {
@@ -114,7 +120,7 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
     if (!liveState) {
       return (
         <>
-          {app?.kind === ApplicationKind.KUBERNETES ? (
+          {isDisplayLiveState(app) ? (
             <div className={classes.container}>
               <CircularProgress />
             </div>
@@ -138,6 +144,10 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
       case ApplicationKind.KUBERNETES: {
         const resources = liveState.kubernetes?.resourcesList || [];
         return <KubernetesStateView resources={resources} />;
+      }
+      case ApplicationKind.CLOUDRUN: {
+        const resources = liveState.cloudrun?.resourcesList || [];
+        return <CloudRunStateView resources={resources} />;
       }
       default:
     }
