@@ -47,6 +47,7 @@ export const dummyApplication: Application.AsObject = {
     version: "v1",
     trigger: dummyTrigger,
     configFilename: "",
+    versionsList: []
   },
   mostRecentlyTriggeredDeployment: {
     deploymentId: "deployment-1",
@@ -56,6 +57,7 @@ export const dummyApplication: Application.AsObject = {
     version: "v1",
     trigger: dummyTrigger,
     configFilename: "",
+    versionsList: []
   },
   syncState: dummyApplicationSyncState,
   updatedAt: updatedAt.unix(),
