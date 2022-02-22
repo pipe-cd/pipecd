@@ -104,7 +104,7 @@ func mergeDataAndStringData(in *unstructured.Unstructured) (*unstructured.Unstru
 	}
 
 	if secret.Data == nil {
-		secret.Data = make(map[string][]byte)
+		secret.Data = make(map[string][]byte, len(secret.StringData))
 	}
 	for k, v := range secret.StringData {
 		secret.Data[k] = []byte(v)
