@@ -62,7 +62,7 @@ func (e *deployExecutor) ensureBaselineRollout(ctx context.Context) model.StageS
 	}
 
 	// Add builtin annotations for tracking application live state.
-	addBuiltinAnnontations(
+	addBuiltinAnnotations(
 		baselineManifests,
 		variantLabel,
 		baselineVariant,

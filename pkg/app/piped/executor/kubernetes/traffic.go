@@ -120,7 +120,7 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 	}
 
 	// Add builtin annotations for tracking application live state.
-	addBuiltinAnnontations(
+	addBuiltinAnnotations(
 		[]provider.Manifest{trafficRoutingManifest},
 		variantLabel,
 		primaryVariant,

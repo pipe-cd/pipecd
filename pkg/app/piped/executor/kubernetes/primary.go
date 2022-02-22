@@ -116,7 +116,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 	e.LogPersister.Successf("Successfully generated %d manifests for PRIMARY variant", len(primaryManifests))
 
 	// Add builtin annotations for tracking application live state.
-	addBuiltinAnnontations(
+	addBuiltinAnnotations(
 		primaryManifests,
 		variantLabel,
 		primaryVariant,
