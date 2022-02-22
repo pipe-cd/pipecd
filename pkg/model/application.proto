@@ -85,14 +85,16 @@ message ApplicationSyncState {
     int64 timestamp = 5 [(validate.rules).int64.gt = 0];
 }
 
-enum ApplicationComponentKind {
-    CONTAINER_IMAGE = 0;
-}
-
-message ApplicationComponentVersion {
-    ApplicationComponentKind kind = 1;
-    stirng version = 2;
-    string url = 3;
+message ArtifactVersion {
+    enum Kind {
+        UNKNOWN = 0;
+        CONTAINER_IMAGE = 1;
+    }
+   
+    Kind kind = 1 [(validate.rules).enum.defined_only = true];
+    string version = 2 [(validate.rules).string.min_len = 1];
+    string name = 3;
+    string url = 4;
 }
 
 message ApplicationDeploymentReference {
@@ -100,8 +102,8 @@ message ApplicationDeploymentReference {
     DeploymentTrigger trigger = 2 [(validate.rules).message.required = true];
     string summary = 3;
     string version = 4;
-    repeated ApplicationComponentVersion versions = 5;
-    string config_filename = 6;
+    string config_filename = 5;
+    repeated ArtifactVersion versions = 6;
 
     int64 started_at = 14 [(validate.rules).int64.gt = 0];
     int64 completed_at = 15 [(validate.rules).int64.gte = 0];
