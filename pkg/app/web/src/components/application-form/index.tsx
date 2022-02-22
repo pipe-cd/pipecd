@@ -384,13 +384,10 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
             label="Kind"
             value={`${values.kind}`}
             items={Object.keys(APPLICATION_KIND_TEXT).map((key) => ({
-              name:
-                APPLICATION_KIND_TEXT[(key as unknown) as ApplicationKind],
+              name: APPLICATION_KIND_TEXT[(key as unknown) as ApplicationKind],
               value: key,
             }))}
-            onChange={({ value }) =>
-              setFieldValue("kind", parseInt(value, 10))
-            }
+            onChange={({ value }) => setFieldValue("kind", parseInt(value, 10))}
             disabled={isSubmitting || disableApplicationInfo}
           />
 

@@ -94,4 +94,4 @@ export const CloudRunResourceDetail: FC<CloudRunResourceDetailProps> = ({
       </div>
     </Paper>
   );
-}
+};

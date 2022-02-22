@@ -24,9 +24,14 @@ import {
 import { KubernetesStateView } from "./kubernetes-state-view";
 import { CloudRunStateView } from "./cloudrun-state-view";
 
-const isDisplayLiveState = (app: Application.AsObject | undefined): app is Application.AsObject => {
-  return app?.kind === ApplicationKind.KUBERNETES || app?.kind === ApplicationKind.CLOUDRUN
-}
+const isDisplayLiveState = (
+  app: Application.AsObject | undefined
+): app is Application.AsObject => {
+  return (
+    app?.kind === ApplicationKind.KUBERNETES ||
+    app?.kind === ApplicationKind.CLOUDRUN
+  );
+};
 
 const FETCH_INTERVAL = 4000;
 
@@ -80,9 +85,7 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
         }
       },
       // Only fetch kubernetes or cloud run application.
-      isDisplayLiveState(app) && hasError === false
-        ? FETCH_INTERVAL
-        : null
+      isDisplayLiveState(app) && hasError === false ? FETCH_INTERVAL : null
     );
 
     if (app?.disabled) {
