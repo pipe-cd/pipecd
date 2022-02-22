@@ -61,7 +61,8 @@ function useGraph(
   graph.setGraph({ rankdir: "LR", align: "UL" });
   graph.setDefaultEdgeLabel(() => ({}));
 
-  const serviceID = getServiceID(resources)
+  const service = resources.find((r) => r.parentIdsList.length === 0);
+  const serviceID = service?.id || "";
   resources.forEach((resource) => {
     graph.setNode(resource.id, {
       resource,
@@ -69,7 +70,7 @@ function useGraph(
       width: NODE_WIDTH,
     });
     if (resource.parentIdsList.length > 0) {
-    	graph.setEdge(serviceID, resource.id);
+      graph.setEdge(serviceID, resource.id);
     }
   });
 
