@@ -99,7 +99,6 @@ type PipedAPI struct {
 
 	appPipedCache        cache.Cache
 	deploymentPipedCache cache.Cache
-	envProjectCache      cache.Cache
 	pipedStatCache       cache.Cache
 	redis                redis.Redis
 
@@ -123,7 +122,6 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sl
 		commandOutputPutter:       cop,
 		appPipedCache:             memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
-		envProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            hc,
 		redis:                     rd,
 		webBaseURL:                webBaseURL,

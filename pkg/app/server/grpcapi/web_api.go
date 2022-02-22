@@ -119,7 +119,6 @@ type WebAPI struct {
 	appProjectCache        cache.Cache
 	deploymentProjectCache cache.Cache
 	pipedProjectCache      cache.Cache
-	envProjectCache        cache.Cache
 	pipedStatCache         cache.Cache
 	insightCache           cache.Cache
 	redis                  redis.Redis
@@ -160,7 +159,6 @@ func NewWebAPI(
 		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
-		envProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            psc,
 		insightCache:              rediscache.NewTTLCache(rd, 3*time.Hour),
 		redis:                     rd,
