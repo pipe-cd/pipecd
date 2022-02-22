@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
 
 const getServiceID = (resources: CloudRunResourceState.AsObject[]): string => {
   for (let resource of resources) {
-    if (resource.parentIdsList.length == 0) return resource.id;
+    if (resource.parentIdsList.length === 0) return resource.id;
   }
   return "";
 }
@@ -125,7 +125,6 @@ export const CloudRunStateView: FC<CloudRunStateViewProps> = ({
               />
             </Box>
           ))}
-	  {console.log(nodes)}
           {
             // render edges
             graph.edges().map((v, i) => {
