@@ -42,12 +42,6 @@ func isViewer(r model.Role) bool {
 // Todo: Auto generate this file from protobuf.
 func (a *authorizer) Authorize(method string, r model.Role) bool {
 	switch method {
-	case "/grpc.service.webservice.WebService/AddEnvironment":
-		return isAdmin(r)
-	case "/grpc.service.webservice.WebService/UpdateEnvironmentDesc":
-		return isAdmin(r)
-	case "/grpc.service.webservice.WebService/DeleteEnvironment":
-		return isAdmin(r)
 	case "/grpc.service.webservice.WebService/RegisterPiped":
 		return isAdmin(r)
 	case "/grpc.service.webservice.WebService/UpdatePiped":
@@ -105,8 +99,6 @@ func (a *authorizer) Authorize(method string, r model.Role) bool {
 	case "/grpc.service.webservice.WebService/GetProject":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
 	case "/grpc.service.webservice.WebService/GetCommand":
-		return isAdmin(r) || isEditor(r) || isViewer(r)
-	case "/grpc.service.webservice.WebService/ListEnvironments":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
 	case "/grpc.service.webservice.WebService/ListPipeds":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
