@@ -113,7 +113,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	}
 
 	// Add builtin annotations for tracking application live state.
-	addBuiltinAnnontations(
+	addBuiltinAnnotations(
 		manifests,
 		variantLabel,
 		primaryVariant,

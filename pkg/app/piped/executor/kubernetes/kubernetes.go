@@ -191,7 +191,7 @@ func loadManifests(ctx context.Context, appID, commit string, manifestsCache cac
 	return manifests, nil
 }
 
-func addBuiltinAnnontations(manifests []provider.Manifest, variantLabel, variant, hash, pipedID, appID string) {
+func addBuiltinAnnotations(manifests []provider.Manifest, variantLabel, variant, hash, pipedID, appID string) {
 	for i := range manifests {
 		manifests[i].AddAnnotations(map[string]string{
 			provider.LabelManagedBy:          provider.ManagedByPiped,

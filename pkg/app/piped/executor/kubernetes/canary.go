@@ -79,7 +79,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 	}
 
 	// Add builtin annotations for tracking application live state.
-	addBuiltinAnnontations(
+	addBuiltinAnnotations(
 		canaryManifests,
 		variantLabel,
 		canaryVariant,
