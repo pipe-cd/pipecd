@@ -36,10 +36,6 @@ const useStyles = makeStyles((theme) => ({
   textMargin: {
     marginLeft: theme.spacing(1),
   },
-  env: {
-    color: theme.palette.text.secondary,
-    marginLeft: theme.spacing(1),
-  },
   age: {
     color: theme.palette.text.secondary,
     marginLeft: theme.spacing(1),

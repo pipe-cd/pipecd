@@ -29,7 +29,6 @@ export interface DeploymentFilterOptions {
   status?: string;
   kind?: string;
   applicationId?: string;
-  envId?: string;
   applicationName?: string;
   // Suppose to be like ["key-1:value-1"]
   // sindresorhus/query-string doesn't support multidimensional arrays, that's why the format is a bit tricky.
@@ -109,7 +108,7 @@ const convertFilterOptions = (
   return {
     applicationName: options.applicationName ?? "",
     applicationIdsList: options.applicationId ? [options.applicationId] : [],
-    envIdsList: options.envId ? [options.envId] : [],
+    envIdsList: [],
     kindsList: options.kind
       ? [parseInt(options.kind, 10) as ApplicationKind]
       : [],

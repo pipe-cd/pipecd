@@ -10,7 +10,7 @@ const fakeDeployment: Deployment.AsObject = {
   id: DEPLOYMENT_ID,
   applicationId: "debug-project/development/debug-app",
   applicationName: "demo-app",
-  envId: "development",
+  envId: "",
   pipedId: "debug-piped",
   projectId: "debug-project",
   kind: 0,

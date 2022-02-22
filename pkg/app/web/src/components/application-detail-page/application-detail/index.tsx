@@ -49,10 +49,6 @@ const useStyles = makeStyles((theme) => ({
   content: {
     flex: 1,
   },
-  env: {
-    color: theme.palette.text.secondary,
-    marginLeft: theme.spacing(1),
-  },
   appSyncState: {
     marginRight: theme.spacing(1),
   },

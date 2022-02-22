@@ -21,7 +21,7 @@ export const EditPipedDrawer: FC<EditPipedDrawerProps> = memo(
       initialValues: {
         name: piped?.name || "",
         desc: piped?.desc || "",
-        envIds: piped?.envIdsList || [],
+        envIds: [],
       },
       enableReinitialize: true,
       validationSchema,

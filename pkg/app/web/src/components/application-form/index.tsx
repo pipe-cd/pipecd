@@ -295,7 +295,6 @@ export const validationSchema = yup.object().shape({
 
 export interface ApplicationFormValue {
   name: string;
-  env: string;
   kind: ApplicationKind;
   pipedId: string;
   repoPath: string;
@@ -317,7 +316,6 @@ export type ApplicationFormProps = FormikProps<ApplicationFormValue> & {
 
 export const emptyFormValues: ApplicationFormValue = {
   name: "",
-  env: "",
   kind: ApplicationKind.KUBERNETES,
   pipedId: "",
   repoPath: "",
@@ -384,13 +382,10 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
             label="Kind"
             value={`${values.kind}`}
             items={Object.keys(APPLICATION_KIND_TEXT).map((key) => ({
-              name:
-                APPLICATION_KIND_TEXT[(key as unknown) as ApplicationKind],
+              name: APPLICATION_KIND_TEXT[(key as unknown) as ApplicationKind],
               value: key,
             }))}
-            onChange={({ value }) =>
-              setFieldValue("kind", parseInt(value, 10))
-            }
+            onChange={({ value }) => setFieldValue("kind", parseInt(value, 10))}
             disabled={isSubmitting || disableApplicationInfo}
           />
 
@@ -404,7 +399,6 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
                   ...emptyFormValues,
                   name: values.name,
                   kind: values.kind,
-                  env: values.env,
                   pipedId: value,
                 });
               }}

@@ -32,9 +32,6 @@ const useStyles = makeStyles(() => ({
     paddingLeft: 2,
     marginBottom: -4,
   },
-  environment: {
-    minWidth: 150,
-  },
 }));
 
 const PAGER_ROWS_PER_PAGE = [20, 50, { label: "All", value: -1 }];

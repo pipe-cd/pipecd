@@ -17,6 +17,3 @@ export const UPGRADE_PIPEDS_SUCCESS =
 
 // Application
 export const DELETE_APPLICATION_SUCCESS = "Successfully deleted Application.";
-
-// Environment
-export const DELETE_ENVIRONMENT_SUCCESS = "Successfully deleted Environment.";

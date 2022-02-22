@@ -34,7 +34,6 @@ export const Overview = Template.bind({});
 Overview.args = {
   options: {
     applicationId: undefined,
-    envId: undefined,
     kind: undefined,
     status: undefined,
   },
