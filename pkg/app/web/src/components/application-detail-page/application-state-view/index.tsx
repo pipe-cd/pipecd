@@ -24,9 +24,7 @@ import {
 import { KubernetesStateView } from "./kubernetes-state-view";
 import { CloudRunStateView } from "./cloudrun-state-view";
 
-const isDisplayLiveState = (
-  app: Application.AsObject | undefined
-): app is Application.AsObject => {
+const isDisplayLiveState = (app: Application.AsObject | undefined): boolean => {
   return (
     app?.kind === ApplicationKind.KUBERNETES ||
     app?.kind === ApplicationKind.CLOUDRUN
@@ -72,7 +70,7 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
     ]);
 
     useEffect(() => {
-      if (isDisplayLiveState(app)) {
+      if (app && isDisplayLiveState(app)) {
         dispatch(fetchApplicationStateById(app.id));
       }
     }, [app, dispatch]);
@@ -80,7 +78,7 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
     useInterval(
       () => {
         // Only fetch kubernetes or cloud run application.
-        if (isDisplayLiveState(app)) {
+        if (app && isDisplayLiveState(app)) {
           dispatch(fetchApplicationStateById(app.id));
         }
       },

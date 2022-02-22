@@ -55,15 +55,14 @@ function useGraph(
   graph.setDefaultEdgeLabel(() => ({}));
 
   const service = resources.find((r) => r.parentIdsList.length === 0);
-  const serviceID = service?.id || "";
   resources.forEach((resource) => {
     graph.setNode(resource.id, {
       resource,
       height: NODE_HEIGHT,
       width: NODE_WIDTH,
     });
-    if (resource.parentIdsList.length > 0) {
-      graph.setEdge(serviceID, resource.id);
+    if (service && resource.parentIdsList.length > 0) {
+      graph.setEdge(service.id, resource.id);
     }
   });
 
