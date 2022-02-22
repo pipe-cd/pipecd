@@ -42,10 +42,6 @@ type apiApplicationStore interface {
 	UpdateConfigFilename(ctx context.Context, id, filename string) error
 }
 
-type apiEnvironmentStore interface {
-	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Environment, error)
-}
-
 type apiDeploymentStore interface {
 	Get(ctx context.Context, id string) (*model.Deployment, error)
 }
@@ -68,7 +64,6 @@ type commandOutputGetter interface {
 // API implements the behaviors for the gRPC definitions of API.
 type API struct {
 	applicationStore    apiApplicationStore
-	environmentStore    apiEnvironmentStore
 	deploymentStore     apiDeploymentStore
 	pipedStore          apiPipedStore
 	eventStore          apiEventStore
@@ -95,7 +90,6 @@ func NewAPI(
 	w := datastore.PipectlCommander
 	a := &API{
 		applicationStore:    datastore.NewApplicationStore(ds, w),
-		environmentStore:    datastore.NewEnvironmentStore(ds, w),
 		deploymentStore:     datastore.NewDeploymentStore(ds, w),
 		pipedStore:          datastore.NewPipedStore(ds, w),
 		eventStore:          datastore.NewEventStore(ds, w),
@@ -256,49 +250,6 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			Operator: datastore.OperatorEqual,
 			Value:    req.EnvId,
 		})
-	}
-	// Use env-name as listApplications filter only in case env-id is not set.
-	if req.EnvId == "" && req.EnvName != "" {
-		envListOpts := datastore.ListOptions{
-			Filters: []datastore.ListFilter{
-				{
-					Field:    "ProjectId",
-					Operator: datastore.OperatorEqual,
-					Value:    key.ProjectId,
-				},
-				{
-					Field:    "Name",
-					Operator: datastore.OperatorEqual,
-					Value:    req.EnvName,
-				},
-			},
-			Limit: limit,
-		}
-		envs, err := a.environmentStore.List(ctx, envListOpts)
-		if err != nil {
-			return nil, gRPCEntityOperationError(err, "list environment")
-		}
-
-		switch len(envs) {
-		case 0:
-			return nil, status.Error(codes.NotFound, fmt.Sprintf("No environment named as %s", req.EnvName))
-		case 1:
-			filters = append(filters, datastore.ListFilter{
-				Field:    "EnvId",
-				Operator: datastore.OperatorEqual,
-				Value:    envs[0].Id,
-			})
-		default:
-			envsID := make([]string, 0, len(envs))
-			for _, env := range envs {
-				envsID = append(envsID, env.Id)
-			}
-			filters = append(filters, datastore.ListFilter{
-				Field:    "EnvId",
-				Operator: datastore.OperatorIn,
-				Value:    envsID,
-			})
-		}
 	}
 
 	if req.Name != "" {

@@ -44,10 +44,6 @@ type pipedGetter interface {
 	Get(ctx context.Context, id string) (*model.Piped, error)
 }
 
-type environmentGetter interface {
-	Get(ctx context.Context, id string) (*model.Environment, error)
-}
-
 func getPiped(ctx context.Context, store pipedGetter, id string, logger *zap.Logger) (*model.Piped, error) {
 	piped, err := store.Get(ctx, id)
 	if errors.Is(err, datastore.ErrNotFound) {
@@ -133,19 +129,6 @@ func makeGitPath(repoID, path, cfgFilename string, piped *model.Piped, logger *z
 		ConfigFilename: cfgFilename,
 		Url:            u,
 	}, nil
-}
-
-func getEnvironment(ctx context.Context, store environmentGetter, id string, logger *zap.Logger) (*model.Environment, error) {
-	env, err := store.Get(ctx, id)
-	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "Environment is not found")
-	}
-	if err != nil {
-		logger.Error("failed to get environment", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get environment")
-	}
-
-	return env, nil
 }
 
 func encrypt(plaintext string, key []byte, base64Encoding bool, logger *zap.Logger) (string, error) {

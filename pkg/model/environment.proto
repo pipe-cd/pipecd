@@ -20,6 +20,7 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 import "validate/validate.proto";
 
 message Environment {
+    option deprecated = true;
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
     // The name of the environment. e.g. dev, stg, prod.
