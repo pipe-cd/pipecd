@@ -85,12 +85,23 @@ message ApplicationSyncState {
     int64 timestamp = 5 [(validate.rules).int64.gt = 0];
 }
 
+enum ApplicationComponentKind {
+    CONTAINER_IMAGE = 0;
+}
+
+message ApplicationComponentVersion {
+    ApplicationComponentKind kind = 1;
+    stirng version = 2;
+    string url = 3;
+}
+
 message ApplicationDeploymentReference {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     DeploymentTrigger trigger = 2 [(validate.rules).message.required = true];
     string summary = 3;
     string version = 4;
-    string config_filename = 5;
+    repeated ApplicationComponentVersion versions = 5;
+    string config_filename = 6;
 
     int64 started_at = 14 [(validate.rules).int64.gt = 0];
     int64 completed_at = 15 [(validate.rules).int64.gte = 0];
