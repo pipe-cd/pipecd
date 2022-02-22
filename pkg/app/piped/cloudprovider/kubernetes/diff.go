@@ -87,29 +87,35 @@ func mergeDataAndStringData(in *unstructured.Unstructured) (*unstructured.Unstru
 	if in == nil {
 		return in, nil
 	}
+
 	gvk := in.GroupVersionKind()
 	if gvk.Kind != "Secret" {
 		return in, nil
 	}
+
 	var secret v1.Secret
 	err := runtime.DefaultUnstructuredConverter.FromUnstructured(in.Object, &secret)
 	if err != nil {
 		return nil, err
 	}
+
 	if len(secret.StringData) == 0 {
 		return in, nil
 	}
+
 	if secret.Data == nil {
 		secret.Data = make(map[string][]byte)
 	}
 	for k, v := range secret.StringData {
 		secret.Data[k] = []byte(v)
 	}
+
 	secret.StringData = nil
 	newObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&secret)
 	if err != nil {
 		return nil, err
 	}
+
 	unstructured.RemoveNestedField(newObj, "metadata", "creationTimestamp")
 	out := &unstructured.Unstructured{Object: newObj}
 	return out, nil
