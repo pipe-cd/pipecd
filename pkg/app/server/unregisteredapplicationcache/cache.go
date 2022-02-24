@@ -33,7 +33,7 @@ import (
 
 type Cache interface {
 	ListUnregisteredApplications(ctx context.Context, projectID string) ([]*model.ApplicationInfo, error)
-	PutUnregisteredApplication(projectID, pipedID string, apps []*model.ApplicationInfo) error
+	PutUnregisteredApplications(projectID, pipedID string, apps []*model.ApplicationInfo) error
 }
 
 type unregisteredApplicationCache struct {
@@ -84,7 +84,7 @@ func (c *unregisteredApplicationCache) ListUnregisteredApplications(ctx context.
 	return allApps, nil
 }
 
-func (c *unregisteredApplicationCache) PutUnregisteredApplication(projectID, pipedID string, apps []*model.ApplicationInfo) error {
+func (c *unregisteredApplicationCache) PutUnregisteredApplications(projectID, pipedID string, apps []*model.ApplicationInfo) error {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	if err := enc.Encode(apps); err != nil {
