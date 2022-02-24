@@ -50,7 +50,7 @@ type multiGetter struct {
 	getters []Getter
 }
 
-// MultiGetter combines a lit of getters into a single getter.
+// MultiGetter combines a list of getters into a single getter.
 func MultiGetter(getters ...Getter) Getter {
 	all := make([]Getter, 0, len(getters))
 	for _, r := range getters {
