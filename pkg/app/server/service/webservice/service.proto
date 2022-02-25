@@ -96,6 +96,9 @@ service WebService {
 
     // Events
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
+
+    // ControlPlain metadata
+    rpc GetControlPlainMeta(GetControlPlainMetaRequest) returns (GetControlPlainMetaResponse) {}
 }
 
 message RegisterPipedRequest {
@@ -498,4 +501,16 @@ message ListEventsRequest {
 message ListEventsResponse {
    repeated model.Event events = 1;
    string cursor = 2;
+}
+
+message GetControlPlainMetaRequest {
+}
+
+message GetControlPlainMetaResponse {
+    message Version {
+	   string Version = 1;  
+	   string GitCommit = 2;
+	   string BuildDate = 3; 
+    }
+    Version sever = 1;
 }
