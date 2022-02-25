@@ -1652,3 +1652,7 @@ func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsReque
 		Cursor: cursor,
 	}, nil
 }
+
+func (a *WebAPI) GetControlPlainMeta(ctx context.Context, req *webservice.GetControlPlainMetaRequest) (*webservice.GetControlPlainMetaResponse, error) {
+	return nil, nil
+}
