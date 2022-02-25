@@ -195,7 +195,45 @@ func TestDiff(t *testing.T) {
 		diffNum   int
 	}{
 		{
-			name: "secret no diff",
+			name: "Secret no diff 1",
+			manifests: `apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+---
+apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+`,
+			expected: "",
+			diffNum:  0,
+		},
+		{
+			name: "Secret no diff 2",
+			manifests: `apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  password: hoge
+stringData:
+  foo: bar
+---
+apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  password: hoge
+stringData:
+  foo: bar
+`,
+			expected: "",
+			diffNum:  0,
+		},
+		{
+			name: "Secret no diff with merge",
 			manifests: `apiVersion: apps/v1
 kind: Secret
 metadata:
@@ -217,7 +255,7 @@ data:
 			diffNum:  0,
 		},
 		{
-			name: "secret no diff override",
+			name: "Secret no diff override",
 			manifests: `apiVersion: apps/v1
 kind: Secret
 metadata:
@@ -239,6 +277,50 @@ data:
 			expected: "",
 			diffNum:  0,
 		},
+		{
+			name: "Secret has diff",
+			manifests: `apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  password: hoge
+stringData:
+  foo: bar
+---
+apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  foo: YmFy
+`,
+			expected: `data:
+  password: hoge`,
+			diffNum: 1,
+		},
+		{
+			name: "Secret has diff 2",
+			manifests: `apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+stringData:
+  foo: bar
+---
+apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  foo: YmFy
+  password: hoge
+`,
+			expected: `data:
+  password: hoge`,
+			diffNum: 1,
+		},
 	}
 
 	for _, tc := range testcases {
@@ -246,8 +328,9 @@ data:
 			manifests, err := ParseManifests(tc.manifests)
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))
+			old, new := manifests[0], manifests[1]
 
-			result, err := Diff(manifests[0], manifests[1])
+			result, err := Diff(old, new, diff.WithIgnoreAddingMapKeys())
 			require.NoError(t, err)
 
 			assert.Equal(t, tc.diffNum, result.NumNodes())
