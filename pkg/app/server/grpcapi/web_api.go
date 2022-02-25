@@ -44,6 +44,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/redis"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
+	"github.com/pipe-cd/pipecd/pkg/version"
 )
 
 type encrypter interface {
@@ -1653,6 +1654,20 @@ func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsReque
 	}, nil
 }
 
-func (a *WebAPI) GetControlPlainMeta(ctx context.Context, req *webservice.GetControlPlainMetaRequest) (*webservice.GetControlPlainMetaResponse, error) {
-	return nil, nil
+func (a *WebAPI) GetControlPlainMeta(ctx context.Context, _ *webservice.GetControlPlainMetaRequest) (*webservice.GetControlPlainMetaResponse, error) {
+	_, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	ver := version.Get()
+
+	return &webservice.GetControlPlainMetaResponse{
+		Sever: &webservice.GetControlPlainMetaResponse_Version{
+			Version:   ver.Version,
+			GitCommit: ver.GitCommit,
+			BuildDate: ver.BuildDate,
+		},
+	}, nil
 }
