@@ -95,10 +95,6 @@ func (f *FileDB) Get(ctx context.Context, col datastore.Collection, id string, v
 		parts = append(parts, part)
 	}
 
-	if len(parts) != len(fcol.ListInUsedShards()) {
-		return fmt.Errorf("shards count miss matched")
-	}
-
 	return decode(col, v, parts...)
 }
 
