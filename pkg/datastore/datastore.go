@@ -99,12 +99,12 @@ type ShardStorable interface {
 
 type ShardEncoder interface {
 	// Encode accepts an object as its input and returns a map which key is the shard and
-	// value is the raw data which should be stored in that shard.
+	// value is the raw data which should be stored under the key shard.
 	Encode(e interface{}) (map[Shard][]byte, error)
 }
 
 type ShardDecoder interface {
-	// Decode accepts an entity and all parts of raw data which should be unmarshaled into.
+	// Decode unmarshals all given raw data parts to a given entity e.
 	Decode(e interface{}, parts ...[]byte) error
 }
 
