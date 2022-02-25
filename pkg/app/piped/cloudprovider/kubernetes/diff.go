@@ -50,11 +50,11 @@ type DiffListChange struct {
 }
 
 func Diff(old, new Manifest, opts ...diff.Option) (*diff.Result, error) {
-	modified, err := mergeDataAndStringData(old.u)
+	modified, err := normalizeNewSecret(old.u, new.u)
 	if err != nil {
 		return nil, err
 	}
-	return diff.DiffUnstructureds(*modified, *new.u, opts...)
+	return diff.DiffUnstructureds(*old.u, *modified, opts...)
 }
 
 func DiffList(olds, news []Manifest, opts ...diff.Option) (*DiffListResult, error) {
@@ -83,42 +83,42 @@ func DiffList(olds, news []Manifest, opts ...diff.Option) (*DiffListResult, erro
 	return cr, nil
 }
 
-func mergeDataAndStringData(in *unstructured.Unstructured) (*unstructured.Unstructured, error) {
-	if in == nil {
-		return in, nil
+func normalizeNewSecret(old, new *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+	var o, n v1.Secret
+	runtime.DefaultUnstructuredConverter.FromUnstructured(old.Object, &o)
+	runtime.DefaultUnstructuredConverter.FromUnstructured(new.Object, &n)
+
+	// Move as much as possible fields from `n.Data` to `n.StringData` to make `n` close to `o` to minimize the diff.
+	for k, v := range n.Data {
+		// Skip if the field also exists in StringData.
+		if _, ok := n.StringData[k]; ok {
+			continue
+		}
+
+		if _, ok := o.StringData[k]; !ok {
+			continue
+		}
+
+		if n.StringData == nil {
+			n.StringData = make(map[string]string)
+		}
+
+		// If the field is existing in `o.StringData`, we should move that field from `n.Data` to `n.StringData`
+		n.StringData[k] = string(v)
+		delete(n.Data, k)
+
+		// In case the o.data is overridden, we also should restore `n.Data` from `o.Data`
+		if v, ok := o.Data[k]; ok {
+			n.Data[k] = v
+		}
 	}
 
-	gvk := in.GroupVersionKind()
-	if gvk.Kind != "Secret" {
-		return in, nil
-	}
-
-	var secret v1.Secret
-	err := runtime.DefaultUnstructuredConverter.FromUnstructured(in.Object, &secret)
+	newObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&n)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(secret.StringData) == 0 {
-		return in, nil
-	}
-
-	if secret.Data == nil {
-		secret.Data = make(map[string][]byte, len(secret.StringData))
-	}
-	for k, v := range secret.StringData {
-		secret.Data[k] = []byte(v)
-	}
-
-	secret.StringData = nil
-	newObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&secret)
-	if err != nil {
-		return nil, err
-	}
-
-	unstructured.RemoveNestedField(newObj, "metadata", "creationTimestamp")
-	out := &unstructured.Unstructured{Object: newObj}
-	return out, nil
+	return &unstructured.Unstructured{Object: newObj}, nil
 }
 
 type DiffRenderOptions struct {
