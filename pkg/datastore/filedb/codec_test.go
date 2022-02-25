@@ -36,7 +36,7 @@ func TestMerge(t *testing.T) {
 		expected *fakeModel
 	}{
 		{
-			name: "should merge correctly with ordered data",
+			name: "should merge correctly with time ordered data",
 			parts: [][]byte{
 				[]byte(`{"data":"1","updated_at":1}`),
 				[]byte(`{"data":"1","updated_at":2}`),
@@ -48,7 +48,7 @@ func TestMerge(t *testing.T) {
 			},
 		},
 		{
-			name: "should merge correctly with ordered data",
+			name: "should merge correctly with time non ordered data",
 			parts: [][]byte{
 				[]byte(`{"data":"1","updated_at":2}`),
 				[]byte(`{"data":"1","updated_at":3}`),
