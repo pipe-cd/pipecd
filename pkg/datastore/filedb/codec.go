@@ -21,7 +21,11 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 )
 
+// decode checks for the given collection object. If the given collection
+// implements the `datastore.ShardDecoder` interface, its implementation will
+// be used. If not, time order regardless merge logic will be used.
 func decode(col datastore.Collection, e interface{}, parts ...[]byte) error {
+	// In case it's single part contained object, unmarshal it directly.
 	if len(parts) == 1 {
 		return json.Unmarshal(parts[0], e)
 	}
@@ -33,6 +37,9 @@ func decode(col datastore.Collection, e interface{}, parts ...[]byte) error {
 	return dcol.Decode(e, parts...)
 }
 
+// merge function unmarshal all parts of the given data to entity e.
+// The data will be merged regardless of its time order, after be merged,
+// the latest UpdatedAt time will be used as the entity UpdatedAt value.
 func merge(e interface{}, parts ...[]byte) error {
 	type model interface {
 		GetUpdatedAt() int64
