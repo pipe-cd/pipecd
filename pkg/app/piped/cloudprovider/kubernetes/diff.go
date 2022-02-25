@@ -50,11 +50,12 @@ type DiffListChange struct {
 }
 
 func Diff(old, new Manifest, opts ...diff.Option) (*diff.Result, error) {
-	modified, err := normalizeNewSecret(old.u, new.u)
+	var err error
+	new.u, err = normalizeNewSecret(old.u, new.u)
 	if err != nil {
 		return nil, err
 	}
-	return diff.DiffUnstructureds(*old.u, *modified, opts...)
+	return diff.DiffUnstructureds(*old.u, *new.u, opts...)
 }
 
 func DiffList(olds, news []Manifest, opts ...diff.Option) (*DiffListResult, error) {
@@ -83,7 +84,19 @@ func DiffList(olds, news []Manifest, opts ...diff.Option) (*DiffListResult, erro
 	return cr, nil
 }
 
+// If at least one of old and new is nil or not secret, then return new, nil
 func normalizeNewSecret(old, new *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+	if old == nil || new == nil {
+		return new, nil
+	}
+
+	gvkOld := old.GroupVersionKind()
+	gvkNew := new.GroupVersionKind()
+
+	if gvkOld.Kind != "Secret" || gvkNew.Kind != "Secret" {
+		return new, nil
+	}
+
 	var o, n v1.Secret
 	runtime.DefaultUnstructuredConverter.FromUnstructured(old.Object, &o)
 	runtime.DefaultUnstructuredConverter.FromUnstructured(new.Object, &n)

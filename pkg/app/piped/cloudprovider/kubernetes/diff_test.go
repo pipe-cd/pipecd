@@ -295,30 +295,11 @@ metadata:
 data:
   foo: YmFy
 `,
-			expected: `data:
-  password: hoge`,
-			diffNum: 1,
-		},
-		{
-			name: "Secret has diff 2",
-			manifests: `apiVersion: apps/v1
-kind: Secret
-metadata:
-  name: secret-management
-data:
-stringData:
-  foo: bar
----
-apiVersion: apps/v1
-kind: Secret
-metadata:
-  name: secret-management
-data:
-  foo: YmFy
-  password: hoge
+			expected: `  #data
+- data:
+-   password: hoge
+
 `,
-			expected: `data:
-  password: hoge`,
 			diffNum: 1,
 		},
 	}
@@ -330,7 +311,7 @@ data:
 			require.Equal(t, 2, len(manifests))
 			old, new := manifests[0], manifests[1]
 
-			result, err := Diff(old, new, diff.WithIgnoreAddingMapKeys())
+			result, err := Diff(old, new, diff.WithEquateEmpty(), diff.WithIgnoreAddingMapKeys(), diff.WithCompareNumberAndNumericString())
 			require.NoError(t, err)
 
 			assert.Equal(t, tc.diffNum, result.NumNodes())
