@@ -25,7 +25,7 @@ OUT=".rendered-manifests"
 if [ $# -eq 0 ]
 then
   VERSION="$(git describe --tags --always --dirty --abbrev=7)"
-  REGISTRY="localhost:5000"
+  REGISTRY="localhost:5001"
 else
   VERSION=$1
 fi

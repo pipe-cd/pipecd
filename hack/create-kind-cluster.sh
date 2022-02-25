@@ -34,14 +34,15 @@ set -o pipefail
 
 CLUSTER=$1
 REG_NAME='kind-registry'
-REG_PORT='5000'
+REG_PORT='5001'
 
 # Create registry container unless it already exists
 echo "Creating local registry container..."
 running="$(docker inspect -f '{{.State.Running}}' "${REG_NAME}" 2>/dev/null || true)"
 if [ "${running}" != 'true' ]; then
   docker run \
-    -d --restart=always -p "127.0.0.1:${REG_PORT}:5000" --name "${REG_NAME}" \
+    -e REGISTRY_HTTP_ADDR=0.0.0.0:5001 \
+    -d --restart=always -p "127.0.0.1:${REG_PORT}:5001" --name "${REG_NAME}" \
     registry:2
 fi
 
