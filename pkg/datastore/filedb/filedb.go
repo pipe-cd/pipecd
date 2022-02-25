@@ -16,7 +16,6 @@ package filedb
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"go.uber.org/zap"
@@ -96,13 +95,11 @@ func (f *FileDB) Get(ctx context.Context, col datastore.Collection, id string, v
 		parts = append(parts, part)
 	}
 
-	if len(parts) == 1 {
-		return json.Unmarshal(parts[0], v)
+	if len(parts) != len(fcol.ListInUsedShards()) {
+		return fmt.Errorf("shards count miss matched")
 	}
 
-	// TODO: Add merge based on UpdatedAt field in case there are multiple parts of object are fetched.
-
-	return datastore.ErrUnsupported
+	return decode(col, v, parts...)
 }
 
 func (f *FileDB) Create(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {
