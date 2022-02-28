@@ -24,16 +24,17 @@ import (
 // implements the `datastore.ShardDecoder` interface, its implementation will
 // be used. If not, time order regardless merge logic will be used.
 func decode(col datastore.Collection, e interface{}, parts ...[]byte) error {
+	dcol, ok := col.(datastore.ShardDecoder)
+	if ok {
+		return dcol.Decode(e, parts...)
+	}
+	
 	// In case it's single part contained object, unmarshal it directly.
 	if len(parts) == 1 {
 		return json.Unmarshal(parts[0], e)
 	}
-
-	dcol, ok := col.(datastore.ShardDecoder)
-	if !ok {
-		return merge(e, parts...)
-	}
-	return dcol.Decode(e, parts...)
+	
+	return merge(e, parts...)
 }
 
 type updatedAtGetter interface {
