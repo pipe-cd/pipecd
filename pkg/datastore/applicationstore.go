@@ -16,6 +16,7 @@ package datastore
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -52,6 +53,52 @@ func (a *applicationCollection) GetUpdatableShard() (Shard, error) {
 	default:
 		return "", ErrUnsupported
 	}
+}
+
+func (a *applicationCollection) Encode(e interface{}) (map[Shard][]byte, error) {
+	errFmt := "failed while encode Application object: %s"
+
+	me, ok := e.(*model.Application)
+	if !ok {
+		return nil, fmt.Errorf(errFmt, "type not matched")
+	}
+
+	clientShardStruct := model.Application{
+		Id:            me.Id,
+		ProjectId:     me.ProjectId,
+		Kind:          me.Kind,
+		GitPath:       me.GitPath,
+		CloudProvider: me.CloudProvider,
+		Disabled:      me.Disabled,
+		Deleted:       me.Deleted,
+		DeletedAt:     me.DeletedAt,
+		CreatedAt:     me.CreatedAt,
+		UpdatedAt:     me.UpdatedAt,
+	}
+	cdata, err := json.Marshal(&clientShardStruct)
+	if err != nil {
+		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
+	}
+
+	agentShardStruct := model.Application{
+		Name:                             me.Name,
+		Description:                      me.Description,
+		Labels:                           me.Labels,
+		SyncState:                        me.SyncState,
+		Deploying:                        me.Deploying,
+		MostRecentlySuccessfulDeployment: me.MostRecentlySuccessfulDeployment,
+		MostRecentlyTriggeredDeployment:  me.MostRecentlyTriggeredDeployment,
+		UpdatedAt:                        me.UpdatedAt,
+	}
+	adata, err := json.Marshal(&agentShardStruct)
+	if err != nil {
+		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
+	}
+
+	return map[Shard][]byte{
+		ClientShard: cdata,
+		AgentShard:  adata,
+	}, nil
 }
 
 type ApplicationStore interface {

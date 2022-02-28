@@ -16,6 +16,8 @@ package datastore
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -48,6 +50,23 @@ func (e *eventCollection) GetUpdatableShard() (Shard, error) {
 	default:
 		return "", ErrUnsupported
 	}
+}
+
+func (e *eventCollection) Encode(entity interface{}) (map[Shard][]byte, error) {
+	errFmt := "failed while encode Event object: %s"
+
+	me, ok := entity.(*model.Event)
+	if !ok {
+		return nil, fmt.Errorf(errFmt, "type not matched")
+	}
+
+	data, err := json.Marshal(me)
+	if err != nil {
+		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
+	}
+	return map[Shard][]byte{
+		AgentShard: data,
+	}, nil
 }
 
 type EventStore interface {

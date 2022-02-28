@@ -16,6 +16,7 @@ package datastore
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -49,6 +50,23 @@ func (d *deploymentChainCollection) GetUpdatableShard() (Shard, error) {
 	default:
 		return "", ErrUnsupported
 	}
+}
+
+func (d *deploymentChainCollection) Encode(e interface{}) (map[Shard][]byte, error) {
+	errFmt := "failed while encode DeploymentChain object: %s"
+
+	me, ok := e.(*model.DeploymentChain)
+	if !ok {
+		return nil, fmt.Errorf(errFmt, "type not matched")
+	}
+
+	data, err := json.Marshal(me)
+	if err != nil {
+		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
+	}
+	return map[Shard][]byte{
+		OpsShard: data,
+	}, nil
 }
 
 var (
