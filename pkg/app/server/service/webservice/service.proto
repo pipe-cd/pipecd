@@ -97,8 +97,8 @@ service WebService {
     // Events
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
 
-    // ControlPlain metadata
-    rpc GetControlPlainMeta(GetControlPlainMetaRequest) returns (GetControlPlainMetaResponse) {}
+    // ControlPlane metadata
+    rpc GetControlPlaneMeta(GetControlPlaneMetaRequest) returns (GetControlPlaneMetaResponse) {}
 }
 
 message RegisterPipedRequest {
@@ -503,10 +503,10 @@ message ListEventsResponse {
    string cursor = 2;
 }
 
-message GetControlPlainMetaRequest {
+message GetControlPlaneMetaRequest {
 }
 
-message GetControlPlainMetaResponse {
+message GetControlPlaneMetaResponse {
     message Version {
 	   string Version = 1;  
 	   string GitCommit = 2;

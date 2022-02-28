@@ -1654,7 +1654,7 @@ func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsReque
 	}, nil
 }
 
-func (a *WebAPI) GetControlPlainMeta(ctx context.Context, _ *webservice.GetControlPlainMetaRequest) (*webservice.GetControlPlainMetaResponse, error) {
+func (a *WebAPI) GetControlPlaneMeta(ctx context.Context, _ *webservice.GetControlPlaneMetaRequest) (*webservice.GetControlPlaneMetaResponse, error) {
 	_, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
 		a.logger.Error("failed to authenticate the current user", zap.Error(err))
@@ -1663,8 +1663,8 @@ func (a *WebAPI) GetControlPlainMeta(ctx context.Context, _ *webservice.GetContr
 
 	ver := version.Get()
 
-	return &webservice.GetControlPlainMetaResponse{
-		Sever: &webservice.GetControlPlainMetaResponse_Version{
+	return &webservice.GetControlPlaneMetaResponse{
+		Sever: &webservice.GetControlPlaneMetaResponse_Version{
 			Version:   ver.Version,
 			GitCommit: ver.GitCommit,
 			BuildDate: ver.BuildDate,
