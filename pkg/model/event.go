@@ -29,13 +29,13 @@ func (e *Event) IsHandled() bool {
 }
 
 // ContainLabels checks if it has all the given labels.
-func (d *Event) ContainLabels(labels map[string]string) bool {
-	if len(d.Labels) < len(labels) {
+func (e *Event) ContainLabels(labels map[string]string) bool {
+	if len(e.Labels) < len(labels) {
 		return false
 	}
 
 	for k, v := range labels {
-		value, ok := d.Labels[k]
+		value, ok := e.Labels[k]
 		if !ok {
 			return false
 		}
@@ -44,6 +44,10 @@ func (d *Event) ContainLabels(labels map[string]string) bool {
 		}
 	}
 	return true
+}
+
+func (e *Event) SetUpdatedAt(t int64) {
+	e.UpdatedAt = t
 }
 
 // MakeEventKey builds a fixed-length identifier based on the given name

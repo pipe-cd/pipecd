@@ -67,3 +67,7 @@ func (k *APIKey) CompareKey(key string) error {
 func (k *APIKey) RedactSensitiveData() {
 	k.KeyHash = redactedMessage
 }
+
+func (k *APIKey) SetUpdatedAt(t int64) {
+	k.UpdatedAt = t
+}

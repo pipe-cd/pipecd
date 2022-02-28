@@ -85,6 +85,10 @@ func (a *Application) IsOutOfSync() bool {
 	return a.SyncState.Status == ApplicationSyncStatus_OUT_OF_SYNC
 }
 
+func (a *Application) SetUpdatedAt(t int64) {
+	a.UpdatedAt = t
+}
+
 func IsApplicationConfigFile(filename string) bool {
 	return filename == DefaultApplicationConfigFilename || strings.HasSuffix(filename, applicationConfigFileExtention) || filename == oldDefaultApplicationConfigFilename
 }

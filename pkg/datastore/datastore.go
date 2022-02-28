@@ -97,6 +97,11 @@ type ShardStorable interface {
 	GetUpdatableShard() (Shard, error)
 }
 
+type ShardDecoder interface {
+	// Decode unmarshals all given raw data parts to a given entity e.
+	Decode(e interface{}, parts ...[]byte) error
+}
+
 type Factory func() interface{}
 type Updater func(interface{}) error
 

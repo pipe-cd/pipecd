@@ -225,3 +225,7 @@ func (d *Deployment) ContainLabels(labels map[string]string) bool {
 func (d *Deployment) IsInChainDeployment() bool {
 	return d.DeploymentChainId != ""
 }
+
+func (d *Deployment) SetUpdatedAt(t int64) {
+	d.UpdatedAt = t
+}

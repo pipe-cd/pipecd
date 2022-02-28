@@ -16,6 +16,8 @@ package datastore
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -51,6 +53,37 @@ func (c *commandCollection) GetUpdatableShard() (Shard, error) {
 	default:
 		return "", ErrUnsupported
 	}
+}
+
+func (c *commandCollection) Decode(e interface{}, parts ...[]byte) error {
+	if len(parts) != len(c.ListInUsedShards()) {
+		return fmt.Errorf("failed while decode Command object: shards count not matched")
+	}
+
+	cmd, ok := e.(*model.Command)
+	if !ok {
+		return fmt.Errorf("failed while decode Command object: type not matched")
+	}
+
+	var (
+		status    model.CommandStatus
+		updatedAt int64
+	)
+	for _, p := range parts {
+		if err := json.Unmarshal(p, &cmd); err != nil {
+			return err
+		}
+		if updatedAt < cmd.UpdatedAt {
+			updatedAt = cmd.UpdatedAt
+		}
+		if status < cmd.Status {
+			status = cmd.Status
+		}
+	}
+
+	cmd.Status = status
+	cmd.UpdatedAt = updatedAt
+	return nil
 }
 
 type CommandStore interface {
