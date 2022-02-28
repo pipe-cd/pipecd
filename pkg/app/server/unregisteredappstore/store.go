@@ -22,8 +22,6 @@ import (
 	"fmt"
 
 	"go.uber.org/zap"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/rediscache"
@@ -48,7 +46,7 @@ func NewStore(r redis.Redis, logger *zap.Logger) Store {
 	}
 }
 
-func (c *store) ListUnregisteredApplications(ctx context.Context, projectID string) ([]*model.ApplicationInfo, error) {
+func (c *store) ListUnregisteredApplications(_ context.Context, projectID string) ([]*model.ApplicationInfo, error) {
 	key := makeUnregisteredAppsCacheKey(projectID)
 	hc := rediscache.NewHashCache(c.backend, key)
 
@@ -60,7 +58,7 @@ func (c *store) ListUnregisteredApplications(ctx context.Context, projectID stri
 
 	if err != nil {
 		c.logger.Error("failed to get unregistered apps", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get unregistered apps")
+		return nil, err
 	}
 
 	// Integrate all apps cached for each Piped.
@@ -68,14 +66,14 @@ func (c *store) ListUnregisteredApplications(ctx context.Context, projectID stri
 	for _, as := range pipedToApps {
 		b, ok := as.([]byte)
 		if !ok {
-			return nil, status.Error(codes.Internal, "Unexpected data cached")
+			return nil, errors.New("unexpected data cached")
 		}
 
 		dec := gob.NewDecoder(bytes.NewReader(b))
 		var apps []*model.ApplicationInfo
 		if err := dec.Decode(&apps); err != nil {
 			c.logger.Error("failed to decode the unregistered apps", zap.Error(err))
-			return nil, status.Error(codes.Internal, "failed to decode the unregistered apps")
+			return nil, err
 		}
 
 		allApps = append(allApps, apps...)
@@ -89,13 +87,13 @@ func (c *store) PutUnregisteredApplications(projectID, pipedID string, apps []*m
 	enc := gob.NewEncoder(&buf)
 	if err := enc.Encode(apps); err != nil {
 		c.logger.Error("failed to encode the unregistered apps", zap.Error(err))
-		return status.Error(codes.Internal, "failed to encode the unregistered apps")
+		return err
 	}
 
 	key := makeUnregisteredAppsCacheKey(projectID)
 	hc := rediscache.NewHashCache(c.backend, key)
 	if err := hc.Put(pipedID, buf.Bytes()); err != nil {
-		return status.Error(codes.Internal, "failed to put the unregistered apps to the cache")
+		return err
 	}
 
 	return nil
