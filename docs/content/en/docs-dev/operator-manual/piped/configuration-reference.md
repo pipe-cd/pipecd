@@ -34,7 +34,7 @@ spec:
 | eventWatcher | [EventWatcher](/docs/operator-manual/piped/configuration-reference/#eventwatcher) | Optional Event watcher settings. | No |
 | secretManagement | [SecretManagement](/docs/operator-manual/piped/configuration-reference/#secretmanagement) | The using secret management method. | No |
 | notifications | [Notifications](/docs/operator-manual/piped/configuration-reference/#notifications) | Sending notifications to Slack, Webhook... | No |
-| appSelector | map[string]string | List of labels to filter all applications this piped will handle. | No |
+| appSelector | map[string]string | List of labels to filter all applications this piped will handle. Currently, it is only be used to filter the applications suggested for adding from the control plane. | No |
 
 ## Git
 
