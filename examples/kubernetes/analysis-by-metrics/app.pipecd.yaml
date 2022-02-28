@@ -14,7 +14,6 @@ spec:
         with:
           duration: 30m
           metrics:
-            # The simplest way to analyze.
             - strategy: THRESHOLD
               provider: my-prometheus
               interval: 5m
@@ -24,11 +23,9 @@ spec:
                 sum by (job) (rate(http_requests_total{status=~"5.*", job="analysis"}[5m]))
                 /
                 sum by (job) (rate(http_requests_total{job="analysis"}[5m]))
-
-            # In case of using AnalysisTemplate
-            - template:
-                name: http_request_duration_99th_quantile
-                appArgs:
-                  job: foo
       - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
+  description: |
+    This app demonstrates how to use ANALYSIS stage to analyze the deployment based on its metrics.\
+    After new version has been deployed to receive 20% of traffic, Piped periodically requests the specified query to analyze its metrics data.\
+    References: [adding a new app](https://pipecd.dev/docs/user-guide/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
