@@ -181,6 +181,9 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("")},
 				},
 				logger: zap.NewNop(),
+				config: &config.PipedSpec{
+					PipedID: "piped-1",
+				},
 			},
 			args: args{
 				repoPath:           "invalid",
@@ -198,6 +201,9 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("")},
 				},
 				logger: zap.NewNop(),
+				config: &config.PipedSpec{
+					PipedID: "piped-1",
+				},
 			},
 			args: args{
 				repoPath: "path/to/repo-1",
@@ -216,6 +222,9 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte("invalid-text")},
 				},
+				config: &config.PipedSpec{
+					PipedID: "piped-1",
+				},
 				logger: zap.NewNop(),
 			},
 			args: args{
@@ -229,7 +238,9 @@ func TestReporter_findUnregisteredApps(t *testing.T) {
 		{
 			name: "valid app config that is unregistered",
 			reporter: &Reporter{
-				config:            &config.PipedSpec{PipedID: "piped-1"},
+				config: &config.PipedSpec{
+					PipedID: "piped-1",
+				},
 				applicationLister: &fakeApplicationLister{},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte(`
@@ -262,7 +273,9 @@ spec:
 		{
 			name: "valid app config that name isn't default",
 			reporter: &Reporter{
-				config:            &config.PipedSpec{PipedID: "piped-1"},
+				config: &config.PipedSpec{
+					PipedID: "piped-1",
+				},
 				applicationLister: &fakeApplicationLister{},
 				fileSystem: fstest.MapFS{
 					"path/to/repo-1/app-1/dev.pipecd.yaml": &fstest.MapFile{Data: []byte(`
@@ -284,6 +297,80 @@ spec:
 				{
 					Name:           "app-1",
 					Labels:         map[string]string{"key-1": "value-1"},
+					RepoId:         "repo-1",
+					Path:           "app-1",
+					ConfigFilename: "dev.pipecd.yaml",
+					PipedId:        "piped-1",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "filtered by appSelector",
+			reporter: &Reporter{
+				config: &config.PipedSpec{
+					PipedID: "piped-1",
+					AppSelector: map[string]string{
+						"env": "test",
+					},
+				},
+				applicationLister: &fakeApplicationLister{},
+				fileSystem: fstest.MapFS{
+					"path/to/repo-1/app-1/app.pipecd.yaml": &fstest.MapFile{Data: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: app-1
+  labels:
+    key-1: value-1
+    env: dev
+`)},
+				},
+				logger: zap.NewNop(),
+			},
+			args: args{
+				repoPath:           "path/to/repo-1",
+				repoID:             "repo-1",
+				registeredAppPaths: map[string]string{},
+			},
+			want:    []*model.ApplicationInfo{},
+			wantErr: false,
+		},
+		{
+			name: "match labels with appSelector",
+			reporter: &Reporter{
+				config: &config.PipedSpec{
+					PipedID: "piped-1",
+					AppSelector: map[string]string{
+						"env": "test",
+					},
+				},
+				applicationLister: &fakeApplicationLister{},
+				fileSystem: fstest.MapFS{
+					"path/to/repo-1/app-1/dev.pipecd.yaml": &fstest.MapFile{Data: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: app-1
+  labels:
+    key-1: value-1
+    env: test
+`)},
+				},
+				logger: zap.NewNop(),
+			},
+			args: args{
+				repoPath:           "path/to/repo-1",
+				repoID:             "repo-1",
+				registeredAppPaths: map[string]string{},
+			},
+			want: []*model.ApplicationInfo{
+				{
+					Name: "app-1",
+					Labels: map[string]string{
+						"key-1": "value-1",
+						"env":   "test",
+					},
 					RepoId:         "repo-1",
 					Path:           "app-1",
 					ConfigFilename: "dev.pipecd.yaml",
