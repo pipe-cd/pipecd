@@ -86,7 +86,6 @@ func DiffList(olds, news []Manifest, opts ...diff.Option) (*DiffListResult, erro
 	return cr, nil
 }
 
-// If at least one of old and new is nil or not secret, then return new, nil
 func normalizeNewSecret(old, new *unstructured.Unstructured) (*unstructured.Unstructured, error) {
 	var o, n v1.Secret
 	runtime.DefaultUnstructuredConverter.FromUnstructured(old.Object, &o)
