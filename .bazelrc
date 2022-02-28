@@ -20,7 +20,7 @@ build --sandbox_fake_username
 build --sandbox_tmpfs_path=/tmp
 
 # Preset definitions
-build --define DOCKER_REGISTRY=localhost:5000
+build --define DOCKER_REGISTRY=localhost:5001
 
 # https://github.com/bazelbuild/rules_docker/issues/842
 build --host_force_python=PY2
