@@ -28,12 +28,12 @@ func decode(col datastore.Collection, e interface{}, parts ...[]byte) error {
 	if ok {
 		return dcol.Decode(e, parts...)
 	}
-	
+
 	// In case it's single part contained object, unmarshal it directly.
 	if len(parts) == 1 {
 		return json.Unmarshal(parts[0], e)
 	}
-	
+
 	return merge(e, parts...)
 }
 
