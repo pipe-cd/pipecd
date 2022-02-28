@@ -1,5 +1,3 @@
-# This deployment has an Approval stage to wait until got
-# an approval from one of the specified approvers.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
@@ -28,3 +26,7 @@ spec:
       - event: "*"
         slack:
           - slack-user-id-3  # slack-user-name-3
+  description: |
+    This app demonstrates how to configure a Kubernetes app with a WAIT_APPROVAL stage.\
+    This ensures that all deployments of this app must be approved manually on the web console.\
+    References: [adding a new app](https://pipecd.dev/docs/user-guide/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)

@@ -29,7 +29,7 @@ At a glance, PipeCD is composed of 2 components, the Control Plane and the Piped
 
 2. Developers from the product team may need to self-install piped into their applications running cluster if the platform team does not manage those credentials.\
 \
-Once the Piped - the runner is installed successfully, developers only need to care about [application configuration](/docs/user-guide/adding-an-application/) - which defines the pipeline so that piped(s) can use them to deploy your applications. Interaction with the applications is mainly done via the PipeCD web console and the configuration files stored on Git.
+Once the Piped - the runner is installed successfully, developers only need to care about [app configuration](/docs/user-guide/adding-an-application/) - which defines the pipeline so that piped(s) can use them to deploy your applications. Interaction with the applications is mainly done via the PipeCD web console and the configuration files stored on Git.
 
 > As an __operator__, PipeCD [control-plane](/docs/operator-manual/control-plane/) and [piped](/docs/operator-manual/piped/)(s) are what you should care about. As a __developer__, you should care about [piped](/docs/operator-manual/piped/) which installed in your applications running cluster and your [applications' PipeCD configurations](/docs/user-guide/adding-an-application/).
 

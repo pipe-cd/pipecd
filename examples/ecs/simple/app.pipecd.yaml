@@ -13,3 +13,7 @@ spec:
         targetGroupArn: arn:aws:elasticloadbalancing:ap-northeast-1:XXXX:targetgroup/ecs-lb/YYYY
         containerName: web
         containerPort: 80
+  description: |
+    This app demonstrates how to deploy an ECS application with [Quick Sync](https://pipecd.dev/docs/concepts/#quick-sync) strategy.\
+    No pipeline is specified then in each deployment PipeCD will roll out the new version and switch all traffic to it immediately.\
+    References: [adding a new app](https://pipecd.dev/docs/user-guide/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
