@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package unregisteredappcache
+package unregisteredappstore
 
 import (
 	"bytes"
@@ -31,24 +31,24 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/redis"
 )
 
-type Cache interface {
+type Store interface {
 	ListUnregisteredApplications(ctx context.Context, projectID string) ([]*model.ApplicationInfo, error)
 	PutUnregisteredApplications(projectID, pipedID string, apps []*model.ApplicationInfo) error
 }
 
-type unregisteredApplicationCache struct {
+type store struct {
 	backend redis.Redis
 	logger  *zap.Logger
 }
 
-func NewCache(r redis.Redis, logger *zap.Logger) Cache {
-	return &unregisteredApplicationCache{
+func NewStore(r redis.Redis, logger *zap.Logger) Store {
+	return &store{
 		backend: r,
 		logger:  logger,
 	}
 }
 
-func (c *unregisteredApplicationCache) ListUnregisteredApplications(ctx context.Context, projectID string) ([]*model.ApplicationInfo, error) {
+func (c *store) ListUnregisteredApplications(ctx context.Context, projectID string) ([]*model.ApplicationInfo, error) {
 	key := makeUnregisteredAppsCacheKey(projectID)
 	hc := rediscache.NewHashCache(c.backend, key)
 
@@ -84,7 +84,7 @@ func (c *unregisteredApplicationCache) ListUnregisteredApplications(ctx context.
 	return allApps, nil
 }
 
-func (c *unregisteredApplicationCache) PutUnregisteredApplications(projectID, pipedID string, apps []*model.ApplicationInfo) error {
+func (c *store) PutUnregisteredApplications(projectID, pipedID string, apps []*model.ApplicationInfo) error {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	if err := enc.Encode(apps); err != nil {
