@@ -2,7 +2,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["cache.go"],
+    srcs = ["store.go"],
     importpath = "github.com/pipe-cd/pipecd/pkg/app/server/unregisteredappstore",
     visibility = ["//visibility:public"],
     deps = [
@@ -10,8 +10,6 @@ go_library(
         "//pkg/cache/rediscache:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/redis:go_default_library",
-        "@org_golang_google_grpc//codes:go_default_library",
-        "@org_golang_google_grpc//status:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )
