@@ -111,7 +111,7 @@ func normalizeNewSecret(old, new *unstructured.Unstructured) (*unstructured.Unst
 		n.StringData[k] = string(v)
 		delete(n.Data, k)
 
-		// In case the o.data is overridden, we also should restore `n.Data` from `o.Data`
+		// In case the `o.Data` is overridden, we also should restore `n.Data` from `o.Data`
 		if v, ok := o.Data[k]; ok {
 			n.Data[k] = v
 		}
