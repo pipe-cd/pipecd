@@ -72,3 +72,71 @@ func TestApplicationGitPathValidate(t *testing.T) {
 		})
 	}
 }
+
+func TestApplicationInfo_ContainLabels(t *testing.T) {
+	testcases := []struct {
+		name   string
+		app    *ApplicationInfo
+		labels map[string]string
+		want   bool
+	}{
+		{
+			name: "all given tags aren't contained",
+			app: &ApplicationInfo{
+				Labels: map[string]string{
+					"key1": "value1",
+				},
+			},
+			labels: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+			},
+			want: false,
+		},
+		{
+			name: "a label is contained",
+			app: &ApplicationInfo{
+				Labels: map[string]string{
+					"key1": "value1",
+					"key2": "value2",
+				},
+			},
+			labels: map[string]string{
+				"key1": "value1",
+			},
+			want: true,
+		},
+		{
+			name: "all tags are contained",
+			app: &ApplicationInfo{
+				Labels: map[string]string{
+					"key1": "value1",
+					"key2": "value2",
+					"key3": "value3",
+				},
+			},
+			labels: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+				"key3": "value3",
+			},
+			want: true,
+		},
+		{
+			name: "labels is nil",
+			app: &ApplicationInfo{
+				Labels: map[string]string{
+					"key1": "value1",
+				},
+			},
+			labels: nil,
+			want:   true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.app.ContainLabels(tc.labels)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}

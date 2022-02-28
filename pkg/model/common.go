@@ -22,3 +22,21 @@ func ApplicationKindStrings() []string {
 	}
 	return out
 }
+
+// ContainLabels checks if it has all the given labels.
+func (a *ApplicationInfo) ContainLabels(labels map[string]string) bool {
+	if len(a.Labels) < len(labels) {
+		return false
+	}
+
+	for k, v := range labels {
+		value, ok := a.Labels[k]
+		if !ok {
+			return false
+		}
+		if value != v {
+			return false
+		}
+	}
+	return true
+}
