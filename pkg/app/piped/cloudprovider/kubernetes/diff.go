@@ -50,10 +50,12 @@ type DiffListChange struct {
 }
 
 func Diff(old, new Manifest, opts ...diff.Option) (*diff.Result, error) {
-	var err error
-	new.u, err = normalizeNewSecret(old.u, new.u)
-	if err != nil {
-		return nil, err
+	if old.Key.IsSecret() && new.Key.IsSecret() {
+	        var err error
+	        new.u, err = normalizeNewSecret(old.u, new.u)
+	        if err != nil {
+		        return nil, err
+	        }
 	}
 	return diff.DiffUnstructureds(*old.u, *new.u, opts...)
 }
