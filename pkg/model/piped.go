@@ -139,6 +139,10 @@ func (p *Piped) RedactSensitiveData() {
 	}
 }
 
+func (p *Piped) SetUpdatedAt(t int64) {
+	p.UpdatedAt = t
+}
+
 func MakePipedURL(baseURL, pipedID string) string {
 	return fmt.Sprintf("%s/settings/piped", strings.TrimSuffix(baseURL, "/"))
 }

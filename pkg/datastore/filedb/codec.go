@@ -16,7 +16,6 @@ package filedb
 
 import (
 	"encoding/json"
-	"reflect"
 
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 )
@@ -37,20 +36,24 @@ func decode(col datastore.Collection, e interface{}, parts ...[]byte) error {
 	return dcol.Decode(e, parts...)
 }
 
+type updatedAtGetter interface {
+	GetUpdatedAt() int64
+}
+
+type updatedAtSetter interface {
+	SetUpdatedAt(t int64)
+}
+
 // merge function unmarshal all parts of the given data to entity e.
 // The data will be merged regardless of its time order, after be merged,
 // the latest UpdatedAt time will be used as the entity UpdatedAt value.
 func merge(e interface{}, parts ...[]byte) error {
-	type model interface {
-		GetUpdatedAt() int64
-	}
-
 	var latest int64
 	for _, p := range parts {
 		if err := json.Unmarshal(p, e); err != nil {
 			return err
 		}
-		me, ok := e.(model)
+		me, ok := e.(updatedAtGetter)
 		if !ok {
 			return datastore.ErrUnsupported
 		}
@@ -58,7 +61,11 @@ func merge(e interface{}, parts ...[]byte) error {
 			latest = me.GetUpdatedAt()
 		}
 	}
-	// TODO: Find a better way to set value of field UpdatedAt.
-	reflect.ValueOf(e).Elem().FieldByName("UpdatedAt").SetInt(latest)
+	me, ok := e.(updatedAtSetter)
+	if !ok {
+		return datastore.ErrUnsupported
+	}
+	// Fixme: Find a way to set updated_at value without force models having this setter.
+	me.SetUpdatedAt(latest)
 	return nil
 }

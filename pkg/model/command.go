@@ -36,3 +36,7 @@ func (c *Command) IsSyncApplicationCmd() bool {
 func (c *Command) IsChainSyncApplicationCmd() bool {
 	return c.GetChainSyncApplication() != nil
 }
+
+func (c *Command) SetUpdatedAt(t int64) {
+	c.UpdatedAt = t
+}

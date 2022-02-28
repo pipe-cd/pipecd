@@ -29,6 +29,10 @@ func (fm *fakeModel) GetUpdatedAt() int64 {
 	return fm.UpdatedAt
 }
 
+func (fm *fakeModel) SetUpdatedAt(t int64) {
+	fm.UpdatedAt = t
+}
+
 func TestMerge(t *testing.T) {
 	testcases := []struct {
 		name     string
