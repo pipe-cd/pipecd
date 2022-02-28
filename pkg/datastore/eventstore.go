@@ -53,7 +53,7 @@ func (e *eventCollection) GetUpdatableShard() (Shard, error) {
 }
 
 func (e *eventCollection) Encode(entity interface{}) (map[Shard][]byte, error) {
-	errFmt := "failed while encode Event object: %s"
+	const errFmt = "failed while encode Event object: %s"
 
 	me, ok := entity.(*model.Event)
 	if !ok {

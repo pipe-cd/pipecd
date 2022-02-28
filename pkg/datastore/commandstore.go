@@ -87,7 +87,7 @@ func (c *commandCollection) Decode(e interface{}, parts ...[]byte) error {
 }
 
 func (c *commandCollection) Encode(e interface{}) (map[Shard][]byte, error) {
-	errFmt := "failed while encode Command object: %s"
+	const errFmt = "failed while encode Command object: %s"
 
 	me, ok := e.(*model.Command)
 	if !ok {

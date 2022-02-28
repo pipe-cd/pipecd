@@ -56,13 +56,20 @@ func (a *applicationCollection) GetUpdatableShard() (Shard, error) {
 }
 
 func (a *applicationCollection) Encode(e interface{}) (map[Shard][]byte, error) {
-	errFmt := "failed while encode Application object: %s"
+	const errFmt = "failed while encode Application object: %s"
 
 	me, ok := e.(*model.Application)
 	if !ok {
 		return nil, fmt.Errorf(errFmt, "type not matched")
 	}
 
+	// TODO: Find a way to generate function to build this kind of object by specifying a field tag in the proto file.
+	// For example:
+	// ```proto
+	// message Application {
+	//   // The generated unique identifier.
+	//   string id = 1 [(validate.rules).string.min_len = 1, shard=client];
+	// ```
 	clientShardStruct := model.Application{
 		Id:            me.Id,
 		ProjectId:     me.ProjectId,

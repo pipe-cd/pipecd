@@ -53,7 +53,7 @@ func (d *deploymentChainCollection) GetUpdatableShard() (Shard, error) {
 }
 
 func (d *deploymentChainCollection) Encode(e interface{}) (map[Shard][]byte, error) {
-	errFmt := "failed while encode DeploymentChain object: %s"
+	const errFmt = "failed while encode DeploymentChain object: %s"
 
 	me, ok := e.(*model.DeploymentChain)
 	if !ok {

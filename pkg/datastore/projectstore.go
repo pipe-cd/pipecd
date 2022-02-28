@@ -53,7 +53,7 @@ func (p *projectCollection) GetUpdatableShard() (Shard, error) {
 }
 
 func (p *projectCollection) Encode(e interface{}) (map[Shard][]byte, error) {
-	errFmt := "failed while encode Project object: %s"
+	const errFmt = "failed while encode Project object: %s"
 
 	me, ok := e.(*model.Project)
 	if !ok {

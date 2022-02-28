@@ -53,7 +53,7 @@ func (p *pipedCollection) GetUpdatableShard() (Shard, error) {
 }
 
 func (p *pipedCollection) Encode(e interface{}) (map[Shard][]byte, error) {
-	errFmt := "failed while encode Piped object: %s"
+	const errFmt = "failed while encode Piped object: %s"
 
 	me, ok := e.(*model.Piped)
 	if !ok {

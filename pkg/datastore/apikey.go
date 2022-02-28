@@ -53,7 +53,7 @@ func (a *apiKeyCollection) GetUpdatableShard() (Shard, error) {
 }
 
 func (a *apiKeyCollection) Encode(e interface{}) (map[Shard][]byte, error) {
-	errFmt := "failed while encode APIKey object: %s"
+	const errFmt = "failed while encode APIKey object: %s"
 
 	me, ok := e.(*model.APIKey)
 	if !ok {
