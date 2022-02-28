@@ -109,11 +109,6 @@ func normalizeNewSecret(old, new *unstructured.Unstructured) (*unstructured.Unst
 		// If the field is existing in `o.StringData`, we should move that field from `n.Data` to `n.StringData`
 		n.StringData[k] = string(v)
 		delete(n.Data, k)
-
-		// In case the `o.Data` is overridden, we also should restore `n.Data` from `o.Data`
-		if v, ok := o.Data[k]; ok {
-			n.Data[k] = v
-		}
 	}
 
 	newObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&n)

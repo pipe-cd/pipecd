@@ -189,10 +189,11 @@ func TestDiffByCommand(t *testing.T) {
 
 func TestDiff(t *testing.T) {
 	testcases := []struct {
-		name      string
-		manifests string
-		expected  string
-		diffNum   int
+		name          string
+		manifests     string
+		expected      string
+		diffNum       int
+		falsePositive bool
 	}{
 		{
 			name: "Secret no diff 1",
@@ -255,7 +256,7 @@ data:
 			diffNum:  0,
 		},
 		{
-			name: "Secret no diff override",
+			name: "Secret no diff override false-positive",
 			manifests: `apiVersion: apps/v1
 kind: Secret
 metadata:
@@ -274,8 +275,9 @@ data:
   password: hoge
   foo: YmFy
 `,
-			expected: "",
-			diffNum:  0,
+			expected:      "",
+			diffNum:       0,
+			falsePositive: true,
 		},
 		{
 			name: "Secret has diff",
@@ -314,12 +316,15 @@ data:
 			result, err := Diff(old, new, diff.WithEquateEmpty(), diff.WithIgnoreAddingMapKeys(), diff.WithCompareNumberAndNumericString())
 			require.NoError(t, err)
 
-			assert.Equal(t, tc.diffNum, result.NumNodes())
-
 			renderer := diff.NewRenderer(diff.WithLeftPadding(1))
 			ds := renderer.Render(result.Nodes())
-
-			assert.Equal(t, tc.expected, ds)
+			if tc.falsePositive {
+				assert.NotEqual(t, tc.diffNum, result.NumNodes())
+				assert.NotEqual(t, tc.expected, ds)
+			} else {
+				assert.Equal(t, tc.diffNum, result.NumNodes())
+				assert.Equal(t, tc.expected, ds)
+			}
 		})
 	}
 }
