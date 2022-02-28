@@ -68,6 +68,8 @@ type PipedSpec struct {
 	SecretManagement *SecretManagement `json:"secretManagement"`
 	// Optional settings for event watcher.
 	EventWatcher PipedEventWatcher `json:"eventWatcher"`
+	// List of labels to filter all applications this piped will handle.
+	AppSelector map[string]string `json:"appSelector"`
 }
 
 // Validate validates configured data of all fields.
