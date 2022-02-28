@@ -307,7 +307,10 @@ func (r *Reporter) isSynced(appInfo *model.ApplicationInfo, app *model.Applicati
 // findUnregisteredApps finds out unregistered application info in the given git repository.
 // The file name must be default name in order to be recognized as an Application config.
 func (r *Reporter) findUnregisteredApps(repoPath, repoID string) ([]*model.ApplicationInfo, error) {
-	apps := r.applicationLister.List()
+	var (
+		apps     = r.applicationLister.List()
+		selector = r.config.AppSelector
+	)
 	// Create a map to determine the app is registered by GitPath.
 	registeredAppPaths := make(map[string]struct{}, len(apps))
 	for _, app := range apps {
@@ -355,6 +358,12 @@ func (r *Reporter) findUnregisteredApps(repoPath, repoID string) ([]*model.Appli
 			// Continue reading so that it can return apps as much as possible.
 			return nil
 		}
+
+		// Filter the apps by appSelector if appSelector set.
+		if len(selector) != 0 && !appInfo.ContainLabels(selector) {
+			return nil
+		}
+
 		out = append(out, appInfo)
 		return nil
 	})
