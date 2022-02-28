@@ -30,8 +30,8 @@ import (
 )
 
 type Store interface {
-	ListUnregisteredApplications(ctx context.Context, projectID string) ([]*model.ApplicationInfo, error)
-	PutUnregisteredApplications(projectID, pipedID string, apps []*model.ApplicationInfo) error
+	ListApplications(ctx context.Context, projectID string) ([]*model.ApplicationInfo, error)
+	PutApplications(projectID, pipedID string, apps []*model.ApplicationInfo) error
 }
 
 type store struct {
@@ -46,7 +46,7 @@ func NewStore(r redis.Redis, logger *zap.Logger) Store {
 	}
 }
 
-func (c *store) ListUnregisteredApplications(_ context.Context, projectID string) ([]*model.ApplicationInfo, error) {
+func (c *store) ListApplications(_ context.Context, projectID string) ([]*model.ApplicationInfo, error) {
 	key := makeUnregisteredAppsCacheKey(projectID)
 	hc := rediscache.NewHashCache(c.backend, key)
 
@@ -82,7 +82,7 @@ func (c *store) ListUnregisteredApplications(_ context.Context, projectID string
 	return allApps, nil
 }
 
-func (c *store) PutUnregisteredApplications(projectID, pipedID string, apps []*model.ApplicationInfo) error {
+func (c *store) PutApplications(projectID, pipedID string, apps []*model.ApplicationInfo) error {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	if err := enc.Encode(apps); err != nil {
