@@ -93,18 +93,18 @@ type PipedAPI struct {
 	analysisResultStore       analysisresultstore.Store
 	commandStore              commandstore.Store
 	commandOutputPutter       commandOutputPutter
+	unregisteredAppStore      unregisteredappstore.Store
 
 	appPipedCache        cache.Cache
 	deploymentPipedCache cache.Cache
 	pipedStatCache       cache.Cache
-	unregisteredAppStore unregisteredappstore.Store
 
 	webBaseURL string
 	logger     *zap.Logger
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, hc cache.Cache, uas unregisteredappstore.Store, cop commandOutputPutter, webBaseURL string, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, hc cache.Cache, cop commandOutputPutter, uas unregisteredappstore.Store, webBaseURL string, logger *zap.Logger) *PipedAPI {
 	w := datastore.PipedCommander
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds, w),
@@ -117,10 +117,10 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sl
 		analysisResultStore:       las,
 		commandStore:              commandstore.NewStore(w, ds, sc, logger),
 		commandOutputPutter:       cop,
+		unregisteredAppStore:      uas,
 		appPipedCache:             memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            hc,
-		unregisteredAppStore:      uas,
 		webBaseURL:                webBaseURL,
 		logger:                    logger.Named("piped-api"),
 	}

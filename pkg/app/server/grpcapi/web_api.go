@@ -111,6 +111,7 @@ type WebAPI struct {
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
 	insightStore              insightstore.Store
+	unregisteredAppStore      unregisteredappstore.Store
 	encrypter                 encrypter
 
 	appProjectCache        cache.Cache
@@ -118,7 +119,6 @@ type WebAPI struct {
 	pipedProjectCache      cache.Cache
 	pipedStatCache         cache.Cache
 	insightCache           cache.Cache
-	unregisteredAppStore   unregisteredappstore.Store
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -131,10 +131,10 @@ func NewWebAPI(
 	sc cache.Cache,
 	sls stagelogstore.Store,
 	alss applicationlivestatestore.Store,
+	uas unregisteredappstore.Store,
 	is insightstore.Store,
 	psc cache.Cache,
 	ic cache.Cache,
-	uac unregisteredappstore.Store,
 	projs map[string]config.ControlPlaneProject,
 	encrypter encrypter,
 	logger *zap.Logger,
@@ -152,6 +152,7 @@ func NewWebAPI(
 		applicationLiveStateStore: alss,
 		commandStore:              commandstore.NewStore(w, ds, sc, logger),
 		insightStore:              is,
+		unregisteredAppStore:      uas,
 		projectsInConfig:          projs,
 		encrypter:                 encrypter,
 		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
@@ -159,7 +160,6 @@ func NewWebAPI(
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            psc,
 		insightCache:              ic,
-		unregisteredAppStore:      uac,
 		logger:                    logger.Named("web-api"),
 	}
 	return a

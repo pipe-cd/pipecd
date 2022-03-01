@@ -200,7 +200,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 				datastore.NewPipedStore(ds, datastore.PipedCommander),
 				input.Logger,
 			)
-			service = grpcapi.NewPipedAPI(ctx, ds, cache, sls, alss, las, statCache, unregisteredAppStore, cmdOutputStore, cfg.Address, input.Logger)
+			service = grpcapi.NewPipedAPI(ctx, ds, cache, sls, alss, las, statCache, cmdOutputStore, unregisteredAppStore, cfg.Address, input.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),
@@ -273,7 +273,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 		}
 		insightCache := rediscache.NewTTLCache(rd, 3*time.Hour)
 
-		service := grpcapi.NewWebAPI(ctx, ds, cache, sls, alss, is, statCache, insightCache, unregisteredAppStore, cfg.ProjectMap(), encryptDecrypter, input.Logger)
+		service := grpcapi.NewWebAPI(ctx, ds, cache, sls, alss, unregisteredAppStore, is, statCache, insightCache, cfg.ProjectMap(), encryptDecrypter, input.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
