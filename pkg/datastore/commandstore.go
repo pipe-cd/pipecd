@@ -86,6 +86,35 @@ func (c *commandCollection) Decode(e interface{}, parts ...[]byte) error {
 	return nil
 }
 
+func (c *commandCollection) Encode(e interface{}) (map[Shard][]byte, error) {
+	const errFmt = "failed while encode Command object: %s"
+
+	me, ok := e.(*model.Command)
+	if !ok {
+		return nil, fmt.Errorf(errFmt, "type not matched")
+	}
+
+	agentShardStruct := me
+	adata, err := json.Marshal(&agentShardStruct)
+	if err != nil {
+		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
+	}
+
+	opsShardStruct := model.Command{
+		Status:    me.Status,
+		UpdatedAt: me.UpdatedAt,
+	}
+	odata, err := json.Marshal(&opsShardStruct)
+	if err != nil {
+		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
+	}
+
+	return map[Shard][]byte{
+		AgentShard: adata,
+		OpsShard:   odata,
+	}, nil
+}
+
 type CommandStore interface {
 	Add(ctx context.Context, cmd *model.Command) error
 	Get(ctx context.Context, id string) (*model.Command, error)

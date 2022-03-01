@@ -70,3 +70,15 @@ func merge(e interface{}, parts ...[]byte) error {
 	me.SetUpdatedAt(latest)
 	return nil
 }
+
+// encode checks for the given collection object. If the given collection
+// implements the `datastore.ShardEncoder` interface, its implementation will
+// be used. If not, `datastore.ErrUnsupported` error will be raised.
+func encode(col datastore.Collection, e interface{}) (map[datastore.Shard][]byte, error) {
+	ecol, ok := col.(datastore.ShardEncoder)
+	if !ok {
+		return nil, datastore.ErrUnsupported
+	}
+
+	return ecol.Encode(e)
+}

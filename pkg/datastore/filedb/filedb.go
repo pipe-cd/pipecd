@@ -99,11 +99,30 @@ func (f *FileDB) Get(ctx context.Context, col datastore.Collection, id string, v
 }
 
 func (f *FileDB) Create(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {
-	_, ok := col.(datastore.ShardStorable)
-	if !ok {
-		return datastore.ErrUnsupported
+	kind := col.Kind()
+	sdata, err := encode(col, entity)
+	if err != nil {
+		f.logger.Error("failed to encode entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
 	}
-	return datastore.ErrUnimplemented
+
+	for shard, data := range sdata {
+		path := makeHotStorageFilePath(kind, id, shard)
+		if err = f.backend.Put(ctx, path, data); err != nil {
+			f.logger.Error("failed to store entity",
+				zap.String("id", id),
+				zap.String("kind", kind),
+				zap.Error(err),
+			)
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (f *FileDB) Update(ctx context.Context, col datastore.Collection, id string, updater datastore.Updater) error {

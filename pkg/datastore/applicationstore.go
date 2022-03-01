@@ -16,6 +16,7 @@ package datastore
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -52,6 +53,59 @@ func (a *applicationCollection) GetUpdatableShard() (Shard, error) {
 	default:
 		return "", ErrUnsupported
 	}
+}
+
+func (a *applicationCollection) Encode(e interface{}) (map[Shard][]byte, error) {
+	const errFmt = "failed while encode Application object: %s"
+
+	me, ok := e.(*model.Application)
+	if !ok {
+		return nil, fmt.Errorf(errFmt, "type not matched")
+	}
+
+	// TODO: Find a way to generate function to build this kind of object by specifying a field tag in the proto file.
+	// For example:
+	// ```proto
+	// message Application {
+	//   // The generated unique identifier.
+	//   string id = 1 [(validate.rules).string.min_len = 1, shard=client];
+	// ```
+	clientShardStruct := model.Application{
+		Id:            me.Id,
+		ProjectId:     me.ProjectId,
+		Kind:          me.Kind,
+		GitPath:       me.GitPath,
+		CloudProvider: me.CloudProvider,
+		Disabled:      me.Disabled,
+		Deleted:       me.Deleted,
+		DeletedAt:     me.DeletedAt,
+		CreatedAt:     me.CreatedAt,
+		UpdatedAt:     me.UpdatedAt,
+	}
+	cdata, err := json.Marshal(&clientShardStruct)
+	if err != nil {
+		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
+	}
+
+	agentShardStruct := model.Application{
+		Name:                             me.Name,
+		Description:                      me.Description,
+		Labels:                           me.Labels,
+		SyncState:                        me.SyncState,
+		Deploying:                        me.Deploying,
+		MostRecentlySuccessfulDeployment: me.MostRecentlySuccessfulDeployment,
+		MostRecentlyTriggeredDeployment:  me.MostRecentlyTriggeredDeployment,
+		UpdatedAt:                        me.UpdatedAt,
+	}
+	adata, err := json.Marshal(&agentShardStruct)
+	if err != nil {
+		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
+	}
+
+	return map[Shard][]byte{
+		ClientShard: cdata,
+		AgentShard:  adata,
+	}, nil
 }
 
 type ApplicationStore interface {

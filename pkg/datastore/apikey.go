@@ -16,6 +16,7 @@ package datastore
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -49,6 +50,23 @@ func (a *apiKeyCollection) GetUpdatableShard() (Shard, error) {
 	default:
 		return "", ErrUnsupported
 	}
+}
+
+func (a *apiKeyCollection) Encode(e interface{}) (map[Shard][]byte, error) {
+	const errFmt = "failed while encode APIKey object: %s"
+
+	me, ok := e.(*model.APIKey)
+	if !ok {
+		return nil, fmt.Errorf("type not matched")
+	}
+
+	data, err := json.Marshal(me)
+	if err != nil {
+		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
+	}
+	return map[Shard][]byte{
+		ClientShard: data,
+	}, nil
 }
 
 type APIKeyStore interface {
