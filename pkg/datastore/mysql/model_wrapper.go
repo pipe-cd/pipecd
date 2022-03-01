@@ -60,14 +60,6 @@ func wrapModel(entity interface{}) (interface{}, error) {
 			Deployment: *e,
 			Extra:      e.ApplicationName,
 		}, nil
-	case *model.Environment:
-		if e == nil {
-			return nil, fmt.Errorf("nil entity given")
-		}
-		return &environment{
-			Environment: *e,
-			Extra:       e.Name,
-		}, nil
 	case *model.Piped:
 		if e == nil {
 			return nil, fmt.Errorf("nil entity given")
@@ -139,11 +131,6 @@ type command struct {
 type deployment struct {
 	model.Deployment `json:",inline"`
 	Extra            string `json:"_extra"`
-}
-
-type environment struct {
-	model.Environment `json:",inline"`
-	Extra             string `json:"_extra"`
 }
 
 type piped struct {
