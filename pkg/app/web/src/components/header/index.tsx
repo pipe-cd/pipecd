@@ -206,10 +206,22 @@ export const Header: FC = memo(function Header() {
             Events
           </Link>
         </MenuItem>
-        <MenuItem>
+        <MenuItem divider={true}>
           <Link component={RouterLink} to={PAGE_PATH_SETTINGS}>
             Settings
           </Link>
+        </MenuItem>
+        <MenuItem>
+          <Link
+            href="https://pipecd.dev/docs/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Docs
+          </Link>
+        </MenuItem>
+        <MenuItem disabled={true} dense={true}>
+          {process.env.STABLE_VERSION?.substring(0, 10)}
         </MenuItem>
       </Menu>
     </AppBar>
