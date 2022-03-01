@@ -120,7 +120,7 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sl
 		appPipedCache:             memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            hc,
-		unregisteredAppStore:      uac,
+		unregisteredAppStore:      uas,
 		webBaseURL:                webBaseURL,
 		logger:                    logger.Named("piped-api"),
 	}
