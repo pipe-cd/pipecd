@@ -33,6 +33,7 @@ go_library(
         "//pkg/app/server/pipedverifier:go_default_library",
         "//pkg/app/server/service/webservice:go_default_library",
         "//pkg/app/server/stagelogstore:go_default_library",
+        "//pkg/app/server/unregisteredappstore:go_default_library",
         "//pkg/cache/cachemetrics:go_default_library",
         "//pkg/cache/rediscache:go_default_library",
         "//pkg/cli:go_default_library",

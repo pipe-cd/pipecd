@@ -15,9 +15,7 @@
 package grpcapi
 
 import (
-	"bytes"
 	"context"
-	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -34,13 +32,12 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/app/server/stagelogstore"
+	"github.com/pipe-cd/pipecd/pkg/app/server/unregisteredappstore"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
-	"github.com/pipe-cd/pipecd/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/filestore"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/pipe-cd/pipecd/pkg/redis"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
 
@@ -96,18 +93,18 @@ type PipedAPI struct {
 	analysisResultStore       analysisresultstore.Store
 	commandStore              commandstore.Store
 	commandOutputPutter       commandOutputPutter
+	unregisteredAppStore      unregisteredappstore.Store
 
 	appPipedCache        cache.Cache
 	deploymentPipedCache cache.Cache
 	pipedStatCache       cache.Cache
-	redis                redis.Redis
 
 	webBaseURL string
 	logger     *zap.Logger
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, hc cache.Cache, rd redis.Redis, cop commandOutputPutter, webBaseURL string, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, hc cache.Cache, cop commandOutputPutter, uas unregisteredappstore.Store, webBaseURL string, logger *zap.Logger) *PipedAPI {
 	w := datastore.PipedCommander
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds, w),
@@ -120,10 +117,10 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sc cache.Cache, sl
 		analysisResultStore:       las,
 		commandStore:              commandstore.NewStore(w, ds, sc, logger),
 		commandOutputPutter:       cop,
+		unregisteredAppStore:      uas,
 		appPipedCache:             memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            hc,
-		redis:                     rd,
 		webBaseURL:                webBaseURL,
 		logger:                    logger.Named("piped-api"),
 	}
@@ -905,16 +902,8 @@ func (a *PipedAPI) ReportUnregisteredApplicationConfigurations(ctx context.Conte
 		return nil, err
 	}
 
-	// Cache an encoded slice of *model.ApplicationInfo.
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	if err := enc.Encode(req.Applications); err != nil {
-		a.logger.Error("failed to encode the unregistered apps", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to encode the unregistered apps")
-	}
-	key := makeUnregisteredAppsCacheKey(projectID)
-	c := rediscache.NewHashCache(a.redis, key)
-	if err := c.Put(pipedID, buf.Bytes()); err != nil {
+	err = a.unregisteredAppStore.PutApplications(projectID, pipedID, req.Applications)
+	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to put the unregistered apps to the cache")
 	}
 
