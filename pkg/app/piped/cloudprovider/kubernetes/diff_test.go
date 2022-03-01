@@ -19,6 +19,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pipe-cd/pipecd/pkg/diff"
 )
 
 func TestGroupManifests(t *testing.T) {
@@ -181,6 +183,148 @@ func TestDiffByCommand(t *testing.T) {
 				assert.NoError(t, err)
 			}
 			assert.Equal(t, tc.expected, string(got))
+		})
+	}
+}
+
+func TestDiff(t *testing.T) {
+	testcases := []struct {
+		name          string
+		manifests     string
+		expected      string
+		diffNum       int
+		falsePositive bool
+	}{
+		{
+			name: "Secret no diff 1",
+			manifests: `apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+---
+apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+`,
+			expected: "",
+			diffNum:  0,
+		},
+		{
+			name: "Secret no diff 2",
+			manifests: `apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  password: hoge
+stringData:
+  foo: bar
+---
+apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  password: hoge
+stringData:
+  foo: bar
+`,
+			expected: "",
+			diffNum:  0,
+		},
+		{
+			name: "Secret no diff with merge",
+			manifests: `apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  password: hoge
+stringData:
+  foo: bar
+---
+apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  password: hoge
+  foo: YmFy
+`,
+			expected: "",
+			diffNum:  0,
+		},
+		{
+			name: "Secret no diff override false-positive",
+			manifests: `apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  password: hoge
+  foo: Zm9v
+stringData:
+  foo: bar
+---
+apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  password: hoge
+  foo: YmFy
+`,
+			expected:      "",
+			diffNum:       0,
+			falsePositive: true,
+		},
+		{
+			name: "Secret has diff",
+			manifests: `apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  password: hoge
+stringData:
+  foo: bar
+---
+apiVersion: apps/v1
+kind: Secret
+metadata:
+  name: secret-management
+data:
+  foo: YmFy
+`,
+			expected: `  #data
+- data:
+-   password: hoge
+
+`,
+			diffNum: 1,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			manifests, err := ParseManifests(tc.manifests)
+			require.NoError(t, err)
+			require.Equal(t, 2, len(manifests))
+			old, new := manifests[0], manifests[1]
+
+			result, err := Diff(old, new, diff.WithEquateEmpty(), diff.WithIgnoreAddingMapKeys(), diff.WithCompareNumberAndNumericString())
+			require.NoError(t, err)
+
+			renderer := diff.NewRenderer(diff.WithLeftPadding(1))
+			ds := renderer.Render(result.Nodes())
+			if tc.falsePositive {
+				assert.NotEqual(t, tc.diffNum, result.NumNodes())
+				assert.NotEqual(t, tc.expected, ds)
+			} else {
+				assert.Equal(t, tc.diffNum, result.NumNodes())
+				assert.Equal(t, tc.expected, ds)
+			}
 		})
 	}
 }

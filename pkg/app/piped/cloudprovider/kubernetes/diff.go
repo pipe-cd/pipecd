@@ -22,6 +22,10 @@ import (
 	"sort"
 	"strings"
 
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+
 	"github.com/pipe-cd/pipecd/pkg/diff"
 )
 
@@ -46,6 +50,13 @@ type DiffListChange struct {
 }
 
 func Diff(old, new Manifest, opts ...diff.Option) (*diff.Result, error) {
+	if old.Key.IsSecret() && new.Key.IsSecret() {
+		var err error
+		new.u, err = normalizeNewSecret(old.u, new.u)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return diff.DiffUnstructureds(*old.u, *new.u, opts...)
 }
 
@@ -73,6 +84,39 @@ func DiffList(olds, news []Manifest, opts ...diff.Option) (*DiffListResult, erro
 	}
 
 	return cr, nil
+}
+
+func normalizeNewSecret(old, new *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+	var o, n v1.Secret
+	runtime.DefaultUnstructuredConverter.FromUnstructured(old.Object, &o)
+	runtime.DefaultUnstructuredConverter.FromUnstructured(new.Object, &n)
+
+	// Move as much as possible fields from `n.Data` to `n.StringData` to make `n` close to `o` to minimize the diff.
+	for k, v := range n.Data {
+		// Skip if the field also exists in StringData.
+		if _, ok := n.StringData[k]; ok {
+			continue
+		}
+
+		if _, ok := o.StringData[k]; !ok {
+			continue
+		}
+
+		if n.StringData == nil {
+			n.StringData = make(map[string]string)
+		}
+
+		// If the field is existing in `o.StringData`, we should move that field from `n.Data` to `n.StringData`
+		n.StringData[k] = string(v)
+		delete(n.Data, k)
+	}
+
+	newObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&n)
+	if err != nil {
+		return nil, err
+	}
+
+	return &unstructured.Unstructured{Object: newObj}, nil
 }
 
 type DiffRenderOptions struct {
