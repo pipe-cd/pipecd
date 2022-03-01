@@ -39,6 +39,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/pipedverifier"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/webservice"
 	"github.com/pipe-cd/pipecd/pkg/app/server/stagelogstore"
+	"github.com/pipe-cd/pipecd/pkg/app/server/unregisteredappstore"
 	"github.com/pipe-cd/pipecd/pkg/cache/cachemetrics"
 	"github.com/pipe-cd/pipecd/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipecd/pkg/cli"
@@ -186,6 +187,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 	is := insightstore.NewStore(fs)
 	cmdOutputStore := commandoutputstore.NewStore(fs, input.Logger)
 	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
+	unregisteredAppStore := unregisteredappstore.NewStore(rd, input.Logger)
 
 	// Start a gRPC server for handling PipedAPI requests.
 	{
@@ -198,7 +200,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 				datastore.NewPipedStore(ds, datastore.PipedCommander),
 				input.Logger,
 			)
-			service = grpcapi.NewPipedAPI(ctx, ds, cache, sls, alss, las, statCache, rd, cmdOutputStore, cfg.Address, input.Logger)
+			service = grpcapi.NewPipedAPI(ctx, ds, cache, sls, alss, las, statCache, unregisteredAppStore, cmdOutputStore, cfg.Address, input.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),
@@ -269,8 +271,9 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			input.Logger.Error("failed to create a new JWT verifier", zap.Error(err))
 			return err
 		}
+		insightCache := rediscache.NewTTLCache(rd, 3*time.Hour)
 
-		service := grpcapi.NewWebAPI(ctx, ds, cache, sls, alss, is, statCache, rd, cfg.ProjectMap(), encryptDecrypter, input.Logger)
+		service := grpcapi.NewWebAPI(ctx, ds, cache, sls, alss, is, statCache, insightCache, unregisteredAppStore, cfg.ProjectMap(), encryptDecrypter, input.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),

@@ -15,9 +15,7 @@
 package grpcapi
 
 import (
-	"bytes"
 	"context"
-	"encoding/gob"
 	"errors"
 	"fmt"
 	"sort"
@@ -34,15 +32,14 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/webservice"
 	"github.com/pipe-cd/pipecd/pkg/app/server/stagelogstore"
+	"github.com/pipe-cd/pipecd/pkg/app/server/unregisteredappstore"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
-	"github.com/pipe-cd/pipecd/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/filestore"
 	"github.com/pipe-cd/pipecd/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/pipe-cd/pipecd/pkg/redis"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
 
@@ -121,7 +118,7 @@ type WebAPI struct {
 	pipedProjectCache      cache.Cache
 	pipedStatCache         cache.Cache
 	insightCache           cache.Cache
-	redis                  redis.Redis
+	unregisteredAppStore   unregisteredappstore.Store
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -136,7 +133,8 @@ func NewWebAPI(
 	alss applicationlivestatestore.Store,
 	is insightstore.Store,
 	psc cache.Cache,
-	rd redis.Redis,
+	ic cache.Cache,
+	uac unregisteredappstore.Store,
 	projs map[string]config.ControlPlaneProject,
 	encrypter encrypter,
 	logger *zap.Logger,
@@ -160,8 +158,8 @@ func NewWebAPI(
 		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            psc,
-		insightCache:              rediscache.NewTTLCache(rd, 3*time.Hour),
-		redis:                     rd,
+		insightCache:              ic,
+		unregisteredAppStore:      uac,
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -410,11 +408,7 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 		return nil, err
 	}
 
-	// Collect all apps that belong to the project.
-	key := makeUnregisteredAppsCacheKey(claims.Role.ProjectId)
-	c := rediscache.NewHashCache(a.redis, key)
-	// pipedToApps assumes to be a map["piped-id"][]byte(slice of *model.ApplicationInfo encoded by encoding/gob)
-	pipedToApps, err := c.GetAll()
+	allApps, err := a.unregisteredAppStore.ListApplications(ctx, claims.Role.ProjectId)
 	if errors.Is(err, cache.ErrNotFound) {
 		return &webservice.ListUnregisteredApplicationsResponse{}, nil
 	}
@@ -423,21 +417,6 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 		return nil, status.Error(codes.Internal, "Failed to get unregistered apps")
 	}
 
-	// Integrate all apps cached for each Piped.
-	allApps := make([]*model.ApplicationInfo, 0)
-	for _, as := range pipedToApps {
-		b, ok := as.([]byte)
-		if !ok {
-			return nil, status.Error(codes.Internal, "Unexpected data cached")
-		}
-		dec := gob.NewDecoder(bytes.NewReader(b))
-		var apps []*model.ApplicationInfo
-		if err := dec.Decode(&apps); err != nil {
-			a.logger.Error("failed to decode the unregistered apps", zap.Error(err))
-			return nil, status.Error(codes.Internal, "failed to decode the unregistered apps")
-		}
-		allApps = append(allApps, apps...)
-	}
 	if len(allApps) == 0 {
 		return &webservice.ListUnregisteredApplicationsResponse{}, nil
 	}
@@ -445,6 +424,7 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 	sort.Slice(allApps, func(i, j int) bool {
 		return allApps[i].Path < allApps[j].Path
 	})
+
 	return &webservice.ListUnregisteredApplicationsResponse{
 		Applications: allApps,
 	}, nil
