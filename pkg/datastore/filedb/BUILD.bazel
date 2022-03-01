@@ -5,6 +5,8 @@ go_library(
     srcs = [
         "codec.go",
         "filedb.go",
+        "filter.go",
+        "iterator.go",
     ],
     importpath = "github.com/pipe-cd/pipecd/pkg/datastore/filedb",
     visibility = ["//visibility:public"],
