@@ -56,7 +56,6 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//pkg/app/piped/toolregistry:go_default_library",
-        "//pkg/diff:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
         "@com_github_stretchr_testify//require:go_default_library",
         "@io_k8s_api//apps/v1:go_default_library",
