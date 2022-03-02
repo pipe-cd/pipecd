@@ -73,13 +73,27 @@ genrule(
     visibility = ["//visibility:public"],
 )
 
+genrule(
+    name = "embed_version",
+    srcs = ["webpack.config.js", "webpack.common.js"],
+    outs = ["gen_webpack.config.js","gen_webpack.common.js"],
+    cmd = """
+    for f in $(SRCS)
+    do
+        sed -e "s/unknown_placeholder/$$(cat ./bazel-out/stable-status.txt | grep STABLE_VERSION | awk '{print $$2}')/g" $$f > $(@D)/gen_$$(basename $$f)
+    done
+    """,
+    output_to_bindir = 1,
+    stamp = True,
+)
+
 webpack(
     name = "public_files",
     args = [
         "--mode",
         "production",
         "--config",
-        "$(execpath webpack.config.js)",
+        "$(execpath gen_webpack.config.js)",
         "--env htmlTemplate=./$(execpath base.html)",
         "--env bazelBinPath=./$(BINDIR)",
         "--output-path",
@@ -92,9 +106,10 @@ webpack(
         "base.html",
         "compile",
         "copy_assets",
+        "embed_version",
+        "gen_webpack.config.js",
+        "gen_webpack.common.js",
         "model",
-        "webpack.common.js",
-        "webpack.config.js",
         "public/mockServiceWorker.js",
         "@npm//:node_modules",
     ] + glob(["assets/**/*"]),

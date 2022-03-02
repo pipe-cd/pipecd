@@ -5,7 +5,7 @@
   "private": true,
   "license": "Apache-2.0",
   "scripts": {
-    "dev": "webpack serve --env htmlTemplate=./base.html --config ./webpack.config.dev.js",
+    "dev": "STABLE_VERSION=`git describe --tags --always --dirty --abbrev=7` webpack serve --env htmlTemplate=./base.html --config ./webpack.config.dev.js",
     "gen": "scaffdog generate",
     "test": "TZ=Asia/Tokyo jest --config jest.config.local.js",
     "test:coverage": "yarn test --coverage",

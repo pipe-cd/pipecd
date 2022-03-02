@@ -11,7 +11,7 @@ import {
   MenuItem,
   Menu,
 } from "@material-ui/core";
-import { MoreVert } from "@material-ui/icons";
+import { MoreVert, OpenInNew } from "@material-ui/icons";
 import {
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
@@ -78,6 +78,12 @@ const useStyles = makeStyles((theme) => ({
   },
   iconButton: {
     padding: 0,
+  },
+  iconOpenInNew: {
+    fontSize: "0.95rem",
+    marginLeft: "5px",
+    marginBottom: "-2px",
+    color: "rgba(0, 0, 0, 0.5)",
   },
 }));
 
@@ -192,6 +198,9 @@ export const Header: FC = memo(function Header() {
         id="more-menu"
         anchorEl={moreAnchorEl}
         open={Boolean(moreAnchorEl)}
+        getContentAnchorEl={null}
+        anchorOrigin={{ vertical: 35, horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
         onClose={(): void => {
           setMoreAnchorEl(null);
         }}
@@ -206,10 +215,23 @@ export const Header: FC = memo(function Header() {
             Events
           </Link>
         </MenuItem>
-        <MenuItem>
+        <MenuItem divider={true}>
           <Link component={RouterLink} to={PAGE_PATH_SETTINGS}>
             Settings
           </Link>
+        </MenuItem>
+        <MenuItem>
+          <Link
+            href="https://pipecd.dev/docs/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Documentation
+            <OpenInNew className={classes.iconOpenInNew} />
+          </Link>
+        </MenuItem>
+        <MenuItem disabled={true} dense={true}>
+          {process.env.STABLE_VERSION}
         </MenuItem>
       </Menu>
     </AppBar>
