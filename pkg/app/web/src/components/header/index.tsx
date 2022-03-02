@@ -192,6 +192,9 @@ export const Header: FC = memo(function Header() {
         id="more-menu"
         anchorEl={moreAnchorEl}
         open={Boolean(moreAnchorEl)}
+        getContentAnchorEl={null}
+        anchorOrigin={{ vertical: 35, horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
         onClose={(): void => {
           setMoreAnchorEl(null);
         }}
