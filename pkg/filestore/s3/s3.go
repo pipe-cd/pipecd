@@ -184,6 +184,7 @@ func (s *Store) List(ctx context.Context, prefix string) ([]filestore.ObjectAttr
 			objects = append(objects, filestore.ObjectAttrs{
 				Path:      aws.ToString(obj.Key),
 				Size:      obj.Size,
+				Etag:      aws.ToString(obj.ETag),
 				UpdatedAt: aws.ToTime(obj.LastModified).Unix(),
 			})
 		}

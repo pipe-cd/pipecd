@@ -154,6 +154,7 @@ func (s *Store) List(ctx context.Context, prefix string) ([]filestore.ObjectAttr
 		objects = append(objects, filestore.ObjectAttrs{
 			Path:      o.Key,
 			Size:      o.Size,
+			Etag:      o.ETag,
 			UpdatedAt: o.LastModified.Unix(),
 		})
 	}
