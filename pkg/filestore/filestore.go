@@ -27,6 +27,7 @@ var (
 type ObjectAttrs struct {
 	Path      string
 	Size      int64
+	Etag      string
 	UpdatedAt int64
 }
 
