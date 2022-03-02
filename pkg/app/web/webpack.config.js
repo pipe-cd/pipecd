@@ -6,7 +6,7 @@ const path = require("path");
 const webpack = require("webpack");
 
 // overridden by bazel
-const version = "unknown";
+const version = "unknown_placeholder";
 
 module.exports = (env) => {
   return merge(commonConfig(env), {

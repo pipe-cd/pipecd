@@ -80,7 +80,7 @@ genrule(
     cmd = """
     for f in $(SRCS)
     do
-        sed -e "s/unknown/$$(cat ./bazel-out/stable-status.txt | grep STABLE_VERSION | awk '{print $$2}')/g" $$f > $(@D)/gen_$$(basename $$f)
+        sed -e "s/unknown_placeholder/$$(cat ./bazel-out/stable-status.txt | grep STABLE_VERSION | awk '{print $$2}')/g" $$f > $(@D)/gen_$$(basename $$f)
     done
     """,
     output_to_bindir = 1,
