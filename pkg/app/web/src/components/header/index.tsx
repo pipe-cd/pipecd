@@ -79,6 +79,12 @@ const useStyles = makeStyles((theme) => ({
   iconButton: {
     padding: 0,
   },
+  iconOpenInNew: {
+    fontSize: "0.95rem",
+    marginLeft: "5px",
+    marginBottom: "-2px",
+    color: "rgba(0, 0, 0, 0.5)",
+  },
 }));
 
 export const Header: FC = memo(function Header() {
@@ -221,12 +227,8 @@ export const Header: FC = memo(function Header() {
             rel="noreferrer"
           >
             Documentation
+            <OpenInNew className={classes.iconOpenInNew} />
           </Link>
-          <OpenInNew
-            fontSize="small"
-            color="disabled"
-            style={{ marginLeft: "5px" }}
-          />
         </MenuItem>
         <MenuItem disabled={true} dense={true}>
           {process.env.STABLE_VERSION}
