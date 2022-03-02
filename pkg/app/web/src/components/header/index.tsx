@@ -11,7 +11,7 @@ import {
   MenuItem,
   Menu,
 } from "@material-ui/core";
-import { MoreVert } from "@material-ui/icons";
+import { MoreVert, OpenInNew } from "@material-ui/icons";
 import {
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
@@ -217,11 +217,16 @@ export const Header: FC = memo(function Header() {
             target="_blank"
             rel="noreferrer"
           >
-            Docs
+            Documentation
           </Link>
+          <OpenInNew
+            fontSize="small"
+            color="disabled"
+            style={{ marginLeft: "5px" }}
+          />
         </MenuItem>
         <MenuItem disabled={true} dense={true}>
-          {process.env.STABLE_VERSION?.substring(0, 10)}
+          {process.env.STABLE_VERSION}
         </MenuItem>
       </Menu>
     </AppBar>
