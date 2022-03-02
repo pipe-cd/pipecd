@@ -11,7 +11,7 @@ import {
   MenuItem,
   Menu,
 } from "@material-ui/core";
-import { MoreVert } from "@material-ui/icons";
+import { MoreVert, OpenInNew } from "@material-ui/icons";
 import {
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
@@ -206,10 +206,27 @@ export const Header: FC = memo(function Header() {
             Events
           </Link>
         </MenuItem>
-        <MenuItem>
+        <MenuItem divider={true}>
           <Link component={RouterLink} to={PAGE_PATH_SETTINGS}>
             Settings
           </Link>
+        </MenuItem>
+        <MenuItem>
+          <Link
+            href="https://pipecd.dev/docs/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Documentation
+          </Link>
+          <OpenInNew
+            fontSize="small"
+            color="disabled"
+            style={{ marginLeft: "5px" }}
+          />
+        </MenuItem>
+        <MenuItem disabled={true} dense={true}>
+          {process.env.STABLE_VERSION}
         </MenuItem>
       </Menu>
     </AppBar>
