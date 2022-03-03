@@ -75,8 +75,14 @@ genrule(
 
 genrule(
     name = "embed_version",
-    srcs = ["webpack.config.js", "webpack.common.js"],
-    outs = ["gen_webpack.config.js","gen_webpack.common.js"],
+    srcs = [
+        "webpack.config.js",
+        "webpack.common.js",
+    ],
+    outs = [
+        "gen_webpack.config.js",
+        "gen_webpack.common.js",
+    ],
     cmd = """
     for f in $(SRCS)
     do
