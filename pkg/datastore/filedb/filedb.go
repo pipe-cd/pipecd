@@ -21,12 +21,14 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/filestore"
 )
 
 type FileDB struct {
 	backend filestore.Store
+	cache   cache.Cache
 	logger  *zap.Logger
 }
 
@@ -38,9 +40,10 @@ func WithLogger(logger *zap.Logger) Option {
 	}
 }
 
-func NewFileDB(fs filestore.Store, opts ...Option) (*FileDB, error) {
+func NewFileDB(fs filestore.Store, c cache.Cache, opts ...Option) (*FileDB, error) {
 	fd := &FileDB{
 		backend: fs,
+		cache:   c,
 		logger:  zap.NewNop(),
 	}
 	for _, opt := range opts {
