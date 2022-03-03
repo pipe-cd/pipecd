@@ -72,5 +72,5 @@ func (o *objectCache) Put(shard datastore.Shard, id, etag string, val []byte) er
 }
 
 func makeObjectKey(shard datastore.Shard, id string) string {
-	return fmt.Sprintf("FILEDB:OBJECT:%s:%s", id, shard)
+	return fmt.Sprintf("FILEDB:OBJECT:%s:%s", shard, id)
 }
