@@ -95,6 +95,16 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 		for _, obj := range parts {
 			id := filepath.Base(obj.Path)
 
+			// Check if the raw data stored under this path is fetched or not
+			// based on its etag value stored as key in `f.cache` store.
+			cdata, err := f.cache.Get(obj.Etag)
+			if err == nil {
+				objects[id] = append(objects[id], cdata.([]byte))
+				continue
+			}
+
+			// If there is no value attached with the given etag key, fetch the
+			// content under the object path.
 			data, err := f.fetch(ctx, obj.Path)
 			if err != nil {
 				f.logger.Error("failed to fetch entity part",
@@ -103,6 +113,16 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 					zap.Error(err),
 				)
 				return nil, err
+			}
+
+			// Store fetched data to cache.
+			if err = f.cache.Put(obj.Etag, data); err != nil {
+				f.logger.Error("failed to store entity part to cache",
+					zap.String("kind", kind),
+					zap.String("id", id),
+					zap.String("key", obj.Etag),
+					zap.Error(err),
+				)
 			}
 
 			objects[id] = append(objects[id], data)
@@ -217,4 +237,8 @@ func makeHotStorageFilePath(kind, id string, shard datastore.Shard) string {
 
 func makeHotStorageDirPath(kind string, shard datastore.Shard) string {
 	return fmt.Sprintf("%s/%s/", kind, shard)
+}
+
+func makeEtagCacheKey(id string, shard datastore.Shard) string {
+	return fmt.Sprintf("%s_%s", id, shard)
 }
