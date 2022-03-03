@@ -238,7 +238,3 @@ func makeHotStorageFilePath(kind, id string, shard datastore.Shard) string {
 func makeHotStorageDirPath(kind string, shard datastore.Shard) string {
 	return fmt.Sprintf("%s/%s/", kind, shard)
 }
-
-func makeEtagCacheKey(id string, shard datastore.Shard) string {
-	return fmt.Sprintf("%s_%s", id, shard)
-}
