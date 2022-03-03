@@ -78,7 +78,6 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 		objects map[string][][]byte
 	)
 
-	// Fetch the first part of all objects under a specified "directory".
 	for _, shard := range shards {
 		dpath := makeHotStorageDirPath(kind, shard)
 		parts, err := f.backend.List(ctx, dpath)
