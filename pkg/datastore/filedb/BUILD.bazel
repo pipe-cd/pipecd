@@ -13,6 +13,7 @@ go_library(
     deps = [
         "//pkg/cache:go_default_library",
         "//pkg/datastore:go_default_library",
+        "//pkg/datastore/filedb/objectcache:go_default_library",
         "//pkg/filestore:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],

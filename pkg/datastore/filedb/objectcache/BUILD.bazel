@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["cache.go"],
+    importpath = "github.com/pipe-cd/pipecd/pkg/datastore/filedb/objectcache",
+    visibility = ["//visibility:public"],
+    deps = ["//pkg/cache:go_default_library"],
+)

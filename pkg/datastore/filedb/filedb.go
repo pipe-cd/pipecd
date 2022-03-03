@@ -23,13 +23,14 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/datastore/filedb/objectcache"
 	"github.com/pipe-cd/pipecd/pkg/filestore"
 )
 
 type FileDB struct {
-	backend filestore.Store
-	cache   cache.Cache
-	logger  *zap.Logger
+	backend     filestore.Store
+	objectCache objectcache.Cache
+	logger      *zap.Logger
 }
 
 type Option func(*FileDB)
@@ -42,9 +43,9 @@ func WithLogger(logger *zap.Logger) Option {
 
 func NewFileDB(fs filestore.Store, c cache.Cache, opts ...Option) (*FileDB, error) {
 	fd := &FileDB{
-		backend: fs,
-		cache:   c,
-		logger:  zap.NewNop(),
+		backend:     fs,
+		objectCache: objectcache.NewCache(c),
+		logger:      zap.NewNop(),
 	}
 	for _, opt := range opts {
 		opt(fd)
@@ -95,16 +96,14 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 		for _, obj := range parts {
 			id := filepath.Base(obj.Path)
 
-			// Check if the raw data stored under this path is fetched or not
-			// based on its etag value stored as key in `f.cache` store.
-			key := makeCacheEtagKey(obj.Etag)
-			cdata, err := f.cache.Get(key)
+			// Try to get object content from objectCache.
+			cdata, err := f.objectCache.Get(id, obj.Etag)
 			if err == nil {
-				objects[id] = append(objects[id], cdata.([]byte))
+				objects[id] = append(objects[id], cdata)
 				continue
 			}
 
-			// If there is no value attached with the given etag key, fetch the
+			// If there is no object content found from objectCache, try fetching
 			// content under the object path.
 			data, err := f.fetch(ctx, obj.Path)
 			if err != nil {
@@ -117,11 +116,11 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 			}
 
 			// Store fetched data to cache.
-			if err = f.cache.Put(key, data); err != nil {
+			if err = f.objectCache.Put(id, obj.Etag, data); err != nil {
 				f.logger.Error("failed to store entity part to cache",
 					zap.String("kind", kind),
 					zap.String("id", id),
-					zap.String("key", key),
+					zap.String("etag", obj.Etag),
 					zap.Error(err),
 				)
 			}
@@ -238,8 +237,4 @@ func makeHotStorageFilePath(kind, id string, shard datastore.Shard) string {
 
 func makeHotStorageDirPath(kind string, shard datastore.Shard) string {
 	return fmt.Sprintf("%s/%s/", kind, shard)
-}
-
-func makeCacheEtagKey(etag string) string {
-	return fmt.Sprintf("etag_%s", etag)
 }
