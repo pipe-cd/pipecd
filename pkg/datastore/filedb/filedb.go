@@ -97,7 +97,7 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 			id := filepath.Base(obj.Path)
 
 			// Try to get object content from objectCache.
-			cdata, err := f.objectCache.Get(id, obj.Etag)
+			cdata, err := f.objectCache.Get(shard, id, obj.Etag)
 			if err == nil {
 				objects[id] = append(objects[id], cdata)
 				continue
@@ -116,7 +116,7 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 			}
 
 			// Store fetched data to cache.
-			if err = f.objectCache.Put(id, obj.Etag, data); err != nil {
+			if err = f.objectCache.Put(shard, id, obj.Etag, data); err != nil {
 				f.logger.Error("failed to store entity part to cache",
 					zap.String("kind", kind),
 					zap.String("id", id),

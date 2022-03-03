@@ -19,11 +19,12 @@ import (
 	"fmt"
 
 	"github.com/pipe-cd/pipecd/pkg/cache"
+	"github.com/pipe-cd/pipecd/pkg/datastore"
 )
 
 type Cache interface {
-	Get(id, etag string) ([]byte, error)
-	Put(id, etag string, val []byte) error
+	Get(shard datastore.Shard, id, etag string) ([]byte, error)
+	Put(shard datastore.Shard, id, etag string, val []byte) error
 }
 
 type objectCache struct {
@@ -39,8 +40,8 @@ type objectValue struct {
 	Data []byte `json:"data"`
 }
 
-func (o *objectCache) Get(id, etag string) ([]byte, error) {
-	raw, err := o.backend.Get(makeKey(id))
+func (o *objectCache) Get(shard datastore.Shard, id, etag string) ([]byte, error) {
+	raw, err := o.backend.Get(makeKey(shard, id))
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +57,7 @@ func (o *objectCache) Get(id, etag string) ([]byte, error) {
 	return nil, cache.ErrNotFound
 }
 
-func (o *objectCache) Put(id, etag string, val []byte) error {
+func (o *objectCache) Put(shard datastore.Shard, id, etag string, val []byte) error {
 	obj := &objectValue{
 		Etag: etag,
 		Data: val,
@@ -67,9 +68,9 @@ func (o *objectCache) Put(id, etag string, val []byte) error {
 		return err
 	}
 
-	return o.backend.Put(makeKey(id), data)
+	return o.backend.Put(makeKey(shard, id), data)
 }
 
-func makeKey(id string) string {
-	return fmt.Sprintf("filedb_object_%s", id)
+func makeKey(shard datastore.Shard, id string) string {
+	return fmt.Sprintf("filedb_object_%s_%s", id, shard)
 }
