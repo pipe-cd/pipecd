@@ -41,7 +41,7 @@ type objectValue struct {
 }
 
 func (o *objectCache) Get(shard datastore.Shard, id, etag string) ([]byte, error) {
-	raw, err := o.backend.Get(makeKey(shard, id))
+	raw, err := o.backend.Get(makeObjectKey(shard, id))
 	if err != nil {
 		return nil, err
 	}
@@ -68,9 +68,9 @@ func (o *objectCache) Put(shard datastore.Shard, id, etag string, val []byte) er
 		return err
 	}
 
-	return o.backend.Put(makeKey(shard, id), data)
+	return o.backend.Put(makeObjectKey(shard, id), data)
 }
 
-func makeKey(shard datastore.Shard, id string) string {
-	return fmt.Sprintf("filedb_object_%s_%s", id, shard)
+func makeObjectKey(shard datastore.Shard, id string) string {
+	return fmt.Sprintf("FILEDB:OBJECT:%s:%s", id, shard)
 }
