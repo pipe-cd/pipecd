@@ -230,7 +230,7 @@ export const Header: FC = memo(function Header() {
             <OpenInNew className={classes.iconOpenInNew} />
           </Link>
         </MenuItem>
-        <MenuItem disabled={true} dense={true}>
+        <MenuItem disabled={true} dense={true} button={false}>
           {process.env.STABLE_VERSION}
         </MenuItem>
       </Menu>
