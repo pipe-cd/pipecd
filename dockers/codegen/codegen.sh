@@ -4,6 +4,14 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+while [[ -z "$1" ]]
+do
+    echo "Missing path to the root of repository"
+    exit 1
+done
+
+cd $1
+
 # Generate Go files from proto files.
 goProtoDirs=(
   "pkg/model"
