@@ -101,7 +101,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		in.Logger.Error("unable to determine versions", zap.Error(e))
 		out.Versions = []*model.ArtifactVersion{
 			{
-				Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+				Kind:    model.ArtifactVersion_UNKNOWN,
 				Version: versionUnknown,
 			},
 		}
