@@ -17,16 +17,20 @@ package filedb
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/datastore/filedb/objectcache"
 	"github.com/pipe-cd/pipecd/pkg/filestore"
 )
 
 type FileDB struct {
-	backend filestore.Store
-	logger  *zap.Logger
+	backend     filestore.Store
+	objectCache objectcache.Cache
+	logger      *zap.Logger
 }
 
 type Option func(*FileDB)
@@ -37,10 +41,11 @@ func WithLogger(logger *zap.Logger) Option {
 	}
 }
 
-func NewFileDB(fs filestore.Store, opts ...Option) (*FileDB, error) {
+func NewFileDB(fs filestore.Store, c cache.Cache, opts ...Option) (*FileDB, error) {
 	fd := &FileDB{
-		backend: fs,
-		logger:  zap.NewNop(),
+		backend:     fs,
+		objectCache: objectcache.NewCache(c),
+		logger:      zap.NewNop(),
 	}
 	for _, opt := range opts {
 		opt(fd)
@@ -61,11 +66,98 @@ func (f *FileDB) fetch(ctx context.Context, path string) ([]byte, error) {
 }
 
 func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datastore.ListOptions) (datastore.Iterator, error) {
-	_, ok := col.(datastore.ShardStorable)
+	scol, ok := col.(datastore.ShardStorable)
 	if !ok {
 		return nil, datastore.ErrUnsupported
 	}
-	return nil, datastore.ErrUnimplemented
+
+	var (
+		kind   = col.Kind()
+		shards = scol.ListInUsedShards()
+		// Map of objects values with the first key is the object id.
+		objects map[string][][]byte
+	)
+
+	for _, shard := range shards {
+		dpath := makeHotStorageDirPath(kind, shard)
+		parts, err := f.backend.List(ctx, dpath)
+		if err != nil {
+			f.logger.Error("failed to find entities",
+				zap.String("kind", kind),
+				zap.Error(err),
+			)
+			return nil, err
+		}
+
+		if objects == nil {
+			objects = make(map[string][][]byte, len(parts))
+		}
+		for _, obj := range parts {
+			id := filepath.Base(obj.Path)
+
+			// Try to get object content from objectCache.
+			cdata, err := f.objectCache.Get(shard, id, obj.Etag)
+			if err == nil {
+				objects[id] = append(objects[id], cdata)
+				continue
+			}
+
+			// If there is no object content found from objectCache, try fetching
+			// content under the object path.
+			data, err := f.fetch(ctx, obj.Path)
+			if err != nil {
+				f.logger.Error("failed to fetch entity part",
+					zap.String("kind", kind),
+					zap.String("id", id),
+					zap.Error(err),
+				)
+				return nil, err
+			}
+
+			// Store fetched data to cache.
+			if err = f.objectCache.Put(shard, id, obj.Etag, data); err != nil {
+				f.logger.Error("failed to store entity part to cache",
+					zap.String("kind", kind),
+					zap.String("id", id),
+					zap.String("etag", obj.Etag),
+					zap.Error(err),
+				)
+			}
+
+			objects[id] = append(objects[id], data)
+		}
+	}
+
+	entities := make([]interface{}, 0, len(objects))
+	for id, obj := range objects {
+		e := col.Factory()()
+		if err := decode(col, e, obj...); err != nil {
+			f.logger.Error("failed to build entity",
+				zap.String("kind", kind),
+				zap.String("id", id),
+				zap.Error(err),
+			)
+			return nil, err
+		}
+
+		pass, err := filter(col, e, opts.Filters)
+		if err != nil {
+			f.logger.Error("failed to filter entity",
+				zap.String("kind", kind),
+				zap.String("id", id),
+				zap.Error(err),
+			)
+			return nil, err
+		}
+
+		if pass {
+			entities = append(entities, e)
+		}
+	}
+
+	return &Iterator{
+		data: entities,
+	}, nil
 }
 
 func (f *FileDB) Get(ctx context.Context, col datastore.Collection, id string, v interface{}) error {
@@ -140,4 +232,8 @@ func (f *FileDB) Close() error {
 func makeHotStorageFilePath(kind, id string, shard datastore.Shard) string {
 	// TODO: Find a way to separate files by project to avoid fetch resources cross project.
 	return fmt.Sprintf("%s/%s/%s.json", kind, shard, id)
+}
+
+func makeHotStorageDirPath(kind string, shard datastore.Shard) string {
+	return fmt.Sprintf("%s/%s/", kind, shard)
 }

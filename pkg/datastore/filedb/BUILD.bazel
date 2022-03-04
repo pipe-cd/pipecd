@@ -5,11 +5,15 @@ go_library(
     srcs = [
         "codec.go",
         "filedb.go",
+        "filter.go",
+        "iterator.go",
     ],
     importpath = "github.com/pipe-cd/pipecd/pkg/datastore/filedb",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/cache:go_default_library",
         "//pkg/datastore:go_default_library",
+        "//pkg/datastore/filedb/objectcache:go_default_library",
         "//pkg/filestore:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
