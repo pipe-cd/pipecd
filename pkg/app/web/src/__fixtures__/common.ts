@@ -1,4 +1,4 @@
-import { ApplicationGitPath } from "pipe/pkg/app/web/model/common_pb";
+import { ApplicationGitPath } from "pipecd/pkg/app/web/model/common_pb";
 import { createApplicationGitRepository } from "./dummy-repo";
 
 export function createGitPathFromObject(

@@ -11,11 +11,11 @@ import {
   UpdateProjectSSOConfigResponse,
   UpdateProjectStaticAdminRequest,
   UpdateProjectStaticAdminResponse,
-} from "pipe/pkg/app/web/api_client/service_pb";
+} from "pipecd/pkg/app/web/api_client/service_pb";
 import {
   ProjectRBACConfig,
   ProjectSSOConfig,
-} from "pipe/pkg/app/web/model/project_pb";
+} from "pipecd/pkg/app/web/model/project_pb";
 import { apiClient, apiRequest } from "./client";
 
 export const getProject = (): Promise<GetProjectResponse.AsObject> => {

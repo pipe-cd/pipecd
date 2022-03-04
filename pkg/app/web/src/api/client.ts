@@ -1,5 +1,5 @@
 import * as grpcWeb from "grpc-web";
-import { WebServiceClient } from "pipe/pkg/app/web/api_client/service_grpc_web_pb";
+import { WebServiceClient } from "pipecd/pkg/app/web/api_client/service_grpc_web_pb";
 import { apiEndpoint } from "~/constants/api-endpoint";
 
 export const apiClient = new WebServiceClient(apiEndpoint, null, {

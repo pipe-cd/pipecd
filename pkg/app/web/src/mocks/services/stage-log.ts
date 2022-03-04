@@ -1,5 +1,5 @@
 import { StatusCode } from "grpc-web";
-import { GetStageLogResponse } from "pipe/pkg/app/web/api_client/service_pb";
+import { GetStageLogResponse } from "pipecd/pkg/app/web/api_client/service_pb";
 import {
   createLogBlockFromObject,
   dummyLogBlocks,

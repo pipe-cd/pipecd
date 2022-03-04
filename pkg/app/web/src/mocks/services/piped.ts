@@ -4,7 +4,7 @@ import {
   RecreatePipedKeyResponse,
   RegisterPipedResponse,
   DeleteOldPipedKeysResponse,
-} from "pipe/pkg/app/web/api_client/service_pb";
+} from "pipecd/pkg/app/web/api_client/service_pb";
 import { createPipedFromObject, dummyPiped } from "~/__fixtures__/dummy-piped";
 import { randomKeyHash, randomUUID } from "~/__fixtures__/utils";
 import { createHandler } from "../create-handler";

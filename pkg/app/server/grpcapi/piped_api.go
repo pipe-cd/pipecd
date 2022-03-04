@@ -83,6 +83,8 @@ type commandOutputPutter interface {
 
 // PipedAPI implements the behaviors for the gRPC definitions of PipedAPI.
 type PipedAPI struct {
+	pipedservice.UnimplementedPipedServiceServer
+
 	applicationStore          pipedApiApplicationStore
 	deploymentStore           pipedApiDeploymentStore
 	deploymentChainStore      pipedApiDeploymentChainStore

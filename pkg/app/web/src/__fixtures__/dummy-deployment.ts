@@ -1,4 +1,4 @@
-import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
+import { ApplicationKind } from "pipecd/pkg/app/web/model/common_pb";
 import { Deployment, DeploymentStatus } from "~/modules/deployments";
 import { createGitPathFromObject } from "./common";
 import { dummyApplication } from "./dummy-application";

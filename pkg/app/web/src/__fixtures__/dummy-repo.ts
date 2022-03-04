@@ -1,4 +1,4 @@
-import { ApplicationGitRepository } from "pipe/pkg/app/web/model/common_pb";
+import { ApplicationGitRepository } from "pipecd/pkg/app/web/model/common_pb";
 
 export function createApplicationGitRepository(
   o: ApplicationGitRepository.AsObject

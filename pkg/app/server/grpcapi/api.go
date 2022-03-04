@@ -63,6 +63,8 @@ type commandOutputGetter interface {
 
 // API implements the behaviors for the gRPC definitions of API.
 type API struct {
+	apiservice.UnimplementedAPIServiceServer
+
 	applicationStore    apiApplicationStore
 	deploymentStore     apiDeploymentStore
 	pipedStore          apiPipedStore

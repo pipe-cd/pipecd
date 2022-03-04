@@ -9,12 +9,12 @@ import {
   PipelineStage,
   DeploymentStatus,
   StageStatus,
-} from "pipe/pkg/app/web/model/deployment_pb";
+} from "pipecd/pkg/app/web/model/deployment_pb";
 import * as deploymentsApi from "~/api/deployments";
 import { fetchCommand, Command, CommandStatus } from "../commands";
 import type { AppState } from "~/store";
 import { LoadingStatus } from "~/types/module";
-import { ListDeploymentsRequest } from "pipe/pkg/app/web/api_client/service_pb";
+import { ListDeploymentsRequest } from "pipecd/pkg/app/web/api_client/service_pb";
 import { ApplicationKind } from "../applications";
 
 export type Stage = Required<PipelineStage.AsObject>;
@@ -272,11 +272,11 @@ export const selectDeploymentIsCanceling = (id: EntityId) => (
   state: AppState
 ): boolean => (id ? state.deployments.canceling[id] : false);
 
-export { SyncStrategy } from "pipe/pkg/app/web/model/common_pb";
+export { SyncStrategy } from "pipecd/pkg/app/web/model/common_pb";
 
 export {
   Deployment,
   DeploymentStatus,
   StageStatus,
   PipelineStage,
-} from "pipe/pkg/app/web/model/deployment_pb";
+} from "pipecd/pkg/app/web/model/deployment_pb";

@@ -3,7 +3,7 @@ import {
   createEntityAdapter,
   createSlice,
 } from "@reduxjs/toolkit";
-import { Command, CommandStatus } from "pipe/pkg/app/web/model/command_pb";
+import { Command, CommandStatus } from "pipecd/pkg/app/web/model/command_pb";
 import { getCommand } from "~/api/commands";
 import { PAGE_PATH_DEPLOYMENTS } from "~/constants/path";
 import { findMetadataByKey } from "~/utils/find-metadata-by-key";
@@ -83,4 +83,4 @@ export const commandsSlice = createSlice({
   },
 });
 
-export { CommandStatus, Command } from "pipe/pkg/app/web/model/command_pb";
+export { CommandStatus, Command } from "pipecd/pkg/app/web/model/command_pb";

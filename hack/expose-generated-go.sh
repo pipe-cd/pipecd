@@ -79,26 +79,6 @@ expose_package () {
 # Build all packages.
 bazelisk build --noincompatible_strict_action_env -- //...
 
-####################
-# For proto go giles
-####################
-
-# Link to the generated files and add them to excluding list in the root BUILD file.
-for label in $(bazelisk query 'kind(go_proto_library, //...)'); do
-	package="${label%%:*}"
-	package="${package##//}"
-	packageName="${package##*/}"
-	target="${label##*:}"
-	[[ -d "${package}" ]] || continue
-
-	# Compute the path where Bazel puts the files.
-	out_path="bazel-bin/${package}/${packageName}_go_proto_/github.com/${ORGANIZATION}/${REPOSITORY}/${package}"
-
-	old_links=$(eval echo ${package}/*{.pb.go,.pb.validate.go})
-	generated_files=$(eval echo ${out_path}/*{.pb.go,.pb.validate.go})
-	expose_package ${out_path} ${package} old_links generated_files
-done
-
 ###################
 # For mock go files
 ###################

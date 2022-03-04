@@ -1,7 +1,7 @@
 import {
   ListAPIKeysResponse,
   GenerateAPIKeyResponse,
-} from "pipe/pkg/app/web/api_client/service_pb";
+} from "pipecd/pkg/app/web/api_client/service_pb";
 import {
   createAPIKeyFromObject,
   dummyAPIKey,

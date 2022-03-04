@@ -46,3 +46,9 @@ genrule(
     outs = ["pipectl"],
     cmd = "cp $< $@",
 )
+
+# gazelle:exclude pkg/model/*.proto
+# gazelle:exclude pkg/app/server/service/webservice/*.proto
+# gazelle:exclude pkg/app/server/service/pipedservice/*.proto
+# gazelle:exclude pkg/app/server/service/apiservice/*.proto
+# gazelle:exclude pkg/app/helloworld/service/*.proto

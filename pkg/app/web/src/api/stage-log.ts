@@ -2,7 +2,7 @@ import { apiClient, apiRequest } from "./client";
 import {
   GetStageLogRequest,
   GetStageLogResponse,
-} from "pipe/pkg/app/web/api_client/service_pb";
+} from "pipecd/pkg/app/web/api_client/service_pb";
 
 export const getStageLog = ({
   deploymentId,

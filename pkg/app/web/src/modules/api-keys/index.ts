@@ -4,7 +4,7 @@ import {
   SerializedError,
   createEntityAdapter,
 } from "@reduxjs/toolkit";
-import { APIKey } from "pipe/pkg/app/web/model/apikey_pb";
+import { APIKey } from "pipecd/pkg/app/web/model/apikey_pb";
 import * as APIKeysAPI from "~/api/api-keys";
 
 const MODULE_NAME = "apiKeys";
@@ -99,4 +99,4 @@ export const apiKeysSlice = createSlice({
 export const { clearGeneratedKey } = apiKeysSlice.actions;
 export const { selectAll, selectById } = apiKeysAdapter.getSelectors();
 
-export { APIKey } from "pipe/pkg/app/web/model/apikey_pb";
+export { APIKey } from "pipecd/pkg/app/web/model/apikey_pb";
