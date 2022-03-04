@@ -130,3 +130,7 @@ sync-stable-docs:
 update-docsy:
 	rm -rf docs/themes/docsy
 	git clone --recurse-submodules --depth 1 https://github.com/google/docsy.git docs/themes/docsy
+
+.PHONY: codegen
+codegen:
+	docker run --rm -v $PWD:/repo -it gcr.io/pipecd/codegen:0.1.0
