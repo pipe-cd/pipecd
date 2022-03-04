@@ -497,6 +497,7 @@ func determineVersion(manifests []provider.Manifest) (string, error) {
 // For example, in case some containers are used in one application, those image version are retured
 func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion, error) {
 	versions := []*model.ArtifactVersion{}
+	imageMap := map[string]string{}
 
 	for _, m := range manifests {
 		if !m.Key.IsDeployment() {
@@ -512,15 +513,20 @@ func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion,
 		}
 
 		containers := d.Spec.Template.Spec.Containers
+		// remove duplicate images on multiple manifests
 		for _, c := range containers {
-			image := parseContainerImage(c.Image)
-			versions = append(versions, &model.ArtifactVersion{
-				Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
-				Version: image.tag,
-				Name:    image.name,
-				Url:     c.Image,
-			})
+			imageMap[c.Image] = ""
 		}
+	}
+
+	for i, _ := range imageMap {
+		image := parseContainerImage(i)
+		versions = append(versions, &model.ArtifactVersion{
+			Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+			Version: image.tag,
+			Name:    image.name,
+			Url:     i,
+		})
 	}
 
 	if len(versions) == 0 {

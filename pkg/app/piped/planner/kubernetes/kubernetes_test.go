@@ -504,6 +504,18 @@ func TestDetermineVersions(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:      "multiple workloads using same container image",
+			manifests: "testdata/version_multi_workloads_same_image.yaml",
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v1.0.0",
+					Name:    "helloworld",
+					Url:     "gcr.io/pipecd/helloworld:v1.0.0",
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
