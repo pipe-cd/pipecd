@@ -228,6 +228,7 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, out pln.Output) e
 			RunningCommitHash:         p.lastSuccessfulCommitHash,
 			RunningConfigFilename:     p.lastSuccessfulConfigFilename,
 			Version:                   out.Version,
+			Versions:                  out.Versions,
 			Stages:                    out.Stages,
 			DeploymentChainId:         p.deployment.DeploymentChainId,
 			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,

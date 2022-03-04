@@ -9,6 +9,7 @@ import (
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestDecideStrategy(t *testing.T) {
@@ -433,6 +434,92 @@ func TestDetermineVersion(t *testing.T) {
 
 			version, err := determineVersion(manifests)
 			assert.Equal(t, tc.expected, version)
+			assert.Equal(t, tc.expectedError, err)
+		})
+	}
+}
+
+func TestDetermineVersions(t *testing.T) {
+	testcases := []struct {
+		name          string
+		manifests     string
+		expected      []*model.ArtifactVersion
+		expectedError error
+	}{
+		{
+			name:      "no workload",
+			manifests: "testdata/version_no_workload.yaml",
+			expected:  []*model.ArtifactVersion{},
+		},
+		{
+			name:      "single container",
+			manifests: "testdata/version_single_container.yaml",
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v1.0.0",
+					Name:    "helloworld",
+					Url:     "gcr.io/pipecd/helloworld:v1.0.0",
+				},
+			},
+		},
+		{
+			name:      "multiple containers",
+			manifests: "testdata/version_multi_containers.yaml",
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v1.0.0",
+					Name:    "helloworld",
+					Url:     "gcr.io/pipecd/helloworld:v1.0.0",
+				},
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v0.6.0",
+					Name:    "my-service",
+					Url:     "gcr.io/pipecd/my-service:v0.6.0",
+				},
+			},
+		},
+		{
+			name:      "multiple workloads",
+			manifests: "testdata/version_multi_workloads.yaml",
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v1.0.0",
+					Name:    "helloworld",
+					Url:     "gcr.io/pipecd/helloworld:v1.0.0",
+				},
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v0.5.0",
+					Name:    "my-service",
+					Url:     "gcr.io/pipecd/my-service:v0.5.0",
+				},
+			},
+		},
+		{
+			name:      "multiple workloads using same container image",
+			manifests: "testdata/version_multi_workloads_same_image.yaml",
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v1.0.0",
+					Name:    "helloworld",
+					Url:     "gcr.io/pipecd/helloworld:v1.0.0",
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			manifests, err := provider.LoadManifestsFromYAMLFile(tc.manifests)
+			require.NoError(t, err)
+
+			versions, err := determineVersions(manifests)
+			assert.Equal(t, tc.expected, versions)
 			assert.Equal(t, tc.expectedError, err)
 		})
 	}

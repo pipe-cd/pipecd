@@ -35,7 +35,15 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 		expectedRunningCommitHash     = "update-running-commit-hash"
 		expectedRunningConfigFilename = "update-running-config-filename"
 		expectedVersion               = "update-version"
-		expectedStages                = []*model.PipelineStage{
+		expectedVersions              = []*model.ArtifactVersion{
+			{
+				Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+				Version: "update-version",
+				Name:    "update-image-name",
+				Url:     "dummy-registry/update-image-name:update-version",
+			},
+		}
+		expectedStages = []*model.PipelineStage{
 			{
 				Id:    "stage-id1",
 				Name:  "stage1",
@@ -63,6 +71,7 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 			expectedRunningCommitHash,
 			expectedRunningConfigFilename,
 			expectedVersion,
+			expectedVersions,
 			expectedStages,
 		)
 	)
@@ -75,6 +84,7 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 	assert.Equal(t, expectedRunningCommitHash, d.RunningCommitHash)
 	assert.Equal(t, expectedRunningConfigFilename, d.RunningConfigFilename)
 	assert.Equal(t, expectedVersion, d.Version)
+	assert.Equal(t, expectedVersions, d.Versions)
 	assert.Equal(t, expectedStages, d.Stages)
 }
 

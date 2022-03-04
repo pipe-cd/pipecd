@@ -76,7 +76,9 @@ message Deployment {
     // e.g. Scale from 10 to 100 replicas.
     // e.g. Update image from v1.5.0 to v1.6.0.
     string summary = 22;
+    // TODO: Remove version from deployment model.
     string version = 23;
+    repeated ArtifactVersion versions = 24;
 
     // Hash value of the most recently successfully deployed commit.
     string running_commit_hash = 21;

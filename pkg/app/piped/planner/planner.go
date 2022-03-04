@@ -58,6 +58,7 @@ type Input struct {
 
 type Output struct {
 	Version      string
+	Versions     []*model.ArtifactVersion
 	SyncStrategy model.SyncStrategy
 	Summary      string
 	Stages       []*model.PipelineStage

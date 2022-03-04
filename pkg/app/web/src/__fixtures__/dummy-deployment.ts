@@ -22,6 +22,7 @@ export const dummyDeployment: Deployment.AsObject = {
   statusReason: "good",
   trigger: dummyTrigger,
   version: "0.0.0",
+  versionsList: [],
   cloudProvider: "kube-1",
   labelsMap: [],
   createdAt: createdAt.unix(),

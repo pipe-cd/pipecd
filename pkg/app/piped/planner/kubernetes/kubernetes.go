@@ -97,6 +97,18 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		out.Version = version
 	}
 
+	if versions, e := determineVersions(newManifests); e != nil || len(versions) == 0 {
+		in.Logger.Error("unable to determine versions", zap.Error(e))
+		out.Versions = []*model.ArtifactVersion{
+			{
+				Kind:    model.ArtifactVersion_UNKNOWN,
+				Version: versionUnknown,
+			},
+		}
+	} else {
+		out.Versions = versions
+	}
+
 	autoRollback := *cfg.Input.AutoRollback
 
 	// In case the strategy has been decided by trigger.
@@ -479,4 +491,43 @@ func determineVersion(manifests []provider.Manifest) (string, error) {
 	}
 
 	return b.String(), nil
+}
+
+// determineVersions decides artifact versions of an application.
+// It finds all container images that are being specified in the workload manifests then returns their names, version numbers, and urls.
+func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion, error) {
+	imageMap := map[string]struct{}{}
+	for _, m := range manifests {
+		// TODO: Determine container image version from other workload kinds such as StatefulSet, Pod, Daemon, CronJob...
+		if !m.Key.IsDeployment() {
+			continue
+		}
+		data, err := m.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+		var d resource.Deployment
+		if err := json.Unmarshal(data, &d); err != nil {
+			return nil, err
+		}
+
+		containers := d.Spec.Template.Spec.Containers
+		// Remove duplicate images on multiple manifests.
+		for _, c := range containers {
+			imageMap[c.Image] = struct{}{}
+		}
+	}
+
+	versions := make([]*model.ArtifactVersion, 0, len(imageMap))
+	for i := range imageMap {
+		image := parseContainerImage(i)
+		versions = append(versions, &model.ArtifactVersion{
+			Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+			Version: image.tag,
+			Name:    image.name,
+			Url:     i,
+		})
+	}
+
+	return versions, nil
 }
