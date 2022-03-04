@@ -519,7 +519,7 @@ func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion,
 		}
 	}
 
-	for i, _ := range imageMap {
+	for i := range imageMap {
 		image := parseContainerImage(i)
 		versions = append(versions, &model.ArtifactVersion{
 			Kind:    model.ArtifactVersion_CONTAINER_IMAGE,

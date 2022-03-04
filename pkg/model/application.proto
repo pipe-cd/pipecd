@@ -91,7 +91,7 @@ message ApplicationDeploymentReference {
     string summary = 3;
     string version = 4;
     string config_filename = 5;
-    repeated model.ArtifactVersion versions = 6;
+    repeated ArtifactVersion versions = 6;
 
     int64 started_at = 14 [(validate.rules).int64.gt = 0];
     int64 completed_at = 15 [(validate.rules).int64.gte = 0];
