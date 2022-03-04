@@ -449,12 +449,7 @@ func TestDetermineVersions(t *testing.T) {
 		{
 			name:      "no workload",
 			manifests: "testdata/version_no_workload.yaml",
-			expected: []*model.ArtifactVersion{
-				{
-					Kind:    model.ArtifactVersion_UNKNOWN,
-					Version: versionUnknown,
-				},
-			},
+			expected:  []*model.ArtifactVersion{},
 		},
 		{
 			name:      "single container",

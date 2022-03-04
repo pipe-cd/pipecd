@@ -97,7 +97,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		out.Version = version
 	}
 
-	if versions, e := determineVersions(newManifests); e != nil {
+	if versions, e := determineVersions(newManifests); e != nil || len(versions) == 0 {
 		in.Logger.Error("unable to determine versions", zap.Error(e))
 		out.Versions = []*model.ArtifactVersion{
 			{
@@ -528,15 +528,6 @@ func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion,
 			Name:    image.name,
 			Url:     i,
 		})
-	}
-
-	if len(versions) == 0 {
-		return []*model.ArtifactVersion{
-			{
-				Kind:    model.ArtifactVersion_UNKNOWN,
-				Version: versionUnknown,
-			},
-		}, nil
 	}
 
 	return versions, nil
