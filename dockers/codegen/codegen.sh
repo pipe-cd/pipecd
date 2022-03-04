@@ -79,9 +79,8 @@ while [ $i -lt ${#jsProtoDirs[*]} ]; do
   find ${outDir} -type f -exec sed -i "s:'.*pkg:'pipecd\/pkg\/app\/web:g;" {} \;
   find ${outDir} -type f -exec sed -i "s:'.*\/model\/:'pipecd\/pkg\/app\/web\/model\/:g;" {} \;
   echo "successfully generated"
+done
 
 echo ""
 echo "Successfully generated all code"
 echo ""
-
-done
