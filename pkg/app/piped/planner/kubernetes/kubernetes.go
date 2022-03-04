@@ -500,6 +500,7 @@ func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion,
 	imageMap := map[string]struct{}{}
 
 	for _, m := range manifests {
+		// TODO: Determine container image version from other workload kinds such as StatefulSet, Pod, Daemon, CronJob...
 		if !m.Key.IsDeployment() {
 			continue
 		}
