@@ -11,8 +11,6 @@
     "test:coverage": "yarn test --coverage",
     "lint": "eslint --ext .ts,.tsx ./src",
     "lint:fix": "eslint --fix --ext .ts,.tsx ./src",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
