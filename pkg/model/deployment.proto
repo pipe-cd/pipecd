@@ -147,15 +147,3 @@ message Commit {
     string url = 6;
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
 }
-
-message ArtifactVersion {
-    enum Kind {
-        UNKNOWN = 0;
-        CONTAINER_IMAGE = 1;
-    }
-   
-    Kind kind = 1 [(validate.rules).enum.defined_only = true];
-    string version = 2 [(validate.rules).string.min_len = 1];
-    string name = 3;
-    string url = 4;
-}
