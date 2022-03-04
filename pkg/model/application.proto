@@ -85,25 +85,13 @@ message ApplicationSyncState {
     int64 timestamp = 5 [(validate.rules).int64.gt = 0];
 }
 
-message ArtifactVersion {
-    enum Kind {
-        UNKNOWN = 0;
-        CONTAINER_IMAGE = 1;
-    }
-   
-    Kind kind = 1 [(validate.rules).enum.defined_only = true];
-    string version = 2 [(validate.rules).string.min_len = 1];
-    string name = 3;
-    string url = 4;
-}
-
 message ApplicationDeploymentReference {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     DeploymentTrigger trigger = 2 [(validate.rules).message.required = true];
     string summary = 3;
     string version = 4;
     string config_filename = 5;
-    repeated ArtifactVersion versions = 6;
+    repeated model.ArtifactVersion versions = 6;
 
     int64 started_at = 14 [(validate.rules).int64.gt = 0];
     int64 completed_at = 15 [(validate.rules).int64.gte = 0];

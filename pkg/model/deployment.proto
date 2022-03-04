@@ -77,6 +77,7 @@ message Deployment {
     // e.g. Update image from v1.5.0 to v1.6.0.
     string summary = 22;
     string version = 23;
+    repeated ArtifactVersion versions = 103;
 
     // Hash value of the most recently successfully deployed commit.
     string running_commit_hash = 21;
@@ -145,4 +146,16 @@ message Commit {
     int64 pull_request = 5;
     string url = 6;
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
+}
+
+message ArtifactVersion {
+    enum Kind {
+        UNKNOWN = 0;
+        CONTAINER_IMAGE = 1;
+    }
+   
+    Kind kind = 1 [(validate.rules).enum.defined_only = true];
+    string version = 2 [(validate.rules).string.min_len = 1];
+    string name = 3;
+    string url = 4;
 }

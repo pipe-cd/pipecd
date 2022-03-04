@@ -97,6 +97,18 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		out.Version = version
 	}
 
+	if versions, e := determineVersions(newManifests); e != nil {
+		in.Logger.Error("unable to determine versions", zap.Error(e))
+		out.Versions = []*model.ArtifactVersion{
+			{
+				Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+				Version: versionUnknown,
+			},
+		}
+	} else {
+		out.Versions = versions
+	}
+
 	autoRollback := *cfg.Input.AutoRollback
 
 	// In case the strategy has been decided by trigger.
@@ -479,4 +491,46 @@ func determineVersion(manifests []provider.Manifest) (string, error) {
 	}
 
 	return b.String(), nil
+}
+
+// determineVersions decide artifact versions of an application.
+// For example, in case some containers are used in one application, those image version are retured
+func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion, error) {
+	versions := []*model.ArtifactVersion{}
+
+	for _, m := range manifests {
+		if !m.Key.IsDeployment() {
+			continue
+		}
+		data, err := m.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+		var d resource.Deployment
+		if err := json.Unmarshal(data, &d); err != nil {
+			return nil, err
+		}
+
+		containers := d.Spec.Template.Spec.Containers
+		for _, c := range containers {
+			image := parseContainerImage(c.Image)
+			versions = append(versions, &model.ArtifactVersion{
+				Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+				Version: image.tag,
+				Name:    image.name,
+				Url:     c.Image,
+			})
+		}
+	}
+
+	if len(versions) == 0 {
+		return []*model.ArtifactVersion{
+			{
+				Kind:    model.ArtifactVersion_UNKNOWN,
+				Version: versionUnknown,
+			},
+		}, nil
+	}
+
+	return versions, nil
 }

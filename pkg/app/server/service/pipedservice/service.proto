@@ -276,6 +276,7 @@ message ReportDeploymentPlannedRequest {
     string running_config_filename = 9;
     // The application version this deployment is trying to deploy.
     string version = 5;
+    repeated model.ArtifactVersion versions = 10;
     // The planned stages.
     // Empty means nothing has changed compared to when the deployment was created.
     repeated model.PipelineStage stages = 6;
