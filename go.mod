@@ -45,7 +45,7 @@ require (
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
 	google.golang.org/api v0.31.0
 	google.golang.org/genproto v0.0.0-20201019141844-1ed22bb0c154
-	google.golang.org/grpc v1.44.0
+	google.golang.org/grpc v1.43.0
 	google.golang.org/protobuf v1.27.1
 	istio.io/api v0.0.0-20200710191538-00b73d23c685
 	k8s.io/api v0.22.3
