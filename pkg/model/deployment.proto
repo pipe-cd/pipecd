@@ -77,7 +77,7 @@ message Deployment {
     // e.g. Update image from v1.5.0 to v1.6.0.
     string summary = 22;
     string version = 23;
-    repeated ArtifactVersion versions = 103;
+    repeated ArtifactVersion versions = 24;
 
     // Hash value of the most recently successfully deployed commit.
     string running_commit_hash = 21;
