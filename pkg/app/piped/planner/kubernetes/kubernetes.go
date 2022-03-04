@@ -512,7 +512,7 @@ func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion,
 		}
 
 		containers := d.Spec.Template.Spec.Containers
-		// remove duplicate images on multiple manifests
+		// Remove duplicate images on multiple manifests.
 		for _, c := range containers {
 			imageMap[c.Image] = struct{}{}
 		}
