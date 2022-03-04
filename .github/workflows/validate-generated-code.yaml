@@ -14,7 +14,7 @@ jobs:
       uses: docker://gcr.io/pipecd/codegen:0.2.0
       with:
         args: /github/workspace
-     - name: Show Git status
+    - name: Show Git status
       shell: bash
       run: git status
     - name: Validate
