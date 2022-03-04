@@ -7,11 +7,12 @@ on:
 jobs:
   analyze:
     name: Analyze
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
     - name: Generate code
-      uses: docker://gcr.io/pipecd/codegen:0.2.0
+      uses: docker://gcr.io/pipecd/codegen:0.3.0
       with:
         args: /github/workspace
     - name: Show Git status

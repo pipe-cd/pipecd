@@ -133,4 +133,4 @@ update-docsy:
 
 .PHONY: codegen
 codegen:
-	docker run --rm -v ${PWD}:/repo -it gcr.io/pipecd/codegen:0.2.0 /repo
+	docker run --rm -v ${PWD}:/repo -it gcr.io/pipecd/codegen:0.3.0 /repo
