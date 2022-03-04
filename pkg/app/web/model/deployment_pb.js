@@ -2,6 +2,7 @@
 /**
  * @fileoverview
  * @enhanceable
+ * @suppress {missingRequire} reports error on implicit type usages.
  * @suppress {messageConventions} JS Compiler reports an error if a variable or
  *     field starts with 'MSG_' and isn't a translatable message.
  * @public
@@ -12,7 +13,13 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global = Function('return this')();
+var global = (function() {
+  if (this) { return this; }
+  if (typeof window !== 'undefined') { return window; }
+  if (typeof global !== 'undefined') { return global; }
+  if (typeof self !== 'undefined') { return self; }
+  return Function('return this')();
+}.call(null));
 
 
 
@@ -115,7 +122,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.model.Deployment.repeatedFields_ = [32];
+proto.model.Deployment.repeatedFields_ = [24,32];
 
 
 
@@ -161,6 +168,8 @@ proto.model.Deployment.toObject = function(includeInstance, msg) {
     trigger: (f = msg.getTrigger()) && proto.model.DeploymentTrigger.toObject(includeInstance, f),
     summary: jspb.Message.getFieldWithDefault(msg, 22, ""),
     version: jspb.Message.getFieldWithDefault(msg, 23, ""),
+    versionsList: jspb.Message.toObjectList(msg.getVersionsList(),
+    pkg_model_common_pb.ArtifactVersion.toObject, includeInstance),
     runningCommitHash: jspb.Message.getFieldWithDefault(msg, 21, ""),
     runningConfigFilename: jspb.Message.getFieldWithDefault(msg, 60, ""),
     status: jspb.Message.getFieldWithDefault(msg, 30, 0),
@@ -264,6 +273,11 @@ proto.model.Deployment.deserializeBinaryFromReader = function(msg, reader) {
     case 23:
       var value = /** @type {string} */ (reader.readString());
       msg.setVersion(value);
+      break;
+    case 24:
+      var value = new pkg_model_common_pb.ArtifactVersion;
+      reader.readMessage(value,pkg_model_common_pb.ArtifactVersion.deserializeBinaryFromReader);
+      msg.addVersions(value);
       break;
     case 21:
       var value = /** @type {string} */ (reader.readString());
@@ -429,6 +443,14 @@ proto.model.Deployment.serializeBinaryToWriter = function(message, writer) {
     writer.writeString(
       23,
       f
+    );
+  }
+  f = message.getVersionsList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
+      24,
+      f,
+      pkg_model_common_pb.ArtifactVersion.serializeBinaryToWriter
     );
   }
   f = message.getRunningCommitHash();
@@ -782,6 +804,44 @@ proto.model.Deployment.prototype.getVersion = function() {
  */
 proto.model.Deployment.prototype.setVersion = function(value) {
   return jspb.Message.setProto3StringField(this, 23, value);
+};
+
+
+/**
+ * repeated ArtifactVersion versions = 24;
+ * @return {!Array<!proto.model.ArtifactVersion>}
+ */
+proto.model.Deployment.prototype.getVersionsList = function() {
+  return /** @type{!Array<!proto.model.ArtifactVersion>} */ (
+    jspb.Message.getRepeatedWrapperField(this, pkg_model_common_pb.ArtifactVersion, 24));
+};
+
+
+/**
+ * @param {!Array<!proto.model.ArtifactVersion>} value
+ * @return {!proto.model.Deployment} returns this
+*/
+proto.model.Deployment.prototype.setVersionsList = function(value) {
+  return jspb.Message.setRepeatedWrapperField(this, 24, value);
+};
+
+
+/**
+ * @param {!proto.model.ArtifactVersion=} opt_value
+ * @param {number=} opt_index
+ * @return {!proto.model.ArtifactVersion}
+ */
+proto.model.Deployment.prototype.addVersions = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 24, opt_value, proto.model.ArtifactVersion, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.model.Deployment} returns this
+ */
+proto.model.Deployment.prototype.clearVersionsList = function() {
+  return this.setVersionsList([]);
 };
 
 
