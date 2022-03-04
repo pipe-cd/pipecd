@@ -48,6 +48,11 @@ export class Deployment extends jspb.Message {
   getVersion(): string;
   setVersion(value: string): Deployment;
 
+  getVersionsList(): Array<pkg_model_common_pb.ArtifactVersion>;
+  setVersionsList(value: Array<pkg_model_common_pb.ArtifactVersion>): Deployment;
+  clearVersionsList(): Deployment;
+  addVersions(value?: pkg_model_common_pb.ArtifactVersion, index?: number): pkg_model_common_pb.ArtifactVersion;
+
   getRunningCommitHash(): string;
   setRunningCommitHash(value: string): Deployment;
 
@@ -106,6 +111,7 @@ export namespace Deployment {
     trigger?: DeploymentTrigger.AsObject,
     summary: string,
     version: string,
+    versionsList: Array<pkg_model_common_pb.ArtifactVersion.AsObject>,
     runningCommitHash: string,
     runningConfigFilename: string,
     status: DeploymentStatus,

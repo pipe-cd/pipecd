@@ -119,6 +119,41 @@ export namespace ApplicationInfo {
   }
 }
 
+export class ArtifactVersion extends jspb.Message {
+  getKind(): ArtifactVersion.Kind;
+  setKind(value: ArtifactVersion.Kind): ArtifactVersion;
+
+  getVersion(): string;
+  setVersion(value: string): ArtifactVersion;
+
+  getName(): string;
+  setName(value: string): ArtifactVersion;
+
+  getUrl(): string;
+  setUrl(value: string): ArtifactVersion;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ArtifactVersion.AsObject;
+  static toObject(includeInstance: boolean, msg: ArtifactVersion): ArtifactVersion.AsObject;
+  static serializeBinaryToWriter(message: ArtifactVersion, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ArtifactVersion;
+  static deserializeBinaryFromReader(message: ArtifactVersion, reader: jspb.BinaryReader): ArtifactVersion;
+}
+
+export namespace ArtifactVersion {
+  export type AsObject = {
+    kind: ArtifactVersion.Kind,
+    version: string,
+    name: string,
+    url: string,
+  }
+
+  export enum Kind { 
+    UNKNOWN = 0,
+    CONTAINER_IMAGE = 1,
+  }
+}
+
 export enum ApplicationKind { 
   KUBERNETES = 0,
   TERRAFORM = 1,

@@ -137,41 +137,6 @@ export namespace ApplicationSyncState {
   }
 }
 
-export class ArtifactVersion extends jspb.Message {
-  getKind(): ArtifactVersion.Kind;
-  setKind(value: ArtifactVersion.Kind): ArtifactVersion;
-
-  getVersion(): string;
-  setVersion(value: string): ArtifactVersion;
-
-  getName(): string;
-  setName(value: string): ArtifactVersion;
-
-  getUrl(): string;
-  setUrl(value: string): ArtifactVersion;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): ArtifactVersion.AsObject;
-  static toObject(includeInstance: boolean, msg: ArtifactVersion): ArtifactVersion.AsObject;
-  static serializeBinaryToWriter(message: ArtifactVersion, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): ArtifactVersion;
-  static deserializeBinaryFromReader(message: ArtifactVersion, reader: jspb.BinaryReader): ArtifactVersion;
-}
-
-export namespace ArtifactVersion {
-  export type AsObject = {
-    kind: ArtifactVersion.Kind,
-    version: string,
-    name: string,
-    url: string,
-  }
-
-  export enum Kind { 
-    UNKNOWN = 0,
-    CONTAINER_IMAGE = 1,
-  }
-}
-
 export class ApplicationDeploymentReference extends jspb.Message {
   getDeploymentId(): string;
   setDeploymentId(value: string): ApplicationDeploymentReference;
@@ -190,10 +155,10 @@ export class ApplicationDeploymentReference extends jspb.Message {
   getConfigFilename(): string;
   setConfigFilename(value: string): ApplicationDeploymentReference;
 
-  getVersionsList(): Array<ArtifactVersion>;
-  setVersionsList(value: Array<ArtifactVersion>): ApplicationDeploymentReference;
+  getVersionsList(): Array<pkg_model_common_pb.ArtifactVersion>;
+  setVersionsList(value: Array<pkg_model_common_pb.ArtifactVersion>): ApplicationDeploymentReference;
   clearVersionsList(): ApplicationDeploymentReference;
-  addVersions(value?: ArtifactVersion, index?: number): ArtifactVersion;
+  addVersions(value?: pkg_model_common_pb.ArtifactVersion, index?: number): pkg_model_common_pb.ArtifactVersion;
 
   getStartedAt(): number;
   setStartedAt(value: number): ApplicationDeploymentReference;
@@ -216,7 +181,7 @@ export namespace ApplicationDeploymentReference {
     summary: string,
     version: string,
     configFilename: string,
-    versionsList: Array<ArtifactVersion.AsObject>,
+    versionsList: Array<pkg_model_common_pb.ArtifactVersion.AsObject>,
     startedAt: number,
     completedAt: number,
   }
