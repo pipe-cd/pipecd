@@ -493,8 +493,8 @@ func determineVersion(manifests []provider.Manifest) (string, error) {
 	return b.String(), nil
 }
 
-// determineVersions decide artifact versions of an application.
-// For example, in case some containers are used in one application, those image version are retured
+// determineVersions decides artifact versions of an application.
+// It finds all container images that are being specified in the workload manifests then returns their names, version numbers, and urls.
 func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion, error) {
 	versions := []*model.ArtifactVersion{}
 	imageMap := map[string]string{}
