@@ -496,9 +496,7 @@ func determineVersion(manifests []provider.Manifest) (string, error) {
 // determineVersions decides artifact versions of an application.
 // It finds all container images that are being specified in the workload manifests then returns their names, version numbers, and urls.
 func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion, error) {
-	versions := []*model.ArtifactVersion{}
 	imageMap := map[string]struct{}{}
-
 	for _, m := range manifests {
 		// TODO: Determine container image version from other workload kinds such as StatefulSet, Pod, Daemon, CronJob...
 		if !m.Key.IsDeployment() {
@@ -520,6 +518,7 @@ func determineVersions(manifests []provider.Manifest) ([]*model.ArtifactVersion,
 		}
 	}
 
+	versions := make([]*model.ArtifactVersion, 0, len(imageMap))
 	for i := range imageMap {
 		image := parseContainerImage(i)
 		versions = append(versions, &model.ArtifactVersion{
