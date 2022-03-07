@@ -41,9 +41,6 @@ pkg/app/web/src/service
 .ijwb
 .idea
 
-# Generated proto go files
-*.embed.go
-
 .dev
 
 # Terraform workspace

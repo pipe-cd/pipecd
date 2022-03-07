@@ -68,6 +68,3 @@ genrule(
 # gazelle:exclude pkg/model/role.pb.validate.go
 # gazelle:exclude pkg/model/user.pb.validate.go
 # gazelle:exclude pkg/app/helloworld/service/service.pb.validate.go
-# gazelle:exclude pkg/datastore/mysql/ensurer/sql.embed.go
-# gazelle:exclude pkg/app/ops/handler/templates.embed.go
-# gazelle:exclude pkg/app/ops/firestoreindexensurer/indexes.embed.go

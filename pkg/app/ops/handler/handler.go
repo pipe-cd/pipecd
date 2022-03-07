@@ -16,6 +16,7 @@ package handler
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -30,12 +31,15 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
+//go:embed templates/*
+var templateFS embed.FS
+
 var (
-	topPageTmpl           = template.Must(template.New("Top").Parse(Templates["Top"]))
-	listProjectsTmpl      = template.Must(template.New("ListProjects").Parse(Templates["ListProjects"]))
-	applicationCountsTmpl = template.Must(template.New("ApplicationCounts").Parse(Templates["ApplicationCounts"]))
-	addProjectTmpl        = template.Must(template.New("AddProject").Parse(Templates["AddProject"]))
-	addedProjectTmpl      = template.Must(template.New("AddedProject").Parse(Templates["AddedProject"]))
+	topPageTmpl           = template.Must(template.ParseFS(templateFS, "templates/Top"))
+	listProjectsTmpl      = template.Must(template.ParseFS(templateFS, "templates/ListProjects"))
+	applicationCountsTmpl = template.Must(template.ParseFS(templateFS, "templates/ApplicationCounts"))
+	addProjectTmpl        = template.Must(template.ParseFS(templateFS, "templates/AddProject"))
+	addedProjectTmpl      = template.Must(template.ParseFS(templateFS, "templates/AddedProject"))
 )
 
 type projectStore interface {

@@ -17,6 +17,7 @@ package ensurer
 import (
 	"context"
 	"database/sql"
+	_ "embed"
 	"fmt"
 	"strings"
 
@@ -27,8 +28,10 @@ import (
 )
 
 var (
-	mysqlDatabaseSchema  = mysqlProperties_1
-	mysqlDatabaseIndexes = mysqlProperties_0
+	//go:embed schema.sql
+	mysqlDatabaseSchema string
+	//go:embed indexes.sql
+	mysqlDatabaseIndexes string
 )
 
 const (

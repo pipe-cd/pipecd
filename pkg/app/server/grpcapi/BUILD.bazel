@@ -58,5 +58,3 @@ go_test(
         "@org_uber_go_zap//:go_default_library",
     ],
 )
-
-load("@io_bazel_rules_go//go:def.bzl", "go_embed_data")

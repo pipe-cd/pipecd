@@ -2,9 +2,13 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "handler.go",
-        ":templates.embed",  #keep
+    srcs = ["handler.go"],
+    embedsrcs = [
+        "templates/AddProject",
+        "templates/AddedProject",
+        "templates/ApplicationCounts",
+        "templates/ListProjects",
+        "templates/Top",
     ],
     importpath = "github.com/pipe-cd/pipecd/pkg/app/ops/handler",
     visibility = ["//visibility:public"],
@@ -15,18 +19,6 @@ go_library(
         "//pkg/model:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
-)
-
-load("@io_bazel_rules_go//go:def.bzl", "go_embed_data")
-
-go_embed_data(
-    name = "templates.embed",
-    srcs = glob(["templates/*"]),
-    flatten = True,
-    package = "handler",
-    string = True,
-    var = "Templates",
-    visibility = ["//visibility:public"],
 )
 
 go_test(

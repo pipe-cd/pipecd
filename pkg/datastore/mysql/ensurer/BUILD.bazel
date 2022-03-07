@@ -4,8 +4,11 @@ go_library(
     name = "go_default_library",
     srcs = [
         "client.go",
-        "sql.embed",  #keep
         "sqlsensurer.go",
+    ],
+    embedsrcs = [
+        "indexes.sql",
+        "schema.sql",
     ],
     importpath = "github.com/pipe-cd/pipecd/pkg/datastore/mysql/ensurer",
     visibility = ["//visibility:public"],
@@ -14,19 +17,6 @@ go_library(
         "@com_github_go_sql_driver_mysql//:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
-)
-
-load("@io_bazel_rules_go//go:def.bzl", "go_embed_data")
-
-go_embed_data(
-    name = "sql.embed",
-    srcs = [
-        "indexes.sql",
-        "schema.sql",
-    ],
-    package = "ensurer",
-    string = True,
-    var = "mysqlProperties",
 )
 
 go_test(

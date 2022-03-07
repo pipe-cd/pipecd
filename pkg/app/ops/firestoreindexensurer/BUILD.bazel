@@ -6,8 +6,8 @@ go_library(
         "gcloud.go",
         "indexensurer.go",
         "indexes.go",
-        ":indexes.embed",  #keep
     ],
+    embedsrcs = ["indexes.json"],
     importpath = "github.com/pipe-cd/pipecd/pkg/app/ops/firestoreindexensurer",
     visibility = ["//visibility:public"],
     deps = ["@org_uber_go_zap//:go_default_library"],
@@ -26,14 +26,4 @@ go_test(
         "@com_github_stretchr_testify//assert:go_default_library",
         "@com_github_stretchr_testify//require:go_default_library",
     ],
-)
-
-load("@io_bazel_rules_go//go:def.bzl", "go_embed_data")
-
-go_embed_data(
-    name = "indexes.embed",
-    src = "indexes.json",
-    package = "firestoreindexensurer",
-    var = "indexesJSON",
-    visibility = ["//visibility:public"],
 )
