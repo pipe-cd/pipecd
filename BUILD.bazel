@@ -52,7 +52,3 @@ genrule(
 # gazelle:exclude pkg/app/server/service/pipedservice/*.proto
 # gazelle:exclude pkg/app/server/service/apiservice/*.proto
 # gazelle:exclude pkg/app/helloworld/service/*.proto
-
-# gazelle:exclude pkg/datastore/mysql/ensurer/sql.embed.go
-# gazelle:exclude pkg/app/ops/handler/templates.embed.go
-# gazelle:exclude pkg/app/ops/firestoreindexensurer/indexes.embed.go
