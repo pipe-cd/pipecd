@@ -42,7 +42,6 @@ pkg/app/web/src/service
 .idea
 
 # Generated proto go files
-*.mock.go
 *.embed.go
 
 .dev

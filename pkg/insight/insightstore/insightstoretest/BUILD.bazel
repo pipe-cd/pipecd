@@ -2,28 +2,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "insightstore.mock.go",
-        "mock.go",
-    ],
+    srcs = ["insightstore.mock.go"],
     importpath = "github.com/pipe-cd/pipecd/pkg/insight/insightstore/insightstoretest",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/insight:go_default_library",
-        "//pkg/insight/insightstore:go_default_library",
         "//pkg/model:go_default_library",
         "@com_github_golang_mock//gomock:go_default_library",
     ],
-)
-
-load("//bazel:gomock.bzl", "gomock")
-
-gomock(
-    name = "mock_insightstore",
-    out = "insightstore.mock.go",
-    interfaces = [
-        "Store",
-    ],
-    library = "//pkg/insight/insightstore:go_default_library",
-    package = "insightstoretest",
 )

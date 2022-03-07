@@ -2,32 +2,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "datastore.mock.go",
-        "mock.go",
-    ],
+    srcs = ["datastore.mock.go"],
     importpath = "github.com/pipe-cd/pipecd/pkg/datastore/datastoretest",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/crypto:go_default_library",
         "//pkg/datastore:go_default_library",
         "//pkg/model:go_default_library",
         "@com_github_golang_mock//gomock:go_default_library",
     ],
-)
-
-load("//bazel:gomock.bzl", "gomock")
-
-gomock(
-    name = "mock_datastore",
-    out = "datastore.mock.go",
-    interfaces = [
-        "ProjectStore",
-        "PipedStore",
-        "ApplicationStore",
-        "DeploymentStore",
-        "CommandStore",
-    ],
-    library = "//pkg/datastore:go_default_library",
-    package = "datastoretest",
 )

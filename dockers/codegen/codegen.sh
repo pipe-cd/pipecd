@@ -81,6 +81,65 @@ while [ $i -lt ${#jsProtoDirs[*]} ]; do
   echo "successfully generated"
 done
 
+
+# Generate Go mock.
+# TODO: This is just a temporary solution. We will move to have .codegen.yaml config file instead of hard coding like this.
+mockPackageNames=(
+  "redistest"
+  "datastoretest"
+  "filestoretest"
+  "providertest"
+  "cachetest"
+  "gittest"
+  "jwttest"
+  "insightstoretest"
+)
+mockDestinations=(
+  "pkg/redis/redistest/redis.mock.go"
+  "pkg/datastore/datastoretest/datastore.mock.go"
+  "pkg/filestore/filestoretest/filestore.mock.go"
+  "pkg/app/piped/cloudprovider/kubernetes/providertest/provider.mock.go"
+  "pkg/cache/cachetest/cache.mock.go"
+  "pkg/git/gittest/git.mock.go"
+  "pkg/jwt/jwttest/jwt.mock.go"
+  "pkg/insight/insightstore/insightstoretest/insightstore.mock.go"
+)
+mockSources=(
+  "github.com/pipe-cd/pipecd/pkg/redis"
+  "github.com/pipe-cd/pipecd/pkg/datastore"
+  "github.com/pipe-cd/pipecd/pkg/filestore"
+  "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
+  "github.com/pipe-cd/pipecd/pkg/cache"
+  "github.com/pipe-cd/pipecd/pkg/git"
+  "github.com/pipe-cd/pipecd/pkg/jwt"
+  "github.com/pipe-cd/pipecd/pkg/insight/insightstore"
+)
+mockInterfaces=(
+  "Redis"
+  "ProjectStore,PipedStore,ApplicationStore,DeploymentStore,CommandStore"
+  "Store"
+  "Provider"
+  "Getter,Putter,Deleter,Cache"
+  "Repo"
+  "Signer,Verifier"
+  "Store"
+)
+
+i=0
+while [ $i -lt ${#mockPackageNames[*]} ]; do
+  package=${mockPackageNames[$i]}
+  destination=${mockDestinations[$i]}
+  source=${mockSources[$i]}
+  interfaces=${mockInterfaces[$i]}
+  i=$(( $i + 1))
+
+  echo ""
+  echo "- ${destination}"
+  echo "generating mock..."
+  mockgen --build_flags=--mod=mod --package=${package} --destination=${destination} ${source} ${interfaces}
+  echo "successfully generated"
+done
+
 echo ""
 echo "Successfully generated all code"
 echo ""
