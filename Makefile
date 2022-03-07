@@ -74,10 +74,6 @@ buildifier:
 clean:
 	bazelisk clean --expunge
 
-.PHONY: expose-generated-go
-expose-generated-go:
-	./hack/expose-generated-go.sh pipe-cd pipecd
-
 .PHONY: site
 site:
 	env RELEASE=$(shell cut -c10- release/RELEASE) hugo server --source=docs
