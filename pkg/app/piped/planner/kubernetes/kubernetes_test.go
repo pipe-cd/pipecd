@@ -519,7 +519,7 @@ func TestDetermineVersions(t *testing.T) {
 			require.NoError(t, err)
 
 			versions, err := determineVersions(manifests)
-			assert.Equal(t, tc.expected, versions)
+			assert.ElementsMatch(t, tc.expected, versions)
 			assert.Equal(t, tc.expectedError, err)
 		})
 	}
