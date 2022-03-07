@@ -34,13 +34,6 @@ go_register_toolchains(
     go_version = "1.17.6",
 )
 
-load(
-    "@io_bazel_rules_go//extras:embed_data_deps.bzl",
-    "go_embed_data_dependencies",
-)
-
-go_embed_data_dependencies()
-
 http_archive(
     name = "bazel_gazelle",
     sha256 = "de69a09dc70417580aabf20a28619bb3ef60d038470c7cf8442fafcf627c21cb",

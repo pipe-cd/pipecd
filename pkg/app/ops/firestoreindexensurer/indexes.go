@@ -15,10 +15,14 @@
 package firestoreindexensurer
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"strings"
 )
+
+//go:embed indexes.json
+var indexesJSON []byte
 
 // index represents a Firestore composite index.
 type index struct {

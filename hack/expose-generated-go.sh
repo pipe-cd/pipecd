@@ -113,25 +113,6 @@ for package in $(bazelisk query 'kind(gomock, //...)' --output package); do
 	expose_package ${out_path} ${package} old_links generated_files
 done
 
-############################
-# For go_embed_data go files
-############################
-
-# Link to the generated files and add them to excluding list in the root BUILD file.
-for label in $(bazelisk query 'kind(go_embed_data, //...)'); do
-	package="${label%%:*}"
-	package="${package##//}"
-	target="${label##*:}"
-	[[ -d "${package}" ]] || continue
-
-	# Compute the path where Bazel puts the files.
-	out_path="bazel-bin/${package}"
-
-	old_links=${package}/${target}.go
-	generated_files=${out_path}/${target}.go
-	expose_package ${out_path} ${package} old_links generated_files
-done
-
 # Reset the root BUILD file
 cat ${GENERATED_BUILD_FILE} > ${BUILD_FILE}
 rm ${GENERATED_BUILD_FILE}
