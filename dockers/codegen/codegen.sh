@@ -70,10 +70,10 @@ while [ $i -lt ${#jsProtoDirs[*]} ]; do
     -I . \
     -I /go/src/github.com/envoyproxy/protoc-gen-validate \
     --js_out=import_style=commonjs:. \
-    --grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:. \
+    --grpc-web_out=import_style=commonjs+dts,mode=grpcweb:. \
     ${inDir}/*.proto
   mv ${inDir}/*.js ${outDir}
-  mv ${inDir}/*.d.ts ${outDir}
+  mv ${inDir}/*.ts ${outDir}
 
   find ${outDir} -type f -exec sed -i 's:.*validate_pb.*::g' {} \;
   find ${outDir} -type f -exec sed -i "s:'.*pkg:'pipecd\/pkg\/app\/web:g;" {} \;
