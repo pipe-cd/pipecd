@@ -3,8 +3,8 @@ import { StatusCode } from "grpc-web";
 import {
   ApplicationActiveStatus,
   ApplicationKind,
-} from "pipe/pkg/app/web/model/common_pb";
-import { InsightApplicationCountLabelKey } from "pipe/pkg/app/web/model/insight_pb";
+} from "pipecd/pkg/app/web/model/common_pb";
+import { InsightApplicationCountLabelKey } from "pipecd/pkg/app/web/model/insight_pb";
 import { getApplicationCount } from "~/api/insight";
 import { APPLICATION_ACTIVE_STATUS_NAME } from "~/constants/application-active-status";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
@@ -104,4 +104,4 @@ export const applicationCountsSlice = createSlice({
 export {
   InsightApplicationCount,
   InsightApplicationCountLabelKey,
-} from "pipe/pkg/app/web/model/insight_pb";
+} from "pipecd/pkg/app/web/model/insight_pb";

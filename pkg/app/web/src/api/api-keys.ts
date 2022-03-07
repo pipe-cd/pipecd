@@ -6,7 +6,7 @@ import {
   DisableAPIKeyResponse,
   ListAPIKeysRequest,
   ListAPIKeysResponse,
-} from "pipe/pkg/app/web/api_client/service_pb";
+} from "pipecd/pkg/app/web/api_client/service_pb";
 import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
 
 export const getAPIKeys = ({

@@ -8,12 +8,12 @@ import {
 import {
   Application,
   ApplicationSyncStatus,
-} from "pipe/pkg/app/web/model/application_pb";
+} from "pipecd/pkg/app/web/model/application_pb";
 import * as applicationsAPI from "~/api/applications";
 import {
   ApplicationGitRepository,
   ApplicationKind,
-} from "pipe/pkg/app/web/model/common_pb";
+} from "pipecd/pkg/app/web/model/common_pb";
 import { SyncStrategy } from "../deployments";
 import { fetchCommand, CommandStatus, Command } from "../commands";
 import type { AppState } from "~/store";
@@ -241,9 +241,9 @@ export {
   ApplicationSyncState,
   ApplicationSyncStatus,
   ApplicationDeploymentReference,
-} from "pipe/pkg/app/web/model/application_pb";
+} from "pipecd/pkg/app/web/model/application_pb";
 export {
   ApplicationKind,
   ApplicationActiveStatus,
   ApplicationGitRepository,
-} from "pipe/pkg/app/web/model/common_pb";
+} from "pipecd/pkg/app/web/model/common_pb";

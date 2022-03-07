@@ -1,4 +1,4 @@
-import { SyncStrategy } from "pipe/pkg/app/web/model/common_pb";
+import { SyncStrategy } from "pipecd/pkg/app/web/model/common_pb";
 import { Command, CommandStatus } from "~/modules/commands";
 import { dummyDeployment } from "./dummy-deployment";
 import { createRandTimes } from "./utils";

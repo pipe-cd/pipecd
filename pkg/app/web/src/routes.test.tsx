@@ -1,6 +1,6 @@
 import { waitFor } from "@testing-library/react";
 import { setupServer } from "msw/node";
-import { GetMeResponse } from "pipe/pkg/app/web/api_client/service_pb";
+import { GetMeResponse } from "pipecd/pkg/app/web/api_client/service_pb";
 import { MemoryRouter } from "react-router-dom";
 import { createHandler } from "~/mocks/create-handler";
 import { render, screen } from "~~/test-utils";

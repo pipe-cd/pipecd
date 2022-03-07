@@ -1,4 +1,4 @@
-import { Piped } from "pipe/pkg/app/web/model/piped_pb";
+import { Piped } from "pipecd/pkg/app/web/model/piped_pb";
 
 export const PIPED_CONNECTION_STATUS_TEXT: Record<
   Piped.ConnectionStatus,

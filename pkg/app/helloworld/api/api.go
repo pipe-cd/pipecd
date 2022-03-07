@@ -40,6 +40,8 @@ func init() {
 }
 
 type api struct {
+	service.UnimplementedHelloWorldServer
+
 	logger *zap.Logger
 }
 

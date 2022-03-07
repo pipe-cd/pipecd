@@ -2,11 +2,11 @@ import { StatusCode } from "grpc-web";
 import {
   GetInsightDataResponse,
   GetInsightApplicationCountResponse,
-} from "pipe/pkg/app/web/api_client/service_pb";
+} from "pipecd/pkg/app/web/api_client/service_pb";
 import {
   InsightResultType,
   InsightSampleStream,
-} from "pipe/pkg/app/web/model/insight_pb";
+} from "pipecd/pkg/app/web/model/insight_pb";
 import {
   dummyApplicationCounts,
   createInsightApplicationCountFromObject,

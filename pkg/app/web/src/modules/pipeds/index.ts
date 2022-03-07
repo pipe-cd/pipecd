@@ -4,7 +4,7 @@ import {
   createEntityAdapter,
   EntityId,
 } from "@reduxjs/toolkit";
-import { Piped } from "pipe/pkg/app/web/model/piped_pb";
+import { Piped } from "pipecd/pkg/app/web/model/piped_pb";
 import type { AppState } from "~/store";
 import * as pipedsApi from "~/api/piped";
 
@@ -144,4 +144,4 @@ export const pipedsSlice = createSlice({
 });
 
 export const { clearRegisteredPipedInfo } = pipedsSlice.actions;
-export { Piped, PipedKey } from "pipe/pkg/app/web/model/piped_pb";
+export { Piped, PipedKey } from "pipecd/pkg/app/web/model/piped_pb";

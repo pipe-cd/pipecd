@@ -100,6 +100,8 @@ type webApiAPIKeyStore interface {
 
 // WebAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
+	webservice.UnimplementedWebServiceServer
+
 	applicationStore          webApiApplicationStore
 	deploymentChainStore      webApiDeploymentChainStore
 	deploymentStore           webApiDeploymentStore

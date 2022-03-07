@@ -2,7 +2,7 @@ import {
   Project,
   ProjectRBACConfig,
   ProjectStaticUser,
-} from "pipe/pkg/app/web/model/project_pb";
+} from "pipecd/pkg/app/web/model/project_pb";
 import {
   createRandTimes,
   randomKeyHash,

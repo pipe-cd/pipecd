@@ -8,7 +8,7 @@ import {
   CancelDeploymentResponse,
   ApproveStageRequest,
   ApproveStageResponse,
-} from "pipe/pkg/app/web/api_client/service_pb";
+} from "pipecd/pkg/app/web/api_client/service_pb";
 
 export const getDeployment = ({
   deploymentId,

@@ -61,7 +61,7 @@ proto.grpc.service.webservice = require('./service_pb.js');
 proto.grpc.service.webservice.WebServiceClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options.format = 'binary';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -87,7 +87,7 @@ proto.grpc.service.webservice.WebServiceClient =
 proto.grpc.service.webservice.WebServicePromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
-  options.format = 'text';
+  options.format = 'binary';
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client

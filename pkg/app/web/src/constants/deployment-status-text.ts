@@ -1,4 +1,4 @@
-import { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
+import { DeploymentStatus } from "pipecd/pkg/app/web/model/deployment_pb";
 
 export const DEPLOYMENT_STATE_TEXT: Record<DeploymentStatus, string> = {
   [DeploymentStatus.DEPLOYMENT_PENDING]: "PENDING",

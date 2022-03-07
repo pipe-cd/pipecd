@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { Role } from "pipe/pkg/app/web/model/role_pb";
+import { Role } from "pipecd/pkg/app/web/model/role_pb";
 import { getMe } from "~/api/me";
 
 interface Me {
@@ -40,4 +40,4 @@ export const selectProjectName = (state: { me: MeState }): string => {
   return "";
 };
 
-export { Role } from "pipe/pkg/app/web/model/role_pb";
+export { Role } from "pipecd/pkg/app/web/model/role_pb";

@@ -4,7 +4,7 @@ import {
   GetInsightDataResponse,
   GetInsightApplicationCountRequest,
   GetInsightApplicationCountResponse,
-} from "pipe/pkg/app/web/api_client/service_pb";
+} from "pipecd/pkg/app/web/api_client/service_pb";
 
 export const getInsightData = ({
   applicationId,

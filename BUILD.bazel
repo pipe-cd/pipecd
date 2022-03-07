@@ -46,25 +46,9 @@ genrule(
     outs = ["pipectl"],
     cmd = "cp $< $@",
 )
-# gazelle:exclude pkg/app/server/service/webservice/service.pb.validate.go
-# gazelle:exclude pkg/app/server/service/pipedservice/service.pb.validate.go
-# gazelle:exclude pkg/app/server/service/apiservice/service.pb.validate.go
-# gazelle:exclude pkg/model/analysis_result.pb.validate.go
-# gazelle:exclude pkg/model/apikey.pb.validate.go
-# gazelle:exclude pkg/model/application.pb.validate.go
-# gazelle:exclude pkg/model/application_live_state.pb.validate.go
-# gazelle:exclude pkg/model/command.pb.validate.go
-# gazelle:exclude pkg/model/common.pb.validate.go
-# gazelle:exclude pkg/model/deployment.pb.validate.go
-# gazelle:exclude pkg/model/deployment_chain.pb.validate.go
-# gazelle:exclude pkg/model/event.pb.validate.go
-# gazelle:exclude pkg/model/insight.pb.validate.go
-# gazelle:exclude pkg/model/logblock.pb.validate.go
-# gazelle:exclude pkg/model/notificationevent.pb.validate.go
-# gazelle:exclude pkg/model/piped.pb.validate.go
-# gazelle:exclude pkg/model/piped_stat.pb.validate.go
-# gazelle:exclude pkg/model/planpreview.pb.validate.go
-# gazelle:exclude pkg/model/project.pb.validate.go
-# gazelle:exclude pkg/model/role.pb.validate.go
-# gazelle:exclude pkg/model/user.pb.validate.go
-# gazelle:exclude pkg/app/helloworld/service/service.pb.validate.go
+
+# gazelle:exclude pkg/model/*.proto
+# gazelle:exclude pkg/app/server/service/webservice/*.proto
+# gazelle:exclude pkg/app/server/service/pipedservice/*.proto
+# gazelle:exclude pkg/app/server/service/apiservice/*.proto
+# gazelle:exclude pkg/app/helloworld/service/*.proto

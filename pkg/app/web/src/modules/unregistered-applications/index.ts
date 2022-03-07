@@ -3,7 +3,7 @@ import {
   createSlice,
   createEntityAdapter,
 } from "@reduxjs/toolkit";
-import { ApplicationInfo } from "pipe/pkg/app/web/model/common_pb";
+import { ApplicationInfo } from "pipecd/pkg/app/web/model/common_pb";
 import type { AppState } from "~/store";
 import * as applicationsAPI from "~/api/applications";
 
@@ -28,7 +28,7 @@ export const fetchUnregisteredApplications = createAsyncThunk<
   return applicationsList as ApplicationInfo.AsObject[];
 });
 
-export { ApplicationInfo } from "pipe/pkg/app/web/model/common_pb";
+export { ApplicationInfo } from "pipecd/pkg/app/web/model/common_pb";
 
 export const unregisteredApplicationsSlice = createSlice({
   name: MODULE_NAME,

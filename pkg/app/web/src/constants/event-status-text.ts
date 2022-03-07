@@ -1,4 +1,4 @@
-import { EventStatus } from "pipe/pkg/app/web/model/event_pb";
+import { EventStatus } from "pipecd/pkg/app/web/model/event_pb";
 
 export const EVENT_STATE_TEXT: Record<EventStatus, string> = {
   [EventStatus.EVENT_NOT_HANDLED]: "NOT HANDLED",

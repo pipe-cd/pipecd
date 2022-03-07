@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
   ProjectRBACConfig,
   ProjectSSOConfig,
-} from "pipe/pkg/app/web/model/project_pb";
+} from "pipecd/pkg/app/web/model/project_pb";
 import * as projectAPI from "~/api/project";
 import type { AppState } from "~/store";
 
@@ -141,4 +141,4 @@ export const projectSlice = createSlice({
   },
 });
 
-export { ProjectSSOConfig } from "pipe/pkg/app/web/model/project_pb";
+export { ProjectSSOConfig } from "pipecd/pkg/app/web/model/project_pb";

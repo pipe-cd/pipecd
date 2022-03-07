@@ -1,8 +1,8 @@
-import { SyncStrategy } from "pipe/pkg/app/web/model/common_pb";
+import { SyncStrategy } from "pipecd/pkg/app/web/model/common_pb";
 import {
   DeploymentTrigger,
   Commit,
-} from "pipe/pkg/app/web/model/deployment_pb";
+} from "pipecd/pkg/app/web/model/deployment_pb";
 import { createRandTime, randomUUID } from "./utils";
 
 const commitTimestamp = createRandTime();

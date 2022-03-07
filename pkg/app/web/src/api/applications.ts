@@ -20,9 +20,9 @@ import {
   DeleteApplicationResponse,
   ListUnregisteredApplicationsRequest,
   ListUnregisteredApplicationsResponse,
-} from "pipe/pkg/app/web/api_client/service_pb";
-import { ApplicationGitPath } from "pipe/pkg/app/web/model/common_pb";
-import { ApplicationGitRepository } from "pipe/pkg/app/web/model/common_pb";
+} from "pipecd/pkg/app/web/api_client/service_pb";
+import { ApplicationGitPath } from "pipecd/pkg/app/web/model/common_pb";
+import { ApplicationGitRepository } from "pipecd/pkg/app/web/model/common_pb";
 import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
 
 export const getApplicationLiveState = ({

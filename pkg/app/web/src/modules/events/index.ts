@@ -3,11 +3,11 @@ import {
   createEntityAdapter,
   createSlice,
 } from "@reduxjs/toolkit";
-import { Event, EventStatus } from "pipe/pkg/app/web/model/event_pb";
+import { Event, EventStatus } from "pipecd/pkg/app/web/model/event_pb";
 import * as eventsApi from "~/api/events";
 import type { AppState } from "~/store";
 import { LoadingStatus } from "~/types/module";
-import { ListEventsRequest } from "pipe/pkg/app/web/api_client/service_pb";
+import { ListEventsRequest } from "pipecd/pkg/app/web/api_client/service_pb";
 
 export type EventStatusKey = keyof typeof EventStatus;
 
@@ -160,4 +160,4 @@ export const {
   selectIds,
 } = eventsAdapter.getSelectors();
 
-export { Event, EventStatus } from "pipe/pkg/app/web/model/event_pb";
+export { Event, EventStatus } from "pipecd/pkg/app/web/model/event_pb";

@@ -6,7 +6,7 @@ module.exports = {
       "<rootDir>/file-transformer.js",
   },
   moduleNameMapper: {
-    "^pipe/(.*)$": "<rootDir>/../../../bazel-bin/$1",
+    "^pipecd/(.*)$": "<rootDir>/../../../bazel-bin/$1",
     "^~/(.*)$": "<rootDir>/src/$1",
     "^~~/(.*)$": "<rootDir>/$1",
   },

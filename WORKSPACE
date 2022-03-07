@@ -43,14 +43,6 @@ http_archive(
     ],
 )
 
-### Protoc-gen-validate
-git_repository(
-    name = "com_github_envoyproxy_protoc_gen_validate",
-    commit = "9eff07ddfcb4001aa1aab280648153f46e1a8ddc",
-    remote = "https://github.com/envoyproxy/protoc-gen-validate.git",
-    shallow_since = "1560436592 +0000",
-)
-
 ### Load dependencies.
 load("//:repositories.bzl", "go_repositories")
 

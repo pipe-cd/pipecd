@@ -1,40 +1,21 @@
 load("@npm//webpack-cli:index.bzl", webpack = "webpack_cli")
-load("@npm//@bazel/labs:index.bzl", "ts_proto_library")
 load("@npm//@bazel/typescript:index.bzl", "ts_project")
-load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
 load(":jest.bzl", "jest_test")
-
-ts_proto_library(
-    name = "api_proto",
-    proto = "//pkg/app/server/service/webservice:webservice_proto",
-)
-
-ts_proto_library(
-    name = "model_proto_ts",
-    proto = "//pkg/model:model_proto",
-)
-
-nodejs_binary(
-    name = "strip_imports",
-    entry_point = ":strip-imports.js",
-)
 
 genrule(
     name = "build_api",
-    srcs = [":api_proto"],
+    srcs = glob(["api_client/*"]),
     outs = ["api_client"],
-    cmd = "$(locations strip_imports) $(OUTS) $(SRCS)",
+    cmd = "mkdir $(OUTS) && cp $(SRCS) $(OUTS)",
     output_to_bindir = True,
-    tools = [":strip_imports"],
 )
 
 genrule(
     name = "build_model",
-    srcs = [":model_proto_ts"],
+    srcs = glob(["model/*"]),
     outs = ["model"],
-    cmd = "$(locations strip_imports) $(OUTS) $(SRCS)",
+    cmd = "mkdir $(OUTS) && cp $(SRCS) $(OUTS)",
     output_to_bindir = True,
-    tools = [":strip_imports"],
 )
 
 ts_project(

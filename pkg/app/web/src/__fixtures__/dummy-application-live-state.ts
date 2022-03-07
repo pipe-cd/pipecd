@@ -1,9 +1,9 @@
-import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
+import { ApplicationKind } from "pipecd/pkg/app/web/model/common_pb";
 import {
   ApplicationLiveStateVersion,
   KubernetesApplicationLiveState,
   KubernetesResourceState,
-} from "pipe/pkg/app/web/model/application_live_state_pb";
+} from "pipecd/pkg/app/web/model/application_live_state_pb";
 import {
   ApplicationLiveState,
   ApplicationLiveStateSnapshot,
