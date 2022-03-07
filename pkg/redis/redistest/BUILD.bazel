@@ -2,25 +2,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "mock.go",
-        "redis.mock.go",
-    ],
+    srcs = ["redis.mock.go"],
     importpath = "github.com/pipe-cd/pipecd/pkg/redis/redistest",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/redis:go_default_library",
         "@com_github_golang_mock//gomock:go_default_library",
         "@com_github_gomodule_redigo//redis:go_default_library",
     ],
-)
-
-load("//bazel:gomock.bzl", "gomock")
-
-gomock(
-    name = "mock_redis",
-    out = "redis.mock.go",
-    interfaces = ["Redis"],
-    library = "//pkg/redis:go_default_library",
-    package = "redistest",
 )

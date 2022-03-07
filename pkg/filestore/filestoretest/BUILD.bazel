@@ -2,26 +2,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "filestore.mock.go",
-        "mock.go",
-    ],
+    srcs = ["filestore.mock.go"],
     importpath = "github.com/pipe-cd/pipecd/pkg/filestore/filestoretest",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/filestore:go_default_library",
         "@com_github_golang_mock//gomock:go_default_library",
     ],
-)
-
-load("//bazel:gomock.bzl", "gomock")
-
-gomock(
-    name = "mock_filestore",
-    out = "filestore.mock.go",
-    interfaces = [
-        "Store",
-    ],
-    library = "//pkg/filestore:go_default_library",
-    package = "filestoretest",
 )
