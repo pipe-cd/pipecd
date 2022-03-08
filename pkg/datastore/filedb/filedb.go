@@ -16,6 +16,7 @@ package filedb
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 
@@ -218,11 +219,71 @@ func (f *FileDB) Create(ctx context.Context, col datastore.Collection, id string
 }
 
 func (f *FileDB) Update(ctx context.Context, col datastore.Collection, id string, updater datastore.Updater) error {
-	_, ok := col.(datastore.ShardStorable)
+	scol, ok := col.(datastore.ShardStorable)
 	if !ok {
 		return datastore.ErrUnsupported
 	}
-	return datastore.ErrUnimplemented
+
+	kind := col.Kind()
+	shard, err := scol.GetUpdatableShard()
+	if err != nil {
+		f.logger.Error("failed to prepare updatable shard",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	path := makeHotStorageFilePath(kind, id, shard)
+	raw, err := f.fetch(ctx, path)
+	if err != nil {
+		f.logger.Error("failed to fetch updatable shard",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	entity := col.Factory()()
+	if err = json.Unmarshal(raw, entity); err != nil {
+		f.logger.Error("failed to decode entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	if err = updater(entity); err != nil {
+		f.logger.Error("failed to apply updater",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	val, err := json.Marshal(entity)
+	if err != nil {
+		f.logger.Error("failed to encode entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	if err = f.backend.Put(ctx, path, val); err != nil {
+		f.logger.Error("failed to update entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+	return nil
 }
 
 func (f *FileDB) Close() error {
