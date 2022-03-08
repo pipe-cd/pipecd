@@ -20,7 +20,6 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -514,13 +513,13 @@ func makePipedArgs(launcherArgs []string, configFile string) []string {
 	return pipedArgs
 }
 
-func parseConfig(data []byte) (*launcherSpec, error) {
+func parseConfig(data []byte) (*config.LauncherSpec, error) {
 	js, err := yaml.YAMLToJSON(data)
 	if err != nil {
 		return nil, err
 	}
 
-	c := &launcherConfig{}
+	c := &config.LauncherConfig{}
 	if err := json.Unmarshal(js, c); err != nil {
 		return nil, err
 	}
@@ -529,57 +528,6 @@ func parseConfig(data []byte) (*launcherSpec, error) {
 		return nil, err
 	}
 	return &c.Spec, nil
-}
-
-type launcherConfig struct {
-	Kind       config.Kind  `json:"kind"`
-	APIVersion string       `json:"apiVersion,omitempty"`
-	Spec       launcherSpec `json:"spec"`
-}
-
-func (c *launcherConfig) Validate() error {
-	if c.Kind != config.KindPiped {
-		return fmt.Errorf("wrong configuration kind for piped: %v", c.Kind)
-	}
-	if c.Spec.ProjectID == "" {
-		return errors.New("projectID must be set")
-	}
-	if c.Spec.PipedID == "" {
-		return errors.New("pipedID must be set")
-	}
-	if c.Spec.PipedKeyData == "" && c.Spec.PipedKeyFile == "" {
-		return errors.New("either pipedKeyFile or pipedKeyData must be set")
-	}
-	if c.Spec.PipedKeyData != "" && c.Spec.PipedKeyFile != "" {
-		return errors.New("only pipedKeyFile or pipedKeyData can be set")
-	}
-	if c.Spec.APIAddress == "" {
-		return errors.New("apiAddress must be set")
-	}
-	return nil
-}
-
-type launcherSpec struct {
-	// The identifier of the PipeCD project where this piped belongs to.
-	ProjectID string
-	// The unique identifier generated for this piped.
-	PipedID string
-	// The path to the file containing the generated Key string for this piped.
-	PipedKeyFile string
-	// Base64 encoded string of Piped key.
-	PipedKeyData string
-	// The address used to connect to the control-plane's API.
-	APIAddress string `json:"apiAddress"`
-}
-
-func (s *launcherSpec) LoadPipedKey() ([]byte, error) {
-	if s.PipedKeyData != "" {
-		return base64.StdEncoding.DecodeString(s.PipedKeyData)
-	}
-	if s.PipedKeyFile != "" {
-		return os.ReadFile(s.PipedKeyFile)
-	}
-	return nil, errors.New("either pipedKeyFile or pipedKeyData must be set")
 }
 
 func makeDownloadURL(version string) string {
