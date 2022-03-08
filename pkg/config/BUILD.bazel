@@ -15,6 +15,7 @@ go_library(
         "control_plane.go",
         "duration.go",
         "event_watcher.go",
+        "launcher.go",
         "percentage.go",
         "piped.go",
         "replicas.go",
