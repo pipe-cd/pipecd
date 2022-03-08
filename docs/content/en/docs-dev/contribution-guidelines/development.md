@@ -32,7 +32,7 @@ For more information, you might want to read the [installation notes of `bazelis
 - `make gazelle`: generates `BUILD.bazel` files for go code. Run this command after adding a new `import` in go code or adding a new go file.
 - `make buildifier`: formats bazel BUILD and .bzl files with a standard convention.
 - `make clean`: cleans all bazel cache.
-- `make expose-generated-go`: exposes generated Go files (`.pb.go`, `.mock.go`...) to editors and IDEs.
+- `make codegen`: generate Go and Typescript code from protos and mock configs.
 - `make site`: runs PipeCD site (https://pipecd.dev) locally (requires [hugo](https://github.com/gohugoio/hugo) with `_extended` version `0.92.1` or later to be installed).
 
 **NOTE**: The first time of running a bazel command will take some minutes because bazel needs to download all required dependencies. From the second time it will be very fast.
