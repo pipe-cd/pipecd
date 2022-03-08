@@ -514,13 +514,13 @@ func makePipedArgs(launcherArgs []string, configFile string) []string {
 	return pipedArgs
 }
 
-func parseConfig(data []byte) (*LauncherSpec, error) {
+func parseConfig(data []byte) (*launcherSpec, error) {
 	js, err := yaml.YAMLToJSON(data)
 	if err != nil {
 		return nil, err
 	}
 
-	c := &Config{}
+	c := &launcherConfig{}
 	if err := json.Unmarshal(js, c); err != nil {
 		return nil, err
 	}
@@ -531,13 +531,13 @@ func parseConfig(data []byte) (*LauncherSpec, error) {
 	return &c.Spec, nil
 }
 
-type Config struct {
+type launcherConfig struct {
 	Kind       config.Kind  `json:"kind"`
 	APIVersion string       `json:"apiVersion,omitempty"`
-	Spec       LauncherSpec `json:"spec"`
+	Spec       launcherSpec `json:"spec"`
 }
 
-func (c *Config) Validate() error {
+func (c *launcherConfig) Validate() error {
 	if c.Kind != config.KindPiped {
 		return fmt.Errorf("wrong configuration kind for piped: %v", c.Kind)
 	}
@@ -559,7 +559,7 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-type LauncherSpec struct {
+type launcherSpec struct {
 	// The identifier of the PipeCD project where this piped belongs to.
 	ProjectID string
 	// The unique identifier generated for this piped.
@@ -572,7 +572,7 @@ type LauncherSpec struct {
 	APIAddress string `json:"apiAddress"`
 }
 
-func (s *LauncherSpec) LoadPipedKey() ([]byte, error) {
+func (s *launcherSpec) LoadPipedKey() ([]byte, error) {
 	if s.PipedKeyData != "" {
 		return base64.StdEncoding.DecodeString(s.PipedKeyData)
 	}
