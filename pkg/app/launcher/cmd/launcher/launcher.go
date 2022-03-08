@@ -19,6 +19,8 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/base64"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -33,6 +35,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 	"google.golang.org/grpc/credentials"
+	"sigs.k8s.io/yaml"
 
 	"github.com/pipe-cd/pipecd/pkg/admin"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
@@ -511,15 +514,72 @@ func makePipedArgs(launcherArgs []string, configFile string) []string {
 	return pipedArgs
 }
 
-func parseConfig(data []byte) (*config.PipedSpec, error) {
-	cfg, err := config.DecodeYAML(data)
+func parseConfig(data []byte) (*LauncherSpec, error) {
+	js, err := yaml.YAMLToJSON(data)
 	if err != nil {
 		return nil, err
 	}
-	if cfg.Kind != config.KindPiped {
-		return nil, fmt.Errorf("wrong configuration kind for piped: %v", cfg.Kind)
+
+	c := &Config{}
+	if err := json.Unmarshal(js, c); err != nil {
+		return nil, err
 	}
-	return cfg.PipedSpec, nil
+
+	if err := c.Validate(); err != nil {
+		return nil, err
+	}
+	return &c.Spec, nil
+}
+
+type Config struct {
+	Kind       config.Kind  `json:"kind"`
+	APIVersion string       `json:"apiVersion,omitempty"`
+	Spec       LauncherSpec `json:"spec"`
+}
+
+func (c *Config) Validate() error {
+	if c.Kind != config.KindPiped {
+		return fmt.Errorf("wrong configuration kind for piped: %v", c.Kind)
+	}
+	if c.Spec.ProjectID == "" {
+		return errors.New("projectID must be set")
+	}
+	if c.Spec.PipedID == "" {
+		return errors.New("pipedID must be set")
+	}
+	if c.Spec.PipedKeyData == "" && c.Spec.PipedKeyFile == "" {
+		return errors.New("either pipedKeyFile or pipedKeyData must be set")
+	}
+	if c.Spec.PipedKeyData != "" && c.Spec.PipedKeyFile != "" {
+		return errors.New("only pipedKeyFile or pipedKeyData can be set")
+	}
+	if c.Spec.APIAddress == "" {
+		return errors.New("apiAddress must be set")
+	}
+	return nil
+}
+
+type LauncherSpec struct {
+	// The identifier of the PipeCD project where this piped belongs to.
+	ProjectID string
+	// The unique identifier generated for this piped.
+	PipedID string
+	// The path to the file containing the generated Key string for this piped.
+	PipedKeyFile string
+	// Base64 encoded string of Piped key.
+	PipedKeyData string
+	// The address used to connect to the control-plane's API.
+	APIAddress string `json:"apiAddress"`
+}
+
+func (s *LauncherSpec) LoadPipedKey() ([]byte, error) {
+	if s.PipedKeyData != "" {
+		return base64.StdEncoding.DecodeString(s.PipedKeyData)
+	}
+	if s.PipedKeyFile != "" {
+		return os.ReadFile(s.PipedKeyFile)
+	}
+	return nil, errors.New("either pipedKeyFile or pipedKeyData must be set")
 }
 
 func makeDownloadURL(version string) string {
