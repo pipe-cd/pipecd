@@ -497,8 +497,12 @@ func (l *launcher) createAPIClient(ctx context.Context, address, projectID, pipe
 
 // makePipedArgs generates arguments for Piped from the ones passed to Launcher.
 func makePipedArgs(launcherArgs []string, configFile string) []string {
-	pipedArgs := make([]string, 0, len(launcherArgs)+2)
-	pipedArgs = append(pipedArgs, "piped", "--config-file="+configFile)
+	pipedArgs := make([]string, 0, len(launcherArgs)+3)
+	pipedArgs = append(pipedArgs,
+		"piped",
+		"--config-file="+configFile,
+		"--launcher-version="+version.Get().Version,
+	)
 
 	for _, a := range launcherArgs {
 		normalizedArg := strings.TrimLeft(a, "-")
