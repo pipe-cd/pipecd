@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  go:
+  backend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -19,7 +19,7 @@ jobs:
       - name: Run unit tests
         run: go test ./pkg/... ./cmd/...
 
-  web:
+  frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
