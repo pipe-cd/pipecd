@@ -21,6 +21,8 @@ import (
 )
 
 func TestRemoveMapFields(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		config   map[string]interface{}
@@ -209,6 +211,8 @@ func TestRemoveMapFields(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			removed := removeMapFields(tc.config, tc.live)
 			assert.Equal(t, tc.expected, removed)
 		})
