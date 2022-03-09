@@ -410,11 +410,7 @@ spec:
 			require.NoError(t, err)
 
 			got, err := FindArtifactVersion(sm)
-			if tc.wantErr {
-				require.Error(t, err)
-				return
-			}
-			require.NoError(t, err)
+			require.Equal(t, tc.wantErr, err != nil)
 			require.Equal(t, tc.want, got)
 		})
 	}
