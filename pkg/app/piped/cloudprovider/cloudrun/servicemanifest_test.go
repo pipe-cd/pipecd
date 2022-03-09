@@ -19,6 +19,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 const serviceManifest = `
@@ -284,6 +286,133 @@ spec:
 				return
 			}
 			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestFindArtifactVersions(t *testing.T) {
+	testcases := []struct {
+		name     string
+		manifest string
+		want     []*model.ArtifactVersion
+		wantErr  bool
+	}{
+		{
+			name: "ok",
+			manifest: `
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: helloworld
+  labels:
+    cloud.googleapis.com/location: asia-northeast1
+    pipecd-dev-managed-by: piped
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+spec:
+  template:
+    metadata:
+      name: helloworld-v010-1234567
+      annotations:
+        autoscaling.knative.dev/maxScale: '1'
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+      - image: gcr.io/pipecd/helloworld:v0.1.0
+        args:
+        - server
+        ports:
+        - name: http1
+          containerPort: 9085
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 128Mi
+  traffic:
+  - revisionName: helloworld-v010-1234567
+    percent: 100
+`,
+			want: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v0.1.0",
+					Name:    "helloworld",
+					Url:     "gcr.io/pipecd/helloworld:v0.1.0",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "err: containers missing",
+			manifest: `
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: helloworld
+spec:
+  template:
+    metadata:
+      name: helloworld-v010-1234567
+      annotations:
+        autoscaling.knative.dev/maxScale: '1'
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+`,
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "err: image missing",
+			manifest: `
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: helloworld
+  labels:
+    cloud.googleapis.com/location: asia-northeast1
+    pipecd-dev-managed-by: piped
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+spec:
+  template:
+    metadata:
+      name: helloworld-v010-1234567
+      annotations:
+        autoscaling.knative.dev/maxScale: '1'
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+      - args:
+        - server
+        ports:
+        - name: http1
+          containerPort: 9085
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 128Mi
+  traffic:
+  - revisionName: helloworld-v010-1234567
+    percent: 100
+`,
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			data := []byte(tc.manifest)
+			sm, err := ParseServiceManifest(data)
+			require.NoError(t, err)
+
+			got, err := FindArtifactVersions(sm)
+			require.Equal(t, tc.wantErr, err != nil)
 			require.Equal(t, tc.want, got)
 		})
 	}

@@ -62,6 +62,17 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		in.Logger.Warn("unable to determine target version", zap.Error(e))
 	}
 
+	out.Versions, err = p.determineVersions(ds.AppDir, cfg.Input.ServiceManifestFile)
+	if err != nil {
+		in.Logger.Warn("unable to determine target versions", zap.Error(err))
+		out.Versions = []*model.ArtifactVersion{
+			{
+				Kind:    model.ArtifactVersion_UNKNOWN,
+				Version: "unknown",
+			},
+		}
+	}
+
 	autoRollback := *cfg.Input.AutoRollback
 
 	// In case the strategy has been decided by trigger.
@@ -132,4 +143,13 @@ func (p *Planner) determineVersion(appDir, serviceManifestFile string) (string, 
 	}
 
 	return provider.FindImageTag(sm)
+}
+
+func (p *Planner) determineVersions(appDir, serviceManifestFile string) ([]*model.ArtifactVersion, error) {
+	sm, err := provider.LoadServiceManifest(appDir, serviceManifestFile)
+	if err != nil {
+		return nil, err
+	}
+
+	return provider.FindArtifactVersions(sm)
 }
