@@ -25,8 +25,11 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
-// These file is borrowed from argocd/gitops-engine and modified
+// All functions in this file is borrowed from argocd/gitops-engine and modified
+// All function except `remarshal` is borrowed from
 // https://github.com/argoproj/gitops-engine/blob/0bc2f8c395f67123156d4ce6b667bf730618307f/pkg/utils/json/json.go
+// and `remarshal` function is borrowed from
+// https://github.com/argoproj/gitops-engine/blob/b0c5e00ccfa5d1e73087a18dc59e2e4c72f5f175/pkg/diff/diff.go#L685-L723
 
 // https://github.com/ksonnet/ksonnet/blob/master/pkg/kubecfg/diff.go
 func removeFields(config, live interface{}) interface{} {
@@ -87,9 +90,6 @@ func removeListFields(config, live []interface{}) []interface{} {
 // and allows to find differences between actual and target states more accurately.
 // Remarshalling also strips any type information (e.g. float64 vs. int) from the unstructured
 // object. This is important for diffing since it will cause godiff to report a false difference.
-//
-// This `remarshal` function is borrowed and modified from argocd/gitops-engine
-// https://github.com/argoproj/gitops-engine/blob/b0c5e00ccfa5d1e73087a18dc59e2e4c72f5f175/pkg/diff/diff.go#L685-L723
 func remarshal(obj *unstructured.Unstructured) *unstructured.Unstructured {
 	data, err := json.Marshal(obj)
 	if err != nil {
