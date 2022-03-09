@@ -24,6 +24,8 @@ import (
 )
 
 func TestGroupManifests(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name               string
 		olds               []Manifest
@@ -108,6 +110,8 @@ func TestGroupManifests(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			adds, deletes, newChanges, oldChanges := groupManifests(tc.olds, tc.news)
 			assert.Equal(t, tc.expectedAdds, adds)
 			assert.Equal(t, tc.expectedDeletes, deletes)
@@ -118,6 +122,8 @@ func TestGroupManifests(t *testing.T) {
 }
 
 func TestDiffByCommand(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		command     string
@@ -172,6 +178,8 @@ func TestDiffByCommand(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifests, err := LoadManifestsFromYAMLFile(tc.manifests)
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))
@@ -188,6 +196,8 @@ func TestDiffByCommand(t *testing.T) {
 }
 
 func TestDiff(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		manifests     string
@@ -378,6 +388,8 @@ spec:
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifests, err := ParseManifests(tc.manifests)
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))
