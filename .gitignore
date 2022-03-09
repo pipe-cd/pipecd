@@ -22,6 +22,9 @@
 /bazel-testlogs
 /BUILD.bazel.generated
 
+# Binaries
+.artifacts
+
 # Go
 /vendor
 
