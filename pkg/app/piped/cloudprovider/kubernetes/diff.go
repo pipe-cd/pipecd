@@ -59,7 +59,7 @@ func Diff(old, new Manifest, opts ...diff.Option) (*diff.Result, error) {
 	}
 
 	var err error
-	old.u, err = remarshal(old.u)
+	old.u = remarshal(old.u)
 	if err != nil {
 		return nil, err
 	}
