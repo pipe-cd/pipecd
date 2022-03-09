@@ -20,3 +20,8 @@ This product contains a modified part of perf, distributed by golang:
 
   * License: https://github.com/golang/perf/blob/master/LICENSE
   * Homepage: https://github.com/golang/perf
+
+This product contains a modified part of gitops-engine, distributed by argoproj:
+
+  * License: https://github.com/argoproj/gitops-engine/blob/master/LICENSE (Apache License v2.0)
+  * Homepage: https://argo-cd.readthedocs.io/
