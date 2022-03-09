@@ -19,6 +19,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/pipe-cd/pipecd/pkg/model"
 	"google.golang.org/api/run/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -198,4 +199,35 @@ func parseContainerImage(image string) (name, tag string) {
 	paths := strings.Split(parts[0], "/")
 	name = paths[len(paths)-1]
 	return
+}
+
+func FindArtifactVersion(sm ServiceManifest) (*model.ArtifactVersion, error) {
+	containers, ok, err := unstructured.NestedSlice(sm.u.Object, "spec", "template", "spec", "containers")
+	if err != nil {
+		return nil, err
+	}
+	if !ok || len(containers) == 0 {
+		return nil, fmt.Errorf("spec.template.spec.containers was missing")
+	}
+
+	container, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&containers[0])
+	if err != nil {
+		return nil, fmt.Errorf("invalid container format")
+	}
+
+	image, ok, err := unstructured.NestedString(container, "image")
+	if err != nil {
+		return nil, err
+	}
+	if !ok || image == "" {
+		return nil, fmt.Errorf("image was missing")
+	}
+	name, tag := parseContainerImage(image)
+
+	return &model.ArtifactVersion{
+		Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+		Version: tag,
+		Name:    name,
+		Url:     image,
+	}, nil
 }
