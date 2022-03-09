@@ -19,11 +19,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"google.golang.org/api/run/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/yaml"
+
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type ServiceManifest struct {
