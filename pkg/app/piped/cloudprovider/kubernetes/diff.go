@@ -94,14 +94,14 @@ func DiffList(olds, news []Manifest, opts ...diff.Option) (*DiffListResult, erro
 	return cr, nil
 }
 
-// Following `remarshal` function and comment is copied from argocd/gitops-engine and modified
-// https://github.com/argoproj/gitops-engine/blob/b0c5e00ccfa5d1e73087a18dc59e2e4c72f5f175/pkg/diff/diff.go#L685-L723
-
 // remarshal checks resource kind and version and re-marshal using corresponding struct custom marshaller.
 // This ensures that expected resource state is formatter same as actual resource state in kubernetes
 // and allows to find differences between actual and target states more accurately.
 // Remarshalling also strips any type information (e.g. float64 vs. int) from the unstructured
 // object. This is important for diffing since it will cause godiff to report a false difference.
+//
+// This `remarshal` function is borrowed and modified from argocd/gitops-engine
+// https://github.com/argoproj/gitops-engine/blob/b0c5e00ccfa5d1e73087a18dc59e2e4c72f5f175/pkg/diff/diff.go#L685-L723
 func remarshal(obj *unstructured.Unstructured) *unstructured.Unstructured {
 	data, err := json.Marshal(obj)
 	if err != nil {
