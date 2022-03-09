@@ -7,4 +7,4 @@ vendor
 .github
 hack
 template
-pkg/app/web/node_modules
+web/node_modules

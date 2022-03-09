@@ -1,6 +1,6 @@
 workspace(
     name = "pipecd",
-    managed_directories = {"@npm": ["pkg/app/web/node_modules"]},
+    managed_directories = {"@npm": ["web/node_modules"]},
 )
 
 load(
@@ -178,15 +178,15 @@ load(
 ### https://bazelbuild.github.io/rules_nodejs/Built-ins.html#usage
 node_repositories(
     node_version = "16.13.0",
-    package_json = ["//pkg/app/web:package.json"],
+    package_json = ["//web:package.json"],
     yarn_version = "1.22.4",
 )
 
 yarn_install(
     name = "npm",
     frozen_lockfile = False,
-    package_json = "//pkg/app/web:package.json",
-    yarn_lock = "//pkg/app/web:yarn.lock",
+    package_json = "//web:package.json",
+    yarn_lock = "//web:yarn.lock",
 )
 
 load("@npm//@bazel/labs:package.bzl", "npm_bazel_labs_dependencies")

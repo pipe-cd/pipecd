@@ -54,7 +54,7 @@ test-integration:
 
 .PHONY: coverage
 coverage:
-	bazelisk ${BAZEL_FLAGS} coverage ${BAZEL_COMMAND_FLAGS} -- //pkg/... -//pkg/app/web/...
+	bazelisk ${BAZEL_FLAGS} coverage ${BAZEL_COMMAND_FLAGS} -- //pkg/... -//web/...
 
 .PHONY: dep
 dep:
@@ -80,19 +80,19 @@ site:
 
 .PHONY: web-dep
 web-dep:
-	bazelisk build //pkg/app/web:build_api //pkg/app/web:build_model
+	bazelisk build //web:build_api //web:build_model
 
 .PHONY: web-dev
 web-dev:
-	cd pkg/app/web; yarn dev
+	cd web; yarn dev
 
 .PHONY: web-test
 web-test:
-	cd pkg/app/web; yarn test:coverage --runInBand
+	cd web; yarn test:coverage --runInBand
 
 .PHONY: web-lint
 web-lint:
-	cd pkg/app/web; yarn lint:fix
+	cd web; yarn lint:fix
 
 .PHONY: generate-test-tls
 generate-test-tls:
@@ -129,4 +129,4 @@ update-docsy:
 
 .PHONY: codegen
 codegen:
-	docker run --rm -v ${PWD}:/repo -it gcr.io/pipecd/codegen:0.5.0 /repo
+	docker run --rm -v ${PWD}:/repo -it gcr.io/pipecd/codegen:0.6.0 /repo

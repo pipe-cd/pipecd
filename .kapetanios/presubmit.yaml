@@ -31,7 +31,7 @@ spec:
     - description: Run coverage for unit tests
       runner: gcr.io/pipecd/runner:1.0.0
       commands:
-        - bazelisk --output_base=/workspace/bazel_out coverage --config=ci --config=linux -- //pkg/... -//pkg/app/web/...
+        - bazelisk --output_base=/workspace/bazel_out coverage --config=ci --config=linux -- //pkg/... -//web/...
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT
@@ -61,7 +61,7 @@ spec:
   - name: web-test
     timeout: 30m
     whenChanged:
-      - pkg/app/web/**
+      - web/**
     steps:
     - name: restore-cache
       description: Restore node modules cache
@@ -72,7 +72,7 @@ spec:
     - name: install-dependencies
       runner: gcr.io/kapetanios/node:16.13.1
       commands:
-        - cd pkg/app/web
+        - cd web
         - yarn install --frozen-lockfile
     - description: Save node modules cache
       runner: kapetanios@save-cache
@@ -83,7 +83,7 @@ spec:
       description: Generate API client code
       runner: gcr.io/pipecd/runner:1.0.0
       commands:
-        - bazelisk --output_base=/workspace/bazel_out build --config=ci //pkg/app/web:build_api //pkg/app/web:build_model
+        - bazelisk --output_base=/workspace/bazel_out build --config=ci //web:build_api //web:build_model
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT
@@ -91,7 +91,7 @@ spec:
       description: Run all web tests
       runner: gcr.io/kapetanios/node:16.13.1
       commands:
-        - cd pkg/app/web
+        - cd web
         - yarn test:coverage --coverageDirectory=/artifact --runInBand
         - yarn typecheck
       requires:
