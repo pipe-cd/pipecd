@@ -10,7 +10,7 @@ env:
 
 jobs:
   publish-image:
-    name: Publish Image
+    name: publish images
     runs-on: ubuntu-latest
     permissions:
       contents: read

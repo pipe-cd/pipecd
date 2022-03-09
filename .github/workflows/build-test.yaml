@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Build Binaries
+    name: build binaries
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -30,7 +30,7 @@ jobs:
         run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/helloworld ./cmd/helloworld
 
   go-test:
-    name: Go Test
+    name: go test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -41,7 +41,7 @@ jobs:
         run: go test ./pkg/... ./cmd/...
 
   web-test:
-    name: Web Test
+    name: web test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -60,4 +60,4 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: Run unit tests
-        run: cd /pkg/app/web && yarn test
+        run: cd pkg/app/web && yarn test
