@@ -1,0 +1,32 @@
+name: Build & Test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.17.6'
+      - run: GOOS=linux GOARCH=amd64 go build -o artifacts/pipecd ./cmd/pipecd
+      - run: GOOS=linux GOARCH=amd64 go build -o artifacts/piped ./cmd/piped
+      - run: GOOS=linux GOARCH=amd64 go build -o artifacts/launcher ./cmd/launcher
+      - run: GOOS=linux GOARCH=amd64 go build -o artifacts/pipectl ./cmd/pipectl
+      - run: GOOS=linux GOARCH=amd64 go build -o artifacts/helloworld ./cmd/helloworld
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.17.6'
+      - run: go test ./pkg/... ./cmd/...

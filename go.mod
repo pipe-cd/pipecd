@@ -17,7 +17,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.1.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
 	github.com/creasty/defaults v1.5.2
-	github.com/envoyproxy/protoc-gen-validate v0.1.0
+	github.com/envoyproxy/protoc-gen-validate v0.6.6
 	github.com/fsouza/fake-gcs-server v1.21.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/goccy/go-yaml v1.9.3
@@ -40,9 +40,9 @@ require (
 	go.uber.org/multierr v1.2.0 // indirect
 	go.uber.org/zap v1.10.1-0.20190709142728-9a9fa7d4b5f0
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
-	golang.org/x/net v0.0.0-20210726213435-c6fcb2dbf985
+	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/api v0.31.0
 	google.golang.org/genproto v0.0.0-20201019141844-1ed22bb0c154
 	google.golang.org/grpc v1.43.0
