@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: Build Binaries
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -30,7 +30,7 @@ jobs:
         run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/helloworld ./cmd/helloworld
 
   go-test:
-    name: Go test
+    name: Go Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -41,7 +41,7 @@ jobs:
         run: go test ./pkg/... ./cmd/...
 
   web-test:
-    name: Web test
+    name: Web Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
