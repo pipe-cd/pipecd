@@ -16,19 +16,15 @@ package kubernetes
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
-	"reflect"
 	"sort"
 	"strings"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/pipe-cd/pipecd/pkg/diff"
 )
@@ -62,8 +58,11 @@ func Diff(old, new Manifest, opts ...diff.Option) (*diff.Result, error) {
 		}
 	}
 
-	old.u = remarshal(old.u)
-	new.u = remarshal(new.u)
+	var err error
+	old.u, err = remarshal(old.u)
+	if err != nil {
+		return nil, err
+	}
 
 	return diff.DiffUnstructureds(*old.u, *new.u, opts...)
 }
@@ -92,48 +91,6 @@ func DiffList(olds, news []Manifest, opts ...diff.Option) (*DiffListResult, erro
 	}
 
 	return cr, nil
-}
-
-// remarshal checks resource kind and version and re-marshal using corresponding struct custom marshaller.
-// This ensures that expected resource state is formatter same as actual resource state in kubernetes
-// and allows to find differences between actual and target states more accurately.
-// Remarshalling also strips any type information (e.g. float64 vs. int) from the unstructured
-// object. This is important for diffing since it will cause godiff to report a false difference.
-//
-// This `remarshal` function is borrowed and modified from argocd/gitops-engine
-// https://github.com/argoproj/gitops-engine/blob/b0c5e00ccfa5d1e73087a18dc59e2e4c72f5f175/pkg/diff/diff.go#L685-L723
-func remarshal(obj *unstructured.Unstructured) *unstructured.Unstructured {
-	data, err := json.Marshal(obj)
-	if err != nil {
-		panic(err)
-	}
-	gvk := obj.GroupVersionKind()
-	item, err := scheme.Scheme.New(obj.GroupVersionKind())
-	if err != nil {
-		// This is common. the scheme is not registered
-		log.Printf("Could not create new object of type %s: %v", gvk, err)
-		return obj
-	}
-	// This will drop any omitempty fields, perform resource conversion etc...
-	unmarshalledObj := reflect.New(reflect.TypeOf(item).Elem()).Interface()
-	// Unmarshal data into unmarshalledObj, but detect if there are any unknown fields that are not
-	// found in the target GVK object.
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.DisallowUnknownFields()
-	if err := decoder.Decode(&unmarshalledObj); err != nil {
-		// Likely a field present in obj that is not present in the GVK type, or user
-		// may have specified an invalid spec in git, so return original object
-		log.Printf("Could not unmarshal to object of type %s: %v", gvk, err)
-		return obj
-	}
-	unstrBody, err := runtime.DefaultUnstructuredConverter.ToUnstructured(unmarshalledObj)
-	if err != nil {
-		log.Printf("Could not unmarshal to object of type %s: %v", gvk, err)
-		return obj
-	}
-	// Remove all default values specified by custom formatter (e.g. creationTimestamp)
-	unstrBody = removeMapFields(obj.Object, unstrBody)
-	return &unstructured.Unstructured{Object: unstrBody}
 }
 
 func normalizeNewSecret(old, new *unstructured.Unstructured) (*unstructured.Unstructured, error) {
