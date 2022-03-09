@@ -7,7 +7,7 @@ load("@bazel_gazelle//:def.bzl", "gazelle")
 # gazelle:exclude terraform
 # gazelle:exclude template
 # gazelle:exclude vendor
-# gazelle:exclude pkg/app/web/node_modules
+# gazelle:exclude web/node_modules
 # gazelle:exclude pkg/plugin/golinter/gofmt/testdata
 # gazelle:exclude pkg/app/kapetool/cmd/godifflinter/pkg/linters/unusedparam/testdata
 # gazelle:exclude pkg/app/kapetool/cmd/godifflinter/pkg/linters/ineffassign/testdata

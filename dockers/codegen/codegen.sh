@@ -48,8 +48,8 @@ jsProtoDirs=(
   "pkg/app/server/service/webservice"
 )
 jsOutDirs=(
-  "pkg/app/web/model"
-  "pkg/app/web/api_client"
+  "web/model"
+  "web/api_client"
 )
 
 i=0
