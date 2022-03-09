@@ -87,6 +87,7 @@ type piped struct {
 	enableDefaultKubernetesCloudProvider bool
 	gracePeriod                          time.Duration
 	addLoginUserToPasswd                 bool
+	launcherVersion                      string
 }
 
 func NewCommand() *cobra.Command {
@@ -118,6 +119,8 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&p.addLoginUserToPasswd, "add-login-user-to-passwd", p.addLoginUserToPasswd, "Whether to add login user to $HOME/passwd. This is typically for applications running as a random user ID.")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
 
+	cmd.Flags().StringVar(&p.launcherVersion, "launcher-version", p.launcherVersion, "The version of launcher which initialized this Piped.")
+
 	return cmd
 }
 
@@ -137,7 +140,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	}
 
 	// Register all metrics.
-	registry := registerMetrics(cfg.PipedID, cfg.ProjectID)
+	registry := registerMetrics(cfg.PipedID, cfg.ProjectID, p.launcherVersion)
 
 	// Configure SSH config if needed.
 	if cfg.Git.ShouldConfigureSSHConfig() {
@@ -721,13 +724,14 @@ func (p *piped) getConfigDataFromSecretManager(ctx context.Context) ([]byte, err
 	return resp.Payload.Data, nil
 }
 
-func registerMetrics(pipedID, projectID string) *prometheus.Registry {
+func registerMetrics(pipedID, projectID, launcherVersion string) *prometheus.Registry {
 	r := prometheus.NewRegistry()
 	wrapped := prometheus.WrapRegistererWith(
 		map[string]string{
 			"pipecd_component": "piped",
 			"piped":            pipedID,
 			"piped_version":    version.Get().Version,
+			"launcher_version": launcherVersion,
 			"project":          projectID,
 		},
 		r,
