@@ -59,21 +59,21 @@ proto.grpc.service.webservice = require('./service_pb.js');
  * @final
  */
 proto.grpc.service.webservice.WebServiceClient =
-  function (hostname, credentials, options) {
-    if (!options) options = {};
-    options.format = 'binary';
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options.format = 'binary';
 
-    /**
-     * @private @const {!grpc.web.GrpcWebClientBase} The client
-     */
-    this.client_ = new grpc.web.GrpcWebClientBase(options);
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
 
-    /**
-     * @private @const {string} The hostname
-     */
-    this.hostname_ = hostname;
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname;
 
-  };
+};
 
 
 /**
@@ -85,21 +85,21 @@ proto.grpc.service.webservice.WebServiceClient =
  * @final
  */
 proto.grpc.service.webservice.WebServicePromiseClient =
-  function (hostname, credentials, options) {
-    if (!options) options = {};
-    options.format = 'binary';
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options.format = 'binary';
 
-    /**
-     * @private @const {!grpc.web.GrpcWebClientBase} The client
-     */
-    this.client_ = new grpc.web.GrpcWebClientBase(options);
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
 
-    /**
-     * @private @const {string} The hostname
-     */
-    this.hostname_ = hostname;
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname;
 
-  };
+};
 
 
 /**
@@ -117,7 +117,7 @@ const methodDescriptor_WebService_RegisterPiped = new grpc.web.MethodDescriptor(
    * @param {!proto.grpc.service.webservice.RegisterPipedRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.RegisterPipedResponse.deserializeBinary
@@ -135,14 +135,14 @@ const methodDescriptor_WebService_RegisterPiped = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.registerPiped =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/RegisterPiped',
       request,
       metadata || {},
       methodDescriptor_WebService_RegisterPiped,
       callback);
-  };
+};
 
 
 /**
@@ -154,13 +154,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.registerPiped =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.registerPiped =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/RegisterPiped',
       request,
       metadata || {},
       methodDescriptor_WebService_RegisterPiped);
-  };
+};
 
 
 /**
@@ -178,7 +178,7 @@ const methodDescriptor_WebService_UpdatePiped = new grpc.web.MethodDescriptor(
    * @param {!proto.grpc.service.webservice.UpdatePipedRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.UpdatePipedResponse.deserializeBinary
@@ -196,14 +196,14 @@ const methodDescriptor_WebService_UpdatePiped = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.updatePiped =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/UpdatePiped',
       request,
       metadata || {},
       methodDescriptor_WebService_UpdatePiped,
       callback);
-  };
+};
 
 
 /**
@@ -215,13 +215,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.updatePiped =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.updatePiped =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/UpdatePiped',
       request,
       metadata || {},
       methodDescriptor_WebService_UpdatePiped);
-  };
+};
 
 
 /**
@@ -239,7 +239,7 @@ const methodDescriptor_WebService_RecreatePipedKey = new grpc.web.MethodDescript
    * @param {!proto.grpc.service.webservice.RecreatePipedKeyRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.RecreatePipedKeyResponse.deserializeBinary
@@ -257,14 +257,14 @@ const methodDescriptor_WebService_RecreatePipedKey = new grpc.web.MethodDescript
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.recreatePipedKey =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/RecreatePipedKey',
       request,
       metadata || {},
       methodDescriptor_WebService_RecreatePipedKey,
       callback);
-  };
+};
 
 
 /**
@@ -276,13 +276,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.recreatePipedKey =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.recreatePipedKey =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/RecreatePipedKey',
       request,
       metadata || {},
       methodDescriptor_WebService_RecreatePipedKey);
-  };
+};
 
 
 /**
@@ -300,7 +300,7 @@ const methodDescriptor_WebService_DeleteOldPipedKeys = new grpc.web.MethodDescri
    * @param {!proto.grpc.service.webservice.DeleteOldPipedKeysRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.DeleteOldPipedKeysResponse.deserializeBinary
@@ -318,14 +318,14 @@ const methodDescriptor_WebService_DeleteOldPipedKeys = new grpc.web.MethodDescri
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.deleteOldPipedKeys =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/DeleteOldPipedKeys',
       request,
       metadata || {},
       methodDescriptor_WebService_DeleteOldPipedKeys,
       callback);
-  };
+};
 
 
 /**
@@ -337,13 +337,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.deleteOldPipedKeys =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.deleteOldPipedKeys =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/DeleteOldPipedKeys',
       request,
       metadata || {},
       methodDescriptor_WebService_DeleteOldPipedKeys);
-  };
+};
 
 
 /**
@@ -361,7 +361,7 @@ const methodDescriptor_WebService_EnablePiped = new grpc.web.MethodDescriptor(
    * @param {!proto.grpc.service.webservice.EnablePipedRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.EnablePipedResponse.deserializeBinary
@@ -379,14 +379,14 @@ const methodDescriptor_WebService_EnablePiped = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.enablePiped =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/EnablePiped',
       request,
       metadata || {},
       methodDescriptor_WebService_EnablePiped,
       callback);
-  };
+};
 
 
 /**
@@ -398,13 +398,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.enablePiped =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.enablePiped =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/EnablePiped',
       request,
       metadata || {},
       methodDescriptor_WebService_EnablePiped);
-  };
+};
 
 
 /**
@@ -422,7 +422,7 @@ const methodDescriptor_WebService_DisablePiped = new grpc.web.MethodDescriptor(
    * @param {!proto.grpc.service.webservice.DisablePipedRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.DisablePipedResponse.deserializeBinary
@@ -440,14 +440,14 @@ const methodDescriptor_WebService_DisablePiped = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.disablePiped =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/DisablePiped',
       request,
       metadata || {},
       methodDescriptor_WebService_DisablePiped,
       callback);
-  };
+};
 
 
 /**
@@ -459,13 +459,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.disablePiped =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.disablePiped =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/DisablePiped',
       request,
       metadata || {},
       methodDescriptor_WebService_DisablePiped);
-  };
+};
 
 
 /**
@@ -483,7 +483,7 @@ const methodDescriptor_WebService_ListPipeds = new grpc.web.MethodDescriptor(
    * @param {!proto.grpc.service.webservice.ListPipedsRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.ListPipedsResponse.deserializeBinary
@@ -501,14 +501,14 @@ const methodDescriptor_WebService_ListPipeds = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.listPipeds =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ListPipeds',
       request,
       metadata || {},
       methodDescriptor_WebService_ListPipeds,
       callback);
-  };
+};
 
 
 /**
@@ -520,13 +520,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.listPipeds =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.listPipeds =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ListPipeds',
       request,
       metadata || {},
       methodDescriptor_WebService_ListPipeds);
-  };
+};
 
 
 /**
@@ -544,7 +544,7 @@ const methodDescriptor_WebService_GetPiped = new grpc.web.MethodDescriptor(
    * @param {!proto.grpc.service.webservice.GetPipedRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.GetPipedResponse.deserializeBinary
@@ -562,14 +562,14 @@ const methodDescriptor_WebService_GetPiped = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.getPiped =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetPiped',
       request,
       metadata || {},
       methodDescriptor_WebService_GetPiped,
       callback);
-  };
+};
 
 
 /**
@@ -581,13 +581,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.getPiped =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.getPiped =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetPiped',
       request,
       metadata || {},
       methodDescriptor_WebService_GetPiped);
-  };
+};
 
 
 /**
@@ -605,7 +605,7 @@ const methodDescriptor_WebService_UpdatePipedDesiredVersion = new grpc.web.Metho
    * @param {!proto.grpc.service.webservice.UpdatePipedDesiredVersionRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.UpdatePipedDesiredVersionResponse.deserializeBinary
@@ -623,14 +623,14 @@ const methodDescriptor_WebService_UpdatePipedDesiredVersion = new grpc.web.Metho
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.updatePipedDesiredVersion =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/UpdatePipedDesiredVersion',
       request,
       metadata || {},
       methodDescriptor_WebService_UpdatePipedDesiredVersion,
       callback);
-  };
+};
 
 
 /**
@@ -642,13 +642,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.updatePipedDesiredVersi
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.updatePipedDesiredVersion =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/UpdatePipedDesiredVersion',
       request,
       metadata || {},
       methodDescriptor_WebService_UpdatePipedDesiredVersion);
-  };
+};
 
 
 /**
@@ -666,7 +666,7 @@ const methodDescriptor_WebService_AddApplication = new grpc.web.MethodDescriptor
    * @param {!proto.grpc.service.webservice.AddApplicationRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.AddApplicationResponse.deserializeBinary
@@ -684,14 +684,14 @@ const methodDescriptor_WebService_AddApplication = new grpc.web.MethodDescriptor
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.addApplication =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/AddApplication',
       request,
       metadata || {},
       methodDescriptor_WebService_AddApplication,
       callback);
-  };
+};
 
 
 /**
@@ -703,13 +703,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.addApplication =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.addApplication =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/AddApplication',
       request,
       metadata || {},
       methodDescriptor_WebService_AddApplication);
-  };
+};
 
 
 /**
@@ -727,7 +727,7 @@ const methodDescriptor_WebService_UpdateApplication = new grpc.web.MethodDescrip
    * @param {!proto.grpc.service.webservice.UpdateApplicationRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.UpdateApplicationResponse.deserializeBinary
@@ -745,14 +745,14 @@ const methodDescriptor_WebService_UpdateApplication = new grpc.web.MethodDescrip
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.updateApplication =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/UpdateApplication',
       request,
       metadata || {},
       methodDescriptor_WebService_UpdateApplication,
       callback);
-  };
+};
 
 
 /**
@@ -764,13 +764,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.updateApplication =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.updateApplication =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/UpdateApplication',
       request,
       metadata || {},
       methodDescriptor_WebService_UpdateApplication);
-  };
+};
 
 
 /**
@@ -788,7 +788,7 @@ const methodDescriptor_WebService_EnableApplication = new grpc.web.MethodDescrip
    * @param {!proto.grpc.service.webservice.EnableApplicationRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.EnableApplicationResponse.deserializeBinary
@@ -806,14 +806,14 @@ const methodDescriptor_WebService_EnableApplication = new grpc.web.MethodDescrip
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.enableApplication =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/EnableApplication',
       request,
       metadata || {},
       methodDescriptor_WebService_EnableApplication,
       callback);
-  };
+};
 
 
 /**
@@ -825,13 +825,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.enableApplication =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.enableApplication =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/EnableApplication',
       request,
       metadata || {},
       methodDescriptor_WebService_EnableApplication);
-  };
+};
 
 
 /**
@@ -849,7 +849,7 @@ const methodDescriptor_WebService_DisableApplication = new grpc.web.MethodDescri
    * @param {!proto.grpc.service.webservice.DisableApplicationRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.DisableApplicationResponse.deserializeBinary
@@ -867,14 +867,14 @@ const methodDescriptor_WebService_DisableApplication = new grpc.web.MethodDescri
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.disableApplication =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/DisableApplication',
       request,
       metadata || {},
       methodDescriptor_WebService_DisableApplication,
       callback);
-  };
+};
 
 
 /**
@@ -886,13 +886,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.disableApplication =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.disableApplication =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/DisableApplication',
       request,
       metadata || {},
       methodDescriptor_WebService_DisableApplication);
-  };
+};
 
 
 /**
@@ -910,7 +910,7 @@ const methodDescriptor_WebService_DeleteApplication = new grpc.web.MethodDescrip
    * @param {!proto.grpc.service.webservice.DeleteApplicationRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.DeleteApplicationResponse.deserializeBinary
@@ -928,14 +928,14 @@ const methodDescriptor_WebService_DeleteApplication = new grpc.web.MethodDescrip
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.deleteApplication =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/DeleteApplication',
       request,
       metadata || {},
       methodDescriptor_WebService_DeleteApplication,
       callback);
-  };
+};
 
 
 /**
@@ -947,13 +947,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.deleteApplication =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.deleteApplication =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/DeleteApplication',
       request,
       metadata || {},
       methodDescriptor_WebService_DeleteApplication);
-  };
+};
 
 
 /**
@@ -971,7 +971,7 @@ const methodDescriptor_WebService_ListApplications = new grpc.web.MethodDescript
    * @param {!proto.grpc.service.webservice.ListApplicationsRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.ListApplicationsResponse.deserializeBinary
@@ -989,14 +989,14 @@ const methodDescriptor_WebService_ListApplications = new grpc.web.MethodDescript
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.listApplications =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ListApplications',
       request,
       metadata || {},
       methodDescriptor_WebService_ListApplications,
       callback);
-  };
+};
 
 
 /**
@@ -1008,13 +1008,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.listApplications =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.listApplications =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ListApplications',
       request,
       metadata || {},
       methodDescriptor_WebService_ListApplications);
-  };
+};
 
 
 /**
@@ -1032,7 +1032,7 @@ const methodDescriptor_WebService_SyncApplication = new grpc.web.MethodDescripto
    * @param {!proto.grpc.service.webservice.SyncApplicationRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.SyncApplicationResponse.deserializeBinary
@@ -1050,14 +1050,14 @@ const methodDescriptor_WebService_SyncApplication = new grpc.web.MethodDescripto
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.syncApplication =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/SyncApplication',
       request,
       metadata || {},
       methodDescriptor_WebService_SyncApplication,
       callback);
-  };
+};
 
 
 /**
@@ -1069,13 +1069,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.syncApplication =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.syncApplication =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/SyncApplication',
       request,
       metadata || {},
       methodDescriptor_WebService_SyncApplication);
-  };
+};
 
 
 /**
@@ -1093,7 +1093,7 @@ const methodDescriptor_WebService_GetApplication = new grpc.web.MethodDescriptor
    * @param {!proto.grpc.service.webservice.GetApplicationRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.GetApplicationResponse.deserializeBinary
@@ -1111,14 +1111,14 @@ const methodDescriptor_WebService_GetApplication = new grpc.web.MethodDescriptor
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.getApplication =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetApplication',
       request,
       metadata || {},
       methodDescriptor_WebService_GetApplication,
       callback);
-  };
+};
 
 
 /**
@@ -1130,13 +1130,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.getApplication =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.getApplication =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetApplication',
       request,
       metadata || {},
       methodDescriptor_WebService_GetApplication);
-  };
+};
 
 
 /**
@@ -1154,7 +1154,7 @@ const methodDescriptor_WebService_GenerateApplicationSealedSecret = new grpc.web
    * @param {!proto.grpc.service.webservice.GenerateApplicationSealedSecretRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.GenerateApplicationSealedSecretResponse.deserializeBinary
@@ -1172,14 +1172,14 @@ const methodDescriptor_WebService_GenerateApplicationSealedSecret = new grpc.web
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.generateApplicationSealedSecret =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GenerateApplicationSealedSecret',
       request,
       metadata || {},
       methodDescriptor_WebService_GenerateApplicationSealedSecret,
       callback);
-  };
+};
 
 
 /**
@@ -1191,13 +1191,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.generateApplicationSeal
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.generateApplicationSealedSecret =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GenerateApplicationSealedSecret',
       request,
       metadata || {},
       methodDescriptor_WebService_GenerateApplicationSealedSecret);
-  };
+};
 
 
 /**
@@ -1215,7 +1215,7 @@ const methodDescriptor_WebService_ListUnregisteredApplications = new grpc.web.Me
    * @param {!proto.grpc.service.webservice.ListUnregisteredApplicationsRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.ListUnregisteredApplicationsResponse.deserializeBinary
@@ -1233,14 +1233,14 @@ const methodDescriptor_WebService_ListUnregisteredApplications = new grpc.web.Me
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.listUnregisteredApplications =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ListUnregisteredApplications',
       request,
       metadata || {},
       methodDescriptor_WebService_ListUnregisteredApplications,
       callback);
-  };
+};
 
 
 /**
@@ -1252,13 +1252,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.listUnregisteredApplica
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.listUnregisteredApplications =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ListUnregisteredApplications',
       request,
       metadata || {},
       methodDescriptor_WebService_ListUnregisteredApplications);
-  };
+};
 
 
 /**
@@ -1276,7 +1276,7 @@ const methodDescriptor_WebService_ListDeployments = new grpc.web.MethodDescripto
    * @param {!proto.grpc.service.webservice.ListDeploymentsRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.ListDeploymentsResponse.deserializeBinary
@@ -1294,14 +1294,14 @@ const methodDescriptor_WebService_ListDeployments = new grpc.web.MethodDescripto
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.listDeployments =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ListDeployments',
       request,
       metadata || {},
       methodDescriptor_WebService_ListDeployments,
       callback);
-  };
+};
 
 
 /**
@@ -1313,13 +1313,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.listDeployments =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.listDeployments =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ListDeployments',
       request,
       metadata || {},
       methodDescriptor_WebService_ListDeployments);
-  };
+};
 
 
 /**
@@ -1337,7 +1337,7 @@ const methodDescriptor_WebService_GetDeployment = new grpc.web.MethodDescriptor(
    * @param {!proto.grpc.service.webservice.GetDeploymentRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.GetDeploymentResponse.deserializeBinary
@@ -1355,14 +1355,14 @@ const methodDescriptor_WebService_GetDeployment = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.getDeployment =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetDeployment',
       request,
       metadata || {},
       methodDescriptor_WebService_GetDeployment,
       callback);
-  };
+};
 
 
 /**
@@ -1374,13 +1374,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.getDeployment =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.getDeployment =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetDeployment',
       request,
       metadata || {},
       methodDescriptor_WebService_GetDeployment);
-  };
+};
 
 
 /**
@@ -1398,7 +1398,7 @@ const methodDescriptor_WebService_GetStageLog = new grpc.web.MethodDescriptor(
    * @param {!proto.grpc.service.webservice.GetStageLogRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.GetStageLogResponse.deserializeBinary
@@ -1416,14 +1416,14 @@ const methodDescriptor_WebService_GetStageLog = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.getStageLog =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetStageLog',
       request,
       metadata || {},
       methodDescriptor_WebService_GetStageLog,
       callback);
-  };
+};
 
 
 /**
@@ -1435,13 +1435,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.getStageLog =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.getStageLog =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetStageLog',
       request,
       metadata || {},
       methodDescriptor_WebService_GetStageLog);
-  };
+};
 
 
 /**
@@ -1459,7 +1459,7 @@ const methodDescriptor_WebService_CancelDeployment = new grpc.web.MethodDescript
    * @param {!proto.grpc.service.webservice.CancelDeploymentRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.CancelDeploymentResponse.deserializeBinary
@@ -1477,14 +1477,14 @@ const methodDescriptor_WebService_CancelDeployment = new grpc.web.MethodDescript
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.cancelDeployment =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/CancelDeployment',
       request,
       metadata || {},
       methodDescriptor_WebService_CancelDeployment,
       callback);
-  };
+};
 
 
 /**
@@ -1496,13 +1496,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.cancelDeployment =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.cancelDeployment =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/CancelDeployment',
       request,
       metadata || {},
       methodDescriptor_WebService_CancelDeployment);
-  };
+};
 
 
 /**
@@ -1520,7 +1520,7 @@ const methodDescriptor_WebService_ApproveStage = new grpc.web.MethodDescriptor(
    * @param {!proto.grpc.service.webservice.ApproveStageRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.ApproveStageResponse.deserializeBinary
@@ -1538,14 +1538,14 @@ const methodDescriptor_WebService_ApproveStage = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.approveStage =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ApproveStage',
       request,
       metadata || {},
       methodDescriptor_WebService_ApproveStage,
       callback);
-  };
+};
 
 
 /**
@@ -1557,13 +1557,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.approveStage =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.approveStage =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ApproveStage',
       request,
       metadata || {},
       methodDescriptor_WebService_ApproveStage);
-  };
+};
 
 
 /**
@@ -1581,7 +1581,7 @@ const methodDescriptor_WebService_GetApplicationLiveState = new grpc.web.MethodD
    * @param {!proto.grpc.service.webservice.GetApplicationLiveStateRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.GetApplicationLiveStateResponse.deserializeBinary
@@ -1599,14 +1599,14 @@ const methodDescriptor_WebService_GetApplicationLiveState = new grpc.web.MethodD
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.getApplicationLiveState =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetApplicationLiveState',
       request,
       metadata || {},
       methodDescriptor_WebService_GetApplicationLiveState,
       callback);
-  };
+};
 
 
 /**
@@ -1618,13 +1618,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.getApplicationLiveState
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.getApplicationLiveState =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetApplicationLiveState',
       request,
       metadata || {},
       methodDescriptor_WebService_GetApplicationLiveState);
-  };
+};
 
 
 /**
@@ -1642,7 +1642,7 @@ const methodDescriptor_WebService_GetProject = new grpc.web.MethodDescriptor(
    * @param {!proto.grpc.service.webservice.GetProjectRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.GetProjectResponse.deserializeBinary
@@ -1660,14 +1660,14 @@ const methodDescriptor_WebService_GetProject = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.getProject =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetProject',
       request,
       metadata || {},
       methodDescriptor_WebService_GetProject,
       callback);
-  };
+};
 
 
 /**
@@ -1679,13 +1679,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.getProject =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.getProject =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetProject',
       request,
       metadata || {},
       methodDescriptor_WebService_GetProject);
-  };
+};
 
 
 /**
@@ -1703,7 +1703,7 @@ const methodDescriptor_WebService_UpdateProjectStaticAdmin = new grpc.web.Method
    * @param {!proto.grpc.service.webservice.UpdateProjectStaticAdminRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.UpdateProjectStaticAdminResponse.deserializeBinary
@@ -1721,14 +1721,14 @@ const methodDescriptor_WebService_UpdateProjectStaticAdmin = new grpc.web.Method
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.updateProjectStaticAdmin =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/UpdateProjectStaticAdmin',
       request,
       metadata || {},
       methodDescriptor_WebService_UpdateProjectStaticAdmin,
       callback);
-  };
+};
 
 
 /**
@@ -1740,13 +1740,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.updateProjectStaticAdmi
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.updateProjectStaticAdmin =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/UpdateProjectStaticAdmin',
       request,
       metadata || {},
       methodDescriptor_WebService_UpdateProjectStaticAdmin);
-  };
+};
 
 
 /**
@@ -1764,7 +1764,7 @@ const methodDescriptor_WebService_EnableStaticAdmin = new grpc.web.MethodDescrip
    * @param {!proto.grpc.service.webservice.EnableStaticAdminRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.EnableStaticAdminResponse.deserializeBinary
@@ -1782,14 +1782,14 @@ const methodDescriptor_WebService_EnableStaticAdmin = new grpc.web.MethodDescrip
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.enableStaticAdmin =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/EnableStaticAdmin',
       request,
       metadata || {},
       methodDescriptor_WebService_EnableStaticAdmin,
       callback);
-  };
+};
 
 
 /**
@@ -1801,13 +1801,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.enableStaticAdmin =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.enableStaticAdmin =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/EnableStaticAdmin',
       request,
       metadata || {},
       methodDescriptor_WebService_EnableStaticAdmin);
-  };
+};
 
 
 /**
@@ -1825,7 +1825,7 @@ const methodDescriptor_WebService_DisableStaticAdmin = new grpc.web.MethodDescri
    * @param {!proto.grpc.service.webservice.DisableStaticAdminRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.DisableStaticAdminResponse.deserializeBinary
@@ -1843,14 +1843,14 @@ const methodDescriptor_WebService_DisableStaticAdmin = new grpc.web.MethodDescri
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.disableStaticAdmin =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/DisableStaticAdmin',
       request,
       metadata || {},
       methodDescriptor_WebService_DisableStaticAdmin,
       callback);
-  };
+};
 
 
 /**
@@ -1862,13 +1862,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.disableStaticAdmin =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.disableStaticAdmin =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/DisableStaticAdmin',
       request,
       metadata || {},
       methodDescriptor_WebService_DisableStaticAdmin);
-  };
+};
 
 
 /**
@@ -1886,7 +1886,7 @@ const methodDescriptor_WebService_UpdateProjectSSOConfig = new grpc.web.MethodDe
    * @param {!proto.grpc.service.webservice.UpdateProjectSSOConfigRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.UpdateProjectSSOConfigResponse.deserializeBinary
@@ -1904,14 +1904,14 @@ const methodDescriptor_WebService_UpdateProjectSSOConfig = new grpc.web.MethodDe
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.updateProjectSSOConfig =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/UpdateProjectSSOConfig',
       request,
       metadata || {},
       methodDescriptor_WebService_UpdateProjectSSOConfig,
       callback);
-  };
+};
 
 
 /**
@@ -1923,13 +1923,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.updateProjectSSOConfig 
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.updateProjectSSOConfig =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/UpdateProjectSSOConfig',
       request,
       metadata || {},
       methodDescriptor_WebService_UpdateProjectSSOConfig);
-  };
+};
 
 
 /**
@@ -1947,7 +1947,7 @@ const methodDescriptor_WebService_UpdateProjectRBACConfig = new grpc.web.MethodD
    * @param {!proto.grpc.service.webservice.UpdateProjectRBACConfigRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.UpdateProjectRBACConfigResponse.deserializeBinary
@@ -1965,14 +1965,14 @@ const methodDescriptor_WebService_UpdateProjectRBACConfig = new grpc.web.MethodD
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.updateProjectRBACConfig =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/UpdateProjectRBACConfig',
       request,
       metadata || {},
       methodDescriptor_WebService_UpdateProjectRBACConfig,
       callback);
-  };
+};
 
 
 /**
@@ -1984,13 +1984,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.updateProjectRBACConfig
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.updateProjectRBACConfig =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/UpdateProjectRBACConfig',
       request,
       metadata || {},
       methodDescriptor_WebService_UpdateProjectRBACConfig);
-  };
+};
 
 
 /**
@@ -2008,7 +2008,7 @@ const methodDescriptor_WebService_GetMe = new grpc.web.MethodDescriptor(
    * @param {!proto.grpc.service.webservice.GetMeRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.GetMeResponse.deserializeBinary
@@ -2026,14 +2026,14 @@ const methodDescriptor_WebService_GetMe = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.getMe =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetMe',
       request,
       metadata || {},
       methodDescriptor_WebService_GetMe,
       callback);
-  };
+};
 
 
 /**
@@ -2045,13 +2045,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.getMe =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.getMe =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetMe',
       request,
       metadata || {},
       methodDescriptor_WebService_GetMe);
-  };
+};
 
 
 /**
@@ -2069,7 +2069,7 @@ const methodDescriptor_WebService_GetCommand = new grpc.web.MethodDescriptor(
    * @param {!proto.grpc.service.webservice.GetCommandRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.GetCommandResponse.deserializeBinary
@@ -2087,14 +2087,14 @@ const methodDescriptor_WebService_GetCommand = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.getCommand =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetCommand',
       request,
       metadata || {},
       methodDescriptor_WebService_GetCommand,
       callback);
-  };
+};
 
 
 /**
@@ -2106,13 +2106,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.getCommand =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.getCommand =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetCommand',
       request,
       metadata || {},
       methodDescriptor_WebService_GetCommand);
-  };
+};
 
 
 /**
@@ -2130,7 +2130,7 @@ const methodDescriptor_WebService_GenerateAPIKey = new grpc.web.MethodDescriptor
    * @param {!proto.grpc.service.webservice.GenerateAPIKeyRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.GenerateAPIKeyResponse.deserializeBinary
@@ -2148,14 +2148,14 @@ const methodDescriptor_WebService_GenerateAPIKey = new grpc.web.MethodDescriptor
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.generateAPIKey =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GenerateAPIKey',
       request,
       metadata || {},
       methodDescriptor_WebService_GenerateAPIKey,
       callback);
-  };
+};
 
 
 /**
@@ -2167,13 +2167,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.generateAPIKey =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.generateAPIKey =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GenerateAPIKey',
       request,
       metadata || {},
       methodDescriptor_WebService_GenerateAPIKey);
-  };
+};
 
 
 /**
@@ -2191,7 +2191,7 @@ const methodDescriptor_WebService_DisableAPIKey = new grpc.web.MethodDescriptor(
    * @param {!proto.grpc.service.webservice.DisableAPIKeyRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.DisableAPIKeyResponse.deserializeBinary
@@ -2209,14 +2209,14 @@ const methodDescriptor_WebService_DisableAPIKey = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.disableAPIKey =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/DisableAPIKey',
       request,
       metadata || {},
       methodDescriptor_WebService_DisableAPIKey,
       callback);
-  };
+};
 
 
 /**
@@ -2228,13 +2228,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.disableAPIKey =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.disableAPIKey =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/DisableAPIKey',
       request,
       metadata || {},
       methodDescriptor_WebService_DisableAPIKey);
-  };
+};
 
 
 /**
@@ -2252,7 +2252,7 @@ const methodDescriptor_WebService_ListAPIKeys = new grpc.web.MethodDescriptor(
    * @param {!proto.grpc.service.webservice.ListAPIKeysRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.ListAPIKeysResponse.deserializeBinary
@@ -2270,14 +2270,14 @@ const methodDescriptor_WebService_ListAPIKeys = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.listAPIKeys =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ListAPIKeys',
       request,
       metadata || {},
       methodDescriptor_WebService_ListAPIKeys,
       callback);
-  };
+};
 
 
 /**
@@ -2289,13 +2289,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.listAPIKeys =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.listAPIKeys =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ListAPIKeys',
       request,
       metadata || {},
       methodDescriptor_WebService_ListAPIKeys);
-  };
+};
 
 
 /**
@@ -2313,7 +2313,7 @@ const methodDescriptor_WebService_GetInsightData = new grpc.web.MethodDescriptor
    * @param {!proto.grpc.service.webservice.GetInsightDataRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.GetInsightDataResponse.deserializeBinary
@@ -2331,14 +2331,14 @@ const methodDescriptor_WebService_GetInsightData = new grpc.web.MethodDescriptor
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.getInsightData =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetInsightData',
       request,
       metadata || {},
       methodDescriptor_WebService_GetInsightData,
       callback);
-  };
+};
 
 
 /**
@@ -2350,13 +2350,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.getInsightData =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.getInsightData =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetInsightData',
       request,
       metadata || {},
       methodDescriptor_WebService_GetInsightData);
-  };
+};
 
 
 /**
@@ -2374,7 +2374,7 @@ const methodDescriptor_WebService_GetInsightApplicationCount = new grpc.web.Meth
    * @param {!proto.grpc.service.webservice.GetInsightApplicationCountRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.GetInsightApplicationCountResponse.deserializeBinary
@@ -2392,14 +2392,14 @@ const methodDescriptor_WebService_GetInsightApplicationCount = new grpc.web.Meth
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.getInsightApplicationCount =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetInsightApplicationCount',
       request,
       metadata || {},
       methodDescriptor_WebService_GetInsightApplicationCount,
       callback);
-  };
+};
 
 
 /**
@@ -2411,13 +2411,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.getInsightApplicationCo
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.getInsightApplicationCount =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetInsightApplicationCount',
       request,
       metadata || {},
       methodDescriptor_WebService_GetInsightApplicationCount);
-  };
+};
 
 
 /**
@@ -2435,7 +2435,7 @@ const methodDescriptor_WebService_ListDeploymentChains = new grpc.web.MethodDesc
    * @param {!proto.grpc.service.webservice.ListDeploymentChainsRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.ListDeploymentChainsResponse.deserializeBinary
@@ -2453,14 +2453,14 @@ const methodDescriptor_WebService_ListDeploymentChains = new grpc.web.MethodDesc
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.listDeploymentChains =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ListDeploymentChains',
       request,
       metadata || {},
       methodDescriptor_WebService_ListDeploymentChains,
       callback);
-  };
+};
 
 
 /**
@@ -2472,13 +2472,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.listDeploymentChains =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.listDeploymentChains =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ListDeploymentChains',
       request,
       metadata || {},
       methodDescriptor_WebService_ListDeploymentChains);
-  };
+};
 
 
 /**
@@ -2496,7 +2496,7 @@ const methodDescriptor_WebService_GetDeploymentChain = new grpc.web.MethodDescri
    * @param {!proto.grpc.service.webservice.GetDeploymentChainRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.GetDeploymentChainResponse.deserializeBinary
@@ -2514,14 +2514,14 @@ const methodDescriptor_WebService_GetDeploymentChain = new grpc.web.MethodDescri
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.getDeploymentChain =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetDeploymentChain',
       request,
       metadata || {},
       methodDescriptor_WebService_GetDeploymentChain,
       callback);
-  };
+};
 
 
 /**
@@ -2533,13 +2533,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.getDeploymentChain =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.getDeploymentChain =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/GetDeploymentChain',
       request,
       metadata || {},
       methodDescriptor_WebService_GetDeploymentChain);
-  };
+};
 
 
 /**
@@ -2557,7 +2557,7 @@ const methodDescriptor_WebService_ListEvents = new grpc.web.MethodDescriptor(
    * @param {!proto.grpc.service.webservice.ListEventsRequest} request
    * @return {!Uint8Array}
    */
-  function (request) {
+  function(request) {
     return request.serializeBinary();
   },
   proto.grpc.service.webservice.ListEventsResponse.deserializeBinary
@@ -2575,14 +2575,14 @@ const methodDescriptor_WebService_ListEvents = new grpc.web.MethodDescriptor(
  *     The XHR Node Readable Stream
  */
 proto.grpc.service.webservice.WebServiceClient.prototype.listEvents =
-  function (request, metadata, callback) {
-    return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ListEvents',
       request,
       metadata || {},
       methodDescriptor_WebService_ListEvents,
       callback);
-  };
+};
 
 
 /**
@@ -2594,13 +2594,13 @@ proto.grpc.service.webservice.WebServiceClient.prototype.listEvents =
  *     Promise that resolves to the response
  */
 proto.grpc.service.webservice.WebServicePromiseClient.prototype.listEvents =
-  function (request, metadata) {
-    return this.client_.unaryCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
       '/grpc.service.webservice.WebService/ListEvents',
       request,
       metadata || {},
       methodDescriptor_WebService_ListEvents);
-  };
+};
 
 
 module.exports = proto.grpc.service.webservice;

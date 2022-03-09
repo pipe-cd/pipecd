@@ -13,7 +13,7 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global = (function () {
+var global = (function() {
   if (this) { return this; }
   if (typeof window !== 'undefined') { return window; }
   if (typeof global !== 'undefined') { return global; }
@@ -48,7 +48,7 @@ goog.exportSymbol('proto.model.TerraformApplicationLiveState', null, global);
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.ApplicationLiveStateSnapshot = function (opt_data) {
+proto.model.ApplicationLiveStateSnapshot = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.ApplicationLiveStateSnapshot, jspb.Message);
@@ -69,7 +69,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.ApplicationLiveStateVersion = function (opt_data) {
+proto.model.ApplicationLiveStateVersion = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.ApplicationLiveStateVersion, jspb.Message);
@@ -90,7 +90,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.KubernetesApplicationLiveState = function (opt_data) {
+proto.model.KubernetesApplicationLiveState = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.model.KubernetesApplicationLiveState.repeatedFields_, null);
 };
 goog.inherits(proto.model.KubernetesApplicationLiveState, jspb.Message);
@@ -111,7 +111,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.TerraformApplicationLiveState = function (opt_data) {
+proto.model.TerraformApplicationLiveState = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.TerraformApplicationLiveState, jspb.Message);
@@ -132,7 +132,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.CloudRunApplicationLiveState = function (opt_data) {
+proto.model.CloudRunApplicationLiveState = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.model.CloudRunApplicationLiveState.repeatedFields_, null);
 };
 goog.inherits(proto.model.CloudRunApplicationLiveState, jspb.Message);
@@ -153,7 +153,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.LambdaApplicationLiveState = function (opt_data) {
+proto.model.LambdaApplicationLiveState = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.LambdaApplicationLiveState, jspb.Message);
@@ -174,7 +174,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.KubernetesResourceState = function (opt_data) {
+proto.model.KubernetesResourceState = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.model.KubernetesResourceState.repeatedFields_, null);
 };
 goog.inherits(proto.model.KubernetesResourceState, jspb.Message);
@@ -195,7 +195,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.KubernetesResourceStateEvent = function (opt_data) {
+proto.model.KubernetesResourceStateEvent = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.KubernetesResourceStateEvent, jspb.Message);
@@ -216,7 +216,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.CloudRunResourceState = function (opt_data) {
+proto.model.CloudRunResourceState = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.model.CloudRunResourceState.repeatedFields_, null);
 };
 goog.inherits(proto.model.CloudRunResourceState, jspb.Message);
@@ -231,52 +231,52 @@ if (goog.DEBUG && !COMPILED) {
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.ApplicationLiveStateSnapshot.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.ApplicationLiveStateSnapshot.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.ApplicationLiveStateSnapshot.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.ApplicationLiveStateSnapshot.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.ApplicationLiveStateSnapshot} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.ApplicationLiveStateSnapshot.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    applicationId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    envId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    pipedId: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    projectId: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    kind: jspb.Message.getFieldWithDefault(msg, 5, 0),
+    healthStatus: jspb.Message.getFieldWithDefault(msg, 6, 0),
+    kubernetes: (f = msg.getKubernetes()) && proto.model.KubernetesApplicationLiveState.toObject(includeInstance, f),
+    terraform: (f = msg.getTerraform()) && proto.model.TerraformApplicationLiveState.toObject(includeInstance, f),
+    cloudrun: (f = msg.getCloudrun()) && proto.model.CloudRunApplicationLiveState.toObject(includeInstance, f),
+    lambda: (f = msg.getLambda()) && proto.model.LambdaApplicationLiveState.toObject(includeInstance, f),
+    version: (f = msg.getVersion()) && proto.model.ApplicationLiveStateVersion.toObject(includeInstance, f)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.ApplicationLiveStateSnapshot} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.ApplicationLiveStateSnapshot.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      applicationId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-      envId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-      pipedId: jspb.Message.getFieldWithDefault(msg, 3, ""),
-      projectId: jspb.Message.getFieldWithDefault(msg, 4, ""),
-      kind: jspb.Message.getFieldWithDefault(msg, 5, 0),
-      healthStatus: jspb.Message.getFieldWithDefault(msg, 6, 0),
-      kubernetes: (f = msg.getKubernetes()) && proto.model.KubernetesApplicationLiveState.toObject(includeInstance, f),
-      terraform: (f = msg.getTerraform()) && proto.model.TerraformApplicationLiveState.toObject(includeInstance, f),
-      cloudrun: (f = msg.getCloudrun()) && proto.model.CloudRunApplicationLiveState.toObject(includeInstance, f),
-      lambda: (f = msg.getLambda()) && proto.model.LambdaApplicationLiveState.toObject(includeInstance, f),
-      version: (f = msg.getVersion()) && proto.model.ApplicationLiveStateVersion.toObject(includeInstance, f)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -285,7 +285,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.ApplicationLiveStateSnapshot}
  */
-proto.model.ApplicationLiveStateSnapshot.deserializeBinary = function (bytes) {
+proto.model.ApplicationLiveStateSnapshot.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.ApplicationLiveStateSnapshot;
   return proto.model.ApplicationLiveStateSnapshot.deserializeBinaryFromReader(msg, reader);
@@ -299,65 +299,65 @@ proto.model.ApplicationLiveStateSnapshot.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.ApplicationLiveStateSnapshot}
  */
-proto.model.ApplicationLiveStateSnapshot.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.ApplicationLiveStateSnapshot.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setApplicationId(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setEnvId(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setPipedId(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setProjectId(value);
-        break;
-      case 5:
-        var value = /** @type {!proto.model.ApplicationKind} */ (reader.readEnum());
-        msg.setKind(value);
-        break;
-      case 6:
-        var value = /** @type {!proto.model.ApplicationLiveStateSnapshot.Status} */ (reader.readEnum());
-        msg.setHealthStatus(value);
-        break;
-      case 10:
-        var value = new proto.model.KubernetesApplicationLiveState;
-        reader.readMessage(value, proto.model.KubernetesApplicationLiveState.deserializeBinaryFromReader);
-        msg.setKubernetes(value);
-        break;
-      case 11:
-        var value = new proto.model.TerraformApplicationLiveState;
-        reader.readMessage(value, proto.model.TerraformApplicationLiveState.deserializeBinaryFromReader);
-        msg.setTerraform(value);
-        break;
-      case 12:
-        var value = new proto.model.CloudRunApplicationLiveState;
-        reader.readMessage(value, proto.model.CloudRunApplicationLiveState.deserializeBinaryFromReader);
-        msg.setCloudrun(value);
-        break;
-      case 13:
-        var value = new proto.model.LambdaApplicationLiveState;
-        reader.readMessage(value, proto.model.LambdaApplicationLiveState.deserializeBinaryFromReader);
-        msg.setLambda(value);
-        break;
-      case 15:
-        var value = new proto.model.ApplicationLiveStateVersion;
-        reader.readMessage(value, proto.model.ApplicationLiveStateVersion.deserializeBinaryFromReader);
-        msg.setVersion(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setApplicationId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setEnvId(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPipedId(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setProjectId(value);
+      break;
+    case 5:
+      var value = /** @type {!proto.model.ApplicationKind} */ (reader.readEnum());
+      msg.setKind(value);
+      break;
+    case 6:
+      var value = /** @type {!proto.model.ApplicationLiveStateSnapshot.Status} */ (reader.readEnum());
+      msg.setHealthStatus(value);
+      break;
+    case 10:
+      var value = new proto.model.KubernetesApplicationLiveState;
+      reader.readMessage(value,proto.model.KubernetesApplicationLiveState.deserializeBinaryFromReader);
+      msg.setKubernetes(value);
+      break;
+    case 11:
+      var value = new proto.model.TerraformApplicationLiveState;
+      reader.readMessage(value,proto.model.TerraformApplicationLiveState.deserializeBinaryFromReader);
+      msg.setTerraform(value);
+      break;
+    case 12:
+      var value = new proto.model.CloudRunApplicationLiveState;
+      reader.readMessage(value,proto.model.CloudRunApplicationLiveState.deserializeBinaryFromReader);
+      msg.setCloudrun(value);
+      break;
+    case 13:
+      var value = new proto.model.LambdaApplicationLiveState;
+      reader.readMessage(value,proto.model.LambdaApplicationLiveState.deserializeBinaryFromReader);
+      msg.setLambda(value);
+      break;
+    case 15:
+      var value = new proto.model.ApplicationLiveStateVersion;
+      reader.readMessage(value,proto.model.ApplicationLiveStateVersion.deserializeBinaryFromReader);
+      msg.setVersion(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -368,7 +368,7 @@ proto.model.ApplicationLiveStateSnapshot.deserializeBinaryFromReader = function 
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.serializeBinary = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.ApplicationLiveStateSnapshot.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -382,7 +382,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.serializeBinary = function ()
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.ApplicationLiveStateSnapshot.serializeBinaryToWriter = function (message, writer) {
+proto.model.ApplicationLiveStateSnapshot.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getApplicationId();
   if (f.length > 0) {
@@ -482,7 +482,7 @@ proto.model.ApplicationLiveStateSnapshot.Status = {
  * optional string application_id = 1;
  * @return {string}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.getApplicationId = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.getApplicationId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -491,7 +491,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.getApplicationId = function (
  * @param {string} value
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.setApplicationId = function (value) {
+proto.model.ApplicationLiveStateSnapshot.prototype.setApplicationId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -500,7 +500,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.setApplicationId = function (
  * optional string env_id = 2;
  * @return {string}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.getEnvId = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.getEnvId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -509,7 +509,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.getEnvId = function () {
  * @param {string} value
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.setEnvId = function (value) {
+proto.model.ApplicationLiveStateSnapshot.prototype.setEnvId = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -518,7 +518,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.setEnvId = function (value) {
  * optional string piped_id = 3;
  * @return {string}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.getPipedId = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.getPipedId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -527,7 +527,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.getPipedId = function () {
  * @param {string} value
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.setPipedId = function (value) {
+proto.model.ApplicationLiveStateSnapshot.prototype.setPipedId = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -536,7 +536,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.setPipedId = function (value)
  * optional string project_id = 4;
  * @return {string}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.getProjectId = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.getProjectId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -545,7 +545,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.getProjectId = function () {
  * @param {string} value
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.setProjectId = function (value) {
+proto.model.ApplicationLiveStateSnapshot.prototype.setProjectId = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
@@ -554,7 +554,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.setProjectId = function (valu
  * optional ApplicationKind kind = 5;
  * @return {!proto.model.ApplicationKind}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.getKind = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.getKind = function() {
   return /** @type {!proto.model.ApplicationKind} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
 };
 
@@ -563,7 +563,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.getKind = function () {
  * @param {!proto.model.ApplicationKind} value
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.setKind = function (value) {
+proto.model.ApplicationLiveStateSnapshot.prototype.setKind = function(value) {
   return jspb.Message.setProto3EnumField(this, 5, value);
 };
 
@@ -572,7 +572,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.setKind = function (value) {
  * optional Status health_status = 6;
  * @return {!proto.model.ApplicationLiveStateSnapshot.Status}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.getHealthStatus = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.getHealthStatus = function() {
   return /** @type {!proto.model.ApplicationLiveStateSnapshot.Status} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
 };
 
@@ -581,7 +581,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.getHealthStatus = function ()
  * @param {!proto.model.ApplicationLiveStateSnapshot.Status} value
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.setHealthStatus = function (value) {
+proto.model.ApplicationLiveStateSnapshot.prototype.setHealthStatus = function(value) {
   return jspb.Message.setProto3EnumField(this, 6, value);
 };
 
@@ -590,7 +590,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.setHealthStatus = function (v
  * optional KubernetesApplicationLiveState kubernetes = 10;
  * @return {?proto.model.KubernetesApplicationLiveState}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.getKubernetes = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.getKubernetes = function() {
   return /** @type{?proto.model.KubernetesApplicationLiveState} */ (
     jspb.Message.getWrapperField(this, proto.model.KubernetesApplicationLiveState, 10));
 };
@@ -600,7 +600,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.getKubernetes = function () {
  * @param {?proto.model.KubernetesApplicationLiveState|undefined} value
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
 */
-proto.model.ApplicationLiveStateSnapshot.prototype.setKubernetes = function (value) {
+proto.model.ApplicationLiveStateSnapshot.prototype.setKubernetes = function(value) {
   return jspb.Message.setWrapperField(this, 10, value);
 };
 
@@ -609,7 +609,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.setKubernetes = function (val
  * Clears the message field making it undefined.
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.clearKubernetes = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.clearKubernetes = function() {
   return this.setKubernetes(undefined);
 };
 
@@ -618,7 +618,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.clearKubernetes = function ()
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.hasKubernetes = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.hasKubernetes = function() {
   return jspb.Message.getField(this, 10) != null;
 };
 
@@ -627,7 +627,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.hasKubernetes = function () {
  * optional TerraformApplicationLiveState terraform = 11;
  * @return {?proto.model.TerraformApplicationLiveState}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.getTerraform = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.getTerraform = function() {
   return /** @type{?proto.model.TerraformApplicationLiveState} */ (
     jspb.Message.getWrapperField(this, proto.model.TerraformApplicationLiveState, 11));
 };
@@ -637,7 +637,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.getTerraform = function () {
  * @param {?proto.model.TerraformApplicationLiveState|undefined} value
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
 */
-proto.model.ApplicationLiveStateSnapshot.prototype.setTerraform = function (value) {
+proto.model.ApplicationLiveStateSnapshot.prototype.setTerraform = function(value) {
   return jspb.Message.setWrapperField(this, 11, value);
 };
 
@@ -646,7 +646,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.setTerraform = function (valu
  * Clears the message field making it undefined.
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.clearTerraform = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.clearTerraform = function() {
   return this.setTerraform(undefined);
 };
 
@@ -655,7 +655,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.clearTerraform = function () 
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.hasTerraform = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.hasTerraform = function() {
   return jspb.Message.getField(this, 11) != null;
 };
 
@@ -664,7 +664,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.hasTerraform = function () {
  * optional CloudRunApplicationLiveState cloudrun = 12;
  * @return {?proto.model.CloudRunApplicationLiveState}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.getCloudrun = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.getCloudrun = function() {
   return /** @type{?proto.model.CloudRunApplicationLiveState} */ (
     jspb.Message.getWrapperField(this, proto.model.CloudRunApplicationLiveState, 12));
 };
@@ -674,7 +674,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.getCloudrun = function () {
  * @param {?proto.model.CloudRunApplicationLiveState|undefined} value
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
 */
-proto.model.ApplicationLiveStateSnapshot.prototype.setCloudrun = function (value) {
+proto.model.ApplicationLiveStateSnapshot.prototype.setCloudrun = function(value) {
   return jspb.Message.setWrapperField(this, 12, value);
 };
 
@@ -683,7 +683,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.setCloudrun = function (value
  * Clears the message field making it undefined.
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.clearCloudrun = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.clearCloudrun = function() {
   return this.setCloudrun(undefined);
 };
 
@@ -692,7 +692,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.clearCloudrun = function () {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.hasCloudrun = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.hasCloudrun = function() {
   return jspb.Message.getField(this, 12) != null;
 };
 
@@ -701,7 +701,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.hasCloudrun = function () {
  * optional LambdaApplicationLiveState lambda = 13;
  * @return {?proto.model.LambdaApplicationLiveState}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.getLambda = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.getLambda = function() {
   return /** @type{?proto.model.LambdaApplicationLiveState} */ (
     jspb.Message.getWrapperField(this, proto.model.LambdaApplicationLiveState, 13));
 };
@@ -711,7 +711,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.getLambda = function () {
  * @param {?proto.model.LambdaApplicationLiveState|undefined} value
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
 */
-proto.model.ApplicationLiveStateSnapshot.prototype.setLambda = function (value) {
+proto.model.ApplicationLiveStateSnapshot.prototype.setLambda = function(value) {
   return jspb.Message.setWrapperField(this, 13, value);
 };
 
@@ -720,7 +720,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.setLambda = function (value) 
  * Clears the message field making it undefined.
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.clearLambda = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.clearLambda = function() {
   return this.setLambda(undefined);
 };
 
@@ -729,7 +729,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.clearLambda = function () {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.hasLambda = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.hasLambda = function() {
   return jspb.Message.getField(this, 13) != null;
 };
 
@@ -738,7 +738,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.hasLambda = function () {
  * optional ApplicationLiveStateVersion version = 15;
  * @return {?proto.model.ApplicationLiveStateVersion}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.getVersion = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.getVersion = function() {
   return /** @type{?proto.model.ApplicationLiveStateVersion} */ (
     jspb.Message.getWrapperField(this, proto.model.ApplicationLiveStateVersion, 15));
 };
@@ -748,7 +748,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.getVersion = function () {
  * @param {?proto.model.ApplicationLiveStateVersion|undefined} value
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
 */
-proto.model.ApplicationLiveStateSnapshot.prototype.setVersion = function (value) {
+proto.model.ApplicationLiveStateSnapshot.prototype.setVersion = function(value) {
   return jspb.Message.setWrapperField(this, 15, value);
 };
 
@@ -757,7 +757,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.setVersion = function (value)
  * Clears the message field making it undefined.
  * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.clearVersion = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.clearVersion = function() {
   return this.setVersion(undefined);
 };
 
@@ -766,7 +766,7 @@ proto.model.ApplicationLiveStateSnapshot.prototype.clearVersion = function () {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.ApplicationLiveStateSnapshot.prototype.hasVersion = function () {
+proto.model.ApplicationLiveStateSnapshot.prototype.hasVersion = function() {
   return jspb.Message.getField(this, 15) != null;
 };
 
@@ -775,43 +775,43 @@ proto.model.ApplicationLiveStateSnapshot.prototype.hasVersion = function () {
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.ApplicationLiveStateVersion.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.ApplicationLiveStateVersion.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.ApplicationLiveStateVersion.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.ApplicationLiveStateVersion.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.ApplicationLiveStateVersion} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.ApplicationLiveStateVersion.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    timestamp: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    index: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.ApplicationLiveStateVersion} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.ApplicationLiveStateVersion.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      timestamp: jspb.Message.getFieldWithDefault(msg, 1, 0),
-      index: jspb.Message.getFieldWithDefault(msg, 2, 0)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -820,7 +820,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.ApplicationLiveStateVersion}
  */
-proto.model.ApplicationLiveStateVersion.deserializeBinary = function (bytes) {
+proto.model.ApplicationLiveStateVersion.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.ApplicationLiveStateVersion;
   return proto.model.ApplicationLiveStateVersion.deserializeBinaryFromReader(msg, reader);
@@ -834,24 +834,24 @@ proto.model.ApplicationLiveStateVersion.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.ApplicationLiveStateVersion}
  */
-proto.model.ApplicationLiveStateVersion.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.ApplicationLiveStateVersion.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setTimestamp(value);
-        break;
-      case 2:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setIndex(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setTimestamp(value);
+      break;
+    case 2:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setIndex(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -862,7 +862,7 @@ proto.model.ApplicationLiveStateVersion.deserializeBinaryFromReader = function (
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.ApplicationLiveStateVersion.prototype.serializeBinary = function () {
+proto.model.ApplicationLiveStateVersion.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.ApplicationLiveStateVersion.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -876,7 +876,7 @@ proto.model.ApplicationLiveStateVersion.prototype.serializeBinary = function () 
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.ApplicationLiveStateVersion.serializeBinaryToWriter = function (message, writer) {
+proto.model.ApplicationLiveStateVersion.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getTimestamp();
   if (f !== 0) {
@@ -899,7 +899,7 @@ proto.model.ApplicationLiveStateVersion.serializeBinaryToWriter = function (mess
  * optional int64 timestamp = 1;
  * @return {number}
  */
-proto.model.ApplicationLiveStateVersion.prototype.getTimestamp = function () {
+proto.model.ApplicationLiveStateVersion.prototype.getTimestamp = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
 };
 
@@ -908,7 +908,7 @@ proto.model.ApplicationLiveStateVersion.prototype.getTimestamp = function () {
  * @param {number} value
  * @return {!proto.model.ApplicationLiveStateVersion} returns this
  */
-proto.model.ApplicationLiveStateVersion.prototype.setTimestamp = function (value) {
+proto.model.ApplicationLiveStateVersion.prototype.setTimestamp = function(value) {
   return jspb.Message.setProto3IntField(this, 1, value);
 };
 
@@ -917,7 +917,7 @@ proto.model.ApplicationLiveStateVersion.prototype.setTimestamp = function (value
  * optional int64 index = 2;
  * @return {number}
  */
-proto.model.ApplicationLiveStateVersion.prototype.getIndex = function () {
+proto.model.ApplicationLiveStateVersion.prototype.getIndex = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
 };
 
@@ -926,7 +926,7 @@ proto.model.ApplicationLiveStateVersion.prototype.getIndex = function () {
  * @param {number} value
  * @return {!proto.model.ApplicationLiveStateVersion} returns this
  */
-proto.model.ApplicationLiveStateVersion.prototype.setIndex = function (value) {
+proto.model.ApplicationLiveStateVersion.prototype.setIndex = function(value) {
   return jspb.Message.setProto3IntField(this, 2, value);
 };
 
@@ -942,43 +942,43 @@ proto.model.KubernetesApplicationLiveState.repeatedFields_ = [1];
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.KubernetesApplicationLiveState.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.KubernetesApplicationLiveState.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.KubernetesApplicationLiveState.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.KubernetesApplicationLiveState.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.KubernetesApplicationLiveState} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.KubernetesApplicationLiveState.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    resourcesList: jspb.Message.toObjectList(msg.getResourcesList(),
+    proto.model.KubernetesResourceState.toObject, includeInstance)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.KubernetesApplicationLiveState} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.KubernetesApplicationLiveState.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      resourcesList: jspb.Message.toObjectList(msg.getResourcesList(),
-        proto.model.KubernetesResourceState.toObject, includeInstance)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -987,7 +987,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.KubernetesApplicationLiveState}
  */
-proto.model.KubernetesApplicationLiveState.deserializeBinary = function (bytes) {
+proto.model.KubernetesApplicationLiveState.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.KubernetesApplicationLiveState;
   return proto.model.KubernetesApplicationLiveState.deserializeBinaryFromReader(msg, reader);
@@ -1001,21 +1001,21 @@ proto.model.KubernetesApplicationLiveState.deserializeBinary = function (bytes) 
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.KubernetesApplicationLiveState}
  */
-proto.model.KubernetesApplicationLiveState.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.KubernetesApplicationLiveState.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new proto.model.KubernetesResourceState;
-        reader.readMessage(value, proto.model.KubernetesResourceState.deserializeBinaryFromReader);
-        msg.addResources(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new proto.model.KubernetesResourceState;
+      reader.readMessage(value,proto.model.KubernetesResourceState.deserializeBinaryFromReader);
+      msg.addResources(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1026,7 +1026,7 @@ proto.model.KubernetesApplicationLiveState.deserializeBinaryFromReader = functio
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.KubernetesApplicationLiveState.prototype.serializeBinary = function () {
+proto.model.KubernetesApplicationLiveState.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.KubernetesApplicationLiveState.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -1040,7 +1040,7 @@ proto.model.KubernetesApplicationLiveState.prototype.serializeBinary = function 
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.KubernetesApplicationLiveState.serializeBinaryToWriter = function (message, writer) {
+proto.model.KubernetesApplicationLiveState.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getResourcesList();
   if (f.length > 0) {
@@ -1057,7 +1057,7 @@ proto.model.KubernetesApplicationLiveState.serializeBinaryToWriter = function (m
  * repeated KubernetesResourceState resources = 1;
  * @return {!Array<!proto.model.KubernetesResourceState>}
  */
-proto.model.KubernetesApplicationLiveState.prototype.getResourcesList = function () {
+proto.model.KubernetesApplicationLiveState.prototype.getResourcesList = function() {
   return /** @type{!Array<!proto.model.KubernetesResourceState>} */ (
     jspb.Message.getRepeatedWrapperField(this, proto.model.KubernetesResourceState, 1));
 };
@@ -1067,7 +1067,7 @@ proto.model.KubernetesApplicationLiveState.prototype.getResourcesList = function
  * @param {!Array<!proto.model.KubernetesResourceState>} value
  * @return {!proto.model.KubernetesApplicationLiveState} returns this
 */
-proto.model.KubernetesApplicationLiveState.prototype.setResourcesList = function (value) {
+proto.model.KubernetesApplicationLiveState.prototype.setResourcesList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
@@ -1077,7 +1077,7 @@ proto.model.KubernetesApplicationLiveState.prototype.setResourcesList = function
  * @param {number=} opt_index
  * @return {!proto.model.KubernetesResourceState}
  */
-proto.model.KubernetesApplicationLiveState.prototype.addResources = function (opt_value, opt_index) {
+proto.model.KubernetesApplicationLiveState.prototype.addResources = function(opt_value, opt_index) {
   return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.model.KubernetesResourceState, opt_index);
 };
 
@@ -1086,7 +1086,7 @@ proto.model.KubernetesApplicationLiveState.prototype.addResources = function (op
  * Clears the list making it empty but non-null.
  * @return {!proto.model.KubernetesApplicationLiveState} returns this
  */
-proto.model.KubernetesApplicationLiveState.prototype.clearResourcesList = function () {
+proto.model.KubernetesApplicationLiveState.prototype.clearResourcesList = function() {
   return this.setResourcesList([]);
 };
 
@@ -1095,42 +1095,42 @@ proto.model.KubernetesApplicationLiveState.prototype.clearResourcesList = functi
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.TerraformApplicationLiveState.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.TerraformApplicationLiveState.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.TerraformApplicationLiveState.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.TerraformApplicationLiveState.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.TerraformApplicationLiveState} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.TerraformApplicationLiveState.toObject = function(includeInstance, msg) {
+  var f, obj = {
+
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.TerraformApplicationLiveState} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.TerraformApplicationLiveState.toObject = function (includeInstance, msg) {
-    var f, obj = {
-
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -1139,7 +1139,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.TerraformApplicationLiveState}
  */
-proto.model.TerraformApplicationLiveState.deserializeBinary = function (bytes) {
+proto.model.TerraformApplicationLiveState.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.TerraformApplicationLiveState;
   return proto.model.TerraformApplicationLiveState.deserializeBinaryFromReader(msg, reader);
@@ -1153,16 +1153,16 @@ proto.model.TerraformApplicationLiveState.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.TerraformApplicationLiveState}
  */
-proto.model.TerraformApplicationLiveState.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.TerraformApplicationLiveState.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      default:
-        reader.skipField();
-        break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1173,7 +1173,7 @@ proto.model.TerraformApplicationLiveState.deserializeBinaryFromReader = function
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.TerraformApplicationLiveState.prototype.serializeBinary = function () {
+proto.model.TerraformApplicationLiveState.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.TerraformApplicationLiveState.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -1187,7 +1187,7 @@ proto.model.TerraformApplicationLiveState.prototype.serializeBinary = function (
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.TerraformApplicationLiveState.serializeBinaryToWriter = function (message, writer) {
+proto.model.TerraformApplicationLiveState.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
 };
 
@@ -1203,43 +1203,43 @@ proto.model.CloudRunApplicationLiveState.repeatedFields_ = [1];
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.CloudRunApplicationLiveState.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.CloudRunApplicationLiveState.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.CloudRunApplicationLiveState.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.CloudRunApplicationLiveState.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.CloudRunApplicationLiveState} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.CloudRunApplicationLiveState.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    resourcesList: jspb.Message.toObjectList(msg.getResourcesList(),
+    proto.model.CloudRunResourceState.toObject, includeInstance)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.CloudRunApplicationLiveState} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.CloudRunApplicationLiveState.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      resourcesList: jspb.Message.toObjectList(msg.getResourcesList(),
-        proto.model.CloudRunResourceState.toObject, includeInstance)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -1248,7 +1248,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.CloudRunApplicationLiveState}
  */
-proto.model.CloudRunApplicationLiveState.deserializeBinary = function (bytes) {
+proto.model.CloudRunApplicationLiveState.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.CloudRunApplicationLiveState;
   return proto.model.CloudRunApplicationLiveState.deserializeBinaryFromReader(msg, reader);
@@ -1262,21 +1262,21 @@ proto.model.CloudRunApplicationLiveState.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.CloudRunApplicationLiveState}
  */
-proto.model.CloudRunApplicationLiveState.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.CloudRunApplicationLiveState.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new proto.model.CloudRunResourceState;
-        reader.readMessage(value, proto.model.CloudRunResourceState.deserializeBinaryFromReader);
-        msg.addResources(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new proto.model.CloudRunResourceState;
+      reader.readMessage(value,proto.model.CloudRunResourceState.deserializeBinaryFromReader);
+      msg.addResources(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1287,7 +1287,7 @@ proto.model.CloudRunApplicationLiveState.deserializeBinaryFromReader = function 
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.CloudRunApplicationLiveState.prototype.serializeBinary = function () {
+proto.model.CloudRunApplicationLiveState.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.CloudRunApplicationLiveState.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -1301,7 +1301,7 @@ proto.model.CloudRunApplicationLiveState.prototype.serializeBinary = function ()
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.CloudRunApplicationLiveState.serializeBinaryToWriter = function (message, writer) {
+proto.model.CloudRunApplicationLiveState.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getResourcesList();
   if (f.length > 0) {
@@ -1318,7 +1318,7 @@ proto.model.CloudRunApplicationLiveState.serializeBinaryToWriter = function (mes
  * repeated CloudRunResourceState resources = 1;
  * @return {!Array<!proto.model.CloudRunResourceState>}
  */
-proto.model.CloudRunApplicationLiveState.prototype.getResourcesList = function () {
+proto.model.CloudRunApplicationLiveState.prototype.getResourcesList = function() {
   return /** @type{!Array<!proto.model.CloudRunResourceState>} */ (
     jspb.Message.getRepeatedWrapperField(this, proto.model.CloudRunResourceState, 1));
 };
@@ -1328,7 +1328,7 @@ proto.model.CloudRunApplicationLiveState.prototype.getResourcesList = function (
  * @param {!Array<!proto.model.CloudRunResourceState>} value
  * @return {!proto.model.CloudRunApplicationLiveState} returns this
 */
-proto.model.CloudRunApplicationLiveState.prototype.setResourcesList = function (value) {
+proto.model.CloudRunApplicationLiveState.prototype.setResourcesList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
@@ -1338,7 +1338,7 @@ proto.model.CloudRunApplicationLiveState.prototype.setResourcesList = function (
  * @param {number=} opt_index
  * @return {!proto.model.CloudRunResourceState}
  */
-proto.model.CloudRunApplicationLiveState.prototype.addResources = function (opt_value, opt_index) {
+proto.model.CloudRunApplicationLiveState.prototype.addResources = function(opt_value, opt_index) {
   return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.model.CloudRunResourceState, opt_index);
 };
 
@@ -1347,7 +1347,7 @@ proto.model.CloudRunApplicationLiveState.prototype.addResources = function (opt_
  * Clears the list making it empty but non-null.
  * @return {!proto.model.CloudRunApplicationLiveState} returns this
  */
-proto.model.CloudRunApplicationLiveState.prototype.clearResourcesList = function () {
+proto.model.CloudRunApplicationLiveState.prototype.clearResourcesList = function() {
   return this.setResourcesList([]);
 };
 
@@ -1356,42 +1356,42 @@ proto.model.CloudRunApplicationLiveState.prototype.clearResourcesList = function
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.LambdaApplicationLiveState.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.LambdaApplicationLiveState.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.LambdaApplicationLiveState.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.LambdaApplicationLiveState.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.LambdaApplicationLiveState} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.LambdaApplicationLiveState.toObject = function(includeInstance, msg) {
+  var f, obj = {
+
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.LambdaApplicationLiveState} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.LambdaApplicationLiveState.toObject = function (includeInstance, msg) {
-    var f, obj = {
-
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -1400,7 +1400,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.LambdaApplicationLiveState}
  */
-proto.model.LambdaApplicationLiveState.deserializeBinary = function (bytes) {
+proto.model.LambdaApplicationLiveState.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.LambdaApplicationLiveState;
   return proto.model.LambdaApplicationLiveState.deserializeBinaryFromReader(msg, reader);
@@ -1414,16 +1414,16 @@ proto.model.LambdaApplicationLiveState.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.LambdaApplicationLiveState}
  */
-proto.model.LambdaApplicationLiveState.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.LambdaApplicationLiveState.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      default:
-        reader.skipField();
-        break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1434,7 +1434,7 @@ proto.model.LambdaApplicationLiveState.deserializeBinaryFromReader = function (m
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.LambdaApplicationLiveState.prototype.serializeBinary = function () {
+proto.model.LambdaApplicationLiveState.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.LambdaApplicationLiveState.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -1448,7 +1448,7 @@ proto.model.LambdaApplicationLiveState.prototype.serializeBinary = function () {
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.LambdaApplicationLiveState.serializeBinaryToWriter = function (message, writer) {
+proto.model.LambdaApplicationLiveState.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
 };
 
@@ -1459,57 +1459,57 @@ proto.model.LambdaApplicationLiveState.serializeBinaryToWriter = function (messa
  * @private {!Array<number>}
  * @const
  */
-proto.model.KubernetesResourceState.repeatedFields_ = [2, 3];
+proto.model.KubernetesResourceState.repeatedFields_ = [2,3];
 
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.KubernetesResourceState.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.KubernetesResourceState.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.KubernetesResourceState.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.KubernetesResourceState.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.KubernetesResourceState} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.KubernetesResourceState.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    ownerIdsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
+    parentIdsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
+    name: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    apiVersion: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    kind: jspb.Message.getFieldWithDefault(msg, 6, ""),
+    namespace: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    healthStatus: jspb.Message.getFieldWithDefault(msg, 8, 0),
+    healthDescription: jspb.Message.getFieldWithDefault(msg, 9, ""),
+    createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
+    updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.KubernetesResourceState} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.KubernetesResourceState.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-      ownerIdsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
-      parentIdsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
-      name: jspb.Message.getFieldWithDefault(msg, 4, ""),
-      apiVersion: jspb.Message.getFieldWithDefault(msg, 5, ""),
-      kind: jspb.Message.getFieldWithDefault(msg, 6, ""),
-      namespace: jspb.Message.getFieldWithDefault(msg, 7, ""),
-      healthStatus: jspb.Message.getFieldWithDefault(msg, 8, 0),
-      healthDescription: jspb.Message.getFieldWithDefault(msg, 9, ""),
-      createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
-      updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -1518,7 +1518,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.KubernetesResourceState}
  */
-proto.model.KubernetesResourceState.deserializeBinary = function (bytes) {
+proto.model.KubernetesResourceState.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.KubernetesResourceState;
   return proto.model.KubernetesResourceState.deserializeBinaryFromReader(msg, reader);
@@ -1532,60 +1532,60 @@ proto.model.KubernetesResourceState.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.KubernetesResourceState}
  */
-proto.model.KubernetesResourceState.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.KubernetesResourceState.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setId(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addOwnerIds(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addParentIds(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setName(value);
-        break;
-      case 5:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setApiVersion(value);
-        break;
-      case 6:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setKind(value);
-        break;
-      case 7:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setNamespace(value);
-        break;
-      case 8:
-        var value = /** @type {!proto.model.KubernetesResourceState.HealthStatus} */ (reader.readEnum());
-        msg.setHealthStatus(value);
-        break;
-      case 9:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setHealthDescription(value);
-        break;
-      case 14:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setCreatedAt(value);
-        break;
-      case 15:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setUpdatedAt(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addOwnerIds(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addParentIds(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setName(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setApiVersion(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setKind(value);
+      break;
+    case 7:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setNamespace(value);
+      break;
+    case 8:
+      var value = /** @type {!proto.model.KubernetesResourceState.HealthStatus} */ (reader.readEnum());
+      msg.setHealthStatus(value);
+      break;
+    case 9:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setHealthDescription(value);
+      break;
+    case 14:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setCreatedAt(value);
+      break;
+    case 15:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setUpdatedAt(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1596,7 +1596,7 @@ proto.model.KubernetesResourceState.deserializeBinaryFromReader = function (msg,
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.KubernetesResourceState.prototype.serializeBinary = function () {
+proto.model.KubernetesResourceState.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.KubernetesResourceState.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -1610,7 +1610,7 @@ proto.model.KubernetesResourceState.prototype.serializeBinary = function () {
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.KubernetesResourceState.serializeBinaryToWriter = function (message, writer) {
+proto.model.KubernetesResourceState.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
@@ -1705,7 +1705,7 @@ proto.model.KubernetesResourceState.HealthStatus = {
  * optional string id = 1;
  * @return {string}
  */
-proto.model.KubernetesResourceState.prototype.getId = function () {
+proto.model.KubernetesResourceState.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -1714,7 +1714,7 @@ proto.model.KubernetesResourceState.prototype.getId = function () {
  * @param {string} value
  * @return {!proto.model.KubernetesResourceState} returns this
  */
-proto.model.KubernetesResourceState.prototype.setId = function (value) {
+proto.model.KubernetesResourceState.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -1723,7 +1723,7 @@ proto.model.KubernetesResourceState.prototype.setId = function (value) {
  * repeated string owner_ids = 2;
  * @return {!Array<string>}
  */
-proto.model.KubernetesResourceState.prototype.getOwnerIdsList = function () {
+proto.model.KubernetesResourceState.prototype.getOwnerIdsList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 2));
 };
 
@@ -1732,7 +1732,7 @@ proto.model.KubernetesResourceState.prototype.getOwnerIdsList = function () {
  * @param {!Array<string>} value
  * @return {!proto.model.KubernetesResourceState} returns this
  */
-proto.model.KubernetesResourceState.prototype.setOwnerIdsList = function (value) {
+proto.model.KubernetesResourceState.prototype.setOwnerIdsList = function(value) {
   return jspb.Message.setField(this, 2, value || []);
 };
 
@@ -1742,7 +1742,7 @@ proto.model.KubernetesResourceState.prototype.setOwnerIdsList = function (value)
  * @param {number=} opt_index
  * @return {!proto.model.KubernetesResourceState} returns this
  */
-proto.model.KubernetesResourceState.prototype.addOwnerIds = function (value, opt_index) {
+proto.model.KubernetesResourceState.prototype.addOwnerIds = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 2, value, opt_index);
 };
 
@@ -1751,7 +1751,7 @@ proto.model.KubernetesResourceState.prototype.addOwnerIds = function (value, opt
  * Clears the list making it empty but non-null.
  * @return {!proto.model.KubernetesResourceState} returns this
  */
-proto.model.KubernetesResourceState.prototype.clearOwnerIdsList = function () {
+proto.model.KubernetesResourceState.prototype.clearOwnerIdsList = function() {
   return this.setOwnerIdsList([]);
 };
 
@@ -1760,7 +1760,7 @@ proto.model.KubernetesResourceState.prototype.clearOwnerIdsList = function () {
  * repeated string parent_ids = 3;
  * @return {!Array<string>}
  */
-proto.model.KubernetesResourceState.prototype.getParentIdsList = function () {
+proto.model.KubernetesResourceState.prototype.getParentIdsList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 3));
 };
 
@@ -1769,7 +1769,7 @@ proto.model.KubernetesResourceState.prototype.getParentIdsList = function () {
  * @param {!Array<string>} value
  * @return {!proto.model.KubernetesResourceState} returns this
  */
-proto.model.KubernetesResourceState.prototype.setParentIdsList = function (value) {
+proto.model.KubernetesResourceState.prototype.setParentIdsList = function(value) {
   return jspb.Message.setField(this, 3, value || []);
 };
 
@@ -1779,7 +1779,7 @@ proto.model.KubernetesResourceState.prototype.setParentIdsList = function (value
  * @param {number=} opt_index
  * @return {!proto.model.KubernetesResourceState} returns this
  */
-proto.model.KubernetesResourceState.prototype.addParentIds = function (value, opt_index) {
+proto.model.KubernetesResourceState.prototype.addParentIds = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 3, value, opt_index);
 };
 
@@ -1788,7 +1788,7 @@ proto.model.KubernetesResourceState.prototype.addParentIds = function (value, op
  * Clears the list making it empty but non-null.
  * @return {!proto.model.KubernetesResourceState} returns this
  */
-proto.model.KubernetesResourceState.prototype.clearParentIdsList = function () {
+proto.model.KubernetesResourceState.prototype.clearParentIdsList = function() {
   return this.setParentIdsList([]);
 };
 
@@ -1797,7 +1797,7 @@ proto.model.KubernetesResourceState.prototype.clearParentIdsList = function () {
  * optional string name = 4;
  * @return {string}
  */
-proto.model.KubernetesResourceState.prototype.getName = function () {
+proto.model.KubernetesResourceState.prototype.getName = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -1806,7 +1806,7 @@ proto.model.KubernetesResourceState.prototype.getName = function () {
  * @param {string} value
  * @return {!proto.model.KubernetesResourceState} returns this
  */
-proto.model.KubernetesResourceState.prototype.setName = function (value) {
+proto.model.KubernetesResourceState.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
@@ -1815,7 +1815,7 @@ proto.model.KubernetesResourceState.prototype.setName = function (value) {
  * optional string api_version = 5;
  * @return {string}
  */
-proto.model.KubernetesResourceState.prototype.getApiVersion = function () {
+proto.model.KubernetesResourceState.prototype.getApiVersion = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
@@ -1824,7 +1824,7 @@ proto.model.KubernetesResourceState.prototype.getApiVersion = function () {
  * @param {string} value
  * @return {!proto.model.KubernetesResourceState} returns this
  */
-proto.model.KubernetesResourceState.prototype.setApiVersion = function (value) {
+proto.model.KubernetesResourceState.prototype.setApiVersion = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
 };
 
@@ -1833,7 +1833,7 @@ proto.model.KubernetesResourceState.prototype.setApiVersion = function (value) {
  * optional string kind = 6;
  * @return {string}
  */
-proto.model.KubernetesResourceState.prototype.getKind = function () {
+proto.model.KubernetesResourceState.prototype.getKind = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
 };
 
@@ -1842,7 +1842,7 @@ proto.model.KubernetesResourceState.prototype.getKind = function () {
  * @param {string} value
  * @return {!proto.model.KubernetesResourceState} returns this
  */
-proto.model.KubernetesResourceState.prototype.setKind = function (value) {
+proto.model.KubernetesResourceState.prototype.setKind = function(value) {
   return jspb.Message.setProto3StringField(this, 6, value);
 };
 
@@ -1851,7 +1851,7 @@ proto.model.KubernetesResourceState.prototype.setKind = function (value) {
  * optional string namespace = 7;
  * @return {string}
  */
-proto.model.KubernetesResourceState.prototype.getNamespace = function () {
+proto.model.KubernetesResourceState.prototype.getNamespace = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
 };
 
@@ -1860,7 +1860,7 @@ proto.model.KubernetesResourceState.prototype.getNamespace = function () {
  * @param {string} value
  * @return {!proto.model.KubernetesResourceState} returns this
  */
-proto.model.KubernetesResourceState.prototype.setNamespace = function (value) {
+proto.model.KubernetesResourceState.prototype.setNamespace = function(value) {
   return jspb.Message.setProto3StringField(this, 7, value);
 };
 
@@ -1869,7 +1869,7 @@ proto.model.KubernetesResourceState.prototype.setNamespace = function (value) {
  * optional HealthStatus health_status = 8;
  * @return {!proto.model.KubernetesResourceState.HealthStatus}
  */
-proto.model.KubernetesResourceState.prototype.getHealthStatus = function () {
+proto.model.KubernetesResourceState.prototype.getHealthStatus = function() {
   return /** @type {!proto.model.KubernetesResourceState.HealthStatus} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
 };
 
@@ -1878,7 +1878,7 @@ proto.model.KubernetesResourceState.prototype.getHealthStatus = function () {
  * @param {!proto.model.KubernetesResourceState.HealthStatus} value
  * @return {!proto.model.KubernetesResourceState} returns this
  */
-proto.model.KubernetesResourceState.prototype.setHealthStatus = function (value) {
+proto.model.KubernetesResourceState.prototype.setHealthStatus = function(value) {
   return jspb.Message.setProto3EnumField(this, 8, value);
 };
 
@@ -1887,7 +1887,7 @@ proto.model.KubernetesResourceState.prototype.setHealthStatus = function (value)
  * optional string health_description = 9;
  * @return {string}
  */
-proto.model.KubernetesResourceState.prototype.getHealthDescription = function () {
+proto.model.KubernetesResourceState.prototype.getHealthDescription = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ""));
 };
 
@@ -1896,7 +1896,7 @@ proto.model.KubernetesResourceState.prototype.getHealthDescription = function ()
  * @param {string} value
  * @return {!proto.model.KubernetesResourceState} returns this
  */
-proto.model.KubernetesResourceState.prototype.setHealthDescription = function (value) {
+proto.model.KubernetesResourceState.prototype.setHealthDescription = function(value) {
   return jspb.Message.setProto3StringField(this, 9, value);
 };
 
@@ -1905,7 +1905,7 @@ proto.model.KubernetesResourceState.prototype.setHealthDescription = function (v
  * optional int64 created_at = 14;
  * @return {number}
  */
-proto.model.KubernetesResourceState.prototype.getCreatedAt = function () {
+proto.model.KubernetesResourceState.prototype.getCreatedAt = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 14, 0));
 };
 
@@ -1914,7 +1914,7 @@ proto.model.KubernetesResourceState.prototype.getCreatedAt = function () {
  * @param {number} value
  * @return {!proto.model.KubernetesResourceState} returns this
  */
-proto.model.KubernetesResourceState.prototype.setCreatedAt = function (value) {
+proto.model.KubernetesResourceState.prototype.setCreatedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 14, value);
 };
 
@@ -1923,7 +1923,7 @@ proto.model.KubernetesResourceState.prototype.setCreatedAt = function (value) {
  * optional int64 updated_at = 15;
  * @return {number}
  */
-proto.model.KubernetesResourceState.prototype.getUpdatedAt = function () {
+proto.model.KubernetesResourceState.prototype.getUpdatedAt = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 15, 0));
 };
 
@@ -1932,7 +1932,7 @@ proto.model.KubernetesResourceState.prototype.getUpdatedAt = function () {
  * @param {number} value
  * @return {!proto.model.KubernetesResourceState} returns this
  */
-proto.model.KubernetesResourceState.prototype.setUpdatedAt = function (value) {
+proto.model.KubernetesResourceState.prototype.setUpdatedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 15, value);
 };
 
@@ -1941,47 +1941,47 @@ proto.model.KubernetesResourceState.prototype.setUpdatedAt = function (value) {
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.KubernetesResourceStateEvent.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.KubernetesResourceStateEvent.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.KubernetesResourceStateEvent.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.KubernetesResourceStateEvent.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.KubernetesResourceStateEvent} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.KubernetesResourceStateEvent.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    applicationId: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    type: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    state: (f = msg.getState()) && proto.model.KubernetesResourceState.toObject(includeInstance, f),
+    snapshotVersion: (f = msg.getSnapshotVersion()) && proto.model.ApplicationLiveStateVersion.toObject(includeInstance, f),
+    createdAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.KubernetesResourceStateEvent} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.KubernetesResourceStateEvent.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-      applicationId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-      type: jspb.Message.getFieldWithDefault(msg, 3, 0),
-      state: (f = msg.getState()) && proto.model.KubernetesResourceState.toObject(includeInstance, f),
-      snapshotVersion: (f = msg.getSnapshotVersion()) && proto.model.ApplicationLiveStateVersion.toObject(includeInstance, f),
-      createdAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -1990,7 +1990,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.KubernetesResourceStateEvent}
  */
-proto.model.KubernetesResourceStateEvent.deserializeBinary = function (bytes) {
+proto.model.KubernetesResourceStateEvent.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.KubernetesResourceStateEvent;
   return proto.model.KubernetesResourceStateEvent.deserializeBinaryFromReader(msg, reader);
@@ -2004,42 +2004,42 @@ proto.model.KubernetesResourceStateEvent.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.KubernetesResourceStateEvent}
  */
-proto.model.KubernetesResourceStateEvent.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.KubernetesResourceStateEvent.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setId(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setApplicationId(value);
-        break;
-      case 3:
-        var value = /** @type {!proto.model.KubernetesResourceStateEvent.Type} */ (reader.readEnum());
-        msg.setType(value);
-        break;
-      case 4:
-        var value = new proto.model.KubernetesResourceState;
-        reader.readMessage(value, proto.model.KubernetesResourceState.deserializeBinaryFromReader);
-        msg.setState(value);
-        break;
-      case 5:
-        var value = new proto.model.ApplicationLiveStateVersion;
-        reader.readMessage(value, proto.model.ApplicationLiveStateVersion.deserializeBinaryFromReader);
-        msg.setSnapshotVersion(value);
-        break;
-      case 15:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setCreatedAt(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setApplicationId(value);
+      break;
+    case 3:
+      var value = /** @type {!proto.model.KubernetesResourceStateEvent.Type} */ (reader.readEnum());
+      msg.setType(value);
+      break;
+    case 4:
+      var value = new proto.model.KubernetesResourceState;
+      reader.readMessage(value,proto.model.KubernetesResourceState.deserializeBinaryFromReader);
+      msg.setState(value);
+      break;
+    case 5:
+      var value = new proto.model.ApplicationLiveStateVersion;
+      reader.readMessage(value,proto.model.ApplicationLiveStateVersion.deserializeBinaryFromReader);
+      msg.setSnapshotVersion(value);
+      break;
+    case 15:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setCreatedAt(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -2050,7 +2050,7 @@ proto.model.KubernetesResourceStateEvent.deserializeBinaryFromReader = function 
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.KubernetesResourceStateEvent.prototype.serializeBinary = function () {
+proto.model.KubernetesResourceStateEvent.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.KubernetesResourceStateEvent.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -2064,7 +2064,7 @@ proto.model.KubernetesResourceStateEvent.prototype.serializeBinary = function ()
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.KubernetesResourceStateEvent.serializeBinaryToWriter = function (message, writer) {
+proto.model.KubernetesResourceStateEvent.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
@@ -2125,7 +2125,7 @@ proto.model.KubernetesResourceStateEvent.Type = {
  * optional string id = 1;
  * @return {string}
  */
-proto.model.KubernetesResourceStateEvent.prototype.getId = function () {
+proto.model.KubernetesResourceStateEvent.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -2134,7 +2134,7 @@ proto.model.KubernetesResourceStateEvent.prototype.getId = function () {
  * @param {string} value
  * @return {!proto.model.KubernetesResourceStateEvent} returns this
  */
-proto.model.KubernetesResourceStateEvent.prototype.setId = function (value) {
+proto.model.KubernetesResourceStateEvent.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -2143,7 +2143,7 @@ proto.model.KubernetesResourceStateEvent.prototype.setId = function (value) {
  * optional string application_id = 2;
  * @return {string}
  */
-proto.model.KubernetesResourceStateEvent.prototype.getApplicationId = function () {
+proto.model.KubernetesResourceStateEvent.prototype.getApplicationId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -2152,7 +2152,7 @@ proto.model.KubernetesResourceStateEvent.prototype.getApplicationId = function (
  * @param {string} value
  * @return {!proto.model.KubernetesResourceStateEvent} returns this
  */
-proto.model.KubernetesResourceStateEvent.prototype.setApplicationId = function (value) {
+proto.model.KubernetesResourceStateEvent.prototype.setApplicationId = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -2161,7 +2161,7 @@ proto.model.KubernetesResourceStateEvent.prototype.setApplicationId = function (
  * optional Type type = 3;
  * @return {!proto.model.KubernetesResourceStateEvent.Type}
  */
-proto.model.KubernetesResourceStateEvent.prototype.getType = function () {
+proto.model.KubernetesResourceStateEvent.prototype.getType = function() {
   return /** @type {!proto.model.KubernetesResourceStateEvent.Type} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
 };
 
@@ -2170,7 +2170,7 @@ proto.model.KubernetesResourceStateEvent.prototype.getType = function () {
  * @param {!proto.model.KubernetesResourceStateEvent.Type} value
  * @return {!proto.model.KubernetesResourceStateEvent} returns this
  */
-proto.model.KubernetesResourceStateEvent.prototype.setType = function (value) {
+proto.model.KubernetesResourceStateEvent.prototype.setType = function(value) {
   return jspb.Message.setProto3EnumField(this, 3, value);
 };
 
@@ -2179,7 +2179,7 @@ proto.model.KubernetesResourceStateEvent.prototype.setType = function (value) {
  * optional KubernetesResourceState state = 4;
  * @return {?proto.model.KubernetesResourceState}
  */
-proto.model.KubernetesResourceStateEvent.prototype.getState = function () {
+proto.model.KubernetesResourceStateEvent.prototype.getState = function() {
   return /** @type{?proto.model.KubernetesResourceState} */ (
     jspb.Message.getWrapperField(this, proto.model.KubernetesResourceState, 4));
 };
@@ -2189,7 +2189,7 @@ proto.model.KubernetesResourceStateEvent.prototype.getState = function () {
  * @param {?proto.model.KubernetesResourceState|undefined} value
  * @return {!proto.model.KubernetesResourceStateEvent} returns this
 */
-proto.model.KubernetesResourceStateEvent.prototype.setState = function (value) {
+proto.model.KubernetesResourceStateEvent.prototype.setState = function(value) {
   return jspb.Message.setWrapperField(this, 4, value);
 };
 
@@ -2198,7 +2198,7 @@ proto.model.KubernetesResourceStateEvent.prototype.setState = function (value) {
  * Clears the message field making it undefined.
  * @return {!proto.model.KubernetesResourceStateEvent} returns this
  */
-proto.model.KubernetesResourceStateEvent.prototype.clearState = function () {
+proto.model.KubernetesResourceStateEvent.prototype.clearState = function() {
   return this.setState(undefined);
 };
 
@@ -2207,7 +2207,7 @@ proto.model.KubernetesResourceStateEvent.prototype.clearState = function () {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.KubernetesResourceStateEvent.prototype.hasState = function () {
+proto.model.KubernetesResourceStateEvent.prototype.hasState = function() {
   return jspb.Message.getField(this, 4) != null;
 };
 
@@ -2216,7 +2216,7 @@ proto.model.KubernetesResourceStateEvent.prototype.hasState = function () {
  * optional ApplicationLiveStateVersion snapshot_version = 5;
  * @return {?proto.model.ApplicationLiveStateVersion}
  */
-proto.model.KubernetesResourceStateEvent.prototype.getSnapshotVersion = function () {
+proto.model.KubernetesResourceStateEvent.prototype.getSnapshotVersion = function() {
   return /** @type{?proto.model.ApplicationLiveStateVersion} */ (
     jspb.Message.getWrapperField(this, proto.model.ApplicationLiveStateVersion, 5));
 };
@@ -2226,7 +2226,7 @@ proto.model.KubernetesResourceStateEvent.prototype.getSnapshotVersion = function
  * @param {?proto.model.ApplicationLiveStateVersion|undefined} value
  * @return {!proto.model.KubernetesResourceStateEvent} returns this
 */
-proto.model.KubernetesResourceStateEvent.prototype.setSnapshotVersion = function (value) {
+proto.model.KubernetesResourceStateEvent.prototype.setSnapshotVersion = function(value) {
   return jspb.Message.setWrapperField(this, 5, value);
 };
 
@@ -2235,7 +2235,7 @@ proto.model.KubernetesResourceStateEvent.prototype.setSnapshotVersion = function
  * Clears the message field making it undefined.
  * @return {!proto.model.KubernetesResourceStateEvent} returns this
  */
-proto.model.KubernetesResourceStateEvent.prototype.clearSnapshotVersion = function () {
+proto.model.KubernetesResourceStateEvent.prototype.clearSnapshotVersion = function() {
   return this.setSnapshotVersion(undefined);
 };
 
@@ -2244,7 +2244,7 @@ proto.model.KubernetesResourceStateEvent.prototype.clearSnapshotVersion = functi
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.KubernetesResourceStateEvent.prototype.hasSnapshotVersion = function () {
+proto.model.KubernetesResourceStateEvent.prototype.hasSnapshotVersion = function() {
   return jspb.Message.getField(this, 5) != null;
 };
 
@@ -2253,7 +2253,7 @@ proto.model.KubernetesResourceStateEvent.prototype.hasSnapshotVersion = function
  * optional int64 created_at = 15;
  * @return {number}
  */
-proto.model.KubernetesResourceStateEvent.prototype.getCreatedAt = function () {
+proto.model.KubernetesResourceStateEvent.prototype.getCreatedAt = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 15, 0));
 };
 
@@ -2262,7 +2262,7 @@ proto.model.KubernetesResourceStateEvent.prototype.getCreatedAt = function () {
  * @param {number} value
  * @return {!proto.model.KubernetesResourceStateEvent} returns this
  */
-proto.model.KubernetesResourceStateEvent.prototype.setCreatedAt = function (value) {
+proto.model.KubernetesResourceStateEvent.prototype.setCreatedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 15, value);
 };
 
@@ -2273,57 +2273,57 @@ proto.model.KubernetesResourceStateEvent.prototype.setCreatedAt = function (valu
  * @private {!Array<number>}
  * @const
  */
-proto.model.CloudRunResourceState.repeatedFields_ = [2, 3];
+proto.model.CloudRunResourceState.repeatedFields_ = [2,3];
 
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.CloudRunResourceState.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.CloudRunResourceState.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.CloudRunResourceState.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.CloudRunResourceState.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.CloudRunResourceState} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.CloudRunResourceState.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    ownerIdsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
+    parentIdsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
+    name: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    apiVersion: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    kind: jspb.Message.getFieldWithDefault(msg, 6, ""),
+    namespace: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    healthStatus: jspb.Message.getFieldWithDefault(msg, 8, 0),
+    healthDescription: jspb.Message.getFieldWithDefault(msg, 9, ""),
+    createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
+    updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.CloudRunResourceState} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.CloudRunResourceState.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-      ownerIdsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
-      parentIdsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
-      name: jspb.Message.getFieldWithDefault(msg, 4, ""),
-      apiVersion: jspb.Message.getFieldWithDefault(msg, 5, ""),
-      kind: jspb.Message.getFieldWithDefault(msg, 6, ""),
-      namespace: jspb.Message.getFieldWithDefault(msg, 7, ""),
-      healthStatus: jspb.Message.getFieldWithDefault(msg, 8, 0),
-      healthDescription: jspb.Message.getFieldWithDefault(msg, 9, ""),
-      createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
-      updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -2332,7 +2332,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.CloudRunResourceState}
  */
-proto.model.CloudRunResourceState.deserializeBinary = function (bytes) {
+proto.model.CloudRunResourceState.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.CloudRunResourceState;
   return proto.model.CloudRunResourceState.deserializeBinaryFromReader(msg, reader);
@@ -2346,60 +2346,60 @@ proto.model.CloudRunResourceState.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.CloudRunResourceState}
  */
-proto.model.CloudRunResourceState.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.CloudRunResourceState.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setId(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addOwnerIds(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addParentIds(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setName(value);
-        break;
-      case 5:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setApiVersion(value);
-        break;
-      case 6:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setKind(value);
-        break;
-      case 7:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setNamespace(value);
-        break;
-      case 8:
-        var value = /** @type {!proto.model.CloudRunResourceState.HealthStatus} */ (reader.readEnum());
-        msg.setHealthStatus(value);
-        break;
-      case 9:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setHealthDescription(value);
-        break;
-      case 14:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setCreatedAt(value);
-        break;
-      case 15:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setUpdatedAt(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addOwnerIds(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addParentIds(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setName(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setApiVersion(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setKind(value);
+      break;
+    case 7:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setNamespace(value);
+      break;
+    case 8:
+      var value = /** @type {!proto.model.CloudRunResourceState.HealthStatus} */ (reader.readEnum());
+      msg.setHealthStatus(value);
+      break;
+    case 9:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setHealthDescription(value);
+      break;
+    case 14:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setCreatedAt(value);
+      break;
+    case 15:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setUpdatedAt(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -2410,7 +2410,7 @@ proto.model.CloudRunResourceState.deserializeBinaryFromReader = function (msg, r
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.CloudRunResourceState.prototype.serializeBinary = function () {
+proto.model.CloudRunResourceState.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.CloudRunResourceState.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -2424,7 +2424,7 @@ proto.model.CloudRunResourceState.prototype.serializeBinary = function () {
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.CloudRunResourceState.serializeBinaryToWriter = function (message, writer) {
+proto.model.CloudRunResourceState.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
@@ -2519,7 +2519,7 @@ proto.model.CloudRunResourceState.HealthStatus = {
  * optional string id = 1;
  * @return {string}
  */
-proto.model.CloudRunResourceState.prototype.getId = function () {
+proto.model.CloudRunResourceState.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -2528,7 +2528,7 @@ proto.model.CloudRunResourceState.prototype.getId = function () {
  * @param {string} value
  * @return {!proto.model.CloudRunResourceState} returns this
  */
-proto.model.CloudRunResourceState.prototype.setId = function (value) {
+proto.model.CloudRunResourceState.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -2537,7 +2537,7 @@ proto.model.CloudRunResourceState.prototype.setId = function (value) {
  * repeated string owner_ids = 2;
  * @return {!Array<string>}
  */
-proto.model.CloudRunResourceState.prototype.getOwnerIdsList = function () {
+proto.model.CloudRunResourceState.prototype.getOwnerIdsList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 2));
 };
 
@@ -2546,7 +2546,7 @@ proto.model.CloudRunResourceState.prototype.getOwnerIdsList = function () {
  * @param {!Array<string>} value
  * @return {!proto.model.CloudRunResourceState} returns this
  */
-proto.model.CloudRunResourceState.prototype.setOwnerIdsList = function (value) {
+proto.model.CloudRunResourceState.prototype.setOwnerIdsList = function(value) {
   return jspb.Message.setField(this, 2, value || []);
 };
 
@@ -2556,7 +2556,7 @@ proto.model.CloudRunResourceState.prototype.setOwnerIdsList = function (value) {
  * @param {number=} opt_index
  * @return {!proto.model.CloudRunResourceState} returns this
  */
-proto.model.CloudRunResourceState.prototype.addOwnerIds = function (value, opt_index) {
+proto.model.CloudRunResourceState.prototype.addOwnerIds = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 2, value, opt_index);
 };
 
@@ -2565,7 +2565,7 @@ proto.model.CloudRunResourceState.prototype.addOwnerIds = function (value, opt_i
  * Clears the list making it empty but non-null.
  * @return {!proto.model.CloudRunResourceState} returns this
  */
-proto.model.CloudRunResourceState.prototype.clearOwnerIdsList = function () {
+proto.model.CloudRunResourceState.prototype.clearOwnerIdsList = function() {
   return this.setOwnerIdsList([]);
 };
 
@@ -2574,7 +2574,7 @@ proto.model.CloudRunResourceState.prototype.clearOwnerIdsList = function () {
  * repeated string parent_ids = 3;
  * @return {!Array<string>}
  */
-proto.model.CloudRunResourceState.prototype.getParentIdsList = function () {
+proto.model.CloudRunResourceState.prototype.getParentIdsList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 3));
 };
 
@@ -2583,7 +2583,7 @@ proto.model.CloudRunResourceState.prototype.getParentIdsList = function () {
  * @param {!Array<string>} value
  * @return {!proto.model.CloudRunResourceState} returns this
  */
-proto.model.CloudRunResourceState.prototype.setParentIdsList = function (value) {
+proto.model.CloudRunResourceState.prototype.setParentIdsList = function(value) {
   return jspb.Message.setField(this, 3, value || []);
 };
 
@@ -2593,7 +2593,7 @@ proto.model.CloudRunResourceState.prototype.setParentIdsList = function (value) 
  * @param {number=} opt_index
  * @return {!proto.model.CloudRunResourceState} returns this
  */
-proto.model.CloudRunResourceState.prototype.addParentIds = function (value, opt_index) {
+proto.model.CloudRunResourceState.prototype.addParentIds = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 3, value, opt_index);
 };
 
@@ -2602,7 +2602,7 @@ proto.model.CloudRunResourceState.prototype.addParentIds = function (value, opt_
  * Clears the list making it empty but non-null.
  * @return {!proto.model.CloudRunResourceState} returns this
  */
-proto.model.CloudRunResourceState.prototype.clearParentIdsList = function () {
+proto.model.CloudRunResourceState.prototype.clearParentIdsList = function() {
   return this.setParentIdsList([]);
 };
 
@@ -2611,7 +2611,7 @@ proto.model.CloudRunResourceState.prototype.clearParentIdsList = function () {
  * optional string name = 4;
  * @return {string}
  */
-proto.model.CloudRunResourceState.prototype.getName = function () {
+proto.model.CloudRunResourceState.prototype.getName = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -2620,7 +2620,7 @@ proto.model.CloudRunResourceState.prototype.getName = function () {
  * @param {string} value
  * @return {!proto.model.CloudRunResourceState} returns this
  */
-proto.model.CloudRunResourceState.prototype.setName = function (value) {
+proto.model.CloudRunResourceState.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
@@ -2629,7 +2629,7 @@ proto.model.CloudRunResourceState.prototype.setName = function (value) {
  * optional string api_version = 5;
  * @return {string}
  */
-proto.model.CloudRunResourceState.prototype.getApiVersion = function () {
+proto.model.CloudRunResourceState.prototype.getApiVersion = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
@@ -2638,7 +2638,7 @@ proto.model.CloudRunResourceState.prototype.getApiVersion = function () {
  * @param {string} value
  * @return {!proto.model.CloudRunResourceState} returns this
  */
-proto.model.CloudRunResourceState.prototype.setApiVersion = function (value) {
+proto.model.CloudRunResourceState.prototype.setApiVersion = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
 };
 
@@ -2647,7 +2647,7 @@ proto.model.CloudRunResourceState.prototype.setApiVersion = function (value) {
  * optional string kind = 6;
  * @return {string}
  */
-proto.model.CloudRunResourceState.prototype.getKind = function () {
+proto.model.CloudRunResourceState.prototype.getKind = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
 };
 
@@ -2656,7 +2656,7 @@ proto.model.CloudRunResourceState.prototype.getKind = function () {
  * @param {string} value
  * @return {!proto.model.CloudRunResourceState} returns this
  */
-proto.model.CloudRunResourceState.prototype.setKind = function (value) {
+proto.model.CloudRunResourceState.prototype.setKind = function(value) {
   return jspb.Message.setProto3StringField(this, 6, value);
 };
 
@@ -2665,7 +2665,7 @@ proto.model.CloudRunResourceState.prototype.setKind = function (value) {
  * optional string namespace = 7;
  * @return {string}
  */
-proto.model.CloudRunResourceState.prototype.getNamespace = function () {
+proto.model.CloudRunResourceState.prototype.getNamespace = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
 };
 
@@ -2674,7 +2674,7 @@ proto.model.CloudRunResourceState.prototype.getNamespace = function () {
  * @param {string} value
  * @return {!proto.model.CloudRunResourceState} returns this
  */
-proto.model.CloudRunResourceState.prototype.setNamespace = function (value) {
+proto.model.CloudRunResourceState.prototype.setNamespace = function(value) {
   return jspb.Message.setProto3StringField(this, 7, value);
 };
 
@@ -2683,7 +2683,7 @@ proto.model.CloudRunResourceState.prototype.setNamespace = function (value) {
  * optional HealthStatus health_status = 8;
  * @return {!proto.model.CloudRunResourceState.HealthStatus}
  */
-proto.model.CloudRunResourceState.prototype.getHealthStatus = function () {
+proto.model.CloudRunResourceState.prototype.getHealthStatus = function() {
   return /** @type {!proto.model.CloudRunResourceState.HealthStatus} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
 };
 
@@ -2692,7 +2692,7 @@ proto.model.CloudRunResourceState.prototype.getHealthStatus = function () {
  * @param {!proto.model.CloudRunResourceState.HealthStatus} value
  * @return {!proto.model.CloudRunResourceState} returns this
  */
-proto.model.CloudRunResourceState.prototype.setHealthStatus = function (value) {
+proto.model.CloudRunResourceState.prototype.setHealthStatus = function(value) {
   return jspb.Message.setProto3EnumField(this, 8, value);
 };
 
@@ -2701,7 +2701,7 @@ proto.model.CloudRunResourceState.prototype.setHealthStatus = function (value) {
  * optional string health_description = 9;
  * @return {string}
  */
-proto.model.CloudRunResourceState.prototype.getHealthDescription = function () {
+proto.model.CloudRunResourceState.prototype.getHealthDescription = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ""));
 };
 
@@ -2710,7 +2710,7 @@ proto.model.CloudRunResourceState.prototype.getHealthDescription = function () {
  * @param {string} value
  * @return {!proto.model.CloudRunResourceState} returns this
  */
-proto.model.CloudRunResourceState.prototype.setHealthDescription = function (value) {
+proto.model.CloudRunResourceState.prototype.setHealthDescription = function(value) {
   return jspb.Message.setProto3StringField(this, 9, value);
 };
 
@@ -2719,7 +2719,7 @@ proto.model.CloudRunResourceState.prototype.setHealthDescription = function (val
  * optional int64 created_at = 14;
  * @return {number}
  */
-proto.model.CloudRunResourceState.prototype.getCreatedAt = function () {
+proto.model.CloudRunResourceState.prototype.getCreatedAt = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 14, 0));
 };
 
@@ -2728,7 +2728,7 @@ proto.model.CloudRunResourceState.prototype.getCreatedAt = function () {
  * @param {number} value
  * @return {!proto.model.CloudRunResourceState} returns this
  */
-proto.model.CloudRunResourceState.prototype.setCreatedAt = function (value) {
+proto.model.CloudRunResourceState.prototype.setCreatedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 14, value);
 };
 
@@ -2737,7 +2737,7 @@ proto.model.CloudRunResourceState.prototype.setCreatedAt = function (value) {
  * optional int64 updated_at = 15;
  * @return {number}
  */
-proto.model.CloudRunResourceState.prototype.getUpdatedAt = function () {
+proto.model.CloudRunResourceState.prototype.getUpdatedAt = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 15, 0));
 };
 
@@ -2746,7 +2746,7 @@ proto.model.CloudRunResourceState.prototype.getUpdatedAt = function () {
  * @param {number} value
  * @return {!proto.model.CloudRunResourceState} returns this
  */
-proto.model.CloudRunResourceState.prototype.setUpdatedAt = function (value) {
+proto.model.CloudRunResourceState.prototype.setUpdatedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 15, value);
 };
 

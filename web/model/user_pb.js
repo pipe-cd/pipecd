@@ -13,7 +13,7 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global = (function () {
+var global = (function() {
   if (this) { return this; }
   if (typeof window !== 'undefined') { return window; }
   if (typeof global !== 'undefined') { return global; }
@@ -36,7 +36,7 @@ goog.exportSymbol('proto.model.User', null, global);
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.User = function (opt_data) {
+proto.model.User = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.User, jspb.Message);
@@ -51,44 +51,44 @@ if (goog.DEBUG && !COMPILED) {
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.User.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.User.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.User.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.User.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.User} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.User.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    username: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    avatarUrl: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    role: (f = msg.getRole()) && pkg_model_role_pb.Role.toObject(includeInstance, f)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.User} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.User.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      username: jspb.Message.getFieldWithDefault(msg, 1, ""),
-      avatarUrl: jspb.Message.getFieldWithDefault(msg, 2, ""),
-      role: (f = msg.getRole()) && pkg_model_role_pb.Role.toObject(includeInstance, f)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -97,7 +97,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.User}
  */
-proto.model.User.deserializeBinary = function (bytes) {
+proto.model.User.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.User;
   return proto.model.User.deserializeBinaryFromReader(msg, reader);
@@ -111,29 +111,29 @@ proto.model.User.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.User}
  */
-proto.model.User.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.User.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setUsername(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setAvatarUrl(value);
-        break;
-      case 3:
-        var value = new pkg_model_role_pb.Role;
-        reader.readMessage(value, pkg_model_role_pb.Role.deserializeBinaryFromReader);
-        msg.setRole(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setUsername(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setAvatarUrl(value);
+      break;
+    case 3:
+      var value = new pkg_model_role_pb.Role;
+      reader.readMessage(value,pkg_model_role_pb.Role.deserializeBinaryFromReader);
+      msg.setRole(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -144,7 +144,7 @@ proto.model.User.deserializeBinaryFromReader = function (msg, reader) {
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.User.prototype.serializeBinary = function () {
+proto.model.User.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.User.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -158,7 +158,7 @@ proto.model.User.prototype.serializeBinary = function () {
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.User.serializeBinaryToWriter = function (message, writer) {
+proto.model.User.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getUsername();
   if (f.length > 0) {
@@ -189,7 +189,7 @@ proto.model.User.serializeBinaryToWriter = function (message, writer) {
  * optional string username = 1;
  * @return {string}
  */
-proto.model.User.prototype.getUsername = function () {
+proto.model.User.prototype.getUsername = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -198,7 +198,7 @@ proto.model.User.prototype.getUsername = function () {
  * @param {string} value
  * @return {!proto.model.User} returns this
  */
-proto.model.User.prototype.setUsername = function (value) {
+proto.model.User.prototype.setUsername = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -207,7 +207,7 @@ proto.model.User.prototype.setUsername = function (value) {
  * optional string avatar_url = 2;
  * @return {string}
  */
-proto.model.User.prototype.getAvatarUrl = function () {
+proto.model.User.prototype.getAvatarUrl = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -216,7 +216,7 @@ proto.model.User.prototype.getAvatarUrl = function () {
  * @param {string} value
  * @return {!proto.model.User} returns this
  */
-proto.model.User.prototype.setAvatarUrl = function (value) {
+proto.model.User.prototype.setAvatarUrl = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -225,7 +225,7 @@ proto.model.User.prototype.setAvatarUrl = function (value) {
  * optional Role role = 3;
  * @return {?proto.model.Role}
  */
-proto.model.User.prototype.getRole = function () {
+proto.model.User.prototype.getRole = function() {
   return /** @type{?proto.model.Role} */ (
     jspb.Message.getWrapperField(this, pkg_model_role_pb.Role, 3));
 };
@@ -235,7 +235,7 @@ proto.model.User.prototype.getRole = function () {
  * @param {?proto.model.Role|undefined} value
  * @return {!proto.model.User} returns this
 */
-proto.model.User.prototype.setRole = function (value) {
+proto.model.User.prototype.setRole = function(value) {
   return jspb.Message.setWrapperField(this, 3, value);
 };
 
@@ -244,7 +244,7 @@ proto.model.User.prototype.setRole = function (value) {
  * Clears the message field making it undefined.
  * @return {!proto.model.User} returns this
  */
-proto.model.User.prototype.clearRole = function () {
+proto.model.User.prototype.clearRole = function() {
   return this.setRole(undefined);
 };
 
@@ -253,7 +253,7 @@ proto.model.User.prototype.clearRole = function () {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.User.prototype.hasRole = function () {
+proto.model.User.prototype.hasRole = function() {
   return jspb.Message.getField(this, 3) != null;
 };
 

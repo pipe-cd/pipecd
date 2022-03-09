@@ -13,7 +13,7 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global = (function () {
+var global = (function() {
   if (this) { return this; }
   if (typeof window !== 'undefined') { return window; }
   if (typeof global !== 'undefined') { return global; }
@@ -40,7 +40,7 @@ goog.exportSymbol('proto.model.PipedKey', null, global);
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.Piped = function (opt_data) {
+proto.model.Piped = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.model.Piped.repeatedFields_, null);
 };
 goog.inherits(proto.model.Piped, jspb.Message);
@@ -61,7 +61,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.Piped.CloudProvider = function (opt_data) {
+proto.model.Piped.CloudProvider = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.Piped.CloudProvider, jspb.Message);
@@ -82,7 +82,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.Piped.SecretEncryption = function (opt_data) {
+proto.model.Piped.SecretEncryption = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.Piped.SecretEncryption, jspb.Message);
@@ -103,7 +103,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.PipedKey = function (opt_data) {
+proto.model.PipedKey = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.PipedKey, jspb.Message);
@@ -120,67 +120,67 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.model.Piped.repeatedFields_ = [6, 9, 10, 20];
+proto.model.Piped.repeatedFields_ = [6,9,10,20];
 
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.Piped.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.Piped.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.Piped.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.Piped.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.Piped} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.Piped.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    name: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    desc: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    keyHash: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    projectId: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    envIdsList: (f = jspb.Message.getRepeatedField(msg, 6)) == null ? undefined : f,
+    version: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    startedAt: jspb.Message.getFieldWithDefault(msg, 8, 0),
+    cloudProvidersList: jspb.Message.toObjectList(msg.getCloudProvidersList(),
+    proto.model.Piped.CloudProvider.toObject, includeInstance),
+    repositoriesList: jspb.Message.toObjectList(msg.getRepositoriesList(),
+    pkg_model_common_pb.ApplicationGitRepository.toObject, includeInstance),
+    status: jspb.Message.getFieldWithDefault(msg, 11, 0),
+    sealedSecretEncryption: (f = msg.getSealedSecretEncryption()) && proto.model.Piped.SecretEncryption.toObject(includeInstance, f),
+    secretEncryption: (f = msg.getSecretEncryption()) && proto.model.Piped.SecretEncryption.toObject(includeInstance, f),
+    keysList: jspb.Message.toObjectList(msg.getKeysList(),
+    proto.model.PipedKey.toObject, includeInstance),
+    desiredVersion: jspb.Message.getFieldWithDefault(msg, 30, ""),
+    disabled: jspb.Message.getBooleanFieldWithDefault(msg, 13, false),
+    createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
+    updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.Piped} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.Piped.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-      name: jspb.Message.getFieldWithDefault(msg, 2, ""),
-      desc: jspb.Message.getFieldWithDefault(msg, 3, ""),
-      keyHash: jspb.Message.getFieldWithDefault(msg, 4, ""),
-      projectId: jspb.Message.getFieldWithDefault(msg, 5, ""),
-      envIdsList: (f = jspb.Message.getRepeatedField(msg, 6)) == null ? undefined : f,
-      version: jspb.Message.getFieldWithDefault(msg, 7, ""),
-      startedAt: jspb.Message.getFieldWithDefault(msg, 8, 0),
-      cloudProvidersList: jspb.Message.toObjectList(msg.getCloudProvidersList(),
-        proto.model.Piped.CloudProvider.toObject, includeInstance),
-      repositoriesList: jspb.Message.toObjectList(msg.getRepositoriesList(),
-        pkg_model_common_pb.ApplicationGitRepository.toObject, includeInstance),
-      status: jspb.Message.getFieldWithDefault(msg, 11, 0),
-      sealedSecretEncryption: (f = msg.getSealedSecretEncryption()) && proto.model.Piped.SecretEncryption.toObject(includeInstance, f),
-      secretEncryption: (f = msg.getSecretEncryption()) && proto.model.Piped.SecretEncryption.toObject(includeInstance, f),
-      keysList: jspb.Message.toObjectList(msg.getKeysList(),
-        proto.model.PipedKey.toObject, includeInstance),
-      desiredVersion: jspb.Message.getFieldWithDefault(msg, 30, ""),
-      disabled: jspb.Message.getBooleanFieldWithDefault(msg, 13, false),
-      createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
-      updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -189,7 +189,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.Piped}
  */
-proto.model.Piped.deserializeBinary = function (bytes) {
+proto.model.Piped.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.Piped;
   return proto.model.Piped.deserializeBinaryFromReader(msg, reader);
@@ -203,93 +203,93 @@ proto.model.Piped.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.Piped}
  */
-proto.model.Piped.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.Piped.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setId(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setName(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setDesc(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setKeyHash(value);
-        break;
-      case 5:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setProjectId(value);
-        break;
-      case 6:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addEnvIds(value);
-        break;
-      case 7:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setVersion(value);
-        break;
-      case 8:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setStartedAt(value);
-        break;
-      case 9:
-        var value = new proto.model.Piped.CloudProvider;
-        reader.readMessage(value, proto.model.Piped.CloudProvider.deserializeBinaryFromReader);
-        msg.addCloudProviders(value);
-        break;
-      case 10:
-        var value = new pkg_model_common_pb.ApplicationGitRepository;
-        reader.readMessage(value, pkg_model_common_pb.ApplicationGitRepository.deserializeBinaryFromReader);
-        msg.addRepositories(value);
-        break;
-      case 11:
-        var value = /** @type {!proto.model.Piped.ConnectionStatus} */ (reader.readEnum());
-        msg.setStatus(value);
-        break;
-      case 12:
-        var value = new proto.model.Piped.SecretEncryption;
-        reader.readMessage(value, proto.model.Piped.SecretEncryption.deserializeBinaryFromReader);
-        msg.setSealedSecretEncryption(value);
-        break;
-      case 21:
-        var value = new proto.model.Piped.SecretEncryption;
-        reader.readMessage(value, proto.model.Piped.SecretEncryption.deserializeBinaryFromReader);
-        msg.setSecretEncryption(value);
-        break;
-      case 20:
-        var value = new proto.model.PipedKey;
-        reader.readMessage(value, proto.model.PipedKey.deserializeBinaryFromReader);
-        msg.addKeys(value);
-        break;
-      case 30:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setDesiredVersion(value);
-        break;
-      case 13:
-        var value = /** @type {boolean} */ (reader.readBool());
-        msg.setDisabled(value);
-        break;
-      case 14:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setCreatedAt(value);
-        break;
-      case 15:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setUpdatedAt(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setName(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDesc(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setKeyHash(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setProjectId(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addEnvIds(value);
+      break;
+    case 7:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setVersion(value);
+      break;
+    case 8:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setStartedAt(value);
+      break;
+    case 9:
+      var value = new proto.model.Piped.CloudProvider;
+      reader.readMessage(value,proto.model.Piped.CloudProvider.deserializeBinaryFromReader);
+      msg.addCloudProviders(value);
+      break;
+    case 10:
+      var value = new pkg_model_common_pb.ApplicationGitRepository;
+      reader.readMessage(value,pkg_model_common_pb.ApplicationGitRepository.deserializeBinaryFromReader);
+      msg.addRepositories(value);
+      break;
+    case 11:
+      var value = /** @type {!proto.model.Piped.ConnectionStatus} */ (reader.readEnum());
+      msg.setStatus(value);
+      break;
+    case 12:
+      var value = new proto.model.Piped.SecretEncryption;
+      reader.readMessage(value,proto.model.Piped.SecretEncryption.deserializeBinaryFromReader);
+      msg.setSealedSecretEncryption(value);
+      break;
+    case 21:
+      var value = new proto.model.Piped.SecretEncryption;
+      reader.readMessage(value,proto.model.Piped.SecretEncryption.deserializeBinaryFromReader);
+      msg.setSecretEncryption(value);
+      break;
+    case 20:
+      var value = new proto.model.PipedKey;
+      reader.readMessage(value,proto.model.PipedKey.deserializeBinaryFromReader);
+      msg.addKeys(value);
+      break;
+    case 30:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDesiredVersion(value);
+      break;
+    case 13:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setDisabled(value);
+      break;
+    case 14:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setCreatedAt(value);
+      break;
+    case 15:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setUpdatedAt(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -300,7 +300,7 @@ proto.model.Piped.deserializeBinaryFromReader = function (msg, reader) {
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.Piped.prototype.serializeBinary = function () {
+proto.model.Piped.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.Piped.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -314,7 +314,7 @@ proto.model.Piped.prototype.serializeBinary = function () {
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.Piped.serializeBinaryToWriter = function (message, writer) {
+proto.model.Piped.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
@@ -463,43 +463,43 @@ proto.model.Piped.ConnectionStatus = {
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.Piped.CloudProvider.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.Piped.CloudProvider.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.Piped.CloudProvider.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.Piped.CloudProvider.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.Piped.CloudProvider} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.Piped.CloudProvider.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    type: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.Piped.CloudProvider} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.Piped.CloudProvider.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-      type: jspb.Message.getFieldWithDefault(msg, 2, "")
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -508,7 +508,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.Piped.CloudProvider}
  */
-proto.model.Piped.CloudProvider.deserializeBinary = function (bytes) {
+proto.model.Piped.CloudProvider.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.Piped.CloudProvider;
   return proto.model.Piped.CloudProvider.deserializeBinaryFromReader(msg, reader);
@@ -522,24 +522,24 @@ proto.model.Piped.CloudProvider.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.Piped.CloudProvider}
  */
-proto.model.Piped.CloudProvider.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.Piped.CloudProvider.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setName(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setType(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setName(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setType(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -550,7 +550,7 @@ proto.model.Piped.CloudProvider.deserializeBinaryFromReader = function (msg, rea
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.Piped.CloudProvider.prototype.serializeBinary = function () {
+proto.model.Piped.CloudProvider.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.Piped.CloudProvider.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -564,7 +564,7 @@ proto.model.Piped.CloudProvider.prototype.serializeBinary = function () {
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.Piped.CloudProvider.serializeBinaryToWriter = function (message, writer) {
+proto.model.Piped.CloudProvider.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getName();
   if (f.length > 0) {
@@ -587,7 +587,7 @@ proto.model.Piped.CloudProvider.serializeBinaryToWriter = function (message, wri
  * optional string name = 1;
  * @return {string}
  */
-proto.model.Piped.CloudProvider.prototype.getName = function () {
+proto.model.Piped.CloudProvider.prototype.getName = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -596,7 +596,7 @@ proto.model.Piped.CloudProvider.prototype.getName = function () {
  * @param {string} value
  * @return {!proto.model.Piped.CloudProvider} returns this
  */
-proto.model.Piped.CloudProvider.prototype.setName = function (value) {
+proto.model.Piped.CloudProvider.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -605,7 +605,7 @@ proto.model.Piped.CloudProvider.prototype.setName = function (value) {
  * optional string type = 2;
  * @return {string}
  */
-proto.model.Piped.CloudProvider.prototype.getType = function () {
+proto.model.Piped.CloudProvider.prototype.getType = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -614,7 +614,7 @@ proto.model.Piped.CloudProvider.prototype.getType = function () {
  * @param {string} value
  * @return {!proto.model.Piped.CloudProvider} returns this
  */
-proto.model.Piped.CloudProvider.prototype.setType = function (value) {
+proto.model.Piped.CloudProvider.prototype.setType = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -623,44 +623,44 @@ proto.model.Piped.CloudProvider.prototype.setType = function (value) {
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.Piped.SecretEncryption.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.Piped.SecretEncryption.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.Piped.SecretEncryption.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.Piped.SecretEncryption.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.Piped.SecretEncryption} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.Piped.SecretEncryption.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    type: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    publicKey: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    encryptServiceAccount: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.Piped.SecretEncryption} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.Piped.SecretEncryption.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      type: jspb.Message.getFieldWithDefault(msg, 1, ""),
-      publicKey: jspb.Message.getFieldWithDefault(msg, 2, ""),
-      encryptServiceAccount: jspb.Message.getFieldWithDefault(msg, 3, "")
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -669,7 +669,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.Piped.SecretEncryption}
  */
-proto.model.Piped.SecretEncryption.deserializeBinary = function (bytes) {
+proto.model.Piped.SecretEncryption.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.Piped.SecretEncryption;
   return proto.model.Piped.SecretEncryption.deserializeBinaryFromReader(msg, reader);
@@ -683,28 +683,28 @@ proto.model.Piped.SecretEncryption.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.Piped.SecretEncryption}
  */
-proto.model.Piped.SecretEncryption.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.Piped.SecretEncryption.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setType(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setPublicKey(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setEncryptServiceAccount(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setType(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPublicKey(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setEncryptServiceAccount(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -715,7 +715,7 @@ proto.model.Piped.SecretEncryption.deserializeBinaryFromReader = function (msg, 
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.Piped.SecretEncryption.prototype.serializeBinary = function () {
+proto.model.Piped.SecretEncryption.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.Piped.SecretEncryption.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -729,7 +729,7 @@ proto.model.Piped.SecretEncryption.prototype.serializeBinary = function () {
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.Piped.SecretEncryption.serializeBinaryToWriter = function (message, writer) {
+proto.model.Piped.SecretEncryption.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getType();
   if (f.length > 0) {
@@ -759,7 +759,7 @@ proto.model.Piped.SecretEncryption.serializeBinaryToWriter = function (message, 
  * optional string type = 1;
  * @return {string}
  */
-proto.model.Piped.SecretEncryption.prototype.getType = function () {
+proto.model.Piped.SecretEncryption.prototype.getType = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -768,7 +768,7 @@ proto.model.Piped.SecretEncryption.prototype.getType = function () {
  * @param {string} value
  * @return {!proto.model.Piped.SecretEncryption} returns this
  */
-proto.model.Piped.SecretEncryption.prototype.setType = function (value) {
+proto.model.Piped.SecretEncryption.prototype.setType = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -777,7 +777,7 @@ proto.model.Piped.SecretEncryption.prototype.setType = function (value) {
  * optional string public_key = 2;
  * @return {string}
  */
-proto.model.Piped.SecretEncryption.prototype.getPublicKey = function () {
+proto.model.Piped.SecretEncryption.prototype.getPublicKey = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -786,7 +786,7 @@ proto.model.Piped.SecretEncryption.prototype.getPublicKey = function () {
  * @param {string} value
  * @return {!proto.model.Piped.SecretEncryption} returns this
  */
-proto.model.Piped.SecretEncryption.prototype.setPublicKey = function (value) {
+proto.model.Piped.SecretEncryption.prototype.setPublicKey = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -795,7 +795,7 @@ proto.model.Piped.SecretEncryption.prototype.setPublicKey = function (value) {
  * optional string encrypt_service_account = 3;
  * @return {string}
  */
-proto.model.Piped.SecretEncryption.prototype.getEncryptServiceAccount = function () {
+proto.model.Piped.SecretEncryption.prototype.getEncryptServiceAccount = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -804,7 +804,7 @@ proto.model.Piped.SecretEncryption.prototype.getEncryptServiceAccount = function
  * @param {string} value
  * @return {!proto.model.Piped.SecretEncryption} returns this
  */
-proto.model.Piped.SecretEncryption.prototype.setEncryptServiceAccount = function (value) {
+proto.model.Piped.SecretEncryption.prototype.setEncryptServiceAccount = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -813,7 +813,7 @@ proto.model.Piped.SecretEncryption.prototype.setEncryptServiceAccount = function
  * optional string id = 1;
  * @return {string}
  */
-proto.model.Piped.prototype.getId = function () {
+proto.model.Piped.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -822,7 +822,7 @@ proto.model.Piped.prototype.getId = function () {
  * @param {string} value
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.setId = function (value) {
+proto.model.Piped.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -831,7 +831,7 @@ proto.model.Piped.prototype.setId = function (value) {
  * optional string name = 2;
  * @return {string}
  */
-proto.model.Piped.prototype.getName = function () {
+proto.model.Piped.prototype.getName = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -840,7 +840,7 @@ proto.model.Piped.prototype.getName = function () {
  * @param {string} value
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.setName = function (value) {
+proto.model.Piped.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -849,7 +849,7 @@ proto.model.Piped.prototype.setName = function (value) {
  * optional string desc = 3;
  * @return {string}
  */
-proto.model.Piped.prototype.getDesc = function () {
+proto.model.Piped.prototype.getDesc = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -858,7 +858,7 @@ proto.model.Piped.prototype.getDesc = function () {
  * @param {string} value
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.setDesc = function (value) {
+proto.model.Piped.prototype.setDesc = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -867,7 +867,7 @@ proto.model.Piped.prototype.setDesc = function (value) {
  * optional string key_hash = 4;
  * @return {string}
  */
-proto.model.Piped.prototype.getKeyHash = function () {
+proto.model.Piped.prototype.getKeyHash = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -876,7 +876,7 @@ proto.model.Piped.prototype.getKeyHash = function () {
  * @param {string} value
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.setKeyHash = function (value) {
+proto.model.Piped.prototype.setKeyHash = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
@@ -885,7 +885,7 @@ proto.model.Piped.prototype.setKeyHash = function (value) {
  * optional string project_id = 5;
  * @return {string}
  */
-proto.model.Piped.prototype.getProjectId = function () {
+proto.model.Piped.prototype.getProjectId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
@@ -894,7 +894,7 @@ proto.model.Piped.prototype.getProjectId = function () {
  * @param {string} value
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.setProjectId = function (value) {
+proto.model.Piped.prototype.setProjectId = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
 };
 
@@ -903,7 +903,7 @@ proto.model.Piped.prototype.setProjectId = function (value) {
  * repeated string env_ids = 6;
  * @return {!Array<string>}
  */
-proto.model.Piped.prototype.getEnvIdsList = function () {
+proto.model.Piped.prototype.getEnvIdsList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 6));
 };
 
@@ -912,7 +912,7 @@ proto.model.Piped.prototype.getEnvIdsList = function () {
  * @param {!Array<string>} value
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.setEnvIdsList = function (value) {
+proto.model.Piped.prototype.setEnvIdsList = function(value) {
   return jspb.Message.setField(this, 6, value || []);
 };
 
@@ -922,7 +922,7 @@ proto.model.Piped.prototype.setEnvIdsList = function (value) {
  * @param {number=} opt_index
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.addEnvIds = function (value, opt_index) {
+proto.model.Piped.prototype.addEnvIds = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 6, value, opt_index);
 };
 
@@ -931,7 +931,7 @@ proto.model.Piped.prototype.addEnvIds = function (value, opt_index) {
  * Clears the list making it empty but non-null.
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.clearEnvIdsList = function () {
+proto.model.Piped.prototype.clearEnvIdsList = function() {
   return this.setEnvIdsList([]);
 };
 
@@ -940,7 +940,7 @@ proto.model.Piped.prototype.clearEnvIdsList = function () {
  * optional string version = 7;
  * @return {string}
  */
-proto.model.Piped.prototype.getVersion = function () {
+proto.model.Piped.prototype.getVersion = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
 };
 
@@ -949,7 +949,7 @@ proto.model.Piped.prototype.getVersion = function () {
  * @param {string} value
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.setVersion = function (value) {
+proto.model.Piped.prototype.setVersion = function(value) {
   return jspb.Message.setProto3StringField(this, 7, value);
 };
 
@@ -958,7 +958,7 @@ proto.model.Piped.prototype.setVersion = function (value) {
  * optional int64 started_at = 8;
  * @return {number}
  */
-proto.model.Piped.prototype.getStartedAt = function () {
+proto.model.Piped.prototype.getStartedAt = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
 };
 
@@ -967,7 +967,7 @@ proto.model.Piped.prototype.getStartedAt = function () {
  * @param {number} value
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.setStartedAt = function (value) {
+proto.model.Piped.prototype.setStartedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 8, value);
 };
 
@@ -976,7 +976,7 @@ proto.model.Piped.prototype.setStartedAt = function (value) {
  * repeated CloudProvider cloud_providers = 9;
  * @return {!Array<!proto.model.Piped.CloudProvider>}
  */
-proto.model.Piped.prototype.getCloudProvidersList = function () {
+proto.model.Piped.prototype.getCloudProvidersList = function() {
   return /** @type{!Array<!proto.model.Piped.CloudProvider>} */ (
     jspb.Message.getRepeatedWrapperField(this, proto.model.Piped.CloudProvider, 9));
 };
@@ -986,7 +986,7 @@ proto.model.Piped.prototype.getCloudProvidersList = function () {
  * @param {!Array<!proto.model.Piped.CloudProvider>} value
  * @return {!proto.model.Piped} returns this
 */
-proto.model.Piped.prototype.setCloudProvidersList = function (value) {
+proto.model.Piped.prototype.setCloudProvidersList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 9, value);
 };
 
@@ -996,7 +996,7 @@ proto.model.Piped.prototype.setCloudProvidersList = function (value) {
  * @param {number=} opt_index
  * @return {!proto.model.Piped.CloudProvider}
  */
-proto.model.Piped.prototype.addCloudProviders = function (opt_value, opt_index) {
+proto.model.Piped.prototype.addCloudProviders = function(opt_value, opt_index) {
   return jspb.Message.addToRepeatedWrapperField(this, 9, opt_value, proto.model.Piped.CloudProvider, opt_index);
 };
 
@@ -1005,7 +1005,7 @@ proto.model.Piped.prototype.addCloudProviders = function (opt_value, opt_index) 
  * Clears the list making it empty but non-null.
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.clearCloudProvidersList = function () {
+proto.model.Piped.prototype.clearCloudProvidersList = function() {
   return this.setCloudProvidersList([]);
 };
 
@@ -1014,7 +1014,7 @@ proto.model.Piped.prototype.clearCloudProvidersList = function () {
  * repeated ApplicationGitRepository repositories = 10;
  * @return {!Array<!proto.model.ApplicationGitRepository>}
  */
-proto.model.Piped.prototype.getRepositoriesList = function () {
+proto.model.Piped.prototype.getRepositoriesList = function() {
   return /** @type{!Array<!proto.model.ApplicationGitRepository>} */ (
     jspb.Message.getRepeatedWrapperField(this, pkg_model_common_pb.ApplicationGitRepository, 10));
 };
@@ -1024,7 +1024,7 @@ proto.model.Piped.prototype.getRepositoriesList = function () {
  * @param {!Array<!proto.model.ApplicationGitRepository>} value
  * @return {!proto.model.Piped} returns this
 */
-proto.model.Piped.prototype.setRepositoriesList = function (value) {
+proto.model.Piped.prototype.setRepositoriesList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 10, value);
 };
 
@@ -1034,7 +1034,7 @@ proto.model.Piped.prototype.setRepositoriesList = function (value) {
  * @param {number=} opt_index
  * @return {!proto.model.ApplicationGitRepository}
  */
-proto.model.Piped.prototype.addRepositories = function (opt_value, opt_index) {
+proto.model.Piped.prototype.addRepositories = function(opt_value, opt_index) {
   return jspb.Message.addToRepeatedWrapperField(this, 10, opt_value, proto.model.ApplicationGitRepository, opt_index);
 };
 
@@ -1043,7 +1043,7 @@ proto.model.Piped.prototype.addRepositories = function (opt_value, opt_index) {
  * Clears the list making it empty but non-null.
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.clearRepositoriesList = function () {
+proto.model.Piped.prototype.clearRepositoriesList = function() {
   return this.setRepositoriesList([]);
 };
 
@@ -1052,7 +1052,7 @@ proto.model.Piped.prototype.clearRepositoriesList = function () {
  * optional ConnectionStatus status = 11;
  * @return {!proto.model.Piped.ConnectionStatus}
  */
-proto.model.Piped.prototype.getStatus = function () {
+proto.model.Piped.prototype.getStatus = function() {
   return /** @type {!proto.model.Piped.ConnectionStatus} */ (jspb.Message.getFieldWithDefault(this, 11, 0));
 };
 
@@ -1061,7 +1061,7 @@ proto.model.Piped.prototype.getStatus = function () {
  * @param {!proto.model.Piped.ConnectionStatus} value
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.setStatus = function (value) {
+proto.model.Piped.prototype.setStatus = function(value) {
   return jspb.Message.setProto3EnumField(this, 11, value);
 };
 
@@ -1070,7 +1070,7 @@ proto.model.Piped.prototype.setStatus = function (value) {
  * optional SecretEncryption sealed_secret_encryption = 12;
  * @return {?proto.model.Piped.SecretEncryption}
  */
-proto.model.Piped.prototype.getSealedSecretEncryption = function () {
+proto.model.Piped.prototype.getSealedSecretEncryption = function() {
   return /** @type{?proto.model.Piped.SecretEncryption} */ (
     jspb.Message.getWrapperField(this, proto.model.Piped.SecretEncryption, 12));
 };
@@ -1080,7 +1080,7 @@ proto.model.Piped.prototype.getSealedSecretEncryption = function () {
  * @param {?proto.model.Piped.SecretEncryption|undefined} value
  * @return {!proto.model.Piped} returns this
 */
-proto.model.Piped.prototype.setSealedSecretEncryption = function (value) {
+proto.model.Piped.prototype.setSealedSecretEncryption = function(value) {
   return jspb.Message.setWrapperField(this, 12, value);
 };
 
@@ -1089,7 +1089,7 @@ proto.model.Piped.prototype.setSealedSecretEncryption = function (value) {
  * Clears the message field making it undefined.
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.clearSealedSecretEncryption = function () {
+proto.model.Piped.prototype.clearSealedSecretEncryption = function() {
   return this.setSealedSecretEncryption(undefined);
 };
 
@@ -1098,7 +1098,7 @@ proto.model.Piped.prototype.clearSealedSecretEncryption = function () {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.Piped.prototype.hasSealedSecretEncryption = function () {
+proto.model.Piped.prototype.hasSealedSecretEncryption = function() {
   return jspb.Message.getField(this, 12) != null;
 };
 
@@ -1107,7 +1107,7 @@ proto.model.Piped.prototype.hasSealedSecretEncryption = function () {
  * optional SecretEncryption secret_encryption = 21;
  * @return {?proto.model.Piped.SecretEncryption}
  */
-proto.model.Piped.prototype.getSecretEncryption = function () {
+proto.model.Piped.prototype.getSecretEncryption = function() {
   return /** @type{?proto.model.Piped.SecretEncryption} */ (
     jspb.Message.getWrapperField(this, proto.model.Piped.SecretEncryption, 21));
 };
@@ -1117,7 +1117,7 @@ proto.model.Piped.prototype.getSecretEncryption = function () {
  * @param {?proto.model.Piped.SecretEncryption|undefined} value
  * @return {!proto.model.Piped} returns this
 */
-proto.model.Piped.prototype.setSecretEncryption = function (value) {
+proto.model.Piped.prototype.setSecretEncryption = function(value) {
   return jspb.Message.setWrapperField(this, 21, value);
 };
 
@@ -1126,7 +1126,7 @@ proto.model.Piped.prototype.setSecretEncryption = function (value) {
  * Clears the message field making it undefined.
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.clearSecretEncryption = function () {
+proto.model.Piped.prototype.clearSecretEncryption = function() {
   return this.setSecretEncryption(undefined);
 };
 
@@ -1135,7 +1135,7 @@ proto.model.Piped.prototype.clearSecretEncryption = function () {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.Piped.prototype.hasSecretEncryption = function () {
+proto.model.Piped.prototype.hasSecretEncryption = function() {
   return jspb.Message.getField(this, 21) != null;
 };
 
@@ -1144,7 +1144,7 @@ proto.model.Piped.prototype.hasSecretEncryption = function () {
  * repeated PipedKey keys = 20;
  * @return {!Array<!proto.model.PipedKey>}
  */
-proto.model.Piped.prototype.getKeysList = function () {
+proto.model.Piped.prototype.getKeysList = function() {
   return /** @type{!Array<!proto.model.PipedKey>} */ (
     jspb.Message.getRepeatedWrapperField(this, proto.model.PipedKey, 20));
 };
@@ -1154,7 +1154,7 @@ proto.model.Piped.prototype.getKeysList = function () {
  * @param {!Array<!proto.model.PipedKey>} value
  * @return {!proto.model.Piped} returns this
 */
-proto.model.Piped.prototype.setKeysList = function (value) {
+proto.model.Piped.prototype.setKeysList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 20, value);
 };
 
@@ -1164,7 +1164,7 @@ proto.model.Piped.prototype.setKeysList = function (value) {
  * @param {number=} opt_index
  * @return {!proto.model.PipedKey}
  */
-proto.model.Piped.prototype.addKeys = function (opt_value, opt_index) {
+proto.model.Piped.prototype.addKeys = function(opt_value, opt_index) {
   return jspb.Message.addToRepeatedWrapperField(this, 20, opt_value, proto.model.PipedKey, opt_index);
 };
 
@@ -1173,7 +1173,7 @@ proto.model.Piped.prototype.addKeys = function (opt_value, opt_index) {
  * Clears the list making it empty but non-null.
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.clearKeysList = function () {
+proto.model.Piped.prototype.clearKeysList = function() {
   return this.setKeysList([]);
 };
 
@@ -1182,7 +1182,7 @@ proto.model.Piped.prototype.clearKeysList = function () {
  * optional string desired_version = 30;
  * @return {string}
  */
-proto.model.Piped.prototype.getDesiredVersion = function () {
+proto.model.Piped.prototype.getDesiredVersion = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 30, ""));
 };
 
@@ -1191,7 +1191,7 @@ proto.model.Piped.prototype.getDesiredVersion = function () {
  * @param {string} value
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.setDesiredVersion = function (value) {
+proto.model.Piped.prototype.setDesiredVersion = function(value) {
   return jspb.Message.setProto3StringField(this, 30, value);
 };
 
@@ -1200,7 +1200,7 @@ proto.model.Piped.prototype.setDesiredVersion = function (value) {
  * optional bool disabled = 13;
  * @return {boolean}
  */
-proto.model.Piped.prototype.getDisabled = function () {
+proto.model.Piped.prototype.getDisabled = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 13, false));
 };
 
@@ -1209,7 +1209,7 @@ proto.model.Piped.prototype.getDisabled = function () {
  * @param {boolean} value
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.setDisabled = function (value) {
+proto.model.Piped.prototype.setDisabled = function(value) {
   return jspb.Message.setProto3BooleanField(this, 13, value);
 };
 
@@ -1218,7 +1218,7 @@ proto.model.Piped.prototype.setDisabled = function (value) {
  * optional int64 created_at = 14;
  * @return {number}
  */
-proto.model.Piped.prototype.getCreatedAt = function () {
+proto.model.Piped.prototype.getCreatedAt = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 14, 0));
 };
 
@@ -1227,7 +1227,7 @@ proto.model.Piped.prototype.getCreatedAt = function () {
  * @param {number} value
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.setCreatedAt = function (value) {
+proto.model.Piped.prototype.setCreatedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 14, value);
 };
 
@@ -1236,7 +1236,7 @@ proto.model.Piped.prototype.setCreatedAt = function (value) {
  * optional int64 updated_at = 15;
  * @return {number}
  */
-proto.model.Piped.prototype.getUpdatedAt = function () {
+proto.model.Piped.prototype.getUpdatedAt = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 15, 0));
 };
 
@@ -1245,7 +1245,7 @@ proto.model.Piped.prototype.getUpdatedAt = function () {
  * @param {number} value
  * @return {!proto.model.Piped} returns this
  */
-proto.model.Piped.prototype.setUpdatedAt = function (value) {
+proto.model.Piped.prototype.setUpdatedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 15, value);
 };
 
@@ -1254,44 +1254,44 @@ proto.model.Piped.prototype.setUpdatedAt = function (value) {
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.PipedKey.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.PipedKey.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.PipedKey.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.PipedKey.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.PipedKey} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.PipedKey.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    hash: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    creator: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    createdAt: jspb.Message.getFieldWithDefault(msg, 10, 0)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.PipedKey} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.PipedKey.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      hash: jspb.Message.getFieldWithDefault(msg, 1, ""),
-      creator: jspb.Message.getFieldWithDefault(msg, 2, ""),
-      createdAt: jspb.Message.getFieldWithDefault(msg, 10, 0)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -1300,7 +1300,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.PipedKey}
  */
-proto.model.PipedKey.deserializeBinary = function (bytes) {
+proto.model.PipedKey.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.PipedKey;
   return proto.model.PipedKey.deserializeBinaryFromReader(msg, reader);
@@ -1314,28 +1314,28 @@ proto.model.PipedKey.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.PipedKey}
  */
-proto.model.PipedKey.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.PipedKey.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setHash(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setCreator(value);
-        break;
-      case 10:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setCreatedAt(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setHash(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCreator(value);
+      break;
+    case 10:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setCreatedAt(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1346,7 +1346,7 @@ proto.model.PipedKey.deserializeBinaryFromReader = function (msg, reader) {
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.PipedKey.prototype.serializeBinary = function () {
+proto.model.PipedKey.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.PipedKey.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -1360,7 +1360,7 @@ proto.model.PipedKey.prototype.serializeBinary = function () {
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.PipedKey.serializeBinaryToWriter = function (message, writer) {
+proto.model.PipedKey.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getHash();
   if (f.length > 0) {
@@ -1390,7 +1390,7 @@ proto.model.PipedKey.serializeBinaryToWriter = function (message, writer) {
  * optional string hash = 1;
  * @return {string}
  */
-proto.model.PipedKey.prototype.getHash = function () {
+proto.model.PipedKey.prototype.getHash = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -1399,7 +1399,7 @@ proto.model.PipedKey.prototype.getHash = function () {
  * @param {string} value
  * @return {!proto.model.PipedKey} returns this
  */
-proto.model.PipedKey.prototype.setHash = function (value) {
+proto.model.PipedKey.prototype.setHash = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -1408,7 +1408,7 @@ proto.model.PipedKey.prototype.setHash = function (value) {
  * optional string creator = 2;
  * @return {string}
  */
-proto.model.PipedKey.prototype.getCreator = function () {
+proto.model.PipedKey.prototype.getCreator = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -1417,7 +1417,7 @@ proto.model.PipedKey.prototype.getCreator = function () {
  * @param {string} value
  * @return {!proto.model.PipedKey} returns this
  */
-proto.model.PipedKey.prototype.setCreator = function (value) {
+proto.model.PipedKey.prototype.setCreator = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -1426,7 +1426,7 @@ proto.model.PipedKey.prototype.setCreator = function (value) {
  * optional int64 created_at = 10;
  * @return {number}
  */
-proto.model.PipedKey.prototype.getCreatedAt = function () {
+proto.model.PipedKey.prototype.getCreatedAt = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 10, 0));
 };
 
@@ -1435,7 +1435,7 @@ proto.model.PipedKey.prototype.getCreatedAt = function () {
  * @param {number} value
  * @return {!proto.model.PipedKey} returns this
  */
-proto.model.PipedKey.prototype.setCreatedAt = function (value) {
+proto.model.PipedKey.prototype.setCreatedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 10, value);
 };
 

@@ -13,7 +13,7 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global = (function () {
+var global = (function() {
   if (this) { return this; }
   if (typeof window !== 'undefined') { return window; }
   if (typeof global !== 'undefined') { return global; }
@@ -41,7 +41,7 @@ goog.exportSymbol('proto.model.ApplicationSyncStatus', null, global);
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.Application = function (opt_data) {
+proto.model.Application = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.Application, jspb.Message);
@@ -62,7 +62,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.ApplicationSyncState = function (opt_data) {
+proto.model.ApplicationSyncState = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.ApplicationSyncState, jspb.Message);
@@ -83,7 +83,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.ApplicationDeploymentReference = function (opt_data) {
+proto.model.ApplicationDeploymentReference = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.model.ApplicationDeploymentReference.repeatedFields_, null);
 };
 goog.inherits(proto.model.ApplicationDeploymentReference, jspb.Message);
@@ -98,60 +98,60 @@ if (goog.DEBUG && !COMPILED) {
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.Application.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.Application.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.Application.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.Application.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.Application} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.Application.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    name: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    envId: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    pipedId: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    projectId: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    kind: jspb.Message.getFieldWithDefault(msg, 6, 0),
+    gitPath: (f = msg.getGitPath()) && pkg_model_common_pb.ApplicationGitPath.toObject(includeInstance, f),
+    cloudProvider: jspb.Message.getFieldWithDefault(msg, 8, ""),
+    description: jspb.Message.getFieldWithDefault(msg, 9, ""),
+    labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : [],
+    mostRecentlySuccessfulDeployment: (f = msg.getMostRecentlySuccessfulDeployment()) && proto.model.ApplicationDeploymentReference.toObject(includeInstance, f),
+    mostRecentlyTriggeredDeployment: (f = msg.getMostRecentlyTriggeredDeployment()) && proto.model.ApplicationDeploymentReference.toObject(includeInstance, f),
+    syncState: (f = msg.getSyncState()) && proto.model.ApplicationSyncState.toObject(includeInstance, f),
+    deploying: jspb.Message.getBooleanFieldWithDefault(msg, 14, false),
+    deletedAt: jspb.Message.getFieldWithDefault(msg, 98, 0),
+    deleted: jspb.Message.getBooleanFieldWithDefault(msg, 99, false),
+    disabled: jspb.Message.getBooleanFieldWithDefault(msg, 100, false),
+    createdAt: jspb.Message.getFieldWithDefault(msg, 101, 0),
+    updatedAt: jspb.Message.getFieldWithDefault(msg, 102, 0)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.Application} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.Application.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-      name: jspb.Message.getFieldWithDefault(msg, 2, ""),
-      envId: jspb.Message.getFieldWithDefault(msg, 3, ""),
-      pipedId: jspb.Message.getFieldWithDefault(msg, 4, ""),
-      projectId: jspb.Message.getFieldWithDefault(msg, 5, ""),
-      kind: jspb.Message.getFieldWithDefault(msg, 6, 0),
-      gitPath: (f = msg.getGitPath()) && pkg_model_common_pb.ApplicationGitPath.toObject(includeInstance, f),
-      cloudProvider: jspb.Message.getFieldWithDefault(msg, 8, ""),
-      description: jspb.Message.getFieldWithDefault(msg, 9, ""),
-      labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : [],
-      mostRecentlySuccessfulDeployment: (f = msg.getMostRecentlySuccessfulDeployment()) && proto.model.ApplicationDeploymentReference.toObject(includeInstance, f),
-      mostRecentlyTriggeredDeployment: (f = msg.getMostRecentlyTriggeredDeployment()) && proto.model.ApplicationDeploymentReference.toObject(includeInstance, f),
-      syncState: (f = msg.getSyncState()) && proto.model.ApplicationSyncState.toObject(includeInstance, f),
-      deploying: jspb.Message.getBooleanFieldWithDefault(msg, 14, false),
-      deletedAt: jspb.Message.getFieldWithDefault(msg, 98, 0),
-      deleted: jspb.Message.getBooleanFieldWithDefault(msg, 99, false),
-      disabled: jspb.Message.getBooleanFieldWithDefault(msg, 100, false),
-      createdAt: jspb.Message.getFieldWithDefault(msg, 101, 0),
-      updatedAt: jspb.Message.getFieldWithDefault(msg, 102, 0)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -160,7 +160,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.Application}
  */
-proto.model.Application.deserializeBinary = function (bytes) {
+proto.model.Application.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.Application;
   return proto.model.Application.deserializeBinaryFromReader(msg, reader);
@@ -174,98 +174,98 @@ proto.model.Application.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.Application}
  */
-proto.model.Application.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.Application.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setId(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setName(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setEnvId(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setPipedId(value);
-        break;
-      case 5:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setProjectId(value);
-        break;
-      case 6:
-        var value = /** @type {!proto.model.ApplicationKind} */ (reader.readEnum());
-        msg.setKind(value);
-        break;
-      case 7:
-        var value = new pkg_model_common_pb.ApplicationGitPath;
-        reader.readMessage(value, pkg_model_common_pb.ApplicationGitPath.deserializeBinaryFromReader);
-        msg.setGitPath(value);
-        break;
-      case 8:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setCloudProvider(value);
-        break;
-      case 9:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setDescription(value);
-        break;
-      case 10:
-        var value = msg.getLabelsMap();
-        reader.readMessage(value, function (message, reader) {
-          jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
-        });
-        break;
-      case 11:
-        var value = new proto.model.ApplicationDeploymentReference;
-        reader.readMessage(value, proto.model.ApplicationDeploymentReference.deserializeBinaryFromReader);
-        msg.setMostRecentlySuccessfulDeployment(value);
-        break;
-      case 12:
-        var value = new proto.model.ApplicationDeploymentReference;
-        reader.readMessage(value, proto.model.ApplicationDeploymentReference.deserializeBinaryFromReader);
-        msg.setMostRecentlyTriggeredDeployment(value);
-        break;
-      case 13:
-        var value = new proto.model.ApplicationSyncState;
-        reader.readMessage(value, proto.model.ApplicationSyncState.deserializeBinaryFromReader);
-        msg.setSyncState(value);
-        break;
-      case 14:
-        var value = /** @type {boolean} */ (reader.readBool());
-        msg.setDeploying(value);
-        break;
-      case 98:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setDeletedAt(value);
-        break;
-      case 99:
-        var value = /** @type {boolean} */ (reader.readBool());
-        msg.setDeleted(value);
-        break;
-      case 100:
-        var value = /** @type {boolean} */ (reader.readBool());
-        msg.setDisabled(value);
-        break;
-      case 101:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setCreatedAt(value);
-        break;
-      case 102:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setUpdatedAt(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setName(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setEnvId(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPipedId(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setProjectId(value);
+      break;
+    case 6:
+      var value = /** @type {!proto.model.ApplicationKind} */ (reader.readEnum());
+      msg.setKind(value);
+      break;
+    case 7:
+      var value = new pkg_model_common_pb.ApplicationGitPath;
+      reader.readMessage(value,pkg_model_common_pb.ApplicationGitPath.deserializeBinaryFromReader);
+      msg.setGitPath(value);
+      break;
+    case 8:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCloudProvider(value);
+      break;
+    case 9:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDescription(value);
+      break;
+    case 10:
+      var value = msg.getLabelsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
+      break;
+    case 11:
+      var value = new proto.model.ApplicationDeploymentReference;
+      reader.readMessage(value,proto.model.ApplicationDeploymentReference.deserializeBinaryFromReader);
+      msg.setMostRecentlySuccessfulDeployment(value);
+      break;
+    case 12:
+      var value = new proto.model.ApplicationDeploymentReference;
+      reader.readMessage(value,proto.model.ApplicationDeploymentReference.deserializeBinaryFromReader);
+      msg.setMostRecentlyTriggeredDeployment(value);
+      break;
+    case 13:
+      var value = new proto.model.ApplicationSyncState;
+      reader.readMessage(value,proto.model.ApplicationSyncState.deserializeBinaryFromReader);
+      msg.setSyncState(value);
+      break;
+    case 14:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setDeploying(value);
+      break;
+    case 98:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setDeletedAt(value);
+      break;
+    case 99:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setDeleted(value);
+      break;
+    case 100:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setDisabled(value);
+      break;
+    case 101:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setCreatedAt(value);
+      break;
+    case 102:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setUpdatedAt(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -276,7 +276,7 @@ proto.model.Application.deserializeBinaryFromReader = function (msg, reader) {
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.Application.prototype.serializeBinary = function () {
+proto.model.Application.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.Application.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -290,7 +290,7 @@ proto.model.Application.prototype.serializeBinary = function () {
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.Application.serializeBinaryToWriter = function (message, writer) {
+proto.model.Application.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
@@ -433,7 +433,7 @@ proto.model.Application.serializeBinaryToWriter = function (message, writer) {
  * optional string id = 1;
  * @return {string}
  */
-proto.model.Application.prototype.getId = function () {
+proto.model.Application.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -442,7 +442,7 @@ proto.model.Application.prototype.getId = function () {
  * @param {string} value
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setId = function (value) {
+proto.model.Application.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -451,7 +451,7 @@ proto.model.Application.prototype.setId = function (value) {
  * optional string name = 2;
  * @return {string}
  */
-proto.model.Application.prototype.getName = function () {
+proto.model.Application.prototype.getName = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -460,7 +460,7 @@ proto.model.Application.prototype.getName = function () {
  * @param {string} value
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setName = function (value) {
+proto.model.Application.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -469,7 +469,7 @@ proto.model.Application.prototype.setName = function (value) {
  * optional string env_id = 3;
  * @return {string}
  */
-proto.model.Application.prototype.getEnvId = function () {
+proto.model.Application.prototype.getEnvId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -478,7 +478,7 @@ proto.model.Application.prototype.getEnvId = function () {
  * @param {string} value
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setEnvId = function (value) {
+proto.model.Application.prototype.setEnvId = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -487,7 +487,7 @@ proto.model.Application.prototype.setEnvId = function (value) {
  * optional string piped_id = 4;
  * @return {string}
  */
-proto.model.Application.prototype.getPipedId = function () {
+proto.model.Application.prototype.getPipedId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -496,7 +496,7 @@ proto.model.Application.prototype.getPipedId = function () {
  * @param {string} value
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setPipedId = function (value) {
+proto.model.Application.prototype.setPipedId = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
@@ -505,7 +505,7 @@ proto.model.Application.prototype.setPipedId = function (value) {
  * optional string project_id = 5;
  * @return {string}
  */
-proto.model.Application.prototype.getProjectId = function () {
+proto.model.Application.prototype.getProjectId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
@@ -514,7 +514,7 @@ proto.model.Application.prototype.getProjectId = function () {
  * @param {string} value
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setProjectId = function (value) {
+proto.model.Application.prototype.setProjectId = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
 };
 
@@ -523,7 +523,7 @@ proto.model.Application.prototype.setProjectId = function (value) {
  * optional ApplicationKind kind = 6;
  * @return {!proto.model.ApplicationKind}
  */
-proto.model.Application.prototype.getKind = function () {
+proto.model.Application.prototype.getKind = function() {
   return /** @type {!proto.model.ApplicationKind} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
 };
 
@@ -532,7 +532,7 @@ proto.model.Application.prototype.getKind = function () {
  * @param {!proto.model.ApplicationKind} value
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setKind = function (value) {
+proto.model.Application.prototype.setKind = function(value) {
   return jspb.Message.setProto3EnumField(this, 6, value);
 };
 
@@ -541,7 +541,7 @@ proto.model.Application.prototype.setKind = function (value) {
  * optional ApplicationGitPath git_path = 7;
  * @return {?proto.model.ApplicationGitPath}
  */
-proto.model.Application.prototype.getGitPath = function () {
+proto.model.Application.prototype.getGitPath = function() {
   return /** @type{?proto.model.ApplicationGitPath} */ (
     jspb.Message.getWrapperField(this, pkg_model_common_pb.ApplicationGitPath, 7));
 };
@@ -551,7 +551,7 @@ proto.model.Application.prototype.getGitPath = function () {
  * @param {?proto.model.ApplicationGitPath|undefined} value
  * @return {!proto.model.Application} returns this
 */
-proto.model.Application.prototype.setGitPath = function (value) {
+proto.model.Application.prototype.setGitPath = function(value) {
   return jspb.Message.setWrapperField(this, 7, value);
 };
 
@@ -560,7 +560,7 @@ proto.model.Application.prototype.setGitPath = function (value) {
  * Clears the message field making it undefined.
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.clearGitPath = function () {
+proto.model.Application.prototype.clearGitPath = function() {
   return this.setGitPath(undefined);
 };
 
@@ -569,7 +569,7 @@ proto.model.Application.prototype.clearGitPath = function () {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.Application.prototype.hasGitPath = function () {
+proto.model.Application.prototype.hasGitPath = function() {
   return jspb.Message.getField(this, 7) != null;
 };
 
@@ -578,7 +578,7 @@ proto.model.Application.prototype.hasGitPath = function () {
  * optional string cloud_provider = 8;
  * @return {string}
  */
-proto.model.Application.prototype.getCloudProvider = function () {
+proto.model.Application.prototype.getCloudProvider = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 8, ""));
 };
 
@@ -587,7 +587,7 @@ proto.model.Application.prototype.getCloudProvider = function () {
  * @param {string} value
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setCloudProvider = function (value) {
+proto.model.Application.prototype.setCloudProvider = function(value) {
   return jspb.Message.setProto3StringField(this, 8, value);
 };
 
@@ -596,7 +596,7 @@ proto.model.Application.prototype.setCloudProvider = function (value) {
  * optional string description = 9;
  * @return {string}
  */
-proto.model.Application.prototype.getDescription = function () {
+proto.model.Application.prototype.getDescription = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ""));
 };
 
@@ -605,7 +605,7 @@ proto.model.Application.prototype.getDescription = function () {
  * @param {string} value
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setDescription = function (value) {
+proto.model.Application.prototype.setDescription = function(value) {
   return jspb.Message.setProto3StringField(this, 9, value);
 };
 
@@ -616,9 +616,9 @@ proto.model.Application.prototype.setDescription = function (value) {
  * empty, instead returning `undefined`
  * @return {!jspb.Map<string,string>}
  */
-proto.model.Application.prototype.getLabelsMap = function (opt_noLazyCreate) {
+proto.model.Application.prototype.getLabelsMap = function(opt_noLazyCreate) {
   return /** @type {!jspb.Map<string,string>} */ (
-    jspb.Message.getMapField(this, 10, opt_noLazyCreate,
+      jspb.Message.getMapField(this, 10, opt_noLazyCreate,
       null));
 };
 
@@ -627,17 +627,16 @@ proto.model.Application.prototype.getLabelsMap = function (opt_noLazyCreate) {
  * Clears values from the map. The map will be non-null.
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.clearLabelsMap = function () {
+proto.model.Application.prototype.clearLabelsMap = function() {
   this.getLabelsMap().clear();
-  return this;
-};
+  return this;};
 
 
 /**
  * optional ApplicationDeploymentReference most_recently_successful_deployment = 11;
  * @return {?proto.model.ApplicationDeploymentReference}
  */
-proto.model.Application.prototype.getMostRecentlySuccessfulDeployment = function () {
+proto.model.Application.prototype.getMostRecentlySuccessfulDeployment = function() {
   return /** @type{?proto.model.ApplicationDeploymentReference} */ (
     jspb.Message.getWrapperField(this, proto.model.ApplicationDeploymentReference, 11));
 };
@@ -647,7 +646,7 @@ proto.model.Application.prototype.getMostRecentlySuccessfulDeployment = function
  * @param {?proto.model.ApplicationDeploymentReference|undefined} value
  * @return {!proto.model.Application} returns this
 */
-proto.model.Application.prototype.setMostRecentlySuccessfulDeployment = function (value) {
+proto.model.Application.prototype.setMostRecentlySuccessfulDeployment = function(value) {
   return jspb.Message.setWrapperField(this, 11, value);
 };
 
@@ -656,7 +655,7 @@ proto.model.Application.prototype.setMostRecentlySuccessfulDeployment = function
  * Clears the message field making it undefined.
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.clearMostRecentlySuccessfulDeployment = function () {
+proto.model.Application.prototype.clearMostRecentlySuccessfulDeployment = function() {
   return this.setMostRecentlySuccessfulDeployment(undefined);
 };
 
@@ -665,7 +664,7 @@ proto.model.Application.prototype.clearMostRecentlySuccessfulDeployment = functi
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.Application.prototype.hasMostRecentlySuccessfulDeployment = function () {
+proto.model.Application.prototype.hasMostRecentlySuccessfulDeployment = function() {
   return jspb.Message.getField(this, 11) != null;
 };
 
@@ -674,7 +673,7 @@ proto.model.Application.prototype.hasMostRecentlySuccessfulDeployment = function
  * optional ApplicationDeploymentReference most_recently_triggered_deployment = 12;
  * @return {?proto.model.ApplicationDeploymentReference}
  */
-proto.model.Application.prototype.getMostRecentlyTriggeredDeployment = function () {
+proto.model.Application.prototype.getMostRecentlyTriggeredDeployment = function() {
   return /** @type{?proto.model.ApplicationDeploymentReference} */ (
     jspb.Message.getWrapperField(this, proto.model.ApplicationDeploymentReference, 12));
 };
@@ -684,7 +683,7 @@ proto.model.Application.prototype.getMostRecentlyTriggeredDeployment = function 
  * @param {?proto.model.ApplicationDeploymentReference|undefined} value
  * @return {!proto.model.Application} returns this
 */
-proto.model.Application.prototype.setMostRecentlyTriggeredDeployment = function (value) {
+proto.model.Application.prototype.setMostRecentlyTriggeredDeployment = function(value) {
   return jspb.Message.setWrapperField(this, 12, value);
 };
 
@@ -693,7 +692,7 @@ proto.model.Application.prototype.setMostRecentlyTriggeredDeployment = function 
  * Clears the message field making it undefined.
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.clearMostRecentlyTriggeredDeployment = function () {
+proto.model.Application.prototype.clearMostRecentlyTriggeredDeployment = function() {
   return this.setMostRecentlyTriggeredDeployment(undefined);
 };
 
@@ -702,7 +701,7 @@ proto.model.Application.prototype.clearMostRecentlyTriggeredDeployment = functio
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.Application.prototype.hasMostRecentlyTriggeredDeployment = function () {
+proto.model.Application.prototype.hasMostRecentlyTriggeredDeployment = function() {
   return jspb.Message.getField(this, 12) != null;
 };
 
@@ -711,7 +710,7 @@ proto.model.Application.prototype.hasMostRecentlyTriggeredDeployment = function 
  * optional ApplicationSyncState sync_state = 13;
  * @return {?proto.model.ApplicationSyncState}
  */
-proto.model.Application.prototype.getSyncState = function () {
+proto.model.Application.prototype.getSyncState = function() {
   return /** @type{?proto.model.ApplicationSyncState} */ (
     jspb.Message.getWrapperField(this, proto.model.ApplicationSyncState, 13));
 };
@@ -721,7 +720,7 @@ proto.model.Application.prototype.getSyncState = function () {
  * @param {?proto.model.ApplicationSyncState|undefined} value
  * @return {!proto.model.Application} returns this
 */
-proto.model.Application.prototype.setSyncState = function (value) {
+proto.model.Application.prototype.setSyncState = function(value) {
   return jspb.Message.setWrapperField(this, 13, value);
 };
 
@@ -730,7 +729,7 @@ proto.model.Application.prototype.setSyncState = function (value) {
  * Clears the message field making it undefined.
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.clearSyncState = function () {
+proto.model.Application.prototype.clearSyncState = function() {
   return this.setSyncState(undefined);
 };
 
@@ -739,7 +738,7 @@ proto.model.Application.prototype.clearSyncState = function () {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.Application.prototype.hasSyncState = function () {
+proto.model.Application.prototype.hasSyncState = function() {
   return jspb.Message.getField(this, 13) != null;
 };
 
@@ -748,7 +747,7 @@ proto.model.Application.prototype.hasSyncState = function () {
  * optional bool deploying = 14;
  * @return {boolean}
  */
-proto.model.Application.prototype.getDeploying = function () {
+proto.model.Application.prototype.getDeploying = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 14, false));
 };
 
@@ -757,7 +756,7 @@ proto.model.Application.prototype.getDeploying = function () {
  * @param {boolean} value
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setDeploying = function (value) {
+proto.model.Application.prototype.setDeploying = function(value) {
   return jspb.Message.setProto3BooleanField(this, 14, value);
 };
 
@@ -766,7 +765,7 @@ proto.model.Application.prototype.setDeploying = function (value) {
  * optional int64 deleted_at = 98;
  * @return {number}
  */
-proto.model.Application.prototype.getDeletedAt = function () {
+proto.model.Application.prototype.getDeletedAt = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 98, 0));
 };
 
@@ -775,7 +774,7 @@ proto.model.Application.prototype.getDeletedAt = function () {
  * @param {number} value
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setDeletedAt = function (value) {
+proto.model.Application.prototype.setDeletedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 98, value);
 };
 
@@ -784,7 +783,7 @@ proto.model.Application.prototype.setDeletedAt = function (value) {
  * optional bool deleted = 99;
  * @return {boolean}
  */
-proto.model.Application.prototype.getDeleted = function () {
+proto.model.Application.prototype.getDeleted = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 99, false));
 };
 
@@ -793,7 +792,7 @@ proto.model.Application.prototype.getDeleted = function () {
  * @param {boolean} value
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setDeleted = function (value) {
+proto.model.Application.prototype.setDeleted = function(value) {
   return jspb.Message.setProto3BooleanField(this, 99, value);
 };
 
@@ -802,7 +801,7 @@ proto.model.Application.prototype.setDeleted = function (value) {
  * optional bool disabled = 100;
  * @return {boolean}
  */
-proto.model.Application.prototype.getDisabled = function () {
+proto.model.Application.prototype.getDisabled = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 100, false));
 };
 
@@ -811,7 +810,7 @@ proto.model.Application.prototype.getDisabled = function () {
  * @param {boolean} value
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setDisabled = function (value) {
+proto.model.Application.prototype.setDisabled = function(value) {
   return jspb.Message.setProto3BooleanField(this, 100, value);
 };
 
@@ -820,7 +819,7 @@ proto.model.Application.prototype.setDisabled = function (value) {
  * optional int64 created_at = 101;
  * @return {number}
  */
-proto.model.Application.prototype.getCreatedAt = function () {
+proto.model.Application.prototype.getCreatedAt = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 101, 0));
 };
 
@@ -829,7 +828,7 @@ proto.model.Application.prototype.getCreatedAt = function () {
  * @param {number} value
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setCreatedAt = function (value) {
+proto.model.Application.prototype.setCreatedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 101, value);
 };
 
@@ -838,7 +837,7 @@ proto.model.Application.prototype.setCreatedAt = function (value) {
  * optional int64 updated_at = 102;
  * @return {number}
  */
-proto.model.Application.prototype.getUpdatedAt = function () {
+proto.model.Application.prototype.getUpdatedAt = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 102, 0));
 };
 
@@ -847,7 +846,7 @@ proto.model.Application.prototype.getUpdatedAt = function () {
  * @param {number} value
  * @return {!proto.model.Application} returns this
  */
-proto.model.Application.prototype.setUpdatedAt = function (value) {
+proto.model.Application.prototype.setUpdatedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 102, value);
 };
 
@@ -856,46 +855,46 @@ proto.model.Application.prototype.setUpdatedAt = function (value) {
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.ApplicationSyncState.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.ApplicationSyncState.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.ApplicationSyncState.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.ApplicationSyncState.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.ApplicationSyncState} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.ApplicationSyncState.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    status: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    shortReason: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    reason: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    headDeploymentId: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    timestamp: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.ApplicationSyncState} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.ApplicationSyncState.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      status: jspb.Message.getFieldWithDefault(msg, 1, 0),
-      shortReason: jspb.Message.getFieldWithDefault(msg, 2, ""),
-      reason: jspb.Message.getFieldWithDefault(msg, 3, ""),
-      headDeploymentId: jspb.Message.getFieldWithDefault(msg, 4, ""),
-      timestamp: jspb.Message.getFieldWithDefault(msg, 5, 0)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -904,7 +903,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.ApplicationSyncState}
  */
-proto.model.ApplicationSyncState.deserializeBinary = function (bytes) {
+proto.model.ApplicationSyncState.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.ApplicationSyncState;
   return proto.model.ApplicationSyncState.deserializeBinaryFromReader(msg, reader);
@@ -918,36 +917,36 @@ proto.model.ApplicationSyncState.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.ApplicationSyncState}
  */
-proto.model.ApplicationSyncState.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.ApplicationSyncState.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {!proto.model.ApplicationSyncStatus} */ (reader.readEnum());
-        msg.setStatus(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setShortReason(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setReason(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setHeadDeploymentId(value);
-        break;
-      case 5:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setTimestamp(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {!proto.model.ApplicationSyncStatus} */ (reader.readEnum());
+      msg.setStatus(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setShortReason(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setReason(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setHeadDeploymentId(value);
+      break;
+    case 5:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setTimestamp(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -958,7 +957,7 @@ proto.model.ApplicationSyncState.deserializeBinaryFromReader = function (msg, re
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.ApplicationSyncState.prototype.serializeBinary = function () {
+proto.model.ApplicationSyncState.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.ApplicationSyncState.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -972,7 +971,7 @@ proto.model.ApplicationSyncState.prototype.serializeBinary = function () {
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.ApplicationSyncState.serializeBinaryToWriter = function (message, writer) {
+proto.model.ApplicationSyncState.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getStatus();
   if (f !== 0.0) {
@@ -1016,7 +1015,7 @@ proto.model.ApplicationSyncState.serializeBinaryToWriter = function (message, wr
  * optional ApplicationSyncStatus status = 1;
  * @return {!proto.model.ApplicationSyncStatus}
  */
-proto.model.ApplicationSyncState.prototype.getStatus = function () {
+proto.model.ApplicationSyncState.prototype.getStatus = function() {
   return /** @type {!proto.model.ApplicationSyncStatus} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
 };
 
@@ -1025,7 +1024,7 @@ proto.model.ApplicationSyncState.prototype.getStatus = function () {
  * @param {!proto.model.ApplicationSyncStatus} value
  * @return {!proto.model.ApplicationSyncState} returns this
  */
-proto.model.ApplicationSyncState.prototype.setStatus = function (value) {
+proto.model.ApplicationSyncState.prototype.setStatus = function(value) {
   return jspb.Message.setProto3EnumField(this, 1, value);
 };
 
@@ -1034,7 +1033,7 @@ proto.model.ApplicationSyncState.prototype.setStatus = function (value) {
  * optional string short_reason = 2;
  * @return {string}
  */
-proto.model.ApplicationSyncState.prototype.getShortReason = function () {
+proto.model.ApplicationSyncState.prototype.getShortReason = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -1043,7 +1042,7 @@ proto.model.ApplicationSyncState.prototype.getShortReason = function () {
  * @param {string} value
  * @return {!proto.model.ApplicationSyncState} returns this
  */
-proto.model.ApplicationSyncState.prototype.setShortReason = function (value) {
+proto.model.ApplicationSyncState.prototype.setShortReason = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -1052,7 +1051,7 @@ proto.model.ApplicationSyncState.prototype.setShortReason = function (value) {
  * optional string reason = 3;
  * @return {string}
  */
-proto.model.ApplicationSyncState.prototype.getReason = function () {
+proto.model.ApplicationSyncState.prototype.getReason = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -1061,7 +1060,7 @@ proto.model.ApplicationSyncState.prototype.getReason = function () {
  * @param {string} value
  * @return {!proto.model.ApplicationSyncState} returns this
  */
-proto.model.ApplicationSyncState.prototype.setReason = function (value) {
+proto.model.ApplicationSyncState.prototype.setReason = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -1070,7 +1069,7 @@ proto.model.ApplicationSyncState.prototype.setReason = function (value) {
  * optional string head_deployment_id = 4;
  * @return {string}
  */
-proto.model.ApplicationSyncState.prototype.getHeadDeploymentId = function () {
+proto.model.ApplicationSyncState.prototype.getHeadDeploymentId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -1079,7 +1078,7 @@ proto.model.ApplicationSyncState.prototype.getHeadDeploymentId = function () {
  * @param {string} value
  * @return {!proto.model.ApplicationSyncState} returns this
  */
-proto.model.ApplicationSyncState.prototype.setHeadDeploymentId = function (value) {
+proto.model.ApplicationSyncState.prototype.setHeadDeploymentId = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
@@ -1088,7 +1087,7 @@ proto.model.ApplicationSyncState.prototype.setHeadDeploymentId = function (value
  * optional int64 timestamp = 5;
  * @return {number}
  */
-proto.model.ApplicationSyncState.prototype.getTimestamp = function () {
+proto.model.ApplicationSyncState.prototype.getTimestamp = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
 };
 
@@ -1097,7 +1096,7 @@ proto.model.ApplicationSyncState.prototype.getTimestamp = function () {
  * @param {number} value
  * @return {!proto.model.ApplicationSyncState} returns this
  */
-proto.model.ApplicationSyncState.prototype.setTimestamp = function (value) {
+proto.model.ApplicationSyncState.prototype.setTimestamp = function(value) {
   return jspb.Message.setProto3IntField(this, 5, value);
 };
 
@@ -1113,50 +1112,50 @@ proto.model.ApplicationDeploymentReference.repeatedFields_ = [6];
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.ApplicationDeploymentReference.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.ApplicationDeploymentReference.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.ApplicationDeploymentReference.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.ApplicationDeploymentReference.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.ApplicationDeploymentReference} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.ApplicationDeploymentReference.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    deploymentId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    trigger: (f = msg.getTrigger()) && pkg_model_deployment_pb.DeploymentTrigger.toObject(includeInstance, f),
+    summary: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    version: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    configFilename: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    versionsList: jspb.Message.toObjectList(msg.getVersionsList(),
+    pkg_model_common_pb.ArtifactVersion.toObject, includeInstance),
+    startedAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
+    completedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.ApplicationDeploymentReference} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.ApplicationDeploymentReference.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      deploymentId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-      trigger: (f = msg.getTrigger()) && pkg_model_deployment_pb.DeploymentTrigger.toObject(includeInstance, f),
-      summary: jspb.Message.getFieldWithDefault(msg, 3, ""),
-      version: jspb.Message.getFieldWithDefault(msg, 4, ""),
-      configFilename: jspb.Message.getFieldWithDefault(msg, 5, ""),
-      versionsList: jspb.Message.toObjectList(msg.getVersionsList(),
-        pkg_model_common_pb.ArtifactVersion.toObject, includeInstance),
-      startedAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
-      completedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -1165,7 +1164,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.ApplicationDeploymentReference}
  */
-proto.model.ApplicationDeploymentReference.deserializeBinary = function (bytes) {
+proto.model.ApplicationDeploymentReference.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.ApplicationDeploymentReference;
   return proto.model.ApplicationDeploymentReference.deserializeBinaryFromReader(msg, reader);
@@ -1179,50 +1178,50 @@ proto.model.ApplicationDeploymentReference.deserializeBinary = function (bytes) 
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.ApplicationDeploymentReference}
  */
-proto.model.ApplicationDeploymentReference.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.ApplicationDeploymentReference.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setDeploymentId(value);
-        break;
-      case 2:
-        var value = new pkg_model_deployment_pb.DeploymentTrigger;
-        reader.readMessage(value, pkg_model_deployment_pb.DeploymentTrigger.deserializeBinaryFromReader);
-        msg.setTrigger(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setSummary(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setVersion(value);
-        break;
-      case 5:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setConfigFilename(value);
-        break;
-      case 6:
-        var value = new pkg_model_common_pb.ArtifactVersion;
-        reader.readMessage(value, pkg_model_common_pb.ArtifactVersion.deserializeBinaryFromReader);
-        msg.addVersions(value);
-        break;
-      case 14:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setStartedAt(value);
-        break;
-      case 15:
-        var value = /** @type {number} */ (reader.readInt64());
-        msg.setCompletedAt(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDeploymentId(value);
+      break;
+    case 2:
+      var value = new pkg_model_deployment_pb.DeploymentTrigger;
+      reader.readMessage(value,pkg_model_deployment_pb.DeploymentTrigger.deserializeBinaryFromReader);
+      msg.setTrigger(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setSummary(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setVersion(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setConfigFilename(value);
+      break;
+    case 6:
+      var value = new pkg_model_common_pb.ArtifactVersion;
+      reader.readMessage(value,pkg_model_common_pb.ArtifactVersion.deserializeBinaryFromReader);
+      msg.addVersions(value);
+      break;
+    case 14:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setStartedAt(value);
+      break;
+    case 15:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setCompletedAt(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1233,7 +1232,7 @@ proto.model.ApplicationDeploymentReference.deserializeBinaryFromReader = functio
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.ApplicationDeploymentReference.prototype.serializeBinary = function () {
+proto.model.ApplicationDeploymentReference.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.ApplicationDeploymentReference.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -1247,7 +1246,7 @@ proto.model.ApplicationDeploymentReference.prototype.serializeBinary = function 
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.ApplicationDeploymentReference.serializeBinaryToWriter = function (message, writer) {
+proto.model.ApplicationDeploymentReference.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getDeploymentId();
   if (f.length > 0) {
@@ -1314,7 +1313,7 @@ proto.model.ApplicationDeploymentReference.serializeBinaryToWriter = function (m
  * optional string deployment_id = 1;
  * @return {string}
  */
-proto.model.ApplicationDeploymentReference.prototype.getDeploymentId = function () {
+proto.model.ApplicationDeploymentReference.prototype.getDeploymentId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -1323,7 +1322,7 @@ proto.model.ApplicationDeploymentReference.prototype.getDeploymentId = function 
  * @param {string} value
  * @return {!proto.model.ApplicationDeploymentReference} returns this
  */
-proto.model.ApplicationDeploymentReference.prototype.setDeploymentId = function (value) {
+proto.model.ApplicationDeploymentReference.prototype.setDeploymentId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -1332,7 +1331,7 @@ proto.model.ApplicationDeploymentReference.prototype.setDeploymentId = function 
  * optional DeploymentTrigger trigger = 2;
  * @return {?proto.model.DeploymentTrigger}
  */
-proto.model.ApplicationDeploymentReference.prototype.getTrigger = function () {
+proto.model.ApplicationDeploymentReference.prototype.getTrigger = function() {
   return /** @type{?proto.model.DeploymentTrigger} */ (
     jspb.Message.getWrapperField(this, pkg_model_deployment_pb.DeploymentTrigger, 2));
 };
@@ -1342,7 +1341,7 @@ proto.model.ApplicationDeploymentReference.prototype.getTrigger = function () {
  * @param {?proto.model.DeploymentTrigger|undefined} value
  * @return {!proto.model.ApplicationDeploymentReference} returns this
 */
-proto.model.ApplicationDeploymentReference.prototype.setTrigger = function (value) {
+proto.model.ApplicationDeploymentReference.prototype.setTrigger = function(value) {
   return jspb.Message.setWrapperField(this, 2, value);
 };
 
@@ -1351,7 +1350,7 @@ proto.model.ApplicationDeploymentReference.prototype.setTrigger = function (valu
  * Clears the message field making it undefined.
  * @return {!proto.model.ApplicationDeploymentReference} returns this
  */
-proto.model.ApplicationDeploymentReference.prototype.clearTrigger = function () {
+proto.model.ApplicationDeploymentReference.prototype.clearTrigger = function() {
   return this.setTrigger(undefined);
 };
 
@@ -1360,7 +1359,7 @@ proto.model.ApplicationDeploymentReference.prototype.clearTrigger = function () 
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.ApplicationDeploymentReference.prototype.hasTrigger = function () {
+proto.model.ApplicationDeploymentReference.prototype.hasTrigger = function() {
   return jspb.Message.getField(this, 2) != null;
 };
 
@@ -1369,7 +1368,7 @@ proto.model.ApplicationDeploymentReference.prototype.hasTrigger = function () {
  * optional string summary = 3;
  * @return {string}
  */
-proto.model.ApplicationDeploymentReference.prototype.getSummary = function () {
+proto.model.ApplicationDeploymentReference.prototype.getSummary = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -1378,7 +1377,7 @@ proto.model.ApplicationDeploymentReference.prototype.getSummary = function () {
  * @param {string} value
  * @return {!proto.model.ApplicationDeploymentReference} returns this
  */
-proto.model.ApplicationDeploymentReference.prototype.setSummary = function (value) {
+proto.model.ApplicationDeploymentReference.prototype.setSummary = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -1387,7 +1386,7 @@ proto.model.ApplicationDeploymentReference.prototype.setSummary = function (valu
  * optional string version = 4;
  * @return {string}
  */
-proto.model.ApplicationDeploymentReference.prototype.getVersion = function () {
+proto.model.ApplicationDeploymentReference.prototype.getVersion = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -1396,7 +1395,7 @@ proto.model.ApplicationDeploymentReference.prototype.getVersion = function () {
  * @param {string} value
  * @return {!proto.model.ApplicationDeploymentReference} returns this
  */
-proto.model.ApplicationDeploymentReference.prototype.setVersion = function (value) {
+proto.model.ApplicationDeploymentReference.prototype.setVersion = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
@@ -1405,7 +1404,7 @@ proto.model.ApplicationDeploymentReference.prototype.setVersion = function (valu
  * optional string config_filename = 5;
  * @return {string}
  */
-proto.model.ApplicationDeploymentReference.prototype.getConfigFilename = function () {
+proto.model.ApplicationDeploymentReference.prototype.getConfigFilename = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
@@ -1414,7 +1413,7 @@ proto.model.ApplicationDeploymentReference.prototype.getConfigFilename = functio
  * @param {string} value
  * @return {!proto.model.ApplicationDeploymentReference} returns this
  */
-proto.model.ApplicationDeploymentReference.prototype.setConfigFilename = function (value) {
+proto.model.ApplicationDeploymentReference.prototype.setConfigFilename = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
 };
 
@@ -1423,7 +1422,7 @@ proto.model.ApplicationDeploymentReference.prototype.setConfigFilename = functio
  * repeated ArtifactVersion versions = 6;
  * @return {!Array<!proto.model.ArtifactVersion>}
  */
-proto.model.ApplicationDeploymentReference.prototype.getVersionsList = function () {
+proto.model.ApplicationDeploymentReference.prototype.getVersionsList = function() {
   return /** @type{!Array<!proto.model.ArtifactVersion>} */ (
     jspb.Message.getRepeatedWrapperField(this, pkg_model_common_pb.ArtifactVersion, 6));
 };
@@ -1433,7 +1432,7 @@ proto.model.ApplicationDeploymentReference.prototype.getVersionsList = function 
  * @param {!Array<!proto.model.ArtifactVersion>} value
  * @return {!proto.model.ApplicationDeploymentReference} returns this
 */
-proto.model.ApplicationDeploymentReference.prototype.setVersionsList = function (value) {
+proto.model.ApplicationDeploymentReference.prototype.setVersionsList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 6, value);
 };
 
@@ -1443,7 +1442,7 @@ proto.model.ApplicationDeploymentReference.prototype.setVersionsList = function 
  * @param {number=} opt_index
  * @return {!proto.model.ArtifactVersion}
  */
-proto.model.ApplicationDeploymentReference.prototype.addVersions = function (opt_value, opt_index) {
+proto.model.ApplicationDeploymentReference.prototype.addVersions = function(opt_value, opt_index) {
   return jspb.Message.addToRepeatedWrapperField(this, 6, opt_value, proto.model.ArtifactVersion, opt_index);
 };
 
@@ -1452,7 +1451,7 @@ proto.model.ApplicationDeploymentReference.prototype.addVersions = function (opt
  * Clears the list making it empty but non-null.
  * @return {!proto.model.ApplicationDeploymentReference} returns this
  */
-proto.model.ApplicationDeploymentReference.prototype.clearVersionsList = function () {
+proto.model.ApplicationDeploymentReference.prototype.clearVersionsList = function() {
   return this.setVersionsList([]);
 };
 
@@ -1461,7 +1460,7 @@ proto.model.ApplicationDeploymentReference.prototype.clearVersionsList = functio
  * optional int64 started_at = 14;
  * @return {number}
  */
-proto.model.ApplicationDeploymentReference.prototype.getStartedAt = function () {
+proto.model.ApplicationDeploymentReference.prototype.getStartedAt = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 14, 0));
 };
 
@@ -1470,7 +1469,7 @@ proto.model.ApplicationDeploymentReference.prototype.getStartedAt = function () 
  * @param {number} value
  * @return {!proto.model.ApplicationDeploymentReference} returns this
  */
-proto.model.ApplicationDeploymentReference.prototype.setStartedAt = function (value) {
+proto.model.ApplicationDeploymentReference.prototype.setStartedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 14, value);
 };
 
@@ -1479,7 +1478,7 @@ proto.model.ApplicationDeploymentReference.prototype.setStartedAt = function (va
  * optional int64 completed_at = 15;
  * @return {number}
  */
-proto.model.ApplicationDeploymentReference.prototype.getCompletedAt = function () {
+proto.model.ApplicationDeploymentReference.prototype.getCompletedAt = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 15, 0));
 };
 
@@ -1488,7 +1487,7 @@ proto.model.ApplicationDeploymentReference.prototype.getCompletedAt = function (
  * @param {number} value
  * @return {!proto.model.ApplicationDeploymentReference} returns this
  */
-proto.model.ApplicationDeploymentReference.prototype.setCompletedAt = function (value) {
+proto.model.ApplicationDeploymentReference.prototype.setCompletedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 15, value);
 };
 

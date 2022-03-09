@@ -13,7 +13,7 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global = (function () {
+var global = (function() {
   if (this) { return this; }
   if (typeof window !== 'undefined') { return window; }
   if (typeof global !== 'undefined') { return global; }
@@ -52,7 +52,7 @@ goog.exportSymbol('proto.model.NotificationEventType', null, global);
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.NotificationEventDeploymentTriggered = function (opt_data) {
+proto.model.NotificationEventDeploymentTriggered = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.model.NotificationEventDeploymentTriggered.repeatedFields_, null);
 };
 goog.inherits(proto.model.NotificationEventDeploymentTriggered, jspb.Message);
@@ -73,7 +73,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.NotificationEventDeploymentPlanned = function (opt_data) {
+proto.model.NotificationEventDeploymentPlanned = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.model.NotificationEventDeploymentPlanned.repeatedFields_, null);
 };
 goog.inherits(proto.model.NotificationEventDeploymentPlanned, jspb.Message);
@@ -94,7 +94,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.NotificationEventDeploymentApproved = function (opt_data) {
+proto.model.NotificationEventDeploymentApproved = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.model.NotificationEventDeploymentApproved.repeatedFields_, null);
 };
 goog.inherits(proto.model.NotificationEventDeploymentApproved, jspb.Message);
@@ -115,7 +115,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.NotificationEventDeploymentRollingBack = function (opt_data) {
+proto.model.NotificationEventDeploymentRollingBack = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.NotificationEventDeploymentRollingBack, jspb.Message);
@@ -136,7 +136,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.NotificationEventDeploymentSucceeded = function (opt_data) {
+proto.model.NotificationEventDeploymentSucceeded = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.model.NotificationEventDeploymentSucceeded.repeatedFields_, null);
 };
 goog.inherits(proto.model.NotificationEventDeploymentSucceeded, jspb.Message);
@@ -157,7 +157,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.NotificationEventDeploymentFailed = function (opt_data) {
+proto.model.NotificationEventDeploymentFailed = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.model.NotificationEventDeploymentFailed.repeatedFields_, null);
 };
 goog.inherits(proto.model.NotificationEventDeploymentFailed, jspb.Message);
@@ -178,7 +178,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.NotificationEventDeploymentCancelled = function (opt_data) {
+proto.model.NotificationEventDeploymentCancelled = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.model.NotificationEventDeploymentCancelled.repeatedFields_, null);
 };
 goog.inherits(proto.model.NotificationEventDeploymentCancelled, jspb.Message);
@@ -199,7 +199,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.NotificationEventDeploymentWaitApproval = function (opt_data) {
+proto.model.NotificationEventDeploymentWaitApproval = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.model.NotificationEventDeploymentWaitApproval.repeatedFields_, null);
 };
 goog.inherits(proto.model.NotificationEventDeploymentWaitApproval, jspb.Message);
@@ -220,7 +220,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.NotificationEventDeploymentTriggerFailed = function (opt_data) {
+proto.model.NotificationEventDeploymentTriggerFailed = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.model.NotificationEventDeploymentTriggerFailed.repeatedFields_, null);
 };
 goog.inherits(proto.model.NotificationEventDeploymentTriggerFailed, jspb.Message);
@@ -241,7 +241,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.NotificationEventApplicationSynced = function (opt_data) {
+proto.model.NotificationEventApplicationSynced = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.NotificationEventApplicationSynced, jspb.Message);
@@ -262,7 +262,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.NotificationEventApplicationOutOfSync = function (opt_data) {
+proto.model.NotificationEventApplicationOutOfSync = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.NotificationEventApplicationOutOfSync, jspb.Message);
@@ -283,7 +283,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.NotificationEventPipedStarted = function (opt_data) {
+proto.model.NotificationEventPipedStarted = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.NotificationEventPipedStarted, jspb.Message);
@@ -304,7 +304,7 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.model.NotificationEventPipedStopped = function (opt_data) {
+proto.model.NotificationEventPipedStopped = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.model.NotificationEventPipedStopped, jspb.Message);
@@ -326,43 +326,43 @@ proto.model.NotificationEventDeploymentTriggered.repeatedFields_ = [3];
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.NotificationEventDeploymentTriggered.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.NotificationEventDeploymentTriggered.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.NotificationEventDeploymentTriggered.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.NotificationEventDeploymentTriggered.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.NotificationEventDeploymentTriggered} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.NotificationEventDeploymentTriggered.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.NotificationEventDeploymentTriggered} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.NotificationEventDeploymentTriggered.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
-      mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -371,7 +371,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.NotificationEventDeploymentTriggered}
  */
-proto.model.NotificationEventDeploymentTriggered.deserializeBinary = function (bytes) {
+proto.model.NotificationEventDeploymentTriggered.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.NotificationEventDeploymentTriggered;
   return proto.model.NotificationEventDeploymentTriggered.deserializeBinaryFromReader(msg, reader);
@@ -385,25 +385,25 @@ proto.model.NotificationEventDeploymentTriggered.deserializeBinary = function (b
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.NotificationEventDeploymentTriggered}
  */
-proto.model.NotificationEventDeploymentTriggered.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.NotificationEventDeploymentTriggered.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new pkg_model_deployment_pb.Deployment;
-        reader.readMessage(value, pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
-        msg.setDeployment(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addMentionedAccounts(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new pkg_model_deployment_pb.Deployment;
+      reader.readMessage(value,pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
+      msg.setDeployment(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedAccounts(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -414,7 +414,7 @@ proto.model.NotificationEventDeploymentTriggered.deserializeBinaryFromReader = f
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.NotificationEventDeploymentTriggered.prototype.serializeBinary = function () {
+proto.model.NotificationEventDeploymentTriggered.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.NotificationEventDeploymentTriggered.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -428,7 +428,7 @@ proto.model.NotificationEventDeploymentTriggered.prototype.serializeBinary = fun
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.NotificationEventDeploymentTriggered.serializeBinaryToWriter = function (message, writer) {
+proto.model.NotificationEventDeploymentTriggered.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getDeployment();
   if (f != null) {
@@ -452,7 +452,7 @@ proto.model.NotificationEventDeploymentTriggered.serializeBinaryToWriter = funct
  * optional Deployment deployment = 1;
  * @return {?proto.model.Deployment}
  */
-proto.model.NotificationEventDeploymentTriggered.prototype.getDeployment = function () {
+proto.model.NotificationEventDeploymentTriggered.prototype.getDeployment = function() {
   return /** @type{?proto.model.Deployment} */ (
     jspb.Message.getWrapperField(this, pkg_model_deployment_pb.Deployment, 1));
 };
@@ -462,7 +462,7 @@ proto.model.NotificationEventDeploymentTriggered.prototype.getDeployment = funct
  * @param {?proto.model.Deployment|undefined} value
  * @return {!proto.model.NotificationEventDeploymentTriggered} returns this
 */
-proto.model.NotificationEventDeploymentTriggered.prototype.setDeployment = function (value) {
+proto.model.NotificationEventDeploymentTriggered.prototype.setDeployment = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
@@ -471,7 +471,7 @@ proto.model.NotificationEventDeploymentTriggered.prototype.setDeployment = funct
  * Clears the message field making it undefined.
  * @return {!proto.model.NotificationEventDeploymentTriggered} returns this
  */
-proto.model.NotificationEventDeploymentTriggered.prototype.clearDeployment = function () {
+proto.model.NotificationEventDeploymentTriggered.prototype.clearDeployment = function() {
   return this.setDeployment(undefined);
 };
 
@@ -480,7 +480,7 @@ proto.model.NotificationEventDeploymentTriggered.prototype.clearDeployment = fun
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.NotificationEventDeploymentTriggered.prototype.hasDeployment = function () {
+proto.model.NotificationEventDeploymentTriggered.prototype.hasDeployment = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -489,7 +489,7 @@ proto.model.NotificationEventDeploymentTriggered.prototype.hasDeployment = funct
  * repeated string mentioned_accounts = 3;
  * @return {!Array<string>}
  */
-proto.model.NotificationEventDeploymentTriggered.prototype.getMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentTriggered.prototype.getMentionedAccountsList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 3));
 };
 
@@ -498,7 +498,7 @@ proto.model.NotificationEventDeploymentTriggered.prototype.getMentionedAccountsL
  * @param {!Array<string>} value
  * @return {!proto.model.NotificationEventDeploymentTriggered} returns this
  */
-proto.model.NotificationEventDeploymentTriggered.prototype.setMentionedAccountsList = function (value) {
+proto.model.NotificationEventDeploymentTriggered.prototype.setMentionedAccountsList = function(value) {
   return jspb.Message.setField(this, 3, value || []);
 };
 
@@ -508,7 +508,7 @@ proto.model.NotificationEventDeploymentTriggered.prototype.setMentionedAccountsL
  * @param {number=} opt_index
  * @return {!proto.model.NotificationEventDeploymentTriggered} returns this
  */
-proto.model.NotificationEventDeploymentTriggered.prototype.addMentionedAccounts = function (value, opt_index) {
+proto.model.NotificationEventDeploymentTriggered.prototype.addMentionedAccounts = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 3, value, opt_index);
 };
 
@@ -517,7 +517,7 @@ proto.model.NotificationEventDeploymentTriggered.prototype.addMentionedAccounts 
  * Clears the list making it empty but non-null.
  * @return {!proto.model.NotificationEventDeploymentTriggered} returns this
  */
-proto.model.NotificationEventDeploymentTriggered.prototype.clearMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentTriggered.prototype.clearMentionedAccountsList = function() {
   return this.setMentionedAccountsList([]);
 };
 
@@ -533,44 +533,44 @@ proto.model.NotificationEventDeploymentPlanned.repeatedFields_ = [4];
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.NotificationEventDeploymentPlanned.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.NotificationEventDeploymentPlanned.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.NotificationEventDeploymentPlanned.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.NotificationEventDeploymentPlanned.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.NotificationEventDeploymentPlanned} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.NotificationEventDeploymentPlanned.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
+    summary: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.NotificationEventDeploymentPlanned} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.NotificationEventDeploymentPlanned.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
-      summary: jspb.Message.getFieldWithDefault(msg, 3, ""),
-      mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -579,7 +579,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.NotificationEventDeploymentPlanned}
  */
-proto.model.NotificationEventDeploymentPlanned.deserializeBinary = function (bytes) {
+proto.model.NotificationEventDeploymentPlanned.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.NotificationEventDeploymentPlanned;
   return proto.model.NotificationEventDeploymentPlanned.deserializeBinaryFromReader(msg, reader);
@@ -593,29 +593,29 @@ proto.model.NotificationEventDeploymentPlanned.deserializeBinary = function (byt
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.NotificationEventDeploymentPlanned}
  */
-proto.model.NotificationEventDeploymentPlanned.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.NotificationEventDeploymentPlanned.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new pkg_model_deployment_pb.Deployment;
-        reader.readMessage(value, pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
-        msg.setDeployment(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setSummary(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addMentionedAccounts(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new pkg_model_deployment_pb.Deployment;
+      reader.readMessage(value,pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
+      msg.setDeployment(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setSummary(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedAccounts(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -626,7 +626,7 @@ proto.model.NotificationEventDeploymentPlanned.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.NotificationEventDeploymentPlanned.prototype.serializeBinary = function () {
+proto.model.NotificationEventDeploymentPlanned.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.NotificationEventDeploymentPlanned.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -640,7 +640,7 @@ proto.model.NotificationEventDeploymentPlanned.prototype.serializeBinary = funct
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.NotificationEventDeploymentPlanned.serializeBinaryToWriter = function (message, writer) {
+proto.model.NotificationEventDeploymentPlanned.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getDeployment();
   if (f != null) {
@@ -671,7 +671,7 @@ proto.model.NotificationEventDeploymentPlanned.serializeBinaryToWriter = functio
  * optional Deployment deployment = 1;
  * @return {?proto.model.Deployment}
  */
-proto.model.NotificationEventDeploymentPlanned.prototype.getDeployment = function () {
+proto.model.NotificationEventDeploymentPlanned.prototype.getDeployment = function() {
   return /** @type{?proto.model.Deployment} */ (
     jspb.Message.getWrapperField(this, pkg_model_deployment_pb.Deployment, 1));
 };
@@ -681,7 +681,7 @@ proto.model.NotificationEventDeploymentPlanned.prototype.getDeployment = functio
  * @param {?proto.model.Deployment|undefined} value
  * @return {!proto.model.NotificationEventDeploymentPlanned} returns this
 */
-proto.model.NotificationEventDeploymentPlanned.prototype.setDeployment = function (value) {
+proto.model.NotificationEventDeploymentPlanned.prototype.setDeployment = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
@@ -690,7 +690,7 @@ proto.model.NotificationEventDeploymentPlanned.prototype.setDeployment = functio
  * Clears the message field making it undefined.
  * @return {!proto.model.NotificationEventDeploymentPlanned} returns this
  */
-proto.model.NotificationEventDeploymentPlanned.prototype.clearDeployment = function () {
+proto.model.NotificationEventDeploymentPlanned.prototype.clearDeployment = function() {
   return this.setDeployment(undefined);
 };
 
@@ -699,7 +699,7 @@ proto.model.NotificationEventDeploymentPlanned.prototype.clearDeployment = funct
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.NotificationEventDeploymentPlanned.prototype.hasDeployment = function () {
+proto.model.NotificationEventDeploymentPlanned.prototype.hasDeployment = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -708,7 +708,7 @@ proto.model.NotificationEventDeploymentPlanned.prototype.hasDeployment = functio
  * optional string summary = 3;
  * @return {string}
  */
-proto.model.NotificationEventDeploymentPlanned.prototype.getSummary = function () {
+proto.model.NotificationEventDeploymentPlanned.prototype.getSummary = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -717,7 +717,7 @@ proto.model.NotificationEventDeploymentPlanned.prototype.getSummary = function (
  * @param {string} value
  * @return {!proto.model.NotificationEventDeploymentPlanned} returns this
  */
-proto.model.NotificationEventDeploymentPlanned.prototype.setSummary = function (value) {
+proto.model.NotificationEventDeploymentPlanned.prototype.setSummary = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -726,7 +726,7 @@ proto.model.NotificationEventDeploymentPlanned.prototype.setSummary = function (
  * repeated string mentioned_accounts = 4;
  * @return {!Array<string>}
  */
-proto.model.NotificationEventDeploymentPlanned.prototype.getMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentPlanned.prototype.getMentionedAccountsList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
 };
 
@@ -735,7 +735,7 @@ proto.model.NotificationEventDeploymentPlanned.prototype.getMentionedAccountsLis
  * @param {!Array<string>} value
  * @return {!proto.model.NotificationEventDeploymentPlanned} returns this
  */
-proto.model.NotificationEventDeploymentPlanned.prototype.setMentionedAccountsList = function (value) {
+proto.model.NotificationEventDeploymentPlanned.prototype.setMentionedAccountsList = function(value) {
   return jspb.Message.setField(this, 4, value || []);
 };
 
@@ -745,7 +745,7 @@ proto.model.NotificationEventDeploymentPlanned.prototype.setMentionedAccountsLis
  * @param {number=} opt_index
  * @return {!proto.model.NotificationEventDeploymentPlanned} returns this
  */
-proto.model.NotificationEventDeploymentPlanned.prototype.addMentionedAccounts = function (value, opt_index) {
+proto.model.NotificationEventDeploymentPlanned.prototype.addMentionedAccounts = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
 };
 
@@ -754,7 +754,7 @@ proto.model.NotificationEventDeploymentPlanned.prototype.addMentionedAccounts = 
  * Clears the list making it empty but non-null.
  * @return {!proto.model.NotificationEventDeploymentPlanned} returns this
  */
-proto.model.NotificationEventDeploymentPlanned.prototype.clearMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentPlanned.prototype.clearMentionedAccountsList = function() {
   return this.setMentionedAccountsList([]);
 };
 
@@ -770,44 +770,44 @@ proto.model.NotificationEventDeploymentApproved.repeatedFields_ = [4];
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.NotificationEventDeploymentApproved.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.NotificationEventDeploymentApproved.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.NotificationEventDeploymentApproved.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.NotificationEventDeploymentApproved.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.NotificationEventDeploymentApproved} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.NotificationEventDeploymentApproved.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
+    approver: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.NotificationEventDeploymentApproved} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.NotificationEventDeploymentApproved.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
-      approver: jspb.Message.getFieldWithDefault(msg, 3, ""),
-      mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -816,7 +816,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.NotificationEventDeploymentApproved}
  */
-proto.model.NotificationEventDeploymentApproved.deserializeBinary = function (bytes) {
+proto.model.NotificationEventDeploymentApproved.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.NotificationEventDeploymentApproved;
   return proto.model.NotificationEventDeploymentApproved.deserializeBinaryFromReader(msg, reader);
@@ -830,29 +830,29 @@ proto.model.NotificationEventDeploymentApproved.deserializeBinary = function (by
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.NotificationEventDeploymentApproved}
  */
-proto.model.NotificationEventDeploymentApproved.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.NotificationEventDeploymentApproved.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new pkg_model_deployment_pb.Deployment;
-        reader.readMessage(value, pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
-        msg.setDeployment(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setApprover(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addMentionedAccounts(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new pkg_model_deployment_pb.Deployment;
+      reader.readMessage(value,pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
+      msg.setDeployment(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setApprover(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedAccounts(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -863,7 +863,7 @@ proto.model.NotificationEventDeploymentApproved.deserializeBinaryFromReader = fu
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.NotificationEventDeploymentApproved.prototype.serializeBinary = function () {
+proto.model.NotificationEventDeploymentApproved.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.NotificationEventDeploymentApproved.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -877,7 +877,7 @@ proto.model.NotificationEventDeploymentApproved.prototype.serializeBinary = func
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.NotificationEventDeploymentApproved.serializeBinaryToWriter = function (message, writer) {
+proto.model.NotificationEventDeploymentApproved.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getDeployment();
   if (f != null) {
@@ -908,7 +908,7 @@ proto.model.NotificationEventDeploymentApproved.serializeBinaryToWriter = functi
  * optional Deployment deployment = 1;
  * @return {?proto.model.Deployment}
  */
-proto.model.NotificationEventDeploymentApproved.prototype.getDeployment = function () {
+proto.model.NotificationEventDeploymentApproved.prototype.getDeployment = function() {
   return /** @type{?proto.model.Deployment} */ (
     jspb.Message.getWrapperField(this, pkg_model_deployment_pb.Deployment, 1));
 };
@@ -918,7 +918,7 @@ proto.model.NotificationEventDeploymentApproved.prototype.getDeployment = functi
  * @param {?proto.model.Deployment|undefined} value
  * @return {!proto.model.NotificationEventDeploymentApproved} returns this
 */
-proto.model.NotificationEventDeploymentApproved.prototype.setDeployment = function (value) {
+proto.model.NotificationEventDeploymentApproved.prototype.setDeployment = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
@@ -927,7 +927,7 @@ proto.model.NotificationEventDeploymentApproved.prototype.setDeployment = functi
  * Clears the message field making it undefined.
  * @return {!proto.model.NotificationEventDeploymentApproved} returns this
  */
-proto.model.NotificationEventDeploymentApproved.prototype.clearDeployment = function () {
+proto.model.NotificationEventDeploymentApproved.prototype.clearDeployment = function() {
   return this.setDeployment(undefined);
 };
 
@@ -936,7 +936,7 @@ proto.model.NotificationEventDeploymentApproved.prototype.clearDeployment = func
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.NotificationEventDeploymentApproved.prototype.hasDeployment = function () {
+proto.model.NotificationEventDeploymentApproved.prototype.hasDeployment = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -945,7 +945,7 @@ proto.model.NotificationEventDeploymentApproved.prototype.hasDeployment = functi
  * optional string approver = 3;
  * @return {string}
  */
-proto.model.NotificationEventDeploymentApproved.prototype.getApprover = function () {
+proto.model.NotificationEventDeploymentApproved.prototype.getApprover = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -954,7 +954,7 @@ proto.model.NotificationEventDeploymentApproved.prototype.getApprover = function
  * @param {string} value
  * @return {!proto.model.NotificationEventDeploymentApproved} returns this
  */
-proto.model.NotificationEventDeploymentApproved.prototype.setApprover = function (value) {
+proto.model.NotificationEventDeploymentApproved.prototype.setApprover = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -963,7 +963,7 @@ proto.model.NotificationEventDeploymentApproved.prototype.setApprover = function
  * repeated string mentioned_accounts = 4;
  * @return {!Array<string>}
  */
-proto.model.NotificationEventDeploymentApproved.prototype.getMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentApproved.prototype.getMentionedAccountsList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
 };
 
@@ -972,7 +972,7 @@ proto.model.NotificationEventDeploymentApproved.prototype.getMentionedAccountsLi
  * @param {!Array<string>} value
  * @return {!proto.model.NotificationEventDeploymentApproved} returns this
  */
-proto.model.NotificationEventDeploymentApproved.prototype.setMentionedAccountsList = function (value) {
+proto.model.NotificationEventDeploymentApproved.prototype.setMentionedAccountsList = function(value) {
   return jspb.Message.setField(this, 4, value || []);
 };
 
@@ -982,7 +982,7 @@ proto.model.NotificationEventDeploymentApproved.prototype.setMentionedAccountsLi
  * @param {number=} opt_index
  * @return {!proto.model.NotificationEventDeploymentApproved} returns this
  */
-proto.model.NotificationEventDeploymentApproved.prototype.addMentionedAccounts = function (value, opt_index) {
+proto.model.NotificationEventDeploymentApproved.prototype.addMentionedAccounts = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
 };
 
@@ -991,7 +991,7 @@ proto.model.NotificationEventDeploymentApproved.prototype.addMentionedAccounts =
  * Clears the list making it empty but non-null.
  * @return {!proto.model.NotificationEventDeploymentApproved} returns this
  */
-proto.model.NotificationEventDeploymentApproved.prototype.clearMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentApproved.prototype.clearMentionedAccountsList = function() {
   return this.setMentionedAccountsList([]);
 };
 
@@ -1000,42 +1000,42 @@ proto.model.NotificationEventDeploymentApproved.prototype.clearMentionedAccounts
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.NotificationEventDeploymentRollingBack.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.NotificationEventDeploymentRollingBack.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.NotificationEventDeploymentRollingBack.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.NotificationEventDeploymentRollingBack.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.NotificationEventDeploymentRollingBack} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.NotificationEventDeploymentRollingBack.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.NotificationEventDeploymentRollingBack} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.NotificationEventDeploymentRollingBack.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -1044,7 +1044,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.NotificationEventDeploymentRollingBack}
  */
-proto.model.NotificationEventDeploymentRollingBack.deserializeBinary = function (bytes) {
+proto.model.NotificationEventDeploymentRollingBack.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.NotificationEventDeploymentRollingBack;
   return proto.model.NotificationEventDeploymentRollingBack.deserializeBinaryFromReader(msg, reader);
@@ -1058,21 +1058,21 @@ proto.model.NotificationEventDeploymentRollingBack.deserializeBinary = function 
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.NotificationEventDeploymentRollingBack}
  */
-proto.model.NotificationEventDeploymentRollingBack.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.NotificationEventDeploymentRollingBack.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new pkg_model_deployment_pb.Deployment;
-        reader.readMessage(value, pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
-        msg.setDeployment(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new pkg_model_deployment_pb.Deployment;
+      reader.readMessage(value,pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
+      msg.setDeployment(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1083,7 +1083,7 @@ proto.model.NotificationEventDeploymentRollingBack.deserializeBinaryFromReader =
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.NotificationEventDeploymentRollingBack.prototype.serializeBinary = function () {
+proto.model.NotificationEventDeploymentRollingBack.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.NotificationEventDeploymentRollingBack.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -1097,7 +1097,7 @@ proto.model.NotificationEventDeploymentRollingBack.prototype.serializeBinary = f
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.NotificationEventDeploymentRollingBack.serializeBinaryToWriter = function (message, writer) {
+proto.model.NotificationEventDeploymentRollingBack.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getDeployment();
   if (f != null) {
@@ -1114,7 +1114,7 @@ proto.model.NotificationEventDeploymentRollingBack.serializeBinaryToWriter = fun
  * optional Deployment deployment = 1;
  * @return {?proto.model.Deployment}
  */
-proto.model.NotificationEventDeploymentRollingBack.prototype.getDeployment = function () {
+proto.model.NotificationEventDeploymentRollingBack.prototype.getDeployment = function() {
   return /** @type{?proto.model.Deployment} */ (
     jspb.Message.getWrapperField(this, pkg_model_deployment_pb.Deployment, 1));
 };
@@ -1124,7 +1124,7 @@ proto.model.NotificationEventDeploymentRollingBack.prototype.getDeployment = fun
  * @param {?proto.model.Deployment|undefined} value
  * @return {!proto.model.NotificationEventDeploymentRollingBack} returns this
 */
-proto.model.NotificationEventDeploymentRollingBack.prototype.setDeployment = function (value) {
+proto.model.NotificationEventDeploymentRollingBack.prototype.setDeployment = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
@@ -1133,7 +1133,7 @@ proto.model.NotificationEventDeploymentRollingBack.prototype.setDeployment = fun
  * Clears the message field making it undefined.
  * @return {!proto.model.NotificationEventDeploymentRollingBack} returns this
  */
-proto.model.NotificationEventDeploymentRollingBack.prototype.clearDeployment = function () {
+proto.model.NotificationEventDeploymentRollingBack.prototype.clearDeployment = function() {
   return this.setDeployment(undefined);
 };
 
@@ -1142,7 +1142,7 @@ proto.model.NotificationEventDeploymentRollingBack.prototype.clearDeployment = f
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.NotificationEventDeploymentRollingBack.prototype.hasDeployment = function () {
+proto.model.NotificationEventDeploymentRollingBack.prototype.hasDeployment = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -1158,43 +1158,43 @@ proto.model.NotificationEventDeploymentSucceeded.repeatedFields_ = [3];
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.NotificationEventDeploymentSucceeded.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.NotificationEventDeploymentSucceeded.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.NotificationEventDeploymentSucceeded.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.NotificationEventDeploymentSucceeded.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.NotificationEventDeploymentSucceeded} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.NotificationEventDeploymentSucceeded.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.NotificationEventDeploymentSucceeded} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.NotificationEventDeploymentSucceeded.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
-      mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -1203,7 +1203,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.NotificationEventDeploymentSucceeded}
  */
-proto.model.NotificationEventDeploymentSucceeded.deserializeBinary = function (bytes) {
+proto.model.NotificationEventDeploymentSucceeded.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.NotificationEventDeploymentSucceeded;
   return proto.model.NotificationEventDeploymentSucceeded.deserializeBinaryFromReader(msg, reader);
@@ -1217,25 +1217,25 @@ proto.model.NotificationEventDeploymentSucceeded.deserializeBinary = function (b
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.NotificationEventDeploymentSucceeded}
  */
-proto.model.NotificationEventDeploymentSucceeded.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.NotificationEventDeploymentSucceeded.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new pkg_model_deployment_pb.Deployment;
-        reader.readMessage(value, pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
-        msg.setDeployment(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addMentionedAccounts(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new pkg_model_deployment_pb.Deployment;
+      reader.readMessage(value,pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
+      msg.setDeployment(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedAccounts(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1246,7 +1246,7 @@ proto.model.NotificationEventDeploymentSucceeded.deserializeBinaryFromReader = f
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.NotificationEventDeploymentSucceeded.prototype.serializeBinary = function () {
+proto.model.NotificationEventDeploymentSucceeded.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.NotificationEventDeploymentSucceeded.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -1260,7 +1260,7 @@ proto.model.NotificationEventDeploymentSucceeded.prototype.serializeBinary = fun
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.NotificationEventDeploymentSucceeded.serializeBinaryToWriter = function (message, writer) {
+proto.model.NotificationEventDeploymentSucceeded.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getDeployment();
   if (f != null) {
@@ -1284,7 +1284,7 @@ proto.model.NotificationEventDeploymentSucceeded.serializeBinaryToWriter = funct
  * optional Deployment deployment = 1;
  * @return {?proto.model.Deployment}
  */
-proto.model.NotificationEventDeploymentSucceeded.prototype.getDeployment = function () {
+proto.model.NotificationEventDeploymentSucceeded.prototype.getDeployment = function() {
   return /** @type{?proto.model.Deployment} */ (
     jspb.Message.getWrapperField(this, pkg_model_deployment_pb.Deployment, 1));
 };
@@ -1294,7 +1294,7 @@ proto.model.NotificationEventDeploymentSucceeded.prototype.getDeployment = funct
  * @param {?proto.model.Deployment|undefined} value
  * @return {!proto.model.NotificationEventDeploymentSucceeded} returns this
 */
-proto.model.NotificationEventDeploymentSucceeded.prototype.setDeployment = function (value) {
+proto.model.NotificationEventDeploymentSucceeded.prototype.setDeployment = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
@@ -1303,7 +1303,7 @@ proto.model.NotificationEventDeploymentSucceeded.prototype.setDeployment = funct
  * Clears the message field making it undefined.
  * @return {!proto.model.NotificationEventDeploymentSucceeded} returns this
  */
-proto.model.NotificationEventDeploymentSucceeded.prototype.clearDeployment = function () {
+proto.model.NotificationEventDeploymentSucceeded.prototype.clearDeployment = function() {
   return this.setDeployment(undefined);
 };
 
@@ -1312,7 +1312,7 @@ proto.model.NotificationEventDeploymentSucceeded.prototype.clearDeployment = fun
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.NotificationEventDeploymentSucceeded.prototype.hasDeployment = function () {
+proto.model.NotificationEventDeploymentSucceeded.prototype.hasDeployment = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -1321,7 +1321,7 @@ proto.model.NotificationEventDeploymentSucceeded.prototype.hasDeployment = funct
  * repeated string mentioned_accounts = 3;
  * @return {!Array<string>}
  */
-proto.model.NotificationEventDeploymentSucceeded.prototype.getMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentSucceeded.prototype.getMentionedAccountsList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 3));
 };
 
@@ -1330,7 +1330,7 @@ proto.model.NotificationEventDeploymentSucceeded.prototype.getMentionedAccountsL
  * @param {!Array<string>} value
  * @return {!proto.model.NotificationEventDeploymentSucceeded} returns this
  */
-proto.model.NotificationEventDeploymentSucceeded.prototype.setMentionedAccountsList = function (value) {
+proto.model.NotificationEventDeploymentSucceeded.prototype.setMentionedAccountsList = function(value) {
   return jspb.Message.setField(this, 3, value || []);
 };
 
@@ -1340,7 +1340,7 @@ proto.model.NotificationEventDeploymentSucceeded.prototype.setMentionedAccountsL
  * @param {number=} opt_index
  * @return {!proto.model.NotificationEventDeploymentSucceeded} returns this
  */
-proto.model.NotificationEventDeploymentSucceeded.prototype.addMentionedAccounts = function (value, opt_index) {
+proto.model.NotificationEventDeploymentSucceeded.prototype.addMentionedAccounts = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 3, value, opt_index);
 };
 
@@ -1349,7 +1349,7 @@ proto.model.NotificationEventDeploymentSucceeded.prototype.addMentionedAccounts 
  * Clears the list making it empty but non-null.
  * @return {!proto.model.NotificationEventDeploymentSucceeded} returns this
  */
-proto.model.NotificationEventDeploymentSucceeded.prototype.clearMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentSucceeded.prototype.clearMentionedAccountsList = function() {
   return this.setMentionedAccountsList([]);
 };
 
@@ -1365,44 +1365,44 @@ proto.model.NotificationEventDeploymentFailed.repeatedFields_ = [4];
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.NotificationEventDeploymentFailed.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.NotificationEventDeploymentFailed.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.NotificationEventDeploymentFailed.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.NotificationEventDeploymentFailed.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.NotificationEventDeploymentFailed} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.NotificationEventDeploymentFailed.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
+    reason: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.NotificationEventDeploymentFailed} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.NotificationEventDeploymentFailed.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
-      reason: jspb.Message.getFieldWithDefault(msg, 3, ""),
-      mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -1411,7 +1411,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.NotificationEventDeploymentFailed}
  */
-proto.model.NotificationEventDeploymentFailed.deserializeBinary = function (bytes) {
+proto.model.NotificationEventDeploymentFailed.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.NotificationEventDeploymentFailed;
   return proto.model.NotificationEventDeploymentFailed.deserializeBinaryFromReader(msg, reader);
@@ -1425,29 +1425,29 @@ proto.model.NotificationEventDeploymentFailed.deserializeBinary = function (byte
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.NotificationEventDeploymentFailed}
  */
-proto.model.NotificationEventDeploymentFailed.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.NotificationEventDeploymentFailed.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new pkg_model_deployment_pb.Deployment;
-        reader.readMessage(value, pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
-        msg.setDeployment(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setReason(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addMentionedAccounts(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new pkg_model_deployment_pb.Deployment;
+      reader.readMessage(value,pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
+      msg.setDeployment(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setReason(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedAccounts(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1458,7 +1458,7 @@ proto.model.NotificationEventDeploymentFailed.deserializeBinaryFromReader = func
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.NotificationEventDeploymentFailed.prototype.serializeBinary = function () {
+proto.model.NotificationEventDeploymentFailed.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.NotificationEventDeploymentFailed.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -1472,7 +1472,7 @@ proto.model.NotificationEventDeploymentFailed.prototype.serializeBinary = functi
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.NotificationEventDeploymentFailed.serializeBinaryToWriter = function (message, writer) {
+proto.model.NotificationEventDeploymentFailed.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getDeployment();
   if (f != null) {
@@ -1503,7 +1503,7 @@ proto.model.NotificationEventDeploymentFailed.serializeBinaryToWriter = function
  * optional Deployment deployment = 1;
  * @return {?proto.model.Deployment}
  */
-proto.model.NotificationEventDeploymentFailed.prototype.getDeployment = function () {
+proto.model.NotificationEventDeploymentFailed.prototype.getDeployment = function() {
   return /** @type{?proto.model.Deployment} */ (
     jspb.Message.getWrapperField(this, pkg_model_deployment_pb.Deployment, 1));
 };
@@ -1513,7 +1513,7 @@ proto.model.NotificationEventDeploymentFailed.prototype.getDeployment = function
  * @param {?proto.model.Deployment|undefined} value
  * @return {!proto.model.NotificationEventDeploymentFailed} returns this
 */
-proto.model.NotificationEventDeploymentFailed.prototype.setDeployment = function (value) {
+proto.model.NotificationEventDeploymentFailed.prototype.setDeployment = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
@@ -1522,7 +1522,7 @@ proto.model.NotificationEventDeploymentFailed.prototype.setDeployment = function
  * Clears the message field making it undefined.
  * @return {!proto.model.NotificationEventDeploymentFailed} returns this
  */
-proto.model.NotificationEventDeploymentFailed.prototype.clearDeployment = function () {
+proto.model.NotificationEventDeploymentFailed.prototype.clearDeployment = function() {
   return this.setDeployment(undefined);
 };
 
@@ -1531,7 +1531,7 @@ proto.model.NotificationEventDeploymentFailed.prototype.clearDeployment = functi
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.NotificationEventDeploymentFailed.prototype.hasDeployment = function () {
+proto.model.NotificationEventDeploymentFailed.prototype.hasDeployment = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -1540,7 +1540,7 @@ proto.model.NotificationEventDeploymentFailed.prototype.hasDeployment = function
  * optional string reason = 3;
  * @return {string}
  */
-proto.model.NotificationEventDeploymentFailed.prototype.getReason = function () {
+proto.model.NotificationEventDeploymentFailed.prototype.getReason = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -1549,7 +1549,7 @@ proto.model.NotificationEventDeploymentFailed.prototype.getReason = function () 
  * @param {string} value
  * @return {!proto.model.NotificationEventDeploymentFailed} returns this
  */
-proto.model.NotificationEventDeploymentFailed.prototype.setReason = function (value) {
+proto.model.NotificationEventDeploymentFailed.prototype.setReason = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -1558,7 +1558,7 @@ proto.model.NotificationEventDeploymentFailed.prototype.setReason = function (va
  * repeated string mentioned_accounts = 4;
  * @return {!Array<string>}
  */
-proto.model.NotificationEventDeploymentFailed.prototype.getMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentFailed.prototype.getMentionedAccountsList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
 };
 
@@ -1567,7 +1567,7 @@ proto.model.NotificationEventDeploymentFailed.prototype.getMentionedAccountsList
  * @param {!Array<string>} value
  * @return {!proto.model.NotificationEventDeploymentFailed} returns this
  */
-proto.model.NotificationEventDeploymentFailed.prototype.setMentionedAccountsList = function (value) {
+proto.model.NotificationEventDeploymentFailed.prototype.setMentionedAccountsList = function(value) {
   return jspb.Message.setField(this, 4, value || []);
 };
 
@@ -1577,7 +1577,7 @@ proto.model.NotificationEventDeploymentFailed.prototype.setMentionedAccountsList
  * @param {number=} opt_index
  * @return {!proto.model.NotificationEventDeploymentFailed} returns this
  */
-proto.model.NotificationEventDeploymentFailed.prototype.addMentionedAccounts = function (value, opt_index) {
+proto.model.NotificationEventDeploymentFailed.prototype.addMentionedAccounts = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
 };
 
@@ -1586,7 +1586,7 @@ proto.model.NotificationEventDeploymentFailed.prototype.addMentionedAccounts = f
  * Clears the list making it empty but non-null.
  * @return {!proto.model.NotificationEventDeploymentFailed} returns this
  */
-proto.model.NotificationEventDeploymentFailed.prototype.clearMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentFailed.prototype.clearMentionedAccountsList = function() {
   return this.setMentionedAccountsList([]);
 };
 
@@ -1602,44 +1602,44 @@ proto.model.NotificationEventDeploymentCancelled.repeatedFields_ = [4];
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.NotificationEventDeploymentCancelled.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.NotificationEventDeploymentCancelled.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.NotificationEventDeploymentCancelled.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.NotificationEventDeploymentCancelled.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.NotificationEventDeploymentCancelled} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.NotificationEventDeploymentCancelled.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
+    commander: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.NotificationEventDeploymentCancelled} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.NotificationEventDeploymentCancelled.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
-      commander: jspb.Message.getFieldWithDefault(msg, 3, ""),
-      mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -1648,7 +1648,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.NotificationEventDeploymentCancelled}
  */
-proto.model.NotificationEventDeploymentCancelled.deserializeBinary = function (bytes) {
+proto.model.NotificationEventDeploymentCancelled.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.NotificationEventDeploymentCancelled;
   return proto.model.NotificationEventDeploymentCancelled.deserializeBinaryFromReader(msg, reader);
@@ -1662,29 +1662,29 @@ proto.model.NotificationEventDeploymentCancelled.deserializeBinary = function (b
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.NotificationEventDeploymentCancelled}
  */
-proto.model.NotificationEventDeploymentCancelled.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.NotificationEventDeploymentCancelled.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new pkg_model_deployment_pb.Deployment;
-        reader.readMessage(value, pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
-        msg.setDeployment(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setCommander(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addMentionedAccounts(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new pkg_model_deployment_pb.Deployment;
+      reader.readMessage(value,pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
+      msg.setDeployment(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCommander(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedAccounts(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1695,7 +1695,7 @@ proto.model.NotificationEventDeploymentCancelled.deserializeBinaryFromReader = f
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.NotificationEventDeploymentCancelled.prototype.serializeBinary = function () {
+proto.model.NotificationEventDeploymentCancelled.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.NotificationEventDeploymentCancelled.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -1709,7 +1709,7 @@ proto.model.NotificationEventDeploymentCancelled.prototype.serializeBinary = fun
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.NotificationEventDeploymentCancelled.serializeBinaryToWriter = function (message, writer) {
+proto.model.NotificationEventDeploymentCancelled.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getDeployment();
   if (f != null) {
@@ -1740,7 +1740,7 @@ proto.model.NotificationEventDeploymentCancelled.serializeBinaryToWriter = funct
  * optional Deployment deployment = 1;
  * @return {?proto.model.Deployment}
  */
-proto.model.NotificationEventDeploymentCancelled.prototype.getDeployment = function () {
+proto.model.NotificationEventDeploymentCancelled.prototype.getDeployment = function() {
   return /** @type{?proto.model.Deployment} */ (
     jspb.Message.getWrapperField(this, pkg_model_deployment_pb.Deployment, 1));
 };
@@ -1750,7 +1750,7 @@ proto.model.NotificationEventDeploymentCancelled.prototype.getDeployment = funct
  * @param {?proto.model.Deployment|undefined} value
  * @return {!proto.model.NotificationEventDeploymentCancelled} returns this
 */
-proto.model.NotificationEventDeploymentCancelled.prototype.setDeployment = function (value) {
+proto.model.NotificationEventDeploymentCancelled.prototype.setDeployment = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
@@ -1759,7 +1759,7 @@ proto.model.NotificationEventDeploymentCancelled.prototype.setDeployment = funct
  * Clears the message field making it undefined.
  * @return {!proto.model.NotificationEventDeploymentCancelled} returns this
  */
-proto.model.NotificationEventDeploymentCancelled.prototype.clearDeployment = function () {
+proto.model.NotificationEventDeploymentCancelled.prototype.clearDeployment = function() {
   return this.setDeployment(undefined);
 };
 
@@ -1768,7 +1768,7 @@ proto.model.NotificationEventDeploymentCancelled.prototype.clearDeployment = fun
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.NotificationEventDeploymentCancelled.prototype.hasDeployment = function () {
+proto.model.NotificationEventDeploymentCancelled.prototype.hasDeployment = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -1777,7 +1777,7 @@ proto.model.NotificationEventDeploymentCancelled.prototype.hasDeployment = funct
  * optional string commander = 3;
  * @return {string}
  */
-proto.model.NotificationEventDeploymentCancelled.prototype.getCommander = function () {
+proto.model.NotificationEventDeploymentCancelled.prototype.getCommander = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -1786,7 +1786,7 @@ proto.model.NotificationEventDeploymentCancelled.prototype.getCommander = functi
  * @param {string} value
  * @return {!proto.model.NotificationEventDeploymentCancelled} returns this
  */
-proto.model.NotificationEventDeploymentCancelled.prototype.setCommander = function (value) {
+proto.model.NotificationEventDeploymentCancelled.prototype.setCommander = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -1795,7 +1795,7 @@ proto.model.NotificationEventDeploymentCancelled.prototype.setCommander = functi
  * repeated string mentioned_accounts = 4;
  * @return {!Array<string>}
  */
-proto.model.NotificationEventDeploymentCancelled.prototype.getMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentCancelled.prototype.getMentionedAccountsList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
 };
 
@@ -1804,7 +1804,7 @@ proto.model.NotificationEventDeploymentCancelled.prototype.getMentionedAccountsL
  * @param {!Array<string>} value
  * @return {!proto.model.NotificationEventDeploymentCancelled} returns this
  */
-proto.model.NotificationEventDeploymentCancelled.prototype.setMentionedAccountsList = function (value) {
+proto.model.NotificationEventDeploymentCancelled.prototype.setMentionedAccountsList = function(value) {
   return jspb.Message.setField(this, 4, value || []);
 };
 
@@ -1814,7 +1814,7 @@ proto.model.NotificationEventDeploymentCancelled.prototype.setMentionedAccountsL
  * @param {number=} opt_index
  * @return {!proto.model.NotificationEventDeploymentCancelled} returns this
  */
-proto.model.NotificationEventDeploymentCancelled.prototype.addMentionedAccounts = function (value, opt_index) {
+proto.model.NotificationEventDeploymentCancelled.prototype.addMentionedAccounts = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
 };
 
@@ -1823,7 +1823,7 @@ proto.model.NotificationEventDeploymentCancelled.prototype.addMentionedAccounts 
  * Clears the list making it empty but non-null.
  * @return {!proto.model.NotificationEventDeploymentCancelled} returns this
  */
-proto.model.NotificationEventDeploymentCancelled.prototype.clearMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentCancelled.prototype.clearMentionedAccountsList = function() {
   return this.setMentionedAccountsList([]);
 };
 
@@ -1839,43 +1839,43 @@ proto.model.NotificationEventDeploymentWaitApproval.repeatedFields_ = [3];
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.NotificationEventDeploymentWaitApproval.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.NotificationEventDeploymentWaitApproval.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.NotificationEventDeploymentWaitApproval.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.NotificationEventDeploymentWaitApproval.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.NotificationEventDeploymentWaitApproval} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.NotificationEventDeploymentWaitApproval.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.NotificationEventDeploymentWaitApproval} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.NotificationEventDeploymentWaitApproval.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
-      mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -1884,7 +1884,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.NotificationEventDeploymentWaitApproval}
  */
-proto.model.NotificationEventDeploymentWaitApproval.deserializeBinary = function (bytes) {
+proto.model.NotificationEventDeploymentWaitApproval.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.NotificationEventDeploymentWaitApproval;
   return proto.model.NotificationEventDeploymentWaitApproval.deserializeBinaryFromReader(msg, reader);
@@ -1898,25 +1898,25 @@ proto.model.NotificationEventDeploymentWaitApproval.deserializeBinary = function
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.NotificationEventDeploymentWaitApproval}
  */
-proto.model.NotificationEventDeploymentWaitApproval.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.NotificationEventDeploymentWaitApproval.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new pkg_model_deployment_pb.Deployment;
-        reader.readMessage(value, pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
-        msg.setDeployment(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addMentionedAccounts(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new pkg_model_deployment_pb.Deployment;
+      reader.readMessage(value,pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
+      msg.setDeployment(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedAccounts(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -1927,7 +1927,7 @@ proto.model.NotificationEventDeploymentWaitApproval.deserializeBinaryFromReader 
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.NotificationEventDeploymentWaitApproval.prototype.serializeBinary = function () {
+proto.model.NotificationEventDeploymentWaitApproval.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.NotificationEventDeploymentWaitApproval.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -1941,7 +1941,7 @@ proto.model.NotificationEventDeploymentWaitApproval.prototype.serializeBinary = 
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.NotificationEventDeploymentWaitApproval.serializeBinaryToWriter = function (message, writer) {
+proto.model.NotificationEventDeploymentWaitApproval.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getDeployment();
   if (f != null) {
@@ -1965,7 +1965,7 @@ proto.model.NotificationEventDeploymentWaitApproval.serializeBinaryToWriter = fu
  * optional Deployment deployment = 1;
  * @return {?proto.model.Deployment}
  */
-proto.model.NotificationEventDeploymentWaitApproval.prototype.getDeployment = function () {
+proto.model.NotificationEventDeploymentWaitApproval.prototype.getDeployment = function() {
   return /** @type{?proto.model.Deployment} */ (
     jspb.Message.getWrapperField(this, pkg_model_deployment_pb.Deployment, 1));
 };
@@ -1975,7 +1975,7 @@ proto.model.NotificationEventDeploymentWaitApproval.prototype.getDeployment = fu
  * @param {?proto.model.Deployment|undefined} value
  * @return {!proto.model.NotificationEventDeploymentWaitApproval} returns this
 */
-proto.model.NotificationEventDeploymentWaitApproval.prototype.setDeployment = function (value) {
+proto.model.NotificationEventDeploymentWaitApproval.prototype.setDeployment = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
@@ -1984,7 +1984,7 @@ proto.model.NotificationEventDeploymentWaitApproval.prototype.setDeployment = fu
  * Clears the message field making it undefined.
  * @return {!proto.model.NotificationEventDeploymentWaitApproval} returns this
  */
-proto.model.NotificationEventDeploymentWaitApproval.prototype.clearDeployment = function () {
+proto.model.NotificationEventDeploymentWaitApproval.prototype.clearDeployment = function() {
   return this.setDeployment(undefined);
 };
 
@@ -1993,7 +1993,7 @@ proto.model.NotificationEventDeploymentWaitApproval.prototype.clearDeployment = 
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.NotificationEventDeploymentWaitApproval.prototype.hasDeployment = function () {
+proto.model.NotificationEventDeploymentWaitApproval.prototype.hasDeployment = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -2002,7 +2002,7 @@ proto.model.NotificationEventDeploymentWaitApproval.prototype.hasDeployment = fu
  * repeated string mentioned_accounts = 3;
  * @return {!Array<string>}
  */
-proto.model.NotificationEventDeploymentWaitApproval.prototype.getMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentWaitApproval.prototype.getMentionedAccountsList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 3));
 };
 
@@ -2011,7 +2011,7 @@ proto.model.NotificationEventDeploymentWaitApproval.prototype.getMentionedAccoun
  * @param {!Array<string>} value
  * @return {!proto.model.NotificationEventDeploymentWaitApproval} returns this
  */
-proto.model.NotificationEventDeploymentWaitApproval.prototype.setMentionedAccountsList = function (value) {
+proto.model.NotificationEventDeploymentWaitApproval.prototype.setMentionedAccountsList = function(value) {
   return jspb.Message.setField(this, 3, value || []);
 };
 
@@ -2021,7 +2021,7 @@ proto.model.NotificationEventDeploymentWaitApproval.prototype.setMentionedAccoun
  * @param {number=} opt_index
  * @return {!proto.model.NotificationEventDeploymentWaitApproval} returns this
  */
-proto.model.NotificationEventDeploymentWaitApproval.prototype.addMentionedAccounts = function (value, opt_index) {
+proto.model.NotificationEventDeploymentWaitApproval.prototype.addMentionedAccounts = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 3, value, opt_index);
 };
 
@@ -2030,7 +2030,7 @@ proto.model.NotificationEventDeploymentWaitApproval.prototype.addMentionedAccoun
  * Clears the list making it empty but non-null.
  * @return {!proto.model.NotificationEventDeploymentWaitApproval} returns this
  */
-proto.model.NotificationEventDeploymentWaitApproval.prototype.clearMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentWaitApproval.prototype.clearMentionedAccountsList = function() {
   return this.setMentionedAccountsList([]);
 };
 
@@ -2046,46 +2046,46 @@ proto.model.NotificationEventDeploymentTriggerFailed.repeatedFields_ = [5];
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.NotificationEventDeploymentTriggerFailed.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.NotificationEventDeploymentTriggerFailed.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.NotificationEventDeploymentTriggerFailed.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.NotificationEventDeploymentTriggerFailed} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.NotificationEventDeploymentTriggerFailed.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    application: (f = msg.getApplication()) && pkg_model_application_pb.Application.toObject(includeInstance, f),
+    commitHash: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    commitMessage: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    reason: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 5)) == null ? undefined : f
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.NotificationEventDeploymentTriggerFailed} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.NotificationEventDeploymentTriggerFailed.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      application: (f = msg.getApplication()) && pkg_model_application_pb.Application.toObject(includeInstance, f),
-      commitHash: jspb.Message.getFieldWithDefault(msg, 2, ""),
-      commitMessage: jspb.Message.getFieldWithDefault(msg, 3, ""),
-      reason: jspb.Message.getFieldWithDefault(msg, 4, ""),
-      mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 5)) == null ? undefined : f
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -2094,7 +2094,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.NotificationEventDeploymentTriggerFailed}
  */
-proto.model.NotificationEventDeploymentTriggerFailed.deserializeBinary = function (bytes) {
+proto.model.NotificationEventDeploymentTriggerFailed.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.NotificationEventDeploymentTriggerFailed;
   return proto.model.NotificationEventDeploymentTriggerFailed.deserializeBinaryFromReader(msg, reader);
@@ -2108,37 +2108,37 @@ proto.model.NotificationEventDeploymentTriggerFailed.deserializeBinary = functio
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.NotificationEventDeploymentTriggerFailed}
  */
-proto.model.NotificationEventDeploymentTriggerFailed.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.NotificationEventDeploymentTriggerFailed.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new pkg_model_application_pb.Application;
-        reader.readMessage(value, pkg_model_application_pb.Application.deserializeBinaryFromReader);
-        msg.setApplication(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setCommitHash(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setCommitMessage(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setReason(value);
-        break;
-      case 5:
-        var value = /** @type {string} */ (reader.readString());
-        msg.addMentionedAccounts(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new pkg_model_application_pb.Application;
+      reader.readMessage(value,pkg_model_application_pb.Application.deserializeBinaryFromReader);
+      msg.setApplication(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCommitHash(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCommitMessage(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setReason(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedAccounts(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -2149,7 +2149,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.deserializeBinaryFromReader
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.NotificationEventDeploymentTriggerFailed.prototype.serializeBinary = function () {
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.NotificationEventDeploymentTriggerFailed.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -2163,7 +2163,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.serializeBinary =
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.NotificationEventDeploymentTriggerFailed.serializeBinaryToWriter = function (message, writer) {
+proto.model.NotificationEventDeploymentTriggerFailed.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getApplication();
   if (f != null) {
@@ -2208,7 +2208,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.serializeBinaryToWriter = f
  * optional Application application = 1;
  * @return {?proto.model.Application}
  */
-proto.model.NotificationEventDeploymentTriggerFailed.prototype.getApplication = function () {
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.getApplication = function() {
   return /** @type{?proto.model.Application} */ (
     jspb.Message.getWrapperField(this, pkg_model_application_pb.Application, 1));
 };
@@ -2218,7 +2218,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.getApplication = 
  * @param {?proto.model.Application|undefined} value
  * @return {!proto.model.NotificationEventDeploymentTriggerFailed} returns this
 */
-proto.model.NotificationEventDeploymentTriggerFailed.prototype.setApplication = function (value) {
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.setApplication = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
@@ -2227,7 +2227,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.setApplication = 
  * Clears the message field making it undefined.
  * @return {!proto.model.NotificationEventDeploymentTriggerFailed} returns this
  */
-proto.model.NotificationEventDeploymentTriggerFailed.prototype.clearApplication = function () {
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.clearApplication = function() {
   return this.setApplication(undefined);
 };
 
@@ -2236,7 +2236,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.clearApplication 
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.NotificationEventDeploymentTriggerFailed.prototype.hasApplication = function () {
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.hasApplication = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -2245,7 +2245,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.hasApplication = 
  * optional string commit_hash = 2;
  * @return {string}
  */
-proto.model.NotificationEventDeploymentTriggerFailed.prototype.getCommitHash = function () {
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.getCommitHash = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -2254,7 +2254,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.getCommitHash = f
  * @param {string} value
  * @return {!proto.model.NotificationEventDeploymentTriggerFailed} returns this
  */
-proto.model.NotificationEventDeploymentTriggerFailed.prototype.setCommitHash = function (value) {
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.setCommitHash = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -2263,7 +2263,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.setCommitHash = f
  * optional string commit_message = 3;
  * @return {string}
  */
-proto.model.NotificationEventDeploymentTriggerFailed.prototype.getCommitMessage = function () {
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.getCommitMessage = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -2272,7 +2272,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.getCommitMessage 
  * @param {string} value
  * @return {!proto.model.NotificationEventDeploymentTriggerFailed} returns this
  */
-proto.model.NotificationEventDeploymentTriggerFailed.prototype.setCommitMessage = function (value) {
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.setCommitMessage = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -2281,7 +2281,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.setCommitMessage 
  * optional string reason = 4;
  * @return {string}
  */
-proto.model.NotificationEventDeploymentTriggerFailed.prototype.getReason = function () {
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.getReason = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -2290,7 +2290,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.getReason = funct
  * @param {string} value
  * @return {!proto.model.NotificationEventDeploymentTriggerFailed} returns this
  */
-proto.model.NotificationEventDeploymentTriggerFailed.prototype.setReason = function (value) {
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.setReason = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
@@ -2299,7 +2299,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.setReason = funct
  * repeated string mentioned_accounts = 5;
  * @return {!Array<string>}
  */
-proto.model.NotificationEventDeploymentTriggerFailed.prototype.getMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.getMentionedAccountsList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 5));
 };
 
@@ -2308,7 +2308,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.getMentionedAccou
  * @param {!Array<string>} value
  * @return {!proto.model.NotificationEventDeploymentTriggerFailed} returns this
  */
-proto.model.NotificationEventDeploymentTriggerFailed.prototype.setMentionedAccountsList = function (value) {
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.setMentionedAccountsList = function(value) {
   return jspb.Message.setField(this, 5, value || []);
 };
 
@@ -2318,7 +2318,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.setMentionedAccou
  * @param {number=} opt_index
  * @return {!proto.model.NotificationEventDeploymentTriggerFailed} returns this
  */
-proto.model.NotificationEventDeploymentTriggerFailed.prototype.addMentionedAccounts = function (value, opt_index) {
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.addMentionedAccounts = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 5, value, opt_index);
 };
 
@@ -2327,7 +2327,7 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.addMentionedAccou
  * Clears the list making it empty but non-null.
  * @return {!proto.model.NotificationEventDeploymentTriggerFailed} returns this
  */
-proto.model.NotificationEventDeploymentTriggerFailed.prototype.clearMentionedAccountsList = function () {
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.clearMentionedAccountsList = function() {
   return this.setMentionedAccountsList([]);
 };
 
@@ -2336,43 +2336,43 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.clearMentionedAcc
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.NotificationEventApplicationSynced.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.NotificationEventApplicationSynced.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.NotificationEventApplicationSynced.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.NotificationEventApplicationSynced.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.NotificationEventApplicationSynced} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.NotificationEventApplicationSynced.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    application: (f = msg.getApplication()) && pkg_model_application_pb.Application.toObject(includeInstance, f),
+    state: (f = msg.getState()) && pkg_model_application_pb.ApplicationSyncState.toObject(includeInstance, f)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.NotificationEventApplicationSynced} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.NotificationEventApplicationSynced.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      application: (f = msg.getApplication()) && pkg_model_application_pb.Application.toObject(includeInstance, f),
-      state: (f = msg.getState()) && pkg_model_application_pb.ApplicationSyncState.toObject(includeInstance, f)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -2381,7 +2381,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.NotificationEventApplicationSynced}
  */
-proto.model.NotificationEventApplicationSynced.deserializeBinary = function (bytes) {
+proto.model.NotificationEventApplicationSynced.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.NotificationEventApplicationSynced;
   return proto.model.NotificationEventApplicationSynced.deserializeBinaryFromReader(msg, reader);
@@ -2395,26 +2395,26 @@ proto.model.NotificationEventApplicationSynced.deserializeBinary = function (byt
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.NotificationEventApplicationSynced}
  */
-proto.model.NotificationEventApplicationSynced.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.NotificationEventApplicationSynced.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new pkg_model_application_pb.Application;
-        reader.readMessage(value, pkg_model_application_pb.Application.deserializeBinaryFromReader);
-        msg.setApplication(value);
-        break;
-      case 3:
-        var value = new pkg_model_application_pb.ApplicationSyncState;
-        reader.readMessage(value, pkg_model_application_pb.ApplicationSyncState.deserializeBinaryFromReader);
-        msg.setState(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new pkg_model_application_pb.Application;
+      reader.readMessage(value,pkg_model_application_pb.Application.deserializeBinaryFromReader);
+      msg.setApplication(value);
+      break;
+    case 3:
+      var value = new pkg_model_application_pb.ApplicationSyncState;
+      reader.readMessage(value,pkg_model_application_pb.ApplicationSyncState.deserializeBinaryFromReader);
+      msg.setState(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -2425,7 +2425,7 @@ proto.model.NotificationEventApplicationSynced.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.NotificationEventApplicationSynced.prototype.serializeBinary = function () {
+proto.model.NotificationEventApplicationSynced.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.NotificationEventApplicationSynced.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -2439,7 +2439,7 @@ proto.model.NotificationEventApplicationSynced.prototype.serializeBinary = funct
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.NotificationEventApplicationSynced.serializeBinaryToWriter = function (message, writer) {
+proto.model.NotificationEventApplicationSynced.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getApplication();
   if (f != null) {
@@ -2464,7 +2464,7 @@ proto.model.NotificationEventApplicationSynced.serializeBinaryToWriter = functio
  * optional Application application = 1;
  * @return {?proto.model.Application}
  */
-proto.model.NotificationEventApplicationSynced.prototype.getApplication = function () {
+proto.model.NotificationEventApplicationSynced.prototype.getApplication = function() {
   return /** @type{?proto.model.Application} */ (
     jspb.Message.getWrapperField(this, pkg_model_application_pb.Application, 1));
 };
@@ -2474,7 +2474,7 @@ proto.model.NotificationEventApplicationSynced.prototype.getApplication = functi
  * @param {?proto.model.Application|undefined} value
  * @return {!proto.model.NotificationEventApplicationSynced} returns this
 */
-proto.model.NotificationEventApplicationSynced.prototype.setApplication = function (value) {
+proto.model.NotificationEventApplicationSynced.prototype.setApplication = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
@@ -2483,7 +2483,7 @@ proto.model.NotificationEventApplicationSynced.prototype.setApplication = functi
  * Clears the message field making it undefined.
  * @return {!proto.model.NotificationEventApplicationSynced} returns this
  */
-proto.model.NotificationEventApplicationSynced.prototype.clearApplication = function () {
+proto.model.NotificationEventApplicationSynced.prototype.clearApplication = function() {
   return this.setApplication(undefined);
 };
 
@@ -2492,7 +2492,7 @@ proto.model.NotificationEventApplicationSynced.prototype.clearApplication = func
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.NotificationEventApplicationSynced.prototype.hasApplication = function () {
+proto.model.NotificationEventApplicationSynced.prototype.hasApplication = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -2501,7 +2501,7 @@ proto.model.NotificationEventApplicationSynced.prototype.hasApplication = functi
  * optional ApplicationSyncState state = 3;
  * @return {?proto.model.ApplicationSyncState}
  */
-proto.model.NotificationEventApplicationSynced.prototype.getState = function () {
+proto.model.NotificationEventApplicationSynced.prototype.getState = function() {
   return /** @type{?proto.model.ApplicationSyncState} */ (
     jspb.Message.getWrapperField(this, pkg_model_application_pb.ApplicationSyncState, 3));
 };
@@ -2511,7 +2511,7 @@ proto.model.NotificationEventApplicationSynced.prototype.getState = function () 
  * @param {?proto.model.ApplicationSyncState|undefined} value
  * @return {!proto.model.NotificationEventApplicationSynced} returns this
 */
-proto.model.NotificationEventApplicationSynced.prototype.setState = function (value) {
+proto.model.NotificationEventApplicationSynced.prototype.setState = function(value) {
   return jspb.Message.setWrapperField(this, 3, value);
 };
 
@@ -2520,7 +2520,7 @@ proto.model.NotificationEventApplicationSynced.prototype.setState = function (va
  * Clears the message field making it undefined.
  * @return {!proto.model.NotificationEventApplicationSynced} returns this
  */
-proto.model.NotificationEventApplicationSynced.prototype.clearState = function () {
+proto.model.NotificationEventApplicationSynced.prototype.clearState = function() {
   return this.setState(undefined);
 };
 
@@ -2529,7 +2529,7 @@ proto.model.NotificationEventApplicationSynced.prototype.clearState = function (
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.NotificationEventApplicationSynced.prototype.hasState = function () {
+proto.model.NotificationEventApplicationSynced.prototype.hasState = function() {
   return jspb.Message.getField(this, 3) != null;
 };
 
@@ -2538,43 +2538,43 @@ proto.model.NotificationEventApplicationSynced.prototype.hasState = function () 
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.NotificationEventApplicationOutOfSync.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.NotificationEventApplicationOutOfSync.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.NotificationEventApplicationOutOfSync.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.NotificationEventApplicationOutOfSync.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.NotificationEventApplicationOutOfSync} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.NotificationEventApplicationOutOfSync.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    application: (f = msg.getApplication()) && pkg_model_application_pb.Application.toObject(includeInstance, f),
+    state: (f = msg.getState()) && pkg_model_application_pb.ApplicationSyncState.toObject(includeInstance, f)
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.NotificationEventApplicationOutOfSync} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.NotificationEventApplicationOutOfSync.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      application: (f = msg.getApplication()) && pkg_model_application_pb.Application.toObject(includeInstance, f),
-      state: (f = msg.getState()) && pkg_model_application_pb.ApplicationSyncState.toObject(includeInstance, f)
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -2583,7 +2583,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.NotificationEventApplicationOutOfSync}
  */
-proto.model.NotificationEventApplicationOutOfSync.deserializeBinary = function (bytes) {
+proto.model.NotificationEventApplicationOutOfSync.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.NotificationEventApplicationOutOfSync;
   return proto.model.NotificationEventApplicationOutOfSync.deserializeBinaryFromReader(msg, reader);
@@ -2597,26 +2597,26 @@ proto.model.NotificationEventApplicationOutOfSync.deserializeBinary = function (
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.NotificationEventApplicationOutOfSync}
  */
-proto.model.NotificationEventApplicationOutOfSync.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.NotificationEventApplicationOutOfSync.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = new pkg_model_application_pb.Application;
-        reader.readMessage(value, pkg_model_application_pb.Application.deserializeBinaryFromReader);
-        msg.setApplication(value);
-        break;
-      case 3:
-        var value = new pkg_model_application_pb.ApplicationSyncState;
-        reader.readMessage(value, pkg_model_application_pb.ApplicationSyncState.deserializeBinaryFromReader);
-        msg.setState(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = new pkg_model_application_pb.Application;
+      reader.readMessage(value,pkg_model_application_pb.Application.deserializeBinaryFromReader);
+      msg.setApplication(value);
+      break;
+    case 3:
+      var value = new pkg_model_application_pb.ApplicationSyncState;
+      reader.readMessage(value,pkg_model_application_pb.ApplicationSyncState.deserializeBinaryFromReader);
+      msg.setState(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -2627,7 +2627,7 @@ proto.model.NotificationEventApplicationOutOfSync.deserializeBinaryFromReader = 
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.NotificationEventApplicationOutOfSync.prototype.serializeBinary = function () {
+proto.model.NotificationEventApplicationOutOfSync.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.NotificationEventApplicationOutOfSync.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -2641,7 +2641,7 @@ proto.model.NotificationEventApplicationOutOfSync.prototype.serializeBinary = fu
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.NotificationEventApplicationOutOfSync.serializeBinaryToWriter = function (message, writer) {
+proto.model.NotificationEventApplicationOutOfSync.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getApplication();
   if (f != null) {
@@ -2666,7 +2666,7 @@ proto.model.NotificationEventApplicationOutOfSync.serializeBinaryToWriter = func
  * optional Application application = 1;
  * @return {?proto.model.Application}
  */
-proto.model.NotificationEventApplicationOutOfSync.prototype.getApplication = function () {
+proto.model.NotificationEventApplicationOutOfSync.prototype.getApplication = function() {
   return /** @type{?proto.model.Application} */ (
     jspb.Message.getWrapperField(this, pkg_model_application_pb.Application, 1));
 };
@@ -2676,7 +2676,7 @@ proto.model.NotificationEventApplicationOutOfSync.prototype.getApplication = fun
  * @param {?proto.model.Application|undefined} value
  * @return {!proto.model.NotificationEventApplicationOutOfSync} returns this
 */
-proto.model.NotificationEventApplicationOutOfSync.prototype.setApplication = function (value) {
+proto.model.NotificationEventApplicationOutOfSync.prototype.setApplication = function(value) {
   return jspb.Message.setWrapperField(this, 1, value);
 };
 
@@ -2685,7 +2685,7 @@ proto.model.NotificationEventApplicationOutOfSync.prototype.setApplication = fun
  * Clears the message field making it undefined.
  * @return {!proto.model.NotificationEventApplicationOutOfSync} returns this
  */
-proto.model.NotificationEventApplicationOutOfSync.prototype.clearApplication = function () {
+proto.model.NotificationEventApplicationOutOfSync.prototype.clearApplication = function() {
   return this.setApplication(undefined);
 };
 
@@ -2694,7 +2694,7 @@ proto.model.NotificationEventApplicationOutOfSync.prototype.clearApplication = f
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.NotificationEventApplicationOutOfSync.prototype.hasApplication = function () {
+proto.model.NotificationEventApplicationOutOfSync.prototype.hasApplication = function() {
   return jspb.Message.getField(this, 1) != null;
 };
 
@@ -2703,7 +2703,7 @@ proto.model.NotificationEventApplicationOutOfSync.prototype.hasApplication = fun
  * optional ApplicationSyncState state = 3;
  * @return {?proto.model.ApplicationSyncState}
  */
-proto.model.NotificationEventApplicationOutOfSync.prototype.getState = function () {
+proto.model.NotificationEventApplicationOutOfSync.prototype.getState = function() {
   return /** @type{?proto.model.ApplicationSyncState} */ (
     jspb.Message.getWrapperField(this, pkg_model_application_pb.ApplicationSyncState, 3));
 };
@@ -2713,7 +2713,7 @@ proto.model.NotificationEventApplicationOutOfSync.prototype.getState = function 
  * @param {?proto.model.ApplicationSyncState|undefined} value
  * @return {!proto.model.NotificationEventApplicationOutOfSync} returns this
 */
-proto.model.NotificationEventApplicationOutOfSync.prototype.setState = function (value) {
+proto.model.NotificationEventApplicationOutOfSync.prototype.setState = function(value) {
   return jspb.Message.setWrapperField(this, 3, value);
 };
 
@@ -2722,7 +2722,7 @@ proto.model.NotificationEventApplicationOutOfSync.prototype.setState = function 
  * Clears the message field making it undefined.
  * @return {!proto.model.NotificationEventApplicationOutOfSync} returns this
  */
-proto.model.NotificationEventApplicationOutOfSync.prototype.clearState = function () {
+proto.model.NotificationEventApplicationOutOfSync.prototype.clearState = function() {
   return this.setState(undefined);
 };
 
@@ -2731,7 +2731,7 @@ proto.model.NotificationEventApplicationOutOfSync.prototype.clearState = functio
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.model.NotificationEventApplicationOutOfSync.prototype.hasState = function () {
+proto.model.NotificationEventApplicationOutOfSync.prototype.hasState = function() {
   return jspb.Message.getField(this, 3) != null;
 };
 
@@ -2740,45 +2740,45 @@ proto.model.NotificationEventApplicationOutOfSync.prototype.hasState = function 
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.NotificationEventPipedStarted.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.NotificationEventPipedStarted.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.NotificationEventPipedStarted.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.NotificationEventPipedStarted.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.NotificationEventPipedStarted} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.NotificationEventPipedStarted.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    name: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    version: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    projectId: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.NotificationEventPipedStarted} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.NotificationEventPipedStarted.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-      name: jspb.Message.getFieldWithDefault(msg, 2, ""),
-      version: jspb.Message.getFieldWithDefault(msg, 3, ""),
-      projectId: jspb.Message.getFieldWithDefault(msg, 4, "")
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -2787,7 +2787,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.NotificationEventPipedStarted}
  */
-proto.model.NotificationEventPipedStarted.deserializeBinary = function (bytes) {
+proto.model.NotificationEventPipedStarted.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.NotificationEventPipedStarted;
   return proto.model.NotificationEventPipedStarted.deserializeBinaryFromReader(msg, reader);
@@ -2801,32 +2801,32 @@ proto.model.NotificationEventPipedStarted.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.NotificationEventPipedStarted}
  */
-proto.model.NotificationEventPipedStarted.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.NotificationEventPipedStarted.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setId(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setName(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setVersion(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setProjectId(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setName(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setVersion(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setProjectId(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -2837,7 +2837,7 @@ proto.model.NotificationEventPipedStarted.deserializeBinaryFromReader = function
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.NotificationEventPipedStarted.prototype.serializeBinary = function () {
+proto.model.NotificationEventPipedStarted.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.NotificationEventPipedStarted.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -2851,7 +2851,7 @@ proto.model.NotificationEventPipedStarted.prototype.serializeBinary = function (
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.NotificationEventPipedStarted.serializeBinaryToWriter = function (message, writer) {
+proto.model.NotificationEventPipedStarted.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
@@ -2888,7 +2888,7 @@ proto.model.NotificationEventPipedStarted.serializeBinaryToWriter = function (me
  * optional string id = 1;
  * @return {string}
  */
-proto.model.NotificationEventPipedStarted.prototype.getId = function () {
+proto.model.NotificationEventPipedStarted.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -2897,7 +2897,7 @@ proto.model.NotificationEventPipedStarted.prototype.getId = function () {
  * @param {string} value
  * @return {!proto.model.NotificationEventPipedStarted} returns this
  */
-proto.model.NotificationEventPipedStarted.prototype.setId = function (value) {
+proto.model.NotificationEventPipedStarted.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -2906,7 +2906,7 @@ proto.model.NotificationEventPipedStarted.prototype.setId = function (value) {
  * optional string name = 2;
  * @return {string}
  */
-proto.model.NotificationEventPipedStarted.prototype.getName = function () {
+proto.model.NotificationEventPipedStarted.prototype.getName = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -2915,7 +2915,7 @@ proto.model.NotificationEventPipedStarted.prototype.getName = function () {
  * @param {string} value
  * @return {!proto.model.NotificationEventPipedStarted} returns this
  */
-proto.model.NotificationEventPipedStarted.prototype.setName = function (value) {
+proto.model.NotificationEventPipedStarted.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -2924,7 +2924,7 @@ proto.model.NotificationEventPipedStarted.prototype.setName = function (value) {
  * optional string version = 3;
  * @return {string}
  */
-proto.model.NotificationEventPipedStarted.prototype.getVersion = function () {
+proto.model.NotificationEventPipedStarted.prototype.getVersion = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -2933,7 +2933,7 @@ proto.model.NotificationEventPipedStarted.prototype.getVersion = function () {
  * @param {string} value
  * @return {!proto.model.NotificationEventPipedStarted} returns this
  */
-proto.model.NotificationEventPipedStarted.prototype.setVersion = function (value) {
+proto.model.NotificationEventPipedStarted.prototype.setVersion = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -2942,7 +2942,7 @@ proto.model.NotificationEventPipedStarted.prototype.setVersion = function (value
  * optional string project_id = 4;
  * @return {string}
  */
-proto.model.NotificationEventPipedStarted.prototype.getProjectId = function () {
+proto.model.NotificationEventPipedStarted.prototype.getProjectId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -2951,7 +2951,7 @@ proto.model.NotificationEventPipedStarted.prototype.getProjectId = function () {
  * @param {string} value
  * @return {!proto.model.NotificationEventPipedStarted} returns this
  */
-proto.model.NotificationEventPipedStarted.prototype.setProjectId = function (value) {
+proto.model.NotificationEventPipedStarted.prototype.setProjectId = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
@@ -2960,45 +2960,45 @@ proto.model.NotificationEventPipedStarted.prototype.setProjectId = function (val
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
-  /**
-   * Creates an object representation of this proto.
-   * Field names that are reserved in JavaScript and will be renamed to pb_name.
-   * Optional fields that are not set will be set to undefined.
-   * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
-   * For the list of reserved names please see:
-   *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
-   * @param {boolean=} opt_includeInstance Deprecated. whether to include the
-   *     JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @return {!Object}
-   */
-  proto.model.NotificationEventPipedStopped.prototype.toObject = function (opt_includeInstance) {
-    return proto.model.NotificationEventPipedStopped.toObject(opt_includeInstance, this);
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.model.NotificationEventPipedStopped.prototype.toObject = function(opt_includeInstance) {
+  return proto.model.NotificationEventPipedStopped.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.model.NotificationEventPipedStopped} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.model.NotificationEventPipedStopped.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    name: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    version: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    projectId: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
-
-  /**
-   * Static version of the {@see toObject} method.
-   * @param {boolean|undefined} includeInstance Deprecated. Whether to include
-   *     the JSPB instance for transitional soy proto support:
-   *     http://goto/soy-param-migration
-   * @param {!proto.model.NotificationEventPipedStopped} msg The msg instance to transform.
-   * @return {!Object}
-   * @suppress {unusedLocalVariables} f is only used for nested messages
-   */
-  proto.model.NotificationEventPipedStopped.toObject = function (includeInstance, msg) {
-    var f, obj = {
-      id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-      name: jspb.Message.getFieldWithDefault(msg, 2, ""),
-      version: jspb.Message.getFieldWithDefault(msg, 3, ""),
-      projectId: jspb.Message.getFieldWithDefault(msg, 4, "")
-    };
-
-    if (includeInstance) {
-      obj.$jspbMessageInstance = msg;
-    }
-    return obj;
-  };
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
 }
 
 
@@ -3007,7 +3007,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.model.NotificationEventPipedStopped}
  */
-proto.model.NotificationEventPipedStopped.deserializeBinary = function (bytes) {
+proto.model.NotificationEventPipedStopped.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
   var msg = new proto.model.NotificationEventPipedStopped;
   return proto.model.NotificationEventPipedStopped.deserializeBinaryFromReader(msg, reader);
@@ -3021,32 +3021,32 @@ proto.model.NotificationEventPipedStopped.deserializeBinary = function (bytes) {
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
  * @return {!proto.model.NotificationEventPipedStopped}
  */
-proto.model.NotificationEventPipedStopped.deserializeBinaryFromReader = function (msg, reader) {
+proto.model.NotificationEventPipedStopped.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
     }
     var field = reader.getFieldNumber();
     switch (field) {
-      case 1:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setId(value);
-        break;
-      case 2:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setName(value);
-        break;
-      case 3:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setVersion(value);
-        break;
-      case 4:
-        var value = /** @type {string} */ (reader.readString());
-        msg.setProjectId(value);
-        break;
-      default:
-        reader.skipField();
-        break;
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setName(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setVersion(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setProjectId(value);
+      break;
+    default:
+      reader.skipField();
+      break;
     }
   }
   return msg;
@@ -3057,7 +3057,7 @@ proto.model.NotificationEventPipedStopped.deserializeBinaryFromReader = function
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.model.NotificationEventPipedStopped.prototype.serializeBinary = function () {
+proto.model.NotificationEventPipedStopped.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
   proto.model.NotificationEventPipedStopped.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
@@ -3071,7 +3071,7 @@ proto.model.NotificationEventPipedStopped.prototype.serializeBinary = function (
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.model.NotificationEventPipedStopped.serializeBinaryToWriter = function (message, writer) {
+proto.model.NotificationEventPipedStopped.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
   if (f.length > 0) {
@@ -3108,7 +3108,7 @@ proto.model.NotificationEventPipedStopped.serializeBinaryToWriter = function (me
  * optional string id = 1;
  * @return {string}
  */
-proto.model.NotificationEventPipedStopped.prototype.getId = function () {
+proto.model.NotificationEventPipedStopped.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -3117,7 +3117,7 @@ proto.model.NotificationEventPipedStopped.prototype.getId = function () {
  * @param {string} value
  * @return {!proto.model.NotificationEventPipedStopped} returns this
  */
-proto.model.NotificationEventPipedStopped.prototype.setId = function (value) {
+proto.model.NotificationEventPipedStopped.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -3126,7 +3126,7 @@ proto.model.NotificationEventPipedStopped.prototype.setId = function (value) {
  * optional string name = 2;
  * @return {string}
  */
-proto.model.NotificationEventPipedStopped.prototype.getName = function () {
+proto.model.NotificationEventPipedStopped.prototype.getName = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -3135,7 +3135,7 @@ proto.model.NotificationEventPipedStopped.prototype.getName = function () {
  * @param {string} value
  * @return {!proto.model.NotificationEventPipedStopped} returns this
  */
-proto.model.NotificationEventPipedStopped.prototype.setName = function (value) {
+proto.model.NotificationEventPipedStopped.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -3144,7 +3144,7 @@ proto.model.NotificationEventPipedStopped.prototype.setName = function (value) {
  * optional string version = 3;
  * @return {string}
  */
-proto.model.NotificationEventPipedStopped.prototype.getVersion = function () {
+proto.model.NotificationEventPipedStopped.prototype.getVersion = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -3153,7 +3153,7 @@ proto.model.NotificationEventPipedStopped.prototype.getVersion = function () {
  * @param {string} value
  * @return {!proto.model.NotificationEventPipedStopped} returns this
  */
-proto.model.NotificationEventPipedStopped.prototype.setVersion = function (value) {
+proto.model.NotificationEventPipedStopped.prototype.setVersion = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
@@ -3162,7 +3162,7 @@ proto.model.NotificationEventPipedStopped.prototype.setVersion = function (value
  * optional string project_id = 4;
  * @return {string}
  */
-proto.model.NotificationEventPipedStopped.prototype.getProjectId = function () {
+proto.model.NotificationEventPipedStopped.prototype.getProjectId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -3171,7 +3171,7 @@ proto.model.NotificationEventPipedStopped.prototype.getProjectId = function () {
  * @param {string} value
  * @return {!proto.model.NotificationEventPipedStopped} returns this
  */
-proto.model.NotificationEventPipedStopped.prototype.setProjectId = function (value) {
+proto.model.NotificationEventPipedStopped.prototype.setProjectId = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
