@@ -1,0 +1,29 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.17.6'
+
+      - name: Build pipecd binary
+        run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/pipecd ./cmd/pipecd
+      - name: Build piped binary
+        run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/piped ./cmd/piped
+      - name: Build launcher binary
+        run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/launcher ./cmd/launcher
+      - name: Build pipectl binary
+        run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/pipectl ./cmd/pipectl
+      - name: Build helloworld binary
+        run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/helloworld ./cmd/helloworld

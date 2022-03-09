@@ -1,4 +1,4 @@
-name: "Validate Generated Code"
+name: CodeGen
 
 on:
   pull_request:
