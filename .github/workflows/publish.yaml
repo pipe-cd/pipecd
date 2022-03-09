@@ -1,4 +1,4 @@
-name: Publish Artifacts
+name: Publish
 
 on:
   push:
@@ -9,7 +9,7 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  publish-image:
+  image:
     runs-on: ubuntu-latest
     permissions:
       contents: read

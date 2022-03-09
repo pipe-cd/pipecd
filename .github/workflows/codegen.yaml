@@ -1,4 +1,4 @@
-name: "Validate Generated Code"
+name: CodeGen
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze
+    name: validate
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
