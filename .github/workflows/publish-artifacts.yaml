@@ -34,4 +34,4 @@ jobs:
         with:
           push: true
           file: cmd/pipecd/Dockerfile
-          tags: pipecd:${{ github.ref_name }}
+          tags: ${{ env.REGISTRY }}/pipe-cd/pipecd:${{ github.ref_name }}
