@@ -76,8 +76,8 @@ while [ $i -lt ${#jsProtoDirs[*]} ]; do
   mv ${inDir}/*.ts ${outDir}
 
   find ${outDir} -type f -exec sed -i 's:.*validate_pb.*::g' {} \;
-  find ${outDir} -type f -exec sed -i "s:'.*pkg:'pipecd\/pkg\/app\/web:g;" {} \;
-  find ${outDir} -type f -exec sed -i "s:'.*\/model\/:'pipecd\/pkg\/app\/web\/model\/:g;" {} \;
+  find ${outDir} -type f -exec sed -i "s:'.*pkg:'pipecd\/web:g;" {} \;
+  find ${outDir} -type f -exec sed -i "s:'.*\/model\/:'pipecd\/web\/model\/:g;" {} \;
   echo "successfully generated"
 done
 
