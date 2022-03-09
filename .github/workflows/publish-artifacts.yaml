@@ -42,29 +42,34 @@ jobs:
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           push: true
+          context: .
           file: cmd/pipecd/Dockerfile
           tags: ${{ env.REGISTRY }}/pipe-cd/pipecd:${{ github.ref_name }}
       - name: Build and push piped image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           push: true
+          context: .
           file: cmd/piped/Dockerfile
           tags: ${{ env.REGISTRY }}/pipe-cd/piped:${{ github.ref_name }}
       - name: Build and push launcher image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           push: true
+          context: .
           file: cmd/launcher/Dockerfile
           tags: ${{ env.REGISTRY }}/pipe-cd/launcher:${{ github.ref_name }}
       - name: Build and push pipectl image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           push: true
+          context: .
           file: cmd/pipectl/Dockerfile
           tags: ${{ env.REGISTRY }}/pipe-cd/pipectl:${{ github.ref_name }}
       - name: Build and push helloworld image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           push: true
+          context: .
           file: cmd/helloworld/Dockerfile
           tags: ${{ env.REGISTRY }}/pipe-cd/helloworld:${{ github.ref_name }}
