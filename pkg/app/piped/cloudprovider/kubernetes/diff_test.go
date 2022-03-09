@@ -304,6 +304,76 @@ data:
 `,
 			diffNum: 1,
 		},
+		{
+			name: "Pod no diff 1",
+			manifests: `apiVersion: v1
+kind: Pod
+metadata:
+  name: static-web
+  labels:
+    role: myrole
+spec:
+  containers:
+    - name: web
+      image: nginx
+      ports:
+      resources:
+        limits:
+          memory: "2Gi"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: static-web
+  labels:
+    role: myrole
+spec:
+  containers:
+    - name: web
+      image: nginx
+      resources:
+        limits:
+          memory: "2Gi"
+`,
+			expected:      "",
+			diffNum:       0,
+			falsePositive: false,
+		},
+		{
+			name: "Pod no diff 2",
+			manifests: `apiVersion: v1
+kind: Pod
+metadata:
+  name: static-web
+  labels:
+    role: myrole
+spec:
+  containers:
+    - name: web
+      image: nginx
+      ports:
+      resources:
+        limits:
+          memory: "1.5Gi"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: static-web
+  labels:
+    role: myrole
+spec:
+  containers:
+    - name: web
+      image: nginx
+      resources:
+        limits:
+          memory: "1536Mi"
+`,
+			expected:      "",
+			diffNum:       0,
+			falsePositive: false,
+		},
 	}
 
 	for _, tc := range testcases {
