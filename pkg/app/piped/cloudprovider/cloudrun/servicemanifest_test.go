@@ -291,11 +291,11 @@ spec:
 	}
 }
 
-func TestFindArtifactVersion(t *testing.T) {
+func TestFindArtifactVersions(t *testing.T) {
 	testcases := []struct {
 		name     string
 		manifest string
-		want     *model.ArtifactVersion
+		want     []*model.ArtifactVersion
 		wantErr  bool
 	}{
 		{
@@ -335,11 +335,13 @@ spec:
   - revisionName: helloworld-v010-1234567
     percent: 100
 `,
-			want: &model.ArtifactVersion{
-				Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
-				Version: "v0.1.0",
-				Name:    "helloworld",
-				Url:     "gcr.io/pipecd/helloworld:v0.1.0",
+			want: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v0.1.0",
+					Name:    "helloworld",
+					Url:     "gcr.io/pipecd/helloworld:v0.1.0",
+				},
 			},
 			wantErr: false,
 		},
@@ -409,7 +411,7 @@ spec:
 			sm, err := ParseServiceManifest(data)
 			require.NoError(t, err)
 
-			got, err := FindArtifactVersion(sm)
+			got, err := FindArtifactVersions(sm)
 			require.Equal(t, tc.wantErr, err != nil)
 			require.Equal(t, tc.want, got)
 		})

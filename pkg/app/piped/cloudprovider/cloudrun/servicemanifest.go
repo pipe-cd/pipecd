@@ -202,7 +202,7 @@ func parseContainerImage(image string) (name, tag string) {
 	return
 }
 
-func FindArtifactVersion(sm ServiceManifest) (*model.ArtifactVersion, error) {
+func FindArtifactVersions(sm ServiceManifest) ([]*model.ArtifactVersion, error) {
 	containers, ok, err := unstructured.NestedSlice(sm.u.Object, "spec", "template", "spec", "containers")
 	if err != nil {
 		return nil, err
@@ -225,10 +225,12 @@ func FindArtifactVersion(sm ServiceManifest) (*model.ArtifactVersion, error) {
 	}
 	name, tag := parseContainerImage(image)
 
-	return &model.ArtifactVersion{
-		Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
-		Version: tag,
-		Name:    name,
-		Url:     image,
+	return []*model.ArtifactVersion{
+		{
+			Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+			Version: tag,
+			Name:    name,
+			Url:     image,
+		},
 	}, nil
 }
