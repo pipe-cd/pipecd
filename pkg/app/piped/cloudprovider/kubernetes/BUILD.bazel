@@ -8,6 +8,7 @@ go_library(
         "diff.go",
         "hasher.go",
         "helm.go",
+        "jsonutil.go",
         "kubectl.go",
         "kubernetes.go",
         "kustomize.go",
