@@ -37,5 +37,8 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
+
+      - name: Yarn install
+        run: yarn install
       - name: Run unit tests
         run: cd pkg/app/web && yarn test
