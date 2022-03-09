@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"reflect"
@@ -106,9 +107,11 @@ func remarshal(obj *unstructured.Unstructured) *unstructured.Unstructured {
 	if err != nil {
 		panic(err)
 	}
+	gvk := obj.GroupVersionKind()
 	item, err := scheme.Scheme.New(obj.GroupVersionKind())
 	if err != nil {
 		// This is common. the scheme is not registered
+		log.Printf("Could not create new object of type %s: %v", gvk, err)
 		return obj
 	}
 	// This will drop any omitempty fields, perform resource conversion etc...
@@ -120,10 +123,12 @@ func remarshal(obj *unstructured.Unstructured) *unstructured.Unstructured {
 	if err := decoder.Decode(&unmarshalledObj); err != nil {
 		// Likely a field present in obj that is not present in the GVK type, or user
 		// may have specified an invalid spec in git, so return original object
+		log.Printf("Could not unmarshal to object of type %s: %v", gvk, err)
 		return obj
 	}
 	unstrBody, err := runtime.DefaultUnstructuredConverter.ToUnstructured(unmarshalledObj)
 	if err != nil {
+		log.Printf("Could not unmarshal to object of type %s: %v", gvk, err)
 		return obj
 	}
 	// Remove all default values specified by custom formatter (e.g. creationTimestamp)
