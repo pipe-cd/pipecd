@@ -6,9 +6,9 @@ go_library(
         "cache.go",
         "deployment.go",
         "diff.go",
+        "diffutil.go",
         "hasher.go",
         "helm.go",
-        "jsonutil.go",
         "kubectl.go",
         "kubernetes.go",
         "kustomize.go",
@@ -48,6 +48,7 @@ go_test(
     srcs = [
         "deployment_test.go",
         "diff_test.go",
+        "diffutil_test.go",
         "hasher_test.go",
         "helm_test.go",
         "kubernetes_test.go",
