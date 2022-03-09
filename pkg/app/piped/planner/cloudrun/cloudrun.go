@@ -62,17 +62,16 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		in.Logger.Warn("unable to determine target version", zap.Error(e))
 	}
 
-	versions, err := p.determineVersions(ds.AppDir, cfg.Input.ServiceManifestFile)
+	out.Versions, err = p.determineVersions(ds.AppDir, cfg.Input.ServiceManifestFile)
 	if err != nil {
 		in.Logger.Warn("unable to determine target versions", zap.Error(err))
-		versions = []*model.ArtifactVersion{
+		out.Versions = []*model.ArtifactVersion{
 			{
 				Kind:    model.ArtifactVersion_UNKNOWN,
 				Version: "unknown",
 			},
 		}
 	}
-	out.Versions = versions
 
 	autoRollback := *cfg.Input.AutoRollback
 
