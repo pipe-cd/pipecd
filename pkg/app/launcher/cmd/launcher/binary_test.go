@@ -23,6 +23,8 @@ import (
 )
 
 func TestGracefulStopCommand(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name      string
 		stopAfter time.Duration
@@ -38,7 +40,11 @@ func TestGracefulStopCommand(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
+
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			cmd, err := runBinary("sh", []string{"sleep", "1m"})
 			require.NoError(t, err)
 			require.NotNil(t, cmd)
