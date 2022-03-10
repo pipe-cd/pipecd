@@ -138,7 +138,11 @@ const MostRecentlySuccessfulDeployment: FC<{
                         target="_blank"
                         rel="noreferrer"
                       >
-                        {v.version} ({v.name})
+                        {/* Trim first 7 characters like commit hash in case it is too long */}
+                        {v.name}:
+                        {v.version.length > 7
+                          ? `${v.version.slice(0, 7)}...`
+                          : v.version}
                         <OpenInNewIcon className={classes.linkIcon} />
                       </Link>
                     </>
