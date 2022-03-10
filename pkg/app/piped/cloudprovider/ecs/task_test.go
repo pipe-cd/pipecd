@@ -82,6 +82,8 @@ cpu: 256
 }
 
 func TestFindArtifactVersions(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		input       []byte
@@ -272,9 +274,9 @@ func TestFindArtifactVersions(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
+		tc := tc
 
+		t.Run(tc.name, func(t *testing.T) {
 			td, _ := parseTaskDefinition(tc.input)
 			versions, err := FindArtifactVersions(td)
 			assert.Equal(t, tc.expectedErr, err != nil)
