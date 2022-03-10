@@ -24,7 +24,9 @@ import (
 	"testing"
 )
 
-func aeqTable(a, b [][]float64) bool {
+func aeqTable(t *testing.T, a, b [][]float64) bool {
+	t.Helper()
+
 	if len(a) != len(b) {
 		return false
 	}
@@ -65,6 +67,8 @@ var udist5 = [][]float64{
 }
 
 func TestUDist(t *testing.T) {
+	t.Parallel()
+
 	makeTable := func(n int) [][]float64 {
 		out := make([][]float64, 6)
 		for U := 0; U < 6; U++ {
@@ -94,12 +98,12 @@ func TestUDist(t *testing.T) {
 
 	// Compare against tables given in Mann, Whitney (1947).
 	got3 := makeTable(3)
-	if !aeqTable(got3, udist3) {
+	if !aeqTable(t, got3, udist3) {
 		t.Errorf("For n=3, want:\n%sgot:\n%s", fmtTable(udist3), fmtTable(got3))
 	}
 
 	got5 := makeTable(5)
-	if !aeqTable(got5, udist5) {
+	if !aeqTable(t, got5, udist5) {
 		t.Errorf("For n=5, want:\n%sgot:\n%s", fmtTable(udist5), fmtTable(got5))
 	}
 }
@@ -113,14 +117,16 @@ func BenchmarkUDist(b *testing.B) {
 }
 
 func TestUDistTies(t *testing.T) {
-	makeTable := func(m, N int, t []int, minx, maxx float64) [][]float64 {
+	t.Parallel()
+
+	makeTable := func(m, N int, tVar []int, minx, maxx float64) [][]float64 {
 		out := [][]float64{}
-		dist := UDist{N1: m, N2: N - m, T: t}
+		dist := UDist{N1: m, N2: N - m, T: tVar}
 		for x := minx; x <= maxx; x += 0.5 {
 			// Convert x from uQt' to uQv'.
 			U := x - float64(m*m)/2
 			P := dist.CDF(U)
-			if len(out) == 0 || !aeq(out[len(out)-1][1], P) {
+			if len(out) == 0 || !aeq(t, out[len(out)-1][1], P) {
 				out = append(out, []float64{x, P})
 			}
 		}
@@ -142,7 +148,7 @@ func TestUDistTies(t *testing.T) {
 		{17.5, 0.071429}, {18.0, 0.087302},
 		{19.0, 0.134921}, {19.5, 0.138889},
 	}
-	if !aeqTable(got, want) {
+	if !aeqTable(t, got, want) {
 		t.Errorf("Want:\n%sgot:\n%s", fmtTable(want), fmtTable(got))
 	}
 
@@ -175,7 +181,7 @@ func TestUDistTies(t *testing.T) {
 		{85.5, 0.083498}, {86.0, 0.094079},
 		{86.5, 0.096693}, {87.0, 0.101132},
 	}
-	if !aeqTable(got, want) {
+	if !aeqTable(t, got, want) {
 		t.Errorf("Want:\n%sgot:\n%s", fmtTable(want), fmtTable(got))
 	}
 
@@ -188,14 +194,14 @@ func TestUDistTies(t *testing.T) {
 		{48.0, 0.057187}, {50.0, 0.086713},
 		{52.0, 0.126263}, {54.0, 0.175369},
 	}
-	if !aeqTable(got, want) {
+	if !aeqTable(t, got, want) {
 		t.Errorf("Want:\n%sgot:\n%s", fmtTable(want), fmtTable(got))
 	}
 
 	// Check remaining tables from Klotz against the reference
 	// implementation.
 	checkRef := func(n1 int, tie []int) {
-		wantPMF1, wantCDF1 := udistRef(n1, tie)
+		wantPMF1, wantCDF1 := udistRef(t, n1, tie)
 
 		dist := UDist{N1: n1, N2: sumint(tie) - n1, T: tie}
 		gotPMF, wantPMF := [][]float64{}, [][]float64{}
@@ -207,10 +213,10 @@ func TestUDistTies(t *testing.T) {
 			wantPMF = append(wantPMF, []float64{U, wantPMF1[int(U*2)]})
 			wantCDF = append(wantCDF, []float64{U, wantCDF1[int(U*2)]})
 		}
-		if !aeqTable(wantPMF, gotPMF) {
+		if !aeqTable(t, wantPMF, gotPMF) {
 			t.Errorf("For PMF of n1=%v, t=%v, want:\n%sgot:\n%s", n1, tie, fmtTable(wantPMF), fmtTable(gotPMF))
 		}
-		if !aeqTable(wantCDF, gotCDF) {
+		if !aeqTable(t, wantCDF, gotCDF) {
 			t.Errorf("For CDF of n1=%v, t=%v, want:\n%sgot:\n%s", n1, tie, fmtTable(wantCDF), fmtTable(gotCDF))
 		}
 	}
@@ -239,7 +245,7 @@ func BenchmarkUDistTies(b *testing.B) {
 func XTestPrintUmemo(t *testing.T) {
 	// Reproduce table from Cheung, Klotz.
 	ties := []int{4, 5, 3, 4, 6}
-	printUmemo(makeUmemo(80, 10, ties), ties)
+	printUmemo(t, makeUmemo(80, 10, ties), ties)
 }
 
 // udistRef computes the PMF and CDF of the U distribution for two
@@ -249,20 +255,21 @@ func XTestPrintUmemo(t *testing.T) {
 // This uses the "graphical method" of Klotz (1966). It is very slow
 // (Θ(∏ (t[i]+1)) = Ω(2^|t|)), but very correct, and hence useful as a
 // reference for testing faster implementations.
-func udistRef(n1 int, t []int) (pmf, cdf []float64) {
-	// Enumerate all u vectors for which 0 <= u_i <= t_i. Count
+func udistRef(t *testing.T, n1 int, tVar []int) (pmf, cdf []float64) {
+	t.Helper()
+	// Enumerate all u vectors for which 0 <= ui <= tVari. Count
 	// the number of permutations of two samples of sizes n1 and
 	// sum(t)-n1 with tie vector t and accumulate these counts by
 	// their U statistics in count[2*U].
-	counts := make([]int, 1+2*n1*(sumint(t)-n1))
+	counts := make([]int, 1+2*n1*(sumint(tVar)-n1))
 
-	u := make([]int, len(t))
+	u := make([]int, len(tVar))
 	u[0] = -1 // Get enumeration started.
 enumu:
 	for {
 		// Compute the next u vector.
 		u[0]++
-		for i := 0; i < len(u) && u[i] > t[i]; i++ {
+		for i := 0; i < len(u) && u[i] > tVar[i]; i++ {
 			if i == len(u)-1 {
 				// All u vectors have been enumerated.
 				break enumu
@@ -282,18 +289,18 @@ enumu:
 
 		// Compute 2*U statistic for this u vector.
 		twoU, vsum := 0, 0
-		for i, u_i := range u {
-			v_i := t[i] - u_i
-			// U = U + vsum*u_i + u_i*v_i/2
-			twoU += 2*vsum*u_i + u_i*v_i
-			vsum += v_i
+		for i, ui := range u {
+			vi := tVar[i] - ui
+			// U = U + vsum*ui + ui*vi/2
+			twoU += 2*vsum*ui + ui*vi
+			vsum += vi
 		}
 
-		// Compute Π choose(t_i, u_i). This is the number of
+		// Compute Π choose(tVari, ui). This is the number of
 		// ways of permuting the input sample under u.
 		prod := 1
-		for i, u_i := range u {
-			prod *= int(mathChoose(t[i], u_i) + 0.5)
+		for i, ui := range u {
+			prod *= int(mathChoose(tVar[i], ui) + 0.5)
 		}
 
 		// Accumulate the permutations on this u path.
@@ -313,7 +320,7 @@ enumu:
 	// Convert counts into probabilities for PMF and CDF.
 	pmf = make([]float64, len(counts))
 	cdf = make([]float64, len(counts))
-	total := int(mathChoose(sumint(t), n1) + 0.5)
+	total := int(mathChoose(sumint(tVar), n1) + 0.5)
 	for i, count := range counts {
 		pmf[i] = float64(count) / float64(total)
 		if i > 0 {
@@ -325,11 +332,13 @@ enumu:
 }
 
 // printUmemo prints the output of makeUmemo for debugging.
-func printUmemo(A []map[ukey]float64, t []int) {
+func printUmemo(t *testing.T, A []map[ukey]float64, tVar []int) {
+	t.Helper()
+
 	fmt.Printf("K\tn1\t2*U\tpr\n")
 	for K := len(A) - 1; K >= 0; K-- {
 		for i, pr := range A[K] {
-			_, ref := udistRef(i.n1, t[:K])
+			_, ref := udistRef(t, i.n1, tVar[:K])
 			fmt.Printf("%v\t%v\t%v\t%v\t%v\n", K, i.n1, i.twoU, pr, ref[i.twoU])
 		}
 	}

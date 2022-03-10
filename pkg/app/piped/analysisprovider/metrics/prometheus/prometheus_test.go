@@ -14,11 +14,15 @@ import (
 )
 
 func TestType(t *testing.T) {
+	t.Parallel()
+
 	p := Provider{}
 	assert.Equal(t, ProviderType, p.Type())
 }
 
 func TestProviderQueryPoints(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name       string
 		client     client
@@ -107,7 +111,10 @@ func TestProviderQueryPoints(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			provider := &Provider{
 				api:     tc.client,
 				timeout: defaultTimeout,

@@ -84,6 +84,8 @@ status:
 `
 
 func TestServiceManifest(t *testing.T) {
+	t.Parallel()
+
 	sm, err := ParseServiceManifest([]byte(serviceManifest))
 	require.NoError(t, err)
 	require.NotEmpty(t, sm)
@@ -145,6 +147,8 @@ func TestServiceManifest(t *testing.T) {
 }
 
 func TestParseServiceManifest(t *testing.T) {
+	t.Parallel()
+
 	// Success
 	data := []byte(serviceManifest)
 	sm, err := ParseServiceManifest(data)
@@ -158,6 +162,8 @@ func TestParseServiceManifest(t *testing.T) {
 }
 
 func TestDecideRevisionName(t *testing.T) {
+	t.Parallel()
+
 	data := []byte(serviceManifest)
 	sm, err := ParseServiceManifest(data)
 	require.NoError(t, err)
@@ -168,6 +174,8 @@ func TestDecideRevisionName(t *testing.T) {
 }
 
 func TestFindImageTag(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		manifest string
@@ -275,7 +283,10 @@ spec:
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			data := []byte(tc.manifest)
 			sm, err := ParseServiceManifest(data)
 			require.NoError(t, err)

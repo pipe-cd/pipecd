@@ -27,6 +27,8 @@ import (
 )
 
 func TestConfigureTrafficRouting(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name      string
 		version   string
@@ -124,7 +126,10 @@ func TestConfigureTrafficRouting(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			trafficCfg := make(map[provider.TrafficConfigKeyName]provider.VersionTraffic)
 			if tc.primary != nil {
 				trafficCfg[provider.TrafficPrimaryVersionKeyName] = *tc.primary
@@ -171,6 +176,8 @@ func (g *fakeGitClient) Clone(_ context.Context, _, _, _, _ string) (git.Repo, e
 }
 
 func TestPrepareZipFromSource(t *testing.T) {
+	t.Parallel()
+
 	gc := &fakeGitClient{
 		repo: &fakeRepo{
 			source: "testdata/raw",

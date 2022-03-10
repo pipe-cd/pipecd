@@ -21,6 +21,8 @@ import (
 )
 
 func TestMakeFlowControlTagsMap(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name                 string
 		remoteTags           map[string]string
@@ -121,7 +123,10 @@ func TestMakeFlowControlTagsMap(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			newDefinedTags, updatedTags, removedTags := makeFlowControlTagsMaps(tc.remoteTags, tc.definedTags)
 			assert.Equal(t, tc.wantedNewDefinedTags, newDefinedTags)
 			assert.Equal(t, tc.wantedUpdatedTags, updatedTags)

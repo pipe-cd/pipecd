@@ -26,6 +26,8 @@ import (
 )
 
 func TestKustomizeTemplate(t *testing.T) {
+	t.Parallel()
+
 	var (
 		ctx     = context.TODO()
 		appName = "testapp"

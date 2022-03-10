@@ -21,6 +21,8 @@ import (
 )
 
 func TestparseFunctionManifest(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		data     string
@@ -165,7 +167,10 @@ func TestparseFunctionManifest(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			fm, err := parseFunctionManifest([]byte(tc.data))
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.wantSpec, fm)

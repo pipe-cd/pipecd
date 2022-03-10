@@ -21,11 +21,13 @@ package mannwhitney
 import "testing"
 
 func TestMannWhitneyUTest(t *testing.T) {
+	t.Parallel()
+
 	check := func(want, got *MannWhitneyUTestResult) {
 		if want.N1 != got.N1 || want.N2 != got.N2 ||
-			!aeq(want.U, got.U) ||
+			!aeq(t, want.U, got.U) ||
 			want.AltHypothesis != got.AltHypothesis ||
-			!aeq(want.P, got.P) {
+			!aeq(t, want.P, got.P) {
 			t.Errorf("want %+v, got %+v", want, got)
 		}
 	}

@@ -25,6 +25,8 @@ import (
 )
 
 func TestResourceMatcher(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name string
 		cfg  config.KubernetesAppStateInformer
@@ -71,10 +73,14 @@ func TestResourceMatcher(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		m := newResourceMatcher(tc.cfg)
 		for gvk, expected := range tc.gvks {
 			desc := fmt.Sprintf("%s: %v", tc.name, gvk)
+			gvk, expected := gvk, expected
 			t.Run(desc, func(t *testing.T) {
+				t.Parallel()
+
 				matched := m.Match(gvk)
 				assert.Equal(t, expected, matched)
 			})

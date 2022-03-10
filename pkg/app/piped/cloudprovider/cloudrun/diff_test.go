@@ -22,6 +22,8 @@ import (
 )
 
 func TestDiff(t *testing.T) {
+	t.Parallel()
+
 	old, err := loadServiceManifest("testdata/old_manifest.yaml")
 	require.NoError(t, err)
 	require.NotEmpty(t, old)
@@ -42,6 +44,8 @@ func TestDiff(t *testing.T) {
 }
 
 func TestDiffResult_NoChange(t *testing.T) {
+	t.Parallel()
+
 	old, err := loadServiceManifest("testdata/old_manifest.yaml")
 	require.NoError(t, err)
 	require.NotEmpty(t, old)
@@ -100,6 +104,8 @@ func TestDiffResult_Render(t *testing.T) {
 }
 
 func TestDiffByCommand(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		command     string
@@ -140,7 +146,10 @@ func TestDiffByCommand(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			old, err := loadServiceManifest(tc.oldManifest)
 			require.NoError(t, err)
 

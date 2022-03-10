@@ -58,6 +58,8 @@ spec:
 `
 
 func TestAddBuiltinLabels(t *testing.T) {
+	t.Parallel()
+
 	var (
 		hash         = "commit-hash"
 		pipedID      = "piped-id"
