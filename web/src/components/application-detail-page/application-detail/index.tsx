@@ -130,20 +130,16 @@ const MostRecentlySuccessfulDeployment: FC<{
             value={
               deployment.versionsList.length !== 0 ? (
                 <>
-                  {deployment.versionsList.map((v, i) => (
+                  {deployment.versionsList.map((v) => (
                     <>
-                      {i > 0 && ","}
                       <Link
                         href={v.url.includes("://") ? v.url : `//${v.url}`}
                         target="_blank"
                         rel="noreferrer"
                       >
-                        {/* Trim first 7 characters like commit hash in case it is too long */}
-                        {v.name}:
-                        {v.version.length > 7
-                          ? `${v.version.slice(0, 7)}...`
-                          : v.version}
+                        {v.name}:{v.version}
                         <OpenInNewIcon className={classes.linkIcon} />
+                        <br />
                       </Link>
                     </>
                   ))}
