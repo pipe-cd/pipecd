@@ -58,6 +58,8 @@ func TestDiffResult_NoChange(t *testing.T) {
 }
 
 func TestDiffResult_Render(t *testing.T) {
+	t.Parallel()
+
 	old, err := loadServiceManifest("testdata/old_manifest.yaml")
 	require.NoError(t, err)
 

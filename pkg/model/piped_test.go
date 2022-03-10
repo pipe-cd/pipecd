@@ -24,6 +24,8 @@ import (
 )
 
 func TestGeneratePipedKey(t *testing.T) {
+	t.Parallel()
+
 	key, hash, err := GeneratePipedKey()
 	assert.NoError(t, err)
 	assert.True(t, len(key) > 0)

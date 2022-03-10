@@ -28,6 +28,8 @@ import (
 )
 
 func TestVerify(t *testing.T) {
+	t.Parallel()
+
 	now := time.Now()
 
 	testcases := []struct {
@@ -110,7 +112,10 @@ func TestVerify(t *testing.T) {
 
 	testFunc := func(s Signer, v Verifier) {
 		for _, tc := range testcases {
+			tc := tc
 			t.Run(tc.name, func(t *testing.T) {
+				t.Parallel()
+
 				token, err := s.Sign(tc.claims)
 				require.NoError(t, err)
 				require.True(t, len(token) > 0)
