@@ -22,6 +22,8 @@ import (
 )
 
 func TestNewLoggerOK(t *testing.T) {
+	t.Parallel()
+
 	validLevels := []string{
 		"debug",
 		"info",
@@ -55,6 +57,8 @@ func TestNewLoggerOK(t *testing.T) {
 }
 
 func TestNewLoggerFailed(t *testing.T) {
+	t.Parallel()
+
 	configs := []Configs{
 		Configs{
 			Level:    "foo",

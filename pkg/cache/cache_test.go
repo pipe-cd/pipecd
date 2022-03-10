@@ -32,6 +32,8 @@ func (f getterFunc) GetAll() (map[string]interface{}, error) {
 }
 
 func TestMultiGetter(t *testing.T) {
+	t.Parallel()
+
 	value := "ok"
 	err := errors.New("err")
 	var calls int

@@ -26,6 +26,8 @@ import (
 func stringPointer(s string) *string { return &s }
 
 func TestDecideRole(t *testing.T) {
+	t.Parallel()
+
 	cases := []struct {
 		name     string
 		username string
@@ -148,7 +150,10 @@ func TestDecideRole(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			role, err := tc.oc.decideRole(tc.username, tc.teams)
 			assert.Equal(t, tc.wantErr, err != nil)
 			if err == nil {

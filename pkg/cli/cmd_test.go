@@ -26,6 +26,8 @@ import (
 )
 
 func TestRunWithContext(t *testing.T) {
+	t.Parallel()
+
 	calls := 0
 	piped := func(ctx context.Context, t Input) error {
 		calls++
@@ -46,6 +48,8 @@ func TestRunWithContext(t *testing.T) {
 }
 
 func TestNewLogger(t *testing.T) {
+	t.Parallel()
+
 	logger, err := newLogger("service", "1.0.0", "debug", "json")
 	assert.NoError(t, err)
 	assert.NotNil(t, logger)

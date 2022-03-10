@@ -26,6 +26,8 @@ import (
 )
 
 func TestTTLCache(t *testing.T) {
+	t.Parallel()
+
 	c := NewTTLCache(context.TODO(), 0, 5*time.Second)
 	err := c.Put("key-1", "value-1")
 	require.NoError(t, err)

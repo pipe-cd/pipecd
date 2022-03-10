@@ -23,11 +23,15 @@ import (
 )
 
 func TestDefaultPool(t *testing.T) {
+	t.Parallel()
+
 	pool := DefaultPool()
 	require.NotNil(t, pool)
 }
 
 func TestPool(t *testing.T) {
+	t.Parallel()
+
 	pool, err := NewPool(2)
 	require.NoError(t, err)
 

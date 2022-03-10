@@ -23,6 +23,8 @@ import (
 )
 
 func TestHandleTop(t *testing.T) {
+	t.Parallel()
+
 	req := httptest.NewRequest("GET", "http://admin", nil)
 
 	testcases := []struct {

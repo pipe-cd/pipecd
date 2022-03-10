@@ -38,60 +38,80 @@ import (
 )
 
 func TestWildcardMatches(t *testing.T) {
+	t.Parallel()
+
 	match, _ := Matches("fileutils.go", []string{"*"})
 	assert.Equal(t, true, match, "failed to get a wildcard match, got %v", match)
 }
 
 // A simple pattern match should return true.
 func TestPatternMatches(t *testing.T) {
+	t.Parallel()
+
 	match, _ := Matches("fileutils.go", []string{"*.go"})
 	assert.Equal(t, true, match, "failed to get a match, got %v", match)
 }
 
 // A folder pattern followed by an exception should return false.
 func TestPatternMatchesFolderExclusions(t *testing.T) {
+	t.Parallel()
+
 	match, _ := Matches("docs/README.md", []string{"docs", "!docs/README.md"})
 	assert.Equal(t, false, match, "failed to get a false match on exclusion pattern, got %v", match)
 }
 
 // A folder pattern followed by an exception should return false.
 func TestPatternMatchesFolderWithSlashExclusions(t *testing.T) {
+	t.Parallel()
+
 	match, _ := Matches("docs/README.md", []string{"docs/", "!docs/README.md"})
 	assert.Equal(t, false, match, "failed to get a false match on exclusion pattern, got %v", match)
 }
 
 // A folder pattern followed by an exception should return false.
 func TestPatternMatchesFolderWildcardExclusions(t *testing.T) {
+	t.Parallel()
+
 	match, _ := Matches("docs/README.md", []string{"docs/*", "!docs/README.md"})
 	assert.Equal(t, false, match, "failed to get a false match on exclusion pattern, got %v", match)
 }
 
 // A pattern followed by an exclusion should return false.
 func TestExclusionPatternMatchesPatternAfter(t *testing.T) {
+	t.Parallel()
+
 	match, _ := Matches("fileutils.go", []string{"*.go", "!fileutils.go"})
 	assert.Equal(t, false, match, "failed to get false match on exclusion pattern, got %v", match)
 }
 
 // An exclusion followed by an inclusion should also return false.
 func TestExclusionPatternMatchesPatternBefore(t *testing.T) {
+	t.Parallel()
+
 	match, _ := Matches("fileutils.go", []string{"!fileutils.go", "*.go"})
 	assert.Equal(t, false, match, "failed to get false match on exclusion pattern, got %v", match)
 }
 
 // A filename evaluating to . should return false.
 func TestExclusionPatternMatchesWholeDirectory(t *testing.T) {
+	t.Parallel()
+
 	match, _ := Matches(".", []string{"*.go"})
 	assert.Equal(t, false, match, "failed to get false match on ., got %v", match)
 }
 
 // A single ! pattern should return an error.
 func TestSingleExclamationError(t *testing.T) {
+	t.Parallel()
+
 	_, err := Matches("fileutils.go", []string{"!"})
 	assert.Error(t, err, "failed to get an error for a single exclamation point, got %v", err)
 }
 
 // Matches with no patterns.
 func TestMatchesWithNoPatterns(t *testing.T) {
+	t.Parallel()
+
 	matches, err := Matches("/any/path/there", []string{})
 	require.NoError(t, err)
 	assert.Equal(t, false, matches, "Should not have match anything")
@@ -99,6 +119,8 @@ func TestMatchesWithNoPatterns(t *testing.T) {
 
 // Matches with malformed patterns.
 func TestMatchesWithMalformedPatterns(t *testing.T) {
+	t.Parallel()
+
 	matches, err := Matches("/any/path/there", []string{"["})
 	require.Error(t, err, "Should have failed because of a malformed syntax in the pattern")
 	assert.Equal(t, false, matches, "Should not have match anything")
@@ -111,6 +133,8 @@ type matchesTestCase struct {
 }
 
 func TestMatches(t *testing.T) {
+	t.Parallel()
+
 	tests := []matchesTestCase{
 		{"**", "file", true},
 		{"**", "file/", true},
@@ -184,6 +208,8 @@ func TestMatches(t *testing.T) {
 }
 
 func TestCleanPatterns(t *testing.T) {
+	t.Parallel()
+
 	patterns := []string{"docs", "config"}
 	pm, err := NewPatternMatcher(patterns)
 	require.NoError(t, err)
@@ -192,6 +218,8 @@ func TestCleanPatterns(t *testing.T) {
 }
 
 func TestCleanPatternsStripEmptyPatterns(t *testing.T) {
+	t.Parallel()
+
 	patterns := []string{"docs", "config", ""}
 	pm, err := NewPatternMatcher(patterns)
 	require.NoError(t, err)
@@ -200,6 +228,8 @@ func TestCleanPatternsStripEmptyPatterns(t *testing.T) {
 }
 
 func TestCleanExceptionPatterns(t *testing.T) {
+	t.Parallel()
+
 	patterns := []string{"docs", "!docs/README.md"}
 	pm, err := NewPatternMatcher(patterns)
 	require.NoError(t, err)
@@ -207,6 +237,8 @@ func TestCleanExceptionPatterns(t *testing.T) {
 }
 
 func TestCleanPatternsLeadingSpaceTrimmed(t *testing.T) {
+	t.Parallel()
+
 	patterns := []string{"docs", "  !docs/README.md"}
 	pm, err := NewPatternMatcher(patterns)
 	require.NoError(t, err)
@@ -214,6 +246,8 @@ func TestCleanPatternsLeadingSpaceTrimmed(t *testing.T) {
 }
 
 func TestCleanPatternsTrailingSpaceTrimmed(t *testing.T) {
+	t.Parallel()
+
 	patterns := []string{"docs", "!docs/README.md  "}
 	pm, err := NewPatternMatcher(patterns)
 	require.NoError(t, err)
@@ -221,6 +255,8 @@ func TestCleanPatternsTrailingSpaceTrimmed(t *testing.T) {
 }
 
 func TestCleanPatternsErrorSingleException(t *testing.T) {
+	t.Parallel()
+
 	patterns := []string{"!"}
 	_, err := NewPatternMatcher(patterns)
 	assert.Error(t, err, "expected error on single exclamation point, got %v", err)
@@ -292,6 +328,8 @@ var matchTests = []matchTest{
 
 // TestMatch test's our version of filepath.Match, called regexpMatch.
 func TestMatch(t *testing.T) {
+	t.Parallel()
+
 	for _, tt := range matchTests {
 		pattern := tt.pattern
 		s := tt.s
