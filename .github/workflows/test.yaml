@@ -39,8 +39,8 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - name: Yarn install
-        working-directory: pkg/app/web
+        working-directory: web
         run: yarn install
       - name: Run unit tests
-        working-directory: pkg/app/web
+        working-directory: web
         run: echo "WIP"
