@@ -15,6 +15,7 @@ go_library(
     deps = [
         "//pkg/app/piped/cloudprovider:go_default_library",
         "//pkg/config:go_default_library",
+        "//pkg/model:go_default_library",
         "@com_github_aws_aws_sdk_go_v2//aws:go_default_library",
         "@com_github_aws_aws_sdk_go_v2_config//:go_default_library",
         "@com_github_aws_aws_sdk_go_v2_credentials//stscreds:go_default_library",
@@ -37,6 +38,7 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
+        "//pkg/model:go_default_library",
         "@com_github_aws_aws_sdk_go_v2//aws:go_default_library",
         "@com_github_aws_aws_sdk_go_v2_service_ecs//types:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",

@@ -19,9 +19,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"sigs.k8s.io/yaml"
 
-	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func loadTaskDefinition(path string) (types.TaskDefinition, error) {
@@ -60,4 +61,34 @@ func parseContainerImage(image string) (name, tag string) {
 	paths := strings.Split(parts[0], "/")
 	name = paths[len(paths)-1]
 	return
+}
+
+// FindArtifactVersions parses artifact versions from ECS task definition.
+func FindArtifactVersions(taskDefinition types.TaskDefinition) ([]*model.ArtifactVersion, error) {
+	if len(taskDefinition.ContainerDefinitions) == 0 {
+		return nil, fmt.Errorf("container definition could not be empty")
+	}
+
+	// Remove duplicate images.
+	imageMap := map[string]struct{}{}
+	for _, cd := range taskDefinition.ContainerDefinitions {
+		imageMap[*cd.Image] = struct{}{}
+	}
+
+	versions := make([]*model.ArtifactVersion, 0, len(imageMap))
+	for i := range imageMap {
+		name, tag := parseContainerImage(i)
+		if name == "" {
+			return nil, fmt.Errorf("image name could not be empty")
+		}
+
+		versions = append(versions, &model.ArtifactVersion{
+			Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+			Version: tag,
+			Name:    name,
+			Url:     i,
+		})
+	}
+
+	return versions, nil
 }
