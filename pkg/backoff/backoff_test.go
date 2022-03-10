@@ -24,6 +24,8 @@ import (
 )
 
 func TestWaitNext(t *testing.T) {
+	t.Parallel()
+
 	var (
 		bo          = NewConstant(time.Millisecond)
 		r           = NewRetry(10, bo)
@@ -38,6 +40,8 @@ func TestWaitNext(t *testing.T) {
 }
 
 func TestWaitNextCancel(t *testing.T) {
+	t.Parallel()
+
 	var (
 		bo          = NewConstant(time.Minute)
 		r           = NewRetry(3, bo)
@@ -49,6 +53,8 @@ func TestWaitNextCancel(t *testing.T) {
 }
 
 func TestDo(t *testing.T) {
+	t.Parallel()
+
 	var calls int
 
 	testcases := []struct {

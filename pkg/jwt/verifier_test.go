@@ -28,6 +28,8 @@ import (
 )
 
 func TestVerify(t *testing.T) {
+	t.Parallel()
+
 	now := time.Now()
 
 	testcases := []struct {

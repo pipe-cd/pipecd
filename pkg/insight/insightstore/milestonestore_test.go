@@ -27,6 +27,8 @@ import (
 )
 
 func TestLoadMilestone(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

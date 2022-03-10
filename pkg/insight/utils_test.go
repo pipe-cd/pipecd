@@ -10,6 +10,8 @@ import (
 )
 
 func TestNormalizeTime(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		from time.Time
 		step model.InsightStep
@@ -53,7 +55,10 @@ func TestNormalizeTime(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := NormalizeTime(tt.args.from, tt.args.step)
 			assert.Equal(t, got, tt.want)
 		})

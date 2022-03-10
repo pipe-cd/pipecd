@@ -22,6 +22,8 @@ import (
 )
 
 func TestConstant(t *testing.T) {
+	t.Parallel()
+
 	bo := NewConstant(time.Millisecond)
 	assert.Equal(t, 0, bo.Calls())
 	assert.Equal(t, time.Duration(0), bo.Next())

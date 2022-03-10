@@ -24,6 +24,8 @@ import (
 )
 
 func TestExponential(t *testing.T) {
+	t.Parallel()
+
 	eb := NewExponential(time.Millisecond, time.Second)
 	assert.Equal(t, 0, eb.Calls())
 	assert.Equal(t, time.Duration(0), eb.Next())

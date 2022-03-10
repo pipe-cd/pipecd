@@ -26,6 +26,8 @@ import (
 )
 
 func TestMakeApplicationCounts(t *testing.T) {
+	t.Parallel()
+
 	now := time.Now()
 
 	testcases := []struct {

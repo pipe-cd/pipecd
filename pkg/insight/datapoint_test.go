@@ -24,6 +24,8 @@ import (
 )
 
 func Test_ExtractDataPoints(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		datapoints []DataPoint
 		from       time.Time
@@ -153,7 +155,10 @@ func Test_ExtractDataPoints(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := extractDataPoints(tt.args.datapoints, tt.args.from, tt.args.to)
 			if (err != nil) != tt.wantErr {
 				if !tt.wantErr {

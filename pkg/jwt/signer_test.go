@@ -25,6 +25,8 @@ import (
 )
 
 func TestSign(t *testing.T) {
+	t.Parallel()
+
 	claims := NewClaims("user-1", "avatar-url", time.Hour, model.Role{
 		ProjectId:   "project-1",
 		ProjectRole: model.Role_ADMIN,
