@@ -24,6 +24,8 @@ import (
 )
 
 func TestGeneratePipedKey(t *testing.T) {
+	t.Parallel()
+
 	key, hash, err := GeneratePipedKey()
 	assert.NoError(t, err)
 	assert.True(t, len(key) > 0)
@@ -31,6 +33,8 @@ func TestGeneratePipedKey(t *testing.T) {
 }
 
 func TestPipedCheckKey(t *testing.T) {
+	t.Parallel()
+
 	key, hash, err := GeneratePipedKey()
 	require.NoError(t, err)
 
@@ -49,6 +53,8 @@ func TestPipedCheckKey(t *testing.T) {
 }
 
 func TestAddKey(t *testing.T) {
+	t.Parallel()
+
 	p := &Piped{}
 	require.Equal(t, 0, len(p.Keys))
 
@@ -96,6 +102,8 @@ func TestAddKey(t *testing.T) {
 }
 
 func TestPipedDeleteOldPipedKeys(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		piped    Piped
@@ -171,7 +179,10 @@ func TestPipedDeleteOldPipedKeys(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			tc.piped.DeleteOldPipedKeys()
 			assert.Equal(t, tc.expected, tc.piped)
 		})
@@ -179,6 +190,8 @@ func TestPipedDeleteOldPipedKeys(t *testing.T) {
 }
 
 func TestPipedRedactSensitiveData(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		piped    Piped
@@ -230,7 +243,10 @@ func TestPipedRedactSensitiveData(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			tc.piped.RedactSensitiveData()
 			assert.Equal(t, tc.expected, tc.piped)
 		})
@@ -238,6 +254,8 @@ func TestPipedRedactSensitiveData(t *testing.T) {
 }
 
 func TestMakePipedURL(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		baseURL  string
@@ -258,7 +276,10 @@ func TestMakePipedURL(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := MakePipedURL(tc.baseURL, tc.pipedID)
 			assert.Equal(t, tc.expected, got)
 		})

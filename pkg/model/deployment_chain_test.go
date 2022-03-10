@@ -21,6 +21,8 @@ import (
 )
 
 func TestDeploymentChainDesireStatus(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name                 string
 		deploymentChain      DeploymentChain
@@ -104,7 +106,10 @@ func TestDeploymentChainDesireStatus(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			desireStatus := tc.deploymentChain.DesiredStatus()
 			assert.Equal(t, tc.expectedDesireStatus, desireStatus)
 		})

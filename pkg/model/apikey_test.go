@@ -22,6 +22,8 @@ import (
 )
 
 func TestGenerateAPIKey(t *testing.T) {
+	t.Parallel()
+
 	id := "test-id"
 	key, hash, err := GenerateAPIKey(id)
 	require.NoError(t, err)
@@ -42,6 +44,8 @@ func TestGenerateAPIKey(t *testing.T) {
 }
 
 func TestAPIKeyRedactSensitiveData(t *testing.T) {
+	t.Parallel()
+
 	apiKey := &APIKey{
 		Id:      "id",
 		KeyHash: "hash",

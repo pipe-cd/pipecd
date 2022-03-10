@@ -21,6 +21,8 @@ import (
 )
 
 func TestApplicationGitPathValidate(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		gitPath     *ApplicationGitPath
@@ -62,7 +64,10 @@ func TestApplicationGitPathValidate(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := tc.gitPath.Validate()
 			var errMsg string
 			if err != nil {
@@ -74,6 +79,8 @@ func TestApplicationGitPathValidate(t *testing.T) {
 }
 
 func TestApplicationInfo_ContainLabels(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name   string
 		app    *ApplicationInfo
@@ -134,7 +141,10 @@ func TestApplicationInfo_ContainLabels(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := tc.app.ContainLabels(tc.labels)
 			assert.Equal(t, tc.want, got)
 		})

@@ -21,6 +21,8 @@ import (
 )
 
 func TestMakeApplicationURL(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		baseURL       string
@@ -41,7 +43,10 @@ func TestMakeApplicationURL(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := MakeApplicationURL(tc.baseURL, tc.applicationID)
 			assert.Equal(t, tc.expected, got)
 		})
@@ -49,6 +54,8 @@ func TestMakeApplicationURL(t *testing.T) {
 }
 
 func TestApplication_ContainLabels(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name   string
 		app    *Application
@@ -91,7 +98,10 @@ func TestApplication_ContainLabels(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := tc.app.ContainLabels(tc.labels)
 			assert.Equal(t, tc.want, got)
 		})

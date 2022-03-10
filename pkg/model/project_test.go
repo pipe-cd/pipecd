@@ -36,6 +36,8 @@ func (d mockDecrypter) Decrypt(text string) (string, error) {
 }
 
 func TestRedactSensitiveData(t *testing.T) {
+	t.Parallel()
+
 	cases := []struct {
 		name    string
 		project *Project
@@ -69,7 +71,10 @@ func TestRedactSensitiveData(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			tc.project.RedactSensitiveData()
 			assert.Equal(t, tc.expect, tc.project)
 		})
@@ -77,6 +82,8 @@ func TestRedactSensitiveData(t *testing.T) {
 }
 
 func TestUpdateProjectStaticUser(t *testing.T) {
+	t.Parallel()
+
 	cases := []struct {
 		name           string
 		username       string
@@ -94,7 +101,10 @@ func TestUpdateProjectStaticUser(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			p := &ProjectStaticUser{}
 			p.Update(tc.username, tc.password)
 			assert.Equal(t, tc.expectUsername, p.Username)
@@ -105,6 +115,8 @@ func TestUpdateProjectStaticUser(t *testing.T) {
 }
 
 func TestUpdateProjectSSOConfig(t *testing.T) {
+	t.Parallel()
+
 	cases := []struct {
 		name   string
 		sso    *ProjectSSOConfig
@@ -136,7 +148,10 @@ func TestUpdateProjectSSOConfig(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			p := &ProjectSSOConfig{}
 			p.Update(tc.sso)
 			assert.Equal(t, tc.expect, p)
@@ -145,6 +160,8 @@ func TestUpdateProjectSSOConfig(t *testing.T) {
 }
 
 func TestEncrypt(t *testing.T) {
+	t.Parallel()
+
 	cases := []struct {
 		name   string
 		sso    *ProjectSSOConfig
@@ -176,7 +193,10 @@ func TestEncrypt(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			e := &mockEncrypter{}
 			err := tc.sso.Encrypt(e)
 			assert.NoError(t, err)
@@ -186,6 +206,8 @@ func TestEncrypt(t *testing.T) {
 }
 
 func TestDecrypt(t *testing.T) {
+	t.Parallel()
+
 	cases := []struct {
 		name   string
 		sso    *ProjectSSOConfig
@@ -217,7 +239,10 @@ func TestDecrypt(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			d := &mockDecrypter{}
 			err := tc.sso.Decrypt(d)
 			assert.NoError(t, err)

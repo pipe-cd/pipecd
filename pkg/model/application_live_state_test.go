@@ -21,6 +21,8 @@ import (
 )
 
 func TestApplicationLiveStateSnapshot_DetermineAppHealthStatus(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		snapshot *ApplicationLiveStateSnapshot
@@ -109,7 +111,10 @@ func TestApplicationLiveStateSnapshot_DetermineAppHealthStatus(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			tc.snapshot.DetermineAppHealthStatus()
 			assert.Equal(t, tc.want, tc.snapshot.HealthStatus)
 		})

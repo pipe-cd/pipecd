@@ -21,6 +21,8 @@ import (
 )
 
 func TestMakeEventKey(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		testname string
 		name1    string
@@ -81,7 +83,10 @@ func TestMakeEventKey(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.testname, func(t *testing.T) {
+			t.Parallel()
+
 			// Check if we can get the exact same string.
 			got1 := MakeEventKey(tc.name1, tc.labels1)
 			got2 := MakeEventKey(tc.name2, tc.labels2)

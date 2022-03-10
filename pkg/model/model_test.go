@@ -22,6 +22,8 @@ import (
 )
 
 func TestGenerateRandomString(t *testing.T) {
+	t.Parallel()
+
 	validator := func(s string) error {
 		for _, c := range s {
 			if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') {

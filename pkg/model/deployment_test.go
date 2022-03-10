@@ -21,6 +21,8 @@ import (
 )
 
 func TestDeployment_ContainTags(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name       string
 		deployment *Deployment
@@ -63,7 +65,10 @@ func TestDeployment_ContainTags(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := tc.deployment.ContainLabels(tc.labels)
 			assert.Equal(t, tc.want, got)
 		})
