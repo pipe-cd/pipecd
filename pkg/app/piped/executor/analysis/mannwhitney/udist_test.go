@@ -119,9 +119,9 @@ func BenchmarkUDist(b *testing.B) {
 func TestUDistTies(t *testing.T) {
 	t.Parallel()
 
-	makeTable := func(m, N int, t_var []int, minx, maxx float64) [][]float64 {
+	makeTable := func(m, N int, tVar []int, minx, maxx float64) [][]float64 {
 		out := [][]float64{}
-		dist := UDist{N1: m, N2: N - m, T: t_var}
+		dist := UDist{N1: m, N2: N - m, T: tVar}
 		for x := minx; x <= maxx; x += 0.5 {
 			// Convert x from uQt' to uQv'.
 			U := x - float64(m*m)/2
@@ -255,21 +255,21 @@ func XTestPrintUmemo(t *testing.T) {
 // This uses the "graphical method" of Klotz (1966). It is very slow
 // (Θ(∏ (t[i]+1)) = Ω(2^|t|)), but very correct, and hence useful as a
 // reference for testing faster implementations.
-func udistRef(t *testing.T, n1 int, t_var []int) (pmf, cdf []float64) {
+func udistRef(t *testing.T, n1 int, tVar []int) (pmf, cdf []float64) {
 	t.Helper()
-	// Enumerate all u vectors for which 0 <= u_i <= t_vari. Count
+	// Enumerate all u vectors for which 0 <= u_i <= tVari. Count
 	// the number of permutations of two samples of sizes n1 and
 	// sum(t)-n1 with tie vector t and accumulate these counts by
 	// their U statistics in count[2*U].
-	counts := make([]int, 1+2*n1*(sumint(t_var)-n1))
+	counts := make([]int, 1+2*n1*(sumint(tVar)-n1))
 
-	u := make([]int, len(t_var))
+	u := make([]int, len(tVar))
 	u[0] = -1 // Get enumeration started.
 enumu:
 	for {
 		// Compute the next u vector.
 		u[0]++
-		for i := 0; i < len(u) && u[i] > t_var[i]; i++ {
+		for i := 0; i < len(u) && u[i] > tVar[i]; i++ {
 			if i == len(u)-1 {
 				// All u vectors have been enumerated.
 				break enumu
@@ -290,17 +290,17 @@ enumu:
 		// Compute 2*U statistic for this u vector.
 		twoU, vsum := 0, 0
 		for i, u_i := range u {
-			v_i := t_var[i] - u_i
+			v_i := tVar[i] - u_i
 			// U = U + vsum*u_i + u_i*v_i/2
 			twoU += 2*vsum*u_i + u_i*v_i
 			vsum += v_i
 		}
 
-		// Compute Π choose(t_vari, u_i). This is the number of
+		// Compute Π choose(tVari, u_i). This is the number of
 		// ways of permuting the input sample under u.
 		prod := 1
 		for i, u_i := range u {
-			prod *= int(mathChoose(t_var[i], u_i) + 0.5)
+			prod *= int(mathChoose(tVar[i], u_i) + 0.5)
 		}
 
 		// Accumulate the permutations on this u path.
@@ -320,7 +320,7 @@ enumu:
 	// Convert counts into probabilities for PMF and CDF.
 	pmf = make([]float64, len(counts))
 	cdf = make([]float64, len(counts))
-	total := int(mathChoose(sumint(t_var), n1) + 0.5)
+	total := int(mathChoose(sumint(tVar), n1) + 0.5)
 	for i, count := range counts {
 		pmf[i] = float64(count) / float64(total)
 		if i > 0 {
@@ -332,13 +332,13 @@ enumu:
 }
 
 // printUmemo prints the output of makeUmemo for debugging.
-func printUmemo(t *testing.T, A []map[ukey]float64, t_var []int) {
+func printUmemo(t *testing.T, A []map[ukey]float64, tVar []int) {
 	t.Helper()
 
 	fmt.Printf("K\tn1\t2*U\tpr\n")
 	for K := len(A) - 1; K >= 0; K-- {
 		for i, pr := range A[K] {
-			_, ref := udistRef(t, i.n1, t_var[:K])
+			_, ref := udistRef(t, i.n1, tVar[:K])
 			fmt.Printf("%v\t%v\t%v\t%v\t%v\n", K, i.n1, i.twoU, pr, ref[i.twoU])
 		}
 	}
