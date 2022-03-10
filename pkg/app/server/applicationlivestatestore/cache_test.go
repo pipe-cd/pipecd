@@ -26,6 +26,8 @@ import (
 )
 
 func TestCacheGet(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := cachetest.NewMockCache(ctrl)

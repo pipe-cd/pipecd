@@ -23,6 +23,8 @@ import (
 )
 
 func TestMergeKubernetesResourceStatesOnAddOrUpdated(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name       string
 		prevStates []*model.KubernetesResourceState
@@ -163,7 +165,10 @@ func TestMergeKubernetesResourceStatesOnAddOrUpdated(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			states := mergeKubernetesResourceStatesOnAddOrUpdated(tc.prevStates, tc.event)
 			assert.Equal(t, tc.expectedStetes, states)
 		})
@@ -171,6 +176,8 @@ func TestMergeKubernetesResourceStatesOnAddOrUpdated(t *testing.T) {
 }
 
 func TestMergeKubernetesResourceStatesOnDeleted(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name       string
 		prevStates []*model.KubernetesResourceState
@@ -297,7 +304,10 @@ func TestMergeKubernetesResourceStatesOnDeleted(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			states := mergeKubernetesResourceStatesOnDeleted(tc.prevStates, tc.event)
 			assert.Equal(t, tc.expectedStetes, states)
 		})

@@ -30,6 +30,8 @@ import (
 )
 
 func TestValidateAppBelongsToPiped(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -122,6 +124,8 @@ func TestValidateAppBelongsToPiped(t *testing.T) {
 }
 
 func TestValidateDeploymentBelongsToPiped(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

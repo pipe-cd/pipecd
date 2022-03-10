@@ -30,6 +30,8 @@ import (
 )
 
 func TestValidateAppBelongsToProject(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -122,6 +124,8 @@ func TestValidateAppBelongsToProject(t *testing.T) {
 }
 
 func TestValidateDeploymentBelongsToProject(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -214,6 +218,8 @@ func TestValidateDeploymentBelongsToProject(t *testing.T) {
 }
 
 func TestValidatePipedBelongsToProject(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -306,6 +312,8 @@ func TestValidatePipedBelongsToProject(t *testing.T) {
 }
 
 func TestValidateApprover(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		stages    []*model.PipelineStage
@@ -368,7 +376,10 @@ func TestValidateApprover(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := validateApprover(tt.stages, tt.commander, tt.stageID)
 			assert.Equal(t, tt.wantErr, err != nil)
 		})

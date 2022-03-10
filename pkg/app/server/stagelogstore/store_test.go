@@ -23,6 +23,8 @@ import (
 )
 
 func TestMergeBlocks(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name string
 
@@ -207,7 +209,10 @@ func TestMergeBlocks(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			actual := mergeBlocks(tc.before, tc.after)
 			assert.Equal(t, tc.expected, actual)
 		})

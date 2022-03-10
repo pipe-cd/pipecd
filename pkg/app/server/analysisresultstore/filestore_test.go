@@ -28,6 +28,8 @@ import (
 )
 
 func TestFileStoreGet(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	store := filestoretest.NewMockStore(ctrl)
@@ -66,7 +68,10 @@ func TestFileStoreGet(t *testing.T) {
 		backend: store,
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			path := buildPath(tc.applicationID)
 			content := []byte(tc.content)
 
