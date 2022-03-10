@@ -26,6 +26,8 @@ import (
 )
 
 func TestGetCommitHashForRev(t *testing.T) {
+	t.Parallel()
+
 	faker, err := newFaker()
 	require.NoError(t, err)
 	defer faker.clean()

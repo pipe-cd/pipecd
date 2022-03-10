@@ -27,6 +27,8 @@ import (
 )
 
 func TestTemplateLocalChart(t *testing.T) {
+	t.Parallel()
+
 	var (
 		ctx       = context.Background()
 		appName   = "testapp"
@@ -48,6 +50,8 @@ func TestTemplateLocalChart(t *testing.T) {
 }
 
 func TestTemplateLocalChart_WithNamespace(t *testing.T) {
+	t.Parallel()
+
 	var (
 		ctx       = context.Background()
 		appName   = "testapp"

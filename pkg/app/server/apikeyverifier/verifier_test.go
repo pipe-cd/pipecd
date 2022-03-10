@@ -43,6 +43,8 @@ func (g *fakeAPIKeyGetter) Get(_ context.Context, id string) (*model.APIKey, err
 }
 
 func TestVerify(t *testing.T) {
+	t.Parallel()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
