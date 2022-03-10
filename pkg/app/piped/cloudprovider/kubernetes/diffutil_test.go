@@ -210,10 +210,7 @@ func TestRemoveMapFields(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			removed := removeMapFields(tc.config, tc.live)
 			assert.Equal(t, tc.expected, removed)
 		})
