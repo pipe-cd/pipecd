@@ -139,8 +139,8 @@ const MostRecentlySuccessfulDeployment: FC<{
                       >
                         {v.name}:{v.version}
                         <OpenInNewIcon className={classes.linkIcon} />
-                        <br />
                       </Link>
+                      <br />
                     </>
                   ))}
                 </>
