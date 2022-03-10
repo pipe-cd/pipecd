@@ -26,6 +26,8 @@ import (
 var testdata embed.FS
 
 func TestMakeCommentBody(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		event    githubEvent
@@ -218,7 +220,11 @@ func TestMakeCommentBody(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
+
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			expected, err := testdata.ReadFile(tc.expected)
 			require.NoError(t, err)
 
