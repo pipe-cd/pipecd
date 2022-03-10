@@ -24,6 +24,8 @@ import (
 )
 
 func TestReadableResultString(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		results  []*model.PlanPreviewCommandResult
@@ -212,7 +214,10 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			var buf bytes.Buffer
 			printResults(tc.results, &buf, "")
 

@@ -22,6 +22,8 @@ import (
 )
 
 func TestDetermineIndent(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name   string
 		line   string
@@ -67,7 +69,10 @@ func TestDetermineIndent(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, found := determineIndent(tc.line)
 			assert.Equal(t, tc.indent, got)
 			assert.Equal(t, tc.found, found)
@@ -76,6 +81,8 @@ func TestDetermineIndent(t *testing.T) {
 }
 
 func TestConvert(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name           string
 		deployConfig   string
@@ -154,7 +161,10 @@ spec:
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := convert([]byte(tc.deployConfig), tc.appName, tc.appEnv, tc.appDescription)
 			assert.Equal(t, tc.appConfig, string(got))
 			require.NoError(t, err)
