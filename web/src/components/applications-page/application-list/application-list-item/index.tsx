@@ -156,7 +156,7 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
                   recentlyDeployment.versionsList.map((v) => (
                     <>
                       <Link
-                        href={`//${v.url}`}
+                        href={v.url.includes("://") ? v.url : `//${v.url}`}
                         target="_blank"
                         rel="noreferrer"
                       >

@@ -134,7 +134,7 @@ const MostRecentlySuccessfulDeployment: FC<{
                     <>
                       {i > 0 && ","}
                       <Link
-                        href={`//${v.url}`}
+                        href={v.url.includes("://") ? v.url : `//${v.url}`}
                         target="_blank"
                         rel="noreferrer"
                       >
