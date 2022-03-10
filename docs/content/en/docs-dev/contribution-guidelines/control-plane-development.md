@@ -10,7 +10,7 @@ description: >
 
 - [cmd/pipecd](https://github.com/pipe-cd/pipecd/tree/master/cmd/pipecd): entrypoint for binary of control-plane server.
 - [pkg/app/server](https://github.com/pipe-cd/pipecd/tree/master/pkg/app/server): contains source code for control-plane api.
-- [pkg/app/web](https://github.com/pipe-cd/pipecd/tree/master/pkg/app/web): contains source code for control-plane web.
+- [web](https://github.com/pipe-cd/pipecd/tree/master/web): contains source code for the web console.
 - [pkg](https://github.com/pipe-cd/pipecd/tree/master/pkg): contains shared source code for all components of both `piped` and `control-plane`.
 
 ## How to run control-plane locally
