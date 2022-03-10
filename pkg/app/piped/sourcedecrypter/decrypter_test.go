@@ -40,8 +40,9 @@ func TestDecryptSecrets(t *testing.T) {
 
 	workspace, err := os.MkdirTemp("", "test-decrypt-secrets")
 	require.NoError(t, err)
-	defer os.RemoveAll(workspace)
-
+	t.Cleanup(func() {
+		os.RemoveAll(workspace)
+	})
 	dcr := testSecretDecrypter{
 		prefix: "decrypted-",
 	}
