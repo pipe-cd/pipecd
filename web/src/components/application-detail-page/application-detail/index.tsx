@@ -125,7 +125,30 @@ const MostRecentlySuccessfulDeployment: FC<{
             label="Deployed At"
             value={<span title={date.format()}>{date.fromNow()}</span>}
           />
-          <DetailTableRow label="Version" value={deployment.version} />
+          <DetailTableRow
+            label="Version"
+            value={
+              deployment.versionsList.length !== 0 ? (
+                <>
+                  {deployment.versionsList.map((v, i) => (
+                    <>
+                      {i > 0 && ","}
+                      <Link
+                        href={`//${v.url}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {v.version} ({v.name})
+                        <OpenInNewIcon className={classes.linkIcon} />
+                      </Link>
+                    </>
+                  ))}
+                </>
+              ) : (
+                <span>{deployment.version}</span>
+              )
+            }
+          />
           <DetailTableRow label="Summary" value={deployment.summary} />
         </tbody>
       </table>
