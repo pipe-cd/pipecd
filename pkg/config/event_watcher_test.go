@@ -21,6 +21,8 @@ import (
 )
 
 func TestLoadEventWatcher(t *testing.T) {
+	t.Parallel()
+
 	want := &EventWatcherSpec{Events: []EventWatcherEvent{
 		{
 			Name: "app1-image-update",
@@ -46,6 +48,8 @@ func TestLoadEventWatcher(t *testing.T) {
 	}}
 
 	t.Run("valid config files given", func(t *testing.T) {
+		t.Parallel()
+
 		got, err := LoadEventWatcher("testdata", []string{"event-watcher.yaml"}, nil)
 		assert.NoError(t, err)
 		assert.Equal(t, want, got)
@@ -53,6 +57,8 @@ func TestLoadEventWatcher(t *testing.T) {
 }
 
 func TestEventWatcherValidate(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name             string
 		eventWatcherSpec EventWatcherSpec
@@ -185,7 +191,10 @@ func TestEventWatcherValidate(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := tc.eventWatcherSpec.Validate()
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
@@ -193,6 +202,8 @@ func TestEventWatcherValidate(t *testing.T) {
 }
 
 func TestFilterEventWatcherFiles(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		files    []string
@@ -245,7 +256,10 @@ func TestFilterEventWatcherFiles(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := filterEventWatcherFiles(tc.files, tc.includes, tc.excludes)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)

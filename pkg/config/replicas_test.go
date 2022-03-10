@@ -24,6 +24,8 @@ import (
 )
 
 func TestReplicasMarshal(t *testing.T) {
+	t.Parallel()
+
 	type wrapper struct {
 		Replicas Replicas
 	}
@@ -55,7 +57,10 @@ func TestReplicasMarshal(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := json.Marshal(tc.input)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expected, string(got))
@@ -64,6 +69,8 @@ func TestReplicasMarshal(t *testing.T) {
 }
 
 func TestReplicasUnmarshal(t *testing.T) {
+	t.Parallel()
+
 	type wrapper struct {
 		Replicas Replicas
 	}
@@ -115,7 +122,10 @@ func TestReplicasUnmarshal(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := &wrapper{}
 			err := json.Unmarshal([]byte(tc.input), got)
 			assert.Equal(t, tc.expectedErr, err)

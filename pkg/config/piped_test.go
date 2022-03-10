@@ -25,6 +25,8 @@ import (
 )
 
 func TestPipedConfig(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind
@@ -225,7 +227,10 @@ func TestPipedConfig(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.fileName, func(t *testing.T) {
+			t.Parallel()
+
 			cfg, err := LoadFromYAML(tc.fileName)
 			require.Equal(t, tc.expectedError, err)
 			if err == nil {
@@ -238,6 +243,8 @@ func TestPipedConfig(t *testing.T) {
 }
 
 func TestPipedEventWatcherValidate(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name                  string
 		eventWatcher          PipedEventWatcher
@@ -312,7 +319,10 @@ func TestPipedEventWatcherValidate(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := tc.eventWatcher.Validate()
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.wantPipedEventWatcher, tc.eventWatcher)

@@ -25,6 +25,8 @@ import (
 )
 
 func TestHasStage(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name  string
 		s     GenericApplicationSpec
@@ -67,7 +69,10 @@ func TestHasStage(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := tc.s.HasStage(tc.stage)
 			assert.Equal(t, tc.want, got)
 		})
@@ -75,6 +80,8 @@ func TestHasStage(t *testing.T) {
 }
 
 func TestValidateWaitApprovalStageOptions(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name           string
 		minApproverNum int
@@ -92,7 +99,10 @@ func TestValidateWaitApprovalStageOptions(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			w := &WaitApprovalStageOptions{
 				MinApproverNum: tc.minApproverNum,
 			}
@@ -103,6 +113,8 @@ func TestValidateWaitApprovalStageOptions(t *testing.T) {
 }
 
 func TestFindSlackAccounts(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		mentions []NotificationMention
@@ -167,7 +179,10 @@ func TestFindSlackAccounts(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			n := &DeploymentNotification{
 				tc.mentions,
 			}
@@ -178,6 +193,8 @@ func TestFindSlackAccounts(t *testing.T) {
 }
 
 func TestValidateAnalysisTemplateRef(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name    string
 		tplName string
@@ -195,7 +212,10 @@ func TestValidateAnalysisTemplateRef(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			a := &AnalysisTemplateRef{
 				Name: tc.tplName,
 			}
@@ -206,6 +226,8 @@ func TestValidateAnalysisTemplateRef(t *testing.T) {
 }
 
 func TestValidateEncryption(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name             string
 		encryptedSecrets map[string]string
@@ -228,7 +250,10 @@ func TestValidateEncryption(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			s := &SecretEncryption{
 				EncryptedSecrets: tc.encryptedSecrets,
 			}
@@ -239,6 +264,8 @@ func TestValidateEncryption(t *testing.T) {
 }
 
 func TestValidateMentions(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name    string
 		event   string
@@ -271,7 +298,10 @@ func TestValidateMentions(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			m := &NotificationMention{
 				Event: tc.event,
 				Slack: tc.slack,
@@ -283,6 +313,8 @@ func TestValidateMentions(t *testing.T) {
 }
 
 func TestGenericTriggerConfiguration(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind
@@ -327,7 +359,10 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.fileName, func(t *testing.T) {
+			t.Parallel()
+
 			cfg, err := LoadFromYAML(tc.fileName)
 			require.Equal(t, tc.expectedError, err)
 			if err == nil {
@@ -340,6 +375,8 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 }
 
 func TestTrueByDefaultBoolConfiguration(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind
@@ -436,7 +473,10 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.fileName, func(t *testing.T) {
+			t.Parallel()
+
 			cfg, err := LoadFromYAML(tc.fileName)
 			require.Equal(t, tc.expectedError, err)
 			if err == nil {
@@ -449,6 +489,8 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 }
 
 func TestGenericPostSyncConfiguration(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind
@@ -505,7 +547,10 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.fileName, func(t *testing.T) {
+			t.Parallel()
+
 			cfg, err := LoadFromYAML(tc.fileName)
 			require.Equal(t, tc.expectedError, err)
 			if err == nil {

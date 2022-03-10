@@ -25,6 +25,8 @@ import (
 )
 
 func TestLambdaApplicationConfig(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind
@@ -155,7 +157,10 @@ func TestLambdaApplicationConfig(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.fileName, func(t *testing.T) {
+			t.Parallel()
+
 			cfg, err := LoadFromYAML(tc.fileName)
 			require.Equal(t, tc.expectedError, err)
 			if err == nil {

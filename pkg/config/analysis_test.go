@@ -25,6 +25,8 @@ func floatPointer(v float64) *float64 {
 }
 
 func TestAnalysisExpectedString(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name string
 		Min  *float64
@@ -53,7 +55,10 @@ func TestAnalysisExpectedString(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			e := &AnalysisExpected{
 				Min: tc.Min,
 				Max: tc.Max,

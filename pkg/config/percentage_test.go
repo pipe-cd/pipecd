@@ -23,6 +23,8 @@ import (
 )
 
 func TestPercentageMarshal(t *testing.T) {
+	t.Parallel()
+
 	type wrapper struct {
 		Percentage Percentage
 	}
@@ -54,7 +56,10 @@ func TestPercentageMarshal(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := json.Marshal(tc.input)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expected, string(got))
@@ -63,6 +68,8 @@ func TestPercentageMarshal(t *testing.T) {
 }
 
 func TestPercentageUnmarshal(t *testing.T) {
+	t.Parallel()
+
 	type wrapper struct {
 		Percentage Percentage
 	}
@@ -109,7 +116,10 @@ func TestPercentageUnmarshal(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := &wrapper{}
 			err := json.Unmarshal([]byte(tc.input), got)
 			assert.Equal(t, tc.expectedErr, err != nil)

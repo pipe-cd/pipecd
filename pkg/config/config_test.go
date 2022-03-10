@@ -24,6 +24,8 @@ import (
 )
 
 func TestUnmarshalConfig(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		data     string
@@ -69,7 +71,10 @@ func TestUnmarshalConfig(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			var got Config
 			err := json.Unmarshal([]byte(tc.data), &got)
 			assert.Equal(t, tc.wantErr, err != nil)
@@ -83,6 +88,8 @@ func newBoolPointer(v bool) *bool {
 }
 
 func TestKind_ToApplicationKind(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name   string
 		k      Kind
@@ -103,7 +110,10 @@ func TestKind_ToApplicationKind(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, gotOk := tc.k.ToApplicationKind()
 			assert.Equal(t, tc.want, got)
 			assert.Equal(t, tc.wantOk, gotOk)

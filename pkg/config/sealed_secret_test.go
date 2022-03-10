@@ -23,6 +23,8 @@ import (
 )
 
 func TestSealedSecretConfig(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind
@@ -60,7 +62,10 @@ data:
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.fileName, func(t *testing.T) {
+			t.Parallel()
+
 			cfg, err := LoadFromYAML(tc.fileName)
 			require.Equal(t, tc.expectedError, err)
 			if err == nil {
@@ -81,6 +86,8 @@ func (d testSealedSecretDecrypter) Decrypt(text string) (string, error) {
 }
 
 func TestSealedSecretRenderOrifinalContent(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		spec          *SealedSecretSpec
@@ -121,7 +128,10 @@ func TestSealedSecretRenderOrifinalContent(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := tc.spec.RenderOriginalContent(dcr)
 			assert.Equal(t, tc.expected, string(got))
 			if tc.expectedError != nil && err != nil {
