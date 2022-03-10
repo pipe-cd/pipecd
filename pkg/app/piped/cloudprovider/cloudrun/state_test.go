@@ -25,6 +25,8 @@ import (
 )
 
 func TestMakeResourceStates(t *testing.T) {
+	t.Parallel()
+
 	sm, err := ParseServiceManifest([]byte(serviceManifest))
 	require.NoError(t, err)
 

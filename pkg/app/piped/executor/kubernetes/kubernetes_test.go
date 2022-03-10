@@ -63,6 +63,8 @@ func (m *fakeMetadataStageStore) Put(_ context.Context, _, _ string) error      
 func (m *fakeMetadataStageStore) PutMulti(_ context.Context, _ map[string]string) error { return nil }
 
 func TestGenerateServiceManifests(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		manifestsFile string
@@ -73,7 +75,10 @@ func TestGenerateServiceManifests(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifests, err := provider.LoadManifestsFromYAMLFile(tc.manifestsFile)
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))
@@ -88,6 +93,8 @@ func TestGenerateServiceManifests(t *testing.T) {
 }
 
 func TestGenerateVariantWorkloadManifests(t *testing.T) {
+	t.Parallel()
+
 	const (
 		variantLabel  = "pipecd.dev/variant"
 		canaryVariant = "canary-variant"
@@ -110,7 +117,10 @@ func TestGenerateVariantWorkloadManifests(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifests, err := provider.LoadManifestsFromYAMLFile(tc.manifestsFile)
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))
@@ -146,6 +156,8 @@ func TestGenerateVariantWorkloadManifests(t *testing.T) {
 }
 
 func TestCheckVariantSelectorInWorkload(t *testing.T) {
+	t.Parallel()
+
 	const (
 		variantLabel   = "pipecd.dev/variant"
 		primaryVariant = "primary"
@@ -274,7 +286,10 @@ spec:
 	require.Equal(t, 1, len(generatedManifests))
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifests, err := provider.ParseManifests(tc.manifest)
 			require.NoError(t, err)
 			require.Equal(t, 1, len(manifests))
@@ -291,6 +306,8 @@ spec:
 }
 
 func TestApplyManifests(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 
 	testcases := []struct {
@@ -469,6 +486,8 @@ spec:
 }
 
 func TestDeleteResources(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 
 	testcases := []struct {
@@ -535,6 +554,8 @@ func TestDeleteResources(t *testing.T) {
 }
 
 func TestAnnotateConfigHash(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		manifests     string
@@ -753,7 +774,10 @@ data:
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifests, err := provider.ParseManifests(tc.manifests)
 			require.NoError(t, err)
 
@@ -768,6 +792,8 @@ data:
 }
 
 func TestPatchManifest(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		manifests     string
@@ -850,7 +876,10 @@ func TestPatchManifest(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifests, err := provider.LoadManifestsFromYAMLFile(tc.manifests)
 			require.NoError(t, err)
 
@@ -877,6 +906,8 @@ func TestPatchManifest(t *testing.T) {
 }
 
 func TestPatchManifests(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		input       []provider.Manifest
@@ -1005,7 +1036,10 @@ func TestPatchManifests(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := patchManifests(tc.input, tc.patches, patcher)
 			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expected, got)

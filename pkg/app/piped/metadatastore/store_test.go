@@ -56,6 +56,8 @@ func (c *fakeAPIClient) SaveStageMetadata(ctx context.Context, req *pipedservice
 }
 
 func TestStore(t *testing.T) {
+	t.Parallel()
+
 	ac := &fakeAPIClient{
 		shared: make(map[string]string, 0),
 		stages: make(map[string]metadata, 0),

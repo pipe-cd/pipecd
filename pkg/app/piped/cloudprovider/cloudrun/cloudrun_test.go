@@ -24,6 +24,8 @@ import (
 )
 
 func TestLoadServiceManifest(t *testing.T) {
+	t.Parallel()
+
 	const (
 		appDir      = "testdata"
 		serviceFile = "new_manifest.yaml"
@@ -39,12 +41,16 @@ func TestLoadServiceManifest(t *testing.T) {
 }
 
 func TestMakeManagedByPipedSelector(t *testing.T) {
+	t.Parallel()
+
 	want := "pipecd-dev-managed-by=piped"
 	got := MakeManagedByPipedSelector()
 	assert.Equal(t, want, got)
 }
 
 func TestMakeRevisionNamesSelector(t *testing.T) {
+	t.Parallel()
+
 	names := []string{"test-1", "test-2", "test-3"}
 	got := MakeRevisionNamesSelector(names)
 	want := "pipecd-dev-revision-name in (test-1,test-2,test-3)"
@@ -52,6 +58,8 @@ func TestMakeRevisionNamesSelector(t *testing.T) {
 }
 
 func TestService(t *testing.T) {
+	t.Parallel()
+
 	sm, err := ParseServiceManifest([]byte(serviceManifest))
 	require.NoError(t, err)
 
@@ -75,6 +83,8 @@ func TestService(t *testing.T) {
 }
 
 func TestService_HealthStatus(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		manifest string
@@ -293,7 +303,10 @@ status:
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			data := []byte(tc.manifest)
 			sm, err := ParseServiceManifest(data)
 			require.NoError(t, err)
@@ -309,6 +322,8 @@ status:
 }
 
 func TestRevision(t *testing.T) {
+	t.Parallel()
+
 	rm, err := ParseRevisionManifest([]byte(revisionManifest))
 	require.NoError(t, err)
 	require.NotEmpty(t, rm)
@@ -323,6 +338,8 @@ func TestRevision(t *testing.T) {
 }
 
 func TestRevision_HealthStatus(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		manifest string
@@ -580,7 +597,10 @@ status:
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			data := []byte(tc.manifest)
 			rm, err := ParseRevisionManifest(data)
 			require.NoError(t, err)

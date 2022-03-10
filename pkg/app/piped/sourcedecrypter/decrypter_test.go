@@ -36,6 +36,8 @@ func (d testSecretDecrypter) Decrypt(text string) (string, error) {
 }
 
 func TestDecryptSecrets(t *testing.T) {
+	t.Parallel()
+
 	workspace, err := os.MkdirTemp("", "test-decrypt-secrets")
 	require.NoError(t, err)
 	defer os.RemoveAll(workspace)
@@ -140,7 +142,10 @@ func TestDecryptSecrets(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			appDir, err := os.MkdirTemp(workspace, "app-dir")
 			require.NoError(t, err)
 

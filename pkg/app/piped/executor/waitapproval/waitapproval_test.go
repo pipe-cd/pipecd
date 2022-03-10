@@ -74,6 +74,8 @@ type fakeNotifier struct{}
 func (n *fakeNotifier) Notify(_ model.NotificationEvent) {}
 
 func TestValidateApproverNum(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 
 	ac := &fakeAPIClient{
@@ -209,7 +211,10 @@ func TestValidateApproverNum(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := tc.executor.validateApproverNum(ctx, tc.approver, tc.minApproverNum)
 			assert.Equal(t, tc.want, got)
 		})

@@ -11,6 +11,8 @@ import (
 )
 
 func TestBuildQuickSyncPipeline(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name             string
 		wantAutoRollback bool
@@ -25,7 +27,10 @@ func TestBuildQuickSyncPipeline(t *testing.T) {
 		},
 	}
 	for _, tc := range tests {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			gotStages := buildQuickSyncPipeline(tc.wantAutoRollback, time.Now())
 			var gotAutoRollback bool
 			for _, stage := range gotStages {
@@ -39,6 +44,8 @@ func TestBuildQuickSyncPipeline(t *testing.T) {
 }
 
 func TestBuildProgressivePipeline(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name             string
 		wantAutoRollback bool
@@ -53,7 +60,10 @@ func TestBuildProgressivePipeline(t *testing.T) {
 		},
 	}
 	for _, tc := range tests {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			gotStages := buildProgressivePipeline(&config.DeploymentPipeline{}, tc.wantAutoRollback, time.Now())
 			var gotAutoRollback bool
 			for _, stage := range gotStages {

@@ -34,6 +34,8 @@ func (f *fakeApplicationLister) List() []*model.Application {
 }
 
 func TestReporter_findRegisteredApps(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		repoPath string
 		repoID   string
@@ -153,7 +155,10 @@ spec:
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := tc.reporter.findRegisteredApps(tc.args.repoPath, tc.args.repoID)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)
@@ -162,6 +167,8 @@ spec:
 }
 
 func TestReporter_findUnregisteredApps(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		registeredAppPaths map[string]string
 		repoPath, repoID   string
@@ -381,7 +388,10 @@ spec:
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := tc.reporter.findUnregisteredApps(tc.args.repoPath, tc.args.repoID)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)

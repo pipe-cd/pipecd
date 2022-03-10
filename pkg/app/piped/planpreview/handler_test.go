@@ -53,6 +53,8 @@ func (b *testBuilder) Build(ctx context.Context, id string, cmd model.Command_Bu
 }
 
 func TestHandler(t *testing.T) {
+	t.Parallel()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

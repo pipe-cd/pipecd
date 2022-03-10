@@ -29,6 +29,8 @@ import (
 )
 
 func TestProviderQueryPoints(t *testing.T) {
+	t.Parallel()
+
 	toInt64Pointer := func(i int64) *int64 { return &i }
 	type queryResponse struct {
 		res        datadog.MetricsQueryResponse
@@ -98,7 +100,10 @@ func TestProviderQueryPoints(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			provider := Provider{
 				client: datadog.NewAPIClient(datadog.NewConfiguration()),
 				runQuery: func(_ datadog.ApiQueryMetricsRequest) (datadog.MetricsQueryResponse, *http.Response, error) {

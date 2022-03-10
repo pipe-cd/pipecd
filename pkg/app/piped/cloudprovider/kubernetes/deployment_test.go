@@ -24,6 +24,8 @@ import (
 )
 
 func TestFindReferencingConfigMapsInDeployment(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		manifest string
@@ -173,7 +175,10 @@ spec:
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifests, err := ParseManifests(tc.manifest)
 			require.NoError(t, err)
 			require.Equal(t, 1, len(manifests))
@@ -189,6 +194,8 @@ spec:
 }
 
 func TestFindReferencingSecretsInDeployment(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		manifest string
@@ -338,7 +345,10 @@ spec:
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifests, err := ParseManifests(tc.manifest)
 			require.NoError(t, err)
 			require.Equal(t, 1, len(manifests))

@@ -23,6 +23,8 @@ import (
 )
 
 func TestParseTaskDefinition(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		input       string
@@ -71,7 +73,10 @@ cpu: 256
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := parseTaskDefinition([]byte(tc.input))
 			assert.Equal(t, tc.expectedErr, err != nil)
 			assert.Equal(t, tc.expected, got)
