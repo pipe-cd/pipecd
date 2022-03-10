@@ -29,6 +29,8 @@ import (
 )
 
 func TestDeploymentToPlannedUpdater(t *testing.T) {
+	t.Parallel()
+
 	var (
 		expectedDesc                  = "updated-summary"
 		expectedStatusDesc            = "update-status-desc"
@@ -89,6 +91,8 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 }
 
 func TestDeploymentStatusUpdater(t *testing.T) {
+	t.Parallel()
+
 	var (
 		expectedStatus     = model.DeploymentStatus_DEPLOYMENT_RUNNING
 		expectedStatusDesc = "update-status-desc"
@@ -107,6 +111,8 @@ func TestDeploymentStatusUpdater(t *testing.T) {
 }
 
 func TestDeploymentToCompletedUpdater(t *testing.T) {
+	t.Parallel()
+
 	now := time.Now()
 	testcases := []struct {
 		name          string
@@ -210,6 +216,8 @@ func TestDeploymentToCompletedUpdater(t *testing.T) {
 }
 
 func TestStageStatusChangedUpdater(t *testing.T) {
+	t.Parallel()
+
 	now := time.Now()
 	testcases := []struct {
 		name         string
@@ -309,6 +317,8 @@ func TestStageStatusChangedUpdater(t *testing.T) {
 }
 
 func TestAddDeployment(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -373,6 +383,8 @@ func TestAddDeployment(t *testing.T) {
 }
 
 func TestGetDeployment(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -418,6 +430,8 @@ func TestGetDeployment(t *testing.T) {
 }
 
 func TestListDeployments(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

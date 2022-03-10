@@ -24,6 +24,8 @@ import (
 )
 
 func TestBuildGetQuery(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		kind          string
@@ -37,7 +39,10 @@ func TestBuildGetQuery(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			query := buildGetQuery(tc.kind)
 			assert.Equal(t, tc.expectedQuery, query)
 		})
@@ -45,6 +50,8 @@ func TestBuildGetQuery(t *testing.T) {
 }
 
 func TestBuildUpdateQuery(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		kind          string
@@ -58,7 +65,10 @@ func TestBuildUpdateQuery(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			query := buildUpdateQuery(tc.kind)
 			assert.Equal(t, tc.expectedQuery, query)
 		})
@@ -66,6 +76,8 @@ func TestBuildUpdateQuery(t *testing.T) {
 }
 
 func TestBuildCreateQuery(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		kind          string
@@ -79,7 +91,10 @@ func TestBuildCreateQuery(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			query := buildCreateQuery(tc.kind)
 			assert.Equal(t, tc.expectedQuery, query)
 		})
@@ -87,6 +102,8 @@ func TestBuildCreateQuery(t *testing.T) {
 }
 
 func TestBuildFindQuery(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		kind          string
@@ -380,7 +397,10 @@ func TestBuildFindQuery(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			query, err := buildFindQuery(tc.kind, tc.listOptions)
 			assert.Equal(t, tc.expectedQuery, query)
 			assert.Equal(t, tc.wantErr, err != nil)
@@ -389,6 +409,8 @@ func TestBuildFindQuery(t *testing.T) {
 }
 
 func TestRefineFiltersValue(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name               string
 		filters            []datastore.ListFilter
@@ -424,7 +446,10 @@ func TestRefineFiltersValue(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			vals := refineFiltersValue(tc.filters)
 			assert.Equal(t, tc.expectedFiltersVal, vals)
 		})
@@ -432,6 +457,8 @@ func TestRefineFiltersValue(t *testing.T) {
 }
 
 func TestMakeCompareOperatorForOuterSet(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name      string
 		direction datastore.OrderDirection
@@ -450,7 +477,10 @@ func TestMakeCompareOperatorForOuterSet(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ope := makeCompareOperatorForOuterSet(tc.direction)
 			assert.Equal(t, tc.expectOpe, ope)
 		})
@@ -458,6 +488,8 @@ func TestMakeCompareOperatorForOuterSet(t *testing.T) {
 }
 
 func TestMakeCompareOperatorForSubSet(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name      string
 		direction datastore.OrderDirection
@@ -476,7 +508,10 @@ func TestMakeCompareOperatorForSubSet(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ope := makeCompareOperatorForSubSet(tc.direction)
 			assert.Equal(t, tc.expectOpe, ope)
 		})
@@ -484,6 +519,8 @@ func TestMakeCompareOperatorForSubSet(t *testing.T) {
 }
 
 func TestMakePaginationCursorValues(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name               string
 		opts               datastore.ListOptions
@@ -560,7 +597,10 @@ func TestMakePaginationCursorValues(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			vals, err := makePaginationCursorValues(tc.opts)
 			assert.Equal(t, tc.expectedCursorVals, vals)
 			assert.Equal(t, tc.wantErr, err != nil)

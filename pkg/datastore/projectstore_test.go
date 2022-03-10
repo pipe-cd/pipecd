@@ -26,6 +26,8 @@ import (
 )
 
 func TestAddProject(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -71,6 +73,8 @@ func TestAddProject(t *testing.T) {
 }
 
 func TestGetProject(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -116,6 +120,8 @@ func TestGetProject(t *testing.T) {
 }
 
 func TestListProjects(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

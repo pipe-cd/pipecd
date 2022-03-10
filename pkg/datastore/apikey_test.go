@@ -26,6 +26,8 @@ import (
 )
 
 func TestAddAPIKey(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -72,6 +74,8 @@ func TestAddAPIKey(t *testing.T) {
 }
 
 func TestListAPIKeys(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

@@ -26,6 +26,8 @@ import (
 )
 
 func TestAddApplication(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -77,6 +79,8 @@ func TestAddApplication(t *testing.T) {
 }
 
 func TestGetApplication(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -122,6 +126,8 @@ func TestGetApplication(t *testing.T) {
 }
 
 func TestListApplications(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

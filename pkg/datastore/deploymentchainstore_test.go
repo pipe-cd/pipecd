@@ -24,6 +24,8 @@ import (
 )
 
 func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name             string
 		deploymentChain  model.DeploymentChain
@@ -310,7 +312,10 @@ func TestDeploymentChainNodeDeploymentStatusUpdater(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			updater := nodeDeploymentStatusUpdateFunc(tc.blockIndex, tc.deploymentID, tc.deploymentStatus, "")
 			err := updater(&tc.deploymentChain)
 			if err != nil {

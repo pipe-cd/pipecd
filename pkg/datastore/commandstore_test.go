@@ -27,6 +27,8 @@ import (
 )
 
 func TestAddCommand(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -70,6 +72,8 @@ func TestAddCommand(t *testing.T) {
 }
 
 func TestGetCommand(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -115,6 +119,8 @@ func TestGetCommand(t *testing.T) {
 }
 
 func TestListCommands(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -170,6 +176,8 @@ func TestListCommands(t *testing.T) {
 }
 
 func TestDecode(t *testing.T) {
+	t.Parallel()
+
 	col := &commandCollection{requestedBy: TestCommander}
 
 	testcases := []struct {
@@ -199,7 +207,10 @@ func TestDecode(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			cmd := &model.Command{}
 			err := col.Decode(cmd, tc.parts...)
 			require.Equal(t, tc.expectErr, err != nil)

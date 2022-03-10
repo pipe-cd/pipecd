@@ -32,6 +32,8 @@ func (d *dummyDoc) Data() map[string]interface{} {
 }
 
 func TestCursor(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name         string
 		iter         Iterator
@@ -95,7 +97,10 @@ func TestCursor(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			cursor, err := tc.iter.Cursor()
 			assert.Equal(t, tc.expectCursor, cursor)
 			assert.Equal(t, tc.expectErr, err != nil)

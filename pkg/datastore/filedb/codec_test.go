@@ -34,6 +34,8 @@ func (fm *fakeModel) SetUpdatedAt(t int64) {
 }
 
 func TestMerge(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		parts    [][]byte
@@ -66,7 +68,10 @@ func TestMerge(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			m := &fakeModel{}
 			merge(m, tc.parts...)
 			assert.Equal(t, tc.expected, m)

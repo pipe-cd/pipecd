@@ -21,6 +21,8 @@ import (
 )
 
 func TestMakeCreateIndexStatements(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name               string
 		rawIndexes         string
@@ -51,7 +53,10 @@ func TestMakeCreateIndexStatements(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			statements := makeCreateIndexStatements(tc.rawIndexes)
 			assert.Equal(t, tc.expectedStatements, statements)
 		})

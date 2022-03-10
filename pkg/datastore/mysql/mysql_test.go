@@ -21,6 +21,8 @@ import (
 )
 
 func TestBuildDataSourceName(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name           string
 		url            string
@@ -67,7 +69,10 @@ func TestBuildDataSourceName(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			dataSourceName, err := BuildDataSourceName(tc.url, tc.database, tc.usernameFile, tc.passwordFile)
 			assert.Equal(t, tc.expectErr, err != nil)
 			assert.Equal(t, tc.dataSourceName, dataSourceName)
@@ -76,6 +81,8 @@ func TestBuildDataSourceName(t *testing.T) {
 }
 
 func TestMakeRowID(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name    string
 		modelID string
@@ -99,7 +106,10 @@ func TestMakeRowID(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			rowID := makeRowID(tc.modelID)
 			assert.Equal(t, tc.rowID, rowID)
 		})

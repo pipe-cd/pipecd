@@ -24,6 +24,8 @@ import (
 )
 
 func TestProcessCursorArg(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name       string
 		opts       datastore.ListOptions
@@ -86,7 +88,10 @@ func TestProcessCursorArg(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			vals, err := makeCursorValues(tc.opts)
 			assert.Equal(t, tc.expectErr, err != nil)
 			assert.Equal(t, tc.expectVals, vals)

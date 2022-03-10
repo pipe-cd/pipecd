@@ -26,6 +26,8 @@ import (
 )
 
 func TestAddPiped(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -70,6 +72,8 @@ func TestAddPiped(t *testing.T) {
 }
 
 func TestGetPiped(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -115,6 +119,8 @@ func TestGetPiped(t *testing.T) {
 }
 
 func TestListPipeds(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
