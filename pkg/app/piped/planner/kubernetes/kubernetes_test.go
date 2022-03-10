@@ -399,6 +399,8 @@ func TestDecideStrategy(t *testing.T) {
 }
 
 func TestDetermineVersion(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		manifests     string
@@ -428,7 +430,10 @@ func TestDetermineVersion(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifests, err := provider.LoadManifestsFromYAMLFile(tc.manifests)
 			require.NoError(t, err)
 

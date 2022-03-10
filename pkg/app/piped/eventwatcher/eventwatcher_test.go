@@ -119,6 +119,8 @@ func TestModifyYAML(t *testing.T) {
 }
 
 func TestModifyText(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name         string
 		path         string
@@ -228,7 +230,9 @@ spec:
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			got, gotUpToDate, err := modifyText(tc.path, tc.regex, tc.newValue)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)

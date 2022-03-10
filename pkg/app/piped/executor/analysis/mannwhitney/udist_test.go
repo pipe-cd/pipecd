@@ -113,6 +113,8 @@ func BenchmarkUDist(b *testing.B) {
 }
 
 func TestUDistTies(t *testing.T) {
+	t.Parallel()
+
 	makeTable := func(m, N int, t []int, minx, maxx float64) [][]float64 {
 		out := [][]float64{}
 		dist := UDist{N1: m, N2: N - m, T: t}

@@ -768,6 +768,8 @@ data:
 }
 
 func TestPatchManifest(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		manifests     string
@@ -850,7 +852,10 @@ func TestPatchManifest(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			manifests, err := provider.LoadManifestsFromYAMLFile(tc.manifests)
 			require.NoError(t, err)
 
