@@ -385,7 +385,6 @@ spec:
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-
 			manifests, err := ParseManifests(tc.manifests)
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))
