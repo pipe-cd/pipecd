@@ -31,6 +31,8 @@ func TestGeneratePipedKey(t *testing.T) {
 }
 
 func TestPipedCheckKey(t *testing.T) {
+	t.Parallel()
+
 	key, hash, err := GeneratePipedKey()
 	require.NoError(t, err)
 

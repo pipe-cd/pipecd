@@ -77,6 +77,8 @@ func TestRedactSensitiveData(t *testing.T) {
 }
 
 func TestUpdateProjectStaticUser(t *testing.T) {
+	t.Parallel()
+
 	cases := []struct {
 		name           string
 		username       string
@@ -94,7 +96,9 @@ func TestUpdateProjectStaticUser(t *testing.T) {
 	}
 
 	for _, tc := range cases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			p := &ProjectStaticUser{}
 			p.Update(tc.username, tc.password)
 			assert.Equal(t, tc.expectUsername, p.Username)

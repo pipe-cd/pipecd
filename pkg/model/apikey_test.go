@@ -22,6 +22,8 @@ import (
 )
 
 func TestGenerateAPIKey(t *testing.T) {
+	t.Parallel()
+
 	id := "test-id"
 	key, hash, err := GenerateAPIKey(id)
 	require.NoError(t, err)

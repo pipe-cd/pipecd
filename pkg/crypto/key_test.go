@@ -25,6 +25,8 @@ import (
 )
 
 func TestGenerateRSAPems(t *testing.T) {
+	t.Parallel()
+
 	private, public, err := GenerateRSAPems(0)
 	require.Error(t, err)
 	assert.Nil(t, private)

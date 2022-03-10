@@ -118,6 +118,8 @@ func TestGroupManifests(t *testing.T) {
 }
 
 func TestDiffByCommand(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		command     string
