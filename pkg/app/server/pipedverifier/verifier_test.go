@@ -60,6 +60,8 @@ func (g *fakePipedGetter) Get(_ context.Context, id string) (*model.Piped, error
 }
 
 func TestVerify(t *testing.T) {
+	t.Parallel()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
