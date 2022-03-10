@@ -19,6 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/diff"
 )
@@ -398,7 +399,7 @@ spec:
 			require.Equal(t, 2, len(manifests))
 			old, new := manifests[0], manifests[1]
 
-			result, err := Diff(old, new, diff.WithEquateEmpty(), diff.WithIgnoreAddingMapKeys(), diff.WithCompareNumberAndNumericString())
+			result, err := Diff(old, new, zap.NewNop(), diff.WithEquateEmpty(), diff.WithIgnoreAddingMapKeys(), diff.WithCompareNumberAndNumericString())
 			require.NoError(t, err)
 
 			renderer := diff.NewRenderer(diff.WithLeftPadding(1))

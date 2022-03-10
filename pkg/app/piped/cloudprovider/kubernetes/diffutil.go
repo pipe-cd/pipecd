@@ -17,7 +17,6 @@ package kubernetes
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"reflect"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -90,17 +89,15 @@ func removeListFields(config, live []interface{}) []interface{} {
 // and allows to find differences between actual and target states more accurately.
 // Remarshalling also strips any type information (e.g. float64 vs. int) from the unstructured
 // object. This is important for diffing since it will cause godiff to report a false difference.
-func remarshal(obj *unstructured.Unstructured) *unstructured.Unstructured {
+func remarshal(obj *unstructured.Unstructured) (*unstructured.Unstructured, error) {
 	data, err := json.Marshal(obj)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	gvk := obj.GroupVersionKind()
 	item, err := scheme.Scheme.New(obj.GroupVersionKind())
 	if err != nil {
 		// This is common. the scheme is not registered
-		log.Printf("Could not create new object of type %s: %v", gvk, err)
-		return obj
+		return nil, err
 	}
 	// This will drop any omitempty fields, perform resource conversion etc...
 	unmarshalledObj := reflect.New(reflect.TypeOf(item).Elem()).Interface()
@@ -111,15 +108,13 @@ func remarshal(obj *unstructured.Unstructured) *unstructured.Unstructured {
 	if err := decoder.Decode(&unmarshalledObj); err != nil {
 		// Likely a field present in obj that is not present in the GVK type, or user
 		// may have specified an invalid spec in git, so return original object
-		log.Printf("Could not unmarshal to object of type %s: %v", gvk, err)
-		return obj
+		return nil, err
 	}
 	unstrBody, err := runtime.DefaultUnstructuredConverter.ToUnstructured(unmarshalledObj)
 	if err != nil {
-		log.Printf("Could not unmarshal to object of type %s: %v", gvk, err)
-		return obj
+		return nil, err
 	}
 	// Remove all default values specified by custom formatter (e.g. creationTimestamp)
 	unstrBody = removeMapFields(obj.Object, unstrBody)
-	return &unstructured.Unstructured{Object: unstrBody}
+	return &unstructured.Unstructured{Object: unstrBody}, nil
 }

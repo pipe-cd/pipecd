@@ -209,7 +209,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		manifestCache.Put(in.MostRecentSuccessfulCommitHash, oldManifests)
 	}
 
-	progressive, desc := decideStrategy(oldManifests, newManifests, cfg.Workloads)
+	progressive, desc := decideStrategy(oldManifests, newManifests, cfg.Workloads, in.Logger)
 	out.Summary = desc
 
 	if progressive {
@@ -225,7 +225,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 
 // First up, checks to see if the workload's `spec.template` has been changed,
 // and then checks if the configmap/secret's data.
-func decideStrategy(olds, news []provider.Manifest, workloadRefs []config.K8sResourceReference) (progressive bool, desc string) {
+func decideStrategy(olds, news []provider.Manifest, workloadRefs []config.K8sResourceReference, logger *zap.Logger) (progressive bool, desc string) {
 	oldWorkloads := findWorkloadManifests(olds, workloadRefs)
 	if len(oldWorkloads) == 0 {
 		desc = "Quick sync by applying all manifests because it was unable to find the currently running workloads"
@@ -243,7 +243,7 @@ func decideStrategy(olds, news []provider.Manifest, workloadRefs []config.K8sRes
 	for _, w := range workloads {
 		// If the workload's pod template was touched
 		// do progressive deployment with the specified pipeline.
-		diffResult, err := provider.Diff(w.old, w.new)
+		diffResult, err := provider.Diff(w.old, w.new, logger)
 		if err != nil {
 			progressive = true
 			desc = fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
@@ -287,7 +287,7 @@ func decideStrategy(olds, news []provider.Manifest, workloadRefs []config.K8sRes
 			desc = fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key.Kind, oc.Key.Name)
 			return
 		}
-		result, err := provider.Diff(oc, nc)
+		result, err := provider.Diff(oc, nc, logger)
 		if err != nil {
 			progressive = true
 			desc = fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)

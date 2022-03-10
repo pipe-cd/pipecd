@@ -191,6 +191,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	result, err := provider.DiffList(
 		headManifests,
 		liveManifests,
+		d.logger,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),

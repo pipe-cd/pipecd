@@ -63,6 +63,7 @@ func (b *builder) kubernetesDiff(
 	result, err := provider.DiffList(
 		oldManifests,
 		newManifests,
+		b.logger,
 		diff.WithEquateEmpty(),
 		diff.WithCompareNumberAndNumericString(),
 	)
