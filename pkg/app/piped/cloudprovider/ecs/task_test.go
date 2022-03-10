@@ -278,7 +278,7 @@ func TestFindArtifactVersions(t *testing.T) {
 			td, _ := parseTaskDefinition(tc.input)
 			versions, err := FindArtifactVersions(td)
 			assert.Equal(t, tc.expectedErr, err != nil)
-			assert.Equal(t, tc.expected, versions)
+			assert.ElementsMatch(t, tc.expected, versions)
 		})
 	}
 }
