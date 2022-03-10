@@ -33,6 +33,8 @@ import (
 )
 
 func TestUpdateDataPoints(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		chunk         insight.Chunk
 		step          model.InsightStep
@@ -443,7 +445,10 @@ func TestUpdateDataPoints(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := updateDataPoints(tt.args.chunk, tt.args.step, tt.args.updatedps, tt.args.accumulatedTo)
 			if (err != nil) != tt.wantErr {
 				if !tt.wantErr {
@@ -459,6 +464,8 @@ func TestUpdateDataPoints(t *testing.T) {
 	}
 }
 func TestFindDeploymentsCreatedInRange(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		from int64
 		to   int64
@@ -628,7 +635,10 @@ func TestFindDeploymentsCreatedInRange(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -655,6 +665,8 @@ func TestFindDeploymentsCreatedInRange(t *testing.T) {
 	}
 }
 func TestFindDeploymentsCompletedInRange(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		from int64
 		to   int64
@@ -824,7 +836,10 @@ func TestFindDeploymentsCompletedInRange(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -852,6 +867,8 @@ func TestFindDeploymentsCompletedInRange(t *testing.T) {
 }
 
 func TestExtractDailyInsightDataPoints(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		kind        model.InsightMetricsKind
 		deployments []*model.Deployment
@@ -996,7 +1013,10 @@ func TestExtractDailyInsightDataPoints(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := extractDailyInsightDataPoints(tt.args.deployments, tt.args.kind, tt.args.rangeFrom, tt.args.rangeTo)
 			if (err != nil) != tt.wantErr {
 				if !tt.wantErr {
@@ -1012,6 +1032,7 @@ func TestExtractDailyInsightDataPoints(t *testing.T) {
 }
 
 func TestGroupDeployments(t *testing.T) {
+	t.Parallel()
 
 	var (
 		d111 = &model.Deployment{
@@ -1081,7 +1102,10 @@ func TestGroupDeployments(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			apps, projects := groupDeployments(tc.deployments)
 			assert.Equal(t, tc.apps, apps)
 			assert.Equal(t, tc.projects, projects)

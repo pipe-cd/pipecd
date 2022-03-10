@@ -22,6 +22,8 @@ import (
 )
 
 func TestParseIndexes(t *testing.T) {
+	t.Parallel()
+
 	want := []index{
 		{
 			CollectionGroup: "Application",
@@ -581,6 +583,8 @@ func TestParseIndexes(t *testing.T) {
 }
 
 func TestFilterIndexes(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		indexes  []index
@@ -696,7 +700,10 @@ func TestFilterIndexes(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := filterIndexes(tc.indexes, tc.excludes)
 			assert.Equal(t, tc.want, got)
 		})
@@ -704,6 +711,8 @@ func TestFilterIndexes(t *testing.T) {
 }
 
 func TestIndexID(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name string
 		idx  index
@@ -747,7 +756,10 @@ func TestIndexID(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := tc.idx.id()
 			assert.Equal(t, tc.want, got)
 		})
@@ -755,6 +767,8 @@ func TestIndexID(t *testing.T) {
 }
 
 func TestPrefixIndexes(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		indexes  []index
@@ -788,7 +802,10 @@ func TestPrefixIndexes(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			indexes := tc.indexes
 			prefixIndexes(indexes, tc.prefix)
 			assert.Equal(t, tc.expected, indexes)

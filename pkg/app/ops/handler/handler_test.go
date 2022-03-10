@@ -24,6 +24,8 @@ import (
 )
 
 func TestMakeApplicationCounts(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name           string
 		counts         []model.InsightApplicationCount
@@ -84,7 +86,10 @@ func TestMakeApplicationCounts(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			total, groups := groupApplicationCounts(tc.counts)
 			assert.Equal(t, tc.expectedTotal, total)
 			assert.Equal(t, tc.expectedGroups, groups)
@@ -93,6 +98,8 @@ func TestMakeApplicationCounts(t *testing.T) {
 }
 
 func TestApplicationCountsTmpl(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		data        []map[string]interface{}
@@ -202,7 +209,10 @@ Unable to fetch application counts (No data for this project).
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			var buf bytes.Buffer
 			err := applicationCountsTmpl.Execute(&buf, tc.data)
 			assert.Equal(t, tc.expected, buf.String())

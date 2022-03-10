@@ -58,6 +58,8 @@ func (m *mockBuilderBackend) GetAll() (map[string]interface{}, error) {
 }
 
 func TestBuildPipedStat(t *testing.T) {
+	t.Parallel()
+
 	builder := NewPipedStatsBuilder(newMockBuilderBackend(), zap.NewNop())
 	rc, err := builder.Build()
 	require.NoError(t, err)
