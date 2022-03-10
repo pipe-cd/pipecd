@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/MoreVert";
+import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import clsx from "clsx";
 import dayjs from "dayjs";
 import { FC, memo, useState } from "react";
@@ -36,6 +37,11 @@ const useStyles = makeStyles((theme) => ({
   deployedBy: {
     maxWidth: 300,
     wordBreak: "break-word",
+  },
+  linkIcon: {
+    fontSize: 16,
+    verticalAlign: "text-bottom",
+    marginLeft: theme.spacing(0.5),
   },
 }));
 
@@ -146,7 +152,25 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
           {recentlyDeployment ? (
             <>
               <TableCell className={classes.version}>
-                {recentlyDeployment.version.includes(",") ? (
+                {recentlyDeployment.versionsList.length !== 0 ? (
+                  recentlyDeployment.versionsList.map((v) => (
+                    <>
+                      <Link
+                        href={v.url.includes("://") ? v.url : `//${v.url}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {/* Trim first 7 characters like commit hash in case it is too long */}
+                        {v.name}:
+                        {v.version.length > 7
+                          ? `${v.version.slice(0, 7)}...`
+                          : v.version}
+                        <OpenInNewIcon className={classes.linkIcon} />
+                      </Link>
+                      <br />
+                    </>
+                  ))
+                ) : recentlyDeployment.version.includes(",") ? (
                   recentlyDeployment.version
                     .split(",")
                     .filter((item, index, arr) => arr.indexOf(item) === index)
