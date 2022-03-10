@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -14,11 +14,4 @@ go_library(
         "@org_golang_x_sync//singleflight:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
-)
-
-go_test(
-    name = "go_default_test",
-    size = "small",
-    srcs = ["registry_test.go"],
-    embed = [":go_default_library"],
 )

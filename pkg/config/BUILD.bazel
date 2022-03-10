@@ -36,7 +36,6 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
-        "analysis_template_test.go",
         "analysis_test.go",
         "application_cloudrun_test.go",
         "application_ecs_test.go",
