@@ -22,5 +22,7 @@ import (
 )
 
 func TestVersion(t *testing.T) {
+	t.Parallel()
+
 	require.Equal(t, "1.43.0", grpc.Version)
 }

@@ -58,6 +58,8 @@ func (v testPipedTokenVerifier) Verify(ctx context.Context, projectID, pipedID, 
 }
 
 func TestRPCRequestOK(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 	pipedToken := rpcauth.MakePipedToken("test-project-id", "test-piped-id", "test-piped-key")
 	creds := rpcclient.NewPerRPCCredentials(pipedToken, rpcauth.PipedTokenCredentials, true)
@@ -93,6 +95,8 @@ func TestRPCRequestOK(t *testing.T) {
 }
 
 func TestRPCRequestWithoutCredentials(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 	var cli service.Client
 	var err error

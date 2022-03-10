@@ -32,6 +32,8 @@ func (v testValidator) Validate() error {
 }
 
 func TestRequestValidationUnaryServerInterceptor(t *testing.T) {
+	t.Parallel()
+
 	in := RequestValidationUnaryServerInterceptor()
 
 	testcases := []struct {

@@ -50,6 +50,8 @@ func (v testPipedTokenVerifier) Verify(ctx context.Context, projectID, pipedID, 
 }
 
 func TestPipedTokenUnaryServerInterceptor(t *testing.T) {
+	t.Parallel()
+
 	verifier := testPipedTokenVerifier{"test-piped-key"}
 	in := PipedTokenUnaryServerInterceptor(verifier, zap.NewNop())
 	testcases := []struct {
@@ -107,6 +109,8 @@ func TestPipedTokenUnaryServerInterceptor(t *testing.T) {
 }
 
 func TestPipedTokenStreamServerInterceptor(t *testing.T) {
+	t.Parallel()
+
 	verifier := testPipedTokenVerifier{"test-piped-key"}
 	in := PipedTokenStreamServerInterceptor(verifier, zap.NewNop())
 	testcases := []struct {
@@ -181,6 +185,8 @@ func (v testAPIKeyVerifier) Verify(_ context.Context, key string) (*model.APIKey
 }
 
 func TestAPIKeyUnaryServerInterceptor(t *testing.T) {
+	t.Parallel()
+
 	verifier := testAPIKeyVerifier{
 		keyString: "test-api-key",
 		key: &model.APIKey{

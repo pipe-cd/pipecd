@@ -24,6 +24,8 @@ import (
 )
 
 func TestChainUnaryServerInterceptors(t *testing.T) {
+	t.Parallel()
+
 	type parentKey string
 	parent := parentKey("parent")
 	ctx := context.WithValue(context.Background(), parent, "")

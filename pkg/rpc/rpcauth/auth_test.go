@@ -23,6 +23,8 @@ import (
 )
 
 func TestMakePipedToken(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name      string
 		projectID string
@@ -46,7 +48,10 @@ func TestMakePipedToken(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			got := MakePipedToken(tc.projectID, tc.pipedID, tc.pipedKey)
 			assert.Equal(t, tc.want, got)
 		})
@@ -54,6 +59,8 @@ func TestMakePipedToken(t *testing.T) {
 }
 
 func TestParsePipedToken(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		token         string
@@ -104,7 +111,10 @@ func TestParsePipedToken(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			projectID, pipedID, pipedKey, err := parsePipedToken(tc.token)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.wantProjectID, projectID)
@@ -115,6 +125,8 @@ func TestParsePipedToken(t *testing.T) {
 }
 
 func TestExtractToken(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name                    string
 		ctx                     context.Context
@@ -185,7 +197,10 @@ func TestExtractToken(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			creds, err := extractCredentials(tc.ctx)
 			assert.Equal(t, tc.failed, err != nil)
 			assert.Equal(t, tc.expectedCredentials, creds.Data)
@@ -195,6 +210,8 @@ func TestExtractToken(t *testing.T) {
 }
 
 func TestExtractCookie(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name           string
 		ctx            context.Context
@@ -233,7 +250,10 @@ func TestExtractCookie(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			cookie, err := extractCookie(tc.ctx)
 			assert.Equal(t, tc.failed, err != nil)
 			assert.Equal(t, tc.expectedCookie, cookie)
