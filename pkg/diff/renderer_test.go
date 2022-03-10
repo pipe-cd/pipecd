@@ -24,6 +24,8 @@ import (
 )
 
 func TestRenderNodeValue(t *testing.T) {
+	t.Parallel()
+
 	var (
 		mapOfPrimative = map[string]string{
 			"one": "1",
@@ -153,6 +155,8 @@ two: two-value`,
 }
 
 func TestRenderNodeValueComplex(t *testing.T) {
+	t.Parallel()
+
 	// Complex node. Note that the keys in the yaml file must be in order.
 	objs, err := loadUnstructureds("testdata/complex-node.yaml")
 	require.NoError(t, err)
@@ -167,6 +171,8 @@ func TestRenderNodeValueComplex(t *testing.T) {
 }
 
 func TestRenderPrimitiveValue(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		value    interface{}
@@ -197,7 +203,10 @@ func TestRenderPrimitiveValue(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			v := reflect.ValueOf(tc.value)
 			got := RenderPrimitiveValue(v)
 			assert.Equal(t, tc.expected, got)

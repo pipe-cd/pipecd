@@ -25,6 +25,8 @@ import (
 )
 
 func TestGenerateRSAPems(t *testing.T) {
+	t.Parallel()
+
 	private, public, err := GenerateRSAPems(0)
 	require.Error(t, err)
 	assert.Nil(t, private)
@@ -48,6 +50,8 @@ func TestGenerateRSAPems(t *testing.T) {
 }
 
 func TestParseRSAKey(t *testing.T) {
+	t.Parallel()
+
 	data, err := os.ReadFile("testdata/private-rsa-pem")
 	require.NoError(t, err)
 

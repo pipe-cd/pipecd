@@ -23,6 +23,8 @@ import (
 )
 
 func TestGenerateSSHConfig(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		cfg         config.PipedGit
@@ -80,7 +82,10 @@ Host gitlab.com
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			sshKeyFile := "/etc/piped-secret/ssh-key"
 			got, err := generateSSHConfig(tc.cfg, sshKeyFile)
 			assert.Equal(t, tc.expected, got)

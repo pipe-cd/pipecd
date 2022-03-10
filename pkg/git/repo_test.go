@@ -26,6 +26,8 @@ import (
 )
 
 func TestGetCommitHashForRev(t *testing.T) {
+	t.Parallel()
+
 	faker, err := newFaker()
 	require.NoError(t, err)
 	defer faker.clean()
@@ -53,6 +55,8 @@ func TestGetCommitHashForRev(t *testing.T) {
 }
 
 func TestChangedFiles(t *testing.T) {
+	t.Parallel()
+
 	faker, err := newFaker()
 	require.NoError(t, err)
 	defer faker.clean()
@@ -104,6 +108,8 @@ func TestChangedFiles(t *testing.T) {
 }
 
 func TestAddCommit(t *testing.T) {
+	t.Parallel()
+
 	faker, err := newFaker()
 	require.NoError(t, err)
 	defer faker.clean()
@@ -142,6 +148,8 @@ func TestAddCommit(t *testing.T) {
 }
 
 func TestCommitChanges(t *testing.T) {
+	t.Parallel()
+
 	faker, err := newFaker()
 	require.NoError(t, err)
 	defer faker.clean()

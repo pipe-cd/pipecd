@@ -24,6 +24,8 @@ import (
 )
 
 func TestParseCommit(t *testing.T) {
+	t.Parallel()
+
 	log, err := os.ReadFile("testdata/log.txt")
 	require.NoError(t, err)
 

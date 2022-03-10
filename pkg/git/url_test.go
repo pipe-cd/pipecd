@@ -8,6 +8,8 @@ import (
 )
 
 func TestMakeCommitURL(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		repoURL string
@@ -73,7 +75,10 @@ func TestMakeCommitURL(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := MakeCommitURL(tt.repoURL, tt.hash)
 			assert.Equal(t, tt.wantErr, err != nil)
 			assert.Equal(t, got, tt.want)
@@ -82,6 +87,8 @@ func TestMakeCommitURL(t *testing.T) {
 }
 
 func TestMakeDirURL(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		repoURL string
@@ -156,7 +163,10 @@ func TestMakeDirURL(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := MakeDirURL(tt.repoURL, tt.dir, tt.branch)
 			assert.Equal(t, tt.wantErr, err != nil)
 			assert.Equal(t, got, tt.want)
@@ -165,6 +175,8 @@ func TestMakeDirURL(t *testing.T) {
 }
 
 func TestMakeFileCreationURL(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		repoURL  string
@@ -239,7 +251,10 @@ foo:
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := MakeFileCreationURL(tt.repoURL, tt.dir, tt.branch, tt.filename, tt.value)
 			assert.Equal(t, tt.wantErr, err != nil)
 			assert.Equal(t, tt.want, got)
@@ -248,6 +263,8 @@ foo:
 }
 
 func TestParseGitURL(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		rawURL  string
@@ -377,7 +394,10 @@ func TestParseGitURL(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			got, err := parseGitURL(tt.rawURL)
 			assert.Equal(t, tt.wantErr, err != nil)
 			assert.Equal(t, got, tt.wantURL)

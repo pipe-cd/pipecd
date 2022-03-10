@@ -27,6 +27,8 @@ import (
 )
 
 func TestDiff(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name       string
 		yamlFile   string
@@ -107,7 +109,10 @@ func TestDiff(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			objs, err := loadUnstructureds(tc.yamlFile)
 			require.NoError(t, err)
 			require.Equal(t, 2, len(objs))

@@ -23,6 +23,8 @@ import (
 )
 
 func TestRSAEncryptDecrypt(t *testing.T) {
+	t.Parallel()
+
 	data, err := os.ReadFile("testdata/public-rsa-pem")
 	require.NoError(t, err)
 

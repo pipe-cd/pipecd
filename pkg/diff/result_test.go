@@ -21,6 +21,8 @@ import (
 )
 
 func TestFindOne(t *testing.T) {
+	t.Parallel()
+
 	nodes := []Node{
 		{PathString: "spec.template.spec"},
 	}
@@ -52,7 +54,10 @@ func TestFindOne(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			n, err := tc.nodes.FindOne(tc.query)
 			assert.Equal(t, tc.expected, n)
 			assert.Equal(t, tc.exepectedError, err)
@@ -61,6 +66,8 @@ func TestFindOne(t *testing.T) {
 }
 
 func TestFind(t *testing.T) {
+	t.Parallel()
+
 	nodes := []Node{
 		{PathString: "spec.replicas"},
 		{PathString: "spec.template.spec.containers.0.image"},
@@ -93,7 +100,10 @@ func TestFind(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			ns, err := tc.nodes.Find(tc.query)
 			assert.Equal(t, Nodes(tc.expected), ns)
 			assert.NoError(t, err)

@@ -22,12 +22,16 @@ import (
 )
 
 func TestNewAESEncryptDecrypterInvalidKey(t *testing.T) {
+	t.Parallel()
+
 	ed, err := NewAESEncryptDecrypter("testdata/short-key")
 	assert.Nil(t, ed)
 	assert.Equal(t, "key size (9) must be greater than or equal to 32", err.Error())
 }
 
 func TestAESEncryptDecrypt(t *testing.T) {
+	t.Parallel()
+
 	text := "foo-bar-baz"
 
 	ed, err := NewAESEncryptDecrypter("testdata/key")

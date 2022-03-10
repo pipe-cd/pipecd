@@ -29,6 +29,8 @@ import (
 )
 
 func TestClone(t *testing.T) {
+	t.Parallel()
+
 	faker, err := newFaker()
 	require.NoError(t, err)
 	defer faker.clean()
@@ -177,6 +179,8 @@ func (g gitCommander) addCommit(filename string, content string) error {
 }
 
 func TestRetryCommand(t *testing.T) {
+	t.Parallel()
+
 	var (
 		ranCount   = 0
 		commandOut = []byte("hello")
