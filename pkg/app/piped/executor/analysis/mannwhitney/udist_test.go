@@ -257,7 +257,7 @@ func XTestPrintUmemo(t *testing.T) {
 // reference for testing faster implementations.
 func udistRef(t *testing.T, n1 int, tVar []int) (pmf, cdf []float64) {
 	t.Helper()
-	// Enumerate all u vectors for which 0 <= u_i <= tVari. Count
+	// Enumerate all u vectors for which 0 <= ui <= tVari. Count
 	// the number of permutations of two samples of sizes n1 and
 	// sum(t)-n1 with tie vector t and accumulate these counts by
 	// their U statistics in count[2*U].
@@ -289,18 +289,18 @@ enumu:
 
 		// Compute 2*U statistic for this u vector.
 		twoU, vsum := 0, 0
-		for i, u_i := range u {
-			v_i := tVar[i] - u_i
-			// U = U + vsum*u_i + u_i*v_i/2
-			twoU += 2*vsum*u_i + u_i*v_i
-			vsum += v_i
+		for i, ui := range u {
+			vi := tVar[i] - ui
+			// U = U + vsum*ui + ui*vi/2
+			twoU += 2*vsum*ui + ui*vi
+			vsum += vi
 		}
 
-		// Compute Π choose(tVari, u_i). This is the number of
+		// Compute Π choose(tVari, ui). This is the number of
 		// ways of permuting the input sample under u.
 		prod := 1
-		for i, u_i := range u {
-			prod *= int(mathChoose(tVar[i], u_i) + 0.5)
+		for i, ui := range u {
+			prod *= int(mathChoose(tVar[i], ui) + 0.5)
 		}
 
 		// Accumulate the permutations on this u path.
