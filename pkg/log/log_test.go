@@ -60,11 +60,11 @@ func TestNewLoggerFailed(t *testing.T) {
 	t.Parallel()
 
 	configs := []Configs{
-		Configs{
+		{
 			Level:    "foo",
 			Encoding: "json",
 		},
-		Configs{
+		{
 			Level:    "info",
 			Encoding: "foo",
 		},
