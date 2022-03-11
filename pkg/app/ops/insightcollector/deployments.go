@@ -93,6 +93,10 @@ func (c *Collector) findDeploymentsCreatedInRange(ctx context.Context, from, to 
 					Field:     "CreatedAt",
 					Direction: datastore.Desc,
 				},
+				{
+					Field:     "Id",
+					Direction: datastore.Asc,
+				},
 			},
 		})
 		if err != nil {
@@ -132,6 +136,10 @@ func (c *Collector) findDeploymentsCompletedInRange(ctx context.Context, from, t
 				{
 					Field:     "CompletedAt",
 					Direction: datastore.Desc,
+				},
+				{
+					Field:     "Id",
+					Direction: datastore.Asc,
 				},
 			},
 		})
