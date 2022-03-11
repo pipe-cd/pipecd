@@ -310,6 +310,38 @@
     ]
   },
   {
+    "collectionGroup": "Deployment",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "CompletedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Deployment",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "CreatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
     "collectionGroup": "Event",
     "queryScope": "COLLECTION",
     "fields": [
