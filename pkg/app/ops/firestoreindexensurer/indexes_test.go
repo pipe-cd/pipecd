@@ -334,6 +334,38 @@ func TestParseIndexes(t *testing.T) {
 			},
 		},
 		{
+			CollectionGroup: "Deployment",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "CompletedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Deployment",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
+					FieldPath:   "CreatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
 			CollectionGroup: "Event",
 			QueryScope:      "COLLECTION",
 			Fields: []field{
