@@ -496,6 +496,10 @@ func TestFindDeploymentsCreatedInRange(t *testing.T) {
 							Field:     "CreatedAt",
 							Direction: datastore.Desc,
 						},
+						{
+							Field:     "Id",
+							Direction: datastore.Asc,
+						},
 					},
 				}).Return([]*model.Deployment{
 					{
@@ -530,6 +534,10 @@ func TestFindDeploymentsCreatedInRange(t *testing.T) {
 							Field:     "CreatedAt",
 							Direction: datastore.Desc,
 						},
+						{
+							Field:     "Id",
+							Direction: datastore.Asc,
+						},
 					},
 				}).Return([]*model.Deployment{
 					{
@@ -563,6 +571,10 @@ func TestFindDeploymentsCreatedInRange(t *testing.T) {
 						{
 							Field:     "CreatedAt",
 							Direction: datastore.Desc,
+						},
+						{
+							Field:     "Id",
+							Direction: datastore.Asc,
 						},
 					},
 					Cursor: "",
@@ -620,6 +632,10 @@ func TestFindDeploymentsCreatedInRange(t *testing.T) {
 						{
 							Field:     "CreatedAt",
 							Direction: datastore.Desc,
+						},
+						{
+							Field:     "Id",
+							Direction: datastore.Asc,
 						},
 					},
 				}).Return([]*model.Deployment{}, "", fmt.Errorf("something wrong happens in ListDeployments"))
@@ -692,6 +708,10 @@ func TestFindDeploymentsCompletedInRange(t *testing.T) {
 							Field:     "CompletedAt",
 							Direction: datastore.Desc,
 						},
+						{
+							Field:     "Id",
+							Direction: datastore.Asc,
+						},
 					},
 				}).Return([]*model.Deployment{
 					{
@@ -726,6 +746,10 @@ func TestFindDeploymentsCompletedInRange(t *testing.T) {
 							Field:     "CompletedAt",
 							Direction: datastore.Desc,
 						},
+						{
+							Field:     "Id",
+							Direction: datastore.Asc,
+						},
 					},
 				}).Return([]*model.Deployment{
 					{
@@ -759,6 +783,10 @@ func TestFindDeploymentsCompletedInRange(t *testing.T) {
 						{
 							Field:     "CompletedAt",
 							Direction: datastore.Desc,
+						},
+						{
+							Field:     "Id",
+							Direction: datastore.Asc,
 						},
 					},
 					Cursor: "",
@@ -816,6 +844,10 @@ func TestFindDeploymentsCompletedInRange(t *testing.T) {
 						{
 							Field:     "CompletedAt",
 							Direction: datastore.Desc,
+						},
+						{
+							Field:     "Id",
+							Direction: datastore.Asc,
 						},
 					},
 				}).Return([]*model.Deployment{}, "", fmt.Errorf("something wrong happens in ListDeployments"))
