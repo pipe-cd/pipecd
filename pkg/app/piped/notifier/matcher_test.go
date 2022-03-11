@@ -190,10 +190,7 @@ func TestMatch(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			matcher := newMatcher(tc.config)
 			for event, expected := range tc.matchings {
 				got := matcher.Match(event)

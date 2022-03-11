@@ -75,10 +75,7 @@ func TestGenerateServiceManifests(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			manifests, err := provider.LoadManifestsFromYAMLFile(tc.manifestsFile)
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))
@@ -117,10 +114,7 @@ func TestGenerateVariantWorkloadManifests(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			manifests, err := provider.LoadManifestsFromYAMLFile(tc.manifestsFile)
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))
@@ -286,10 +280,7 @@ spec:
 	require.Equal(t, 1, len(generatedManifests))
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			manifests, err := provider.ParseManifests(tc.manifest)
 			require.NoError(t, err)
 			require.Equal(t, 1, len(manifests))
@@ -774,10 +765,7 @@ data:
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			manifests, err := provider.ParseManifests(tc.manifests)
 			require.NoError(t, err)
 
@@ -876,10 +864,7 @@ func TestPatchManifest(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			manifests, err := provider.LoadManifestsFromYAMLFile(tc.manifests)
 			require.NoError(t, err)
 
@@ -1036,10 +1021,7 @@ func TestPatchManifests(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			got, err := patchManifests(tc.input, tc.patches, patcher)
 			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expected, got)

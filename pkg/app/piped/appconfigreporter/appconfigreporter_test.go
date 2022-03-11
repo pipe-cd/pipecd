@@ -155,10 +155,7 @@ spec:
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			got, err := tc.reporter.findRegisteredApps(tc.args.repoPath, tc.args.repoID)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)
@@ -388,10 +385,7 @@ spec:
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			got, err := tc.reporter.findUnregisteredApps(tc.args.repoPath, tc.args.repoID)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)

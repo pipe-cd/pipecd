@@ -109,10 +109,7 @@ func TestGroupManifests(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			adds, deletes, newChanges, oldChanges := groupManifests(tc.olds, tc.news)
 			assert.Equal(t, tc.expectedAdds, adds)
 			assert.Equal(t, tc.expectedDeletes, deletes)
@@ -178,10 +175,7 @@ func TestDiffByCommand(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			manifests, err := LoadManifestsFromYAMLFile(tc.manifests)
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))
@@ -319,10 +313,7 @@ data:
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			manifests, err := ParseManifests(tc.manifests)
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))

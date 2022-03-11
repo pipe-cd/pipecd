@@ -73,10 +73,7 @@ func TestConvertStr(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			got, err := convertStr(tc.value)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)
@@ -116,10 +113,7 @@ func TestModifyYAML(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			gotNewYml, gotUpToDate, err := modifyYAML(tc.path, tc.field, tc.newValue)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.wantNewYml, gotNewYml)
@@ -240,10 +234,7 @@ spec:
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			got, gotUpToDate, err := modifyText(tc.path, tc.regex, tc.newValue)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)

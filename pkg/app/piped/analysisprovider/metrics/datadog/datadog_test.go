@@ -100,10 +100,7 @@ func TestProviderQueryPoints(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			provider := Provider{
 				client: datadog.NewAPIClient(datadog.NewConfiguration()),
 				runQuery: func(_ datadog.ApiQueryMetricsRequest) (datadog.MetricsQueryResponse, *http.Response, error) {

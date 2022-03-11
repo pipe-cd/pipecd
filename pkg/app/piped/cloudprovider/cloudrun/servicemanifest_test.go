@@ -281,10 +281,7 @@ spec:
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			data := []byte(tc.manifest)
 			sm, err := ParseServiceManifest(data)
 			require.NoError(t, err)

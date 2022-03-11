@@ -128,10 +128,7 @@ func Test_metricsAnalyzer_analyzeWithThreshold(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			tc.metricsAnalyzer.logger = zap.NewNop()
 			tc.metricsAnalyzer.logPersister = &fakeLogPersister{}
 			got, err := tc.metricsAnalyzer.analyzeWithThreshold(context.Background())
@@ -227,10 +224,7 @@ func Test_compare(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			got, err := compare(tc.args.experiment, tc.args.control, tc.args.deviation)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.wantExpected, got)
@@ -299,10 +293,7 @@ func Test_metricsAnalyzer_renderQuery(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			got, err := tc.metricsAnalyzer.renderQuery(tc.args.queryTemplate, tc.args.variantCustomArgs, tc.args.variant)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)

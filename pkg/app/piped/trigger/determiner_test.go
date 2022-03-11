@@ -72,10 +72,7 @@ func TestIsTouchedByChangedFiles(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			got, err := isTouchedByChangedFiles(tc.appDir, tc.changes, tc.changedFiles)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expected, got)

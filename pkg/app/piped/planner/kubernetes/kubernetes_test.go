@@ -392,10 +392,7 @@ func TestDecideStrategy(t *testing.T) {
 		},
 	}
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			gotProgressive, gotDesc := decideStrategy(tc.olds, tc.news, tc.workloadRefs)
 			assert.Equal(t, tc.wantProgressive, gotProgressive)
 			assert.Equal(t, tc.wantDesc, gotDesc)
@@ -435,10 +432,7 @@ func TestDetermineVersion(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			manifests, err := provider.LoadManifestsFromYAMLFile(tc.manifests)
 			require.NoError(t, err)
 
@@ -526,10 +520,7 @@ func TestDetermineVersions(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			manifests, err := provider.LoadManifestsFromYAMLFile(tc.manifests)
 			require.NoError(t, err)
 
@@ -575,10 +566,7 @@ func TestCheckImageChange(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			oldManifests, err := provider.LoadManifestsFromYAMLFile(tc.oldManifests)
 			require.NoError(t, err)
 
