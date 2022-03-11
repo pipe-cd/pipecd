@@ -79,7 +79,7 @@ ALTER TABLE Deployment ADD COLUMN PipedId VARCHAR(36) GENERATED ALWAYS AS (data-
 CREATE INDEX deployment_piped_id ON Deployment (PipedId);
 
 -- index on `CompletedAt` ASC
-ALTER TABLE Deployment ADD COLUMN CompletedAt INT(11) GENERATED ALWAYS AS (data->>"$.completed_at") VIRTUAL NOT NULL;
+ALTER TABLE Deployment ADD COLUMN CompletedAt INT(11) GENERATED ALWAYS AS (data->>"$.completed_at") VIRTUAL NULL;
 CREATE INDEX deployment_completed_at ON Deployment (CompletedAt);
 
 -- index on `DeploymentChainId` ASC and `UpdatedAt` DESC
