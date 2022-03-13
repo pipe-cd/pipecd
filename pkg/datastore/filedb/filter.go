@@ -122,8 +122,8 @@ func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
 
 func makeSliceOfInterfaces(v interface{}) ([]interface{}, error) {
 	rv := reflect.ValueOf(v)
-	if rv.Kind() != reflect.Slice {
-		return nil, fmt.Errorf("value is not a slide")
+	if rv.Kind() != reflect.Slice && rv.Kind() != reflect.Array {
+		return nil, fmt.Errorf("value is not a slide or array")
 	}
 
 	vs := make([]interface{}, rv.Len())
