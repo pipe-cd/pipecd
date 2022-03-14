@@ -20,9 +20,10 @@ import (
 	"os"
 	"strings"
 
+	"sigs.k8s.io/yaml"
+
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"sigs.k8s.io/yaml"
 )
 
 const (
