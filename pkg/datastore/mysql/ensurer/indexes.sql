@@ -78,7 +78,7 @@ CREATE INDEX deployment_status_updated_at_desc ON Deployment (Status, UpdatedAt 
 ALTER TABLE Deployment ADD COLUMN PipedId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.piped_id") VIRTUAL NOT NULL;
 CREATE INDEX deployment_piped_id ON Deployment (PipedId);
 
--- index on `CompletedAt` DESC
+-- index on `CompletedAt` DESC and `Id` ASC
 ALTER TABLE Deployment ADD COLUMN CompletedAt INT(11) GENERATED ALWAYS AS (data->>"$.completed_at") VIRTUAL NULL;
 CREATE INDEX deployment_completed_at_desc_id ON Deployment (CompletedAt DESC, Id);
 
