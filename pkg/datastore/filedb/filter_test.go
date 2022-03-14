@@ -21,15 +21,53 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
+
+func TestConvertCamelToSnake(t *testing.T) {
+	testcases := []struct {
+		name  string
+		camel string
+		snake string
+	}{
+		{
+			name:  "single camel",
+			camel: "Id",
+			snake: "id",
+		},
+		{
+			name:  "full of upper cases",
+			camel: "API",
+			snake: "api",
+		},
+		{
+			name:  "mix with full of upper cases word",
+			camel: "APIKey",
+			snake: "api_key",
+		},
+		{
+			name:  "formal camel",
+			camel: "StaticAdminDisabled",
+			snake: "static_admin_disabled",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			out := convertCamelToSnake(tc.camel)
+			assert.Equal(t, tc.snake, out)
+		})
+	}
+}
 
 func TestCompare(t *testing.T) {
 	testcases := []struct {
-		name     string
-		val      interface{}
-		operand  interface{}
-		operator datastore.Operator
-		expect   bool
+		name      string
+		val       interface{}
+		operand   interface{}
+		operator  datastore.Operator
+		expect    bool
+		expectErr bool
 	}{
 		{
 			name:     "equal number int",
@@ -59,20 +97,20 @@ func TestCompare(t *testing.T) {
 			operator: datastore.OperatorNotEqual,
 			expect:   true,
 		},
-		// {
-		// 	name:     "greater than int",
-		// 	val:      3,
-		// 	operand:  1,
-		// 	operator: datastore.OperatorGreaterThan,
-		// 	expect:   true,
-		// },
-		// {
-		// 	name:     "greater than string",
-		// 	val:      "text_2",
-		// 	operand:  "text_1",
-		// 	operator: datastore.OperatorGreaterThan,
-		// 	expect:   true,
-		// },
+		{
+			name:     "greater than int",
+			val:      3,
+			operand:  1,
+			operator: datastore.OperatorGreaterThan,
+			expect:   true,
+		},
+		{
+			name:     "greater than or equal int",
+			val:      3,
+			operand:  3,
+			operator: datastore.OperatorGreaterThanOrEqual,
+			expect:   true,
+		},
 		{
 			name:     "in int",
 			val:      1,
@@ -108,17 +146,106 @@ func TestCompare(t *testing.T) {
 			operator: datastore.OperatorContains,
 			expect:   true,
 		},
+		{
+			name:      "error on query for numeric only operator with wrong value",
+			val:       "string_1",
+			operand:   "string_0",
+			operator:  datastore.OperatorGreaterThan,
+			expectErr: true,
+		},
+		{
+			name:      "error on query in operator with not operand of type slide/array",
+			val:       1,
+			operand:   1,
+			operator:  datastore.OperatorIn,
+			expectErr: true,
+		},
 	}
 
 	for _, tc := range testcases {
-		tc := tc
-
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			res, err := compare(tc.val, tc.operand, tc.operator)
+			require.Equal(t, tc.expectErr, err != nil)
+
+			if err != nil {
+				assert.Equal(t, tc.expect, res)
+			}
+		})
+	}
+}
+
+func TestFilter(t *testing.T) {
+	testcases := []struct {
+		name    string
+		entity  interface{}
+		filters []datastore.ListFilter
+		expect  bool
+	}{
+		{
+			name:   "filter single condition - passed",
+			entity: &model.Project{Id: "project_1"},
+			filters: []datastore.ListFilter{
+				{
+					Field:    "Id",
+					Operator: datastore.OperatorEqual,
+					Value:    "project_1",
+				},
+			},
+			expect: true,
+		},
+		{
+			name:   "filter single condition - not passed",
+			entity: &model.Project{Id: "project_1"},
+			filters: []datastore.ListFilter{
+				{
+					Field:    "Id",
+					Operator: datastore.OperatorEqual,
+					Value:    "project_2",
+				},
+			},
+			expect: false,
+		},
+		{
+			name:   "filter multiple conditions - passed",
+			entity: &model.Project{Id: "project_1", StaticAdminDisabled: true},
+			filters: []datastore.ListFilter{
+				{
+					Field:    "Id",
+					Operator: datastore.OperatorEqual,
+					Value:    "project_1",
+				},
+				{
+					Field:    "StaticAdminDisabled",
+					Operator: datastore.OperatorEqual,
+					Value:    true,
+				},
+			},
+			expect: true,
+		},
+		{
+			name:   "filter multiple conditions - not passed",
+			entity: &model.Project{Id: "project_1", StaticAdminDisabled: true},
+			filters: []datastore.ListFilter{
+				{
+					Field:    "Id",
+					Operator: datastore.OperatorEqual,
+					Value:    "project_1",
+				},
+				{
+					Field:    "StaticAdminDisabled",
+					Operator: datastore.OperatorEqual,
+					Value:    false,
+				},
+			},
+			expect: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			passed, err := filter(nil, tc.entity, tc.filters)
 			require.Nil(t, err)
-			assert.Equal(t, tc.expect, res)
+			assert.Equal(t, tc.expect, passed)
 		})
 	}
 }

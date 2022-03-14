@@ -51,6 +51,13 @@ const (
 	OperatorContains
 )
 
+func IsNumericOperator(op Operator) bool {
+	return op == OperatorGreaterThan ||
+		op == OperatorGreaterThanOrEqual ||
+		op == OperatorLessThan ||
+		op == OperatorLessThanOrEqual
+}
+
 var (
 	ErrNotFound        = errors.New("not found")
 	ErrInvalidArgument = errors.New("invalid argument")

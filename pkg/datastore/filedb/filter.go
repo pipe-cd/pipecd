@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"unicode"
 
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 )
@@ -41,12 +42,13 @@ func filter(col datastore.Collection, e interface{}, filters []datastore.ListFil
 	}
 
 	for _, filter := range filters {
-		if strings.Contains(filter.Field, ".") {
+		field := convertCamelToSnake(filter.Field)
+		if strings.Contains(field, ".") {
 			// TODO: Handle nested field name such as SyncState.Status.
 			return false, datastore.ErrUnsupported
 		}
 
-		val, ok := omap[filter.Field]
+		val, ok := omap[field]
 		// If the object does not contain given field name in filter, return false immidiately.
 		if !ok {
 			return false, nil
@@ -66,19 +68,41 @@ func filter(col datastore.Collection, e interface{}, filters []datastore.ListFil
 }
 
 func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
+	var valNum, operandNum int64
+	switch v := val.(type) {
+	case int, int8, int16, int32, int64:
+		valNum = reflect.ValueOf(v).Int()
+	case uint, uint8, uint16, uint32, uint64:
+		valNum = reflect.ValueOf(v).Int()
+	default:
+		if datastore.IsNumericOperator(op) {
+			return false, fmt.Errorf("value of type unsupported")
+		}
+	}
+	switch o := operand.(type) {
+	case int, int8, int16, int32, int64:
+		operandNum = reflect.ValueOf(o).Int()
+	case uint, uint8, uint16, uint32, uint64:
+		operandNum = reflect.ValueOf(o).Int()
+	default:
+		if datastore.IsNumericOperator(op) {
+			return false, fmt.Errorf("value of type unsupported")
+		}
+	}
+
 	switch op {
 	case datastore.OperatorEqual:
 		return val == operand, nil
 	case datastore.OperatorNotEqual:
 		return val != operand, nil
 	case datastore.OperatorGreaterThan:
-		return val.(int64) > operand.(int64), nil
+		return valNum > operandNum, nil
 	case datastore.OperatorGreaterThanOrEqual:
-		return val.(int64) >= operand.(int64), nil
+		return valNum >= operandNum, nil
 	case datastore.OperatorLessThan:
-		return val.(int64) < operand.(int64), nil
+		return valNum < operandNum, nil
 	case datastore.OperatorLessThanOrEqual:
-		return val.(int64) <= operand.(int64), nil
+		return valNum <= operandNum, nil
 	case datastore.OperatorIn:
 		os, err := makeSliceOfInterfaces(operand)
 		if err != nil {
@@ -132,4 +156,36 @@ func makeSliceOfInterfaces(v interface{}) ([]interface{}, error) {
 	}
 
 	return vs, nil
+}
+
+func convertCamelToSnake(key string) string {
+	runeToLower := func(r rune) string {
+		return strings.ToLower(string(r))
+	}
+
+	var out string
+	for i, v := range key {
+		if i == 0 {
+			out += runeToLower(v)
+			continue
+		}
+
+		if i == len(key)-1 {
+			out += runeToLower(v)
+			break
+		}
+
+		if unicode.IsUpper(v) && unicode.IsLower(rune(key[i+1])) {
+			out += fmt.Sprintf("_%s", runeToLower(v))
+			continue
+		}
+
+		if unicode.IsUpper(v) {
+			out += runeToLower(v)
+			continue
+		}
+
+		out += string(v)
+	}
+	return out
 }
