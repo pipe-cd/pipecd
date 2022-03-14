@@ -29,13 +29,17 @@ type filterable interface {
 }
 
 func filter(col datastore.Collection, e interface{}, filters []datastore.ListFilter) (bool, error) {
+	// If the collection implement filterable interface, use it.
 	fcol, ok := col.(filterable)
 	if ok {
 		return fcol.Match(e, filters)
 	}
 
 	// remarshal entity as map[string]interface{} struct.
-	raw, _ := json.Marshal(e)
+	raw, err := json.Marshal(e)
+	if err != nil {
+		return false, err
+	}
 	var omap map[string]interface{}
 	if err := json.Unmarshal(raw, &omap); err != nil {
 		return false, err
@@ -72,21 +76,21 @@ func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
 	switch v := val.(type) {
 	case int, int8, int16, int32, int64:
 		valNum = reflect.ValueOf(v).Int()
-	case uint, uint8, uint16, uint32, uint64:
+	case uint, uint8, uint16, uint32:
 		valNum = reflect.ValueOf(v).Int()
 	default:
-		if datastore.IsNumericOperator(op) {
+		if op.IsNumericOperator() {
 			return false, fmt.Errorf("value of type unsupported")
 		}
 	}
 	switch o := operand.(type) {
 	case int, int8, int16, int32, int64:
 		operandNum = reflect.ValueOf(o).Int()
-	case uint, uint8, uint16, uint32, uint64:
+	case uint, uint8, uint16, uint32:
 		operandNum = reflect.ValueOf(o).Int()
 	default:
-		if datastore.IsNumericOperator(op) {
-			return false, fmt.Errorf("value of type unsupported")
+		if op.IsNumericOperator() {
+			return false, fmt.Errorf("operand of type unsupported")
 		}
 	}
 

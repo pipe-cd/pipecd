@@ -51,11 +51,11 @@ const (
 	OperatorContains
 )
 
-func IsNumericOperator(op Operator) bool {
-	return op == OperatorGreaterThan ||
-		op == OperatorGreaterThanOrEqual ||
-		op == OperatorLessThan ||
-		op == OperatorLessThanOrEqual
+func (o Operator) IsNumericOperator() bool {
+	return o == OperatorGreaterThan ||
+		o == OperatorGreaterThanOrEqual ||
+		o == OperatorLessThan ||
+		o == OperatorLessThanOrEqual
 }
 
 var (
