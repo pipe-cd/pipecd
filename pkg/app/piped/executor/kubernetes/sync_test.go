@@ -34,6 +34,8 @@ import (
 )
 
 func TestEnsureSync(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -159,6 +161,8 @@ func TestEnsureSync(t *testing.T) {
 }
 
 func TestFindRemoveResources(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		manifests     []provider.Manifest

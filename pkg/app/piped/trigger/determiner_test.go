@@ -21,6 +21,8 @@ import (
 )
 
 func TestIsTouchedByChangedFiles(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name         string
 		appDir       string

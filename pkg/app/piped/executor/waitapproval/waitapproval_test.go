@@ -74,6 +74,8 @@ type fakeNotifier struct{}
 func (n *fakeNotifier) Notify(_ model.NotificationEvent) {}
 
 func TestValidateApproverNum(t *testing.T) {
+	t.Parallel()
+
 	ctx := context.Background()
 
 	ac := &fakeAPIClient{

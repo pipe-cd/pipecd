@@ -25,6 +25,8 @@ import (
 )
 
 func TestParseTaskDefinition(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		input       string

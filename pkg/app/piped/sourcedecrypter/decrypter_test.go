@@ -36,10 +36,13 @@ func (d testSecretDecrypter) Decrypt(text string) (string, error) {
 }
 
 func TestDecryptSecrets(t *testing.T) {
+	t.Parallel()
+
 	workspace, err := os.MkdirTemp("", "test-decrypt-secrets")
 	require.NoError(t, err)
-	defer os.RemoveAll(workspace)
-
+	t.Cleanup(func() {
+		os.RemoveAll(workspace)
+	})
 	dcr := testSecretDecrypter{
 		prefix: "decrypted-",
 	}

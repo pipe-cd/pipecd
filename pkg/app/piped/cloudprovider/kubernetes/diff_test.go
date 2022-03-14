@@ -24,6 +24,8 @@ import (
 )
 
 func TestGroupManifests(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name               string
 		olds               []Manifest
@@ -118,6 +120,8 @@ func TestGroupManifests(t *testing.T) {
 }
 
 func TestDiffByCommand(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		command     string
@@ -188,6 +192,8 @@ func TestDiffByCommand(t *testing.T) {
 }
 
 func TestDiff(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		manifests     string

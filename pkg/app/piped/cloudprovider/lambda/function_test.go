@@ -21,6 +21,8 @@ import (
 )
 
 func TestparseFunctionManifest(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		data     string

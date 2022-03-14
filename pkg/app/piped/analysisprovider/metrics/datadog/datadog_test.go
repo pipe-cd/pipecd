@@ -29,6 +29,8 @@ import (
 )
 
 func TestProviderQueryPoints(t *testing.T) {
+	t.Parallel()
+
 	toInt64Pointer := func(i int64) *int64 { return &i }
 	type queryResponse struct {
 		res        datadog.MetricsQueryResponse

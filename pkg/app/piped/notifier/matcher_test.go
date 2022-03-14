@@ -24,6 +24,8 @@ import (
 )
 
 func TestMatch(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name      string
 		config    config.NotificationRoute

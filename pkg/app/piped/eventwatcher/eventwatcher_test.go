@@ -21,6 +21,8 @@ import (
 )
 
 func TestConvertStr(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name    string
 		value   interface{}
@@ -80,6 +82,8 @@ func TestConvertStr(t *testing.T) {
 }
 
 func TestModifyYAML(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name         string
 		path         string
@@ -119,6 +123,8 @@ func TestModifyYAML(t *testing.T) {
 }
 
 func TestModifyText(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name         string
 		path         string

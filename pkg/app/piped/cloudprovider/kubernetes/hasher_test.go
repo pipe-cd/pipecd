@@ -23,6 +23,8 @@ import (
 )
 
 func TestHashManifests(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		manifests     string

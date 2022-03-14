@@ -21,6 +21,8 @@ import (
 )
 
 func TestMakeCloudRunParent(t *testing.T) {
+	t.Parallel()
+
 	const projectID = "projectID"
 	got := makeCloudRunParent(projectID)
 	want := "namespaces/projectID"
@@ -28,6 +30,8 @@ func TestMakeCloudRunParent(t *testing.T) {
 }
 
 func TestMakeCloudRunServiceName(t *testing.T) {
+	t.Parallel()
+
 	const (
 		projectID = "projectID"
 		serviceID = "serviceID"
@@ -38,6 +42,8 @@ func TestMakeCloudRunServiceName(t *testing.T) {
 }
 
 func TestMakeCloudRunRevisionName(t *testing.T) {
+	t.Parallel()
+
 	const (
 		projectID  = "projectID"
 		revisionID = "revisionID"

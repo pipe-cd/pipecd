@@ -63,6 +63,8 @@ func (m *fakeMetadataStageStore) Put(_ context.Context, _, _ string) error      
 func (m *fakeMetadataStageStore) PutMulti(_ context.Context, _ map[string]string) error { return nil }
 
 func TestGenerateServiceManifests(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		manifestsFile string
@@ -88,6 +90,8 @@ func TestGenerateServiceManifests(t *testing.T) {
 }
 
 func TestGenerateVariantWorkloadManifests(t *testing.T) {
+	t.Parallel()
+
 	const (
 		variantLabel  = "pipecd.dev/variant"
 		canaryVariant = "canary-variant"
@@ -146,6 +150,8 @@ func TestGenerateVariantWorkloadManifests(t *testing.T) {
 }
 
 func TestCheckVariantSelectorInWorkload(t *testing.T) {
+	t.Parallel()
+
 	const (
 		variantLabel   = "pipecd.dev/variant"
 		primaryVariant = "primary"
@@ -291,6 +297,8 @@ spec:
 }
 
 func TestApplyManifests(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 
 	testcases := []struct {
@@ -469,6 +477,8 @@ spec:
 }
 
 func TestDeleteResources(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 
 	testcases := []struct {
@@ -535,6 +545,8 @@ func TestDeleteResources(t *testing.T) {
 }
 
 func TestAnnotateConfigHash(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		manifests     string
@@ -768,6 +780,8 @@ data:
 }
 
 func TestPatchManifest(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		manifests     string
@@ -877,6 +891,8 @@ func TestPatchManifest(t *testing.T) {
 }
 
 func TestPatchManifests(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		input       []provider.Manifest

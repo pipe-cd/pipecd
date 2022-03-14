@@ -13,6 +13,8 @@ import (
 )
 
 func TestDecideStrategy(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name            string
 		olds            []provider.Manifest
@@ -399,6 +401,8 @@ func TestDecideStrategy(t *testing.T) {
 }
 
 func TestDetermineVersion(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		manifests     string
@@ -440,6 +444,8 @@ func TestDetermineVersion(t *testing.T) {
 }
 
 func TestDetermineVersions(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		manifests     string
@@ -526,6 +532,8 @@ func TestDetermineVersions(t *testing.T) {
 }
 
 func TestCheckImageChange(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		oldManifests  string

@@ -24,6 +24,8 @@ import (
 )
 
 func TestFindReferencingConfigMapsInDeployment(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		manifest string
@@ -189,6 +191,8 @@ spec:
 }
 
 func TestFindReferencingSecretsInDeployment(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name     string
 		manifest string

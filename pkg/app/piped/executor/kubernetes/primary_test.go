@@ -34,6 +34,8 @@ import (
 )
 
 func TestEnsurePrimaryRollout(t *testing.T) {
+	t.Parallel()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -296,6 +298,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+
 			ctx := context.Background()
 			got := tc.executor.ensurePrimaryRollout(ctx)
 			assert.Equal(t, tc.want, got)
@@ -304,6 +307,8 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 }
 
 func TestFindRemoveManifests(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		prevs     []provider.Manifest

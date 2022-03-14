@@ -21,6 +21,8 @@ import (
 )
 
 func TestMakeFlowControlTagsMap(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name                 string
 		remoteTags           map[string]string

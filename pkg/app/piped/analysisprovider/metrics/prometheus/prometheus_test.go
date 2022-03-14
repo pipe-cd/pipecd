@@ -14,11 +14,15 @@ import (
 )
 
 func TestType(t *testing.T) {
+	t.Parallel()
+
 	p := Provider{}
 	assert.Equal(t, ProviderType, p.Type())
 }
 
 func TestProviderQueryPoints(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name       string
 		client     client

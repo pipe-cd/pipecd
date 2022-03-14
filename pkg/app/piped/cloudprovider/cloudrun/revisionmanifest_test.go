@@ -86,6 +86,8 @@ status:
 `
 
 func TestRevisionManifest(t *testing.T) {
+	t.Parallel()
+
 	rm, err := ParseRevisionManifest([]byte(revisionManifest))
 	require.NoError(t, err)
 	require.NotEmpty(t, rm)

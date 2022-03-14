@@ -26,6 +26,8 @@ import (
 )
 
 func TestGenerateVirtualServiceManifest(t *testing.T) {
+	t.Parallel()
+
 	exec := &deployExecutor{
 		appCfg: &config.KubernetesApplicationSpec{
 			VariantLabel: config.KubernetesVariantLabel{
@@ -78,6 +80,8 @@ func TestGenerateVirtualServiceManifest(t *testing.T) {
 }
 
 func TestCheckVariantSelectorInService(t *testing.T) {
+	t.Parallel()
+
 	const (
 		variantLabel   = "pipecd.dev/variant"
 		primaryVariant = "primary"

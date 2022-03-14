@@ -27,6 +27,8 @@ import (
 )
 
 func testDiscreteCDF(t *testing.T, name string, dist DiscreteDist) {
+	t.Parallel()
+
 	// Build the expected CDF out of the PMF.
 	l, h := dist.Bounds()
 	s := dist.Step()
@@ -42,6 +44,8 @@ func testDiscreteCDF(t *testing.T, name string, dist DiscreteDist) {
 }
 
 func testInvCDF(t *testing.T, dist Dist, bounded bool) {
+	t.Parallel()
+
 	inv := InvCDF(dist)
 	name := fmt.Sprintf("InvCDF(%+v)", dist)
 	cdfName := fmt.Sprintf("CDF(%+v)", dist)
@@ -71,7 +75,7 @@ func testInvCDF(t *testing.T, dist Dist, bounded bool) {
 
 	// Test points between.
 	vals = map[float64]float64{}
-	for _, p := range vecLinspace(0, 1, 11) {
+	for _, p := range vecLinspace(t, 0, 1, 11) {
 		if p == 0 || p == 1 {
 			continue
 		}
@@ -87,7 +91,9 @@ func testInvCDF(t *testing.T, dist Dist, bounded bool) {
 
 // aeq returns true if expect and got are equal to 8 significant
 // figures (1 part in 100 million).
-func aeq(expect, got float64) bool {
+func aeq(t *testing.T, expect, got float64) bool {
+	t.Helper()
+
 	if expect < 0 && got < 0 {
 		expect, got = -expect, -got
 	}
@@ -95,6 +101,8 @@ func aeq(expect, got float64) bool {
 }
 
 func testFunc(t *testing.T, name string, f func(float64) float64, vals map[float64]float64) {
+	t.Parallel()
+
 	xs := make([]float64, 0, len(vals))
 	for x := range vals {
 		xs = append(xs, x)
@@ -103,7 +111,7 @@ func testFunc(t *testing.T, name string, f func(float64) float64, vals map[float
 
 	for _, x := range xs {
 		want, got := vals[x], f(x)
-		if math.IsNaN(want) && math.IsNaN(got) || aeq(want, got) {
+		if math.IsNaN(want) && math.IsNaN(got) || aeq(t, want, got) {
 			continue
 		}
 		var label string
@@ -118,7 +126,9 @@ func testFunc(t *testing.T, name string, f func(float64) float64, vals map[float
 
 // vecLinspace returns num values spaced evenly between lo and hi,
 // inclusive. If num is 1, this returns an array consisting of lo.
-func vecLinspace(lo, hi float64, num int) []float64 {
+func vecLinspace(t *testing.T, lo, hi float64, num int) []float64 {
+	t.Helper()
+
 	res := make([]float64, num)
 	if num == 1 {
 		res[0] = lo

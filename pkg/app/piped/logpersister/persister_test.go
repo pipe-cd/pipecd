@@ -51,6 +51,8 @@ func (c *fakeAPIClient) NumberOfReportStageLogsFromLastCheckpoint() int {
 }
 
 func TestPersister(t *testing.T) {
+	t.Parallel()
+
 	apiClient := &fakeAPIClient{}
 	p := NewPersister(apiClient, zap.NewNop())
 	p.stalePeriod = 0

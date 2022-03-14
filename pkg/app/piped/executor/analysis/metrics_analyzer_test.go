@@ -49,6 +49,8 @@ func (l *fakeLogPersister) Errorf(_ string, _ ...interface{})   {}
 func floatToPointer(n float64) *float64 { return &n }
 
 func Test_metricsAnalyzer_analyzeWithThreshold(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name            string
 		metricsAnalyzer *metricsAnalyzer
@@ -137,6 +139,8 @@ func Test_metricsAnalyzer_analyzeWithThreshold(t *testing.T) {
 }
 
 func Test_compare(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		experiment []float64
 		control    []float64
@@ -229,6 +233,8 @@ func Test_compare(t *testing.T) {
 }
 
 func Test_metricsAnalyzer_renderQuery(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		queryTemplate     string
 		variantCustomArgs map[string]string
