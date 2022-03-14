@@ -25,6 +25,8 @@ import (
 )
 
 func TestConvertCamelToSnake(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name  string
 		camel string
@@ -61,6 +63,8 @@ func TestConvertCamelToSnake(t *testing.T) {
 }
 
 func TestCompare(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name      string
 		val       interface{}
@@ -175,6 +179,8 @@ func TestCompare(t *testing.T) {
 }
 
 func TestFilter(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name    string
 		entity  interface{}
