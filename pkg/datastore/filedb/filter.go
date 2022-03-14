@@ -77,7 +77,7 @@ func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
 	case int, int8, int16, int32, int64:
 		valNum = reflect.ValueOf(v).Int()
 	case uint, uint8, uint16, uint32:
-		valNum = reflect.ValueOf(v).Int()
+		valNum = int64(reflect.ValueOf(v).Uint())
 	default:
 		if op.IsNumericOperator() {
 			return false, fmt.Errorf("value of type unsupported")
@@ -87,7 +87,7 @@ func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
 	case int, int8, int16, int32, int64:
 		operandNum = reflect.ValueOf(o).Int()
 	case uint, uint8, uint16, uint32:
-		operandNum = reflect.ValueOf(o).Int()
+		operandNum = int64(reflect.ValueOf(o).Uint())
 	default:
 		if op.IsNumericOperator() {
 			return false, fmt.Errorf("operand of type unsupported")
