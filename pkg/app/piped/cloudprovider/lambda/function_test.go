@@ -17,6 +17,7 @@ package lambda
 import (
 	"testing"
 
+	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -171,6 +172,200 @@ func TestparseFunctionManifest(t *testing.T) {
 			fm, err := parseFunctionManifest([]byte(tc.data))
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.wantSpec, fm)
+		})
+	}
+}
+
+func TestFindArtifactVersions(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name        string
+		input       []byte
+		expected    []*model.ArtifactVersion
+		expectedErr bool
+	}{
+		{
+			name: "[From container image] ok: using container image",
+			input: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaFunction
+spec:
+  name: SimpleFunction
+  image: ecr.ap-northeast-1.amazonaws.com/lambda-test:v0.0.1
+  role: arn:aws:iam::76xxxxxxx:role/lambda-role
+  memory: 512
+  timeout: 30
+`),
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+					Version: "v0.0.1",
+					Name:    "lambda-test",
+					Url:     "ecr.ap-northeast-1.amazonaws.com/lambda-test:v0.0.1",
+				},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "[From container image] error: no image name",
+			input: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaFunction
+spec:
+  name: SimpleFunction
+  image: ecr.ap-northeast-1.amazonaws.com/:v0.0.1
+  role: arn:aws:iam::76xxxxxxx:role/lambda-role
+  memory: 512
+  timeout: 30
+`),
+			expected:    nil,
+			expectedErr: true,
+		},
+		{
+			name: "[From S3] ok: using s3 object",
+			input: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaFunction
+spec:
+  name: SimpleZipPackingS3Function
+  role: arn:aws:iam::76xxxxxxx:role/lambda-role
+  s3Bucket: pipecd-sample-lambda
+  s3Key: pipecd-sample-src
+  s3ObjectVersion: 1pTK9_v0Kd7I8Sk4n6abzCL
+  handler: app.lambdaHandler
+  runtime: nodejs14.x
+  memory: 512
+  timeout: 30
+`),
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_S3_OBJECT,
+					Version: "1pTK9_v0Kd7I8Sk4n6abzCL",
+					Name:    "pipecd-sample-lambda/pipecd-sample-src",
+					Url:     "https://console.aws.amazon.com/s3/object/pipecd-sample-lambda?prefix=pipecd-sample-src",
+				},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "[From Source Code] ok: using source code",
+			input: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaFunction
+spec:
+  name: SimpleSourceCodeFunction
+  role: arn:aws:iam::76xxxxxxx:role/lambda-role
+  source:
+    git: git@github.com:username/lambda-function-code.git
+    ref: dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603
+    path: hello-world
+  handler: app.lambdaHandler
+  runtime: nodejs14.x
+  memory: 512
+  timeout: 30
+`),
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_SOURCE_CODE,
+					Version: "dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603",
+					Name:    "username/lambda-function-code",
+					Url:     "https://github.com/username/lambda-function-code/commit/dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603",
+				},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "[From Source Code] ok: using source code from gitlab",
+			input: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaFunction
+spec:
+  name: SimpleSourceCodeFunction
+  role: arn:aws:iam::76xxxxxxx:role/lambda-role
+  source:
+    git: git@gitlab.com:username/lambda-function-code.git
+    ref: dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603
+    path: hello-world
+  handler: app.lambdaHandler
+  runtime: nodejs14.x
+  memory: 512
+  timeout: 30
+`),
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_SOURCE_CODE,
+					Version: "dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603",
+					Name:    "username/lambda-function-code",
+					Url:     "https://gitlab.com/username/lambda-function-code/commit/dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603",
+				},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "[From Source Code] ok: using source code from bitbucket",
+			input: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaFunction
+spec:
+  name: SimpleSourceCodeFunction
+  role: arn:aws:iam::76xxxxxxx:role/lambda-role
+  source:
+    git: git@bitbucket.org:username/lambda-function-code.git
+    ref: dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603
+    path: hello-world
+  handler: app.lambdaHandler
+  runtime: nodejs14.x
+  memory: 512
+  timeout: 30
+`),
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_SOURCE_CODE,
+					Version: "dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603",
+					Name:    "username/lambda-function-code",
+					Url:     "https://bitbucket.org/username/lambda-function-code/commits/dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603",
+				},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "[From Source Code] ok: using source code from other git provider",
+			input: []byte(`
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaFunction
+spec:
+  name: SimpleSourceCodeFunction
+  role: arn:aws:iam::76xxxxxxx:role/lambda-role
+  source:
+    git: git@ghe.github.com:username/lambda-function-code.git
+    ref: dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603
+    path: hello-world
+  handler: app.lambdaHandler
+  runtime: nodejs14.x
+  memory: 512
+  timeout: 30
+`),
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_SOURCE_CODE,
+					Version: "dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603",
+					Name:    "username/lambda-function-code",
+					Url:     "git@ghe.github.com:username/lambda-function-code.git",
+				},
+			},
+			expectedErr: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			fm, err := parseFunctionManifest(tc.input)
+			versions, err := FindArtifactVersions(fm)
+
+			assert.Equal(t, tc.expectedErr, err != nil)
+			assert.ElementsMatch(t, tc.expected, versions)
 		})
 	}
 }

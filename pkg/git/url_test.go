@@ -384,3 +384,66 @@ func TestParseGitURL(t *testing.T) {
 		})
 	}
 }
+
+func TestMakeRepoPath(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		repoURL string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "ssh to github.com",
+			repoURL: "git@github.com:org/repo.git",
+			want:    "org/repo",
+			wantErr: false,
+		},
+		{
+			name:    "ssh to github.com with suffix '/'",
+			repoURL: "git@github.com:org/repo.git/",
+			want:    "org/repo",
+			wantErr: false,
+		},
+		{
+			name:    "http to github.com",
+			repoURL: "http://github.com/org/repo",
+			want:    "org/repo",
+			wantErr: false,
+		},
+		{
+			name:    "http to github.com with suffix '.git'",
+			repoURL: "http://github.com/org/repo.git",
+			want:    "org/repo",
+			wantErr: false,
+		},
+		{
+			name:    "http to github.com with suffix '/'",
+			repoURL: "http://github.com/org/repo/",
+			want:    "org/repo",
+			wantErr: false,
+		},
+		{
+			name:    "http to github.com with suffix '.git/'",
+			repoURL: "http://github.com/org/repo.git/",
+			want:    "org/repo",
+			wantErr: false,
+		},
+		{
+			name:    "unparseable url",
+			repoURL: "1234abcd",
+			want:    "",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			repoPath, err := MakeRepoPath(tt.repoURL)
+			assert.Equal(t, tt.wantErr, err != nil)
+			assert.Equal(t, tt.want, repoPath)
+		})
+	}
+}

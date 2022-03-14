@@ -16,9 +16,12 @@ package lambda
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 
+	"github.com/pipe-cd/pipecd/pkg/git"
+	"github.com/pipe-cd/pipecd/pkg/model"
 	"sigs.k8s.io/yaml"
 )
 
@@ -163,4 +166,68 @@ func parseContainerImage(image string) (name, tag string) {
 	paths := strings.Split(parts[0], "/")
 	name = paths[len(paths)-1]
 	return
+}
+
+// FindArtifactVersions parses artifact versions from function.yaml.
+func FindArtifactVersions(fm FunctionManifest) ([]*model.ArtifactVersion, error) {
+	// Extract container image tag as application version.
+	if fm.Spec.ImageURI != "" {
+		name, tag := parseContainerImage(fm.Spec.ImageURI)
+		if name == "" {
+			return nil, fmt.Errorf("image name could not be empty")
+		}
+
+		return []*model.ArtifactVersion{
+			{
+				Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+				Version: tag,
+				Name:    name,
+				Url:     fm.Spec.ImageURI,
+			},
+		}, nil
+	}
+
+	// Extract s3 object version as application version.
+	if fm.Spec.S3ObjectVersion != "" {
+		return []*model.ArtifactVersion{
+			{
+				Kind:    model.ArtifactVersion_S3_OBJECT,
+				Version: fm.Spec.S3ObjectVersion,
+				Name:    fmt.Sprintf("%s/%s", fm.Spec.S3Bucket, fm.Spec.S3Key),
+				Url:     fmt.Sprintf("https://console.aws.amazon.com/s3/object/%s?prefix=%s", fm.Spec.S3Bucket, fm.Spec.S3Key),
+			},
+		}, nil
+	}
+
+	// Extract source code commihash as application version.
+	if fm.Spec.SourceCode.Ref != "" {
+		gitURL, err := git.MakeCommitURL(fm.Spec.SourceCode.Git, fm.Spec.SourceCode.Ref)
+		if err != nil {
+			return nil, err
+		}
+
+		// Use raw source code url if self hosted git provider (e.g. ghe)
+		u, err := url.Parse(gitURL)
+		switch u.Host {
+		case "github.com", "gitlab.com", "bitbucket.org":
+		default:
+			gitURL = fm.Spec.SourceCode.Git
+		}
+
+		repoPath, err := git.MakeRepoPath(fm.Spec.SourceCode.Git)
+		if err != nil {
+			return nil, err
+		}
+
+		return []*model.ArtifactVersion{
+			{
+				Kind:    model.ArtifactVersion_SOURCE_CODE,
+				Version: fm.Spec.SourceCode.Ref,
+				Name:    repoPath,
+				Url:     gitURL,
+			},
+		}, nil
+	}
+
+	return nil, fmt.Errorf("couldn't determine artifact versions")
 }

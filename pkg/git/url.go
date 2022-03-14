@@ -126,6 +126,19 @@ func MakeFileCreationURL(repoURL, dir, branch, filename, value string) (string, 
 	return u.String(), nil
 }
 
+// MakeRepoPath builds a repository name from a repository url.
+func MakeRepoPath(repoURL string) (string, error) {
+	u, err := parseGitURL(repoURL)
+	if err != nil {
+		return "", err
+	}
+
+	repoPath := strings.Trim(u.Path, "/")
+	repoPath = strings.TrimSuffix(repoPath, ".git")
+
+	return repoPath, nil
+}
+
 var (
 	knownSchemes = map[string]interface{}{
 		"ssh":     struct{}{},
