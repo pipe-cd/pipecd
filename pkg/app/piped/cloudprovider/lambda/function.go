@@ -208,6 +208,10 @@ func FindArtifactVersions(fm FunctionManifest) ([]*model.ArtifactVersion, error)
 
 		// Use raw source code url if self hosted git provider (e.g. ghe)
 		u, err := url.Parse(gitURL)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse git url")
+		}
+
 		switch u.Host {
 		case "github.com", "gitlab.com", "bitbucket.org":
 		default:

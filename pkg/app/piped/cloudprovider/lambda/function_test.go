@@ -361,7 +361,7 @@ spec:
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			fm, err := parseFunctionManifest(tc.input)
+			fm, _ := parseFunctionManifest(tc.input)
 			versions, err := FindArtifactVersions(fm)
 
 			assert.Equal(t, tc.expectedErr, err != nil)
