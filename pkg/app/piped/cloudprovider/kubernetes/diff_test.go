@@ -19,6 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/diff"
 )
@@ -310,6 +311,76 @@ data:
 `,
 			diffNum: 1,
 		},
+		{
+			name: "Pod no diff 1",
+			manifests: `apiVersion: v1
+kind: Pod
+metadata:
+  name: static-web
+  labels:
+    role: myrole
+spec:
+  containers:
+    - name: web
+      image: nginx
+      ports:
+      resources:
+        limits:
+          memory: "2Gi"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: static-web
+  labels:
+    role: myrole
+spec:
+  containers:
+    - name: web
+      image: nginx
+      resources:
+        limits:
+          memory: "2Gi"
+`,
+			expected:      "",
+			diffNum:       0,
+			falsePositive: false,
+		},
+		{
+			name: "Pod no diff 2",
+			manifests: `apiVersion: v1
+kind: Pod
+metadata:
+  name: static-web
+  labels:
+    role: myrole
+spec:
+  containers:
+    - name: web
+      image: nginx
+      ports:
+      resources:
+        limits:
+          memory: "1.5Gi"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: static-web
+  labels:
+    role: myrole
+spec:
+  containers:
+    - name: web
+      image: nginx
+      resources:
+        limits:
+          memory: "1536Mi"
+`,
+			expected:      "",
+			diffNum:       0,
+			falsePositive: false,
+		},
 	}
 
 	for _, tc := range testcases {
@@ -319,7 +390,7 @@ data:
 			require.Equal(t, 2, len(manifests))
 			old, new := manifests[0], manifests[1]
 
-			result, err := Diff(old, new, diff.WithEquateEmpty(), diff.WithIgnoreAddingMapKeys(), diff.WithCompareNumberAndNumericString())
+			result, err := Diff(old, new, zap.NewNop(), diff.WithEquateEmpty(), diff.WithIgnoreAddingMapKeys(), diff.WithCompareNumberAndNumericString())
 			require.NoError(t, err)
 
 			renderer := diff.NewRenderer(diff.WithLeftPadding(1))

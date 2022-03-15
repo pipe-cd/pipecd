@@ -22,6 +22,7 @@ import (
 	"sort"
 	"strings"
 
+	"go.uber.org/zap"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -49,7 +50,7 @@ type DiffListChange struct {
 	Diff *diff.Result
 }
 
-func Diff(old, new Manifest, opts ...diff.Option) (*diff.Result, error) {
+func Diff(old, new Manifest, logger *zap.Logger, opts ...diff.Option) (*diff.Result, error) {
 	if old.Key.IsSecret() && new.Key.IsSecret() {
 		var err error
 		new.u, err = normalizeNewSecret(old.u, new.u)
@@ -57,10 +58,17 @@ func Diff(old, new Manifest, opts ...diff.Option) (*diff.Result, error) {
 			return nil, err
 		}
 	}
-	return diff.DiffUnstructureds(*old.u, *new.u, opts...)
+
+	normalized, err := remarshal(old.u)
+	if err != nil {
+		logger.Info("Unable to remarshal Kubernetes manifest, the raw data will be used to calculate the diff", zap.Error(err))
+		return diff.DiffUnstructureds(*old.u, *new.u, opts...)
+	}
+
+	return diff.DiffUnstructureds(*normalized, *new.u, opts...)
 }
 
-func DiffList(olds, news []Manifest, opts ...diff.Option) (*DiffListResult, error) {
+func DiffList(olds, news []Manifest, logger *zap.Logger, opts ...diff.Option) (*DiffListResult, error) {
 	adds, deletes, newChanges, oldChanges := groupManifests(olds, news)
 	cr := &DiffListResult{
 		Adds:    adds,
@@ -69,7 +77,7 @@ func DiffList(olds, news []Manifest, opts ...diff.Option) (*DiffListResult, erro
 	}
 
 	for i := 0; i < len(newChanges); i++ {
-		result, err := Diff(oldChanges[i], newChanges[i], opts...)
+		result, err := Diff(oldChanges[i], newChanges[i], logger, opts...)
 		if err != nil {
 			return nil, err
 		}

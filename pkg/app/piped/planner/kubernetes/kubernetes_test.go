@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
@@ -393,7 +394,7 @@ func TestDecideStrategy(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotProgressive, gotDesc := decideStrategy(tc.olds, tc.news, tc.workloadRefs)
+			gotProgressive, gotDesc := decideStrategy(tc.olds, tc.news, tc.workloadRefs, zap.NewNop())
 			assert.Equal(t, tc.wantProgressive, gotProgressive)
 			assert.Equal(t, tc.wantDesc, gotDesc)
 		})
@@ -575,7 +576,7 @@ func TestCheckImageChange(t *testing.T) {
 
 			workloads := findUpdatedWorkloads(oldManifests, newManifests)
 			for _, w := range workloads {
-				diffResult, err := provider.Diff(w.old, w.new)
+				diffResult, err := provider.Diff(w.old, w.new, zap.NewNop())
 				require.NoError(t, err)
 				diffNodes := diffResult.Nodes()
 				templateDiffs := diffNodes.FindByPrefix("spec.template")
