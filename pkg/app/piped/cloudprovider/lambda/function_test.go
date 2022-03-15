@@ -362,6 +362,7 @@ spec:
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			fm, _ := parseFunctionManifest(tc.input)
 			versions, err := FindArtifactVersions(fm)
 
