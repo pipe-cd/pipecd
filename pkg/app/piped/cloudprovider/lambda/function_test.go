@@ -268,7 +268,7 @@ spec:
 `),
 			expected: []*model.ArtifactVersion{
 				{
-					Kind:    model.ArtifactVersion_SOURCE_CODE,
+					Kind:    model.ArtifactVersion_GIT_SOURCE,
 					Version: "dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603",
 					Name:    "username/lambda-function-code",
 					Url:     "https://github.com/username/lambda-function-code/commit/dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603",
@@ -295,7 +295,7 @@ spec:
 `),
 			expected: []*model.ArtifactVersion{
 				{
-					Kind:    model.ArtifactVersion_SOURCE_CODE,
+					Kind:    model.ArtifactVersion_GIT_SOURCE,
 					Version: "dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603",
 					Name:    "username/lambda-function-code",
 					Url:     "https://gitlab.com/username/lambda-function-code/commit/dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603",
@@ -322,7 +322,7 @@ spec:
 `),
 			expected: []*model.ArtifactVersion{
 				{
-					Kind:    model.ArtifactVersion_SOURCE_CODE,
+					Kind:    model.ArtifactVersion_GIT_SOURCE,
 					Version: "dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603",
 					Name:    "username/lambda-function-code",
 					Url:     "https://bitbucket.org/username/lambda-function-code/commits/dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603",
@@ -349,7 +349,7 @@ spec:
 `),
 			expected: []*model.ArtifactVersion{
 				{
-					Kind:    model.ArtifactVersion_SOURCE_CODE,
+					Kind:    model.ArtifactVersion_GIT_SOURCE,
 					Version: "dede7cdea5bbd3fdbcc4674bfcd2b2f9e0579603",
 					Name:    "username/lambda-function-code",
 					Url:     "git@ghe.github.com:username/lambda-function-code.git",

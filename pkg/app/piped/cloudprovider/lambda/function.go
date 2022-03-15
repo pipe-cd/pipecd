@@ -226,7 +226,7 @@ func FindArtifactVersions(fm FunctionManifest) ([]*model.ArtifactVersion, error)
 
 		return []*model.ArtifactVersion{
 			{
-				Kind:    model.ArtifactVersion_SOURCE_CODE,
+				Kind:    model.ArtifactVersion_GIT_SOURCE,
 				Version: fm.Spec.SourceCode.Ref,
 				Name:    repoPath,
 				Url:     gitURL,
