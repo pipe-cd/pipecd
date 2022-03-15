@@ -29,6 +29,11 @@ type filterable interface {
 }
 
 func filter(col datastore.Collection, e interface{}, filters []datastore.ListFilter) (bool, error) {
+	// Always pass, if there is no filter.
+	if len(filters) == 0 {
+		return true, nil
+	}
+
 	// If the collection implement filterable interface, use it.
 	fcol, ok := col.(filterable)
 	if ok {
