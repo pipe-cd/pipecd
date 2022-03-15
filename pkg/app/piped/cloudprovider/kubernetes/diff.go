@@ -61,7 +61,7 @@ func Diff(old, new Manifest, logger *zap.Logger, opts ...diff.Option) (*diff.Res
 
 	normalized, err := remarshal(old.u)
 	if err != nil {
-		logger.Info(fmt.Sprintf("Some error occurred while remarshaling %s", err.Error()))
+		logger.Info("Unable to remarshal Kubernetes manifest, the raw data will be used to calculate the diff", zap.Error(err))
 	} else {
 		old.u = normalized
 	}
