@@ -16,7 +16,6 @@ package lambda
 
 import (
 	"fmt"
-	"net/url"
 	"os"
 	"strings"
 
@@ -202,26 +201,29 @@ func FindArtifactVersions(fm FunctionManifest) ([]*model.ArtifactVersion, error)
 
 	// Extract source code commihash as application version.
 	if fm.Spec.SourceCode.Ref != "" {
-		gitURL, err := git.MakeCommitURL(fm.Spec.SourceCode.Git, fm.Spec.SourceCode.Ref)
+		u, err := git.ParseGitURL(fm.Spec.SourceCode.Git)
 		if err != nil {
 			return nil, err
 		}
 
-		// Use raw source code url if self hosted git provider (e.g. ghe)
-		u, err := url.Parse(gitURL)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse git url")
+		scheme := "https"
+		if u.Scheme != "ssh" {
+			scheme = u.Scheme
 		}
 
+		repoPath := strings.Trim(u.Path, "/")
+		repoPath = strings.TrimSuffix(repoPath, ".git")
+
+		var gitURL string
 		switch u.Host {
-		case "github.com", "gitlab.com", "bitbucket.org":
+		case "github.com", "gitlab.com":
+			gitURL = fmt.Sprintf("%s://%s/%s/commit/%s", scheme, u.Host, repoPath, fm.Spec.SourceCode.Ref)
+		case "bitbucket.org":
+			gitURL = fmt.Sprintf("%s://%s/%s/commits/%s", scheme, u.Host, repoPath, fm.Spec.SourceCode.Ref)
 		default:
-			gitURL = fm.Spec.SourceCode.Git
-		}
-
-		repoPath, err := git.MakeRepoPath(fm.Spec.SourceCode.Git)
-		if err != nil {
-			return nil, err
+			// TODO: Show repo name with commit link for other git provider
+			gitURL = ""
+			repoPath = ""
 		}
 
 		return []*model.ArtifactVersion{

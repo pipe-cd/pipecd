@@ -130,19 +130,26 @@ const MostRecentlySuccessfulDeployment: FC<{
             value={
               deployment.versionsList.length !== 0 ? (
                 <>
-                  {deployment.versionsList.map((v) => (
-                    <>
-                      <Link
-                        href={v.url.includes("://") ? v.url : `//${v.url}`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {v.name}:{v.version}
-                        <OpenInNewIcon className={classes.linkIcon} />
-                      </Link>
-                      <br />
-                    </>
-                  ))}
+                  {deployment.versionsList.map((v) =>
+                    v.name == "" ? (
+                      <>
+                        <span>{v.version}</span>
+                        <br />
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          href={v.url.includes("://") ? v.url : `//${v.url}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {v.name}:{v.version}
+                          <OpenInNewIcon className={classes.linkIcon} />
+                        </Link>
+                        <br />
+                      </>
+                    )
+                  )}
                 </>
               ) : (
                 <span>{deployment.version}</span>
