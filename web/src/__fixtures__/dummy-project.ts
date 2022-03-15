@@ -25,6 +25,8 @@ export const dummyProject: Project.AsObject = {
     editor: "editor-team",
     viewer: "viewer-team",
   },
+  rbacRolesList: [],
+  teamsList: [],
   staticAdmin: {
     username: "static-admin-user",
     passwordHash: randomKeyHash(),

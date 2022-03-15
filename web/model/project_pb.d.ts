@@ -39,6 +39,11 @@ export class Project extends jspb.Message {
   clearRbacRolesList(): Project;
   addRbacRoles(value?: ProjectRBACRole, index?: number): ProjectRBACRole;
 
+  getTeamsList(): Array<ProjectTeam>;
+  setTeamsList(value: Array<ProjectTeam>): Project;
+  clearTeamsList(): Project;
+  addTeams(value?: ProjectTeam, index?: number): ProjectTeam;
+
   getCreatedAt(): number;
   setCreatedAt(value: number): Project;
 
@@ -64,6 +69,7 @@ export namespace Project {
     sharedSsoName: string,
     allowStrayAsViewer: boolean,
     rbacRolesList: Array<ProjectRBACRole.AsObject>,
+    teamsList: Array<ProjectTeam.AsObject>,
     createdAt: number,
     updatedAt: number,
   }
@@ -211,15 +217,31 @@ export namespace ProjectRBACConfig {
   }
 }
 
+export class ProjectTeam extends jspb.Message {
+  getName(): string;
+  setName(value: string): ProjectTeam;
+
+  getRoleName(): string;
+  setRoleName(value: string): ProjectTeam;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ProjectTeam.AsObject;
+  static toObject(includeInstance: boolean, msg: ProjectTeam): ProjectTeam.AsObject;
+  static serializeBinaryToWriter(message: ProjectTeam, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ProjectTeam;
+  static deserializeBinaryFromReader(message: ProjectTeam, reader: jspb.BinaryReader): ProjectTeam;
+}
+
+export namespace ProjectTeam {
+  export type AsObject = {
+    name: string,
+    roleName: string,
+  }
+}
+
 export class ProjectRBACRole extends jspb.Message {
   getName(): string;
   setName(value: string): ProjectRBACRole;
-
-  getType(): ProjectRBACRole.RoleType;
-  setType(value: ProjectRBACRole.RoleType): ProjectRBACRole;
-
-  getSubject(): string;
-  setSubject(value: string): ProjectRBACRole;
 
   getPolicyList(): Array<ProjectRBACPolicy>;
   setPolicyList(value: Array<ProjectRBACPolicy>): ProjectRBACRole;
@@ -237,14 +259,7 @@ export class ProjectRBACRole extends jspb.Message {
 export namespace ProjectRBACRole {
   export type AsObject = {
     name: string,
-    type: ProjectRBACRole.RoleType,
-    subject: string,
     policyList: Array<ProjectRBACPolicy.AsObject>,
-  }
-
-  export enum RoleType { 
-    GITHUB_TEAM = 0,
-    GOOGLE_GROUP = 1,
   }
 }
 
@@ -284,8 +299,8 @@ export namespace ProjectRBACPolicy {
     PIPED = 3,
     DEPLOYMENTCHAIN = 4,
     PROJECT = 5,
-    ROLE = 6,
-    APIKEY = 7,
+    APIKEY = 6,
+    INSIGHT = 7,
   }
 
   export enum ActionType { 
