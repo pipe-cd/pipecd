@@ -207,7 +207,7 @@ func (m *Project) validate(all bool) error {
 
 	}
 
-	for idx, item := range m.GetTeams() {
+	for idx, item := range m.GetUserGroups() {
 		_, _ = idx, item
 
 		if all {
@@ -215,7 +215,7 @@ func (m *Project) validate(all bool) error {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
 					errors = append(errors, ProjectValidationError{
-						field:  fmt.Sprintf("Teams[%v]", idx),
+						field:  fmt.Sprintf("UserGroups[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -223,7 +223,7 @@ func (m *Project) validate(all bool) error {
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
 					errors = append(errors, ProjectValidationError{
-						field:  fmt.Sprintf("Teams[%v]", idx),
+						field:  fmt.Sprintf("UserGroups[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
 					})
@@ -232,7 +232,7 @@ func (m *Project) validate(all bool) error {
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return ProjectValidationError{
-					field:  fmt.Sprintf("Teams[%v]", idx),
+					field:  fmt.Sprintf("UserGroups[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
 				}
@@ -750,31 +750,31 @@ var _ interface {
 	ErrorName() string
 } = ProjectRBACConfigValidationError{}
 
-// Validate checks the field values on ProjectTeam with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *ProjectTeam) Validate() error {
+// Validate checks the field values on ProjectUserGroup with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *ProjectUserGroup) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ProjectTeam with the rules defined in
-// the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in ProjectTeamMultiError, or
-// nil if none found.
-func (m *ProjectTeam) ValidateAll() error {
+// ValidateAll checks the field values on ProjectUserGroup with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ProjectUserGroupMultiError, or nil if none found.
+func (m *ProjectUserGroup) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ProjectTeam) validate(all bool) error {
+func (m *ProjectUserGroup) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetName()) < 1 {
-		err := ProjectTeamValidationError{
-			field:  "Name",
+	if utf8.RuneCountInString(m.GetSsoGroup()) < 1 {
+		err := ProjectUserGroupValidationError{
+			field:  "SsoGroup",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {
@@ -783,9 +783,9 @@ func (m *ProjectTeam) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetRoleName()) < 1 {
-		err := ProjectTeamValidationError{
-			field:  "RoleName",
+	if utf8.RuneCountInString(m.GetRole()) < 1 {
+		err := ProjectUserGroupValidationError{
+			field:  "Role",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {
@@ -795,18 +795,19 @@ func (m *ProjectTeam) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return ProjectTeamMultiError(errors)
+		return ProjectUserGroupMultiError(errors)
 	}
 
 	return nil
 }
 
-// ProjectTeamMultiError is an error wrapping multiple validation errors
-// returned by ProjectTeam.ValidateAll() if the designated constraints aren't met.
-type ProjectTeamMultiError []error
+// ProjectUserGroupMultiError is an error wrapping multiple validation errors
+// returned by ProjectUserGroup.ValidateAll() if the designated constraints
+// aren't met.
+type ProjectUserGroupMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ProjectTeamMultiError) Error() string {
+func (m ProjectUserGroupMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -815,11 +816,11 @@ func (m ProjectTeamMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ProjectTeamMultiError) AllErrors() []error { return m }
+func (m ProjectUserGroupMultiError) AllErrors() []error { return m }
 
-// ProjectTeamValidationError is the validation error returned by
-// ProjectTeam.Validate if the designated constraints aren't met.
-type ProjectTeamValidationError struct {
+// ProjectUserGroupValidationError is the validation error returned by
+// ProjectUserGroup.Validate if the designated constraints aren't met.
+type ProjectUserGroupValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -827,22 +828,22 @@ type ProjectTeamValidationError struct {
 }
 
 // Field function returns field value.
-func (e ProjectTeamValidationError) Field() string { return e.field }
+func (e ProjectUserGroupValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ProjectTeamValidationError) Reason() string { return e.reason }
+func (e ProjectUserGroupValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ProjectTeamValidationError) Cause() error { return e.cause }
+func (e ProjectUserGroupValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ProjectTeamValidationError) Key() bool { return e.key }
+func (e ProjectUserGroupValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ProjectTeamValidationError) ErrorName() string { return "ProjectTeamValidationError" }
+func (e ProjectUserGroupValidationError) ErrorName() string { return "ProjectUserGroupValidationError" }
 
 // Error satisfies the builtin error interface
-func (e ProjectTeamValidationError) Error() string {
+func (e ProjectUserGroupValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -854,14 +855,14 @@ func (e ProjectTeamValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sProjectTeam.%s: %s%s",
+		"invalid %sProjectUserGroup.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ProjectTeamValidationError{}
+var _ error = ProjectUserGroupValidationError{}
 
 var _ interface {
 	Field() string
@@ -869,7 +870,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ProjectTeamValidationError{}
+} = ProjectUserGroupValidationError{}
 
 // Validate checks the field values on ProjectRBACRole with the rules defined
 // in the proto definition for this message. If any rules are violated, the
@@ -1016,6 +1017,156 @@ var _ interface {
 	ErrorName() string
 } = ProjectRBACRoleValidationError{}
 
+// Validate checks the field values on ProjectRBACResource with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ProjectRBACResource) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ProjectRBACResource with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ProjectRBACResourceMultiError, or nil if none found.
+func (m *ProjectRBACResource) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ProjectRBACResource) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if _, ok := ProjectRBACResource_ResourceType_name[int32(m.GetType())]; !ok {
+		err := ProjectRBACResourceValidationError{
+			field:  "Type",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	{
+		sorted_keys := make([]string, len(m.GetLabels()))
+		i := 0
+		for key := range m.GetLabels() {
+			sorted_keys[i] = key
+			i++
+		}
+		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
+		for _, key := range sorted_keys {
+			val := m.GetLabels()[key]
+			_ = val
+
+			if utf8.RuneCountInString(key) < 1 {
+				err := ProjectRBACResourceValidationError{
+					field:  fmt.Sprintf("Labels[%v]", key),
+					reason: "value length must be at least 1 runes",
+				}
+				if !all {
+					return err
+				}
+				errors = append(errors, err)
+			}
+
+			if utf8.RuneCountInString(val) < 1 {
+				err := ProjectRBACResourceValidationError{
+					field:  fmt.Sprintf("Labels[%v]", key),
+					reason: "value length must be at least 1 runes",
+				}
+				if !all {
+					return err
+				}
+				errors = append(errors, err)
+			}
+
+		}
+	}
+
+	if len(errors) > 0 {
+		return ProjectRBACResourceMultiError(errors)
+	}
+
+	return nil
+}
+
+// ProjectRBACResourceMultiError is an error wrapping multiple validation
+// errors returned by ProjectRBACResource.ValidateAll() if the designated
+// constraints aren't met.
+type ProjectRBACResourceMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ProjectRBACResourceMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ProjectRBACResourceMultiError) AllErrors() []error { return m }
+
+// ProjectRBACResourceValidationError is the validation error returned by
+// ProjectRBACResource.Validate if the designated constraints aren't met.
+type ProjectRBACResourceValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ProjectRBACResourceValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ProjectRBACResourceValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ProjectRBACResourceValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ProjectRBACResourceValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ProjectRBACResourceValidationError) ErrorName() string {
+	return "ProjectRBACResourceValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ProjectRBACResourceValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sProjectRBACResource.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ProjectRBACResourceValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ProjectRBACResourceValidationError{}
+
 // Validate checks the field values on ProjectRBACPolicy with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
@@ -1038,31 +1189,39 @@ func (m *ProjectRBACPolicy) validate(all bool) error {
 
 	var errors []error
 
-	if _, ok := ProjectRBACPolicy_ResourceType_name[int32(m.GetResourceType())]; !ok {
-		err := ProjectRBACPolicyValidationError{
-			field:  "ResourceType",
-			reason: "value must be one of the defined enum values",
+	for idx, item := range m.GetResources() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ProjectRBACPolicyValidationError{
+						field:  fmt.Sprintf("Resources[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ProjectRBACPolicyValidationError{
+						field:  fmt.Sprintf("Resources[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ProjectRBACPolicyValidationError{
+					field:  fmt.Sprintf("Resources[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
 		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
+
 	}
-
-	if _, ok := ProjectRBACPolicy_ActionType_name[int32(m.GetActionType())]; !ok {
-		err := ProjectRBACPolicyValidationError{
-			field:  "ActionType",
-			reason: "value must be one of the defined enum values",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	// no validation rules for LabelKey
-
-	// no validation rules for LabelValue
 
 	if len(errors) > 0 {
 		return ProjectRBACPolicyMultiError(errors)

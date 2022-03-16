@@ -49,8 +49,8 @@ message Project {
     // RBAC roles for this project.
     repeated ProjectRBACRole rbac_roles = 9;
 
-    // Teams for this project.
-    repeated ProjectTeam teams = 10;
+    // Mapping SSO group and RBAC role.
+    repeated ProjectUserGroup user_groups = 10;
 
     // Unix time when the project is created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
@@ -106,12 +106,12 @@ message ProjectRBACConfig {
     string viewer = 3;
 }
 
-// ProjectTeam represents a team.
-message ProjectTeam {
-    // The name of team.
-    string name = 1 [(validate.rules).string.min_len = 1];
+// ProjectUserGroup represents a user group.
+message ProjectUserGroup {
+    // The name of sso group.
+    string sso_group = 1 [(validate.rules).string.min_len = 1];
     // The name of rbac role.
-    string role_name = 2 [(validate.rules).string.min_len = 1];
+    string role = 2 [(validate.rules).string.min_len = 1];
 }
 
 // ProjectRBACRole represents a RBAC role.
@@ -122,19 +122,27 @@ message ProjectRBACRole {
     repeated ProjectRBACPolicy policy = 2;
 }
 
-message ProjectRBACPolicy {
+// ProjectResource represents a RBAC resource.
+message ProjectRBACResource {
     enum ResourceType {
       APPLICATION = 0; 
       DEPLOYMENT = 1;
       EVENT = 2;
       PIPED = 3;
-      DEPLOYMENTCHAIN = 4;
+      DEPLOYMENT_CHAIN = 4;
       PROJECT = 5;
-      APIKEY = 6;
+      API_KEY = 6;
       INSIGHT = 7;
     }
 
-    enum ActionType {
+    // The type of resource.
+    ResourceType type = 1 [(validate.rules).enum.defined_only = true];
+    // Custom attributes to identify resource.
+    map<string, string> labels = 2 [(validate.rules).map.keys.string.min_len = 1, (validate.rules).map.values.string.min_len = 1];
+}
+
+message ProjectRBACPolicy {
+    enum Action {
       GET = 0;
       LIST = 1;
       CREATE = 2;
@@ -142,12 +150,8 @@ message ProjectRBACPolicy {
       DELETE = 4;
     }
 
-    // The type of resource.
-    ResourceType resource_type = 1 [(validate.rules).enum.defined_only = true];
-    // The type of action.
-    ActionType action_type = 2 [(validate.rules).enum.defined_only = true];
-    // The key of resource label.
-    string label_key = 3;
-    // The value of resource label.
-    string label_value = 4;
+    // The resources of this project.
+    repeated ProjectRBACResource resources = 1;
+    // The types of action.
+    repeated Action actions = 2;
 }
