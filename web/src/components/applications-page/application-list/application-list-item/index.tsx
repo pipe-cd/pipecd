@@ -153,23 +153,30 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
             <>
               <TableCell className={classes.version}>
                 {recentlyDeployment.versionsList.length !== 0 ? (
-                  recentlyDeployment.versionsList.map((v) => (
-                    <>
-                      <Link
-                        href={v.url.includes("://") ? v.url : `//${v.url}`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {/* Trim first 7 characters like commit hash in case it is too long */}
-                        {v.name}:
-                        {v.version.length > 7
-                          ? `${v.version.slice(0, 7)}...`
-                          : v.version}
-                        <OpenInNewIcon className={classes.linkIcon} />
-                      </Link>
-                      <br />
-                    </>
-                  ))
+                  recentlyDeployment.versionsList.map((v) =>
+                    v.name == "" ? (
+                      <>
+                        <span>{v.version}</span>
+                        <br />
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          href={v.url.includes("://") ? v.url : `//${v.url}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {/* Trim first 7 characters like commit hash in case it is too long */}
+                          {v.name}:
+                          {v.version.length > 7
+                            ? `${v.version.slice(0, 7)}...`
+                            : v.version}
+                          <OpenInNewIcon className={classes.linkIcon} />
+                        </Link>
+                        <br />
+                      </>
+                    )
+                  )
                 ) : recentlyDeployment.version.includes(",") ? (
                   recentlyDeployment.version
                     .split(",")

@@ -62,6 +62,17 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		in.Logger.Warn("unable to determine target version", zap.Error(err))
 	}
 
+	out.Versions, err = determineVersions(ds.AppDir, cfg.Input.FunctionManifestFile)
+	if err != nil {
+		in.Logger.Warn("unable to determine target versions", zap.Error(err))
+		out.Versions = []*model.ArtifactVersion{
+			{
+				Kind:    model.ArtifactVersion_UNKNOWN,
+				Version: "unknown",
+			},
+		}
+	}
+
 	autoRollback := *cfg.Input.AutoRollback
 
 	// In case the strategy has been decided by trigger.
@@ -147,4 +158,13 @@ func determineVersion(appDir, functionManifestFile string) (string, error) {
 	}
 
 	return "", fmt.Errorf("unable to determine version from manifest")
+}
+
+func determineVersions(appDir, functionManifestFile string) ([]*model.ArtifactVersion, error) {
+	fm, err := provider.LoadFunctionManifest(appDir, functionManifestFile)
+	if err != nil {
+		return nil, err
+	}
+
+	return provider.FindArtifactVersions(fm)
 }

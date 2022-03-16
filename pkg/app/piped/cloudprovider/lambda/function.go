@@ -20,6 +20,9 @@ import (
 	"strings"
 
 	"sigs.k8s.io/yaml"
+
+	"github.com/pipe-cd/pipecd/pkg/git"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 const (
@@ -163,4 +166,75 @@ func parseContainerImage(image string) (name, tag string) {
 	paths := strings.Split(parts[0], "/")
 	name = paths[len(paths)-1]
 	return
+}
+
+// FindArtifactVersions parses artifact versions from function.yaml.
+func FindArtifactVersions(fm FunctionManifest) ([]*model.ArtifactVersion, error) {
+	// Extract container image tag as application version.
+	if fm.Spec.ImageURI != "" {
+		name, tag := parseContainerImage(fm.Spec.ImageURI)
+		if name == "" {
+			return nil, fmt.Errorf("image name could not be empty")
+		}
+
+		return []*model.ArtifactVersion{
+			{
+				Kind:    model.ArtifactVersion_CONTAINER_IMAGE,
+				Version: tag,
+				Name:    name,
+				Url:     fm.Spec.ImageURI,
+			},
+		}, nil
+	}
+
+	// Extract s3 object version as application version.
+	if fm.Spec.S3ObjectVersion != "" {
+		return []*model.ArtifactVersion{
+			{
+				Kind:    model.ArtifactVersion_S3_OBJECT,
+				Version: fm.Spec.S3ObjectVersion,
+				Name:    fm.Spec.S3Key,
+				Url:     fmt.Sprintf("https://console.aws.amazon.com/s3/object/%s?prefix=%s", fm.Spec.S3Bucket, fm.Spec.S3Key),
+			},
+		}, nil
+	}
+
+	// Extract source code commihash as application version.
+	if fm.Spec.SourceCode.Ref != "" {
+		u, err := git.ParseGitURL(fm.Spec.SourceCode.Git)
+		if err != nil {
+			return nil, err
+		}
+
+		scheme := "https"
+		if u.Scheme != "ssh" {
+			scheme = u.Scheme
+		}
+
+		repoPath := strings.Trim(u.Path, "/")
+		repoPath = strings.TrimSuffix(repoPath, ".git")
+
+		var gitURL string
+		switch u.Host {
+		case "github.com", "gitlab.com":
+			gitURL = fmt.Sprintf("%s://%s/%s/commit/%s", scheme, u.Host, repoPath, fm.Spec.SourceCode.Ref)
+		case "bitbucket.org":
+			gitURL = fmt.Sprintf("%s://%s/%s/commits/%s", scheme, u.Host, repoPath, fm.Spec.SourceCode.Ref)
+		default:
+			// TODO: Show repo name with commit link for other git provider
+			gitURL = ""
+			repoPath = ""
+		}
+
+		return []*model.ArtifactVersion{
+			{
+				Kind:    model.ArtifactVersion_GIT_SOURCE,
+				Version: fm.Spec.SourceCode.Ref,
+				Name:    repoPath,
+				Url:     gitURL,
+			},
+		}, nil
+	}
+
+	return nil, fmt.Errorf("couldn't determine artifact versions")
 }

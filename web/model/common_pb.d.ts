@@ -151,6 +151,8 @@ export namespace ArtifactVersion {
   export enum Kind { 
     UNKNOWN = 0,
     CONTAINER_IMAGE = 1,
+    S3_OBJECT = 2,
+    GIT_SOURCE = 3,
   }
 }
 

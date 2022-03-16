@@ -148,6 +148,11 @@ func parseGitURL(rawURL string) (u *url.URL, err error) {
 	return parseScp(rawURL)
 }
 
+// ParseGitURL parses git url into a URL structure.
+func ParseGitURL(rawURL string) (u *url.URL, err error) {
+	return parseGitURL(rawURL)
+}
+
 // Return a structured URL only when scheme is a known Git transport.
 func parseTransport(rawURL string) (*url.URL, error) {
 	u, err := url.Parse(rawURL)
