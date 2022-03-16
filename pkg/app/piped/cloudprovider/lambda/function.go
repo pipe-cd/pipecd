@@ -193,7 +193,7 @@ func FindArtifactVersions(fm FunctionManifest) ([]*model.ArtifactVersion, error)
 			{
 				Kind:    model.ArtifactVersion_S3_OBJECT,
 				Version: fm.Spec.S3ObjectVersion,
-				Name:    fmt.Sprintf("%s/%s", fm.Spec.S3Bucket, fm.Spec.S3Key),
+				Name:    fm.Spec.S3Key,
 				Url:     fmt.Sprintf("https://console.aws.amazon.com/s3/object/%s?prefix=%s", fm.Spec.S3Bucket, fm.Spec.S3Key),
 			},
 		}, nil

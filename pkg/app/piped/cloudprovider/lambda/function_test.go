@@ -243,7 +243,7 @@ spec:
 				{
 					Kind:    model.ArtifactVersion_S3_OBJECT,
 					Version: "1pTK9_v0Kd7I8Sk4n6abzCL",
-					Name:    "pipecd-sample-lambda/pipecd-sample-src",
+					Name:    "pipecd-sample-src",
 					Url:     "https://console.aws.amazon.com/s3/object/pipecd-sample-lambda?prefix=pipecd-sample-src",
 				},
 			},
