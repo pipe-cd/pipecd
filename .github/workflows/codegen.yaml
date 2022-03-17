@@ -12,7 +12,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
     - name: Generate code
-      uses: docker://gcr.io/pipecd/codegen@sha256:088a403140a0fbed7d71270019edb81f073d2b4fa139f9046a453cd76b6e0384 #v0.6.0
+      uses: docker://gcr.io/pipecd/codegen@sha256:64ee981a5a3343c8c70ac27fa899e502f27198fcae67c59af87d32f9c7e8c2c9 #v0.7.0
       with:
         args: /github/workspace
     - name: Show Git status
