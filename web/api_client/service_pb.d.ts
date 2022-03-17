@@ -1580,8 +1580,8 @@ export class GetInsightDataRequest extends jspb.Message {
   getRangeFrom(): number;
   setRangeFrom(value: number): GetInsightDataRequest;
 
-  getDayCount(): number;
-  setDayCount(value: number): GetInsightDataRequest;
+  getRangeTo(): number;
+  setRangeTo(value: number): GetInsightDataRequest;
 
   getApplicationId(): string;
   setApplicationId(value: string): GetInsightDataRequest;
@@ -1598,7 +1598,7 @@ export namespace GetInsightDataRequest {
   export type AsObject = {
     metricsKind: pkg_model_insight_pb.InsightMetricsKind,
     rangeFrom: number,
-    dayCount: number,
+    rangeTo: number,
     applicationId: string,
   }
 }

@@ -8555,9 +8555,9 @@ func (m *GetInsightDataRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if m.GetDayCount() <= 0 {
+	if m.GetRangeTo() <= 0 {
 		err := GetInsightDataRequestValidationError{
-			field:  "DayCount",
+			field:  "RangeTo",
 			reason: "value must be greater than 0",
 		}
 		if !all {

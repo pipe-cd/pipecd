@@ -13579,7 +13579,7 @@ proto.grpc.service.webservice.GetInsightDataRequest.toObject = function(includeI
   var f, obj = {
     metricsKind: jspb.Message.getFieldWithDefault(msg, 1, 0),
     rangeFrom: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    dayCount: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    rangeTo: jspb.Message.getFieldWithDefault(msg, 3, 0),
     applicationId: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
@@ -13627,7 +13627,7 @@ proto.grpc.service.webservice.GetInsightDataRequest.deserializeBinaryFromReader 
       break;
     case 3:
       var value = /** @type {number} */ (reader.readInt64());
-      msg.setDayCount(value);
+      msg.setRangeTo(value);
       break;
     case 4:
       var value = /** @type {string} */ (reader.readString());
@@ -13676,7 +13676,7 @@ proto.grpc.service.webservice.GetInsightDataRequest.serializeBinaryToWriter = fu
       f
     );
   }
-  f = message.getDayCount();
+  f = message.getRangeTo();
   if (f !== 0) {
     writer.writeInt64(
       3,
@@ -13730,10 +13730,10 @@ proto.grpc.service.webservice.GetInsightDataRequest.prototype.setRangeFrom = fun
 
 
 /**
- * optional int64 day_count = 3;
+ * optional int64 range_to = 3;
  * @return {number}
  */
-proto.grpc.service.webservice.GetInsightDataRequest.prototype.getDayCount = function() {
+proto.grpc.service.webservice.GetInsightDataRequest.prototype.getRangeTo = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
 };
 
@@ -13742,7 +13742,7 @@ proto.grpc.service.webservice.GetInsightDataRequest.prototype.getDayCount = func
  * @param {number} value
  * @return {!proto.grpc.service.webservice.GetInsightDataRequest} returns this
  */
-proto.grpc.service.webservice.GetInsightDataRequest.prototype.setDayCount = function(value) {
+proto.grpc.service.webservice.GetInsightDataRequest.prototype.setRangeTo = function(value) {
   return jspb.Message.setProto3IntField(this, 3, value);
 };
 
