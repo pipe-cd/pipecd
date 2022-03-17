@@ -136,58 +136,6 @@ func (InsightMetricsKind) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_insight_proto_rawDescGZIP(), []int{1}
 }
 
-type InsightStep int32
-
-const (
-	InsightStep_DAILY   InsightStep = 0
-	InsightStep_WEEKLY  InsightStep = 1
-	InsightStep_MONTHLY InsightStep = 2
-	InsightStep_YEARLY  InsightStep = 3
-)
-
-// Enum value maps for InsightStep.
-var (
-	InsightStep_name = map[int32]string{
-		0: "DAILY",
-		1: "WEEKLY",
-		2: "MONTHLY",
-		3: "YEARLY",
-	}
-	InsightStep_value = map[string]int32{
-		"DAILY":   0,
-		"WEEKLY":  1,
-		"MONTHLY": 2,
-		"YEARLY":  3,
-	}
-)
-
-func (x InsightStep) Enum() *InsightStep {
-	p := new(InsightStep)
-	*p = x
-	return p
-}
-
-func (x InsightStep) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (InsightStep) Descriptor() protoreflect.EnumDescriptor {
-	return file_pkg_model_insight_proto_enumTypes[2].Descriptor()
-}
-
-func (InsightStep) Type() protoreflect.EnumType {
-	return &file_pkg_model_insight_proto_enumTypes[2]
-}
-
-func (x InsightStep) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use InsightStep.Descriptor instead.
-func (InsightStep) EnumDescriptor() ([]byte, []int) {
-	return file_pkg_model_insight_proto_rawDescGZIP(), []int{2}
-}
-
 type InsightApplicationCountLabelKey int32
 
 const (
@@ -218,11 +166,11 @@ func (x InsightApplicationCountLabelKey) String() string {
 }
 
 func (InsightApplicationCountLabelKey) Descriptor() protoreflect.EnumDescriptor {
-	return file_pkg_model_insight_proto_enumTypes[3].Descriptor()
+	return file_pkg_model_insight_proto_enumTypes[2].Descriptor()
 }
 
 func (InsightApplicationCountLabelKey) Type() protoreflect.EnumType {
-	return &file_pkg_model_insight_proto_enumTypes[3]
+	return &file_pkg_model_insight_proto_enumTypes[2]
 }
 
 func (x InsightApplicationCountLabelKey) Number() protoreflect.EnumNumber {
@@ -231,7 +179,7 @@ func (x InsightApplicationCountLabelKey) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use InsightApplicationCountLabelKey.Descriptor instead.
 func (InsightApplicationCountLabelKey) EnumDescriptor() ([]byte, []int) {
-	return file_pkg_model_insight_proto_rawDescGZIP(), []int{3}
+	return file_pkg_model_insight_proto_rawDescGZIP(), []int{2}
 }
 
 type InsightSample struct {
@@ -512,18 +460,14 @@ var file_pkg_model_insight_proto_rawDesc = []byte{
 	0x52, 0x45, 0x5f, 0x52, 0x41, 0x54, 0x45, 0x10, 0x01, 0x12, 0x08, 0x0a, 0x04, 0x4d, 0x54, 0x54,
 	0x52, 0x10, 0x02, 0x12, 0x0d, 0x0a, 0x09, 0x4c, 0x45, 0x41, 0x44, 0x5f, 0x54, 0x49, 0x4d, 0x45,
 	0x10, 0x03, 0x12, 0x16, 0x0a, 0x12, 0x41, 0x50, 0x50, 0x4c, 0x49, 0x43, 0x41, 0x54, 0x49, 0x4f,
-	0x4e, 0x53, 0x5f, 0x43, 0x4f, 0x55, 0x4e, 0x54, 0x10, 0x04, 0x2a, 0x3d, 0x0a, 0x0b, 0x49, 0x6e,
-	0x73, 0x69, 0x67, 0x68, 0x74, 0x53, 0x74, 0x65, 0x70, 0x12, 0x09, 0x0a, 0x05, 0x44, 0x41, 0x49,
-	0x4c, 0x59, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x57, 0x45, 0x45, 0x4b, 0x4c, 0x59, 0x10, 0x01,
-	0x12, 0x0b, 0x0a, 0x07, 0x4d, 0x4f, 0x4e, 0x54, 0x48, 0x4c, 0x59, 0x10, 0x02, 0x12, 0x0a, 0x0a,
-	0x06, 0x59, 0x45, 0x41, 0x52, 0x4c, 0x59, 0x10, 0x03, 0x2a, 0x3e, 0x0a, 0x1f, 0x49, 0x6e, 0x73,
-	0x69, 0x67, 0x68, 0x74, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43,
-	0x6f, 0x75, 0x6e, 0x74, 0x4c, 0x61, 0x62, 0x65, 0x6c, 0x4b, 0x65, 0x79, 0x12, 0x08, 0x0a, 0x04,
-	0x4b, 0x49, 0x4e, 0x44, 0x10, 0x00, 0x12, 0x11, 0x0a, 0x0d, 0x41, 0x43, 0x54, 0x49, 0x56, 0x45,
-	0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x10, 0x01, 0x42, 0x25, 0x5a, 0x23, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x69, 0x70, 0x65, 0x2d, 0x63, 0x64, 0x2f,
-	0x70, 0x69, 0x70, 0x65, 0x63, 0x64, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x4e, 0x53, 0x5f, 0x43, 0x4f, 0x55, 0x4e, 0x54, 0x10, 0x04, 0x2a, 0x3e, 0x0a, 0x1f, 0x49, 0x6e,
+	0x73, 0x69, 0x67, 0x68, 0x74, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x43, 0x6f, 0x75, 0x6e, 0x74, 0x4c, 0x61, 0x62, 0x65, 0x6c, 0x4b, 0x65, 0x79, 0x12, 0x08, 0x0a,
+	0x04, 0x4b, 0x49, 0x4e, 0x44, 0x10, 0x00, 0x12, 0x11, 0x0a, 0x0d, 0x41, 0x43, 0x54, 0x49, 0x56,
+	0x45, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x55, 0x53, 0x10, 0x01, 0x42, 0x25, 0x5a, 0x23, 0x67, 0x69,
+	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x69, 0x70, 0x65, 0x2d, 0x63, 0x64,
+	0x2f, 0x70, 0x69, 0x70, 0x65, 0x63, 0x64, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x6d, 0x6f, 0x64, 0x65,
+	0x6c, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -538,32 +482,31 @@ func file_pkg_model_insight_proto_rawDescGZIP() []byte {
 	return file_pkg_model_insight_proto_rawDescData
 }
 
-var file_pkg_model_insight_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_pkg_model_insight_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
 var file_pkg_model_insight_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_pkg_model_insight_proto_goTypes = []interface{}{
 	(InsightResultType)(0),               // 0: model.InsightResultType
 	(InsightMetricsKind)(0),              // 1: model.InsightMetricsKind
-	(InsightStep)(0),                     // 2: model.InsightStep
-	(InsightApplicationCountLabelKey)(0), // 3: model.InsightApplicationCountLabelKey
-	(*InsightSample)(nil),                // 4: model.InsightSample
-	(*InsightSampleStream)(nil),          // 5: model.InsightSampleStream
-	(*InsightDataPoint)(nil),             // 6: model.InsightDataPoint
-	(*InsightApplicationCount)(nil),      // 7: model.InsightApplicationCount
-	nil,                                  // 8: model.InsightSample.LabelsEntry
-	nil,                                  // 9: model.InsightSampleStream.LabelsEntry
-	nil,                                  // 10: model.InsightApplicationCount.LabelsEntry
+	(InsightApplicationCountLabelKey)(0), // 2: model.InsightApplicationCountLabelKey
+	(*InsightSample)(nil),                // 3: model.InsightSample
+	(*InsightSampleStream)(nil),          // 4: model.InsightSampleStream
+	(*InsightDataPoint)(nil),             // 5: model.InsightDataPoint
+	(*InsightApplicationCount)(nil),      // 6: model.InsightApplicationCount
+	nil,                                  // 7: model.InsightSample.LabelsEntry
+	nil,                                  // 8: model.InsightSampleStream.LabelsEntry
+	nil,                                  // 9: model.InsightApplicationCount.LabelsEntry
 }
 var file_pkg_model_insight_proto_depIdxs = []int32{
-	8,  // 0: model.InsightSample.labels:type_name -> model.InsightSample.LabelsEntry
-	6,  // 1: model.InsightSample.data_point:type_name -> model.InsightDataPoint
-	9,  // 2: model.InsightSampleStream.labels:type_name -> model.InsightSampleStream.LabelsEntry
-	6,  // 3: model.InsightSampleStream.data_points:type_name -> model.InsightDataPoint
-	10, // 4: model.InsightApplicationCount.labels:type_name -> model.InsightApplicationCount.LabelsEntry
-	5,  // [5:5] is the sub-list for method output_type
-	5,  // [5:5] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	7, // 0: model.InsightSample.labels:type_name -> model.InsightSample.LabelsEntry
+	5, // 1: model.InsightSample.data_point:type_name -> model.InsightDataPoint
+	8, // 2: model.InsightSampleStream.labels:type_name -> model.InsightSampleStream.LabelsEntry
+	5, // 3: model.InsightSampleStream.data_points:type_name -> model.InsightDataPoint
+	9, // 4: model.InsightApplicationCount.labels:type_name -> model.InsightApplicationCount.LabelsEntry
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_pkg_model_insight_proto_init() }
@@ -626,7 +569,7 @@ func file_pkg_model_insight_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_model_insight_proto_rawDesc,
-			NumEnums:      4,
+			NumEnums:      3,
 			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,

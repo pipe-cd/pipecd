@@ -6,7 +6,7 @@ import { applicationsSlice } from "./applications";
 import { applicationLiveStateSlice } from "./applications-live-state";
 import { commandsSlice } from "./commands";
 import { deleteApplicationSlice } from "./delete-application";
-import { deploymentFrequencySlice } from "./deployment-frequency";
+// import { deploymentFrequencySlice } from "./deployment-frequency";
 import { deploymentsSlice } from "./deployments";
 import { insightSlice } from "./insight";
 import { meSlice } from "./me";
@@ -35,7 +35,7 @@ export const reducers = combineReducers({
   sealedSecret: sealedSecretSlice.reducer,
   apiKeys: apiKeysSlice.reducer,
   insight: insightSlice.reducer,
-  deploymentFrequency: deploymentFrequencySlice.reducer,
+  // deploymentFrequency: deploymentFrequencySlice.reducer,
   applicationCounts: applicationCountsSlice.reducer,
   unregisteredApplications: unregisteredApplicationsSlice.reducer,
   events: eventsSlice.reducer,

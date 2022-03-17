@@ -47,19 +47,12 @@ enum InsightMetricsKind {
   APPLICATIONS_COUNT = 4;
 }
 
-enum InsightStep {
-  DAILY = 0;
-  WEEKLY = 1;
-  MONTHLY = 2;
-  YEARLY = 3;
-}
-
 message InsightApplicationCount {
   map<string,string> labels = 1;
   int32 count = 2;
 }
 
 enum InsightApplicationCountLabelKey {
-    KIND = 0;
-    ACTIVE_STATUS = 1;
+  KIND = 0;
+  ACTIVE_STATUS = 1;
 }

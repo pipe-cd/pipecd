@@ -14,25 +14,25 @@
 
 package insight
 
-import (
-	"time"
+// import (
+// 	"time"
 
-	"github.com/pipe-cd/pipecd/pkg/model"
-)
+// 	"github.com/pipe-cd/pipecd/pkg/model"
+// )
 
-func NormalizeTime(from time.Time, step model.InsightStep) time.Time {
-	var formattedTime time.Time
-	switch step {
-	case model.InsightStep_DAILY:
-		formattedTime = time.Date(from.Year(), from.Month(), from.Day(), 0, 0, 0, 0, time.UTC)
-	case model.InsightStep_WEEKLY:
-		// Sunday in the week of rangeFrom
-		sunday := from.AddDate(0, 0, -int(from.Weekday()))
-		formattedTime = time.Date(sunday.Year(), sunday.Month(), sunday.Day(), 0, 0, 0, 0, time.UTC)
-	case model.InsightStep_MONTHLY:
-		formattedTime = time.Date(from.Year(), from.Month(), 1, 0, 0, 0, 0, time.UTC)
-	case model.InsightStep_YEARLY:
-		formattedTime = time.Date(from.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
-	}
-	return formattedTime
-}
+// func NormalizeTime(from time.Time, step model.InsightStep) time.Time {
+// 	var formattedTime time.Time
+// 	switch step {
+// 	case model.InsightStep_DAILY:
+// 		formattedTime = time.Date(from.Year(), from.Month(), from.Day(), 0, 0, 0, 0, time.UTC)
+// 	case model.InsightStep_WEEKLY:
+// 		// Sunday in the week of rangeFrom
+// 		sunday := from.AddDate(0, 0, -int(from.Weekday()))
+// 		formattedTime = time.Date(sunday.Year(), sunday.Month(), sunday.Day(), 0, 0, 0, 0, time.UTC)
+// 	case model.InsightStep_MONTHLY:
+// 		formattedTime = time.Date(from.Year(), from.Month(), 1, 0, 0, 0, 0, time.UTC)
+// 	case model.InsightStep_YEARLY:
+// 		formattedTime = time.Date(from.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
+// 	}
+// 	return formattedTime
+// }

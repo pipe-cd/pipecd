@@ -11,10 +11,8 @@ go_library(
     importpath = "github.com/pipe-cd/pipecd/pkg/insight/insightstore",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/cache:go_default_library",
         "//pkg/filestore:go_default_library",
         "//pkg/insight:go_default_library",
-        "//pkg/model:go_default_library",
     ],
 )
 

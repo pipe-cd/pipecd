@@ -8544,17 +8544,6 @@ func (m *GetInsightDataRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if _, ok := model.InsightStep_name[int32(m.GetStep())]; !ok {
-		err := GetInsightDataRequestValidationError{
-			field:  "Step",
-			reason: "value must be one of the defined enum values",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	if m.GetRangeFrom() <= 0 {
 		err := GetInsightDataRequestValidationError{
 			field:  "RangeFrom",
@@ -8566,9 +8555,9 @@ func (m *GetInsightDataRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if m.GetDataPointCount() <= 0 {
+	if m.GetRangeTo() <= 0 {
 		err := GetInsightDataRequestValidationError{
-			field:  "DataPointCount",
+			field:  "RangeTo",
 			reason: "value must be greater than 0",
 		}
 		if !all {
@@ -8682,40 +8671,6 @@ func (m *GetInsightDataResponse) validate(all bool) error {
 	var errors []error
 
 	// no validation rules for UpdatedAt
-
-	for idx, item := range m.GetDataPoints() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, GetInsightDataResponseValidationError{
-						field:  fmt.Sprintf("DataPoints[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, GetInsightDataResponseValidationError{
-						field:  fmt.Sprintf("DataPoints[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return GetInsightDataResponseValidationError{
-					field:  fmt.Sprintf("DataPoints[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
 
 	// no validation rules for Type
 
