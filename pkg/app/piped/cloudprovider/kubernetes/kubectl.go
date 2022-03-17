@@ -59,12 +59,12 @@ func (c *Kubectl) Apply(ctx context.Context, kubeconfig, namespace string, manif
 		return err
 	}
 
-	args := make([]string, 0, 5)
+	args := make([]string, 0, 7)
 	if kubeconfig != "" {
-		args = append(args, "--kubeconfig="+kubeconfig)
+		args = append(args, "--kubeconfig", kubeconfig)
 	}
 	if namespace != "" {
-		args = append(args, "-n", namespace)
+		args = append(args, "--namespace", namespace)
 	}
 	args = append(args, "apply", "-f", "-")
 
@@ -93,12 +93,12 @@ func (c *Kubectl) Create(ctx context.Context, kubeconfig, namespace string, mani
 		return err
 	}
 
-	args := make([]string, 0, 5)
+	args := make([]string, 0, 7)
 	if kubeconfig != "" {
-		args = append(args, "--kubeconfig="+kubeconfig)
+		args = append(args, "--kubeconfig", kubeconfig)
 	}
 	if namespace != "" {
-		args = append(args, "-n", namespace)
+		args = append(args, "--namespace", namespace)
 	}
 	args = append(args, "create", "-f", "-")
 
@@ -127,12 +127,12 @@ func (c *Kubectl) Replace(ctx context.Context, kubeconfig, namespace string, man
 		return err
 	}
 
-	args := make([]string, 0, 5)
+	args := make([]string, 0, 7)
 	if kubeconfig != "" {
-		args = append(args, "--kubeconfig="+kubeconfig)
+		args = append(args, "--kubeconfig", kubeconfig)
 	}
 	if namespace != "" {
-		args = append(args, "-n", namespace)
+		args = append(args, "--namespace", namespace)
 	}
 	args = append(args, "replace", "-f", "-")
 
@@ -161,12 +161,12 @@ func (c *Kubectl) Delete(ctx context.Context, kubeconfig, namespace string, r Re
 		)
 	}()
 
-	args := make([]string, 0, 5)
+	args := make([]string, 0, 7)
 	if kubeconfig != "" {
-		args = append(args, "--kubeconfig="+kubeconfig)
+		args = append(args, "--kubeconfig", kubeconfig)
 	}
 	if namespace != "" {
-		args = append(args, "-n", namespace)
+		args = append(args, "--namespace", namespace)
 	}
 	args = append(args, "delete", r.Kind, r.Name)
 
