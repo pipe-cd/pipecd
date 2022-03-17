@@ -94,6 +94,12 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		}
 	}
 
+	cp, ok := e.PipedConfig.FindCloudProvider(e.Deployment.CloudProvider, model.ApplicationKind_KUBERNETES)
+	if !ok {
+		e.LogPersister.Errorf("Not found cloud provider %q", e.Deployment.CloudProvider)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	e.loader = provider.NewLoader(
 		e.Deployment.ApplicationName,
 		ds.AppDir,
@@ -105,6 +111,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	)
 	e.applier = provider.NewApplier(
 		e.appCfg.Input,
+		*cp.KubernetesConfig,
 		e.Logger,
 	)
 	e.Logger.Info("start executing kubernetes stage",

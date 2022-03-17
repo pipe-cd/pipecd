@@ -135,8 +135,15 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	cp, ok := e.PipedConfig.FindCloudProvider(e.Deployment.CloudProvider, model.ApplicationKind_KUBERNETES)
+	if !ok {
+		e.LogPersister.Errorf("Not found cloud provider %q", e.Deployment.CloudProvider)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	applier := provider.NewApplier(
 		appCfg.Input,
+		*cp.KubernetesConfig,
 		e.Logger,
 	)
 
