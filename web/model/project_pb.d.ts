@@ -34,6 +34,16 @@ export class Project extends jspb.Message {
   getAllowStrayAsViewer(): boolean;
   setAllowStrayAsViewer(value: boolean): Project;
 
+  getRbacRolesList(): Array<ProjectRBACRole>;
+  setRbacRolesList(value: Array<ProjectRBACRole>): Project;
+  clearRbacRolesList(): Project;
+  addRbacRoles(value?: ProjectRBACRole, index?: number): ProjectRBACRole;
+
+  getUserGroupsList(): Array<ProjectUserGroup>;
+  setUserGroupsList(value: Array<ProjectUserGroup>): Project;
+  clearUserGroupsList(): Project;
+  addUserGroups(value?: ProjectUserGroup, index?: number): ProjectUserGroup;
+
   getCreatedAt(): number;
   setCreatedAt(value: number): Project;
 
@@ -58,6 +68,8 @@ export namespace Project {
     rbac?: ProjectRBACConfig.AsObject,
     sharedSsoName: string,
     allowStrayAsViewer: boolean,
+    rbacRolesList: Array<ProjectRBACRole.AsObject>,
+    userGroupsList: Array<ProjectUserGroup.AsObject>,
     createdAt: number,
     updatedAt: number,
   }
@@ -202,6 +214,119 @@ export namespace ProjectRBACConfig {
     admin: string,
     editor: string,
     viewer: string,
+  }
+}
+
+export class ProjectUserGroup extends jspb.Message {
+  getSsoGroup(): string;
+  setSsoGroup(value: string): ProjectUserGroup;
+
+  getRole(): string;
+  setRole(value: string): ProjectUserGroup;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ProjectUserGroup.AsObject;
+  static toObject(includeInstance: boolean, msg: ProjectUserGroup): ProjectUserGroup.AsObject;
+  static serializeBinaryToWriter(message: ProjectUserGroup, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ProjectUserGroup;
+  static deserializeBinaryFromReader(message: ProjectUserGroup, reader: jspb.BinaryReader): ProjectUserGroup;
+}
+
+export namespace ProjectUserGroup {
+  export type AsObject = {
+    ssoGroup: string,
+    role: string,
+  }
+}
+
+export class ProjectRBACRole extends jspb.Message {
+  getName(): string;
+  setName(value: string): ProjectRBACRole;
+
+  getPolicyList(): Array<ProjectRBACPolicy>;
+  setPolicyList(value: Array<ProjectRBACPolicy>): ProjectRBACRole;
+  clearPolicyList(): ProjectRBACRole;
+  addPolicy(value?: ProjectRBACPolicy, index?: number): ProjectRBACPolicy;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ProjectRBACRole.AsObject;
+  static toObject(includeInstance: boolean, msg: ProjectRBACRole): ProjectRBACRole.AsObject;
+  static serializeBinaryToWriter(message: ProjectRBACRole, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ProjectRBACRole;
+  static deserializeBinaryFromReader(message: ProjectRBACRole, reader: jspb.BinaryReader): ProjectRBACRole;
+}
+
+export namespace ProjectRBACRole {
+  export type AsObject = {
+    name: string,
+    policyList: Array<ProjectRBACPolicy.AsObject>,
+  }
+}
+
+export class ProjectRBACResource extends jspb.Message {
+  getType(): ProjectRBACResource.ResourceType;
+  setType(value: ProjectRBACResource.ResourceType): ProjectRBACResource;
+
+  getLabelsMap(): jspb.Map<string, string>;
+  clearLabelsMap(): ProjectRBACResource;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ProjectRBACResource.AsObject;
+  static toObject(includeInstance: boolean, msg: ProjectRBACResource): ProjectRBACResource.AsObject;
+  static serializeBinaryToWriter(message: ProjectRBACResource, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ProjectRBACResource;
+  static deserializeBinaryFromReader(message: ProjectRBACResource, reader: jspb.BinaryReader): ProjectRBACResource;
+}
+
+export namespace ProjectRBACResource {
+  export type AsObject = {
+    type: ProjectRBACResource.ResourceType,
+    labelsMap: Array<[string, string]>,
+  }
+
+  export enum ResourceType { 
+    APPLICATION = 0,
+    DEPLOYMENT = 1,
+    EVENT = 2,
+    PIPED = 3,
+    DEPLOYMENT_CHAIN = 4,
+    PROJECT = 5,
+    API_KEY = 6,
+    INSIGHT = 7,
+  }
+}
+
+export class ProjectRBACPolicy extends jspb.Message {
+  getResourcesList(): Array<ProjectRBACResource>;
+  setResourcesList(value: Array<ProjectRBACResource>): ProjectRBACPolicy;
+  clearResourcesList(): ProjectRBACPolicy;
+  addResources(value?: ProjectRBACResource, index?: number): ProjectRBACResource;
+
+  getActionsList(): Array<ProjectRBACPolicy.Action>;
+  setActionsList(value: Array<ProjectRBACPolicy.Action>): ProjectRBACPolicy;
+  clearActionsList(): ProjectRBACPolicy;
+  addActions(value: ProjectRBACPolicy.Action, index?: number): ProjectRBACPolicy;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ProjectRBACPolicy.AsObject;
+  static toObject(includeInstance: boolean, msg: ProjectRBACPolicy): ProjectRBACPolicy.AsObject;
+  static serializeBinaryToWriter(message: ProjectRBACPolicy, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ProjectRBACPolicy;
+  static deserializeBinaryFromReader(message: ProjectRBACPolicy, reader: jspb.BinaryReader): ProjectRBACPolicy;
+}
+
+export namespace ProjectRBACPolicy {
+  export type AsObject = {
+    resourcesList: Array<ProjectRBACResource.AsObject>,
+    actionsList: Array<ProjectRBACPolicy.Action>,
+  }
+
+  export enum Action { 
+    GET = 0,
+    LIST = 1,
+    CREATE = 2,
+    UPDATE = 3,
+    DELETE = 4,
   }
 }
 

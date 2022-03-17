@@ -46,6 +46,12 @@ message Project {
     // to any registered teams to log in with Viewer role.
     bool allow_stray_as_viewer = 8;
 
+    // RBAC roles for this project.
+    repeated ProjectRBACRole rbac_roles = 9;
+
+    // Mapping SSO group and RBAC role.
+    repeated ProjectUserGroup user_groups = 10;
+
     // Unix time when the project is created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     // Unix time of the last time when the project is updated.
@@ -98,4 +104,54 @@ message ProjectRBACConfig {
     string admin = 1 [(validate.rules).string.min_len = 1];
     string editor = 2;
     string viewer = 3;
+}
+
+// ProjectUserGroup represents a user group.
+message ProjectUserGroup {
+    // The name of sso group.
+    string sso_group = 1 [(validate.rules).string.min_len = 1];
+    // The name of rbac role.
+    string role = 2 [(validate.rules).string.min_len = 1];
+}
+
+// ProjectRBACRole represents a RBAC role.
+message ProjectRBACRole {
+    // The name of role.
+    string name = 1 [(validate.rules).string.min_len = 1];
+    // The policy of role.
+    repeated ProjectRBACPolicy policy = 2;
+}
+
+// ProjectResource represents a RBAC resource.
+message ProjectRBACResource {
+    enum ResourceType {
+      APPLICATION = 0; 
+      DEPLOYMENT = 1;
+      EVENT = 2;
+      PIPED = 3;
+      DEPLOYMENT_CHAIN = 4;
+      PROJECT = 5;
+      API_KEY = 6;
+      INSIGHT = 7;
+    }
+
+    // The type of resource.
+    ResourceType type = 1 [(validate.rules).enum.defined_only = true];
+    // Custom attributes to identify resource.
+    map<string, string> labels = 2 [(validate.rules).map.keys.string.min_len = 1, (validate.rules).map.values.string.min_len = 1];
+}
+
+message ProjectRBACPolicy {
+    enum Action {
+      GET = 0;
+      LIST = 1;
+      CREATE = 2;
+      UPDATE = 3;
+      DELETE = 4;
+    }
+
+    // The resources of this project.
+    repeated ProjectRBACResource resources = 1;
+    // The types of action.
+    repeated Action actions = 2;
 }
