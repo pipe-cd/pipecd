@@ -2023,7 +2023,7 @@ proto.model.ProjectRBACRole.prototype.toObject = function(opt_includeInstance) {
 proto.model.ProjectRBACRole.toObject = function(includeInstance, msg) {
   var f, obj = {
     name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    policyList: jspb.Message.toObjectList(msg.getPolicyList(),
+    policiesList: jspb.Message.toObjectList(msg.getPoliciesList(),
     proto.model.ProjectRBACPolicy.toObject, includeInstance)
   };
 
@@ -2068,7 +2068,7 @@ proto.model.ProjectRBACRole.deserializeBinaryFromReader = function(msg, reader) 
     case 2:
       var value = new proto.model.ProjectRBACPolicy;
       reader.readMessage(value,proto.model.ProjectRBACPolicy.deserializeBinaryFromReader);
-      msg.addPolicy(value);
+      msg.addPolicies(value);
       break;
     default:
       reader.skipField();
@@ -2106,7 +2106,7 @@ proto.model.ProjectRBACRole.serializeBinaryToWriter = function(message, writer) 
       f
     );
   }
-  f = message.getPolicyList();
+  f = message.getPoliciesList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
       2,
@@ -2136,10 +2136,10 @@ proto.model.ProjectRBACRole.prototype.setName = function(value) {
 
 
 /**
- * repeated ProjectRBACPolicy policy = 2;
+ * repeated ProjectRBACPolicy policies = 2;
  * @return {!Array<!proto.model.ProjectRBACPolicy>}
  */
-proto.model.ProjectRBACRole.prototype.getPolicyList = function() {
+proto.model.ProjectRBACRole.prototype.getPoliciesList = function() {
   return /** @type{!Array<!proto.model.ProjectRBACPolicy>} */ (
     jspb.Message.getRepeatedWrapperField(this, proto.model.ProjectRBACPolicy, 2));
 };
@@ -2149,7 +2149,7 @@ proto.model.ProjectRBACRole.prototype.getPolicyList = function() {
  * @param {!Array<!proto.model.ProjectRBACPolicy>} value
  * @return {!proto.model.ProjectRBACRole} returns this
 */
-proto.model.ProjectRBACRole.prototype.setPolicyList = function(value) {
+proto.model.ProjectRBACRole.prototype.setPoliciesList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 2, value);
 };
 
@@ -2159,7 +2159,7 @@ proto.model.ProjectRBACRole.prototype.setPolicyList = function(value) {
  * @param {number=} opt_index
  * @return {!proto.model.ProjectRBACPolicy}
  */
-proto.model.ProjectRBACRole.prototype.addPolicy = function(opt_value, opt_index) {
+proto.model.ProjectRBACRole.prototype.addPolicies = function(opt_value, opt_index) {
   return jspb.Message.addToRepeatedWrapperField(this, 2, opt_value, proto.model.ProjectRBACPolicy, opt_index);
 };
 
@@ -2168,8 +2168,8 @@ proto.model.ProjectRBACRole.prototype.addPolicy = function(opt_value, opt_index)
  * Clears the list making it empty but non-null.
  * @return {!proto.model.ProjectRBACRole} returns this
  */
-proto.model.ProjectRBACRole.prototype.clearPolicyList = function() {
-  return this.setPolicyList([]);
+proto.model.ProjectRBACRole.prototype.clearPoliciesList = function() {
+  return this.setPoliciesList([]);
 };
 
 

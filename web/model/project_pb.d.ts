@@ -243,10 +243,10 @@ export class ProjectRBACRole extends jspb.Message {
   getName(): string;
   setName(value: string): ProjectRBACRole;
 
-  getPolicyList(): Array<ProjectRBACPolicy>;
-  setPolicyList(value: Array<ProjectRBACPolicy>): ProjectRBACRole;
-  clearPolicyList(): ProjectRBACRole;
-  addPolicy(value?: ProjectRBACPolicy, index?: number): ProjectRBACPolicy;
+  getPoliciesList(): Array<ProjectRBACPolicy>;
+  setPoliciesList(value: Array<ProjectRBACPolicy>): ProjectRBACRole;
+  clearPoliciesList(): ProjectRBACRole;
+  addPolicies(value?: ProjectRBACPolicy, index?: number): ProjectRBACPolicy;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ProjectRBACRole.AsObject;
@@ -259,7 +259,7 @@ export class ProjectRBACRole extends jspb.Message {
 export namespace ProjectRBACRole {
   export type AsObject = {
     name: string,
-    policyList: Array<ProjectRBACPolicy.AsObject>,
+    policiesList: Array<ProjectRBACPolicy.AsObject>,
   }
 }
 
