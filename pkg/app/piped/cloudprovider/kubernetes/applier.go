@@ -85,6 +85,7 @@ func (a *applier) ReplaceManifest(ctx context.Context, manifest Manifest) error 
 	if a.initErr != nil {
 		return a.initErr
 	}
+
 	err := a.kubectl.Replace(ctx, a.getNamespaceToRun(manifest.Key), manifest)
 	if err == nil {
 		return nil
