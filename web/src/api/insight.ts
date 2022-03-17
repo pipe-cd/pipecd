@@ -1,7 +1,7 @@
 import { apiClient, apiRequest } from "./client";
 import {
-  GetInsightDataRequest,
-  GetInsightDataResponse,
+  // GetInsightDataRequest,
+  // GetInsightDataResponse,
   GetInsightApplicationCountRequest,
   GetInsightApplicationCountResponse,
 } from "pipecd/web/api_client/service_pb";

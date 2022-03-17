@@ -44,7 +44,7 @@ export const insightHandlers = [
     const insightSampleStream = new InsightSampleStream();
     insightSampleStream.setDataPointsList(dataPointsList);
     response.setVectorList([]);
-    response.setDataPointsList(dataPointsList);
+    // response.setDataPointsList(dataPointsList);
     response.setType(InsightResultType.MATRIX);
     return response;
   }),
