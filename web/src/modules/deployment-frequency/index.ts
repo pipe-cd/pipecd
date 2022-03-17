@@ -3,7 +3,7 @@ import type { AppState } from "~/store";
 import { InsightMetricsKind, InsightDataPoint } from "../insight";
 import dayjs from "dayjs";
 import * as InsightAPI from "~/api/insight";
-import { InsightStep } from "pipecd/web/model/insight_pb";
+// import { InsightStep } from "pipecd/web/model/insight_pb";
 import { LoadingStatus } from "~/types/module";
 
 const MODULE_NAME = "deploymentFrequency";
@@ -18,12 +18,12 @@ const initialState: DeploymentFrequencyState = {
   data: [],
 };
 
-const STEP_UNIT_MAP: Record<InsightStep, "day" | "week" | "month" | "year"> = {
-  [InsightStep.DAILY]: "day",
-  [InsightStep.WEEKLY]: "week",
-  [InsightStep.MONTHLY]: "month",
-  [InsightStep.YEARLY]: "year",
-};
+// const STEP_UNIT_MAP: Record<InsightStep, "day" | "week" | "month" | "year"> = {
+//   [InsightStep.DAILY]: "day",
+//   [InsightStep.WEEKLY]: "week",
+//   [InsightStep.MONTHLY]: "month",
+//   [InsightStep.YEARLY]: "year",
+// };
 
 export const fetchDeploymentFrequency = createAsyncThunk<
   InsightDataPoint.AsObject[],
@@ -32,17 +32,18 @@ export const fetchDeploymentFrequency = createAsyncThunk<
 >(`${MODULE_NAME}/fetch`, async (_, thunkAPI) => {
   const state = thunkAPI.getState();
 
-  const { dataPointsList } = await InsightAPI.getInsightData({
-    applicationId: state.insight.applicationId,
-    step: state.insight.step,
-    dataPointCount: dayjs(state.insight.rangeTo).diff(
-      state.insight.rangeFrom,
-      STEP_UNIT_MAP[state.insight.step]
-    ),
-    metricsKind: InsightMetricsKind.DEPLOYMENT_FREQUENCY,
-    rangeFrom: state.insight.rangeFrom,
-  });
-  return dataPointsList;
+  // const { dataPointsList } = await InsightAPI.getInsightData({
+  //   applicationId: state.insight.applicationId,
+  //   step: state.insight.step,
+  //   dataPointCount: dayjs(state.insight.rangeTo).diff(
+  //     state.insight.rangeFrom,
+  //     STEP_UNIT_MAP[state.insight.step]
+  //   ),
+  //   metricsKind: InsightMetricsKind.DEPLOYMENT_FREQUENCY,
+  //   rangeFrom: state.insight.rangeFrom,
+  // });
+  // return dataPointsList;
+  return [];
 });
 
 export const deploymentFrequencySlice = createSlice({
