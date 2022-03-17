@@ -65,7 +65,7 @@ func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProvid
 		return
 	}
 
-	cp, ok := in.PipedConfig.FindCloudProvider(name, model.CloudProviderCloudRun)
+	cp, ok := in.PipedConfig.FindCloudProvider(name, model.ApplicationKind_CLOUDRUN)
 	if !ok {
 		in.LogPersister.Errorf("The specified cloud provider %q was not found in piped configuration", name)
 		return
