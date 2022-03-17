@@ -38,9 +38,9 @@ type deploymentStore interface {
 }
 
 type Collector struct {
-	applicationStore applicationStore
-	deploymentStore  deploymentStore
-	insightstore     insightstore.Store
+	applicationStore      applicationStore
+	deploymentStore       deploymentStore
+	applicationCountStore insightstore.ApplicationCountStore
 
 	applicationsHandlers              []func(ctx context.Context, applications []*model.Application, target time.Time) error
 	newlyCreatedDeploymentsHandlers   []func(ctx context.Context, developments []*model.Deployment, target time.Time) error
@@ -53,11 +53,11 @@ type Collector struct {
 func NewCollector(ds datastore.DataStore, fs filestore.Store, cfg config.ControlPlaneInsightCollector, logger *zap.Logger) *Collector {
 	w := datastore.OpsCommander
 	c := &Collector{
-		applicationStore: datastore.NewApplicationStore(ds, w),
-		deploymentStore:  datastore.NewDeploymentStore(ds, w),
-		insightstore:     insightstore.NewStore(fs),
-		config:           cfg,
-		logger:           logger.Named("insight-collector"),
+		applicationStore:      datastore.NewApplicationStore(ds, w),
+		deploymentStore:       datastore.NewDeploymentStore(ds, w),
+		applicationCountStore: insightstore.NewStore(fs),
+		config:                cfg,
+		logger:                logger.Named("insight-collector"),
 	}
 
 	if cfg.Application.Enabled {

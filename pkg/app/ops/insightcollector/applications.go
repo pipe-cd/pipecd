@@ -46,7 +46,7 @@ func (c *Collector) collectApplicationCount(ctx context.Context, apps []*model.A
 func (c *Collector) updateApplicationCounts(ctx context.Context, projectID string, apps []*model.Application, target time.Time) error {
 	counts := insight.MakeApplicationCounts(apps, target)
 
-	if err := c.insightstore.PutApplicationCounts(ctx, projectID, counts); err != nil {
+	if err := c.applicationCountStore.PutApplicationCounts(ctx, projectID, counts); err != nil {
 		return fmt.Errorf("failed to put application counts: %w", err)
 	}
 
