@@ -6,6 +6,12 @@
 
 // const initialState: DeploymentFrequencyState = { status: "idle", data: [] };
 
+describe("fake", () => {
+  it("fake", () => {
+    true;
+  });
+});
+
 // describe("deploymentFrequencySlice reducer", () => {
 //   it("should return the initial state", () => {
 //     expect(
