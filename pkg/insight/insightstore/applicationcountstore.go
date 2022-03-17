@@ -22,6 +22,11 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/insight"
 )
 
+type ApplicationCountStore interface {
+	LoadApplicationCounts(ctx context.Context, projectID string) (*insight.ApplicationCounts, error)
+	PutApplicationCounts(ctx context.Context, projectID string, counts insight.ApplicationCounts) error
+}
+
 // LoadApplicationCounts loads ApplicationCounts data for a specific project from file store.
 func (s *store) LoadApplicationCounts(ctx context.Context, projectID string) (*insight.ApplicationCounts, error) {
 	content, err := s.filestore.Get(ctx, determineFilePath(projectID))
