@@ -118,7 +118,7 @@ mockInterfaces=(
   "Redis"
   "ProjectStore,PipedStore,ApplicationStore,DeploymentStore,CommandStore"
   "Store"
-  "Provider"
+  "Applier,Loader"
   "Getter,Putter,Deleter,Cache"
   "Repo"
   "Signer,Verifier"
