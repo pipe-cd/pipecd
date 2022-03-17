@@ -105,15 +105,15 @@ func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationL
 	}
 	for _, cp := range cfg.CloudProviders {
 		switch cp.Type {
-		case model.CloudProviderKubernetes:
+		case model.ApplicationKind_KUBERNETES:
 			store := kubernetes.NewStore(cp.KubernetesConfig, cfg, cp.Name, logger)
 			s.kubernetesStores[cp.Name] = store
 
-		case model.CloudProviderTerraform:
+		case model.ApplicationKind_TERRAFORM:
 			store := terraform.NewStore(cp.TerraformConfig, cp.Name, appLister, logger)
 			s.terraformStores[cp.Name] = store
 
-		case model.CloudProviderCloudRun:
+		case model.ApplicationKind_CLOUDRUN:
 			store, err := cloudrun.NewStore(ctx, cp.CloudRunConfig, cp.Name, logger)
 			if err != nil {
 				logger.Error("failed to create a new cloudrun's livestatestore", zap.Error(err))
@@ -121,11 +121,11 @@ func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationL
 			}
 			s.cloudrunStores[cp.Name] = store
 
-		case model.CloudProviderLambda:
+		case model.ApplicationKind_LAMBDA:
 			store := lambda.NewStore(cp.LambdaConfig, cp.Name, appLister, logger)
 			s.lambdaStores[cp.Name] = store
 
-		case model.CloudProviderECS:
+		case model.ApplicationKind_ECS:
 			store := ecs.NewStore(cp.ECSConfig, cp.Name, appLister, logger)
 			s.ecsStores[cp.Name] = store
 		}

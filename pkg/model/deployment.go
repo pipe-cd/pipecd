@@ -152,24 +152,6 @@ func (d *Deployment) TriggerBefore(other *Deployment) bool {
 
 }
 
-// CloudProviderType determines the cloud provider type from application kind.
-func (d *Deployment) CloudProviderType() CloudProviderType {
-	switch d.Kind {
-	case ApplicationKind_KUBERNETES:
-		return CloudProviderKubernetes
-	case ApplicationKind_TERRAFORM:
-		return CloudProviderTerraform
-	case ApplicationKind_CLOUDRUN:
-		return CloudProviderCloudRun
-	case ApplicationKind_LAMBDA:
-		return CloudProviderLambda
-	case ApplicationKind_ECS:
-		return CloudProviderECS
-	default:
-		return CloudProviderType(d.Kind.String())
-	}
-}
-
 // FindRollbackStage finds the rollback stage in stage list.
 func (d *Deployment) FindRollbackStage() (*PipelineStage, bool) {
 	for i := len(d.Stages) - 1; i >= 0; i-- {

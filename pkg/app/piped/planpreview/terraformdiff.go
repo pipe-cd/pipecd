@@ -33,7 +33,7 @@ func (b *builder) terraformDiff(
 	buf *bytes.Buffer,
 ) (*diffResult, error) {
 
-	cp, ok := b.pipedCfg.FindCloudProvider(app.CloudProvider, model.CloudProviderTerraform)
+	cp, ok := b.pipedCfg.FindCloudProvider(app.CloudProvider, model.ApplicationKind_TERRAFORM)
 	if !ok {
 		err := fmt.Errorf("cloud provider %s was not found in Piped config", app.CloudProvider)
 		fmt.Fprintln(buf, err.Error())

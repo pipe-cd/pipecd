@@ -15,7 +15,6 @@ go_library(
         "application_live_state.go",
         "application_live_state.pb.go",
         "application_live_state.pb.validate.go",
-        "cloudprovider.go",
         "command.go",
         "command.pb.go",
         "command.pb.validate.go",

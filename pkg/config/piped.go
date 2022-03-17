@@ -24,9 +24,9 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-var DefaultKubernetesCloudProvider = PipedCloudProvider{
+var defaultKubernetesCloudProvider = PipedCloudProvider{
 	Name:             "kubernetes-default",
-	Type:             model.CloudProviderKubernetes,
+	Type:             model.ApplicationKind_KUBERNETES,
 	KubernetesConfig: &CloudProviderKubernetesConfig{},
 }
 
@@ -116,15 +116,15 @@ func (s *PipedSpec) Validate() error {
 // EnableDefaultKubernetesCloudProvider adds the default kubernetes cloud provider if it was not specified.
 func (s *PipedSpec) EnableDefaultKubernetesCloudProvider() {
 	for _, cp := range s.CloudProviders {
-		if cp.Name == DefaultKubernetesCloudProvider.Name {
+		if cp.Name == defaultKubernetesCloudProvider.Name {
 			return
 		}
 	}
-	s.CloudProviders = append(s.CloudProviders, DefaultKubernetesCloudProvider)
+	s.CloudProviders = append(s.CloudProviders, defaultKubernetesCloudProvider)
 }
 
 // HasCloudProvider checks whether the given provider is configured or not.
-func (s *PipedSpec) HasCloudProvider(name string, t model.CloudProviderType) bool {
+func (s *PipedSpec) HasCloudProvider(name string, t model.ApplicationKind) bool {
 	for _, cp := range s.CloudProviders {
 		if cp.Name != name {
 			continue
@@ -138,7 +138,7 @@ func (s *PipedSpec) HasCloudProvider(name string, t model.CloudProviderType) boo
 }
 
 // FindCloudProvider finds and returns a Cloud Provider by name and type.
-func (s *PipedSpec) FindCloudProvider(name string, t model.CloudProviderType) (PipedCloudProvider, bool) {
+func (s *PipedSpec) FindCloudProvider(name string, t model.ApplicationKind) (PipedCloudProvider, bool) {
 	for _, p := range s.CloudProviders {
 		if p.Name != name {
 			continue
@@ -335,7 +335,7 @@ func (s *PipedSpec) GitHelmChartRepositories() []HelmChartRepository {
 
 type PipedCloudProvider struct {
 	Name string
-	Type model.CloudProviderType
+	Type model.ApplicationKind
 
 	KubernetesConfig *CloudProviderKubernetesConfig
 	TerraformConfig  *CloudProviderTerraformConfig
@@ -345,9 +345,9 @@ type PipedCloudProvider struct {
 }
 
 type genericPipedCloudProvider struct {
-	Name   string                  `json:"name"`
-	Type   model.CloudProviderType `json:"type"`
-	Config json.RawMessage         `json:"config"`
+	Name   string          `json:"name"`
+	Type   string          `json:"type"`
+	Config json.RawMessage `json:"config"`
 }
 
 func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
@@ -357,30 +357,30 @@ func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	p.Name = gp.Name
-	p.Type = gp.Type
+	p.Type = model.ApplicationKind(model.ApplicationKind_value[gp.Type])
 
 	switch p.Type {
-	case model.CloudProviderKubernetes:
+	case model.ApplicationKind_KUBERNETES:
 		p.KubernetesConfig = &CloudProviderKubernetesConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.KubernetesConfig)
 		}
-	case model.CloudProviderTerraform:
+	case model.ApplicationKind_TERRAFORM:
 		p.TerraformConfig = &CloudProviderTerraformConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.TerraformConfig)
 		}
-	case model.CloudProviderCloudRun:
+	case model.ApplicationKind_CLOUDRUN:
 		p.CloudRunConfig = &CloudProviderCloudRunConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.CloudRunConfig)
 		}
-	case model.CloudProviderLambda:
+	case model.ApplicationKind_LAMBDA:
 		p.LambdaConfig = &CloudProviderLambdaConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.LambdaConfig)
 		}
-	case model.CloudProviderECS:
+	case model.ApplicationKind_ECS:
 		p.ECSConfig = &CloudProviderECSConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.ECSConfig)

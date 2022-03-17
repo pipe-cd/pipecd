@@ -79,7 +79,7 @@ func TestPipedConfig(t *testing.T) {
 				CloudProviders: []PipedCloudProvider{
 					{
 						Name: "kubernetes-default",
-						Type: model.CloudProviderKubernetes,
+						Type: model.ApplicationKind_KUBERNETES,
 						KubernetesConfig: &CloudProviderKubernetesConfig{
 							AppStateInformer: KubernetesAppStateInformer{
 								IncludeResources: []KubernetesResourceMatcher{
@@ -102,12 +102,12 @@ func TestPipedConfig(t *testing.T) {
 					},
 					{
 						Name:             "kubernetes-dev",
-						Type:             model.CloudProviderKubernetes,
+						Type:             model.ApplicationKind_KUBERNETES,
 						KubernetesConfig: &CloudProviderKubernetesConfig{},
 					},
 					{
 						Name: "terraform",
-						Type: model.CloudProviderTerraform,
+						Type: model.ApplicationKind_TERRAFORM,
 						TerraformConfig: &CloudProviderTerraformConfig{
 							Vars: []string{
 								"project=gcp-project",
@@ -117,7 +117,7 @@ func TestPipedConfig(t *testing.T) {
 					},
 					{
 						Name: "cloudrun",
-						Type: model.CloudProviderCloudRun,
+						Type: model.ApplicationKind_CLOUDRUN,
 						CloudRunConfig: &CloudProviderCloudRunConfig{
 							Project:         "gcp-project-id",
 							Region:          "cloud-run-region",
@@ -126,7 +126,7 @@ func TestPipedConfig(t *testing.T) {
 					},
 					{
 						Name: "lambda",
-						Type: model.CloudProviderLambda,
+						Type: model.ApplicationKind_LAMBDA,
 						LambdaConfig: &CloudProviderLambdaConfig{
 							Region: "us-east-1",
 						},
