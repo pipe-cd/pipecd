@@ -10,6 +10,7 @@ env:
 
 jobs:
   image:
+    name: Publish Container Images
     runs-on: ubuntu-latest
     permissions:
       contents: read
