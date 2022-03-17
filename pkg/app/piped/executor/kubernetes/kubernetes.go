@@ -39,7 +39,7 @@ type deployExecutor struct {
 	commit string
 	appCfg *config.KubernetesApplicationSpec
 
-	loader  provider.ManifestLoader
+	loader  provider.Loader
 	applier provider.Applier
 }
 
@@ -94,7 +94,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		}
 	}
 
-	e.loader = provider.NewManifestLoader(
+	e.loader = provider.NewLoader(
 		e.Deployment.ApplicationName,
 		ds.AppDir,
 		ds.RepoDir,
@@ -161,7 +161,7 @@ func (e *deployExecutor) loadRunningManifests(ctx context.Context) (manifests []
 				return nil, err
 			}
 
-			loader := provider.NewManifestLoader(
+			loader := provider.NewLoader(
 				e.Deployment.ApplicationName,
 				ds.AppDir,
 				ds.RepoDir,
@@ -185,7 +185,7 @@ func (l *manifestsLoadFunc) LoadManifests(ctx context.Context) ([]provider.Manif
 	return l.loadFunc(ctx)
 }
 
-func loadManifests(ctx context.Context, appID, commit string, manifestsCache cache.Cache, loader provider.ManifestLoader, logger *zap.Logger) (manifests []provider.Manifest, err error) {
+func loadManifests(ctx context.Context, appID, commit string, manifestsCache cache.Cache, loader provider.Loader, logger *zap.Logger) (manifests []provider.Manifest, err error) {
 	cache := provider.AppManifestsCache{
 		AppID:  appID,
 		Cache:  manifestsCache,

@@ -91,7 +91,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					}(),
 					Logger: zap.NewNop(),
 				},
-				loader: func() provider.ManifestLoader {
+				loader: func() provider.Loader {
 					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return(nil, fmt.Errorf("error"))
 					return p
@@ -122,7 +122,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					}(),
 					Logger: zap.NewNop(),
 				},
-				loader: func() provider.ManifestLoader {
+				loader: func() provider.Loader {
 					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{}, nil)
 					return p
@@ -155,7 +155,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					PipedConfig:   &config.PipedSpec{},
 					Logger:        zap.NewNop(),
 				},
-				loader: func() provider.ManifestLoader {
+				loader: func() provider.Loader {
 					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
 						provider.MakeManifest(provider.ResourceKey{
@@ -208,7 +208,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					PipedConfig:   &config.PipedSpec{},
 					Logger:        zap.NewNop(),
 				},
-				loader: func() provider.ManifestLoader {
+				loader: func() provider.Loader {
 					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
 						provider.MakeManifest(provider.ResourceKey{

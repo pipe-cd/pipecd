@@ -36,7 +36,7 @@ const (
 	TemplatingMethodNone      TemplatingMethod = "none"
 )
 
-type ManifestLoader interface {
+type Loader interface {
 	// LoadManifests renders and loads all manifests for application.
 	LoadManifests(ctx context.Context) ([]Manifest, error)
 }
@@ -61,12 +61,12 @@ type loader struct {
 	initErr          error
 }
 
-func NewManifestLoader(
+func NewLoader(
 	appName, appDir, repoDir, configFileName string,
 	input config.KubernetesDeploymentInput,
 	gc gitClient,
 	logger *zap.Logger,
-) ManifestLoader {
+) Loader {
 
 	return &loader{
 		appName:        appName,
