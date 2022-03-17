@@ -10,6 +10,7 @@ on:
 
 jobs:
   backend:
+    name: Build Backend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -29,6 +30,7 @@ jobs:
         run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/helloworld ./cmd/helloworld
 
   frontend:
+    name: Build Frontend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

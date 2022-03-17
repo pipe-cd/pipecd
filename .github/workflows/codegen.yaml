@@ -6,7 +6,7 @@ on:
 
 jobs:
   analyze:
-    name: validate
+    name: Validate Generated Code
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
