@@ -436,7 +436,7 @@ message ListAPIKeysResponse {
 message GetInsightDataRequest {
     model.InsightMetricsKind metrics_kind = 1 [(validate.rules).enum.defined_only = true];
     int64 range_from = 2 [(validate.rules).int64.gt = 0];
-    int64 day_count = 3 [(validate.rules).int64.gt = 0];
+    int64 range_to = 3 [(validate.rules).int64.gt = 0];
     string application_id = 4;
 }
 
