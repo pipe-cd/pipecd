@@ -25,7 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes/providertest"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes/kubernetestest"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/cachetest"
@@ -63,7 +63,7 @@ func TestEnsureSync(t *testing.T) {
 					Logger: zap.NewNop(),
 				},
 				loader: func() provider.Loader {
-					p := providertest.NewMockProvider(ctrl)
+					p := kubernetestest.NewMockLoader(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return(nil, fmt.Errorf("error"))
 					return p
 				}(),
@@ -90,7 +90,7 @@ func TestEnsureSync(t *testing.T) {
 					Logger: zap.NewNop(),
 				},
 				loader: func() provider.Loader {
-					p := providertest.NewMockProvider(ctrl)
+					p := kubernetestest.NewMockLoader(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
 						provider.MakeManifest(provider.ResourceKey{
 							APIVersion: "apps/v1",
@@ -102,7 +102,7 @@ func TestEnsureSync(t *testing.T) {
 					return p
 				}(),
 				applier: func() provider.Applier {
-					p := providertest.NewMockProvider(ctrl)
+					p := kubernetestest.NewMockApplier(ctrl)
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
 					return p
 				}(),
@@ -134,7 +134,7 @@ func TestEnsureSync(t *testing.T) {
 					Logger: zap.NewNop(),
 				},
 				loader: func() provider.Loader {
-					p := providertest.NewMockProvider(ctrl)
+					p := kubernetestest.NewMockLoader(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
 						provider.MakeManifest(provider.ResourceKey{
 							APIVersion: "apps/v1",
@@ -146,7 +146,7 @@ func TestEnsureSync(t *testing.T) {
 					return p
 				}(),
 				applier: func() provider.Applier {
-					p := providertest.NewMockProvider(ctrl)
+					p := kubernetestest.NewMockApplier(ctrl)
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
 					return p
 				}(),

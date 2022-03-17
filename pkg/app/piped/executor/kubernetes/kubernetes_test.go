@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes/providertest"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes/kubernetestest"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
@@ -312,7 +312,7 @@ func TestApplyManifests(t *testing.T) {
 		{
 			name: "unable to apply manifest",
 			applier: func() provider.Applier {
-				p := providertest.NewMockProvider(ctrl)
+				p := kubernetestest.NewMockApplier(ctrl)
 				p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(errors.New("unexpected error"))
 				return p
 			}(),
@@ -336,7 +336,7 @@ spec:
 		{
 			name: "unable to replace manifest",
 			applier: func() provider.Applier {
-				p := providertest.NewMockProvider(ctrl)
+				p := kubernetestest.NewMockApplier(ctrl)
 				p.EXPECT().ReplaceManifest(gomock.Any(), gomock.Any()).Return(errors.New("unexpected error"))
 				return p
 			}(),
@@ -362,7 +362,7 @@ spec:
 		{
 			name: "unable to create manifest",
 			applier: func() provider.Applier {
-				p := providertest.NewMockProvider(ctrl)
+				p := kubernetestest.NewMockApplier(ctrl)
 				p.EXPECT().ReplaceManifest(gomock.Any(), gomock.Any()).Return(provider.ErrNotFound)
 				p.EXPECT().CreateManifest(gomock.Any(), gomock.Any()).Return(errors.New("unexpected error"))
 				return p
@@ -389,7 +389,7 @@ spec:
 		{
 			name: "successfully apply manifest",
 			applier: func() provider.Applier {
-				p := providertest.NewMockProvider(ctrl)
+				p := kubernetestest.NewMockApplier(ctrl)
 				p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
 				return p
 			}(),
@@ -413,7 +413,7 @@ spec:
 		{
 			name: "successfully replace manifest",
 			applier: func() provider.Applier {
-				p := providertest.NewMockProvider(ctrl)
+				p := kubernetestest.NewMockApplier(ctrl)
 				p.EXPECT().ReplaceManifest(gomock.Any(), gomock.Any()).Return(nil)
 				return p
 			}(),
@@ -439,7 +439,7 @@ spec:
 		{
 			name: "successfully create manifest",
 			applier: func() provider.Applier {
-				p := providertest.NewMockProvider(ctrl)
+				p := kubernetestest.NewMockApplier(ctrl)
 				p.EXPECT().ReplaceManifest(gomock.Any(), gomock.Any()).Return(provider.ErrNotFound)
 				p.EXPECT().CreateManifest(gomock.Any(), gomock.Any()).Return(nil)
 				return p
@@ -501,7 +501,7 @@ func TestDeleteResources(t *testing.T) {
 				},
 			},
 			applier: func() provider.Applier {
-				p := providertest.NewMockProvider(ctrl)
+				p := kubernetestest.NewMockApplier(ctrl)
 				p.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(provider.ErrNotFound)
 				return p
 			}(),
@@ -515,7 +515,7 @@ func TestDeleteResources(t *testing.T) {
 				},
 			},
 			applier: func() provider.Applier {
-				p := providertest.NewMockProvider(ctrl)
+				p := kubernetestest.NewMockApplier(ctrl)
 				p.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(fmt.Errorf("unexpected error"))
 				return p
 			}(),
@@ -529,7 +529,7 @@ func TestDeleteResources(t *testing.T) {
 				},
 			},
 			applier: func() provider.Applier {
-				p := providertest.NewMockProvider(ctrl)
+				p := kubernetestest.NewMockApplier(ctrl)
 				p.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil)
 				return p
 			}(),

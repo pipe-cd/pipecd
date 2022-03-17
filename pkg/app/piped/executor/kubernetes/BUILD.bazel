@@ -43,7 +43,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
-        "//pkg/app/piped/cloudprovider/kubernetes/providertest:go_default_library",
+        "//pkg/app/piped/cloudprovider/kubernetes/kubernetestest:go_default_library",
         "//pkg/app/piped/executor:go_default_library",
         "//pkg/app/piped/metadatastore:go_default_library",
         "//pkg/cache:go_default_library",
