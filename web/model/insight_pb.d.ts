@@ -106,12 +106,6 @@ export enum InsightMetricsKind {
   LEAD_TIME = 3,
   APPLICATIONS_COUNT = 4,
 }
-export enum InsightStep { 
-  DAILY = 0,
-  WEEKLY = 1,
-  MONTHLY = 2,
-  YEARLY = 3,
-}
 export enum InsightApplicationCountLabelKey { 
   KIND = 0,
   ACTIVE_STATUS = 1,

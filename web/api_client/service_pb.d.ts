@@ -1577,14 +1577,11 @@ export class GetInsightDataRequest extends jspb.Message {
   getMetricsKind(): pkg_model_insight_pb.InsightMetricsKind;
   setMetricsKind(value: pkg_model_insight_pb.InsightMetricsKind): GetInsightDataRequest;
 
-  getStep(): pkg_model_insight_pb.InsightStep;
-  setStep(value: pkg_model_insight_pb.InsightStep): GetInsightDataRequest;
-
   getRangeFrom(): number;
   setRangeFrom(value: number): GetInsightDataRequest;
 
-  getDataPointCount(): number;
-  setDataPointCount(value: number): GetInsightDataRequest;
+  getDayCount(): number;
+  setDayCount(value: number): GetInsightDataRequest;
 
   getApplicationId(): string;
   setApplicationId(value: string): GetInsightDataRequest;
@@ -1600,9 +1597,8 @@ export class GetInsightDataRequest extends jspb.Message {
 export namespace GetInsightDataRequest {
   export type AsObject = {
     metricsKind: pkg_model_insight_pb.InsightMetricsKind,
-    step: pkg_model_insight_pb.InsightStep,
     rangeFrom: number,
-    dataPointCount: number,
+    dayCount: number,
     applicationId: string,
   }
 }
@@ -1610,11 +1606,6 @@ export namespace GetInsightDataRequest {
 export class GetInsightDataResponse extends jspb.Message {
   getUpdatedAt(): number;
   setUpdatedAt(value: number): GetInsightDataResponse;
-
-  getDataPointsList(): Array<pkg_model_insight_pb.InsightDataPoint>;
-  setDataPointsList(value: Array<pkg_model_insight_pb.InsightDataPoint>): GetInsightDataResponse;
-  clearDataPointsList(): GetInsightDataResponse;
-  addDataPoints(value?: pkg_model_insight_pb.InsightDataPoint, index?: number): pkg_model_insight_pb.InsightDataPoint;
 
   getType(): pkg_model_insight_pb.InsightResultType;
   setType(value: pkg_model_insight_pb.InsightResultType): GetInsightDataResponse;
@@ -1640,7 +1631,6 @@ export class GetInsightDataResponse extends jspb.Message {
 export namespace GetInsightDataResponse {
   export type AsObject = {
     updatedAt: number,
-    dataPointsList: Array<pkg_model_insight_pb.InsightDataPoint.AsObject>,
     type: pkg_model_insight_pb.InsightResultType,
     vectorList: Array<pkg_model_insight_pb.InsightSample.AsObject>,
     matrixList: Array<pkg_model_insight_pb.InsightSampleStream.AsObject>,

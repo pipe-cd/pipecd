@@ -13578,10 +13578,9 @@ proto.grpc.service.webservice.GetInsightDataRequest.prototype.toObject = functio
 proto.grpc.service.webservice.GetInsightDataRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     metricsKind: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    step: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    rangeFrom: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    dataPointCount: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    applicationId: jspb.Message.getFieldWithDefault(msg, 5, "")
+    rangeFrom: jspb.Message.getFieldWithDefault(msg, 2, 0),
+    dayCount: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    applicationId: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
   if (includeInstance) {
@@ -13623,18 +13622,14 @@ proto.grpc.service.webservice.GetInsightDataRequest.deserializeBinaryFromReader 
       msg.setMetricsKind(value);
       break;
     case 2:
-      var value = /** @type {!proto.model.InsightStep} */ (reader.readEnum());
-      msg.setStep(value);
-      break;
-    case 3:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setRangeFrom(value);
       break;
-    case 4:
+    case 3:
       var value = /** @type {number} */ (reader.readInt64());
-      msg.setDataPointCount(value);
+      msg.setDayCount(value);
       break;
-    case 5:
+    case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.setApplicationId(value);
       break;
@@ -13674,31 +13669,24 @@ proto.grpc.service.webservice.GetInsightDataRequest.serializeBinaryToWriter = fu
       f
     );
   }
-  f = message.getStep();
-  if (f !== 0.0) {
-    writer.writeEnum(
+  f = message.getRangeFrom();
+  if (f !== 0) {
+    writer.writeInt64(
       2,
       f
     );
   }
-  f = message.getRangeFrom();
+  f = message.getDayCount();
   if (f !== 0) {
     writer.writeInt64(
       3,
       f
     );
   }
-  f = message.getDataPointCount();
-  if (f !== 0) {
-    writer.writeInt64(
-      4,
-      f
-    );
-  }
   f = message.getApplicationId();
   if (f.length > 0) {
     writer.writeString(
-      5,
+      4,
       f
     );
   }
@@ -13724,29 +13712,11 @@ proto.grpc.service.webservice.GetInsightDataRequest.prototype.setMetricsKind = f
 
 
 /**
- * optional model.InsightStep step = 2;
- * @return {!proto.model.InsightStep}
- */
-proto.grpc.service.webservice.GetInsightDataRequest.prototype.getStep = function() {
-  return /** @type {!proto.model.InsightStep} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
-};
-
-
-/**
- * @param {!proto.model.InsightStep} value
- * @return {!proto.grpc.service.webservice.GetInsightDataRequest} returns this
- */
-proto.grpc.service.webservice.GetInsightDataRequest.prototype.setStep = function(value) {
-  return jspb.Message.setProto3EnumField(this, 2, value);
-};
-
-
-/**
- * optional int64 range_from = 3;
+ * optional int64 range_from = 2;
  * @return {number}
  */
 proto.grpc.service.webservice.GetInsightDataRequest.prototype.getRangeFrom = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
 };
 
 
@@ -13755,16 +13725,16 @@ proto.grpc.service.webservice.GetInsightDataRequest.prototype.getRangeFrom = fun
  * @return {!proto.grpc.service.webservice.GetInsightDataRequest} returns this
  */
 proto.grpc.service.webservice.GetInsightDataRequest.prototype.setRangeFrom = function(value) {
-  return jspb.Message.setProto3IntField(this, 3, value);
+  return jspb.Message.setProto3IntField(this, 2, value);
 };
 
 
 /**
- * optional int64 data_point_count = 4;
+ * optional int64 day_count = 3;
  * @return {number}
  */
-proto.grpc.service.webservice.GetInsightDataRequest.prototype.getDataPointCount = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+proto.grpc.service.webservice.GetInsightDataRequest.prototype.getDayCount = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
 };
 
 
@@ -13772,17 +13742,17 @@ proto.grpc.service.webservice.GetInsightDataRequest.prototype.getDataPointCount 
  * @param {number} value
  * @return {!proto.grpc.service.webservice.GetInsightDataRequest} returns this
  */
-proto.grpc.service.webservice.GetInsightDataRequest.prototype.setDataPointCount = function(value) {
-  return jspb.Message.setProto3IntField(this, 4, value);
+proto.grpc.service.webservice.GetInsightDataRequest.prototype.setDayCount = function(value) {
+  return jspb.Message.setProto3IntField(this, 3, value);
 };
 
 
 /**
- * optional string application_id = 5;
+ * optional string application_id = 4;
  * @return {string}
  */
 proto.grpc.service.webservice.GetInsightDataRequest.prototype.getApplicationId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
 
@@ -13791,7 +13761,7 @@ proto.grpc.service.webservice.GetInsightDataRequest.prototype.getApplicationId =
  * @return {!proto.grpc.service.webservice.GetInsightDataRequest} returns this
  */
 proto.grpc.service.webservice.GetInsightDataRequest.prototype.setApplicationId = function(value) {
-  return jspb.Message.setProto3StringField(this, 5, value);
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
@@ -13801,7 +13771,7 @@ proto.grpc.service.webservice.GetInsightDataRequest.prototype.setApplicationId =
  * @private {!Array<number>}
  * @const
  */
-proto.grpc.service.webservice.GetInsightDataResponse.repeatedFields_ = [2,4,5];
+proto.grpc.service.webservice.GetInsightDataResponse.repeatedFields_ = [3,4];
 
 
 
@@ -13835,9 +13805,7 @@ proto.grpc.service.webservice.GetInsightDataResponse.prototype.toObject = functi
 proto.grpc.service.webservice.GetInsightDataResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     updatedAt: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    dataPointsList: jspb.Message.toObjectList(msg.getDataPointsList(),
-    pkg_model_insight_pb.InsightDataPoint.toObject, includeInstance),
-    type: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    type: jspb.Message.getFieldWithDefault(msg, 2, 0),
     vectorList: jspb.Message.toObjectList(msg.getVectorList(),
     pkg_model_insight_pb.InsightSample.toObject, includeInstance),
     matrixList: jspb.Message.toObjectList(msg.getMatrixList(),
@@ -13883,20 +13851,15 @@ proto.grpc.service.webservice.GetInsightDataResponse.deserializeBinaryFromReader
       msg.setUpdatedAt(value);
       break;
     case 2:
-      var value = new pkg_model_insight_pb.InsightDataPoint;
-      reader.readMessage(value,pkg_model_insight_pb.InsightDataPoint.deserializeBinaryFromReader);
-      msg.addDataPoints(value);
-      break;
-    case 3:
       var value = /** @type {!proto.model.InsightResultType} */ (reader.readEnum());
       msg.setType(value);
       break;
-    case 4:
+    case 3:
       var value = new pkg_model_insight_pb.InsightSample;
       reader.readMessage(value,pkg_model_insight_pb.InsightSample.deserializeBinaryFromReader);
       msg.addVector(value);
       break;
-    case 5:
+    case 4:
       var value = new pkg_model_insight_pb.InsightSampleStream;
       reader.readMessage(value,pkg_model_insight_pb.InsightSampleStream.deserializeBinaryFromReader);
       msg.addMatrix(value);
@@ -13937,25 +13900,17 @@ proto.grpc.service.webservice.GetInsightDataResponse.serializeBinaryToWriter = f
       f
     );
   }
-  f = message.getDataPointsList();
-  if (f.length > 0) {
-    writer.writeRepeatedMessage(
-      2,
-      f,
-      pkg_model_insight_pb.InsightDataPoint.serializeBinaryToWriter
-    );
-  }
   f = message.getType();
   if (f !== 0.0) {
     writer.writeEnum(
-      3,
+      2,
       f
     );
   }
   f = message.getVectorList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
-      4,
+      3,
       f,
       pkg_model_insight_pb.InsightSample.serializeBinaryToWriter
     );
@@ -13963,7 +13918,7 @@ proto.grpc.service.webservice.GetInsightDataResponse.serializeBinaryToWriter = f
   f = message.getMatrixList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
-      5,
+      4,
       f,
       pkg_model_insight_pb.InsightSampleStream.serializeBinaryToWriter
     );
@@ -13990,49 +13945,11 @@ proto.grpc.service.webservice.GetInsightDataResponse.prototype.setUpdatedAt = fu
 
 
 /**
- * repeated model.InsightDataPoint data_points = 2;
- * @return {!Array<!proto.model.InsightDataPoint>}
- */
-proto.grpc.service.webservice.GetInsightDataResponse.prototype.getDataPointsList = function() {
-  return /** @type{!Array<!proto.model.InsightDataPoint>} */ (
-    jspb.Message.getRepeatedWrapperField(this, pkg_model_insight_pb.InsightDataPoint, 2));
-};
-
-
-/**
- * @param {!Array<!proto.model.InsightDataPoint>} value
- * @return {!proto.grpc.service.webservice.GetInsightDataResponse} returns this
-*/
-proto.grpc.service.webservice.GetInsightDataResponse.prototype.setDataPointsList = function(value) {
-  return jspb.Message.setRepeatedWrapperField(this, 2, value);
-};
-
-
-/**
- * @param {!proto.model.InsightDataPoint=} opt_value
- * @param {number=} opt_index
- * @return {!proto.model.InsightDataPoint}
- */
-proto.grpc.service.webservice.GetInsightDataResponse.prototype.addDataPoints = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 2, opt_value, proto.model.InsightDataPoint, opt_index);
-};
-
-
-/**
- * Clears the list making it empty but non-null.
- * @return {!proto.grpc.service.webservice.GetInsightDataResponse} returns this
- */
-proto.grpc.service.webservice.GetInsightDataResponse.prototype.clearDataPointsList = function() {
-  return this.setDataPointsList([]);
-};
-
-
-/**
- * optional model.InsightResultType type = 3;
+ * optional model.InsightResultType type = 2;
  * @return {!proto.model.InsightResultType}
  */
 proto.grpc.service.webservice.GetInsightDataResponse.prototype.getType = function() {
-  return /** @type {!proto.model.InsightResultType} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+  return /** @type {!proto.model.InsightResultType} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
 };
 
 
@@ -14041,17 +13958,17 @@ proto.grpc.service.webservice.GetInsightDataResponse.prototype.getType = functio
  * @return {!proto.grpc.service.webservice.GetInsightDataResponse} returns this
  */
 proto.grpc.service.webservice.GetInsightDataResponse.prototype.setType = function(value) {
-  return jspb.Message.setProto3EnumField(this, 3, value);
+  return jspb.Message.setProto3EnumField(this, 2, value);
 };
 
 
 /**
- * repeated model.InsightSample vector = 4;
+ * repeated model.InsightSample vector = 3;
  * @return {!Array<!proto.model.InsightSample>}
  */
 proto.grpc.service.webservice.GetInsightDataResponse.prototype.getVectorList = function() {
   return /** @type{!Array<!proto.model.InsightSample>} */ (
-    jspb.Message.getRepeatedWrapperField(this, pkg_model_insight_pb.InsightSample, 4));
+    jspb.Message.getRepeatedWrapperField(this, pkg_model_insight_pb.InsightSample, 3));
 };
 
 
@@ -14060,7 +13977,7 @@ proto.grpc.service.webservice.GetInsightDataResponse.prototype.getVectorList = f
  * @return {!proto.grpc.service.webservice.GetInsightDataResponse} returns this
 */
 proto.grpc.service.webservice.GetInsightDataResponse.prototype.setVectorList = function(value) {
-  return jspb.Message.setRepeatedWrapperField(this, 4, value);
+  return jspb.Message.setRepeatedWrapperField(this, 3, value);
 };
 
 
@@ -14070,7 +13987,7 @@ proto.grpc.service.webservice.GetInsightDataResponse.prototype.setVectorList = f
  * @return {!proto.model.InsightSample}
  */
 proto.grpc.service.webservice.GetInsightDataResponse.prototype.addVector = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 4, opt_value, proto.model.InsightSample, opt_index);
+  return jspb.Message.addToRepeatedWrapperField(this, 3, opt_value, proto.model.InsightSample, opt_index);
 };
 
 
@@ -14084,12 +14001,12 @@ proto.grpc.service.webservice.GetInsightDataResponse.prototype.clearVectorList =
 
 
 /**
- * repeated model.InsightSampleStream matrix = 5;
+ * repeated model.InsightSampleStream matrix = 4;
  * @return {!Array<!proto.model.InsightSampleStream>}
  */
 proto.grpc.service.webservice.GetInsightDataResponse.prototype.getMatrixList = function() {
   return /** @type{!Array<!proto.model.InsightSampleStream>} */ (
-    jspb.Message.getRepeatedWrapperField(this, pkg_model_insight_pb.InsightSampleStream, 5));
+    jspb.Message.getRepeatedWrapperField(this, pkg_model_insight_pb.InsightSampleStream, 4));
 };
 
 
@@ -14098,7 +14015,7 @@ proto.grpc.service.webservice.GetInsightDataResponse.prototype.getMatrixList = f
  * @return {!proto.grpc.service.webservice.GetInsightDataResponse} returns this
 */
 proto.grpc.service.webservice.GetInsightDataResponse.prototype.setMatrixList = function(value) {
-  return jspb.Message.setRepeatedWrapperField(this, 5, value);
+  return jspb.Message.setRepeatedWrapperField(this, 4, value);
 };
 
 
@@ -14108,7 +14025,7 @@ proto.grpc.service.webservice.GetInsightDataResponse.prototype.setMatrixList = f
  * @return {!proto.model.InsightSampleStream}
  */
 proto.grpc.service.webservice.GetInsightDataResponse.prototype.addMatrix = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 5, opt_value, proto.model.InsightSampleStream, opt_index);
+  return jspb.Message.addToRepeatedWrapperField(this, 4, opt_value, proto.model.InsightSampleStream, opt_index);
 };
 
 
