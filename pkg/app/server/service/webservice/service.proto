@@ -435,18 +435,16 @@ message ListAPIKeysResponse {
 
 message GetInsightDataRequest {
     model.InsightMetricsKind metrics_kind = 1 [(validate.rules).enum.defined_only = true];
-    model.InsightStep step = 2 [(validate.rules).enum.defined_only = true];
-    int64 range_from = 3 [(validate.rules).int64.gt = 0];
-    int64 data_point_count = 4 [(validate.rules).int64.gt = 0];
-    string application_id = 5;
+    int64 range_from = 2 [(validate.rules).int64.gt = 0];
+    int64 day_count = 3 [(validate.rules).int64.gt = 0];
+    string application_id = 4;
 }
 
 message GetInsightDataResponse {
     int64 updated_at = 1;
-    repeated model.InsightDataPoint data_points = 2 [deprecated = true];
-    model.InsightResultType type = 3;
-    repeated model.InsightSample vector = 4;
-    repeated model.InsightSampleStream matrix = 5;
+    model.InsightResultType type = 2;
+    repeated model.InsightSample vector = 3;
+    repeated model.InsightSampleStream matrix = 4;
 }
 
 message GetInsightApplicationCountRequest {
