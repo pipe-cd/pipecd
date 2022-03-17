@@ -36,9 +36,11 @@ import (
 type deployExecutor struct {
 	executor.Input
 
-	commit   string
-	appCfg   *config.KubernetesApplicationSpec
-	provider provider.Provider
+	commit string
+	appCfg *config.KubernetesApplicationSpec
+
+	loader  provider.ManifestLoader
+	applier provider.Applier
 }
 
 type registerer interface {
@@ -92,7 +94,19 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		}
 	}
 
-	e.provider = provider.NewProvider(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, e.appCfg.Input, e.GitClient, e.Logger)
+	e.loader = provider.NewManifestLoader(
+		e.Deployment.ApplicationName,
+		ds.AppDir,
+		ds.RepoDir,
+		e.Deployment.GitPath.ConfigFilename,
+		e.appCfg.Input,
+		e.GitClient,
+		e.Logger,
+	)
+	e.applier = provider.NewApplier(
+		e.appCfg.Input,
+		e.Logger,
+	)
 	e.Logger.Info("start executing kubernetes stage",
 		zap.String("stage-name", e.Stage.Name),
 		zap.String("app-dir", ds.AppDir),

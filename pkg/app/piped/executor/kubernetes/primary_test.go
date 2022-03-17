@@ -91,7 +91,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					}(),
 					Logger: zap.NewNop(),
 				},
-				provider: func() provider.Provider {
+				loader: func() provider.ManifestLoader {
 					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return(nil, fmt.Errorf("error"))
 					return p
@@ -125,7 +125,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					}(),
 					Logger: zap.NewNop(),
 				},
-				provider: func() provider.Provider {
+				loader: func() provider.ManifestLoader {
 					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
 						provider.MakeManifest(provider.ResourceKey{
@@ -135,6 +135,10 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 							Object: map[string]interface{}{"spec": map[string]interface{}{}},
 						}),
 					}, nil)
+					return p
+				}(),
+				applier: func() provider.Applier {
+					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
 					return p
 				}(),
@@ -167,7 +171,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					}(),
 					Logger: zap.NewNop(),
 				},
-				provider: func() provider.Provider {
+				loader: func() provider.ManifestLoader {
 					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
 						provider.MakeManifest(provider.ResourceKey{
@@ -184,6 +188,10 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 							Object: map[string]interface{}{"spec": map[string]interface{}{}},
 						}),
 					}, nil)
+					return p
+				}(),
+				applier: func() provider.Applier {
+					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
 					return p
@@ -222,7 +230,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					}(),
 					Logger: zap.NewNop(),
 				},
-				provider: func() provider.Provider {
+				loader: func() provider.ManifestLoader {
 					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
 						provider.MakeManifest(provider.ResourceKey{
@@ -267,7 +275,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					}(),
 					Logger: zap.NewNop(),
 				},
-				provider: func() provider.Provider {
+				loader: func() provider.ManifestLoader {
 					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
 						provider.MakeManifest(provider.ResourceKey{

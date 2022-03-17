@@ -56,7 +56,7 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 		e.Deployment.ApplicationId,
 		e.commit,
 		e.AppManifestsCache,
-		e.provider,
+		e.loader,
 		e.Logger,
 	)
 	if err != nil {
@@ -134,7 +134,7 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 		canaryPercent,
 		baselinePercent,
 	)
-	if err := applyManifests(ctx, e.provider, []provider.Manifest{trafficRoutingManifest}, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, e.applier, []provider.Manifest{trafficRoutingManifest}, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

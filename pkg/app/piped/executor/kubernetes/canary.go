@@ -47,7 +47,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 		e.Deployment.ApplicationId,
 		e.commit,
 		e.AppManifestsCache,
-		e.provider,
+		e.loader,
 		e.Logger,
 	)
 	if err != nil {
@@ -102,7 +102,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 
 	// Start rolling out the resources for CANARY variant.
 	e.LogPersister.Info("Start rolling out CANARY variant...")
-	if err := applyManifests(ctx, e.provider, canaryManifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, e.applier, canaryManifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -118,7 +118,7 @@ func (e *deployExecutor) ensureCanaryClean(ctx context.Context) model.StageStatu
 	}
 
 	resources := strings.Split(value, ",")
-	if err := removeCanaryResources(ctx, e.provider, resources, e.LogPersister); err != nil {
+	if err := removeCanaryResources(ctx, e.applier, resources, e.LogPersister); err != nil {
 		e.LogPersister.Errorf("Unable to remove canary resources: %v", err)
 		return model.StageStatus_STAGE_FAILURE
 	}

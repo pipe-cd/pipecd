@@ -483,7 +483,7 @@ func TestDeleteResources(t *testing.T) {
 
 	testcases := []struct {
 		name      string
-		provider  provider.Provider
+		applier   provider.Applier
 		resources []provider.ResourceKey
 		wantErr   bool
 	}{
@@ -500,7 +500,7 @@ func TestDeleteResources(t *testing.T) {
 					Name: "foo",
 				},
 			},
-			provider: func() provider.Provider {
+			applier: func() provider.Applier {
 				p := providertest.NewMockProvider(ctrl)
 				p.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(provider.ErrNotFound)
 				return p
@@ -514,7 +514,7 @@ func TestDeleteResources(t *testing.T) {
 					Name: "foo",
 				},
 			},
-			provider: func() provider.Provider {
+			applier: func() provider.Applier {
 				p := providertest.NewMockProvider(ctrl)
 				p.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(fmt.Errorf("unexpected error"))
 				return p
@@ -528,7 +528,7 @@ func TestDeleteResources(t *testing.T) {
 					Name: "foo",
 				},
 			},
-			provider: func() provider.Provider {
+			applier: func() provider.Applier {
 				p := providertest.NewMockProvider(ctrl)
 				p.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil)
 				return p
@@ -538,7 +538,7 @@ func TestDeleteResources(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
-			err := deleteResources(ctx, tc.provider, tc.resources, &fakeLogPersister{})
+			err := deleteResources(ctx, tc.applier, tc.resources, &fakeLogPersister{})
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}

@@ -91,7 +91,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					}(),
 					Logger: zap.NewNop(),
 				},
-				provider: func() provider.Provider {
+				loader: func() provider.ManifestLoader {
 					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return(nil, fmt.Errorf("error"))
 					return p
@@ -122,7 +122,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					}(),
 					Logger: zap.NewNop(),
 				},
-				provider: func() provider.Provider {
+				loader: func() provider.ManifestLoader {
 					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{}, nil)
 					return p
@@ -155,7 +155,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					PipedConfig:   &config.PipedSpec{},
 					Logger:        zap.NewNop(),
 				},
-				provider: func() provider.Provider {
+				loader: func() provider.ManifestLoader {
 					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
 						provider.MakeManifest(provider.ResourceKey{
@@ -173,6 +173,10 @@ func TestEnsureCanaryRollout(t *testing.T) {
 							},
 						}),
 					}, nil)
+					return p
+				}(),
+				applier: func() provider.Applier {
+					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
 					return p
 				}(),
@@ -204,7 +208,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					PipedConfig:   &config.PipedSpec{},
 					Logger:        zap.NewNop(),
 				},
-				provider: func() provider.Provider {
+				loader: func() provider.ManifestLoader {
 					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
 						provider.MakeManifest(provider.ResourceKey{
@@ -222,6 +226,10 @@ func TestEnsureCanaryRollout(t *testing.T) {
 							},
 						}),
 					}, nil)
+					return p
+				}(),
+				applier: func() provider.Applier {
+					p := providertest.NewMockProvider(ctrl)
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
 					return p
 				}(),

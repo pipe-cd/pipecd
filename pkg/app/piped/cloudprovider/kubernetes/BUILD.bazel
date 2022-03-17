@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
+        "applier.go",
         "cache.go",
         "deployment.go",
         "diff.go",
@@ -12,6 +13,7 @@ go_library(
         "kubectl.go",
         "kubernetes.go",
         "kustomize.go",
+        "loader.go",
         "manifest.go",
         "resourcekey.go",
         "state.go",
