@@ -85,7 +85,7 @@ func (e *deployExecutor) ensureBaselineRollout(ctx context.Context) model.StageS
 
 	// Start rolling out the resources for BASELINE variant.
 	e.LogPersister.Info("Start rolling out BASELINE variant...")
-	if err := applyManifests(ctx, e.provider, baselineManifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, e.applier, baselineManifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -101,7 +101,7 @@ func (e *deployExecutor) ensureBaselineClean(ctx context.Context) model.StageSta
 	}
 
 	resources := strings.Split(value, ",")
-	if err := removeBaselineResources(ctx, e.provider, resources, e.LogPersister); err != nil {
+	if err := removeBaselineResources(ctx, e.applier, resources, e.LogPersister); err != nil {
 		e.LogPersister.Errorf("Unable to remove baseline resources: %v", err)
 		return model.StageStatus_STAGE_FAILURE
 	}

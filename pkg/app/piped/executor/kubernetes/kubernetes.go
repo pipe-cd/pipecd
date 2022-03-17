@@ -36,9 +36,11 @@ import (
 type deployExecutor struct {
 	executor.Input
 
-	commit   string
-	appCfg   *config.KubernetesApplicationSpec
-	provider provider.Provider
+	commit string
+	appCfg *config.KubernetesApplicationSpec
+
+	loader  provider.Loader
+	applier provider.Applier
 }
 
 type registerer interface {
@@ -92,7 +94,19 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		}
 	}
 
-	e.provider = provider.NewProvider(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, e.appCfg.Input, e.GitClient, e.Logger)
+	e.loader = provider.NewLoader(
+		e.Deployment.ApplicationName,
+		ds.AppDir,
+		ds.RepoDir,
+		e.Deployment.GitPath.ConfigFilename,
+		e.appCfg.Input,
+		e.GitClient,
+		e.Logger,
+	)
+	e.applier = provider.NewApplier(
+		e.appCfg.Input,
+		e.Logger,
+	)
 	e.Logger.Info("start executing kubernetes stage",
 		zap.String("stage-name", e.Stage.Name),
 		zap.String("app-dir", ds.AppDir),
@@ -147,7 +161,7 @@ func (e *deployExecutor) loadRunningManifests(ctx context.Context) (manifests []
 				return nil, err
 			}
 
-			loader := provider.NewManifestLoader(
+			loader := provider.NewLoader(
 				e.Deployment.ApplicationName,
 				ds.AppDir,
 				ds.RepoDir,
@@ -171,7 +185,7 @@ func (l *manifestsLoadFunc) LoadManifests(ctx context.Context) ([]provider.Manif
 	return l.loadFunc(ctx)
 }
 
-func loadManifests(ctx context.Context, appID, commit string, manifestsCache cache.Cache, loader provider.ManifestLoader, logger *zap.Logger) (manifests []provider.Manifest, err error) {
+func loadManifests(ctx context.Context, appID, commit string, manifestsCache cache.Cache, loader provider.Loader, logger *zap.Logger) (manifests []provider.Manifest, err error) {
 	cache := provider.AppManifestsCache{
 		AppID:  appID,
 		Cache:  manifestsCache,

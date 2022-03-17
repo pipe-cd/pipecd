@@ -42,7 +42,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 		e.Deployment.ApplicationId,
 		e.commit,
 		e.AppManifestsCache,
-		e.provider,
+		e.loader,
 		e.Logger,
 	)
 	if err != nil {
@@ -133,7 +133,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 
 	// Start applying all manifests to add or update running resources.
 	e.LogPersister.Info("Start rolling out PRIMARY variant...")
-	if err := applyManifests(ctx, e.provider, primaryManifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, e.applier, primaryManifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 	e.LogPersister.Success("Successfully rolled out PRIMARY variant")
@@ -171,7 +171,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 
 	// Start deleting all running resources that are not defined in Git.
 	e.LogPersister.Infof("Start deleting %d resources", len(removeKeys))
-	if err := deleteResources(ctx, e.provider, removeKeys, e.LogPersister); err != nil {
+	if err := deleteResources(ctx, e.applier, removeKeys, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

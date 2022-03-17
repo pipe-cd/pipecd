@@ -74,7 +74,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		}
 	}
 
-	p := provider.NewProvider(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, appCfg.Input, e.GitClient, e.Logger)
+	loader := provider.NewLoader(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, appCfg.Input, e.GitClient, e.Logger)
 	e.Logger.Info("start executing kubernetes stage",
 		zap.String("stage-name", e.Stage.Name),
 		zap.String("app-dir", ds.AppDir),
@@ -85,7 +85,14 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 
 	// Load the manifests at the specified commit.
 	e.LogPersister.Infof("Loading manifests at running commit %s for handling", e.Deployment.RunningCommitHash)
-	manifests, err := loadManifests(ctx, e.Deployment.ApplicationId, e.Deployment.RunningCommitHash, e.AppManifestsCache, p, e.Logger)
+	manifests, err := loadManifests(
+		ctx,
+		e.Deployment.ApplicationId,
+		e.Deployment.RunningCommitHash,
+		e.AppManifestsCache,
+		loader,
+		e.Logger,
+	)
 	if err != nil {
 		e.LogPersister.Errorf("Failed while loading running manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -128,8 +135,13 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	applier := provider.NewApplier(
+		appCfg.Input,
+		e.Logger,
+	)
+
 	// Start applying all manifests to add or update running resources.
-	if err := applyManifests(ctx, p, manifests, appCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, applier, manifests, appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -139,7 +151,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	e.LogPersister.Info("Start checking to ensure that the CANARY variant should be removed")
 	if value, ok := e.MetadataStore.Shared().Get(addedCanaryResourcesMetadataKey); ok {
 		resources := strings.Split(value, ",")
-		if err := removeCanaryResources(ctx, p, resources, e.LogPersister); err != nil {
+		if err := removeCanaryResources(ctx, applier, resources, e.LogPersister); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -148,7 +160,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	e.LogPersister.Info("Start checking to ensure that the BASELINE variant should be removed")
 	if value, ok := e.MetadataStore.Shared().Get(addedBaselineResourcesMetadataKey); ok {
 		resources := strings.Split(value, ",")
-		if err := removeBaselineResources(ctx, p, resources, e.LogPersister); err != nil {
+		if err := removeBaselineResources(ctx, applier, resources, e.LogPersister); err != nil {
 			errs = append(errs, err)
 		}
 	}

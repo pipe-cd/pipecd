@@ -116,7 +116,7 @@ func loadKubernetesManifests(ctx context.Context, app model.Application, dsp dep
 		return nil, fmt.Errorf("malformed application configuration file")
 	}
 
-	loader := provider.NewManifestLoader(
+	loader := provider.NewLoader(
 		app.Name,
 		ds.AppDir,
 		ds.RepoDir,
