@@ -38,18 +38,20 @@ type Applier interface {
 }
 
 type applier struct {
-	input  config.KubernetesDeploymentInput
-	logger *zap.Logger
+	input         config.KubernetesDeploymentInput
+	cloudProvider config.CloudProviderKubernetesConfig
+	logger        *zap.Logger
 
 	kubectl  *Kubectl
 	initOnce sync.Once
 	initErr  error
 }
 
-func NewApplier(input config.KubernetesDeploymentInput, logger *zap.Logger) Applier {
+func NewApplier(input config.KubernetesDeploymentInput, cp config.CloudProviderKubernetesConfig, logger *zap.Logger) Applier {
 	return &applier{
-		input:  input,
-		logger: logger.Named("kubernetes-applier"),
+		input:         input,
+		cloudProvider: cp,
+		logger:        logger.Named("kubernetes-applier"),
 	}
 }
 
@@ -62,7 +64,12 @@ func (a *applier) ApplyManifest(ctx context.Context, manifest Manifest) error {
 		return a.initErr
 	}
 
-	return a.kubectl.Apply(ctx, a.getNamespaceToRun(manifest.Key), manifest)
+	return a.kubectl.Apply(
+		ctx,
+		a.cloudProvider.KubeConfigPath,
+		a.getNamespaceToRun(manifest.Key),
+		manifest,
+	)
 }
 
 // CreateManifest uses kubectl to create the given manifests.
@@ -74,7 +81,12 @@ func (a *applier) CreateManifest(ctx context.Context, manifest Manifest) error {
 		return a.initErr
 	}
 
-	return a.kubectl.Create(ctx, a.getNamespaceToRun(manifest.Key), manifest)
+	return a.kubectl.Create(
+		ctx,
+		a.cloudProvider.KubeConfigPath,
+		a.getNamespaceToRun(manifest.Key),
+		manifest,
+	)
 }
 
 // ReplaceManifest uses kubectl to replace the given manifests.
@@ -86,7 +98,12 @@ func (a *applier) ReplaceManifest(ctx context.Context, manifest Manifest) error 
 		return a.initErr
 	}
 
-	err := a.kubectl.Replace(ctx, a.getNamespaceToRun(manifest.Key), manifest)
+	err := a.kubectl.Replace(
+		ctx,
+		a.cloudProvider.KubeConfigPath,
+		a.getNamespaceToRun(manifest.Key),
+		manifest,
+	)
 	if err == nil {
 		return nil
 	}
@@ -107,7 +124,12 @@ func (a *applier) Delete(ctx context.Context, k ResourceKey) (err error) {
 		return a.initErr
 	}
 
-	return a.kubectl.Delete(ctx, a.getNamespaceToRun(k), k)
+	return a.kubectl.Delete(
+		ctx,
+		a.cloudProvider.KubeConfigPath,
+		a.getNamespaceToRun(k),
+		k,
+	)
 }
 
 // getNamespaceToRun returns namespace used on kubectl apply/delete commands.
