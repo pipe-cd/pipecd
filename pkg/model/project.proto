@@ -119,7 +119,7 @@ message ProjectRBACRole {
     // The name of role.
     string name = 1 [(validate.rules).string.min_len = 1];
     // The policy of role.
-    repeated ProjectRBACPolicy policy = 2;
+    repeated ProjectRBACPolicy policies = 2;
 }
 
 // ProjectResource represents a RBAC resource.
