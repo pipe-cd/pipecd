@@ -531,3 +531,851 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = InsightApplicationCountValidationError{}
+
+// Validate checks the field values on DeploymentSubset with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *DeploymentSubset) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeploymentSubset with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeploymentSubsetMultiError, or nil if none found.
+func (m *DeploymentSubset) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeploymentSubset) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetCreatedAt() < 0 {
+		err := DeploymentSubsetValidationError{
+			field:  "CreatedAt",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetUpdatedAt() < 0 {
+		err := DeploymentSubsetValidationError{
+			field:  "UpdatedAt",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return DeploymentSubsetMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeploymentSubsetMultiError is an error wrapping multiple validation errors
+// returned by DeploymentSubset.ValidateAll() if the designated constraints
+// aren't met.
+type DeploymentSubsetMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeploymentSubsetMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeploymentSubsetMultiError) AllErrors() []error { return m }
+
+// DeploymentSubsetValidationError is the validation error returned by
+// DeploymentSubset.Validate if the designated constraints aren't met.
+type DeploymentSubsetValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeploymentSubsetValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeploymentSubsetValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeploymentSubsetValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeploymentSubsetValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeploymentSubsetValidationError) ErrorName() string { return "DeploymentSubsetValidationError" }
+
+// Error satisfies the builtin error interface
+func (e DeploymentSubsetValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeploymentSubset.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeploymentSubsetValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeploymentSubsetValidationError{}
+
+// Validate checks the field values on DailyDeployment with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *DailyDeployment) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DailyDeployment with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DailyDeploymentMultiError, or nil if none found.
+func (m *DailyDeployment) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DailyDeployment) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetDate() < 0 {
+		err := DailyDeploymentValidationError{
+			field:  "Date",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetCreatedAt() < 0 {
+		err := DailyDeploymentValidationError{
+			field:  "CreatedAt",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetUpdatedAt() < 0 {
+		err := DailyDeploymentValidationError{
+			field:  "UpdatedAt",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	for idx, item := range m.GetDailyDeployments() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DailyDeploymentValidationError{
+						field:  fmt.Sprintf("DailyDeployments[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DailyDeploymentValidationError{
+						field:  fmt.Sprintf("DailyDeployments[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DailyDeploymentValidationError{
+					field:  fmt.Sprintf("DailyDeployments[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return DailyDeploymentMultiError(errors)
+	}
+
+	return nil
+}
+
+// DailyDeploymentMultiError is an error wrapping multiple validation errors
+// returned by DailyDeployment.ValidateAll() if the designated constraints
+// aren't met.
+type DailyDeploymentMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DailyDeploymentMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DailyDeploymentMultiError) AllErrors() []error { return m }
+
+// DailyDeploymentValidationError is the validation error returned by
+// DailyDeployment.Validate if the designated constraints aren't met.
+type DailyDeploymentValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DailyDeploymentValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DailyDeploymentValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DailyDeploymentValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DailyDeploymentValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DailyDeploymentValidationError) ErrorName() string { return "DailyDeploymentValidationError" }
+
+// Error satisfies the builtin error interface
+func (e DailyDeploymentValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDailyDeployment.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DailyDeploymentValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DailyDeploymentValidationError{}
+
+// Validate checks the field values on DeploymentChunk with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *DeploymentChunk) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeploymentChunk with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeploymentChunkMultiError, or nil if none found.
+func (m *DeploymentChunk) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeploymentChunk) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetDateRange()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, DeploymentChunkValidationError{
+					field:  "DateRange",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, DeploymentChunkValidationError{
+					field:  "DateRange",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDateRange()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return DeploymentChunkValidationError{
+				field:  "DateRange",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	for idx, item := range m.GetDeployments() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DeploymentChunkValidationError{
+						field:  fmt.Sprintf("Deployments[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DeploymentChunkValidationError{
+						field:  fmt.Sprintf("Deployments[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DeploymentChunkValidationError{
+					field:  fmt.Sprintf("Deployments[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return DeploymentChunkMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeploymentChunkMultiError is an error wrapping multiple validation errors
+// returned by DeploymentChunk.ValidateAll() if the designated constraints
+// aren't met.
+type DeploymentChunkMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeploymentChunkMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeploymentChunkMultiError) AllErrors() []error { return m }
+
+// DeploymentChunkValidationError is the validation error returned by
+// DeploymentChunk.Validate if the designated constraints aren't met.
+type DeploymentChunkValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeploymentChunkValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeploymentChunkValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeploymentChunkValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeploymentChunkValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeploymentChunkValidationError) ErrorName() string { return "DeploymentChunkValidationError" }
+
+// Error satisfies the builtin error interface
+func (e DeploymentChunkValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeploymentChunk.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeploymentChunkValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeploymentChunkValidationError{}
+
+// Validate checks the field values on DeploymentChunkMetaData with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeploymentChunkMetaData) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeploymentChunkMetaData with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeploymentChunkMetaDataMultiError, or nil if none found.
+func (m *DeploymentChunkMetaData) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeploymentChunkMetaData) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetData() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, DeploymentChunkMetaDataValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, DeploymentChunkMetaDataValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return DeploymentChunkMetaDataValidationError{
+					field:  fmt.Sprintf("Data[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return DeploymentChunkMetaDataMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeploymentChunkMetaDataMultiError is an error wrapping multiple validation
+// errors returned by DeploymentChunkMetaData.ValidateAll() if the designated
+// constraints aren't met.
+type DeploymentChunkMetaDataMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeploymentChunkMetaDataMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeploymentChunkMetaDataMultiError) AllErrors() []error { return m }
+
+// DeploymentChunkMetaDataValidationError is the validation error returned by
+// DeploymentChunkMetaData.Validate if the designated constraints aren't met.
+type DeploymentChunkMetaDataValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeploymentChunkMetaDataValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeploymentChunkMetaDataValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeploymentChunkMetaDataValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeploymentChunkMetaDataValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeploymentChunkMetaDataValidationError) ErrorName() string {
+	return "DeploymentChunkMetaDataValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeploymentChunkMetaDataValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeploymentChunkMetaData.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeploymentChunkMetaDataValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeploymentChunkMetaDataValidationError{}
+
+// Validate checks the field values on ChunkDateRange with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *ChunkDateRange) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ChunkDateRange with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in ChunkDateRangeMultiError,
+// or nil if none found.
+func (m *ChunkDateRange) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ChunkDateRange) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetFrom() < 0 {
+		err := ChunkDateRangeValidationError{
+			field:  "From",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetTo() < 0 {
+		err := ChunkDateRangeValidationError{
+			field:  "To",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return ChunkDateRangeMultiError(errors)
+	}
+
+	return nil
+}
+
+// ChunkDateRangeMultiError is an error wrapping multiple validation errors
+// returned by ChunkDateRange.ValidateAll() if the designated constraints
+// aren't met.
+type ChunkDateRangeMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ChunkDateRangeMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ChunkDateRangeMultiError) AllErrors() []error { return m }
+
+// ChunkDateRangeValidationError is the validation error returned by
+// ChunkDateRange.Validate if the designated constraints aren't met.
+type ChunkDateRangeValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ChunkDateRangeValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ChunkDateRangeValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ChunkDateRangeValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ChunkDateRangeValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ChunkDateRangeValidationError) ErrorName() string { return "ChunkDateRangeValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ChunkDateRangeValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sChunkDateRange.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ChunkDateRangeValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ChunkDateRangeValidationError{}
+
+// Validate checks the field values on DeploymentChunkMetaData_ChunkData with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the first error encountered is returned, or nil if there are
+// no violations.
+func (m *DeploymentChunkMetaData_ChunkData) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeploymentChunkMetaData_ChunkData
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// DeploymentChunkMetaData_ChunkDataMultiError, or nil if none found.
+func (m *DeploymentChunkMetaData_ChunkData) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeploymentChunkMetaData_ChunkData) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetDateRange()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, DeploymentChunkMetaData_ChunkDataValidationError{
+					field:  "DateRange",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, DeploymentChunkMetaData_ChunkDataValidationError{
+					field:  "DateRange",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDateRange()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return DeploymentChunkMetaData_ChunkDataValidationError{
+				field:  "DateRange",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for ChunkKey
+
+	// no validation rules for ChunkSize
+
+	if len(errors) > 0 {
+		return DeploymentChunkMetaData_ChunkDataMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeploymentChunkMetaData_ChunkDataMultiError is an error wrapping multiple
+// validation errors returned by
+// DeploymentChunkMetaData_ChunkData.ValidateAll() if the designated
+// constraints aren't met.
+type DeploymentChunkMetaData_ChunkDataMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeploymentChunkMetaData_ChunkDataMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeploymentChunkMetaData_ChunkDataMultiError) AllErrors() []error { return m }
+
+// DeploymentChunkMetaData_ChunkDataValidationError is the validation error
+// returned by DeploymentChunkMetaData_ChunkData.Validate if the designated
+// constraints aren't met.
+type DeploymentChunkMetaData_ChunkDataValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeploymentChunkMetaData_ChunkDataValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeploymentChunkMetaData_ChunkDataValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeploymentChunkMetaData_ChunkDataValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeploymentChunkMetaData_ChunkDataValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeploymentChunkMetaData_ChunkDataValidationError) ErrorName() string {
+	return "DeploymentChunkMetaData_ChunkDataValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeploymentChunkMetaData_ChunkDataValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeploymentChunkMetaData_ChunkData.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeploymentChunkMetaData_ChunkDataValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeploymentChunkMetaData_ChunkDataValidationError{}
