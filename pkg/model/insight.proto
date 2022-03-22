@@ -68,16 +68,15 @@ message DailyDeployment {
   int64 created_at = 2 [(validate.rules).int64.gte = 0];
   int64 updated_at = 3 [(validate.rules).int64.gte = 0];
 
-  // Daily DeploymentSubset sorted by created_at
+  // Daily DeploymentSubset sorted by created_at ASC.
   repeated DeploymentSubset daily_deployments = 4;
-
 }
 
 // DeploymentChunk represents a chunk that is used by insight
 message DeploymentChunk {
   ChunkDateRange date_range = 1;
 
-  // Daily-deployments sorted by date
+  // Daily-deployments sorted by DailyDeployment.date ASC.
   repeated DailyDeployment deployments = 2;
 }
 
@@ -92,7 +91,7 @@ message DeploymentChunkMetaData {
       int64 chunk_size = 3;
   }
 
-  // Sorted by Date. date_range does not overlap
+  // Sorted by ChunkData.date_range ASC. date_range does not overlap.
   repeated ChunkData data = 1;
 }
 

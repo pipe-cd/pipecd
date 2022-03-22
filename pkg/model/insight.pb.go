@@ -466,7 +466,7 @@ type DailyDeployment struct {
 	Date      int64 `protobuf:"varint,1,opt,name=date,proto3" json:"date,omitempty"`
 	CreatedAt int64 `protobuf:"varint,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt int64 `protobuf:"varint,3,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	// Daily DeploymentSubset sorted by created_at
+	// Daily DeploymentSubset sorted by created_at ASC.
 	DailyDeployments []*DeploymentSubset `protobuf:"bytes,4,rep,name=daily_deployments,json=dailyDeployments,proto3" json:"daily_deployments,omitempty"`
 }
 
@@ -537,7 +537,7 @@ type DeploymentChunk struct {
 	unknownFields protoimpl.UnknownFields
 
 	DateRange *ChunkDateRange `protobuf:"bytes,1,opt,name=date_range,json=dateRange,proto3" json:"date_range,omitempty"`
-	// Daily-deployments sorted by date
+	// Daily-deployments sorted by DailyDeployment.date ASC.
 	Deployments []*DailyDeployment `protobuf:"bytes,2,rep,name=deployments,proto3" json:"deployments,omitempty"`
 }
 
@@ -592,7 +592,7 @@ type DeploymentChunkMetaData struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Sorted by Date. date_range does not overlap
+	// Sorted by ChunkData.date_range ASC. date_range does not overlap.
 	Data []*DeploymentChunkMetaData_ChunkData `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
 }
 
