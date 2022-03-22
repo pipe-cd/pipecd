@@ -1,8 +1,5 @@
 import { SyncStrategy } from "pipecd/web/model/common_pb";
-import {
-  DeploymentTrigger,
-  Commit,
-} from "pipecd/web/model/deployment_pb";
+import { DeploymentTrigger, Commit } from "pipecd/web/model/deployment_pb";
 import { createRandTime, randomUUID } from "./utils";
 
 const commitTimestamp = createRandTime();
