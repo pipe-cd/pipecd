@@ -23,6 +23,11 @@ import (
 
 const milestonePath = "insights/milestone.json"
 
+type MileStoneStore interface {
+	LoadMilestone(ctx context.Context) (*insight.Milestone, error)
+	PutMilestone(ctx context.Context, m *insight.Milestone) error
+}
+
 func (s *store) LoadMilestone(ctx context.Context) (*insight.Milestone, error) {
 	m := &insight.Milestone{}
 	content, err := s.filestore.Get(ctx, milestonePath)
