@@ -10,7 +10,6 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	insight "github.com/pipe-cd/pipecd/pkg/insight"
-	model "github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // MockStore is a mock of Store interface.
@@ -36,21 +35,6 @@ func (m *MockStore) EXPECT() *MockStoreMockRecorder {
 	return m.recorder
 }
 
-// GetDailyDeployments mocks base method.
-func (m *MockStore) GetDailyDeployments(arg0 context.Context, arg1 string, arg2 *model.ChunkDateRange) ([]*model.DailyDeployment, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetDailyDeployments", arg0, arg1, arg2)
-	ret0, _ := ret[0].([]*model.DailyDeployment)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetDailyDeployments indicates an expected call of GetDailyDeployments.
-func (mr *MockStoreMockRecorder) GetDailyDeployments(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDailyDeployments", reflect.TypeOf((*MockStore)(nil).GetDailyDeployments), arg0, arg1, arg2)
-}
-
 // LoadApplicationCounts mocks base method.
 func (m *MockStore) LoadApplicationCounts(arg0 context.Context, arg1 string) (*insight.ApplicationCounts, error) {
 	m.ctrl.T.Helper()
@@ -66,21 +50,6 @@ func (mr *MockStoreMockRecorder) LoadApplicationCounts(arg0, arg1 interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoadApplicationCounts", reflect.TypeOf((*MockStore)(nil).LoadApplicationCounts), arg0, arg1)
 }
 
-// LoadMilestone mocks base method.
-func (m *MockStore) LoadMilestone(arg0 context.Context) (*insight.Milestone, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LoadMilestone", arg0)
-	ret0, _ := ret[0].(*insight.Milestone)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// LoadMilestone indicates an expected call of LoadMilestone.
-func (mr *MockStoreMockRecorder) LoadMilestone(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoadMilestone", reflect.TypeOf((*MockStore)(nil).LoadMilestone), arg0)
-}
-
 // PutApplicationCounts mocks base method.
 func (m *MockStore) PutApplicationCounts(arg0 context.Context, arg1 string, arg2 insight.ApplicationCounts) error {
 	m.ctrl.T.Helper()
@@ -93,32 +62,4 @@ func (m *MockStore) PutApplicationCounts(arg0 context.Context, arg1 string, arg2
 func (mr *MockStoreMockRecorder) PutApplicationCounts(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutApplicationCounts", reflect.TypeOf((*MockStore)(nil).PutApplicationCounts), arg0, arg1, arg2)
-}
-
-// PutDailyDeployment mocks base method.
-func (m *MockStore) PutDailyDeployment(arg0 context.Context, arg1 string, arg2 *model.DailyDeployment) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PutDailyDeployment", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PutDailyDeployment indicates an expected call of PutDailyDeployment.
-func (mr *MockStoreMockRecorder) PutDailyDeployment(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutDailyDeployment", reflect.TypeOf((*MockStore)(nil).PutDailyDeployment), arg0, arg1, arg2)
-}
-
-// PutMilestone mocks base method.
-func (m *MockStore) PutMilestone(arg0 context.Context, arg1 *insight.Milestone) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PutMilestone", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PutMilestone indicates an expected call of PutMilestone.
-func (mr *MockStoreMockRecorder) PutMilestone(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutMilestone", reflect.TypeOf((*MockStore)(nil).PutMilestone), arg0, arg1)
 }
