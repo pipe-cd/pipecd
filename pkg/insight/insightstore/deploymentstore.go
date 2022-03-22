@@ -16,8 +16,13 @@ package insightstore
 
 import (
 	"context"
+	"errors"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
+)
+
+var (
+	errUnimplemented = errors.New("unimplemented")
 )
 
 type DeploymentStore interface {
@@ -25,4 +30,13 @@ type DeploymentStore interface {
 	GetDailyDeployments(ctx context.Context, projectID string, dateRage *model.ChunkDateRange) ([]*model.DailyDeployment, error)
 
 	PutDailyDeployment(ctx context.Context, projectID string, deployments *model.DailyDeployment) error
+}
+
+// GetDailyDeployments returns slice of DailyDeployment sorted by DailyDeployment.Date ASC.
+func (s *store) GetDailyDeployments(_ context.Context, _ string, _ *model.ChunkDateRange) ([]*model.DailyDeployment, error) {
+	return nil, errUnimplemented
+}
+
+func (s *store) PutDailyDeployment(_ context.Context, _ string, _ *model.DailyDeployment) error {
+	return errUnimplemented
 }
