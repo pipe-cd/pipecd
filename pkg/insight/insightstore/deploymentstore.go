@@ -16,8 +16,13 @@ package insightstore
 
 import (
 	"context"
+	"errors"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
+)
+
+var (
+	errUnimplemented = errors.New("unimplemented")
 )
 
 type DeploymentStore interface {
@@ -25,4 +30,13 @@ type DeploymentStore interface {
 	GetDeployments(ctx context.Context, projectID string, from, to int64, minimumVersion *model.InsightDeploymentVersion) ([]*model.InsightDeployment, error)
 
 	PutDeployments(ctx context.Context, projectID string, deployments []*model.InsightDeployment, version *model.InsightDeploymentVersion) error
+}
+
+// GetDeployments returns slice of Deployment sorted by startedAt ASC.
+func (s *store) GetDeployments(_ context.Context, _ string, _, _ int64, minimumVersion *model.InsightDeploymentVersion) ([]*model.InsightDeployment, error) {
+	return nil, errUnimplemented
+}
+
+func (s *store) PutDeployments(_ context.Context, _ string, _ []*model.InsightDeployment, version *model.InsightDeploymentVersion) error {
+	return errUnimplemented
 }
