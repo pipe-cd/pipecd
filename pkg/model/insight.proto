@@ -56,3 +56,50 @@ enum InsightApplicationCountLabelKey {
   KIND = 0;
   ACTIVE_STATUS = 1;
 }
+
+message InsightDeploymentSubset {
+  int64 created_at = 14 [(validate.rules).int64.gte = 0];
+  int64 updated_at = 15 [(validate.rules).int64.gte = 0];
+}
+
+message InsightDailyDeployment {
+  // `date` must be normalized like xxxx/xx/xx:00:00:00;
+  int64 date = 1 [(validate.rules).int64.gte = 0];
+  int64 created_at = 14 [(validate.rules).int64.gte = 0];
+  int64 updated_at = 15 [(validate.rules).int64.gte = 0];
+
+  // Daily InsightDeploymentSubset sorted by created_at ASC.
+  repeated InsightDeploymentSubset daily_deployments = 4;
+}
+
+// InsightDeploymentChunk represents a chunk that is used by insight
+message InsightDeploymentChunk {
+  InsightChunkDateRange date_range = 1;
+
+  // Daily-deployments sorted by InsightDailyDeployment.date ASC.
+  repeated InsightDailyDeployment deployments = 2;
+}
+
+message InsightDeploymentChunkMetaData {
+  message ChunkData {
+      InsightChunkDateRange date_range = 1;
+
+      // Unique chunk identifier
+      string chunk_key = 2;
+
+      // Chunk size (byte)
+      int64 chunk_size = 3;
+  }
+
+  // Sorted by ChunkData.date_range ASC. date_range does not overlap.
+  repeated ChunkData data = 1;
+}
+
+// `from` and `to` must be normalized like xxxx/xx/xx:00:00:00;
+// InsightChunkDateRange means date range [from, to].
+// If `from` is 1647820800(2022/03/21:00:00:00) and `to` is 1647907200(2022/03/22:00:00:00),
+// this means 2022/03/21:00:00:00 ~ 2022/03/22:23:59:59. (note that 2022/03/22 is included)
+message InsightChunkDateRange {
+  int64 from = 1 [(validate.rules).int64.gte = 0];
+  int64 to = 2 [(validate.rules).int64.gte = 0];
+}

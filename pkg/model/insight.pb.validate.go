@@ -531,3 +531,861 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = InsightApplicationCountValidationError{}
+
+// Validate checks the field values on InsightDeploymentSubset with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *InsightDeploymentSubset) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on InsightDeploymentSubset with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// InsightDeploymentSubsetMultiError, or nil if none found.
+func (m *InsightDeploymentSubset) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *InsightDeploymentSubset) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetCreatedAt() < 0 {
+		err := InsightDeploymentSubsetValidationError{
+			field:  "CreatedAt",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetUpdatedAt() < 0 {
+		err := InsightDeploymentSubsetValidationError{
+			field:  "UpdatedAt",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return InsightDeploymentSubsetMultiError(errors)
+	}
+
+	return nil
+}
+
+// InsightDeploymentSubsetMultiError is an error wrapping multiple validation
+// errors returned by InsightDeploymentSubset.ValidateAll() if the designated
+// constraints aren't met.
+type InsightDeploymentSubsetMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m InsightDeploymentSubsetMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m InsightDeploymentSubsetMultiError) AllErrors() []error { return m }
+
+// InsightDeploymentSubsetValidationError is the validation error returned by
+// InsightDeploymentSubset.Validate if the designated constraints aren't met.
+type InsightDeploymentSubsetValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e InsightDeploymentSubsetValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e InsightDeploymentSubsetValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e InsightDeploymentSubsetValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e InsightDeploymentSubsetValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e InsightDeploymentSubsetValidationError) ErrorName() string {
+	return "InsightDeploymentSubsetValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e InsightDeploymentSubsetValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sInsightDeploymentSubset.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = InsightDeploymentSubsetValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = InsightDeploymentSubsetValidationError{}
+
+// Validate checks the field values on InsightDailyDeployment with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *InsightDailyDeployment) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on InsightDailyDeployment with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// InsightDailyDeploymentMultiError, or nil if none found.
+func (m *InsightDailyDeployment) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *InsightDailyDeployment) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetDate() < 0 {
+		err := InsightDailyDeploymentValidationError{
+			field:  "Date",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetCreatedAt() < 0 {
+		err := InsightDailyDeploymentValidationError{
+			field:  "CreatedAt",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetUpdatedAt() < 0 {
+		err := InsightDailyDeploymentValidationError{
+			field:  "UpdatedAt",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	for idx, item := range m.GetDailyDeployments() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, InsightDailyDeploymentValidationError{
+						field:  fmt.Sprintf("DailyDeployments[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, InsightDailyDeploymentValidationError{
+						field:  fmt.Sprintf("DailyDeployments[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return InsightDailyDeploymentValidationError{
+					field:  fmt.Sprintf("DailyDeployments[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return InsightDailyDeploymentMultiError(errors)
+	}
+
+	return nil
+}
+
+// InsightDailyDeploymentMultiError is an error wrapping multiple validation
+// errors returned by InsightDailyDeployment.ValidateAll() if the designated
+// constraints aren't met.
+type InsightDailyDeploymentMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m InsightDailyDeploymentMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m InsightDailyDeploymentMultiError) AllErrors() []error { return m }
+
+// InsightDailyDeploymentValidationError is the validation error returned by
+// InsightDailyDeployment.Validate if the designated constraints aren't met.
+type InsightDailyDeploymentValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e InsightDailyDeploymentValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e InsightDailyDeploymentValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e InsightDailyDeploymentValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e InsightDailyDeploymentValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e InsightDailyDeploymentValidationError) ErrorName() string {
+	return "InsightDailyDeploymentValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e InsightDailyDeploymentValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sInsightDailyDeployment.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = InsightDailyDeploymentValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = InsightDailyDeploymentValidationError{}
+
+// Validate checks the field values on InsightDeploymentChunk with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *InsightDeploymentChunk) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on InsightDeploymentChunk with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// InsightDeploymentChunkMultiError, or nil if none found.
+func (m *InsightDeploymentChunk) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *InsightDeploymentChunk) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetDateRange()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, InsightDeploymentChunkValidationError{
+					field:  "DateRange",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, InsightDeploymentChunkValidationError{
+					field:  "DateRange",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDateRange()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return InsightDeploymentChunkValidationError{
+				field:  "DateRange",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	for idx, item := range m.GetDeployments() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, InsightDeploymentChunkValidationError{
+						field:  fmt.Sprintf("Deployments[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, InsightDeploymentChunkValidationError{
+						field:  fmt.Sprintf("Deployments[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return InsightDeploymentChunkValidationError{
+					field:  fmt.Sprintf("Deployments[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return InsightDeploymentChunkMultiError(errors)
+	}
+
+	return nil
+}
+
+// InsightDeploymentChunkMultiError is an error wrapping multiple validation
+// errors returned by InsightDeploymentChunk.ValidateAll() if the designated
+// constraints aren't met.
+type InsightDeploymentChunkMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m InsightDeploymentChunkMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m InsightDeploymentChunkMultiError) AllErrors() []error { return m }
+
+// InsightDeploymentChunkValidationError is the validation error returned by
+// InsightDeploymentChunk.Validate if the designated constraints aren't met.
+type InsightDeploymentChunkValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e InsightDeploymentChunkValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e InsightDeploymentChunkValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e InsightDeploymentChunkValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e InsightDeploymentChunkValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e InsightDeploymentChunkValidationError) ErrorName() string {
+	return "InsightDeploymentChunkValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e InsightDeploymentChunkValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sInsightDeploymentChunk.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = InsightDeploymentChunkValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = InsightDeploymentChunkValidationError{}
+
+// Validate checks the field values on InsightDeploymentChunkMetaData with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *InsightDeploymentChunkMetaData) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on InsightDeploymentChunkMetaData with
+// the rules defined in the proto definition for this message. If any rules
+// are violated, the result is a list of violation errors wrapped in
+// InsightDeploymentChunkMetaDataMultiError, or nil if none found.
+func (m *InsightDeploymentChunkMetaData) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *InsightDeploymentChunkMetaData) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetData() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, InsightDeploymentChunkMetaDataValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, InsightDeploymentChunkMetaDataValidationError{
+						field:  fmt.Sprintf("Data[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return InsightDeploymentChunkMetaDataValidationError{
+					field:  fmt.Sprintf("Data[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return InsightDeploymentChunkMetaDataMultiError(errors)
+	}
+
+	return nil
+}
+
+// InsightDeploymentChunkMetaDataMultiError is an error wrapping multiple
+// validation errors returned by InsightDeploymentChunkMetaData.ValidateAll()
+// if the designated constraints aren't met.
+type InsightDeploymentChunkMetaDataMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m InsightDeploymentChunkMetaDataMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m InsightDeploymentChunkMetaDataMultiError) AllErrors() []error { return m }
+
+// InsightDeploymentChunkMetaDataValidationError is the validation error
+// returned by InsightDeploymentChunkMetaData.Validate if the designated
+// constraints aren't met.
+type InsightDeploymentChunkMetaDataValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e InsightDeploymentChunkMetaDataValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e InsightDeploymentChunkMetaDataValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e InsightDeploymentChunkMetaDataValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e InsightDeploymentChunkMetaDataValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e InsightDeploymentChunkMetaDataValidationError) ErrorName() string {
+	return "InsightDeploymentChunkMetaDataValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e InsightDeploymentChunkMetaDataValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sInsightDeploymentChunkMetaData.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = InsightDeploymentChunkMetaDataValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = InsightDeploymentChunkMetaDataValidationError{}
+
+// Validate checks the field values on InsightChunkDateRange with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *InsightChunkDateRange) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on InsightChunkDateRange with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// InsightChunkDateRangeMultiError, or nil if none found.
+func (m *InsightChunkDateRange) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *InsightChunkDateRange) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetFrom() < 0 {
+		err := InsightChunkDateRangeValidationError{
+			field:  "From",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetTo() < 0 {
+		err := InsightChunkDateRangeValidationError{
+			field:  "To",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return InsightChunkDateRangeMultiError(errors)
+	}
+
+	return nil
+}
+
+// InsightChunkDateRangeMultiError is an error wrapping multiple validation
+// errors returned by InsightChunkDateRange.ValidateAll() if the designated
+// constraints aren't met.
+type InsightChunkDateRangeMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m InsightChunkDateRangeMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m InsightChunkDateRangeMultiError) AllErrors() []error { return m }
+
+// InsightChunkDateRangeValidationError is the validation error returned by
+// InsightChunkDateRange.Validate if the designated constraints aren't met.
+type InsightChunkDateRangeValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e InsightChunkDateRangeValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e InsightChunkDateRangeValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e InsightChunkDateRangeValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e InsightChunkDateRangeValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e InsightChunkDateRangeValidationError) ErrorName() string {
+	return "InsightChunkDateRangeValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e InsightChunkDateRangeValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sInsightChunkDateRange.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = InsightChunkDateRangeValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = InsightChunkDateRangeValidationError{}
+
+// Validate checks the field values on InsightDeploymentChunkMetaData_ChunkData
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *InsightDeploymentChunkMetaData_ChunkData) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on
+// InsightDeploymentChunkMetaData_ChunkData with the rules defined in the
+// proto definition for this message. If any rules are violated, the result is
+// a list of violation errors wrapped in
+// InsightDeploymentChunkMetaData_ChunkDataMultiError, or nil if none found.
+func (m *InsightDeploymentChunkMetaData_ChunkData) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *InsightDeploymentChunkMetaData_ChunkData) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetDateRange()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, InsightDeploymentChunkMetaData_ChunkDataValidationError{
+					field:  "DateRange",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, InsightDeploymentChunkMetaData_ChunkDataValidationError{
+					field:  "DateRange",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDateRange()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return InsightDeploymentChunkMetaData_ChunkDataValidationError{
+				field:  "DateRange",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for ChunkKey
+
+	// no validation rules for ChunkSize
+
+	if len(errors) > 0 {
+		return InsightDeploymentChunkMetaData_ChunkDataMultiError(errors)
+	}
+
+	return nil
+}
+
+// InsightDeploymentChunkMetaData_ChunkDataMultiError is an error wrapping
+// multiple validation errors returned by
+// InsightDeploymentChunkMetaData_ChunkData.ValidateAll() if the designated
+// constraints aren't met.
+type InsightDeploymentChunkMetaData_ChunkDataMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m InsightDeploymentChunkMetaData_ChunkDataMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m InsightDeploymentChunkMetaData_ChunkDataMultiError) AllErrors() []error { return m }
+
+// InsightDeploymentChunkMetaData_ChunkDataValidationError is the validation
+// error returned by InsightDeploymentChunkMetaData_ChunkData.Validate if the
+// designated constraints aren't met.
+type InsightDeploymentChunkMetaData_ChunkDataValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e InsightDeploymentChunkMetaData_ChunkDataValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e InsightDeploymentChunkMetaData_ChunkDataValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e InsightDeploymentChunkMetaData_ChunkDataValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e InsightDeploymentChunkMetaData_ChunkDataValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e InsightDeploymentChunkMetaData_ChunkDataValidationError) ErrorName() string {
+	return "InsightDeploymentChunkMetaData_ChunkDataValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e InsightDeploymentChunkMetaData_ChunkDataValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sInsightDeploymentChunkMetaData_ChunkData.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = InsightDeploymentChunkMetaData_ChunkDataValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = InsightDeploymentChunkMetaData_ChunkDataValidationError{}
