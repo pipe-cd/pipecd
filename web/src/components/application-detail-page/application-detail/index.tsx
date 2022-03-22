@@ -126,7 +126,7 @@ const MostRecentlySuccessfulDeployment: FC<{
             value={<span title={date.format()}>{date.fromNow()}</span>}
           />
           <DetailTableRow
-            label="Version"
+            label="Artifact Versions"
             value={
               deployment.versionsList.length !== 0 ? (
                 <>
