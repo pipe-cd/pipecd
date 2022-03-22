@@ -48,21 +48,21 @@ type projectStore interface {
 }
 
 type Handler struct {
-	port             int
-	projectStore     projectStore
-	insightStore     insightstore.Store
-	sharedSSOConfigs []config.SharedSSOConfig
-	server           *http.Server
-	gracePeriod      time.Duration
-	logger           *zap.Logger
+	port                  int
+	projectStore          projectStore
+	applicationCountStore insightstore.ApplicationCountStore
+	sharedSSOConfigs      []config.SharedSSOConfig
+	server                *http.Server
+	gracePeriod           time.Duration
+	logger                *zap.Logger
 }
 
-func NewHandler(port int, ps projectStore, is insightstore.Store, sharedSSOConfigs []config.SharedSSOConfig, gracePeriod time.Duration, logger *zap.Logger) *Handler {
+func NewHandler(port int, ps projectStore, acs insightstore.ApplicationCountStore, sharedSSOConfigs []config.SharedSSOConfig, gracePeriod time.Duration, logger *zap.Logger) *Handler {
 	mux := http.NewServeMux()
 	h := &Handler{
-		projectStore:     ps,
-		insightStore:     is,
-		sharedSSOConfigs: sharedSSOConfigs,
+		projectStore:          ps,
+		applicationCountStore: acs,
+		sharedSSOConfigs:      sharedSSOConfigs,
 		server: &http.Server{
 			Addr:    fmt.Sprintf(":%d", port),
 			Handler: mux,
@@ -254,7 +254,7 @@ func (h *Handler) handleApplicationCounts(w http.ResponseWriter, r *http.Request
 
 	data := make([]map[string]interface{}, 0, len(projects))
 	for i := range projects {
-		counts, err := h.insightStore.LoadApplicationCounts(ctx, projects[i].Id)
+		counts, err := h.applicationCountStore.LoadApplicationCounts(ctx, projects[i].Id)
 		if err != nil {
 			data = append(data, map[string]interface{}{
 				"Project": projects[i].Id,
