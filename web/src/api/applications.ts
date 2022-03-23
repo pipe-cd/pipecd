@@ -78,6 +78,7 @@ export const addApplication = async ({
   kind,
   gitPath,
   labelsMap,
+  description,
 }: Required<AddApplicationRequest.AsObject>): Promise<
   AddApplicationResponse.AsObject
 > => {
@@ -87,6 +88,7 @@ export const addApplication = async ({
   req.setPipedId(pipedId);
   req.setCloudProvider(cloudProvider);
   req.setKind(kind);
+  req.setDescription(description);
   const appGitPath = new ApplicationGitPath();
   const repository = new ApplicationGitRepository();
   if (gitPath.repo) {
