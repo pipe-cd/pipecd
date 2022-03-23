@@ -144,6 +144,9 @@ const useStyles = makeStyles((theme) => ({
     "& .MuiTab-wrapper > *:first-child": {
       marginBottom: 0,
     },
+    "& .MuiIconButton-sizeSmall": {
+      padding: "0 3px 3px 3px",
+    },
   },
 }));
 
@@ -203,7 +206,6 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
             icon={
               <IconButton
                 size="small"
-                edge="start"
                 href="https://pipecd.dev/docs/user-guide/adding-an-application/#from-the-application-configuration-in-your-git-repository-recommended"
                 target="_blank"
                 rel="noopener noreferrer"
