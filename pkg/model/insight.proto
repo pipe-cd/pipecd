@@ -57,32 +57,33 @@ enum InsightApplicationCountLabelKey {
   ACTIVE_STATUS = 1;
 }
 
-message DeploymentSubset {
-  int64 created_at = 1 [(validate.rules).int64.gte = 0];
-  int64 updated_at = 2 [(validate.rules).int64.gte = 0];
+message InsightDeploymentSubset {
+  string id = 1 [(validate.rules).string.min_len = 1];
+  int64 created_at = 14 [(validate.rules).int64.gte = 0];
+  int64 updated_at = 15 [(validate.rules).int64.gte = 0];
 }
 
-message DailyDeployment {
+message InsightDailyDeployment {
   // `date` must be normalized like xxxx/xx/xx:00:00:00;
   int64 date = 1 [(validate.rules).int64.gte = 0];
-  int64 created_at = 2 [(validate.rules).int64.gte = 0];
-  int64 updated_at = 3 [(validate.rules).int64.gte = 0];
+  int64 created_at = 14 [(validate.rules).int64.gte = 0];
+  int64 updated_at = 15 [(validate.rules).int64.gte = 0];
 
-  // Daily DeploymentSubset sorted by created_at ASC.
-  repeated DeploymentSubset daily_deployments = 4;
+  // DailyDeploymentSubset sorted by created_at ASC.
+  repeated InsightDeploymentSubset daily_deployments = 4;
 }
 
-// DeploymentChunk represents a chunk that is used by insight
-message DeploymentChunk {
-  ChunkDateRange date_range = 1;
+// InsightDeploymentChunk represents a chunk that is used by insight
+message InsightDeploymentChunk {
+  InsightChunkDateRange date_range = 1;
 
-  // Daily-deployments sorted by DailyDeployment.date ASC.
-  repeated DailyDeployment deployments = 2;
+  // `deployments` sorted by DailyDeployment.date ASC.
+  repeated InsightDailyDeployment deployments = 2;
 }
 
-message DeploymentChunkMetaData {
-  message ChunkData {
-      ChunkDateRange date_range = 1;
+message InsightDeploymentChunkMetaData {
+  message InsightChunkData {
+      InsightChunkDateRange date_range = 1;
 
       // Unique chunk identifier
       string chunk_key = 2;
@@ -91,15 +92,15 @@ message DeploymentChunkMetaData {
       int64 chunk_size = 3;
   }
 
-  // Sorted by ChunkData.date_range ASC. date_range does not overlap.
-  repeated ChunkData data = 1;
+  // Sorted by InsightChunkData.date_range ASC. date_range does not overlap.
+  repeated InsightChunkData data = 1;
 }
 
 // `from` and `to` must be normalized like xxxx/xx/xx:00:00:00;
-// ChunkDateRange means date range [from, to].
+// InsightChunkDateRange means date range [from, to].
 // If `from` is 1647820800(2022/03/21:00:00:00) and `to` is 1647907200(2022/03/22:00:00:00),
 // this means 2022/03/21:00:00:00 ~ 2022/03/22:23:59:59. (note that 2022/03/22 is included)
-message ChunkDateRange {
+message InsightChunkDateRange {
   int64 from = 1 [(validate.rules).int64.gte = 0];
   int64 to = 2 [(validate.rules).int64.gte = 0];
 }
