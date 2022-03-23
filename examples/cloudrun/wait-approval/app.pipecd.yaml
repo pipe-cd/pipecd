@@ -11,7 +11,7 @@ spec:
       - name: CLOUDRUN_PROMOTE
         with:
           percent: 10
-      - name: WAIT_APPOVAL
+      - name: WAIT_APPROVAL
       # Promote new version to receive all traffic.
       - name: CLOUDRUN_PROMOTE
         with:
