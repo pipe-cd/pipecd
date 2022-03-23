@@ -1,22 +1,21 @@
+terraform {
+  backend "gcs" {
+    bucket      = "pipecd-play-terraform-examples-backend"
+    prefix      = "simple"
+    credentials = ".credentials/service-account.json"
+  }
+}
+
 variable "project" {}
+variable "content" {}
 
 provider "google" {
   project     = var.project
   credentials = ".credentials/service-account.json"
 }
 
-terraform {
-  backend "gcs" {
-    bucket      = "pipecd-terraform-examples"
-    prefix      = "tfstates/simple"
-    credentials = ".credentials/service-account.json"
-  }
-}
-
-variable "content" {}
-
 resource "google_storage_bucket_object" "object" {
-  name    = "examples/simple/${terraform.workspace}.txt"
-  bucket  = "pipecd-terraform-examples"
+  name    = "simple/${terraform.workspace}.txt"
+  bucket  = "pipecd-play-terraform-examples"
   content = var.content
 }
