@@ -1,5 +1,6 @@
 import {
   Box,
+  Chip,
   CircularProgress,
   Link,
   makeStyles,
@@ -57,6 +58,10 @@ const useStyles = makeStyles((theme) => ({
     fontSize: 16,
     verticalAlign: "text-bottom",
     marginLeft: theme.spacing(0.5),
+  },
+  labelChip: {
+    marginLeft: theme.spacing(1),
+    marginBottom: theme.spacing(0.25),
   },
 }));
 
@@ -128,6 +133,14 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
               <Typography variant="body1" className={classes.age}>
                 {dayjs(deployment.createdAt * 1000).fromNow()}
               </Typography>
+              {deployment.labelsMap.map(([key, value], i) => (
+                <Chip
+                  label={key + ": " + value}
+                  className={classes.labelChip}
+                  variant="outlined"
+                  key={i}
+                />
+              ))}
             </Box>
             <Typography
               variant="body2"

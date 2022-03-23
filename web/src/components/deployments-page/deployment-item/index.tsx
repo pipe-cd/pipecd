@@ -1,4 +1,4 @@
-import { Box, ListItem, makeStyles, Typography } from "@material-ui/core";
+import { Box, Chip, ListItem, makeStyles, Typography } from "@material-ui/core";
 import dayjs from "dayjs";
 import { FC, memo } from "react";
 import { Link as RouterLink } from "react-router-dom";
@@ -19,7 +19,6 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     display: "flex",
     alignItems: "center",
-    height: 72,
     backgroundColor: theme.palette.background.paper,
   },
   info: {
@@ -34,6 +33,10 @@ const useStyles = makeStyles((theme) => ({
   description: {
     ...ellipsis,
     color: theme.palette.text.hint,
+  },
+  labelChip: {
+    marginLeft: theme.spacing(1),
+    marginBottom: theme.spacing(0.25),
   },
 }));
 
@@ -90,6 +93,13 @@ export const DeploymentItem: FC<DeploymentItemProps> = memo(
               className={classes.info}
             >
               {APPLICATION_KIND_TEXT[deployment.kind]}
+              {deployment?.labelsMap.map(([key, value], i) => (
+                <Chip
+                  label={key + ": " + value}
+                  className={classes.labelChip}
+                  key={i}
+                />
+              ))}
             </Typography>
           </Box>
           <Typography variant="body1" className={classes.description}>
