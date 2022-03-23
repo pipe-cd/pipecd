@@ -12,8 +12,8 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-// TerraformFileMapping is a schema for Terraform file.
-type TerraformFileMapping struct {
+// FileMapping is a schema for Terraform file.
+type FileMapping struct {
 	ModuleMappings []*ModuleMapping `hcl:"module,block"`
 	Remain         hcl.Body         `hcl:",remain"`
 }
@@ -26,8 +26,8 @@ type ModuleMapping struct {
 	Remain  hcl.Body `hcl:",remain"`
 }
 
-// TerraformFile represents a Terraform file.
-type TerraformFile struct {
+// File represents a Terraform file.
+type File struct {
 	Modules []*Module
 }
 
@@ -39,14 +39,14 @@ type Module struct {
 }
 
 // LoadTerraformFiles loads terraform files from a given dir.
-func LoadTerraformFiles(dir string) ([]*TerraformFile, error) {
-	files, err := ioutil.ReadDir(dir)
+func LoadTerraformFiles(dir string) ([]*File, error) {
+	fileInfos, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
 
 	filenames := []string{}
-	for _, f := range files {
+	for _, f := range fileInfos {
 		if f.IsDir() {
 			continue
 		}
@@ -63,23 +63,23 @@ func LoadTerraformFiles(dir string) ([]*TerraformFile, error) {
 	}
 
 	p := hclparse.NewParser()
-	tfs := make([]*TerraformFile, 0, len(filenames))
+	tfs := make([]*File, 0, len(filenames))
 	for _, fn := range filenames {
 		f, diags := p.ParseHCLFile(filepath.Join(dir, fn))
 		if diags.HasErrors() {
 			return nil, diags
 		}
 
-		tfm := &TerraformFileMapping{}
-		diags = gohcl.DecodeBody(f.Body, nil, tfm)
+		fm := &FileMapping{}
+		diags = gohcl.DecodeBody(f.Body, nil, fm)
 		if diags.HasErrors() {
 			return nil, diags
 		}
 
-		tf := TerraformFile{
-			Modules: make([]*Module, 0, len(tfm.ModuleMappings)),
+		tf := File{
+			Modules: make([]*Module, 0, len(fm.ModuleMappings)),
 		}
-		for _, m := range tfm.ModuleMappings {
+		for _, m := range fm.ModuleMappings {
 			tf.Modules = append(tf.Modules, &Module{
 				Name:    m.Name,
 				Source:  m.Source,
@@ -95,7 +95,7 @@ func LoadTerraformFiles(dir string) ([]*TerraformFile, error) {
 
 // FindArtifactVersions parses artifact versions from Terraform files.
 // For Terraform, module version is an artifact version.
-func FindArtifactVersions(tfs []*TerraformFile) ([]*model.ArtifactVersion, error) {
+func FindArtifactVersions(tfs []*File) ([]*model.ArtifactVersion, error) {
 	var modules []*Module
 	for _, tf := range tfs {
 		modules = append(modules, tf.Modules...)

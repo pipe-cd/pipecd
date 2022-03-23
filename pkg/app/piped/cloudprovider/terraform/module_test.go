@@ -3,9 +3,10 @@ package terraform
 import (
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestLoadTerraformFiles(t *testing.T) {
@@ -14,13 +15,13 @@ func TestLoadTerraformFiles(t *testing.T) {
 	testcases := []struct {
 		name        string
 		moduleDir   string
-		expected    []*TerraformFile
+		expected    []*File
 		expectedErr bool
 	}{
 		{
 			name:      "single module",
 			moduleDir: "./testdata/single_module",
-			expected: []*TerraformFile{
+			expected: []*File{
 				{
 					Modules: []*Module{
 						{
@@ -36,7 +37,7 @@ func TestLoadTerraformFiles(t *testing.T) {
 		{
 			name:      "multi modules",
 			moduleDir: "./testdata/multi_modules",
-			expected: []*TerraformFile{
+			expected: []*File{
 				{
 					Modules: []*Module{
 						{
@@ -57,7 +58,7 @@ func TestLoadTerraformFiles(t *testing.T) {
 		{
 			name:      "multi modules with multi files",
 			moduleDir: "./testdata/multi_modules_with_multi_files",
-			expected: []*TerraformFile{
+			expected: []*File{
 				{
 					Modules: []*Module{
 						{
