@@ -6,7 +6,6 @@ spec:
     env: example
     team: infra
   input:
-    workspace: dev
     terraformVersion: 1.1.6
   pipeline:
     stages:
