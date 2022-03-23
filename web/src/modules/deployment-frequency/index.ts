@@ -1,66 +1,58 @@
-// import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-// import type { AppState } from "~/store";
-// import { InsightMetricsKind, InsightDataPoint } from "../insight";
-// import dayjs from "dayjs";
-// import * as InsightAPI from "~/api/insight";
-// // import { InsightStep } from "pipecd/web/model/insight_pb";
-// import { LoadingStatus } from "~/types/module";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import type { AppState } from "~/store";
+import { InsightMetricsKind, InsightDataPoint } from "../insight";
+import * as InsightAPI from "~/api/insight";
+import { LoadingStatus } from "~/types/module";
+import { InsightResultType } from "pipecd/web/model/insight_pb";
 
-// const MODULE_NAME = "deploymentFrequency";
+const MODULE_NAME = "deploymentFrequency";
 
-// export interface DeploymentFrequencyState {
-//   status: LoadingStatus;
-//   data: InsightDataPoint.AsObject[];
-// }
+export interface DeploymentFrequencyState {
+  status: LoadingStatus;
+  data: InsightDataPoint.AsObject[];
+}
 
-// const initialState: DeploymentFrequencyState = {
-//   status: "idle",
-//   data: [],
-// };
+const initialState: DeploymentFrequencyState = {
+  status: "idle",
+  data: [],
+};
 
-// // const STEP_UNIT_MAP: Record<InsightStep, "day" | "week" | "month" | "year"> = {
-// //   [InsightStep.DAILY]: "day",
-// //   [InsightStep.WEEKLY]: "week",
-// //   [InsightStep.MONTHLY]: "month",
-// //   [InsightStep.YEARLY]: "year",
-// // };
+export const fetchDeploymentFrequency = createAsyncThunk<
+  InsightDataPoint.AsObject[],
+  void,
+  { state: AppState }
+>(`${MODULE_NAME}/fetch`, async (_, thunkAPI) => {
+  const state = thunkAPI.getState();
 
-// export const fetchDeploymentFrequency = createAsyncThunk<
-//   InsightDataPoint.AsObject[],
-//   void,
-//   { state: AppState }
-// >(`${MODULE_NAME}/fetch`, async (_, thunkAPI) => {
-//   const state = thunkAPI.getState();
+  const data = await InsightAPI.getInsightData({
+    applicationId: state.insight.applicationId,
+    metricsKind: InsightMetricsKind.DEPLOYMENT_FREQUENCY,
+    rangeFrom: state.insight.rangeFrom,
+    rangeTo: state.insight.rangeTo,
+  });
 
-//   // const { dataPointsList } = await InsightAPI.getInsightData({
-//   //   applicationId: state.insight.applicationId,
-//   //   step: state.insight.step,
-//   //   dataPointCount: dayjs(state.insight.rangeTo).diff(
-//   //     state.insight.rangeFrom,
-//   //     STEP_UNIT_MAP[state.insight.step]
-//   //   ),
-//   //   metricsKind: InsightMetricsKind.DEPLOYMENT_FREQUENCY,
-//   //   rangeFrom: state.insight.rangeFrom,
-//   // });
-//   // return dataPointsList;
-//   return [];
-// });
+  if (data.type == InsightResultType.MATRIX) {
+    return data.matrixList[0].dataPointsList;
+  } else {
+    return [];
+  }
+});
 
-// export const deploymentFrequencySlice = createSlice({
-//   name: MODULE_NAME,
-//   initialState,
-//   reducers: {},
-//   extraReducers: (builder) => {
-//     builder
-//       .addCase(fetchDeploymentFrequency.pending, (state) => {
-//         state.status = "loading";
-//       })
-//       .addCase(fetchDeploymentFrequency.rejected, (state) => {
-//         state.status = "failed";
-//       })
-//       .addCase(fetchDeploymentFrequency.fulfilled, (state, action) => {
-//         state.status = "succeeded";
-//         state.data = action.payload;
-//       });
-//   },
-// });
+export const deploymentFrequencySlice = createSlice({
+  name: MODULE_NAME,
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchDeploymentFrequency.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchDeploymentFrequency.rejected, (state) => {
+        state.status = "failed";
+      })
+      .addCase(fetchDeploymentFrequency.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.data = action.payload;
+      });
+  },
+});
