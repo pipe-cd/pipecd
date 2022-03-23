@@ -8,6 +8,7 @@ require (
 	cloud.google.com/go/storage v1.11.0
 	github.com/DataDog/datadog-api-client-go v1.0.0-beta.16
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
+	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.6.0
 	github.com/aws/aws-sdk-go-v2/config v1.1.1
 	github.com/aws/aws-sdk-go-v2/credentials v1.1.1
@@ -29,7 +30,10 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/hashicorp/golang-lru v0.5.3
+	github.com/hashicorp/hcl/v2 v2.0.0
+	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/minio/minio-go/v7 v7.0.5
+	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/common v0.26.0
 	github.com/robfig/cron/v3 v3.0.1
