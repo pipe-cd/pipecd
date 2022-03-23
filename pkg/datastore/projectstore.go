@@ -80,6 +80,7 @@ type ProjectStore interface {
 	UpdateProjectRBACConfig(ctx context.Context, id string, rbac *model.ProjectRBACConfig) error
 	UpdateProjectRBACRoles(ctx context.Context, id string, roles []*model.ProjectRBACRole) error
 	UpdateProjectUserGroups(ctx context.Context, id string, groups []*model.ProjectUserGroup) error
+	UpsertBuiltinRBACRoles(ctx context.Context, id string) error
 	MigrateFromProjectRBACConfig(ctx context.Context, id string) error
 }
 
@@ -206,6 +207,11 @@ func (s *projectStore) UpdateProjectRBACRoles(ctx context.Context, id string, ro
 
 // UpdateProjectUserGroups updates project user groups.
 func (s *projectStore) UpdateProjectUserGroups(ctx context.Context, id string, groups []*model.ProjectUserGroup) error {
+	return ErrUnimplemented
+}
+
+// UpsertBuiltinRBACRoles add built-in rbac roles or update that roles if already exists.
+func (s *projectStore) UpsertBuiltinRBACRoles(ctx context.Context, id string) error {
 	return ErrUnimplemented
 }
 

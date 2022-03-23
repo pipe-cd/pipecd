@@ -193,6 +193,20 @@ func (mr *MockProjectStoreMockRecorder) UpdateProjectUserGroups(arg0, arg1, arg2
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProjectUserGroups", reflect.TypeOf((*MockProjectStore)(nil).UpdateProjectUserGroups), arg0, arg1, arg2)
 }
 
+// UpsertBuiltinRBACRoles mocks base method.
+func (m *MockProjectStore) UpsertBuiltinRBACRoles(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpsertBuiltinRBACRoles", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertBuiltinRBACRoles indicates an expected call of UpsertBuiltinRBACRoles.
+func (mr *MockProjectStoreMockRecorder) UpsertBuiltinRBACRoles(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertBuiltinRBACRoles", reflect.TypeOf((*MockProjectStore)(nil).UpsertBuiltinRBACRoles), arg0, arg1)
+}
+
 // MockPipedStore is a mock of PipedStore interface.
 type MockPipedStore struct {
 	ctrl     *gomock.Controller
