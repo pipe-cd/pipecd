@@ -15,7 +15,7 @@ provider "google" {
 }
 
 resource "google_storage_bucket_object" "object" {
-  name    = "wait-approval/${terraform.workspace}.txt"
+  name    = "wait-approval/example.txt"
   bucket  = "pipecd-play-terraform-examples"
   content = var.content
 }
