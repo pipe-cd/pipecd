@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"sort"
 	"strings"
 	"time"
@@ -38,10 +39,13 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/filestore"
+	"github.com/pipe-cd/pipecd/pkg/insight"
 	"github.com/pipe-cd/pipecd/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
+
+var deploymentFrequencyMinimumVersion = model.InsightDeploymentVersion_V0
 
 type encrypter interface {
 	Encrypt(text string) (string, error)
@@ -1373,14 +1377,34 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 
 // GetInsightData returns the accumulated insight data.
 func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
-	// claims, err := rpcauth.ExtractClaims(ctx)
-	// if err != nil {
-	// 	a.logger.Error("failed to authenticate the current user", zap.Error(err))
-	// 	return nil, err
-	// }
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
 
-	// from := time.Unix(req.RangeFrom, 0)
+	if math.Abs(float64(req.Offset)) > 86400 {
+		return nil, status.Error(codes.InvalidArgument, "offset must between -86400 ~ 86400")
+	}
+
+	loc := time.FixedZone("", int(req.Offset))
+
+	switch req.MetricsKind {
+	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
+		points, updatedAt, err := a.getDeploymentFrequency(ctx, claims.Role.ProjectId, req.ApplicationId, req.RangeFrom, req.RangeTo, loc)
+		if err != nil {
+			return nil, err
+		}
+		return &webservice.GetInsightDataResponse{
+			UpdatedAt: updatedAt,
+			Type:      model.InsightResultType_MATRIX,
+			Matrix: []*model.InsightSampleStream{
+				{DataPoints: points},
+			},
+		}, nil
+	default:
+		return nil, status.Error(codes.Unimplemented, "")
+	}
 
 	// chunks, err := insightstore.LoadChunksFromCache(a.insightCache, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
 	// if err != nil {
@@ -1419,6 +1443,36 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 	// 		},
 	// 	},
 	// }, nil
+}
+
+// getDeploymentFrequency if applicationID is empty, collect all application
+func (a *WebAPI) getDeploymentFrequency(ctx context.Context, projectID string, applicationID string, from, to int64, loc *time.Location) ([]*model.InsightDataPoint, int64, error) {
+	deployments, err := a.insightStore.List(ctx, projectID, from, to, deploymentFrequencyMinimumVersion)
+	var updatedAt int64
+	if err != nil {
+		return nil, updatedAt, err
+	}
+
+	if applicationID != "" {
+		filtered := deployments[:0]
+		for _, v := range deployments {
+			if v.AppId == applicationID {
+				filtered = append(filtered, v)
+			}
+		}
+		deployments = filtered
+	}
+
+	dailyDeployments := insight.GroupDeploymentsByDaily(deployments, loc)
+	result := make([]*model.InsightDataPoint, 0, len(deployments))
+	for _, d := range dailyDeployments {
+		result = append(result, &model.InsightDataPoint{
+			Timestamp: insight.NormalizeUnixTime(d[0].StartedAt, loc),
+			Value:     float32(len(d)),
+		})
+	}
+
+	return result, updatedAt, nil
 }
 
 func (a *WebAPI) GetInsightApplicationCount(ctx context.Context, req *webservice.GetInsightApplicationCountRequest) (*webservice.GetInsightApplicationCountResponse, error) {
