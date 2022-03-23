@@ -85,6 +85,10 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: "-2px",
     color: "rgba(0, 0, 0, 0.5)",
   },
+  menuItem: {
+    color: "#283778",
+    textDecorationLine: "none",
+  },
 }));
 
 export const Header: FC = memo(function Header() {
@@ -205,30 +209,36 @@ export const Header: FC = memo(function Header() {
           setMoreAnchorEl(null);
         }}
       >
-        <MenuItem>
-          <Link component={RouterLink} to={PAGE_PATH_INSIGHTS}>
-            Insights
-          </Link>
+        <MenuItem
+          className={classes.menuItem}
+          component={RouterLink}
+          to={PAGE_PATH_INSIGHTS}
+        >
+          Insights
         </MenuItem>
-        <MenuItem>
-          <Link component={RouterLink} to={PAGE_PATH_EVENTS}>
-            Events
-          </Link>
+        <MenuItem
+          className={classes.menuItem}
+          component={RouterLink}
+          to={PAGE_PATH_EVENTS}
+        >
+          Events
         </MenuItem>
-        <MenuItem divider={true}>
-          <Link component={RouterLink} to={PAGE_PATH_SETTINGS}>
-            Settings
-          </Link>
+        <MenuItem
+          className={classes.menuItem}
+          component={RouterLink}
+          to={PAGE_PATH_SETTINGS}
+          divider
+        >
+          Settings
         </MenuItem>
-        <MenuItem>
-          <Link
-            href="https://pipecd.dev/docs/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Documentation
-            <OpenInNew className={classes.iconOpenInNew} />
-          </Link>
+        <MenuItem
+          component={Link}
+          href="https://pipecd.dev/docs/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Documentation
+          <OpenInNew className={classes.iconOpenInNew} />
         </MenuItem>
         <MenuItem disabled={true} dense={true} button={false}>
           {process.env.STABLE_VERSION}
