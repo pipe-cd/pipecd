@@ -6,7 +6,7 @@
   Continuous Delivery for Declarative Kubernetes, Serverless and Infrastructure Applications
   <br/>
   <a href="https://pipecd.dev"><strong>Explore PipeCD docs »</strong></a>
-  <a href="https://play.pipecd.dev"><strong>Play with live demo »</strong></a>
+  <a href="https://play.pipecd.dev?project=play"><strong>Play with live demo »</strong></a>
 </p>
 
 #
