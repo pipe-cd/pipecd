@@ -9,7 +9,7 @@ spec:
     # Helm chart sourced from another Git repository.
     helmChart:
       gitRemote: git@github.com:pipe-cd/manifests.git
-      ref: v0.6.0
+      ref: v0.9.0
       path: manifests/helloworld
     helmOptions:
       valueFiles:
