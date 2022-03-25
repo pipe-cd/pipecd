@@ -57,6 +57,8 @@ enum InsightApplicationCountLabelKey {
   ACTIVE_STATUS = 1;
 }
 
+// time is treated as unix time second
+
 message InsightDeploymentSubset {
   int64 created_at = 14 [(validate.rules).int64.gte = 0];
   int64 updated_at = 15 [(validate.rules).int64.gte = 0];
@@ -65,11 +67,14 @@ message InsightDeploymentSubset {
 message InsightDailyDeployment {
   // `date` must be normalized like xxxx/xx/xx:00:00:00;
   int64 date = 1 [(validate.rules).int64.gte = 0];
-  int64 created_at = 14 [(validate.rules).int64.gte = 0];
-  int64 updated_at = 15 [(validate.rules).int64.gte = 0];
 
   // Daily InsightDeploymentSubset sorted by created_at ASC.
   repeated InsightDeploymentSubset daily_deployments = 4;
+
+  // Unix time when the insight daily deployment is created.
+  int64 created_at = 14 [(validate.rules).int64.gte = 0];
+  // Unix time of the last time when the insight daily deployment is updated.
+  int64 updated_at = 15 [(validate.rules).int64.gte = 0];
 }
 
 // InsightDeploymentChunk represents a chunk that is used by insight

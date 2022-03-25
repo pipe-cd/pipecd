@@ -689,28 +689,6 @@ func (m *InsightDailyDeployment) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if m.GetCreatedAt() < 0 {
-		err := InsightDailyDeploymentValidationError{
-			field:  "CreatedAt",
-			reason: "value must be greater than or equal to 0",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if m.GetUpdatedAt() < 0 {
-		err := InsightDailyDeploymentValidationError{
-			field:  "UpdatedAt",
-			reason: "value must be greater than or equal to 0",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	for idx, item := range m.GetDailyDeployments() {
 		_, _ = idx, item
 
@@ -743,6 +721,28 @@ func (m *InsightDailyDeployment) validate(all bool) error {
 			}
 		}
 
+	}
+
+	if m.GetCreatedAt() < 0 {
+		err := InsightDailyDeploymentValidationError{
+			field:  "CreatedAt",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetUpdatedAt() < 0 {
+		err := InsightDailyDeploymentValidationError{
+			field:  "UpdatedAt",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 	}
 
 	if len(errors) > 0 {

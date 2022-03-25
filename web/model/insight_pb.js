@@ -1146,10 +1146,10 @@ proto.model.InsightDailyDeployment.prototype.toObject = function(opt_includeInst
 proto.model.InsightDailyDeployment.toObject = function(includeInstance, msg) {
   var f, obj = {
     date: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
-    updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0),
     dailyDeploymentsList: jspb.Message.toObjectList(msg.getDailyDeploymentsList(),
-    proto.model.InsightDeploymentSubset.toObject, includeInstance)
+    proto.model.InsightDeploymentSubset.toObject, includeInstance),
+    createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
+    updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
   };
 
   if (includeInstance) {
@@ -1190,6 +1190,11 @@ proto.model.InsightDailyDeployment.deserializeBinaryFromReader = function(msg, r
       var value = /** @type {number} */ (reader.readInt64());
       msg.setDate(value);
       break;
+    case 4:
+      var value = new proto.model.InsightDeploymentSubset;
+      reader.readMessage(value,proto.model.InsightDeploymentSubset.deserializeBinaryFromReader);
+      msg.addDailyDeployments(value);
+      break;
     case 14:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setCreatedAt(value);
@@ -1197,11 +1202,6 @@ proto.model.InsightDailyDeployment.deserializeBinaryFromReader = function(msg, r
     case 15:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setUpdatedAt(value);
-      break;
-    case 4:
-      var value = new proto.model.InsightDeploymentSubset;
-      reader.readMessage(value,proto.model.InsightDeploymentSubset.deserializeBinaryFromReader);
-      msg.addDailyDeployments(value);
       break;
     default:
       reader.skipField();
@@ -1239,6 +1239,14 @@ proto.model.InsightDailyDeployment.serializeBinaryToWriter = function(message, w
       f
     );
   }
+  f = message.getDailyDeploymentsList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
+      4,
+      f,
+      proto.model.InsightDeploymentSubset.serializeBinaryToWriter
+    );
+  }
   f = message.getCreatedAt();
   if (f !== 0) {
     writer.writeInt64(
@@ -1251,14 +1259,6 @@ proto.model.InsightDailyDeployment.serializeBinaryToWriter = function(message, w
     writer.writeInt64(
       15,
       f
-    );
-  }
-  f = message.getDailyDeploymentsList();
-  if (f.length > 0) {
-    writer.writeRepeatedMessage(
-      4,
-      f,
-      proto.model.InsightDeploymentSubset.serializeBinaryToWriter
     );
   }
 };
@@ -1279,42 +1279,6 @@ proto.model.InsightDailyDeployment.prototype.getDate = function() {
  */
 proto.model.InsightDailyDeployment.prototype.setDate = function(value) {
   return jspb.Message.setProto3IntField(this, 1, value);
-};
-
-
-/**
- * optional int64 created_at = 14;
- * @return {number}
- */
-proto.model.InsightDailyDeployment.prototype.getCreatedAt = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 14, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.model.InsightDailyDeployment} returns this
- */
-proto.model.InsightDailyDeployment.prototype.setCreatedAt = function(value) {
-  return jspb.Message.setProto3IntField(this, 14, value);
-};
-
-
-/**
- * optional int64 updated_at = 15;
- * @return {number}
- */
-proto.model.InsightDailyDeployment.prototype.getUpdatedAt = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 15, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.model.InsightDailyDeployment} returns this
- */
-proto.model.InsightDailyDeployment.prototype.setUpdatedAt = function(value) {
-  return jspb.Message.setProto3IntField(this, 15, value);
 };
 
 
@@ -1353,6 +1317,42 @@ proto.model.InsightDailyDeployment.prototype.addDailyDeployments = function(opt_
  */
 proto.model.InsightDailyDeployment.prototype.clearDailyDeploymentsList = function() {
   return this.setDailyDeploymentsList([]);
+};
+
+
+/**
+ * optional int64 created_at = 14;
+ * @return {number}
+ */
+proto.model.InsightDailyDeployment.prototype.getCreatedAt = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 14, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.model.InsightDailyDeployment} returns this
+ */
+proto.model.InsightDailyDeployment.prototype.setCreatedAt = function(value) {
+  return jspb.Message.setProto3IntField(this, 14, value);
+};
+
+
+/**
+ * optional int64 updated_at = 15;
+ * @return {number}
+ */
+proto.model.InsightDailyDeployment.prototype.getUpdatedAt = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 15, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.model.InsightDailyDeployment} returns this
+ */
+proto.model.InsightDailyDeployment.prototype.setUpdatedAt = function(value) {
+  return jspb.Message.setProto3IntField(this, 15, value);
 };
 
 

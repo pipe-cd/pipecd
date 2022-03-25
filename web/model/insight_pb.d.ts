@@ -121,16 +121,16 @@ export class InsightDailyDeployment extends jspb.Message {
   getDate(): number;
   setDate(value: number): InsightDailyDeployment;
 
+  getDailyDeploymentsList(): Array<InsightDeploymentSubset>;
+  setDailyDeploymentsList(value: Array<InsightDeploymentSubset>): InsightDailyDeployment;
+  clearDailyDeploymentsList(): InsightDailyDeployment;
+  addDailyDeployments(value?: InsightDeploymentSubset, index?: number): InsightDeploymentSubset;
+
   getCreatedAt(): number;
   setCreatedAt(value: number): InsightDailyDeployment;
 
   getUpdatedAt(): number;
   setUpdatedAt(value: number): InsightDailyDeployment;
-
-  getDailyDeploymentsList(): Array<InsightDeploymentSubset>;
-  setDailyDeploymentsList(value: Array<InsightDeploymentSubset>): InsightDailyDeployment;
-  clearDailyDeploymentsList(): InsightDailyDeployment;
-  addDailyDeployments(value?: InsightDeploymentSubset, index?: number): InsightDeploymentSubset;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): InsightDailyDeployment.AsObject;
@@ -143,9 +143,9 @@ export class InsightDailyDeployment extends jspb.Message {
 export namespace InsightDailyDeployment {
   export type AsObject = {
     date: number,
+    dailyDeploymentsList: Array<InsightDeploymentSubset.AsObject>,
     createdAt: number,
     updatedAt: number,
-    dailyDeploymentsList: Array<InsightDeploymentSubset.AsObject>,
   }
 }
 
