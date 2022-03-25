@@ -193,21 +193,15 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
               </TableCell>
               {displayAllProperties && (
                 <TableCell>
-                  {recentlyDeployment.trigger?.commit?.url !== "" ? (
+                  {recentlyDeployment.trigger?.commit && (
                     <Link
-                      href={recentlyDeployment.trigger?.commit?.url}
+                      href={recentlyDeployment.trigger.commit.url}
                       target="_blank"
                       rel="noreferrer"
                     >
-                      {recentlyDeployment.trigger?.commit?.hash.slice(0, 8) ??
-                        UI_TEXT_NOT_AVAILABLE_TEXT}
+                      {recentlyDeployment.trigger.commit.hash.slice(0, 8)}
                       <OpenInNewIcon className={classes.linkIcon} />
                     </Link>
-                  ) : (
-                    <>
-                      {recentlyDeployment.trigger?.commit?.hash.slice(0, 8) ??
-                        UI_TEXT_NOT_AVAILABLE_TEXT}
-                    </>
                   )}
                 </TableCell>
               )}
