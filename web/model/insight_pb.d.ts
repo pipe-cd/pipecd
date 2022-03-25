@@ -1,6 +1,7 @@
 import * as jspb from 'google-protobuf'
 
 
+import * as pkg_model_deployment_pb from 'pipecd/web/model/deployment_pb';
 
 
 export class InsightSample extends jspb.Message {
@@ -95,70 +96,20 @@ export namespace InsightApplicationCount {
   }
 }
 
-export class InsightDeploymentSubset extends jspb.Message {
-  getCreatedAt(): number;
-  setCreatedAt(value: number): InsightDeploymentSubset;
-
-  getUpdatedAt(): number;
-  setUpdatedAt(value: number): InsightDeploymentSubset;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): InsightDeploymentSubset.AsObject;
-  static toObject(includeInstance: boolean, msg: InsightDeploymentSubset): InsightDeploymentSubset.AsObject;
-  static serializeBinaryToWriter(message: InsightDeploymentSubset, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): InsightDeploymentSubset;
-  static deserializeBinaryFromReader(message: InsightDeploymentSubset, reader: jspb.BinaryReader): InsightDeploymentSubset;
-}
-
-export namespace InsightDeploymentSubset {
-  export type AsObject = {
-    createdAt: number,
-    updatedAt: number,
-  }
-}
-
-export class InsightDailyDeployment extends jspb.Message {
-  getDate(): number;
-  setDate(value: number): InsightDailyDeployment;
-
-  getDailyDeploymentsList(): Array<InsightDeploymentSubset>;
-  setDailyDeploymentsList(value: Array<InsightDeploymentSubset>): InsightDailyDeployment;
-  clearDailyDeploymentsList(): InsightDailyDeployment;
-  addDailyDeployments(value?: InsightDeploymentSubset, index?: number): InsightDeploymentSubset;
-
-  getCreatedAt(): number;
-  setCreatedAt(value: number): InsightDailyDeployment;
-
-  getUpdatedAt(): number;
-  setUpdatedAt(value: number): InsightDailyDeployment;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): InsightDailyDeployment.AsObject;
-  static toObject(includeInstance: boolean, msg: InsightDailyDeployment): InsightDailyDeployment.AsObject;
-  static serializeBinaryToWriter(message: InsightDailyDeployment, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): InsightDailyDeployment;
-  static deserializeBinaryFromReader(message: InsightDailyDeployment, reader: jspb.BinaryReader): InsightDailyDeployment;
-}
-
-export namespace InsightDailyDeployment {
-  export type AsObject = {
-    date: number,
-    dailyDeploymentsList: Array<InsightDeploymentSubset.AsObject>,
-    createdAt: number,
-    updatedAt: number,
-  }
-}
-
 export class InsightDeploymentChunk extends jspb.Message {
-  getDateRange(): InsightChunkDateRange | undefined;
-  setDateRange(value?: InsightChunkDateRange): InsightDeploymentChunk;
-  hasDateRange(): boolean;
-  clearDateRange(): InsightDeploymentChunk;
+  getVersion(): InsightDeploymentVersion;
+  setVersion(value: InsightDeploymentVersion): InsightDeploymentChunk;
 
-  getDeploymentsList(): Array<InsightDailyDeployment>;
-  setDeploymentsList(value: Array<InsightDailyDeployment>): InsightDeploymentChunk;
+  getFrom(): number;
+  setFrom(value: number): InsightDeploymentChunk;
+
+  getTo(): number;
+  setTo(value: number): InsightDeploymentChunk;
+
+  getDeploymentsList(): Array<InsightDeployment>;
+  setDeploymentsList(value: Array<InsightDeployment>): InsightDeploymentChunk;
   clearDeploymentsList(): InsightDeploymentChunk;
-  addDeployments(value?: InsightDailyDeployment, index?: number): InsightDailyDeployment;
+  addDeployments(value?: InsightDeployment, index?: number): InsightDeployment;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): InsightDeploymentChunk.AsObject;
@@ -170,80 +121,116 @@ export class InsightDeploymentChunk extends jspb.Message {
 
 export namespace InsightDeploymentChunk {
   export type AsObject = {
-    dateRange?: InsightChunkDateRange.AsObject,
-    deploymentsList: Array<InsightDailyDeployment.AsObject>,
+    version: InsightDeploymentVersion,
+    from: number,
+    to: number,
+    deploymentsList: Array<InsightDeployment.AsObject>,
   }
 }
 
-export class InsightDeploymentChunkMetaData extends jspb.Message {
-  getDataList(): Array<InsightDeploymentChunkMetaData.ChunkData>;
-  setDataList(value: Array<InsightDeploymentChunkMetaData.ChunkData>): InsightDeploymentChunkMetaData;
-  clearDataList(): InsightDeploymentChunkMetaData;
-  addData(value?: InsightDeploymentChunkMetaData.ChunkData, index?: number): InsightDeploymentChunkMetaData.ChunkData;
+export class InsightDeployment extends jspb.Message {
+  getId(): string;
+  setId(value: string): InsightDeployment;
+
+  getAppId(): string;
+  setAppId(value: string): InsightDeployment;
+
+  getLabelsMap(): jspb.Map<string, string>;
+  clearLabelsMap(): InsightDeployment;
+
+  getStartedAt(): number;
+  setStartedAt(value: number): InsightDeployment;
+
+  getCompletedAt(): number;
+  setCompletedAt(value: number): InsightDeployment;
+
+  getRollbackStartedAt(): number;
+  setRollbackStartedAt(value: number): InsightDeployment;
+
+  getCompleteStatus(): pkg_model_deployment_pb.DeploymentStatus;
+  setCompleteStatus(value: pkg_model_deployment_pb.DeploymentStatus): InsightDeployment;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): InsightDeploymentChunkMetaData.AsObject;
-  static toObject(includeInstance: boolean, msg: InsightDeploymentChunkMetaData): InsightDeploymentChunkMetaData.AsObject;
-  static serializeBinaryToWriter(message: InsightDeploymentChunkMetaData, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): InsightDeploymentChunkMetaData;
-  static deserializeBinaryFromReader(message: InsightDeploymentChunkMetaData, reader: jspb.BinaryReader): InsightDeploymentChunkMetaData;
+  toObject(includeInstance?: boolean): InsightDeployment.AsObject;
+  static toObject(includeInstance: boolean, msg: InsightDeployment): InsightDeployment.AsObject;
+  static serializeBinaryToWriter(message: InsightDeployment, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): InsightDeployment;
+  static deserializeBinaryFromReader(message: InsightDeployment, reader: jspb.BinaryReader): InsightDeployment;
 }
 
-export namespace InsightDeploymentChunkMetaData {
+export namespace InsightDeployment {
   export type AsObject = {
-    dataList: Array<InsightDeploymentChunkMetaData.ChunkData.AsObject>,
+    id: string,
+    appId: string,
+    labelsMap: Array<[string, string]>,
+    startedAt: number,
+    completedAt: number,
+    rollbackStartedAt: number,
+    completeStatus: pkg_model_deployment_pb.DeploymentStatus,
+  }
+}
+
+export class InsightDeploymentChunkMetadata extends jspb.Message {
+  getChunksList(): Array<InsightDeploymentChunkMetadata.ChunkMeta>;
+  setChunksList(value: Array<InsightDeploymentChunkMetadata.ChunkMeta>): InsightDeploymentChunkMetadata;
+  clearChunksList(): InsightDeploymentChunkMetadata;
+  addChunks(value?: InsightDeploymentChunkMetadata.ChunkMeta, index?: number): InsightDeploymentChunkMetadata.ChunkMeta;
+
+  getCreatedAt(): number;
+  setCreatedAt(value: number): InsightDeploymentChunkMetadata;
+
+  getUpdatedAt(): number;
+  setUpdatedAt(value: number): InsightDeploymentChunkMetadata;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): InsightDeploymentChunkMetadata.AsObject;
+  static toObject(includeInstance: boolean, msg: InsightDeploymentChunkMetadata): InsightDeploymentChunkMetadata.AsObject;
+  static serializeBinaryToWriter(message: InsightDeploymentChunkMetadata, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): InsightDeploymentChunkMetadata;
+  static deserializeBinaryFromReader(message: InsightDeploymentChunkMetadata, reader: jspb.BinaryReader): InsightDeploymentChunkMetadata;
+}
+
+export namespace InsightDeploymentChunkMetadata {
+  export type AsObject = {
+    chunksList: Array<InsightDeploymentChunkMetadata.ChunkMeta.AsObject>,
+    createdAt: number,
+    updatedAt: number,
   }
 
-  export class ChunkData extends jspb.Message {
-    getDateRange(): InsightChunkDateRange | undefined;
-    setDateRange(value?: InsightChunkDateRange): ChunkData;
-    hasDateRange(): boolean;
-    clearDateRange(): ChunkData;
+  export class ChunkMeta extends jspb.Message {
+    getFrom(): number;
+    setFrom(value: number): ChunkMeta;
 
-    getChunkKey(): string;
-    setChunkKey(value: string): ChunkData;
+    getTo(): number;
+    setTo(value: number): ChunkMeta;
 
-    getChunkSize(): number;
-    setChunkSize(value: number): ChunkData;
+    getName(): string;
+    setName(value: string): ChunkMeta;
+
+    getSize(): number;
+    setSize(value: number): ChunkMeta;
+
+    getCount(): number;
+    setCount(value: number): ChunkMeta;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): ChunkData.AsObject;
-    static toObject(includeInstance: boolean, msg: ChunkData): ChunkData.AsObject;
-    static serializeBinaryToWriter(message: ChunkData, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): ChunkData;
-    static deserializeBinaryFromReader(message: ChunkData, reader: jspb.BinaryReader): ChunkData;
+    toObject(includeInstance?: boolean): ChunkMeta.AsObject;
+    static toObject(includeInstance: boolean, msg: ChunkMeta): ChunkMeta.AsObject;
+    static serializeBinaryToWriter(message: ChunkMeta, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ChunkMeta;
+    static deserializeBinaryFromReader(message: ChunkMeta, reader: jspb.BinaryReader): ChunkMeta;
   }
 
-  export namespace ChunkData {
+  export namespace ChunkMeta {
     export type AsObject = {
-      dateRange?: InsightChunkDateRange.AsObject,
-      chunkKey: string,
-      chunkSize: number,
+      from: number,
+      to: number,
+      name: string,
+      size: number,
+      count: number,
     }
   }
 
-}
-
-export class InsightChunkDateRange extends jspb.Message {
-  getFrom(): number;
-  setFrom(value: number): InsightChunkDateRange;
-
-  getTo(): number;
-  setTo(value: number): InsightChunkDateRange;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): InsightChunkDateRange.AsObject;
-  static toObject(includeInstance: boolean, msg: InsightChunkDateRange): InsightChunkDateRange.AsObject;
-  static serializeBinaryToWriter(message: InsightChunkDateRange, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): InsightChunkDateRange;
-  static deserializeBinaryFromReader(message: InsightChunkDateRange, reader: jspb.BinaryReader): InsightChunkDateRange;
-}
-
-export namespace InsightChunkDateRange {
-  export type AsObject = {
-    from: number,
-    to: number,
-  }
 }
 
 export enum InsightResultType { 
@@ -260,4 +247,7 @@ export enum InsightMetricsKind {
 export enum InsightApplicationCountLabelKey { 
   KIND = 0,
   ACTIVE_STATUS = 1,
+}
+export enum InsightDeploymentVersion { 
+  V0 = 0,
 }

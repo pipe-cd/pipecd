@@ -18,6 +18,7 @@ package model;
 option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 
 import "validate/validate.proto";
+import "pkg/model/deployment.proto";
 
 enum InsightResultType {
   MATRIX = 0;
@@ -59,52 +60,41 @@ enum InsightApplicationCountLabelKey {
 
 // time is treated as unix time second
 
-message InsightDeploymentSubset {
-  int64 created_at = 14 [(validate.rules).int64.gte = 0];
-  int64 updated_at = 15 [(validate.rules).int64.gte = 0];
+enum InsightDeploymentVersion {
+  V0 = 0;
 }
 
-message InsightDailyDeployment {
-  // `date` must be normalized like xxxx/xx/xx:00:00:00;
-  int64 date = 1 [(validate.rules).int64.gte = 0];
-
-  // Daily InsightDeploymentSubset sorted by created_at ASC.
-  repeated InsightDeploymentSubset daily_deployments = 4;
-
-  // Unix time when the insight daily deployment is created.
-  int64 created_at = 14 [(validate.rules).int64.gte = 0];
-  // Unix time of the last time when the insight daily deployment is updated.
-  int64 updated_at = 15 [(validate.rules).int64.gte = 0];
-}
-
-// InsightDeploymentChunk represents a chunk that is used by insight
 message InsightDeploymentChunk {
-  InsightChunkDateRange date_range = 1;
+  InsightDeploymentVersion version = 1;
+  int64 from = 2 [(validate.rules).int64.gte = 0];
+  int64 to = 3 [(validate.rules).int64.gte = 0];
 
-  // Daily-deployments sorted by InsightDailyDeployment.date ASC.
-  repeated InsightDailyDeployment deployments = 2;
+  repeated InsightDeployment deployments = 4;
 }
 
-message InsightDeploymentChunkMetaData {
-  message ChunkData {
-      InsightChunkDateRange date_range = 1;
+message InsightDeployment {
+  string id = 1;
+  string app_id = 2;
+  map<string,string> labels = 3;
 
-      // Unique chunk identifier
-      string chunk_key = 2;
-
-      // Chunk size (byte)
-      int64 chunk_size = 3;
-  }
-
-  // Sorted by ChunkData.date_range ASC. date_range does not overlap.
-  repeated ChunkData data = 1;
+  int64 started_at = 4;
+  int64 completed_at = 5;
+  int64 rollback_started_at = 6;
+  model.DeploymentStatus complete_status = 7;
 }
 
-// `from` and `to` must be normalized like xxxx/xx/xx:00:00:00;
-// InsightChunkDateRange means date range [from, to].
-// If `from` is 1647820800(2022/03/21:00:00:00) and `to` is 1647907200(2022/03/22:00:00:00),
-// this means 2022/03/21:00:00:00 ~ 2022/03/22:23:59:59. (note that 2022/03/22 is included)
-message InsightChunkDateRange {
-  int64 from = 1 [(validate.rules).int64.gte = 0];
-  int64 to = 2 [(validate.rules).int64.gte = 0];
+message InsightDeploymentChunkMetadata {
+  message ChunkMeta {
+     int64 from = 1 [(validate.rules).int64.gte = 0];
+     int64 to = 2 [(validate.rules).int64.gte = 0];
+     // chunk file name
+     string name = 3; 
+     int64 size = 4;
+     int64 count = 5;
+ }
+
+  repeated ChunkMeta chunks = 1;
+
+  int64 created_at = 14;
+  int64 updated_at = 15;
 }
