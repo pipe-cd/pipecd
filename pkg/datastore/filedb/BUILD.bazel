@@ -25,6 +25,7 @@ go_test(
     srcs = [
         "codec_test.go",
         "filter_test.go",
+        "iterator_test.go",
     ],
     embed = [":go_default_library"],
     deps = [

@@ -14,16 +14,34 @@
 
 package filedb
 
-import "github.com/pipe-cd/pipecd/pkg/datastore"
+import (
+	"fmt"
+	"reflect"
+
+	"github.com/pipe-cd/pipecd/pkg/datastore"
+)
 
 type Iterator struct {
-	data []interface{}
+	data    []interface{}
+	current int
 }
 
 func (it *Iterator) Next(dst interface{}) error {
-	return datastore.ErrUnimplemented
+	if it.current == len(it.data) {
+		return datastore.ErrIteratorDone
+	}
+
+	cur := it.data[it.current]
+	if reflect.TypeOf(cur) != reflect.TypeOf(dst) {
+		return fmt.Errorf("data type miss match")
+	}
+
+	reflect.ValueOf(dst).Elem().Set(reflect.ValueOf(cur).Elem())
+
+	it.current++
+	return nil
 }
 
 func (it *Iterator) Cursor() (string, error) {
-	return "", datastore.ErrUnimplemented
+	return "", datastore.ErrUnsupported
 }
