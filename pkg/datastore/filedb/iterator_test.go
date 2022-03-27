@@ -17,9 +17,10 @@ package filedb
 import (
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pipe-cd/pipecd/pkg/datastore"
 )
 
 func TestNext(t *testing.T) {
