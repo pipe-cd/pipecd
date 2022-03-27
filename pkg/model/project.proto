@@ -127,7 +127,7 @@ message ProjectRBACRole {
 // ProjectResource represents a RBAC resource.
 message ProjectRBACResource {
     enum ResourceType {
-      All = 0;
+      ALL = 0;
       APPLICATION = 1; 
       DEPLOYMENT = 2;
       EVENT = 3;
@@ -146,7 +146,7 @@ message ProjectRBACResource {
 
 message ProjectRBACPolicy {
     enum Action {
-      All = 0;
+      ALL = 0;
       GET = 1;
       LIST = 2;
       CREATE = 3;
