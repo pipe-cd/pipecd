@@ -939,6 +939,8 @@ func (m *ProjectRBACRole) validate(all bool) error {
 
 	}
 
+	// no validation rules for IsBuiltin
+
 	if len(errors) > 0 {
 		return ProjectRBACRoleMultiError(errors)
 	}

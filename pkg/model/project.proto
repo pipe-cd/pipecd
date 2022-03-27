@@ -120,19 +120,22 @@ message ProjectRBACRole {
     string name = 1 [(validate.rules).string.min_len = 1];
     // The policy of role.
     repeated ProjectRBACPolicy policies = 2;
+    // Whether built-in role or not.
+    bool is_builtin = 3;
 }
 
 // ProjectResource represents a RBAC resource.
 message ProjectRBACResource {
     enum ResourceType {
-      APPLICATION = 0; 
-      DEPLOYMENT = 1;
-      EVENT = 2;
-      PIPED = 3;
-      DEPLOYMENT_CHAIN = 4;
-      PROJECT = 5;
-      API_KEY = 6;
-      INSIGHT = 7;
+      All = 0;
+      APPLICATION = 1; 
+      DEPLOYMENT = 2;
+      EVENT = 3;
+      PIPED = 4;
+      DEPLOYMENT_CHAIN = 5;
+      PROJECT = 6;
+      API_KEY = 7;
+      INSIGHT = 8;
     }
 
     // The type of resource.
@@ -143,11 +146,12 @@ message ProjectRBACResource {
 
 message ProjectRBACPolicy {
     enum Action {
-      GET = 0;
-      LIST = 1;
-      CREATE = 2;
-      UPDATE = 3;
-      DELETE = 4;
+      All = 0;
+      GET = 1;
+      LIST = 2;
+      CREATE = 3;
+      UPDATE = 4;
+      DELETE = 5;
     }
 
     // The resources of this project.

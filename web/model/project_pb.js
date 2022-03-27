@@ -2024,7 +2024,8 @@ proto.model.ProjectRBACRole.toObject = function(includeInstance, msg) {
   var f, obj = {
     name: jspb.Message.getFieldWithDefault(msg, 1, ""),
     policiesList: jspb.Message.toObjectList(msg.getPoliciesList(),
-    proto.model.ProjectRBACPolicy.toObject, includeInstance)
+    proto.model.ProjectRBACPolicy.toObject, includeInstance),
+    isBuiltin: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -2070,6 +2071,10 @@ proto.model.ProjectRBACRole.deserializeBinaryFromReader = function(msg, reader) 
       reader.readMessage(value,proto.model.ProjectRBACPolicy.deserializeBinaryFromReader);
       msg.addPolicies(value);
       break;
+    case 3:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setIsBuiltin(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -2112,6 +2117,13 @@ proto.model.ProjectRBACRole.serializeBinaryToWriter = function(message, writer) 
       2,
       f,
       proto.model.ProjectRBACPolicy.serializeBinaryToWriter
+    );
+  }
+  f = message.getIsBuiltin();
+  if (f) {
+    writer.writeBool(
+      3,
+      f
     );
   }
 };
@@ -2170,6 +2182,24 @@ proto.model.ProjectRBACRole.prototype.addPolicies = function(opt_value, opt_inde
  */
 proto.model.ProjectRBACRole.prototype.clearPoliciesList = function() {
   return this.setPoliciesList([]);
+};
+
+
+/**
+ * optional bool is_builtin = 3;
+ * @return {boolean}
+ */
+proto.model.ProjectRBACRole.prototype.getIsBuiltin = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 3, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.model.ProjectRBACRole} returns this
+ */
+proto.model.ProjectRBACRole.prototype.setIsBuiltin = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
 
@@ -2300,14 +2330,15 @@ proto.model.ProjectRBACResource.serializeBinaryToWriter = function(message, writ
  * @enum {number}
  */
 proto.model.ProjectRBACResource.ResourceType = {
-  APPLICATION: 0,
-  DEPLOYMENT: 1,
-  EVENT: 2,
-  PIPED: 3,
-  DEPLOYMENT_CHAIN: 4,
-  PROJECT: 5,
-  API_KEY: 6,
-  INSIGHT: 7
+  ALL: 0,
+  APPLICATION: 1,
+  DEPLOYMENT: 2,
+  EVENT: 3,
+  PIPED: 4,
+  DEPLOYMENT_CHAIN: 5,
+  PROJECT: 6,
+  API_KEY: 7,
+  INSIGHT: 8
 };
 
 /**
@@ -2490,11 +2521,12 @@ proto.model.ProjectRBACPolicy.serializeBinaryToWriter = function(message, writer
  * @enum {number}
  */
 proto.model.ProjectRBACPolicy.Action = {
-  GET: 0,
-  LIST: 1,
-  CREATE: 2,
-  UPDATE: 3,
-  DELETE: 4
+  ALL: 0,
+  GET: 1,
+  LIST: 2,
+  CREATE: 3,
+  UPDATE: 4,
+  DELETE: 5
 };
 
 /**
