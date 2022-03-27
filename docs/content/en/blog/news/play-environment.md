@@ -42,7 +42,7 @@ Deployment detail page - show the deployment's stages and its log
 
 ### Notes for the PipeCD play environment
 
-1. Since the limitation of the resources, you can only log in with the [Viewer permission](/docs/operator-manual/control-plane/auth/#role-based-access-control-rbac). This means you can only click around and see PipeCD team prepared examples, __triggering new deployments or creating new resources are disabled__.
+1. Since the limitation of the resources, you can only log in with the [Viewer role](/docs/operator-manual/control-plane/auth/#role-based-access-control-rbac). This means you can only click around and see PipeCD team prepared examples, __triggering new deployments or creating new resources are disabled__.
 2. Currently, only applications of kinds: `KUBERNETES`, `CLOUDRUN` and `TERRAFORM` are prepared and available to see on the play environment console. We will add example applications of other kinds (`LAMBDA`, `ECS`, etc.) later.
 3. The [application configuration](/docs/user-guide/adding-an-application/) files for those examples on the play environment are published at [pipe-cd/examples](https://github.com/pipe-cd/examples) repository. Those configuration files are __real-life useable__ configurations, but only on our cluster, since the encrypted credentials placed in those files are ours. You can replace those and use on your own.
 
