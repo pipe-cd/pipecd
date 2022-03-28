@@ -15,6 +15,7 @@
 package filedb
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -60,15 +61,24 @@ func TestNext(t *testing.T) {
 			expectCurrent: 2,
 			expectErr:     datastore.ErrIteratorDone,
 		},
+		{
+			name: "data type miss match",
+			iter: Iterator{
+				data: []interface{}{
+					"1",
+				},
+			},
+			expectErr: fmt.Errorf("data type miss match"),
+		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			var dst fakeModel
-			err := tc.iter.Next(&dst)
+			dst := &fakeModel{}
+			err := tc.iter.Next(dst)
 
 			require.Equal(t, tc.expectErr, err)
-			if err != nil {
+			if err == nil {
 				assert.Equal(t, tc.expectCurrent, tc.iter.current)
 				assert.Equal(t, tc.expectDst, dst)
 			}
