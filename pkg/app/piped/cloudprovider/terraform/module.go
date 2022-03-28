@@ -38,6 +38,8 @@ type Module struct {
 	Version string
 }
 
+const tfFileExtension = ".tf"
+
 // LoadTerraformFiles loads terraform files from a given dir.
 func LoadTerraformFiles(dir string) ([]File, error) {
 	fileInfos, err := ioutil.ReadDir(dir)
@@ -51,7 +53,7 @@ func LoadTerraformFiles(dir string) ([]File, error) {
 			continue
 		}
 
-		if ext := filepath.Ext(f.Name()); ext != ".tf" {
+		if ext := filepath.Ext(f.Name()); ext != tfFileExtension {
 			continue
 		}
 
