@@ -95,6 +95,139 @@ export namespace InsightApplicationCount {
   }
 }
 
+export class InsightDeploymentChunk extends jspb.Message {
+  getVersion(): InsightDeploymentVersion;
+  setVersion(value: InsightDeploymentVersion): InsightDeploymentChunk;
+
+  getFrom(): number;
+  setFrom(value: number): InsightDeploymentChunk;
+
+  getTo(): number;
+  setTo(value: number): InsightDeploymentChunk;
+
+  getDeploymentsList(): Array<InsightDeployment>;
+  setDeploymentsList(value: Array<InsightDeployment>): InsightDeploymentChunk;
+  clearDeploymentsList(): InsightDeploymentChunk;
+  addDeployments(value?: InsightDeployment, index?: number): InsightDeployment;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): InsightDeploymentChunk.AsObject;
+  static toObject(includeInstance: boolean, msg: InsightDeploymentChunk): InsightDeploymentChunk.AsObject;
+  static serializeBinaryToWriter(message: InsightDeploymentChunk, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): InsightDeploymentChunk;
+  static deserializeBinaryFromReader(message: InsightDeploymentChunk, reader: jspb.BinaryReader): InsightDeploymentChunk;
+}
+
+export namespace InsightDeploymentChunk {
+  export type AsObject = {
+    version: InsightDeploymentVersion,
+    from: number,
+    to: number,
+    deploymentsList: Array<InsightDeployment.AsObject>,
+  }
+}
+
+export class InsightDeployment extends jspb.Message {
+  getId(): string;
+  setId(value: string): InsightDeployment;
+
+  getAppId(): string;
+  setAppId(value: string): InsightDeployment;
+
+  getLabelsMap(): jspb.Map<string, string>;
+  clearLabelsMap(): InsightDeployment;
+
+  getStartedAt(): number;
+  setStartedAt(value: number): InsightDeployment;
+
+  getCompletedAt(): number;
+  setCompletedAt(value: number): InsightDeployment;
+
+  getRollbackStartedAt(): number;
+  setRollbackStartedAt(value: number): InsightDeployment;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): InsightDeployment.AsObject;
+  static toObject(includeInstance: boolean, msg: InsightDeployment): InsightDeployment.AsObject;
+  static serializeBinaryToWriter(message: InsightDeployment, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): InsightDeployment;
+  static deserializeBinaryFromReader(message: InsightDeployment, reader: jspb.BinaryReader): InsightDeployment;
+}
+
+export namespace InsightDeployment {
+  export type AsObject = {
+    id: string,
+    appId: string,
+    labelsMap: Array<[string, string]>,
+    startedAt: number,
+    completedAt: number,
+    rollbackStartedAt: number,
+  }
+}
+
+export class InsightDeploymentChunkMetadata extends jspb.Message {
+  getChunksList(): Array<InsightDeploymentChunkMetadata.ChunkMeta>;
+  setChunksList(value: Array<InsightDeploymentChunkMetadata.ChunkMeta>): InsightDeploymentChunkMetadata;
+  clearChunksList(): InsightDeploymentChunkMetadata;
+  addChunks(value?: InsightDeploymentChunkMetadata.ChunkMeta, index?: number): InsightDeploymentChunkMetadata.ChunkMeta;
+
+  getCreatedAt(): number;
+  setCreatedAt(value: number): InsightDeploymentChunkMetadata;
+
+  getUpdatedAt(): number;
+  setUpdatedAt(value: number): InsightDeploymentChunkMetadata;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): InsightDeploymentChunkMetadata.AsObject;
+  static toObject(includeInstance: boolean, msg: InsightDeploymentChunkMetadata): InsightDeploymentChunkMetadata.AsObject;
+  static serializeBinaryToWriter(message: InsightDeploymentChunkMetadata, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): InsightDeploymentChunkMetadata;
+  static deserializeBinaryFromReader(message: InsightDeploymentChunkMetadata, reader: jspb.BinaryReader): InsightDeploymentChunkMetadata;
+}
+
+export namespace InsightDeploymentChunkMetadata {
+  export type AsObject = {
+    chunksList: Array<InsightDeploymentChunkMetadata.ChunkMeta.AsObject>,
+    createdAt: number,
+    updatedAt: number,
+  }
+
+  export class ChunkMeta extends jspb.Message {
+    getFrom(): number;
+    setFrom(value: number): ChunkMeta;
+
+    getTo(): number;
+    setTo(value: number): ChunkMeta;
+
+    getName(): string;
+    setName(value: string): ChunkMeta;
+
+    getSize(): number;
+    setSize(value: number): ChunkMeta;
+
+    getCount(): number;
+    setCount(value: number): ChunkMeta;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ChunkMeta.AsObject;
+    static toObject(includeInstance: boolean, msg: ChunkMeta): ChunkMeta.AsObject;
+    static serializeBinaryToWriter(message: ChunkMeta, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ChunkMeta;
+    static deserializeBinaryFromReader(message: ChunkMeta, reader: jspb.BinaryReader): ChunkMeta;
+  }
+
+  export namespace ChunkMeta {
+    export type AsObject = {
+      from: number,
+      to: number,
+      name: string,
+      size: number,
+      count: number,
+    }
+  }
+
+}
+
 export enum InsightResultType { 
   MATRIX = 0,
   VECTOR = 1,
@@ -109,4 +242,7 @@ export enum InsightMetricsKind {
 export enum InsightApplicationCountLabelKey { 
   KIND = 0,
   ACTIVE_STATUS = 1,
+}
+export enum InsightDeploymentVersion { 
+  V0 = 0,
 }
