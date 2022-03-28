@@ -45,7 +45,7 @@ func LoadTerraformFiles(dir string) ([]File, error) {
 		return nil, err
 	}
 
-	filepaths := []string{}
+	filepaths := make([]string, 0)
 	for _, f := range fileInfos {
 		if f.IsDir() {
 			continue
@@ -96,7 +96,7 @@ func LoadTerraformFiles(dir string) ([]File, error) {
 // FindArtifactVersions parses artifact versions from Terraform files.
 // For Terraform, module version is an artifact version.
 func FindArtifactVersions(tfs []File) ([]*model.ArtifactVersion, error) {
-	var versions []*model.ArtifactVersion
+	versions := make([]*model.ArtifactVersion, 0)
 	for _, tf := range tfs {
 		for _, m := range tf.Modules {
 			versions = append(versions, &model.ArtifactVersion{
