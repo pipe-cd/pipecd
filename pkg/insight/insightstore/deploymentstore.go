@@ -17,26 +17,420 @@ package insightstore
 import (
 	"context"
 	"errors"
+	"fmt"
+	"sort"
+	"time"
 
+	"github.com/pipe-cd/pipecd/pkg/filestore"
+	"github.com/pipe-cd/pipecd/pkg/insight"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"google.golang.org/protobuf/proto"
 )
 
 var (
-	errUnimplemented = errors.New("unimplemented")
+	errInvalidArg             = errors.New("invalid arg")
+	errLargeDuration          = errors.New("too large duration")
+	errTooManyDailyDeployment = errors.New("too many daily deployments")
+	errExceedMaxSize          = errors.New("exceed max file size")
+)
+
+const (
+	maxChunkByteSize = 1 * 1024 * 1024
+	metaFileName     = "meta.proto.bin"
+
+	maxDuration time.Duration = 24 * 365 * 2 * time.Hour
 )
 
 type DeploymentStore interface {
 	// List returns slice of Deployment sorted by startedAt ASC.
-	List(ctx context.Context, projectID string, from, to int64, minimumVersion *model.InsightDeploymentVersion) ([]*model.InsightDeployment, error)
+	List(ctx context.Context, projectID string, from, to int64, minimumVersion model.InsightDeploymentVersion) ([]*model.InsightDeployment, error)
 
-	Put(ctx context.Context, projectID string, deployments []*model.InsightDeployment, version *model.InsightDeploymentVersion) error
+	Put(ctx context.Context, projectID string, deployments []*model.InsightDeployment, version model.InsightDeploymentVersion) error
 }
 
 // List returns slice of Deployment sorted by startedAt ASC.
-func (s *store) List(_ context.Context, _ string, _, _ int64, minimumVersion *model.InsightDeploymentVersion) ([]*model.InsightDeployment, error) {
-	return nil, errUnimplemented
+func (s *store) List(ctx context.Context, projectID string, from, to int64, minimumVersion model.InsightDeploymentVersion) ([]*model.InsightDeployment, error) {
+	fromTime := time.Unix(from, 0)
+	fromYear := fromTime.Year()
+	toTime := time.Unix(to, 0)
+	toYear := toTime.Year()
+
+	if from > to {
+		return nil, errInvalidArg
+	}
+
+	sub := toTime.Sub(fromTime)
+	if sub > maxDuration {
+		return nil, errLargeDuration
+	}
+
+	var result []*model.InsightDeployment
+	for year := fromYear; year <= toYear; year++ {
+		dirPath := determineDeploymentDirPath(year, projectID)
+		meta := model.InsightDeploymentChunkMetadata{}
+		err := s.loadProtoMessage(ctx, fmt.Sprintf("%s/%s", dirPath, metaFileName), &meta)
+		if err != nil && !errors.Is(err, filestore.ErrNotFound) {
+			return nil, err
+		}
+		if err != nil {
+			continue
+		}
+
+		keys := findPathFromMeta(&meta, from, to)
+
+		for _, key := range keys {
+			data := model.InsightDeploymentChunk{}
+			err := s.loadProtoMessage(ctx, fmt.Sprintf("%s/%s", dirPath, key), &data)
+			if err != nil {
+				return nil, err
+			}
+
+			// Maybe we should use metadata instead of loading chunkdata
+			if data.Version >= minimumVersion {
+				deployments := extractDeploymentsFromChunk(&data, from, to)
+				result = append(result, deployments...)
+			}
+
+		}
+	}
+
+	return result, nil
 }
 
-func (s *store) Put(_ context.Context, _ string, _ []*model.InsightDeployment, version *model.InsightDeploymentVersion) error {
-	return errUnimplemented
+// deployments must be sorted by startedAt,
+func (s *store) Put(ctx context.Context, projectID string, deployments []*model.InsightDeployment, version model.InsightDeploymentVersion) error {
+	dailyDeployments := insight.GroupDeploymentsByDaily(deployments)
+	var startedAt int64
+	for _, daily := range dailyDeployments {
+		for _, d := range daily {
+			if startedAt > d.StartedAt {
+				return errInvalidArg
+			}
+			startedAt = d.StartedAt
+		}
+	}
+
+	for _, daily := range dailyDeployments {
+		err := s.putDeployments(ctx, projectID, daily, version, time.Now())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// deployments must be sorted by startedAt, and year must be same.
+// if deployments is too large, this function cannot store deployments efficiently.
+func (s *store) putDeployments(ctx context.Context, projectID string, deployments []*model.InsightDeployment, version model.InsightDeploymentVersion, updatedAt time.Time) error {
+	if len(deployments) == 0 {
+		return nil
+	}
+
+	var year = time.Unix(deployments[0].StartedAt, 0).Year()
+
+	// Load chunk
+	dirPath := determineDeploymentDirPath(year, projectID)
+	meta := model.InsightDeploymentChunkMetadata{}
+
+	metaPath := fmt.Sprintf("%s/%s", dirPath, metaFileName)
+	err := s.loadProtoMessage(ctx, metaPath, &meta)
+	if err != nil && !errors.Is(err, filestore.ErrNotFound) {
+		return err
+	}
+
+	// create chunk and meta
+	if len(meta.Chunks) == 0 {
+		chunkKey := determineDeploymentChunkKey(1)
+		newMeta, newChunk, err := createNewChunkAndMeta(deployments, version, chunkKey, updatedAt)
+		if err != nil {
+			return err
+		}
+
+		_, err = s.storeProtoMessage(ctx, metaPath, newMeta)
+		if err != nil {
+			return err
+		}
+
+		_, err = s.storeProtoMessage(ctx, fmt.Sprintf("%s/%s", dirPath, chunkKey), newChunk)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	firstDeployment := deployments[0]
+
+	latestChunkMeta := meta.Chunks[len(meta.Chunks)-1]
+	if firstDeployment.StartedAt < latestChunkMeta.To {
+		return errors.New("cannot overwrite past deployment")
+	}
+
+	// TODO refine this size check
+	size, err := messageSize(&model.InsightDeploymentChunk{Deployments: deployments})
+	if err != nil {
+		return err
+	}
+
+	// append to current chunk
+	if latestChunkMeta.Size+size < maxChunkByteSize {
+		// Update chunk
+		chunkData := model.InsightDeploymentChunk{}
+		chunkPath := fmt.Sprintf("%s/%s", dirPath, latestChunkMeta.Name)
+		err := s.loadProtoMessage(ctx, chunkPath, &chunkData)
+		if err != nil {
+			return err
+		}
+
+		if firstDeployment.StartedAt < chunkData.To {
+			panic("should not come here")
+		}
+
+		// if version is not equal, then skip this branch and create new chunk.
+		if chunkData.Version == version {
+			err := appendChunkAndUpdateMeta(&meta, &chunkData, deployments, updatedAt)
+			if err != nil {
+				return err
+			}
+
+			// Store metadata first
+			_, err = s.storeProtoMessage(ctx, metaPath, &meta)
+			if err != nil {
+				return err
+			}
+
+			_, err = s.storeProtoMessage(ctx, chunkPath, &chunkData)
+			if err != nil {
+				return err
+			}
+			return err
+		}
+	}
+
+	// Create new meta and chunk
+	newChunkKey := determineDeploymentChunkKey(len(meta.Chunks) + 1)
+	chunk, err := createNewChunkAndUpdateMeta(&meta, deployments, updatedAt)
+	if err != nil {
+		return err
+	}
+
+	// Store meta first
+	_, err = s.storeProtoMessage(ctx, metaPath, &meta)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.storeProtoMessage(ctx, fmt.Sprintf("%s/%s", dirPath, newChunkKey), chunk)
+	return err
+}
+
+// deployments must not be empty
+func createNewChunk(deployments []*model.InsightDeployment) (*model.InsightDeploymentChunk, int64, error) {
+	from, to := deployments[0].StartedAt, deployments[len(deployments)-1].StartedAt
+	// Create new meta and chunk
+	chunkData := model.InsightDeploymentChunk{
+		From:        from,
+		To:          to,
+		Deployments: deployments,
+	}
+	size, err := messageSize(&chunkData)
+	if err != nil {
+		return nil, 0, err
+	}
+	if size > maxChunkByteSize {
+		return nil, 0, errTooManyDailyDeployment
+	}
+
+	return &chunkData, size, nil
+}
+
+func createNewChunkAndMeta(deployments []*model.InsightDeployment, version model.InsightDeploymentVersion, key string, updatedAt time.Time) (*model.InsightDeploymentChunkMetadata, *model.InsightDeploymentChunk, error) {
+	if len(deployments) == 0 {
+		return nil, nil, errInvalidArg
+	}
+
+	from, to := deployments[0].StartedAt, deployments[len(deployments)-1].StartedAt
+	// Create new meta and chunk
+	chunkData := &model.InsightDeploymentChunk{
+		From:        from,
+		To:          to,
+		Version:     version,
+		Deployments: deployments,
+	}
+	size, err := messageSize(chunkData)
+	if err != nil {
+		return nil, nil, err
+	}
+	if size > maxChunkByteSize {
+		return nil, nil, errTooManyDailyDeployment
+	}
+
+	// Create meta
+	newChunkMetaData := model.InsightDeploymentChunkMetadata_ChunkMeta{
+		From:  from,
+		To:    to,
+		Name:  key,
+		Size:  size,
+		Count: int64(len(deployments)),
+	}
+
+	meta := &model.InsightDeploymentChunkMetadata{
+		Chunks:    []*model.InsightDeploymentChunkMetadata_ChunkMeta{&newChunkMetaData},
+		CreatedAt: updatedAt.Unix(),
+		UpdatedAt: updatedAt.Unix(),
+	}
+
+	return meta, chunkData, nil
+
+}
+
+// deployments must not be empty
+func createNewChunkAndUpdateMeta(curMeta *model.InsightDeploymentChunkMetadata, deployments []*model.InsightDeployment, updatedAt time.Time) (*model.InsightDeploymentChunk, error) {
+	newChunk, size, err := createNewChunk(deployments)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create new meta and chunk
+	newChunkKey := determineDeploymentChunkKey(len(curMeta.Chunks) + 1)
+
+	// Create meta
+	from, to := deployments[0].StartedAt, deployments[len(deployments)-1].StartedAt
+	newChunkMetaData := model.InsightDeploymentChunkMetadata_ChunkMeta{
+		From:  from,
+		To:    to,
+		Name:  newChunkKey,
+		Size:  size,
+		Count: int64(len(deployments)),
+	}
+
+	curMeta.Chunks = append(curMeta.Chunks, &newChunkMetaData)
+	curMeta.UpdatedAt = updatedAt.Unix()
+
+	return newChunk, nil
+}
+
+// deployments must not be empty
+func appendChunkAndUpdateMeta(meta *model.InsightDeploymentChunkMetadata, curChunk *model.InsightDeploymentChunk, deployments []*model.InsightDeployment, updatedAt time.Time) error {
+	firstDeployment := deployments[0]
+	lastDeployment := deployments[len(deployments)-1]
+	if firstDeployment.StartedAt < curChunk.To {
+		return errInvalidArg
+	}
+
+	curChunk.Deployments = append(curChunk.Deployments, deployments...)
+	curChunk.To = lastDeployment.StartedAt
+
+	size, err := messageSize(curChunk)
+	if err != nil {
+		return err
+	}
+
+	// if size > maxChunkByteSize {
+	// 	return errExceedMaxSize
+	// }
+
+	latestChunkMeta := meta.Chunks[len(meta.Chunks)-1]
+
+	// Update meta
+	latestChunkMeta.Size = size
+	latestChunkMeta.To = lastDeployment.StartedAt
+	latestChunkMeta.Count += int64(len(curChunk.Deployments))
+	meta.UpdatedAt = updatedAt.Unix()
+
+	return nil
+}
+
+// Load proto message stored in path. If path does not exists, dest does not modified.
+func (s *store) loadProtoMessage(ctx context.Context, path string, dest proto.Message) error {
+	raw, err := s.filestore.Get(ctx, path)
+	if err != nil {
+		return err
+	}
+
+	err = proto.Unmarshal(raw, dest)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *store) storeProtoMessage(ctx context.Context, path string, data proto.Message) (dataSize int64, err error) {
+	raw, err := proto.Marshal(data)
+	if err != nil {
+		return dataSize, err
+	}
+
+	err = s.filestore.Put(ctx, path, raw)
+	if err != nil {
+		return dataSize, err
+	}
+	return int64(len(raw)), nil
+}
+
+func findPathFromMeta(meta *model.InsightDeploymentChunkMetadata, from, to int64) []string {
+	var paths []string
+	for _, m := range meta.Chunks {
+		if overlap(from, to, m.From, m.To) {
+			paths = append(paths, m.Name)
+		}
+	}
+	return paths
+}
+
+func messageSize(pbm proto.Message) (int64, error) {
+	raw, err := proto.Marshal(pbm)
+	if err != nil {
+		return 0, err
+	}
+
+	return int64(len(raw)), nil
+}
+
+func overlap(lhsFrom, lhsTo, rhsFrom, rhsTo int64) bool {
+	return (rhsFrom < lhsTo && lhsFrom < rhsTo)
+}
+
+func extractDeploymentsFromChunk(chunk *model.InsightDeploymentChunk, from, to int64) []*model.InsightDeployment {
+	var result []*model.InsightDeployment
+	for _, d := range chunk.Deployments {
+		if from <= d.StartedAt && d.StartedAt <= to {
+			result = append(result, d)
+		}
+	}
+	return result
+}
+
+func determineDeploymentDirPath(year int, projectID string) string {
+	return fmt.Sprintf("insights/deployments/%s/%d", projectID, year)
+}
+
+func determineDeploymentChunkKey(n int) string {
+	return fmt.Sprintf("%04d.proto.bin", n)
+}
+
+func groupDeployments(deployments []*model.InsightDeployment) [][]*model.InsightDeployment {
+	dailyDeployments := make(map[int64][]*model.InsightDeployment)
+
+	for _, d := range deployments {
+		t := insight.NormalizeUnixTime(d.StartedAt)
+		dailyDeployments[t] = append(dailyDeployments[t], d)
+	}
+
+	keys := make([]int64, len(dailyDeployments))
+	idx := 0
+	for key := range dailyDeployments {
+		keys[idx] = key
+		idx++
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i] < keys[j]
+	})
+
+	result := make([][]*model.InsightDeployment, len(dailyDeployments))
+	for idx, key := range keys {
+		result[idx] = dailyDeployments[key]
+	}
+
+	return result
 }
