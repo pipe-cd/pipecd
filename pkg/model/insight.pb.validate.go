@@ -726,6 +726,8 @@ func (m *InsightDeployment) validate(all bool) error {
 
 	// no validation rules for RollbackStartedAt
 
+	// no validation rules for CompleteStatus
+
 	if len(errors) > 0 {
 		return InsightDeploymentMultiError(errors)
 	}
