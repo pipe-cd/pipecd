@@ -9,8 +9,10 @@ go_library(
     importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/planner/terraform",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/app/piped/cloudprovider/terraform:go_default_library",
         "//pkg/app/piped/planner:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
     ],
 )

@@ -1134,7 +1134,8 @@ proto.model.ArtifactVersion.Kind = {
   UNKNOWN: 0,
   CONTAINER_IMAGE: 1,
   S3_OBJECT: 2,
-  GIT_SOURCE: 3
+  GIT_SOURCE: 3,
+  TERRAFORM_MODULE: 4
 };
 
 /**
