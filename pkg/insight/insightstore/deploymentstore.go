@@ -29,14 +29,14 @@ type DeploymentStore interface {
 	// List returns slice of Deployment sorted by startedAt ASC.
 	List(ctx context.Context, projectID string, from, to int64, minimumVersion *model.InsightDeploymentVersion) ([]*model.InsightDeployment, error)
 
-	PutDeployments(ctx context.Context, projectID string, deployments []*model.InsightDeployment, version *model.InsightDeploymentVersion) error
+	Put(ctx context.Context, projectID string, deployments []*model.InsightDeployment, version *model.InsightDeploymentVersion) error
 }
 
-// GetDeployments returns slice of Deployment sorted by startedAt ASC.
+// List returns slice of Deployment sorted by startedAt ASC.
 func (s *store) List(_ context.Context, _ string, _, _ int64, minimumVersion *model.InsightDeploymentVersion) ([]*model.InsightDeployment, error) {
 	return nil, errUnimplemented
 }
 
-func (s *store) PutDeployments(_ context.Context, _ string, _ []*model.InsightDeployment, version *model.InsightDeploymentVersion) error {
+func (s *store) Put(_ context.Context, _ string, _ []*model.InsightDeployment, version *model.InsightDeploymentVersion) error {
 	return errUnimplemented
 }
