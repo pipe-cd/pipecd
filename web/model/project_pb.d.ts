@@ -248,6 +248,9 @@ export class ProjectRBACRole extends jspb.Message {
   clearPoliciesList(): ProjectRBACRole;
   addPolicies(value?: ProjectRBACPolicy, index?: number): ProjectRBACPolicy;
 
+  getIsBuiltin(): boolean;
+  setIsBuiltin(value: boolean): ProjectRBACRole;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ProjectRBACRole.AsObject;
   static toObject(includeInstance: boolean, msg: ProjectRBACRole): ProjectRBACRole.AsObject;
@@ -260,6 +263,7 @@ export namespace ProjectRBACRole {
   export type AsObject = {
     name: string,
     policiesList: Array<ProjectRBACPolicy.AsObject>,
+    isBuiltin: boolean,
   }
 }
 
@@ -285,14 +289,15 @@ export namespace ProjectRBACResource {
   }
 
   export enum ResourceType { 
-    APPLICATION = 0,
-    DEPLOYMENT = 1,
-    EVENT = 2,
-    PIPED = 3,
-    DEPLOYMENT_CHAIN = 4,
-    PROJECT = 5,
-    API_KEY = 6,
-    INSIGHT = 7,
+    ALL = 0,
+    APPLICATION = 1,
+    DEPLOYMENT = 2,
+    EVENT = 3,
+    PIPED = 4,
+    DEPLOYMENT_CHAIN = 5,
+    PROJECT = 6,
+    API_KEY = 7,
+    INSIGHT = 8,
   }
 }
 
@@ -322,11 +327,12 @@ export namespace ProjectRBACPolicy {
   }
 
   export enum Action { 
-    GET = 0,
-    LIST = 1,
-    CREATE = 2,
-    UPDATE = 3,
-    DELETE = 4,
+    ALL = 0,
+    GET = 1,
+    LIST = 2,
+    CREATE = 3,
+    UPDATE = 4,
+    DELETE = 5,
   }
 }
 
