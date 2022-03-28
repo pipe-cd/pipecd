@@ -23,8 +23,6 @@ var global = (function() {
 
 
 
-var pkg_model_deployment_pb = require('pipecd/web/model/deployment_pb.js');
-goog.object.extend(proto, pkg_model_deployment_pb);
 goog.exportSymbol('proto.model.InsightApplicationCount', null, global);
 goog.exportSymbol('proto.model.InsightApplicationCountLabelKey', null, global);
 goog.exportSymbol('proto.model.InsightDataPoint', null, global);
@@ -1192,8 +1190,7 @@ proto.model.InsightDeployment.toObject = function(includeInstance, msg) {
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : [],
     startedAt: jspb.Message.getFieldWithDefault(msg, 4, 0),
     completedAt: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    rollbackStartedAt: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    completeStatus: jspb.Message.getFieldWithDefault(msg, 7, 0)
+    rollbackStartedAt: jspb.Message.getFieldWithDefault(msg, 6, 0)
   };
 
   if (includeInstance) {
@@ -1255,10 +1252,6 @@ proto.model.InsightDeployment.deserializeBinaryFromReader = function(msg, reader
     case 6:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setRollbackStartedAt(value);
-      break;
-    case 7:
-      var value = /** @type {!proto.model.DeploymentStatus} */ (reader.readEnum());
-      msg.setCompleteStatus(value);
       break;
     default:
       reader.skipField();
@@ -1325,13 +1318,6 @@ proto.model.InsightDeployment.serializeBinaryToWriter = function(message, writer
   if (f !== 0) {
     writer.writeInt64(
       6,
-      f
-    );
-  }
-  f = message.getCompleteStatus();
-  if (f !== 0.0) {
-    writer.writeEnum(
-      7,
       f
     );
   }
@@ -1447,24 +1433,6 @@ proto.model.InsightDeployment.prototype.getRollbackStartedAt = function() {
  */
 proto.model.InsightDeployment.prototype.setRollbackStartedAt = function(value) {
   return jspb.Message.setProto3IntField(this, 6, value);
-};
-
-
-/**
- * optional DeploymentStatus complete_status = 7;
- * @return {!proto.model.DeploymentStatus}
- */
-proto.model.InsightDeployment.prototype.getCompleteStatus = function() {
-  return /** @type {!proto.model.DeploymentStatus} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
-};
-
-
-/**
- * @param {!proto.model.DeploymentStatus} value
- * @return {!proto.model.InsightDeployment} returns this
- */
-proto.model.InsightDeployment.prototype.setCompleteStatus = function(value) {
-  return jspb.Message.setProto3EnumField(this, 7, value);
 };
 
 

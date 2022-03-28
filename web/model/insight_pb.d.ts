@@ -1,7 +1,6 @@
 import * as jspb from 'google-protobuf'
 
 
-import * as pkg_model_deployment_pb from 'pipecd/web/model/deployment_pb';
 
 
 export class InsightSample extends jspb.Message {
@@ -147,9 +146,6 @@ export class InsightDeployment extends jspb.Message {
   getRollbackStartedAt(): number;
   setRollbackStartedAt(value: number): InsightDeployment;
 
-  getCompleteStatus(): pkg_model_deployment_pb.DeploymentStatus;
-  setCompleteStatus(value: pkg_model_deployment_pb.DeploymentStatus): InsightDeployment;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): InsightDeployment.AsObject;
   static toObject(includeInstance: boolean, msg: InsightDeployment): InsightDeployment.AsObject;
@@ -166,7 +162,6 @@ export namespace InsightDeployment {
     startedAt: number,
     completedAt: number,
     rollbackStartedAt: number,
-    completeStatus: pkg_model_deployment_pb.DeploymentStatus,
   }
 }
 

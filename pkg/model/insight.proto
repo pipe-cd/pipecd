@@ -18,7 +18,6 @@ package model;
 option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 
 import "validate/validate.proto";
-import "pkg/model/deployment.proto";
 
 enum InsightResultType {
   MATRIX = 0;
@@ -58,15 +57,15 @@ enum InsightApplicationCountLabelKey {
   ACTIVE_STATUS = 1;
 }
 
-// time is treated as unix time second
-
 enum InsightDeploymentVersion {
   V0 = 0;
 }
 
 message InsightDeploymentChunk {
   InsightDeploymentVersion version = 1;
+  // Time is the number of seconds since Unix epoch.
   int64 from = 2 [(validate.rules).int64.gte = 0];
+  // Time is the number of seconds since Unix epoch.
   int64 to = 3 [(validate.rules).int64.gte = 0];
 
   repeated InsightDeployment deployments = 4;
@@ -77,15 +76,19 @@ message InsightDeployment {
   string app_id = 2;
   map<string,string> labels = 3;
 
+  // Time is the number of seconds since Unix epoch.
   int64 started_at = 4;
+  // Time is the number of seconds since Unix epoch.
   int64 completed_at = 5;
+  // Time is the number of seconds since Unix epoch.
   int64 rollback_started_at = 6;
-  model.DeploymentStatus complete_status = 7;
 }
 
 message InsightDeploymentChunkMetadata {
   message ChunkMeta {
+     // Time is the number of seconds since Unix epoch.
      int64 from = 1 [(validate.rules).int64.gte = 0];
+     // Time is the number of seconds since Unix epoch.
      int64 to = 2 [(validate.rules).int64.gte = 0];
      // chunk file name
      string name = 3; 
@@ -95,6 +98,8 @@ message InsightDeploymentChunkMetadata {
 
   repeated ChunkMeta chunks = 1;
 
+  // Time is the number of seconds since Unix epoch.
   int64 created_at = 14;
+  // Time is the number of seconds since Unix epoch.
   int64 updated_at = 15;
 }
