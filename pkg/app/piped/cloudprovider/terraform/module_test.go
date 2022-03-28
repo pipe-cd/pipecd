@@ -15,13 +15,13 @@ func TestLoadTerraformFiles(t *testing.T) {
 	testcases := []struct {
 		name        string
 		moduleDir   string
-		expected    []*File
+		expected    []File
 		expectedErr bool
 	}{
 		{
 			name:      "single module",
 			moduleDir: "./testdata/single_module",
-			expected: []*File{
+			expected: []File{
 				{
 					Modules: []*Module{
 						{
@@ -37,7 +37,7 @@ func TestLoadTerraformFiles(t *testing.T) {
 		{
 			name:      "multi modules",
 			moduleDir: "./testdata/multi_modules",
-			expected: []*File{
+			expected: []File{
 				{
 					Modules: []*Module{
 						{
@@ -58,7 +58,7 @@ func TestLoadTerraformFiles(t *testing.T) {
 		{
 			name:      "multi modules with multi files",
 			moduleDir: "./testdata/multi_modules_with_multi_files",
-			expected: []*File{
+			expected: []File{
 				{
 					Modules: []*Module{
 						{

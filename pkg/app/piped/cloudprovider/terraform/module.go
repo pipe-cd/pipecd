@@ -39,7 +39,7 @@ type Module struct {
 }
 
 // LoadTerraformFiles loads terraform files from a given dir.
-func LoadTerraformFiles(dir string) ([]*File, error) {
+func LoadTerraformFiles(dir string) ([]File, error) {
 	fileInfos, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func LoadTerraformFiles(dir string) ([]*File, error) {
 	}
 
 	p := hclparse.NewParser()
-	tfs := make([]*File, 0, len(filepaths))
+	tfs := make([]File, 0, len(filepaths))
 	for _, fp := range filepaths {
 		f, diags := p.ParseHCLFile(fp)
 		if diags.HasErrors() {
@@ -87,7 +87,7 @@ func LoadTerraformFiles(dir string) ([]*File, error) {
 			})
 		}
 
-		tfs = append(tfs, &tf)
+		tfs = append(tfs, tf)
 	}
 
 	return tfs, nil
@@ -95,7 +95,7 @@ func LoadTerraformFiles(dir string) ([]*File, error) {
 
 // FindArtifactVersions parses artifact versions from Terraform files.
 // For Terraform, module version is an artifact version.
-func FindArtifactVersions(tfs []*File) ([]*model.ArtifactVersion, error) {
+func FindArtifactVersions(tfs []File) ([]*model.ArtifactVersion, error) {
 	var versions []*model.ArtifactVersion
 	for _, tf := range tfs {
 		for _, m := range tf.Modules {
