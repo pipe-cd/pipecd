@@ -21,7 +21,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/pipe-cd/pipecd/pkg/datastore"
-	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestConvertCamelToSnake(t *testing.T) {
@@ -178,6 +177,11 @@ func TestCompare(t *testing.T) {
 	}
 }
 
+type entity struct {
+	Id      string `json:"id"`
+	BoolVal bool   `json:"bool_val"`
+}
+
 func TestFilter(t *testing.T) {
 	t.Parallel()
 
@@ -189,7 +193,7 @@ func TestFilter(t *testing.T) {
 	}{
 		{
 			name:   "filter single condition - passed",
-			entity: &model.Project{Id: "project_1"},
+			entity: &entity{Id: "project_1"},
 			filters: []datastore.ListFilter{
 				{
 					Field:    "Id",
@@ -201,7 +205,7 @@ func TestFilter(t *testing.T) {
 		},
 		{
 			name:   "filter single condition - not passed",
-			entity: &model.Project{Id: "project_1"},
+			entity: &entity{Id: "project_1"},
 			filters: []datastore.ListFilter{
 				{
 					Field:    "Id",
@@ -213,7 +217,7 @@ func TestFilter(t *testing.T) {
 		},
 		{
 			name:   "filter multiple conditions - passed",
-			entity: &model.Project{Id: "project_1", StaticAdminDisabled: true},
+			entity: &entity{Id: "project_1", BoolVal: true},
 			filters: []datastore.ListFilter{
 				{
 					Field:    "Id",
@@ -221,7 +225,7 @@ func TestFilter(t *testing.T) {
 					Value:    "project_1",
 				},
 				{
-					Field:    "StaticAdminDisabled",
+					Field:    "BoolVal",
 					Operator: datastore.OperatorEqual,
 					Value:    true,
 				},
@@ -230,7 +234,7 @@ func TestFilter(t *testing.T) {
 		},
 		{
 			name:   "filter multiple conditions - not passed",
-			entity: &model.Project{Id: "project_1", StaticAdminDisabled: true},
+			entity: &entity{Id: "project_1", BoolVal: true},
 			filters: []datastore.ListFilter{
 				{
 					Field:    "Id",
@@ -238,7 +242,7 @@ func TestFilter(t *testing.T) {
 					Value:    "project_1",
 				},
 				{
-					Field:    "StaticAdminDisabled",
+					Field:    "BoolVal",
 					Operator: datastore.OperatorEqual,
 					Value:    false,
 				},

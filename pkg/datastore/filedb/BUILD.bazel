@@ -29,7 +29,6 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//pkg/datastore:go_default_library",
-        "//pkg/model:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
         "@com_github_stretchr_testify//require:go_default_library",
     ],

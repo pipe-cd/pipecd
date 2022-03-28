@@ -37,11 +37,8 @@ func decode(col datastore.Collection, e interface{}, parts ...[]byte) error {
 	return merge(e, parts...)
 }
 
-type updatedAtGetter interface {
+type mergeable interface {
 	GetUpdatedAt() int64
-}
-
-type updatedAtSetter interface {
 	SetUpdatedAt(t int64)
 }
 
@@ -49,22 +46,19 @@ type updatedAtSetter interface {
 // The data will be merged regardless of its time order, after be merged,
 // the latest UpdatedAt time will be used as the entity UpdatedAt value.
 func merge(e interface{}, parts ...[]byte) error {
+	me, ok := e.(mergeable)
+	if !ok {
+		return datastore.ErrUnsupported
+	}
+
 	var latest int64
 	for _, p := range parts {
 		if err := json.Unmarshal(p, e); err != nil {
 			return err
 		}
-		me, ok := e.(updatedAtGetter)
-		if !ok {
-			return datastore.ErrUnsupported
-		}
 		if latest < me.GetUpdatedAt() {
 			latest = me.GetUpdatedAt()
 		}
-	}
-	me, ok := e.(updatedAtSetter)
-	if !ok {
-		return datastore.ErrUnsupported
 	}
 	// Fixme: Find a way to set updated_at value without force models having this setter.
 	me.SetUpdatedAt(latest)
