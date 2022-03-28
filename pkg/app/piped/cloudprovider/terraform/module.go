@@ -45,7 +45,7 @@ func LoadTerraformFiles(dir string) ([]*File, error) {
 		return nil, err
 	}
 
-	filenames := []string{}
+	filepaths := []string{}
 	for _, f := range fileInfos {
 		if f.IsDir() {
 			continue
@@ -55,17 +55,17 @@ func LoadTerraformFiles(dir string) ([]*File, error) {
 			continue
 		}
 
-		filenames = append(filenames, f.Name())
+		filepaths = append(filepaths, filepath.Join(dir, f.Name()))
 	}
 
-	if len(filenames) == 0 {
+	if len(filepaths) == 0 {
 		return nil, fmt.Errorf("couldn't find terraform module")
 	}
 
 	p := hclparse.NewParser()
-	tfs := make([]*File, 0, len(filenames))
-	for _, fn := range filenames {
-		f, diags := p.ParseHCLFile(filepath.Join(dir, fn))
+	tfs := make([]*File, 0, len(filepaths))
+	for _, fp := range filepaths {
+		f, diags := p.ParseHCLFile(fp)
 		if diags.HasErrors() {
 			return nil, diags
 		}
