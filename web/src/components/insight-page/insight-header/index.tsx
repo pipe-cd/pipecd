@@ -57,7 +57,7 @@ export const InsightHeader: FC = memo(function InsightHeader() {
   const handleRangeFromChange = useCallback(
     (time: MaterialUiPickersDate) => {
       if (time) {
-        dispatch(changeRangeFrom(time.valueOf()));
+        dispatch(changeRangeFrom(time.startOf("date").valueOf()));
       }
     },
     [dispatch]
@@ -66,7 +66,7 @@ export const InsightHeader: FC = memo(function InsightHeader() {
   const handleRangeToChange = useCallback(
     (time: MaterialUiPickersDate) => {
       if (time) {
-        dispatch(changeRangeTo(time.valueOf()));
+        dispatch(changeRangeTo(time.endOf("date").valueOf()));
       }
     },
     [dispatch]
