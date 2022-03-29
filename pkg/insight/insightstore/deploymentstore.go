@@ -28,10 +28,10 @@ import (
 )
 
 var (
-	errInvalidArg             = errors.New("invalid arg")
-	errLargeDuration          = errors.New("too large duration")
-	errTooManyDailyDeployment = errors.New("too many daily deployments")
-	errExceedMaxSize          = errors.New("exceed max file size")
+	errInvalidArg    = errors.New("invalid arg")
+	errLargeDuration = errors.New("too large duration")
+	errExceedMaxSize = errors.New("exceed max file size")
+	errInconsistent  = errors.New("no consistency between meta and chunk")
 )
 
 const (
@@ -100,15 +100,6 @@ func (s *store) List(ctx context.Context, projectID string, from, to int64, mini
 // deployments must be sorted by startedAt,
 func (s *store) Put(ctx context.Context, projectID string, deployments []*model.InsightDeployment, version model.InsightDeploymentVersion) error {
 	dailyDeployments := insight.GroupDeploymentsByDaily(deployments)
-	var startedAt int64
-	for _, daily := range dailyDeployments {
-		for _, d := range daily {
-			if startedAt > d.StartedAt {
-				return errInvalidArg
-			}
-			startedAt = d.StartedAt
-		}
-	}
 
 	for _, daily := range dailyDeployments {
 		err := s.putDeployments(ctx, projectID, daily, version, time.Now())
@@ -183,7 +174,7 @@ func (s *store) putDeployments(ctx context.Context, projectID string, deployment
 		}
 
 		if firstDeployment.StartedAt < chunkData.To {
-			panic("should not come here")
+			return errInconsistent
 		}
 
 		// if version is not equal, then skip this branch and create new chunk.
@@ -238,7 +229,7 @@ func createNewChunk(deployments []*model.InsightDeployment) (*model.InsightDeplo
 		return nil, 0, err
 	}
 	if size > maxChunkByteSize {
-		return nil, 0, errTooManyDailyDeployment
+		return nil, 0, errExceedMaxSize
 	}
 
 	return &chunkData, size, nil
@@ -262,7 +253,7 @@ func createNewChunkAndMeta(deployments []*model.InsightDeployment, version model
 		return nil, nil, err
 	}
 	if size > maxChunkByteSize {
-		return nil, nil, errTooManyDailyDeployment
+		return nil, nil, errExceedMaxSize
 	}
 
 	// Create meta
@@ -289,6 +280,9 @@ func createNewChunkAndUpdateMeta(curMeta *model.InsightDeploymentChunkMetadata, 
 	newChunk, size, err := createNewChunk(deployments)
 	if err != nil {
 		return nil, err
+	}
+	if size > maxChunkByteSize {
+		return nil, errExceedMaxSize
 	}
 
 	// Create new meta and chunk
@@ -326,6 +320,9 @@ func appendChunkAndUpdateMeta(meta *model.InsightDeploymentChunkMetadata, curChu
 		return err
 	}
 
+	// we cannot know exact size on caller side.
+	// so maybe this condition become true.
+	// this is safe if we think maxChunkByteSize as soft limit
 	// if size > maxChunkByteSize {
 	// 	return errExceedMaxSize
 	// }
