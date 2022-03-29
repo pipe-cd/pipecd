@@ -28,6 +28,10 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/filestore"
 )
 
+const (
+	datastoreRootPath = "datastore"
+)
+
 type FileDB struct {
 	backend     filestore.Store
 	objectCache objectcache.Cache
@@ -292,9 +296,9 @@ func (f *FileDB) Close() error {
 
 func makeHotStorageFilePath(kind, id string, shard datastore.Shard) string {
 	// TODO: Find a way to separate files by project to avoid fetch resources cross project.
-	return fmt.Sprintf("%s/%s/%s.json", kind, shard, id)
+	return fmt.Sprintf("%s/%s/%s/%s.json", datastoreRootPath, kind, shard, id)
 }
 
 func makeHotStorageDirPath(kind string, shard datastore.Shard) string {
-	return fmt.Sprintf("%s/%s/", kind, shard)
+	return fmt.Sprintf("%s/%s/%s/", datastoreRootPath, kind, shard)
 }
