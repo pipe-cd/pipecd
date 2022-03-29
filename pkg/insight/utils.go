@@ -14,10 +14,41 @@
 
 package insight
 
-import "time"
+import (
+	"sort"
+	"time"
 
-// ignore hour, minute, second, nsecond
+	"github.com/pipe-cd/pipecd/pkg/model"
+)
+
+// NormalizeUnixTime ignores hour, minute, second and nanosecond
 func NormalizeUnixTime(t int64) int64 {
 	tt := time.Unix(t, 0)
 	return time.Date(tt.Year(), tt.Month(), tt.Day(), 0, 0, 0, 0, time.UTC).Unix()
+}
+
+func GroupDeploymentsByDaily(deployments []*model.InsightDeployment) [][]*model.InsightDeployment {
+	dailyDeployments := make(map[int64][]*model.InsightDeployment)
+
+	for _, d := range deployments {
+		t := NormalizeUnixTime(d.StartedAt)
+		dailyDeployments[t] = append(dailyDeployments[t], d)
+	}
+
+	keys := make([]int64, len(dailyDeployments))
+	idx := 0
+	for key := range dailyDeployments {
+		keys[idx] = key
+		idx++
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i] < keys[j]
+	})
+
+	result := make([][]*model.InsightDeployment, len(dailyDeployments))
+	for idx, key := range keys {
+		result[idx] = dailyDeployments[key]
+	}
+
+	return result
 }

@@ -669,56 +669,56 @@ func TestOverlap(t *testing.T) {
 	)
 
 	testcases := []struct {
-		name             string
-		lhs_from, lhs_to int64
-		rhs_from, rhs_to int64
-		expected         bool
+		name           string
+		lhsFrom, lhsTo int64
+		rhsFrom, rhsTo int64
+		expected       bool
 	}{
 		{
 			name:     "No overlap 1",
-			lhs_from: testDateUnix - dayUnix,
-			lhs_to:   testDateUnix,
-			rhs_from: testDateUnix,
-			rhs_to:   testDateUnix + dayUnix,
+			lhsFrom:  testDateUnix - dayUnix,
+			lhsTo:    testDateUnix,
+			rhsFrom:  testDateUnix,
+			rhsTo:    testDateUnix + dayUnix,
 			expected: false,
 		},
 		{
 			name:     "No overlap 2",
-			lhs_from: testDateUnix,
-			lhs_to:   testDateUnix + dayUnix,
-			rhs_from: testDateUnix - dayUnix,
-			rhs_to:   testDateUnix,
+			lhsFrom:  testDateUnix,
+			lhsTo:    testDateUnix + dayUnix,
+			rhsFrom:  testDateUnix - dayUnix,
+			rhsTo:    testDateUnix,
 			expected: false,
 		},
 		{
 			name:     "Overlap same day",
-			lhs_from: testDateUnix,
-			lhs_to:   testDateUnix + dayUnix,
-			rhs_from: testDateUnix,
-			rhs_to:   testDateUnix + dayUnix,
+			lhsFrom:  testDateUnix,
+			lhsTo:    testDateUnix + dayUnix,
+			rhsFrom:  testDateUnix,
+			rhsTo:    testDateUnix + dayUnix,
 			expected: true,
 		},
 		{
 			name:     "Overlap",
-			lhs_from: testDateUnix - dayUnix,
-			lhs_to:   testDateUnix + dayUnix,
-			rhs_from: testDateUnix,
-			rhs_to:   testDateUnix + dayUnix,
+			lhsFrom:  testDateUnix - dayUnix,
+			lhsTo:    testDateUnix + dayUnix,
+			rhsFrom:  testDateUnix,
+			rhsTo:    testDateUnix + dayUnix,
 			expected: true,
 		},
 		{
 			name:     "Overlap contain",
-			lhs_from: testDateUnix - dayUnix,
-			lhs_to:   testDateUnix + dayUnix,
-			rhs_from: testDateUnix,
-			rhs_to:   testDateUnix,
+			lhsFrom:  testDateUnix - dayUnix,
+			lhsTo:    testDateUnix + dayUnix,
+			rhsFrom:  testDateUnix,
+			rhsTo:    testDateUnix,
 			expected: true,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := overlap(tc.lhs_from, tc.lhs_to, tc.rhs_from, tc.rhs_to)
+			got := overlap(tc.lhsFrom, tc.lhsTo, tc.rhsFrom, tc.rhsTo)
 			assert.Equal(t, tc.expected, got)
 		})
 	}
