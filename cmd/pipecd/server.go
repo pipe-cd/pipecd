@@ -40,12 +40,14 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/webservice"
 	"github.com/pipe-cd/pipecd/pkg/app/server/stagelogstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/unregisteredappstore"
+	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/cachemetrics"
 	"github.com/pipe-cd/pipecd/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/datastore/filedb"
 	"github.com/pipe-cd/pipecd/pkg/datastore/firestore"
 	"github.com/pipe-cd/pipecd/pkg/datastore/mysql"
 	"github.com/pipe-cd/pipecd/pkg/filestore"
@@ -149,18 +151,13 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 	}
 	input.Logger.Info("successfully loaded control-plane configuration")
 
-	ds, err := createDatastore(ctx, cfg, input.Logger)
-	if err != nil {
-		input.Logger.Error("failed to create datastore", zap.Error(err))
-		return err
-	}
+	// Connect to the cache server.
+	rd := redis.NewRedis(s.cacheAddress, "")
 	defer func() {
-		if err := ds.Close(); err != nil {
-			input.Logger.Error("failed to close datastore client", zap.Error(err))
-
+		if err := rd.Close(); err != nil {
+			input.Logger.Error("failed to close redis client", zap.Error(err))
 		}
 	}()
-	input.Logger.Info("successfully connected to data store")
 
 	fs, err := createFilestore(ctx, cfg, input.Logger)
 	if err != nil {
@@ -174,12 +171,20 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 	}()
 	input.Logger.Info("successfully connected to file store")
 
-	rd := redis.NewRedis(s.cacheAddress, "")
+	dbCache := rediscache.NewTTLCache(rd, 3*time.Hour)
+	ds, err := createDatastore(ctx, cfg, fs, dbCache, input.Logger)
+	if err != nil {
+		input.Logger.Error("failed to create datastore", zap.Error(err))
+		return err
+	}
 	defer func() {
-		if err := rd.Close(); err != nil {
-			input.Logger.Error("failed to close redis client", zap.Error(err))
+		if err := ds.Close(); err != nil {
+			input.Logger.Error("failed to close datastore client", zap.Error(err))
+
 		}
 	}()
+	input.Logger.Info("successfully connected to data store")
+
 	cache := rediscache.NewTTLCache(rd, cfg.Cache.TTLDuration())
 	sls := stagelogstore.NewStore(fs, cache, input.Logger)
 	alss := applicationlivestatestore.NewStore(fs, cache, input.Logger)
@@ -397,7 +402,7 @@ func loadConfig(file string) (*config.ControlPlaneSpec, error) {
 	return cfg.ControlPlaneSpec, nil
 }
 
-func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) (datastore.DataStore, error) {
+func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, fs filestore.Store, c cache.Cache, logger *zap.Logger) (datastore.DataStore, error) {
 	switch cfg.Datastore.Type {
 	case model.DataStoreFirestore:
 		fsConfig := cfg.Datastore.FirestoreConfig
@@ -419,6 +424,11 @@ func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *
 			options = append(options, mysql.WithAuthenticationFile(mqConfig.UsernameFile, mqConfig.PasswordFile))
 		}
 		return mysql.NewMySQL(mqConfig.URL, mqConfig.Database, options...)
+	case model.DataStoreFileDB:
+		options := []filedb.Option{
+			filedb.WithLogger(logger),
+		}
+		return filedb.NewFileDB(fs, c, options...)
 	default:
 		return nil, fmt.Errorf("unknown datastore type %q", cfg.Datastore.Type)
 	}
