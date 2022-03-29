@@ -15,6 +15,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -145,6 +146,10 @@ const (
 	githubServerURLEnv  = "GITHUB_SERVER_URL"
 	githubRepositoryEnv = "GITHUB_REPOSITORY"
 	githubRunIDEnv      = "GITHUB_RUN_ID"
+
+	// Terraform plan format
+	startTerraformPlan = "Terraform used the selected providers to generate the following execution"
+	endTerraformPlan   = "─────────────────────────────────────────────────────────────────────────────"
 )
 
 func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
@@ -182,12 +187,19 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		fmt.Fprintf(&b, "Sync strategy: %s\n", app.SyncStrategy)
 		fmt.Fprintf(&b, "Summary: %s\n\n", app.PlanSummary)
 
-		var lang string = "diff"
+		var (
+			lang    = "diff"
+			details = app.PlanDetails
+		)
 		if app.ApplicationKind == "TERRAFORM" {
 			lang = "hcl"
+			shortened, err := generateTerraformShortPlanDetails(details)
+			if err == nil {
+				details = shortened
+			}
 		}
 
-		l := utf8.RuneCountInString(app.PlanDetails)
+		l := utf8.RuneCountInString(details)
 		if detailLen+l > detailsLenLimit {
 			fmt.Fprintf(&b, detailsFormat, lang, detailsOmittedMessage)
 			detailLen += utf8.RuneCountInString(detailsOmittedMessage)
@@ -289,4 +301,30 @@ func makeTitleText(app *ApplicationInfo) string {
 		return fmt.Sprintf(appInfoWithoutEnvFormat, app.ApplicationName, app.ApplicationURL, strings.ToLower(app.ApplicationKind))
 	}
 	return fmt.Sprintf(appInfoWithEnvFormat, app.ApplicationName, app.ApplicationURL, app.Env, strings.ToLower(app.ApplicationKind))
+}
+
+func generateTerraformShortPlanDetails(details string) (string, error) {
+	r := strings.NewReader(details)
+	scanner := bufio.NewScanner(r)
+	var (
+		start, end int
+		length     int
+		newLine    = len([]byte("\n"))
+	)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.Contains(line, startTerraformPlan) {
+			start = length
+		}
+		if strings.Contains(line, endTerraformPlan) {
+			end = length - 1 // Exclude last new line.
+			break
+		}
+		length += len(scanner.Bytes())
+		length += newLine
+	}
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	return details[start:end], nil
 }
