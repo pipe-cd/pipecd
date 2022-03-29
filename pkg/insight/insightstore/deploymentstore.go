@@ -42,13 +42,13 @@ const (
 )
 
 type DeploymentStore interface {
-	// List returns slice of Deployment sorted by startedAt ASC.
+	// List returns slice of Deployment sorted by CompletedAt ASC.
 	List(ctx context.Context, projectID string, from, to int64, minimumVersion model.InsightDeploymentVersion) ([]*model.InsightDeployment, error)
 
 	Put(ctx context.Context, projectID string, deployments []*model.InsightDeployment, version model.InsightDeploymentVersion) error
 }
 
-// List returns slice of Deployment sorted by startedAt ASC.
+// List returns slice of Deployment sorted by CompletedAt ASC.
 func (s *store) List(ctx context.Context, projectID string, from, to int64, minimumVersion model.InsightDeploymentVersion) ([]*model.InsightDeployment, error) {
 	fromTime := time.Unix(from, 0)
 	fromYear := fromTime.Year()
@@ -95,7 +95,7 @@ func (s *store) List(ctx context.Context, projectID string, from, to int64, mini
 	return result, nil
 }
 
-// deployments must be sorted by startedAt,
+// deployments must be sorted by CompletedAt,
 func (s *store) Put(ctx context.Context, projectID string, deployments []*model.InsightDeployment, version model.InsightDeploymentVersion) error {
 	dailyDeployments := insight.GroupDeploymentsByDaily(deployments)
 
@@ -109,14 +109,14 @@ func (s *store) Put(ctx context.Context, projectID string, deployments []*model.
 	return nil
 }
 
-// deployments must be sorted by startedAt, and year must be same.
+// deployments must be sorted by CompletedAt, and year must be same.
 // if deployments is too large, this function cannot store deployments efficiently.
 func (s *store) putDeployments(ctx context.Context, projectID string, deployments []*model.InsightDeployment, version model.InsightDeploymentVersion, updatedAt time.Time) error {
 	if len(deployments) == 0 {
 		return nil
 	}
 
-	var year = time.Unix(deployments[0].StartedAt, 0).Year()
+	var year = time.Unix(deployments[0].CompletedAt, 0).Year()
 
 	// Load chunk
 	dirPath := determineDeploymentDirPath(year, projectID)
@@ -151,7 +151,7 @@ func (s *store) putDeployments(ctx context.Context, projectID string, deployment
 	firstDeployment := deployments[0]
 
 	latestChunkMeta := meta.Chunks[len(meta.Chunks)-1]
-	if firstDeployment.StartedAt < latestChunkMeta.To {
+	if firstDeployment.CompletedAt < latestChunkMeta.To {
 		return errors.New("cannot overwrite past deployment")
 	}
 
@@ -171,7 +171,7 @@ func (s *store) putDeployments(ctx context.Context, projectID string, deployment
 			return err
 		}
 
-		if firstDeployment.StartedAt < chunkData.To {
+		if firstDeployment.CompletedAt < chunkData.To {
 			return errInconsistent
 		}
 
@@ -215,7 +215,7 @@ func (s *store) putDeployments(ctx context.Context, projectID string, deployment
 
 // deployments must not be empty
 func createNewChunk(deployments []*model.InsightDeployment) (*model.InsightDeploymentChunk, int64, error) {
-	from, to := deployments[0].StartedAt, deployments[len(deployments)-1].StartedAt
+	from, to := deployments[0].CompletedAt, deployments[len(deployments)-1].CompletedAt
 	// Create new meta and chunk
 	chunkData := model.InsightDeploymentChunk{
 		From:        from,
@@ -238,7 +238,7 @@ func createNewChunkAndMeta(deployments []*model.InsightDeployment, version model
 		return nil, nil, errInvalidArg
 	}
 
-	from, to := deployments[0].StartedAt, deployments[len(deployments)-1].StartedAt
+	from, to := deployments[0].CompletedAt, deployments[len(deployments)-1].CompletedAt
 	// Create new meta and chunk
 	chunkData := &model.InsightDeploymentChunk{
 		From:        from,
@@ -287,7 +287,7 @@ func createNewChunkAndUpdateMeta(curMeta *model.InsightDeploymentChunkMetadata, 
 	newChunkKey := determineDeploymentChunkKey(len(curMeta.Chunks) + 1)
 
 	// Create meta
-	from, to := deployments[0].StartedAt, deployments[len(deployments)-1].StartedAt
+	from, to := deployments[0].CompletedAt, deployments[len(deployments)-1].CompletedAt
 	newChunkMetaData := model.InsightDeploymentChunkMetadata_ChunkMeta{
 		From:  from,
 		To:    to,
@@ -306,12 +306,12 @@ func createNewChunkAndUpdateMeta(curMeta *model.InsightDeploymentChunkMetadata, 
 func appendChunkAndUpdateMeta(meta *model.InsightDeploymentChunkMetadata, curChunk *model.InsightDeploymentChunk, deployments []*model.InsightDeployment, updatedAt time.Time) error {
 	firstDeployment := deployments[0]
 	lastDeployment := deployments[len(deployments)-1]
-	if firstDeployment.StartedAt < curChunk.To {
+	if firstDeployment.CompletedAt < curChunk.To {
 		return errInvalidArg
 	}
 
 	curChunk.Deployments = append(curChunk.Deployments, deployments...)
-	curChunk.To = lastDeployment.StartedAt
+	curChunk.To = lastDeployment.CompletedAt
 
 	size, err := messageSize(curChunk)
 	if err != nil {
@@ -329,7 +329,7 @@ func appendChunkAndUpdateMeta(meta *model.InsightDeploymentChunkMetadata, curChu
 
 	// Update meta
 	latestChunkMeta.Size = size
-	latestChunkMeta.To = lastDeployment.StartedAt
+	latestChunkMeta.To = lastDeployment.CompletedAt
 	latestChunkMeta.Count += int64(len(curChunk.Deployments))
 	meta.UpdatedAt = updatedAt.Unix()
 
@@ -389,7 +389,7 @@ func overlap(lhsFrom, lhsTo, rhsFrom, rhsTo int64) bool {
 func extractDeploymentsFromChunk(chunk *model.InsightDeploymentChunk, from, to int64) []*model.InsightDeployment {
 	var result []*model.InsightDeployment
 	for _, d := range chunk.Deployments {
-		if from <= d.StartedAt && d.StartedAt <= to {
+		if from <= d.CompletedAt && d.CompletedAt <= to {
 			result = append(result, d)
 		}
 	}

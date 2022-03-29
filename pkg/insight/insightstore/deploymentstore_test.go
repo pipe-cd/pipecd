@@ -70,14 +70,14 @@ func TestGetDailyDeployments(t *testing.T) {
 					To:   testDateUnix,
 					Deployments: []*model.InsightDeployment{
 						{
-							StartedAt: testDateUnix,
+							CompletedAt: testDateUnix,
 						},
 					},
 				},
 			}},
 			expected: []*model.InsightDeployment{
 				{
-					StartedAt: testDateUnix,
+					CompletedAt: testDateUnix,
 				},
 			},
 			expectedErr: nil,
@@ -108,10 +108,10 @@ func TestGetDailyDeployments(t *testing.T) {
 					To:   testDateUnix,
 					Deployments: []*model.InsightDeployment{
 						{
-							StartedAt: testDateUnix - 2*dayUnix + 1,
+							CompletedAt: testDateUnix - 2*dayUnix + 1,
 						},
 						{
-							StartedAt: testDateUnix - dayUnix + 2,
+							CompletedAt: testDateUnix - dayUnix + 2,
 						},
 					},
 				},
@@ -120,23 +120,23 @@ func TestGetDailyDeployments(t *testing.T) {
 					To:   testDateUnix + dayUnix,
 					Deployments: []*model.InsightDeployment{
 						{
-							StartedAt: testDateUnix + 1,
+							CompletedAt: testDateUnix + 1,
 						},
 						{
-							StartedAt: testDateUnix + dayUnix,
+							CompletedAt: testDateUnix + dayUnix,
 						},
 					},
 				},
 			}},
 			expected: []*model.InsightDeployment{
 				{
-					StartedAt: testDateUnix - dayUnix + 2,
+					CompletedAt: testDateUnix - dayUnix + 2,
 				},
 				{
-					StartedAt: testDateUnix + 1,
+					CompletedAt: testDateUnix + 1,
 				},
 				{
-					StartedAt: testDateUnix + dayUnix,
+					CompletedAt: testDateUnix + dayUnix,
 				},
 			},
 			expectedErr: nil,
@@ -184,10 +184,10 @@ func TestGetDailyDeployments(t *testing.T) {
 						To:   endYearDateUnix - 150*dayUnix,
 						Deployments: []*model.InsightDeployment{
 							{
-								StartedAt: endYearDateUnix - 200*dayUnix,
+								CompletedAt: endYearDateUnix - 200*dayUnix,
 							},
 							{
-								StartedAt: endYearDateUnix - 150*dayUnix,
+								CompletedAt: endYearDateUnix - 150*dayUnix,
 							},
 						},
 					},
@@ -196,10 +196,10 @@ func TestGetDailyDeployments(t *testing.T) {
 						To:   endYearDateUnix,
 						Deployments: []*model.InsightDeployment{
 							{
-								StartedAt: endYearDateUnix - 140*dayUnix,
+								CompletedAt: endYearDateUnix - 140*dayUnix,
 							},
 							{
-								StartedAt: endYearDateUnix,
+								CompletedAt: endYearDateUnix,
 							},
 						},
 					},
@@ -210,10 +210,10 @@ func TestGetDailyDeployments(t *testing.T) {
 						To:   endYearDateUnix + 100*dayUnix,
 						Deployments: []*model.InsightDeployment{
 							{
-								StartedAt: endYearDateUnix + dayUnix,
+								CompletedAt: endYearDateUnix + dayUnix,
 							},
 							{
-								StartedAt: endYearDateUnix + 100*dayUnix,
+								CompletedAt: endYearDateUnix + 100*dayUnix,
 							},
 						},
 					},
@@ -222,10 +222,10 @@ func TestGetDailyDeployments(t *testing.T) {
 						To:   endYearDateUnix + 366*dayUnix,
 						Deployments: []*model.InsightDeployment{
 							{
-								StartedAt: endYearDateUnix + 100*dayUnix,
+								CompletedAt: endYearDateUnix + 100*dayUnix,
 							},
 							{
-								StartedAt: endYearDateUnix + 366*dayUnix,
+								CompletedAt: endYearDateUnix + 366*dayUnix,
 							},
 						},
 					},
@@ -233,25 +233,25 @@ func TestGetDailyDeployments(t *testing.T) {
 			},
 			expected: []*model.InsightDeployment{
 				{
-					StartedAt: endYearDateUnix - 200*dayUnix,
+					CompletedAt: endYearDateUnix - 200*dayUnix,
 				},
 				{
-					StartedAt: endYearDateUnix - 150*dayUnix,
+					CompletedAt: endYearDateUnix - 150*dayUnix,
 				},
 				{
-					StartedAt: endYearDateUnix - 140*dayUnix,
+					CompletedAt: endYearDateUnix - 140*dayUnix,
 				},
 				{
-					StartedAt: endYearDateUnix,
+					CompletedAt: endYearDateUnix,
 				},
 				{
-					StartedAt: endYearDateUnix + dayUnix,
+					CompletedAt: endYearDateUnix + dayUnix,
 				},
 				{
-					StartedAt: endYearDateUnix + 100*dayUnix,
+					CompletedAt: endYearDateUnix + 100*dayUnix,
 				},
 				{
-					StartedAt: endYearDateUnix + 100*dayUnix,
+					CompletedAt: endYearDateUnix + 100*dayUnix,
 				},
 			},
 			expectedErr: nil,
@@ -321,10 +321,10 @@ func TestPutDeployment(t *testing.T) {
 			args: args{
 				dailyDeployment: []*model.InsightDeployment{
 					{
-						StartedAt: testDateUnix,
+						CompletedAt: testDateUnix,
 					},
 					{
-						StartedAt: testDateUnix + 2,
+						CompletedAt: testDateUnix + 2,
 					},
 				},
 			},
@@ -349,10 +349,10 @@ func TestPutDeployment(t *testing.T) {
 
 					Deployments: []*model.InsightDeployment{
 						{
-							StartedAt: testDateUnix,
+							CompletedAt: testDateUnix,
 						},
 						{
-							StartedAt: testDateUnix + 2,
+							CompletedAt: testDateUnix + 2,
 						},
 					},
 				},
@@ -379,10 +379,10 @@ func TestPutDeployment(t *testing.T) {
 			args: args{
 				dailyDeployment: []*model.InsightDeployment{
 					{
-						StartedAt: testDateUnix + 1,
+						CompletedAt: testDateUnix + 1,
 					},
 					{
-						StartedAt: testDateUnix + 2,
+						CompletedAt: testDateUnix + 2,
 					},
 				},
 			},
@@ -406,10 +406,10 @@ func TestPutDeployment(t *testing.T) {
 
 					Deployments: []*model.InsightDeployment{
 						{
-							StartedAt: testDateUnix - dayUnix,
+							CompletedAt: testDateUnix - dayUnix,
 						},
 						{
-							StartedAt: testDateUnix,
+							CompletedAt: testDateUnix,
 						},
 					},
 				},
@@ -434,16 +434,16 @@ func TestPutDeployment(t *testing.T) {
 
 					Deployments: []*model.InsightDeployment{
 						{
-							StartedAt: testDateUnix - dayUnix,
+							CompletedAt: testDateUnix - dayUnix,
 						},
 						{
-							StartedAt: testDateUnix,
+							CompletedAt: testDateUnix,
 						},
 						{
-							StartedAt: testDateUnix + 1,
+							CompletedAt: testDateUnix + 1,
 						},
 						{
-							StartedAt: testDateUnix + 2,
+							CompletedAt: testDateUnix + 2,
 						},
 					},
 				},
@@ -473,10 +473,10 @@ func TestPutDeployment(t *testing.T) {
 			args: args{
 				dailyDeployment: []*model.InsightDeployment{
 					{
-						StartedAt: testDateUnix + 1,
+						CompletedAt: testDateUnix + 1,
 					},
 					{
-						StartedAt: testDateUnix + 2,
+						CompletedAt: testDateUnix + 2,
 					},
 				},
 			},
@@ -501,10 +501,10 @@ func TestPutDeployment(t *testing.T) {
 
 					Deployments: []*model.InsightDeployment{
 						{
-							StartedAt: testDateUnix - dayUnix - 2,
+							CompletedAt: testDateUnix - dayUnix - 2,
 						},
 						{
-							StartedAt: testDateUnix - dayUnix - 1,
+							CompletedAt: testDateUnix - dayUnix - 1,
 						},
 					},
 				},
@@ -535,10 +535,10 @@ func TestPutDeployment(t *testing.T) {
 
 					Deployments: []*model.InsightDeployment{
 						{
-							StartedAt: testDateUnix + 1,
+							CompletedAt: testDateUnix + 1,
 						},
 						{
-							StartedAt: testDateUnix + 2,
+							CompletedAt: testDateUnix + 2,
 						},
 					},
 				},
@@ -599,14 +599,14 @@ func TestExtractDailyDeploymentFromChunk(t *testing.T) {
 			chunk: &model.InsightDeploymentChunk{
 				From: testDateUnix, To: testDateUnix + 2,
 				Deployments: []*model.InsightDeployment{
-					{StartedAt: testDateUnix + 1},
-					{StartedAt: testDateUnix + 2},
+					{CompletedAt: testDateUnix + 1},
+					{CompletedAt: testDateUnix + 2},
 				},
 			},
 			from: testDateUnix, to: testDateUnix + 2,
 			expectedDailyDeployments: []*model.InsightDeployment{
-				{StartedAt: testDateUnix + 1},
-				{StartedAt: testDateUnix + 2},
+				{CompletedAt: testDateUnix + 1},
+				{CompletedAt: testDateUnix + 2},
 			},
 		},
 		{
@@ -614,18 +614,18 @@ func TestExtractDailyDeploymentFromChunk(t *testing.T) {
 			chunk: &model.InsightDeploymentChunk{
 				From: testDateUnix - dayUnix, To: testDateUnix + dayUnix + 2,
 				Deployments: []*model.InsightDeployment{
-					{StartedAt: testDateUnix - dayUnix + 1},
-					{StartedAt: testDateUnix - dayUnix + 2},
-					{StartedAt: testDateUnix + 1},
-					{StartedAt: testDateUnix + 2},
-					{StartedAt: testDateUnix + dayUnix + 1},
-					{StartedAt: testDateUnix + dayUnix + 2},
+					{CompletedAt: testDateUnix - dayUnix + 1},
+					{CompletedAt: testDateUnix - dayUnix + 2},
+					{CompletedAt: testDateUnix + 1},
+					{CompletedAt: testDateUnix + 2},
+					{CompletedAt: testDateUnix + dayUnix + 1},
+					{CompletedAt: testDateUnix + dayUnix + 2},
 				},
 			},
 			from: testDateUnix, to: testDateUnix + dayUnix,
 			expectedDailyDeployments: []*model.InsightDeployment{
-				{StartedAt: testDateUnix + 1},
-				{StartedAt: testDateUnix + 2},
+				{CompletedAt: testDateUnix + 1},
+				{CompletedAt: testDateUnix + 2},
 			},
 		},
 		{
@@ -633,22 +633,22 @@ func TestExtractDailyDeploymentFromChunk(t *testing.T) {
 			chunk: &model.InsightDeploymentChunk{
 				From: testDateUnix - dayUnix, To: testDateUnix + dayUnix + 2,
 				Deployments: []*model.InsightDeployment{
-					{StartedAt: testDateUnix - dayUnix + 1},
-					{StartedAt: testDateUnix - dayUnix + 2},
-					{StartedAt: testDateUnix + 1},
-					{StartedAt: testDateUnix + 2},
-					{StartedAt: testDateUnix + dayUnix + 1},
-					{StartedAt: testDateUnix + dayUnix + 2},
+					{CompletedAt: testDateUnix - dayUnix + 1},
+					{CompletedAt: testDateUnix - dayUnix + 2},
+					{CompletedAt: testDateUnix + 1},
+					{CompletedAt: testDateUnix + 2},
+					{CompletedAt: testDateUnix + dayUnix + 1},
+					{CompletedAt: testDateUnix + dayUnix + 2},
 				},
 			},
 			from: testDateUnix - dayUnix, to: testDateUnix + 2*dayUnix,
 			expectedDailyDeployments: []*model.InsightDeployment{
-				{StartedAt: testDateUnix - dayUnix + 1},
-				{StartedAt: testDateUnix - dayUnix + 2},
-				{StartedAt: testDateUnix + 1},
-				{StartedAt: testDateUnix + 2},
-				{StartedAt: testDateUnix + dayUnix + 1},
-				{StartedAt: testDateUnix + dayUnix + 2},
+				{CompletedAt: testDateUnix - dayUnix + 1},
+				{CompletedAt: testDateUnix - dayUnix + 2},
+				{CompletedAt: testDateUnix + 1},
+				{CompletedAt: testDateUnix + 2},
+				{CompletedAt: testDateUnix + dayUnix + 1},
+				{CompletedAt: testDateUnix + dayUnix + 2},
 			},
 		},
 	}
