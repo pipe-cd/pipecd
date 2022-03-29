@@ -18,13 +18,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sort"
 	"time"
+
+	"google.golang.org/protobuf/proto"
 
 	"github.com/pipe-cd/pipecd/pkg/filestore"
 	"github.com/pipe-cd/pipecd/pkg/insight"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"google.golang.org/protobuf/proto"
 )
 
 var (
@@ -404,30 +404,4 @@ func determineDeploymentDirPath(year int, projectID string) string {
 
 func determineDeploymentChunkKey(n int) string {
 	return fmt.Sprintf("%04d.proto.bin", n)
-}
-
-func groupDeployments(deployments []*model.InsightDeployment) [][]*model.InsightDeployment {
-	dailyDeployments := make(map[int64][]*model.InsightDeployment)
-
-	for _, d := range deployments {
-		t := insight.NormalizeUnixTime(d.StartedAt)
-		dailyDeployments[t] = append(dailyDeployments[t], d)
-	}
-
-	keys := make([]int64, len(dailyDeployments))
-	idx := 0
-	for key := range dailyDeployments {
-		keys[idx] = key
-		idx++
-	}
-	sort.Slice(keys, func(i, j int) bool {
-		return keys[i] < keys[j]
-	})
-
-	result := make([][]*model.InsightDeployment, len(dailyDeployments))
-	for idx, key := range keys {
-		result[idx] = dailyDeployments[key]
-	}
-
-	return result
 }

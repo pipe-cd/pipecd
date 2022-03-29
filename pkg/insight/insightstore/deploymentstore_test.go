@@ -20,10 +20,11 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/pipe-cd/pipecd/pkg/filestore/filestoretest"
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/pipe-cd/pipecd/pkg/filestore/filestoretest"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 func TestGetDailyDeployments(t *testing.T) {
