@@ -24,14 +24,14 @@ import (
 // NormalizeUnixTime ignores hour, minute, second and nanosecond
 func NormalizeUnixTime(t int64) int64 {
 	tt := time.Unix(t, 0)
-	return time.Date(tt.Year(), tt.Month(), tt.Day(), 0, 0, 0, 0, time.UTC).Unix()
+	return time.Date(tt.Year(), tt.Month(), tt.Day(), 0, 0, 0, 0, tt.Location()).Unix()
 }
 
 func GroupDeploymentsByDaily(deployments []*model.InsightDeployment) [][]*model.InsightDeployment {
 	dailyDeployments := make(map[int64][]*model.InsightDeployment)
 
 	for _, d := range deployments {
-		t := NormalizeUnixTime(d.StartedAt)
+		t := NormalizeUnixTime(d.CompletedAt)
 		dailyDeployments[t] = append(dailyDeployments[t], d)
 	}
 

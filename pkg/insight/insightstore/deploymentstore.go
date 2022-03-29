@@ -35,10 +35,10 @@ var (
 )
 
 const (
-	maxChunkByteSize = 1 * 1024 * 1024
+	maxChunkByteSize = 1 * 1024 * 1024 // 1MB
 	metaFileName     = "meta.proto.bin"
 
-	maxDuration time.Duration = 24 * 365 * 2 * time.Hour
+	maxDuration time.Duration = 24 * 365 * 2 * time.Hour // 2 year
 )
 
 type DeploymentStore interface {
@@ -55,11 +55,10 @@ func (s *store) List(ctx context.Context, projectID string, from, to int64, mini
 	toTime := time.Unix(to, 0)
 	toYear := toTime.Year()
 
-	if from > to {
+	sub := toTime.Sub(fromTime)
+	if sub < 0 {
 		return nil, errInvalidArg
 	}
-
-	sub := toTime.Sub(fromTime)
 	if sub > maxDuration {
 		return nil, errLargeDuration
 	}
@@ -68,19 +67,19 @@ func (s *store) List(ctx context.Context, projectID string, from, to int64, mini
 	for year := fromYear; year <= toYear; year++ {
 		dirPath := determineDeploymentDirPath(year, projectID)
 		meta := model.InsightDeploymentChunkMetadata{}
-		err := s.loadProtoMessage(ctx, fmt.Sprintf("%s/%s", dirPath, metaFileName), &meta)
-		if err != nil && !errors.Is(err, filestore.ErrNotFound) {
-			return nil, err
+		err := s.loadDataFromFilestore(ctx, fmt.Sprintf("%s/%s", dirPath, metaFileName), &meta)
+		if errors.Is(err, filestore.ErrNotFound) {
+			continue
 		}
 		if err != nil {
-			continue
+			return nil, err
 		}
 
 		keys := findPathFromMeta(&meta, from, to)
 
 		for _, key := range keys {
 			data := model.InsightDeploymentChunk{}
-			err := s.loadProtoMessage(ctx, fmt.Sprintf("%s/%s", dirPath, key), &data)
+			err := s.loadDataFromFilestore(ctx, fmt.Sprintf("%s/%s", dirPath, key), &data)
 			if err != nil {
 				return nil, err
 			}
@@ -90,7 +89,6 @@ func (s *store) List(ctx context.Context, projectID string, from, to int64, mini
 				deployments := extractDeploymentsFromChunk(&data, from, to)
 				result = append(result, deployments...)
 			}
-
 		}
 	}
 
@@ -125,7 +123,7 @@ func (s *store) putDeployments(ctx context.Context, projectID string, deployment
 	meta := model.InsightDeploymentChunkMetadata{}
 
 	metaPath := fmt.Sprintf("%s/%s", dirPath, metaFileName)
-	err := s.loadProtoMessage(ctx, metaPath, &meta)
+	err := s.loadDataFromFilestore(ctx, metaPath, &meta)
 	if err != nil && !errors.Is(err, filestore.ErrNotFound) {
 		return err
 	}
@@ -138,12 +136,12 @@ func (s *store) putDeployments(ctx context.Context, projectID string, deployment
 			return err
 		}
 
-		_, err = s.storeProtoMessage(ctx, metaPath, newMeta)
+		_, err = s.saveDataIntoFilestore(ctx, metaPath, newMeta)
 		if err != nil {
 			return err
 		}
 
-		_, err = s.storeProtoMessage(ctx, fmt.Sprintf("%s/%s", dirPath, chunkKey), newChunk)
+		_, err = s.saveDataIntoFilestore(ctx, fmt.Sprintf("%s/%s", dirPath, chunkKey), newChunk)
 		if err != nil {
 			return err
 		}
@@ -168,7 +166,7 @@ func (s *store) putDeployments(ctx context.Context, projectID string, deployment
 		// Update chunk
 		chunkData := model.InsightDeploymentChunk{}
 		chunkPath := fmt.Sprintf("%s/%s", dirPath, latestChunkMeta.Name)
-		err := s.loadProtoMessage(ctx, chunkPath, &chunkData)
+		err := s.loadDataFromFilestore(ctx, chunkPath, &chunkData)
 		if err != nil {
 			return err
 		}
@@ -185,12 +183,12 @@ func (s *store) putDeployments(ctx context.Context, projectID string, deployment
 			}
 
 			// Store metadata first
-			_, err = s.storeProtoMessage(ctx, metaPath, &meta)
+			_, err = s.saveDataIntoFilestore(ctx, metaPath, &meta)
 			if err != nil {
 				return err
 			}
 
-			_, err = s.storeProtoMessage(ctx, chunkPath, &chunkData)
+			_, err = s.saveDataIntoFilestore(ctx, chunkPath, &chunkData)
 			if err != nil {
 				return err
 			}
@@ -206,12 +204,12 @@ func (s *store) putDeployments(ctx context.Context, projectID string, deployment
 	}
 
 	// Store meta first
-	_, err = s.storeProtoMessage(ctx, metaPath, &meta)
+	_, err = s.saveDataIntoFilestore(ctx, metaPath, &meta)
 	if err != nil {
 		return err
 	}
 
-	_, err = s.storeProtoMessage(ctx, fmt.Sprintf("%s/%s", dirPath, newChunkKey), chunk)
+	_, err = s.saveDataIntoFilestore(ctx, fmt.Sprintf("%s/%s", dirPath, newChunkKey), chunk)
 	return err
 }
 
@@ -339,7 +337,7 @@ func appendChunkAndUpdateMeta(meta *model.InsightDeploymentChunkMetadata, curChu
 }
 
 // Load proto message stored in path. If path does not exists, dest does not modified.
-func (s *store) loadProtoMessage(ctx context.Context, path string, dest proto.Message) error {
+func (s *store) loadDataFromFilestore(ctx context.Context, path string, dest proto.Message) error {
 	raw, err := s.filestore.Get(ctx, path)
 	if err != nil {
 		return err
@@ -352,7 +350,7 @@ func (s *store) loadProtoMessage(ctx context.Context, path string, dest proto.Me
 	return nil
 }
 
-func (s *store) storeProtoMessage(ctx context.Context, path string, data proto.Message) (dataSize int64, err error) {
+func (s *store) saveDataIntoFilestore(ctx context.Context, path string, data proto.Message) (dataSize int64, err error) {
 	raw, err := proto.Marshal(data)
 	if err != nil {
 		return dataSize, err
