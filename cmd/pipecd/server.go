@@ -40,12 +40,14 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/webservice"
 	"github.com/pipe-cd/pipecd/pkg/app/server/stagelogstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/unregisteredappstore"
+	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/cachemetrics"
 	"github.com/pipe-cd/pipecd/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/datastore/filedb"
 	"github.com/pipe-cd/pipecd/pkg/datastore/firestore"
 	"github.com/pipe-cd/pipecd/pkg/datastore/mysql"
 	"github.com/pipe-cd/pipecd/pkg/filestore"
@@ -149,7 +151,16 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 	}
 	input.Logger.Info("successfully loaded control-plane configuration")
 
-	ds, err := createDatastore(ctx, cfg, input.Logger)
+	// Prepare redis client for cache(s).
+	rd := redis.NewRedis(s.cacheAddress, "")
+	defer func() {
+		if err := rd.Close(); err != nil {
+			input.Logger.Error("failed to close redis client", zap.Error(err))
+		}
+	}()
+
+	dbCache := rediscache.NewTTLCache(rd, 3*time.Hour)
+	ds, err := createDatastore(ctx, cfg, dbCache, input.Logger)
 	if err != nil {
 		input.Logger.Error("failed to create datastore", zap.Error(err))
 		return err
@@ -174,12 +185,6 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 	}()
 	input.Logger.Info("successfully connected to file store")
 
-	rd := redis.NewRedis(s.cacheAddress, "")
-	defer func() {
-		if err := rd.Close(); err != nil {
-			input.Logger.Error("failed to close redis client", zap.Error(err))
-		}
-	}()
 	cache := rediscache.NewTTLCache(rd, cfg.Cache.TTLDuration())
 	sls := stagelogstore.NewStore(fs, cache, input.Logger)
 	alss := applicationlivestatestore.NewStore(fs, cache, input.Logger)
@@ -397,7 +402,7 @@ func loadConfig(file string) (*config.ControlPlaneSpec, error) {
 	return cfg.ControlPlaneSpec, nil
 }
 
-func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) (datastore.DataStore, error) {
+func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, c cache.Cache, logger *zap.Logger) (datastore.DataStore, error) {
 	switch cfg.Datastore.Type {
 	case model.DataStoreFirestore:
 		fsConfig := cfg.Datastore.FirestoreConfig
@@ -419,6 +424,62 @@ func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *
 			options = append(options, mysql.WithAuthenticationFile(mqConfig.UsernameFile, mqConfig.PasswordFile))
 		}
 		return mysql.NewMySQL(mqConfig.URL, mqConfig.Database, options...)
+	case model.DataStoreGCS:
+		gcsCfg := cfg.Datastore.GCSConfig
+		options := []gcs.Option{
+			gcs.WithLogger(logger),
+		}
+		if gcsCfg.CredentialsFile != "" {
+			options = append(options, gcs.WithCredentialsFile(gcsCfg.CredentialsFile))
+		}
+		fs, err := gcs.NewStore(ctx, gcsCfg.Bucket, options...)
+		if err != nil {
+			return nil, err
+		}
+
+		opts := []filedb.Option{
+			filedb.WithLogger(logger),
+		}
+		return filedb.NewFileDB(fs, c, opts...)
+	case model.DataStoreS3:
+		s3Cfg := cfg.Datastore.S3Config
+		options := []s3.Option{
+			s3.WithLogger(logger),
+		}
+		if s3Cfg.CredentialsFile != "" {
+			options = append(options, s3.WithCredentialsFile(s3Cfg.CredentialsFile, s3Cfg.Profile))
+		}
+		if s3Cfg.RoleARN != "" && s3Cfg.TokenFile != "" {
+			options = append(options, s3.WithTokenFile(s3Cfg.RoleARN, s3Cfg.TokenFile))
+		}
+		fs, err := s3.NewStore(ctx, s3Cfg.Region, s3Cfg.Bucket, options...)
+		if err != nil {
+			return nil, err
+		}
+
+		opts := []filedb.Option{
+			filedb.WithLogger(logger),
+		}
+		return filedb.NewFileDB(fs, c, opts...)
+	case model.DataStoreMINIO:
+		minioCfg := cfg.Datastore.MinioConfig
+		options := []minio.Option{
+			minio.WithLogger(logger),
+		}
+		fs, err := minio.NewStore(minioCfg.Endpoint, minioCfg.Bucket, minioCfg.AccessKeyFile, minioCfg.SecretKeyFile, options...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate minio store: %w", err)
+		}
+		if minioCfg.AutoCreateBucket {
+			if err := fs.EnsureBucket(ctx); err != nil {
+				return nil, fmt.Errorf("failed to ensure bucket: %w", err)
+			}
+		}
+
+		opts := []filedb.Option{
+			filedb.WithLogger(logger),
+		}
+		return filedb.NewFileDB(fs, c, opts...)
 	default:
 		return nil, fmt.Errorf("unknown datastore type %q", cfg.Datastore.Type)
 	}

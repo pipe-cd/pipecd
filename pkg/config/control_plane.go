@@ -141,6 +141,12 @@ type ControlPlaneDataStore struct {
 	FirestoreConfig *DataStoreFireStoreConfig
 	// The configuration in the case of general MySQL.
 	MySQLConfig *DataStoreMySQLConfig
+	// The configuration in the case of Google Cloud Storage.
+	GCSConfig *FileStoreGCSConfig `json:"gcs"`
+	// The configuration in the case of Amazon S3.
+	S3Config *FileStoreS3Config `json:"s3"`
+	// The configuration in the case of Minio.
+	MinioConfig *FileStoreMinioConfig `json:"minio"`
 }
 
 type genericControlPlaneDataStore struct {
@@ -166,6 +172,21 @@ func (d *ControlPlaneDataStore) UnmarshalJSON(data []byte) error {
 		d.MySQLConfig = &DataStoreMySQLConfig{}
 		if len(gc.Config) > 0 {
 			err = json.Unmarshal(gc.Config, d.MySQLConfig)
+		}
+	case model.DataStoreGCS:
+		d.GCSConfig = &FileStoreGCSConfig{}
+		if len(gc.Config) > 0 {
+			err = json.Unmarshal(gc.Config, d.GCSConfig)
+		}
+	case model.DataStoreS3:
+		d.S3Config = &FileStoreS3Config{}
+		if len(gc.Config) > 0 {
+			err = json.Unmarshal(gc.Config, d.S3Config)
+		}
+	case model.DataStoreMINIO:
+		d.MinioConfig = &FileStoreMinioConfig{}
+		if len(gc.Config) > 0 {
+			err = json.Unmarshal(gc.Config, d.MinioConfig)
 		}
 	default:
 		// Left comment out for mock response.
