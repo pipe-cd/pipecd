@@ -10,8 +10,8 @@ import {
 
 const initialState: InsightState = {
   applicationId: "",
-  rangeFrom: 1,
-  rangeTo: 604800001,
+  rangeFrom: -2678399999,
+  rangeTo: 1,
 };
 
 describe("insightSlice reducer", () => {
