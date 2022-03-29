@@ -3,9 +3,10 @@ import { Box, makeStyles, TextField } from "@material-ui/core";
 import { Autocomplete } from "@material-ui/lab";
 import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
-import { FC, memo, useCallback } from "react";
+import { FC, memo, useCallback, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { Application, selectAll, selectById } from "~/modules/applications";
+import { fetchDeploymentFrequency } from "~/modules/deployment-frequency";
 import {
   changeApplication,
   changeRangeFrom,
@@ -71,10 +72,9 @@ export const InsightHeader: FC = memo(function InsightHeader() {
     [dispatch]
   );
 
-  // TODO: Enable fetch chart data on insight filter changes.
-  // useEffect(() => {
-  //   dispatch(fetchDeploymentFrequency());
-  // }, [dispatch, applicationId, step, rangeFrom, rangeTo]);
+  useEffect(() => {
+    dispatch(fetchDeploymentFrequency());
+  }, [dispatch, applicationId, rangeFrom, rangeTo]);
 
   return (
     <Box display="flex" alignItems="center" justifyContent="flex-end">
