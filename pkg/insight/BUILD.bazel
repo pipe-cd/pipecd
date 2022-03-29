@@ -23,6 +23,7 @@ go_test(
         "chunk_test.go",
         "datapoint_test.go",
         "filepath_test.go",
+        "utils_test.go",
     ],
     embed = [":go_default_library"],
     deps = [
