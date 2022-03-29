@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"time"
 
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/pipe-cd/pipecd/pkg/filestore"
@@ -343,7 +344,7 @@ func (s *store) loadDataFromFilestore(ctx context.Context, path string, dest pro
 		return err
 	}
 
-	err = proto.Unmarshal(raw, dest)
+	err = protojson.Unmarshal(raw, dest)
 	if err != nil {
 		return err
 	}
@@ -351,7 +352,7 @@ func (s *store) loadDataFromFilestore(ctx context.Context, path string, dest pro
 }
 
 func (s *store) saveDataIntoFilestore(ctx context.Context, path string, data proto.Message) (dataSize int64, err error) {
-	raw, err := proto.Marshal(data)
+	raw, err := protojson.Marshal(data)
 	if err != nil {
 		return dataSize, err
 	}
