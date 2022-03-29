@@ -311,13 +311,14 @@ func generateTerraformShortPlanDetails(details string) (string, error) {
 		length     int
 		newLine    = len([]byte("\n"))
 	)
+	// NOTE: scanner.Scan() return false if the buffer size of one line exceed bufio.MaxScanTokenSize(65536 byte).
 	for scanner.Scan() {
 		line := scanner.Text()
 		if strings.Contains(line, startTerraformPlan) {
 			start = length
 		}
-		if strings.Contains(line, endTerraformPlan) {
-			end = length - 1 // Exclude last new line.
+		if start != 0 && strings.Contains(line, endTerraformPlan) {
+			end = length - 2*newLine // Exclude last new line.
 			break
 		}
 		length += len(scanner.Bytes())
