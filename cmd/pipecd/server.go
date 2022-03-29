@@ -151,27 +151,13 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 	}
 	input.Logger.Info("successfully loaded control-plane configuration")
 
-	// Prepare redis client for cache(s).
+	// Connect to the cache server.
 	rd := redis.NewRedis(s.cacheAddress, "")
 	defer func() {
 		if err := rd.Close(); err != nil {
 			input.Logger.Error("failed to close redis client", zap.Error(err))
 		}
 	}()
-
-	dbCache := rediscache.NewTTLCache(rd, 3*time.Hour)
-	ds, err := createDatastore(ctx, cfg, dbCache, input.Logger)
-	if err != nil {
-		input.Logger.Error("failed to create datastore", zap.Error(err))
-		return err
-	}
-	defer func() {
-		if err := ds.Close(); err != nil {
-			input.Logger.Error("failed to close datastore client", zap.Error(err))
-
-		}
-	}()
-	input.Logger.Info("successfully connected to data store")
 
 	fs, err := createFilestore(ctx, cfg, input.Logger)
 	if err != nil {
@@ -184,6 +170,20 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 		}
 	}()
 	input.Logger.Info("successfully connected to file store")
+
+	dbCache := rediscache.NewTTLCache(rd, 3*time.Hour)
+	ds, err := createDatastore(ctx, cfg, fs, dbCache, input.Logger)
+	if err != nil {
+		input.Logger.Error("failed to create datastore", zap.Error(err))
+		return err
+	}
+	defer func() {
+		if err := ds.Close(); err != nil {
+			input.Logger.Error("failed to close datastore client", zap.Error(err))
+
+		}
+	}()
+	input.Logger.Info("successfully connected to data store")
 
 	cache := rediscache.NewTTLCache(rd, cfg.Cache.TTLDuration())
 	sls := stagelogstore.NewStore(fs, cache, input.Logger)
@@ -402,7 +402,7 @@ func loadConfig(file string) (*config.ControlPlaneSpec, error) {
 	return cfg.ControlPlaneSpec, nil
 }
 
-func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, c cache.Cache, logger *zap.Logger) (datastore.DataStore, error) {
+func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, fs filestore.Store, c cache.Cache, logger *zap.Logger) (datastore.DataStore, error) {
 	switch cfg.Datastore.Type {
 	case model.DataStoreFirestore:
 		fsConfig := cfg.Datastore.FirestoreConfig
@@ -424,62 +424,11 @@ func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, c cache.
 			options = append(options, mysql.WithAuthenticationFile(mqConfig.UsernameFile, mqConfig.PasswordFile))
 		}
 		return mysql.NewMySQL(mqConfig.URL, mqConfig.Database, options...)
-	case model.DataStoreGCS:
-		gcsCfg := cfg.Datastore.GCSConfig
-		options := []gcs.Option{
-			gcs.WithLogger(logger),
-		}
-		if gcsCfg.CredentialsFile != "" {
-			options = append(options, gcs.WithCredentialsFile(gcsCfg.CredentialsFile))
-		}
-		fs, err := gcs.NewStore(ctx, gcsCfg.Bucket, options...)
-		if err != nil {
-			return nil, err
-		}
-
-		opts := []filedb.Option{
+	case model.DataStoreFileDB:
+		options := []filedb.Option{
 			filedb.WithLogger(logger),
 		}
-		return filedb.NewFileDB(fs, c, opts...)
-	case model.DataStoreS3:
-		s3Cfg := cfg.Datastore.S3Config
-		options := []s3.Option{
-			s3.WithLogger(logger),
-		}
-		if s3Cfg.CredentialsFile != "" {
-			options = append(options, s3.WithCredentialsFile(s3Cfg.CredentialsFile, s3Cfg.Profile))
-		}
-		if s3Cfg.RoleARN != "" && s3Cfg.TokenFile != "" {
-			options = append(options, s3.WithTokenFile(s3Cfg.RoleARN, s3Cfg.TokenFile))
-		}
-		fs, err := s3.NewStore(ctx, s3Cfg.Region, s3Cfg.Bucket, options...)
-		if err != nil {
-			return nil, err
-		}
-
-		opts := []filedb.Option{
-			filedb.WithLogger(logger),
-		}
-		return filedb.NewFileDB(fs, c, opts...)
-	case model.DataStoreMINIO:
-		minioCfg := cfg.Datastore.MinioConfig
-		options := []minio.Option{
-			minio.WithLogger(logger),
-		}
-		fs, err := minio.NewStore(minioCfg.Endpoint, minioCfg.Bucket, minioCfg.AccessKeyFile, minioCfg.SecretKeyFile, options...)
-		if err != nil {
-			return nil, fmt.Errorf("failed to generate minio store: %w", err)
-		}
-		if minioCfg.AutoCreateBucket {
-			if err := fs.EnsureBucket(ctx); err != nil {
-				return nil, fmt.Errorf("failed to ensure bucket: %w", err)
-			}
-		}
-
-		opts := []filedb.Option{
-			filedb.WithLogger(logger),
-		}
-		return filedb.NewFileDB(fs, c, opts...)
+		return filedb.NewFileDB(fs, c, options...)
 	default:
 		return nil, fmt.Errorf("unknown datastore type %q", cfg.Datastore.Type)
 	}
