@@ -76,7 +76,7 @@ func (s *store) List(ctx context.Context, projectID string, from, to int64, mini
 			return nil, err
 		}
 
-		keys := findPathFromMeta(&meta, from, to)
+		keys := (&meta).ListChunkNames(from, to)
 
 		for _, key := range keys {
 			data := model.InsightDeploymentChunk{}
@@ -87,7 +87,7 @@ func (s *store) List(ctx context.Context, projectID string, from, to int64, mini
 
 			// Maybe we should use metadata instead of loading chunkdata
 			if data.Version >= minimumVersion {
-				deployments := extractDeploymentsFromChunk(&data, from, to)
+				deployments := (&data).ExtractDeployments(from, to)
 				result = append(result, deployments...)
 			}
 		}
@@ -157,7 +157,7 @@ func (s *store) putDeployments(ctx context.Context, projectID string, deployment
 	}
 
 	// TODO refine this size check
-	size, err := messageSize(&model.InsightDeploymentChunk{Deployments: deployments})
+	size, err := (&model.InsightDeploymentChunk{Deployments: deployments}).Size()
 	if err != nil {
 		return err
 	}
@@ -216,14 +216,18 @@ func (s *store) putDeployments(ctx context.Context, projectID string, deployment
 
 // deployments must not be empty
 func createNewChunk(deployments []*model.InsightDeployment) (*model.InsightDeploymentChunk, int64, error) {
-	from, to := deployments[0].CompletedAt, deployments[len(deployments)-1].CompletedAt
+	var (
+		from = deployments[0].CompletedAt
+		to   = deployments[len(deployments)-1].CompletedAt
+	)
+
 	// Create new meta and chunk
 	chunkData := model.InsightDeploymentChunk{
 		From:        from,
 		To:          to,
 		Deployments: deployments,
 	}
-	size, err := messageSize(&chunkData)
+	size, err := (&chunkData).Size()
 	if err != nil {
 		return nil, 0, err
 	}
@@ -247,7 +251,7 @@ func createNewChunkAndMeta(deployments []*model.InsightDeployment, version model
 		Version:     version,
 		Deployments: deployments,
 	}
-	size, err := messageSize(chunkData)
+	size, err := chunkData.Size()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -314,7 +318,7 @@ func appendChunkAndUpdateMeta(meta *model.InsightDeploymentChunkMetadata, curChu
 	curChunk.Deployments = append(curChunk.Deployments, deployments...)
 	curChunk.To = lastDeployment.CompletedAt
 
-	size, err := messageSize(curChunk)
+	size, err := curChunk.Size()
 	if err != nil {
 		return err
 	}
@@ -362,39 +366,6 @@ func (s *store) saveDataIntoFilestore(ctx context.Context, path string, data pro
 		return dataSize, err
 	}
 	return int64(len(raw)), nil
-}
-
-func findPathFromMeta(meta *model.InsightDeploymentChunkMetadata, from, to int64) []string {
-	var paths []string
-	for _, m := range meta.Chunks {
-		if overlap(from, to, m.From, m.To) {
-			paths = append(paths, m.Name)
-		}
-	}
-	return paths
-}
-
-func messageSize(pbm proto.Message) (int64, error) {
-	raw, err := proto.Marshal(pbm)
-	if err != nil {
-		return 0, err
-	}
-
-	return int64(len(raw)), nil
-}
-
-func overlap(lhsFrom, lhsTo, rhsFrom, rhsTo int64) bool {
-	return (rhsFrom < lhsTo && lhsFrom < rhsTo)
-}
-
-func extractDeploymentsFromChunk(chunk *model.InsightDeploymentChunk, from, to int64) []*model.InsightDeployment {
-	var result []*model.InsightDeployment
-	for _, d := range chunk.Deployments {
-		if from <= d.CompletedAt && d.CompletedAt <= to {
-			result = append(result, d)
-		}
-	}
-	return result
 }
 
 func determineDeploymentDirPath(year int, projectID string) string {
