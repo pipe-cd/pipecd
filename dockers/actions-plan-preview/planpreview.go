@@ -193,8 +193,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		)
 		if app.ApplicationKind == "TERRAFORM" {
 			lang = "hcl"
-			shortened, err := generateTerraformShortPlanDetails(details)
-			if err == nil {
+			if shortened, err := generateTerraformShortPlanDetails(details); err == nil {
 				details = shortened
 			}
 		}
