@@ -205,8 +205,10 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 			continue
 		}
 
-		detailLen += l
-		fmt.Fprintf(&b, detailsFormat, lang, app.PlanDetails)
+		if l > 0 {
+			detailLen += l
+			fmt.Fprintf(&b, detailsFormat, lang, details)
+		}
 	}
 
 	if len(pipelineApps)+len(quickSyncApps) > 0 {
@@ -245,7 +247,9 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 				lang = "hcl"
 			}
 
-			fmt.Fprintf(&b, detailsFormat, lang, app.PlanDetails)
+			if len(app.PlanDetails) > 0 {
+				fmt.Fprintf(&b, detailsFormat, lang, app.PlanDetails)
+			}
 		}
 	}
 
