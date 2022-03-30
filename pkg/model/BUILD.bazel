@@ -33,6 +33,7 @@ go_library(
         "event.pb.go",
         "event.pb.validate.go",
         "filestore.go",
+        "insight.go",
         "insight.pb.go",
         "insight.pb.validate.go",
         "logblock.pb.go",
@@ -85,6 +86,7 @@ go_test(
         "deployment_chain_test.go",
         "deployment_test.go",
         "event_test.go",
+        "insight_test.go",
         "model_test.go",
         "piped_test.go",
         "project_test.go",
@@ -93,6 +95,7 @@ go_test(
     deps = [
         "@com_github_stretchr_testify//assert:go_default_library",
         "@com_github_stretchr_testify//require:go_default_library",
+        "@org_golang_google_protobuf//proto:go_default_library",
         "@org_golang_x_crypto//bcrypt:go_default_library",
     ],
 )
