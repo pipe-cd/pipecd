@@ -20,6 +20,9 @@ import (
 	"io"
 	"time"
 
+	"go.uber.org/zap"
+
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/terraform"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/planner"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -72,6 +75,22 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 
 	now := time.Now()
 	out.Version = "N/A"
+
+	files, err := provider.LoadTerraformFiles(ds.AppDir)
+	if err != nil {
+		return
+	}
+
+	out.Versions, err = provider.FindArtifactVersions(files)
+	if err != nil {
+		in.Logger.Warn("unable to determine target versions", zap.Error(err))
+		out.Versions = []*model.ArtifactVersion{
+			{
+				Kind:    model.ArtifactVersion_UNKNOWN,
+				Version: "unknown",
+			},
+		}
+	}
 
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC

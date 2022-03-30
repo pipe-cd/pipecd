@@ -8568,6 +8568,8 @@ func (m *GetInsightDataRequest) validate(all bool) error {
 
 	// no validation rules for ApplicationId
 
+	// no validation rules for Timezone
+
 	if len(errors) > 0 {
 		return GetInsightDataRequestMultiError(errors)
 	}

@@ -4,7 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "applicationcountstore.go",
-        "chunkstore.go",
+        "deploymentstore.go",
         "insightstore.go",
         "milestonestore.go",
     ],
@@ -13,6 +13,7 @@ go_library(
     deps = [
         "//pkg/filestore:go_default_library",
         "//pkg/insight:go_default_library",
+        "//pkg/model:go_default_library",
     ],
 )
 
@@ -21,7 +22,6 @@ go_test(
     size = "small",
     srcs = [
         "applicationcountstore_test.go",
-        "chunkstore_test.go",
         "milestonestore_test.go",
     ],
     embed = [":go_default_library"],

@@ -158,6 +158,9 @@ func addBuiltinLabels(sm provider.ServiceManifest, hash, pipedID, appID, revisio
 	// Set builtinLabels for Service.
 	sm.AddLabels(labels)
 
+	if revisionName == "" {
+		return true
+	}
 	// Set buildinLabels for Revision.
 	labels[provider.LabelRevisionName] = revisionName
 	if err := sm.AddRevisionLabels(labels); err != nil {

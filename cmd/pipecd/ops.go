@@ -90,6 +90,26 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 		return err
 	}
 
+	// Connect to the cache.
+	rd := redis.NewRedis(s.cacheAddress, "")
+	defer func() {
+		if err := rd.Close(); err != nil {
+			input.Logger.Error("failed to close redis client", zap.Error(err))
+		}
+	}()
+
+	// Connect to the file store.
+	fs, err := createFilestore(ctx, cfg, input.Logger)
+	if err != nil {
+		input.Logger.Error("failed to create filestore", zap.Error(err))
+		return err
+	}
+	defer func() {
+		if err := fs.Close(); err != nil {
+			input.Logger.Error("failed to close filestore client", zap.Error(err))
+		}
+	}()
+
 	// Prepare sql database.
 	if cfg.Datastore.Type == model.DataStoreMySQL {
 		if err := ensureSQLDatabase(ctx, cfg, input.Logger); err != nil {
@@ -112,8 +132,9 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 		})
 	}
 
+	dbCache := rediscache.NewTTLCache(rd, 3*time.Hour)
 	// Connect to the data store.
-	ds, err := createDatastore(ctx, cfg, input.Logger)
+	ds, err := createDatastore(ctx, cfg, fs, dbCache, input.Logger)
 	if err != nil {
 		input.Logger.Error("failed to create datastore", zap.Error(err))
 		return err
@@ -124,27 +145,7 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 		}
 	}()
 
-	// Connect to the file store.
-	fs, err := createFilestore(ctx, cfg, input.Logger)
-	if err != nil {
-		input.Logger.Error("failed to create filestore", zap.Error(err))
-		return err
-	}
-	defer func() {
-		if err := fs.Close(); err != nil {
-			input.Logger.Error("failed to close filestore client", zap.Error(err))
-		}
-	}()
-
-	// Connect to the cache.
-	rd := redis.NewRedis(s.cacheAddress, "")
-	defer func() {
-		if err := rd.Close(); err != nil {
-			input.Logger.Error("failed to close redis client", zap.Error(err))
-		}
-	}()
 	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
-
 	// Start running staled piped stat cleaner.
 	{
 		cleaner := staledpipedstatcleaner.NewStaledPipedStatCleaner(statCache, input.Logger)

@@ -31,16 +31,16 @@ const (
 )
 
 type insightMetricsCollector struct {
-	insightStore insightstore.Store
-	projectStore datastore.ProjectStore
+	applicationCountStore insightstore.ApplicationCountStore
+	projectStore          datastore.ProjectStore
 
 	applicationDesc *prometheus.Desc
 }
 
-func NewInsightMetricsCollector(is insightstore.Store, ps datastore.ProjectStore) prometheus.Collector {
+func NewInsightMetricsCollector(acs insightstore.ApplicationCountStore, ps datastore.ProjectStore) prometheus.Collector {
 	return &insightMetricsCollector{
-		insightStore: is,
-		projectStore: ps,
+		applicationCountStore: acs,
+		projectStore:          ps,
 		applicationDesc: prometheus.NewDesc(
 			"insight_application_total",
 			"Number of applications currently controlled by control plane",
@@ -84,7 +84,7 @@ func (i *insightMetricsCollector) collectApplicationCount() (map[string]map[stri
 	}
 	data := make(map[string]map[string]int, len(projects))
 	for idx := range projects {
-		counts, err := i.insightStore.LoadApplicationCounts(ctx, projects[idx].Id)
+		counts, err := i.applicationCountStore.LoadApplicationCounts(ctx, projects[idx].Id)
 		if err != nil {
 			continue
 		}
