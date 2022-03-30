@@ -7,6 +7,7 @@ export interface InsightState {
   applicationId: string;
   rangeFrom: number;
   rangeTo: number;
+  timezone: string;
 }
 
 const now = dayjs(Date.now());
@@ -15,6 +16,7 @@ const initialState: InsightState = {
   applicationId: "",
   rangeFrom: now.subtract(1, "month").valueOf(),
   rangeTo: now.valueOf(),
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 };
 
 export const insightSlice = createSlice({

@@ -29,6 +29,7 @@ export const fetchDeploymentFrequency = createAsyncThunk<
     metricsKind: InsightMetricsKind.DEPLOYMENT_FREQUENCY,
     rangeFrom: state.insight.rangeFrom,
     rangeTo: state.insight.rangeTo,
+    timezone: state.insight.timezone,
   });
 
   if (data.type == InsightResultType.MATRIX) {

@@ -12,6 +12,7 @@ const initialState: InsightState = {
   applicationId: "",
   rangeFrom: -2678399999,
   rangeTo: 1,
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 };
 
 describe("insightSlice reducer", () => {
