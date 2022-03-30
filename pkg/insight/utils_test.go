@@ -1,61 +1,124 @@
+// Copyright 2022 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package insight
 
-// import (
-// 	"testing"
-// 	"time"
+import (
+	"testing"
+	"time"
 
-// 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 
-// 	"github.com/pipe-cd/pipecd/pkg/model"
-// )
+	"github.com/pipe-cd/pipecd/pkg/model"
+)
 
-// func TestNormalizeTime(t *testing.T) {
-// 	type args struct {
-// 		from time.Time
-// 		step model.InsightStep
-// 	}
-// 	tests := []struct {
-// 		name string
-// 		args args
-// 		want time.Time
-// 	}{
-// 		{
-// 			name: "formatted correctly with daily",
-// 			args: args{
-// 				from: time.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
-// 				step: model.InsightStep_DAILY,
-// 			},
-// 			want: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-// 		},
-// 		{
-// 			name: "formatted correctly with weekly",
-// 			args: args{
-// 				from: time.Date(2020, 1, 10, 1, 1, 1, 1, time.UTC),
-// 				step: model.InsightStep_WEEKLY,
-// 			},
-// 			want: time.Date(2020, 1, 5, 0, 0, 0, 0, time.UTC),
-// 		},
-// 		{
-// 			name: "formatted correctly with monthly",
-// 			args: args{
-// 				from: time.Date(2020, 1, 7, 1, 1, 1, 1, time.UTC),
-// 				step: model.InsightStep_MONTHLY,
-// 			},
-// 			want: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-// 		},
-// 		{
-// 			name: "formatted correctly with yearly",
-// 			args: args{
-// 				from: time.Date(2020, 7, 7, 1, 1, 1, 1, time.UTC),
-// 				step: model.InsightStep_YEARLY,
-// 			},
-// 			want: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-// 		},
-// 	}
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			got := NormalizeTime(tt.args.from, tt.args.step)
-// 			assert.Equal(t, got, tt.want)
-// 		})
-// 	}
-// }
+var jst = time.FixedZone("Asia/Tokyo", 9*60*60)
+
+func TestNoramalizeTime(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name     string
+		t        int64
+		expected int64
+	}{
+		{
+			name:     "Mid time",
+			t:        1648339200, // 2022/03/27:09:00:00 JST
+			expected: 1648306800, // 2022/03/27:00:00:00 JST
+		},
+		{
+			name:     "No change",
+			t:        1648306800, // 2022/03/27:00:00:00 JST
+			expected: 1648306800, // 2022/03/27:00:00:00 JST
+		},
+		{
+			name:     "23:59:59",
+			t:        1648393199, // 2022/03/27:23:59:59 JST
+			expected: 1648306800, // 2022/03/27:00:00:00 JST
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := NormalizeUnixTime(tc.t, jst)
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+}
+
+func TestGroupDeploymentByDaily(t *testing.T) {
+	testcases := []struct {
+		name        string
+		deployments []*model.InsightDeployment
+		expected    [][]*model.InsightDeployment
+	}{
+		{
+			name: "Success",
+			deployments: []*model.InsightDeployment{
+				{
+					Id:          "0",
+					CompletedAt: 1648306799, // 2022/03/26:23:59:59 JST
+				},
+				{
+					Id:          "1",
+					CompletedAt: 1648306800, // 2022/03/27:00:00:00 JST
+				},
+				{
+					Id:          "2",
+					CompletedAt: 1648339200, // 2022/03/27:09:00:00 JST
+				},
+				{
+					Id:          "3",
+					CompletedAt: 1648393199, // 2022/03/27:23:59:59 JST
+				},
+				{
+					Id:          "4",
+					CompletedAt: 1648393200, // 2022/03/28:00:00:00 JST
+				},
+			},
+			expected: [][]*model.InsightDeployment{
+				{{
+					Id:          "0",
+					CompletedAt: 1648306799, // 2022/03/26:23:59:59 JST
+				}},
+				{
+					{
+						Id:          "1",
+						CompletedAt: 1648306800, // 2022/03/27:00:00:00 JST
+					},
+					{
+						Id:          "2",
+						CompletedAt: 1648339200, // 2022/03/27:09:00:00 JST
+					},
+					{
+						Id:          "3",
+						CompletedAt: 1648393199, // 2022/03/27:23:59:59 JST
+					},
+				},
+				{{
+					Id:          "4",
+					CompletedAt: 1648393200, // 2022/03/28:00:00:00 JST
+				}},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := GroupDeploymentsByDaily(tc.deployments, jst)
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+}

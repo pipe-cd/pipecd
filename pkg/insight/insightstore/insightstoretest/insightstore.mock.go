@@ -37,7 +37,7 @@ func (m *MockStore) EXPECT() *MockStoreMockRecorder {
 }
 
 // List mocks base method.
-func (m *MockStore) List(arg0 context.Context, arg1 string, arg2, arg3 int64, arg4 *model.InsightDeploymentVersion) ([]*model.InsightDeployment, error) {
+func (m *MockStore) List(arg0 context.Context, arg1 string, arg2, arg3 int64, arg4 model.InsightDeploymentVersion) ([]*model.InsightDeployment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].([]*model.InsightDeployment)
@@ -82,7 +82,7 @@ func (mr *MockStoreMockRecorder) LoadMilestone(arg0 interface{}) *gomock.Call {
 }
 
 // Put mocks base method.
-func (m *MockStore) Put(arg0 context.Context, arg1 string, arg2 []*model.InsightDeployment, arg3 *model.InsightDeploymentVersion) error {
+func (m *MockStore) Put(arg0 context.Context, arg1 string, arg2 []*model.InsightDeployment, arg3 model.InsightDeploymentVersion) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Put", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)

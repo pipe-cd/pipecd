@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2022 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,25 +14,41 @@
 
 package insight
 
-// import (
-// 	"time"
+import (
+	"sort"
+	"time"
 
-// 	"github.com/pipe-cd/pipecd/pkg/model"
-// )
+	"github.com/pipe-cd/pipecd/pkg/model"
+)
 
-// func NormalizeTime(from time.Time, step model.InsightStep) time.Time {
-// 	var formattedTime time.Time
-// 	switch step {
-// 	case model.InsightStep_DAILY:
-// 		formattedTime = time.Date(from.Year(), from.Month(), from.Day(), 0, 0, 0, 0, time.UTC)
-// 	case model.InsightStep_WEEKLY:
-// 		// Sunday in the week of rangeFrom
-// 		sunday := from.AddDate(0, 0, -int(from.Weekday()))
-// 		formattedTime = time.Date(sunday.Year(), sunday.Month(), sunday.Day(), 0, 0, 0, 0, time.UTC)
-// 	case model.InsightStep_MONTHLY:
-// 		formattedTime = time.Date(from.Year(), from.Month(), 1, 0, 0, 0, 0, time.UTC)
-// 	case model.InsightStep_YEARLY:
-// 		formattedTime = time.Date(from.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
-// 	}
-// 	return formattedTime
-// }
+// NormalizeUnixTime ignores hour, minute, second and nanosecond
+func NormalizeUnixTime(t int64, loc *time.Location) int64 {
+	tt := time.Unix(t, 0).In(loc)
+	return time.Date(tt.Year(), tt.Month(), tt.Day(), 0, 0, 0, 0, loc).Unix()
+}
+
+func GroupDeploymentsByDaily(deployments []*model.InsightDeployment, loc *time.Location) [][]*model.InsightDeployment {
+	dailyDeployments := make(map[int64][]*model.InsightDeployment)
+
+	for _, d := range deployments {
+		t := NormalizeUnixTime(d.CompletedAt, loc)
+		dailyDeployments[t] = append(dailyDeployments[t], d)
+	}
+
+	keys := make([]int64, len(dailyDeployments))
+	idx := 0
+	for key := range dailyDeployments {
+		keys[idx] = key
+		idx++
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i] < keys[j]
+	})
+
+	result := make([][]*model.InsightDeployment, len(dailyDeployments))
+	for idx, key := range keys {
+		result[idx] = dailyDeployments[key]
+	}
+
+	return result
+}
