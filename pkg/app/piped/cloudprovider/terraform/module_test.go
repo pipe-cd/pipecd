@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -26,8 +27,9 @@ func TestLoadTerraformFiles(t *testing.T) {
 					Modules: []*Module{
 						{
 							Name:    "helloworld",
-							Source:  "helloworld",
+							Source:  "./helloworld",
 							Version: "v1.0.0",
+							IsLocal: true,
 						},
 					},
 				},
@@ -42,13 +44,15 @@ func TestLoadTerraformFiles(t *testing.T) {
 					Modules: []*Module{
 						{
 							Name:    "helloworld_01",
-							Source:  "helloworld",
+							Source:  "./helloworld",
 							Version: "v1.0.0",
+							IsLocal: true,
 						},
 						{
 							Name:    "helloworld_02",
-							Source:  "helloworld",
+							Source:  "./helloworld",
 							Version: "v0.9.0",
+							IsLocal: true,
 						},
 					},
 				},
@@ -63,8 +67,9 @@ func TestLoadTerraformFiles(t *testing.T) {
 					Modules: []*Module{
 						{
 							Name:    "helloworld_01",
-							Source:  "helloworld",
+							Source:  "./helloworld",
 							Version: "v1.0.0",
+							IsLocal: true,
 						},
 					},
 				},
@@ -72,8 +77,9 @@ func TestLoadTerraformFiles(t *testing.T) {
 					Modules: []*Module{
 						{
 							Name:    "helloworld_02",
-							Source:  "helloworld",
+							Source:  "./helloworld",
 							Version: "v0.9.0",
+							IsLocal: true,
 						},
 					},
 				},
@@ -104,36 +110,87 @@ func TestFindArticatVersions(t *testing.T) {
 	testcases := []struct {
 		name        string
 		moduleDir   string
+		gp          *model.ApplicationGitPath
+		ds          *deploysource.DeploySource
 		expected    []*model.ArtifactVersion
 		expectedErr bool
 	}{
 		{
-			name:      "single module",
+			name:      "single local module",
 			moduleDir: "./testdata/single_module",
+			gp: &model.ApplicationGitPath{
+				Repo: &model.ApplicationGitRepository{
+					Remote: "https://githuh.com/example",
+					Branch: "main",
+				},
+			},
+			ds: &deploysource.DeploySource{
+				RepoDir: "/repo/example",
+				AppDir:  "/repo/example",
+			},
 			expected: []*model.ArtifactVersion{
 				{
 					Kind:    model.ArtifactVersion_TERRAFORM_MODULE,
 					Name:    "helloworld",
-					Url:     "helloworld",
+					Url:     "https://githuh.com/example/tree/main/helloworld",
 					Version: "v1.0.0",
 				},
 			},
 			expectedErr: false,
 		},
 		{
-			name:      "multi modules",
+			name:      "multi local modules",
 			moduleDir: "./testdata/multi_modules",
+			gp: &model.ApplicationGitPath{
+				Repo: &model.ApplicationGitRepository{
+					Remote: "https://githuh.com/example",
+					Branch: "main",
+				},
+			},
+			ds: &deploysource.DeploySource{
+				RepoDir: "/repo/example",
+				AppDir:  "/repo/example",
+			},
 			expected: []*model.ArtifactVersion{
 				{
 					Kind:    model.ArtifactVersion_TERRAFORM_MODULE,
 					Name:    "helloworld_01",
-					Url:     "helloworld",
+					Url:     "https://githuh.com/example/tree/main/helloworld",
 					Version: "v1.0.0",
 				},
 				{
 					Kind:    model.ArtifactVersion_TERRAFORM_MODULE,
 					Name:    "helloworld_02",
-					Url:     "helloworld",
+					Url:     "https://githuh.com/example/tree/main/helloworld",
+					Version: "v0.9.0",
+				},
+			},
+			expectedErr: false,
+		},
+		{
+			name:      "multi local modules with multi files",
+			moduleDir: "./testdata/multi_modules",
+			gp: &model.ApplicationGitPath{
+				Repo: &model.ApplicationGitRepository{
+					Remote: "https://githuh.com/example",
+					Branch: "main",
+				},
+			},
+			ds: &deploysource.DeploySource{
+				RepoDir: "/repo/example",
+				AppDir:  "/repo/example",
+			},
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_TERRAFORM_MODULE,
+					Name:    "helloworld_01",
+					Url:     "https://githuh.com/example/tree/main/helloworld",
+					Version: "v1.0.0",
+				},
+				{
+					Kind:    model.ArtifactVersion_TERRAFORM_MODULE,
+					Name:    "helloworld_02",
+					Url:     "https://githuh.com/example/tree/main/helloworld",
 					Version: "v0.9.0",
 				},
 			},
@@ -149,7 +206,7 @@ func TestFindArticatVersions(t *testing.T) {
 			tfs, err := LoadTerraformFiles(tc.moduleDir)
 			require.NoError(t, err)
 
-			versions, err := FindArtifactVersions(tfs)
+			versions, err := FindArtifactVersions(tfs, tc.gp, tc.ds)
 			assert.ElementsMatch(t, tc.expected, versions)
 			assert.Equal(t, tc.expectedErr, err != nil)
 		})

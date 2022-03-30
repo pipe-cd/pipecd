@@ -81,24 +81,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
-	// convert module source to URL.
-	for _, f := range files {
-		for _, m := range f.Modules {
-			if m.IsLocal {
-				l := provider.NewLocalModuleSourceConverter(in.GitPath.Repo.Remote, in.GitPath.Repo.Branch, ds.RepoDir, ds.AppDir)
-				url, err := l.MakeURL(m.Source)
-				if err != nil {
-					return out, err
-				}
-
-				m.Source = url
-			} else {
-				// TODO: convert remote module to URL.
-			}
-		}
-	}
-
-	out.Versions, err = provider.FindArtifactVersions(files)
+	out.Versions, err = provider.FindArtifactVersions(files, &in.GitPath, ds)
 	if err != nil {
 		in.Logger.Warn("unable to determine target versions", zap.Error(err))
 		out.Versions = []*model.ArtifactVersion{

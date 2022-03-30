@@ -9,6 +9,7 @@ go_library(
     importpath = "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/terraform",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/app/piped/deploysource:go_default_library",
         "//pkg/git:go_default_library",
         "//pkg/model:go_default_library",
         "@com_github_hashicorp_hcl_v2//:go_default_library",
@@ -24,6 +25,7 @@ go_test(
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
+        "//pkg/app/piped/deploysource:go_default_library",
         "//pkg/model:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
         "@com_github_stretchr_testify//require:go_default_library",

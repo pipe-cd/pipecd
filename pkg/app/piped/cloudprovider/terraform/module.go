@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclparse"
 
+	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -101,10 +102,22 @@ func LoadTerraformFiles(dir string) ([]File, error) {
 
 // FindArtifactVersions parses artifact versions from Terraform files.
 // For Terraform, module version is an artifact version.
-func FindArtifactVersions(tfs []File) ([]*model.ArtifactVersion, error) {
+func FindArtifactVersions(tfs []File, gp *model.ApplicationGitPath, ds *deploysource.DeploySource) ([]*model.ArtifactVersion, error) {
 	versions := make([]*model.ArtifactVersion, 0)
 	for _, tf := range tfs {
 		for _, m := range tf.Modules {
+			if m.IsLocal {
+				l := NewLocalModuleSourceConverter(gp.Repo.Remote, gp.Repo.Branch, ds.RepoDir, ds.AppDir)
+				url, err := l.MakeURL(m.Source)
+				if err != nil {
+					return nil, err
+				}
+
+				m.Source = url
+			} else {
+				// TODO: convert remote module to URL.
+			}
+
 			versions = append(versions, &model.ArtifactVersion{
 				Kind:    model.ArtifactVersion_TERRAFORM_MODULE,
 				Version: m.Version,
