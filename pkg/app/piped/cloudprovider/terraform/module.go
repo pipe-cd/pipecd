@@ -89,7 +89,7 @@ func LoadTerraformFiles(dir string) ([]File, error) {
 				Name:    m.Name,
 				Source:  m.Source,
 				Version: m.Version,
-				IsLocal: isModuleLocal(m.Source),
+				IsLocal: isLocalModule(m.Source),
 			})
 		}
 
@@ -117,12 +117,8 @@ func FindArtifactVersions(tfs []File) ([]*model.ArtifactVersion, error) {
 	return versions, nil
 }
 
-func isModuleLocal(moduleSrc string) bool {
-	if strings.HasPrefix(moduleSrc, "./") || strings.HasPrefix(moduleSrc, "../") {
-		return true
-	}
-
-	return false
+func isLocalModule(moduleSrc string) bool {
+	return strings.HasPrefix(moduleSrc, "./") || strings.HasPrefix(moduleSrc, "../")
 }
 
 // LocalModuleSourceConverter is a converter from local module source to its URL.

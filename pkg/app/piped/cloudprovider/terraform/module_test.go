@@ -242,7 +242,7 @@ func TestMakeURL(t *testing.T) {
 	}
 }
 
-func TestIsModuleLocal(t *testing.T) {
+func TestIsLocalModule(t *testing.T) {
 	t.Parallel()
 
 	testcases := []struct {
@@ -272,7 +272,7 @@ func TestIsModuleLocal(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			assert.Equal(t, isModuleLocal(tc.moduleSrc), tc.expected)
+			assert.Equal(t, isLocalModule(tc.moduleSrc), tc.expected)
 		})
 	}
 }
