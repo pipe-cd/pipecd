@@ -37,7 +37,7 @@ var (
 
 const (
 	maxChunkByteSize = 1 * 1024 * 1024 // 1MB
-	metaFileName     = "meta.proto.bin"
+	metaFileName     = "meta.json"
 
 	maxDuration time.Duration = 24 * 365 * 2 * time.Hour // 2 year
 )
@@ -402,5 +402,5 @@ func determineDeploymentDirPath(year int, projectID string) string {
 }
 
 func determineDeploymentChunkKey(n int) string {
-	return fmt.Sprintf("%04d.proto.bin", n)
+	return fmt.Sprintf("%04d.json", n)
 }
