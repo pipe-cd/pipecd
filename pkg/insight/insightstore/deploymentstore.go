@@ -98,7 +98,7 @@ func (s *store) List(ctx context.Context, projectID string, from, to int64, mini
 
 // deployments must be sorted by CompletedAt,
 func (s *store) Put(ctx context.Context, projectID string, deployments []*model.InsightDeployment, version model.InsightDeploymentVersion) error {
-	dailyDeployments := insight.GroupDeploymentsByDaily(deployments)
+	dailyDeployments := insight.GroupDeploymentsByDaily(deployments, time.Local)
 
 	for _, daily := range dailyDeployments {
 		err := s.putDeployments(ctx, projectID, daily, version, time.Now())

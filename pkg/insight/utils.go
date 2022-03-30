@@ -22,16 +22,16 @@ import (
 )
 
 // NormalizeUnixTime ignores hour, minute, second and nanosecond
-func NormalizeUnixTime(t int64) int64 {
-	tt := time.Unix(t, 0)
-	return time.Date(tt.Year(), tt.Month(), tt.Day(), 0, 0, 0, 0, tt.Location()).Unix()
+func NormalizeUnixTime(t int64, loc *time.Location) int64 {
+	tt := time.Unix(t, 0).In(loc)
+	return time.Date(tt.Year(), tt.Month(), tt.Day(), 0, 0, 0, 0, loc).Unix()
 }
 
-func GroupDeploymentsByDaily(deployments []*model.InsightDeployment) [][]*model.InsightDeployment {
+func GroupDeploymentsByDaily(deployments []*model.InsightDeployment, loc *time.Location) [][]*model.InsightDeployment {
 	dailyDeployments := make(map[int64][]*model.InsightDeployment)
 
 	for _, d := range deployments {
-		t := NormalizeUnixTime(d.CompletedAt)
+		t := NormalizeUnixTime(d.CompletedAt, loc)
 		dailyDeployments[t] = append(dailyDeployments[t], d)
 	}
 

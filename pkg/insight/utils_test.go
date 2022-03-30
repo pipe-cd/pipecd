@@ -16,11 +16,14 @@ package insight
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
+
+var jst = time.FixedZone("Asia/Tokyo", 9*60*60)
 
 func TestNoramalizeTime(t *testing.T) {
 	t.Parallel()
@@ -49,7 +52,7 @@ func TestNoramalizeTime(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := NormalizeUnixTime(tc.t)
+			got := NormalizeUnixTime(tc.t, jst)
 			assert.Equal(t, tc.expected, got)
 		})
 	}
@@ -114,7 +117,7 @@ func TestGroupDeploymentByDaily(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := GroupDeploymentsByDaily(tc.deployments)
+			got := GroupDeploymentsByDaily(tc.deployments, jst)
 			assert.Equal(t, tc.expected, got)
 		})
 	}
