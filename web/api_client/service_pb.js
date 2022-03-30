@@ -13581,7 +13581,7 @@ proto.grpc.service.webservice.GetInsightDataRequest.toObject = function(includeI
     rangeFrom: jspb.Message.getFieldWithDefault(msg, 2, 0),
     rangeTo: jspb.Message.getFieldWithDefault(msg, 3, 0),
     applicationId: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    timezone: jspb.Message.getFieldWithDefault(msg, 5, "")
+    offset: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
   if (includeInstance) {
@@ -13635,8 +13635,8 @@ proto.grpc.service.webservice.GetInsightDataRequest.deserializeBinaryFromReader 
       msg.setApplicationId(value);
       break;
     case 5:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setTimezone(value);
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setOffset(value);
       break;
     default:
       reader.skipField();
@@ -13695,9 +13695,9 @@ proto.grpc.service.webservice.GetInsightDataRequest.serializeBinaryToWriter = fu
       f
     );
   }
-  f = message.getTimezone();
-  if (f.length > 0) {
-    writer.writeString(
+  f = message.getOffset();
+  if (f !== 0) {
+    writer.writeInt32(
       5,
       f
     );
@@ -13778,20 +13778,20 @@ proto.grpc.service.webservice.GetInsightDataRequest.prototype.setApplicationId =
 
 
 /**
- * optional string timezone = 5;
- * @return {string}
+ * optional int32 offset = 5;
+ * @return {number}
  */
-proto.grpc.service.webservice.GetInsightDataRequest.prototype.getTimezone = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+proto.grpc.service.webservice.GetInsightDataRequest.prototype.getOffset = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
 };
 
 
 /**
- * @param {string} value
+ * @param {number} value
  * @return {!proto.grpc.service.webservice.GetInsightDataRequest} returns this
  */
-proto.grpc.service.webservice.GetInsightDataRequest.prototype.setTimezone = function(value) {
-  return jspb.Message.setProto3StringField(this, 5, value);
+proto.grpc.service.webservice.GetInsightDataRequest.prototype.setOffset = function(value) {
+  return jspb.Message.setProto3IntField(this, 5, value);
 };
 
 

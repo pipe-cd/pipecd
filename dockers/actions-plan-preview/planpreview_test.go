@@ -293,11 +293,7 @@ Plan: 1 to add, 0 to change, 0 to destroy.
 Note: You didn't use the -out option to save this plan, so Terraform can't
 guarantee to take exactly these actions if you run "terraform apply" now.
 1 to add, 0 to change, 0 to destroy`,
-			want: `Terraform used the selected providers to generate the following execution
-plan. Resource actions are indicated with the following symbols:
-  + create
-
-Terraform will perform the following actions:
+			want: `Terraform will perform the following actions:
 
   # google_dns_record_set.xxx will be created
   + resource "google_dns_record_set" "xxxxx" {
@@ -312,7 +308,13 @@ Terraform will perform the following actions:
       + type         = "A"
     }
 
-Plan: 1 to add, 0 to change, 0 to destroy.`,
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+─────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.
+1 to add, 0 to change, 0 to destroy`,
 			wantErr: false,
 		},
 		{
@@ -394,11 +396,7 @@ version constraint into the required_providers block.
 Note: You didn't use the -out option to save this plan, so Terraform can't
 guarantee to take exactly these actions if you run "terraform apply" now.
 1 to add, 0 to change, 0 to destroy`,
-			want: `Terraform used the selected providers to generate the following execution
-plan. Resource actions are indicated with the following symbols:
-  + create
-
-Terraform will perform the following actions:
+			want: `Terraform will perform the following actions:
 
   # google_dns_record_set.xxx will be created
   + resource "google_dns_record_set" "xxxxx" {
@@ -423,7 +421,13 @@ Warning: Version constraints inside provider configuration blocks are deprecated
 Terraform 0.13 and earlier allowed provider version constraints inside the
 provider configuration block, but that is now deprecated and will be removed
 in a future version of Terraform. To silence this warning, move the provider
-version constraint into the required_providers block.`,
+version constraint into the required_providers block.
+
+─────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.
+1 to add, 0 to change, 0 to destroy`,
 			wantErr: false,
 		},
 		{
@@ -529,12 +533,7 @@ Plan: 2 to add, 1 to change, 0 to destroy.
 Note: You didn't use the -out option to save this plan, so Terraform can't
 guarantee to take exactly these actions if you run "terraform apply" now.
 2 to add, 1 to change, 0 to destroy`,
-			want: `Terraform used the selected providers to generate the following execution
-plan. Resource actions are indicated with the following symbols:
-  + create
-  ~ update in-place
-
-Terraform will perform the following actions:
+			want: `Terraform will perform the following actions:
 
   # google_dns_managed_zone.xxxxx will be created
   + resource "google_dns_managed_zone" "xxxxx" {
@@ -571,7 +570,13 @@ Terraform will perform the following actions:
         # (3 unchanged attributes hidden)
     }
 
-Plan: 2 to add, 1 to change, 0 to destroy.`,
+Plan: 2 to add, 1 to change, 0 to destroy.
+
+─────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.
+2 to add, 1 to change, 0 to destroy`,
 			wantErr: false,
 		},
 	}
