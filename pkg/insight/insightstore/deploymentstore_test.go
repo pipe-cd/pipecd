@@ -21,6 +21,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/pipe-cd/pipecd/pkg/filestore/filestoretest"
@@ -271,12 +272,12 @@ func TestGetDailyDeployments(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			fs := filestoretest.NewMockStore(ctrl)
 			for i, meta := range tc.storedMeta {
-				fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(proto.Marshal(meta))
+				fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(protojson.Marshal(meta))
 
 				keys := findPathFromMeta(meta, tc.args.from, tc.args.to)
 				assert.Equal(t, len(tc.storedChunks[i]), len(keys))
 				for _, v := range tc.storedChunks[i] {
-					fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(proto.Marshal(v))
+					fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(protojson.Marshal(v))
 				}
 			}
 
@@ -284,7 +285,10 @@ func TestGetDailyDeployments(t *testing.T) {
 			got, err := store.List(context.Background(), tc.args.projectID, tc.args.from, tc.args.to, *model.InsightDeploymentVersion_V0.Enum())
 			assert.Equal(t, tc.expectedErr, err)
 			if tc.expectedErr == nil {
-				assert.Equal(t, tc.expected, got)
+				assert.True(t, len(tc.expected) == len(got))
+				for i := range tc.expected {
+					assert.True(t, proto.Equal(tc.expected[i], got[i]))
+				}
 			}
 		})
 	}
@@ -360,15 +364,15 @@ func TestPutDeployment(t *testing.T) {
 
 			setup: func(fs *filestoretest.MockStore, c *chunks) {
 				// get meta
-				fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(proto.Marshal(c.storedMeta))
+				fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(protojson.Marshal(c.storedMeta))
 
 				// store meta
-				raw, err := proto.Marshal(c.willStoreMeta)
+				raw, err := protojson.Marshal(c.willStoreMeta)
 				assert.NoError(t, err)
 				fs.EXPECT().Put(gomock.Any(), gomock.Any(), raw).Return(nil)
 
 				// store chunk
-				raw, err = proto.Marshal(c.willStoreChunk)
+				raw, err = protojson.Marshal(c.willStoreChunk)
 				assert.NoError(t, err)
 				fs.EXPECT().Put(gomock.Any(), gomock.Any(), raw).Return(nil)
 			},
@@ -451,18 +455,18 @@ func TestPutDeployment(t *testing.T) {
 
 			setup: func(fs *filestoretest.MockStore, c *chunks) {
 				// get meta
-				fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(proto.Marshal(c.storedMeta))
+				fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(protojson.Marshal(c.storedMeta))
 
 				// get chunk
-				fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(proto.Marshal(c.storedChunk))
+				fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(protojson.Marshal(c.storedChunk))
 
 				// store meta
-				raw, err := proto.Marshal(c.willStoreMeta)
+				raw, err := protojson.Marshal(c.willStoreMeta)
 				assert.NoError(t, err)
 				fs.EXPECT().Put(gomock.Any(), gomock.Any(), raw).Return(nil)
 
 				// store chunk
-				raw, err = proto.Marshal(c.willStoreChunk)
+				raw, err = protojson.Marshal(c.willStoreChunk)
 				assert.NoError(t, err)
 				fs.EXPECT().Put(gomock.Any(), gomock.Any(), raw).Return(nil)
 			},
@@ -546,18 +550,18 @@ func TestPutDeployment(t *testing.T) {
 
 			setup: func(fs *filestoretest.MockStore, c *chunks) {
 				// get meta
-				fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(proto.Marshal(c.storedMeta))
+				fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(protojson.Marshal(c.storedMeta))
 
 				// get chunk
-				fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(proto.Marshal(c.storedChunk))
+				fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(protojson.Marshal(c.storedChunk))
 
 				// store meta
-				raw, err := proto.Marshal(c.willStoreMeta)
+				raw, err := protojson.Marshal(c.willStoreMeta)
 				assert.NoError(t, err)
 				fs.EXPECT().Put(gomock.Any(), gomock.Any(), raw).Return(nil)
 
 				// store chunk
-				raw, err = proto.Marshal(c.willStoreChunk)
+				raw, err = protojson.Marshal(c.willStoreChunk)
 				assert.NoError(t, err)
 				fs.EXPECT().Put(gomock.Any(), gomock.Any(), raw).Return(nil)
 			},
@@ -656,7 +660,10 @@ func TestExtractDailyDeploymentFromChunk(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			got := extractDeploymentsFromChunk(tc.chunk, tc.from, tc.to)
-			assert.Equal(t, tc.expectedDailyDeployments, got)
+			assert.True(t, len(tc.expectedDailyDeployments) == len(got))
+			for i := range tc.expectedDailyDeployments {
+				assert.True(t, proto.Equal(tc.expectedDailyDeployments[i], got[i]))
+			}
 		})
 	}
 }
