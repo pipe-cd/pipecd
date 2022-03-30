@@ -196,10 +196,8 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 	}
 
 	commit := e.Deployment.CommitHash()
-	if newRevision != "" {
-		if !addBuiltinLabels(sm, commit, e.PipedConfig.PipedID, e.Deployment.ApplicationId, newRevision, e.LogPersister) {
-			return model.StageStatus_STAGE_FAILURE
-		}
+	if !addBuiltinLabels(sm, commit, e.PipedConfig.PipedID, e.Deployment.ApplicationId, newRevision, e.LogPersister) {
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	if !apply(ctx, e.client, sm, e.LogPersister) {
