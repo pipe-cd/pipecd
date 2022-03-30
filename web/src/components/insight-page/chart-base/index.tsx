@@ -2,7 +2,7 @@ import { Box, makeStyles, Paper, Typography } from "@material-ui/core";
 import grey from "@material-ui/core/colors/grey";
 import { WarningOutlined } from "@material-ui/icons";
 import dayjs from "dayjs";
-import { LineChart } from "echarts/charts";
+import { BarChart } from "echarts/charts";
 import {
   GridComponent,
   LegendComponent,
@@ -21,7 +21,7 @@ echarts.use([
   TitleComponent,
   TooltipComponent,
   GridComponent,
-  LineChart,
+  BarChart,
   CanvasRenderer,
   LegendComponent,
 ]);
@@ -84,7 +84,6 @@ export const ChartBase: FC<ChartBaseProps> = ({
           name: xName,
           nameLocation: "center",
           nameGap: 32,
-          boundaryGap: false,
           data: _data[0].points.map((v) => labelFormatter(v.timestamp)),
         },
         yAxis: {
@@ -96,7 +95,7 @@ export const ChartBase: FC<ChartBaseProps> = ({
         tooltip,
         series: _data.map((v) => ({
           name: v.name,
-          type: "line",
+          type: "bar",
           stack: title,
           data: v.points.map((point) => point.value),
           emphasis: {
