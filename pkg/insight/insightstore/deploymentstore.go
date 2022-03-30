@@ -29,10 +29,11 @@ import (
 )
 
 var (
-	errInvalidArg    = errors.New("invalid arg")
-	errLargeDuration = errors.New("too large duration")
-	errExceedMaxSize = errors.New("exceed max file size")
-	errInconsistent  = errors.New("no consistency between meta and chunk")
+	errInvalidArg         = errors.New("invalid arg")
+	errLargeDuration      = errors.New("too large duration")
+	errExceedMaxSize      = errors.New("exceed max file size")
+	errInconsistent       = errors.New("no consistency between meta and chunk")
+	errOverwritePastChunk = errors.New("cannot overwrite past deployment")
 )
 
 const (
@@ -154,7 +155,7 @@ func (s *store) putDeployments(ctx context.Context, projectID string, deployment
 
 	latestChunkMeta := meta.Chunks[len(meta.Chunks)-1]
 	if firstDeployment.CompletedAt < latestChunkMeta.To {
-		return errors.New("cannot overwrite past deployment")
+		return errOverwritePastChunk
 	}
 
 	// TODO refine this size check

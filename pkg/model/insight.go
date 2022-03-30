@@ -27,6 +27,16 @@ func (c *InsightDeploymentChunk) Size() (int64, error) {
 	return int64(len(raw)), nil
 }
 
+func (c *InsightDeploymentChunk) ExtractDeployments(from, to int64) []*InsightDeployment {
+	var result []*InsightDeployment
+	for _, d := range c.Deployments {
+		if from <= d.CompletedAt && d.CompletedAt <= to {
+			result = append(result, d)
+		}
+	}
+	return result
+}
+
 func (m *InsightDeploymentChunkMetadata) ListChunkNames(from, to int64) []string {
 	var paths []string
 	for _, m := range m.Chunks {
@@ -39,14 +49,4 @@ func (m *InsightDeploymentChunkMetadata) ListChunkNames(from, to int64) []string
 
 func overlap(lhsFrom, lhsTo, rhsFrom, rhsTo int64) bool {
 	return (rhsFrom < lhsTo && lhsFrom < rhsTo)
-}
-
-func (c *InsightDeploymentChunk) ExtractDeployments(from, to int64) []*InsightDeployment {
-	var result []*InsightDeployment
-	for _, d := range c.Deployments {
-		if from <= d.CompletedAt && d.CompletedAt <= to {
-			result = append(result, d)
-		}
-	}
-	return result
 }
