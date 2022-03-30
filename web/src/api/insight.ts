@@ -12,7 +12,7 @@ export const getInsightData = ({
   metricsKind,
   rangeFrom,
   rangeTo,
-  timezone,
+  offset,
 }: GetInsightDataRequest.AsObject): Promise<
   GetInsightDataResponse.AsObject
 > => {
@@ -24,8 +24,7 @@ export const getInsightData = ({
   req.setMetricsKind(metricsKind);
   req.setRangeFrom(rangeFrom);
   req.setRangeTo(rangeTo);
-  req.setTimezone(timezone);
-  console.log(timezone);
+  req.setOffset(offset);
   const p = apiRequest(req, apiClient.getInsightData) as Promise<
     GetInsightDataResponse.AsObject
   >;
