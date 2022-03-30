@@ -13580,7 +13580,8 @@ proto.grpc.service.webservice.GetInsightDataRequest.toObject = function(includeI
     metricsKind: jspb.Message.getFieldWithDefault(msg, 1, 0),
     rangeFrom: jspb.Message.getFieldWithDefault(msg, 2, 0),
     rangeTo: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    applicationId: jspb.Message.getFieldWithDefault(msg, 4, "")
+    applicationId: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    timezone: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
 
   if (includeInstance) {
@@ -13632,6 +13633,10 @@ proto.grpc.service.webservice.GetInsightDataRequest.deserializeBinaryFromReader 
     case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.setApplicationId(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTimezone(value);
       break;
     default:
       reader.skipField();
@@ -13687,6 +13692,13 @@ proto.grpc.service.webservice.GetInsightDataRequest.serializeBinaryToWriter = fu
   if (f.length > 0) {
     writer.writeString(
       4,
+      f
+    );
+  }
+  f = message.getTimezone();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
       f
     );
   }
@@ -13762,6 +13774,24 @@ proto.grpc.service.webservice.GetInsightDataRequest.prototype.getApplicationId =
  */
 proto.grpc.service.webservice.GetInsightDataRequest.prototype.setApplicationId = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional string timezone = 5;
+ * @return {string}
+ */
+proto.grpc.service.webservice.GetInsightDataRequest.prototype.getTimezone = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.grpc.service.webservice.GetInsightDataRequest} returns this
+ */
+proto.grpc.service.webservice.GetInsightDataRequest.prototype.setTimezone = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 

@@ -1586,6 +1586,9 @@ export class GetInsightDataRequest extends jspb.Message {
   getApplicationId(): string;
   setApplicationId(value: string): GetInsightDataRequest;
 
+  getTimezone(): string;
+  setTimezone(value: string): GetInsightDataRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetInsightDataRequest.AsObject;
   static toObject(includeInstance: boolean, msg: GetInsightDataRequest): GetInsightDataRequest.AsObject;
@@ -1600,6 +1603,7 @@ export namespace GetInsightDataRequest {
     rangeFrom: number,
     rangeTo: number,
     applicationId: string,
+    timezone: string,
   }
 }
 

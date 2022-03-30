@@ -438,6 +438,8 @@ message GetInsightDataRequest {
     int64 range_from = 2 [(validate.rules).int64.gt = 0];
     int64 range_to = 3 [(validate.rules).int64.gt = 0];
     string application_id = 4;
+    // tzdb Id like `Asia/Tokyo`. null means UTC.
+    string timezone = 5;
 }
 
 message GetInsightDataResponse {
