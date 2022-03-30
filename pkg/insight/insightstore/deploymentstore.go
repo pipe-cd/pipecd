@@ -46,6 +46,7 @@ type DeploymentStore interface {
 	// List returns slice of Deployment sorted by CompletedAt ASC.
 	List(ctx context.Context, projectID string, from, to int64, minimumVersion model.InsightDeploymentVersion) ([]*model.InsightDeployment, error)
 
+	// Put deployments must be sorted by CompletedAt,
 	Put(ctx context.Context, projectID string, deployments []*model.InsightDeployment, version model.InsightDeploymentVersion) error
 }
 
@@ -76,7 +77,7 @@ func (s *store) List(ctx context.Context, projectID string, from, to int64, mini
 			return nil, err
 		}
 
-		keys := (&meta).ListChunkNames(from, to)
+		keys := meta.ListChunkNames(from, to)
 
 		for _, key := range keys {
 			data := model.InsightDeploymentChunk{}
@@ -87,7 +88,7 @@ func (s *store) List(ctx context.Context, projectID string, from, to int64, mini
 
 			// Maybe we should use metadata instead of loading chunkdata
 			if data.Version >= minimumVersion {
-				deployments := (&data).ExtractDeployments(from, to)
+				deployments := data.ExtractDeployments(from, to)
 				result = append(result, deployments...)
 			}
 		}
@@ -96,7 +97,7 @@ func (s *store) List(ctx context.Context, projectID string, from, to int64, mini
 	return result, nil
 }
 
-// deployments must be sorted by CompletedAt,
+// Put deployments must be sorted by CompletedAt,
 func (s *store) Put(ctx context.Context, projectID string, deployments []*model.InsightDeployment, version model.InsightDeploymentVersion) error {
 	dailyDeployments := insight.GroupDeploymentsByDaily(deployments, time.Local)
 
@@ -227,7 +228,7 @@ func createNewChunk(deployments []*model.InsightDeployment) (*model.InsightDeplo
 		To:          to,
 		Deployments: deployments,
 	}
-	size, err := (&chunkData).Size()
+	size, err := chunkData.Size()
 	if err != nil {
 		return nil, 0, err
 	}
