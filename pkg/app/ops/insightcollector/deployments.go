@@ -16,7 +16,6 @@ package insightcollector
 
 import (
 	"context"
-	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -46,7 +45,7 @@ var deploymentFrequencyMinimumVersion = model.InsightDeploymentVersion_V0
 // 	return updateErr
 // }
 
-func (c *Collector) collectDevelopmentFrequency(ctx context.Context, ds []*model.Deployment, target time.Time) error {
+func (c *Collector) collectDevelopmentFrequency(ctx context.Context, ds []*model.Deployment) error {
 	dailyDeployments := groupDeploymentByProjectID(ds)
 
 	for projectID, deployments := range dailyDeployments {
