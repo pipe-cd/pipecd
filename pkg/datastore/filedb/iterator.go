@@ -43,5 +43,6 @@ func (it *Iterator) Next(dst interface{}) error {
 }
 
 func (it *Iterator) Cursor() (string, error) {
-	return "", datastore.ErrUnsupported
+	// TODO: Implement cursor for filedb datastore.
+	return "", nil
 }
