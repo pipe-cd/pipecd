@@ -109,13 +109,13 @@ func (c *Collector) findDeploymentsCompletedInRange(ctx context.Context, from, t
 }
 
 func groupDeploymentByProjectID(deployments []*model.Deployment) map[string][]*model.InsightDeployment {
-	groupById := make(map[string][]*model.InsightDeployment)
+	groupByID := make(map[string][]*model.InsightDeployment)
 	for _, d := range deployments {
 		var rollbackStartedAt int64
 		if s, ok := d.FindRollbackStage(); ok {
 			rollbackStartedAt = s.CreatedAt
 		}
-		groupById[d.ProjectId] = append(groupById[d.ProjectId], &model.InsightDeployment{
+		groupByID[d.ProjectId] = append(groupByID[d.ProjectId], &model.InsightDeployment{
 			Id:                d.Id,
 			AppId:             d.ApplicationId,
 			Labels:            d.Labels,
@@ -126,5 +126,5 @@ func groupDeploymentByProjectID(deployments []*model.Deployment) map[string][]*m
 		})
 	}
 
-	return groupById
+	return groupByID
 }
