@@ -148,8 +148,7 @@ const (
 	githubRunIDEnv      = "GITHUB_RUN_ID"
 
 	// Terraform plan format
-	startTerraformPlan = "Terraform will perform the following actions:"
-	endTerraformPlan   = "─────────────────────────────────────────────────────────────────────────────"
+	prefixTerraformPlan = "Terraform will perform the following actions:"
 )
 
 func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
@@ -310,18 +309,14 @@ func generateTerraformShortPlanDetails(details string) (string, error) {
 	r := strings.NewReader(details)
 	scanner := bufio.NewScanner(r)
 	var (
-		start, end int
-		length     int
-		newLine    = len([]byte("\n"))
+		start, length int
+		newLine       = len([]byte("\n"))
 	)
 	// NOTE: scanner.Scan() return false if the buffer size of one line exceed bufio.MaxScanTokenSize(65536 byte).
 	for scanner.Scan() {
 		line := scanner.Text()
-		if strings.Contains(line, startTerraformPlan) {
+		if strings.Contains(line, prefixTerraformPlan) {
 			start = length
-		}
-		if start != 0 && strings.Contains(line, endTerraformPlan) {
-			end = length - 2*newLine // Exclude last new line.
 			break
 		}
 		length += len(scanner.Bytes())
@@ -330,5 +325,5 @@ func generateTerraformShortPlanDetails(details string) (string, error) {
 	if err := scanner.Err(); err != nil {
 		return "", err
 	}
-	return details[start:end], nil
+	return details[start:], nil
 }
