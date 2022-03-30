@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclparse"
 
+	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -36,6 +38,7 @@ type Module struct {
 	Name    string
 	Source  string
 	Version string
+	IsLocal bool
 }
 
 const tfFileExtension = ".tf"
@@ -86,6 +89,7 @@ func LoadTerraformFiles(dir string) ([]File, error) {
 				Name:    m.Name,
 				Source:  m.Source,
 				Version: m.Version,
+				IsLocal: isModuleLocal(m.Source),
 			})
 		}
 
@@ -111,4 +115,50 @@ func FindArtifactVersions(tfs []File) ([]*model.ArtifactVersion, error) {
 	}
 
 	return versions, nil
+}
+
+func isModuleLocal(moduleSrc string) bool {
+	if strings.HasPrefix(moduleSrc, "./") || strings.HasPrefix(moduleSrc, "../") {
+		return true
+	}
+
+	return false
+}
+
+// LocalModuleSourceConverter is a converter from local module source to its URL.
+type LocalModuleSourceConverter struct {
+	// GitURL is a URL for git repository URL
+	GitURL string
+	// Branch is a git branch for the current terraform file repo.
+	Branch string
+	// RepoDir is a dir where the terraform file repo located.
+	RepoDir string
+	// AppDir is a dir where the terraform module located.
+	AppDir string
+}
+
+func NewLocalModuleSourceConverter(gitURL, branch, repoDir, AppDir string) *LocalModuleSourceConverter {
+	return &LocalModuleSourceConverter{
+		GitURL:  gitURL,
+		Branch:  branch,
+		RepoDir: repoDir,
+		AppDir:  AppDir,
+	}
+}
+
+// MakeURL make a URL from a local module source.
+func (l *LocalModuleSourceConverter) MakeURL(moduleSrc string) (string, error) {
+	// resolve path for local module
+	// moduleSrc is a relative path like "./" or "../" and so on.
+	moduleDir := filepath.Join(l.AppDir, moduleSrc)
+	dirFromRepo, err := filepath.Rel(l.RepoDir, moduleDir)
+	if err != nil {
+		return "", err
+	}
+
+	if strings.HasSuffix(dirFromRepo, "..") {
+		return "", fmt.Errorf("can't resolve relative path on git repo")
+	}
+
+	return git.MakeDirURL(l.GitURL, dirFromRepo, l.Branch)
 }

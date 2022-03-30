@@ -155,3 +155,124 @@ func TestFindArticatVersions(t *testing.T) {
 		})
 	}
 }
+
+func TestMakeURL(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name        string
+		lc          *LocalModuleSourceConverter
+		moduleSrc   string
+		expected    string
+		expectedErr bool
+	}{
+		{
+			name: "relative path ./",
+			lc: &LocalModuleSourceConverter{
+				GitURL:  "https://github.com/example/test",
+				Branch:  "main",
+				RepoDir: "/repo/test",
+				AppDir:  "/repo/test/hoge",
+			},
+			moduleSrc:   "./",
+			expected:    "https://github.com/example/test/tree/main/hoge",
+			expectedErr: false,
+		},
+		{
+			name: "relative path ../",
+			lc: &LocalModuleSourceConverter{
+				GitURL:  "https://github.com/example/test",
+				Branch:  "main",
+				RepoDir: "/repo/test",
+				AppDir:  "/repo/test/hoge/fuga",
+			},
+			moduleSrc:   "../",
+			expected:    "https://github.com/example/test/tree/main/hoge",
+			expectedErr: false,
+		},
+		{
+			name: "relative path ./hoge",
+			lc: &LocalModuleSourceConverter{
+				GitURL:  "https://github.com/example/test",
+				Branch:  "main",
+				RepoDir: "/repo/test",
+				AppDir:  "/repo/test",
+			},
+			moduleSrc:   "./hoge",
+			expected:    "https://github.com/example/test/tree/main/hoge",
+			expectedErr: false,
+		},
+		{
+			name: "relative path ../fuga",
+			lc: &LocalModuleSourceConverter{
+				GitURL:  "https://github.com/example/test",
+				Branch:  "main",
+				RepoDir: "/repo/test",
+				AppDir:  "/repo/test/hoge",
+			},
+			moduleSrc:   "../fuga",
+			expected:    "https://github.com/example/test/tree/main/fuga",
+			expectedErr: false,
+		},
+		{
+			name: "can't resolve path",
+			lc: &LocalModuleSourceConverter{
+				GitURL:  "https://github.com/example/test",
+				Branch:  "main",
+				RepoDir: "/repo/test",
+				AppDir:  "/repo/test",
+			},
+			moduleSrc:   "../../",
+			expected:    "",
+			expectedErr: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			url, err := tc.lc.MakeURL(tc.moduleSrc)
+
+			assert.Equal(t, tc.expectedErr, err != nil)
+			assert.Equal(t, url, tc.expected)
+		})
+	}
+}
+
+func TestIsModuleLocal(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name      string
+		moduleSrc string
+		expected  bool
+	}{
+		{
+			name:      "start with ./",
+			moduleSrc: "./test",
+			expected:  true,
+		},
+		{
+			name:      "start with ../",
+			moduleSrc: "../test",
+			expected:  true,
+		},
+		{
+			name:      "not a relative path",
+			moduleSrc: "test",
+			expected:  false,
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, isModuleLocal(tc.moduleSrc), tc.expected)
+		})
+	}
+}
