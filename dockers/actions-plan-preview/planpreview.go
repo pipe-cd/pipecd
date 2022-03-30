@@ -148,7 +148,7 @@ const (
 	githubRunIDEnv      = "GITHUB_RUN_ID"
 
 	// Terraform plan format
-	startTerraformPlan = "Terraform used the selected providers to generate the following execution"
+	startTerraformPlan = "Terraform will perform the following actions:"
 	endTerraformPlan   = "─────────────────────────────────────────────────────────────────────────────"
 )
 
