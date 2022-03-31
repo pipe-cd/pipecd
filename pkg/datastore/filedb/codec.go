@@ -29,14 +29,17 @@ func decode(col datastore.Collection, e interface{}, parts map[datastore.Shard][
 		return dcol.Decode(e, parts)
 	}
 
-	// In case it's single part contained object, unmarshal it directly.
-	if len(parts) == 1 {
-		for _, v := range parts {
-			return json.Unmarshal(v, e)
-		}
+	ps := make([][]byte, 0, len(parts))
+	for _, part := range parts {
+		ps = append(ps, part)
 	}
 
-	return merge(e, parts)
+	// In case it's single part contained object, unmarshal it directly.
+	if len(ps) == 1 {
+		return json.Unmarshal(ps[0], e)
+	}
+
+	return merge(e, ps...)
 }
 
 type mergeable interface {
@@ -47,7 +50,7 @@ type mergeable interface {
 // merge function unmarshal all parts of the given data to entity e.
 // The data will be merged regardless of its time order, after be merged,
 // the latest UpdatedAt time will be used as the entity UpdatedAt value.
-func merge(e interface{}, parts map[datastore.Shard][]byte) error {
+func merge(e interface{}, parts ...[]byte) error {
 	me, ok := e.(mergeable)
 	if !ok {
 		return datastore.ErrUnsupported
