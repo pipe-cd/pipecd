@@ -26,6 +26,7 @@ go_library(
         "//pkg/datastore:go_default_library",
         "//pkg/filestore:go_default_library",
         "//pkg/git:go_default_library",
+        "//pkg/insight:go_default_library",
         "//pkg/insight/insightstore:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/rpc/rpcauth:go_default_library",
