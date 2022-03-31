@@ -245,7 +245,11 @@ func createNewChunkAndMeta(deployments []*model.InsightDeployment, version model
 		return nil, nil, errInvalidArg
 	}
 
-	from, to := deployments[0].CompletedAt, deployments[len(deployments)-1].CompletedAt
+	var (
+		from = deployments[0].CompletedAt
+		to   = deployments[len(deployments)-1].CompletedAt
+	)
+
 	// Create new meta and chunk
 	chunkData := &model.InsightDeploymentChunk{
 		From:        from,
@@ -294,7 +298,11 @@ func createNewChunkAndUpdateMeta(curMeta *model.InsightDeploymentChunkMetadata, 
 	newChunkKey := determineDeploymentChunkKey(len(curMeta.Chunks) + 1)
 
 	// Create meta
-	from, to := deployments[0].CompletedAt, deployments[len(deployments)-1].CompletedAt
+	var (
+		from = deployments[0].CompletedAt
+		to   = deployments[len(deployments)-1].CompletedAt
+	)
+
 	newChunkMetaData := model.InsightDeploymentChunkMetadata_ChunkMeta{
 		From:  from,
 		To:    to,
@@ -337,7 +345,7 @@ func appendChunkAndUpdateMeta(meta *model.InsightDeploymentChunkMetadata, curChu
 	// Update meta
 	latestChunkMeta.Size = size
 	latestChunkMeta.To = lastDeployment.CompletedAt
-	latestChunkMeta.Count += int64(len(curChunk.Deployments))
+	latestChunkMeta.Count = int64(len(curChunk.Deployments))
 	meta.UpdatedAt = updatedAt.Unix()
 
 	return nil
