@@ -109,6 +109,20 @@ func (mr *MockProjectStoreMockRecorder) List(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockProjectStore)(nil).List), arg0, arg1)
 }
 
+// MigrateFromProjectRBACConfig mocks base method.
+func (m *MockProjectStore) MigrateFromProjectRBACConfig(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MigrateFromProjectRBACConfig", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MigrateFromProjectRBACConfig indicates an expected call of MigrateFromProjectRBACConfig.
+func (mr *MockProjectStoreMockRecorder) MigrateFromProjectRBACConfig(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MigrateFromProjectRBACConfig", reflect.TypeOf((*MockProjectStore)(nil).MigrateFromProjectRBACConfig), arg0, arg1)
+}
+
 // UpdateProjectRBACConfig mocks base method.
 func (m *MockProjectStore) UpdateProjectRBACConfig(arg0 context.Context, arg1 string, arg2 *model.ProjectRBACConfig) error {
 	m.ctrl.T.Helper()
@@ -121,6 +135,20 @@ func (m *MockProjectStore) UpdateProjectRBACConfig(arg0 context.Context, arg1 st
 func (mr *MockProjectStoreMockRecorder) UpdateProjectRBACConfig(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProjectRBACConfig", reflect.TypeOf((*MockProjectStore)(nil).UpdateProjectRBACConfig), arg0, arg1, arg2)
+}
+
+// UpdateProjectRBACRoles mocks base method.
+func (m *MockProjectStore) UpdateProjectRBACRoles(arg0 context.Context, arg1 string, arg2 []*model.ProjectRBACRole) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateProjectRBACRoles", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateProjectRBACRoles indicates an expected call of UpdateProjectRBACRoles.
+func (mr *MockProjectStoreMockRecorder) UpdateProjectRBACRoles(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProjectRBACRoles", reflect.TypeOf((*MockProjectStore)(nil).UpdateProjectRBACRoles), arg0, arg1, arg2)
 }
 
 // UpdateProjectSSOConfig mocks base method.
@@ -149,6 +177,20 @@ func (m *MockProjectStore) UpdateProjectStaticAdmin(arg0 context.Context, arg1, 
 func (mr *MockProjectStoreMockRecorder) UpdateProjectStaticAdmin(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProjectStaticAdmin", reflect.TypeOf((*MockProjectStore)(nil).UpdateProjectStaticAdmin), arg0, arg1, arg2, arg3)
+}
+
+// UpdateProjectUserGroups mocks base method.
+func (m *MockProjectStore) UpdateProjectUserGroups(arg0 context.Context, arg1 string, arg2 []*model.ProjectUserGroup) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateProjectUserGroups", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateProjectUserGroups indicates an expected call of UpdateProjectUserGroups.
+func (mr *MockProjectStoreMockRecorder) UpdateProjectUserGroups(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProjectUserGroups", reflect.TypeOf((*MockProjectStore)(nil).UpdateProjectUserGroups), arg0, arg1, arg2)
 }
 
 // MockPipedStore is a mock of PipedStore interface.
