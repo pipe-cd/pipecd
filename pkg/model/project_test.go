@@ -225,3 +225,165 @@ func TestDecrypt(t *testing.T) {
 		})
 	}
 }
+
+func TestProject_UpdateRBACRoles(t *testing.T) {
+	roles := []*ProjectRBACRole{
+		builtinAdminRBACRole,
+		builtinEditorRBACRole,
+		builtinViewerRBACRole,
+	}
+	p := &Project{RbacRoles: roles}
+	testcases := []struct {
+		name    string
+		roles   []*ProjectRBACRole
+		wantErr bool
+	}{
+		{
+			name: "cannot use built-in role name",
+			roles: []*ProjectRBACRole{
+				builtinAdminRBACRole,
+				builtinEditorRBACRole,
+				builtinViewerRBACRole,
+				{
+					Name: "Admin",
+					Policies: []*ProjectRBACPolicy{
+						{
+							Resources: []*ProjectRBACResource{
+								{
+									Type: ProjectRBACResource_ALL,
+								},
+							},
+							Actions: []ProjectRBACPolicy_Action{
+								ProjectRBACPolicy_ALL,
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "role name must be unique",
+			roles: []*ProjectRBACRole{
+				builtinAdminRBACRole,
+				builtinEditorRBACRole,
+				builtinViewerRBACRole,
+				{
+					Name: "Tester",
+					Policies: []*ProjectRBACPolicy{
+						{
+							Resources: []*ProjectRBACResource{
+								{
+									Type: ProjectRBACResource_APPLICATION,
+								},
+							},
+							Actions: []ProjectRBACPolicy_Action{
+								ProjectRBACPolicy_GET,
+							},
+						},
+					},
+				},
+				{
+					Name: "Tester",
+					Policies: []*ProjectRBACPolicy{
+						{
+							Resources: []*ProjectRBACResource{
+								{
+									Type: ProjectRBACResource_APPLICATION,
+								},
+							},
+							Actions: []ProjectRBACPolicy_Action{
+								ProjectRBACPolicy_GET,
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := p.UpdateRBACRoles(tc.roles)
+			assert.Equal(t, tc.wantErr, err != nil)
+		})
+	}
+}
+
+func TestProjectRBACRole_IsBuiltinName(t *testing.T) {
+	p := &ProjectRBACRole{}
+	// Admin
+	p.Name = "Admin"
+	assert.True(t, p.IsBuiltinName())
+	// Editor
+	p.Name = "Editor"
+	assert.True(t, p.IsBuiltinName())
+	// Viewer
+	p.Name = "Viewer"
+	assert.True(t, p.IsBuiltinName())
+	// Other
+	p.Name = "Tester"
+	assert.False(t, p.IsBuiltinName())
+}
+
+func TestProject_UpdateUserGroups(t *testing.T) {
+	p := &Project{}
+	groups := []*ProjectUserGroup{
+		{
+			Role:     "Admin",
+			SsoGroup: "team/admin",
+		},
+		{
+			Role:     "Editor",
+			SsoGroup: "team/editor",
+		},
+		{
+			Role:     "Viewer",
+			SsoGroup: "team/viewer",
+		},
+	}
+	err := p.UpdateUserGroups(groups)
+	assert.NoError(t, err)
+	assert.Len(t, p.UserGroups, len(groups))
+
+	groups = []*ProjectUserGroup{
+		{
+			Role:     "Tester",
+			SsoGroup: "team/tester",
+		},
+		{
+			Role:     "Owner",
+			SsoGroup: "team/tester",
+		},
+	}
+	err = p.UpdateUserGroups(groups)
+	assert.Error(t, err)
+}
+
+func TestProject_SetUserGroup(t *testing.T) {
+	p := &Project{}
+	const group, role = "team/admin", "Admin"
+	// Add
+	p.SetUserGroup(group, role)
+	groups := p.UserGroups
+	assert.Equal(t, group, groups[0].SsoGroup)
+	assert.Equal(t, role, groups[0].Role)
+	// Update
+	p.SetUserGroup(group, role)
+	assert.Equal(t, groups, p.UserGroups)
+}
+
+func TestProject_MigrateFromRBAC(t *testing.T) {
+	p := &Project{}
+	p.MigrateFromRBAC()
+	assert.Empty(t, p.Rbac)
+
+	p.Rbac = &ProjectRBACConfig{
+		Admin:  "admin",
+		Editor: "editor",
+		Viewer: "viewer",
+	}
+	p.MigrateFromRBAC()
+	assert.Empty(t, p.Rbac)
+	assert.Len(t, p.UserGroups, 3)
+}

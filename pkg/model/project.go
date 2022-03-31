@@ -26,7 +26,86 @@ import (
 
 var (
 	githubScopes = []string{"read:org"}
+
+	builtinAdminRBACRole = &ProjectRBACRole{
+		Name:      builtinRBACRoleAdmin.String(),
+		Policies:  builtinAdminRBACPolicy,
+		IsBuiltin: true,
+	}
+	builtinAdminRBACPolicy = []*ProjectRBACPolicy{
+		{
+			Resources: []*ProjectRBACResource{
+				{
+					Type: ProjectRBACResource_ALL,
+				},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_ALL,
+			},
+		},
+	}
+	builtinEditorRBACRole = &ProjectRBACRole{
+		Name:      builtinRBACRoleEditor.String(),
+		Policies:  builtinEditorRBACPolicy,
+		IsBuiltin: true,
+	}
+	builtinEditorRBACPolicy = []*ProjectRBACPolicy{
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_APPLICATION},
+				{Type: ProjectRBACResource_DEPLOYMENT},
+				{Type: ProjectRBACResource_EVENT},
+				{Type: ProjectRBACResource_DEPLOYMENT_CHAIN},
+				{Type: ProjectRBACResource_INSIGHT},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_ALL,
+			},
+		},
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_PIPED},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_GET,
+				ProjectRBACPolicy_LIST,
+			},
+		},
+	}
+	builtinViewerRBACRole = &ProjectRBACRole{
+		Name:      builtinRBACRoleViewer.String(),
+		Policies:  builtinViewerRBACPolicy,
+		IsBuiltin: true,
+	}
+	builtinViewerRBACPolicy = []*ProjectRBACPolicy{
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_APPLICATION},
+				{Type: ProjectRBACResource_DEPLOYMENT},
+				{Type: ProjectRBACResource_EVENT},
+				{Type: ProjectRBACResource_PIPED},
+				{Type: ProjectRBACResource_DEPLOYMENT_CHAIN},
+				{Type: ProjectRBACResource_INSIGHT},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_GET,
+				ProjectRBACPolicy_LIST,
+			},
+		},
+	}
 )
+
+type BuiltinRBACRole string
+
+const (
+	builtinRBACRoleAdmin  BuiltinRBACRole = "Admin"
+	builtinRBACRoleEditor BuiltinRBACRole = "Editor"
+	builtinRBACRoleViewer BuiltinRBACRole = "Viewer"
+)
+
+func (b BuiltinRBACRole) String() string {
+	return string(b)
+}
 
 type encrypter interface {
 	Encrypt(text string) (string, error)
@@ -242,4 +321,74 @@ func (p *ProjectSSOConfig_GitHub) GenerateAuthCodeURL(project, callbackURL, stat
 	authURL := cfg.AuthCodeURL(state, oauth2.ApprovalForce, oauth2.AccessTypeOnline)
 
 	return authURL, nil
+}
+
+// UpdateRBACRoles update only custom rbac roles.
+func (p *Project) UpdateRBACRoles(roles []*ProjectRBACRole) error {
+	v := make(map[string]struct{}, len(roles))
+	update := make([]*ProjectRBACRole, 0, len(roles))
+	for _, role := range roles {
+		if role.IsBuiltin {
+			continue
+		}
+		if role.IsBuiltinName() {
+			return fmt.Errorf("cannot use built-in role name")
+		}
+		if _, ok := v[role.Name]; ok {
+			return fmt.Errorf("role name must be unique")
+		}
+		v[role.Name] = struct{}{}
+		update = append(update, role)
+	}
+	p.RbacRoles = update
+	return nil
+}
+
+func (p *ProjectRBACRole) IsBuiltinName() bool {
+	return p.Name == builtinRBACRoleAdmin.String() ||
+		p.Name == builtinRBACRoleEditor.String() ||
+		p.Name == builtinRBACRoleViewer.String()
+}
+
+// UpdateUserGroups update user groups.
+func (p *Project) UpdateUserGroups(groups []*ProjectUserGroup) error {
+	v := make(map[string]struct{}, len(groups))
+	for _, group := range groups {
+		if _, ok := v[group.SsoGroup]; ok {
+			return fmt.Errorf("cannot assign multi roles to sso group")
+		}
+		v[group.SsoGroup] = struct{}{}
+	}
+	p.UserGroups = groups
+	return nil
+}
+
+// SetUserGroup add user group or update user group if already exists.
+func (p *Project) SetUserGroup(group, role string) {
+	v := &ProjectUserGroup{
+		SsoGroup: group,
+		Role:     role,
+	}
+	for i := range p.UserGroups {
+		if p.UserGroups[i].SsoGroup == group {
+			p.UserGroups[i] = v
+			return
+		}
+	}
+	p.UserGroups = append(p.UserGroups, v)
+}
+
+// MigrateFromRBAC migrate rbac config to user group.
+func (p *Project) MigrateFromRBAC() {
+	rbac := p.Rbac
+	if rbac.GetAdmin() != "" {
+		p.SetUserGroup(rbac.Admin, builtinRBACRoleAdmin.String())
+	}
+	if rbac.GetEditor() != "" {
+		p.SetUserGroup(rbac.Editor, builtinRBACRoleEditor.String())
+	}
+	if rbac.GetViewer() != "" {
+		p.SetUserGroup(rbac.Viewer, builtinRBACRoleViewer.String())
+	}
+	p.Rbac = &ProjectRBACConfig{}
 }
