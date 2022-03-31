@@ -68,9 +68,9 @@ func (p *pipedCollection) Decode(e interface{}, parts map[Shard][]byte) error {
 	}
 
 	var (
-		versions          = make(map[Shard]string, len(parts))
-		secretEncryptions = make(map[Shard]*model.Piped_SecretEncryption, len(parts))
-		updatedAt         int64
+		clientShardVersion          string
+		clientShardSecretEncryption *model.Piped_SecretEncryption
+		updatedAt                   int64
 	)
 	for shard, p := range parts {
 		if err := json.Unmarshal(p, &mp); err != nil {
@@ -79,17 +79,20 @@ func (p *pipedCollection) Decode(e interface{}, parts map[Shard][]byte) error {
 		if updatedAt < mp.UpdatedAt {
 			updatedAt = mp.UpdatedAt
 		}
-		versions[shard] = mp.Version
-		secretEncryptions[shard] = mp.SecretEncryption
+
+		if shard == ClientShard {
+			clientShardVersion = mp.Version
+			clientShardSecretEncryption = mp.SecretEncryption
+		}
 	}
 
 	// Version value from ClientShard has a higher priority.
-	if versions[ClientShard] != "" {
-		mp.Version = versions[ClientShard]
+	if clientShardVersion != "" {
+		mp.Version = clientShardVersion
 	}
 	// SecretEncrypt value from ClientShard has a higher priority.
-	if secretEncryptions[ClientShard] != nil {
-		mp.SecretEncryption = secretEncryptions[ClientShard]
+	if clientShardSecretEncryption != nil {
+		mp.SecretEncryption = clientShardSecretEncryption
 	}
 
 	mp.UpdatedAt = updatedAt
