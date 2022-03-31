@@ -169,7 +169,7 @@ func TestListCommands(t *testing.T) {
 	}
 }
 
-func TestDecode(t *testing.T) {
+func TestCommandDecode(t *testing.T) {
 	col := &commandCollection{requestedBy: TestCommander}
 
 	testcases := []struct {

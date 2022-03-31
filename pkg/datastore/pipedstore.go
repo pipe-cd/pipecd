@@ -40,6 +40,7 @@ func (p *pipedCollection) Factory() Factory {
 func (p *pipedCollection) ListInUsedShards() []Shard {
 	return []Shard{
 		ClientShard,
+		AgentShard,
 	}
 }
 
@@ -47,9 +48,52 @@ func (p *pipedCollection) GetUpdatableShard() (Shard, error) {
 	switch p.requestedBy {
 	case WebCommander:
 		return ClientShard, nil
+	case PipedCommander:
+		return AgentShard, nil
 	default:
 		return "", ErrUnsupported
 	}
+}
+
+func (p *pipedCollection) Decode(e interface{}, parts map[Shard][]byte) error {
+	const errFmt = "failed while decode Piped object: %s"
+
+	if len(parts) != len(p.ListInUsedShards()) {
+		return fmt.Errorf(errFmt, "shards count not matched")
+	}
+
+	mp, ok := e.(*model.Piped)
+	if !ok {
+		return fmt.Errorf(errFmt, "type not matched")
+	}
+
+	var (
+		versions          = make(map[Shard]string, len(parts))
+		secretEncryptions = make(map[Shard]*model.Piped_SecretEncryption, len(parts))
+		updatedAt         int64
+	)
+	for shard, p := range parts {
+		if err := json.Unmarshal(p, &mp); err != nil {
+			return err
+		}
+		if updatedAt < mp.UpdatedAt {
+			updatedAt = mp.UpdatedAt
+		}
+		versions[shard] = mp.Version
+		secretEncryptions[shard] = mp.SecretEncryption
+	}
+
+	// Version value from ClientShard has a higher priority.
+	if versions[ClientShard] != "" {
+		mp.Version = versions[ClientShard]
+	}
+	// SecretEncrypt value from ClientShard has a higher priority.
+	if secretEncryptions[ClientShard] != nil {
+		mp.SecretEncryption = secretEncryptions[ClientShard]
+	}
+
+	mp.UpdatedAt = updatedAt
+	return nil
 }
 
 func (p *pipedCollection) Encode(e interface{}) (map[Shard][]byte, error) {
@@ -60,12 +104,29 @@ func (p *pipedCollection) Encode(e interface{}) (map[Shard][]byte, error) {
 		return nil, fmt.Errorf(errFmt, "type not matched")
 	}
 
-	data, err := json.Marshal(me)
+	clientShardStruct := me
+	cdata, err := json.Marshal(&clientShardStruct)
 	if err != nil {
 		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
 	}
+
+	agentShardStruct := model.Piped{
+		CloudProviders: me.CloudProviders,
+		Repositories:   me.Repositories,
+		// Below fields will be committed by Piped once at it start, after that
+		// those fields value can be updated by WebCommander so we should use
+		// those values from ClientShard with a higher priority.
+		Version:          me.Version,
+		SecretEncryption: me.SecretEncryption,
+	}
+	adata, err := json.Marshal(&agentShardStruct)
+	if err != nil {
+		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
+	}
+
 	return map[Shard][]byte{
-		ClientShard: data,
+		ClientShard: cdata,
+		AgentShard:  adata,
 	}, nil
 }
 
