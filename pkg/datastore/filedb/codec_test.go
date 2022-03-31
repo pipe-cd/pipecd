@@ -17,8 +17,9 @@ package filedb
 import (
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipecd/pkg/datastore"
 )
 
 type fakeModel struct {
