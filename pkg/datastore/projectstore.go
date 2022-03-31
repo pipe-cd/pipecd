@@ -77,7 +77,10 @@ type ProjectStore interface {
 	EnableStaticAdmin(ctx context.Context, id string) error
 	DisableStaticAdmin(ctx context.Context, id string) error
 	UpdateProjectSSOConfig(ctx context.Context, id string, sso *model.ProjectSSOConfig) error
-	UpdateProjectRBACConfig(ctx context.Context, id string, sso *model.ProjectRBACConfig) error
+	UpdateProjectRBACConfig(ctx context.Context, id string, rbac *model.ProjectRBACConfig) error
+	UpdateProjectRBACRoles(ctx context.Context, id string, roles []*model.ProjectRBACRole) error
+	UpdateProjectUserGroups(ctx context.Context, id string, groups []*model.ProjectUserGroup) error
+	MigrateFromProjectRBACConfig(ctx context.Context, id string) error
 }
 
 type projectStore struct {
@@ -194,4 +197,19 @@ func (s *projectStore) UpdateProjectRBACConfig(ctx context.Context, id string, r
 		p.Rbac = rbac
 		return nil
 	})
+}
+
+// UpdateProjectRBACRoles updates project rbac roles.
+func (s *projectStore) UpdateProjectRBACRoles(ctx context.Context, id string, roles []*model.ProjectRBACRole) error {
+	return ErrUnimplemented
+}
+
+// UpdateProjectUserGroups updates project user groups.
+func (s *projectStore) UpdateProjectUserGroups(ctx context.Context, id string, groups []*model.ProjectUserGroup) error {
+	return ErrUnimplemented
+}
+
+// MigrateFromProjectRBACConfig migrate from ProjectRBACConfig to ProjectUserGroup.
+func (s *projectStore) MigrateFromProjectRBACConfig(ctx context.Context, id string) error {
+	return ErrUnimplemented
 }
