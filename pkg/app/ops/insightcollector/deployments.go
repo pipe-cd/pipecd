@@ -70,18 +70,20 @@ func (c *Collector) findDeploymentsCompletedInRange(ctx context.Context, from, t
 			Operator: datastore.OperatorLessThanOrEqual,
 			Value:    to,
 		},
+		{
+			Field:    "CompletedAt",
+			Operator: datastore.OperatorGreaterThanOrEqual,
+			Value:    from,
+		},
 	}
 
 	var deployments []*model.Deployment
-	minCompletedAt := from
+	var cursor string
 	for {
-		d, _, err := c.deploymentStore.List(ctx, datastore.ListOptions{
-			Limit: limit,
-			Filters: append(filters, datastore.ListFilter{
-				Field:    "CompletedAt",
-				Operator: datastore.OperatorGreaterThanOrEqual,
-				Value:    minCompletedAt,
-			}),
+		d, next, err := c.deploymentStore.List(ctx, datastore.ListOptions{
+			Limit:   limit,
+			Cursor:  cursor,
+			Filters: filters,
 			Orders: []datastore.Order{
 				{
 					Field:     "CompletedAt",
@@ -96,14 +98,13 @@ func (c *Collector) findDeploymentsCompletedInRange(ctx context.Context, from, t
 		if err != nil {
 			return nil, err
 		}
-		if len(d) == 0 {
+
+		deployments = append(deployments, d...)
+		if next == "" {
 			// get all deployments in range
 			break
 		}
-
-		deployments = append(deployments, d...)
-		// Add 1 for preventing infinity loop
-		minCompletedAt = d[len(d)-1].CompletedAt + 1
+		cursor = next
 	}
 	return deployments, nil
 }
