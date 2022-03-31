@@ -17,6 +17,7 @@ package filedb
 import (
 	"testing"
 
+	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,15 +37,15 @@ func (fm *fakeModel) SetUpdatedAt(t int64) {
 func TestMerge(t *testing.T) {
 	testcases := []struct {
 		name     string
-		parts    [][]byte
+		parts    map[datastore.Shard][]byte
 		expected *fakeModel
 	}{
 		{
 			name: "should merge correctly with time ordered data",
-			parts: [][]byte{
-				[]byte(`{"data":"1","updated_at":1}`),
-				[]byte(`{"data":"1","updated_at":2}`),
-				[]byte(`{"data":"1","updated_at":3}`),
+			parts: map[datastore.Shard][]byte{
+				datastore.ClientShard: []byte(`{"data":"1","updated_at":1}`),
+				datastore.AgentShard:  []byte(`{"data":"1","updated_at":2}`),
+				datastore.OpsShard:    []byte(`{"data":"1","updated_at":3}`),
 			},
 			expected: &fakeModel{
 				Data:      "1",
@@ -53,10 +54,10 @@ func TestMerge(t *testing.T) {
 		},
 		{
 			name: "should merge correctly with time non ordered data",
-			parts: [][]byte{
-				[]byte(`{"data":"1","updated_at":2}`),
-				[]byte(`{"data":"1","updated_at":3}`),
-				[]byte(`{"data":"1","updated_at":1}`),
+			parts: map[datastore.Shard][]byte{
+				datastore.ClientShard: []byte(`{"data":"1","updated_at":2}`),
+				datastore.AgentShard:  []byte(`{"data":"1","updated_at":3}`),
+				datastore.OpsShard:    []byte(`{"data":"1","updated_at":1}`),
 			},
 			expected: &fakeModel{
 				Data:      "1",
@@ -68,7 +69,7 @@ func TestMerge(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			m := &fakeModel{}
-			merge(m, tc.parts...)
+			merge(m, tc.parts)
 			assert.Equal(t, tc.expected, m)
 		})
 	}

@@ -112,7 +112,7 @@ type ShardEncoder interface {
 
 type ShardDecoder interface {
 	// Decode unmarshals all given raw data parts to a given entity e.
-	Decode(e interface{}, parts ...[]byte) error
+	Decode(e interface{}, parts map[Shard][]byte) error
 }
 
 type Factory func() interface{}

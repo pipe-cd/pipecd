@@ -55,7 +55,7 @@ func (c *commandCollection) GetUpdatableShard() (Shard, error) {
 	}
 }
 
-func (c *commandCollection) Decode(e interface{}, parts ...[]byte) error {
+func (c *commandCollection) Decode(e interface{}, parts map[Shard][]byte) error {
 	if len(parts) != len(c.ListInUsedShards()) {
 		return fmt.Errorf("failed while decode Command object: shards count not matched")
 	}
