@@ -337,7 +337,7 @@ func appendChunkAndUpdateMeta(meta *model.InsightDeploymentChunkMetadata, curChu
 	// Update meta
 	latestChunkMeta.Size = size
 	latestChunkMeta.To = lastDeployment.CompletedAt
-	latestChunkMeta.Count += int64(len(curChunk.Deployments))
+	latestChunkMeta.Count = int64(len(curChunk.Deployments))
 	meta.UpdatedAt = updatedAt.Unix()
 
 	return nil
