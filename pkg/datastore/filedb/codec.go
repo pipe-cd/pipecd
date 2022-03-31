@@ -23,18 +23,23 @@ import (
 // decode checks for the given collection object. If the given collection
 // implements the `datastore.ShardDecoder` interface, its implementation will
 // be used. If not, time order regardless merge logic will be used.
-func decode(col datastore.Collection, e interface{}, parts ...[]byte) error {
+func decode(col datastore.Collection, e interface{}, parts map[datastore.Shard][]byte) error {
 	dcol, ok := col.(datastore.ShardDecoder)
 	if ok {
-		return dcol.Decode(e, parts...)
+		return dcol.Decode(e, parts)
+	}
+
+	ps := make([][]byte, 0, len(parts))
+	for _, part := range parts {
+		ps = append(ps, part)
 	}
 
 	// In case it's single part contained object, unmarshal it directly.
-	if len(parts) == 1 {
-		return json.Unmarshal(parts[0], e)
+	if len(ps) == 1 {
+		return json.Unmarshal(ps[0], e)
 	}
 
-	return merge(e, parts...)
+	return merge(e, ps...)
 }
 
 type mergeable interface {

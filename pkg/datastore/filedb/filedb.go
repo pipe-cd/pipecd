@@ -80,7 +80,7 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 		kind   = col.Kind()
 		shards = scol.ListInUsedShards()
 		// Map of objects values with the first key is the object id.
-		objects map[string][][]byte
+		objects map[string]map[datastore.Shard][]byte
 	)
 
 	for _, shard := range shards {
@@ -95,15 +95,19 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 		}
 
 		if objects == nil {
-			objects = make(map[string][][]byte, len(parts))
+			objects = make(map[string]map[datastore.Shard][]byte, len(parts))
 		}
 		for _, obj := range parts {
 			id := filepath.Base(obj.Path)
 
+			if objects[id] == nil {
+				objects[id] = make(map[datastore.Shard][]byte, len(scol.ListInUsedShards()))
+			}
+
 			// Try to get object content from objectCache.
 			cdata, err := f.objectCache.Get(shard, id, obj.Etag)
 			if err == nil {
-				objects[id] = append(objects[id], cdata)
+				objects[id][shard] = cdata
 				continue
 			}
 
@@ -129,14 +133,14 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 				)
 			}
 
-			objects[id] = append(objects[id], data)
+			objects[id][shard] = data
 		}
 	}
 
 	entities := make([]interface{}, 0, len(objects))
 	for id, obj := range objects {
 		e := col.Factory()()
-		if err := decode(col, e, obj...); err != nil {
+		if err := decode(col, e, obj); err != nil {
 			f.logger.Error("failed to build entity",
 				zap.String("kind", kind),
 				zap.String("id", id),
@@ -173,13 +177,13 @@ func (f *FileDB) Get(ctx context.Context, col datastore.Collection, id string, v
 
 	kind := col.Kind()
 	shards := fcol.ListInUsedShards()
-	paths := make([]string, 0, len(shards))
+	paths := make(map[datastore.Shard]string, len(shards))
 	for _, s := range shards {
-		paths = append(paths, makeHotStorageFilePath(kind, id, s))
+		paths[s] = makeHotStorageFilePath(kind, id, s)
 	}
 
-	parts := make([][]byte, 0, len(paths))
-	for _, path := range paths {
+	parts := make(map[datastore.Shard][]byte, len(paths))
+	for shard, path := range paths {
 		part, err := f.fetch(ctx, path)
 		if err != nil {
 			f.logger.Error("failed to fetch entity",
@@ -189,10 +193,10 @@ func (f *FileDB) Get(ctx context.Context, col datastore.Collection, id string, v
 			)
 			return err
 		}
-		parts = append(parts, part)
+		parts[shard] = part
 	}
 
-	return decode(col, v, parts...)
+	return decode(col, v, parts)
 }
 
 func (f *FileDB) Create(ctx context.Context, col datastore.Collection, id string, entity interface{}) error {

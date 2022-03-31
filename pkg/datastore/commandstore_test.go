@@ -174,20 +174,20 @@ func TestDecode(t *testing.T) {
 
 	testcases := []struct {
 		name      string
-		parts     [][]byte
+		parts     map[Shard][]byte
 		expectCmd *model.Command
 		expectErr bool
 	}{
 		{
 			name:      "parts count miss matched",
-			parts:     [][]byte{},
+			parts:     make(map[Shard][]byte),
 			expectErr: true,
 		},
 		{
 			name: "should merge correctly",
-			parts: [][]byte{
-				[]byte(`{"id":"1","status":3,"updated_at":4}`),
-				[]byte(`{"id":"1","status":0,"updated_at":1}`),
+			parts: map[Shard][]byte{
+				AgentShard: []byte(`{"id":"1","status":3,"updated_at":4}`),
+				OpsShard:   []byte(`{"id":"1","status":0,"updated_at":1}`),
 			},
 			expectCmd: &model.Command{
 				Id:        "1",
@@ -201,7 +201,7 @@ func TestDecode(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			cmd := &model.Command{}
-			err := col.Decode(cmd, tc.parts...)
+			err := col.Decode(cmd, tc.parts)
 			require.Equal(t, tc.expectErr, err != nil)
 
 			if err == nil {
