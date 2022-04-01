@@ -30,7 +30,9 @@ import (
 )
 
 const (
-	defaultTimeout = 5 * time.Minute
+	defaultTimeout       = 5 * time.Minute
+	pullRequestEventName = "pull_request"
+	commentEventName     = "issue_comment"
 )
 
 func main() {
@@ -42,6 +44,21 @@ func main() {
 	}
 	log.Println("Successfully parsed arguments")
 
+	eventName := os.Getenv("GITHUB_EVENT_NAME")
+	if !isSupportedGitHubEvent(eventName) {
+		log.Fatal(fmt.Errorf(
+			"unexpected event %s, only %q and %q event are supported",
+			eventName,
+			pullRequestEventName,
+			commentEventName,
+		))
+	}
+
+	payload, err := os.ReadFile(os.Getenv("GITHUB_EVENT_PATH"))
+	if err != nil {
+		log.Fatal(fmt.Errorf("failed to read event payload: %v", err))
+	}
+
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
@@ -52,7 +69,7 @@ func main() {
 	ghClient := github.NewClient(tc)
 	ghGraphQLClient := githubv4.NewClient(tc)
 
-	event, err := parseGitHubEvent(ctx, ghClient)
+	event, err := parseGitHubEvent(ctx, ghClient.PullRequests, eventName, payload)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -61,7 +78,7 @@ func main() {
 	doComment := func(body string) {
 		comment, err := sendComment(
 			ctx,
-			ghClient,
+			ghClient.Issues,
 			event.Owner,
 			event.Repo,
 			event.PRNumber,
@@ -79,6 +96,8 @@ func main() {
 		return
 	}
 
+	// TODO: When PR opened, `Mergeable` is nil for calculation.
+	// Here it is true for now, but needs to be handled.
 	if event.PRMergeable != nil && *event.PRMergeable == false {
 		doComment(failureBadgeURL + "Unable to run plan-preview for an un-mergeable pull request. Please resolve the conficts and try again.")
 		return
@@ -101,7 +120,7 @@ func main() {
 
 	// Maybe the PR is already closed so Piped could not clone the source code.
 	if result.HasError() {
-		pr, err := getPullRequest(ctx, ghClient, event.Owner, event.Repo, event.PRNumber)
+		pr, err := getPullRequest(ctx, ghClient.PullRequests, event.Owner, event.Repo, event.PRNumber)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -182,4 +201,14 @@ func parseArgs(args []string) (arguments, error) {
 	}
 
 	return out, nil
+}
+
+func isSupportedGitHubEvent(event string) bool {
+	switch event {
+	case pullRequestEventName:
+		return true
+	case commentEventName:
+		return true
+	}
+	return false
 }

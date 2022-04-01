@@ -26,12 +26,3 @@ plan-details-1
 ## app: [app-name-2](app-url-2), env: env-2, kind: app-kind-2
 Reason: reason-2
 
-<details>
-<summary>Details (Click me)</summary>
-<p>
-
-``` diff
-
-```
-</p>
-</details>

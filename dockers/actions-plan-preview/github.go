@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/google/go-github/v36/github"
@@ -40,6 +39,19 @@ type githubEvent struct {
 	CommentURL  string
 }
 
+type IssuesService interface {
+	CreateComment(ctx context.Context, owner string, repo string, number int, comment *github.IssueComment) (*github.IssueComment, *github.Response, error)
+}
+
+type PullRequestsService interface {
+	Get(ctx context.Context, owner string, repo string, number int) (*github.PullRequest, *github.Response, error)
+}
+
+type GraphQLClient interface {
+	Query(ctx context.Context, q interface{}, variables map[string]interface{}) error
+	Mutate(ctx context.Context, m interface{}, input githubv4.Input, variables map[string]interface{}) error
+}
+
 // parsePullRequestEvent uses the given environment variables
 // to parse and build githubEvent struct.
 // Currently, we support 2 kinds of event as below:
@@ -47,23 +59,12 @@ type githubEvent struct {
 //   https://pkg.go.dev/github.com/google/go-github/v36/github#PullRequestEvent
 // - IssueCommentEvent
 //   https://pkg.go.dev/github.com/google/go-github/v36/github#IssueCommentEvent
-func parseGitHubEvent(ctx context.Context, client *github.Client) (*githubEvent, error) {
-	const (
-		pullRequestEventName = "pull_request"
-		commentEventName     = "issue_comment"
-	)
-
-	eventName := os.Getenv("GITHUB_EVENT_NAME")
-	if eventName != pullRequestEventName && eventName != commentEventName {
-		return nil, fmt.Errorf("unexpected event %s, only %q and %q event are supported", eventName, pullRequestEventName, commentEventName)
-	}
-
-	eventPath := os.Getenv("GITHUB_EVENT_PATH")
-	payload, err := os.ReadFile(eventPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read event payload: %v", err)
-	}
-
+func parseGitHubEvent(
+	ctx context.Context,
+	prsService PullRequestsService,
+	eventName string,
+	payload []byte,
+) (*githubEvent, error) {
 	event, err := github.ParseWebHook(eventName, payload)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse event payload: %v", err)
@@ -90,7 +91,7 @@ func parseGitHubEvent(ctx context.Context, client *github.Client) (*githubEvent,
 			repo  = e.Repo.GetName()
 			prNum = e.Issue.GetNumber()
 		)
-		pr, err := getPullRequest(ctx, client, owner, repo, prNum)
+		pr, err := getPullRequest(ctx, prsService, owner, repo, prNum)
 		if err != nil {
 			return nil, err
 		}
@@ -115,15 +116,15 @@ func parseGitHubEvent(ctx context.Context, client *github.Client) (*githubEvent,
 	}
 }
 
-func sendComment(ctx context.Context, client *github.Client, owner, repo string, prNum int, body string) (*github.IssueComment, error) {
-	c, _, err := client.Issues.CreateComment(ctx, owner, repo, prNum, &github.IssueComment{
+func sendComment(ctx context.Context, issuesService IssuesService, owner, repo string, prNum int, body string) (*github.IssueComment, error) {
+	c, _, err := issuesService.CreateComment(ctx, owner, repo, prNum, &github.IssueComment{
 		Body: &body,
 	})
 	return c, err
 }
 
-func getPullRequest(ctx context.Context, client *github.Client, owner, repo string, prNum int) (*github.PullRequest, error) {
-	pr, _, err := client.PullRequests.Get(ctx, owner, repo, prNum)
+func getPullRequest(ctx context.Context, prsService PullRequestsService, owner, repo string, prNum int) (*github.PullRequest, error) {
+	pr, _, err := prsService.Get(ctx, owner, repo, prNum)
 	return pr, err
 }
 
@@ -152,7 +153,7 @@ var errNotFound = errors.New("not found")
 
 // find the latest plan preview comment in the specified issue
 // if there is no plan preview comment, return errNotFound err
-func findLatestPlanPreviewComment(ctx context.Context, client *githubv4.Client, owner, repo string, prNumber int) (*issueCommentQuery, error) {
+func findLatestPlanPreviewComment(ctx context.Context, client GraphQLClient, owner, repo string, prNumber int) (*issueCommentQuery, error) {
 	variables := map[string]interface{}{
 		"repositoryOwner": githubv4.String(owner),
 		"repositoryName":  githubv4.String(repo),
@@ -193,7 +194,7 @@ type minimizeCommentMutation struct {
 	} `graphql:"minimizeComment(input: $input)"`
 }
 
-func minimizeComment(ctx context.Context, client *githubv4.Client, id githubv4.ID, classifier string) error {
+func minimizeComment(ctx context.Context, client GraphQLClient, id githubv4.ID, classifier string) error {
 	var m minimizeCommentMutation
 	input := githubv4.MinimizeCommentInput{
 		SubjectID:        id,
