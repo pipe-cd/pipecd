@@ -82,11 +82,18 @@ func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) er
 		if updatedAt < app.UpdatedAt {
 			updatedAt = app.UpdatedAt
 		}
+		// Values of below fields from ClientShard have a higher priority:
+		// - PipedId
+		// - GitPath.ConfigFilename
+		// - CloudProvider
 		if shard == ClientShard {
 			pipedId = app.PipedId
 			configFilename = app.GitPath.ConfigFilename
 			cloudProvider = app.CloudProvider
 		}
+		// Values of below fields from AgentShard have a higher priority:
+		// - Kind
+		// - Name
 		if shard == AgentShard {
 			kind = app.Kind
 			name = app.Name
