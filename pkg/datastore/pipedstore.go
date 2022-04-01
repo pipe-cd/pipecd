@@ -40,6 +40,7 @@ func (p *pipedCollection) Factory() Factory {
 func (p *pipedCollection) ListInUsedShards() []Shard {
 	return []Shard{
 		ClientShard,
+		AgentShard,
 	}
 }
 
@@ -47,6 +48,8 @@ func (p *pipedCollection) GetUpdatableShard() (Shard, error) {
 	switch p.requestedBy {
 	case WebCommander:
 		return ClientShard, nil
+	case PipedCommander:
+		return AgentShard, nil
 	default:
 		return "", ErrUnsupported
 	}
@@ -60,12 +63,46 @@ func (p *pipedCollection) Encode(e interface{}) (map[Shard][]byte, error) {
 		return nil, fmt.Errorf(errFmt, "type not matched")
 	}
 
-	data, err := json.Marshal(me)
+	clientShardStruct := model.Piped{
+		// Fields which must exists due to the validation check on update.
+		Id:        me.Id,
+		Name:      me.Name,
+		ProjectId: me.ProjectId,
+		CreatedAt: me.CreatedAt,
+		UpdatedAt: me.UpdatedAt,
+		// Field which value only available in ClientShard.
+		Desc:           me.Desc,
+		Keys:           me.Keys,
+		DesiredVersion: me.DesiredVersion,
+		Disabled:       me.Disabled,
+	}
+	cdata, err := json.Marshal(&clientShardStruct)
 	if err != nil {
 		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
 	}
+
+	agentShardStruct := model.Piped{
+		// Fields which must exists due to the validation check on update.
+		Id:        me.Id,
+		Name:      me.Name,
+		ProjectId: me.ProjectId,
+		CreatedAt: me.CreatedAt,
+		UpdatedAt: me.UpdatedAt,
+		// Fields which value only available in AgentShard.
+		CloudProviders:   me.CloudProviders,
+		Repositories:     me.Repositories,
+		StartedAt:        me.StartedAt,
+		Version:          me.Version,
+		SecretEncryption: me.SecretEncryption,
+	}
+	adata, err := json.Marshal(&agentShardStruct)
+	if err != nil {
+		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
+	}
+
 	return map[Shard][]byte{
-		ClientShard: data,
+		ClientShard: cdata,
+		AgentShard:  adata,
 	}, nil
 }
 
