@@ -115,8 +115,9 @@ func (p *pipedCollection) Encode(e interface{}) (map[Shard][]byte, error) {
 
 	agentShardStruct := model.Piped{
 		// Fields which must exists due to the validation check on update.
-		Id:   me.Id,
-		Name: me.Name,
+		Id:        me.Id,
+		Name:      me.Name,
+		ProjectId: me.ProjectId,
 		// Fields which value only available in AgentShard.
 		CloudProviders: me.CloudProviders,
 		Repositories:   me.Repositories,
