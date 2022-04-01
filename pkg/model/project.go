@@ -53,10 +53,6 @@ var (
 		{
 			Resources: []*ProjectRBACResource{
 				{Type: ProjectRBACResource_APPLICATION},
-				{Type: ProjectRBACResource_DEPLOYMENT},
-				{Type: ProjectRBACResource_EVENT},
-				{Type: ProjectRBACResource_DEPLOYMENT_CHAIN},
-				{Type: ProjectRBACResource_INSIGHT},
 			},
 			Actions: []ProjectRBACPolicy_Action{
 				ProjectRBACPolicy_ALL,
@@ -64,11 +60,29 @@ var (
 		},
 		{
 			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_DEPLOYMENT},
 				{Type: ProjectRBACResource_PIPED},
+				{Type: ProjectRBACResource_DEPLOYMENT_CHAIN},
 			},
 			Actions: []ProjectRBACPolicy_Action{
 				ProjectRBACPolicy_GET,
 				ProjectRBACPolicy_LIST,
+			},
+		},
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_EVENT},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_LIST,
+			},
+		},
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_INSIGHT},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_GET,
 			},
 		},
 	}
@@ -82,14 +96,28 @@ var (
 			Resources: []*ProjectRBACResource{
 				{Type: ProjectRBACResource_APPLICATION},
 				{Type: ProjectRBACResource_DEPLOYMENT},
-				{Type: ProjectRBACResource_EVENT},
 				{Type: ProjectRBACResource_PIPED},
 				{Type: ProjectRBACResource_DEPLOYMENT_CHAIN},
-				{Type: ProjectRBACResource_INSIGHT},
 			},
 			Actions: []ProjectRBACPolicy_Action{
 				ProjectRBACPolicy_GET,
 				ProjectRBACPolicy_LIST,
+			},
+		},
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_EVENT},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_LIST,
+			},
+		},
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_INSIGHT},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_GET,
 			},
 		},
 	}
