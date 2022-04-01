@@ -55,50 +55,6 @@ func (p *pipedCollection) GetUpdatableShard() (Shard, error) {
 	}
 }
 
-func (p *pipedCollection) Decode(e interface{}, parts map[Shard][]byte) error {
-	const errFmt = "failed while decode Piped object: %s"
-
-	if len(parts) != len(p.ListInUsedShards()) {
-		return fmt.Errorf(errFmt, "shards count not matched")
-	}
-
-	mp, ok := e.(*model.Piped)
-	if !ok {
-		return fmt.Errorf(errFmt, "type not matched")
-	}
-
-	var (
-		clientShardVersion          string
-		clientShardSecretEncryption *model.Piped_SecretEncryption
-		updatedAt                   int64
-	)
-	for shard, p := range parts {
-		if err := json.Unmarshal(p, &mp); err != nil {
-			return err
-		}
-		if updatedAt < mp.UpdatedAt {
-			updatedAt = mp.UpdatedAt
-		}
-
-		if shard == ClientShard {
-			clientShardVersion = mp.Version
-			clientShardSecretEncryption = mp.SecretEncryption
-		}
-	}
-
-	// Version value from ClientShard has a higher priority.
-	if clientShardVersion != "" {
-		mp.Version = clientShardVersion
-	}
-	// SecretEncrypt value from ClientShard has a higher priority.
-	if clientShardSecretEncryption != nil {
-		mp.SecretEncryption = clientShardSecretEncryption
-	}
-
-	mp.UpdatedAt = updatedAt
-	return nil
-}
-
 func (p *pipedCollection) Encode(e interface{}) (map[Shard][]byte, error) {
 	const errFmt = "failed while encode Piped object: %s"
 
@@ -107,7 +63,19 @@ func (p *pipedCollection) Encode(e interface{}) (map[Shard][]byte, error) {
 		return nil, fmt.Errorf(errFmt, "type not matched")
 	}
 
-	clientShardStruct := me
+	clientShardStruct := model.Piped{
+		// Fields which must exists due to the validation check on update.
+		Id:        me.Id,
+		Name:      me.Name,
+		ProjectId: me.ProjectId,
+		CreatedAt: me.CreatedAt,
+		UpdatedAt: me.UpdatedAt,
+		// Field which value only available in ClientShard.
+		Desc:           me.Desc,
+		Keys:           me.Keys,
+		DesiredVersion: me.DesiredVersion,
+		Disabled:       me.Disabled,
+	}
 	cdata, err := json.Marshal(&clientShardStruct)
 	if err != nil {
 		return nil, fmt.Errorf(errFmt, "unable to marshal entity data")
@@ -121,12 +89,9 @@ func (p *pipedCollection) Encode(e interface{}) (map[Shard][]byte, error) {
 		CreatedAt: me.CreatedAt,
 		UpdatedAt: me.UpdatedAt,
 		// Fields which value only available in AgentShard.
-		CloudProviders: me.CloudProviders,
-		Repositories:   me.Repositories,
-		StartedAt:      me.StartedAt,
-		// Fields which be committed by Piped once at it start, after that
-		// those fields value can be updated by WebCommander so we should use
-		// those values from ClientShard with a higher priority.
+		CloudProviders:   me.CloudProviders,
+		Repositories:     me.Repositories,
+		StartedAt:        me.StartedAt,
 		Version:          me.Version,
 		SecretEncryption: me.SecretEncryption,
 	}

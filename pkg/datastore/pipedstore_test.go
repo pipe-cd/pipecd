@@ -21,7 +21,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -166,59 +165,6 @@ func TestListPipeds(t *testing.T) {
 			s := NewPipedStore(tc.ds, TestCommander)
 			_, err := s.List(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
-		})
-	}
-}
-
-func TestPipedDecode(t *testing.T) {
-	col := &pipedCollection{requestedBy: TestCommander}
-
-	testcases := []struct {
-		name        string
-		parts       map[Shard][]byte
-		expectPiped *model.Piped
-		expectErr   bool
-	}{
-		{
-			name:      "parts count miss matched",
-			parts:     make(map[Shard][]byte),
-			expectErr: true,
-		},
-		{
-			name: "in case client shard has no version",
-			parts: map[Shard][]byte{
-				ClientShard: []byte(`{"id":"1","name":"piped"}`),
-				AgentShard:  []byte(`{"version":"1"}`),
-			},
-			expectPiped: &model.Piped{
-				Id:      "1",
-				Name:    "piped",
-				Version: "1",
-			},
-		},
-		{
-			name: "in case client shard has version",
-			parts: map[Shard][]byte{
-				ClientShard: []byte(`{"id":"1","name":"piped","version":"1"}`),
-				AgentShard:  []byte(`{"version":"3"}`),
-			},
-			expectPiped: &model.Piped{
-				Id:      "1",
-				Name:    "piped",
-				Version: "1",
-			},
-		},
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			piped := &model.Piped{}
-			err := col.Decode(piped, tc.parts)
-			require.Equal(t, tc.expectErr, err != nil)
-
-			if err == nil {
-				assert.Equal(t, tc.expectPiped, piped)
-			}
 		})
 	}
 }
