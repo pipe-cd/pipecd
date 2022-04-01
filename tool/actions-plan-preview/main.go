@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -33,6 +34,13 @@ const (
 	defaultTimeout       = 5 * time.Minute
 	pullRequestEventName = "pull_request"
 	commentEventName     = "issue_comment"
+	pushEventName        = "push"
+
+	addressArgName = "address"
+	apiKeyArgName  = "api-key"
+	tokenArgName   = "token"
+	timeoutArgName = "timeout"
+	prNumArgName   = "pull-request-number"
 )
 
 func main() {
@@ -41,10 +49,11 @@ func main() {
 	eventName := os.Getenv("GITHUB_EVENT_NAME")
 	if !isSupportedGitHubEvent(eventName) {
 		log.Fatal(fmt.Errorf(
-			"unexpected event %s, only %q and %q event are supported",
+			"unexpected event %s, only %q, %q and %q event are supported",
 			eventName,
 			pullRequestEventName,
 			commentEventName,
+			pushEventName,
 		))
 	}
 
@@ -69,7 +78,7 @@ func main() {
 	ghClient := github.NewClient(tc)
 	ghGraphQLClient := githubv4.NewClient(tc)
 
-	event, err := parseGitHubEvent(ctx, ghClient.PullRequests, eventName, payload)
+	event, err := parseGitHubEvent(ctx, ghClient.PullRequests, eventName, payload, args.PRNum)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -161,6 +170,7 @@ type arguments struct {
 	APIKey  string
 	Token   string
 	Timeout time.Duration
+	PRNum   int
 }
 
 func parseArgs(args []string) (arguments, error) {
@@ -172,18 +182,30 @@ func parseArgs(args []string) (arguments, error) {
 			continue
 		}
 		switch ps[0] {
-		case "address":
+		case addressArgName:
 			out.Address = ps[1]
-		case "api-key":
+		case apiKeyArgName:
 			out.APIKey = ps[1]
-		case "token":
+		case tokenArgName:
 			out.Token = ps[1]
-		case "timeout":
+		case timeoutArgName:
 			d, err := time.ParseDuration(ps[1])
 			if err != nil {
 				return arguments{}, err
 			}
 			out.Timeout = d
+		case prNumArgName:
+			if ps[1] == "" {
+				continue
+			}
+			i, err := strconv.Atoi(ps[1])
+			if err != nil {
+				return out, err
+			}
+			if i <= 0 {
+				return out, fmt.Errorf("invalid %s: %d", prNumArgName, i)
+			}
+			out.PRNum = i
 		}
 	}
 
@@ -204,5 +226,5 @@ func parseArgs(args []string) (arguments, error) {
 }
 
 func isSupportedGitHubEvent(event string) bool {
-	return event == pullRequestEventName || event == commentEventName
+	return event == pullRequestEventName || event == commentEventName || event == pushEventName
 }
