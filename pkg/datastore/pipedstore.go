@@ -114,9 +114,14 @@ func (p *pipedCollection) Encode(e interface{}) (map[Shard][]byte, error) {
 	}
 
 	agentShardStruct := model.Piped{
+		// Fields which must exists due to the validation check on update.
+		Id:   me.Id,
+		Name: me.Name,
+		// Fields which value only available in AgentShard.
 		CloudProviders: me.CloudProviders,
 		Repositories:   me.Repositories,
-		// Below fields will be committed by Piped once at it start, after that
+		StartedAt:      me.StartedAt,
+		// Fields which be committed by Piped once at it start, after that
 		// those fields value can be updated by WebCommander so we should use
 		// those values from ClientShard with a higher priority.
 		Version:          me.Version,
