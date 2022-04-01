@@ -105,6 +105,7 @@ func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) er
 	app.PipedId = pipedId
 	app.CloudProvider = cloudProvider
 	app.GitPath.ConfigFilename = configFilename
+	app.UpdatedAt = updatedAt
 	return nil
 }
 

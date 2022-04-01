@@ -194,8 +194,8 @@ func TestApplicationDecode(t *testing.T) {
 		{
 			name: "decode correctly",
 			parts: map[Shard][]byte{
-				ClientShard: []byte(`{"kind":1,"name":"name","piped_id":"new_piped","cloud_provider":"new_provider","git_path":{"config_filename":"new_file"}}`),
-				AgentShard:  []byte(`{"kind":0,"name":"new_name","piped_id":"piped","cloud_provider":"provider","git_path":{"config_filename":"file"}}`),
+				ClientShard: []byte(`{"kind":1,"name":"name","piped_id":"new_piped","cloud_provider":"new_provider","git_path":{"config_filename":"new_file"},"updated_at":123}`),
+				AgentShard:  []byte(`{"kind":0,"name":"new_name","piped_id":"piped","cloud_provider":"provider","git_path":{"config_filename":"file"},"updated_at":1}`),
 			},
 			expectApp: &model.Application{
 				Kind:          model.ApplicationKind_KUBERNETES,
@@ -205,6 +205,7 @@ func TestApplicationDecode(t *testing.T) {
 				GitPath: &model.ApplicationGitPath{
 					ConfigFilename: "new_file",
 				},
+				UpdatedAt: 123,
 			},
 		},
 	}
