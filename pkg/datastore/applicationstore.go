@@ -55,6 +55,52 @@ func (a *applicationCollection) GetUpdatableShard() (Shard, error) {
 	}
 }
 
+func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) error {
+	errFmt := "failed while decode Application object: %s"
+
+	if len(parts) != len(a.ListInUsedShards()) {
+		return fmt.Errorf(errFmt, "shards count not matched")
+	}
+
+	app, ok := e.(*model.Application)
+	if !ok {
+		return fmt.Errorf(errFmt, "type not matched")
+	}
+
+	var (
+		kind           model.ApplicationKind
+		name           string
+		pipedId        string
+		configFilename string
+		cloudProvider  string
+		updatedAt      int64
+	)
+	for shard, p := range parts {
+		if err := json.Unmarshal(p, &app); err != nil {
+			return err
+		}
+		if updatedAt < app.UpdatedAt {
+			updatedAt = app.UpdatedAt
+		}
+		if shard == ClientShard {
+			pipedId = app.PipedId
+			configFilename = app.GitPath.ConfigFilename
+			cloudProvider = app.CloudProvider
+		}
+		if shard == AgentShard {
+			kind = app.Kind
+			name = app.Name
+		}
+	}
+
+	app.Kind = kind
+	app.Name = name
+	app.PipedId = pipedId
+	app.CloudProvider = cloudProvider
+	app.GitPath.ConfigFilename = configFilename
+	return nil
+}
+
 func (a *applicationCollection) Encode(e interface{}) (map[Shard][]byte, error) {
 	const errFmt = "failed while encode Application object: %s"
 
@@ -71,16 +117,25 @@ func (a *applicationCollection) Encode(e interface{}) (map[Shard][]byte, error) 
 	//   string id = 1 [(validate.rules).string.min_len = 1, shard=client];
 	// ```
 	clientShardStruct := model.Application{
-		Id:            me.Id,
-		ProjectId:     me.ProjectId,
-		Kind:          me.Kind,
-		GitPath:       me.GitPath,
+		// Fields which required in all shard for validation on update.
+		Id:        me.Id,
+		ProjectId: me.ProjectId,
+		CreatedAt: me.CreatedAt,
+		UpdatedAt: me.UpdatedAt,
+		// Fields which exist in both AgentShard and ClientShard but AgentShard has
+		// a higher priority since those fields can only be updated by PipedCommander.
+		Kind: me.Kind,
+		Name: me.Name,
+		// Fields which exist in both AgentShard and ClientShard but ClientShard has
+		// a higher priority since those fields can only be updated by WebCommander.
+		PipedId:       me.PipedId,
 		CloudProvider: me.CloudProvider,
-		Disabled:      me.Disabled,
-		Deleted:       me.Deleted,
-		DeletedAt:     me.DeletedAt,
-		CreatedAt:     me.CreatedAt,
-		UpdatedAt:     me.UpdatedAt,
+		// Note: Only GitPath.ConfigFilename is changeable.
+		GitPath: me.GitPath,
+		// Fields which exist only in ClientShard.
+		Disabled:  me.Disabled,
+		Deleted:   me.Deleted,
+		DeletedAt: me.DeletedAt,
 	}
 	cdata, err := json.Marshal(&clientShardStruct)
 	if err != nil {
@@ -88,14 +143,27 @@ func (a *applicationCollection) Encode(e interface{}) (map[Shard][]byte, error) 
 	}
 
 	agentShardStruct := model.Application{
-		Name:                             me.Name,
+		// Fields which required in all shard for validation on update.
+		Id:        me.Id,
+		ProjectId: me.ProjectId,
+		CreatedAt: me.CreatedAt,
+		UpdatedAt: me.UpdatedAt,
+		// Fields which exist in both AgentShard and ClientShard but AgentShard has
+		// a higher priority since those fields can only be updated by PipedCommander.
+		Kind: me.Kind,
+		Name: me.Name,
+		// Fields which exist in both AgentShard and ClientShard but ClientShard has
+		// a higher priority since those fields can only be updated by WebCommander.
+		PipedId:       me.PipedId,
+		GitPath:       me.GitPath,
+		CloudProvider: me.CloudProvider,
+		// Fields which exist only in AgentShard.
 		Description:                      me.Description,
 		Labels:                           me.Labels,
 		SyncState:                        me.SyncState,
 		Deploying:                        me.Deploying,
 		MostRecentlySuccessfulDeployment: me.MostRecentlySuccessfulDeployment,
 		MostRecentlyTriggeredDeployment:  me.MostRecentlyTriggeredDeployment,
-		UpdatedAt:                        me.UpdatedAt,
 	}
 	adata, err := json.Marshal(&agentShardStruct)
 	if err != nil {
