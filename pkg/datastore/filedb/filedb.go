@@ -159,6 +159,12 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 			return nil, err
 		}
 
+		f.logger.Info("filter object result",
+			zap.Any("entity value", e),
+			zap.Any("filter", opts.Filters),
+			zap.Bool("result", pass),
+		)
+
 		if pass {
 			entities = append(entities, e)
 		}

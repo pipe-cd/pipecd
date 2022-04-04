@@ -233,6 +233,23 @@ func TestFilter(t *testing.T) {
 			expect: true,
 		},
 		{
+			name:   "filter multiple conditions with omited value - passed",
+			entity: &entity{Id: "project_1"},
+			filters: []datastore.ListFilter{
+				{
+					Field:    "Id",
+					Operator: datastore.OperatorEqual,
+					Value:    "project_1",
+				},
+				{
+					Field:    "BoolVal",
+					Operator: datastore.OperatorEqual,
+					Value:    false,
+				},
+			},
+			expect: true,
+		},
+		{
 			name:   "filter multiple conditions - not passed",
 			entity: &entity{Id: "project_1", BoolVal: true},
 			filters: []datastore.ListFilter{
