@@ -389,7 +389,7 @@ func ValidateUserGroups(groups []*ProjectUserGroup) error {
 	v := make(map[string]struct{}, len(groups))
 	for _, group := range groups {
 		if _, ok := v[group.SsoGroup]; ok {
-			return fmt.Errorf("cannot assign multi roles to sso group")
+			return fmt.Errorf("the SSO group must be unique")
 		}
 		v[group.SsoGroup] = struct{}{}
 	}
