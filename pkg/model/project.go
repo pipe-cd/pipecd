@@ -364,7 +364,7 @@ func (p *Project) FilterRBACRoles(isBuiltin bool) []*ProjectRBACRole {
 }
 
 // ValidateRBACRoles validate rbac roles.
-func (p *Project) ValidateRBACRoles(roles []*ProjectRBACRole) error {
+func ValidateRBACRoles(roles []*ProjectRBACRole) error {
 	v := make(map[string]struct{}, len(roles))
 	for _, role := range roles {
 		if role.IsBuiltinName() {
@@ -385,7 +385,7 @@ func (p *ProjectRBACRole) IsBuiltinName() bool {
 }
 
 // ValidateUserGroups validate user groups.
-func (p *Project) ValidateUserGroups(groups []*ProjectUserGroup) error {
+func ValidateUserGroups(groups []*ProjectUserGroup) error {
 	v := make(map[string]struct{}, len(groups))
 	for _, group := range groups {
 		if _, ok := v[group.SsoGroup]; ok {
@@ -397,6 +397,7 @@ func (p *Project) ValidateUserGroups(groups []*ProjectUserGroup) error {
 }
 
 // SetUserGroup adds a new user group or updates if it already exists.
+// NOTE: SetUserGroup is supposed to be only called by MigrateFromRBAC.
 func (p *Project) SetUserGroup(group, role string) {
 	v := &ProjectUserGroup{
 		SsoGroup: group,
@@ -414,13 +415,16 @@ func (p *Project) SetUserGroup(group, role string) {
 // MigrateFromRBAC migrate rbac config to user group.
 func (p *Project) MigrateFromRBAC() {
 	rbac := p.Rbac
-	if rbac.GetAdmin() != "" {
+	if rbac == nil {
+		return
+	}
+	if rbac.Admin != "" {
 		p.SetUserGroup(rbac.Admin, builtinRBACRoleAdmin.String())
 	}
-	if rbac.GetEditor() != "" {
+	if rbac.Editor != "" {
 		p.SetUserGroup(rbac.Editor, builtinRBACRoleEditor.String())
 	}
-	if rbac.GetViewer() != "" {
+	if rbac.Viewer != "" {
 		p.SetUserGroup(rbac.Viewer, builtinRBACRoleViewer.String())
 	}
 	p.Rbac = &ProjectRBACConfig{}

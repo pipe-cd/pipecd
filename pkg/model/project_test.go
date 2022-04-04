@@ -258,8 +258,7 @@ func TestProject_FilterRBACRoles(t *testing.T) {
 	assert.Len(t, got, 1)
 }
 
-func TestProject_ValidateRBACRoles(t *testing.T) {
-	p := &Project{}
+func TestValidateRBACRoles(t *testing.T) {
 	testcases := []struct {
 		name    string
 		roles   []*ProjectRBACRole
@@ -325,7 +324,7 @@ func TestProject_ValidateRBACRoles(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := p.ValidateRBACRoles(tc.roles)
+			err := ValidateRBACRoles(tc.roles)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
@@ -347,8 +346,7 @@ func TestProjectRBACRole_IsBuiltinName(t *testing.T) {
 	assert.False(t, p.IsBuiltinName())
 }
 
-func TestProject_ValidateUserGroups(t *testing.T) {
-	p := &Project{}
+func TestValidateUserGroups(t *testing.T) {
 	groups := []*ProjectUserGroup{
 		{
 			Role:     "Admin",
@@ -363,7 +361,7 @@ func TestProject_ValidateUserGroups(t *testing.T) {
 			SsoGroup: "team/viewer",
 		},
 	}
-	err := p.ValidateUserGroups(groups)
+	err := ValidateUserGroups(groups)
 	assert.NoError(t, err)
 
 	groups = []*ProjectUserGroup{
@@ -376,7 +374,7 @@ func TestProject_ValidateUserGroups(t *testing.T) {
 			SsoGroup: "team/tester",
 		},
 	}
-	err = p.ValidateUserGroups(groups)
+	err = ValidateUserGroups(groups)
 	assert.Error(t, err)
 }
 
