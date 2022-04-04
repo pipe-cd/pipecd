@@ -38,12 +38,6 @@ const (
 func main() {
 	log.Println("Start running plan-preview")
 
-	args, err := parseArgs(os.Args)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("Successfully parsed arguments")
-
 	eventName := os.Getenv("GITHUB_EVENT_NAME")
 	if !isSupportedGitHubEvent(eventName) {
 		log.Fatal(fmt.Errorf(
@@ -53,6 +47,12 @@ func main() {
 			commentEventName,
 		))
 	}
+
+	args, err := parseArgs(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Successfully parsed arguments")
 
 	payload, err := os.ReadFile(os.Getenv("GITHUB_EVENT_PATH"))
 	if err != nil {
