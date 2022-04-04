@@ -26,7 +26,114 @@ import (
 
 var (
 	githubScopes = []string{"read:org"}
+
+	builtinAdminRBACRole = &ProjectRBACRole{
+		Name:      builtinRBACRoleAdmin.String(),
+		Policies:  builtinAdminRBACPolicy,
+		IsBuiltin: true,
+	}
+	builtinAdminRBACPolicy = []*ProjectRBACPolicy{
+		{
+			Resources: []*ProjectRBACResource{
+				{
+					Type: ProjectRBACResource_ALL,
+				},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_ALL,
+			},
+		},
+	}
+	builtinEditorRBACRole = &ProjectRBACRole{
+		Name:      builtinRBACRoleEditor.String(),
+		Policies:  builtinEditorRBACPolicy,
+		IsBuiltin: true,
+	}
+	builtinEditorRBACPolicy = []*ProjectRBACPolicy{
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_APPLICATION},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_ALL,
+			},
+		},
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_DEPLOYMENT},
+				{Type: ProjectRBACResource_PIPED},
+				{Type: ProjectRBACResource_DEPLOYMENT_CHAIN},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_GET,
+				ProjectRBACPolicy_LIST,
+			},
+		},
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_EVENT},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_LIST,
+			},
+		},
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_INSIGHT},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_GET,
+			},
+		},
+	}
+	builtinViewerRBACRole = &ProjectRBACRole{
+		Name:      builtinRBACRoleViewer.String(),
+		Policies:  builtinViewerRBACPolicy,
+		IsBuiltin: true,
+	}
+	builtinViewerRBACPolicy = []*ProjectRBACPolicy{
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_APPLICATION},
+				{Type: ProjectRBACResource_DEPLOYMENT},
+				{Type: ProjectRBACResource_PIPED},
+				{Type: ProjectRBACResource_DEPLOYMENT_CHAIN},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_GET,
+				ProjectRBACPolicy_LIST,
+			},
+		},
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_EVENT},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_LIST,
+			},
+		},
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_INSIGHT},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_GET,
+			},
+		},
+	}
 )
+
+type BuiltinRBACRole string
+
+const (
+	builtinRBACRoleAdmin  BuiltinRBACRole = "Admin"
+	builtinRBACRoleEditor BuiltinRBACRole = "Editor"
+	builtinRBACRoleViewer BuiltinRBACRole = "Viewer"
+)
+
+func (b BuiltinRBACRole) String() string {
+	return string(b)
+}
 
 type encrypter interface {
 	Encrypt(text string) (string, error)
@@ -242,4 +349,49 @@ func (p *ProjectSSOConfig_GitHub) GenerateAuthCodeURL(project, callbackURL, stat
 	authURL := cfg.AuthCodeURL(state, oauth2.ApprovalForce, oauth2.AccessTypeOnline)
 
 	return authURL, nil
+}
+
+// FilterRBACRoles filter rbac roles for built-in or not.
+func (p *Project) FilterRBACRoles(isBuiltin bool) []*ProjectRBACRole {
+	v := make([]*ProjectRBACRole, 0, len(p.RbacRoles))
+	for _, role := range p.RbacRoles {
+		if role.IsBuiltin != isBuiltin {
+			continue
+		}
+		v = append(v, role)
+	}
+	return v
+}
+
+// ValidateRBACRoles validate rbac roles.
+func ValidateRBACRoles(roles []*ProjectRBACRole) error {
+	v := make(map[string]struct{}, len(roles))
+	for _, role := range roles {
+		if role.IsBuiltinName() {
+			return fmt.Errorf("cannot use built-in role name")
+		}
+		if _, ok := v[role.Name]; ok {
+			return fmt.Errorf("role name must be unique")
+		}
+		v[role.Name] = struct{}{}
+	}
+	return nil
+}
+
+func (p *ProjectRBACRole) IsBuiltinName() bool {
+	return p.Name == builtinRBACRoleAdmin.String() ||
+		p.Name == builtinRBACRoleEditor.String() ||
+		p.Name == builtinRBACRoleViewer.String()
+}
+
+// ValidateUserGroups validate user groups.
+func ValidateUserGroups(groups []*ProjectUserGroup) error {
+	v := make(map[string]struct{}, len(groups))
+	for _, group := range groups {
+		if _, ok := v[group.SsoGroup]; ok {
+			return fmt.Errorf("the SSO group must be unique")
+		}
+		v[group.SsoGroup] = struct{}{}
+	}
+	return nil
 }
