@@ -45,8 +45,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
 
-var deploymentFrequencyMinimumVersion = model.InsightDeploymentVersion_V0
-
 type encrypter interface {
 	Encrypt(text string) (string, error)
 }
@@ -1447,6 +1445,8 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 
 // getDeploymentFrequency if applicationID is empty, collect all application
 func (a *WebAPI) getDeploymentFrequency(ctx context.Context, projectID string, applicationID string, from, to int64, loc *time.Location) ([]*model.InsightDataPoint, int64, error) {
+	const deploymentFrequencyMinimumVersion = model.InsightDeploymentVersion_V0
+
 	deployments, err := a.insightStore.List(ctx, projectID, from, to, deploymentFrequencyMinimumVersion)
 	var updatedAt int64
 	if err != nil {
