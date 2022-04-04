@@ -377,3 +377,78 @@ func TestValidateUserGroups(t *testing.T) {
 	err = ValidateUserGroups(groups)
 	assert.Error(t, err)
 }
+
+func TestProject_MergeRBAC(t *testing.T) {
+	p := &Project{}
+
+	// No change
+	got := p.MergeRBAC()
+	assert.Equal(t, p, got)
+
+	// Merge rbac and user groups
+	p = &Project{
+		Rbac: &ProjectRBACConfig{
+			Admin:  "team/admin",
+			Editor: "team/editor",
+			Viewer: "team/viewer",
+		},
+		UserGroups: []*ProjectUserGroup{
+			{
+				Role:     "Tester",
+				SsoGroup: "team/tester",
+			},
+			{
+				Role:     "Owner",
+				SsoGroup: "team/owner",
+			},
+		},
+	}
+	want := []*ProjectUserGroup{
+		{
+			Role:     "Admin",
+			SsoGroup: "team/admin",
+		},
+		{
+			Role:     "Editor",
+			SsoGroup: "team/editor",
+		},
+		{
+			Role:     "Viewer",
+			SsoGroup: "team/viewer",
+		},
+		{
+			Role:     "Tester",
+			SsoGroup: "team/tester",
+		},
+		{
+			Role:     "Owner",
+			SsoGroup: "team/owner",
+		},
+	}
+	got = p.MergeRBAC()
+	assert.Equal(t, want, got.UserGroups)
+}
+
+func TestProject_WithBuiltinRBACRoles(t *testing.T) {
+	p := &Project{
+		RbacRoles: []*ProjectRBACRole{
+			{
+				Name: "Tester",
+				Policies: []*ProjectRBACPolicy{
+					{
+						Resources: []*ProjectRBACResource{
+							{
+								Type: ProjectRBACResource_APPLICATION,
+							},
+						},
+						Actions: []ProjectRBACPolicy_Action{
+							ProjectRBACPolicy_GET,
+						},
+					},
+				},
+			},
+		},
+	}
+	got := p.WithBuiltinRBACRoles()
+	assert.Len(t, got.RbacRoles, 4)
+}

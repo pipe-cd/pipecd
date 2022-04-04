@@ -395,3 +395,57 @@ func ValidateUserGroups(groups []*ProjectUserGroup) error {
 	}
 	return nil
 }
+
+func (p *Project) MergeRBAC() *Project {
+	rbac := p.Rbac
+	if rbac == nil {
+		return p
+	}
+
+	size := len(p.UserGroups) + 3 // add the count of rbac teams.
+	v := make([]*ProjectUserGroup, 0, size)
+	if rbac.Admin != "" {
+		group := &ProjectUserGroup{
+			SsoGroup: rbac.Admin,
+			Role:     builtinRBACRoleAdmin.String(),
+		}
+		v = append(v, group)
+	}
+	if rbac.Editor != "" {
+		group := &ProjectUserGroup{
+			SsoGroup: rbac.Editor,
+			Role:     builtinRBACRoleEditor.String(),
+		}
+		v = append(v, group)
+	}
+	if rbac.Viewer != "" {
+		group := &ProjectUserGroup{
+			SsoGroup: rbac.Viewer,
+			Role:     builtinRBACRoleViewer.String(),
+		}
+		v = append(v, group)
+	}
+	v = append(v, p.UserGroups...)
+
+	p.UserGroups = v
+	return p
+}
+
+func (p *Project) WithBuiltinRBACRoles() *Project {
+	builtin := []*ProjectRBACRole{
+		builtinAdminRBACRole,
+		builtinEditorRBACRole,
+		builtinViewerRBACRole,
+	}
+
+	// Initialize the capcity since the length of RbacRoles will continue to increase.
+	size := len(p.RbacRoles) + len(builtin)
+	v := make([]*ProjectRBACRole, 0, size)
+	// Set built-in rbac role.
+	v = append(v, builtin...)
+	// Set custom rbac role.
+	v = append(v, p.RbacRoles...)
+
+	p.RbacRoles = v
+	return p
+}
