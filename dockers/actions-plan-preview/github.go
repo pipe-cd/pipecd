@@ -61,7 +61,7 @@ type GraphQLClient interface {
 //   https://pkg.go.dev/github.com/google/go-github/v36/github#IssueCommentEvent
 func parseGitHubEvent(
 	ctx context.Context,
-	prsService PullRequestsService,
+	pullSvc PullRequestsService,
 	eventName string,
 	payload []byte,
 ) (*githubEvent, error) {
