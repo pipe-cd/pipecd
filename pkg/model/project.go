@@ -351,14 +351,22 @@ func (p *ProjectSSOConfig_GitHub) GenerateAuthCodeURL(project, callbackURL, stat
 	return authURL, nil
 }
 
-// UpdateRBACRoles update only custom rbac roles.
-func (p *Project) UpdateRBACRoles(roles []*ProjectRBACRole) error {
-	v := make(map[string]struct{}, len(roles))
-	update := make([]*ProjectRBACRole, 0, len(roles))
-	for _, role := range roles {
-		if role.IsBuiltin {
+// FilterRBACRoles filter rbac roles for built-in or not.
+func (p *Project) FilterRBACRoles(isBuiltin bool) []*ProjectRBACRole {
+	v := make([]*ProjectRBACRole, 0, len(p.RbacRoles))
+	for _, role := range p.RbacRoles {
+		if role.IsBuiltin != isBuiltin {
 			continue
 		}
+		v = append(v, role)
+	}
+	return v
+}
+
+// ValidateRBACRoles validate rbac roles.
+func (p *Project) ValidateRBACRoles(roles []*ProjectRBACRole) error {
+	v := make(map[string]struct{}, len(roles))
+	for _, role := range roles {
 		if role.IsBuiltinName() {
 			return fmt.Errorf("cannot use built-in role name")
 		}
@@ -366,9 +374,7 @@ func (p *Project) UpdateRBACRoles(roles []*ProjectRBACRole) error {
 			return fmt.Errorf("role name must be unique")
 		}
 		v[role.Name] = struct{}{}
-		update = append(update, role)
 	}
-	p.RbacRoles = update
 	return nil
 }
 
@@ -378,8 +384,8 @@ func (p *ProjectRBACRole) IsBuiltinName() bool {
 		p.Name == builtinRBACRoleViewer.String()
 }
 
-// UpdateUserGroups update user groups.
-func (p *Project) UpdateUserGroups(groups []*ProjectUserGroup) error {
+// ValidateUserGroups validate user groups.
+func (p *Project) ValidateUserGroups(groups []*ProjectUserGroup) error {
 	v := make(map[string]struct{}, len(groups))
 	for _, group := range groups {
 		if _, ok := v[group.SsoGroup]; ok {
@@ -387,7 +393,6 @@ func (p *Project) UpdateUserGroups(groups []*ProjectUserGroup) error {
 		}
 		v[group.SsoGroup] = struct{}{}
 	}
-	p.UserGroups = groups
 	return nil
 }
 

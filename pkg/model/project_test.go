@@ -226,13 +226,40 @@ func TestDecrypt(t *testing.T) {
 	}
 }
 
-func TestProject_UpdateRBACRoles(t *testing.T) {
-	roles := []*ProjectRBACRole{
+func TestProject_FilterRBACRoles(t *testing.T) {
+	rbac := []*ProjectRBACRole{
 		builtinAdminRBACRole,
 		builtinEditorRBACRole,
 		builtinViewerRBACRole,
+		{
+			Name: "Tester",
+			Policies: []*ProjectRBACPolicy{
+				{
+					Resources: []*ProjectRBACResource{
+						{
+							Type: ProjectRBACResource_APPLICATION,
+						},
+					},
+					Actions: []ProjectRBACPolicy_Action{
+						ProjectRBACPolicy_GET,
+					},
+				},
+			},
+		},
 	}
-	p := &Project{RbacRoles: roles}
+	p := &Project{RbacRoles: rbac}
+
+	isBuiltin := true
+	got := p.FilterRBACRoles(isBuiltin)
+	assert.Len(t, got, 3)
+
+	isBuiltin = false
+	got = p.FilterRBACRoles(isBuiltin)
+	assert.Len(t, got, 1)
+}
+
+func TestProject_ValidateRBACRoles(t *testing.T) {
+	p := &Project{}
 	testcases := []struct {
 		name    string
 		roles   []*ProjectRBACRole
@@ -241,9 +268,6 @@ func TestProject_UpdateRBACRoles(t *testing.T) {
 		{
 			name: "cannot use built-in role name",
 			roles: []*ProjectRBACRole{
-				builtinAdminRBACRole,
-				builtinEditorRBACRole,
-				builtinViewerRBACRole,
 				{
 					Name: "Admin",
 					Policies: []*ProjectRBACPolicy{
@@ -265,9 +289,6 @@ func TestProject_UpdateRBACRoles(t *testing.T) {
 		{
 			name: "role name must be unique",
 			roles: []*ProjectRBACRole{
-				builtinAdminRBACRole,
-				builtinEditorRBACRole,
-				builtinViewerRBACRole,
 				{
 					Name: "Tester",
 					Policies: []*ProjectRBACPolicy{
@@ -304,7 +325,7 @@ func TestProject_UpdateRBACRoles(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := p.UpdateRBACRoles(tc.roles)
+			err := p.ValidateRBACRoles(tc.roles)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
@@ -326,7 +347,7 @@ func TestProjectRBACRole_IsBuiltinName(t *testing.T) {
 	assert.False(t, p.IsBuiltinName())
 }
 
-func TestProject_UpdateUserGroups(t *testing.T) {
+func TestProject_ValidateUserGroups(t *testing.T) {
 	p := &Project{}
 	groups := []*ProjectUserGroup{
 		{
@@ -342,9 +363,8 @@ func TestProject_UpdateUserGroups(t *testing.T) {
 			SsoGroup: "team/viewer",
 		},
 	}
-	err := p.UpdateUserGroups(groups)
+	err := p.ValidateUserGroups(groups)
 	assert.NoError(t, err)
-	assert.Len(t, p.UserGroups, len(groups))
 
 	groups = []*ProjectUserGroup{
 		{
@@ -356,7 +376,7 @@ func TestProject_UpdateUserGroups(t *testing.T) {
 			SsoGroup: "team/tester",
 		},
 	}
-	err = p.UpdateUserGroups(groups)
+	err = p.ValidateUserGroups(groups)
 	assert.Error(t, err)
 }
 
