@@ -91,7 +91,7 @@ func parseGitHubEvent(
 			repo  = e.Repo.GetName()
 			prNum = e.Issue.GetNumber()
 		)
-		pr, err := getPullRequest(ctx, prsService, owner, repo, prNum)
+		pr, err := getPullRequest(ctx, pullSvc, owner, repo, prNum)
 		if err != nil {
 			return nil, err
 		}
