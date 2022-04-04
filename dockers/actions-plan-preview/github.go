@@ -116,8 +116,8 @@ func parseGitHubEvent(
 	}
 }
 
-func sendComment(ctx context.Context, issuesService IssuesService, owner, repo string, prNum int, body string) (*github.IssueComment, error) {
-	c, _, err := issuesService.CreateComment(ctx, owner, repo, prNum, &github.IssueComment{
+func sendComment(ctx context.Context, svc IssuesService, owner, repo string, prNum int, body string) (*github.IssueComment, error) {
+	c, _, err := svc.CreateComment(ctx, owner, repo, prNum, &github.IssueComment{
 		Body: &body,
 	})
 	return c, err
