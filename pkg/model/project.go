@@ -391,7 +391,7 @@ func (p *Project) UpdateUserGroups(groups []*ProjectUserGroup) error {
 	return nil
 }
 
-// SetUserGroup add user group or update user group if already exists.
+// SetUserGroup adds a new user group or updates if it already exists.
 func (p *Project) SetUserGroup(group, role string) {
 	v := &ProjectUserGroup{
 		SsoGroup: group,
