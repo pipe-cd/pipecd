@@ -15,15 +15,11 @@
 package main
 
 import (
-	"embed"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-//go:embed testdata/*
-var testdata embed.FS
 
 func TestMakeCommentBody(t *testing.T) {
 	testcases := []struct {
