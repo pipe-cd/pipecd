@@ -55,7 +55,7 @@ func TestParseGithubEvent(t *testing.T) {
 		{
 			name:      "successfully parsed PR event",
 			eventName: "pull_request",
-			payload:   readFile(t, "testdata/pull-request-payload.json"),
+			payload:   readTestdataFile(t, "testdata/pull-request-payload.json"),
 			expected: &githubEvent{
 				Owner:       "Codertocat",
 				Repo:        "Hello-World",
@@ -71,7 +71,7 @@ func TestParseGithubEvent(t *testing.T) {
 		{
 			name:      "successfully parsed issue commit event",
 			eventName: "issue_comment",
-			payload:   readFile(t, "testdata/issue-comment-payload.json"),
+			payload:   readTestdataFile(t, "testdata/issue-comment-payload.json"),
 			prService: dummyPullRequestsService{
 				mergeable:  true,
 				createdAt:  time.Unix(0, 0),

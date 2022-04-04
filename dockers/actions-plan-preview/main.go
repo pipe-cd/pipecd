@@ -204,5 +204,5 @@ func parseArgs(args []string) (arguments, error) {
 }
 
 func isSupportedGitHubEvent(event string) bool {
-	return event == pullRequestEventName || event == commentEventNam
+	return event == pullRequestEventName || event == commentEventName
 }

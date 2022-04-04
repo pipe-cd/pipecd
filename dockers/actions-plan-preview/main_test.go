@@ -24,7 +24,7 @@ import (
 //go:embed testdata/*
 var testdata embed.FS
 
-func readFile(t *testing.T, name string) []byte {
+func readTestdataFile(t *testing.T, name string) []byte {
 	data, err := testdata.ReadFile(name)
 	require.NoError(t, err)
 	return data
