@@ -377,31 +377,3 @@ func TestValidateUserGroups(t *testing.T) {
 	err = ValidateUserGroups(groups)
 	assert.Error(t, err)
 }
-
-func TestProject_SetUserGroup(t *testing.T) {
-	p := &Project{}
-	const group, role = "team/admin", "Admin"
-	// Add
-	p.SetUserGroup(group, role)
-	groups := p.UserGroups
-	assert.Equal(t, group, groups[0].SsoGroup)
-	assert.Equal(t, role, groups[0].Role)
-	// Update
-	p.SetUserGroup(group, role)
-	assert.Equal(t, groups, p.UserGroups)
-}
-
-func TestProject_MigrateFromRBAC(t *testing.T) {
-	p := &Project{}
-	p.MigrateFromRBAC()
-	assert.Empty(t, p.Rbac)
-
-	p.Rbac = &ProjectRBACConfig{
-		Admin:  "admin",
-		Editor: "editor",
-		Viewer: "viewer",
-	}
-	p.MigrateFromRBAC()
-	assert.Empty(t, p.Rbac)
-	assert.Len(t, p.UserGroups, 3)
-}

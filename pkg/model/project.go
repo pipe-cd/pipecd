@@ -395,37 +395,3 @@ func ValidateUserGroups(groups []*ProjectUserGroup) error {
 	}
 	return nil
 }
-
-// SetUserGroup adds a new user group or updates if it already exists.
-// NOTE: SetUserGroup is supposed to be only called by MigrateFromRBAC.
-func (p *Project) SetUserGroup(group, role string) {
-	v := &ProjectUserGroup{
-		SsoGroup: group,
-		Role:     role,
-	}
-	for i := range p.UserGroups {
-		if p.UserGroups[i].SsoGroup == group {
-			p.UserGroups[i] = v
-			return
-		}
-	}
-	p.UserGroups = append(p.UserGroups, v)
-}
-
-// MigrateFromRBAC migrate rbac config to user group.
-func (p *Project) MigrateFromRBAC() {
-	rbac := p.Rbac
-	if rbac == nil {
-		return
-	}
-	if rbac.Admin != "" {
-		p.SetUserGroup(rbac.Admin, builtinRBACRoleAdmin.String())
-	}
-	if rbac.Editor != "" {
-		p.SetUserGroup(rbac.Editor, builtinRBACRoleEditor.String())
-	}
-	if rbac.Viewer != "" {
-		p.SetUserGroup(rbac.Viewer, builtinRBACRoleViewer.String())
-	}
-	p.Rbac = &ProjectRBACConfig{}
-}
