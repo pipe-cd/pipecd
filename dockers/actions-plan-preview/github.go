@@ -123,8 +123,8 @@ func sendComment(ctx context.Context, svc IssuesService, owner, repo string, prN
 	return c, err
 }
 
-func getPullRequest(ctx context.Context, prsService PullRequestsService, owner, repo string, prNum int) (*github.PullRequest, error) {
-	pr, _, err := prsService.Get(ctx, owner, repo, prNum)
+func getPullRequest(ctx context.Context, svc PullRequestsService, owner, repo string, prNum int) (*github.PullRequest, error) {
+	pr, _, err := svc.Get(ctx, owner, repo, prNum)
 	return pr, err
 }
 
