@@ -1,0 +1,4 @@
+<!-- RELEASE -->
+[![RELEASE](https://img.shields.io/static/v1?label=GitHub&message=RELEASE&color=success&style=flat)](https://github.com/pipe-cd/actions-gh-release)
+
+No GitHub releases will be created one this pull request got merged. Because this pull request did not modified any RELEASE files.

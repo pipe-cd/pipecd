@@ -1,4 +1,4 @@
-name: Dockers Test
+name: Test
 
 on:
   push:
@@ -14,7 +14,7 @@ on:
 
 jobs:
   backend:
-    name: Unit Tests
+    name: Docker Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -23,4 +23,8 @@ jobs:
           go-version: '1.17.6'
       - name: Run unit tests for actions-plan-preview
         working-directory: dockers/actions-plan-preview
+        run: go test ./...
+
+      - name: Run unit tests for actions-gh-release
+        working-directory: dockers/actions-gh-release
         run: go test ./...

@@ -1,0 +1,8 @@
+<!-- RELEASE -->
+[![RELEASE](https://img.shields.io/static/v1?label=GitHub&message=RELEASE&color=success&style=flat)](https://github.com/pipe-cd/actions-gh-release)
+
+The following 2 GitHub releases will be created once this pull request got merged.
+
+Release note for tag 1
+
+Release note for tag 2
