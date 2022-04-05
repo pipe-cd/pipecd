@@ -91,8 +91,8 @@ func filter(col datastore.Collection, e interface{}, filters []datastore.ListFil
 func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
 	var (
 		valNum, operandNum float64
-		valCasted          bool = true
-		operandCasted      bool = true
+		valCasted          = true
+		operandCasted      = true
 	)
 	switch v := val.(type) {
 	case float32, float64:
