@@ -60,7 +60,7 @@ func filter(col datastore.Collection, e interface{}, filters []datastore.ListFil
 	}
 
 	for _, filter := range filters {
-		field := normalizeFirstChar(filter.Field)
+		field := normalizeFieldName(filter.Field)
 		if strings.Contains(field, ".") {
 			// TODO: Handle nested field name such as SyncState.Status.
 			return false, datastore.ErrUnsupported
@@ -176,9 +176,24 @@ func makeSliceOfInterfaces(v interface{}) ([]interface{}, error) {
 	return vs, nil
 }
 
-func normalizeFirstChar(key string) string {
-	for i, v := range key {
-		return string(unicode.ToLower(v)) + key[i+1:]
+func normalizeFieldName(key string) string {
+	runeToLower := func(r rune) string {
+		return strings.ToLower(string(r))
 	}
-	return ""
+
+	var out string
+	for i, v := range key {
+		if i == 0 || i == len(key)-1 {
+			out += runeToLower(v)
+			continue
+		}
+
+		if i != len(key)-1 && unicode.IsUpper(v) && unicode.IsUpper(rune(key[i+1])) {
+			out += runeToLower(v)
+			continue
+		}
+
+		out += string(v)
+	}
+	return out
 }

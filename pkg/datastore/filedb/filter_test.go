@@ -24,6 +24,44 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
+func TestConvertCamelToSnake(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name string
+		in   string
+		out  string
+	}{
+		{
+			name: "single camel",
+			in:   "Id",
+			out:  "id",
+		},
+		{
+			name: "full of upper cases",
+			in:   "API",
+			out:  "api",
+		},
+		{
+			name: "mix with full of upper cases word",
+			in:   "APIKey",
+			out:  "apiKey",
+		},
+		{
+			name: "formal camel",
+			in:   "StaticAdminDisabled",
+			out:  "staticAdminDisabled",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			out := normalizeFieldName(tc.in)
+			assert.Equal(t, tc.out, out)
+		})
+	}
+}
+
 func TestCompare(t *testing.T) {
 	t.Parallel()
 
