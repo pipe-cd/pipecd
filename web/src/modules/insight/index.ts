@@ -1,23 +1,22 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-// import { InsightStep } from "pipecd/web/model/insight_pb";
 import dayjs from "dayjs";
 
 const MODULE_NAME = "insight";
 
 export interface InsightState {
   applicationId: string;
-  // step: InsightStep;
   rangeFrom: number;
   rangeTo: number;
+  offset: number;
 }
 
 const now = dayjs(Date.now());
 
 const initialState: InsightState = {
   applicationId: "",
-  // step: InsightStep.DAILY,
-  rangeFrom: now.valueOf(),
-  rangeTo: now.add(7, "day").valueOf(),
+  rangeFrom: now.subtract(1, "month").valueOf(),
+  rangeTo: now.valueOf(),
+  offset: -new Date().getTimezoneOffset() * 60,
 };
 
 export const insightSlice = createSlice({
@@ -27,9 +26,6 @@ export const insightSlice = createSlice({
     changeApplication(state, action: PayloadAction<string>) {
       state.applicationId = action.payload;
     },
-    // changeStep(state, action: PayloadAction<InsightStep>) {
-    //   state.step = action.payload;
-    // },
     changeRangeFrom(state, action: PayloadAction<number>) {
       state.rangeFrom = action.payload;
     },
@@ -41,13 +37,11 @@ export const insightSlice = createSlice({
 
 export const {
   changeApplication,
-  // changeStep,
   changeRangeFrom,
   changeRangeTo,
 } = insightSlice.actions;
 
 export {
   InsightMetricsKind,
-  // InsightStep,
   InsightDataPoint,
 } from "pipecd/web/model/insight_pb";

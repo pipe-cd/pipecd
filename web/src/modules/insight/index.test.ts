@@ -4,17 +4,15 @@ import {
   insightSlice,
   InsightState,
   changeApplication,
-  // changeStep,
   changeRangeFrom,
   changeRangeTo,
-  // InsightStep,
 } from "./";
 
 const initialState: InsightState = {
   applicationId: "",
-  rangeFrom: 1,
-  rangeTo: 604800001,
-  // step: 0,
+  rangeFrom: -2678399999,
+  rangeTo: 1,
+  offset: -new Date().getTimezoneOffset() * 60,
 };
 
 describe("insightSlice reducer", () => {
@@ -34,15 +32,6 @@ describe("insightSlice reducer", () => {
       })
     ).toEqual({ ...initialState, applicationId: "application-1" });
   });
-
-  // it(`should handle ${changeStep.type}`, () => {
-  //   expect(
-  //     insightSlice.reducer(initialState, {
-  //       type: changeStep.type,
-  //       payload: InsightStep.YEARLY,
-  //     })
-  //   ).toEqual({ ...initialState, step: InsightStep.YEARLY });
-  // });
 
   it(`should handle ${changeRangeFrom.type}`, () => {
     expect(

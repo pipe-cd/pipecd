@@ -1,44 +1,46 @@
 import { Box } from "@material-ui/core";
 import { FC, memo, useEffect, useCallback } from "react";
 import { useHistory } from "react-router-dom";
-import { useAppDispatch } from "~/hooks/redux";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
 import {
   ApplicationKind,
   fetchApplications,
-  // selectById,
+  selectById,
 } from "~/modules/applications";
 import { fetchApplicationCount } from "~/modules/application-counts";
 import { InsightDataPoint } from "~/modules/insight";
 import { ApplicationCounts } from "./application-counts";
 import { ChangeFailureRateChart } from "./change-failure-rate-chart";
 import { DeploymentFrequencyChart } from "./deployment-frequency-chart";
-// import { InsightHeader } from "./insight-header";
+import { InsightHeader } from "./insight-header";
 import { LeadTimeForChangesChart } from "./lead-time-for-changes-chart";
 import { MeanTimeToRestoreChart } from "./mean-time-to-restore-chart";
+import { fetchDeploymentFrequency } from "~/modules/deployment-frequency";
 
 export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   const dispatch = useAppDispatch();
   const history = useHistory();
 
-  // const deploymentFrequency = useAppSelector<InsightDataPoint.AsObject[]>(
-  //   (state) => state.deploymentFrequency.data
-  // );
-  // const selectedAppName = useAppSelector<string | undefined>((state) =>
-  //   state.insight.applicationId
-  //     ? selectById(state.applications, state.insight.applicationId)?.name
-  //     : undefined
-  // );
+  const deploymentFrequency = useAppSelector<InsightDataPoint.AsObject[]>(
+    (state) => state.deploymentFrequency.data
+  );
+  const selectedAppName = useAppSelector<string | undefined>((state) =>
+    state.insight.applicationId
+      ? selectById(state.applications, state.insight.applicationId)?.name
+      : undefined
+  );
 
   const data: { name: string; points: InsightDataPoint.AsObject[] }[] = [];
 
-  // if (deploymentFrequency.length > 0) {
-  //   data.push({ name: selectedAppName || "All", points: deploymentFrequency });
-  // }
+  if (deploymentFrequency.length > 0) {
+    data.push({ name: selectedAppName || "All", points: deploymentFrequency });
+  }
 
   useEffect(() => {
     dispatch(fetchApplications());
     dispatch(fetchApplicationCount());
+    dispatch(fetchDeploymentFrequency());
   }, [dispatch]);
 
   const updateURL = useCallback(
@@ -60,7 +62,7 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
       <Box display="flex" flexDirection="column" flex={1} p={2}>
         <ApplicationCounts onClick={handleApplicationCountClick} />
       </Box>
-      {/* <InsightHeader /> */}
+      <InsightHeader />
       <Box
         display="grid"
         gridGap="24px"
