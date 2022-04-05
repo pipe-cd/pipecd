@@ -53,28 +53,28 @@ func TestParseReleaseConfig(t *testing.T) {
 				},
 				CommitCategories: []ReleaseCommitCategoryConfig{
 					ReleaseCommitCategoryConfig{
-						Id:    "_category_0",
+						ID:    "_category_0",
 						Title: "Breaking Changes",
 						ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{
 							Contains: []string{"change-category/breaking-change"},
 						},
 					},
 					ReleaseCommitCategoryConfig{
-						Id:    "_category_1",
+						ID:    "_category_1",
 						Title: "New Features",
 						ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{
 							Contains: []string{"change-category/new-feature"},
 						},
 					},
 					ReleaseCommitCategoryConfig{
-						Id:    "_category_2",
+						ID:    "_category_2",
 						Title: "Notable Changes",
 						ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{
 							Contains: []string{"change-category/notable-change"},
 						},
 					},
 					ReleaseCommitCategoryConfig{
-						Id:                         "_category_3",
+						ID:                         "_category_3",
 						Title:                      "Internal Changes",
 						ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{},
 					},
@@ -116,28 +116,28 @@ func TestBuildReleaseCommits(t *testing.T) {
 		},
 		CommitCategories: []ReleaseCommitCategoryConfig{
 			ReleaseCommitCategoryConfig{
-				Id:    "breaking-change",
+				ID:    "breaking-change",
 				Title: "Breaking Changes",
 				ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{
 					Contains: []string{"change-category/breaking-change"},
 				},
 			},
 			ReleaseCommitCategoryConfig{
-				Id:    "new-feature",
+				ID:    "new-feature",
 				Title: "New Features",
 				ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{
 					Contains: []string{"change-category/new-feature"},
 				},
 			},
 			ReleaseCommitCategoryConfig{
-				Id:    "notable-change",
+				ID:    "notable-change",
 				Title: "Notable Changes",
 				ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{
 					Contains: []string{"change-category/notable-change"},
 				},
 			},
 			ReleaseCommitCategoryConfig{
-				Id:                         "internal-change",
+				ID:                         "internal-change",
 				Title:                      "Internal Changes",
 				ReleaseCommitMatcherConfig: ReleaseCommitMatcherConfig{},
 			},
@@ -393,19 +393,19 @@ func TestRenderReleaseNote(t *testing.T) {
 			config: ReleaseConfig{
 				CommitCategories: []ReleaseCommitCategoryConfig{
 					ReleaseCommitCategoryConfig{
-						Id:    "breaking-change",
+						ID:    "breaking-change",
 						Title: "Breaking Changes",
 					},
 					ReleaseCommitCategoryConfig{
-						Id:    "new-feature",
+						ID:    "new-feature",
 						Title: "New Features",
 					},
 					ReleaseCommitCategoryConfig{
-						Id:    "notable-change",
+						ID:    "notable-change",
 						Title: "Notable Changes",
 					},
 					ReleaseCommitCategoryConfig{
-						Id:    "internal-change",
+						ID:    "internal-change",
 						Title: "Internal Changes",
 					},
 				},

@@ -47,7 +47,7 @@ type ReleaseConfig struct {
 }
 
 type ReleaseCommitCategoryConfig struct {
-	Id    string `json:"id,omitempty"`
+	ID    string `json:"id,omitempty"`
 	Title string `json:"title,omitempty"`
 	ReleaseCommitMatcherConfig
 }
@@ -112,8 +112,8 @@ func parseReleaseConfig(data []byte) (*ReleaseConfig, error) {
 		return nil, err
 	}
 	for i := range c.CommitCategories {
-		if c.CommitCategories[i].Id == "" {
-			c.CommitCategories[i].Id = fmt.Sprintf("_category_%d", i)
+		if c.CommitCategories[i].ID == "" {
+			c.CommitCategories[i].ID = fmt.Sprintf("_category_%d", i)
 		}
 	}
 
@@ -332,10 +332,10 @@ func extractReleaseNote(def, body string, useReleaseNoteBlock bool) string {
 func determineCommitCategory(commit Commit, mergeCommit *Commit, categories []ReleaseCommitCategoryConfig) string {
 	for _, c := range categories {
 		if c.ReleaseCommitMatcherConfig.Empty() {
-			return c.Id
+			return c.ID
 		}
 		if c.ReleaseCommitMatcherConfig.Match(commit, mergeCommit) {
-			return c.Id
+			return c.ID
 		}
 	}
 	return ""
@@ -409,7 +409,7 @@ func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 	for _, ctg := range cfg.CommitCategories {
 		commits := make([]ReleaseCommit, 0, 0)
 		for _, c := range filteredCommits {
-			if c.CategoryName == ctg.Id {
+			if c.CategoryName == ctg.ID {
 				commits = append(commits, c)
 			}
 		}
