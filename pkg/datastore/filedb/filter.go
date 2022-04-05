@@ -21,6 +21,9 @@ import (
 	"strings"
 	"unicode"
 
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 )
 
@@ -40,8 +43,14 @@ func filter(col datastore.Collection, e interface{}, filters []datastore.ListFil
 		return fcol.Match(e, filters)
 	}
 
+	pe, ok := e.(proto.Message)
+	if !ok {
+		return false, datastore.ErrUnsupported
+	}
+
 	// remarshal entity as map[string]interface{} struct.
-	raw, err := json.Marshal(e)
+	m := protojson.MarshalOptions{EmitUnpopulated: true}
+	raw, err := m.Marshal(pe)
 	if err != nil {
 		return false, err
 	}
@@ -51,7 +60,7 @@ func filter(col datastore.Collection, e interface{}, filters []datastore.ListFil
 	}
 
 	for _, filter := range filters {
-		field := convertCamelToSnake(filter.Field)
+		field := normalizeFirstChar(filter.Field)
 		if strings.Contains(field, ".") {
 			// TODO: Handle nested field name such as SyncState.Status.
 			return false, datastore.ErrUnsupported
@@ -167,34 +176,9 @@ func makeSliceOfInterfaces(v interface{}) ([]interface{}, error) {
 	return vs, nil
 }
 
-func convertCamelToSnake(key string) string {
-	runeToLower := func(r rune) string {
-		return strings.ToLower(string(r))
-	}
-
-	var out string
+func normalizeFirstChar(key string) string {
 	for i, v := range key {
-		if i == 0 {
-			out += runeToLower(v)
-			continue
-		}
-
-		if i == len(key)-1 {
-			out += runeToLower(v)
-			break
-		}
-
-		if unicode.IsUpper(v) && unicode.IsLower(rune(key[i+1])) {
-			out += fmt.Sprintf("_%s", runeToLower(v))
-			continue
-		}
-
-		if unicode.IsUpper(v) {
-			out += runeToLower(v)
-			continue
-		}
-
-		out += string(v)
+		return string(unicode.ToLower(v)) + key[i+1:]
 	}
-	return out
+	return ""
 }

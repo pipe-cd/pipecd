@@ -21,45 +21,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
-
-func TestConvertCamelToSnake(t *testing.T) {
-	t.Parallel()
-
-	testcases := []struct {
-		name  string
-		camel string
-		snake string
-	}{
-		{
-			name:  "single camel",
-			camel: "Id",
-			snake: "id",
-		},
-		{
-			name:  "full of upper cases",
-			camel: "API",
-			snake: "api",
-		},
-		{
-			name:  "mix with full of upper cases word",
-			camel: "APIKey",
-			snake: "api_key",
-		},
-		{
-			name:  "formal camel",
-			camel: "StaticAdminDisabled",
-			snake: "static_admin_disabled",
-		},
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			out := convertCamelToSnake(tc.camel)
-			assert.Equal(t, tc.snake, out)
-		})
-	}
-}
 
 func TestCompare(t *testing.T) {
 	t.Parallel()
@@ -177,11 +140,6 @@ func TestCompare(t *testing.T) {
 	}
 }
 
-type entity struct {
-	Id      string `json:"id"`
-	BoolVal bool   `json:"bool_val,omitempty"`
-}
-
 func TestFilter(t *testing.T) {
 	t.Parallel()
 
@@ -193,7 +151,7 @@ func TestFilter(t *testing.T) {
 	}{
 		{
 			name:   "filter single condition - passed",
-			entity: &entity{Id: "project_1"},
+			entity: &model.Project{Id: "project_1"},
 			filters: []datastore.ListFilter{
 				{
 					Field:    "Id",
@@ -205,7 +163,7 @@ func TestFilter(t *testing.T) {
 		},
 		{
 			name:   "filter single condition - not passed",
-			entity: &entity{Id: "project_1"},
+			entity: &model.Project{Id: "project_1"},
 			filters: []datastore.ListFilter{
 				{
 					Field:    "Id",
@@ -217,7 +175,7 @@ func TestFilter(t *testing.T) {
 		},
 		{
 			name:   "filter multiple conditions - passed",
-			entity: &entity{Id: "project_1", BoolVal: true},
+			entity: &model.Project{Id: "project_1", AllowStrayAsViewer: true},
 			filters: []datastore.ListFilter{
 				{
 					Field:    "Id",
@@ -225,7 +183,7 @@ func TestFilter(t *testing.T) {
 					Value:    "project_1",
 				},
 				{
-					Field:    "BoolVal",
+					Field:    "AllowStrayAsViewer",
 					Operator: datastore.OperatorEqual,
 					Value:    true,
 				},
@@ -234,7 +192,7 @@ func TestFilter(t *testing.T) {
 		},
 		{
 			name:   "filter multiple conditions with omited value - passed",
-			entity: &entity{Id: "project_1"},
+			entity: &model.Project{Id: "project_1"},
 			filters: []datastore.ListFilter{
 				{
 					Field:    "Id",
@@ -242,7 +200,7 @@ func TestFilter(t *testing.T) {
 					Value:    "project_1",
 				},
 				{
-					Field:    "BoolVal",
+					Field:    "AllowStrayAsViewer",
 					Operator: datastore.OperatorEqual,
 					Value:    false,
 				},
@@ -251,7 +209,7 @@ func TestFilter(t *testing.T) {
 		},
 		{
 			name:   "filter multiple conditions - not passed",
-			entity: &entity{Id: "project_1", BoolVal: true},
+			entity: &model.Project{Id: "project_1", AllowStrayAsViewer: true},
 			filters: []datastore.ListFilter{
 				{
 					Field:    "Id",
@@ -259,7 +217,7 @@ func TestFilter(t *testing.T) {
 					Value:    "project_1",
 				},
 				{
-					Field:    "BoolVal",
+					Field:    "AllowStrayAsViewer",
 					Operator: datastore.OperatorEqual,
 					Value:    false,
 				},

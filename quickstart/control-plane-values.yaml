@@ -7,10 +7,7 @@ config:
     kind: ControlPlane
     spec:
       datastore:
-        type: MYSQL
-        config:
-          url: root:test@tcp(pipecd-mysql:3306)
-          database: quickstart
+        type: FILEDB
       filestore:
         type: MINIO
         config:
