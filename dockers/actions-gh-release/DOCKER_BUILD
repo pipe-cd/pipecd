@@ -1,0 +1,2 @@
+version: 2.3.3
+registry: gcr.io/pipecd/actions-gh-release

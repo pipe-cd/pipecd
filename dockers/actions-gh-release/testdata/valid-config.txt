@@ -1,0 +1,25 @@
+tag: v1.1.0
+name: hello
+
+commitInclude:
+  contains:
+    - app/hello
+commitExclude:
+  prefixes:
+    - "Merge pull request #"
+
+commitCategories:
+  - title: "Breaking Changes"
+    contains:
+      - change-category/breaking-change
+  - title: "New Features"
+    contains:
+      - change-category/new-feature
+  - title: "Notable Changes"
+    contains:
+      - change-category/notable-change
+  - title: "Internal Changes"
+
+releaseNoteGenerator:
+  showCommitter: true
+  useReleaseNoteBlock: true

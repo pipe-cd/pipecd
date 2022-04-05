@@ -1,0 +1,17 @@
+__GIT_LOG_SEPARATOR__nghialv__GIT_LOG_DELIMITER__kapetanios-robot__GIT_LOG_DELIMITER__1565752022__GIT_LOG_DELIMITER__74e20ede0242fdc7fd75b5be56e8d7fa72060707__GIT_LOG_DELIMITER__74e20ed__GIT_LOG_DELIMITER__ea8674c36467fc4d5a2e7900fa47e6c0d7b40948__GIT_LOG_DELIMITER__ea8674c__GIT_LOG_DELIMITER__wip__GIT_LOG_DELIMITER__
+__GIT_LOG_SEPARATOR__Le Van Nghia__GIT_LOG_DELIMITER__kapetanios-robot__GIT_LOG_DELIMITER__1565749682__GIT_LOG_DELIMITER__c9a7596e7e92ea5e3f03eeb951f632acb02b88a3__GIT_LOG_DELIMITER__c9a7596__GIT_LOG_DELIMITER__74e20ede0242fdc7fd75b5be56e8d7fa72060707__GIT_LOG_DELIMITER__74e20ed__GIT_LOG_DELIMITER__Add implementation of inplug service (#648)__GIT_LOG_DELIMITER__**What this PR does / why we need it**:
+
+**Which issue(s) this PR fixes**:
+
+Fixes #
+
+**Does this PR introduce a user-facing change?**:
+<!--
+If no, just write "NONE" in the release-note block below.
+-->
+```release-note
+NONE
+```
+
+This PR was merged by Kapetanios.
+__GIT_LOG_SEPARATOR__nghialv__GIT_LOG_DELIMITER__kapetanios-robot__GIT_LOG_DELIMITER__2565752022__GIT_LOG_DELIMITER__24e20ede0242fdc7fd75b5be56e8d7fa72060707__GIT_LOG_DELIMITER__24e20ed__GIT_LOG_DELIMITER__74e20ede0242fdc7fd75b5be56e8d7fa72060707 c9a7596e7e92ea5e3f03eeb951f632acb02b88a3__GIT_LOG_DELIMITER__74e20ed c9a7596__GIT_LOG_DELIMITER__Added commands to "kapectl" for creating, updating project secret (#475)__GIT_LOG_DELIMITER__

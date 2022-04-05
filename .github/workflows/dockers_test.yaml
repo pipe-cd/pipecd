@@ -24,3 +24,7 @@ jobs:
       - name: Run unit tests for actions-plan-preview
         working-directory: dockers/actions-plan-preview
         run: go test ./...
+
+      - name: Run unit tests for actions-gh-release
+        working-directory: dockers/actions-gh-release
+        run: go test ./...
