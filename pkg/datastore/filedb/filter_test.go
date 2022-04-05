@@ -179,7 +179,7 @@ func TestCompare(t *testing.T) {
 
 type entity struct {
 	Id      string `json:"id"`
-	BoolVal bool   `json:"bool_val"`
+	BoolVal bool   `json:"bool_val,omitempty"`
 }
 
 func TestFilter(t *testing.T) {
