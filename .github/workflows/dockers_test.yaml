@@ -1,4 +1,4 @@
-name: Dockers Test
+name: Test
 
 on:
   push:
@@ -14,7 +14,7 @@ on:
 
 jobs:
   backend:
-    name: Unit Tests
+    name: Docker Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

@@ -1,2 +1,2 @@
-version: 2.3.3
+version: 2.3.4
 registry: gcr.io/pipecd/actions-gh-release
