@@ -49,7 +49,10 @@ func filter(col datastore.Collection, e interface{}, filters []datastore.ListFil
 	}
 
 	// remarshal entity as map[string]interface{} struct.
-	m := protojson.MarshalOptions{EmitUnpopulated: true}
+	m := protojson.MarshalOptions{
+		EmitUnpopulated: true,
+		UseEnumNumbers:  true,
+	}
 	raw, err := m.Marshal(pe)
 	if err != nil {
 		return false, err
@@ -86,32 +89,48 @@ func filter(col datastore.Collection, e interface{}, filters []datastore.ListFil
 }
 
 func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
-	var valNum, operandNum int64
+	var (
+		valNum, operandNum float64
+		valCasted          bool = true
+		operandCasted      bool = true
+	)
 	switch v := val.(type) {
+	case float32, float64:
+		valNum = reflect.ValueOf(v).Float()
 	case int, int8, int16, int32, int64:
-		valNum = reflect.ValueOf(v).Int()
+		valNum = float64(reflect.ValueOf(v).Int())
 	case uint, uint8, uint16, uint32:
-		valNum = int64(reflect.ValueOf(v).Uint())
+		valNum = float64(reflect.ValueOf(v).Uint())
 	default:
 		if op.IsNumericOperator() {
 			return false, fmt.Errorf("value of type unsupported")
 		}
+		valCasted = false
 	}
 	switch o := operand.(type) {
+	case float32, float64:
+		operandNum = reflect.ValueOf(o).Float()
 	case int, int8, int16, int32, int64:
-		operandNum = reflect.ValueOf(o).Int()
+		operandNum = float64(reflect.ValueOf(o).Int())
 	case uint, uint8, uint16, uint32:
-		operandNum = int64(reflect.ValueOf(o).Uint())
+		operandNum = float64(reflect.ValueOf(o).Uint())
 	default:
 		if op.IsNumericOperator() {
 			return false, fmt.Errorf("operand of type unsupported")
 		}
+		operandCasted = false
 	}
 
 	switch op {
 	case datastore.OperatorEqual:
+		if valCasted && operandCasted {
+			return valNum == operandNum, nil
+		}
 		return val == operand, nil
 	case datastore.OperatorNotEqual:
+		if valCasted && operandCasted {
+			return valNum != operandNum, nil
+		}
 		return val != operand, nil
 	case datastore.OperatorGreaterThan:
 		return valNum > operandNum, nil
