@@ -188,7 +188,7 @@ func normalizeFieldName(key string) string {
 			continue
 		}
 
-		if i != len(key)-1 && unicode.IsUpper(v) && unicode.IsUpper(rune(key[i+1])) {
+		if unicode.IsUpper(v) && unicode.IsUpper(rune(key[i+1])) {
 			out += runeToLower(v)
 			continue
 		}
