@@ -403,7 +403,7 @@ func (p *Project) GetAllUserGroups() []*ProjectUserGroup {
 	}
 
 	// The full list also contains 3 legacy user groups.
-	all := make([]*ProjectUserGroup, 0, len(p.UserGroups) + 3)
+	all := make([]*ProjectUserGroup, 0, len(p.UserGroups)+3)
 	if rbac.Admin != "" {
 		all = append(all, &ProjectUserGroup{
 			SsoGroup: rbac.Admin,
@@ -434,7 +434,7 @@ func (p *Project) GetAllRBACRoles() []*ProjectRBACRole {
 		builtinViewerRBACRole,
 	}
 
-	all := make([]*ProjectRBACRole, 0, len(p.RbacRoles) + len(builtin))
+	all := make([]*ProjectRBACRole, 0, len(p.RbacRoles)+len(builtin))
 	// Set built-in rbac role.
 	all = append(all, builtin...)
 	// Set custom rbac role.
