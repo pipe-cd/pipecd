@@ -296,6 +296,23 @@ func TestFilter(t *testing.T) {
 			},
 			expect: false,
 		},
+		{
+			name:   "filter multiple conditions with numberic operator - passed",
+			entity: &model.Application{Id: "app_1", UpdatedAt: 1649219699},
+			filters: []datastore.ListFilter{
+				{
+					Field:    "Id",
+					Operator: datastore.OperatorEqual,
+					Value:    "app_1",
+				},
+				{
+					Field:    "UpdatedAt",
+					Operator: datastore.OperatorGreaterThanOrEqual,
+					Value:    1646648937,
+				},
+			},
+			expect: true,
+		},
 	}
 
 	for _, tc := range testcases {
