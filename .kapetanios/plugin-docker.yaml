@@ -7,7 +7,7 @@ spec:
   docker:
     enabled: true
     paths:
-      - dockers/**
+      - tool/**
     dockerAuth:
       secret:
         name: container_registry_service_account
