@@ -14,7 +14,7 @@ on:
 
 jobs:
   backend:
-    name: Docker Unit Tests
+    name: Tool
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
