@@ -103,7 +103,7 @@ func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
 		valNum = float64(reflect.ValueOf(v).Uint())
 	default:
 		if op.IsNumericOperator() {
-			return false, fmt.Errorf("value of type unsupported")
+			return false, fmt.Errorf("value of type unsupported: %v", reflect.TypeOf(v))
 		}
 		valCasted = false
 	}
@@ -116,7 +116,7 @@ func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
 		operandNum = float64(reflect.ValueOf(o).Uint())
 	default:
 		if op.IsNumericOperator() {
-			return false, fmt.Errorf("operand of type unsupported")
+			return false, fmt.Errorf("operand of type unsupported: %v", reflect.TypeOf(o))
 		}
 		operandCasted = false
 	}
@@ -184,7 +184,7 @@ func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
 func makeSliceOfInterfaces(v interface{}) ([]interface{}, error) {
 	rv := reflect.ValueOf(v)
 	if rv.Kind() != reflect.Slice && rv.Kind() != reflect.Array {
-		return nil, fmt.Errorf("value is not a slide or array")
+		return nil, fmt.Errorf("value type %v is not a slide or array", rv.Kind())
 	}
 
 	vs := make([]interface{}, rv.Len())
