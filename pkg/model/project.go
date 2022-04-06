@@ -402,8 +402,8 @@ func (p *Project) GetAllUserGroups() []*ProjectUserGroup {
 		return p.UserGroups
 	}
 
-	size := len(p.UserGroups) + 3 // add the count of rbac teams.
-	v := make([]*ProjectUserGroup, 0, size)
+	// The full list also contains 3 legacy user groups.
+	all := make([]*ProjectUserGroup, 0, len(p.UserGroups) + 3)
 	if rbac.Admin != "" {
 		group := &ProjectUserGroup{
 			SsoGroup: rbac.Admin,
