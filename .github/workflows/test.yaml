@@ -10,7 +10,7 @@ on:
 
 jobs:
   backend:
-    name: Backend Unit Tests
+    name: Backend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -21,7 +21,7 @@ jobs:
         run: go test ./pkg/... ./cmd/...
 
   frontend:
-    name: Frontend Unit Tests
+    name: Frontend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

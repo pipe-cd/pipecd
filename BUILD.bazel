@@ -2,7 +2,7 @@ load("@bazel_gazelle//:def.bzl", "gazelle")
 
 # gazelle:exclude docs
 # gazelle:exclude hack
-# gazelle:exclude dockers
+# gazelle:exclude tool
 # gazelle:exclude manifests
 # gazelle:exclude terraform
 # gazelle:exclude template
@@ -25,7 +25,7 @@ buildifier(
     name = "buildifier",
     exclude_patterns = [
         "./docs/*",
-        "./dockers/*",
+        "./tool/*",
         "./manifests/*",
         "./terraform/*",
         "./template/*",
