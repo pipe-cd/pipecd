@@ -434,13 +434,11 @@ func (p *Project) GetAllRBACRoles() []*ProjectRBACRole {
 		builtinViewerRBACRole,
 	}
 
-	// Initialize the capcity since the length of RbacRoles will continue to increase.
-	size := len(p.RbacRoles) + len(builtin)
-	v := make([]*ProjectRBACRole, 0, size)
+	all := make([]*ProjectRBACRole, 0, len(p.RbacRoles) + len(builtin))
 	// Set built-in rbac role.
-	v = append(v, builtin...)
+	all = append(all, builtin...)
 	// Set custom rbac role.
-	v = append(v, p.RbacRoles...)
+	all = append(all, p.RbacRoles...)
 
-	return v
+	return all
 }
