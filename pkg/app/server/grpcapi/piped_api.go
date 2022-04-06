@@ -955,7 +955,7 @@ func (a *PipedAPI) CreateDeploymentChain(ctx context.Context, req *pipedservice.
 			filters = append(filters, datastore.ListFilter{
 				Field:    "Kind",
 				Operator: datastore.OperatorEqual,
-				Value:    kind,
+				Value:    model.ApplicationKind(kind),
 			})
 		}
 
