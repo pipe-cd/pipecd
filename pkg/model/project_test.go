@@ -378,12 +378,12 @@ func TestValidateUserGroups(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestProject_MergeRBAC(t *testing.T) {
+func TestProject_GetAllUserGroups(t *testing.T) {
 	p := &Project{}
 
-	// No change
-	got := p.MergeRBAC()
-	assert.Equal(t, p, got)
+	// Empty
+	got := p.GetAllUserGroups()
+	assert.Empty(t, got)
 
 	// Merge rbac and user groups
 	p = &Project{
@@ -425,11 +425,11 @@ func TestProject_MergeRBAC(t *testing.T) {
 			SsoGroup: "team/owner",
 		},
 	}
-	got = p.MergeRBAC()
-	assert.Equal(t, want, got.UserGroups)
+	got = p.GetAllUserGroups()
+	assert.Equal(t, want, got)
 }
 
-func TestProject_WithBuiltinRBACRoles(t *testing.T) {
+func TestProject_GetAllRBACRoles(t *testing.T) {
 	p := &Project{
 		RbacRoles: []*ProjectRBACRole{
 			{
@@ -449,6 +449,6 @@ func TestProject_WithBuiltinRBACRoles(t *testing.T) {
 			},
 		},
 	}
-	got := p.WithBuiltinRBACRoles()
-	assert.Len(t, got.RbacRoles, 4)
+	got := p.GetAllRBACRoles()
+	assert.Len(t, got, 4)
 }

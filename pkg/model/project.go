@@ -396,10 +396,10 @@ func ValidateUserGroups(groups []*ProjectUserGroup) error {
 	return nil
 }
 
-func (p *Project) MergeRBAC() *Project {
+func (p *Project) GetAllUserGroups() []*ProjectUserGroup {
 	rbac := p.Rbac
 	if rbac == nil {
-		return p
+		return p.UserGroups
 	}
 
 	size := len(p.UserGroups) + 3 // add the count of rbac teams.
@@ -427,11 +427,10 @@ func (p *Project) MergeRBAC() *Project {
 	}
 	v = append(v, p.UserGroups...)
 
-	p.UserGroups = v
-	return p
+	return v
 }
 
-func (p *Project) WithBuiltinRBACRoles() *Project {
+func (p *Project) GetAllRBACRoles() []*ProjectRBACRole {
 	builtin := []*ProjectRBACRole{
 		builtinAdminRBACRole,
 		builtinEditorRBACRole,
@@ -446,6 +445,5 @@ func (p *Project) WithBuiltinRBACRoles() *Project {
 	// Set custom rbac role.
 	v = append(v, p.RbacRoles...)
 
-	p.RbacRoles = v
-	return p
+	return v
 }
