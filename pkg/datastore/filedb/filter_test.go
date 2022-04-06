@@ -24,7 +24,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-func TestConvertCamelToSnake(t *testing.T) {
+func TestNormalizeFieldName(t *testing.T) {
 	t.Parallel()
 
 	testcases := []struct {
