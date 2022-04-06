@@ -395,3 +395,50 @@ func ValidateUserGroups(groups []*ProjectUserGroup) error {
 	}
 	return nil
 }
+
+func (p *Project) GetAllUserGroups() []*ProjectUserGroup {
+	rbac := p.Rbac
+	if rbac == nil {
+		return p.UserGroups
+	}
+
+	// The full list also contains 3 legacy user groups.
+	all := make([]*ProjectUserGroup, 0, len(p.UserGroups)+3)
+	if rbac.Admin != "" {
+		all = append(all, &ProjectUserGroup{
+			SsoGroup: rbac.Admin,
+			Role:     builtinRBACRoleAdmin.String(),
+		})
+	}
+	if rbac.Editor != "" {
+		all = append(all, &ProjectUserGroup{
+			SsoGroup: rbac.Editor,
+			Role:     builtinRBACRoleEditor.String(),
+		})
+	}
+	if rbac.Viewer != "" {
+		all = append(all, &ProjectUserGroup{
+			SsoGroup: rbac.Viewer,
+			Role:     builtinRBACRoleViewer.String(),
+		})
+	}
+	all = append(all, p.UserGroups...)
+
+	return all
+}
+
+func (p *Project) GetAllRBACRoles() []*ProjectRBACRole {
+	builtin := []*ProjectRBACRole{
+		builtinAdminRBACRole,
+		builtinEditorRBACRole,
+		builtinViewerRBACRole,
+	}
+
+	all := make([]*ProjectRBACRole, 0, len(p.RbacRoles)+len(builtin))
+	// Set built-in rbac role.
+	all = append(all, builtin...)
+	// Set custom rbac role.
+	all = append(all, p.RbacRoles...)
+
+	return all
+}
