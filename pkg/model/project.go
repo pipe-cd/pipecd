@@ -405,29 +405,26 @@ func (p *Project) GetAllUserGroups() []*ProjectUserGroup {
 	// The full list also contains 3 legacy user groups.
 	all := make([]*ProjectUserGroup, 0, len(p.UserGroups) + 3)
 	if rbac.Admin != "" {
-		group := &ProjectUserGroup{
+		all = append(all, &ProjectUserGroup{
 			SsoGroup: rbac.Admin,
 			Role:     builtinRBACRoleAdmin.String(),
-		}
-		v = append(v, group)
+		})
 	}
 	if rbac.Editor != "" {
-		group := &ProjectUserGroup{
+		all = append(all, &ProjectUserGroup{
 			SsoGroup: rbac.Editor,
 			Role:     builtinRBACRoleEditor.String(),
-		}
-		v = append(v, group)
+		})
 	}
 	if rbac.Viewer != "" {
-		group := &ProjectUserGroup{
+		all = append(all, &ProjectUserGroup{
 			SsoGroup: rbac.Viewer,
 			Role:     builtinRBACRoleViewer.String(),
-		}
-		v = append(v, group)
+		})
 	}
-	v = append(v, p.UserGroups...)
+	all = append(all, p.UserGroups...)
 
-	return v
+	return all
 }
 
 func (p *Project) GetAllRBACRoles() []*ProjectRBACRole {
