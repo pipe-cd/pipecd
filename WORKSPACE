@@ -138,14 +138,6 @@ container_pull(
 )
 
 container_pull(
-    name = "debug-base",
-    digest = "sha256:b0ec52fbde95be09074badc8298b6e94d61a9066e9637d75610267f1646fb0a1",
-    registry = "gcr.io",
-    repository = "pipecd/debug-base",
-    tag = "0.0.1",
-)
-
-container_pull(
     name = "pipectl-base",
     digest = "sha256:0cf7eacedb0cc8d759248f0e25bd8eddf659de6f2c1db315ac95a272ec2e60cc",
     registry = "gcr.io",
