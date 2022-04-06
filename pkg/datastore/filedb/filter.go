@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"unicode"
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -196,23 +195,8 @@ func makeSliceOfInterfaces(v interface{}) ([]interface{}, error) {
 }
 
 func normalizeFieldName(key string) string {
-	runeToLower := func(r rune) string {
-		return strings.ToLower(string(r))
+	if len(key) == 1 {
+		return strings.ToLower(key)
 	}
-
-	var out string
-	for i, v := range key {
-		if i == 0 || i == len(key)-1 {
-			out += runeToLower(v)
-			continue
-		}
-
-		if unicode.IsUpper(v) && unicode.IsUpper(rune(key[i+1])) {
-			out += runeToLower(v)
-			continue
-		}
-
-		out += string(v)
-	}
-	return out
+	return strings.ToLower(string(key[0])) + key[1:]
 }
