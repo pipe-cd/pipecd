@@ -38,13 +38,16 @@ func TestNormalizeFieldName(t *testing.T) {
 			out:  "id",
 		},
 		{
+			// There will be no all rune upper cases like this
+			// as generated code by protobuf, but we add this test
+			// to mention derectly what is the expected output.
 			name: "full of upper cases",
 			in:   "API",
-			out:  "api",
+			out:  "aPI",
 		},
 		{
 			name: "mix with full of upper cases word",
-			in:   "APIKey",
+			in:   "ApiKey",
 			out:  "apiKey",
 		},
 		{
