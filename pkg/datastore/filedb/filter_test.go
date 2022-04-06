@@ -21,42 +21,43 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-func TestConvertCamelToSnake(t *testing.T) {
+func TestNormalizeFieldName(t *testing.T) {
 	t.Parallel()
 
 	testcases := []struct {
-		name  string
-		camel string
-		snake string
+		name string
+		in   string
+		out  string
 	}{
 		{
-			name:  "single camel",
-			camel: "Id",
-			snake: "id",
+			name: "single camel",
+			in:   "Id",
+			out:  "id",
 		},
 		{
-			name:  "full of upper cases",
-			camel: "API",
-			snake: "api",
+			name: "full of upper cases",
+			in:   "API",
+			out:  "api",
 		},
 		{
-			name:  "mix with full of upper cases word",
-			camel: "APIKey",
-			snake: "api_key",
+			name: "mix with full of upper cases word",
+			in:   "APIKey",
+			out:  "apiKey",
 		},
 		{
-			name:  "formal camel",
-			camel: "StaticAdminDisabled",
-			snake: "static_admin_disabled",
+			name: "formal camel",
+			in:   "StaticAdminDisabled",
+			out:  "staticAdminDisabled",
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			out := convertCamelToSnake(tc.camel)
-			assert.Equal(t, tc.snake, out)
+			out := normalizeFieldName(tc.in)
+			assert.Equal(t, tc.out, out)
 		})
 	}
 }
@@ -177,11 +178,6 @@ func TestCompare(t *testing.T) {
 	}
 }
 
-type entity struct {
-	Id      string `json:"id"`
-	BoolVal bool   `json:"bool_val"`
-}
-
 func TestFilter(t *testing.T) {
 	t.Parallel()
 
@@ -193,19 +189,19 @@ func TestFilter(t *testing.T) {
 	}{
 		{
 			name:   "filter single condition - passed",
-			entity: &entity{Id: "project_1"},
+			entity: &model.Application{Id: "app_1"},
 			filters: []datastore.ListFilter{
 				{
 					Field:    "Id",
 					Operator: datastore.OperatorEqual,
-					Value:    "project_1",
+					Value:    "app_1",
 				},
 			},
 			expect: true,
 		},
 		{
 			name:   "filter single condition - not passed",
-			entity: &entity{Id: "project_1"},
+			entity: &model.Application{Id: "app_1"},
 			filters: []datastore.ListFilter{
 				{
 					Field:    "Id",
@@ -217,34 +213,85 @@ func TestFilter(t *testing.T) {
 		},
 		{
 			name:   "filter multiple conditions - passed",
-			entity: &entity{Id: "project_1", BoolVal: true},
+			entity: &model.Application{Id: "app_1", ProjectId: "project_1"},
 			filters: []datastore.ListFilter{
 				{
 					Field:    "Id",
 					Operator: datastore.OperatorEqual,
-					Value:    "project_1",
+					Value:    "app_1",
 				},
 				{
-					Field:    "BoolVal",
+					Field:    "ProjectId",
 					Operator: datastore.OperatorEqual,
-					Value:    true,
+					Value:    "project_1",
+				},
+			},
+			expect: true,
+		},
+		{
+			name:   "filter multiple conditions with int zero value - passed",
+			entity: &model.Application{Id: "app_1", Kind: model.ApplicationKind_KUBERNETES},
+			filters: []datastore.ListFilter{
+				{
+					Field:    "Id",
+					Operator: datastore.OperatorEqual,
+					Value:    "app_1",
+				},
+				{
+					Field:    "Kind",
+					Operator: datastore.OperatorEqual,
+					Value:    0,
+				},
+			},
+			expect: true,
+		},
+		{
+			name:   "filter multiple conditions with boolean zero value - passed",
+			entity: &model.Application{Id: "app_1", Disabled: false},
+			filters: []datastore.ListFilter{
+				{
+					Field:    "Id",
+					Operator: datastore.OperatorEqual,
+					Value:    "app_1",
+				},
+				{
+					Field:    "Disabled",
+					Operator: datastore.OperatorEqual,
+					Value:    false,
 				},
 			},
 			expect: true,
 		},
 		{
 			name:   "filter multiple conditions - not passed",
-			entity: &entity{Id: "project_1", BoolVal: true},
+			entity: &model.Application{Id: "app_1", ProjectId: "project_1"},
 			filters: []datastore.ListFilter{
 				{
 					Field:    "Id",
 					Operator: datastore.OperatorEqual,
-					Value:    "project_1",
+					Value:    "app_1",
 				},
 				{
-					Field:    "BoolVal",
+					Field:    "ProjectId",
 					Operator: datastore.OperatorEqual,
-					Value:    false,
+					Value:    "project_2",
+				},
+			},
+			expect: false,
+		},
+		{
+			name:   "filter multiple conditions wrong type - not passed",
+			entity: &model.Application{Id: "app_1", Disabled: false},
+			filters: []datastore.ListFilter{
+				{
+					Field:    "Id",
+					Operator: datastore.OperatorEqual,
+					Value:    "app_1",
+				},
+				{
+					Field:    "Disabled",
+					Operator: datastore.OperatorEqual,
+					Value:    0,
 				},
 			},
 			expect: false,

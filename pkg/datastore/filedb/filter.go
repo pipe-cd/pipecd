@@ -21,6 +21,9 @@ import (
 	"strings"
 	"unicode"
 
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 )
 
@@ -40,8 +43,17 @@ func filter(col datastore.Collection, e interface{}, filters []datastore.ListFil
 		return fcol.Match(e, filters)
 	}
 
+	pe, ok := e.(proto.Message)
+	if !ok {
+		return false, datastore.ErrUnsupported
+	}
+
 	// remarshal entity as map[string]interface{} struct.
-	raw, err := json.Marshal(e)
+	m := protojson.MarshalOptions{
+		EmitUnpopulated: true,
+		UseEnumNumbers:  true,
+	}
+	raw, err := m.Marshal(pe)
 	if err != nil {
 		return false, err
 	}
@@ -51,7 +63,7 @@ func filter(col datastore.Collection, e interface{}, filters []datastore.ListFil
 	}
 
 	for _, filter := range filters {
-		field := convertCamelToSnake(filter.Field)
+		field := normalizeFieldName(filter.Field)
 		if strings.Contains(field, ".") {
 			// TODO: Handle nested field name such as SyncState.Status.
 			return false, datastore.ErrUnsupported
@@ -77,32 +89,48 @@ func filter(col datastore.Collection, e interface{}, filters []datastore.ListFil
 }
 
 func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
-	var valNum, operandNum int64
+	var (
+		valNum, operandNum float64
+		valCasted          = true
+		operandCasted      = true
+	)
 	switch v := val.(type) {
+	case float32, float64:
+		valNum = reflect.ValueOf(v).Float()
 	case int, int8, int16, int32, int64:
-		valNum = reflect.ValueOf(v).Int()
+		valNum = float64(reflect.ValueOf(v).Int())
 	case uint, uint8, uint16, uint32:
-		valNum = int64(reflect.ValueOf(v).Uint())
+		valNum = float64(reflect.ValueOf(v).Uint())
 	default:
 		if op.IsNumericOperator() {
 			return false, fmt.Errorf("value of type unsupported")
 		}
+		valCasted = false
 	}
 	switch o := operand.(type) {
+	case float32, float64:
+		operandNum = reflect.ValueOf(o).Float()
 	case int, int8, int16, int32, int64:
-		operandNum = reflect.ValueOf(o).Int()
+		operandNum = float64(reflect.ValueOf(o).Int())
 	case uint, uint8, uint16, uint32:
-		operandNum = int64(reflect.ValueOf(o).Uint())
+		operandNum = float64(reflect.ValueOf(o).Uint())
 	default:
 		if op.IsNumericOperator() {
 			return false, fmt.Errorf("operand of type unsupported")
 		}
+		operandCasted = false
 	}
 
 	switch op {
 	case datastore.OperatorEqual:
+		if valCasted && operandCasted {
+			return valNum == operandNum, nil
+		}
 		return val == operand, nil
 	case datastore.OperatorNotEqual:
+		if valCasted && operandCasted {
+			return valNum != operandNum, nil
+		}
 		return val != operand, nil
 	case datastore.OperatorGreaterThan:
 		return valNum > operandNum, nil
@@ -167,29 +195,19 @@ func makeSliceOfInterfaces(v interface{}) ([]interface{}, error) {
 	return vs, nil
 }
 
-func convertCamelToSnake(key string) string {
+func normalizeFieldName(key string) string {
 	runeToLower := func(r rune) string {
 		return strings.ToLower(string(r))
 	}
 
 	var out string
 	for i, v := range key {
-		if i == 0 {
+		if i == 0 || i == len(key)-1 {
 			out += runeToLower(v)
 			continue
 		}
 
-		if i == len(key)-1 {
-			out += runeToLower(v)
-			break
-		}
-
-		if unicode.IsUpper(v) && unicode.IsLower(rune(key[i+1])) {
-			out += fmt.Sprintf("_%s", runeToLower(v))
-			continue
-		}
-
-		if unicode.IsUpper(v) {
+		if unicode.IsUpper(v) && unicode.IsUpper(rune(key[i+1])) {
 			out += runeToLower(v)
 			continue
 		}
