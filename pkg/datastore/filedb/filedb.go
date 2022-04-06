@@ -149,6 +149,7 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 			return nil, err
 		}
 
+		// TODO: Remove this unnecessary log print.
 		f.logger.Info("filtering...",
 			zap.Any("entity", e),
 			zap.Any("filter", opts.Filters),
@@ -164,6 +165,7 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 			return nil, err
 		}
 
+		// TODO: Remove this unnecessary log print.
 		f.logger.Info("check filter result",
 			zap.Any("entity", e),
 			zap.Any("filter", opts.Filters),
