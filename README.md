@@ -86,7 +86,7 @@ We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/
 <a href="https://github.com/Linutux"><img src="https://avatars.githubusercontent.com/u/435352?v=4" title="Linutux" width="80" height="80"></a>
 <a href="https://github.com/KeisukeYamashita"><img src="https://avatars.githubusercontent.com/u/23056537?v=4" title="KeisukeYamashita" width="80" height="80"></a>
 <a href="https://github.com/butterv"><img src="https://avatars.githubusercontent.com/u/15773082?v=4" title="butterv" width="80" height="80"></a>
-<a href="https://github.com/misukuro"><img src="https://avatars.githubusercontent.com/u/1040546?v=4" title="na-ga" width="80" height="80"></a>
+<a href="https://github.com/misukuro"><img src="https://avatars.githubusercontent.com/u/1040546?v=4" title="misukuro" width="80" height="80"></a>
 <a href="https://github.com/eltociear"><img src="https://avatars.githubusercontent.com/u/22633385?v=4" title="eltociear" width="80" height="80"></a>
 <a href="https://github.com/tnir"><img src="https://avatars.githubusercontent.com/u/10229505?v=4" title="tnir" width="80" height="80"></a>
 <a href="https://github.com/RikiyaFujii"><img src="https://avatars.githubusercontent.com/u/23261497?v=4" title="RikiyaFujii" width="80" height="80"></a>
