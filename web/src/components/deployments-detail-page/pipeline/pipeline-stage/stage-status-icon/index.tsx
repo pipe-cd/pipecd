@@ -5,6 +5,7 @@ import {
   Error,
   IndeterminateCheckBox,
   Stop,
+  SkipNext,
 } from "@material-ui/icons";
 import { FC } from "react";
 import { StageStatus } from "~/modules/deployments";
@@ -25,6 +26,9 @@ const useStyles = makeStyles((theme) => ({
   },
   [StageStatus.STAGE_NOT_STARTED_YET]: {
     color: theme.palette.grey[500],
+  },
+  [StageStatus.STAGE_SKIPPED]: {
+    color: theme.palette.success.main,
   },
   "@keyframes running": {
     "0%": {
@@ -54,5 +58,7 @@ export const StageStatusIcon: FC<StageStatusIconProps> = ({ status }) => {
       return <IndeterminateCheckBox className={classes[status]} />;
     case StageStatus.STAGE_RUNNING:
       return <Cached className={classes[status]} />;
+    case StageStatus.STAGE_SKIPPED:
+      return <SkipNext className={classes[status]} />;
   }
 };

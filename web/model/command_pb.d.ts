@@ -68,6 +68,11 @@ export class Command extends jspb.Message {
   hasChainSyncApplication(): boolean;
   clearChainSyncApplication(): Command;
 
+  getSkipStage(): Command.SkipStage | undefined;
+  setSkipStage(value?: Command.SkipStage): Command;
+  hasSkipStage(): boolean;
+  clearSkipStage(): Command;
+
   getCreatedAt(): number;
   setCreatedAt(value: number): Command;
 
@@ -101,6 +106,7 @@ export namespace Command {
     approveStage?: Command.ApproveStage.AsObject,
     buildPlanPreview?: Command.BuildPlanPreview.AsObject,
     chainSyncApplication?: Command.ChainSyncApplication.AsObject,
+    skipStage?: Command.SkipStage.AsObject,
     createdAt: number,
     updatedAt: number,
   }
@@ -271,6 +277,29 @@ export namespace Command {
   }
 
 
+  export class SkipStage extends jspb.Message {
+    getDeploymentId(): string;
+    setDeploymentId(value: string): SkipStage;
+
+    getStageId(): string;
+    setStageId(value: string): SkipStage;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): SkipStage.AsObject;
+    static toObject(includeInstance: boolean, msg: SkipStage): SkipStage.AsObject;
+    static serializeBinaryToWriter(message: SkipStage, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): SkipStage;
+    static deserializeBinaryFromReader(message: SkipStage, reader: jspb.BinaryReader): SkipStage;
+  }
+
+  export namespace SkipStage {
+    export type AsObject = {
+      deploymentId: string,
+      stageId: string,
+    }
+  }
+
+
   export enum Type { 
     SYNC_APPLICATION = 0,
     UPDATE_APPLICATION_CONFIG = 1,
@@ -278,6 +307,7 @@ export namespace Command {
     APPROVE_STAGE = 3,
     BUILD_PLAN_PREVIEW = 4,
     CHAIN_SYNC_APPLICATION = 5,
+    SKIP_STAGE = 6,
   }
 }
 

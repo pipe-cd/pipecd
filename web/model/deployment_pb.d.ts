@@ -291,6 +291,7 @@ export enum StageStatus {
   STAGE_SUCCESS = 2,
   STAGE_FAILURE = 3,
   STAGE_CANCELLED = 4,
+  STAGE_SKIPPED = 5,
 }
 export enum TriggerKind { 
   ON_COMMIT = 0,
