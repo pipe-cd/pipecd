@@ -104,7 +104,7 @@ func (c *OAuthClient) GetUser(ctx context.Context) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	teams, _, err := c.Teams.ListUserTeams(ctx, nil)
+	teams, _, err := c.Teams.ListUserTeams(ctx, &github.ListOptions{PerPage: 100})
 	if err != nil {
 		return nil, err
 	}
