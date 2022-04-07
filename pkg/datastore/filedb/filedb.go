@@ -149,6 +149,12 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 			return nil, err
 		}
 
+		// TODO: Remove this unnecessary log print.
+		f.logger.Info("filtering...",
+			zap.Any("entity", e),
+			zap.Any("filter", opts.Filters),
+		)
+
 		pass, err := filter(col, e, opts.Filters)
 		if err != nil {
 			f.logger.Error("failed to filter entity",
@@ -158,6 +164,13 @@ func (f *FileDB) Find(ctx context.Context, col datastore.Collection, opts datast
 			)
 			return nil, err
 		}
+
+		// TODO: Remove this unnecessary log print.
+		f.logger.Info("check filter result",
+			zap.Any("entity", e),
+			zap.Any("filter", opts.Filters),
+			zap.Bool("result", pass),
+		)
 
 		if pass {
 			entities = append(entities, e)

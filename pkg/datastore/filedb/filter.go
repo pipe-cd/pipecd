@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"google.golang.org/protobuf/encoding/protojson"
@@ -89,6 +90,7 @@ func filter(col datastore.Collection, e interface{}, filters []datastore.ListFil
 
 func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
 	var (
+		err                error
 		valNum, operandNum float64
 		valCasted          = true
 		operandCasted      = true
@@ -100,9 +102,18 @@ func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
 		valNum = float64(reflect.ValueOf(v).Int())
 	case uint, uint8, uint16, uint32:
 		valNum = float64(reflect.ValueOf(v).Uint())
+	case string:
+		if !op.IsNumericOperator() {
+			valCasted = false
+			break
+		}
+		valNum, err = strconv.ParseFloat(v, 64)
+		if err != nil {
+			return false, err
+		}
 	default:
 		if op.IsNumericOperator() {
-			return false, fmt.Errorf("value of type unsupported")
+			return false, fmt.Errorf("value of type unsupported: %v", reflect.TypeOf(v))
 		}
 		valCasted = false
 	}
@@ -113,9 +124,18 @@ func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
 		operandNum = float64(reflect.ValueOf(o).Int())
 	case uint, uint8, uint16, uint32:
 		operandNum = float64(reflect.ValueOf(o).Uint())
+	case string:
+		if !op.IsNumericOperator() {
+			operandCasted = false
+			break
+		}
+		operandNum, err = strconv.ParseFloat(o, 64)
+		if err != nil {
+			return false, err
+		}
 	default:
 		if op.IsNumericOperator() {
-			return false, fmt.Errorf("operand of type unsupported")
+			return false, fmt.Errorf("operand of type unsupported: %v", reflect.TypeOf(o))
 		}
 		operandCasted = false
 	}
@@ -183,7 +203,7 @@ func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
 func makeSliceOfInterfaces(v interface{}) ([]interface{}, error) {
 	rv := reflect.ValueOf(v)
 	if rv.Kind() != reflect.Slice && rv.Kind() != reflect.Array {
-		return nil, fmt.Errorf("value is not a slide or array")
+		return nil, fmt.Errorf("value type %v is not a slide or array", rv.Kind())
 	}
 
 	vs := make([]interface{}, rv.Len())
