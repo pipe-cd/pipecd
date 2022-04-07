@@ -109,20 +109,6 @@ func (mr *MockProjectStoreMockRecorder) List(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockProjectStore)(nil).List), arg0, arg1)
 }
 
-// MigrateFromProjectRBACConfig mocks base method.
-func (m *MockProjectStore) MigrateFromProjectRBACConfig(arg0 context.Context, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MigrateFromProjectRBACConfig", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// MigrateFromProjectRBACConfig indicates an expected call of MigrateFromProjectRBACConfig.
-func (mr *MockProjectStoreMockRecorder) MigrateFromProjectRBACConfig(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MigrateFromProjectRBACConfig", reflect.TypeOf((*MockProjectStore)(nil).MigrateFromProjectRBACConfig), arg0, arg1)
-}
-
 // UpdateProjectRBACConfig mocks base method.
 func (m *MockProjectStore) UpdateProjectRBACConfig(arg0 context.Context, arg1 string, arg2 *model.ProjectRBACConfig) error {
 	m.ctrl.T.Helper()

@@ -80,7 +80,6 @@ type ProjectStore interface {
 	UpdateProjectRBACConfig(ctx context.Context, id string, rbac *model.ProjectRBACConfig) error
 	UpdateProjectRBACRoles(ctx context.Context, id string, roles []*model.ProjectRBACRole) error
 	UpdateProjectUserGroups(ctx context.Context, id string, groups []*model.ProjectUserGroup) error
-	MigrateFromProjectRBACConfig(ctx context.Context, id string) error
 }
 
 type projectStore struct {
@@ -201,15 +200,17 @@ func (s *projectStore) UpdateProjectRBACConfig(ctx context.Context, id string, r
 
 // UpdateProjectRBACRoles updates project rbac roles.
 func (s *projectStore) UpdateProjectRBACRoles(ctx context.Context, id string, roles []*model.ProjectRBACRole) error {
-	return ErrUnimplemented
+	return s.update(ctx, id, func(p *model.Project) error {
+		p.RbacRoles = roles
+		p.RbacRoles = p.FilterRBACRoles(false)
+		return model.ValidateRBACRoles(p.RbacRoles)
+	})
 }
 
 // UpdateProjectUserGroups updates project user groups.
 func (s *projectStore) UpdateProjectUserGroups(ctx context.Context, id string, groups []*model.ProjectUserGroup) error {
-	return ErrUnimplemented
-}
-
-// MigrateFromProjectRBACConfig migrate from ProjectRBACConfig to ProjectUserGroup.
-func (s *projectStore) MigrateFromProjectRBACConfig(ctx context.Context, id string) error {
-	return ErrUnimplemented
+	return s.update(ctx, id, func(p *model.Project) error {
+		p.UserGroups, p.Rbac = groups, nil
+		return model.ValidateUserGroups(p.UserGroups)
+	})
 }
