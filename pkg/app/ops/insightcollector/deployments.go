@@ -1,4 +1,4 @@
-// Copyright 2021 The PipeCD Authors.
+// Copyright 2022 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,26 +24,6 @@ import (
 const limit = 50
 
 var deploymentFrequencyMinimumVersion = model.InsightDeploymentVersion_V0
-
-// func (c *Collector) collectDeploymentChangeFailureRate(ctx context.Context, ds []*model.Deployment, target time.Time) error {
-// 	apps, projects := groupDeployments(ds)
-
-// 	var updateErr error
-// 	for id, ds := range apps {
-// 		if err := c.updateApplicationChunks(ctx, ds[0].ProjectId, id, ds, model.InsightMetricsKind_CHANGE_FAILURE_RATE, target); err != nil {
-// 			c.logger.Error("failed to update application chunks", zap.Error(err))
-// 			updateErr = err
-// 		}
-// 	}
-// 	for id, ds := range projects {
-// 		if err := c.updateApplicationChunks(ctx, id, ds[0].ApplicationId, ds, model.InsightMetricsKind_CHANGE_FAILURE_RATE, target); err != nil {
-// 			c.logger.Error("failed to update application chunks", zap.Error(err))
-// 			updateErr = err
-// 		}
-// 	}
-
-// 	return updateErr
-// }
 
 func (c *Collector) collectDevelopmentFrequency(ctx context.Context, ds []*model.Deployment) error {
 	dailyDeployments := groupDeploymentByProjectID(ds)
