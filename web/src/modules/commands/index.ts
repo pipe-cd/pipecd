@@ -20,6 +20,7 @@ export const COMMAND_TYPE_TEXT: Record<Command.Type, string> = {
   [Command.Type.UPDATE_APPLICATION_CONFIG]: "Update Application Config",
   [Command.Type.BUILD_PLAN_PREVIEW]: "Build Plan Preview",
   [Command.Type.CHAIN_SYNC_APPLICATION]: "Chain Sync Application",
+  [Command.Type.SKIP_STAGE]: "Skip Stage",
 };
 
 const commandsAdapter = createEntityAdapter<Command.AsObject>();
