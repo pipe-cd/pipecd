@@ -1,4 +1,4 @@
-// Copyright 2021 The PipeCD Authors.
+// Copyright 2022 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -45,9 +45,8 @@ type Collector struct {
 	deploymentStore  deploymentStore
 	insightstore     insightstore.Store
 
-	applicationsHandlers []func(ctx context.Context, applications []*model.Application, target time.Time) error
-	// newlyCreatedDeploymentsHandlers []func(ctx context.Context, developments []*model.Deployment, target time.Time) error
-	newlyCompletedDeploymentsHandlers []func(ctx context.Context, developments []*model.Deployment) error
+	applicationHandlers []func(ctx context.Context, applications []*model.Application, target time.Time) error
+	deploymentHandlers  []func(ctx context.Context, developments []*model.Deployment) error
 
 	config config.ControlPlaneInsightCollector
 	logger *zap.Logger
@@ -64,11 +63,10 @@ func NewCollector(ds datastore.DataStore, fs filestore.Store, cfg config.Control
 	}
 
 	if cfg.Application.Enabled {
-		c.applicationsHandlers = append(c.applicationsHandlers, c.collectApplicationCount)
+		c.applicationHandlers = append(c.applicationHandlers, c.collectApplicationCount)
 	}
 	if cfg.Deployment.Enabled {
-		// c.newlyCreatedDeploymentsHandlers = append(c.newlyCreatedDeploymentsHandlers, c.collectDevelopmentFrequency)
-		c.newlyCompletedDeploymentsHandlers = append(c.newlyCompletedDeploymentsHandlers, c.collectDevelopmentFrequency)
+		c.deploymentHandlers = append(c.deploymentHandlers, c.collectDevelopmentFrequency)
 	}
 
 	return c
@@ -125,7 +123,7 @@ func (c *Collector) collectApplicationMetrics(ctx context.Context) {
 		zap.Duration("duration", time.Since(start)),
 	)
 
-	for _, handler := range c.applicationsHandlers {
+	for _, handler := range c.applicationHandlers {
 		if err := handler(ctx, apps, start); err != nil {
 			c.logger.Error("failed to execute a handler for applications", zap.Error(err))
 			// In order to give all handlers the chance to handle the received data, we do not return here.
@@ -139,89 +137,26 @@ func (c *Collector) collectDeploymentMetrics(ctx context.Context) {
 		return
 	}
 
-	cfg := c.config.Deployment
-	retry := backoff.NewRetry(cfg.Retries, backoff.NewConstant(cfg.RetryInterval.Duration()))
-
-	var doneNewlyCompleted bool
+	var (
+		cfg   = c.config.Deployment
+		retry = backoff.NewRetry(cfg.Retries, backoff.NewConstant(cfg.RetryInterval.Duration()))
+	)
 
 	for retry.WaitNext(ctx) {
-		if !doneNewlyCompleted {
-			start := time.Now()
-			if err := c.processNewlyCompletedDeployments(ctx); err != nil {
-				c.logger.Error("failed to process the newly completed deployments", zap.Error(err))
-			} else {
-				c.logger.Info("successfully processed the newly completed deployments",
-					zap.Duration("duration", time.Since(start)),
-				)
-				doneNewlyCompleted = true
-			}
+		start := time.Now()
+		if err := c.collectNewlyCompletedDeployments(ctx); err != nil {
+			c.logger.Error("failed to process the newly completed deployments", zap.Error(err))
+			c.logger.Info("will do another try to collect insight data")
+			continue
 		}
-
-		// if !doneNewlyCreated {
-		// 	start := time.Now()
-		// 	if err := c.processNewlyCreatedDeployments(ctx); err != nil {
-		// 		c.logger.Error("failed to process the newly created deployments", zap.Error(err))
-		// 	} else {
-		// 		c.logger.Info("successfully processed the newly created deployments",
-		// 			zap.Duration("duration", time.Since(start)),
-		// 		)
-		// 		doneNewlyCreated = true
-		// 	}
-		// }
-
-		if doneNewlyCompleted {
-			return
-		}
-		c.logger.Info("will do another try to collect insight data")
+		c.logger.Info("successfully processed the newly completed deployments",
+			zap.Duration("duration", time.Since(start)),
+		)
+		return
 	}
 }
 
-// func (c *Collector) processNewlyCreatedDeployments(ctx context.Context) error {
-// 	c.logger.Info("will retrieve newly created deployments to build insight data")
-// 	now := time.Now()
-// 	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-
-// 	m, err := c.insightstore.LoadMilestone(ctx)
-// 	if err != nil {
-// 		if !errors.Is(err, filestore.ErrNotFound) {
-// 			c.logger.Error("failed to load milestone", zap.Error(err))
-// 			return err
-// 		}
-// 		m = &insight.Milestone{
-// 			// collect from 1 week ago.
-// 			DeploymentCreatedAtMilestone: targetDate.Add(-time.Hour * 24 * 7).Unix(),
-// 		}
-// 	}
-
-// 	dc, err := c.findDeploymentsCompletedInRange(ctx, m.DeploymentCreatedAtMilestone, targetDate.Unix())
-// 	if err != nil {
-// 		c.logger.Error("failed to find newly created deployment", zap.Error(err))
-// 		return err
-// 	}
-
-// 	var handleErr error
-// 	for _, handler := range c.newlyCreatedDeploymentsHandlers {
-// 		if err := handler(ctx, dc, targetDate); err != nil {
-// 			c.logger.Error("failed to execute a handler for newly created deployments", zap.Error(err))
-// 			// In order to give all handlers the chance to handle the received data, we do not return here.
-// 			handleErr = err
-// 		}
-// 	}
-
-// 	if handleErr != nil {
-// 		return handleErr
-// 	}
-
-// 	m.DeploymentCreatedAtMilestone = targetDate.Unix()
-// 	if err := c.insightstore.PutMilestone(ctx, m); err != nil {
-// 		c.logger.Error("failed to store milestone", zap.Error(err))
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
-func (c *Collector) processNewlyCompletedDeployments(ctx context.Context) error {
+func (c *Collector) collectNewlyCompletedDeployments(ctx context.Context) error {
 	c.logger.Info("will retrieve newly completed deployments to build insight data")
 	now := time.Now()
 	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
@@ -245,7 +180,7 @@ func (c *Collector) processNewlyCompletedDeployments(ctx context.Context) error 
 	}
 
 	var handleErr error
-	for _, handler := range c.newlyCompletedDeploymentsHandlers {
+	for _, handler := range c.deploymentHandlers {
 		if err := handler(ctx, dc); err != nil {
 			c.logger.Error("failed to execute a handler for newly completed deployments", zap.Error(err))
 			// In order to give all handlers the chance to handle the received data, we do not return here.
