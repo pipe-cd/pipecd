@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
 	"sort"
 	"strings"
 	"time"
@@ -1375,72 +1374,36 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 
 // GetInsightData returns the accumulated insight data.
 func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
-	claims, err := rpcauth.ExtractClaims(ctx)
-	if err != nil {
-		a.logger.Error("failed to authenticate the current user", zap.Error(err))
-		return nil, err
-	}
+	return nil, status.Error(codes.Unimplemented, "")
 
-	if math.Abs(float64(req.Offset)) > 86400 {
-		return nil, status.Error(codes.InvalidArgument, "offset must between -86400 ~ 86400")
-	}
-
-	loc := time.FixedZone("", int(req.Offset))
-
-	switch req.MetricsKind {
-	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-		points, updatedAt, err := a.getDeploymentFrequency(ctx, claims.Role.ProjectId, req.ApplicationId, req.RangeFrom, req.RangeTo, loc)
-		if err != nil {
-			return nil, err
-		}
-		return &webservice.GetInsightDataResponse{
-			UpdatedAt: updatedAt,
-			Type:      model.InsightResultType_MATRIX,
-			Matrix: []*model.InsightSampleStream{
-				{DataPoints: points},
-			},
-		}, nil
-	default:
-		return nil, status.Error(codes.Unimplemented, "")
-	}
-
-	// chunks, err := insightstore.LoadChunksFromCache(a.insightCache, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
+	// claims, err := rpcauth.ExtractClaims(ctx)
 	// if err != nil {
-	// 	a.logger.Error("failed to load chunks from cache", zap.Error(err))
+	// 	a.logger.Error("failed to authenticate the current user", zap.Error(err))
+	// 	return nil, err
+	// }
 
-	// 	chunks, err = a.insightStore.LoadChunks(ctx, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
+	// if math.Abs(float64(req.Offset)) > 86400 {
+	// 	return nil, status.Error(codes.InvalidArgument, "offset must between -86400 ~ 86400")
+	// }
+
+	// loc := time.FixedZone("", int(req.Offset))
+
+	// switch req.MetricsKind {
+	// case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
+	// 	points, updatedAt, err := a.getDeploymentFrequency(ctx, claims.Role.ProjectId, req.ApplicationId, req.RangeFrom, req.RangeTo, loc)
 	// 	if err != nil {
-	// 		a.logger.Error("failed to load chunks from insightstore", zap.Error(err))
 	// 		return nil, err
 	// 	}
-	// 	if err := insightstore.PutChunksToCache(a.insightCache, chunks); err != nil {
-	// 		a.logger.Error("failed to put chunks to cache", zap.Error(err))
-	// 	}
-	// }
-
-	// idp, err := chunks.ExtractDataPoints(req.Step, from, count)
-	// if err != nil {
-	// 	a.logger.Error("failed to extract data points from chunks", zap.Error(err))
-	// }
-
-	// var updateAt int64
-	// for _, c := range chunks {
-	// 	accumulatedTo := c.GetAccumulatedTo()
-	// 	if accumulatedTo > updateAt {
-	// 		updateAt = accumulatedTo
-	// 	}
-	// }
-
-	// return &webservice.GetInsightDataResponse{
-	// 	UpdatedAt:  updateAt,
-	// 	DataPoints: idp,
-	// 	Type:       model.InsightResultType_MATRIX,
-	// 	Matrix: []*model.InsightSampleStream{
-	// 		{
-	// 			DataPoints: idp,
+	// 	return &webservice.GetInsightDataResponse{
+	// 		UpdatedAt: updatedAt,
+	// 		Type:      model.InsightResultType_MATRIX,
+	// 		Matrix: []*model.InsightSampleStream{
+	// 			{DataPoints: points},
 	// 		},
-	// 	},
-	// }, nil
+	// 	}, nil
+	// default:
+	// 	return nil, status.Error(codes.Unimplemented, "")
+	// }
 }
 
 // getDeploymentFrequency if applicationID is empty, collect all application
