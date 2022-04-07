@@ -27,6 +27,10 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
+const (
+	listPerPage = 100
+)
+
 // OAuthClient is a oauth client for github.
 type OAuthClient struct {
 	*github.Client
@@ -104,7 +108,7 @@ func (c *OAuthClient) GetUser(ctx context.Context) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	teams, _, err := c.Teams.ListUserTeams(ctx, &github.ListOptions{PerPage: 100})
+	teams, _, err := c.Teams.ListUserTeams(ctx, &github.ListOptions{PerPage: listPerPage})
 	if err != nil {
 		return nil, err
 	}
