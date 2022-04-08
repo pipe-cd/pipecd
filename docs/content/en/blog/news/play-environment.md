@@ -1,5 +1,5 @@
 ---
-date: 2022-03-27
+date: 2022-04-08
 title: "The PipeCD play environment is here!!!"
 linkTitle: "The PipeCD play environment"
 weight: 994
