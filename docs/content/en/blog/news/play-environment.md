@@ -32,12 +32,19 @@ Then, that's it. Feel free to click around and see what PipeCD can bring to you 
 
 ![play-environment-application](/images/play-environment-application.png)
 <p style="text-align: center;">
-Application detail page - show the application's state and info
+<a href="https://play.pipecd.dev/applications/913a0bde-1f38-41e3-9f56-75910b8988a9?project=play" target="_blank">Application detail page</a> - show the application's state and info
 </p>
 
 ![play-environment-deployment](/images/play-environment-deployment.png)
 <p style="text-align: center;">
-Deployment detail page - show the deployment's stages and its log
+<a href="https://play.pipecd.dev/deployments/89c4a27a-a268-448a-bb94-bc994863b695?project=play" target="_blank">Deployment detail page</a> - show the deployment's stages and its log
+</p>
+
+You can also have a look at [PlanPreview](https://pipecd.dev/docs/user-guide/plan-preview/) feature example, via the play project application configuration repository named [examples](https://github.com/pipe-cd/examples) at [PR #108 comment](https://github.com/pipe-cd/examples/pull/108#issuecomment-1091098475).
+
+![play-plan-preview](/images/play-plan-preview.png)
+<p style="text-align: center;">
+Plan preview - show the changes which will be applied on PR merged
 </p>
 
 ### Notes for the PipeCD play environment
