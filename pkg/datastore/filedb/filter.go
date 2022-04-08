@@ -235,6 +235,7 @@ func normalizeFieldValue(val interface{}) (interface{}, error) {
 	case uint, uint8, uint16, uint32:
 	case float32, float64:
 	case string:
+	case bool:
 	default:
 		needConvert = true
 	}
