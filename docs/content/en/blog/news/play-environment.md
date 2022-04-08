@@ -44,7 +44,7 @@ You can also have a look at [PlanPreview](https://pipecd.dev/docs/user-guide/pla
 
 ![play-plan-preview](/images/play-plan-preview.png)
 <p style="text-align: center;">
-Plan preview - show the changes which will be applied on PR merged
+Plan preview - give the early feedback by showing the changes which will be applied on PR merged
 </p>
 
 ### Notes for the PipeCD play environment
