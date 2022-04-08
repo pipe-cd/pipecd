@@ -101,8 +101,14 @@ func (c *commandCollection) Encode(e interface{}) (map[Shard][]byte, error) {
 	}
 
 	opsShardStruct := model.Command{
-		Status:    me.Status,
+		// Required fields to pass validation on update.
+		Id:        me.Id,
+		PipedId:   me.PipedId,
+		CreatedAt: me.CreatedAt,
 		UpdatedAt: me.UpdatedAt,
+		// Fields which in both shards, but the higher value has
+		// a higher priority on merge.
+		Status: me.Status,
 	}
 	odata, err := json.Marshal(&opsShardStruct)
 	if err != nil {
