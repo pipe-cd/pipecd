@@ -328,6 +328,18 @@ func TestFilter(t *testing.T) {
 			},
 			expect: true,
 		},
+		{
+			name:   "filter with IN operator - not passed",
+			entity: &model.Deployment{Status: model.DeploymentStatus_DEPLOYMENT_CANCELLED},
+			filters: []datastore.ListFilter{
+				{
+					Field:    "Status",
+					Operator: datastore.OperatorIn,
+					Value:    model.GetNotCompletedDeploymentStatuses(),
+				},
+			},
+			expect: false,
+		},
 	}
 
 	for _, tc := range testcases {
