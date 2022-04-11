@@ -105,7 +105,7 @@ func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
 		valNum = reflect.ValueOf(v).Float()
 	case int, int8, int16, int32, int64:
 		valNum = float64(reflect.ValueOf(v).Int())
-	case uint, uint8, uint16, uint32:
+	case uint, uint8, uint16, uint32, uint64:
 		valNum = float64(reflect.ValueOf(v).Uint())
 	case string:
 		if !op.IsNumericOperator() {
@@ -127,7 +127,7 @@ func compare(val, operand interface{}, op datastore.Operator) (bool, error) {
 		operandNum = reflect.ValueOf(o).Float()
 	case int, int8, int16, int32, int64:
 		operandNum = float64(reflect.ValueOf(o).Int())
-	case uint, uint8, uint16, uint32:
+	case uint, uint8, uint16, uint32, uint64:
 		operandNum = float64(reflect.ValueOf(o).Uint())
 	case string:
 		if !op.IsNumericOperator() {
@@ -232,7 +232,7 @@ func normalizeFieldValue(val interface{}) (interface{}, error) {
 	var needConvert = false
 	switch val.(type) {
 	case int, int8, int16, int32, int64:
-	case uint, uint8, uint16, uint32:
+	case uint, uint8, uint16, uint32, uint64:
 	case float32, float64:
 	case string:
 	case bool:
