@@ -69,3 +69,44 @@ func TestDeployment_ContainTags(t *testing.T) {
 		})
 	}
 }
+
+func TestDeployment_StageMap(t *testing.T) {
+	testcases := []struct {
+		name       string
+		deployment *Deployment
+		want       map[string]*PipelineStage
+	}{
+		{
+			name: "ok",
+			deployment: &Deployment{
+				Stages: []*PipelineStage{
+					{
+						Id: "stage1",
+					},
+					{
+						Id: "stage2",
+					},
+				},
+			},
+			want: map[string]*PipelineStage{
+				"stage1": &PipelineStage{
+					Id: "stage1",
+				},
+				"stage2": &PipelineStage{
+					Id: "stage2",
+				},
+			},
+		},
+		{
+			name:       "no stages",
+			deployment: &Deployment{},
+			want:       map[string]*PipelineStage{},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.deployment.StageMap()
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}

@@ -113,13 +113,13 @@ func CanUpdateStageStatus(cur, next StageStatus) bool {
 	return false
 }
 
-// StageStatusMap returns the map from id to status of all stages.
-func (d *Deployment) StageStatusMap() map[string]StageStatus {
-	statuses := make(map[string]StageStatus, len(d.Stages))
+// StageMap returns the map of id and the stage.
+func (d *Deployment) StageMap() map[string]*PipelineStage {
+	stage := make(map[string]*PipelineStage, len(d.Stages))
 	for _, s := range d.Stages {
-		statuses[s.Id] = s.Status
+		stage[s.Id] = s
 	}
-	return statuses
+	return stage
 }
 
 // CommitHash returns the hash value of trigger commit.
