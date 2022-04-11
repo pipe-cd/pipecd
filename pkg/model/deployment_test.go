@@ -110,3 +110,43 @@ func TestDeployment_StageMap(t *testing.T) {
 		})
 	}
 }
+
+func TestStageStatus_IsCompleted(t *testing.T) {
+	testcases := []struct {
+		name   string
+		status StageStatus
+		want   bool
+	}{
+		{
+			name:   "running",
+			status: StageStatus_STAGE_RUNNING,
+			want:   false,
+		},
+		{
+			name:   "success",
+			status: StageStatus_STAGE_SUCCESS,
+			want:   true,
+		},
+		{
+			name:   "failure",
+			status: StageStatus_STAGE_FAILURE,
+			want:   true,
+		},
+		{
+			name:   "cancelled",
+			status: StageStatus_STAGE_CANCELLED,
+			want:   true,
+		},
+		{
+			name:   "skipped",
+			status: StageStatus_STAGE_SKIPPED,
+			want:   true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.status.IsCompleted()
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
