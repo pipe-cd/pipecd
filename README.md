@@ -17,7 +17,7 @@
 
 PipeCD provides a unified continuous delivery solution for multiple application kinds on multi-cloud that empowers engineers to deploy faster with more confidence, a GitOps tool that enables doing deployment operations by pull request on Git.
 
-![](https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/architecture-overview.png)
+![](https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/pipecd-explanation.png)
 
 **Visibility**
 - Deployment pipeline UI shows clarify what is happening
