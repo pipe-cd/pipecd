@@ -981,7 +981,7 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 		return nil, status.Error(codes.PermissionDenied, "Requested deployment does not belong to your project")
 	}
 
-	if model.IsCompletedDeployment(deployment.Status) {
+	if deployment.Status.IsCompleted() {
 		return nil, status.Errorf(codes.FailedPrecondition, "could not cancel the deployment because it was already completed")
 	}
 

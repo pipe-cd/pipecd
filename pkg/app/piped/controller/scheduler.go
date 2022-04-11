@@ -197,7 +197,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 	}()
 
 	// If this deployment is already completed. Do nothing.
-	if model.IsCompletedDeployment(s.deployment.Status) {
+	if s.deployment.Status.IsCompleted() {
 		s.logger.Info("this deployment is already completed")
 		return nil
 	}
@@ -393,7 +393,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		}
 	}
 
-	if model.IsCompletedDeployment(deploymentStatus) {
+	if deploymentStatus.IsCompleted() {
 		err := s.reportDeploymentCompleted(ctx, deploymentStatus, statusReason, cancelCommander)
 		if err == nil && deploymentStatus == model.DeploymentStatus_DEPLOYMENT_SUCCESS {
 			s.reportMostRecentlySuccessfulDeployment(ctx)

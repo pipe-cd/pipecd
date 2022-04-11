@@ -150,3 +150,53 @@ func TestStageStatus_IsCompleted(t *testing.T) {
 		})
 	}
 }
+
+func TestDeploymentStatus_IsCompleted(t *testing.T) {
+	testcases := []struct {
+		name   string
+		status DeploymentStatus
+		want   bool
+	}{
+		{
+			name:   "pending",
+			status: DeploymentStatus_DEPLOYMENT_PENDING,
+			want:   false,
+		},
+		{
+			name:   "planned",
+			status: DeploymentStatus_DEPLOYMENT_PLANNED,
+			want:   false,
+		},
+		{
+			name:   "running",
+			status: DeploymentStatus_DEPLOYMENT_RUNNING,
+			want:   false,
+		},
+		{
+			name:   "rolling back",
+			status: DeploymentStatus_DEPLOYMENT_ROLLING_BACK,
+			want:   false,
+		},
+		{
+			name:   "success",
+			status: DeploymentStatus_DEPLOYMENT_SUCCESS,
+			want:   true,
+		},
+		{
+			name:   "failure",
+			status: DeploymentStatus_DEPLOYMENT_FAILURE,
+			want:   true,
+		},
+		{
+			name:   "cancelled",
+			status: DeploymentStatus_DEPLOYMENT_CANCELLED,
+			want:   true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.status.IsCompleted()
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}

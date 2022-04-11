@@ -118,7 +118,7 @@ func (d *OnOutOfSyncDeterminer) ShouldTrigger(ctx context.Context, app *model.Ap
 	// Check if it was already completed or not.
 	// Not yet completed means the application is deploying currently,
 	// so no need to trigger a new deployment for it.
-	if !model.IsCompletedDeployment(deployment.Status) {
+	if !deployment.Status.IsCompleted() {
 		return false, nil
 	}
 

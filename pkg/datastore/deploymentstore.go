@@ -86,7 +86,7 @@ var (
 
 	toCompletedUpdateFunc = func(status model.DeploymentStatus, stageStatuses map[string]model.StageStatus, statusReason string, completedAt int64) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
-			if !model.IsCompletedDeployment(status) {
+			if !status.IsCompleted() {
 				return fmt.Errorf("deployment status %s is not completed value: %w", status, ErrInvalidArgument)
 			}
 
