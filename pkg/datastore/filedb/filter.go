@@ -75,7 +75,12 @@ func filter(col datastore.Collection, e interface{}, filters []datastore.ListFil
 			return false, nil
 		}
 
-		cmp, err := compare(val, filter.Value, filter.Operator)
+		operand, err := normalizeFieldValue(filter.Value)
+		if err != nil {
+			return false, err
+		}
+
+		cmp, err := compare(val, operand, filter.Operator)
 		if err != nil {
 			return false, err
 		}
@@ -219,4 +224,34 @@ func normalizeFieldName(key string) string {
 		return strings.ToLower(key)
 	}
 	return strings.ToLower(string(key[0])) + key[1:]
+}
+
+// normalizeFieldValue converts value of any type to the primitive type
+// Note: Find a better way to handle this instead of marshal/unmarshal.
+func normalizeFieldValue(val interface{}) (interface{}, error) {
+	var needConvert = false
+	switch val.(type) {
+	case int, int8, int16, int32, int64:
+	case uint, uint8, uint16, uint32:
+	case float32, float64:
+	case string:
+	case bool:
+	default:
+		needConvert = true
+	}
+
+	if !needConvert {
+		return val, nil
+	}
+
+	raw, err := json.Marshal(val)
+	if err != nil {
+		return nil, err
+	}
+
+	var out interface{}
+	if err = json.Unmarshal(raw, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
 }

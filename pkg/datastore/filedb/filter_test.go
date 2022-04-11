@@ -243,7 +243,7 @@ func TestFilter(t *testing.T) {
 				{
 					Field:    "Kind",
 					Operator: datastore.OperatorEqual,
-					Value:    0,
+					Value:    model.ApplicationKind_KUBERNETES,
 				},
 			},
 			expect: true,
@@ -315,6 +315,30 @@ func TestFilter(t *testing.T) {
 				},
 			},
 			expect: true,
+		},
+		{
+			name:   "filter with IN operator - passed",
+			entity: &model.Deployment{Status: model.DeploymentStatus_DEPLOYMENT_PENDING},
+			filters: []datastore.ListFilter{
+				{
+					Field:    "Status",
+					Operator: datastore.OperatorIn,
+					Value:    model.GetNotCompletedDeploymentStatuses(),
+				},
+			},
+			expect: true,
+		},
+		{
+			name:   "filter with IN operator - not passed",
+			entity: &model.Deployment{Status: model.DeploymentStatus_DEPLOYMENT_CANCELLED},
+			filters: []datastore.ListFilter{
+				{
+					Field:    "Status",
+					Operator: datastore.OperatorIn,
+					Value:    model.GetNotCompletedDeploymentStatuses(),
+				},
+			},
+			expect: false,
 		},
 	}
 
