@@ -83,7 +83,7 @@ func (u *updater) Run(ctx context.Context) error {
 	if len(u.deploymentRefs) != 0 {
 		for _, deploymentRef := range u.deploymentRefs {
 			// Ignore finished deployment.
-			if model.IsCompletedDeployment(deploymentRef.Status) {
+			if deploymentRef.Status.IsCompleted() {
 				continue
 			}
 			deployment, err := u.deploymentStore.Get(ctx, deploymentRef.DeploymentId)
@@ -197,7 +197,7 @@ func (u *updater) isAllInChainDeploymentsCompleted() bool {
 		return false
 	}
 	for _, dr := range u.deploymentRefs {
-		if !model.IsCompletedDeployment(dr.Status) {
+		if !dr.Status.IsCompleted() {
 			return false
 		}
 	}

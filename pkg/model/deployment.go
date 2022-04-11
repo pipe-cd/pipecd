@@ -31,26 +31,11 @@ var notCompletedDeploymentStatuses = []DeploymentStatus{
 	DeploymentStatus_DEPLOYMENT_ROLLING_BACK,
 }
 
-// IsCompletedDeployment checks whether the deployment is at a completion state.
-func IsCompletedDeployment(status DeploymentStatus) bool {
-	if status.String() == "" {
-		return false
-	}
-
-	switch status {
-	case DeploymentStatus_DEPLOYMENT_SUCCESS:
-		return true
-	case DeploymentStatus_DEPLOYMENT_FAILURE:
-		return true
-	case DeploymentStatus_DEPLOYMENT_CANCELLED:
-		return true
-	}
-	return false
-}
-
-// IsSuccessfullyCompletedDeployment checks whether the deployment is at a successfully addressed.
-func IsSuccessfullyCompletedDeployment(status DeploymentStatus) bool {
-	return status == DeploymentStatus_DEPLOYMENT_SUCCESS
+// IsCompleted checks whether the deployment is at a completion state.
+func (d DeploymentStatus) IsCompleted() bool {
+	return d == DeploymentStatus_DEPLOYMENT_SUCCESS ||
+		d == DeploymentStatus_DEPLOYMENT_FAILURE ||
+		d == DeploymentStatus_DEPLOYMENT_CANCELLED
 }
 
 // IsCompleted checks whether the stage is at a completion state.

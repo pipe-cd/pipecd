@@ -309,7 +309,7 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 		delete(c.planners, id)
 
 		// Application will be marked as NOT deploying when planner's deployment was completed.
-		if model.IsCompletedDeployment(p.DoneDeploymentStatus()) {
+		if p.DoneDeploymentStatus().IsCompleted() {
 			if err := reportApplicationDeployingStatus(ctx, c.apiClient, id, false); err != nil {
 				c.logger.Error("failed to mark application as NOT deploying",
 					zap.String("deployment", p.ID()),
@@ -537,7 +537,7 @@ func (c *controller) syncSchedulers(ctx context.Context) error {
 		delete(c.schedulers, id)
 
 		// Application will be marked as NOT deploying when scheduler's deployment was completed.
-		if model.IsCompletedDeployment(s.DoneDeploymentStatus()) {
+		if s.DoneDeploymentStatus().IsCompleted() {
 			if err := reportApplicationDeployingStatus(ctx, c.apiClient, id, false); err != nil {
 				c.logger.Error("failed to mark application as NOT deploying",
 					zap.String("deployment", s.ID()),
