@@ -1025,11 +1025,11 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
-	stage, ok := deployment.StageStatusMap()[req.StageId]
+	stage, ok := deployment.StageMap()[req.StageId]
 	if !ok {
 		return nil, status.Error(codes.FailedPrecondition, "The stage was not found in the deployment")
 	}
-	if model.IsCompletedStage(stage) {
+	if stage.Status.IsCompleted() {
 		return nil, status.Errorf(codes.FailedPrecondition, "Could not approve the stage because it was already completed")
 	}
 

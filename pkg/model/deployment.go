@@ -53,21 +53,12 @@ func IsSuccessfullyCompletedDeployment(status DeploymentStatus) bool {
 	return status == DeploymentStatus_DEPLOYMENT_SUCCESS
 }
 
-// IsCompletedStage checks whether the stage is at a completion state.
-func IsCompletedStage(status StageStatus) bool {
-	if status.String() == "" {
-		return false
-	}
-
-	switch status {
-	case StageStatus_STAGE_SUCCESS:
-		return true
-	case StageStatus_STAGE_FAILURE:
-		return true
-	case StageStatus_STAGE_CANCELLED:
-		return true
-	}
-	return false
+// IsCompleted checks whether the stage is at a completion state.
+func (s StageStatus) IsCompleted() bool {
+	return s == StageStatus_STAGE_SUCCESS ||
+		s == StageStatus_STAGE_FAILURE ||
+		s == StageStatus_STAGE_CANCELLED ||
+		s == StageStatus_STAGE_SKIPPED
 }
 
 // CanUpdateDeploymentStatus checks whether the deployment can transit to the given status.
@@ -113,13 +104,13 @@ func CanUpdateStageStatus(cur, next StageStatus) bool {
 	return false
 }
 
-// StageStatusMap returns the map from id to status of all stages.
-func (d *Deployment) StageStatusMap() map[string]StageStatus {
-	statuses := make(map[string]StageStatus, len(d.Stages))
+// StageMap returns the map of id and the stage.
+func (d *Deployment) StageMap() map[string]*PipelineStage {
+	stage := make(map[string]*PipelineStage, len(d.Stages))
 	for _, s := range d.Stages {
-		statuses[s.Id] = s.Status
+		stage[s.Id] = s
 	}
-	return statuses
+	return stage
 }
 
 // CommitHash returns the hash value of trigger commit.
