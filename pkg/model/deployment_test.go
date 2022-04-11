@@ -89,10 +89,10 @@ func TestDeployment_StageMap(t *testing.T) {
 				},
 			},
 			want: map[string]*PipelineStage{
-				"stage1": &PipelineStage{
+				"stage1": {
 					Id: "stage1",
 				},
-				"stage2": &PipelineStage{
+				"stage2": {
 					Id: "stage2",
 				},
 			},
