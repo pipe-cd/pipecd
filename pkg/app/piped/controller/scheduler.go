@@ -419,7 +419,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	defer func() {
 		// When the piped has been terminated (PS kill) while the stage is still running
 		// we should not mark the log persister as completed.
-		if !model.IsCompletedStage(finalStatus) && sig.Terminated() {
+		if !finalStatus.IsCompleted() && sig.Terminated() {
 			return
 		}
 		lp.Complete(time.Minute)

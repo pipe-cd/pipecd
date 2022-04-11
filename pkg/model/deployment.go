@@ -53,21 +53,12 @@ func IsSuccessfullyCompletedDeployment(status DeploymentStatus) bool {
 	return status == DeploymentStatus_DEPLOYMENT_SUCCESS
 }
 
-// IsCompletedStage checks whether the stage is at a completion state.
-func IsCompletedStage(status StageStatus) bool {
-	if status.String() == "" {
-		return false
-	}
-
-	switch status {
-	case StageStatus_STAGE_SUCCESS:
-		return true
-	case StageStatus_STAGE_FAILURE:
-		return true
-	case StageStatus_STAGE_CANCELLED:
-		return true
-	}
-	return false
+// IsCompleted checks whether the stage is at a completion state.
+func (s StageStatus) IsCompleted() bool {
+	return s == StageStatus_STAGE_SUCCESS ||
+		s == StageStatus_STAGE_FAILURE ||
+		s == StageStatus_STAGE_CANCELLED ||
+		s == StageStatus_STAGE_SKIPPED
 }
 
 // CanUpdateDeploymentStatus checks whether the deployment can transit to the given status.

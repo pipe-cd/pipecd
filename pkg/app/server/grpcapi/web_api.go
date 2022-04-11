@@ -1029,7 +1029,7 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	if !ok {
 		return nil, status.Error(codes.FailedPrecondition, "The stage was not found in the deployment")
 	}
-	if model.IsCompletedStage(stage.Status) {
+	if stage.Status.IsCompleted() {
 		return nil, status.Errorf(codes.FailedPrecondition, "Could not approve the stage because it was already completed")
 	}
 
