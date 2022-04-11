@@ -82,7 +82,13 @@ func (w *webhook) sendEvent(ctx context.Context, event model.NotificationEvent) 
 		return
 	}
 
-	req.Header.Add(w.config.SignatureKey, w.config.SignatureValue)
+	signature, err := w.config.LoadSignatureValue()
+	if err != nil {
+		w.logger.Error("unable to load webhook signature value", zap.Error(err))
+		return
+	}
+
+	req.Header.Add(w.config.SignatureKey, signature)
 
 	resp, err := w.httpClient.Do(req)
 	if err != nil {

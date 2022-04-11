@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -610,9 +611,27 @@ type NotificationReceiverSlack struct {
 }
 
 type NotificationReceiverWebhook struct {
-	URL            string `json:"url"`
-	SignatureKey   string `json:"signatureKey" default:"PipeCD-Signature"`
-	SignatureValue string `json:"signatureValue"`
+	URL                string `json:"url"`
+	SignatureKey       string `json:"signatureKey" default:"PipeCD-Signature"`
+	SignatureValue     string `json:"signatureValue"`
+	SignatureValueFile string `json:"signatureValueFile"`
+}
+
+func (n *NotificationReceiverWebhook) LoadSignatureValue() (string, error) {
+	if n.SignatureValue != "" && n.SignatureValueFile != "" {
+		return "", errors.New("only either signatureValue or signatureValueFile can be set")
+	}
+	if n.SignatureValue != "" {
+		return n.SignatureValue, nil
+	}
+	if n.SignatureValueFile != "" {
+		val, err := os.ReadFile(n.SignatureValueFile)
+		if err != nil {
+			return "", err
+		}
+		return strings.TrimSuffix(string(val), "\n"), nil
+	}
+	return "", nil
 }
 
 type SecretManagement struct {

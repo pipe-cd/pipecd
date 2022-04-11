@@ -319,3 +319,48 @@ func TestPipedEventWatcherValidate(t *testing.T) {
 		})
 	}
 }
+
+func TestNotificationReceiverWebhook_LoadSignatureValue(t *testing.T) {
+	testcase := []struct {
+		name    string
+		webhook *NotificationReceiverWebhook
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "set signatureValue",
+			webhook: &NotificationReceiverWebhook{
+				URL:            "https://example.com",
+				SignatureValue: "foo",
+			},
+			want:    "foo",
+			wantErr: false,
+		},
+		{
+			name: "set signatureValueFile",
+			webhook: &NotificationReceiverWebhook{
+				URL:                "https://example.com",
+				SignatureValueFile: "testdata/piped/notification-receiver-webhook",
+			},
+			want:    "foo",
+			wantErr: false,
+		},
+		{
+			name: "set both of them",
+			webhook: &NotificationReceiverWebhook{
+				URL:                "https://example.com",
+				SignatureValue:     "foo",
+				SignatureValueFile: "testdata/piped/notification-receiver-webhook",
+			},
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tc := range testcase {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := tc.webhook.LoadSignatureValue()
+			assert.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
