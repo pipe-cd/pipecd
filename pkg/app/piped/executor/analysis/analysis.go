@@ -96,6 +96,30 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 
 	eg, ctxWithTimeout := errgroup.WithContext(ctxWithTimeout)
 
+	// Sync the skip command.
+	var (
+		status = model.StageStatus_STAGE_NOT_STARTED_YET
+		doneCh = make(chan struct{})
+	)
+	defer close(doneCh)
+	go func() {
+		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				if !e.checkSkipped(ctx) {
+					continue
+				}
+				status = model.StageStatus_STAGE_SKIPPED
+				ctxWithTimeout.Done()
+				return
+			case <-doneCh:
+				return
+			}
+		}
+	}()
+
 	// Run analyses with metrics providers.
 	for i := range options.Metrics {
 		cfg, err := e.getMetricsConfig(options.Metrics[i], templateCfg)
@@ -146,7 +170,11 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	status := executor.DetermineStageStatus(sig.Signal(), e.Stage.Status, model.StageStatus_STAGE_SUCCESS)
+	if status != model.StageStatus_STAGE_NOT_STARTED_YET {
+		return status
+	}
+
+	status = executor.DetermineStageStatus(sig.Signal(), e.Stage.Status, model.StageStatus_STAGE_SUCCESS)
 	if status != model.StageStatus_STAGE_SUCCESS {
 		return status
 	}
@@ -306,4 +334,24 @@ func (e *Executor) buildAppArgs(customArgs map[string]string) argsTemplate {
 	}
 	args.K8s.Namespace = namespace
 	return args
+}
+
+func (e *Executor) checkSkipped(ctx context.Context) bool {
+	var skipCmd *model.ReportableCommand
+	commands := e.CommandLister.ListCommands()
+
+	for i, cmd := range commands {
+		if cmd.GetSkipStage() != nil {
+			skipCmd = &commands[i]
+			break
+		}
+	}
+	if skipCmd == nil {
+		return false
+	}
+
+	if err := skipCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
+		e.Logger.Error("failed to report handled command", zap.Error(err))
+	}
+	return true
 }
