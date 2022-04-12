@@ -1009,7 +1009,7 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 }
 
 func (a *WebAPI) SkipStage(ctx context.Context, req *webservice.SkipStageRequest) (*webservice.SkipStageResponse, error) {
-	return nil, nil
+	return nil, status.Errorf(codes.Unimplemented, "not implemented")
 }
 
 func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageRequest) (*webservice.ApproveStageResponse, error) {
