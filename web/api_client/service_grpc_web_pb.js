@@ -1508,6 +1508,67 @@ proto.grpc.service.webservice.WebServicePromiseClient.prototype.cancelDeployment
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.grpc.service.webservice.SkipStageRequest,
+ *   !proto.grpc.service.webservice.SkipStageResponse>}
+ */
+const methodDescriptor_WebService_SkipStage = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/SkipStage',
+  grpc.web.MethodType.UNARY,
+  proto.grpc.service.webservice.SkipStageRequest,
+  proto.grpc.service.webservice.SkipStageResponse,
+  /**
+   * @param {!proto.grpc.service.webservice.SkipStageRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.grpc.service.webservice.SkipStageResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.grpc.service.webservice.SkipStageRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.SkipStageResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.SkipStageResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.grpc.service.webservice.WebServiceClient.prototype.skipStage =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/SkipStage',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_SkipStage,
+      callback);
+};
+
+
+/**
+ * @param {!proto.grpc.service.webservice.SkipStageRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.grpc.service.webservice.SkipStageResponse>}
+ *     Promise that resolves to the response
+ */
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.skipStage =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/SkipStage',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_SkipStage);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.grpc.service.webservice.ApproveStageRequest,
  *   !proto.grpc.service.webservice.ApproveStageResponse>}
  */

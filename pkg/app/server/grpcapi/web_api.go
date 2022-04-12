@@ -1008,6 +1008,10 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 	}, nil
 }
 
+func (a *WebAPI) SkipStage(ctx context.Context, req *webservice.SkipStageRequest) (*webservice.SkipStageResponse, error) {
+	return nil, nil
+}
+
 func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageRequest) (*webservice.ApproveStageResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {

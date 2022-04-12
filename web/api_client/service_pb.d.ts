@@ -1086,6 +1086,46 @@ export namespace CancelDeploymentResponse {
   }
 }
 
+export class SkipStageRequest extends jspb.Message {
+  getDeploymentId(): string;
+  setDeploymentId(value: string): SkipStageRequest;
+
+  getStageId(): string;
+  setStageId(value: string): SkipStageRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): SkipStageRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: SkipStageRequest): SkipStageRequest.AsObject;
+  static serializeBinaryToWriter(message: SkipStageRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): SkipStageRequest;
+  static deserializeBinaryFromReader(message: SkipStageRequest, reader: jspb.BinaryReader): SkipStageRequest;
+}
+
+export namespace SkipStageRequest {
+  export type AsObject = {
+    deploymentId: string,
+    stageId: string,
+  }
+}
+
+export class SkipStageResponse extends jspb.Message {
+  getCommandId(): string;
+  setCommandId(value: string): SkipStageResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): SkipStageResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: SkipStageResponse): SkipStageResponse.AsObject;
+  static serializeBinaryToWriter(message: SkipStageResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): SkipStageResponse;
+  static deserializeBinaryFromReader(message: SkipStageResponse, reader: jspb.BinaryReader): SkipStageResponse;
+}
+
+export namespace SkipStageResponse {
+  export type AsObject = {
+    commandId: string,
+  }
+}
+
 export class ApproveStageRequest extends jspb.Message {
   getDeploymentId(): string;
   setDeploymentId(value: string): ApproveStageRequest;

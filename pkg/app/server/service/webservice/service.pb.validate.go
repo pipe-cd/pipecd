@@ -5513,6 +5513,232 @@ var _ interface {
 	ErrorName() string
 } = CancelDeploymentResponseValidationError{}
 
+// Validate checks the field values on SkipStageRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *SkipStageRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SkipStageRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SkipStageRequestMultiError, or nil if none found.
+func (m *SkipStageRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SkipStageRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+		err := SkipStageRequestValidationError{
+			field:  "DeploymentId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetStageId()) < 1 {
+		err := SkipStageRequestValidationError{
+			field:  "StageId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return SkipStageRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// SkipStageRequestMultiError is an error wrapping multiple validation errors
+// returned by SkipStageRequest.ValidateAll() if the designated constraints
+// aren't met.
+type SkipStageRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SkipStageRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SkipStageRequestMultiError) AllErrors() []error { return m }
+
+// SkipStageRequestValidationError is the validation error returned by
+// SkipStageRequest.Validate if the designated constraints aren't met.
+type SkipStageRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SkipStageRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SkipStageRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SkipStageRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SkipStageRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SkipStageRequestValidationError) ErrorName() string { return "SkipStageRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e SkipStageRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSkipStageRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SkipStageRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SkipStageRequestValidationError{}
+
+// Validate checks the field values on SkipStageResponse with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *SkipStageResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on SkipStageResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// SkipStageResponseMultiError, or nil if none found.
+func (m *SkipStageResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *SkipStageResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for CommandId
+
+	if len(errors) > 0 {
+		return SkipStageResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// SkipStageResponseMultiError is an error wrapping multiple validation errors
+// returned by SkipStageResponse.ValidateAll() if the designated constraints
+// aren't met.
+type SkipStageResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m SkipStageResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m SkipStageResponseMultiError) AllErrors() []error { return m }
+
+// SkipStageResponseValidationError is the validation error returned by
+// SkipStageResponse.Validate if the designated constraints aren't met.
+type SkipStageResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e SkipStageResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e SkipStageResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e SkipStageResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e SkipStageResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e SkipStageResponseValidationError) ErrorName() string {
+	return "SkipStageResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e SkipStageResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sSkipStageResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = SkipStageResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = SkipStageResponseValidationError{}
+
 // Validate checks the field values on ApproveStageRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
