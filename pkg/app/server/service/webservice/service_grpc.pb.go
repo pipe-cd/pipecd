@@ -48,6 +48,7 @@ type WebServiceClient interface {
 	GetDeployment(ctx context.Context, in *GetDeploymentRequest, opts ...grpc.CallOption) (*GetDeploymentResponse, error)
 	GetStageLog(ctx context.Context, in *GetStageLogRequest, opts ...grpc.CallOption) (*GetStageLogResponse, error)
 	CancelDeployment(ctx context.Context, in *CancelDeploymentRequest, opts ...grpc.CallOption) (*CancelDeploymentResponse, error)
+	SkipStage(ctx context.Context, in *SkipStageRequest, opts ...grpc.CallOption) (*SkipStageResponse, error)
 	ApproveStage(ctx context.Context, in *ApproveStageRequest, opts ...grpc.CallOption) (*ApproveStageResponse, error)
 	// ApplicationLiveState
 	GetApplicationLiveState(ctx context.Context, in *GetApplicationLiveStateRequest, opts ...grpc.CallOption) (*GetApplicationLiveStateResponse, error)
@@ -290,6 +291,15 @@ func (c *webServiceClient) CancelDeployment(ctx context.Context, in *CancelDeplo
 	return out, nil
 }
 
+func (c *webServiceClient) SkipStage(ctx context.Context, in *SkipStageRequest, opts ...grpc.CallOption) (*SkipStageResponse, error) {
+	out := new(SkipStageResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/SkipStage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *webServiceClient) ApproveStage(ctx context.Context, in *ApproveStageRequest, opts ...grpc.CallOption) (*ApproveStageResponse, error) {
 	out := new(ApproveStageResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/ApproveStage", in, out, opts...)
@@ -482,6 +492,7 @@ type WebServiceServer interface {
 	GetDeployment(context.Context, *GetDeploymentRequest) (*GetDeploymentResponse, error)
 	GetStageLog(context.Context, *GetStageLogRequest) (*GetStageLogResponse, error)
 	CancelDeployment(context.Context, *CancelDeploymentRequest) (*CancelDeploymentResponse, error)
+	SkipStage(context.Context, *SkipStageRequest) (*SkipStageResponse, error)
 	ApproveStage(context.Context, *ApproveStageRequest) (*ApproveStageResponse, error)
 	// ApplicationLiveState
 	GetApplicationLiveState(context.Context, *GetApplicationLiveStateRequest) (*GetApplicationLiveStateResponse, error)
@@ -582,6 +593,9 @@ func (UnimplementedWebServiceServer) GetStageLog(context.Context, *GetStageLogRe
 }
 func (UnimplementedWebServiceServer) CancelDeployment(context.Context, *CancelDeploymentRequest) (*CancelDeploymentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelDeployment not implemented")
+}
+func (UnimplementedWebServiceServer) SkipStage(context.Context, *SkipStageRequest) (*SkipStageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SkipStage not implemented")
 }
 func (UnimplementedWebServiceServer) ApproveStage(context.Context, *ApproveStageRequest) (*ApproveStageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ApproveStage not implemented")
@@ -1064,6 +1078,24 @@ func _WebService_CancelDeployment_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WebService_SkipStage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SkipStageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebServiceServer).SkipStage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.webservice.WebService/SkipStage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebServiceServer).SkipStage(ctx, req.(*SkipStageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _WebService_ApproveStage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ApproveStageRequest)
 	if err := dec(in); err != nil {
@@ -1486,6 +1518,10 @@ var WebService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CancelDeployment",
 			Handler:    _WebService_CancelDeployment_Handler,
+		},
+		{
+			MethodName: "SkipStage",
+			Handler:    _WebService_SkipStage_Handler,
 		},
 		{
 			MethodName: "ApproveStage",

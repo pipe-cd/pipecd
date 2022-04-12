@@ -169,6 +169,13 @@ export class WebServiceClient {
                response: pkg_app_server_service_webservice_service_pb.CancelDeploymentResponse) => void
   ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.CancelDeploymentResponse>;
 
+  skipStage(
+    request: pkg_app_server_service_webservice_service_pb.SkipStageRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: pkg_app_server_service_webservice_service_pb.SkipStageResponse) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.SkipStageResponse>;
+
   approveStage(
     request: pkg_app_server_service_webservice_service_pb.ApproveStageRequest,
     metadata: grpcWeb.Metadata | undefined,
@@ -416,6 +423,11 @@ export class WebServicePromiseClient {
     request: pkg_app_server_service_webservice_service_pb.CancelDeploymentRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<pkg_app_server_service_webservice_service_pb.CancelDeploymentResponse>;
+
+  skipStage(
+    request: pkg_app_server_service_webservice_service_pb.SkipStageRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<pkg_app_server_service_webservice_service_pb.SkipStageResponse>;
 
   approveStage(
     request: pkg_app_server_service_webservice_service_pb.ApproveStageRequest,

@@ -64,6 +64,7 @@ service WebService {
     rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
     rpc GetStageLog(GetStageLogRequest) returns (GetStageLogResponse) {}
     rpc CancelDeployment(CancelDeploymentRequest) returns (CancelDeploymentResponse) {}
+    rpc SkipStage(SkipStageRequest) returns (SkipStageResponse) {}
     rpc ApproveStage(ApproveStageRequest) returns (ApproveStageResponse) {}
 
     // ApplicationLiveState
@@ -326,6 +327,15 @@ message CancelDeploymentRequest {
 }
 
 message CancelDeploymentResponse {
+    string command_id = 1;
+}
+
+message SkipStageRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+}
+
+message SkipStageResponse {
     string command_id = 1;
 }
 
