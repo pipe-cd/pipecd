@@ -33,6 +33,10 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
+const (
+	skippedByKey = "SkippedBy"
+)
+
 type Executor struct {
 	executor.Input
 
@@ -349,6 +353,12 @@ func (e *Executor) checkSkipped(ctx context.Context) bool {
 	if skipCmd == nil {
 		return false
 	}
+
+	if err := e.MetadataStore.Stage(e.Stage.Id).Put(ctx, skippedByKey, skipCmd.Commander); err != nil {
+		e.LogPersister.Errorf("Unable to save the commander who skipped the stage information to deployment, %v", err)
+	}
+	e.LogPersister.Infof("Got the skip command from %q", skipCmd.Commander)
+	e.LogPersister.Infof("This stage has been skipped by user (%s)", skipCmd.Commander)
 
 	if err := skipCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
 		e.Logger.Error("failed to report handled command", zap.Error(err))
