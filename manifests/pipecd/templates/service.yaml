@@ -121,24 +121,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "pipecd.fullname" . }}-mysql
-  labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
-    app.kubernetes.io/component: mysql
-spec:
-  type: ClusterIP
-  ports:
-    - name: service
-      port: 3306
-      targetPort: mysql
-  selector:
-    {{- include "pipecd.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: mysql
-
----
-apiVersion: v1
-kind: Service
-metadata:
   name: {{ include "pipecd.fullname" . }}-minio
   labels:
     {{- include "pipecd.labels" . | nindent 4 }}

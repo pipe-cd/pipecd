@@ -55,10 +55,6 @@ cloudSQLProxy:
     port: 3306
   resources: {}
 
-mysql:
-  imageTag: "8.0.23"
-  resources: {}
-
 minio:
   imageTag: "RELEASE.2020-08-26T00-00-49Z"
   resources: {}
