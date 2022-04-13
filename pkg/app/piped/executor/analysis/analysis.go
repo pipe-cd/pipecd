@@ -102,7 +102,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 
 	// Sync the skip command.
 	var (
-		status = model.StageStatus_STAGE_NOT_STARTED_YET
+		status = model.StageStatus_STAGE_SUCCESS
 		doneCh = make(chan struct{})
 	)
 	defer close(doneCh)
@@ -116,6 +116,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 					continue
 				}
 				status = model.StageStatus_STAGE_SKIPPED
+				// Stop the context to cancel all running analysises.
 				ctxWithTimeout.Done()
 				return
 			case <-doneCh:
@@ -174,11 +175,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if status != model.StageStatus_STAGE_NOT_STARTED_YET {
-		return status
-	}
-
-	status = executor.DetermineStageStatus(sig.Signal(), e.Stage.Status, model.StageStatus_STAGE_SUCCESS)
+	status = executor.DetermineStageStatus(sig.Signal(), e.Stage.Status, status)
 	if status != model.StageStatus_STAGE_SUCCESS {
 		return status
 	}
