@@ -8,6 +8,8 @@ import {
   CancelDeploymentResponse,
   ApproveStageRequest,
   ApproveStageResponse,
+  SkipStageRequest,
+  SkipStageResponse,
 } from "pipecd/web/api_client/service_pb";
 
 export const getDeployment = ({
@@ -67,4 +69,14 @@ export const approveStage = ({
   req.setDeploymentId(deploymentId);
   req.setStageId(stageId);
   return apiRequest(req, apiClient.approveStage);
+};
+
+export const skipStage = ({
+  deploymentId,
+  stageId,
+}: SkipStageRequest.AsObject): Promise<SkipStageResponse.AsObject> => {
+  const req = new SkipStageRequest();
+  req.setDeploymentId(deploymentId);
+  req.setStageId(stageId);
+  return apiRequest(req, apiClient.skipStage);
 };

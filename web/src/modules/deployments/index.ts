@@ -172,6 +172,14 @@ export const approveStage = createAsyncThunk<
   await thunkAPI.dispatch(fetchCommand(commandId));
 });
 
+export const skipStage = createAsyncThunk<
+  void,
+  { deploymentId: string; stageId: string }
+>("deployments/skip", async (props, thunkAPI) => {
+  const { commandId } = await deploymentsApi.skipStage(props);
+  await thunkAPI.dispatch(fetchCommand(commandId));
+});
+
 export const cancelDeployment = createAsyncThunk<
   void,
   {
