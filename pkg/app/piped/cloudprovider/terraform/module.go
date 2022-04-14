@@ -22,7 +22,7 @@ type FileMapping struct {
 type ModuleMapping struct {
 	Name    string   `hcl:"name,label"`
 	Source  string   `hcl:"source"`
-	Version string   `hcl:"version"`
+	Version string   `hcl:"version,optional"`
 	Remain  hcl.Body `hcl:",remain"`
 }
 

@@ -35,6 +35,22 @@ func TestLoadTerraformFiles(t *testing.T) {
 			expectedErr: false,
 		},
 		{
+			name:      "single module with optional argument",
+			moduleDir: "./testdata/single_module_optional",
+			expected: []File{
+				{
+					Modules: []*Module{
+						{
+							Name:    "helloworld",
+							Source:  "helloworld",
+							Version: "",
+						},
+					},
+				},
+			},
+			expectedErr: false,
+		},
+		{
 			name:      "multi modules",
 			moduleDir: "./testdata/multi_modules",
 			expected: []File{
@@ -116,6 +132,19 @@ func TestFindArticatVersions(t *testing.T) {
 					Name:    "helloworld",
 					Url:     "helloworld",
 					Version: "v1.0.0",
+				},
+			},
+			expectedErr: false,
+		},
+		{
+			name:      "single module with optional field",
+			moduleDir: "./testdata/single_module_optional",
+			expected: []*model.ArtifactVersion{
+				{
+					Kind:    model.ArtifactVersion_TERRAFORM_MODULE,
+					Name:    "helloworld",
+					Url:     "helloworld",
+					Version: "",
 				},
 			},
 			expectedErr: false,

@@ -513,16 +513,7 @@ func (m *ArtifactVersion) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetVersion()) < 1 {
-		err := ArtifactVersionValidationError{
-			field:  "Version",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Version
 
 	// no validation rules for Name
 
