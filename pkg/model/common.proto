@@ -85,7 +85,7 @@ message ArtifactVersion {
     }
    
     Kind kind = 1 [(validate.rules).enum.defined_only = true];
-    string version = 2 [(validate.rules).string.min_len = 1];
+    string version = 2;
     string name = 3;
     string url = 4;
 }
