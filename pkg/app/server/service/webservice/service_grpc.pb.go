@@ -60,6 +60,13 @@ type WebServiceClient interface {
 	UpdateProjectSSOConfig(ctx context.Context, in *UpdateProjectSSOConfigRequest, opts ...grpc.CallOption) (*UpdateProjectSSOConfigResponse, error)
 	UpdateProjectRBACConfig(ctx context.Context, in *UpdateProjectRBACConfigRequest, opts ...grpc.CallOption) (*UpdateProjectRBACConfigResponse, error)
 	GetMe(ctx context.Context, in *GetMeRequest, opts ...grpc.CallOption) (*GetMeResponse, error)
+	ListProjectRBACRoles(ctx context.Context, in *ListProjectRBACRolesRequest, opts ...grpc.CallOption) (*ListProjectRBACRolesResponse, error)
+	AddProjectRBACRole(ctx context.Context, in *AddProjectRBACRoleRequest, opts ...grpc.CallOption) (*AddProjectRBACRoleResponse, error)
+	UpdateProjectRBACRole(ctx context.Context, in *UpdateProjectRBACRoleRequest, opts ...grpc.CallOption) (*UpdateProjectRBACRoleResponse, error)
+	DeleteProjectRBACRole(ctx context.Context, in *DeleteProjectRBACRoleRequest, opts ...grpc.CallOption) (*DeleteProjectRBACRoleResponse, error)
+	ListUserGroups(ctx context.Context, in *ListUserGroupsRequest, opts ...grpc.CallOption) (*ListUserGroupsResponses, error)
+	AddUserGroup(ctx context.Context, in *AddUserGroupRequest, opts ...grpc.CallOption) (*AddUserGroupResponse, error)
+	DeleteUserGroup(ctx context.Context, in *DeleteUserGroupRequest, opts ...grpc.CallOption) (*DeleteUserGroupResponse, error)
 	// Command
 	GetCommand(ctx context.Context, in *GetCommandRequest, opts ...grpc.CallOption) (*GetCommandResponse, error)
 	// API Key
@@ -381,6 +388,69 @@ func (c *webServiceClient) GetMe(ctx context.Context, in *GetMeRequest, opts ...
 	return out, nil
 }
 
+func (c *webServiceClient) ListProjectRBACRoles(ctx context.Context, in *ListProjectRBACRolesRequest, opts ...grpc.CallOption) (*ListProjectRBACRolesResponse, error) {
+	out := new(ListProjectRBACRolesResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/ListProjectRBACRoles", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *webServiceClient) AddProjectRBACRole(ctx context.Context, in *AddProjectRBACRoleRequest, opts ...grpc.CallOption) (*AddProjectRBACRoleResponse, error) {
+	out := new(AddProjectRBACRoleResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/AddProjectRBACRole", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *webServiceClient) UpdateProjectRBACRole(ctx context.Context, in *UpdateProjectRBACRoleRequest, opts ...grpc.CallOption) (*UpdateProjectRBACRoleResponse, error) {
+	out := new(UpdateProjectRBACRoleResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/UpdateProjectRBACRole", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *webServiceClient) DeleteProjectRBACRole(ctx context.Context, in *DeleteProjectRBACRoleRequest, opts ...grpc.CallOption) (*DeleteProjectRBACRoleResponse, error) {
+	out := new(DeleteProjectRBACRoleResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/DeleteProjectRBACRole", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *webServiceClient) ListUserGroups(ctx context.Context, in *ListUserGroupsRequest, opts ...grpc.CallOption) (*ListUserGroupsResponses, error) {
+	out := new(ListUserGroupsResponses)
+	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/ListUserGroups", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *webServiceClient) AddUserGroup(ctx context.Context, in *AddUserGroupRequest, opts ...grpc.CallOption) (*AddUserGroupResponse, error) {
+	out := new(AddUserGroupResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/AddUserGroup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *webServiceClient) DeleteUserGroup(ctx context.Context, in *DeleteUserGroupRequest, opts ...grpc.CallOption) (*DeleteUserGroupResponse, error) {
+	out := new(DeleteUserGroupResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/DeleteUserGroup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *webServiceClient) GetCommand(ctx context.Context, in *GetCommandRequest, opts ...grpc.CallOption) (*GetCommandResponse, error) {
 	out := new(GetCommandResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/GetCommand", in, out, opts...)
@@ -504,6 +574,13 @@ type WebServiceServer interface {
 	UpdateProjectSSOConfig(context.Context, *UpdateProjectSSOConfigRequest) (*UpdateProjectSSOConfigResponse, error)
 	UpdateProjectRBACConfig(context.Context, *UpdateProjectRBACConfigRequest) (*UpdateProjectRBACConfigResponse, error)
 	GetMe(context.Context, *GetMeRequest) (*GetMeResponse, error)
+	ListProjectRBACRoles(context.Context, *ListProjectRBACRolesRequest) (*ListProjectRBACRolesResponse, error)
+	AddProjectRBACRole(context.Context, *AddProjectRBACRoleRequest) (*AddProjectRBACRoleResponse, error)
+	UpdateProjectRBACRole(context.Context, *UpdateProjectRBACRoleRequest) (*UpdateProjectRBACRoleResponse, error)
+	DeleteProjectRBACRole(context.Context, *DeleteProjectRBACRoleRequest) (*DeleteProjectRBACRoleResponse, error)
+	ListUserGroups(context.Context, *ListUserGroupsRequest) (*ListUserGroupsResponses, error)
+	AddUserGroup(context.Context, *AddUserGroupRequest) (*AddUserGroupResponse, error)
+	DeleteUserGroup(context.Context, *DeleteUserGroupRequest) (*DeleteUserGroupResponse, error)
 	// Command
 	GetCommand(context.Context, *GetCommandRequest) (*GetCommandResponse, error)
 	// API Key
@@ -623,6 +700,27 @@ func (UnimplementedWebServiceServer) UpdateProjectRBACConfig(context.Context, *U
 }
 func (UnimplementedWebServiceServer) GetMe(context.Context, *GetMeRequest) (*GetMeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMe not implemented")
+}
+func (UnimplementedWebServiceServer) ListProjectRBACRoles(context.Context, *ListProjectRBACRolesRequest) (*ListProjectRBACRolesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListProjectRBACRoles not implemented")
+}
+func (UnimplementedWebServiceServer) AddProjectRBACRole(context.Context, *AddProjectRBACRoleRequest) (*AddProjectRBACRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddProjectRBACRole not implemented")
+}
+func (UnimplementedWebServiceServer) UpdateProjectRBACRole(context.Context, *UpdateProjectRBACRoleRequest) (*UpdateProjectRBACRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateProjectRBACRole not implemented")
+}
+func (UnimplementedWebServiceServer) DeleteProjectRBACRole(context.Context, *DeleteProjectRBACRoleRequest) (*DeleteProjectRBACRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteProjectRBACRole not implemented")
+}
+func (UnimplementedWebServiceServer) ListUserGroups(context.Context, *ListUserGroupsRequest) (*ListUserGroupsResponses, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListUserGroups not implemented")
+}
+func (UnimplementedWebServiceServer) AddUserGroup(context.Context, *AddUserGroupRequest) (*AddUserGroupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddUserGroup not implemented")
+}
+func (UnimplementedWebServiceServer) DeleteUserGroup(context.Context, *DeleteUserGroupRequest) (*DeleteUserGroupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserGroup not implemented")
 }
 func (UnimplementedWebServiceServer) GetCommand(context.Context, *GetCommandRequest) (*GetCommandResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCommand not implemented")
@@ -1258,6 +1356,132 @@ func _WebService_GetMe_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WebService_ListProjectRBACRoles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListProjectRBACRolesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebServiceServer).ListProjectRBACRoles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.webservice.WebService/ListProjectRBACRoles",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebServiceServer).ListProjectRBACRoles(ctx, req.(*ListProjectRBACRolesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WebService_AddProjectRBACRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddProjectRBACRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebServiceServer).AddProjectRBACRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.webservice.WebService/AddProjectRBACRole",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebServiceServer).AddProjectRBACRole(ctx, req.(*AddProjectRBACRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WebService_UpdateProjectRBACRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateProjectRBACRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebServiceServer).UpdateProjectRBACRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.webservice.WebService/UpdateProjectRBACRole",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebServiceServer).UpdateProjectRBACRole(ctx, req.(*UpdateProjectRBACRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WebService_DeleteProjectRBACRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteProjectRBACRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebServiceServer).DeleteProjectRBACRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.webservice.WebService/DeleteProjectRBACRole",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebServiceServer).DeleteProjectRBACRole(ctx, req.(*DeleteProjectRBACRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WebService_ListUserGroups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListUserGroupsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebServiceServer).ListUserGroups(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.webservice.WebService/ListUserGroups",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebServiceServer).ListUserGroups(ctx, req.(*ListUserGroupsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WebService_AddUserGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddUserGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebServiceServer).AddUserGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.webservice.WebService/AddUserGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebServiceServer).AddUserGroup(ctx, req.(*AddUserGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WebService_DeleteUserGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteUserGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebServiceServer).DeleteUserGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.webservice.WebService/DeleteUserGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebServiceServer).DeleteUserGroup(ctx, req.(*DeleteUserGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _WebService_GetCommand_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetCommandRequest)
 	if err := dec(in); err != nil {
@@ -1558,6 +1782,34 @@ var WebService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMe",
 			Handler:    _WebService_GetMe_Handler,
+		},
+		{
+			MethodName: "ListProjectRBACRoles",
+			Handler:    _WebService_ListProjectRBACRoles_Handler,
+		},
+		{
+			MethodName: "AddProjectRBACRole",
+			Handler:    _WebService_AddProjectRBACRole_Handler,
+		},
+		{
+			MethodName: "UpdateProjectRBACRole",
+			Handler:    _WebService_UpdateProjectRBACRole_Handler,
+		},
+		{
+			MethodName: "DeleteProjectRBACRole",
+			Handler:    _WebService_DeleteProjectRBACRole_Handler,
+		},
+		{
+			MethodName: "ListUserGroups",
+			Handler:    _WebService_ListUserGroups_Handler,
+		},
+		{
+			MethodName: "AddUserGroup",
+			Handler:    _WebService_AddUserGroup_Handler,
+		},
+		{
+			MethodName: "DeleteUserGroup",
+			Handler:    _WebService_DeleteUserGroup_Handler,
 		},
 		{
 			MethodName: "GetCommand",

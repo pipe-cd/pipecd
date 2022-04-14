@@ -1008,7 +1008,7 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 	}, nil
 }
 
-func (a *WebAPI) SkipStage(ctx context.Context, req *webservice.SkipStageRequest) (*webservice.SkipStageResponse, error) {
+func (a *WebAPI) SkipStage(_ context.Context, _ *webservice.SkipStageRequest) (*webservice.SkipStageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "not implemented")
 }
 
@@ -1265,6 +1265,34 @@ func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webs
 		ProjectId:   claims.Role.ProjectId,
 		ProjectRole: claims.Role.ProjectRole,
 	}, nil
+}
+
+func (a *WebAPI) ListProjectRBACRoles(_ context.Context, _ *webservice.ListProjectRBACRolesRequest) (*webservice.ListProjectRBACRolesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+}
+
+func (a *WebAPI) AddProjectRBACRole(_ context.Context, _ *webservice.AddProjectRBACRoleRequest) (*webservice.AddProjectRBACRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+}
+
+func (a *WebAPI) UpdateProjectRBACRole(_ context.Context, _ *webservice.UpdateProjectRBACRoleRequest) (*webservice.UpdateProjectRBACRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+}
+
+func (a *WebAPI) DeleteProjectRBACRole(_ context.Context, _ *webservice.DeleteProjectRBACRoleRequest) (*webservice.DeleteProjectRBACRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+}
+
+func (a *WebAPI) ListUserGroups(_ context.Context, _ *webservice.ListUserGroupsRequest) (*webservice.ListUserGroupsResponses, error) {
+	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+}
+
+func (a *WebAPI) AddUserGroup(_ context.Context, _ *webservice.AddUserGroupRequest) (*webservice.AddUserGroupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+}
+
+func (a *WebAPI) DeleteUserGroup(_ context.Context, _ *webservice.DeleteUserGroupRequest) (*webservice.DeleteUserGroupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "not implemented")
 }
 
 func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandRequest) (*webservice.GetCommandResponse, error) {
