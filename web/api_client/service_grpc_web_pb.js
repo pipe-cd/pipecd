@@ -2118,6 +2118,433 @@ proto.grpc.service.webservice.WebServicePromiseClient.prototype.getMe =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.grpc.service.webservice.ListProjectRBACRolesRequest,
+ *   !proto.grpc.service.webservice.ListProjectRBACRolesResponse>}
+ */
+const methodDescriptor_WebService_ListProjectRBACRoles = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/ListProjectRBACRoles',
+  grpc.web.MethodType.UNARY,
+  proto.grpc.service.webservice.ListProjectRBACRolesRequest,
+  proto.grpc.service.webservice.ListProjectRBACRolesResponse,
+  /**
+   * @param {!proto.grpc.service.webservice.ListProjectRBACRolesRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.grpc.service.webservice.ListProjectRBACRolesResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.grpc.service.webservice.ListProjectRBACRolesRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.ListProjectRBACRolesResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.ListProjectRBACRolesResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.grpc.service.webservice.WebServiceClient.prototype.listProjectRBACRoles =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/ListProjectRBACRoles',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_ListProjectRBACRoles,
+      callback);
+};
+
+
+/**
+ * @param {!proto.grpc.service.webservice.ListProjectRBACRolesRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.grpc.service.webservice.ListProjectRBACRolesResponse>}
+ *     Promise that resolves to the response
+ */
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.listProjectRBACRoles =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/ListProjectRBACRoles',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_ListProjectRBACRoles);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.grpc.service.webservice.AddProjectRBACRoleRequest,
+ *   !proto.grpc.service.webservice.AddProjectRBACRoleResponse>}
+ */
+const methodDescriptor_WebService_AddProjectRBACRole = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/AddProjectRBACRole',
+  grpc.web.MethodType.UNARY,
+  proto.grpc.service.webservice.AddProjectRBACRoleRequest,
+  proto.grpc.service.webservice.AddProjectRBACRoleResponse,
+  /**
+   * @param {!proto.grpc.service.webservice.AddProjectRBACRoleRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.grpc.service.webservice.AddProjectRBACRoleResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.grpc.service.webservice.AddProjectRBACRoleRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.AddProjectRBACRoleResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.AddProjectRBACRoleResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.grpc.service.webservice.WebServiceClient.prototype.addProjectRBACRole =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/AddProjectRBACRole',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_AddProjectRBACRole,
+      callback);
+};
+
+
+/**
+ * @param {!proto.grpc.service.webservice.AddProjectRBACRoleRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.grpc.service.webservice.AddProjectRBACRoleResponse>}
+ *     Promise that resolves to the response
+ */
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.addProjectRBACRole =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/AddProjectRBACRole',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_AddProjectRBACRole);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.grpc.service.webservice.UpdateProjectRBACRoleRequest,
+ *   !proto.grpc.service.webservice.UpdateProjectRBACRoleResponse>}
+ */
+const methodDescriptor_WebService_UpdateProjectRBACRole = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/UpdateProjectRBACRole',
+  grpc.web.MethodType.UNARY,
+  proto.grpc.service.webservice.UpdateProjectRBACRoleRequest,
+  proto.grpc.service.webservice.UpdateProjectRBACRoleResponse,
+  /**
+   * @param {!proto.grpc.service.webservice.UpdateProjectRBACRoleRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.grpc.service.webservice.UpdateProjectRBACRoleResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.grpc.service.webservice.UpdateProjectRBACRoleRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.UpdateProjectRBACRoleResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.UpdateProjectRBACRoleResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.grpc.service.webservice.WebServiceClient.prototype.updateProjectRBACRole =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/UpdateProjectRBACRole',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_UpdateProjectRBACRole,
+      callback);
+};
+
+
+/**
+ * @param {!proto.grpc.service.webservice.UpdateProjectRBACRoleRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.grpc.service.webservice.UpdateProjectRBACRoleResponse>}
+ *     Promise that resolves to the response
+ */
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.updateProjectRBACRole =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/UpdateProjectRBACRole',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_UpdateProjectRBACRole);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.grpc.service.webservice.DeleteProjectRBACRoleRequest,
+ *   !proto.grpc.service.webservice.DeleteProjectRBACRoleResponse>}
+ */
+const methodDescriptor_WebService_DeleteProjectRBACRole = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/DeleteProjectRBACRole',
+  grpc.web.MethodType.UNARY,
+  proto.grpc.service.webservice.DeleteProjectRBACRoleRequest,
+  proto.grpc.service.webservice.DeleteProjectRBACRoleResponse,
+  /**
+   * @param {!proto.grpc.service.webservice.DeleteProjectRBACRoleRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.grpc.service.webservice.DeleteProjectRBACRoleResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.grpc.service.webservice.DeleteProjectRBACRoleRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.DeleteProjectRBACRoleResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.DeleteProjectRBACRoleResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.grpc.service.webservice.WebServiceClient.prototype.deleteProjectRBACRole =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/DeleteProjectRBACRole',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_DeleteProjectRBACRole,
+      callback);
+};
+
+
+/**
+ * @param {!proto.grpc.service.webservice.DeleteProjectRBACRoleRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.grpc.service.webservice.DeleteProjectRBACRoleResponse>}
+ *     Promise that resolves to the response
+ */
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.deleteProjectRBACRole =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/DeleteProjectRBACRole',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_DeleteProjectRBACRole);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.grpc.service.webservice.ListUserGroupsRequest,
+ *   !proto.grpc.service.webservice.ListUserGroupsResponses>}
+ */
+const methodDescriptor_WebService_ListUserGroups = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/ListUserGroups',
+  grpc.web.MethodType.UNARY,
+  proto.grpc.service.webservice.ListUserGroupsRequest,
+  proto.grpc.service.webservice.ListUserGroupsResponses,
+  /**
+   * @param {!proto.grpc.service.webservice.ListUserGroupsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.grpc.service.webservice.ListUserGroupsResponses.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.grpc.service.webservice.ListUserGroupsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.ListUserGroupsResponses)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.ListUserGroupsResponses>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.grpc.service.webservice.WebServiceClient.prototype.listUserGroups =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/ListUserGroups',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_ListUserGroups,
+      callback);
+};
+
+
+/**
+ * @param {!proto.grpc.service.webservice.ListUserGroupsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.grpc.service.webservice.ListUserGroupsResponses>}
+ *     Promise that resolves to the response
+ */
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.listUserGroups =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/ListUserGroups',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_ListUserGroups);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.grpc.service.webservice.AddUserGroupRequest,
+ *   !proto.grpc.service.webservice.AddUserGroupResponse>}
+ */
+const methodDescriptor_WebService_AddUserGroup = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/AddUserGroup',
+  grpc.web.MethodType.UNARY,
+  proto.grpc.service.webservice.AddUserGroupRequest,
+  proto.grpc.service.webservice.AddUserGroupResponse,
+  /**
+   * @param {!proto.grpc.service.webservice.AddUserGroupRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.grpc.service.webservice.AddUserGroupResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.grpc.service.webservice.AddUserGroupRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.AddUserGroupResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.AddUserGroupResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.grpc.service.webservice.WebServiceClient.prototype.addUserGroup =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/AddUserGroup',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_AddUserGroup,
+      callback);
+};
+
+
+/**
+ * @param {!proto.grpc.service.webservice.AddUserGroupRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.grpc.service.webservice.AddUserGroupResponse>}
+ *     Promise that resolves to the response
+ */
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.addUserGroup =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/AddUserGroup',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_AddUserGroup);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.grpc.service.webservice.DeleteUserGroupRequest,
+ *   !proto.grpc.service.webservice.DeleteUserGroupResponse>}
+ */
+const methodDescriptor_WebService_DeleteUserGroup = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/DeleteUserGroup',
+  grpc.web.MethodType.UNARY,
+  proto.grpc.service.webservice.DeleteUserGroupRequest,
+  proto.grpc.service.webservice.DeleteUserGroupResponse,
+  /**
+   * @param {!proto.grpc.service.webservice.DeleteUserGroupRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.grpc.service.webservice.DeleteUserGroupResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.grpc.service.webservice.DeleteUserGroupRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.DeleteUserGroupResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.DeleteUserGroupResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.grpc.service.webservice.WebServiceClient.prototype.deleteUserGroup =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/DeleteUserGroup',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_DeleteUserGroup,
+      callback);
+};
+
+
+/**
+ * @param {!proto.grpc.service.webservice.DeleteUserGroupRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.grpc.service.webservice.DeleteUserGroupResponse>}
+ *     Promise that resolves to the response
+ */
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.deleteUserGroup =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/DeleteUserGroup',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_DeleteUserGroup);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.grpc.service.webservice.GetCommandRequest,
  *   !proto.grpc.service.webservice.GetCommandResponse>}
  */

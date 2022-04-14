@@ -239,6 +239,55 @@ export class WebServiceClient {
                response: pkg_app_server_service_webservice_service_pb.GetMeResponse) => void
   ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.GetMeResponse>;
 
+  listProjectRBACRoles(
+    request: pkg_app_server_service_webservice_service_pb.ListProjectRBACRolesRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: pkg_app_server_service_webservice_service_pb.ListProjectRBACRolesResponse) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.ListProjectRBACRolesResponse>;
+
+  addProjectRBACRole(
+    request: pkg_app_server_service_webservice_service_pb.AddProjectRBACRoleRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: pkg_app_server_service_webservice_service_pb.AddProjectRBACRoleResponse) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.AddProjectRBACRoleResponse>;
+
+  updateProjectRBACRole(
+    request: pkg_app_server_service_webservice_service_pb.UpdateProjectRBACRoleRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: pkg_app_server_service_webservice_service_pb.UpdateProjectRBACRoleResponse) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.UpdateProjectRBACRoleResponse>;
+
+  deleteProjectRBACRole(
+    request: pkg_app_server_service_webservice_service_pb.DeleteProjectRBACRoleRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: pkg_app_server_service_webservice_service_pb.DeleteProjectRBACRoleResponse) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.DeleteProjectRBACRoleResponse>;
+
+  listUserGroups(
+    request: pkg_app_server_service_webservice_service_pb.ListUserGroupsRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: pkg_app_server_service_webservice_service_pb.ListUserGroupsResponses) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.ListUserGroupsResponses>;
+
+  addUserGroup(
+    request: pkg_app_server_service_webservice_service_pb.AddUserGroupRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: pkg_app_server_service_webservice_service_pb.AddUserGroupResponse) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.AddUserGroupResponse>;
+
+  deleteUserGroup(
+    request: pkg_app_server_service_webservice_service_pb.DeleteUserGroupRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: pkg_app_server_service_webservice_service_pb.DeleteUserGroupResponse) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.DeleteUserGroupResponse>;
+
   getCommand(
     request: pkg_app_server_service_webservice_service_pb.GetCommandRequest,
     metadata: grpcWeb.Metadata | undefined,
@@ -473,6 +522,41 @@ export class WebServicePromiseClient {
     request: pkg_app_server_service_webservice_service_pb.GetMeRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<pkg_app_server_service_webservice_service_pb.GetMeResponse>;
+
+  listProjectRBACRoles(
+    request: pkg_app_server_service_webservice_service_pb.ListProjectRBACRolesRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<pkg_app_server_service_webservice_service_pb.ListProjectRBACRolesResponse>;
+
+  addProjectRBACRole(
+    request: pkg_app_server_service_webservice_service_pb.AddProjectRBACRoleRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<pkg_app_server_service_webservice_service_pb.AddProjectRBACRoleResponse>;
+
+  updateProjectRBACRole(
+    request: pkg_app_server_service_webservice_service_pb.UpdateProjectRBACRoleRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<pkg_app_server_service_webservice_service_pb.UpdateProjectRBACRoleResponse>;
+
+  deleteProjectRBACRole(
+    request: pkg_app_server_service_webservice_service_pb.DeleteProjectRBACRoleRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<pkg_app_server_service_webservice_service_pb.DeleteProjectRBACRoleResponse>;
+
+  listUserGroups(
+    request: pkg_app_server_service_webservice_service_pb.ListUserGroupsRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<pkg_app_server_service_webservice_service_pb.ListUserGroupsResponses>;
+
+  addUserGroup(
+    request: pkg_app_server_service_webservice_service_pb.AddUserGroupRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<pkg_app_server_service_webservice_service_pb.AddUserGroupResponse>;
+
+  deleteUserGroup(
+    request: pkg_app_server_service_webservice_service_pb.DeleteUserGroupRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<pkg_app_server_service_webservice_service_pb.DeleteUserGroupResponse>;
 
   getCommand(
     request: pkg_app_server_service_webservice_service_pb.GetCommandRequest,

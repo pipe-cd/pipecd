@@ -78,6 +78,13 @@ service WebService {
     rpc UpdateProjectSSOConfig(UpdateProjectSSOConfigRequest) returns (UpdateProjectSSOConfigResponse) {}
     rpc UpdateProjectRBACConfig(UpdateProjectRBACConfigRequest) returns (UpdateProjectRBACConfigResponse) {}
     rpc GetMe(GetMeRequest) returns (GetMeResponse) {}
+    rpc ListProjectRBACRoles(ListProjectRBACRolesRequest) returns (ListProjectRBACRolesResponse) {}
+    rpc AddProjectRBACRole(AddProjectRBACRoleRequest) returns (AddProjectRBACRoleResponse) {}
+    rpc UpdateProjectRBACRole(UpdateProjectRBACRoleRequest) returns (UpdateProjectRBACRoleResponse) {}
+    rpc DeleteProjectRBACRole(DeleteProjectRBACRoleRequest) returns (DeleteProjectRBACRoleResponse) {}
+    rpc ListUserGroups(ListUserGroupsRequest) returns (ListUserGroupsResponses) {}
+    rpc AddUserGroup(AddUserGroupRequest) returns (AddUserGroupResponse) {}
+    rpc DeleteUserGroup(DeleteUserGroupRequest) returns (DeleteUserGroupResponse) {}
 
     // Command
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
@@ -406,6 +413,58 @@ message GetMeResponse {
     string avatar_url = 2;
     string project_id = 3;
     model.Role.ProjectRole project_role = 4;
+}
+
+message ListProjectRBACRolesRequest {
+}
+
+message ListProjectRBACRolesResponse {
+    repeated model.ProjectRBACRole rbac_roles = 1;
+}
+
+message AddProjectRBACRoleRequest {
+    string name = 1 [(validate.rules).string.min_len = 1];
+    repeated model.ProjectRBACPolicy policies = 2 [(validate.rules).repeated.min_items = 1];
+}
+
+message AddProjectRBACRoleResponse {
+}
+
+message UpdateProjectRBACRoleRequest {
+    string name = 1 [(validate.rules).string.min_len = 1];
+    repeated model.ProjectRBACPolicy policies = 2 [(validate.rules).repeated.min_items = 1];
+}
+
+message UpdateProjectRBACRoleResponse {
+}
+
+message DeleteProjectRBACRoleRequest {
+    string name = 1 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteProjectRBACRoleResponse {
+}
+
+message ListUserGroupsRequest {
+}
+
+message ListUserGroupsResponses {
+    repeated model.ProjectUserGroup user_groups = 1;
+}
+
+message AddUserGroupRequest {
+    string sso_group = 1 [(validate.rules).string.min_len = 1];
+    string role = 2 [(validate.rules).string.min_len = 1];
+}
+
+message AddUserGroupResponse {
+}
+
+message DeleteUserGroupRequest {
+    string sso_group = 1 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteUserGroupResponse {
 }
 
 message GetCommandRequest {
