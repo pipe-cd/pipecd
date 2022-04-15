@@ -13,7 +13,7 @@ ingress:
 # ServiceAccount
 serviceAccount:
   # Specifies whether a service account should be created
-  create: true
+  create: false
   # The name of existing ServiceAccount to use when create is false.
   name: ""
   # Annotations to add to the service account
