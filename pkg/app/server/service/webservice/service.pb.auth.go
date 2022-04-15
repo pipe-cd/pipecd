@@ -91,6 +91,8 @@ func (a *authorizer) Authorize(method string, r model.Role) bool {
 		return isAdmin(r) || isEditor(r)
 	case "/grpc.service.webservice.WebService/ApproveStage":
 		return isAdmin(r) || isEditor(r)
+	case "/grpc.service.webservice.WebService/SkipStage":
+		return isAdmin(r) || isEditor(r)
 	case "/grpc.service.webservice.WebService/GenerateApplicationSealedSecret":
 		return isAdmin(r) || isEditor(r)
 
