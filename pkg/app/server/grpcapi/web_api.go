@@ -982,7 +982,7 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 	}
 
 	if deployment.Status.IsCompleted() {
-		return nil, status.Errorf(codes.FailedPrecondition, "could not cancel the deployment because it was already completed")
+		return nil, status.Error(codes.FailedPrecondition, "could not cancel the deployment because it was already completed")
 	}
 
 	cmd := model.Command{
@@ -1030,7 +1030,7 @@ func (a *WebAPI) SkipStage(ctx context.Context, req *webservice.SkipStageRequest
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("SKIP STAGE is not supported for stage %q", stage.Name))
 	}
 	if stage.Status.IsCompleted() {
-		return nil, status.Errorf(codes.FailedPrecondition, "Could not skip the stage because it was already completed")
+		return nil, status.Error(codes.FailedPrecondition, "Could not skip the stage because it was already completed")
 	}
 
 	commandID := uuid.New().String()
@@ -1079,7 +1079,7 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 		return nil, status.Error(codes.FailedPrecondition, "The stage was not found in the deployment")
 	}
 	if stage.Status.IsCompleted() {
-		return nil, status.Errorf(codes.FailedPrecondition, "Could not approve the stage because it was already completed")
+		return nil, status.Error(codes.FailedPrecondition, "Could not approve the stage because it was already completed")
 	}
 
 	commandID := uuid.New().String()
