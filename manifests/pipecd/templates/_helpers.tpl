@@ -80,6 +80,6 @@ Name of ServiceAccount
 {{- if .Values.serviceAccount.create -}}
 {{ include "pipecd.fullname" . }}
 {{- else }}
-{{- default "default" .Values.serviceAccount.name }}
+{{- .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}

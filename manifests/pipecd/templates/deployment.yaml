@@ -84,7 +84,9 @@ spec:
         {{- include "pipecd.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: server
     spec:
+      {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
       serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
+      {{- end }}
       containers:
 {{- if .Values.cloudSQLProxy.enabled }}
         - name: cloud-sql-proxy
