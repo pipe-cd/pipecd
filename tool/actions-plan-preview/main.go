@@ -36,11 +36,11 @@ const (
 	commentEventName     = "issue_comment"
 	pushEventName        = "push"
 
-	addressArgName = "address"
-	apiKeyArgName  = "api-key"
-	tokenArgName   = "token"
-	timeoutArgName = "timeout"
-	prNumArgName   = "pull-request-number"
+	argAddress = "address"
+	argAPIKey  = "api-key"
+	argToken   = "token"
+	argTimeout = "timeout"
+	argPRNum   = "pull-request-number"
 )
 
 func main() {
