@@ -322,9 +322,9 @@ func (s *scheduler) Run(ctx context.Context) error {
 			break
 		}
 
-		// If all operations of the stage were completed successfully
+		// If all operations of the stage were completed successfully or skipped by a web user
 		// handle the next stage.
-		if result == model.StageStatus_STAGE_SUCCESS {
+		if result == model.StageStatus_STAGE_SUCCESS || result == model.StageStatus_STAGE_SKIPPED {
 			continue
 		}
 

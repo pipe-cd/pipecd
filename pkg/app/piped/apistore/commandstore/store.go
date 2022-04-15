@@ -126,7 +126,7 @@ func (s *store) sync(ctx context.Context) error {
 			applicationCommands = append(applicationCommands, s.makeReportableCommand(cmd))
 		case model.Command_CANCEL_DEPLOYMENT:
 			deploymentCommands = append(deploymentCommands, s.makeReportableCommand(cmd))
-		case model.Command_APPROVE_STAGE:
+		case model.Command_APPROVE_STAGE, model.Command_SKIP_STAGE:
 			stageCommands = append(stageCommands, s.makeReportableCommand(cmd))
 		case model.Command_BUILD_PLAN_PREVIEW:
 			planPreviewCommands = append(planPreviewCommands, s.makeReportableCommand(cmd))
