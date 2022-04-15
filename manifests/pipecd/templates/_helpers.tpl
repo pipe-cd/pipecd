@@ -72,3 +72,14 @@ Name of Secret containing sensitive data
 {{- .Values.secret.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Name of ServiceAccount
+*/}}
+{{- define "pipecd.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+{{ include "pipecd.fullname" . }}
+{{- else }}
+{{- .Values.serviceAccount.name }}
+{{- end }}
+{{- end }}

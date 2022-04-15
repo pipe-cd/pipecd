@@ -10,6 +10,15 @@ ingress:
     # kubernetes.io/ingress.allow-http: "false"
     # kubernetes.io/ingress.global-static-ip-name: pipecd
 
+# ServiceAccount
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # The name of existing ServiceAccount to use when create is false.
+  name: ""
+  # Annotations to add to the service account
+  annotations: {}
+
 # Workloads.
 gateway:
   replicasCount: 1
