@@ -738,23 +738,23 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 		})
 	}
 	if req.Status != pipedservice.ListEventsRequest_ALL {
-		var status model.EventStatus
+		var es model.EventStatus
 		switch req.Status {
 		case pipedservice.ListEventsRequest_NOT_HANDLED:
-			status = model.EventStatus_EVENT_NOT_HANDLED
+			es = model.EventStatus_EVENT_NOT_HANDLED
 		case pipedservice.ListEventsRequest_SUCCESS:
-			status = model.EventStatus_EVENT_SUCCESS
+			es = model.EventStatus_EVENT_SUCCESS
 		case pipedservice.ListEventsRequest_FAILURE:
-			status = model.EventStatus_EVENT_FAILURE
+			es = model.EventStatus_EVENT_FAILURE
 		case pipedservice.ListEventsRequest_OUTDATED:
-			status = model.EventStatus_EVENT_OUTDATED
+			es = model.EventStatus_EVENT_OUTDATED
 		default:
-			return nil, fmt.Errorf("unknown status %v given", req.Status)
+			return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("unknown status %v given", req.Status))
 		}
 		opts.Filters = append(opts.Filters, datastore.ListFilter{
 			Field:    "Status",
 			Operator: datastore.OperatorEqual,
-			Value:    status,
+			Value:    es,
 		})
 	}
 	switch req.Order {
