@@ -117,7 +117,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 				}
 				status = model.StageStatus_STAGE_SKIPPED
 				// Stop the context to cancel all running analysises.
-				ctxWithTimeout.Done()
+				cancel()
 				return
 			case <-doneCh:
 				return
