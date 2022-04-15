@@ -182,19 +182,19 @@ func parseArgs(args []string) (arguments, error) {
 			continue
 		}
 		switch ps[0] {
-		case addressArgName:
+		case argAddress:
 			out.Address = ps[1]
-		case apiKeyArgName:
+		case argAPIKey:
 			out.APIKey = ps[1]
-		case tokenArgName:
+		case argToken:
 			out.Token = ps[1]
-		case timeoutArgName:
+		case argTimeout:
 			d, err := time.ParseDuration(ps[1])
 			if err != nil {
 				return arguments{}, err
 			}
 			out.Timeout = d
-		case prNumArgName:
+		case argPRNum:
 			if ps[1] == "" {
 				continue
 			}
@@ -203,7 +203,7 @@ func parseArgs(args []string) (arguments, error) {
 				return out, err
 			}
 			if i <= 0 {
-				return out, fmt.Errorf("invalid %s: %d", prNumArgName, i)
+				return out, fmt.Errorf("invalid %s: %d", argPRNum, i)
 			}
 			out.PRNum = i
 		}
