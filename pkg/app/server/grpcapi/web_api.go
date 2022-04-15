@@ -1026,7 +1026,7 @@ func (a *WebAPI) SkipStage(ctx context.Context, req *webservice.SkipStageRequest
 	if !ok {
 		return nil, status.Error(codes.FailedPrecondition, "The stage was not found in the deployment")
 	}
-	if stage.IsSkippable() {
+	if !stage.IsSkippable() {
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("SKIP STAGE is not supported for stage %q", stage.Name))
 	}
 	if stage.Status.IsCompleted() {
