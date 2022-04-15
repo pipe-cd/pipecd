@@ -1008,8 +1008,53 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 	}, nil
 }
 
-func (a *WebAPI) SkipStage(_ context.Context, _ *webservice.SkipStageRequest) (*webservice.SkipStageResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+func (a *WebAPI) SkipStage(ctx context.Context, req *webservice.SkipStageRequest) (*webservice.SkipStageResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	deployment, err := getDeployment(ctx, a.deploymentStore, req.DeploymentId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+	if claims.Role.ProjectId != deployment.ProjectId {
+		return nil, status.Error(codes.PermissionDenied, "Requested deployment does not belong to your project")
+	}
+	stage, ok := deployment.Stage(req.StageId)
+	if !ok {
+		return nil, status.Error(codes.FailedPrecondition, "The stage was not found in the deployment")
+	}
+	if !stage.IsSkippable() {
+		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("SKIP STAGE is not supported for stage %q", stage.Name))
+	}
+	if stage.Status.IsCompleted() {
+		return nil, status.Errorf(codes.FailedPrecondition, "Could not skip the stage because it was already completed")
+	}
+
+	commandID := uuid.New().String()
+	cmd := model.Command{
+		Id:            commandID,
+		PipedId:       deployment.PipedId,
+		ApplicationId: deployment.ApplicationId,
+		ProjectId:     deployment.ProjectId,
+		DeploymentId:  req.DeploymentId,
+		StageId:       req.StageId,
+		Type:          model.Command_SKIP_STAGE,
+		Commander:     claims.Subject,
+		SkipStage: &model.Command_SkipStage{
+			DeploymentId: req.DeploymentId,
+			StageId:      req.StageId,
+		},
+	}
+	if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
+		return nil, err
+	}
+
+	return &webservice.SkipStageResponse{
+		CommandId: commandID,
+	}, nil
 }
 
 func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageRequest) (*webservice.ApproveStageResponse, error) {

@@ -200,3 +200,47 @@ func TestDeploymentStatus_IsCompleted(t *testing.T) {
 		})
 	}
 }
+
+func TestDeployment_Stage(t *testing.T) {
+	testcases := []struct {
+		name       string
+		id         string
+		deployment *Deployment
+		want       *PipelineStage
+		exists     bool
+	}{
+		{
+			name: "ok",
+			deployment: &Deployment{
+				Stages: []*PipelineStage{
+					{
+						Id: "id",
+					},
+				},
+			},
+			id:     "id",
+			want:   &PipelineStage{Id: "id"},
+			exists: true,
+		},
+		{
+			name: "not found",
+			deployment: &Deployment{
+				Stages: []*PipelineStage{
+					{
+						Id: "id",
+					},
+				},
+			},
+			id:     "foo",
+			want:   nil,
+			exists: false,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, ok := tc.deployment.Stage(tc.id)
+			assert.Equal(t, tc.want, got)
+			assert.Equal(t, tc.exists, ok)
+		})
+	}
+}
