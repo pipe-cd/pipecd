@@ -98,6 +98,21 @@ func (d *Deployment) StageMap() map[string]*PipelineStage {
 	return stage
 }
 
+// Stage returns the stage by stage id.
+func (d *Deployment) Stage(id string) (*PipelineStage, bool) {
+	for _, s := range d.Stages {
+		if s.Id == id {
+			return s, true
+		}
+	}
+	return nil, false
+}
+
+// IsSkippable checks whether skippable or not.
+func (p *PipelineStage) IsSkippable() bool {
+	return p.Name == StageAnalysis.String()
+}
+
 // CommitHash returns the hash value of trigger commit.
 func (d *Deployment) CommitHash() string {
 	return d.Trigger.Commit.Hash

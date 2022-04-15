@@ -1022,11 +1022,11 @@ func (a *WebAPI) SkipStage(ctx context.Context, req *webservice.SkipStageRequest
 	if claims.Role.ProjectId != deployment.ProjectId {
 		return nil, status.Error(codes.PermissionDenied, "Requested deployment does not belong to your project")
 	}
-	stage, ok := deployment.StageMap()[req.StageId]
+	stage, ok := deployment.Stage(req.StageId)
 	if !ok {
 		return nil, status.Error(codes.FailedPrecondition, "The stage was not found in the deployment")
 	}
-	if stage.Name != model.StageAnalysis.String() {
+	if stage.IsSkippable() {
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("SKIP STAGE is not supported for stage %q", stage.Name))
 	}
 	if stage.Status.IsCompleted() {
