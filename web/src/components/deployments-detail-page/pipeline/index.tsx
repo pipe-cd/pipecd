@@ -277,12 +277,15 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
                         name={stage.name}
                         status={stage.status}
                         metadata={stage.metadataMap}
-                        onClick={
-                          stage.name === ANALYSIS_NAME &&
-                          stage.status === StageStatus.STAGE_RUNNING
-                            ? () => setSkipTargetId(stage.id)
-                            : handleOnClickStage
-                        }
+                        onClick={() => {
+                          if (
+                            stage.name === ANALYSIS_NAME &&
+                            stage.status === StageStatus.STAGE_RUNNING
+                          ) {
+                            setSkipTargetId(stage.id);
+                          }
+                          handleOnClickStage(stage.id, stage.name);
+                        }}
                         active={isActive}
                         approver={approver}
                         skipper={skipper}
