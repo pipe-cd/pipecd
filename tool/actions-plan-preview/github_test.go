@@ -48,6 +48,7 @@ func TestParseGithubEvent(t *testing.T) {
 		name        string
 		eventName   string
 		payload     []byte
+		argPRNum    int
 		prService   dummyPullRequestsService
 		expected    *githubEvent
 		expectedErr error
@@ -94,11 +95,36 @@ func TestParseGithubEvent(t *testing.T) {
 				CommentURL:  "https://github.com/Codertocat/Hello-World/issues/1#issuecomment-492700400",
 			},
 		},
+		{
+			name:      "successfully parsed push event",
+			eventName: "push",
+			payload:   readTestdataFile(t, "testdata/push-event-payload.json"),
+			argPRNum:  1,
+			prService: dummyPullRequestsService{
+				mergeable:  true,
+				createdAt:  time.Unix(0, 0),
+				headBranch: "head-branch",
+				headCommit: "head-commit",
+				baseBranch: "base-branch",
+			},
+			expected: &githubEvent{
+				Owner:       "Codertocat",
+				Repo:        "Hello-World",
+				RepoRemote:  "git@github.com:Codertocat/Hello-World.git",
+				PRNumber:    1,
+				PRMergeable: boolPointer(true),
+				PRClosed:    false,
+				HeadBranch:  "head-branch",
+				HeadCommit:  "head-commit",
+				BaseBranch:  "base-branch",
+				SenderLogin: "Codertocat",
+			},
+		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := parseGitHubEvent(context.Background(), tc.prService, tc.eventName, tc.payload)
+			got, err := parseGitHubEvent(context.Background(), tc.prService, tc.eventName, tc.payload, tc.argPRNum)
 			assert.Equal(t, tc.expected, got)
 			assert.Equal(t, tc.expectedErr, err)
 		})

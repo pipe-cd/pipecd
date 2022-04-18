@@ -64,6 +64,7 @@ func parseGitHubEvent(
 	pullSvc PullRequestsService,
 	eventName string,
 	payload []byte,
+	argPRNum int,
 ) (*githubEvent, error) {
 	event, err := github.ParseWebHook(eventName, payload)
 	if err != nil {
@@ -109,6 +110,29 @@ func parseGitHubEvent(
 			SenderLogin: e.Sender.GetLogin(),
 			IsComment:   true,
 			CommentURL:  e.Comment.GetHTMLURL(),
+		}, nil
+
+	case *github.PushEvent:
+		var (
+			owner = e.Repo.Owner.GetLogin()
+			repo  = e.Repo.GetName()
+		)
+		pr, err := getPullRequest(ctx, pullSvc, owner, repo, argPRNum)
+		if err != nil {
+			return nil, err
+		}
+
+		return &githubEvent{
+			Owner:       owner,
+			Repo:        repo,
+			RepoRemote:  e.Repo.GetSSHURL(),
+			PRNumber:    argPRNum,
+			PRMergeable: pr.Mergeable,
+			PRClosed:    !pr.GetClosedAt().IsZero(),
+			HeadBranch:  pr.Head.GetRef(),
+			HeadCommit:  pr.Head.GetSHA(),
+			BaseBranch:  pr.Base.GetRef(),
+			SenderLogin: e.Sender.GetLogin(),
 		}, nil
 
 	default:
