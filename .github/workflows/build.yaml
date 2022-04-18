@@ -19,7 +19,7 @@ jobs:
           go-version: '1.17.6'
       - name: Determine version
         run: |
-          git tags
+          git tag
           git describe --tags --always --abbrev=7
           echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7)" >> $GITHUB_ENV
 
