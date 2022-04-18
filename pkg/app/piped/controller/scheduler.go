@@ -515,8 +515,10 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	// - Apply state successfully.
 	// - State was canceled while running (cancel via Controlpane).
 	// - Apply state failed but not because of terminating piped process.
+	// - State was skipped via Controlpane (currently supports only ANALYSIS stage).
 	if status == model.StageStatus_STAGE_SUCCESS ||
 		status == model.StageStatus_STAGE_CANCELLED ||
+		status == model.StageStatus_STAGE_SKIPPED ||
 		(status == model.StageStatus_STAGE_FAILURE && !sig.Terminated()) {
 
 		s.reportStageStatus(ctx, ps.Id, status, ps.Requires)
