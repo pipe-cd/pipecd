@@ -17,6 +17,11 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: '1.17.6'
+      - name: Determine version
+        run: |
+          git tags
+          git describe --tags --always --abbrev=7
+          echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7)" >> $GITHUB_ENV
 
       - name: Build pipecd binary
         run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/pipecd ./cmd/pipecd
