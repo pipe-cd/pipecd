@@ -4,20 +4,33 @@ import {
   makeStyles,
   Toolbar,
   Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
 } from "@material-ui/core";
-import { Close } from "@material-ui/icons";
+import { Close, SkipNext } from "@material-ui/icons";
 import clsx from "clsx";
 import { FC, memo, useCallback, useState } from "react";
 import Draggable from "react-draggable";
 import { APP_HEADER_HEIGHT } from "~/components/header";
 import { useAppDispatch, useShallowEqualSelector } from "~/hooks/redux";
 import { clearActiveStage } from "~/modules/active-stage";
-import { isStageRunning, selectById, Stage } from "~/modules/deployments";
+import {
+  isStageRunning,
+  selectById,
+  Stage,
+  StageStatus,
+  skipStage,
+} from "~/modules/deployments";
 import { selectStageLogById, StageLog } from "~/modules/stage-logs";
 import { Log } from "./log";
 
 const INITIAL_HEIGHT = 400;
 const TOOLBAR_HEIGHT = 48;
+const ANALYSIS_NAME = "ANALYSIS";
 
 function useActiveStageLog(): [Stage | null, StageLog | null] {
   return useShallowEqualSelector<[Stage | null, StageLog | null]>((state) => {
@@ -86,6 +99,17 @@ const useStyles = makeStyles((theme) => ({
     // view height + header
     zIndex: 10,
   },
+  skipButton: {
+    color: theme.palette.common.white,
+    background: theme.palette.success.main,
+    marginRight: "10px",
+    "& .MuiButton-endIcon": {
+      marginLeft: 0,
+    },
+    "&:hover": {
+      backgroundColor: theme.palette.success.dark,
+    },
+  },
 }));
 
 export const LogViewer: FC = memo(function LogViewer() {
@@ -96,6 +120,8 @@ export const LogViewer: FC = memo(function LogViewer() {
   const dispatch = useAppDispatch();
   const [handlePosY, setHandlePosY] = useState(maxHandlePosY - INITIAL_HEIGHT);
   const logViewHeight = maxHandlePosY - handlePosY;
+  const [skipTargetId, setSkipTargetId] = useState<string | null>(null);
+  const isOpenSkipDialog = Boolean(skipTargetId);
 
   const handleOnClickClose = (): void => {
     dispatch(clearActiveStage());
@@ -113,6 +139,16 @@ export const LogViewer: FC = memo(function LogViewer() {
     },
     [setHandlePosY, maxHandlePosY]
   );
+
+  const handleSkip = (): void => {
+    if (skipTargetId) {
+      const deploymentId = stageLog ? stageLog.deploymentId : "";
+      dispatch(
+        skipStage({ deploymentId: deploymentId, stageId: skipTargetId })
+      );
+      setSkipTargetId(null);
+    }
+  };
 
   if (!stageLog || !activeStage) {
     return null;
@@ -135,6 +171,17 @@ export const LogViewer: FC = memo(function LogViewer() {
         <Divider />
         <Toolbar variant="dense" className={classes.toolbar}>
           <div className={classes.toolbarLeft}>
+            {activeStage.name == ANALYSIS_NAME &&
+              activeStage.status == StageStatus.STAGE_RUNNING && (
+                <Button
+                  className={classes.skipButton}
+                  onClick={() => setSkipTargetId(activeStage.id)}
+                  variant="contained"
+                  endIcon={<SkipNext />}
+                >
+                  SKIP
+                </Button>
+              )}
             <Typography variant="subtitle2" className={classes.stageName}>
               {activeStage.name}
             </Typography>
@@ -155,6 +202,20 @@ export const LogViewer: FC = memo(function LogViewer() {
           />
         </div>
       </div>
+      <Dialog open={isOpenSkipDialog} onClose={() => setSkipTargetId(null)}>
+        <DialogTitle>Skip stage</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {`To skip this stage, click "SKIP".`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSkipTargetId(null)}>CANCEL</Button>
+          <Button color="primary" onClick={handleSkip}>
+            SKIP
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 });

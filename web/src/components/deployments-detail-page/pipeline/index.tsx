@@ -23,14 +23,12 @@ import {
   selectById,
   Stage,
   StageStatus,
-  skipStage,
 } from "~/modules/deployments";
 import { fetchStageLog } from "~/modules/stage-logs";
 import { ApprovalStage } from "./approval-stage";
 import { PipelineStage } from "./pipeline-stage";
 
 const WAIT_APPROVAL_NAME = "WAIT_APPROVAL";
-const ANALYSIS_NAME = "ANALYSIS";
 const STAGE_HEIGHT = 56;
 const APPROVED_STAGE_HEIGHT = 66;
 
@@ -173,9 +171,6 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
   const [approveTargetId, setApproveTargetId] = useState<string | null>(null);
   const isOpenApproveDialog = Boolean(approveTargetId);
 
-  const [skipTargetId, setSkipTargetId] = useState<string | null>(null);
-  const isOpenSkipDialog = Boolean(skipTargetId);
-
   const defaultActiveStage = findDefaultActiveStage(deployment);
   const stages = createStagesForRendering(deployment);
   const isRunning = isDeploymentRunning(deployment?.status);
@@ -219,13 +214,6 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
     if (approveTargetId) {
       dispatch(approveStage({ deploymentId, stageId: approveTargetId }));
       setApproveTargetId(null);
-    }
-  };
-
-  const handleSkip = (): void => {
-    if (skipTargetId) {
-      dispatch(skipStage({ deploymentId, stageId: skipTargetId }));
-      setSkipTargetId(null);
     }
   };
 
@@ -277,15 +265,7 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
                         name={stage.name}
                         status={stage.status}
                         metadata={stage.metadataMap}
-                        onClick={() => {
-                          if (
-                            stage.name === ANALYSIS_NAME &&
-                            stage.status === StageStatus.STAGE_RUNNING
-                          ) {
-                            setSkipTargetId(stage.id);
-                          }
-                          handleOnClickStage(stage.id, stage.name);
-                        }}
+                        onClick={handleOnClickStage}
                         active={isActive}
                         approver={approver}
                         skipper={skipper}
@@ -315,21 +295,6 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
             <Button onClick={() => setApproveTargetId(null)}>CANCEL</Button>
             <Button color="primary" onClick={handleApprove}>
               APPROVE
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog open={isOpenSkipDialog} onClose={() => setSkipTargetId(null)}>
-          <DialogTitle>Skip stage</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {`To skip this stage, click "SKIP".`}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setSkipTargetId(null)}>CANCEL</Button>
-            <Button color="primary" onClick={handleSkip}>
-              SKIP
             </Button>
           </DialogActions>
         </Dialog>
