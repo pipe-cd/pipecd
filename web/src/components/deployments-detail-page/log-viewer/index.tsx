@@ -157,9 +157,10 @@ export const LogViewer: FC = memo(function LogViewer() {
     }
   };
 
-  const isSkipping = useAppSelector(
-    selectDeploymentStageIsSkipping(activeStage?.id)
-  );
+  const isSkipping = (): boolean => {
+      const stageId = activeStage ? activeStage.id : "";
+      return useAppSelector(selectDeploymentStageIsSkipping(stageId))
+  };
 
   if (!stageLog || !activeStage) {
     return null;
@@ -189,7 +190,7 @@ export const LogViewer: FC = memo(function LogViewer() {
                   onClick={() => setSkipTargetId(activeStage.id)}
                   variant="contained"
                   endIcon={<SkipNext />}
-                  disabled={isSkipping}
+                  disabled={isSkipping()}
                 >
                   SKIP
                 </Button>

@@ -13,6 +13,7 @@ import {
   fetchDeployments,
   fetchMoreDeployments,
   cancelDeployment,
+  updateSkippingState,
 } from ".";
 
 const initialState = {
@@ -269,6 +270,26 @@ describe("deploymentsSlice reducer", () => {
         ...initialState,
         canceling: {
           "deployment-1": false,
+        },
+      });
+    });
+  });
+
+  describe("updateSkippingState", () => {
+    it(`should handle ${updateSkippingState.fulfilled.type}`, () => {
+      expect(
+        deploymentsSlice.reducer(initialState, {
+          type: updateSkippingState.fulfilled.type,
+          meta: {
+            arg: {
+              stageId: "stage-id",
+            },
+          },
+        })
+      ).toEqual({
+        ...initialState,
+        skipping: {
+          "stage-id": true,
         },
       });
     });
