@@ -48,6 +48,7 @@ it("should appear stage log in the document if activeState is exists", () => {
         entities: {
           [dummyDeployment.id]: dummyDeployment,
         },
+	skippable: {},
       },
       activeStage: {
         deploymentId: dummyDeployment.id,
@@ -74,6 +75,7 @@ it("should dispatch clearActiveStage action if click `close log` button", () => 
       entities: {
         [dummyDeployment.id]: dummyDeployment,
       },
+      skippable: {},
     },
     activeStage: {
       deploymentId: dummyDeployment.id,

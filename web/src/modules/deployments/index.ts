@@ -79,7 +79,7 @@ const initialState = deploymentsAdapter.getInitialState<{
   hasMore: boolean;
   cursor: string;
   minUpdatedAt: number;
-  skipping: Record<string, boolean>;
+  skippable: Record<string, boolean>;
 }>({
   status: "idle",
   loading: {},
@@ -87,7 +87,7 @@ const initialState = deploymentsAdapter.getInitialState<{
   hasMore: true,
   cursor: "",
   minUpdatedAt: Math.round(Date.now() / 1000 - TIME_RANGE_LIMIT_IN_SECONDS),
-  skipping: {},
+  skippable: {},
 });
 
 export const fetchDeploymentById = createAsyncThunk<
@@ -182,8 +182,8 @@ export const skipStage = createAsyncThunk<
   await thunkAPI.dispatch(fetchCommand(commandId));
 });
 
-export const updateSkippingState = createAsyncThunk<void, { stageId: string }>(
-  "deployments/skipping",
+export const updateSkippableState = createAsyncThunk<void, { stageId: string }>(
+  "deployments/skippable",
   () => {}
 );
 
@@ -278,11 +278,11 @@ export const deploymentsSlice = createSlice({
           (action.payload.status === CommandStatus.COMMAND_FAILED ||
             action.payload.status === CommandStatus.COMMAND_TIMEOUT)
         ) {
-          state.skipping[action.payload.stageId] = false;
+          state.skippable[action.payload.stageId] = false;
         }
       })
-      .addCase(updateSkippingState.fulfilled, (state, action) => {
-        state.skipping[action.meta.arg.stageId] = true;
+      .addCase(updateSkippableState.fulfilled, (state, action) => {
+        state.skippable[action.meta.arg.stageId] = true;
       });
   },
 });
@@ -307,6 +307,6 @@ export {
   PipelineStage,
 } from "pipecd/web/model/deployment_pb";
 
-export const selectDeploymentStageIsSkipping = (id?: EntityId | null) => (
+export const selectDeploymentStageIsSkippable = (id?: EntityId | null) => (
   state: AppState
-): boolean => (id ? state.deployments.skipping[id] : false);
+): boolean => (id ? state.deployments.skippable[id] : false);

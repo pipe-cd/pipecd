@@ -28,15 +28,15 @@ import {
   Stage,
   StageStatus,
   skipStage,
-  selectDeploymentStageIsSkipping,
-  updateSkippingState,
+  selectDeploymentStageIsSkippable,
+  updateSkippableState,
 } from "~/modules/deployments";
 import { selectStageLogById, StageLog } from "~/modules/stage-logs";
 import { Log } from "./log";
 
 const INITIAL_HEIGHT = 400;
 const TOOLBAR_HEIGHT = 48;
-const ANALYSIS_NAME = "ANALYSIS";
+const ANALYSIS_STAGE_NAME = "ANALYSIS";
 
 function useActiveStageLog(): [Stage | null, StageLog | null] {
   return useShallowEqualSelector<[Stage | null, StageLog | null]>((state) => {
@@ -126,8 +126,8 @@ export const LogViewer: FC = memo(function LogViewer() {
   const dispatch = useAppDispatch();
   const [handlePosY, setHandlePosY] = useState(maxHandlePosY - INITIAL_HEIGHT);
   const logViewHeight = maxHandlePosY - handlePosY;
-  const [skipTargetId, setSkipTargetId] = useState<string | null>(null);
-  const isOpenSkipDialog = Boolean(skipTargetId);
+  const [isOpenSkipDialog, setOpenSkipDialog] = useState(false);
+  const stageId = activeStage ? activeStage.id : "";
 
   const handleOnClickClose = (): void => {
     dispatch(clearActiveStage());
@@ -147,20 +147,13 @@ export const LogViewer: FC = memo(function LogViewer() {
   );
 
   const handleSkip = (): void => {
-    if (skipTargetId) {
-      const deploymentId = stageLog ? stageLog.deploymentId : "";
-      dispatch(
-        skipStage({ deploymentId: deploymentId, stageId: skipTargetId })
-      );
-      dispatch(updateSkippingState({ stageId: skipTargetId }));
-      setSkipTargetId(null);
-    }
+    const deploymentId = stageLog ? stageLog.deploymentId : "";
+    dispatch(skipStage({ deploymentId: deploymentId, stageId: stageId }));
+    dispatch(updateSkippableState({ stageId: stageId }));
+    setOpenSkipDialog(false);
   };
 
-  const isSkipping = (): boolean => {
-      const stageId = activeStage ? activeStage.id : "";
-      return useAppSelector(selectDeploymentStageIsSkipping(stageId))
-  };
+  const isSkippable = useAppSelector(selectDeploymentStageIsSkippable(stageId));
 
   if (!stageLog || !activeStage) {
     return null;
@@ -183,14 +176,14 @@ export const LogViewer: FC = memo(function LogViewer() {
         <Divider />
         <Toolbar variant="dense" className={classes.toolbar}>
           <div className={classes.toolbarLeft}>
-            {activeStage.name == ANALYSIS_NAME &&
+            {activeStage.name == ANALYSIS_STAGE_NAME &&
               activeStage.status == StageStatus.STAGE_RUNNING && (
                 <Button
                   className={classes.skipButton}
-                  onClick={() => setSkipTargetId(activeStage.id)}
+                  onClick={() => setOpenSkipDialog(true)}
                   variant="contained"
                   endIcon={<SkipNext />}
-                  disabled={isSkipping()}
+                  disabled={isSkippable}
                 >
                   SKIP
                 </Button>
@@ -215,7 +208,7 @@ export const LogViewer: FC = memo(function LogViewer() {
           />
         </div>
       </div>
-      <Dialog open={isOpenSkipDialog} onClose={() => setSkipTargetId(null)}>
+      <Dialog open={isOpenSkipDialog} onClose={() => setOpenSkipDialog(false)}>
         <DialogTitle>Skip stage</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -223,7 +216,7 @@ export const LogViewer: FC = memo(function LogViewer() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setSkipTargetId(null)}>CANCEL</Button>
+          <Button onClick={() => setOpenSkipDialog(false)}>CANCEL</Button>
           <Button color="primary" onClick={handleSkip}>
             SKIP
           </Button>

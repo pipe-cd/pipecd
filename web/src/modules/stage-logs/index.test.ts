@@ -50,7 +50,7 @@ describe("async actions", () => {
           status: "idle",
           ids: [dummyDeployment.id],
           entities: { [dummyDeployment.id]: dummyDeployment },
-          skipping: {},
+          skippable: {},
         },
       });
 
@@ -94,7 +94,7 @@ describe("async actions", () => {
           status: "idle",
           ids: [deployment.id],
           entities: { [deployment.id]: deployment },
-          skipping: {},
+          skippable: {},
         },
       });
 
@@ -129,7 +129,7 @@ describe("async actions", () => {
           status: "idle",
           ids: [dummyDeployment.id],
           entities: { [dummyDeployment.id]: dummyDeployment },
-          skipping: {},
+          skippable: {},
         },
       });
 

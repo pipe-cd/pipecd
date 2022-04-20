@@ -13,7 +13,7 @@ import {
   fetchDeployments,
   fetchMoreDeployments,
   cancelDeployment,
-  updateSkippingState,
+  updateSkippableState,
 } from ".";
 
 const initialState = {
@@ -25,7 +25,7 @@ const initialState = {
   status: "idle" as LoadingStatus,
   loading: {},
   cursor: "",
-  skipping: {},
+  skippable: {},
 };
 
 test("isDeploymentRunning", () => {
@@ -275,11 +275,11 @@ describe("deploymentsSlice reducer", () => {
     });
   });
 
-  describe("updateSkippingState", () => {
-    it(`should handle ${updateSkippingState.fulfilled.type}`, () => {
+  describe("updateSkippableState", () => {
+    it(`should handle ${updateSkippableState.fulfilled.type}`, () => {
       expect(
         deploymentsSlice.reducer(initialState, {
-          type: updateSkippingState.fulfilled.type,
+          type: updateSkippableState.fulfilled.type,
           meta: {
             arg: {
               stageId: "stage-id",
@@ -288,7 +288,7 @@ describe("deploymentsSlice reducer", () => {
         })
       ).toEqual({
         ...initialState,
-        skipping: {
+        skippable: {
           "stage-id": true,
         },
       });
