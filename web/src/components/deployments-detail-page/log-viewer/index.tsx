@@ -16,7 +16,11 @@ import clsx from "clsx";
 import { FC, memo, useCallback, useState } from "react";
 import Draggable from "react-draggable";
 import { APP_HEADER_HEIGHT } from "~/components/header";
-import { useAppDispatch, useShallowEqualSelector } from "~/hooks/redux";
+import {
+  useAppDispatch,
+  useShallowEqualSelector,
+  useAppSelector,
+} from "~/hooks/redux";
 import { clearActiveStage } from "~/modules/active-stage";
 import {
   isStageRunning,
@@ -24,6 +28,8 @@ import {
   Stage,
   StageStatus,
   skipStage,
+  selectDeploymentStageIsSkipping,
+  updateSkippingState,
 } from "~/modules/deployments";
 import { selectStageLogById, StageLog } from "~/modules/stage-logs";
 import { Log } from "./log";
@@ -146,9 +152,14 @@ export const LogViewer: FC = memo(function LogViewer() {
       dispatch(
         skipStage({ deploymentId: deploymentId, stageId: skipTargetId })
       );
+      dispatch(updateSkippingState({ stageId: skipTargetId }));
       setSkipTargetId(null);
     }
   };
+
+  const isSkipping = useAppSelector(
+    selectDeploymentStageIsSkipping(activeStage?.id)
+  );
 
   if (!stageLog || !activeStage) {
     return null;
@@ -178,6 +189,7 @@ export const LogViewer: FC = memo(function LogViewer() {
                   onClick={() => setSkipTargetId(activeStage.id)}
                   variant="contained"
                   endIcon={<SkipNext />}
+                  disabled={isSkipping}
                 >
                   SKIP
                 </Button>

@@ -24,6 +24,7 @@ const initialState = {
   status: "idle" as LoadingStatus,
   loading: {},
   cursor: "",
+  skipping: {},
 };
 
 test("isDeploymentRunning", () => {
