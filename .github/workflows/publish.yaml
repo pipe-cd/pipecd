@@ -60,6 +60,13 @@ jobs:
           context: .
           file: cmd/piped/Dockerfile
           tags: ${{ env.REGISTRY }}/pipe-cd/piped:${{ env.PIPECD_VERSION }}
+      - name: Build and push piped-okd image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          push: true
+          context: .
+          file: cmd/piped/Dockerfile-okd
+          tags: ${{ env.REGISTRY }}/pipe-cd/piped-okd:${{ env.PIPECD_VERSION }}
       - name: Build and push launcher image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:

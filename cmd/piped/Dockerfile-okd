@@ -1,0 +1,6 @@
+# pipecd/piped-base-okd:0.1.0
+FROM gcr.io/pipecd/piped-base-okd@sha256:54f11a2701a5ad8c9d9fbf1f1c3232fa02f30c4fa399c98e7c2df1640fdb4f0d
+
+ADD .artifacts/piped .
+
+ENTRYPOINT ["./piped"]
