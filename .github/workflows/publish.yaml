@@ -25,7 +25,7 @@ jobs:
       - name: Determine version
         run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7)" >> $GITHUB_ENV
 
-      # Building binaries
+      # Building Go binaries.
       - name: Build pipecd binary
         run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/pipecd ./cmd/pipecd
       - name: Build piped binary
@@ -36,6 +36,10 @@ jobs:
         run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/pipectl ./cmd/pipectl
       - name: Build helloworld binary
         run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/helloworld ./cmd/helloworld
+
+      # Building frontend.
+      - name: Build web static
+        run: make build-frontend
 
       # Login to push container images.
       - name: Log in to the container registry
