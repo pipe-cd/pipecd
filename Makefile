@@ -131,8 +131,8 @@ update-docsy:
 codegen:
 	docker run --rm -v ${PWD}:/repo -it gcr.io/pipecd/codegen:0.7.0 /repo
 
-.PHONY: build/frontend
-build/frontend:
+.PHONY: build-frontend
+build-frontend:
 	rm -rf .artifacts/web-static
 	mkdir -p .artifacts/web-static
 	bazelisk ${BAZEL_FLAGS} build ${BAZEL_COMMAND_FLAGS} -- //web:static

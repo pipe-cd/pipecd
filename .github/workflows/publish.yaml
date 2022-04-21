@@ -39,7 +39,7 @@ jobs:
 
       # Building frontend.
       - name: Build web static
-        run: make build/frontend
+        run: make build-frontend
 
       # Login to push container images.
       - name: Log in to the container registry
