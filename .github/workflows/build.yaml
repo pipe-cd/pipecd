@@ -66,8 +66,6 @@ jobs:
         with:
           version: ${{ env.HELM_VERSION }}
       - name: Package pipecd chart
-        run: |
-          make package-chart CHART=pipecd
+        run: make package-chart CHART=pipecd
       - name: Package piped chart
-        run: |
-          make package-chart CHART=piped
+        run: make package-chart CHART=piped
