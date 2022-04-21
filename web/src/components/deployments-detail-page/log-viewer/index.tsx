@@ -183,7 +183,7 @@ export const LogViewer: FC = memo(function LogViewer() {
                   onClick={() => setOpenSkipDialog(true)}
                   variant="contained"
                   endIcon={<SkipNext />}
-                  disabled={isSkippable}
+                  disabled={!isSkippable}
                 >
                   SKIP
                 </Button>

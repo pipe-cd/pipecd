@@ -283,13 +283,14 @@ describe("deploymentsSlice reducer", () => {
           meta: {
             arg: {
               stageId: "stage-id",
+              skippable: false,
             },
           },
         })
       ).toEqual({
         ...initialState,
         skippable: {
-          "stage-id": true,
+          "stage-id": false,
         },
       });
     });

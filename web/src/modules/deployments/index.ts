@@ -79,7 +79,7 @@ const initialState = deploymentsAdapter.getInitialState<{
   hasMore: boolean;
   cursor: string;
   minUpdatedAt: number;
-  skippable: Record<string, boolean>;
+  skippable: Record<string, boolean | undefined>;
 }>({
   status: "idle",
   loading: {},
@@ -309,4 +309,9 @@ export {
 
 export const selectDeploymentStageIsSkippable = (id?: EntityId | null) => (
   state: AppState
-): boolean => (id ? state.deployments.skippable[id] : false);
+): boolean => {
+  if (id && typeof state.deployments.skippable[id] !== "undefined") {
+    return state.deployments.skippable[id]!;
+  }
+  return true;
+};
