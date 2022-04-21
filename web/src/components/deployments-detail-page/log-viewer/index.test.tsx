@@ -48,7 +48,7 @@ it("should appear stage log in the document if activeState is exists", () => {
         entities: {
           [dummyDeployment.id]: dummyDeployment,
         },
-	skippable: {},
+        skippable: {},
       },
       activeStage: {
         deploymentId: dummyDeployment.id,

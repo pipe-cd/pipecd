@@ -182,10 +182,10 @@ export const skipStage = createAsyncThunk<
   await thunkAPI.dispatch(fetchCommand(commandId));
 });
 
-export const updateSkippableState = createAsyncThunk<void, { stageId: string }>(
-  "deployments/skippable",
-  () => {}
-);
+export const updateSkippableState = createAsyncThunk<
+  void,
+  { stageId: string; skippable: boolean }
+>("deployments/skippable", () => {});
 
 export const cancelDeployment = createAsyncThunk<
   void,
@@ -278,11 +278,11 @@ export const deploymentsSlice = createSlice({
           (action.payload.status === CommandStatus.COMMAND_FAILED ||
             action.payload.status === CommandStatus.COMMAND_TIMEOUT)
         ) {
-          state.skippable[action.payload.stageId] = false;
+          state.skippable[action.payload.stageId] = true;
         }
       })
       .addCase(updateSkippableState.fulfilled, (state, action) => {
-        state.skippable[action.meta.arg.stageId] = true;
+        state.skippable[action.meta.arg.stageId] = action.meta.arg.skippable;
       });
   },
 });

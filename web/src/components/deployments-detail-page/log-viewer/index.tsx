@@ -149,7 +149,7 @@ export const LogViewer: FC = memo(function LogViewer() {
   const handleSkip = (): void => {
     const deploymentId = stageLog ? stageLog.deploymentId : "";
     dispatch(skipStage({ deploymentId: deploymentId, stageId: stageId }));
-    dispatch(updateSkippableState({ stageId: stageId }));
+    dispatch(updateSkippableState({ stageId: stageId, skippable: false }));
     setOpenSkipDialog(false);
   };
 
@@ -176,8 +176,8 @@ export const LogViewer: FC = memo(function LogViewer() {
         <Divider />
         <Toolbar variant="dense" className={classes.toolbar}>
           <div className={classes.toolbarLeft}>
-            {activeStage.name == ANALYSIS_STAGE_NAME &&
-              activeStage.status == StageStatus.STAGE_RUNNING && (
+            {activeStage.name === ANALYSIS_STAGE_NAME &&
+              activeStage.status === StageStatus.STAGE_RUNNING && (
                 <Button
                   className={classes.skipButton}
                   onClick={() => setOpenSkipDialog(true)}
