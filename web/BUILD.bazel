@@ -75,7 +75,7 @@ genrule(
 )
 
 webpack(
-    name = "public_files",
+    name = "static",
     args = [
         "--mode",
         "production",
