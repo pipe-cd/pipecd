@@ -79,6 +79,7 @@ const initialState = deploymentsAdapter.getInitialState<{
   hasMore: boolean;
   cursor: string;
   minUpdatedAt: number;
+  skippable: Record<string, boolean | undefined>;
 }>({
   status: "idle",
   loading: {},
@@ -86,6 +87,7 @@ const initialState = deploymentsAdapter.getInitialState<{
   hasMore: true,
   cursor: "",
   minUpdatedAt: Math.round(Date.now() / 1000 - TIME_RANGE_LIMIT_IN_SECONDS),
+  skippable: {},
 });
 
 export const fetchDeploymentById = createAsyncThunk<
@@ -171,6 +173,19 @@ export const approveStage = createAsyncThunk<
   const { commandId } = await deploymentsApi.approveStage(props);
   await thunkAPI.dispatch(fetchCommand(commandId));
 });
+
+export const skipStage = createAsyncThunk<
+  void,
+  { deploymentId: string; stageId: string }
+>("deployments/skip", async (props, thunkAPI) => {
+  const { commandId } = await deploymentsApi.skipStage(props);
+  await thunkAPI.dispatch(fetchCommand(commandId));
+});
+
+export const updateSkippableState = createAsyncThunk<
+  void,
+  { stageId: string; skippable: boolean }
+>("deployments/skippable", () => {});
 
 export const cancelDeployment = createAsyncThunk<
   void,
@@ -258,6 +273,16 @@ export const deploymentsSlice = createSlice({
         ) {
           state.canceling[action.payload.deploymentId] = false;
         }
+        if (
+          action.payload.type === Command.Type.SKIP_STAGE &&
+          (action.payload.status === CommandStatus.COMMAND_FAILED ||
+            action.payload.status === CommandStatus.COMMAND_TIMEOUT)
+        ) {
+          state.skippable[action.payload.stageId] = true;
+        }
+      })
+      .addCase(updateSkippableState.fulfilled, (state, action) => {
+        state.skippable[action.meta.arg.stageId] = action.meta.arg.skippable;
       });
   },
 });
@@ -281,3 +306,12 @@ export {
   StageStatus,
   PipelineStage,
 } from "pipecd/web/model/deployment_pb";
+
+export const selectDeploymentStageIsSkippable = (id?: EntityId | null) => (
+  state: AppState
+): boolean => {
+  if (id && typeof state.deployments.skippable[id] !== "undefined") {
+    return state.deployments.skippable[id]!;
+  }
+  return true;
+};

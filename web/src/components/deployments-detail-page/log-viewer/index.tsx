@@ -4,20 +4,39 @@ import {
   makeStyles,
   Toolbar,
   Typography,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button,
 } from "@material-ui/core";
-import { Close } from "@material-ui/icons";
+import { Close, SkipNext } from "@material-ui/icons";
 import clsx from "clsx";
 import { FC, memo, useCallback, useState } from "react";
 import Draggable from "react-draggable";
 import { APP_HEADER_HEIGHT } from "~/components/header";
-import { useAppDispatch, useShallowEqualSelector } from "~/hooks/redux";
+import {
+  useAppDispatch,
+  useShallowEqualSelector,
+  useAppSelector,
+} from "~/hooks/redux";
 import { clearActiveStage } from "~/modules/active-stage";
-import { isStageRunning, selectById, Stage } from "~/modules/deployments";
+import {
+  isStageRunning,
+  selectById,
+  Stage,
+  StageStatus,
+  skipStage,
+  selectDeploymentStageIsSkippable,
+  updateSkippableState,
+} from "~/modules/deployments";
 import { selectStageLogById, StageLog } from "~/modules/stage-logs";
 import { Log } from "./log";
 
 const INITIAL_HEIGHT = 400;
 const TOOLBAR_HEIGHT = 48;
+const ANALYSIS_STAGE_NAME = "ANALYSIS";
 
 function useActiveStageLog(): [Stage | null, StageLog | null] {
   return useShallowEqualSelector<[Stage | null, StageLog | null]>((state) => {
@@ -86,6 +105,17 @@ const useStyles = makeStyles((theme) => ({
     // view height + header
     zIndex: 10,
   },
+  skipButton: {
+    color: theme.palette.common.white,
+    background: theme.palette.success.main,
+    marginRight: "10px",
+    "& .MuiButton-endIcon": {
+      marginLeft: 0,
+    },
+    "&:hover": {
+      backgroundColor: theme.palette.success.dark,
+    },
+  },
 }));
 
 export const LogViewer: FC = memo(function LogViewer() {
@@ -96,6 +126,8 @@ export const LogViewer: FC = memo(function LogViewer() {
   const dispatch = useAppDispatch();
   const [handlePosY, setHandlePosY] = useState(maxHandlePosY - INITIAL_HEIGHT);
   const logViewHeight = maxHandlePosY - handlePosY;
+  const [isOpenSkipDialog, setOpenSkipDialog] = useState(false);
+  const stageId = activeStage ? activeStage.id : "";
 
   const handleOnClickClose = (): void => {
     dispatch(clearActiveStage());
@@ -113,6 +145,15 @@ export const LogViewer: FC = memo(function LogViewer() {
     },
     [setHandlePosY, maxHandlePosY]
   );
+
+  const handleSkip = (): void => {
+    const deploymentId = stageLog ? stageLog.deploymentId : "";
+    dispatch(skipStage({ deploymentId: deploymentId, stageId: stageId }));
+    dispatch(updateSkippableState({ stageId: stageId, skippable: false }));
+    setOpenSkipDialog(false);
+  };
+
+  const isSkippable = useAppSelector(selectDeploymentStageIsSkippable(stageId));
 
   if (!stageLog || !activeStage) {
     return null;
@@ -135,6 +176,18 @@ export const LogViewer: FC = memo(function LogViewer() {
         <Divider />
         <Toolbar variant="dense" className={classes.toolbar}>
           <div className={classes.toolbarLeft}>
+            {activeStage.name === ANALYSIS_STAGE_NAME &&
+              activeStage.status === StageStatus.STAGE_RUNNING && (
+                <Button
+                  className={classes.skipButton}
+                  onClick={() => setOpenSkipDialog(true)}
+                  variant="contained"
+                  endIcon={<SkipNext />}
+                  disabled={!isSkippable}
+                >
+                  SKIP
+                </Button>
+              )}
             <Typography variant="subtitle2" className={classes.stageName}>
               {activeStage.name}
             </Typography>
@@ -155,6 +208,20 @@ export const LogViewer: FC = memo(function LogViewer() {
           />
         </div>
       </div>
+      <Dialog open={isOpenSkipDialog} onClose={() => setOpenSkipDialog(false)}>
+        <DialogTitle>Skip stage</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {`To skip this stage, click "SKIP".`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenSkipDialog(false)}>CANCEL</Button>
+          <Button color="primary" onClick={handleSkip}>
+            SKIP
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 });

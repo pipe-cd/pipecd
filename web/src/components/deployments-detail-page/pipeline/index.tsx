@@ -10,7 +10,10 @@ import {
 } from "@material-ui/core";
 import clsx from "clsx";
 import { FC, memo, useCallback, useEffect, useState } from "react";
-import { METADATA_APPROVED_BY } from "~/constants/metadata-keys";
+import {
+  METADATA_APPROVED_BY,
+  METADATA_SKIPPED_BY,
+} from "~/constants/metadata-keys";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { ActiveStage, updateActiveStage } from "~/modules/active-stage";
 import {
@@ -147,6 +150,16 @@ const findApprover = (
   return undefined;
 };
 
+const findSkipper = (metadata: Array<[string, string]>): string | undefined => {
+  const res = metadata.find(([key]) => key === METADATA_SKIPPED_BY);
+
+  if (res) {
+    return res[1];
+  }
+
+  return undefined;
+};
+
 export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
   deploymentId,
 }) {
@@ -216,6 +229,7 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
             >
               {stageColumn.map((stage, stageIndex) => {
                 const approver = findApprover(stage.metadataMap);
+                const skipper = findSkipper(stage.metadataMap);
                 const isActive = activeStage
                   ? activeStage.deploymentId === deploymentId &&
                     activeStage.stageId === stage.id
@@ -254,6 +268,7 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
                         onClick={handleOnClickStage}
                         active={isActive}
                         approver={approver}
+                        skipper={skipper}
                         isDeploymentRunning={isRunning}
                       />
                     )}

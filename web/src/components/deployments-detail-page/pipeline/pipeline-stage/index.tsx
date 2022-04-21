@@ -55,6 +55,7 @@ export interface PipelineStageProps {
   active: boolean;
   isDeploymentRunning: boolean;
   approver?: string;
+  skipper?: string;
   metadata: [string, string][];
   onClick: (stageId: string, stageName: string) => void;
 }
@@ -113,6 +114,7 @@ export const PipelineStage: FC<PipelineStageProps> = memo(
     onClick,
     active,
     approver,
+    skipper,
     metadata,
     isDeploymentRunning,
   }) {
@@ -153,6 +155,13 @@ export const PipelineStage: FC<PipelineStageProps> = memo(
               variant="body2"
               color="inherit"
             >{`Approved by ${approver}`}</Typography>
+          </div>
+        ) : skipper !== undefined ? (
+          <div className={classes.metadata}>
+            <Typography
+              variant="body2"
+              color="inherit"
+            >{`Skipped by ${skipper}`}</Typography>
           </div>
         ) : null}
         {trafficPercentage && (

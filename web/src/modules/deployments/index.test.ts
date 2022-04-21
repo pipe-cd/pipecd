@@ -13,6 +13,7 @@ import {
   fetchDeployments,
   fetchMoreDeployments,
   cancelDeployment,
+  updateSkippableState,
 } from ".";
 
 const initialState = {
@@ -24,6 +25,7 @@ const initialState = {
   status: "idle" as LoadingStatus,
   loading: {},
   cursor: "",
+  skippable: {},
 };
 
 test("isDeploymentRunning", () => {
@@ -268,6 +270,27 @@ describe("deploymentsSlice reducer", () => {
         ...initialState,
         canceling: {
           "deployment-1": false,
+        },
+      });
+    });
+  });
+
+  describe("updateSkippableState", () => {
+    it(`should handle ${updateSkippableState.fulfilled.type}`, () => {
+      expect(
+        deploymentsSlice.reducer(initialState, {
+          type: updateSkippableState.fulfilled.type,
+          meta: {
+            arg: {
+              stageId: "stage-id",
+              skippable: false,
+            },
+          },
+        })
+      ).toEqual({
+        ...initialState,
+        skippable: {
+          "stage-id": false,
         },
       });
     });
