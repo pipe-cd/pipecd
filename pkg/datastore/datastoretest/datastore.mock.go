@@ -51,6 +51,62 @@ func (mr *MockProjectStoreMockRecorder) Add(arg0, arg1 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockProjectStore)(nil).Add), arg0, arg1)
 }
 
+// AddProjectRBACRole mocks base method.
+func (m *MockProjectStore) AddProjectRBACRole(arg0 context.Context, arg1, arg2 string, arg3 []*model.ProjectRBACPolicy) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddProjectRBACRole", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddProjectRBACRole indicates an expected call of AddProjectRBACRole.
+func (mr *MockProjectStoreMockRecorder) AddProjectRBACRole(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddProjectRBACRole", reflect.TypeOf((*MockProjectStore)(nil).AddProjectRBACRole), arg0, arg1, arg2, arg3)
+}
+
+// AddProjectUserGroup mocks base method.
+func (m *MockProjectStore) AddProjectUserGroup(arg0 context.Context, arg1, arg2, arg3 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddProjectUserGroup", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddProjectUserGroup indicates an expected call of AddProjectUserGroup.
+func (mr *MockProjectStoreMockRecorder) AddProjectUserGroup(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddProjectUserGroup", reflect.TypeOf((*MockProjectStore)(nil).AddProjectUserGroup), arg0, arg1, arg2, arg3)
+}
+
+// DeleteProjectRBACRole mocks base method.
+func (m *MockProjectStore) DeleteProjectRBACRole(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteProjectRBACRole", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteProjectRBACRole indicates an expected call of DeleteProjectRBACRole.
+func (mr *MockProjectStoreMockRecorder) DeleteProjectRBACRole(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteProjectRBACRole", reflect.TypeOf((*MockProjectStore)(nil).DeleteProjectRBACRole), arg0, arg1, arg2)
+}
+
+// DeleteProjectUserGroup mocks base method.
+func (m *MockProjectStore) DeleteProjectUserGroup(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteProjectUserGroup", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteProjectUserGroup indicates an expected call of DeleteProjectUserGroup.
+func (mr *MockProjectStoreMockRecorder) DeleteProjectUserGroup(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteProjectUserGroup", reflect.TypeOf((*MockProjectStore)(nil).DeleteProjectUserGroup), arg0, arg1, arg2)
+}
+
 // DisableStaticAdmin mocks base method.
 func (m *MockProjectStore) DisableStaticAdmin(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
@@ -94,6 +150,36 @@ func (mr *MockProjectStoreMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockProjectStore)(nil).Get), arg0, arg1)
 }
 
+// GetAllProjectRBACRoles mocks base method.
+func (m *MockProjectStore) GetAllProjectRBACRoles(arg0 context.Context, arg1 string) ([]*model.ProjectRBACRole, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllProjectRBACRoles", arg0, arg1)
+	ret0, _ := ret[0].([]*model.ProjectRBACRole)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllProjectRBACRoles indicates an expected call of GetAllProjectRBACRoles.
+func (mr *MockProjectStoreMockRecorder) GetAllProjectRBACRoles(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllProjectRBACRoles", reflect.TypeOf((*MockProjectStore)(nil).GetAllProjectRBACRoles), arg0, arg1)
+}
+
+// GetAllProjectUserGroups mocks base method.
+func (m *MockProjectStore) GetAllProjectUserGroups(arg0 context.Context, arg1 string) ([]*model.ProjectUserGroup, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllProjectUserGroups", arg0, arg1)
+	ret0, _ := ret[0].([]*model.ProjectUserGroup)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllProjectUserGroups indicates an expected call of GetAllProjectUserGroups.
+func (mr *MockProjectStoreMockRecorder) GetAllProjectUserGroups(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllProjectUserGroups", reflect.TypeOf((*MockProjectStore)(nil).GetAllProjectUserGroups), arg0, arg1)
+}
+
 // List mocks base method.
 func (m *MockProjectStore) List(arg0 context.Context, arg1 datastore.ListOptions) ([]model.Project, error) {
 	m.ctrl.T.Helper()
@@ -107,20 +193,6 @@ func (m *MockProjectStore) List(arg0 context.Context, arg1 datastore.ListOptions
 func (mr *MockProjectStoreMockRecorder) List(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockProjectStore)(nil).List), arg0, arg1)
-}
-
-// MigrateFromProjectRBACConfig mocks base method.
-func (m *MockProjectStore) MigrateFromProjectRBACConfig(arg0 context.Context, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MigrateFromProjectRBACConfig", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// MigrateFromProjectRBACConfig indicates an expected call of MigrateFromProjectRBACConfig.
-func (mr *MockProjectStoreMockRecorder) MigrateFromProjectRBACConfig(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MigrateFromProjectRBACConfig", reflect.TypeOf((*MockProjectStore)(nil).MigrateFromProjectRBACConfig), arg0, arg1)
 }
 
 // UpdateProjectRBACConfig mocks base method.
@@ -137,18 +209,18 @@ func (mr *MockProjectStoreMockRecorder) UpdateProjectRBACConfig(arg0, arg1, arg2
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProjectRBACConfig", reflect.TypeOf((*MockProjectStore)(nil).UpdateProjectRBACConfig), arg0, arg1, arg2)
 }
 
-// UpdateProjectRBACRoles mocks base method.
-func (m *MockProjectStore) UpdateProjectRBACRoles(arg0 context.Context, arg1 string, arg2 []*model.ProjectRBACRole) error {
+// UpdateProjectRBACRole mocks base method.
+func (m *MockProjectStore) UpdateProjectRBACRole(arg0 context.Context, arg1, arg2 string, arg3 []*model.ProjectRBACPolicy) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateProjectRBACRoles", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpdateProjectRBACRole", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateProjectRBACRoles indicates an expected call of UpdateProjectRBACRoles.
-func (mr *MockProjectStoreMockRecorder) UpdateProjectRBACRoles(arg0, arg1, arg2 interface{}) *gomock.Call {
+// UpdateProjectRBACRole indicates an expected call of UpdateProjectRBACRole.
+func (mr *MockProjectStoreMockRecorder) UpdateProjectRBACRole(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProjectRBACRoles", reflect.TypeOf((*MockProjectStore)(nil).UpdateProjectRBACRoles), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProjectRBACRole", reflect.TypeOf((*MockProjectStore)(nil).UpdateProjectRBACRole), arg0, arg1, arg2, arg3)
 }
 
 // UpdateProjectSSOConfig mocks base method.
@@ -177,20 +249,6 @@ func (m *MockProjectStore) UpdateProjectStaticAdmin(arg0 context.Context, arg1, 
 func (mr *MockProjectStoreMockRecorder) UpdateProjectStaticAdmin(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProjectStaticAdmin", reflect.TypeOf((*MockProjectStore)(nil).UpdateProjectStaticAdmin), arg0, arg1, arg2, arg3)
-}
-
-// UpdateProjectUserGroups mocks base method.
-func (m *MockProjectStore) UpdateProjectUserGroups(arg0 context.Context, arg1 string, arg2 []*model.ProjectUserGroup) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateProjectUserGroups", arg0, arg1, arg2)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateProjectUserGroups indicates an expected call of UpdateProjectUserGroups.
-func (mr *MockProjectStoreMockRecorder) UpdateProjectUserGroups(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProjectUserGroups", reflect.TypeOf((*MockProjectStore)(nil).UpdateProjectUserGroups), arg0, arg1, arg2)
 }
 
 // MockPipedStore is a mock of PipedStore interface.

@@ -204,36 +204,36 @@ func (s *projectStore) UpdateProjectRBACConfig(ctx context.Context, id string, r
 }
 
 // GetProjectRBACRoles returns the custom rbacs roles and built-in rbac roles.
-func (s *projectStore) GetAllProjectRBACRoles(ctx context.Context, id string) ([]*model.ProjectRBACRole, error) {
+func (s *projectStore) GetAllProjectRBACRoles(_ context.Context, _ string) ([]*model.ProjectRBACRole, error) {
 	return nil, ErrUnimplemented
 }
 
 // AddProjectRBACRole adds the custom rbac role.
-func (s *projectStore) AddProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error {
+func (s *projectStore) AddProjectRBACRole(_ context.Context, _, _ string, _ []*model.ProjectRBACPolicy) error {
 	return ErrUnimplemented
 }
 
 // UpdateProjectRBACRole updates the custom rbac role.
-func (s *projectStore) UpdateProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error {
+func (s *projectStore) UpdateProjectRBACRole(_ context.Context, _, _ string, _ []*model.ProjectRBACPolicy) error {
 	return ErrUnimplemented
 }
 
 // DeleteProjectRBACRole deletes the custom rbac role.
-func (s *projectStore) DeleteProjectRBACRole(ctx context.Context, id, name string) error {
+func (s *projectStore) DeleteProjectRBACRole(_ context.Context, _, _ string) error {
 	return ErrUnsupported
 }
 
 // GetUserGroups returns the user groups.
-func (s *projectStore) GetAllProjectUserGroups(ctx context.Context, id string) ([]*model.ProjectUserGroup, error) {
+func (s *projectStore) GetAllProjectUserGroups(_ context.Context, _ string) ([]*model.ProjectUserGroup, error) {
 	return nil, ErrUnsupported
 }
 
 // AddUserGroup adds the user group.
-func (s *projectStore) AddProjectUserGroup(ctx context.Context, id, sso, role string) error {
+func (s *projectStore) AddProjectUserGroup(_ context.Context, _, _, _ string) error {
 	return ErrUnsupported
 }
 
 // DeleteUserGroup deletes the user group.
-func (s *projectStore) DeleteProjectUserGroup(ctx context.Context, id, sso string) error {
+func (s *projectStore) DeleteProjectUserGroup(_ context.Context, _, _ string) error {
 	return ErrUnsupported
 }
