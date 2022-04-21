@@ -28,12 +28,14 @@ appreciate your support. We seek for any kind               ▄▓▓▓▄ ▀�
 of contributions and feedback. If you feel                 ▐▓▓▓▓▓▓       ╟▓▓▓▓▓▌
 interested, feel free to open up issues or PRs.            ▓▓▓▓▓▓         ▓▓▓▓▓▌
                                                            ▓▓▓▓▓▓▄        ╔φ, └└
-The PipeCD official site is located at                      ▓▓▓▓▓▓▀     ╠▒▒▒▒▒╠
-          https://pipecd.dev                                  ▀▓▌ ╓▓▓▓▌ ╚▒╠^
-                                                                ▓▓▓▓▓▓▓▓,
-Love to contribute to PipeCD? we're HIRING, so                   ╙▓▓▓▓▓▓▓▓µ
-don't hesitate to ping us on GitHub or Twitter.                   └▓▓▓▓▓▓▓▌
-                                                                    └▀▓▓▓╙
+The PipeCD official links:                                  ▓▓▓▓▓▓▀     ╠▒▒▒▒▒╠
+  Documentation: https://pipecd.dev                           ▀▓▌ ╓▓▓▓▌ ╚▒╠^
+  Github: https://github.com/pipe-cd/pipecd                     ▓▓▓▓▓▓▓▓,
+  Twitter: https://twitter.com/pipecd_dev                        ╙▓▓▓▓▓▓▓▓µ
+                                                                  └▓▓▓▓▓▓▓▌
+Love to contribute to PipeCD? we're HIRING, so                      └▀▓▓▓╙
+don't hesitate to ping us on GitHub or Twitter.
+
 Happy PipeCD-ing 🙌
 ---------------------------------------------------
 `);
