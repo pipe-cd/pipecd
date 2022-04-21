@@ -110,3 +110,12 @@ jobs:
         run: |
           make package-chart CHART=piped
           helm push .artifacts/piped-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.REGISTRY }}/pipe-cd/chart
+
+      # Notify PipeCD to trigger deployment via EventWatcher.
+      - uses: pipe-cd/actions-event-register@v1
+        with:
+          api-address: ${{ secrets.PIPECD_API_ADDRESS }}
+          api-key: ${{ secrets.PIPECD_API_KEY }}
+          event-name: helm-release
+          labels: helmRepo=pipecd
+          data: ${{ env.PIPECD_VERSION }}
