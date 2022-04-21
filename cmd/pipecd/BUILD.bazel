@@ -68,7 +68,7 @@ go_library(
 go_binary(
     name = "pipecd",
     data = [
-        "//web:public_files",
+        "//web:static",
     ],
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],

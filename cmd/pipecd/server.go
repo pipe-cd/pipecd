@@ -99,7 +99,7 @@ func NewServerCommand() *cobra.Command {
 		httpPort:     9082,
 		apiPort:      9083,
 		adminPort:    9085,
-		staticDir:    "web/public_files",
+		staticDir:    "web/static",
 		cacheAddress: "cache:6379",
 		gracePeriod:  30 * time.Second,
 	}
