@@ -29,7 +29,7 @@ gateway:
 
 server:
   image:
-    repository: gcr.io/pipecd/pipecd
+    repository: ghcr.io/pipe-cd/pipecd
   replicasCount: 1
   args:
     cacheAddress: ""
