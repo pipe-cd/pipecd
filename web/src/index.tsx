@@ -25,14 +25,14 @@ async function run(): Promise<void> {
 Hi there, fellow developer! Thanks for visiting.                ╓▄▓▓▓▓▓▓▓▄╖
 As any other OSS projects out there, we highly                 ╙▀▓▓▓▓▓▓▓▓▓▓▓▄
 appreciate your support. We seek for any kind               ▄▓▓▓▄ ▀▓▓▀▓▓▓▓▓▓▓▓
-of contributions and feedbacks. If you feel                ▐▓▓▓▓▓▓       ╟▓▓▓▓▓▌
+of contributions and feedback. If you feel                 ▐▓▓▓▓▓▓       ╟▓▓▓▓▓▌
 interested, feel free to open up issues or PRs.            ▓▓▓▓▓▓         ▓▓▓▓▓▌
                                                            ▓▓▓▓▓▓▄        ╔φ, └└
 The PipeCD official site is located at                      ▓▓▓▓▓▓▀     ╠▒▒▒▒▒╠
           https://pipecd.dev                                  ▀▓▌ ╓▓▓▓▌ ╚▒╠^
                                                                 ▓▓▓▓▓▓▓▓,
 Love to contribute to PipeCD? we're HIRING, so                   ╙▓▓▓▓▓▓▓▓µ
-don't hesitate to ping us on GitHub.                              └▓▓▓▓▓▓▓▌
+don't hesitate to ping us on GitHub or Twitter.                   └▓▓▓▓▓▓▓▌
                                                                     └▀▓▓▓╙
 Happy PipeCD-ing 🙌
 ---------------------------------------------------
