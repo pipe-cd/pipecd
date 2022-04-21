@@ -78,9 +78,13 @@ type ProjectStore interface {
 	DisableStaticAdmin(ctx context.Context, id string) error
 	UpdateProjectSSOConfig(ctx context.Context, id string, sso *model.ProjectSSOConfig) error
 	UpdateProjectRBACConfig(ctx context.Context, id string, rbac *model.ProjectRBACConfig) error
-	UpdateProjectRBACRoles(ctx context.Context, id string, roles []*model.ProjectRBACRole) error
-	UpdateProjectUserGroups(ctx context.Context, id string, groups []*model.ProjectUserGroup) error
-	MigrateFromProjectRBACConfig(ctx context.Context, id string) error
+	GetAllProjectRBACRoles(ctx context.Context, id string) ([]*model.ProjectRBACRole, error)
+	AddProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error
+	UpdateProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error
+	DeleteProjectRBACRole(ctx context.Context, id, name string) error
+	GetAllProjectUserGroups(ctx context.Context, id string) ([]*model.ProjectUserGroup, error)
+	AddProjectUserGroup(ctx context.Context, id, sso, role string) error
+	DeleteProjectUserGroup(ctx context.Context, id, sso string) error
 }
 
 type projectStore struct {
@@ -199,17 +203,37 @@ func (s *projectStore) UpdateProjectRBACConfig(ctx context.Context, id string, r
 	})
 }
 
-// UpdateProjectRBACRoles updates project rbac roles.
-func (s *projectStore) UpdateProjectRBACRoles(ctx context.Context, id string, roles []*model.ProjectRBACRole) error {
+// GetProjectRBACRoles returns the custom rbacs roles and built-in rbac roles.
+func (s *projectStore) GetAllProjectRBACRoles(ctx context.Context, id string) ([]*model.ProjectRBACRole, error) {
+	return nil, ErrUnimplemented
+}
+
+// AddProjectRBACRole adds the custom rbac role.
+func (s *projectStore) AddProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error {
 	return ErrUnimplemented
 }
 
-// UpdateProjectUserGroups updates project user groups.
-func (s *projectStore) UpdateProjectUserGroups(ctx context.Context, id string, groups []*model.ProjectUserGroup) error {
+// UpdateProjectRBACRole updates the custom rbac role.
+func (s *projectStore) UpdateProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error {
 	return ErrUnimplemented
 }
 
-// MigrateFromProjectRBACConfig migrate from ProjectRBACConfig to ProjectUserGroup.
-func (s *projectStore) MigrateFromProjectRBACConfig(ctx context.Context, id string) error {
-	return ErrUnimplemented
+// DeleteProjectRBACRole deletes the custom rbac role.
+func (s *projectStore) DeleteProjectRBACRole(ctx context.Context, id, name string) error {
+	return ErrUnsupported
+}
+
+// GetUserGroups returns the user groups.
+func (s *projectStore) GetAllProjectUserGroups(ctx context.Context, id string) ([]*model.ProjectUserGroup, error) {
+	return nil, ErrUnsupported
+}
+
+// AddUserGroup adds the user group.
+func (s *projectStore) AddProjectUserGroup(ctx context.Context, id, sso, role string) error {
+	return ErrUnsupported
+}
+
+// DeleteUserGroup deletes the user group.
+func (s *projectStore) DeleteProjectUserGroup(ctx context.Context, id, sso string) error {
+	return ErrUnsupported
 }
