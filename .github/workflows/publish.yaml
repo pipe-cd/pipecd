@@ -7,6 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  GO_BUILD: CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 
 jobs:
   image:
@@ -27,15 +28,15 @@ jobs:
 
       # Building Go binaries.
       - name: Build pipecd binary
-        run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/pipecd ./cmd/pipecd
+        run: ${{ env.GO_BUILD }} go build -o ./.artifacts/pipecd ./cmd/pipecd
       - name: Build piped binary
-        run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/piped ./cmd/piped
+        run: ${{ env.GO_BUILD }} go build -o ./.artifacts/piped ./cmd/piped
       - name: Build launcher binary
-        run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/launcher ./cmd/launcher
+        run: ${{ env.GO_BUILD }} go build -o ./.artifacts/launcher ./cmd/launcher
       - name: Build pipectl binary
-        run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/pipectl ./cmd/pipectl
+        run: ${{ env.GO_BUILD }} go build -o ./.artifacts/pipectl ./cmd/pipectl
       - name: Build helloworld binary
-        run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/helloworld ./cmd/helloworld
+        run: ${{ env.GO_BUILD }} go build -o ./.artifacts/helloworld ./cmd/helloworld
 
       # Building frontend.
       - name: Build web static
