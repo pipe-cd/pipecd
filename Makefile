@@ -137,3 +137,16 @@ build-frontend:
 	mkdir -p .artifacts/web-static
 	bazelisk ${BAZEL_FLAGS} build ${BAZEL_COMMAND_FLAGS} -- //web:static
 	cp -rf bazel-bin/web/static/. .artifacts/web-static
+
+
+GO_BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+GO_BUILD_COMMIT ?= $(shell git rev-parse HEAD)
+GO_BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
+GO_BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
+GO_BUILD_OPTS ?= -ldflags "$(GO_BUILD_LDFLAGS_PREFIX).Version=$(GO_BUILD_VERSION) $(GO_BUILD_LDFLAGS_PREFIX).GitCommit=$(GO_BUILD_COMMIT) $(GO_BUILD_LDFLAGS_PREFIX).BuildDate=$(GO_BUILD_DATE) -w"
+GO_BUILD_COMPONENT ?= pipecd
+GO_BUILD_ENV ?= GOOS=linux GOARCH=amd64
+
+.PHONY: build-go
+build-go:
+	$(GO_BUILD_ENV) CGO_ENABLED=0 go build $(GO_BUILD_OPTS) -o ./.artifacts/$(GO_BUILD_COMPONENT) ./cmd/$(GO_BUILD_COMPONENT)
