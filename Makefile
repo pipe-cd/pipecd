@@ -150,3 +150,10 @@ GO_BUILD_ENV ?= GOOS=linux GOARCH=amd64
 .PHONY: build-go
 build-go:
 	$(GO_BUILD_ENV) CGO_ENABLED=0 go build $(GO_BUILD_OPTS) -o ./.artifacts/$(GO_BUILD_COMPONENT) ./cmd/$(GO_BUILD_COMPONENT)
+
+.PHONY: package-chart
+package-chart: CHART ?= pipecd
+package-chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+package-chart:
+	mkdir -p .artifacts
+	helm package manifests/$(CHART) --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts

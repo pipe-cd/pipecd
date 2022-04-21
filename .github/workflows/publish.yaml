@@ -7,6 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  HELM_VERSION: 3.8.2
 
 jobs:
   image:
@@ -49,7 +50,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Start building and pushing container images.
+      # Building and pushing container images.
       - name: Build and push pipecd image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
@@ -92,3 +93,20 @@ jobs:
           context: .
           file: cmd/helloworld/Dockerfile
           tags: ${{ env.REGISTRY }}/pipe-cd/helloworld:${{ env.PIPECD_VERSION }}
+
+      # Building and pushing Helm charts.
+      - name: Install helm
+        uses: Azure/setup-helm@v1
+        with:
+          version: ${{ env.HELM_VERSION }}
+      - name: Login to OCI using Helm
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.REGISTRY }} --username ${{ github.repository_owner }} --password-stdin
+      - name: Publish pipecd chart
+        run: |
+          make package-chart CHART=pipecd
+          helm push .artifacts/pipecd-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.REGISTRY }}/pipe-cd/chart
+      - name: Publish piped chart
+        run: |
+          make package-chart CHART=piped
+          helm push .artifacts/piped-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.REGISTRY }}/pipe-cd/chart
