@@ -134,5 +134,6 @@ codegen:
 .PHONY: build/frontend
 build/frontend:
 	rm -rf .artifacts/web-static
+	mkdir .artifacts/web-static
 	bazelisk ${BAZEL_FLAGS} build ${BAZEL_COMMAND_FLAGS} -- //web:static
-	cp -rf bazel-bin/web/static .artifacts/web-static
+	cp -rf bazel-bin/web/static/. .artifacts/web-static
