@@ -137,3 +137,4 @@ build-frontend:
 	mkdir -p .artifacts/web-static
 	bazelisk ${BAZEL_FLAGS} build ${BAZEL_COMMAND_FLAGS} -- //web:static
 	cp -rf bazel-bin/web/static/. .artifacts/web-static
+	ls -la .artifacts/web-static
