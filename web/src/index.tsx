@@ -33,7 +33,7 @@ The PipeCD official links:                                  ▓▓▓▓▓▓�
   Github: https://github.com/pipe-cd/pipecd                     ▓▓▓▓▓▓▓▓,
   Twitter: https://twitter.com/pipecd_dev                        ╙▓▓▓▓▓▓▓▓µ
                                                                   └▓▓▓▓▓▓▓▌
-Love to contribute to PipeCD? we're HIRING, so                      └▀▓▓▓╙
+Love to contribute to PipeCD? We're HIRING, so                      └▀▓▓▓╙
 don't hesitate to ping us on GitHub or Twitter.
 
 Happy PipeCD-ing 🙌
