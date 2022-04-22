@@ -10,8 +10,8 @@ env:
   HELM_VERSION: 3.8.2
 
 jobs:
-  image:
-    name: Container Images
+  component:
+    name: Component Images and Charts
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -121,7 +121,7 @@ jobs:
           data: ${{ env.PIPECD_VERSION }}
 
   site:
-    name: Site Image
+    name: Site Image and Chart
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -132,13 +132,11 @@ jobs:
           fetch-depth: 0
       - name: Determine version
         run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7)" >> $GITHUB_ENV
-
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@c03b5dbed22245418539b65eb9a3b1d5fdd9a0a6 #v2.5.0
         with:
           hugo-version: '0.92.1'
           extended: true
-
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
@@ -152,15 +150,13 @@ jobs:
           npm install postcss-cli
           env HUGO_ENV="production" RELEASE="$(cut -c10- ../release/RELEASE)" hugo
 
-      # Login to push container images.
+      # Building and pushing container images.
       - name: Log in to the container registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      # Building and pushing container images.
       - name: Build and push site image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
@@ -168,3 +164,16 @@ jobs:
           context: docs
           file: docs/Dockerfile
           tags: ${{ env.REGISTRY }}/pipe-cd/site:${{ env.PIPECD_VERSION }}
+
+      # Building and pushing Helm charts.
+      - name: Install helm
+        uses: Azure/setup-helm@v1
+        with:
+          version: ${{ env.HELM_VERSION }}
+      - name: Login to OCI using Helm
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.REGISTRY }} --username ${{ github.repository_owner }} --password-stdin
+      - name: Publish site chart
+        run: |
+          make package-chart CHART=site
+          helm push .artifacts/site-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.REGISTRY }}/pipe-cd/chart

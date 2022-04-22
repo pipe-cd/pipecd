@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: site
-          image: "gcr.io/pipecd/site:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
