@@ -1,34 +1,9 @@
 version: v1
 kind: Plugin
 spec:
-  # A plugin to handle approval process that includes managing
-  # 'approved' label, checking approver permission based on code ownership.
-  # See more: https://kapetanios.dev/docs/plugins/approve
-  approve:
-    enabled: true
-    allowSelfApproval: true
-
   # A plugin to label the pull request size based on its changes.
   # See more: https://kapetanios.dev/docs/plugins/size
   size:
-    enabled: true
-
-  # A plugin to schedule user defined builds.
-  # See more: https://kapetanios.dev/plugins/trigger
-  trigger:
-    enabled: true
-    onlyOrgMembers: true
-
-  # A plugin to automatically assign reviewers based on code ownership.
-  # See more: https://kapetanios.dev/docs/plugins/reviewassigner
-  reviewAssigner:
-    enabled: true
-    reviewerCount: 4
-    maxReviewerCount: 4
-
-  # A plugin that provides commands to assign issue/PR or request review for PR.
-  # See more: https://kapetanios.dev/docs/plugins/assign
-  assign:
     enabled: true
 
   # A plugin provides commands that add or remove certain types of labels.
@@ -46,15 +21,6 @@ spec:
   # See more: https://kapetanios.dev/docs/plugins/hold
   hold:
     enabled: true
-
-  # A plugin that enable merge automation with a safer merge logic.
-  # See more: https://kapetanios.dev/docs/plugins/merger
-  merger:
-    enabled: true
-    mergeMethod: squash
-    preconditions:
-      branches:
-        - master
 
   # A plugin to delete branch when pull request is merged or closed.
   # See more: https://kapetanios.dev/docs/plugins/branchcleaner
