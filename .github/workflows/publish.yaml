@@ -26,17 +26,9 @@ jobs:
       - name: Determine version
         run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7)" >> $GITHUB_ENV
 
-      # Building Go binaries.
-      - name: Build pipecd binary
-        run: make build-go GO_BUILD_COMPONENT=pipecd
-      - name: Build piped binary
-        run: make build-go GO_BUILD_COMPONENT=piped
-      - name: Build launcher binary
-        run: make build-go GO_BUILD_COMPONENT=launcher
-      - name: Build pipectl binary
-        run: make build-go GO_BUILD_COMPONENT=pipectl
-      - name: Build helloworld binary
-        run: make build-go GO_BUILD_COMPONENT=helloworld
+      # Building backend.
+      - name: Build backend modules
+        run: make build/backend
 
       # Building frontend.
       - uses: actions/setup-node@v2
@@ -52,15 +44,11 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      - name: Yarn install
-        working-directory: web
-        run: yarn install
+      - name: Update frontend dependencies
+        run: make update/frontend-deps
       - name: Build web static
         run: |
-          make web-build
-          rm -rf .artifacts/web-static
-          mkdir -p .artifacts/web-static
-          cp -rf web/dist/. .artifacts/web-static
+          make build/frontend
 
       # Login to push container images.
       - name: Log in to the container registry
@@ -122,17 +110,11 @@ jobs:
       - name: Login to OCI using Helm
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.REGISTRY }} --username ${{ github.repository_owner }} --password-stdin
-      - name: Publish pipecd chart
+      - name: Publish helm charts
         run: |
-          make package-chart CHART=pipecd
+          make build/chart VERSION=${{ env.PIPECD_VERSION }}
           helm push .artifacts/pipecd-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.REGISTRY }}/pipe-cd/chart
-      - name: Publish piped chart
-        run: |
-          make package-chart CHART=piped
           helm push .artifacts/piped-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.REGISTRY }}/pipe-cd/chart
-      - name: Publish helloworld chart
-        run: |
-          make package-chart CHART=helloworld
           helm push .artifacts/helloworld-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.REGISTRY }}/pipe-cd/chart
 
       # Notify PipeCD to trigger deployment via EventWatcher.
@@ -199,5 +181,5 @@ jobs:
           echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.REGISTRY }} --username ${{ github.repository_owner }} --password-stdin
       - name: Publish site chart
         run: |
-          make package-chart CHART=site VERSION=${{ env.PIPECD_VERSION }}
+          make build/chart MOD=site VERSION=${{ env.PIPECD_VERSION }}
           helm push .artifacts/site-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.REGISTRY }}/pipe-cd/chart

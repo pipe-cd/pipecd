@@ -11,6 +11,7 @@ module.exports = (env) => {
       filename: "assets/[name].[contenthash:9].js",
       chunkFilename: "assets/[name].[contenthash:9].chunk.js",
       publicPath: "/",
+      path: path.resolve(__dirname, '../.artifacts/web-static'),
     },
     optimization: {
       splitChunks: {

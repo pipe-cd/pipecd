@@ -1,11 +1,5 @@
 # PipeCD web
 
-## Setup
-
-```bash
-bazelisk build //web:build_api //web:build_model # generate models and API client from proto files. Also will install dependencies by yarn
-```
-
 ## Directory structure
 
 ```bash

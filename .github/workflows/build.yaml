@@ -17,17 +17,8 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: '1.17.6'
-
-      - name: Build pipecd binary
-        run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/pipecd ./cmd/pipecd
-      - name: Build piped binary
-        run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/piped ./cmd/piped
-      - name: Build launcher binary
-        run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/launcher ./cmd/launcher
-      - name: Build pipectl binary
-        run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/pipectl ./cmd/pipectl
-      - name: Build helloworld binary
-        run: GOOS=linux GOARCH=amd64 go build -o ./.artifacts/helloworld ./cmd/helloworld
+      - name: Build backend modules
+        run: make build/backend
 
   frontend:
     name: Frontend
@@ -47,11 +38,10 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      - name: Yarn install
-        working-directory: web
-        run: yarn install --prefer-offline
+      - name: Update frontend dependencies
+        run: make update/frontend-deps
       - name: Build web static
-        run: make web-build
+        run: make build/frontend
 
   chart:
     name: Helm Chart
@@ -66,7 +56,5 @@ jobs:
         uses: Azure/setup-helm@v1
         with:
           version: ${{ env.HELM_VERSION }}
-      - name: Package pipecd chart
-        run: make package-chart CHART=pipecd
-      - name: Package piped chart
-        run: make package-chart CHART=piped
+      - name: Package helm charts
+        run: make build/chart

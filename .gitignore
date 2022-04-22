@@ -49,3 +49,9 @@ pkg/app/web/.env
 .terraform-credentials
 
 .rendered-manifests
+
+# manfiests
+manifests/pipecd/charts
+manifests/piped/charts
+manifests/site/charts
+manifests/helloworld/charts
