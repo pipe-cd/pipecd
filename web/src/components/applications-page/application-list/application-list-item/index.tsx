@@ -30,9 +30,15 @@ const useStyles = makeStyles((theme) => ({
   disabled: {
     background: theme.palette.grey[200],
   },
+  labels: {
+    maxHeight: 500,
+    overflowY: "scroll",
+  },
   version: {
     maxWidth: 300,
+    maxHeight: 500,
     wordBreak: "break-word",
+    overflowY: "scroll",
   },
   deployedBy: {
     maxWidth: 300,
@@ -139,7 +145,7 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
             </Link>
           </TableCell>
           <TableCell>{APPLICATION_KIND_TEXT[app.kind]}</TableCell>
-          <TableCell>
+          <TableCell className={classes.labels}>
             {app.labelsMap.length !== 0
               ? app.labelsMap.map(([key, value]) => (
                   <>
@@ -154,7 +160,7 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
               <TableCell className={classes.version}>
                 {recentlyDeployment.versionsList.length !== 0 ? (
                   recentlyDeployment.versionsList.map((v) =>
-                    v.name == "" ? (
+                    v.name === "" ? (
                       <>
                         <span>{v.version}</span>
                         <br />
