@@ -10,8 +10,8 @@ env:
   HELM_VERSION: 3.8.2
 
 jobs:
-  component:
-    name: Component Images and Charts
+  artifacts:
+    name: Artifacts
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -127,7 +127,7 @@ jobs:
           data: ${{ env.PIPECD_VERSION }}
 
   site:
-    name: Site Image and Chart
+    name: Site Artifacts
     runs-on: ubuntu-latest
     permissions:
       contents: read
