@@ -60,7 +60,7 @@ jobs:
         run: |
           yarn build
           rm -rf .artifacts/web-static
-	        mkdir -p .artifacts/web-static
+          mkdir -p .artifacts/web-static
           cp -rf web/dist/. .artifacts/web-static
 
       # Login to push container images.
