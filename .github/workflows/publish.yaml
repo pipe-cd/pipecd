@@ -110,6 +110,10 @@ jobs:
         run: |
           make package-chart CHART=piped
           helm push .artifacts/piped-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.REGISTRY }}/pipe-cd/chart
+      - name: Publish helloworld chart
+        run: |
+          make package-chart CHART=helloworld
+          helm push .artifacts/helloworld-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.REGISTRY }}/pipe-cd/chart
 
       # Notify PipeCD to trigger deployment via EventWatcher.
       - uses: pipe-cd/actions-event-register@v1
@@ -175,5 +179,5 @@ jobs:
           echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.REGISTRY }} --username ${{ github.repository_owner }} --password-stdin
       - name: Publish site chart
         run: |
-          make package-chart CHART=site
+          make package-chart CHART=site VERSION=${{ env.PIPECD_VERSION }}
           helm push .artifacts/site-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.REGISTRY }}/pipe-cd/chart
