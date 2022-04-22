@@ -92,7 +92,7 @@ lint/backend:
 
 .PHONY: lint/frontend
 lint/frontend:
-	yarn --cwd web lint:fix
+	@echo "Unimplemented"
 
 # Update commands
 
