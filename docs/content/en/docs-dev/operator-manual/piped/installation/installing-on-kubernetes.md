@@ -19,13 +19,6 @@ description: >
 ## In the cluster-wide mode
 This way requires installing cluster-level resources. Piped installed with this way can perform deployment workloads against any other namespaces than the where Piped runs on.
 
-- Adding `pipecd` helm chart repository
-
-  ```
-  helm repo add pipecd https://charts.pipecd.dev
-  helm repo update
-  ```
-
 - Preparing a piped configuration file as the following
 
   ``` yaml
@@ -46,7 +39,7 @@ This way requires installing cluster-level resources. Piped installed with this 
     syncInterval: 1m
   ```
 
-- Installing by using `Helm 3`
+- Installing by using [Helm](https://helm.sh/docs/intro/install/) (3.8.0 or later)
 
   {{< tabpane >}}
   {{< tab lang="bash" header="Piped" >}}
@@ -54,7 +47,7 @@ This way requires installing cluster-level resources. Piped installed with this 
 # Whenever you want to upgrade that Piped to a new version or update its config data
 # you have to restart it by re-running this command.
 
-helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
   --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
   --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
   --set-file secret.data.ssh-key={PATH_TO_PRIVATE_SSH_KEY_FILE}
@@ -65,7 +58,7 @@ helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} -
 # This allows upgrading Piped to a new version from the web console.
 # But we still need to restart Piped when we want to update its config data.
 
-helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
   --set launcher.enabled=true \
   --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
   --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
@@ -78,7 +71,7 @@ helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} -
 # remote-config allows loading the Piped config stored in a remote location such as a Git repository.
 # Whenever the config data is changed, it loads the new config and restarts Piped to use that new config.
 
-helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
   --set launcher.enabled=true \
   --set launcher.configFromGitRepo.enabled=true \
   --set launcher.configFromGitRepo.repoUrl=git@github.com:{GIT_ORG}/{GIT_REPO}.git \
@@ -125,7 +118,7 @@ Most parts are identical to the previous way, but some are slightly different.
             namespace: {NAMESPACE}
   ```
 
-- Installing by using `Helm 3`
+- Installing by using [Helm](https://helm.sh/docs/intro/install/) (3.8.0 or later)
 
   {{< tabpane >}}
   {{< tab lang="bash" header="Piped" >}}
@@ -133,7 +126,7 @@ Most parts are identical to the previous way, but some are slightly different.
 # Whenever you want to upgrade that Piped to a new version or update its config data
 # you have to restart it by re-running this command.
 
-helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
   --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
   --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
   --set-file secret.data.ssh-key={PATH_TO_PRIVATE_SSH_KEY_FILE} \
@@ -146,7 +139,7 @@ helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} -
 # This allows upgrading Piped to a new version from the web console.
 # But we still need to restart Piped when we want to update its config data.
 
-helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
   --set launcher.enabled=true \
   --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
   --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
@@ -161,7 +154,7 @@ helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} -
 # remote-config allows loading the Piped config stored in a remote location such as a Git repository.
 # Whenever the config data is changed, it loads the new config and restarts Piped to use that new config.
 
-helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
   --set launcher.enabled=true \
   --set launcher.configFromGitRepo.enabled=true \
   --set launcher.configFromGitRepo.repoUrl=git@github.com:{GIT_ORG}/{GIT_REPO}.git \
@@ -182,7 +175,7 @@ Starting from OpenShift 4.2, it also inserts that user into `/etc/passwd` for us
 but before that version, the assigned user is missing in that file. That blocks workloads of `gcr.io/pipecd/piped` image.
 Therefore if you are running on OpenShift with a version before 4.2, please use `gcr.io/pipecd/piped-okd` image with the following command:
 
-- Installing by using `Helm 3`
+- Installing by using [Helm](https://helm.sh/docs/intro/install/) (3.8.0 or later)
 
   {{< tabpane >}}
   {{< tab lang="bash" header="Piped" >}}
@@ -190,7 +183,7 @@ Therefore if you are running on OpenShift with a version before 4.2, please use 
 # Whenever you want to upgrade that Piped to a new version or update its config data
 # you have to restart it by re-running this command.
 
-helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
   --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
   --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
   --set-file secret.data.ssh-key={PATH_TO_PRIVATE_SSH_KEY_FILE} \
@@ -209,7 +202,7 @@ helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} -
 # This allows upgrading Piped to a new version from the web console.
 # But we still need to restart Piped when we want to update its config data.
 
-helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
   --set launcher.enabled=true \
   --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
   --set-file secret.data.piped-key={PATH_TO_PIPED_KEY_FILE} \
@@ -230,7 +223,7 @@ helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} -
 # remote-config allows loading the Piped config stored in a remote location such as a Git repository.
 # Whenever the config data is changed, it loads the new config and restarts Piped to use that new config.
 
-helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
   --set launcher.enabled=true \
   --set launcher.configFromGitRepo.enabled=true \
   --set launcher.configFromGitRepo.repoUrl=git@github.com:{GIT_ORG}/{GIT_REPO}.git \

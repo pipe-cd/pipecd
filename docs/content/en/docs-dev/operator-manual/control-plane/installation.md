@@ -9,21 +9,11 @@ description: >
 ## Prerequisites
 
 - Having a running Kubernetes cluster
-- Installed [helm3](https://helm.sh/docs/intro/install/)
+- Installed [Helm](https://helm.sh/docs/intro/install/) (3.8.0 or later)
 
 ## Installation
 
-### 1. Adding helm chart repository
-
-Installing the control-plane will be done via the helm chart sourced in [pipe-cd/manifests](https://github.com/pipe-cd/manifests/tree/master/manifests/pipecd) GitHub repository. That chart is published in the Helm chart repository at `https://charts.pipecd.dev`.
-
-So before installing PipeCD, let's add the above Helm chart repository to your Helm client by the following command:
-
-``` console
-helm repo add pipecd https://charts.pipecd.dev
-```
-
-### 2. Preparing an encryption key
+### 1. Preparing an encryption key
 
 PipeCD requires a key for encrypting sensitive data or signing JWT token while authenticating. You can use one of the following commands to generate an encryption key.
 
@@ -34,7 +24,7 @@ openssl rand 64 | base64 > encryption-key
 cat /dev/urandom | head -c64 | base64 > encryption-key
 ```
 
-### 3. Preparing control-plane configuration file and installing
+### 2. Preparing control-plane configuration file and installing
 
 As described at the [architecture overview](/docs/operator-manual/control-plane/architecture-overview/) page, the control-plane's data can be stored in one of the provided fully-managed or self-managed services. So you have to decide which kind of [data store](/docs/operator-manual/control-plane/architecture-overview/#data-store) and [file store](/docs/operator-manual/control-plane/architecture-overview/#file-store) you want to use and prepare a control-plane configuration file suitable for that choice.
 
@@ -70,7 +60,7 @@ See [ConfigurationReference](/docs/operator-manual/control-plane/configuration-r
 After all, install the control-plane as bellow:
 
 ``` console
-helm install pipecd pipecd/pipecd --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
+helm install pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/latest_version >}} --namespace={NAMESPACE} \
   --set-file config.data=path-to-control-plane-configuration-file \
   --set-file secret.encryptionKey.data=path-to-encryption-key-file \
   --set-file secret.firestoreServiceAccount.data=path-to-service-account-file \
