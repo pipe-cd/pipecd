@@ -39,8 +39,28 @@ jobs:
         run: make build-go GO_BUILD_COMPONENT=helloworld
 
       # Building frontend.
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16.13.0'
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Yarn install
+        working-directory: web
+        run: yarn install
       - name: Build web static
-        run: make build-frontend
+        run: |
+          make web-build
+          rm -rf .artifacts/web-static
+          mkdir -p .artifacts/web-static
+          cp -rf web/dist/. .artifacts/web-static
 
       # Login to push container images.
       - name: Log in to the container registry

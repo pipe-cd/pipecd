@@ -17,7 +17,7 @@ module.exports = (env) =>
     resolve: {
       extensions: [".mjs", ".ts", ".tsx", ".js"],
       alias: {
-        pipecd: path.resolve(__dirname, "../bazel-bin/"),
+        pipecd: path.resolve(__dirname, ".."),
         "~": path.resolve(__dirname, "src"),
         "~~": path.resolve(__dirname),
       },

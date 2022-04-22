@@ -34,7 +34,6 @@ module.exports = (env) => {
               if (file.includes("/favicon.ico")) {
                 return "[name].[ext]";
               }
-
               return "assets/[name].[hash:8].[ext]";
             },
           },
@@ -48,19 +47,19 @@ module.exports = (env) => {
     },
     plugins: [
       env.htmlTemplate &&
-        new HtmlWebpackPlugin({
-          filename: "index.html",
-          template: env.htmlTemplate,
-          favicon: path.join(__dirname, "assets/favicon.ico"),
-        }),
+      new HtmlWebpackPlugin({
+        filename: "index.html",
+        template: env.htmlTemplate,
+        favicon: path.join(__dirname, "assets/favicon.ico"),
+      }),
       process.env.ENABLE_MOCK &&
-        new CopyPlugin({
-          patterns: [
-            {
-              from: path.join(__dirname, "public/mockServiceWorker.js"),
-            },
-          ],
-        }),
+      new CopyPlugin({
+        patterns: [
+          {
+            from: path.join(__dirname, "public/mockServiceWorker.js"),
+          },
+        ],
+      }),
       new webpack.EnvironmentPlugin({
         ENABLE_MOCK: process.env.ENABLE_MOCK || null,
       }),
