@@ -7,30 +7,6 @@ spec:
   template:
     enabled: true
     rules:
-    - name: manifests
-      destination: manifests
-      trigger:
-        postsubmits:
-          - push-images
-        disableCommand: false
-      transforms:
-      - inputs:
-          - manifests
-        ignores:
-          - manifests/README.md
-          - manifests/RELEASE
-        ignoreRenderings:
-          - manifests/*/templates/**
-          - manifests/*/prom-rules/**
-          - manifests/*/grafana-dashboards/**
-      - inputs:
-          - manifests/RELEASE
-        pathReplacers:
-          - regex: '(.*)'
-            replacement: release/RELEASE
-      - inputs:
-          - quickstart
-
     - name: examples
       destination: examples
       trigger:
