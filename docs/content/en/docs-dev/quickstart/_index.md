@@ -12,17 +12,14 @@ Note: It's not required to install the PipeCD control plane to the cluster where
 
 ### Prerequisites
 - Having a Kubernetes cluster
-- Installed [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) and [helm3](https://helm.sh/docs/intro/install/)
+- Installed [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) and [Helm](https://helm.sh/docs/intro/install/) (3.8.0 or later)
 - Forked the [Examples](https://github.com/pipe-cd/examples) repository
 
 ### 1. Installing control plane
 
 ``` console
-helm repo add pipecd https://charts.pipecd.dev
-
-helm install pipecd pipecd/pipecd -n pipecd \
-  --create-namespace \
-  --dependency-update \
+helm install pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/latest_version >}} \
+  --namespace pipecd --create-namespace \
   --values https://raw.githubusercontent.com/pipe-cd/manifests/{{< blocks/latest_version >}}/quickstart/control-plane-values.yaml
 ```
 
@@ -54,7 +51,8 @@ Be sure to keep a copy for later use.
 Then complete the installation by running the following command after replacing `{PIPED_ID}`, `{PIPED_KEY}`, `{FORKED_GITHUB_ORG}` with what you just got:
 
 ``` console
-helm install piped pipecd/piped -n pipecd \
+helm install piped oci://ghcr.io/pipe-cd/chart/piped --version {{< blocks/latest_version >}} \
+  --namespace pipecd \
   --set quickstart.enabled=true \
   --set quickstart.pipedId={PIPED_ID} \
   --set secret.data.piped-key={PIPED_KEY} \
