@@ -2362,183 +2362,183 @@ proto.grpc.service.webservice.WebServicePromiseClient.prototype.deleteProjectRBA
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.grpc.service.webservice.ListUserGroupsRequest,
- *   !proto.grpc.service.webservice.ListUserGroupsResponses>}
+ *   !proto.grpc.service.webservice.ListProjectUserGroupsRequest,
+ *   !proto.grpc.service.webservice.ListProjectUserGroupsResponses>}
  */
-const methodDescriptor_WebService_ListUserGroups = new grpc.web.MethodDescriptor(
-  '/grpc.service.webservice.WebService/ListUserGroups',
+const methodDescriptor_WebService_ListProjectUserGroups = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/ListProjectUserGroups',
   grpc.web.MethodType.UNARY,
-  proto.grpc.service.webservice.ListUserGroupsRequest,
-  proto.grpc.service.webservice.ListUserGroupsResponses,
+  proto.grpc.service.webservice.ListProjectUserGroupsRequest,
+  proto.grpc.service.webservice.ListProjectUserGroupsResponses,
   /**
-   * @param {!proto.grpc.service.webservice.ListUserGroupsRequest} request
+   * @param {!proto.grpc.service.webservice.ListProjectUserGroupsRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.grpc.service.webservice.ListUserGroupsResponses.deserializeBinary
+  proto.grpc.service.webservice.ListProjectUserGroupsResponses.deserializeBinary
 );
 
 
 /**
- * @param {!proto.grpc.service.webservice.ListUserGroupsRequest} request The
+ * @param {!proto.grpc.service.webservice.ListProjectUserGroupsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.ListUserGroupsResponses)}
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.ListProjectUserGroupsResponses)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.ListUserGroupsResponses>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.ListProjectUserGroupsResponses>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.grpc.service.webservice.WebServiceClient.prototype.listUserGroups =
+proto.grpc.service.webservice.WebServiceClient.prototype.listProjectUserGroups =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/grpc.service.webservice.WebService/ListUserGroups',
+      '/grpc.service.webservice.WebService/ListProjectUserGroups',
       request,
       metadata || {},
-      methodDescriptor_WebService_ListUserGroups,
+      methodDescriptor_WebService_ListProjectUserGroups,
       callback);
 };
 
 
 /**
- * @param {!proto.grpc.service.webservice.ListUserGroupsRequest} request The
+ * @param {!proto.grpc.service.webservice.ListProjectUserGroupsRequest} request The
  *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.grpc.service.webservice.ListUserGroupsResponses>}
+ * @return {!Promise<!proto.grpc.service.webservice.ListProjectUserGroupsResponses>}
  *     Promise that resolves to the response
  */
-proto.grpc.service.webservice.WebServicePromiseClient.prototype.listUserGroups =
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.listProjectUserGroups =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/grpc.service.webservice.WebService/ListUserGroups',
+      '/grpc.service.webservice.WebService/ListProjectUserGroups',
       request,
       metadata || {},
-      methodDescriptor_WebService_ListUserGroups);
+      methodDescriptor_WebService_ListProjectUserGroups);
 };
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.grpc.service.webservice.AddUserGroupRequest,
- *   !proto.grpc.service.webservice.AddUserGroupResponse>}
+ *   !proto.grpc.service.webservice.AddProjectUserGroupRequest,
+ *   !proto.grpc.service.webservice.AddProjectUserGroupResponse>}
  */
-const methodDescriptor_WebService_AddUserGroup = new grpc.web.MethodDescriptor(
-  '/grpc.service.webservice.WebService/AddUserGroup',
+const methodDescriptor_WebService_AddProjectUserGroup = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/AddProjectUserGroup',
   grpc.web.MethodType.UNARY,
-  proto.grpc.service.webservice.AddUserGroupRequest,
-  proto.grpc.service.webservice.AddUserGroupResponse,
+  proto.grpc.service.webservice.AddProjectUserGroupRequest,
+  proto.grpc.service.webservice.AddProjectUserGroupResponse,
   /**
-   * @param {!proto.grpc.service.webservice.AddUserGroupRequest} request
+   * @param {!proto.grpc.service.webservice.AddProjectUserGroupRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.grpc.service.webservice.AddUserGroupResponse.deserializeBinary
+  proto.grpc.service.webservice.AddProjectUserGroupResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.grpc.service.webservice.AddUserGroupRequest} request The
+ * @param {!proto.grpc.service.webservice.AddProjectUserGroupRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.AddUserGroupResponse)}
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.AddProjectUserGroupResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.AddUserGroupResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.AddProjectUserGroupResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.grpc.service.webservice.WebServiceClient.prototype.addUserGroup =
+proto.grpc.service.webservice.WebServiceClient.prototype.addProjectUserGroup =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/grpc.service.webservice.WebService/AddUserGroup',
+      '/grpc.service.webservice.WebService/AddProjectUserGroup',
       request,
       metadata || {},
-      methodDescriptor_WebService_AddUserGroup,
+      methodDescriptor_WebService_AddProjectUserGroup,
       callback);
 };
 
 
 /**
- * @param {!proto.grpc.service.webservice.AddUserGroupRequest} request The
+ * @param {!proto.grpc.service.webservice.AddProjectUserGroupRequest} request The
  *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.grpc.service.webservice.AddUserGroupResponse>}
+ * @return {!Promise<!proto.grpc.service.webservice.AddProjectUserGroupResponse>}
  *     Promise that resolves to the response
  */
-proto.grpc.service.webservice.WebServicePromiseClient.prototype.addUserGroup =
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.addProjectUserGroup =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/grpc.service.webservice.WebService/AddUserGroup',
+      '/grpc.service.webservice.WebService/AddProjectUserGroup',
       request,
       metadata || {},
-      methodDescriptor_WebService_AddUserGroup);
+      methodDescriptor_WebService_AddProjectUserGroup);
 };
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.grpc.service.webservice.DeleteUserGroupRequest,
- *   !proto.grpc.service.webservice.DeleteUserGroupResponse>}
+ *   !proto.grpc.service.webservice.DeleteProjectUserGroupRequest,
+ *   !proto.grpc.service.webservice.DeleteProjectUserGroupResponse>}
  */
-const methodDescriptor_WebService_DeleteUserGroup = new grpc.web.MethodDescriptor(
-  '/grpc.service.webservice.WebService/DeleteUserGroup',
+const methodDescriptor_WebService_DeleteProjectUserGroup = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/DeleteProjectUserGroup',
   grpc.web.MethodType.UNARY,
-  proto.grpc.service.webservice.DeleteUserGroupRequest,
-  proto.grpc.service.webservice.DeleteUserGroupResponse,
+  proto.grpc.service.webservice.DeleteProjectUserGroupRequest,
+  proto.grpc.service.webservice.DeleteProjectUserGroupResponse,
   /**
-   * @param {!proto.grpc.service.webservice.DeleteUserGroupRequest} request
+   * @param {!proto.grpc.service.webservice.DeleteProjectUserGroupRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.grpc.service.webservice.DeleteUserGroupResponse.deserializeBinary
+  proto.grpc.service.webservice.DeleteProjectUserGroupResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.grpc.service.webservice.DeleteUserGroupRequest} request The
+ * @param {!proto.grpc.service.webservice.DeleteProjectUserGroupRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.DeleteUserGroupResponse)}
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.DeleteProjectUserGroupResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.DeleteUserGroupResponse>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.DeleteProjectUserGroupResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.grpc.service.webservice.WebServiceClient.prototype.deleteUserGroup =
+proto.grpc.service.webservice.WebServiceClient.prototype.deleteProjectUserGroup =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/grpc.service.webservice.WebService/DeleteUserGroup',
+      '/grpc.service.webservice.WebService/DeleteProjectUserGroup',
       request,
       metadata || {},
-      methodDescriptor_WebService_DeleteUserGroup,
+      methodDescriptor_WebService_DeleteProjectUserGroup,
       callback);
 };
 
 
 /**
- * @param {!proto.grpc.service.webservice.DeleteUserGroupRequest} request The
+ * @param {!proto.grpc.service.webservice.DeleteProjectUserGroupRequest} request The
  *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.grpc.service.webservice.DeleteUserGroupResponse>}
+ * @return {!Promise<!proto.grpc.service.webservice.DeleteProjectUserGroupResponse>}
  *     Promise that resolves to the response
  */
-proto.grpc.service.webservice.WebServicePromiseClient.prototype.deleteUserGroup =
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.deleteProjectUserGroup =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/grpc.service.webservice.WebService/DeleteUserGroup',
+      '/grpc.service.webservice.WebService/DeleteProjectUserGroup',
       request,
       metadata || {},
-      methodDescriptor_WebService_DeleteUserGroup);
+      methodDescriptor_WebService_DeleteProjectUserGroup);
 };
 
 

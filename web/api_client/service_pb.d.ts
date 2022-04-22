@@ -1584,104 +1584,108 @@ export namespace DeleteProjectRBACRoleResponse {
   }
 }
 
-export class ListUserGroupsRequest extends jspb.Message {
+export class ListProjectUserGroupsRequest extends jspb.Message {
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): ListUserGroupsRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: ListUserGroupsRequest): ListUserGroupsRequest.AsObject;
-  static serializeBinaryToWriter(message: ListUserGroupsRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): ListUserGroupsRequest;
-  static deserializeBinaryFromReader(message: ListUserGroupsRequest, reader: jspb.BinaryReader): ListUserGroupsRequest;
+  toObject(includeInstance?: boolean): ListProjectUserGroupsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ListProjectUserGroupsRequest): ListProjectUserGroupsRequest.AsObject;
+  static serializeBinaryToWriter(message: ListProjectUserGroupsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListProjectUserGroupsRequest;
+  static deserializeBinaryFromReader(message: ListProjectUserGroupsRequest, reader: jspb.BinaryReader): ListProjectUserGroupsRequest;
 }
 
-export namespace ListUserGroupsRequest {
+export namespace ListProjectUserGroupsRequest {
   export type AsObject = {
   }
 }
 
-export class ListUserGroupsResponses extends jspb.Message {
+export class ListProjectUserGroupsResponses extends jspb.Message {
   getUserGroupsList(): Array<pkg_model_project_pb.ProjectUserGroup>;
-  setUserGroupsList(value: Array<pkg_model_project_pb.ProjectUserGroup>): ListUserGroupsResponses;
-  clearUserGroupsList(): ListUserGroupsResponses;
+  setUserGroupsList(value: Array<pkg_model_project_pb.ProjectUserGroup>): ListProjectUserGroupsResponses;
+  clearUserGroupsList(): ListProjectUserGroupsResponses;
   addUserGroups(value?: pkg_model_project_pb.ProjectUserGroup, index?: number): pkg_model_project_pb.ProjectUserGroup;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): ListUserGroupsResponses.AsObject;
-  static toObject(includeInstance: boolean, msg: ListUserGroupsResponses): ListUserGroupsResponses.AsObject;
-  static serializeBinaryToWriter(message: ListUserGroupsResponses, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): ListUserGroupsResponses;
-  static deserializeBinaryFromReader(message: ListUserGroupsResponses, reader: jspb.BinaryReader): ListUserGroupsResponses;
+  toObject(includeInstance?: boolean): ListProjectUserGroupsResponses.AsObject;
+  static toObject(includeInstance: boolean, msg: ListProjectUserGroupsResponses): ListProjectUserGroupsResponses.AsObject;
+  static serializeBinaryToWriter(message: ListProjectUserGroupsResponses, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListProjectUserGroupsResponses;
+  static deserializeBinaryFromReader(message: ListProjectUserGroupsResponses, reader: jspb.BinaryReader): ListProjectUserGroupsResponses;
 }
 
-export namespace ListUserGroupsResponses {
+export namespace ListProjectUserGroupsResponses {
   export type AsObject = {
     userGroupsList: Array<pkg_model_project_pb.ProjectUserGroup.AsObject>,
   }
 }
 
-export class AddUserGroupRequest extends jspb.Message {
+export class AddProjectUserGroupRequest extends jspb.Message {
   getSsoGroup(): string;
-  setSsoGroup(value: string): AddUserGroupRequest;
+  setSsoGroup(value: string): AddProjectUserGroupRequest;
 
   getRole(): string;
-  setRole(value: string): AddUserGroupRequest;
+  setRole(value: string): AddProjectUserGroupRequest;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): AddUserGroupRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: AddUserGroupRequest): AddUserGroupRequest.AsObject;
-  static serializeBinaryToWriter(message: AddUserGroupRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): AddUserGroupRequest;
-  static deserializeBinaryFromReader(message: AddUserGroupRequest, reader: jspb.BinaryReader): AddUserGroupRequest;
+  toObject(includeInstance?: boolean): AddProjectUserGroupRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: AddProjectUserGroupRequest): AddProjectUserGroupRequest.AsObject;
+  static serializeBinaryToWriter(message: AddProjectUserGroupRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AddProjectUserGroupRequest;
+  static deserializeBinaryFromReader(message: AddProjectUserGroupRequest, reader: jspb.BinaryReader): AddProjectUserGroupRequest;
 }
 
-export namespace AddUserGroupRequest {
+export namespace AddProjectUserGroupRequest {
   export type AsObject = {
     ssoGroup: string,
     role: string,
   }
 }
 
-export class AddUserGroupResponse extends jspb.Message {
+export class AddProjectUserGroupResponse extends jspb.Message {
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): AddUserGroupResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: AddUserGroupResponse): AddUserGroupResponse.AsObject;
-  static serializeBinaryToWriter(message: AddUserGroupResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): AddUserGroupResponse;
-  static deserializeBinaryFromReader(message: AddUserGroupResponse, reader: jspb.BinaryReader): AddUserGroupResponse;
+  toObject(includeInstance?: boolean): AddProjectUserGroupResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: AddProjectUserGroupResponse): AddProjectUserGroupResponse.AsObject;
+  static serializeBinaryToWriter(message: AddProjectUserGroupResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AddProjectUserGroupResponse;
+  static deserializeBinaryFromReader(message: AddProjectUserGroupResponse, reader: jspb.BinaryReader): AddProjectUserGroupResponse;
 }
 
-export namespace AddUserGroupResponse {
+export namespace AddProjectUserGroupResponse {
   export type AsObject = {
   }
 }
 
-export class DeleteUserGroupRequest extends jspb.Message {
+export class DeleteProjectUserGroupRequest extends jspb.Message {
   getSsoGroup(): string;
-  setSsoGroup(value: string): DeleteUserGroupRequest;
+  setSsoGroup(value: string): DeleteProjectUserGroupRequest;
+
+  getRole(): string;
+  setRole(value: string): DeleteProjectUserGroupRequest;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): DeleteUserGroupRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: DeleteUserGroupRequest): DeleteUserGroupRequest.AsObject;
-  static serializeBinaryToWriter(message: DeleteUserGroupRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): DeleteUserGroupRequest;
-  static deserializeBinaryFromReader(message: DeleteUserGroupRequest, reader: jspb.BinaryReader): DeleteUserGroupRequest;
+  toObject(includeInstance?: boolean): DeleteProjectUserGroupRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: DeleteProjectUserGroupRequest): DeleteProjectUserGroupRequest.AsObject;
+  static serializeBinaryToWriter(message: DeleteProjectUserGroupRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeleteProjectUserGroupRequest;
+  static deserializeBinaryFromReader(message: DeleteProjectUserGroupRequest, reader: jspb.BinaryReader): DeleteProjectUserGroupRequest;
 }
 
-export namespace DeleteUserGroupRequest {
+export namespace DeleteProjectUserGroupRequest {
   export type AsObject = {
     ssoGroup: string,
+    role: string,
   }
 }
 
-export class DeleteUserGroupResponse extends jspb.Message {
+export class DeleteProjectUserGroupResponse extends jspb.Message {
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): DeleteUserGroupResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: DeleteUserGroupResponse): DeleteUserGroupResponse.AsObject;
-  static serializeBinaryToWriter(message: DeleteUserGroupResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): DeleteUserGroupResponse;
-  static deserializeBinaryFromReader(message: DeleteUserGroupResponse, reader: jspb.BinaryReader): DeleteUserGroupResponse;
+  toObject(includeInstance?: boolean): DeleteProjectUserGroupResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: DeleteProjectUserGroupResponse): DeleteProjectUserGroupResponse.AsObject;
+  static serializeBinaryToWriter(message: DeleteProjectUserGroupResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeleteProjectUserGroupResponse;
+  static deserializeBinaryFromReader(message: DeleteProjectUserGroupResponse, reader: jspb.BinaryReader): DeleteProjectUserGroupResponse;
 }
 
-export namespace DeleteUserGroupResponse {
+export namespace DeleteProjectUserGroupResponse {
   export type AsObject = {
   }
 }

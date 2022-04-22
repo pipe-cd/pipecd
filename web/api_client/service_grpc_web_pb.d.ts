@@ -267,26 +267,26 @@ export class WebServiceClient {
                response: pkg_app_server_service_webservice_service_pb.DeleteProjectRBACRoleResponse) => void
   ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.DeleteProjectRBACRoleResponse>;
 
-  listUserGroups(
-    request: pkg_app_server_service_webservice_service_pb.ListUserGroupsRequest,
+  listProjectUserGroups(
+    request: pkg_app_server_service_webservice_service_pb.ListProjectUserGroupsRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: pkg_app_server_service_webservice_service_pb.ListUserGroupsResponses) => void
-  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.ListUserGroupsResponses>;
+               response: pkg_app_server_service_webservice_service_pb.ListProjectUserGroupsResponses) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.ListProjectUserGroupsResponses>;
 
-  addUserGroup(
-    request: pkg_app_server_service_webservice_service_pb.AddUserGroupRequest,
+  addProjectUserGroup(
+    request: pkg_app_server_service_webservice_service_pb.AddProjectUserGroupRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: pkg_app_server_service_webservice_service_pb.AddUserGroupResponse) => void
-  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.AddUserGroupResponse>;
+               response: pkg_app_server_service_webservice_service_pb.AddProjectUserGroupResponse) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.AddProjectUserGroupResponse>;
 
-  deleteUserGroup(
-    request: pkg_app_server_service_webservice_service_pb.DeleteUserGroupRequest,
+  deleteProjectUserGroup(
+    request: pkg_app_server_service_webservice_service_pb.DeleteProjectUserGroupRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: pkg_app_server_service_webservice_service_pb.DeleteUserGroupResponse) => void
-  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.DeleteUserGroupResponse>;
+               response: pkg_app_server_service_webservice_service_pb.DeleteProjectUserGroupResponse) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.DeleteProjectUserGroupResponse>;
 
   getCommand(
     request: pkg_app_server_service_webservice_service_pb.GetCommandRequest,
@@ -543,20 +543,20 @@ export class WebServicePromiseClient {
     metadata?: grpcWeb.Metadata
   ): Promise<pkg_app_server_service_webservice_service_pb.DeleteProjectRBACRoleResponse>;
 
-  listUserGroups(
-    request: pkg_app_server_service_webservice_service_pb.ListUserGroupsRequest,
+  listProjectUserGroups(
+    request: pkg_app_server_service_webservice_service_pb.ListProjectUserGroupsRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<pkg_app_server_service_webservice_service_pb.ListUserGroupsResponses>;
+  ): Promise<pkg_app_server_service_webservice_service_pb.ListProjectUserGroupsResponses>;
 
-  addUserGroup(
-    request: pkg_app_server_service_webservice_service_pb.AddUserGroupRequest,
+  addProjectUserGroup(
+    request: pkg_app_server_service_webservice_service_pb.AddProjectUserGroupRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<pkg_app_server_service_webservice_service_pb.AddUserGroupResponse>;
+  ): Promise<pkg_app_server_service_webservice_service_pb.AddProjectUserGroupResponse>;
 
-  deleteUserGroup(
-    request: pkg_app_server_service_webservice_service_pb.DeleteUserGroupRequest,
+  deleteProjectUserGroup(
+    request: pkg_app_server_service_webservice_service_pb.DeleteProjectUserGroupRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<pkg_app_server_service_webservice_service_pb.DeleteUserGroupResponse>;
+  ): Promise<pkg_app_server_service_webservice_service_pb.DeleteProjectUserGroupResponse>;
 
   getCommand(
     request: pkg_app_server_service_webservice_service_pb.GetCommandRequest,
