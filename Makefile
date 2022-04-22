@@ -86,6 +86,10 @@ web-dep:
 web-dev:
 	cd web; yarn dev
 
+.PHONY: web-build
+web-build:
+	cd web; yarn build
+
 .PHONY: web-test
 web-test:
 	cd web; yarn test:coverage --runInBand
@@ -131,14 +135,6 @@ update-docsy:
 codegen:
 	docker run --rm -v ${PWD}:/repo -it gcr.io/pipecd/codegen:0.7.0 /repo
 
-.PHONY: build-frontend
-build-frontend:
-	rm -rf .artifacts/web-static
-	mkdir -p .artifacts/web-static
-	bazelisk ${BAZEL_FLAGS} build ${BAZEL_COMMAND_FLAGS} -- //web:static
-	cp -rf bazel-bin/web/static/. .artifacts/web-static
-
-
 GO_BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
 GO_BUILD_COMMIT ?= $(shell git rev-parse HEAD)
 GO_BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
@@ -157,3 +153,4 @@ package-chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=
 package-chart:
 	mkdir -p .artifacts
 	helm package manifests/$(CHART) --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
+

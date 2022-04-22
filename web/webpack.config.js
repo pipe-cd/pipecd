@@ -1,25 +1,36 @@
 /* eslint @typescript-eslint/no-var-requires: 0 */
 "use strict";
-const commonConfig = require("./gen_webpack.common");
-const { merge } = require("webpack-merge");
+require("dotenv").config();
 const path = require("path");
 const webpack = require("webpack");
-
-// overridden by bazel
-const version = "unknown_placeholder";
+const { merge } = require("webpack-merge");
+const webpackBaseConfig = require("./webpack.common");
 
 module.exports = (env) => {
-  return merge(commonConfig(env), {
+  return merge(webpackBaseConfig(env), {
+    mode: "production",
+    entry: {
+      index: "./src/index.tsx",
+    },
     resolve: {
-      extensions: [".mjs", ".js", ".jsx"],
+      //extensions: [".mjs", ".js", ".jsx"],
+      extensions: [".mjs", ".ts", ".tsx", ".js"],
       alias: {
-        pipecd: path.resolve(env.bazelBinPath),
-        "~": path.resolve(env.bazelBinPath, "web/src"),
-        "~~": path.resolve(env.bazelBinPath, "web"),
+        pipecd: path.resolve(__dirname, ".."),
+        "~": path.resolve(__dirname, "src"),
+        "~~": path.resolve(__dirname),
       },
+      modules: [path.resolve(__dirname, "node_modules"), "node_modules"],
     },
     module: {
       rules: [
+        {
+          test: /\.tsx?$/,
+          loader: "ts-loader",
+          options: {
+            transpileOnly: true,
+          },
+        },
         {
           type: "javascript/auto",
           test: /\.m?js$/,
@@ -28,10 +39,9 @@ module.exports = (env) => {
         },
       ],
     },
-    mode: "production",
     plugins: [
       new webpack.EnvironmentPlugin({
-        STABLE_VERSION: version || null,
+        STABLE_VERSION: process.env.STABLE_VERSION || null,
       }),
     ],
   });
