@@ -19,6 +19,27 @@ async function run(): Promise<void> {
     worker.start();
   }
 
+  // Message to visitors.
+  console.log(`
+---------------------------------------------------
+Hi there, fellow developer! Thanks for visiting.                ╓▄▓▓▓▓▓▓▓▄╖
+As any other OSS projects out there, we highly                 ╙▀▓▓▓▓▓▓▓▓▓▓▓▄
+appreciate your support. We seek for any kind               ▄▓▓▓▄ ▀▓▓▀▓▓▓▓▓▓▓▓
+of contributions and feedback. If you feel                 ▐▓▓▓▓▓▓       ╟▓▓▓▓▓▌
+interested, feel free to open up issues or PRs.            ▓▓▓▓▓▓         ▓▓▓▓▓▌
+                                                           ▓▓▓▓▓▓▄        ╔φ, └└
+The PipeCD official links:                                  ▓▓▓▓▓▓▀     ╠▒▒▒▒▒╠
+  Documentation: https://pipecd.dev                           ▀▓▌ ╓▓▓▓▌ ╚▒╠^
+  Github: https://github.com/pipe-cd/pipecd                     ▓▓▓▓▓▓▓▓,
+  Twitter: https://twitter.com/pipecd_dev                        ╙▓▓▓▓▓▓▓▓µ
+                                                                  └▓▓▓▓▓▓▓▌
+Love to contribute to PipeCD? We're HIRING, so                      └▀▓▓▓╙
+don't hesitate to ping us on GitHub or Twitter.
+
+Happy PipeCD-ing 🙌
+---------------------------------------------------
+`);
+
   setupDayjs();
 
   store.dispatch(fetchMe());
