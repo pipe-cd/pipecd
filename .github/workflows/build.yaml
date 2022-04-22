@@ -51,8 +51,7 @@ jobs:
         working-directory: web
         run: yarn install --prefer-offline
       - name: Build web static
-        working-directory: web
-        run: yarn build
+        run: make web-build
 
   chart:
     name: Helm Chart

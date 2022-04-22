@@ -56,9 +56,8 @@ jobs:
         working-directory: web
         run: yarn install
       - name: Build web static
-        working-directory: web
         run: |
-          yarn build
+          make web-build
           rm -rf .artifacts/web-static
           mkdir -p .artifacts/web-static
           cp -rf web/dist/. .artifacts/web-static
