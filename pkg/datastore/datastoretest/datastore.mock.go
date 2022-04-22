@@ -94,17 +94,17 @@ func (mr *MockProjectStoreMockRecorder) DeleteProjectRBACRole(arg0, arg1, arg2 i
 }
 
 // DeleteProjectUserGroup mocks base method.
-func (m *MockProjectStore) DeleteProjectUserGroup(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockProjectStore) DeleteProjectUserGroup(arg0 context.Context, arg1, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteProjectUserGroup", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "DeleteProjectUserGroup", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteProjectUserGroup indicates an expected call of DeleteProjectUserGroup.
-func (mr *MockProjectStoreMockRecorder) DeleteProjectUserGroup(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockProjectStoreMockRecorder) DeleteProjectUserGroup(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteProjectUserGroup", reflect.TypeOf((*MockProjectStore)(nil).DeleteProjectUserGroup), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteProjectUserGroup", reflect.TypeOf((*MockProjectStore)(nil).DeleteProjectUserGroup), arg0, arg1, arg2, arg3)
 }
 
 // DisableStaticAdmin mocks base method.

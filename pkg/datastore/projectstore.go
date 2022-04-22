@@ -84,7 +84,7 @@ type ProjectStore interface {
 	DeleteProjectRBACRole(ctx context.Context, id, name string) error
 	GetAllProjectUserGroups(ctx context.Context, id string) ([]*model.ProjectUserGroup, error)
 	AddProjectUserGroup(ctx context.Context, id, sso, role string) error
-	DeleteProjectUserGroup(ctx context.Context, id, sso string) error
+	DeleteProjectUserGroup(ctx context.Context, id, sso, role string) error
 }
 
 type projectStore struct {
@@ -234,6 +234,6 @@ func (s *projectStore) AddProjectUserGroup(_ context.Context, _, _, _ string) er
 }
 
 // DeleteUserGroup deletes the user group.
-func (s *projectStore) DeleteProjectUserGroup(_ context.Context, _, _ string) error {
+func (s *projectStore) DeleteProjectUserGroup(_ context.Context, _, _, _ string) error {
 	return ErrUnsupported
 }
