@@ -2034,29 +2034,6 @@
   resolved "https://registry.yarnpkg.com/@base2/pretty-print-object/-/pretty-print-object-1.0.0.tgz#860ce718b0b73f4009e153541faff2cb6b85d047"
   integrity sha512-4Th98KlMHr5+JkxfcoDT//6vY8vM+iSPrLNpHhRyLx2CFYi8e2RfqPLdpbnpo0Q5lQC5hNB79yes07zb02fvCw==
 
-"@bazel/labs@^4.4.6":
-  version "4.4.6"
-  resolved "https://registry.yarnpkg.com/@bazel/labs/-/labs-4.4.6.tgz#df686f33ca1803eebcb7e53deedb04504f5c798e"
-  integrity sha512-WK4uZr/0yJLObc7/eNmAFX5tUv9MY8QE/N1XraOHDWRHMjwWNM9jaySrGImW9YsKmQpDRIl34x92V+TVo/xLnA==
-
-"@bazel/typescript@^4.4.6":
-  version "4.4.6"
-  resolved "https://registry.yarnpkg.com/@bazel/typescript/-/typescript-4.4.6.tgz#fbaac22460b3aa4a0961c6c657d239af8f895778"
-  integrity sha512-J205En8MjmnWSPnz4CqJm1x4mzcdWM+HvAsOzzVb0DHx86O+mjPFwqleeAtPGLTE9aWskel81XICJfEuTlNtiw==
-  dependencies:
-    "@bazel/worker" "4.4.6"
-    protobufjs "6.8.8"
-    semver "5.6.0"
-    source-map-support "0.5.9"
-    tsutils "3.21.0"
-
-"@bazel/worker@4.4.6":
-  version "4.4.6"
-  resolved "https://registry.yarnpkg.com/@bazel/worker/-/worker-4.4.6.tgz#c9122c8ec765f62dc723203270a3c913caf8826a"
-  integrity sha512-1Sk0FGIc1m9rFwXhCnm46XDRng88vAnY1FBb7OQPonha/kuxjZTpPDP7q2ndSkqDNyCFKp94cPUFUT58Fgqvfw==
-  dependencies:
-    google-protobuf "^3.6.1"
-
 "@bcoe/v8-coverage@^0.2.3":
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
