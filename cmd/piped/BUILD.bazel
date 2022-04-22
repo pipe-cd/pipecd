@@ -1,9 +1,4 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
-load("@io_bazel_rules_docker//container:container.bzl", "container_bundle", "container_image", "container_layer")
-load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
-load("@io_bazel_rules_docker//container:container.bzl", "container_bundle")
-load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 
 go_library(
     name = "go_default_library",
@@ -19,66 +14,5 @@ go_library(
 go_binary(
     name = "piped",
     embed = [":go_default_library"],
-    visibility = ["//visibility:public"],
-)
-
-# Piped app
-
-container_layer(
-    name = "launcher",
-    tars = [
-        "//cmd/launcher:launcher_image",
-    ],
-)
-
-go_image(
-    name = "piped_image",
-    base = "@piped-base//image",
-    binary = ":piped",
-)
-
-container_image(
-    name = "piped_app_image",
-    base = ":piped_image",
-    layers = [
-        ":launcher",
-    ],
-    symlinks = {
-        "/piped": "/app/cmd/piped/piped",
-        "/launcher": "/app/cmd/launcher/launcher",
-    },
-    visibility = ["//visibility:public"],
-)
-
-container_bundle(
-    name = "piped_app_bundle",
-    images = {
-        "$(DOCKER_REGISTRY)/piped:{STABLE_VERSION}": ":piped_app_image",
-    },
-)
-
-docker_push(
-    name = "piped_app_push",
-    bundle = ":piped_app_bundle",
-)
-
-# Piped app for OKD
-
-go_image(
-    name = "piped_okd_image",
-    base = "@piped-base-okd//image",
-    binary = ":piped",
-)
-
-container_image(
-    name = "piped_okd_app_image",
-    base = ":piped_okd_image",
-    layers = [
-        ":launcher",
-    ],
-    symlinks = {
-        "/piped": "/app/cmd/piped/piped",
-        "/launcher": "/app/cmd/launcher/launcher",
-    },
     visibility = ["//visibility:public"],
 )

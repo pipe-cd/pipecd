@@ -2,25 +2,6 @@ version: v1
 kind: Build
 spec:
   postsubmits:
-  - name: push-images
-    timeout: 15m
-    machine:
-      resource: medium
-    dockerAuth:
-      secret:
-        name: container_registry_service_account
-        type: PROJECT
-    branches:
-      - master
-    steps:
-    - description: Push service images
-      runner: gcr.io/pipecd/runner:1.0.0
-      commands:
-        - bazelisk --output_base=/workspace/bazel_out run --config=ci --config=linux --config=stamping //cmd:push_images
-      secrets:
-      - name: bazel_cache_service_account
-        type: PROJECT
-
   - name: publish-linux-binaries
     timeout: 15m
     machine:
