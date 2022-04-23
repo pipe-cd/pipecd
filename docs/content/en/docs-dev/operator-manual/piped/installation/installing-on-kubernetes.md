@@ -83,7 +83,7 @@ helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks
   {{< /tab >}}
   {{< /tabpane >}}
 
-  Note: Be sure to set `--set args.insecure=true` if your control-plane has not TLS-enabled yet.
+  Note: Be sure to set `--set args.insecure=true` if your Control Plane has not TLS-enabled yet.
 
   See [values.yaml](https://github.com/pipe-cd/manifests/blob/master/manifests/piped/values.yaml) for the full values.
 

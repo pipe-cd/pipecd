@@ -25,8 +25,8 @@ If you've already enabled monitoring system in the previous section, you can acc
 kubectl port-forward -n {NAMESPACE} svc/{PIPECD_RELEASE_NAME}-grafana 3000:80
 ```
 
-#### Control-plane dashboards
-There are three dashboards related to Control-plane:
+#### Control Plane dashboards
+There are three dashboards related to Control Plane:
 - Overview - usage stats of PipeCD
 - Incoming Requests - gRPC and HTTP requests stats to check for any negative impact on users
 - Go - processes stats of PipeCD components

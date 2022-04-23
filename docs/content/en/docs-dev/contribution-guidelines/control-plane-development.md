@@ -1,19 +1,19 @@
 ---
-title: "Control plane development"
-linkTitle: "Control plane development"
+title: "Control Plane development"
+linkTitle: "Control Plane development"
 weight: 5
 description: >
-  This page describes where to find control-plane source code and how to run it locally for debugging.
+  This page describes where to find Control Plane source code and how to run it locally for debugging.
 ---
 
 ## Source code structure
 
-- [cmd/pipecd](https://github.com/pipe-cd/pipecd/tree/master/cmd/pipecd): entrypoint for binary of control-plane server.
-- [pkg/app/server](https://github.com/pipe-cd/pipecd/tree/master/pkg/app/server): contains source code for control-plane api.
+- [cmd/pipecd](https://github.com/pipe-cd/pipecd/tree/master/cmd/pipecd): entrypoint for binary of Control Plane server.
+- [pkg/app/server](https://github.com/pipe-cd/pipecd/tree/master/pkg/app/server): contains source code for Control Plane api.
 - [web](https://github.com/pipe-cd/pipecd/tree/master/web): contains source code for the web console.
-- [pkg](https://github.com/pipe-cd/pipecd/tree/master/pkg): contains shared source code for all components of both `piped` and `control-plane`.
+- [pkg](https://github.com/pipe-cd/pipecd/tree/master/pkg): contains shared source code for all components of both `Piped` and `Control Plane`.
 
-## How to run control-plane locally
+## How to run Control Plane locally
 
 ### Prerequisites
 - Installing [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
@@ -37,17 +37,17 @@ Because the `manifests` directory at [pipe-cd/pipecd](https://github.com/pipe-cd
 make render-manifests
 ```
 
-#### Installing control-plane into the local cluster
+#### Installing Control Plane into the local cluster
 
-Now, you can use the rendered manifests at `.rendered-manifests` to install control-plane to the local cluster.
+Now, you can use the rendered manifests at `.rendered-manifests` to install Control Plane to the local cluster.
 
-Here is the command to install [quickstart](/docs/quickstart/)'s control-plane:
+Here is the command to install [quickstart](/docs/quickstart/)'s Control Plane:
 
 ``` console
 helm -n pipecd install pipecd .rendered-manifests/pipecd --dependency-update --create-namespace --values ./quickstart/control-plane-values.yaml
 ```
 
-Once all components are running up, use `kubectl port-forward` to expose the installed control-plane on your localhost:
+Once all components are running up, use `kubectl port-forward` to expose the installed Control Plane on your localhost:
 
 ``` console
 kubectl -n pipecd port-forward svc/pipecd 8080

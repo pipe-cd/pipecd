@@ -133,5 +133,5 @@ description: >
   {{< /tab >}}
   {{< /tabpane >}}
 
-After that, you can see on PipeCD web at `Settings` page that Piped is connecting to control-plane.
+After that, you can see on PipeCD web at `Settings` page that Piped is connecting to the Control Plane.
 You can also view Piped log as described [here](https://cloud.google.com/compute/docs/containers/deploying-containers#viewing_logs).

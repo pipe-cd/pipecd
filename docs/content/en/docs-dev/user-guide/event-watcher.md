@@ -21,11 +21,11 @@ This guide walks you through configuring Event watcher and how to push an Event.
 Before we get into configuring EventWatcher, be sure to configure Piped. See [here](/docs/operator-manual/piped/configuring-event-watcher/) for more details.
 
 ## Usage
-File updating can be done by registering the latest value corresponding to the Event in the control-plane and comparing it with the current value.
+File updating can be done by registering the latest value corresponding to the Event in the Control Plane and comparing it with the current value.
 
 Therefore, you mainly need to:
 1. define which values in which files should be updated when a new Event found.
-1. integrate a step to push an Event to the control-plane using `pipectl` into your CI workflow.
+1. integrate a step to push an Event to the Control Plane using `pipectl` into your CI workflow.
 
 ### 1. Defining Events
 Prepare EventWatcher configuration files under the `.pipe/` directory at the root of your Git repository.
@@ -47,7 +47,7 @@ spec:
 The full list of configurable `EventWatcher` fields are [here](/docs/user-guide/configuration-reference/#event-watcher-configuration).
 
 ### 2. Pushing an Event with `pipectl`
-To register a new value corresponding to Event such as the above in the control-plane, you need to perform `pipectl`.
+To register a new value corresponding to Event such as the above in the Control Plane, you need to perform `pipectl`.
 And we highly recommend integrating a step for that into your CI workflow.
 
 You first need to set-up the `pipectl`:
@@ -55,7 +55,7 @@ You first need to set-up the `pipectl`:
 - Install it on your CI system or where you want to run according to [this guide](/docs/user-guide/command-line-tool/#installation).
 - Grab the API key to which the `READ_WRITE` role is attached according to [this guide](/docs/user-guide/command-line-tool/#authentication).
 
-Once you're all set up, pushing a new Event to the control-plane by the following command:
+Once you're all set up, pushing a new Event to the Control Plane by the following command:
 
 ```bash
 pipectl event register \
@@ -80,7 +80,7 @@ After a while, Piped will create a commit as shown below:
 +        image: gcr.io/pipecd/helloworld:v0.2.0
 ```
 
-NOTE: Keep in mind that it may take a little while because Piped periodically fetches the new events from the control-plane. You can change its interval according to [here](/docs/operator-manual/piped/configuring-event-watcher/#optional-settings-for-watcher).
+NOTE: Keep in mind that it may take a little while because Piped periodically fetches the new events from the Control Plane. You can change its interval according to [here](/docs/operator-manual/piped/configuring-event-watcher/#optional-settings-for-watcher).
 
 ### [optional] Using labels
 Event watcher is a project-wide feature, hence an event name is unique inside a project. That is, you can update multiple repositories at the same time if you use the same event name for different events.
