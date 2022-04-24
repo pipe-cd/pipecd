@@ -77,6 +77,7 @@ const (
 	KindClusterRole              = "ClusterRole"
 	KindClusterRoleBinding       = "ClusterRoleBinding"
 	KindNameSpace                = "NameSpace"
+	KindPodDisruptionBudget      = "PodDisruptionBudget"
 	KindCustomResourceDefinition = "CustomResourceDefinition"
 
 	DefaultNamespace = "default"
