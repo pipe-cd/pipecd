@@ -377,7 +377,7 @@ func TestProjectRBACConfig_IsAssigned(t *testing.T) {
 	assert.True(t, p.IsAssigned("team/admin"))
 
 	// False
-	assert.True(t, p.IsAssigned("team/test"))
+	assert.False(t, p.IsAssigned("team/test"))
 }
 
 func TestProject_AddUserGroup(t *testing.T) {
