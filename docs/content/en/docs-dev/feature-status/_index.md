@@ -90,7 +90,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Notification](/docs/operator-manual/piped/configuring-notifications/) to external service via webhook | Alpha |
 | [Secrets management](/docs/user-guide/secret-management/) - Storing secrets safely in the Git repository | Beta |
 | [Event watcher](/docs/user-guide/event-watcher/) - Updating files in Git automatically for given events | Alpha |
-| [Pipectl](/docs/user-guide/command-line-tool/) - Command-line tool for interacting with control-plane | Beta |
+| [Pipectl](/docs/user-guide/command-line-tool/) - Command-line tool for interacting with Control Plane | Beta |
 | Deployment plugin - Allow executing user-created deployment plugin | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) (Automated Deployment Analysis) by Prometheus metrics | Alpha |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by Datadog metrics | Alpha |

@@ -51,7 +51,7 @@ docker run --rm gcr.io/pipecd/pipectl:{VERSION} -h
 
 ## Authentication
 
-In order for pipectl to authenticate with PipeCD's control-plane, it needs an API key, which can be created from `Settings/API Key` tab on the web UI.
+In order for pipectl to authenticate with PipeCD's Control Plane, it needs an API key, which can be created from `Settings/API Key` tab on the web UI.
 There are two kinds of key role: `READ_ONLY` and `READ_WRITE`. Depending on the command, it might require an appropriate role to execute.
 
 ![](/images/settings-api-key.png)
@@ -135,11 +135,11 @@ Flags:
       --repo-id string            The repository ID. One the registered repositories in the piped configuration.
 
 Global Flags:
-      --address string                     The address to control-plane api.
-      --api-key string                     The API key used while authenticating with control-plane.
-      --api-key-file string                Path to the file containing API key used while authenticating with control-plane.
+      --address string                     The address to Control Plane api.
+      --api-key string                     The API key used while authenticating with Control Plane.
+      --api-key-file string                Path to the file containing API key used while authenticating with Control Plane.
       --cert-file string                   The path to the TLS certificate file.
-      --insecure                           Whether disabling transport security while connecting to control-plane.
+      --insecure                           Whether disabling transport security while connecting to Control Plane.
       --log-encoding string                The encoding type for logger [json|console|humanize]. (default "humanize")
       --log-level string                   The minimum enabled logging level. (default "info")
       --metrics                            Whether metrics is enabled or not. (default true)

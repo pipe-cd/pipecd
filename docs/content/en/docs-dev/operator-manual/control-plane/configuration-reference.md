@@ -3,7 +3,7 @@ title: "Configuration reference"
 linkTitle: "Configuration reference"
 weight: 7
 description: >
-  This page describes all configurable fields in the control-plane configuration.
+  This page describes all configurable fields in the Control Plane configuration.
 ---
 
 ``` yaml

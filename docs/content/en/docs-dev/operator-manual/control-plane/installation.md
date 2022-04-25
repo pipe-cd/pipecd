@@ -24,9 +24,9 @@ openssl rand 64 | base64 > encryption-key
 cat /dev/urandom | head -c64 | base64 > encryption-key
 ```
 
-### 2. Preparing control-plane configuration file and installing
+### 2. Preparing Control Plane configuration file and installing
 
-As described at the [architecture overview](/docs/operator-manual/control-plane/architecture-overview/) page, the control-plane's data can be stored in one of the provided fully-managed or self-managed services. So you have to decide which kind of [data store](/docs/operator-manual/control-plane/architecture-overview/#data-store) and [file store](/docs/operator-manual/control-plane/architecture-overview/#file-store) you want to use and prepare a control-plane configuration file suitable for that choice.
+As described at the [architecture overview](/docs/operator-manual/control-plane/architecture-overview/) page, the Control Plane's data can be stored in one of the provided fully-managed or self-managed services. So you have to decide which kind of [data store](/docs/operator-manual/control-plane/architecture-overview/#data-store) and [file store](/docs/operator-manual/control-plane/architecture-overview/#file-store) you want to use and prepare a Control Plane configuration file suitable for that choice.
 
 #### Using Firestore and GCS
 
@@ -57,7 +57,7 @@ spec:
 
 See [ConfigurationReference](/docs/operator-manual/control-plane/configuration-reference/) for the full configuration.
 
-After all, install the control-plane as bellow:
+After all, install the Control Plane as bellow:
 
 ``` console
 helm install pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/latest_version >}} --namespace={NAMESPACE} \
@@ -93,12 +93,12 @@ spec:
 
 You can find required configurations to use other datastores and filestores from [ConfigurationReference](/docs/operator-manual/control-plane/configuration-reference/).
 
-__Caution__: In case of using `MySQL` as control-plane's datastore, please note that the implementation of PipeCD requires some features that only available on [MySQL v8](https://dev.mysql.com/doc/refman/8.0/en/), make sure your MySQL service is satisfied the requirement.
+__Caution__: In case of using `MySQL` as Control Plane's datastore, please note that the implementation of PipeCD requires some features that only available on [MySQL v8](https://dev.mysql.com/doc/refman/8.0/en/), make sure your MySQL service is satisfied the requirement.
 
 ### 4. Accessing the PipeCD web
 
 If your installation was including an [ingress](https://github.com/pipe-cd/manifests/blob/master/manifests/pipecd/values.yaml#L6), the PipeCD web can be accessed by the ingress's IP address or domain.
-Otherwise, private PipeCD web can be accessed by using `kubectl port-forward` to expose the installed control-plane on your localhost:
+Otherwise, private PipeCD web can be accessed by using `kubectl port-forward` to expose the installed Control Plane on your localhost:
 
 ``` console
 kubectl port-forward svc/pipecd 8080 --namespace={NAMESPACE}

@@ -34,14 +34,14 @@ PipeCD provides a unified continuous delivery solution for multiple application 
 
 **Safety and Security**
 - Support single sign-on and role-based access control
-- Credentials are not exposed outside the cluster and not saved in the control-plane
+- Credentials are not exposed outside the cluster and not saved in the Control Plane
 - Piped makes only outbound requests and can run inside a restricted network
 - Built-in secrets management
 
 **Multi-provider & Multi-Tenancy**
 - Support multiple application kinds on multi-cloud including Kubernetes, Terraform, Cloud Run, AWS Lambda, Amazon ECS
 - Support multiple analysis providers including Prometheus, Datadog, Stackdriver, and more
-- Easy to operate multi-cluster, multi-tenancy by separating control-plane and piped
+- Easy to operate multi-cluster, multi-tenancy by separating Control Plane and Piped
 
 **Open Source**
 

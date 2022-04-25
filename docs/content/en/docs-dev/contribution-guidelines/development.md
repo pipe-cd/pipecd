@@ -21,7 +21,7 @@ For more information, you might want to read the [installation notes of `bazelis
 
 ## Repositories
 - [pipecd](https://github.com/pipe-cd/pipecd): contains all source code and documentation of PipeCD project.
-- [manifests](https://github.com/pipe-cd/manifests): contains all automatically generated release manifests for both `piped` and `control-plane` components.
+- [manifests](https://github.com/pipe-cd/manifests): contains all automatically generated release manifests for both `Piped` and `Control Plane` components.
 - [examples](https://github.com/pipe-cd/examples): contains various generated examples to demonstrate how to use PipeCD.
 
 ## Build and test with Bazel
