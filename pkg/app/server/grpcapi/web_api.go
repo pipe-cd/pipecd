@@ -1328,15 +1328,15 @@ func (a *WebAPI) DeleteProjectRBACRole(_ context.Context, _ *webservice.DeletePr
 	return nil, status.Errorf(codes.Unimplemented, "not implemented")
 }
 
-func (a *WebAPI) ListUserGroups(_ context.Context, _ *webservice.ListUserGroupsRequest) (*webservice.ListUserGroupsResponses, error) {
+func (a *WebAPI) ListProjectUserGroups(_ context.Context, _ *webservice.ListProjectUserGroupsRequest) (*webservice.ListProjectUserGroupsResponses, error) {
 	return nil, status.Errorf(codes.Unimplemented, "not implemented")
 }
 
-func (a *WebAPI) AddUserGroup(_ context.Context, _ *webservice.AddUserGroupRequest) (*webservice.AddUserGroupResponse, error) {
+func (a *WebAPI) AddProjectUserGroup(_ context.Context, _ *webservice.AddProjectUserGroupRequest) (*webservice.AddProjectUserGroupResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "not implemented")
 }
 
-func (a *WebAPI) DeleteUserGroup(_ context.Context, _ *webservice.DeleteUserGroupRequest) (*webservice.DeleteUserGroupResponse, error) {
+func (a *WebAPI) DeleteProjectUserGroup(_ context.Context, _ *webservice.DeleteProjectUserGroupRequest) (*webservice.DeleteProjectUserGroupResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "not implemented")
 }
 
