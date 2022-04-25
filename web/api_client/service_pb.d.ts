@@ -1658,9 +1658,6 @@ export class DeleteProjectUserGroupRequest extends jspb.Message {
   getSsoGroup(): string;
   setSsoGroup(value: string): DeleteProjectUserGroupRequest;
 
-  getRole(): string;
-  setRole(value: string): DeleteProjectUserGroupRequest;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeleteProjectUserGroupRequest.AsObject;
   static toObject(includeInstance: boolean, msg: DeleteProjectUserGroupRequest): DeleteProjectUserGroupRequest.AsObject;
@@ -1672,7 +1669,6 @@ export class DeleteProjectUserGroupRequest extends jspb.Message {
 export namespace DeleteProjectUserGroupRequest {
   export type AsObject = {
     ssoGroup: string,
-    role: string,
   }
 }
 

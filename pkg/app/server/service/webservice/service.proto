@@ -462,7 +462,6 @@ message AddProjectUserGroupResponse {
 
 message DeleteProjectUserGroupRequest {
     string sso_group = 1 [(validate.rules).string.min_len = 1];
-    string role = 2 [(validate.rules).string.min_len = 1];
 }
 
 message DeleteProjectUserGroupResponse {

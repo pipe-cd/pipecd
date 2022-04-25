@@ -14551,8 +14551,7 @@ proto.grpc.service.webservice.DeleteProjectUserGroupRequest.prototype.toObject =
  */
 proto.grpc.service.webservice.DeleteProjectUserGroupRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    ssoGroup: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    role: jspb.Message.getFieldWithDefault(msg, 2, "")
+    ssoGroup: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -14593,10 +14592,6 @@ proto.grpc.service.webservice.DeleteProjectUserGroupRequest.deserializeBinaryFro
       var value = /** @type {string} */ (reader.readString());
       msg.setSsoGroup(value);
       break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setRole(value);
-      break;
     default:
       reader.skipField();
       break;
@@ -14633,13 +14628,6 @@ proto.grpc.service.webservice.DeleteProjectUserGroupRequest.serializeBinaryToWri
       f
     );
   }
-  f = message.getRole();
-  if (f.length > 0) {
-    writer.writeString(
-      2,
-      f
-    );
-  }
 };
 
 
@@ -14658,24 +14646,6 @@ proto.grpc.service.webservice.DeleteProjectUserGroupRequest.prototype.getSsoGrou
  */
 proto.grpc.service.webservice.DeleteProjectUserGroupRequest.prototype.setSsoGroup = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
-};
-
-
-/**
- * optional string role = 2;
- * @return {string}
- */
-proto.grpc.service.webservice.DeleteProjectUserGroupRequest.prototype.getRole = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.grpc.service.webservice.DeleteProjectUserGroupRequest} returns this
- */
-proto.grpc.service.webservice.DeleteProjectUserGroupRequest.prototype.setRole = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
