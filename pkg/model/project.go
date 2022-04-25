@@ -351,51 +351,27 @@ func (p *ProjectSSOConfig_GitHub) GenerateAuthCodeURL(project, callbackURL, stat
 	return authURL, nil
 }
 
-// FilterRBACRoles filter rbac roles for built-in or not.
-func (p *Project) FilterRBACRoles(isBuiltin bool) []*ProjectRBACRole {
-	v := make([]*ProjectRBACRole, 0, len(p.RbacRoles))
-	for _, role := range p.RbacRoles {
-		if role.IsBuiltin != isBuiltin {
-			continue
+// IsRBACRoleExists checks whether the RBAC role is exists.
+func (p *Project) IsRBACRoleExists(name string) bool {
+	for _, v := range p.RbacRoles {
+		if v.Name == name {
+			return true
 		}
-		v = append(v, role)
 	}
-	return v
+	return false
 }
 
-// ValidateRBACRoles validate rbac roles.
-func ValidateRBACRoles(roles []*ProjectRBACRole) error {
-	v := make(map[string]struct{}, len(roles))
-	for _, role := range roles {
-		if role.IsBuiltinName() {
-			return fmt.Errorf("cannot use built-in role name")
+// IsUserGroupExists checks whether the user group is exists.
+func (p *Project) IsUserGroupExists(sso string) bool {
+	for _, v := range p.UserGroups {
+		if v.SsoGroup == sso {
+			return true
 		}
-		if _, ok := v[role.Name]; ok {
-			return fmt.Errorf("role name must be unique")
-		}
-		v[role.Name] = struct{}{}
 	}
-	return nil
+	return false
 }
 
-func (p *ProjectRBACRole) IsBuiltinName() bool {
-	return p.Name == builtinRBACRoleAdmin.String() ||
-		p.Name == builtinRBACRoleEditor.String() ||
-		p.Name == builtinRBACRoleViewer.String()
-}
-
-// ValidateUserGroups validate user groups.
-func ValidateUserGroups(groups []*ProjectUserGroup) error {
-	v := make(map[string]struct{}, len(groups))
-	for _, group := range groups {
-		if _, ok := v[group.SsoGroup]; ok {
-			return fmt.Errorf("the SSO group must be unique")
-		}
-		v[group.SsoGroup] = struct{}{}
-	}
-	return nil
-}
-
+// GetAllUserGroups returns user groups and the old RBAC confg if exists.
 func (p *Project) GetAllUserGroups() []*ProjectUserGroup {
 	rbac := p.Rbac
 	if rbac == nil {
@@ -410,13 +386,13 @@ func (p *Project) GetAllUserGroups() []*ProjectUserGroup {
 			Role:     builtinRBACRoleAdmin.String(),
 		})
 	}
-	if rbac.Editor != "" {
+	if rbac.Editor != "" && rbac.Editor != rbac.Admin {
 		all = append(all, &ProjectUserGroup{
 			SsoGroup: rbac.Editor,
 			Role:     builtinRBACRoleEditor.String(),
 		})
 	}
-	if rbac.Viewer != "" {
+	if rbac.Viewer != "" && rbac.Viewer != rbac.Admin && rbac.Viewer != rbac.Editor {
 		all = append(all, &ProjectUserGroup{
 			SsoGroup: rbac.Viewer,
 			Role:     builtinRBACRoleViewer.String(),
@@ -427,6 +403,59 @@ func (p *Project) GetAllUserGroups() []*ProjectUserGroup {
 	return all
 }
 
+// IsAssigned checks whether the team is already assigned as built-in roles.
+func (p *ProjectRBACConfig) IsAssigned(team string) bool {
+	if p == nil {
+		return false
+	}
+	return p.Admin == team || p.Editor == team || p.Viewer == team
+}
+
+// AddUserGroup adds a user group.
+func (p *Project) AddUserGroup(sso, role string) error {
+	if p.IsUserGroupExists(sso) {
+		return fmt.Errorf("%s is already assigned role. The SSO group must be unique", sso)
+	}
+	if p.Rbac.IsAssigned(sso) {
+		return fmt.Errorf("%s is already assigned role. The SSO group must be unique", sso)
+	}
+	if !p.IsRBACRoleExists(role) {
+		return fmt.Errorf("%s role doesn't exist", role)
+	}
+	p.UserGroups = append(p.UserGroups, &ProjectUserGroup{
+		SsoGroup: sso,
+		Role:     role,
+	})
+	return nil
+}
+
+// DeleteUserGroup deletes a user group.
+func (p *Project) DeleteUserGroup(sso string) error {
+	for i, v := range p.UserGroups {
+		if v.SsoGroup == sso {
+			c := copy(p.UserGroups[i:], p.UserGroups[i+1:])
+			p.UserGroups = p.UserGroups[:i+c]
+			return nil
+		}
+	}
+	if p.Rbac != nil {
+		if p.Rbac.Admin == sso {
+			p.Rbac.Admin = ""
+			return nil
+		}
+		if p.Rbac.Editor == sso {
+			p.Rbac.Editor = ""
+			return nil
+		}
+		if p.Rbac.Viewer == sso {
+			p.Rbac.Viewer = ""
+			return nil
+		}
+	}
+	return fmt.Errorf("%s user group doesn't exist", sso)
+}
+
+// GetAllRBACRoles returns user groups and built-in roles.
 func (p *Project) GetAllRBACRoles() []*ProjectRBACRole {
 	builtin := []*ProjectRBACRole{
 		builtinAdminRBACRole,
@@ -441,4 +470,57 @@ func (p *Project) GetAllRBACRoles() []*ProjectRBACRole {
 	all = append(all, p.RbacRoles...)
 
 	return all
+}
+
+// IsBuiltinRBACRole checks whether the name is the name of built-in role.
+func (p *Project) IsBuiltinRBACRole(name string) bool {
+	return name == builtinRBACRoleAdmin.String() ||
+		name == builtinRBACRoleEditor.String() ||
+		name == builtinRBACRoleViewer.String()
+}
+
+// AddRBACRole adds a custom RBAC role.
+func (p *Project) AddRBACRole(name string, policies []*ProjectRBACPolicy) error {
+	if p.IsRBACRoleExists(name) {
+		return fmt.Errorf("the name of %s is already used", name)
+	}
+	if p.IsBuiltinRBACRole(name) {
+		return fmt.Errorf("the name of built-in role cannot be used")
+	}
+	p.RbacRoles = append(p.RbacRoles, &ProjectRBACRole{
+		Name:     name,
+		Policies: policies,
+	})
+	return nil
+}
+
+// UpdateRBACRole updates a custom RBAC role.
+// Built-in role cannot be updated.
+func (p *Project) UpdateRBACRole(name string, policies []*ProjectRBACPolicy) error {
+	for _, v := range p.RbacRoles {
+		if v.Name == name {
+			v.Policies = policies
+			return nil
+		}
+	}
+	if p.IsBuiltinRBACRole(name) {
+		return fmt.Errorf("built-in role cannot be updated")
+	}
+	return fmt.Errorf("%s role doesn't exist", name)
+}
+
+// DeleteRBACRole deletes a custom RBAC role.
+// Built-in role cannot be deleted.
+func (p *Project) DeleteRBACRole(name string) error {
+	for i, v := range p.RbacRoles {
+		if v.Name == name {
+			c := copy(p.RbacRoles[i:], p.RbacRoles[i+1:])
+			p.RbacRoles = p.RbacRoles[:i+c]
+			return nil
+		}
+	}
+	if p.IsBuiltinRBACRole(name) {
+		return fmt.Errorf("built-in role cannot be deleted")
+	}
+	return fmt.Errorf("%s role doesn't exist", name)
 }
