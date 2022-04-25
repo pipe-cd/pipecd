@@ -26,6 +26,7 @@ description: >
 
 - `make run/pipecd`: runs Control Plane locally.
 - `make run/piped`: runs Piped Agent locally.
+- `make run/frontend`: runs frontend locally.
 - `make run/site`: runs PipeCD site locally (requires [hugo](https://github.com/gohugoio/hugo) with `_extended` version `0.92.1` or later to be installed).
 
 - `make gen/code`: generate Go and Typescript code from protos and mock configs. You need to run it if you modified any proto or mock definition files.
