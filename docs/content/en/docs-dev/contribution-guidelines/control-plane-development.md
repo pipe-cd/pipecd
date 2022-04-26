@@ -17,34 +17,19 @@ description: >
 
 ### Prerequisites
 - Installing [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
-- Running a local Kubernetes cluster by `make kind-up`. (Cluster that is no longer used can be deleted by `make kind-down`.)
 
-### Pushing the images to local container registry
+### Start running a Kubernetes cluster
 
 ``` console
-make push
+make kind-up
 ```
 
-**NOTE: Since it uses the commit hash as an image tag, you need to make a new commit whenever you change the source code.**
+Once it is no longer used, run `make kind-down` to delete it.
 
-This command compiles the local source code to build the docker images for `pipecd`, `piped` and then pushes them to the local container registery which was enabled by `make kind-up`.
-
-### Rendering the local manifests
-
-Because the `manifests` directory at [pipe-cd/pipecd](https://github.com/pipe-cd/pipecd) are just containing the manifest templates, they cannot be used to install directly. The following command helps rendering those templates locally. The installable manifests will be stored at `.rendered-manifests` directory.
+### Installing Control Plane into the local cluster
 
 ``` console
-make render-manifests
-```
-
-#### Installing Control Plane into the local cluster
-
-Now, you can use the rendered manifests at `.rendered-manifests` to install Control Plane to the local cluster.
-
-Here is the command to install [quickstart](/docs/quickstart/)'s Control Plane:
-
-``` console
-helm -n pipecd install pipecd .rendered-manifests/pipecd --dependency-update --create-namespace --values ./quickstart/control-plane-values.yaml
+make run/pipecd
 ```
 
 Once all components are running up, use `kubectl port-forward` to expose the installed Control Plane on your localhost:

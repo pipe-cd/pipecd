@@ -1,0 +1,46 @@
+quickstart:
+  enabled: true
+
+server:
+  image:
+    repository: localhost:5001/pipecd
+
+ops:
+  image:
+    repository: localhost:5001/pipecd
+
+config:
+  data: |
+    apiVersion: "pipecd.dev/v1beta1"
+    kind: ControlPlane
+    spec:
+      datastore:
+        type: MYSQL
+        config:
+          url: root:test@tcp(pipecd-mysql:3306)
+          database: quickstart
+      filestore:
+        type: MINIO
+        config:
+          endpoint: http://pipecd-minio:9000
+          bucket: quickstart
+          accessKeyFile: /etc/pipecd-secret/minio-access-key
+          secretKeyFile: /etc/pipecd-secret/minio-secret-key
+          autoCreateBucket: true
+      projects:
+        - id: quickstart
+          staticAdmin:
+            username: hello-pipecd
+            passwordHash: "$2a$10$ye96mUqUqTnjUqgwQJbJzel/LJibRhUnmzyypACkvrTSnQpVFZ7qK" # bcrypt value of "hello-pipecd"
+
+secret:
+  encryptionKey:
+    data: encryption-key-just-used-for-quickstart
+  minioAccessKey:
+    data: quickstart-access-key
+  minioSecretKey:
+    data: quickstart-secret-key
+
+mysql:
+  rootPassword: "test"
+  database: "quickstart"
