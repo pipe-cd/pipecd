@@ -1,3 +1,14 @@
+####################
+# All make commands are following the format as "make action/target"
+# "action" can be either:
+#   build:  build artifacts such as binary, container image, chart
+#   test:   execute test
+#   run:    run a module locally
+#   lint:   lint the source code
+#   update: update packages or dependencies to the newer versions
+#   gen:    execute code or docs generation
+####################
+
 # Build commands
 
 .PHONY: build
