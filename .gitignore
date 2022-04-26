@@ -55,3 +55,6 @@ manifests/pipecd/charts
 manifests/piped/charts
 manifests/site/charts
 manifests/helloworld/charts
+
+# gomock generated reflect files
+gomock_reflect_*/
