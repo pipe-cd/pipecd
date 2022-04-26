@@ -17,16 +17,16 @@ description: >
 
 ## Commands
 
-- `make build/backend`: builds all binaries of all backend modules.
-- `make build/frontend`: builds the static files for frontend.
+- `make build/go`: builds all go modules including pipecd, piped, pipectl.
+- `make build/web`: builds the static files for web.
 
-- `make test/backend`: runs all unit tests of backend.
-- `make test/frontend`: runs all unit tests of backend.
+- `make test/go`: runs all unit tests of go modules.
+- `make test/web`: runs all unit tests of web.
 - `make test/integration`: runs integration tests.
 
 - `make run/pipecd`: runs Control Plane locally.
 - `make run/piped`: runs Piped Agent locally.
-- `make run/frontend`: runs frontend locally.
+- `make run/web`: runs frontend locally.
 - `make run/site`: runs PipeCD site locally (requires [hugo](https://github.com/gohugoio/hugo) with `_extended` version `0.92.1` or later to be installed).
 
 - `make gen/code`: generate Go and Typescript code from protos and mock configs. You need to run it if you modified any proto or mock definition files.
