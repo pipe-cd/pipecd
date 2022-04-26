@@ -89,7 +89,9 @@ run/pipecd:
 	docker push localhost:5001/pipecd:$(BUILD_VERSION)
 
 	@echo "Installing Control Plane in kind..."
-	helm -n pipecd install pipecd manifests/pipecd --version $(BUILD_VERSION) --app-version $(BUILD_VERSION) --dependency-update --create-namespace --values ./local/control-plane-values.yaml
+	mkdir -p .artifacts
+	helm package manifests/pipecd --version $(BUILD_VERSION) --app-version $(BUILD_VERSION) --dependency-update --destination .artifacts
+	helm -n pipecd install pipecd manifests/pipecd-$(BUILD_VERSION).tgz --create-namespace --values ./local/control-plane-values.yaml
 
 .PHONY: run/piped
 run/piped: CONFIG_FILE ?=
