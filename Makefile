@@ -6,17 +6,19 @@ build/backend: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
 build/backend: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
 build/backend: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
 build/backend: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
-build/backend: BUILD_ARCH ?= GOOS=linux GOARCH=amd64
-build/backend: BUILD_ENV ?= $(BUILD_ARCH) CGO_ENABLED=0
+build/backend: BUILD_OS ?= linux
+build/backend: BUILD_ARCH ?= amd64
+build/backend: BUILD_ENV ?= GOOS=$(BUILD_OS) GOARCH=$(BUILD_ARCH) CGO_ENABLED=0
+build/backend: BIN_SUFFIX ?=
 build/backend:
 ifndef MOD
-	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd ./cmd/pipecd
-	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/piped ./cmd/piped
-	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/launcher ./cmd/launcher
-	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipectl ./cmd/pipectl
-	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/helloworld ./cmd/helloworld
+	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd$(BIN_SUFFIX) ./cmd/pipecd
+	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/piped$(BIN_SUFFIX) ./cmd/piped
+	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/launcher$(BIN_SUFFIX) ./cmd/launcher
+	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipectl$(BIN_SUFFIX) ./cmd/pipectl
+	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/helloworld$(BIN_SUFFIX) ./cmd/helloworld
 else
-	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/$(MOD) ./cmd/$(MOD)
+	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/$(MOD)$(BIN_SUFFIX) ./cmd/$(MOD)
 endif
 
 .PHONY: build/frontend
