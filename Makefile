@@ -1,26 +1,31 @@
 # Build commands
 
-.PHONY: build/backend
-build/backend: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
-build/backend: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
-build/backend: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
-build/backend: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
-build/backend: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
-build/backend: BUILD_ARCH ?= GOOS=linux GOARCH=amd64
-build/backend: BUILD_ENV ?= $(BUILD_ARCH) CGO_ENABLED=0
-build/backend:
+.PHONY: build
+build: build/go build/web
+
+.PHONY: build/go
+build/go: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+build/go: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
+build/go: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
+build/go: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
+build/go: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
+build/go: BUILD_OS ?= linux
+build/go: BUILD_ARCH ?= amd64
+build/go: BUILD_ENV ?= GOOS=$(BUILD_OS) GOARCH=$(BUILD_ARCH) CGO_ENABLED=0
+build/go: BIN_SUFFIX ?=
+build/go:
 ifndef MOD
-	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd ./cmd/pipecd
-	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/piped ./cmd/piped
-	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/launcher ./cmd/launcher
-	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipectl ./cmd/pipectl
-	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/helloworld ./cmd/helloworld
+	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd$(BIN_SUFFIX) ./cmd/pipecd
+	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/piped$(BIN_SUFFIX) ./cmd/piped
+	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/launcher$(BIN_SUFFIX) ./cmd/launcher
+	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipectl$(BIN_SUFFIX) ./cmd/pipectl
+	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/helloworld$(BIN_SUFFIX) ./cmd/helloworld
 else
-	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/$(MOD) ./cmd/$(MOD)
+	$(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/$(MOD)$(BIN_SUFFIX) ./cmd/$(MOD)
 endif
 
-.PHONY: build/frontend
-build/frontend:
+.PHONY: build/web
+build/web:
 	yarn --cwd web build
 
 .PHONY: build/chart
@@ -42,12 +47,15 @@ build/image:
 
 # Test commands
 
-.PHONY: test/backend
-test/backend:
+.PHONY: test
+test: test/go test/web
+
+.PHONY: test/go
+test/go:
 	go test ./pkg/... ./cmd/...
 
-.PHONY: test/frontend
-test/frontend:
+.PHONY: test/web
+test/web:
 	yarn --cwd web test:coverage --runInBand
 
 .PHONY: test/integration
@@ -76,8 +84,8 @@ run/pipecd:
 run/piped:
 	@echo "Unimplemented"
 
-.PHONY: run/frontend
-run/frontend:
+.PHONY: run/web
+run/web:
 	yarn --cwd web dev
 
 .PHONY: run/site
@@ -86,23 +94,23 @@ run/site:
 
 # Lint commands
 
-.PHONY: lint/backend
-lint/backend:
+.PHONY: lint/go
+lint/go:
 	@echo "Unimplemented"
 
-.PHONY: lint/frontend
-lint/frontend:
+.PHONY: lint/web
+lint/web:
 	@echo "Unimplemented"
 
 # Update commands
 
-.PHONY: update/backend-deps
-update/backend-deps:
+.PHONY: update/go-deps
+update/go-deps:
 	go mod tidy
 	go mod vendor
 
-.PHONY: update/frontend-deps
-update/frontend-deps:
+.PHONY: update/web-deps
+update/web-deps:
 	yarn --cwd web install --prefer-offline
 
 .PHONY: update/docsy

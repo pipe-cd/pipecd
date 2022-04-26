@@ -8,26 +8,31 @@ on:
     branches:
       - master
 
+env:
+  GO_VERSION: 1.17.6
+  NODE_VERSION: 16.13.0
+  HELM_VERSION: 3.8.2
+
 jobs:
-  backend:
-    name: Backend
+  go:
+    name: Go
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
         with:
-          go-version: '1.17.6'
-      - name: Build backend modules
-        run: make build/backend
+          go-version: ${{ env.GO_VERSION }}
+      - name: Build go modules
+        run: make build/go
 
-  frontend:
-    name: Frontend
+  web:
+    name: Web
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: '16.13.0'
+          node-version: ${{ env.NODE_VERSION }}
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -38,16 +43,14 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      - name: Update frontend dependencies
-        run: make update/frontend-deps
+      - name: Update web dependencies
+        run: make update/web-deps
       - name: Build web static
-        run: make build/frontend
+        run: make build/web
 
   chart:
     name: Helm Chart
-    runs-on: ubuntu-latest
-    env:
-      HELM_VERSION: 3.8.2
+    runs-on: ubuntu-latest      
     steps:
       - uses: actions/checkout@v2
         with:
