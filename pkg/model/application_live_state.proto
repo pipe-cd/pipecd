@@ -23,6 +23,8 @@ import "pkg/model/common.proto";
 // ApplicationLiveStateSnapshot represents the full live state information of an application
 // at a specific timestamp.
 message ApplicationLiveStateSnapshot {
+    reserved 2;
+
     enum Status {
         UNKNOWN = 0;
         HEALTHY = 1;

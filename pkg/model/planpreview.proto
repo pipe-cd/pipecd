@@ -35,6 +35,8 @@ message PlanPreviewCommandResult {
 }
 
 message ApplicationPlanPreviewResult {
+    reserved 6 to 8;
+
     // Application information.
     string application_id = 1 [(validate.rules).string.min_len = 1];
     string application_name = 2 [(validate.rules).string.min_len = 1];
