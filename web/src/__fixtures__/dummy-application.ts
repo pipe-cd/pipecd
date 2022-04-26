@@ -25,7 +25,6 @@ export const dummyApplication: Application.AsObject = {
   id: randomUUID(),
   cloudProvider: "kubernetes-default",
   disabled: false,
-  envId: "",
   gitPath: {
     configPath: "",
     configFilename: "",
@@ -133,7 +132,6 @@ export function createApplicationFromObject(
   app.setId(o.id);
   app.setCloudProvider(o.cloudProvider);
   app.setDisabled(o.disabled);
-  app.setEnvId(o.envId);
   app.setKind(o.kind);
   app.setName(o.name);
   app.setPipedId(o.pipedId);

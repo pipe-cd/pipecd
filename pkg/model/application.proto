@@ -22,15 +22,15 @@ import "pkg/model/common.proto";
 import "pkg/model/deployment.proto";
 
 message Application {
+    reserved 3;
+
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
     // The name of the application.
     string name = 2 [(validate.rules).string.min_len = 1];
-    // The id of environment this application belongs to.
-    string env_id = 3 [deprecated = true];
     // The ID of the piped that should handle this application.
     string piped_id = 4 [(validate.rules).string.min_len = 1];
-    // The ID of the project this environment belongs to.
+    // The ID of the project this application belongs to.
     string project_id = 5 [(validate.rules).string.min_len = 1];
     // What kind of this application.
     ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
