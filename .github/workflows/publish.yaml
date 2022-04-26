@@ -28,7 +28,7 @@ jobs:
       - name: Determine version
         run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7)" >> $GITHUB_ENV
 
-      # Building go.
+      # Building go modules.
       - name: Build go modules
         run: make build/go
 
