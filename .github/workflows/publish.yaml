@@ -8,6 +8,8 @@ on:
 env:
   REGISTRY: ghcr.io
   HELM_VERSION: 3.8.2
+  GO_VERSION: 1.17.6
+  NODE_VERSION: 16.13.0
 
 jobs:
   artifacts:
@@ -22,7 +24,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-go@v2
         with:
-          go-version: '1.17.6'
+          go-version: ${{ env.GO_VERSION }}
       - name: Determine version
         run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7)" >> $GITHUB_ENV
 
@@ -30,10 +32,10 @@ jobs:
       - name: Build backend modules
         run: make build/backend
 
-      # Building frontend.
+      # Building web.
       - uses: actions/setup-node@v2
         with:
-          node-version: '16.13.0'
+          node-version: ${{ env.NODE_VERSION }}
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -44,11 +46,10 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      - name: Update frontend dependencies
-        run: make update/frontend-deps
+      - name: Update web dependencies
+        run: make update/web-deps
       - name: Build web static
-        run: |
-          make build/frontend
+        run: make build/web
 
       # Login to push container images.
       - name: Log in to the container registry

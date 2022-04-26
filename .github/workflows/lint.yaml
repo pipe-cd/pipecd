@@ -8,23 +8,26 @@ on:
     branches:
       - master
 
+env:
+  NODE_VERSION: 16.13.0
+
 jobs:
-  backend:
-    name: Backend
+  go:
+    name: Go
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Run lint
-        run: make lint/backend
+        run: make lint/go
 
-  frontend:
-    name: Frontend
+  web:
+    name: Web
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: '16.13.0'
+          node-version: ${{ env.NODE_VERSION }}
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -35,7 +38,7 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      - name: Update frontend dependencies
-        run: make update/frontend-deps
+      - name: Update web dependencies
+        run: make update/web-deps
       - name: Run lint
-        run: make lint/frontend
+        run: make lint/web
