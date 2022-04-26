@@ -100,7 +100,7 @@ type Piped struct {
 	//
 	// Deprecated: Do not use.
 	KeyHash string `protobuf:"bytes,4,opt,name=key_hash,json=keyHash,proto3" json:"key_hash,omitempty"`
-	// The ID of the project this enviroment belongs to.
+	// The ID of the project this piped belongs to.
 	ProjectId string `protobuf:"bytes,5,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
 	// The IDs of environments where this piped can be connected to.
 	EnvIds []string `protobuf:"bytes,6,rep,name=env_ids,json=envIds,proto3" json:"env_ids,omitempty"`

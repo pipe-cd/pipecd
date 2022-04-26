@@ -29,7 +29,6 @@ message ApplicationLiveStateSnapshot {
         OTHER = 2;
     }
     string application_id = 1 [(validate.rules).string.min_len = 1];
-    string env_id = 2 [deprecated = true];
     string piped_id = 3 [(validate.rules).string.min_len = 1];
     string project_id = 4 [(validate.rules).string.min_len = 1];
     ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];

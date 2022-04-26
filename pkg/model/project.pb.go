@@ -214,7 +214,7 @@ func (ProjectRBACPolicy_Action) EnumDescriptor() ([]byte, []int) {
 }
 
 // Project contains needed data for a PipeCD project.
-// Each project can have multiple pipeds, enviroments, applications.
+// Each project can have multiple pipeds, applications, etc.
 // And each project can be controlled by a group of admin users.
 type Project struct {
 	state         protoimpl.MessageState

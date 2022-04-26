@@ -265,12 +265,6 @@ func (m *ApplicationPlanPreviewResult) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for EnvId
-
-	// no validation rules for EnvName
-
-	// no validation rules for EnvUrl
-
 	if utf8.RuneCountInString(m.GetPipedId()) < 1 {
 		err := ApplicationPlanPreviewResultValidationError{
 			field:  "PipedId",

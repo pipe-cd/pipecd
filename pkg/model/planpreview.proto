@@ -44,10 +44,6 @@ message ApplicationPlanPreviewResult {
     ApplicationKind application_kind = 4 [(validate.rules).enum.defined_only = true];
     string application_directory = 5 [(validate.rules).string.min_len = 1];
 
-    string env_id = 6 [deprecated = true];
-    string env_name = 7 [deprecated = true];
-    string env_url = 8 [deprecated = true];
-
     string piped_id = 9 [(validate.rules).string.min_len = 1];
     string project_id = 10 [(validate.rules).string.min_len = 1];
 

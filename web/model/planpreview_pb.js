@@ -386,9 +386,6 @@ proto.model.ApplicationPlanPreviewResult.toObject = function(includeInstance, ms
     applicationUrl: jspb.Message.getFieldWithDefault(msg, 3, ""),
     applicationKind: jspb.Message.getFieldWithDefault(msg, 4, 0),
     applicationDirectory: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    envId: jspb.Message.getFieldWithDefault(msg, 6, ""),
-    envName: jspb.Message.getFieldWithDefault(msg, 7, ""),
-    envUrl: jspb.Message.getFieldWithDefault(msg, 8, ""),
     pipedId: jspb.Message.getFieldWithDefault(msg, 9, ""),
     projectId: jspb.Message.getFieldWithDefault(msg, 10, ""),
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : [],
@@ -455,18 +452,6 @@ proto.model.ApplicationPlanPreviewResult.deserializeBinaryFromReader = function(
     case 5:
       var value = /** @type {string} */ (reader.readString());
       msg.setApplicationDirectory(value);
-      break;
-    case 6:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setEnvId(value);
-      break;
-    case 7:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setEnvName(value);
-      break;
-    case 8:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setEnvUrl(value);
       break;
     case 9:
       var value = /** @type {string} */ (reader.readString());
@@ -575,27 +560,6 @@ proto.model.ApplicationPlanPreviewResult.serializeBinaryToWriter = function(mess
   if (f.length > 0) {
     writer.writeString(
       5,
-      f
-    );
-  }
-  f = message.getEnvId();
-  if (f.length > 0) {
-    writer.writeString(
-      6,
-      f
-    );
-  }
-  f = message.getEnvName();
-  if (f.length > 0) {
-    writer.writeString(
-      7,
-      f
-    );
-  }
-  f = message.getEnvUrl();
-  if (f.length > 0) {
-    writer.writeString(
-      8,
       f
     );
   }
@@ -763,60 +727,6 @@ proto.model.ApplicationPlanPreviewResult.prototype.getApplicationDirectory = fun
  */
 proto.model.ApplicationPlanPreviewResult.prototype.setApplicationDirectory = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
-};
-
-
-/**
- * optional string env_id = 6;
- * @return {string}
- */
-proto.model.ApplicationPlanPreviewResult.prototype.getEnvId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.model.ApplicationPlanPreviewResult} returns this
- */
-proto.model.ApplicationPlanPreviewResult.prototype.setEnvId = function(value) {
-  return jspb.Message.setProto3StringField(this, 6, value);
-};
-
-
-/**
- * optional string env_name = 7;
- * @return {string}
- */
-proto.model.ApplicationPlanPreviewResult.prototype.getEnvName = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.model.ApplicationPlanPreviewResult} returns this
- */
-proto.model.ApplicationPlanPreviewResult.prototype.setEnvName = function(value) {
-  return jspb.Message.setProto3StringField(this, 7, value);
-};
-
-
-/**
- * optional string env_url = 8;
- * @return {string}
- */
-proto.model.ApplicationPlanPreviewResult.prototype.getEnvUrl = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 8, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.model.ApplicationPlanPreviewResult} returns this
- */
-proto.model.ApplicationPlanPreviewResult.prototype.setEnvUrl = function(value) {
-  return jspb.Message.setProto3StringField(this, 8, value);
 };
 
 

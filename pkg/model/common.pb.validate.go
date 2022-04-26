@@ -398,8 +398,6 @@ func (m *ApplicationInfo) validate(all bool) error {
 
 	// no validation rules for Description
 
-	// no validation rules for EnvName
-
 	if len(errors) > 0 {
 		return ApplicationInfoMultiError(errors)
 	}

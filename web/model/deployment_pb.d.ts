@@ -14,9 +14,6 @@ export class Deployment extends jspb.Message {
   getApplicationName(): string;
   setApplicationName(value: string): Deployment;
 
-  getEnvId(): string;
-  setEnvId(value: string): Deployment;
-
   getPipedId(): string;
   setPipedId(value: string): Deployment;
 
@@ -101,7 +98,6 @@ export namespace Deployment {
     id: string,
     applicationId: string,
     applicationName: string,
-    envId: string,
     pipedId: string,
     projectId: string,
     kind: pkg_model_common_pb.ApplicationKind,

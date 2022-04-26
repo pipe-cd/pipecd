@@ -30,7 +30,6 @@ export const dummyDeployment: Deployment.AsObject = {
   completedAt: completedAt.unix(),
   summary:
     "Quick sync by deploying the new version and configuring all traffic to it because no pipeline was configured",
-  envId: "",
   gitPath: {
     configPath: "",
     configFilename: "",
@@ -56,7 +55,6 @@ export function createDeploymentFromObject(o: Deployment.AsObject): Deployment {
   deployment.setCloudProvider(o.cloudProvider);
   deployment.setCompletedAt(o.completedAt);
   deployment.setCreatedAt(o.createdAt);
-  deployment.setEnvId(o.envId);
   deployment.setKind(o.kind);
   deployment.setPipedId(o.pipedId);
   deployment.setProjectId(o.projectId);

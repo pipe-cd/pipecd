@@ -93,9 +93,6 @@ export class ApplicationInfo extends jspb.Message {
   getDescription(): string;
   setDescription(value: string): ApplicationInfo;
 
-  getEnvName(): string;
-  setEnvName(value: string): ApplicationInfo;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ApplicationInfo.AsObject;
   static toObject(includeInstance: boolean, msg: ApplicationInfo): ApplicationInfo.AsObject;
@@ -115,7 +112,6 @@ export namespace ApplicationInfo {
     configFilename: string,
     pipedId: string,
     description: string,
-    envName: string,
   }
 }
 

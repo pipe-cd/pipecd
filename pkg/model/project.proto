@@ -20,7 +20,7 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 import "validate/validate.proto";
 
 // Project contains needed data for a PipeCD project.
-// Each project can have multiple pipeds, enviroments, applications.
+// Each project can have multiple pipeds, applications, etc.
 // And each project can be controlled by a group of admin users.
 message Project {
     // The configured unique identifier.
