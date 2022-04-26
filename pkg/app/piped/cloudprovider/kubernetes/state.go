@@ -110,6 +110,8 @@ func determineResourceHealth(key ResourceKey, obj *unstructured.Unstructured) (s
 		return determineClusterRoleBindingHealth(obj)
 	case KindNameSpace:
 		return determineNameSpace(obj)
+	case KindPodDisruptionBudget:
+		return determinePodDisruptionBudgetHealth(obj)
 	default:
 		desc = "Unimplemented or unknown resource"
 		return
@@ -533,6 +535,12 @@ func determinePVCHealth(obj *unstructured.Unstructured) (status model.Kubernetes
 }
 
 func determineServiceAccountHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
+	status = model.KubernetesResourceState_HEALTHY
+	return
+}
+
+func determinePodDisruptionBudgetHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
 	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
 	status = model.KubernetesResourceState_HEALTHY
 	return

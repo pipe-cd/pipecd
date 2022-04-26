@@ -47,6 +47,7 @@ var builtInApiVersions = map[string]struct{}{
 	"networking.k8s.io/v1":                 {},
 	"networking.k8s.io/v1beta1":            {},
 	"node.k8s.io/v1beta1":                  {},
+	"policy/v1":                            {},
 	"policy/v1beta1":                       {},
 	"rbac.authorization.k8s.io/v1":         {},
 	"rbac.authorization.k8s.io/v1beta1":    {},
@@ -77,6 +78,7 @@ const (
 	KindClusterRole              = "ClusterRole"
 	KindClusterRoleBinding       = "ClusterRoleBinding"
 	KindNameSpace                = "NameSpace"
+	KindPodDisruptionBudget      = "PodDisruptionBudget"
 	KindCustomResourceDefinition = "CustomResourceDefinition"
 
 	DefaultNamespace = "default"
