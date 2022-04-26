@@ -42,7 +42,7 @@ enum ChainStatus {
 message DeploymentChain {
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
-    // The ID of the project this environment belongs to.
+    // The ID of the project this deployment chain belongs to.
     string project_id = 2 [(validate.rules).string.min_len = 1];
     // Status of this deployment chain.
     ChainStatus status = 3 [(validate.rules).enum.defined_only = true];

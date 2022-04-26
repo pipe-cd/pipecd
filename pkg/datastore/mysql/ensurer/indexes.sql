@@ -5,10 +5,9 @@
 -- index on `Disabled` and `UpdatedAt` DESC
 CREATE INDEX application_disabled_updated_at_desc ON Application (Disabled, UpdatedAt DESC);
 
--- index on `EnvId` ASC and `UpdatedAt` DESC
-ALTER TABLE Application ADD COLUMN EnvId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.env_id") VIRTUAL NOT NULL;
-ALTER TABLE Application MODIFY EnvId VARCHAR(36) GENERATED ALWAYS AS (IFNULL(data->>"$.env_id", "")) VIRTUAL NOT NULL;
-CREATE INDEX application_env_id_updated_at_desc ON Application (EnvId, UpdatedAt DESC);
+-- TODO: Remove this drop statement once all environment concept is removed completely after few versions
+-- drop index on `EnvId` column if exists
+DROP INDEX application_env_id_updated_at_desc ON Application;
 
 -- index on `Name` ASC and `UpdatedAt` DESC
 ALTER TABLE Application ADD COLUMN Name VARCHAR(50) GENERATED ALWAYS AS (data->>"$.name") VIRTUAL NOT NULL;
@@ -61,10 +60,9 @@ CREATE INDEX deployment_application_name_updated_at_desc ON Deployment (Applicat
 -- index on `ProjectId` ASC and `UpdatedAt` DESC
 CREATE INDEX deployment_project_id_updated_at_desc ON Deployment (ProjectId, UpdatedAt DESC);
 
--- index on `EnvId` ASC and `UpdatedAt` DESC
-ALTER TABLE Deployment ADD COLUMN EnvId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.env_id") VIRTUAL NOT NULL;
-ALTER TABLE Deployment MODIFY EnvId VARCHAR(36) GENERATED ALWAYS AS (IFNULL(data->>"$.env_id", "")) VIRTUAL NOT NULL;
-CREATE INDEX deployment_env_id_updated_at_desc ON Deployment (EnvId, UpdatedAt DESC);
+-- TODO: Remove this drop statement once all environment concept is removed completely after few versions
+-- drop index on `EnvId` column if exists
+DROP INDEX deployment_env_id_updated_at_desc ON Deployment;
 
 -- index on `Kind` ASC and `UpdatedAt` DESC
 ALTER TABLE Deployment ADD COLUMN Kind INT GENERATED ALWAYS AS (IFNULL(data->>"$.kind", 0)) VIRTUAL NOT NULL;
@@ -128,11 +126,8 @@ CREATE INDEX event_name_project_id_status_updated_at_desc ON Event (Name, Projec
 -- index on `ProjectId` ASC
 CREATE INDEX piped_project_id_asc ON Piped (ProjectId);
 
--- index on `ProjectId` ASC and `EnvIds` ASC
-ALTER TABLE Piped ADD COLUMN EnvIds JSON GENERATED ALWAYS AS (IFNULL(data ->> "$.env_ids", '[]')) VIRTUAL NOT NULL;
--- Remove the `piped_project_id_env_ids_asc` index due to issue around empty array value on column
--- which be a part of mulitple columns index.
--- ref: https://dev.mysql.com/doc/refman/8.0/en/create-index.html#create-index-multi-valued
+-- TODO: Remove this drop statement once all environment concept is removed completely after few versions
+-- drop index on `EnvId` column if exists
 DROP INDEX piped_project_id_env_ids_asc ON Piped;
 
 --

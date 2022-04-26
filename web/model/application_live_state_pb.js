@@ -260,7 +260,6 @@ proto.model.ApplicationLiveStateSnapshot.prototype.toObject = function(opt_inclu
 proto.model.ApplicationLiveStateSnapshot.toObject = function(includeInstance, msg) {
   var f, obj = {
     applicationId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    envId: jspb.Message.getFieldWithDefault(msg, 2, ""),
     pipedId: jspb.Message.getFieldWithDefault(msg, 3, ""),
     projectId: jspb.Message.getFieldWithDefault(msg, 4, ""),
     kind: jspb.Message.getFieldWithDefault(msg, 5, 0),
@@ -309,10 +308,6 @@ proto.model.ApplicationLiveStateSnapshot.deserializeBinaryFromReader = function(
     case 1:
       var value = /** @type {string} */ (reader.readString());
       msg.setApplicationId(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setEnvId(value);
       break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
@@ -388,13 +383,6 @@ proto.model.ApplicationLiveStateSnapshot.serializeBinaryToWriter = function(mess
   if (f.length > 0) {
     writer.writeString(
       1,
-      f
-    );
-  }
-  f = message.getEnvId();
-  if (f.length > 0) {
-    writer.writeString(
-      2,
       f
     );
   }
@@ -493,24 +481,6 @@ proto.model.ApplicationLiveStateSnapshot.prototype.getApplicationId = function()
  */
 proto.model.ApplicationLiveStateSnapshot.prototype.setApplicationId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
-};
-
-
-/**
- * optional string env_id = 2;
- * @return {string}
- */
-proto.model.ApplicationLiveStateSnapshot.prototype.getEnvId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
- */
-proto.model.ApplicationLiveStateSnapshot.prototype.setEnvId = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 

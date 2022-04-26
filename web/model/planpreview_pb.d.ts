@@ -56,15 +56,6 @@ export class ApplicationPlanPreviewResult extends jspb.Message {
   getApplicationDirectory(): string;
   setApplicationDirectory(value: string): ApplicationPlanPreviewResult;
 
-  getEnvId(): string;
-  setEnvId(value: string): ApplicationPlanPreviewResult;
-
-  getEnvName(): string;
-  setEnvName(value: string): ApplicationPlanPreviewResult;
-
-  getEnvUrl(): string;
-  setEnvUrl(value: string): ApplicationPlanPreviewResult;
-
   getPipedId(): string;
   setPipedId(value: string): ApplicationPlanPreviewResult;
 
@@ -117,9 +108,6 @@ export namespace ApplicationPlanPreviewResult {
     applicationUrl: string,
     applicationKind: pkg_model_common_pb.ApplicationKind,
     applicationDirectory: string,
-    envId: string,
-    envName: string,
-    envUrl: string,
     pipedId: string,
     projectId: string,
     labelsMap: Array<[string, string]>,

@@ -8,9 +8,6 @@ export class ApplicationLiveStateSnapshot extends jspb.Message {
   getApplicationId(): string;
   setApplicationId(value: string): ApplicationLiveStateSnapshot;
 
-  getEnvId(): string;
-  setEnvId(value: string): ApplicationLiveStateSnapshot;
-
   getPipedId(): string;
   setPipedId(value: string): ApplicationLiveStateSnapshot;
 
@@ -59,7 +56,6 @@ export class ApplicationLiveStateSnapshot extends jspb.Message {
 export namespace ApplicationLiveStateSnapshot {
   export type AsObject = {
     applicationId: string,
-    envId: string,
     pipedId: string,
     projectId: string,
     kind: pkg_model_common_pb.ApplicationKind,

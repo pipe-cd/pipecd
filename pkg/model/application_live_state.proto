@@ -23,13 +23,14 @@ import "pkg/model/common.proto";
 // ApplicationLiveStateSnapshot represents the full live state information of an application
 // at a specific timestamp.
 message ApplicationLiveStateSnapshot {
+    reserved 2;
+
     enum Status {
         UNKNOWN = 0;
         HEALTHY = 1;
         OTHER = 2;
     }
     string application_id = 1 [(validate.rules).string.min_len = 1];
-    string env_id = 2 [deprecated = true];
     string piped_id = 3 [(validate.rules).string.min_len = 1];
     string project_id = 4 [(validate.rules).string.min_len = 1];
     ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];

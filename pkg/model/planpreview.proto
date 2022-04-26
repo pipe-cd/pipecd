@@ -35,6 +35,8 @@ message PlanPreviewCommandResult {
 }
 
 message ApplicationPlanPreviewResult {
+    reserved 6 to 8;
+
     // Application information.
     string application_id = 1 [(validate.rules).string.min_len = 1];
     string application_name = 2 [(validate.rules).string.min_len = 1];
@@ -43,10 +45,6 @@ message ApplicationPlanPreviewResult {
     string application_url = 3;
     ApplicationKind application_kind = 4 [(validate.rules).enum.defined_only = true];
     string application_directory = 5 [(validate.rules).string.min_len = 1];
-
-    string env_id = 6 [deprecated = true];
-    string env_name = 7 [deprecated = true];
-    string env_url = 8 [deprecated = true];
 
     string piped_id = 9 [(validate.rules).string.min_len = 1];
     string project_id = 10 [(validate.rules).string.min_len = 1];

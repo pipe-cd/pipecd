@@ -174,7 +174,7 @@ type DeploymentChain struct {
 
 	// The generated unique identifier.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// The ID of the project this environment belongs to.
+	// The ID of the project this deployment chain belongs to.
 	ProjectId string `protobuf:"bytes,2,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
 	// Status of this deployment chain.
 	Status ChainStatus `protobuf:"varint,3,opt,name=status,proto3,enum=model.ChainStatus" json:"status,omitempty"`
