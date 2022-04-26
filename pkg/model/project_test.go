@@ -226,7 +226,7 @@ func TestDecrypt(t *testing.T) {
 	}
 }
 
-func TestProject_IsRBACRoleExists(t *testing.T) {
+func TestProject_HasRBACRole(t *testing.T) {
 	roles := []*ProjectRBACRole{
 		{
 			Name: "test",
@@ -247,13 +247,13 @@ func TestProject_IsRBACRoleExists(t *testing.T) {
 	p := &Project{RbacRoles: roles}
 
 	// True
-	assert.True(t, p.IsRBACRoleExists("test"))
+	assert.True(t, p.HasRBACRole("test"))
 
 	// False
-	assert.False(t, p.IsRBACRoleExists("foo"))
+	assert.False(t, p.HasRBACRole("foo"))
 }
 
-func TestProject_IsUserGroupExists(t *testing.T) {
+func TestProject_HasUserGroup(t *testing.T) {
 	groups := []*ProjectUserGroup{
 		{
 			SsoGroup: "team/admin",
@@ -263,10 +263,10 @@ func TestProject_IsUserGroupExists(t *testing.T) {
 	p := &Project{UserGroups: groups}
 
 	// True
-	assert.True(t, p.IsUserGroupExists("team/admin"))
+	assert.True(t, p.HasUserGroup("team/admin"))
 
 	// False
-	assert.False(t, p.IsUserGroupExists("team/editor"))
+	assert.False(t, p.HasUserGroup("team/editor"))
 }
 
 func TestProject_GetAllUserGroups(t *testing.T) {
