@@ -91,7 +91,7 @@ run/pipecd:
 	@echo "Installing Control Plane in kind..."
 	mkdir -p .artifacts
 	helm package manifests/pipecd --version $(BUILD_VERSION) --app-version $(BUILD_VERSION) --dependency-update --destination .artifacts
-	helm -n pipecd install pipecd manifests/pipecd-$(BUILD_VERSION).tgz --create-namespace --values ./local/control-plane-values.yaml
+	helm -n pipecd install pipecd .artifacts/pipecd-$(BUILD_VERSION).tgz --create-namespace --values ./local/control-plane-values.yaml
 
 .PHONY: run/piped
 run/piped: CONFIG_FILE ?=
