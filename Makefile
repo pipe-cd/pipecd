@@ -52,10 +52,6 @@ else
 	helm package manifests/$(MOD) --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
 endif
 
-.PHONY: build/image
-build/image:
-	@echo "Unimplemented"
-
 # Test commands
 
 .PHONY: test
@@ -76,24 +72,34 @@ test/integration:
 # Run commands
 
 .PHONY: run/pipecd
+run/pipecd: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+run/pipecd: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
+run/pipecd: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
+run/pipecd: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
+run/pipecd: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
 run/pipecd:
-	@echo "Unimplemented"
+	@echo "Building go binary of Control Plane..."
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd ./cmd/pipecd
 
-# .PHONY: load-piped-image
-# load-piped-image:
-# 	bazelisk ${BAZEL_FLAGS} run ${BAZEL_COMMAND_FLAGS} --config=linux --config=stamping -- //cmd/piped:piped_app_image --norun
-#
-# .PHONY: kind-up
-# kind-up:
-# 	./hack/create-kind-cluster.sh pipecd
-#
-# .PHONY: kind-down
-# kind-down:
-# 	kind delete cluster --name pipecd
+	@echo "Building web static files..."
+	yarn --cwd web build
+
+	@echo "Building docker image and pushing it to local registry..."
+	docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) .
+	docker push localhost:5001/pipecd:$(BUILD_VERSION)
+
+	@echo "Installing Control Plane in kind..."
+	mkdir -p .artifacts
+	helm package manifests/pipecd --version $(BUILD_VERSION) --app-version $(BUILD_VERSION) --dependency-update --destination .artifacts
+	helm -n pipecd install pipecd .artifacts/pipecd-$(BUILD_VERSION).tgz --create-namespace \
+		--values ./quickstart/control-plane-values.yaml \
+		--set server.image.repository=localhost:5001/pipecd \
+		--set ops.image.repository=localhost:5001/pipecd
 
 .PHONY: run/piped
+run/piped: CONFIG_FILE ?=
 run/piped:
-	@echo "Unimplemented"
+	go run cmd/piped/main.go piped --tools-dir=/tmp/piped-bin --config-file=$(CONFIG_FILE)
 
 .PHONY: run/web
 run/web:
@@ -154,3 +160,13 @@ gen/test-tls:
 		-out pkg/rpc/testdata/tls.crt \
 		-subj "/CN=localhost" \
 		-config pkg/rpc/testdata/tls.config
+
+# Other commands
+
+.PHONY: kind-up
+kind-up:
+	./hack/create-kind-cluster.sh pipecd
+
+.PHONY: kind-down
+kind-down:
+	kind delete cluster --name pipecd
