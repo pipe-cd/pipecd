@@ -32,7 +32,7 @@ src
 We use `msw` for mocking API, so you can see UI without running API server.
 
 ```bash
-make web-dev
+make run/web
 ```
 
 The app will be available at http://localhost:9090.

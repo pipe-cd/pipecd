@@ -10,6 +10,7 @@ description: >
 
 - [Go 1.17](https://go.dev/)
 - [Docker Decktop](https://www.docker.com/products/docker-desktop/)
+- [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) (If you want to run Control Plane locally)
 
 ## Repositories
 - [pipecd](https://github.com/pipe-cd/pipecd): contains all source code and documentation of PipeCD project.
@@ -24,14 +25,49 @@ description: >
 - `make test/web`: runs all unit tests of web.
 - `make test/integration`: runs integration tests.
 
-- `make run/pipecd`: runs Control Plane locally.
-- `make run/piped`: runs Piped Agent locally.
-- `make run/web`: runs frontend locally.
 - `make run/site`: runs PipeCD site locally (requires [hugo](https://github.com/gohugoio/hugo) with `_extended` version `0.92.1` or later to be installed).
 
 - `make gen/code`: generate Go and Typescript code from protos and mock configs. You need to run it if you modified any proto or mock definition files.
 
 For the full list of available commands, please see the Makefile at the root of repository.
+
+## How to run Piped agent locally
+
+1. Prepare the piped configuration file `piped-config.yaml`
+
+2. Ensure that your `kube-context` is connecting to the right kubernetes cluster
+
+2. Run the following command to start running `piped`
+
+    ``` console
+    make run/piped CONFIG_FILE=piped-config.yaml
+    ```
+
+## How to run Control Plane locally
+
+1. Start running a Kubernetes cluster
+
+    ``` console
+    make kind-up
+    ```
+
+    Once it is no longer used, run `make kind-down` to delete it.
+
+2. Installing Control Plane into the local cluster
+
+    ``` console
+    make run/pipecd
+    ```
+
+    Once all components are running up, use `kubectl port-forward` to expose the installed Control Plane on your localhost:
+
+    ``` console
+    kubectl -n pipecd port-forward svc/pipecd 8080
+    ```
+
+3. Accessing web console of the local Control Plane
+
+    Point your web browser to [http://localhost:8080](http://localhost:8080) to login with the configured static admin account: project = `quickstart`, username = `hello-pipecd`, password = `hello-pipecd`.
 
 ## Docs and workaround with docs
 
