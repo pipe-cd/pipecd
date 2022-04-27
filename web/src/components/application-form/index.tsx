@@ -623,7 +623,6 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
 
     const [appToAdd, setAppToAdd] = useState({
       name: "",
-      env: "",
       pipedId: "",
       repo: {} as ApplicationGitRepository.AsObject,
       repoPath: "",
@@ -760,7 +759,6 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
               onClick={() => {
                 setAppToAdd({
                   name: selectedApp.name,
-                  env: "",
                   pipedId: selectedApp.pipedId,
                   repo: {
                     id: selectedApp.repoId,

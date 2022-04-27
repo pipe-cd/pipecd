@@ -228,12 +228,6 @@ export const applicationsSlice = createSlice({
   },
 });
 
-export const selectApplicationsByEnvId = (envId: string) => (
-  state: AppState
-): Application.AsObject[] => {
-  return selectAll(state.applications).filter((app) => app.envId === envId);
-};
-
 export const { clearAddedApplicationId } = applicationsSlice.actions;
 
 export {

@@ -12,9 +12,6 @@ export class Application extends jspb.Message {
   getName(): string;
   setName(value: string): Application;
 
-  getEnvId(): string;
-  setEnvId(value: string): Application;
-
   getPipedId(): string;
   setPipedId(value: string): Application;
 
@@ -83,7 +80,6 @@ export namespace Application {
   export type AsObject = {
     id: string,
     name: string,
-    envId: string,
     pipedId: string,
     projectId: string,
     kind: pkg_model_common_pb.ApplicationKind,

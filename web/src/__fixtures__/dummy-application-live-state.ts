@@ -60,7 +60,6 @@ export const resourcesList: KubernetesResourceState.AsObject[] = [
 export const dummyApplicationLiveState: ApplicationLiveState = {
   applicationId: dummyApplication.id,
   healthStatus: ApplicationLiveStateSnapshot.Status.HEALTHY,
-  envId: "",
   kind: ApplicationKind.KUBERNETES,
   pipedId: dummyPiped.id,
   version: { index: 1, timestamp: 0 },
@@ -134,7 +133,6 @@ export function createLiveStateSnapshotFromObject(
   const snapshot = new ApplicationLiveStateSnapshot();
   snapshot.setApplicationId(o.applicationId);
   snapshot.setHealthStatus(o.healthStatus);
-  snapshot.setEnvId(o.envId);
   snapshot.setKind(o.kind);
   snapshot.setPipedId(o.pipedId);
   if (o.version) {

@@ -128,7 +128,6 @@ proto.model.Application.toObject = function(includeInstance, msg) {
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     name: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    envId: jspb.Message.getFieldWithDefault(msg, 3, ""),
     pipedId: jspb.Message.getFieldWithDefault(msg, 4, ""),
     projectId: jspb.Message.getFieldWithDefault(msg, 5, ""),
     kind: jspb.Message.getFieldWithDefault(msg, 6, 0),
@@ -188,10 +187,6 @@ proto.model.Application.deserializeBinaryFromReader = function(msg, reader) {
     case 2:
       var value = /** @type {string} */ (reader.readString());
       msg.setName(value);
-      break;
-    case 3:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setEnvId(value);
       break;
     case 4:
       var value = /** @type {string} */ (reader.readString());
@@ -303,13 +298,6 @@ proto.model.Application.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       2,
-      f
-    );
-  }
-  f = message.getEnvId();
-  if (f.length > 0) {
-    writer.writeString(
-      3,
       f
     );
   }
@@ -462,24 +450,6 @@ proto.model.Application.prototype.getName = function() {
  */
 proto.model.Application.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
-};
-
-
-/**
- * optional string env_id = 3;
- * @return {string}
- */
-proto.model.Application.prototype.getEnvId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.model.Application} returns this
- */
-proto.model.Application.prototype.setEnvId = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
