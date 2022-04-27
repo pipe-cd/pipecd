@@ -185,6 +185,50 @@ func TestMatch(t *testing.T) {
 					Type:     model.NotificationEventType_EVENT_PIPED_STARTED,
 					Metadata: &model.NotificationEventPipedStarted{},
 				}: true,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED,
+					Metadata: &model.NotificationEventDeploymentCancelled{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env":  "stg",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL,
+					Metadata: &model.NotificationEventDeploymentWaitApproval{
+						Deployment: &model.Deployment{
+							Labels: map[string]string{
+								"env":  "stg",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED,
+					Metadata: &model.NotificationEventDeploymentTriggerFailed{
+						Application: &model.Application{
+							Labels: map[string]string{
+								"env":  "stg",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: false,
+				{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED,
+					Metadata: &model.NotificationEventDeploymentTriggerFailed{
+						Application: &model.Application{
+							Labels: map[string]string{
+								"env":  "dev",
+								"team": "pipecd",
+							},
+						},
+					},
+				}: true,
 			},
 		},
 	}
