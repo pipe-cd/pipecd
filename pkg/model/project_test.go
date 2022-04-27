@@ -226,13 +226,10 @@ func TestDecrypt(t *testing.T) {
 	}
 }
 
-func TestProject_FilterRBACRoles(t *testing.T) {
-	rbac := []*ProjectRBACRole{
-		builtinAdminRBACRole,
-		builtinEditorRBACRole,
-		builtinViewerRBACRole,
+func TestProject_HasRBACRole(t *testing.T) {
+	roles := []*ProjectRBACRole{
 		{
-			Name: "Tester",
+			Name: "test",
 			Policies: []*ProjectRBACPolicy{
 				{
 					Resources: []*ProjectRBACResource{
@@ -247,37 +244,203 @@ func TestProject_FilterRBACRoles(t *testing.T) {
 			},
 		},
 	}
-	p := &Project{RbacRoles: rbac}
+	p := &Project{RbacRoles: roles}
 
-	isBuiltin := true
-	got := p.FilterRBACRoles(isBuiltin)
-	assert.Len(t, got, 3)
+	// True
+	assert.True(t, p.HasRBACRole("test"))
 
-	isBuiltin = false
-	got = p.FilterRBACRoles(isBuiltin)
-	assert.Len(t, got, 1)
+	// False
+	assert.False(t, p.HasRBACRole("foo"))
 }
 
-func TestValidateRBACRoles(t *testing.T) {
+func TestProject_HasUserGroup(t *testing.T) {
+	groups := []*ProjectUserGroup{
+		{
+			SsoGroup: "team/tester",
+			Role:     "Tester",
+		},
+	}
+	rbac := &ProjectRBACConfig{
+		Admin:  "team/admin",
+		Editor: "team/editor",
+		Viewer: "team/viewer",
+	}
+	p := &Project{
+		UserGroups: groups,
+		Rbac:       rbac,
+	}
+
+	// True
+	assert.True(t, p.HasUserGroup("team/tester"))
+	assert.True(t, p.HasUserGroup("team/admin"))
+
+	// False
+	assert.False(t, p.HasUserGroup("team/foo"))
+}
+
+func TestProject_GetAllUserGroups(t *testing.T) {
 	testcases := []struct {
 		name    string
-		roles   []*ProjectRBACRole
+		project *Project
+		want    []*ProjectUserGroup
+	}{
+		{
+			name:    "empty",
+			project: &Project{},
+			want:    nil,
+		},
+		{
+			name: "merge rbac config and user group",
+			project: &Project{
+				Rbac: &ProjectRBACConfig{
+					Admin:  "team/admin",
+					Editor: "team/editor",
+					Viewer: "team/viewer",
+				},
+				UserGroups: []*ProjectUserGroup{
+					{
+						Role:     "Tester",
+						SsoGroup: "team/tester",
+					},
+					{
+						Role:     "Owner",
+						SsoGroup: "team/owner",
+					},
+				},
+			},
+			want: []*ProjectUserGroup{
+				{
+					Role:     "Admin",
+					SsoGroup: "team/admin",
+				},
+				{
+					Role:     "Editor",
+					SsoGroup: "team/editor",
+				},
+				{
+					Role:     "Viewer",
+					SsoGroup: "team/viewer",
+				},
+				{
+					Role:     "Tester",
+					SsoGroup: "team/tester",
+				},
+				{
+					Role:     "Owner",
+					SsoGroup: "team/owner",
+				},
+			},
+		},
+		{
+			name: "exists same name rbac config",
+			project: &Project{
+				Rbac: &ProjectRBACConfig{
+					Admin:  "team/admin",
+					Editor: "team/admin",
+					Viewer: "team/admin",
+				},
+				UserGroups: []*ProjectUserGroup{
+					{
+						Role:     "Tester",
+						SsoGroup: "team/tester",
+					},
+					{
+						Role:     "Owner",
+						SsoGroup: "team/owner",
+					},
+				},
+			},
+			want: []*ProjectUserGroup{
+				{
+					Role:     "Admin",
+					SsoGroup: "team/admin",
+				},
+				{
+					Role:     "Tester",
+					SsoGroup: "team/tester",
+				},
+				{
+					Role:     "Owner",
+					SsoGroup: "team/owner",
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.project.GetAllUserGroups()
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestProject_AddUserGroup(t *testing.T) {
+	type args struct {
+		sso  string
+		role string
+	}
+	testcases := []struct {
+		name    string
+		args    args
+		project *Project
 		wantErr bool
 	}{
 		{
-			name: "cannot use built-in role name",
-			roles: []*ProjectRBACRole{
-				{
-					Name: "Admin",
-					Policies: []*ProjectRBACPolicy{
-						{
-							Resources: []*ProjectRBACResource{
-								{
-									Type: ProjectRBACResource_ALL,
+			name: "ok",
+			args: args{
+				sso:  "team/admin",
+				role: "Admin",
+			},
+			project: &Project{
+				RbacRoles: []*ProjectRBACRole{
+					builtinAdminRBACRole,
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "the role is already assigned in rbac config",
+			args: args{
+				sso:  "team/admin",
+				role: "Admin",
+			},
+			project: &Project{
+				Rbac: &ProjectRBACConfig{
+					Admin: "team/admin",
+				},
+				RbacRoles: []*ProjectRBACRole{
+					builtinAdminRBACRole,
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "the role is already assigned in user group",
+			args: args{
+				sso:  "team/tester",
+				role: "Tester",
+			},
+			project: &Project{
+				UserGroups: []*ProjectUserGroup{
+					{
+						SsoGroup: "team/tester",
+						Role:     "Tester",
+					},
+				},
+				RbacRoles: []*ProjectRBACRole{
+					{
+						Name: "Tester",
+						Policies: []*ProjectRBACPolicy{
+							{
+								Resources: []*ProjectRBACResource{
+									{
+										Type: ProjectRBACResource_APPLICATION,
+									},
 								},
-							},
-							Actions: []ProjectRBACPolicy_Action{
-								ProjectRBACPolicy_ALL,
+								Actions: []ProjectRBACPolicy_Action{
+									ProjectRBACPolicy_GET,
+								},
 							},
 						},
 					},
@@ -286,155 +449,152 @@ func TestValidateRBACRoles(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "role name must be unique",
-			roles: []*ProjectRBACRole{
-				{
-					Name: "Tester",
-					Policies: []*ProjectRBACPolicy{
-						{
-							Resources: []*ProjectRBACResource{
-								{
-									Type: ProjectRBACResource_APPLICATION,
-								},
-							},
-							Actions: []ProjectRBACPolicy_Action{
-								ProjectRBACPolicy_GET,
-							},
-						},
-					},
-				},
-				{
-					Name: "Tester",
-					Policies: []*ProjectRBACPolicy{
-						{
-							Resources: []*ProjectRBACResource{
-								{
-									Type: ProjectRBACResource_APPLICATION,
-								},
-							},
-							Actions: []ProjectRBACPolicy_Action{
-								ProjectRBACPolicy_GET,
-							},
-						},
-					},
-				},
+			name: "the role doesn't exist",
+			args: args{
+				sso:  "team/tester",
+				role: "Tester",
 			},
+			project: &Project{},
 			wantErr: true,
 		},
 	}
+
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := ValidateRBACRoles(tc.roles)
+			err := tc.project.AddUserGroup(tc.args.sso, tc.args.role)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
 }
 
-func TestProjectRBACRole_IsBuiltinName(t *testing.T) {
-	p := &ProjectRBACRole{}
-	// Admin
-	p.Name = "Admin"
-	assert.True(t, p.IsBuiltinName())
-	// Editor
-	p.Name = "Editor"
-	assert.True(t, p.IsBuiltinName())
-	// Viewer
-	p.Name = "Viewer"
-	assert.True(t, p.IsBuiltinName())
-	// Other
-	p.Name = "Tester"
-	assert.False(t, p.IsBuiltinName())
-}
-
-func TestValidateUserGroups(t *testing.T) {
-	groups := []*ProjectUserGroup{
-		{
-			Role:     "Admin",
-			SsoGroup: "team/admin",
-		},
-		{
-			Role:     "Editor",
-			SsoGroup: "team/editor",
-		},
-		{
-			Role:     "Viewer",
-			SsoGroup: "team/viewer",
-		},
+func TestProject_DeleteUserGroup(t *testing.T) {
+	type args struct {
+		sso string
 	}
-	err := ValidateUserGroups(groups)
-	assert.NoError(t, err)
-
-	groups = []*ProjectUserGroup{
+	testcases := []struct {
+		name    string
+		args    args
+		project *Project
+		wantErr bool
+	}{
 		{
-			Role:     "Tester",
-			SsoGroup: "team/tester",
-		},
-		{
-			Role:     "Owner",
-			SsoGroup: "team/tester",
-		},
-	}
-	err = ValidateUserGroups(groups)
-	assert.Error(t, err)
-}
-
-func TestProject_GetAllUserGroups(t *testing.T) {
-	p := &Project{}
-
-	// Empty
-	got := p.GetAllUserGroups()
-	assert.Empty(t, got)
-
-	// Merge rbac and user groups
-	p = &Project{
-		Rbac: &ProjectRBACConfig{
-			Admin:  "team/admin",
-			Editor: "team/editor",
-			Viewer: "team/viewer",
-		},
-		UserGroups: []*ProjectUserGroup{
-			{
-				Role:     "Tester",
-				SsoGroup: "team/tester",
+			name: "ok",
+			args: args{
+				sso: "team/admin",
 			},
-			{
-				Role:     "Owner",
-				SsoGroup: "team/owner",
+			project: &Project{
+				UserGroups: []*ProjectUserGroup{
+					{
+						SsoGroup: "team/admin",
+						Role:     "Admin",
+					},
+				},
 			},
+			wantErr: false,
+		},
+		{
+			name: "the user group doen't exist",
+			args: args{
+				sso: "team/admin",
+			},
+			project: &Project{},
+			wantErr: true,
+		},
+		{
+			name: "delete rbac config role",
+			args: args{
+				sso: "team/admin",
+			},
+			project: &Project{
+				Rbac: &ProjectRBACConfig{
+					Admin: "team/admin",
+				},
+			},
+			wantErr: false,
 		},
 	}
-	want := []*ProjectUserGroup{
-		{
-			Role:     "Admin",
-			SsoGroup: "team/admin",
-		},
-		{
-			Role:     "Editor",
-			SsoGroup: "team/editor",
-		},
-		{
-			Role:     "Viewer",
-			SsoGroup: "team/viewer",
-		},
-		{
-			Role:     "Tester",
-			SsoGroup: "team/tester",
-		},
-		{
-			Role:     "Owner",
-			SsoGroup: "team/owner",
-		},
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.project.DeleteUserGroup(tc.args.sso)
+			assert.Equal(t, tc.wantErr, err != nil)
+		})
 	}
-	got = p.GetAllUserGroups()
-	assert.Equal(t, want, got)
 }
 
 func TestProject_GetAllRBACRoles(t *testing.T) {
-	p := &Project{
-		RbacRoles: []*ProjectRBACRole{
-			{
-				Name: "Tester",
-				Policies: []*ProjectRBACPolicy{
+	testcases := []struct {
+		name    string
+		project *Project
+		want    []*ProjectRBACRole
+	}{
+		{
+			name: "ok",
+			project: &Project{
+				RbacRoles: []*ProjectRBACRole{
+					{
+						Name: "Tester",
+						Policies: []*ProjectRBACPolicy{
+							{
+								Resources: []*ProjectRBACResource{
+									{
+										Type: ProjectRBACResource_APPLICATION,
+									},
+								},
+								Actions: []ProjectRBACPolicy_Action{
+									ProjectRBACPolicy_GET,
+								},
+							},
+						},
+					},
+				},
+			},
+			want: []*ProjectRBACRole{
+				builtinAdminRBACRole,
+				builtinEditorRBACRole,
+				builtinViewerRBACRole,
+				{
+					Name: "Tester",
+					Policies: []*ProjectRBACPolicy{
+						{
+							Resources: []*ProjectRBACResource{
+								{
+									Type: ProjectRBACResource_APPLICATION,
+								},
+							},
+							Actions: []ProjectRBACPolicy_Action{
+								ProjectRBACPolicy_GET,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.project.GetAllRBACRoles()
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestProject_AddRBACRole(t *testing.T) {
+	type args struct {
+		name     string
+		policies []*ProjectRBACPolicy
+	}
+	testcases := []struct {
+		name    string
+		args    args
+		project *Project
+		wantErr bool
+	}{
+		{
+			name: "ok",
+			args: args{
+				name: "Tester",
+				policies: []*ProjectRBACPolicy{
 					{
 						Resources: []*ProjectRBACResource{
 							{
@@ -447,8 +607,231 @@ func TestProject_GetAllRBACRoles(t *testing.T) {
 					},
 				},
 			},
+			project: &Project{},
+			wantErr: false,
+		},
+		{
+			name: "the name is already used",
+			args: args{
+				name: "Tester",
+				policies: []*ProjectRBACPolicy{
+					{
+						Resources: []*ProjectRBACResource{
+							{
+								Type: ProjectRBACResource_APPLICATION,
+							},
+						},
+						Actions: []ProjectRBACPolicy_Action{
+							ProjectRBACPolicy_GET,
+						},
+					},
+				},
+			},
+			project: &Project{
+				RbacRoles: []*ProjectRBACRole{
+					{
+						Name: "Tester",
+						Policies: []*ProjectRBACPolicy{
+							{
+								Resources: []*ProjectRBACResource{
+									{
+										Type: ProjectRBACResource_APPLICATION,
+									},
+								},
+								Actions: []ProjectRBACPolicy_Action{
+									ProjectRBACPolicy_GET,
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "the name of built-in role cannot be used",
+			args: args{
+				name: "Admin",
+				policies: []*ProjectRBACPolicy{
+					{
+						Resources: []*ProjectRBACResource{
+							{
+								Type: ProjectRBACResource_APPLICATION,
+							},
+						},
+						Actions: []ProjectRBACPolicy_Action{
+							ProjectRBACPolicy_GET,
+						},
+					},
+				},
+			},
+			project: &Project{},
+			wantErr: true,
 		},
 	}
-	got := p.GetAllRBACRoles()
-	assert.Len(t, got, 4)
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.project.AddRBACRole(tc.args.name, tc.args.policies)
+			assert.Equal(t, tc.wantErr, got != nil)
+		})
+	}
+}
+
+func TestProject_UpdateRBACRole(t *testing.T) {
+	type args struct {
+		name     string
+		policies []*ProjectRBACPolicy
+	}
+	testcases := []struct {
+		name    string
+		args    args
+		project *Project
+		wantErr bool
+	}{
+		{
+			name: "ok",
+			args: args{
+				name: "Tester",
+				policies: []*ProjectRBACPolicy{
+					{
+						Resources: []*ProjectRBACResource{
+							{
+								Type: ProjectRBACResource_APPLICATION,
+							},
+						},
+						Actions: []ProjectRBACPolicy_Action{
+							ProjectRBACPolicy_GET,
+						},
+					},
+				},
+			},
+			project: &Project{
+				RbacRoles: []*ProjectRBACRole{
+					{
+						Name: "Tester",
+						Policies: []*ProjectRBACPolicy{
+							{
+								Resources: []*ProjectRBACResource{
+									{
+										Type: ProjectRBACResource_APPLICATION,
+									},
+								},
+								Actions: []ProjectRBACPolicy_Action{
+									ProjectRBACPolicy_ALL,
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "the role doesn't exist",
+			args: args{
+				name: "Tester",
+				policies: []*ProjectRBACPolicy{
+					{
+						Resources: []*ProjectRBACResource{
+							{
+								Type: ProjectRBACResource_APPLICATION,
+							},
+						},
+						Actions: []ProjectRBACPolicy_Action{
+							ProjectRBACPolicy_GET,
+						},
+					},
+				},
+			},
+			project: &Project{},
+			wantErr: true,
+		},
+		{
+			name: "built-in role cannot be updated",
+			args: args{
+				name: "Admin",
+				policies: []*ProjectRBACPolicy{
+					{
+						Resources: []*ProjectRBACResource{
+							{
+								Type: ProjectRBACResource_APPLICATION,
+							},
+						},
+						Actions: []ProjectRBACPolicy_Action{
+							ProjectRBACPolicy_GET,
+						},
+					},
+				},
+			},
+			project: &Project{},
+			wantErr: true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.project.UpdateRBACRole(tc.args.name, tc.args.policies)
+			assert.Equal(t, tc.wantErr, got != nil)
+		})
+	}
+}
+
+func TestProject_DeleteRBACRole(t *testing.T) {
+	type args struct {
+		name string
+	}
+	testcases := []struct {
+		name    string
+		args    args
+		project *Project
+		wantErr bool
+	}{
+		{
+			name: "ok",
+			args: args{
+				name: "Tester",
+			},
+			project: &Project{
+				RbacRoles: []*ProjectRBACRole{
+					{
+						Name: "Tester",
+						Policies: []*ProjectRBACPolicy{
+							{
+								Resources: []*ProjectRBACResource{
+									{
+										Type: ProjectRBACResource_APPLICATION,
+									},
+								},
+								Actions: []ProjectRBACPolicy_Action{
+									ProjectRBACPolicy_GET,
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "the role doesn't exist",
+			args: args{
+				name: "Tester",
+			},
+			project: &Project{},
+			wantErr: true,
+		},
+		{
+			name: "built-in role cannot be deleted",
+			args: args{
+				name: "Tester",
+			},
+			project: &Project{},
+			wantErr: true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.project.DeleteRBACRole(tc.args.name)
+			assert.Equal(t, tc.wantErr, got != nil)
+		})
+	}
 }
