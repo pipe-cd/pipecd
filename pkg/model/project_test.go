@@ -253,20 +253,29 @@ func TestProject_HasRBACRole(t *testing.T) {
 	assert.False(t, p.HasRBACRole("foo"))
 }
 
-func TestProject_HasUserGroup(t *testing.T) {
+func TestProject_IsRBACRoleAssigned(t *testing.T) {
 	groups := []*ProjectUserGroup{
 		{
-			SsoGroup: "team/admin",
-			Role:     "Admin",
+			SsoGroup: "team/tester",
+			Role:     "Tester",
 		},
 	}
-	p := &Project{UserGroups: groups}
+	rbac := &ProjectRBACConfig{
+		Admin:  "team/admin",
+		Editor: "team/editor",
+		Viewer: "team/viewer",
+	}
+	p := &Project{
+		UserGroups: groups,
+		Rbac:       rbac,
+	}
 
 	// True
-	assert.True(t, p.HasUserGroup("team/admin"))
+	assert.True(t, p.IsRBACRoleAssigned("team/tester"))
+	assert.True(t, p.IsRBACRoleAssigned("team/admin"))
 
 	// False
-	assert.False(t, p.HasUserGroup("team/editor"))
+	assert.False(t, p.IsRBACRoleAssigned("team/foo"))
 }
 
 func TestProject_GetAllUserGroups(t *testing.T) {
@@ -364,20 +373,6 @@ func TestProject_GetAllUserGroups(t *testing.T) {
 			assert.Equal(t, tc.want, got)
 		})
 	}
-}
-
-func TestProjectRBACConfig_IsAssigned(t *testing.T) {
-	p := &ProjectRBACConfig{
-		Admin:  "team/admin",
-		Editor: "team/editor",
-		Viewer: "team/viewer",
-	}
-
-	// True
-	assert.True(t, p.IsAssigned("team/admin"))
-
-	// False
-	assert.False(t, p.IsAssigned("team/test"))
 }
 
 func TestProject_AddUserGroup(t *testing.T) {
