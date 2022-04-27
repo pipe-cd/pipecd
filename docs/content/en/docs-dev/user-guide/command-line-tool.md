@@ -241,32 +241,6 @@ You can encrypt it the same way you do [from the web](/docs/user-guide/secret-ma
       --input-file={PATH_TO_SECRET_FILE}
   ```
 
-### Rename multiple application configuration files
-
-  ``` console
-  pipectl app-config rename \
-      --address={CONTROL_PLANE_API_ADDRESS} \
-      --api-key={API_KEY} \
-      --repo-root-path={ABSOLUTE_PATH_TO_ROOT_OF_REPOSITORY} \
-      --repo-id={REPO_ID} \
-      --env-name={ENV_NAME} \ # Optional.
-      --before=.pipe.yaml \
-      --after=app.pipecd.yaml \
-      --update-on-local=true \ # Whether to rename files in Git locally.
-      --update-on-control-plane=false # Whether to update application information on control plane to use the new name.
-  ```
-
-### Migrating deployment configuration files to application configuration files
-
-  ``` console
-  pipectl app-config migrate-from-deploy-config \
-      --address={CONTROL_PLANE_API_ADDRESS} \
-      --api-key={API_KEY} \
-      --repo-root-path={ABSOLUTE_PATH_TO_ROOT_OF_REPOSITORY} \
-      --repo-id={REPO_ID} \
-      --env-name={ENV_NAME}
-  ```
-
 ### You want more?
 
 We always want to add more needed commands into pipectl. Please let us know what command you want to add by creating issues in the [pipe-cd/pipe ](https://github.com/pipe-cd/pipecd/issues) repository. We also welcome your pull request to add the command.
