@@ -246,14 +246,6 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 		},
 	}
 
-	if req.EnvId != "" {
-		filters = append(filters, datastore.ListFilter{
-			Field:    "EnvId",
-			Operator: datastore.OperatorEqual,
-			Value:    req.EnvId,
-		})
-	}
-
 	if req.Name != "" {
 		filters = append(filters, datastore.ListFilter{
 			Field:    "Name",

@@ -49,8 +49,9 @@ service APIService {
 }
 
 message AddApplicationRequest {
+    reserved 2;
+
     string name = 1 [(validate.rules).string.min_len = 1];
-    string env_id = 2 [deprecated = true];
     string piped_id = 3 [(validate.rules).string.min_len = 1];
     model.ApplicationGitPath git_path = 4 [(validate.rules).message.required = true];
     model.ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
@@ -79,11 +80,11 @@ message GetApplicationResponse {
 }
 
 message ListApplicationsRequest {
+    reserved 3, 5;
+
     string name = 1;
     string kind = 2;
-    string env_id = 3 [deprecated = true];
     bool disabled = 4;
-    string env_name = 5;
     // TODO: Enable to filter by labels
     string cursor = 10;
 }
