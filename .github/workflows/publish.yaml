@@ -33,7 +33,7 @@ jobs:
         run: make build/go
 
       # Building web.
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Get yarn cache directory path
