@@ -241,7 +241,7 @@ export const Header: FC = memo(function Header() {
           <OpenInNew className={classes.iconOpenInNew} />
         </MenuItem>
         <MenuItem disabled={true} dense={true} button={false}>
-          {process.env.STABLE_VERSION}
+          {process.env.PIPECD_VERSION}
         </MenuItem>
       </Menu>
     </AppBar>
