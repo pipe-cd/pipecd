@@ -99,7 +99,7 @@ type Application struct {
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// The ID of the piped that should handle this application.
 	PipedId string `protobuf:"bytes,4,opt,name=piped_id,json=pipedId,proto3" json:"piped_id,omitempty"`
-	// The ID of the project this environment belongs to.
+	// The ID of the project this application belongs to.
 	ProjectId string `protobuf:"bytes,5,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
 	// What kind of this application.
 	Kind ApplicationKind `protobuf:"varint,6,opt,name=kind,proto3,enum=model.ApplicationKind" json:"kind,omitempty"`
