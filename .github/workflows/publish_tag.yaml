@@ -11,7 +11,7 @@ env:
 jobs:
   gh_release:
     name: GitHub Release
-      runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - run: echo "not implemented"
 
