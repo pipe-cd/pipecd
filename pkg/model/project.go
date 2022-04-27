@@ -361,8 +361,8 @@ func (p *Project) HasRBACRole(name string) bool {
 	return false
 }
 
-// IsRBACRoleAssigned checks whether the user group is exists.
-func (p *Project) IsRBACRoleAssigned(sso string) bool {
+// HasUserGroup checks whether the user group is exists.
+func (p *Project) HasUserGroup(sso string) bool {
 	for _, v := range p.UserGroups {
 		if v.SsoGroup == sso {
 			return true
@@ -409,7 +409,7 @@ func (p *Project) GetAllUserGroups() []*ProjectUserGroup {
 
 // AddUserGroup adds a user group.
 func (p *Project) AddUserGroup(sso, role string) error {
-	if p.IsRBACRoleAssigned(sso) {
+	if p.HasUserGroup(sso) {
 		return fmt.Errorf("%s is already being used. The SSO group must be unique", sso)
 	}
 	if !p.HasRBACRole(role) {

@@ -253,7 +253,7 @@ func TestProject_HasRBACRole(t *testing.T) {
 	assert.False(t, p.HasRBACRole("foo"))
 }
 
-func TestProject_IsRBACRoleAssigned(t *testing.T) {
+func TestProject_HasUserGroup(t *testing.T) {
 	groups := []*ProjectUserGroup{
 		{
 			SsoGroup: "team/tester",
@@ -271,11 +271,11 @@ func TestProject_IsRBACRoleAssigned(t *testing.T) {
 	}
 
 	// True
-	assert.True(t, p.IsRBACRoleAssigned("team/tester"))
-	assert.True(t, p.IsRBACRoleAssigned("team/admin"))
+	assert.True(t, p.HasUserGroup("team/tester"))
+	assert.True(t, p.HasUserGroup("team/admin"))
 
 	// False
-	assert.False(t, p.IsRBACRoleAssigned("team/foo"))
+	assert.False(t, p.HasUserGroup("team/foo"))
 }
 
 func TestProject_GetAllUserGroups(t *testing.T) {
