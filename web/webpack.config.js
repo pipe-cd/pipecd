@@ -41,7 +41,7 @@ module.exports = (env) => {
     },
     plugins: [
       new webpack.EnvironmentPlugin({
-        STABLE_VERSION: process.env.STABLE_VERSION || null,
+        PIPECD_VERSION: process.env.PIPECD_VERSION || null,
       }),
     ],
   });

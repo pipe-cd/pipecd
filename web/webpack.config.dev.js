@@ -64,7 +64,7 @@ module.exports = (env) =>
       new ForkTsCheckerWebpackPlugin(),
       new webpack.EnvironmentPlugin({
         API_ENDPOINT: process.env.API_ENDPOINT || null,
-        STABLE_VERSION: process.env.STABLE_VERSION || null,
+        PIPECD_VERSION: process.env.PIPECD_VERSION || null,
       }),
     ],
   });
