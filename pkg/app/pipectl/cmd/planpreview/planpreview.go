@@ -150,8 +150,6 @@ func (c *command) run(ctx context.Context, _ cli.Input) error {
 			return printResults(results, os.Stdout, c.out)
 		}
 	}
-
-	return nil
 }
 
 func printResults(results []*model.PlanPreviewCommandResult, stdout io.Writer, outFile string) error {
