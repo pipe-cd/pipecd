@@ -5108,7 +5108,6 @@ proto.grpc.service.webservice.AddApplicationRequest.prototype.toObject = functio
 proto.grpc.service.webservice.AddApplicationRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    envId: jspb.Message.getFieldWithDefault(msg, 2, ""),
     pipedId: jspb.Message.getFieldWithDefault(msg, 3, ""),
     gitPath: (f = msg.getGitPath()) && pkg_model_common_pb.ApplicationGitPath.toObject(includeInstance, f),
     kind: jspb.Message.getFieldWithDefault(msg, 5, 0),
@@ -5154,10 +5153,6 @@ proto.grpc.service.webservice.AddApplicationRequest.deserializeBinaryFromReader 
     case 1:
       var value = /** @type {string} */ (reader.readString());
       msg.setName(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setEnvId(value);
       break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
@@ -5222,13 +5217,6 @@ proto.grpc.service.webservice.AddApplicationRequest.serializeBinaryToWriter = fu
       f
     );
   }
-  f = message.getEnvId();
-  if (f.length > 0) {
-    writer.writeString(
-      2,
-      f
-    );
-  }
   f = message.getPipedId();
   if (f.length > 0) {
     writer.writeString(
@@ -5287,24 +5275,6 @@ proto.grpc.service.webservice.AddApplicationRequest.prototype.getName = function
  */
 proto.grpc.service.webservice.AddApplicationRequest.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
-};
-
-
-/**
- * optional string env_id = 2;
- * @return {string}
- */
-proto.grpc.service.webservice.AddApplicationRequest.prototype.getEnvId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.grpc.service.webservice.AddApplicationRequest} returns this
- */
-proto.grpc.service.webservice.AddApplicationRequest.prototype.setEnvId = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -5603,7 +5573,6 @@ proto.grpc.service.webservice.UpdateApplicationRequest.toObject = function(inclu
   var f, obj = {
     applicationId: jspb.Message.getFieldWithDefault(msg, 1, ""),
     name: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    envId: jspb.Message.getFieldWithDefault(msg, 3, ""),
     pipedId: jspb.Message.getFieldWithDefault(msg, 4, ""),
     kind: jspb.Message.getFieldWithDefault(msg, 6, 0),
     cloudProvider: jspb.Message.getFieldWithDefault(msg, 7, ""),
@@ -5651,10 +5620,6 @@ proto.grpc.service.webservice.UpdateApplicationRequest.deserializeBinaryFromRead
     case 2:
       var value = /** @type {string} */ (reader.readString());
       msg.setName(value);
-      break;
-    case 3:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setEnvId(value);
       break;
     case 4:
       var value = /** @type {string} */ (reader.readString());
@@ -5712,13 +5677,6 @@ proto.grpc.service.webservice.UpdateApplicationRequest.serializeBinaryToWriter =
   if (f.length > 0) {
     writer.writeString(
       2,
-      f
-    );
-  }
-  f = message.getEnvId();
-  if (f.length > 0) {
-    writer.writeString(
-      3,
       f
     );
   }
@@ -5786,24 +5744,6 @@ proto.grpc.service.webservice.UpdateApplicationRequest.prototype.getName = funct
  */
 proto.grpc.service.webservice.UpdateApplicationRequest.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
-};
-
-
-/**
- * optional string env_id = 3;
- * @return {string}
- */
-proto.grpc.service.webservice.UpdateApplicationRequest.prototype.getEnvId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.grpc.service.webservice.UpdateApplicationRequest} returns this
- */
-proto.grpc.service.webservice.UpdateApplicationRequest.prototype.setEnvId = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -6793,7 +6733,7 @@ proto.grpc.service.webservice.ListApplicationsRequest.serializeBinaryToWriter = 
  * @private {!Array<number>}
  * @const
  */
-proto.grpc.service.webservice.ListApplicationsRequest.Options.repeatedFields_ = [2,3,4];
+proto.grpc.service.webservice.ListApplicationsRequest.Options.repeatedFields_ = [2,3];
 
 
 
@@ -6829,7 +6769,6 @@ proto.grpc.service.webservice.ListApplicationsRequest.Options.toObject = functio
     enabled: (f = msg.getEnabled()) && google_protobuf_wrappers_pb.BoolValue.toObject(includeInstance, f),
     kindsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
     syncStatusesList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
-    envIdsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
     name: jspb.Message.getFieldWithDefault(msg, 5, ""),
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : []
   };
@@ -6884,10 +6823,6 @@ proto.grpc.service.webservice.ListApplicationsRequest.Options.deserializeBinaryF
       for (var i = 0; i < values.length; i++) {
         msg.addSyncStatuses(values[i]);
       }
-      break;
-    case 4:
-      var value = /** @type {string} */ (reader.readString());
-      msg.addEnvIds(value);
       break;
     case 5:
       var value = /** @type {string} */ (reader.readString());
@@ -6947,13 +6882,6 @@ proto.grpc.service.webservice.ListApplicationsRequest.Options.serializeBinaryToW
   if (f.length > 0) {
     writer.writePackedEnum(
       3,
-      f
-    );
-  }
-  f = message.getEnvIdsList();
-  if (f.length > 0) {
-    writer.writeRepeatedString(
-      4,
       f
     );
   }
@@ -7079,43 +7007,6 @@ proto.grpc.service.webservice.ListApplicationsRequest.Options.prototype.addSyncS
  */
 proto.grpc.service.webservice.ListApplicationsRequest.Options.prototype.clearSyncStatusesList = function() {
   return this.setSyncStatusesList([]);
-};
-
-
-/**
- * repeated string env_ids = 4;
- * @return {!Array<string>}
- */
-proto.grpc.service.webservice.ListApplicationsRequest.Options.prototype.getEnvIdsList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
-};
-
-
-/**
- * @param {!Array<string>} value
- * @return {!proto.grpc.service.webservice.ListApplicationsRequest.Options} returns this
- */
-proto.grpc.service.webservice.ListApplicationsRequest.Options.prototype.setEnvIdsList = function(value) {
-  return jspb.Message.setField(this, 4, value || []);
-};
-
-
-/**
- * @param {string} value
- * @param {number=} opt_index
- * @return {!proto.grpc.service.webservice.ListApplicationsRequest.Options} returns this
- */
-proto.grpc.service.webservice.ListApplicationsRequest.Options.prototype.addEnvIds = function(value, opt_index) {
-  return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
-};
-
-
-/**
- * Clears the list making it empty but non-null.
- * @return {!proto.grpc.service.webservice.ListApplicationsRequest.Options} returns this
- */
-proto.grpc.service.webservice.ListApplicationsRequest.Options.prototype.clearEnvIdsList = function() {
-  return this.setEnvIdsList([]);
 };
 
 
@@ -8664,7 +8555,7 @@ proto.grpc.service.webservice.ListDeploymentsRequest.serializeBinaryToWriter = f
  * @private {!Array<number>}
  * @const
  */
-proto.grpc.service.webservice.ListDeploymentsRequest.Options.repeatedFields_ = [1,2,3,4];
+proto.grpc.service.webservice.ListDeploymentsRequest.Options.repeatedFields_ = [1,2,3];
 
 
 
@@ -8700,7 +8591,6 @@ proto.grpc.service.webservice.ListDeploymentsRequest.Options.toObject = function
     statusesList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
     kindsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
     applicationIdsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
-    envIdsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
     applicationName: jspb.Message.getFieldWithDefault(msg, 5, ""),
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : []
   };
@@ -8754,10 +8644,6 @@ proto.grpc.service.webservice.ListDeploymentsRequest.Options.deserializeBinaryFr
     case 3:
       var value = /** @type {string} */ (reader.readString());
       msg.addApplicationIds(value);
-      break;
-    case 4:
-      var value = /** @type {string} */ (reader.readString());
-      msg.addEnvIds(value);
       break;
     case 5:
       var value = /** @type {string} */ (reader.readString());
@@ -8816,13 +8702,6 @@ proto.grpc.service.webservice.ListDeploymentsRequest.Options.serializeBinaryToWr
   if (f.length > 0) {
     writer.writeRepeatedString(
       3,
-      f
-    );
-  }
-  f = message.getEnvIdsList();
-  if (f.length > 0) {
-    writer.writeRepeatedString(
-      4,
       f
     );
   }
@@ -8948,43 +8827,6 @@ proto.grpc.service.webservice.ListDeploymentsRequest.Options.prototype.addApplic
  */
 proto.grpc.service.webservice.ListDeploymentsRequest.Options.prototype.clearApplicationIdsList = function() {
   return this.setApplicationIdsList([]);
-};
-
-
-/**
- * repeated string env_ids = 4;
- * @return {!Array<string>}
- */
-proto.grpc.service.webservice.ListDeploymentsRequest.Options.prototype.getEnvIdsList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
-};
-
-
-/**
- * @param {!Array<string>} value
- * @return {!proto.grpc.service.webservice.ListDeploymentsRequest.Options} returns this
- */
-proto.grpc.service.webservice.ListDeploymentsRequest.Options.prototype.setEnvIdsList = function(value) {
-  return jspb.Message.setField(this, 4, value || []);
-};
-
-
-/**
- * @param {string} value
- * @param {number=} opt_index
- * @return {!proto.grpc.service.webservice.ListDeploymentsRequest.Options} returns this
- */
-proto.grpc.service.webservice.ListDeploymentsRequest.Options.prototype.addEnvIds = function(value, opt_index) {
-  return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
-};
-
-
-/**
- * Clears the list making it empty but non-null.
- * @return {!proto.grpc.service.webservice.ListDeploymentsRequest.Options} returns this
- */
-proto.grpc.service.webservice.ListDeploymentsRequest.Options.prototype.clearEnvIdsList = function() {
-  return this.setEnvIdsList([]);
 };
 
 

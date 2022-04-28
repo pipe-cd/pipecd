@@ -32,7 +32,6 @@ export const updateApplication = createAsyncThunk<
   await applicationAPI.updateApplication({
     applicationId: values.applicationId,
     name: values.name,
-    envId: "",
     pipedId: values.pipedId,
     cloudProvider: values.cloudProvider,
     kind: values.kind,

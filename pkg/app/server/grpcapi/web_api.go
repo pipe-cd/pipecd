@@ -604,13 +604,6 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 				Value:    o.SyncStatuses[0],
 			})
 		}
-		if len(o.EnvIds) > 0 {
-			filters = append(filters, datastore.ListFilter{
-				Field:    "EnvId",
-				Operator: datastore.OperatorEqual,
-				Value:    o.EnvIds[0],
-			})
-		}
 		if o.Name != "" {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "Name",
@@ -809,13 +802,6 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 				Field:    "ApplicationId",
 				Operator: datastore.OperatorEqual,
 				Value:    o.ApplicationIds[0],
-			})
-		}
-		if len(o.EnvIds) > 0 {
-			filters = append(filters, datastore.ListFilter{
-				Field:    "EnvId",
-				Operator: datastore.OperatorEqual,
-				Value:    o.EnvIds[0],
 			})
 		}
 		if o.ApplicationName != "" {

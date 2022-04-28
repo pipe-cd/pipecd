@@ -106,7 +106,6 @@ export const addApplication = createAsyncThunk<
 >(`${MODULE_NAME}/add`, async (props) => {
   const { applicationId } = await applicationsAPI.addApplication({
     name: props.name,
-    envId: "",
     pipedId: props.pipedId,
     gitPath: {
       repo: props.repo,
