@@ -24,11 +24,6 @@ export class RegisterPipedRequest extends jspb.Message {
   getDesc(): string;
   setDesc(value: string): RegisterPipedRequest;
 
-  getEnvIdsList(): Array<string>;
-  setEnvIdsList(value: Array<string>): RegisterPipedRequest;
-  clearEnvIdsList(): RegisterPipedRequest;
-  addEnvIds(value: string, index?: number): RegisterPipedRequest;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): RegisterPipedRequest.AsObject;
   static toObject(includeInstance: boolean, msg: RegisterPipedRequest): RegisterPipedRequest.AsObject;
@@ -41,7 +36,6 @@ export namespace RegisterPipedRequest {
   export type AsObject = {
     name: string,
     desc: string,
-    envIdsList: Array<string>,
   }
 }
 
@@ -77,11 +71,6 @@ export class UpdatePipedRequest extends jspb.Message {
   getDesc(): string;
   setDesc(value: string): UpdatePipedRequest;
 
-  getEnvIdsList(): Array<string>;
-  setEnvIdsList(value: Array<string>): UpdatePipedRequest;
-  clearEnvIdsList(): UpdatePipedRequest;
-  addEnvIds(value: string, index?: number): UpdatePipedRequest;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UpdatePipedRequest.AsObject;
   static toObject(includeInstance: boolean, msg: UpdatePipedRequest): UpdatePipedRequest.AsObject;
@@ -95,7 +84,6 @@ export namespace UpdatePipedRequest {
     pipedId: string,
     name: string,
     desc: string,
-    envIdsList: Array<string>,
   }
 }
 

@@ -20,11 +20,6 @@ export class Piped extends jspb.Message {
   getProjectId(): string;
   setProjectId(value: string): Piped;
 
-  getEnvIdsList(): Array<string>;
-  setEnvIdsList(value: Array<string>): Piped;
-  clearEnvIdsList(): Piped;
-  addEnvIds(value: string, index?: number): Piped;
-
   getVersion(): string;
   setVersion(value: string): Piped;
 
@@ -86,7 +81,6 @@ export namespace Piped {
     desc: string,
     keyHash: string,
     projectId: string,
-    envIdsList: Array<string>,
     version: string,
     startedAt: number,
     cloudProvidersList: Array<Piped.CloudProvider.AsObject>,

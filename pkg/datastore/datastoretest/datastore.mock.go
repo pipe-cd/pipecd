@@ -389,17 +389,17 @@ func (mr *MockPipedStoreMockRecorder) UpdateDesiredVersion(arg0, arg1, arg2 inte
 }
 
 // UpdateInfo mocks base method.
-func (m *MockPipedStore) UpdateInfo(arg0 context.Context, arg1, arg2, arg3 string, arg4 []string) error {
+func (m *MockPipedStore) UpdateInfo(arg0 context.Context, arg1, arg2, arg3 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateInfo", arg0, arg1, arg2, arg3, arg4)
+	ret := m.ctrl.Call(m, "UpdateInfo", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateInfo indicates an expected call of UpdateInfo.
-func (mr *MockPipedStoreMockRecorder) UpdateInfo(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockPipedStoreMockRecorder) UpdateInfo(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateInfo", reflect.TypeOf((*MockPipedStore)(nil).UpdateInfo), arg0, arg1, arg2, arg3, arg4)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateInfo", reflect.TypeOf((*MockPipedStore)(nil).UpdateInfo), arg0, arg1, arg2, arg3)
 }
 
 // UpdateMetadata mocks base method.

@@ -110,7 +110,7 @@ type PipedStore interface {
 	Add(ctx context.Context, piped *model.Piped) error
 	Get(ctx context.Context, id string) (*model.Piped, error)
 	List(ctx context.Context, opts ListOptions) ([]*model.Piped, error)
-	UpdateInfo(ctx context.Context, id, name, desc string, envIds []string) error
+	UpdateInfo(ctx context.Context, id, name, desc string) error
 	EnablePiped(ctx context.Context, id string) error
 	DisablePiped(ctx context.Context, id string) error
 	UpdateDesiredVersion(ctx context.Context, id, version string) error
@@ -190,11 +190,10 @@ func (s *pipedStore) update(ctx context.Context, id string, updater func(piped *
 	})
 }
 
-func (s *pipedStore) UpdateInfo(ctx context.Context, id, name, desc string, envIds []string) error {
+func (s *pipedStore) UpdateInfo(ctx context.Context, id, name, desc string) error {
 	return s.update(ctx, id, func(piped *model.Piped) error {
 		piped.Name = name
 		piped.Desc = desc
-		piped.EnvIds = envIds
 		return nil
 	})
 }

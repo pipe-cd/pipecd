@@ -21,6 +21,8 @@ import "validate/validate.proto";
 import "pkg/model/common.proto";
 
 message Piped {
+    reserved 6;
+
     message CloudProvider {
         string name = 1 [(validate.rules).string.min_len = 1];
         string type = 2 [(validate.rules).string.min_len = 1];
@@ -49,8 +51,6 @@ message Piped {
     string key_hash = 4 [deprecated=true];
     // The ID of the project this piped belongs to.
     string project_id = 5 [(validate.rules).string.min_len = 1];
-    // The IDs of environments where this piped can be connected to.
-    repeated string env_ids = 6;
 
     // Currently running version.
     string version = 7;

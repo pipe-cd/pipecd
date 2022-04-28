@@ -120,7 +120,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.model.Piped.repeatedFields_ = [6,9,10,20];
+proto.model.Piped.repeatedFields_ = [9,10,20];
 
 
 
@@ -158,7 +158,6 @@ proto.model.Piped.toObject = function(includeInstance, msg) {
     desc: jspb.Message.getFieldWithDefault(msg, 3, ""),
     keyHash: jspb.Message.getFieldWithDefault(msg, 4, ""),
     projectId: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    envIdsList: (f = jspb.Message.getRepeatedField(msg, 6)) == null ? undefined : f,
     version: jspb.Message.getFieldWithDefault(msg, 7, ""),
     startedAt: jspb.Message.getFieldWithDefault(msg, 8, 0),
     cloudProvidersList: jspb.Message.toObjectList(msg.getCloudProvidersList(),
@@ -229,10 +228,6 @@ proto.model.Piped.deserializeBinaryFromReader = function(msg, reader) {
     case 5:
       var value = /** @type {string} */ (reader.readString());
       msg.setProjectId(value);
-      break;
-    case 6:
-      var value = /** @type {string} */ (reader.readString());
-      msg.addEnvIds(value);
       break;
     case 7:
       var value = /** @type {string} */ (reader.readString());
@@ -348,13 +343,6 @@ proto.model.Piped.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       5,
-      f
-    );
-  }
-  f = message.getEnvIdsList();
-  if (f.length > 0) {
-    writer.writeRepeatedString(
-      6,
       f
     );
   }
@@ -896,43 +884,6 @@ proto.model.Piped.prototype.getProjectId = function() {
  */
 proto.model.Piped.prototype.setProjectId = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
-};
-
-
-/**
- * repeated string env_ids = 6;
- * @return {!Array<string>}
- */
-proto.model.Piped.prototype.getEnvIdsList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 6));
-};
-
-
-/**
- * @param {!Array<string>} value
- * @return {!proto.model.Piped} returns this
- */
-proto.model.Piped.prototype.setEnvIdsList = function(value) {
-  return jspb.Message.setField(this, 6, value || []);
-};
-
-
-/**
- * @param {string} value
- * @param {number=} opt_index
- * @return {!proto.model.Piped} returns this
- */
-proto.model.Piped.prototype.addEnvIds = function(value, opt_index) {
-  return jspb.Message.addToRepeatedField(this, 6, value, opt_index);
-};
-
-
-/**
- * Clears the list making it empty but non-null.
- * @return {!proto.model.Piped} returns this
- */
-proto.model.Piped.prototype.clearEnvIdsList = function() {
-  return this.setEnvIdsList([]);
 };
 
 

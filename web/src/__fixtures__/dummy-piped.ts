@@ -33,7 +33,6 @@ export const dummyPiped: Piped.AsObject = {
     { hash: "key-1", creator: "user", createdAt: createdAt.unix() },
     { hash: "key-2", creator: "user", createdAt: createdAt.unix() },
   ],
-  envIdsList: [],
   sealedSecretEncryption: {
     encryptServiceAccount: "",
     publicKey: "",
@@ -69,7 +68,6 @@ export function createPipedFromObject(o: Piped.AsObject): Piped {
   piped.setStartedAt(o.startedAt);
   piped.setUpdatedAt(o.updatedAt);
   piped.setDisabled(o.disabled);
-  piped.setEnvIdsList(o.envIdsList);
   piped.setRepositoriesList(
     o.repositoriesList.map(createApplicationGitRepository)
   );

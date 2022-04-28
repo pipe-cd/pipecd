@@ -107,9 +107,10 @@ service WebService {
 }
 
 message RegisterPipedRequest {
+    reserved 3;
+
     string name = 1;
     string desc = 2;
-    repeated string env_ids = 3;
 }
 
 message RegisterPipedResponse {
@@ -118,10 +119,11 @@ message RegisterPipedResponse {
 }
 
 message UpdatePipedRequest {
+    reserved 4;
+
     string piped_id = 1 [(validate.rules).string.min_len = 1];
     string name = 2 [(validate.rules).string.min_len = 1];
     string desc = 3;
-    repeated string env_ids = 4;
 }
 
 message UpdatePipedResponse {
