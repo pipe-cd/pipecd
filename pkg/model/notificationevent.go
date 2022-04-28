@@ -82,6 +82,30 @@ func (e *NotificationEventDeploymentFailed) GetLabels() map[string]string {
 	return e.Deployment.Labels
 }
 
+func (e *NotificationEventDeploymentCancelled) GetAppName() string {
+	return e.Deployment.ApplicationName
+}
+
+func (e *NotificationEventDeploymentCancelled) GetLabels() map[string]string {
+	return e.Deployment.Labels
+}
+
+func (e *NotificationEventDeploymentWaitApproval) GetAppName() string {
+	return e.Deployment.ApplicationName
+}
+
+func (e *NotificationEventDeploymentWaitApproval) GetLabels() map[string]string {
+	return e.Deployment.Labels
+}
+
+func (e *NotificationEventDeploymentTriggerFailed) GetAppName() string {
+	return e.Application.Name
+}
+
+func (e *NotificationEventDeploymentTriggerFailed) GetLabels() map[string]string {
+	return e.Application.Labels
+}
+
 func (e *NotificationEventApplicationSynced) GetAppName() string {
 	return e.Application.Name
 }
