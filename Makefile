@@ -4,6 +4,7 @@
 #   build:  build artifacts such as binary, container image, chart
 #   test:   execute test
 #   run:    run a module locally
+#   stop:   stop a locally running module
 #   lint:   lint the source code
 #   update: update packages or dependencies to the newer versions
 #   gen:    execute code or docs generation
@@ -77,6 +78,7 @@ run/pipecd: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
 run/pipecd: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
 run/pipecd: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
 run/pipecd: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
+run/pipecd: CONTROL_PLANE_VALUES ?= ./quickstart/control-plane-values.yaml
 run/pipecd:
 	@echo "Building go binary of Control Plane..."
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd ./cmd/pipecd
@@ -92,9 +94,13 @@ run/pipecd:
 	mkdir -p .artifacts
 	helm package manifests/pipecd --version $(BUILD_VERSION) --app-version $(BUILD_VERSION) --dependency-update --destination .artifacts
 	helm -n pipecd install pipecd .artifacts/pipecd-$(BUILD_VERSION).tgz --create-namespace \
-		--values ./quickstart/control-plane-values.yaml \
 		--set server.image.repository=localhost:5001/pipecd \
-		--set ops.image.repository=localhost:5001/pipecd
+		--set ops.image.repository=localhost:5001/pipecd \
+		--values $(CONTROL_PLANE_VALUES)
+
+.PHONY: stop/pipecd
+stop/pipecd:
+	helm -n pipecd uninstall pipecd
 
 .PHONY: run/piped
 run/piped: CONFIG_FILE ?=
