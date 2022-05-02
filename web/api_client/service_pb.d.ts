@@ -24,11 +24,6 @@ export class RegisterPipedRequest extends jspb.Message {
   getDesc(): string;
   setDesc(value: string): RegisterPipedRequest;
 
-  getEnvIdsList(): Array<string>;
-  setEnvIdsList(value: Array<string>): RegisterPipedRequest;
-  clearEnvIdsList(): RegisterPipedRequest;
-  addEnvIds(value: string, index?: number): RegisterPipedRequest;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): RegisterPipedRequest.AsObject;
   static toObject(includeInstance: boolean, msg: RegisterPipedRequest): RegisterPipedRequest.AsObject;
@@ -41,7 +36,6 @@ export namespace RegisterPipedRequest {
   export type AsObject = {
     name: string,
     desc: string,
-    envIdsList: Array<string>,
   }
 }
 
@@ -77,11 +71,6 @@ export class UpdatePipedRequest extends jspb.Message {
   getDesc(): string;
   setDesc(value: string): UpdatePipedRequest;
 
-  getEnvIdsList(): Array<string>;
-  setEnvIdsList(value: Array<string>): UpdatePipedRequest;
-  clearEnvIdsList(): UpdatePipedRequest;
-  addEnvIds(value: string, index?: number): UpdatePipedRequest;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UpdatePipedRequest.AsObject;
   static toObject(includeInstance: boolean, msg: UpdatePipedRequest): UpdatePipedRequest.AsObject;
@@ -95,7 +84,6 @@ export namespace UpdatePipedRequest {
     pipedId: string,
     name: string,
     desc: string,
-    envIdsList: Array<string>,
   }
 }
 
@@ -390,9 +378,6 @@ export class AddApplicationRequest extends jspb.Message {
   getName(): string;
   setName(value: string): AddApplicationRequest;
 
-  getEnvId(): string;
-  setEnvId(value: string): AddApplicationRequest;
-
   getPipedId(): string;
   setPipedId(value: string): AddApplicationRequest;
 
@@ -424,7 +409,6 @@ export class AddApplicationRequest extends jspb.Message {
 export namespace AddApplicationRequest {
   export type AsObject = {
     name: string,
-    envId: string,
     pipedId: string,
     gitPath?: pkg_model_common_pb.ApplicationGitPath.AsObject,
     kind: pkg_model_common_pb.ApplicationKind,
@@ -459,9 +443,6 @@ export class UpdateApplicationRequest extends jspb.Message {
   getName(): string;
   setName(value: string): UpdateApplicationRequest;
 
-  getEnvId(): string;
-  setEnvId(value: string): UpdateApplicationRequest;
-
   getPipedId(): string;
   setPipedId(value: string): UpdateApplicationRequest;
 
@@ -486,7 +467,6 @@ export namespace UpdateApplicationRequest {
   export type AsObject = {
     applicationId: string,
     name: string,
-    envId: string,
     pipedId: string,
     kind: pkg_model_common_pb.ApplicationKind,
     cloudProvider: string,
@@ -639,11 +619,6 @@ export namespace ListApplicationsRequest {
     clearSyncStatusesList(): Options;
     addSyncStatuses(value: pkg_model_application_pb.ApplicationSyncStatus, index?: number): Options;
 
-    getEnvIdsList(): Array<string>;
-    setEnvIdsList(value: Array<string>): Options;
-    clearEnvIdsList(): Options;
-    addEnvIds(value: string, index?: number): Options;
-
     getName(): string;
     setName(value: string): Options;
 
@@ -663,7 +638,6 @@ export namespace ListApplicationsRequest {
       enabled?: google_protobuf_wrappers_pb.BoolValue.AsObject,
       kindsList: Array<pkg_model_common_pb.ApplicationKind>,
       syncStatusesList: Array<pkg_model_application_pb.ApplicationSyncStatus>,
-      envIdsList: Array<string>,
       name: string,
       labelsMap: Array<[string, string]>,
     }
@@ -894,11 +868,6 @@ export namespace ListDeploymentsRequest {
     clearApplicationIdsList(): Options;
     addApplicationIds(value: string, index?: number): Options;
 
-    getEnvIdsList(): Array<string>;
-    setEnvIdsList(value: Array<string>): Options;
-    clearEnvIdsList(): Options;
-    addEnvIds(value: string, index?: number): Options;
-
     getApplicationName(): string;
     setApplicationName(value: string): Options;
 
@@ -918,7 +887,6 @@ export namespace ListDeploymentsRequest {
       statusesList: Array<pkg_model_deployment_pb.DeploymentStatus>,
       kindsList: Array<pkg_model_common_pb.ApplicationKind>,
       applicationIdsList: Array<string>,
-      envIdsList: Array<string>,
       applicationName: string,
       labelsMap: Array<[string, string]>,
     }

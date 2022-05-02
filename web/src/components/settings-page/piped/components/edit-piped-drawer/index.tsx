@@ -21,16 +21,15 @@ export const EditPipedDrawer: FC<EditPipedDrawerProps> = memo(
       initialValues: {
         name: piped?.name || "",
         desc: piped?.desc || "",
-        envIds: [],
       },
       enableReinitialize: true,
       validationSchema,
-      async onSubmit({ desc, envIds, name }) {
+      async onSubmit({ desc, name }) {
         if (!pipedId) {
           return;
         }
 
-        await dispatch(editPiped({ pipedId, name, desc, envIds })).then(() => {
+        await dispatch(editPiped({ pipedId, name, desc })).then(() => {
           dispatch(fetchPipeds(true));
           dispatch(
             addToast({ message: UPDATE_PIPED_SUCCESS, severity: "success" })

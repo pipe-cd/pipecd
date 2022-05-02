@@ -27,7 +27,6 @@ export const validationSchema = yup.object().shape({
 export interface PipedFormValues {
   name: string;
   desc: string;
-  envIds: string[];
 }
 
 export type PipedFormProps = FormikProps<PipedFormValues> & {

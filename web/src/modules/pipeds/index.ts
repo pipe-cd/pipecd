@@ -45,7 +45,6 @@ export const addPiped = createAsyncThunk<
   const res = await pipedsApi.registerPiped({
     desc: props.desc,
     name: props.name,
-    envIdsList: [],
   });
   return { ...res, isNewKey: false };
 });
@@ -81,13 +80,12 @@ export const deleteOldKey = createAsyncThunk<void, { pipedId: string }>(
 
 export const editPiped = createAsyncThunk<
   void,
-  { pipedId: string; name: string; desc: string; envIds: string[] }
->(`${MODULE_NAME}/edit`, async ({ pipedId, name, desc, envIds }) => {
+  { pipedId: string; name: string; desc: string }
+>(`${MODULE_NAME}/edit`, async ({ pipedId, name, desc }) => {
   await pipedsApi.updatePiped({
     pipedId,
     name,
     desc,
-    envIdsList: envIds,
   });
 });
 

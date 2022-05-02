@@ -43,7 +43,6 @@ export const getApplications = ({
   const req = new ListApplicationsRequest();
   if (options) {
     const o = new ListApplicationsRequest.Options();
-    o.setEnvIdsList(options.envIdsList);
     o.setKindsList(options.kindsList);
     o.setSyncStatusesList(options.syncStatusesList);
     o.setName(options.name);
@@ -72,7 +71,6 @@ export const getApplication = ({
 
 export const addApplication = async ({
   name,
-  envId,
   pipedId,
   cloudProvider,
   kind,
@@ -83,7 +81,6 @@ export const addApplication = async ({
 > => {
   const req = new AddApplicationRequest();
   req.setName(name);
-  req.setEnvId(envId);
   req.setPipedId(pipedId);
   req.setCloudProvider(cloudProvider);
   req.setKind(kind);
@@ -141,7 +138,6 @@ export const enableApplication = async ({
 export const updateApplication = async ({
   applicationId,
   cloudProvider,
-  envId,
   kind,
   name,
   pipedId,
@@ -152,7 +148,6 @@ export const updateApplication = async ({
   const req = new UpdateApplicationRequest();
   req.setApplicationId(applicationId);
   req.setName(name);
-  req.setEnvId(envId);
   req.setPipedId(pipedId);
   req.setCloudProvider(cloudProvider);
   req.setKind(kind);

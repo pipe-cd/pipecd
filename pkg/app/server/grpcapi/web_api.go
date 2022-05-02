@@ -74,7 +74,7 @@ type webApiPipedStore interface {
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Piped, error)
 	AddKey(ctx context.Context, id, keyHash, creator string, createdAt time.Time) error
 	DeleteOldKeys(ctx context.Context, id string) error
-	UpdateInfo(ctx context.Context, id, name, desc string, envIds []string) error
+	UpdateInfo(ctx context.Context, id, name, desc string) error
 	EnablePiped(ctx context.Context, id string) error
 	DisablePiped(ctx context.Context, id string) error
 	UpdateDesiredVersion(ctx context.Context, id, version string) error
@@ -191,7 +191,6 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 		Name:      req.Name,
 		Desc:      req.Desc,
 		ProjectId: claims.Role.ProjectId,
-		EnvIds:    req.EnvIds,
 	}
 	if err := piped.AddKey(keyHash, claims.Subject, time.Now()); err != nil {
 		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("Failed to create key: %v", err))
@@ -209,7 +208,7 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 
 func (a *WebAPI) UpdatePiped(ctx context.Context, req *webservice.UpdatePipedRequest) (*webservice.UpdatePipedResponse, error) {
 	updater := func(ctx context.Context, pipedID string) error {
-		return a.pipedStore.UpdateInfo(ctx, req.PipedId, req.Name, req.Desc, req.EnvIds)
+		return a.pipedStore.UpdateInfo(ctx, req.PipedId, req.Name, req.Desc)
 	}
 	if err := a.updatePiped(ctx, req.PipedId, updater); err != nil {
 		return nil, err
@@ -604,13 +603,6 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 				Value:    o.SyncStatuses[0],
 			})
 		}
-		if len(o.EnvIds) > 0 {
-			filters = append(filters, datastore.ListFilter{
-				Field:    "EnvId",
-				Operator: datastore.OperatorEqual,
-				Value:    o.EnvIds[0],
-			})
-		}
 		if o.Name != "" {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "Name",
@@ -809,13 +801,6 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 				Field:    "ApplicationId",
 				Operator: datastore.OperatorEqual,
 				Value:    o.ApplicationIds[0],
-			})
-		}
-		if len(o.EnvIds) > 0 {
-			filters = append(filters, datastore.ListFilter{
-				Field:    "EnvId",
-				Operator: datastore.OperatorEqual,
-				Value:    o.EnvIds[0],
 			})
 		}
 		if o.ApplicationName != "" {

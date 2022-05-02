@@ -31,7 +31,6 @@ export const getDeployments = ({
   const req = new ListDeploymentsRequest();
   if (options) {
     const opts = new ListDeploymentsRequest.Options();
-    opts.setEnvIdsList(options.envIdsList);
     opts.setApplicationIdsList(options.applicationIdsList);
     opts.setKindsList(options.kindsList);
     opts.setStatusesList(options.statusesList);

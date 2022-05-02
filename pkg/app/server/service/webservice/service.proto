@@ -107,9 +107,10 @@ service WebService {
 }
 
 message RegisterPipedRequest {
+    reserved 3;
+
     string name = 1;
     string desc = 2;
-    repeated string env_ids = 3;
 }
 
 message RegisterPipedResponse {
@@ -118,10 +119,11 @@ message RegisterPipedResponse {
 }
 
 message UpdatePipedRequest {
+    reserved 4;
+
     string piped_id = 1 [(validate.rules).string.min_len = 1];
     string name = 2 [(validate.rules).string.min_len = 1];
     string desc = 3;
-    repeated string env_ids = 4;
 }
 
 message UpdatePipedResponse {
@@ -186,8 +188,9 @@ message UpdatePipedDesiredVersionResponse {
 }
 
 message AddApplicationRequest {
+    reserved 2;
+
     string name = 1 [(validate.rules).string.min_len = 1];
-    string env_id = 2 [deprecated = true];
     string piped_id = 3 [(validate.rules).string.min_len = 1];
     model.ApplicationGitPath git_path = 4 [(validate.rules).message.required = true];
     model.ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
@@ -201,9 +204,10 @@ message AddApplicationResponse {
 }
 
 message UpdateApplicationRequest {
+    reserved 3;
+
     string application_id = 1 [(validate.rules).string.min_len = 1];
     string name = 2 [(validate.rules).string.min_len = 1];
-    string env_id = 3 [deprecated = true];
     string piped_id = 4 [(validate.rules).string.min_len = 1];
     model.ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
     string cloud_provider = 7 [(validate.rules).string.min_len = 1];
@@ -236,10 +240,11 @@ message DeleteApplicationResponse {
 
 message ListApplicationsRequest {
     message Options {
+        reserved 4;
+
         google.protobuf.BoolValue enabled = 1;
         repeated model.ApplicationKind kinds = 2;
         repeated model.ApplicationSyncStatus sync_statuses = 3;
-        repeated string env_ids = 4;
         string name = 5;
         map<string, string> labels = 6;
     }
@@ -287,10 +292,11 @@ message ListUnregisteredApplicationsResponse {
 
 message ListDeploymentsRequest {
     message Options {
+        reserved 4;
+
         repeated model.DeploymentStatus statuses = 1;
         repeated model.ApplicationKind kinds = 2;
         repeated string application_ids = 3;
-        repeated string env_ids = 4;
         string application_name = 5;
         map<string, string> labels = 6;
     }

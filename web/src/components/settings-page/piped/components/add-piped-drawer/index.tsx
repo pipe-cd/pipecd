@@ -19,7 +19,7 @@ export const AddPipedDrawer: FC<AddPipedDrawerProps> = memo(
     const projectName = useAppSelector(selectProjectName);
 
     const formik = useFormik<PipedFormValues>({
-      initialValues: { name: "", desc: "", envIds: [] },
+      initialValues: { name: "", desc: "" },
       validationSchema,
       validateOnMount: true,
       async onSubmit(values) {

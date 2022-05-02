@@ -2106,8 +2106,6 @@ func (m *AddApplicationRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for EnvId
-
 	if utf8.RuneCountInString(m.GetPipedId()) < 1 {
 		err := AddApplicationRequestValidationError{
 			field:  "PipedId",
@@ -2421,8 +2419,6 @@ func (m *UpdateApplicationRequest) validate(all bool) error {
 		}
 		errors = append(errors, err)
 	}
-
-	// no validation rules for EnvId
 
 	if utf8.RuneCountInString(m.GetPipedId()) < 1 {
 		err := UpdateApplicationRequestValidationError{

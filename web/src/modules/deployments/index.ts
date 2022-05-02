@@ -111,7 +111,6 @@ const convertFilterOptions = (
   return {
     applicationName: options.applicationName ?? "",
     applicationIdsList: options.applicationId ? [options.applicationId] : [],
-    envIdsList: [],
     kindsList: options.kind
       ? [parseInt(options.kind, 10) as ApplicationKind]
       : [],
