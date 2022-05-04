@@ -32,26 +32,14 @@ const (
 type SecretManagementType string
 
 const (
-	SecretManagementTypeNone SecretManagementType = "NONE"
-	// SecretManagementTypeKeyPair is equal to SecretManagementTypeSealingKey.
-	// We added this new type because of removing "sealed" prefix.
+	SecretManagementTypeNone    SecretManagementType = "NONE"
 	SecretManagementTypeKeyPair SecretManagementType = "KEY_PAIR"
-	// SecretManagementTypeSealingKey is deprecated for a while before being removed completely.
-	// Deprecated
-	SecretManagementTypeSealingKey SecretManagementType = "SEALING_KEY"
-	SecretManagementTypeGCPKMS     SecretManagementType = "GCP_KMS"
-	SecretManagementTypeAWSKMS     SecretManagementType = "AWS_KMS"
+	SecretManagementTypeGCPKMS  SecretManagementType = "GCP_KMS"
+	SecretManagementTypeAWSKMS  SecretManagementType = "AWS_KMS"
 )
 
 func (t SecretManagementType) String() string {
 	return string(t)
-}
-
-func GetSecretEncryptionInPiped(p *Piped) *Piped_SecretEncryption {
-	if p.SealedSecretEncryption != nil {
-		return p.SealedSecretEncryption
-	}
-	return p.SecretEncryption
 }
 
 // GeneratePipedKey generates a new key for piped.

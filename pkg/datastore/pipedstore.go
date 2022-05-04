@@ -225,11 +225,7 @@ func (s *pipedStore) UpdateMetadata(ctx context.Context, id, version string, cps
 	return s.update(ctx, id, func(piped *model.Piped) error {
 		piped.CloudProviders = cps
 		piped.Repositories = repos
-
 		piped.SecretEncryption = se
-		// Remove the legacy data.
-		piped.SealedSecretEncryption = nil
-
 		piped.Version = version
 		piped.StartedAt = startedAt
 		return nil

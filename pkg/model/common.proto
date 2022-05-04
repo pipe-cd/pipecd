@@ -22,8 +22,6 @@ import "validate/validate.proto";
 enum ApplicationKind {
     KUBERNETES = 0;
     TERRAFORM = 1;
-    // TODO: Uncomment when support CrossPlane application kind.
-    // CROSSPLANE = 2;
     LAMBDA = 3;
     CLOUDRUN = 4;
     ECS = 5;

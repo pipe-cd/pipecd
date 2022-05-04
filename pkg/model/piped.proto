@@ -29,7 +29,7 @@ message Piped {
     }
 
     message SecretEncryption {
-        string type = 1 [(validate.rules).string = {in: ["KEY_PAIR", "SEALING_KEY", "GCP_KMS", "AWS_KMS", "NONE"]}];
+        string type = 1 [(validate.rules).string = {in: ["KEY_PAIR", "GCP_KMS", "AWS_KMS", "NONE"]}];
         string public_key = 2;
         string encrypt_service_account = 3;
     }
@@ -63,9 +63,6 @@ message Piped {
     // The latest connection status of piped.
     ConnectionStatus status = 11 [(validate.rules).enum.defined_only = true];
     // The public key/service account for encrypting the secret data.
-    // Deprecated.
-    // TODO: Remove sealed_secret_encryption field in the future.
-    SecretEncryption sealed_secret_encryption = 12 [deprecated = true];
     SecretEncryption secret_encryption = 21;
 
     // The list keys can be used to authenticate.
