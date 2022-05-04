@@ -623,7 +623,7 @@ func (m *Piped_SecretEncryption) validate(all bool) error {
 	if _, ok := _Piped_SecretEncryption_Type_InLookup[m.GetType()]; !ok {
 		err := Piped_SecretEncryptionValidationError{
 			field:  "Type",
-			reason: "value must be in list [KEY_PAIR SEALING_KEY GCP_KMS AWS_KMS NONE]",
+			reason: "value must be in list [KEY_PAIR GCP_KMS AWS_KMS NONE]",
 		}
 		if !all {
 			return err
@@ -716,9 +716,8 @@ var _ interface {
 } = Piped_SecretEncryptionValidationError{}
 
 var _Piped_SecretEncryption_Type_InLookup = map[string]struct{}{
-	"KEY_PAIR":    {},
-	"SEALING_KEY": {},
-	"GCP_KMS":     {},
-	"AWS_KMS":     {},
-	"NONE":        {},
+	"KEY_PAIR": {},
+	"GCP_KMS":  {},
+	"AWS_KMS":  {},
+	"NONE":     {},
 }
