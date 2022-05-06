@@ -37,7 +37,7 @@ For the full list of available commands, please see the Makefile at the root of 
 
 2. Ensure that your `kube-context` is connecting to the right kubernetes cluster
 
-2. Run the following command to start running `piped`
+3. Run the following command to start running `piped`
 
     ``` console
     make run/piped CONFIG_FILE=piped-config.yaml
