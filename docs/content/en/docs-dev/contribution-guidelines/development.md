@@ -53,7 +53,7 @@ For the full list of available commands, please see the Makefile at the root of 
 
     Once it is no longer used, run `make kind-down` to delete it.
 
-2. Installing Control Plane into the local cluster
+2. Install Control Plane into the local cluster
 
     ``` console
     make run/pipecd
