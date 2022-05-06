@@ -93,7 +93,7 @@ run/pipecd:
 	@echo "Installing Control Plane in kind..."
 	mkdir -p .artifacts
 	helm package manifests/pipecd --version $(BUILD_VERSION) --app-version $(BUILD_VERSION) --dependency-update --destination .artifacts
-	helm -n pipecd install pipecd .artifacts/pipecd-$(BUILD_VERSION).tgz --create-namespace \
+	helm -n pipecd upgrade --install pipecd .artifacts/pipecd-$(BUILD_VERSION).tgz --create-namespace \
 		--set server.image.repository=localhost:5001/pipecd \
 		--set ops.image.repository=localhost:5001/pipecd \
 		--values $(CONTROL_PLANE_VALUES)
