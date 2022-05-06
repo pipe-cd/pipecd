@@ -31,18 +31,6 @@ description: >
 
 For the full list of available commands, please see the Makefile at the root of repository.
 
-## How to run Piped agent locally
-
-1. Prepare the piped configuration file `piped-config.yaml`
-
-2. Ensure that your `kube-context` is connecting to the right kubernetes cluster
-
-3. Run the following command to start running `piped`
-
-    ``` console
-    make run/piped CONFIG_FILE=piped-config.yaml
-    ```
-
 ## How to run Control Plane locally
 
 1. Start running a Kubernetes cluster
@@ -68,6 +56,18 @@ For the full list of available commands, please see the Makefile at the root of 
 3. Access to the local Control Plane web console
 
     Point your web browser to [http://localhost:8080](http://localhost:8080) to login with the configured static admin account: project = `quickstart`, username = `hello-pipecd`, password = `hello-pipecd`.
+
+## How to run Piped agent locally
+
+1. Prepare the piped configuration file `piped-config.yaml`
+
+2. Ensure that your `kube-context` is connecting to the right kubernetes cluster
+
+3. Run the following command to start running `piped`
+
+    ``` console
+    make run/piped CONFIG_FILE=piped-config.yaml
+    ```
 
 ## Docs and workaround with docs
 
