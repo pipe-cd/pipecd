@@ -97,4 +97,5 @@ We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/
 <a href="https://github.com/amaany3"><img src="https://avatars.githubusercontent.com/u/25783732?v=4" title="amaany3" width="80" height="80"></a>
 <a href="https://github.com/masaaania"><img src="https://avatars.githubusercontent.com/u/2755429?v=4" title="masaaania" width="80" height="80"></a>
 <a href="https://github.com/hori-ryota"><img src="https://avatars.githubusercontent.com/u/2936501?v=4" title="hori-ryota" width="80" height="80"></a>
+<a href="https://github.com/golemiso"><img src="https://avatars.githubusercontent.com/u/3282656?v=4" title="golemiso" width="80" height="80"></a>
 <a href="https://github.com/sano307"><img src="https://avatars.githubusercontent.com/u/12808316?v=4" title="sano307" width="80" height="80"></a>
