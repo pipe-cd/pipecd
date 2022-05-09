@@ -204,7 +204,7 @@ func (c *Kubectl) Get(ctx context.Context, kubeconfig, namespace string, r Resou
 	out, err := cmd.CombinedOutput()
 
 	if strings.Contains(string(out), "(NotFound)") {
-		return Manifest{}, fmt.Errorf("failed to get: %s, (%w), %v", string(out), ErrNotFound, err)
+		return Manifest{}, fmt.Errorf("not found manifest %v, (%w), %v", r, ErrNotFound, err)
 	}
 	if err != nil {
 		return Manifest{}, fmt.Errorf("failed to get: %s, %v", string(out), err)
