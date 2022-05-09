@@ -636,7 +636,7 @@ func (n *NotificationReceiverWebhook) LoadSignatureValue() (string, error) {
 
 type SecretManagement struct {
 	// Which management service should be used.
-	// Available values: KEY_PAIR, SEALING_KEY, GCP_KMS, AWS_KMS
+	// Available values: KEY_PAIR, GCP_KMS, AWS_KMS
 	Type model.SecretManagementType `json:"type"`
 
 	KeyPair *SecretManagementKeyPair
@@ -655,7 +655,6 @@ func (s *SecretManagement) Validate() error {
 }
 
 type SecretManagementKeyPair struct {
-	// Configurable fields for SEALING_KEY.
 	// The path to the private RSA key file.
 	PrivateKeyFile string `json:"privateKeyFile"`
 	// Base64 encoded string of private key.
@@ -738,8 +737,6 @@ func (s *SecretManagement) UnmarshalJSON(data []byte) error {
 	}
 
 	switch g.Type {
-	case model.SecretManagementTypeSealingKey:
-		fallthrough
 	case model.SecretManagementTypeKeyPair:
 		s.Type = model.SecretManagementTypeKeyPair
 		s.KeyPair = &SecretManagementKeyPair{}

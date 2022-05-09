@@ -588,7 +588,7 @@ func (a *API) Encrypt(ctx context.Context, req *apiservice.EncryptRequest) (*api
 		if err != nil {
 			return nil, err
 		}
-		pubkey, err = getEncriptionKey(model.GetSecretEncryptionInPiped(piped))
+		pubkey, err = getEncriptionKey(piped.SecretEncryption)
 		if err != nil {
 			return nil, err
 		}

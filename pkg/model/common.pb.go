@@ -40,11 +40,9 @@ type ApplicationKind int32
 const (
 	ApplicationKind_KUBERNETES ApplicationKind = 0
 	ApplicationKind_TERRAFORM  ApplicationKind = 1
-	// TODO: Uncomment when support CrossPlane application kind.
-	// CROSSPLANE = 2;
-	ApplicationKind_LAMBDA   ApplicationKind = 3
-	ApplicationKind_CLOUDRUN ApplicationKind = 4
-	ApplicationKind_ECS      ApplicationKind = 5
+	ApplicationKind_LAMBDA     ApplicationKind = 3
+	ApplicationKind_CLOUDRUN   ApplicationKind = 4
+	ApplicationKind_ECS        ApplicationKind = 5
 )
 
 // Enum value maps for ApplicationKind.

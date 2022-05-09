@@ -153,7 +153,7 @@ func getEncriptionKey(se *model.Piped_SecretEncryption) ([]byte, error) {
 		return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a public key")
 	}
 	switch model.SecretManagementType(se.Type) {
-	case model.SecretManagementTypeSealingKey, model.SecretManagementTypeKeyPair:
+	case model.SecretManagementTypeKeyPair:
 		if se.PublicKey == "" {
 			return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a public key")
 		}

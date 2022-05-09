@@ -165,7 +165,6 @@ proto.model.Piped.toObject = function(includeInstance, msg) {
     repositoriesList: jspb.Message.toObjectList(msg.getRepositoriesList(),
     pkg_model_common_pb.ApplicationGitRepository.toObject, includeInstance),
     status: jspb.Message.getFieldWithDefault(msg, 11, 0),
-    sealedSecretEncryption: (f = msg.getSealedSecretEncryption()) && proto.model.Piped.SecretEncryption.toObject(includeInstance, f),
     secretEncryption: (f = msg.getSecretEncryption()) && proto.model.Piped.SecretEncryption.toObject(includeInstance, f),
     keysList: jspb.Message.toObjectList(msg.getKeysList(),
     proto.model.PipedKey.toObject, includeInstance),
@@ -250,11 +249,6 @@ proto.model.Piped.deserializeBinaryFromReader = function(msg, reader) {
     case 11:
       var value = /** @type {!proto.model.Piped.ConnectionStatus} */ (reader.readEnum());
       msg.setStatus(value);
-      break;
-    case 12:
-      var value = new proto.model.Piped.SecretEncryption;
-      reader.readMessage(value,proto.model.Piped.SecretEncryption.deserializeBinaryFromReader);
-      msg.setSealedSecretEncryption(value);
       break;
     case 21:
       var value = new proto.model.Piped.SecretEncryption;
@@ -381,14 +375,6 @@ proto.model.Piped.serializeBinaryToWriter = function(message, writer) {
     writer.writeEnum(
       11,
       f
-    );
-  }
-  f = message.getSealedSecretEncryption();
-  if (f != null) {
-    writer.writeMessage(
-      12,
-      f,
-      proto.model.Piped.SecretEncryption.serializeBinaryToWriter
     );
   }
   f = message.getSecretEncryption();
@@ -1014,43 +1000,6 @@ proto.model.Piped.prototype.getStatus = function() {
  */
 proto.model.Piped.prototype.setStatus = function(value) {
   return jspb.Message.setProto3EnumField(this, 11, value);
-};
-
-
-/**
- * optional SecretEncryption sealed_secret_encryption = 12;
- * @return {?proto.model.Piped.SecretEncryption}
- */
-proto.model.Piped.prototype.getSealedSecretEncryption = function() {
-  return /** @type{?proto.model.Piped.SecretEncryption} */ (
-    jspb.Message.getWrapperField(this, proto.model.Piped.SecretEncryption, 12));
-};
-
-
-/**
- * @param {?proto.model.Piped.SecretEncryption|undefined} value
- * @return {!proto.model.Piped} returns this
-*/
-proto.model.Piped.prototype.setSealedSecretEncryption = function(value) {
-  return jspb.Message.setWrapperField(this, 12, value);
-};
-
-
-/**
- * Clears the message field making it undefined.
- * @return {!proto.model.Piped} returns this
- */
-proto.model.Piped.prototype.clearSealedSecretEncryption = function() {
-  return this.setSealedSecretEncryption(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.model.Piped.prototype.hasSealedSecretEncryption = function() {
-  return jspb.Message.getField(this, 12) != null;
 };
 
 

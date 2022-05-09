@@ -177,35 +177,6 @@ func (m *Piped) validate(all bool) error {
 	}
 
 	if all {
-		switch v := interface{}(m.GetSealedSecretEncryption()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, PipedValidationError{
-					field:  "SealedSecretEncryption",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, PipedValidationError{
-					field:  "SealedSecretEncryption",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetSealedSecretEncryption()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return PipedValidationError{
-				field:  "SealedSecretEncryption",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if all {
 		switch v := interface{}(m.GetSecretEncryption()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
@@ -652,7 +623,7 @@ func (m *Piped_SecretEncryption) validate(all bool) error {
 	if _, ok := _Piped_SecretEncryption_Type_InLookup[m.GetType()]; !ok {
 		err := Piped_SecretEncryptionValidationError{
 			field:  "Type",
-			reason: "value must be in list [KEY_PAIR SEALING_KEY GCP_KMS AWS_KMS NONE]",
+			reason: "value must be in list [KEY_PAIR GCP_KMS AWS_KMS NONE]",
 		}
 		if !all {
 			return err
@@ -745,9 +716,8 @@ var _ interface {
 } = Piped_SecretEncryptionValidationError{}
 
 var _Piped_SecretEncryption_Type_InLookup = map[string]struct{}{
-	"KEY_PAIR":    {},
-	"SEALING_KEY": {},
-	"GCP_KMS":     {},
-	"AWS_KMS":     {},
-	"NONE":        {},
+	"KEY_PAIR": {},
+	"GCP_KMS":  {},
+	"AWS_KMS":  {},
+	"NONE":     {},
 }

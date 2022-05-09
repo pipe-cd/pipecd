@@ -711,8 +711,7 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 		return nil, err
 	}
 
-	se := model.GetSecretEncryptionInPiped(piped)
-	pubkey, err := getEncriptionKey(se)
+	pubkey, err := getEncriptionKey(piped.SecretEncryption)
 	if err != nil {
 		return nil, err
 	}
