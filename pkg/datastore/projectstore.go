@@ -215,30 +215,21 @@ func (s *projectStore) GetAllProjectRBACRoles(ctx context.Context, id string) ([
 // AddProjectRBACRole adds the custom rbac role.
 func (s *projectStore) AddProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error {
 	return s.update(ctx, id, func(p *model.Project) error {
-		if err := p.AddRBACRole(name, policies); err != nil {
-			return err
-		}
-		return p.Validate()
+		return p.AddRBACRole(name, policies)
 	})
 }
 
 // UpdateProjectRBACRole updates the custom rbac role.
 func (s *projectStore) UpdateProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error {
 	return s.update(ctx, id, func(p *model.Project) error {
-		if err := p.UpdateRBACRole(name, policies); err != nil {
-			return err
-		}
-		return p.Validate()
+		return p.UpdateRBACRole(name, policies)
 	})
 }
 
 // DeleteProjectRBACRole deletes the custom rbac role.
 func (s *projectStore) DeleteProjectRBACRole(ctx context.Context, id, name string) error {
 	return s.update(ctx, id, func(p *model.Project) error {
-		if err := p.DeleteRBACRole(name); err != nil {
-			return err
-		}
-		return p.Validate()
+		return p.DeleteRBACRole(name)
 	})
 }
 
@@ -254,19 +245,13 @@ func (s *projectStore) GetAllProjectUserGroups(ctx context.Context, id string) (
 // AddProjectUserGroup adds the user group.
 func (s *projectStore) AddProjectUserGroup(ctx context.Context, id, sso, role string) error {
 	return s.update(ctx, id, func(p *model.Project) error {
-		if err := p.AddUserGroup(sso, role); err != nil {
-			return err
-		}
-		return p.Validate()
+		return p.AddUserGroup(sso, role)
 	})
 }
 
 // DeleteProjectUserGroup deletes the user group.
 func (s *projectStore) DeleteProjectUserGroup(ctx context.Context, id, sso string) error {
 	return s.update(ctx, id, func(p *model.Project) error {
-		if err := p.DeleteUserGroup(sso); err != nil {
-			return err
-		}
-		return p.Validate()
+		return p.DeleteUserGroup(sso)
 	})
 }
