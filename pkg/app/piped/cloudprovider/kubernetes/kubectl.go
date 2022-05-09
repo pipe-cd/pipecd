@@ -181,3 +181,37 @@ func (c *Kubectl) Delete(ctx context.Context, kubeconfig, namespace string, r Re
 	}
 	return nil
 }
+
+func (c *Kubectl) Get(ctx context.Context, kubeconfig, namespace string, r ResourceKey) (m Manifest, err error) {
+	defer func() {
+		kubernetesmetrics.IncKubectlCallsCounter(
+			c.version,
+			kubernetesmetrics.LabelGetCommand,
+			err == nil,
+		)
+	}()
+
+	args := make([]string, 0, 7)
+	if kubeconfig != "" {
+		args = append(args, "--kubeconfig", kubeconfig)
+	}
+	if namespace != "" {
+		args = append(args, "--namespace", namespace)
+	}
+	args = append(args, "get", r.Kind, r.Name, "-o", "yaml")
+
+	cmd := exec.CommandContext(ctx, c.execPath, args...)
+	out, err := cmd.CombinedOutput()
+
+	if strings.Contains(string(out), "(NotFound)") {
+		return Manifest{}, fmt.Errorf("failed to get: %s, (%w), %v", string(out), ErrNotFound, err)
+	}
+	if err != nil {
+		return Manifest{}, fmt.Errorf("failed to get: %s, %v", string(out), err)
+	}
+	ms, err := ParseManifests(string(out))
+	if err != nil {
+		return Manifest{}, fmt.Errorf("failed to get: %v", err)
+	}
+	return ms[0], nil
+}

@@ -38,6 +38,7 @@ const (
 	LabelCreateCommand  ToolCommand = "create"
 	LabelReplaceCommand ToolCommand = "replace"
 	LabelDeleteCommand  ToolCommand = "delete"
+	LabelGetCommand     ToolCommand = "get"
 )
 
 type CommandOutput string
