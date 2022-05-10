@@ -203,37 +203,55 @@ func (s *projectStore) UpdateProjectRBACConfig(ctx context.Context, id string, r
 	})
 }
 
-// GetProjectRBACRoles returns the custom rbacs roles and built-in rbac roles.
-func (s *projectStore) GetAllProjectRBACRoles(_ context.Context, _ string) ([]*model.ProjectRBACRole, error) {
-	return nil, ErrUnimplemented
+// GetAllProjectRBACRoles returns the custom rbacs roles and built-in rbac roles.
+func (s *projectStore) GetAllProjectRBACRoles(ctx context.Context, id string) ([]*model.ProjectRBACRole, error) {
+	p, err := s.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return p.GetAllRBACRoles(), nil
 }
 
 // AddProjectRBACRole adds the custom rbac role.
-func (s *projectStore) AddProjectRBACRole(_ context.Context, _, _ string, _ []*model.ProjectRBACPolicy) error {
-	return ErrUnimplemented
+func (s *projectStore) AddProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error {
+	return s.update(ctx, id, func(p *model.Project) error {
+		return p.AddRBACRole(name, policies)
+	})
 }
 
 // UpdateProjectRBACRole updates the custom rbac role.
-func (s *projectStore) UpdateProjectRBACRole(_ context.Context, _, _ string, _ []*model.ProjectRBACPolicy) error {
-	return ErrUnimplemented
+func (s *projectStore) UpdateProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error {
+	return s.update(ctx, id, func(p *model.Project) error {
+		return p.UpdateRBACRole(name, policies)
+	})
 }
 
 // DeleteProjectRBACRole deletes the custom rbac role.
-func (s *projectStore) DeleteProjectRBACRole(_ context.Context, _, _ string) error {
-	return ErrUnsupported
+func (s *projectStore) DeleteProjectRBACRole(ctx context.Context, id, name string) error {
+	return s.update(ctx, id, func(p *model.Project) error {
+		return p.DeleteRBACRole(name)
+	})
 }
 
-// GetUserGroups returns the user groups.
-func (s *projectStore) GetAllProjectUserGroups(_ context.Context, _ string) ([]*model.ProjectUserGroup, error) {
-	return nil, ErrUnsupported
+// GetAllProjectUserGroups returns the user groups.
+func (s *projectStore) GetAllProjectUserGroups(ctx context.Context, id string) ([]*model.ProjectUserGroup, error) {
+	p, err := s.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return p.GetAllUserGroups(), nil
 }
 
-// AddUserGroup adds the user group.
-func (s *projectStore) AddProjectUserGroup(_ context.Context, _, _, _ string) error {
-	return ErrUnsupported
+// AddProjectUserGroup adds the user group.
+func (s *projectStore) AddProjectUserGroup(ctx context.Context, id, sso, role string) error {
+	return s.update(ctx, id, func(p *model.Project) error {
+		return p.AddUserGroup(sso, role)
+	})
 }
 
-// DeleteUserGroup deletes the user group.
-func (s *projectStore) DeleteProjectUserGroup(_ context.Context, _, _ string) error {
-	return ErrUnsupported
+// DeleteProjectUserGroup deletes the user group.
+func (s *projectStore) DeleteProjectUserGroup(ctx context.Context, id, sso string) error {
+	return s.update(ctx, id, func(p *model.Project) error {
+		return p.DeleteUserGroup(sso)
+	})
 }
