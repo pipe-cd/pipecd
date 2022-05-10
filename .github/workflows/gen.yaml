@@ -1,11 +1,11 @@
-name: CodeGen
+name: Gen
 
 on:
   pull_request:
     branches: [ master ]
 
 jobs:
-  analyze:
+  code:
     name: Validate Generated Code
     runs-on: ubuntu-latest
     steps:
@@ -15,6 +15,21 @@ jobs:
       uses: docker://gcr.io/pipecd/codegen@sha256:64ee981a5a3343c8c70ac27fa899e502f27198fcae67c59af87d32f9c7e8c2c9 #v0.7.0
       with:
         args: /github/workspace
+    - name: Show Git status
+      shell: bash
+      run: git status
+    - name: Validate
+      shell: bash
+      run: test -z "$(git status --porcelain)"
+
+  docs:
+    name: Validate Generated Docs
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Generate stable docs
+      run: make gen/stable-docs
     - name: Show Git status
       shell: bash
       run: git status
