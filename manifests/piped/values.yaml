@@ -1,5 +1,5 @@
 image:
-  repository: gcr.io/pipecd/piped
+  repository: ghcr.io/pipe-cd/piped
 
 args:
   metrics: true
