@@ -37,6 +37,7 @@ func TestEnsureSync(t *testing.T) {
 	t.Parallel()
 
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
 	testcases := []struct {
 		name     string
@@ -170,14 +171,10 @@ func TestEnsureSync(t *testing.T) {
 func TestFindRemoveResources(t *testing.T) {
 	t.Parallel()
 
-	ctrl := gomock.NewController(t)
-	ctx := context.Background()
-
 	testcases := []struct {
 		name          string
 		manifests     []provider.Manifest
 		liveResources []provider.Manifest
-		executor      *deployExecutor
 		want          []provider.ResourceKey
 	}{
 		{
@@ -200,8 +197,7 @@ func TestFindRemoveResources(t *testing.T) {
 					},
 				},
 			},
-			executor: &deployExecutor{},
-			want:     []provider.ResourceKey{},
+			want: []provider.ResourceKey{},
 		},
 		{
 			name:      "one resource removed",
@@ -214,16 +210,6 @@ func TestFindRemoveResources(t *testing.T) {
 						Name:       "foo",
 					},
 				},
-			},
-			executor: &deployExecutor{
-				Input: executor.Input{
-					LogPersister: &fakeLogPersister{},
-				},
-				applier: func() provider.Applier {
-					p := kubernetestest.NewMockApplier(ctrl)
-					p.EXPECT().GetManifest(gomock.Any(), gomock.Any()).Return(provider.Manifest{}, nil)
-					return p
-				}(),
 			},
 			want: []provider.ResourceKey{
 				{
@@ -245,41 +231,6 @@ func TestFindRemoveResources(t *testing.T) {
 					},
 				},
 			},
-			executor: &deployExecutor{},
-			liveResources: []provider.Manifest{
-				{
-					Key: provider.ResourceKey{
-						APIVersion: "v1",
-						Kind:       "Service",
-						Namespace:  "namespace",
-						Name:       "foo",
-					},
-				},
-			},
-			want: []provider.ResourceKey{},
-		},
-		{
-			name: "api version is updated",
-			manifests: []provider.Manifest{
-				{
-					Key: provider.ResourceKey{
-						APIVersion: "v2",
-						Kind:       "Service",
-						Namespace:  "namespace",
-						Name:       "foo",
-					},
-				},
-			},
-			executor: &deployExecutor{
-				Input: executor.Input{
-					LogPersister: &fakeLogPersister{},
-				},
-				applier: func() provider.Applier {
-					p := kubernetestest.NewMockApplier(ctrl)
-					p.EXPECT().GetManifest(gomock.Any(), gomock.Any()).Return(provider.Manifest{}, provider.ErrNotFound)
-					return p
-				}(),
-			},
 			liveResources: []provider.Manifest{
 				{
 					Key: provider.ResourceKey{
@@ -295,7 +246,7 @@ func TestFindRemoveResources(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := tc.executor.findRemoveResources(ctx, tc.manifests, tc.liveResources)
+			got := findRemoveResources(tc.manifests, tc.liveResources)
 			assert.Equal(t, tc.want, got)
 		})
 	}

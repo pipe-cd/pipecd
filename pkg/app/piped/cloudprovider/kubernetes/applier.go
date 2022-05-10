@@ -35,8 +35,6 @@ type Applier interface {
 	ReplaceManifest(ctx context.Context, manifest Manifest) error
 	// Delete deletes the given resource from Kubernetes cluster.
 	Delete(ctx context.Context, key ResourceKey) error
-	// GetManifest gets the manifest by the given resource.
-	GetManifest(ctx context.Context, key ResourceKey) (Manifest, error)
 }
 
 type applier struct {
@@ -118,6 +116,7 @@ func (a *applier) ReplaceManifest(ctx context.Context, manifest Manifest) error 
 }
 
 // Delete deletes the given resource from Kubernetes cluster.
+// If the resource key is different, this returns ErrNotFound.
 func (a *applier) Delete(ctx context.Context, k ResourceKey) (err error) {
 	a.initOnce.Do(func() {
 		a.kubectl, a.initErr = a.findKubectl(ctx, a.input.KubectlVersion)
@@ -126,34 +125,27 @@ func (a *applier) Delete(ctx context.Context, k ResourceKey) (err error) {
 		return a.initErr
 	}
 
+	m, err := a.kubectl.Get(
+		ctx,
+		a.cloudProvider.KubeConfigPath,
+		a.getNamespaceToRun(k),
+		k,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if k.String() != m.GetAnnotations()[LabelResourceKey] {
+		return ErrNotFound
+	}
+
 	return a.kubectl.Delete(
 		ctx,
 		a.cloudProvider.KubeConfigPath,
 		a.getNamespaceToRun(k),
 		k,
 	)
-}
-
-func (a *applier) GetManifest(ctx context.Context, k ResourceKey) (m Manifest, err error) {
-	a.initOnce.Do(func() {
-		a.kubectl, a.initErr = a.findKubectl(ctx, a.input.KubectlVersion)
-	})
-	if a.initErr != nil {
-		return Manifest{}, a.initErr
-	}
-
-	m, err = a.kubectl.Get(
-		ctx,
-		a.cloudProvider.KubeConfigPath,
-		a.getNamespaceToRun(k),
-		k,
-	)
-
-	if k.String() != m.GetAnnotations()[LabelResourceKey] {
-		err = ErrNotFound
-	}
-
-	return
 }
 
 // getNamespaceToRun returns namespace used on kubectl apply/delete commands.
