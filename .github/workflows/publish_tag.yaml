@@ -34,10 +34,10 @@ jobs:
 
       - name: Build binary artifacts
         run: |
-          make build/go MOD=piped BUILD_OS=linux BIN_SUFFIX=${{ env.PIPECD_VERSION }}_linux_amd64
-          make build/go MOD=piped BUILD_OS=darwin BIN_SUFFIX=${{ env.PIPECD_VERSION }}_darwin_amd64
-          make build/go MOD=pipectl BUILD_OS=linux BIN_SUFFIX=${{ env.PIPECD_VERSION }}_linux_amd64
-          make build/go MOD=pipectl BUILD_OS=darwin BIN_SUFFIX=${{ env.PIPECD_VERSION }}_darwin_amd64
+          make build/go MOD=piped BUILD_OS=linux BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_linux_amd64
+          make build/go MOD=piped BUILD_OS=darwin BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_darwin_amd64
+          make build/go MOD=pipectl BUILD_OS=linux BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_linux_amd64
+          make build/go MOD=pipectl BUILD_OS=darwin BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_darwin_amd64
 
       - name: Publish binary artifacts
         uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5 #v0.1.14
