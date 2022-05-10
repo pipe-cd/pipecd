@@ -22,18 +22,16 @@ spec:
       serviceAccountName: {{ include "piped.serviceAccountName" . }}
       containers:
         - name: piped
-          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           {{- if .Values.launcher.enabled }}
-          command:
-            - /launcher
-          {{- end }}
+          image: "{{ .Values.launcher.image.repository }}:{{ .Chart.AppVersion }}"
           args:
-            {{- if .Values.launcher.enabled }}
-              {{- include "piped.launcherArgs" . | nindent 12 }}
-            {{- else }}
-              {{- include "piped.pipedArgs" . | nindent 12 }}
-            {{- end }}
+            {{- include "piped.launcherArgs" . | nindent 12 }}
+          {{- else }}
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          args:
+            {{- include "piped.pipedArgs" . | nindent 12 }}
+          {{- end }}
           ports:
             - name: admin
               containerPort: 9085

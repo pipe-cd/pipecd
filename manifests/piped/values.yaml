@@ -13,6 +13,8 @@ args:
 
 launcher:
   enabled: false
+  image:
+    repository: ghcr.io/pipe-cd/launcher
   configFromGitRepo:
     # Whether to load Piped config that is being stored in a git repository.
     enabled: false
