@@ -131,16 +131,15 @@ func (e *deployExecutor) findRemoveResources(ctx context.Context, manifests []pr
 	}
 	for _, m := range liveResources {
 		key := m.Key
-		if _, err := e.applier.GetManifest(ctx, key); err != nil {
-			e.LogPersister.Errorf("Failed to get manifest: %s (%w)", key, err)
-			continue
-		}
-
 		key.Namespace = ""
 		if _, ok := keys[key]; ok {
 			continue
 		}
 		key.Namespace = m.Key.Namespace
+		if _, err := e.applier.GetManifest(ctx, key); err != nil {
+			e.LogPersister.Errorf("Failed to get manifest: %s (%w)", key, err)
+			continue
+		}
 		removeKeys = append(removeKeys, key)
 	}
 	return removeKeys
