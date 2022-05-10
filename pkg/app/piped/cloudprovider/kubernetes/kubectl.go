@@ -213,5 +213,8 @@ func (c *Kubectl) Get(ctx context.Context, kubeconfig, namespace string, r Resou
 	if err != nil {
 		return Manifest{}, fmt.Errorf("failed to parse manifests %v: %v", r, err)
 	}
+	if len(ms) == 0 {
+		return Manifest{}, fmt.Errorf("not found manifest %v, (%w)", r, ErrNotFound)
+	}
 	return ms[0], nil
 }
