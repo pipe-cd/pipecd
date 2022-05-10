@@ -104,7 +104,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_SUCCESS
 	}
 
-	removeKeys := findRemoveResources(manifests, liveResources)
+	removeKeys := e.findRemoveResources(ctx, manifests, liveResources)
 	if len(removeKeys) == 0 {
 		e.LogPersister.Info("There are no live resources should be removed")
 		return model.StageStatus_STAGE_SUCCESS
@@ -119,7 +119,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func findRemoveResources(manifests []provider.Manifest, liveResources []provider.Manifest) []provider.ResourceKey {
+func (e *deployExecutor) findRemoveResources(ctx context.Context, manifests []provider.Manifest, liveResources []provider.Manifest) []provider.ResourceKey {
 	var (
 		keys       = make(map[provider.ResourceKey]struct{}, len(manifests))
 		removeKeys = make([]provider.ResourceKey, 0)
@@ -131,6 +131,11 @@ func findRemoveResources(manifests []provider.Manifest, liveResources []provider
 	}
 	for _, m := range liveResources {
 		key := m.Key
+		if _, err := e.applier.GetManifest(ctx, key); err != nil {
+			e.LogPersister.Errorf("Failed to get manifest: %s (%w)", key, err)
+			continue
+		}
+
 		key.Namespace = ""
 		if _, ok := keys[key]; ok {
 			continue

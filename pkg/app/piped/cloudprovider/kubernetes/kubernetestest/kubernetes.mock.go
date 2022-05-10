@@ -77,6 +77,21 @@ func (mr *MockApplierMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockApplier)(nil).Delete), arg0, arg1)
 }
 
+// GetManifest mocks base method.
+func (m *MockApplier) GetManifest(arg0 context.Context, arg1 kubernetes.ResourceKey) (kubernetes.Manifest, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetManifest", arg0, arg1)
+	ret0, _ := ret[0].(kubernetes.Manifest)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetManifest indicates an expected call of GetManifest.
+func (mr *MockApplierMockRecorder) GetManifest(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetManifest", reflect.TypeOf((*MockApplier)(nil).GetManifest), arg0, arg1)
+}
+
 // ReplaceManifest mocks base method.
 func (m *MockApplier) ReplaceManifest(arg0 context.Context, arg1 kubernetes.Manifest) error {
 	m.ctrl.T.Helper()
