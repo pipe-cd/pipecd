@@ -116,12 +116,28 @@ func (a *applier) ReplaceManifest(ctx context.Context, manifest Manifest) error 
 }
 
 // Delete deletes the given resource from Kubernetes cluster.
+// If the resource key is different, this returns ErrNotFound.
 func (a *applier) Delete(ctx context.Context, k ResourceKey) (err error) {
 	a.initOnce.Do(func() {
 		a.kubectl, a.initErr = a.findKubectl(ctx, a.input.KubectlVersion)
 	})
 	if a.initErr != nil {
 		return a.initErr
+	}
+
+	m, err := a.kubectl.Get(
+		ctx,
+		a.cloudProvider.KubeConfigPath,
+		a.getNamespaceToRun(k),
+		k,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if k.String() != m.GetAnnotations()[LabelResourceKey] {
+		return ErrNotFound
 	}
 
 	return a.kubectl.Delete(
