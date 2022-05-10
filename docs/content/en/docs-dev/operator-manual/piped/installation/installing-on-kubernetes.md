@@ -194,7 +194,7 @@ helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks
   --set securityContext.runAsUser={UID} \
   --set securityContext.fsGroup={FS_GROUP} \
   --set securityContext.runAsGroup=0 \
-  --set image.repository="gcr.io/pipecd/piped-okd"
+  --set image.repository="ghcr.io/pipe-cd/piped-okd"
   {{< /tab >}}
   {{< tab lang="bash" header="Piped with Remote-upgrade" >}}
 # Enable remote-upgrade feature of Piped.
@@ -214,7 +214,7 @@ helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks
   --set securityContext.runAsUser={UID} \
   --set securityContext.fsGroup={FS_GROUP} \
   --set securityContext.runAsGroup=0 \
-  --set image.repository="gcr.io/pipecd/piped-okd"
+  --set launcher.image.repository="ghcr.io/pipe-cd/launcher-okd"
   {{< /tab >}}
   {{< tab lang="bash" header="Piped with Remote-upgrade and Remote-config" >}}
 # Enable both remote-upgrade and remote-config features of Piped.
@@ -239,6 +239,6 @@ helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks
   --set securityContext.runAsUser={UID} \
   --set securityContext.fsGroup={FS_GROUP} \
   --set securityContext.runAsGroup=0 \
-  --set image.repository="gcr.io/pipecd/piped-okd"
+  --set launcher.image.repository="ghcr.io/pipe-cd/launcher-okd"
   {{< /tab >}}
   {{< /tabpane >}}
