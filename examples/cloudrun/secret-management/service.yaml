@@ -12,7 +12,7 @@ spec:
       containers:
       - args:
           - server
-        image: gcr.io/pipecd/helloworld:v0.6.0
+        image: ghcr.io/pipe-cd/helloworld:v0.30.0
         env:
           - name: KEY
             value: "{{ .encryptedSecrets.key }}"
