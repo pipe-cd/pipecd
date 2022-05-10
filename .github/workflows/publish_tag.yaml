@@ -21,7 +21,7 @@ jobs:
     needs: gh_release
     permissions:
       contents: read
-      packages: write
+      contents: write
     steps:
       - uses: actions/checkout@v2
         with:
@@ -44,7 +44,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            piped_${{ env.PIPECD_VERSION }}_linux_amd64
-            piped_${{ env.PIPECD_VERSION }}_darwin_amd64
-            pipectl_${{ env.PIPECD_VERSION }}_linux_amd64
-            pipectl_${{ env.PIPECD_VERSION }}_darwin_amd64
+            ./.artifacts/piped_${{ env.PIPECD_VERSION }}_linux_amd64
+            ./.artifacts/piped_${{ env.PIPECD_VERSION }}_darwin_amd64
+            ./.artifacts/pipectl_${{ env.PIPECD_VERSION }}_linux_amd64
+            ./.artifacts/pipectl_${{ env.PIPECD_VERSION }}_darwin_amd64

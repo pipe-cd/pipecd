@@ -1,5 +1,5 @@
 ---
 title: "Welcome to PipeCD"
-linkTitle: "Documentation [v0.28.0]"
+linkTitle: "Documentation [v0.29.x]"
 type: docs
 ---
