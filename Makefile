@@ -153,7 +153,7 @@ gen/release:
 
 .PHONY: gen/release-docs
 gen/release-docs:
-	./hack/gen/gen-release-docs.sh $(version)
+	./hack/gen-release-docs.sh $(version)
 
 .PHONY: gen/stable-docs
 gen/stable-docs:
