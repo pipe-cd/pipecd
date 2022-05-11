@@ -17,9 +17,9 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Beta | **Usable in production**. Documented. |
 | Stable | Production hardened. Backward compatibility. Documented. |
 
-## PipeCD Features
+## Provider
 
-### Kubernetes Deployment
+### Kubernetes
 
 | Feature | Phase |
 |-|-|
@@ -35,7 +35,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Support [AWS App Mesh](https://aws.amazon.com/app-mesh/) | Incubating |
 | [Plan preview](/docs/user-guide/plan-preview) | Beta |
 
-### Terraform Deployment
+### Terraform
 
 | Feature | Phase |
 |-|-|
@@ -46,7 +46,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Application live state](/docs/user-guide/application-live-state/) | Incubating |
 | [Plan preview](/docs/user-guide/plan-preview) | Beta |
 
-### Cloud Run Deployment
+### Cloud Run
 
 | Feature | Phase |
 |-|-|
@@ -57,7 +57,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Application live state](/docs/user-guide/application-live-state/) | Alpha |
 | [Plan preview](/docs/user-guide/plan-preview) | Alpha |
 
-### Lambda Deployment
+### Lambda
 
 | Feature | Phase |
 |-|-|
@@ -68,7 +68,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Application live state](/docs/user-guide/application-live-state/) | Incubating |
 | [Plan preview](/docs/user-guide/plan-preview) | Alpha |
 
-### Amazon ECS Deployment
+### Amazon ECS
 
 | Feature | Phase |
 |-|-|
@@ -80,7 +80,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Support [AWS App Mesh](https://aws.amazon.com/app-mesh/) | Incubating |
 | [Plan preview](/docs/user-guide/plan-preview) | Alpha |
 
-### Piped's Core
+## Piped Agent
 
 | Feature | Phase |
 |-|-|
@@ -102,7 +102,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Remote upgrade](/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-upgrade) - Ability to upgrade Piped from the web console | Beta |
 | [Remote config](/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-config) - Watch and reload configuration from a remote location such as Git | Beta |
 
-### ControlPlane's Core
+## Control Plane
 
 | Feature | Phase |
 |-|-|
