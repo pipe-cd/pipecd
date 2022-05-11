@@ -6,8 +6,6 @@ description: >
   This page describes how to enable monitoring system for collecting PipeCD' metrics.
 ---
 
-> WIP
-
 PipeCD comes with a monitoring system including Prometheus, Alertmanager, and Grafana.
 This page walks you through how to set up and use them.
 
