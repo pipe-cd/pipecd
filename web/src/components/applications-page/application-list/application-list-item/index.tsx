@@ -33,12 +33,18 @@ const useStyles = makeStyles((theme) => ({
   labels: {
     maxHeight: 200,
     overflowY: "scroll",
+    "&::-webkit-scrollbar": {
+      display: "none",
+    },
   },
   version: {
     maxWidth: 300,
     maxHeight: 200,
-    overflowY: "scroll",
     wordBreak: "break-word",
+    overflowY: "scroll",
+    "&::-webkit-scrollbar": {
+      display: "none",
+    },
   },
   deployedBy: {
     maxWidth: 300,
