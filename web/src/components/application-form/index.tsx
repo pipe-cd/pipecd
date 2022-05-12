@@ -308,6 +308,7 @@ export interface ApplicationFormValue {
     branch: string;
   };
   labels: Array<[string, string]>;
+  description: string;
 }
 
 export type ApplicationFormProps = FormikProps<ApplicationFormValue> & {
@@ -329,6 +330,7 @@ export const emptyFormValues: ApplicationFormValue = {
     branch: "",
   },
   labels: new Array<[string, string]>(),
+  description: "",
 };
 
 export const ApplicationForm: FC<ApplicationFormProps> = memo(
@@ -631,6 +633,7 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
       kind: ApplicationKind.KUBERNETES,
       cloudProvider: "",
       labels: new Array<[string, string]>(),
+      description: "",
     });
 
     const handleFilterChange = useCallback(
@@ -769,6 +772,7 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
                   kind: selectedApp.kind,
                   cloudProvider: selectedCloudProvider,
                   labels: selectedApp.labelsMap,
+                  description: selectedApp.description,
                 });
                 setShowConfirm(true);
               }}

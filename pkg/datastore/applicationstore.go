@@ -70,6 +70,7 @@ func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) er
 	var (
 		kind           model.ApplicationKind
 		name           string
+		desc           string
 		pipedId        string
 		configFilename string
 		cloudProvider  string
@@ -94,14 +95,17 @@ func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) er
 		// Values of below fields from AgentShard have a higher priority:
 		// - Kind
 		// - Name
+		// - Description
 		if shard == AgentShard {
 			kind = app.Kind
 			name = app.Name
+			desc = app.Description
 		}
 	}
 
 	app.Kind = kind
 	app.Name = name
+	app.Description = desc
 	app.PipedId = pipedId
 	app.CloudProvider = cloudProvider
 	app.GitPath.ConfigFilename = configFilename
@@ -132,8 +136,9 @@ func (a *applicationCollection) Encode(e interface{}) (map[Shard][]byte, error) 
 		UpdatedAt: me.UpdatedAt,
 		// Fields which exist in both AgentShard and ClientShard but AgentShard has
 		// a higher priority since those fields can only be updated by PipedCommander.
-		Kind: me.Kind,
-		Name: me.Name,
+		Kind:        me.Kind,
+		Name:        me.Name,
+		Description: me.Description,
 		// Fields which exist in both AgentShard and ClientShard but ClientShard has
 		// a higher priority since those fields can only be updated by WebCommander.
 		PipedId:       me.PipedId,
@@ -158,15 +163,15 @@ func (a *applicationCollection) Encode(e interface{}) (map[Shard][]byte, error) 
 		UpdatedAt: me.UpdatedAt,
 		// Fields which exist in both AgentShard and ClientShard but AgentShard has
 		// a higher priority since those fields can only be updated by PipedCommander.
-		Kind: me.Kind,
-		Name: me.Name,
+		Kind:        me.Kind,
+		Name:        me.Name,
+		Description: me.Description,
 		// Fields which exist in both AgentShard and ClientShard but ClientShard has
 		// a higher priority since those fields can only be updated by WebCommander.
 		PipedId:       me.PipedId,
 		GitPath:       me.GitPath,
 		CloudProvider: me.CloudProvider,
 		// Fields which exist only in AgentShard.
-		Description:                      me.Description,
 		Labels:                           me.Labels,
 		SyncState:                        me.SyncState,
 		Deploying:                        me.Deploying,
