@@ -32,12 +32,15 @@ for dir in ${goProtoDirs[*]}; do
   protoc \
     -I . \
     -I /go/src/github.com/envoyproxy/protoc-gen-validate \
+    --plugin=./tool/codegen/protoc-gen-auth/protoc-gen-auth \
     --go_out=. \
     --go_opt=paths=source_relative \
     --go-grpc_out=. \
     --go-grpc_opt=paths=source_relative \
     --validate_out="lang=go:." \
     --validate_opt=paths=source_relative \
+    --auth_out=. \
+    --auth_opt=paths=source_relative \
     ${dir}/*.proto
   echo "successfully generated"
 done
