@@ -38,6 +38,12 @@ RUN go install github.com/envoyproxy/protoc-gen-validate@v${PROTOC_GEN_VALIDATE_
   && rm protoc-gen-validate.tar.gz \
   && mv /go/src/github.com/envoyproxy/protoc-gen-validate-${PROTOC_GEN_VALIDATE_VER} /go/src/github.com/envoyproxy/protoc-gen-validate
 
+# protoc-gen-auth
+COPY protoc-gen-auth /protoc-gen-auth
+RUN cd /protoc-gen-auth && \
+  go build -o /usr/local/bin/protoc-gen-auth . && \
+  chmod +x /usr/local/bin/protoc-gen-auth
+
 # gomock
 RUN go install github.com/golang/mock/mockgen@v${GOMOCK_VER}
 
