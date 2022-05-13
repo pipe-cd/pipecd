@@ -1,3 +1,12 @@
+# Builder image to build go program.
+FROM golang:1.17-alpine3.15 as BUILDER
+
+COPY protoc-gen-auth /protoc-gen-auth
+RUN cd /protoc-gen-auth \
+  && go build -o /usr/local/bin/protoc-gen-auth . \
+  && chmod +x /usr/local/bin/protoc-gen-auth
+
+# Codegen image which is actually being used.
 FROM golang:1.17-alpine3.15
 
 ENV PROTOC_VER=3.19.4
@@ -39,10 +48,7 @@ RUN go install github.com/envoyproxy/protoc-gen-validate@v${PROTOC_GEN_VALIDATE_
   && mv /go/src/github.com/envoyproxy/protoc-gen-validate-${PROTOC_GEN_VALIDATE_VER} /go/src/github.com/envoyproxy/protoc-gen-validate
 
 # protoc-gen-auth
-COPY protoc-gen-auth /protoc-gen-auth
-RUN cd /protoc-gen-auth && \
-  go build -o /usr/local/bin/protoc-gen-auth . && \
-  chmod +x /usr/local/bin/protoc-gen-auth
+COPY --from=BUILDER /usr/local/bin/protoc-gen-auth /usr/local/bin/
 
 # gomock
 RUN go install github.com/golang/mock/mockgen@v${GOMOCK_VER}
