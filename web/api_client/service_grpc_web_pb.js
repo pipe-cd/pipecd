@@ -45,6 +45,8 @@ var pkg_model_apikey_pb = require('pipecd/web/model/apikey_pb.js')
 var pkg_model_event_pb = require('pipecd/web/model/event_pb.js')
 
 var google_protobuf_wrappers_pb = require('google-protobuf/google/protobuf/wrappers_pb.js')
+
+var google_protobuf_descriptor_pb = require('google-protobuf/google/protobuf/descriptor_pb.js')
 const proto = {};
 proto.grpc = {};
 proto.grpc.service = {};

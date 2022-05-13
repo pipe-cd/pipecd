@@ -51,6 +51,8 @@ var pkg_model_event_pb = require('pipecd/web/model/event_pb.js');
 goog.object.extend(proto, pkg_model_event_pb);
 var google_protobuf_wrappers_pb = require('google-protobuf/google/protobuf/wrappers_pb.js');
 goog.object.extend(proto, google_protobuf_wrappers_pb);
+var google_protobuf_descriptor_pb = require('google-protobuf/google/protobuf/descriptor_pb.js');
+goog.object.extend(proto, google_protobuf_descriptor_pb);
 goog.exportSymbol('proto.grpc.service.webservice.AddApplicationRequest', null, global);
 goog.exportSymbol('proto.grpc.service.webservice.AddApplicationResponse', null, global);
 goog.exportSymbol('proto.grpc.service.webservice.AddProjectRBACRoleRequest', null, global);

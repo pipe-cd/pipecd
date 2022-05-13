@@ -15,6 +15,7 @@ import * as pkg_model_project_pb from 'pipecd/web/model/project_pb';
 import * as pkg_model_apikey_pb from 'pipecd/web/model/apikey_pb';
 import * as pkg_model_event_pb from 'pipecd/web/model/event_pb';
 import * as google_protobuf_wrappers_pb from 'google-protobuf/google/protobuf/wrappers_pb';
+import * as google_protobuf_descriptor_pb from 'google-protobuf/google/protobuf/descriptor_pb';
 
 
 export class RegisterPipedRequest extends jspb.Message {
