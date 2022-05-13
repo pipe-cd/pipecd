@@ -38,6 +38,8 @@ for dir in ${goProtoDirs[*]}; do
     --go-grpc_opt=paths=source_relative \
     --validate_out="lang=go:." \
     --validate_opt=paths=source_relative \
+    --auth_out=. \
+    --auth_opt=paths=source_relative \
     ${dir}/*.proto
   echo "successfully generated"
 done
