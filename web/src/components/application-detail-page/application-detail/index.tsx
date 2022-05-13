@@ -184,6 +184,7 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
 
     const piped = useAppSelector(selectPipedById(app?.pipedId));
     const isSyncing = useIsSyncingApplication(app?.id);
+    const description = app?.description.replace(/\\\n/g, "  \n");
 
     const handleSync = (index: number): void => {
       if (app) {
@@ -319,7 +320,7 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
             display="flex"
           >
             <ReactMarkdown linkTarget="_blank" className={classes.markdown}>
-              {app.description}
+              {description}
             </ReactMarkdown>
           </Box>
         )}
