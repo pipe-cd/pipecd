@@ -104,8 +104,9 @@ stop/pipecd:
 
 .PHONY: run/piped
 run/piped: CONFIG_FILE ?=
+run/piped: INSECURE ?= false
 run/piped:
-	go run cmd/piped/main.go piped --tools-dir=/tmp/piped-bin --config-file=$(CONFIG_FILE)
+	go run cmd/piped/main.go piped --tools-dir=/tmp/piped-bin --config-file=$(CONFIG_FILE) --insecure=$(INSECURE)
 
 .PHONY: run/web
 run/web:
