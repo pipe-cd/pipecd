@@ -320,7 +320,7 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
             display="flex"
           >
             <ReactMarkdown linkTarget="_blank" className={classes.markdown}>
-              {description || "No description."}
+              {description}
             </ReactMarkdown>
           </Box>
         )}
