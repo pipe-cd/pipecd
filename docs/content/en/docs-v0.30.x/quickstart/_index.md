@@ -20,7 +20,7 @@ Note: It's not required to install the PipeCD control plane to the cluster where
 ``` console
 helm install pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/latest_version >}} \
   --namespace pipecd --create-namespace \
-  --values https://raw.githubusercontent.com/pipe-cd/manifests/{{< blocks/latest_version >}}/quickstart/control-plane-values.yaml
+  --values https://raw.githubusercontent.com/pipe-cd/pipecd/{{< blocks/latest_version >}}/quickstart/control-plane-values.yaml
 ```
 
 Once installed, use `kubectl port-forward` to expose the web console on your localhost:
