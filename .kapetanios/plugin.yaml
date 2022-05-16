@@ -1,43 +1,10 @@
 version: v1
 kind: Plugin
 spec:
-  # A plugin to label the pull request size based on its changes.
-  # See more: https://kapetanios.dev/docs/plugins/size
-  size:
-    enabled: true
-
   # A plugin provides commands that add or remove certain types of labels.
   # See more: https://kapetanios.dev/docs/plugins/label
   label:
     enabled: true
-
-  # A plugin that marks a pull request as work in progress
-  # when pull request title contains a [WIP] or WIP prefix.
-  # See more: https://kapetanios.dev/docs/plugins/wip
-  wip:
-    enabled: true
-
-  # A plugin to add do-not-merge/hold label to pull request to prevent merging.
-  # See more: https://kapetanios.dev/docs/plugins/hold
-  hold:
-    enabled: true
-
-  # A plugin to delete branch when pull request is merged or closed.
-  # See more: https://kapetanios.dev/docs/plugins/branchcleaner
-  branchCleaner:
-    enabled: true
-
-  # A plugin provides commands to handle lifecyle of issue or pull request
-  # such as closing or reopening.
-  # See more: https://kapetanios.dev/docs/plugins/lifecycle
-  lifeCycle:
-    enabled: true
-
-  # A plugin to validate PR's commit messages against the specified format.
-  # See more: https://kapetanios.dev/docs/plugins/commitmessage
-  # commitMessage:
-  #   enabled: true
-  #   formatRegex: '^[A-Z\[]'
 
   # A plugin provides command to generate the changelog from latest release.
   # See more: https://kapetanios.dev/docs/plugins/changelog
@@ -64,11 +31,6 @@ spec:
   todo:
     enabled: true
     autoAssign: true
-
-  # A plugin that provides command to rebase pull request.
-  # See more: https://kapetanios.dev/docs/plugins/rebase
-  rebase:
-    enabled: true
 
   # A plugin that lints changed go files and
   # adds review comments on pull request.
