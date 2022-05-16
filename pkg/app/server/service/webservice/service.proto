@@ -32,52 +32,119 @@ import "pkg/model/project.proto";
 import "pkg/model/apikey.proto";
 import "pkg/model/event.proto";
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/descriptor.proto";
 
 // WebService contains all RPC definitions for web client.
 // All of these RPCs are only called by web client and authenticated by using ID_TOKEN.
 service WebService {
     // Piped
-    rpc RegisterPiped(RegisterPipedRequest) returns (RegisterPipedResponse) {}
-    rpc UpdatePiped(UpdatePipedRequest) returns (UpdatePipedResponse) {}
-    rpc RecreatePipedKey(RecreatePipedKeyRequest) returns (RecreatePipedKeyResponse) {}
-    rpc DeleteOldPipedKeys(DeleteOldPipedKeysRequest) returns (DeleteOldPipedKeysResponse) {}
-    rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {}
-    rpc DisablePiped(DisablePipedRequest) returns (DisablePipedResponse) {}
-    rpc ListPipeds(ListPipedsRequest) returns (ListPipedsResponse) {}
-    rpc GetPiped(GetPipedRequest) returns (GetPipedResponse) {}
-    rpc UpdatePipedDesiredVersion(UpdatePipedDesiredVersionRequest) returns (UpdatePipedDesiredVersionResponse) {}
+    rpc RegisterPiped(RegisterPipedRequest) returns (RegisterPipedResponse) {
+        option (model.role).project_role = ADMIN;
+    }
+    rpc UpdatePiped(UpdatePipedRequest) returns (UpdatePipedResponse) {
+        option (model.role).project_role = ADMIN;
+    }
+    rpc RecreatePipedKey(RecreatePipedKeyRequest) returns (RecreatePipedKeyResponse) {
+        option (model.role).project_role = ADMIN;
+    }
+    rpc DeleteOldPipedKeys(DeleteOldPipedKeysRequest) returns (DeleteOldPipedKeysResponse) {
+        option (model.role).project_role = ADMIN;
+    }
+    rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {
+        option (model.role).project_role = ADMIN;
+    }
+    rpc DisablePiped(DisablePipedRequest) returns (DisablePipedResponse) {
+        option (model.role).project_role = ADMIN;
+    }
+    rpc ListPipeds(ListPipedsRequest) returns (ListPipedsResponse) {
+        option (model.role).project_role = VIEWER;
+    }
+    rpc GetPiped(GetPipedRequest) returns (GetPipedResponse) {
+        option (model.role).project_role = VIEWER;
+    }
+    rpc UpdatePipedDesiredVersion(UpdatePipedDesiredVersionRequest) returns (UpdatePipedDesiredVersionResponse) {
+        option (model.role).project_role = ADMIN;
+    }
 
     // Application
-    rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {}
-    rpc UpdateApplication(UpdateApplicationRequest) returns (UpdateApplicationResponse) {}
-    rpc EnableApplication(EnableApplicationRequest) returns (EnableApplicationResponse) {}
-    rpc DisableApplication(DisableApplicationRequest) returns (DisableApplicationResponse) {}
-    rpc DeleteApplication(DeleteApplicationRequest) returns (DeleteApplicationResponse) {}
-    rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
-    rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
-    rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {}
-    rpc GenerateApplicationSealedSecret(GenerateApplicationSealedSecretRequest) returns (GenerateApplicationSealedSecretResponse) {}
-    rpc ListUnregisteredApplications(ListUnregisteredApplicationsRequest) returns (ListUnregisteredApplicationsResponse) {}
+    rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {
+        option (model.role).project_role = EDITOR;
+    }
+    rpc UpdateApplication(UpdateApplicationRequest) returns (UpdateApplicationResponse) {
+        option (model.role).project_role = EDITOR;
+    }
+    rpc EnableApplication(EnableApplicationRequest) returns (EnableApplicationResponse) {
+        option (model.role).project_role = EDITOR;
+    }
+    rpc DisableApplication(DisableApplicationRequest) returns (DisableApplicationResponse) {
+        option (model.role).project_role = EDITOR;
+    }
+    rpc DeleteApplication(DeleteApplicationRequest) returns (DeleteApplicationResponse) {
+        option (model.role).project_role = EDITOR;
+    }
+    rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {
+        option (model.role).project_role = VIEWER;
+    }
+    rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {
+        option (model.role).project_role = EDITOR;
+    }
+    rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {
+        option (model.role).project_role = VIEWER;
+    }
+    rpc GenerateApplicationSealedSecret(GenerateApplicationSealedSecretRequest) returns (GenerateApplicationSealedSecretResponse) {
+        option (model.role).project_role = EDITOR;
+    }
+    rpc ListUnregisteredApplications(ListUnregisteredApplicationsRequest) returns (ListUnregisteredApplicationsResponse) {
+        option (model.role).project_role = VIEWER;
+    }
 
     // Deployment
-    rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {}
-    rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
-    rpc GetStageLog(GetStageLogRequest) returns (GetStageLogResponse) {}
-    rpc CancelDeployment(CancelDeploymentRequest) returns (CancelDeploymentResponse) {}
-    rpc SkipStage(SkipStageRequest) returns (SkipStageResponse) {}
-    rpc ApproveStage(ApproveStageRequest) returns (ApproveStageResponse) {}
+    rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {
+        option (model.role).project_role = VIEWER;
+    }
+    rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {
+        option (model.role).project_role = VIEWER;
+    }
+    rpc GetStageLog(GetStageLogRequest) returns (GetStageLogResponse) {
+        option (model.role).project_role = VIEWER;
+    }
+    rpc CancelDeployment(CancelDeploymentRequest) returns (CancelDeploymentResponse) {
+        option (model.role).project_role = EDITOR;
+    }
+    rpc SkipStage(SkipStageRequest) returns (SkipStageResponse) {
+        option (model.role).project_role = EDITOR;
+    }
+    rpc ApproveStage(ApproveStageRequest) returns (ApproveStageResponse) {
+        option (model.role).project_role = EDITOR;
+    }
 
     // ApplicationLiveState
-    rpc GetApplicationLiveState(GetApplicationLiveStateRequest) returns (GetApplicationLiveStateResponse) {}
+    rpc GetApplicationLiveState(GetApplicationLiveStateRequest) returns (GetApplicationLiveStateResponse) {
+        option (model.role).project_role = VIEWER;
+    }
 
     // Account
-    rpc GetProject(GetProjectRequest) returns (GetProjectResponse) {}
-    rpc UpdateProjectStaticAdmin(UpdateProjectStaticAdminRequest) returns (UpdateProjectStaticAdminResponse) {}
-    rpc EnableStaticAdmin(EnableStaticAdminRequest) returns (EnableStaticAdminResponse) {}
-    rpc DisableStaticAdmin(DisableStaticAdminRequest) returns (DisableStaticAdminResponse) {}
-    rpc UpdateProjectSSOConfig(UpdateProjectSSOConfigRequest) returns (UpdateProjectSSOConfigResponse) {}
-    rpc UpdateProjectRBACConfig(UpdateProjectRBACConfigRequest) returns (UpdateProjectRBACConfigResponse) {}
-    rpc GetMe(GetMeRequest) returns (GetMeResponse) {}
+    rpc GetProject(GetProjectRequest) returns (GetProjectResponse) {
+        option (model.role).project_role = VIEWER;
+    }
+    rpc UpdateProjectStaticAdmin(UpdateProjectStaticAdminRequest) returns (UpdateProjectStaticAdminResponse) {
+        option (model.role).project_role = ADMIN; 
+    }
+    rpc EnableStaticAdmin(EnableStaticAdminRequest) returns (EnableStaticAdminResponse) {
+        option (model.role).project_role = ADMIN; 
+    }
+    rpc DisableStaticAdmin(DisableStaticAdminRequest) returns (DisableStaticAdminResponse) {
+        option (model.role).project_role = ADMIN; 
+    }
+    rpc UpdateProjectSSOConfig(UpdateProjectSSOConfigRequest) returns (UpdateProjectSSOConfigResponse) {
+        option (model.role).project_role = ADMIN; 
+    }
+    rpc UpdateProjectRBACConfig(UpdateProjectRBACConfigRequest) returns (UpdateProjectRBACConfigResponse) {
+        option (model.role).project_role = ADMIN; 
+    }
+    rpc GetMe(GetMeRequest) returns (GetMeResponse) {
+        option (model.role).project_role = VIEWER;
+    }
     rpc ListProjectRBACRoles(ListProjectRBACRolesRequest) returns (ListProjectRBACRolesResponse) {}
     rpc AddProjectRBACRole(AddProjectRBACRoleRequest) returns (AddProjectRBACRoleResponse) {}
     rpc UpdateProjectRBACRole(UpdateProjectRBACRoleRequest) returns (UpdateProjectRBACRoleResponse) {}
@@ -87,23 +154,37 @@ service WebService {
     rpc DeleteProjectUserGroup(DeleteProjectUserGroupRequest) returns (DeleteProjectUserGroupResponse) {}
 
     // Command
-    rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
+    rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {
+        option (model.role).project_role = VIEWER;
+    }
 
     // API Key
-    rpc GenerateAPIKey(GenerateAPIKeyRequest) returns (GenerateAPIKeyResponse) {}
-    rpc DisableAPIKey(DisableAPIKeyRequest) returns (DisableAPIKeyResponse) {}
-    rpc ListAPIKeys(ListAPIKeysRequest) returns (ListAPIKeysResponse) {}
+    rpc GenerateAPIKey(GenerateAPIKeyRequest) returns (GenerateAPIKeyResponse) {
+        option (model.role).project_role = ADMIN; 
+    }
+    rpc DisableAPIKey(DisableAPIKeyRequest) returns (DisableAPIKeyResponse) {
+        option (model.role).project_role = ADMIN; 
+    }
+    rpc ListAPIKeys(ListAPIKeysRequest) returns (ListAPIKeysResponse) {
+        option (model.role).project_role = ADMIN; 
+    }
 
     // Insights
-    rpc GetInsightData(GetInsightDataRequest) returns (GetInsightDataResponse) {}
-    rpc GetInsightApplicationCount(GetInsightApplicationCountRequest) returns (GetInsightApplicationCountResponse) {}
+    rpc GetInsightData(GetInsightDataRequest) returns (GetInsightDataResponse) {
+        option (model.role).project_role = VIEWER;
+    }
+    rpc GetInsightApplicationCount(GetInsightApplicationCountRequest) returns (GetInsightApplicationCountResponse) {
+        option (model.role).project_role = VIEWER;
+    }
 
     // DeploymentChain
     rpc ListDeploymentChains(ListDeploymentChainsRequest) returns (ListDeploymentChainsResponse) {}
     rpc GetDeploymentChain(GetDeploymentChainRequest) returns (GetDeploymentChainResponse) {}
 
     // Events
-    rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
+    rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {
+        option (model.role).project_role = VIEWER;
+    }
 }
 
 message RegisterPipedRequest {
