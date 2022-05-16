@@ -835,3 +835,132 @@ func TestProject_DeleteRBACRole(t *testing.T) {
 		})
 	}
 }
+
+func TestProjectRBACPolicy_GetResource(t *testing.T) {
+	type args struct {
+		resourceType ProjectRBACResource_ResourceType
+		action       ProjectRBACPolicy_Action
+	}
+	testcases := []struct {
+		name   string
+		policy *ProjectRBACPolicy
+		want   *ProjectRBACResource
+		exists bool
+		args   args
+	}{
+		{
+			name: "policy has the permission",
+			policy: &ProjectRBACPolicy{
+				Resources: []*ProjectRBACResource{
+					{
+						Type: ProjectRBACResource_APPLICATION,
+					},
+				},
+				Actions: []ProjectRBACPolicy_Action{
+					ProjectRBACPolicy_ALL,
+				},
+			},
+			want:   &ProjectRBACResource{Type: ProjectRBACResource_APPLICATION},
+			exists: true,
+			args: args{
+				resourceType: ProjectRBACResource_APPLICATION,
+				action:       ProjectRBACPolicy_CREATE,
+			},
+		},
+		{
+			name: "policy does not have the permission",
+			policy: &ProjectRBACPolicy{
+				Resources: []*ProjectRBACResource{
+					{
+						Type: ProjectRBACResource_APPLICATION,
+					},
+				},
+				Actions: []ProjectRBACPolicy_Action{
+					ProjectRBACPolicy_GET,
+				},
+			},
+			want:   nil,
+			exists: false,
+			args: args{
+				resourceType: ProjectRBACResource_APPLICATION,
+				action:       ProjectRBACPolicy_CREATE,
+			},
+		},
+		{
+			name: "policy does not have the resource permission",
+			policy: &ProjectRBACPolicy{
+				Resources: []*ProjectRBACResource{
+					{
+						Type: ProjectRBACResource_EVENT,
+					},
+				},
+				Actions: []ProjectRBACPolicy_Action{
+					ProjectRBACPolicy_ALL,
+				},
+			},
+			want:   nil,
+			exists: false,
+			args: args{
+				resourceType: ProjectRBACResource_APPLICATION,
+				action:       ProjectRBACPolicy_CREATE,
+			},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			ret, ok := tc.policy.GetResource(tc.args.resourceType, tc.args.action)
+			assert.Equal(t, tc.exists, ok)
+			assert.Equal(t, tc.want, ret)
+		})
+	}
+}
+
+func TestProjectRBACResource_ContainLabels(t *testing.T) {
+	testcases := []struct {
+		name   string
+		res    *ProjectRBACResource
+		labels map[string]string
+		want   bool
+	}{
+		{
+			name: "all given tags aren't contained",
+			res:  &ProjectRBACResource{Labels: map[string]string{"key1": "value1"}},
+			labels: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+			},
+			want: false,
+		},
+		{
+			name: "a label is contained",
+			res: &ProjectRBACResource{Labels: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+			}},
+			labels: map[string]string{
+				"key1": "value1",
+			},
+			want: true,
+		},
+		{
+			name: "all tags are contained",
+			res: &ProjectRBACResource{Labels: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+				"key3": "value3",
+			}},
+			labels: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+				"key3": "value3",
+			},
+			want: true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.res.ContainLabels(tc.labels)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}

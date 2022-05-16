@@ -518,3 +518,42 @@ func (p *Project) DeleteRBACRole(name string) error {
 	}
 	return fmt.Errorf("%s role does nott exist", name)
 }
+
+// GetResource returns *ProjectRBACResource and flag which represents wether the resource exists or not.
+// If the resource exists but the action does not exist, this returns nil and false.
+func (p *ProjectRBACPolicy) GetResource(typ ProjectRBACResource_ResourceType, action ProjectRBACPolicy_Action) (*ProjectRBACResource, bool) {
+	var res *ProjectRBACResource
+	for _, v := range p.Resources {
+		if v.Type == typ || v.Type == ProjectRBACResource_ALL {
+			res = v
+			break
+		}
+	}
+	if res == nil {
+		return nil, false
+	}
+	for _, v := range p.Actions {
+		if v == action || v == ProjectRBACPolicy_ALL {
+			return res, true
+		}
+	}
+	return nil, false
+}
+
+// ContainLabels checks if it has all the given labels.
+func (p *ProjectRBACResource) ContainLabels(labels map[string]string) bool {
+	if len(p.Labels) < len(labels) {
+		return false
+	}
+
+	for k, v := range labels {
+		value, ok := p.Labels[k]
+		if !ok {
+			return false
+		}
+		if value != v {
+			return false
+		}
+	}
+	return true
+}
