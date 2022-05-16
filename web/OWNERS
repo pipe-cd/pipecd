@@ -1,7 +1,0 @@
-reviewers:
-  - sig-frontend
-approvers:
-  - sig-frontend
-
-labels:
-  - area/web

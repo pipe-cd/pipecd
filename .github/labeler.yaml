@@ -1,0 +1,27 @@
+area/go:
+- cmd/*
+- cmd/**/*
+- pkg/*
+- pkg/**/*
+
+area/web:
+- web/*
+- web/**/*
+
+area/build:
+- hack/*
+- .github/*
+- .github/**/*
+- Makefile
+- local/*
+
+area/manifests:
+- manifests/**/*
+
+area/examples:
+- examples/*
+- examples/**/*
+
+area/tool:
+- tool/*
+- tool/**/*
