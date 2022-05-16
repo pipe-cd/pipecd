@@ -1,11 +1,6 @@
 version: v1
 kind: Plugin
 spec:
-  # A plugin provides commands that add or remove certain types of labels.
-  # See more: https://kapetanios.dev/docs/plugins/label
-  label:
-    enabled: true
-
   # A plugin provides command to generate the changelog from latest release.
   # See more: https://kapetanios.dev/docs/plugins/changelog
   changelog:
