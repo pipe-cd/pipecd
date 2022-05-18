@@ -155,8 +155,6 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 		switch chart.AuthOptions.Type {
 		case config.InputHelmAuthOptionsTypeAuth:
 			out, err := execHelmLogin(c.execPath, repositoryWithoutOCIScheme, chart.AuthOptions.Username, chart.AuthOptions.Password)
-			fmt.Println("[DEBUG::out]", out)
-			fmt.Println("[DEBUG::err]", err)
 		}
 	}
 
@@ -227,8 +225,6 @@ func execHelmLogin(execPath, repository, username, password string) (string, err
 		"--password-stdin",
 		repository,
 	}
-	fmt.Println("[DEBUG::cmd1]", cmdForEchoPassword)
-	fmt.Println("[DEBUG::cmd2]", cmdForHelmLogin)
 	out, err := pipeline.Output(cmdForEchoPassword, cmdForHelmLogin)
 	if err != nil {
 		return "", err
