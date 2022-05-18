@@ -25,6 +25,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/mattn/go-pipeline"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/chartrepo"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -123,10 +124,11 @@ func (c *Helm) TemplateRemoteGitChart(ctx context.Context, appName, appDir, name
 }
 
 type helmRemoteChart struct {
-	Repository string
-	Name       string
-	Version    string
-	Insecure   bool
+	Repository  string
+	Name        string
+	Version     string
+	Insecure    bool
+	AuthOptions *config.InputHelmAuthOptions
 }
 
 func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespace string, chart helmRemoteChart, opts *config.InputHelmOptions) (string, error) {
@@ -147,6 +149,17 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 		args = append(args, "--insecure-skip-tls-verify")
 	}
 
+	if chart.AuthOptions.Type != "" && strings.HasPrefix(chart.Repository, "oci://") {
+		repositoryWithoutOCIScheme := chart.Repository[6:]
+
+		switch chart.AuthOptions.Type {
+		case config.InputHelmAuthOptionsTypeAuth:
+			out, err := execHelmLogin(c.execPath, repositoryWithoutOCIScheme, chart.AuthOptions.Username, chart.AuthOptions.Password)
+			fmt.Println("[DEBUG::out]", out)
+			fmt.Println("[DEBUG::err]", err)
+		}
+	}
+
 	if namespace != "" {
 		args = append(args, fmt.Sprintf("--namespace=%s", namespace))
 	}
@@ -163,16 +176,6 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 		}
 		if opts.KubeVersion != "" {
 			args = append(args, "--kube-version", opts.KubeVersion)
-		}
-		if opts.AuthOptions.Type != "" {
-			switch opts.AuthOptions.Type {
-			case config.InputHelmAuthOptionsTypeBasic:
-				result, _ := exec.Command("helm version").Output()
-				fmt.Println("[DEBUG::version]", result)
-				out, err := execHelmLogin(ctx, c.execPath, chart.Repository, opts.AuthOptions.Username, opts.AuthOptions.Password)
-				fmt.Println("[DEBUG::out]", out)
-				fmt.Println("[DEBUG::err]", err)
-			}
 		}
 	}
 
@@ -210,30 +213,26 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 	return executor()
 }
 
-func execHelmLogin(ctx context.Context, execPath, repository, username, password string) (string, error) {
-	executor := func() (string, error) {
-		var stdout, stderr bytes.Buffer
-		args := []string{
-			"registry",
-			"login",
-			fmt.Sprintf("--username=%s", username),
-			fmt.Sprintf("--password=%s", password),
-			repository,
-		}
-		cmd := exec.CommandContext(ctx, execPath, args...)
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stderr
-
-		if err := cmd.Run(); err != nil {
-			return stdout.String(), fmt.Errorf("%w: %s", err, stderr.String())
-		}
-		return stdout.String(), nil
+func execHelmLogin(execPath, repository, username, password string) (string, error) {
+	cmdForEchoPassword := []string{
+		"echo",
+		password,
 	}
-
-	out, err := executor()
+	cmdForHelmLogin := []string{
+		execPath,
+		"registry",
+		"login",
+		"-u",
+		username,
+		"--password-stdin",
+		repository,
+	}
+	fmt.Println("[DEBUG::cmd1]", cmdForEchoPassword)
+	fmt.Println("[DEBUG::cmd2]", cmdForHelmLogin)
+	out, err := pipeline.Output(cmdForEchoPassword, cmdForHelmLogin)
 	if err != nil {
 		return "", err
 	}
 
-	return out, nil
+	return string(out), nil
 }
