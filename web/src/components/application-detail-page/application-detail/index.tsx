@@ -184,7 +184,7 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
 
     const piped = useAppSelector(selectPipedById(app?.pipedId));
     const isSyncing = useIsSyncingApplication(app?.id);
-    const description = app?.description.replace(/\\\n/g, "  \n");
+    const description = app?.description.replace(/\\\n/g, "  \n") || "";
 
     const handleSync = (index: number): void => {
       if (app) {
