@@ -125,6 +125,10 @@ type InputHelmOptions struct {
 
 type InputHelmAuthOptionsType string
 
+const (
+	InputHelmAuthOptionsTypeBasic InputHelmAuthOptionsType = "BASIC"
+)
+
 type InputHelmAuthOptions struct {
 	Type     InputHelmAuthOptionsType `json:"type"`
 	Username string                   `json:"username"`

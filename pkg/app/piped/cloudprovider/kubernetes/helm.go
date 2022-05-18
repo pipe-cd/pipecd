@@ -164,6 +164,16 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 		if opts.KubeVersion != "" {
 			args = append(args, "--kube-version", opts.KubeVersion)
 		}
+		if opts.AuthOptions.Type != "" {
+			switch opts.AuthOptions.Type {
+			case config.InputHelmAuthOptionsTypeBasic:
+				result, _ := exec.Command("helm version").Output()
+				fmt.Println("[DEBUG::version]", result)
+				out, err := execHelmLogin(ctx, c.execPath, chart.Repository, opts.AuthOptions.Username, opts.AuthOptions.Password)
+				fmt.Println("[DEBUG::out]", out)
+				fmt.Println("[DEBUG::err]", err)
+			}
+		}
 	}
 
 	c.logger.Info(fmt.Sprintf("start templating a chart from Helm repository for application %s", appName),
@@ -198,4 +208,32 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 		return "", err
 	}
 	return executor()
+}
+
+func execHelmLogin(ctx context.Context, execPath, repository, username, password string) (string, error) {
+	executor := func() (string, error) {
+		var stdout, stderr bytes.Buffer
+		args := []string{
+			"registry",
+			"login",
+			fmt.Sprintf("--username=%s", username),
+			fmt.Sprintf("--password=%s", password),
+			repository,
+		}
+		cmd := exec.CommandContext(ctx, execPath, args...)
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+
+		if err := cmd.Run(); err != nil {
+			return stdout.String(), fmt.Errorf("%w: %s", err, stderr.String())
+		}
+		return stdout.String(), nil
+	}
+
+	out, err := executor()
+	if err != nil {
+		return "", err
+	}
+
+	return out, nil
 }
