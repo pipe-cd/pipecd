@@ -119,6 +119,16 @@ type InputHelmOptions struct {
 	APIVersions []string `json:"apiVersions"`
 	// Kubernetes version used for Capabilities.KubeVersion
 	KubeVersion string `json"kubeVersion"`
+	// Authentication options used for connecting private OCI registry
+	AuthOptions *InputHelmAuthOptions `json:"authOptions"`
+}
+
+type InputHelmAuthOptionsType string
+
+type InputHelmAuthOptions struct {
+	Type     InputHelmAuthOptionsType `json:"type"`
+	Username string                   `json:"username"`
+	Password string                   `json:"password"`
 }
 
 type KubernetesTrafficRoutingMethod string
