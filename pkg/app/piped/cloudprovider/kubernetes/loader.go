@@ -115,11 +115,10 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 
 		case l.input.HelmChart.Repository != "":
 			chart := helmRemoteChart{
-				Repository:  l.input.HelmChart.Repository,
-				Name:        l.input.HelmChart.Name,
-				Version:     l.input.HelmChart.Version,
-				Insecure:    l.input.HelmChart.Insecure,
-				AuthOptions: l.input.HelmChart.AuthOptions,
+				Repository: l.input.HelmChart.Repository,
+				Name:       l.input.HelmChart.Name,
+				Version:    l.input.HelmChart.Version,
+				Insecure:   l.input.HelmChart.Insecure,
 			}
 			data, err = l.helm.TemplateRemoteChart(ctx,
 				l.appName,
