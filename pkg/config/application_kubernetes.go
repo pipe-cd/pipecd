@@ -105,20 +105,6 @@ type InputHelmChart struct {
 	// Whether to skip TLS certificate checks for the repository or not.
 	// This option will automatically set the value of HelmChartRepository.Insecure.
 	Insecure bool `json:"-"`
-	// Authentication options used for connecting private OCI registry
-	AuthOptions *InputHelmAuthOptions `json:"authOptions"`
-}
-
-type InputHelmAuthOptionsType string
-
-const (
-	InputHelmAuthOptionsTypeAuth InputHelmAuthOptionsType = "AUTH"
-)
-
-type InputHelmAuthOptions struct {
-	Type     InputHelmAuthOptionsType `json:"type"`
-	Username string                   `json:"username"`
-	Password string                   `json:"password"`
 }
 
 type InputHelmOptions struct {

@@ -32,7 +32,6 @@ require (
 	github.com/hashicorp/golang-lru v0.5.3
 	github.com/hashicorp/hcl/v2 v2.0.0
 	github.com/kylelemons/godebug v1.1.0 // indirect
-	github.com/mattn/go-pipeline v0.0.0-20190323144519-32d779b32768 // indirect
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.11.0

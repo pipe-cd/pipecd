@@ -25,7 +25,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/mattn/go-pipeline"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/chartrepo"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -124,11 +123,10 @@ func (c *Helm) TemplateRemoteGitChart(ctx context.Context, appName, appDir, name
 }
 
 type helmRemoteChart struct {
-	Repository  string
-	Name        string
-	Version     string
-	Insecure    bool
-	AuthOptions *config.InputHelmAuthOptions
+	Repository string
+	Name       string
+	Version    string
+	Insecure   bool
 }
 
 func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespace string, chart helmRemoteChart, opts *config.InputHelmOptions) (string, error) {
@@ -147,15 +145,6 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 
 	if chart.Insecure {
 		args = append(args, "--insecure-skip-tls-verify")
-	}
-
-	if chart.AuthOptions.Type != "" && strings.HasPrefix(chart.Repository, "oci://") {
-		repositoryWithoutOCIScheme := chart.Repository[6:]
-
-		switch chart.AuthOptions.Type {
-		case config.InputHelmAuthOptionsTypeAuth:
-			out, err := execHelmLogin(c.execPath, repositoryWithoutOCIScheme, chart.AuthOptions.Username, chart.AuthOptions.Password)
-		}
 	}
 
 	if namespace != "" {
@@ -209,26 +198,4 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 		return "", err
 	}
 	return executor()
-}
-
-func execHelmLogin(execPath, repository, username, password string) (string, error) {
-	cmdForEchoPassword := []string{
-		"echo",
-		password,
-	}
-	cmdForHelmLogin := []string{
-		execPath,
-		"registry",
-		"login",
-		"-u",
-		username,
-		"--password-stdin",
-		repository,
-	}
-	out, err := pipeline.Output(cmdForEchoPassword, cmdForHelmLogin)
-	if err != nil {
-		return "", err
-	}
-
-	return string(out), nil
 }
