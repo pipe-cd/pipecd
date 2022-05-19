@@ -323,7 +323,7 @@ func (r *HelmChartRepository) Validate() error {
 		return nil
 	}
 
-	return fmt.Errorf("either %s repository, %s repository or %s repository must be configured", HTTPHelmChartRepository, GITHelmChartRepository, OCIHelmChartRepository)
+	return fmt.Errorf("either %s repository, %s repository or %s registry must be configured", HTTPHelmChartRepository, GITHelmChartRepository, OCIHelmChartRepository)
 }
 
 func (s *PipedSpec) HTTPHelmChartRepositories() []HelmChartRepository {
