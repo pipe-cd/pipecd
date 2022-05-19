@@ -143,7 +143,7 @@ Must be one of the following structs:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The unique name of the analysis provider. | Yes |
-| type | string | The provider type. Currently, only PROMETHEUS is available. | Yes |
+| type | string | The provider type. Currently, only PROMETHEUS, DATADOG are available. | Yes |
 | config | [AnalysisProviderConfig](/docs/operator-manual/piped/configuration-reference/#analysisproviderconfig) | Specific configuration for the specified type of analysis provider. | Yes |
 
 ## AnalysisProviderConfig
