@@ -30,7 +30,6 @@ spec:
       password: basic-password
       insecure: true
     - type: OCI
-      name: private-charts-in-oci-registry
       address: oci://private-charts.com
       username: sample-username
       password: sample-password

@@ -77,7 +77,6 @@ func TestPipedConfig(t *testing.T) {
 					},
 					{
 						Type:     OCIHelmChartRepository,
-						Name:     "private-charts-in-oci-registry",
 						Address:  "oci://private-charts.com",
 						Username: "sample-username",
 						Password: "sample-password",
