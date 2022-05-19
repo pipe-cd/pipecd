@@ -760,7 +760,7 @@ func registerMetrics(pipedID, projectID, launcherVersion string) *prometheus.Reg
 	return r
 }
 
-func loginToOCIRegistry(ctx context.Context, execPath, repository, username, password string) error {
+func loginToOCIRegistry(ctx context.Context, execPath, address, username, password string) error {
 	args := []string{
 		"registry",
 		"login",
@@ -768,7 +768,7 @@ func loginToOCIRegistry(ctx context.Context, execPath, repository, username, pas
 		username,
 		"-p",
 		password,
-		repository,
+		address,
 	}
 
 	var stdout, stderr bytes.Buffer
