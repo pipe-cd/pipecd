@@ -294,7 +294,7 @@ func (r *HelmChartRepository) IsGitRepository() bool {
 	return r.Type == GITHelmChartRepository
 }
 
-func (r *HelmChartRepository) IsOCIRepository() bool {
+func (r *HelmChartRepository) IsOCIRegistry() bool {
 	return r.Type == OCIHelmChartRepository
 }
 
@@ -316,7 +316,7 @@ func (r *HelmChartRepository) Validate() error {
 		return nil
 	}
 
-	if r.IsOCIRepository() {
+	if r.IsOCIRegistry() {
 		if r.Address == "" {
 			return errors.New("address must be set")
 		}
@@ -349,7 +349,7 @@ func (s *PipedSpec) GitHelmChartRepositories() []HelmChartRepository {
 func (s *PipedSpec) OCIHelmChartRepositories() []HelmChartRepository {
 	repos := make([]HelmChartRepository, 0, len(s.ChartRepositories))
 	for _, r := range s.ChartRepositories {
-		if r.IsOCIRepository() {
+		if r.IsOCIRegistry() {
 			repos = append(repos, r)
 		}
 	}
