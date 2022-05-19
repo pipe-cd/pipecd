@@ -29,6 +29,7 @@ import (
 	"time"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
+	"github.com/mattn/go-pipeline"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/spf13/cobra"
@@ -155,6 +156,22 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	if err := toolregistry.InitDefaultRegistry(p.toolsDir, input.Logger); err != nil {
 		input.Logger.Error("failed to initialize default tool registry", zap.Error(err))
 		return err
+	}
+
+	// Login to OCI Helm chart repositories.
+	if repos := cfg.OCIHelmChartRepositories(); len(repos) > 0 {
+		reg := toolregistry.DefaultRegistry()
+		helm, _, err := reg.Helm(ctx, "")
+		if err != nil {
+			return fmt.Errorf("failed to find helm to login to OCI registry (%w)", err)
+		}
+
+		for _, repo := range repos {
+			err := loginToOCIRegistry(helm, repo.Address, repo.Username, repo.Password)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	// Add configured Helm chart repositories.
@@ -740,4 +757,26 @@ func registerMetrics(pipedID, projectID, launcherVersion string) *prometheus.Reg
 	planpreviewmetrics.Register(wrapped)
 
 	return r
+}
+
+func loginToOCIRegistry(execPath, repository, username, password string) error {
+	cmdForEchoPassword := []string{
+		"echo",
+		password,
+	}
+	cmdForHelmLogin := []string{
+		execPath,
+		"registry",
+		"login",
+		"-u",
+		username,
+		"--password-stdin",
+		repository,
+	}
+	_, err := pipeline.Output(cmdForEchoPassword, cmdForHelmLogin)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
