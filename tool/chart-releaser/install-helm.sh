@@ -19,7 +19,7 @@ set -o nounset
 set -o pipefail
 
 BASE_URL="https://get.helm.sh"
-VERSION="3.2.1"
+VERSION="3.8.2"
 
 echo "Installing helm-${VERSION} ..."
 curl -L ${BASE_URL}/helm-v${VERSION}-linux-amd64.tar.gz | tar xvz
