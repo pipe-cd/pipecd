@@ -258,6 +258,7 @@ type HelmChartRepositoryType string
 const (
 	HTTPHelmChartRepository HelmChartRepositoryType = "HTTP"
 	GITHelmChartRepository  HelmChartRepositoryType = "GIT"
+	OCIHelmChartRepository  HelmChartRepositoryType = "OCI"
 )
 
 type HelmChartRepository struct {
@@ -265,14 +266,14 @@ type HelmChartRepository struct {
 	// Default is HTTP.
 	Type HelmChartRepositoryType `json:"type" default:"HTTP"`
 
-	// Configuration for HTTP type.
+	// Configuration for HTTP and OCI type.
 	// The name of the Helm chart repository.
 	Name string `json:"name"`
 	// The address to the Helm chart repository.
 	Address string `json:"address"`
-	// Username used for the repository backed by HTTP basic authentication.
+	// Username used for the repository backed by HTTP basic authentication or OCI registry authentication.
 	Username string `json:"username"`
-	// Password used for the repository backed by HTTP basic authentication.
+	// Password used for the repository backed by HTTP basic authentication or OCI registry authentication.
 	Password string `json:"password"`
 	// Whether to skip TLS certificate checks for the repository or not.
 	Insecure bool `json:"insecure"`
@@ -293,8 +294,12 @@ func (r *HelmChartRepository) IsGitRepository() bool {
 	return r.Type == GITHelmChartRepository
 }
 
+func (r *HelmChartRepository) IsOCIRepository() bool {
+	return r.Type == OCIHelmChartRepository
+}
+
 func (r *HelmChartRepository) Validate() error {
-	if r.IsHTTPRepository() {
+	if r.IsHTTPRepository() || r.IsOCIRepository() {
 		if r.Name == "" {
 			return errors.New("name must be set")
 		}
@@ -328,6 +333,16 @@ func (s *PipedSpec) GitHelmChartRepositories() []HelmChartRepository {
 	repos := make([]HelmChartRepository, 0, len(s.ChartRepositories))
 	for _, r := range s.ChartRepositories {
 		if r.IsGitRepository() {
+			repos = append(repos, r)
+		}
+	}
+	return repos
+}
+
+func (s *PipedSpec) OCIHelmChartRepositories() []HelmChartRepository {
+	repos := make([]HelmChartRepository, 0, len(s.ChartRepositories))
+	for _, r := range s.ChartRepositories {
+		if r.IsOCIRepository() {
 			repos = append(repos, r)
 		}
 	}
