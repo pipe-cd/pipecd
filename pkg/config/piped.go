@@ -299,7 +299,7 @@ func (r *HelmChartRepository) IsOCIRepository() bool {
 }
 
 func (r *HelmChartRepository) Validate() error {
-	if r.IsHTTPRepository() || r.IsOCIRepository() {
+	if r.IsHTTPRepository() {
 		if r.Name == "" {
 			return errors.New("name must be set")
 		}
@@ -312,6 +312,13 @@ func (r *HelmChartRepository) Validate() error {
 	if r.IsGitRepository() {
 		if r.GitRemote == "" {
 			return errors.New("gitRemote must be set")
+		}
+		return nil
+	}
+
+	if r.IsOCIRepository() {
+		if r.Address == "" {
+			return errors.New("address must be set")
 		}
 		return nil
 	}
