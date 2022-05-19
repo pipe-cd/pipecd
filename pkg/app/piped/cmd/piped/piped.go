@@ -167,9 +167,11 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		}
 
 		for _, repo := range repos {
-			err := loginToOCIRegistry(helm, repo.Address, repo.Username, repo.Password)
-			if err != nil {
-				return err
+			if repo.Username != "" && repo.Password != "" {
+				err := loginToOCIRegistry(helm, repo.Address, repo.Username, repo.Password)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
