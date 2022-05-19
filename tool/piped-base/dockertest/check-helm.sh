@@ -36,7 +36,7 @@ done
 
 declare -A versioncases
 #versioncases["helm-2.16.7"]="Client: \&version.Version{SemVer:\"v2.16.7\", GitCommit:\"5f2584fd3d35552c4af26036f0c464191287986b\", GitTreeState:\"clean\"}"
-versioncases["helm"]="version.BuildInfo{Version:\"v3.8.2\", GitCommit:\"fe51cd1e31e6a202cba7dead9552a6d418ded79a\", GitTreeState:\"clean\", GoVersion:\"go1.13.10\"}"
+versioncases["helm"]="version.BuildInfo{Version:\"v3.8.2\", GitCommit:\"6e3701edea09e5d55a8ca2aae03a68917630e91b\", GitTreeState:\"clean\", GoVersion:\"go1.13.10\"}"
 
 for h in "${!versioncases[@]}"
 do
