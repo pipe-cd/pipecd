@@ -60,11 +60,11 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| type | string | The repository type. Currently, HTTP and GIT are supported. Default is HTTP. | No |
+| type | string | The repository type. Currently, HTTP, GIT and OCI are supported. Default is HTTP. | No |
 | name | string | The name of the Helm chart repository. Note that is not a Git repository but a [Helm chart repository](https://helm.sh/docs/topics/chart_repository/). | Yes if type is HTTP |
-| address | string | The address to the Helm chart repository. | Yes if type is HTTP |
-| username | string | Username used for the repository backed by HTTP basic authentication. | No |
-| password | string | Password used for the repository backed by HTTP basic authentication. | No |
+| address | string | The address to the Helm chart repository. | Yes if type is HTTP or OCI |
+| username | string | Username used for the repository backed by HTTP basic authentication or private OCI registry authentication. | No |
+| password | string | Password used for the repository backed by HTTP basic authentication or private OCI registry authentication. | No |
 | insecure | bool | Whether to skip TLS certificate checks for the repository or not. | No |
 | gitRemote | string | Remote address of the Git repository used to clone Helm charts. | Yes if type is GIT |
 | sshKeyFile | string | The path to the private ssh key file used while cloning Helm charts from above Git repository. | No |
@@ -143,7 +143,7 @@ Must be one of the following structs:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The unique name of the analysis provider. | Yes |
-| type | string | The provider type. Currently, only PROMETHEUS is available. | Yes |
+| type | string | The provider type. Currently, only PROMETHEUS, DATADOG are available. | Yes |
 | config | [AnalysisProviderConfig](/docs/operator-manual/piped/configuration-reference/#analysisproviderconfig) | Specific configuration for the specified type of analysis provider. | Yes |
 
 ## AnalysisProviderConfig
