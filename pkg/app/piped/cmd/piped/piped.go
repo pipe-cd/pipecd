@@ -29,7 +29,6 @@ import (
 	"time"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
-	"github.com/mattn/go-pipeline"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/spf13/cobra"
@@ -168,7 +167,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 		for _, repo := range repos {
 			if repo.Username != "" && repo.Password != "" {
-				err := loginToOCIRegistry(helm, repo.Address, repo.Username, repo.Password)
+				err := loginToOCIRegistry(ctx, helm, repo.Address, repo.Username, repo.Password)
 				if err != nil {
 					return err
 				}
@@ -761,24 +760,24 @@ func registerMetrics(pipedID, projectID, launcherVersion string) *prometheus.Reg
 	return r
 }
 
-func loginToOCIRegistry(execPath, repository, username, password string) error {
-	cmdForEchoPassword := []string{
-		"echo",
-		password,
-	}
-	cmdForHelmLogin := []string{
-		execPath,
+func loginToOCIRegistry(ctx context.Context, execPath, repository, username, password string) error {
+	args := []string{
 		"registry",
 		"login",
 		"-u",
 		username,
-		"--password-stdin",
+		"-p",
+		password,
 		repository,
 	}
-	_, err := pipeline.Output(cmdForEchoPassword, cmdForHelmLogin)
-	if err != nil {
-		return err
-	}
 
+	var stdout, stderr bytes.Buffer
+	cmd := exec.CommandContext(ctx, execPath, args...)
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("%w: %s", err, stderr.String())
+	}
 	return nil
 }
