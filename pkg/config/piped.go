@@ -262,14 +262,14 @@ const (
 )
 
 type HelmChartRepository struct {
-	// The repository type. Currently, HTTP and GIT are supported.
+	// The repository type. Currently, HTTP, GIT and OCI are supported.
 	// Default is HTTP.
 	Type HelmChartRepositoryType `json:"type" default:"HTTP"`
 
-	// Configuration for HTTP and OCI type.
+	// Configuration for HTTP type.
 	// The name of the Helm chart repository.
 	Name string `json:"name"`
-	// The address to the Helm chart repository.
+	// The address to the Helm chart repository or OCI registry.
 	Address string `json:"address"`
 	// Username used for the repository backed by HTTP basic authentication or OCI registry authentication.
 	Username string `json:"username"`

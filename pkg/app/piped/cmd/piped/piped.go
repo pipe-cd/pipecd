@@ -157,7 +157,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		return err
 	}
 
-	// Login to OCI Helm chart repositories.
+	// Login to private OCI registry.
 	if repos := cfg.OCIHelmChartRepositories(); len(repos) > 0 {
 		reg := toolregistry.DefaultRegistry()
 		helm, _, err := reg.Helm(ctx, "")
