@@ -75,6 +75,13 @@ func TestPipedConfig(t *testing.T) {
 						Password: "basic-password",
 						Insecure: true,
 					},
+					{
+						Type:     HTTPHelmChartRepository,
+						Name:     "private-charts-in-oci-registry",
+						Address:  "oci://private-charts.com",
+						Username: "sample-username",
+						Password: "sample-password",
+					},
 				},
 				CloudProviders: []PipedCloudProvider{
 					{
