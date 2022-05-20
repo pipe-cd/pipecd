@@ -188,7 +188,7 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, headCommits map[str
 		return fmt.Errorf("failed to update application configurations: %w", err)
 	}
 
-	// Memorize registered application which be updated above.
+	// Memorize registered applications, which are updated above.
 	for _, app := range outOfSyncRegisteredApps {
 		r.lastScannedCommits[app.Id] = headCommits[app.RepoId]
 	}
