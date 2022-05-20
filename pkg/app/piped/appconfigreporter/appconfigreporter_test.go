@@ -109,7 +109,8 @@ spec:
   labels:
     key-1: value-1`)},
 				},
-				logger: zap.NewNop(),
+				lastScannedCommits: make(map[string]string),
+				logger:             zap.NewNop(),
 			},
 			args: args{
 				repoPath: "path/to/repo-1",
@@ -156,7 +157,7 @@ spec:
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := tc.reporter.findRegisteredApps(tc.args.repoPath, tc.args.repoID)
+			got, err := tc.reporter.findOutOfSyncRegisteredApps(tc.args.repoPath, tc.args.repoID, "not-existed-head-commit")
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)
 		})
