@@ -41,7 +41,6 @@ RUN \
     rm -rf /installer && \
     rm -f /var/cache/apk/* && \
     chown -R $PIPED_USER:$PIPED_USER_GROUP $HOME && \
-    chmod 770 -R $HOME && \
-    chmod +r -R /
+    chmod 770 -R $HOME
 
 USER $PIPED_USER
