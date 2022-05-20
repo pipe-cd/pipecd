@@ -28,7 +28,7 @@ import (
 const (
 	defaultKubectlVersion   = "1.18.2"
 	defaultKustomizeVersion = "3.8.1"
-	defaultHelmVersion      = "3.8.2"
+	defaultHelmVersion      = "3.9.0"
 	defaultTerraformVersion = "0.13.0"
 )
 

@@ -16,7 +16,7 @@ spec:
       valueFiles:
         - values.yaml
       releaseName: helm-remote-chart
-    helmVersion: 3.8.2
+    helmVersion: 3.9.0
   description: |
     This app demonstrates how to deploy a Kubernetes app that uses a Helm chart sourced from a remote HTTP Chart server.\
     References: [adding a new app](https://pipecd.dev/docs/user-guide/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
