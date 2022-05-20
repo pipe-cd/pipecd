@@ -8,7 +8,9 @@ ARG PIPED_GID=1000
 ENV HOME=/home/${PIPED_USER}
 ENV PIPED_TOOLS_DIR="${HOME}/.piped/tools"
 ENV PATH="${PIPED_TOOLS_DIR}:${PATH}"
+ENV HELM_CONFIG_HOME="${PIPED_TOOLS_DIR}"
 ENV HELM_REGISTRY_CONFIG="${PIPED_TOOLS_DIR}/helm-config.json"
+ENV HELM_REPOSITORY_CONFIG="${PIPED_TOOLS_DIR}/helm-repositories.yaml"
 
 COPY install-helm.sh /installer/install-helm.sh
 COPY install-kubectl.sh /installer/install-kubectl.sh

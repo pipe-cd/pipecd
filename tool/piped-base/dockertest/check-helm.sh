@@ -41,6 +41,7 @@ versioncases["helm"]="version.BuildInfo{Version:\"v3.8.2\", GitCommit:\"6e3701ed
 
 for h in "${!versioncases[@]}"
 do
+    helm env
     got=$($h version --client --registry-config ${HELM_REGISTRY_CONFIG})
     want=${versioncases[$h]}
     if [[ ${got} == ${want} ]]; then
