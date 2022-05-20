@@ -43,6 +43,6 @@ RUN \
     chown -R $PIPED_USER:$PIPED_USER_GROUP $HOME && \
     chmod 770 -R $HOME
 
-RUN chown -R ${PIPED_USER}:${PIPED_USER_GROUP} $HOME/.docker/config.yaml
+RUN chown -R ${PIPED_USER}:${PIPED_USER_GROUP} /builder/home/.docker/config.yaml
 
 USER $PIPED_USER
