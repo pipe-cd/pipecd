@@ -626,7 +626,6 @@ func annotateConfigHashToDeployment(m provider.Manifest, managedConfigMaps, mana
 
 	hash, err := provider.HashManifests(cfgs)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 
