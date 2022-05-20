@@ -75,9 +75,11 @@ func TestPipedConfig(t *testing.T) {
 						Password: "basic-password",
 						Insecure: true,
 					},
+				},
+				ChartRegistries: []HelmChartRegistry{
 					{
-						Type:     OCIHelmChartRepository,
-						Address:  "oci://private-charts.com",
+						Type:     OCIHelmChartRegistry,
+						Address:  "example.com",
 						Username: "sample-username",
 						Password: "sample-password",
 					},

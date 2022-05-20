@@ -157,24 +157,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		return err
 	}
 
-	// Login to private OCI registry.
-	if repos := cfg.OCIHelmChartRepositories(); len(repos) > 0 {
-		reg := toolregistry.DefaultRegistry()
-		helm, _, err := reg.Helm(ctx, "")
-		if err != nil {
-			return fmt.Errorf("failed to find helm to login to OCI registry (%w)", err)
-		}
-
-		for _, repo := range repos {
-			if repo.Username != "" && repo.Password != "" {
-				err := loginToOCIRegistry(ctx, helm, repo.Address, repo.Username, repo.Password)
-				if err != nil {
-					return err
-				}
-			}
-		}
-	}
-
 	// Add configured Helm chart repositories.
 	if repos := cfg.HTTPHelmChartRepositories(); len(repos) > 0 {
 		reg := toolregistry.DefaultRegistry()
@@ -185,6 +167,24 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		if err := chartrepo.Update(ctx, reg, input.Logger); err != nil {
 			input.Logger.Error("failed to update Helm chart repositories", zap.Error(err))
 			return err
+		}
+	}
+
+	// Login to OCI registry.
+	if regs := cfg.OCIHelmChartRegistries(); len(regs) > 0 {
+		reg := toolregistry.DefaultRegistry()
+		helm, _, err := reg.Helm(ctx, "")
+		if err != nil {
+			return fmt.Errorf("failed to find helm to login to OCI registry (%w)", err)
+		}
+
+		for _, r := range regs {
+			if r.Username != "" && r.Password != "" {
+				err := loginToOCIRegistry(ctx, helm, r.Address, r.Username, r.Password)
+				if err != nil {
+					return err
+				}
+			}
 		}
 	}
 

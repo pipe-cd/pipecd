@@ -29,6 +29,8 @@ spec:
       username: basic-username
       password: basic-password
       insecure: true
+  
+  chartRegistries:
     - type: OCI
       address: oci://private-charts.com
       username: sample-username

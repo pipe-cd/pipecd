@@ -59,6 +59,8 @@ type PipedSpec struct {
 	Repositories []PipedRepository `json:"repositories"`
 	// List of helm chart repositories that should be added while starting up.
 	ChartRepositories []HelmChartRepository `json:"chartRepositories"`
+	// List of helm chart registries that should be logged in while starting up.
+	ChartRegistries []HelmChartRegistry `json:"chartRegistries"`
 	// List of cloud providers can be used by this piped.
 	CloudProviders []PipedCloudProvider `json:"cloudProviders"`
 	// List of analysis providers can be used by this piped.
@@ -258,22 +260,21 @@ type HelmChartRepositoryType string
 const (
 	HTTPHelmChartRepository HelmChartRepositoryType = "HTTP"
 	GITHelmChartRepository  HelmChartRepositoryType = "GIT"
-	OCIHelmChartRepository  HelmChartRepositoryType = "OCI"
 )
 
 type HelmChartRepository struct {
-	// The repository type. Currently, HTTP, GIT and OCI are supported.
+	// The repository type. Currently, HTTP and GIT are supported.
 	// Default is HTTP.
 	Type HelmChartRepositoryType `json:"type" default:"HTTP"`
 
 	// Configuration for HTTP type.
 	// The name of the Helm chart repository.
 	Name string `json:"name"`
-	// The address to the Helm chart repository or OCI registry.
+	// The address to the Helm chart repository.
 	Address string `json:"address"`
-	// Username used for the repository backed by HTTP basic authentication or OCI registry authentication.
+	// Username used for the repository backed by HTTP basic authentication authentication.
 	Username string `json:"username"`
-	// Password used for the repository backed by HTTP basic authentication or OCI registry authentication.
+	// Password used for the repository backed by HTTP basic authentication authentication.
 	Password string `json:"password"`
 	// Whether to skip TLS certificate checks for the repository or not.
 	Insecure bool `json:"insecure"`
@@ -294,10 +295,6 @@ func (r *HelmChartRepository) IsGitRepository() bool {
 	return r.Type == GITHelmChartRepository
 }
 
-func (r *HelmChartRepository) IsOCIRegistry() bool {
-	return r.Type == OCIHelmChartRepository
-}
-
 func (r *HelmChartRepository) Validate() error {
 	if r.IsHTTPRepository() {
 		if r.Name == "" {
@@ -316,14 +313,7 @@ func (r *HelmChartRepository) Validate() error {
 		return nil
 	}
 
-	if r.IsOCIRegistry() {
-		if r.Address == "" {
-			return errors.New("address must be set")
-		}
-		return nil
-	}
-
-	return fmt.Errorf("either %s repository, %s repository or %s registry must be configured", HTTPHelmChartRepository, GITHelmChartRepository, OCIHelmChartRepository)
+	return fmt.Errorf("either %s repository or %s repository must be configured", HTTPHelmChartRepository, GITHelmChartRepository)
 }
 
 func (s *PipedSpec) HTTPHelmChartRepositories() []HelmChartRepository {
@@ -346,14 +336,47 @@ func (s *PipedSpec) GitHelmChartRepositories() []HelmChartRepository {
 	return repos
 }
 
-func (s *PipedSpec) OCIHelmChartRepositories() []HelmChartRepository {
-	repos := make([]HelmChartRepository, 0, len(s.ChartRepositories))
-	for _, r := range s.ChartRepositories {
+type HelmChartRegistryType string
+
+const (
+	OCIHelmChartRegistry HelmChartRegistryType = "OCI"
+)
+
+type HelmChartRegistry struct {
+	// The repository type. Currently, only OCI is supported.
+	Type HelmChartRegistryType `json:"type" default:"OCI"`
+
+	// The address to the Helm chart registry.
+	Address string `json:"address"`
+	// Username used for the registry authentication.
+	Username string `json:"username"`
+	// Password used for the registry authentication.
+	Password string `json:"password"`
+}
+
+func (r *HelmChartRegistry) IsOCIRegistry() bool {
+	return r.Type == OCIHelmChartRegistry
+}
+
+func (r *HelmChartRegistry) Validate() error {
+	if r.IsOCIRegistry() {
+		if r.Address == "" {
+			return errors.New("address must be set")
+		}
+		return nil
+	}
+
+	return fmt.Errorf("%s registry must be configured", OCIHelmChartRegistry)
+}
+
+func (s *PipedSpec) OCIHelmChartRegistries() []HelmChartRegistry {
+	regs := make([]HelmChartRegistry, 0, len(s.ChartRegistries))
+	for _, r := range s.ChartRegistries {
 		if r.IsOCIRegistry() {
-			repos = append(repos, r)
+			regs = append(regs, r)
 		}
 	}
-	return repos
+	return regs
 }
 
 type PipedCloudProvider struct {
