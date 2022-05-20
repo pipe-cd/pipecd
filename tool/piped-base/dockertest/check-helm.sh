@@ -39,6 +39,7 @@ declare -A versioncases
 versioncases["helm"]="version.BuildInfo{Version:\"v3.8.2\", GitCommit:\"6e3701edea09e5d55a8ca2aae03a68917630e91b\", GitTreeState:\"clean\", GoVersion:\"go1.17.5\"}"
 
 ls -al /builder/home/.docker
+echo $HOME
 
 
 for h in "${!versioncases[@]}"
