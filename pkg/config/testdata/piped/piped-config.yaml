@@ -32,7 +32,7 @@ spec:
   
   chartRegistries:
     - type: OCI
-      address: oci://private-charts.com
+      address: registry.example.com
       username: sample-username
       password: sample-password
 

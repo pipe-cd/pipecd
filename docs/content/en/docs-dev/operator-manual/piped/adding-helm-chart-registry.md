@@ -16,7 +16,7 @@ spec:
   ...
   chartRegistries:
     - type: OCI
-      address: example.com
+      address: registry.example.com
       username: sample-username
       password: sample-password
 ```

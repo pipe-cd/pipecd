@@ -79,7 +79,7 @@ func TestPipedConfig(t *testing.T) {
 				ChartRegistries: []HelmChartRegistry{
 					{
 						Type:     OCIHelmChartRegistry,
-						Address:  "example.com",
+						Address:  "registry.example.com",
 						Username: "sample-username",
 						Password: "sample-password",
 					},
