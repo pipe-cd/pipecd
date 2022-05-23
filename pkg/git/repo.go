@@ -209,8 +209,7 @@ func (r *repo) Push(ctx context.Context, branch string) error {
 	if err == nil {
 		return nil
 	}
-	msg := string(out)
-	if strings.Contains(msg, "failed to push some refs to") {
+	if strings.Contains(string(out), "failed to push some refs to") {
 		return ErrBranchNotFresh
 	}
 	return formatCommandError(err, out)
