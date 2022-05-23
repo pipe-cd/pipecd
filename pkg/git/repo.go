@@ -25,7 +25,8 @@ import (
 )
 
 var (
-	ErrNoChange = errors.New("no change")
+	ErrNoChange    = errors.New("no change")
+	ErrForceNeeded = errors.New("some refs were not updated")
 )
 
 // Repo provides functions to get and handle git data.
@@ -205,10 +206,14 @@ func (r *repo) MergeRemoteBranch(ctx context.Context, branch, commit, mergeCommi
 // Push pushes local changes of a given branch to the remote.
 func (r *repo) Push(ctx context.Context, branch string) error {
 	out, err := r.runGitCommand(ctx, "push", r.remote, branch)
-	if err != nil {
-		return formatCommandError(err, out)
+	if err == nil {
+		return nil
 	}
-	return nil
+	msg := string(out)
+	if strings.Contains(msg, "failed to push some refs to") {
+		return ErrForceNeeded
+	}
+	return formatCommandError(err, out)
 }
 
 // CommitChanges commits some changes into a branch.
