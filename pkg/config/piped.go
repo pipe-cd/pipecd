@@ -272,9 +272,9 @@ type HelmChartRepository struct {
 	Name string `json:"name"`
 	// The address to the Helm chart repository.
 	Address string `json:"address"`
-	// Username used for the repository backed by HTTP basic authentication authentication.
+	// Username used for the repository backed by HTTP basic authentication.
 	Username string `json:"username"`
-	// Password used for the repository backed by HTTP basic authentication authentication.
+	// Password used for the repository backed by HTTP basic authentication.
 	Password string `json:"password"`
 	// Whether to skip TLS certificate checks for the repository or not.
 	Insecure bool `json:"insecure"`
