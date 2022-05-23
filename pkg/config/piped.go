@@ -338,12 +338,13 @@ func (s *PipedSpec) GitHelmChartRepositories() []HelmChartRepository {
 
 type HelmChartRegistryType string
 
+// The registry types that hosts Helm charts.
 const (
 	OCIHelmChartRegistry HelmChartRegistryType = "OCI"
 )
 
 type HelmChartRegistry struct {
-	// The repository type. Currently, only OCI is supported.
+	// The registry type. Currently, only OCI is supported.
 	Type HelmChartRegistryType `json:"type" default:"OCI"`
 
 	// The address to the Helm chart registry.
