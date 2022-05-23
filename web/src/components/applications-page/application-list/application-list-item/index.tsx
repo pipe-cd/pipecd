@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   deployedBy: {
-    maxWidth: 200,
+    maxWidth: 150,
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap"
