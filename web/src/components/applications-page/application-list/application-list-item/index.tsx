@@ -47,8 +47,10 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   deployedBy: {
-    maxWidth: 300,
-    wordBreak: "break-word",
+    maxWidth: 150,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   linkIcon: {
     fontSize: 16,
