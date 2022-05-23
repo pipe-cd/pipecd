@@ -27,6 +27,5 @@ echo "Installing helm-${VERSION} into ${PIPED_TOOLS_DIR}/helm..."
 curl -L ${BASE_URL}/helm-v${VERSION}-linux-amd64.tar.gz | tar xvz
 mv linux-amd64/helm ${PIPED_TOOLS_DIR}/helm
 chmod +x ${PIPED_TOOLS_DIR}/helm
-echo "{}" > ${HELM_REGISTRY_CONFIG}
 rm -rf linux-amd64
 echo "Successfully installed helm-${VERSION} into ${PIPED_TOOLS_DIR}/helm"
