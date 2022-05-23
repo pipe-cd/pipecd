@@ -27,6 +27,7 @@ import { DELETE_OLD_PIPED_KEY_SUCCESS } from "~/constants/toast-text";
 import {
   UI_TEXT_ADD_NEW_KEY,
   UI_TEXT_DELETE_OLD_KEY,
+  UI_TEXT_OPEN_PIPED_CONFIG,
   UI_TEXT_DISABLE,
   UI_TEXT_EDIT,
   UI_TEXT_ENABLE,
@@ -143,6 +144,11 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
     });
   }, [pipedId, dispatch]);
 
+  const handleOpenPipedConfig = useCallback(() => {
+    setAnchorEl(null);
+    window.open('https://example.com', "_blank")
+  }, []);
+
   const handleEnable = useCallback(() => {
     setAnchorEl(null);
     onEnable(pipedId);
@@ -241,6 +247,9 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
               onClick={handleDeleteOldKey}
             >
               {UI_TEXT_DELETE_OLD_KEY}
+            </MenuItem>,
+            <MenuItem key="piped-menu-open-piped-config" onClick={handleOpenPipedConfig}>
+              {UI_TEXT_OPEN_PIPED_CONFIG}
             </MenuItem>,
             <MenuItem key="piped-menu-disable" onClick={handleDisable}>
               {UI_TEXT_DISABLE}
