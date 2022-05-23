@@ -242,9 +242,10 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		firstRead = false
 	}
 	var (
-		handledEvents  = make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventCfgs))
-		outDatedEvents = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
-		maxTimestamp   int64
+		handledEvents    = make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventCfgs))
+		outDatedEvents   = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
+		maxTimestamp     int64
+		outDatedDuration = time.Hour
 	)
 	for _, e := range eventCfgs {
 		notHandledEvents := w.eventLister.ListNotHandled(e.Name, e.Labels, milestone+1, numToMakeOutdated)
@@ -280,6 +281,14 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 				})
 				continue
 			}
+		}
+		if time.Since(time.Unix(latestEvent.CreatedAt, 0)) > outDatedDuration {
+			outDatedEvents = append(outDatedEvents, &pipedservice.ReportEventStatusesRequest_Event{
+				Id:                latestEvent.Id,
+				Status:            model.EventStatus_EVENT_OUTDATED,
+				StatusDescription: fmt.Sprintf("Too much time has passed since the event %q was created", latestEvent.Id),
+			})
+			continue
 		}
 		if err := w.commitFiles(ctx, latestEvent.Data, e, tmpRepo, commitMsg); err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
@@ -319,6 +328,11 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 			return fmt.Errorf("failed to report event statuses: %w", err)
 		}
 		w.milestoneMap.Store(repoID, maxTimestamp)
+		return nil
+	}
+
+	if err == git.ErrBranchNotFresh {
+		w.logger.Warn("failed to push commits", zap.Error(err))
 		return nil
 	}
 
