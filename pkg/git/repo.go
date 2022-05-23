@@ -25,8 +25,8 @@ import (
 )
 
 var (
-	ErrNoChange    = errors.New("no change")
-	ErrForceNeeded = errors.New("some refs were not updated")
+	ErrNoChange       = errors.New("no change")
+	ErrBranchNotFresh = errors.New("some refs were not updated")
 )
 
 // Repo provides functions to get and handle git data.
@@ -211,7 +211,7 @@ func (r *repo) Push(ctx context.Context, branch string) error {
 	}
 	msg := string(out)
 	if strings.Contains(msg, "failed to push some refs to") {
-		return ErrForceNeeded
+		return ErrBranchNotFresh
 	}
 	return formatCommandError(err, out)
 }
