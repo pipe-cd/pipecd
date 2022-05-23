@@ -45,11 +45,6 @@ type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
-type gitRepo interface {
-	GetPath() string
-	ChangedFiles(ctx context.Context, from, to string) ([]string, error)
-}
-
 type applicationLister interface {
 	List() []*model.Application
 }
@@ -65,7 +60,7 @@ type Reporter struct {
 	config            *config.PipedSpec
 	gitRepos          map[string]git.Repo
 	gracePeriod       time.Duration
-	// Cache for the last scanned commit for each repository.
+	// Cache for the last scanned commit for each registered application.
 	lastScannedCommits map[string]string
 	fileSystem         fs.FS
 	logger             *zap.Logger
@@ -160,51 +155,49 @@ func (r *Reporter) scanAppConfigs(ctx context.Context) error {
 	if err := r.updateRegisteredApps(ctx, headCommits); err != nil {
 		return err
 	}
-	if err := r.updateUnregisteredApps(ctx, headCommits); err != nil {
+	if err := r.updateUnregisteredApps(ctx); err != nil {
 		return err
 	}
 
-	for repoID, hash := range headCommits {
-		r.lastScannedCommits[repoID] = hash
-	}
 	return nil
 }
 
 // updateRegisteredApps sends application configurations that have changed since the last time to the control-plane.
 func (r *Reporter) updateRegisteredApps(ctx context.Context, headCommits map[string]string) error {
-	registeredApps := make([]*model.ApplicationInfo, 0)
+	outOfSyncRegisteredApps := make([]*model.ApplicationInfo, 0)
 	for repoID, repo := range r.gitRepos {
 		headCommit := headCommits[repoID]
-		// Skip if the head commit is already scanned.
-		if lc, ok := r.lastScannedCommits[repoID]; ok && headCommit == lc {
-			continue
-		}
-
-		rs, err := r.findRegisteredApps(repo.GetPath(), repoID)
+		rs, err := r.findOutOfSyncRegisteredApps(repo.GetPath(), repoID, headCommit)
 		if err != nil {
 			return err
 		}
 		r.logger.Info(fmt.Sprintf("found out %d valid registered applications that config has been changed in repository %q", len(rs), repoID))
-		registeredApps = append(registeredApps, rs...)
+		outOfSyncRegisteredApps = append(outOfSyncRegisteredApps, rs...)
 	}
-	if len(registeredApps) == 0 {
+	if len(outOfSyncRegisteredApps) == 0 {
 		return nil
 	}
 
 	_, err := r.apiClient.UpdateApplicationConfigurations(
 		ctx,
 		&pipedservice.UpdateApplicationConfigurationsRequest{
-			Applications: registeredApps,
+			Applications: outOfSyncRegisteredApps,
 		},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to update application configurations: %w", err)
 	}
+
+	// Memorize registered applications, which are updated above.
+	for _, app := range outOfSyncRegisteredApps {
+		r.lastScannedCommits[app.Id] = headCommits[app.RepoId]
+	}
+
 	return nil
 }
 
 // updateUnregisteredApps sends all unregistered application configurations to the control-plane.
-func (r *Reporter) updateUnregisteredApps(ctx context.Context, headCommits map[string]string) error {
+func (r *Reporter) updateUnregisteredApps(ctx context.Context) error {
 	unregisteredApps := make([]*model.ApplicationInfo, 0)
 	for repoID, repo := range r.gitRepos {
 		// The unregistered apps sent previously aren't persisted, that's why it has to send them again even if it's scanned one.
@@ -239,8 +232,8 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context, headCommits map[s
 	return nil
 }
 
-// findRegisteredApps finds out registered application info that should be updated in the given git repository.
-func (r *Reporter) findRegisteredApps(repoPath, repoID string) ([]*model.ApplicationInfo, error) {
+// findOutOfSyncRegisteredApps finds out registered application info that should be updated in the given git repository.
+func (r *Reporter) findOutOfSyncRegisteredApps(repoPath, repoID, headCommit string) ([]*model.ApplicationInfo, error) {
 	// Compare the apps registered on Control-plane with the latest config file
 	// and return only the ones that have been changed.
 	apps := make([]*model.ApplicationInfo, 0)
@@ -248,6 +241,12 @@ func (r *Reporter) findRegisteredApps(repoPath, repoID string) ([]*model.Applica
 		if app.GitPath.Repo.Id != repoID {
 			continue
 		}
+
+		// Skip if there is no new commit pushed from last scanned time for this application.
+		if lc, ok := r.lastScannedCommits[app.Id]; ok && headCommit == lc {
+			continue
+		}
+
 		appCfg, err := r.readApplicationInfo(repoPath, repoID, app.GitPath.GetApplicationConfigFilePath())
 		if errors.Is(err, errMissingRequiredField) {
 			// For historical reasons, we need to treat applications that don't define app config in a file as normal.
@@ -268,7 +267,9 @@ func (r *Reporter) findRegisteredApps(repoPath, repoID string) ([]*model.Applica
 			continue
 		}
 
+		// Memorize the application last scanned commit in case the app is unchanged.
 		if r.isSynced(appCfg, app) {
+			r.lastScannedCommits[app.Id] = headCommit
 			continue
 		}
 		appCfg.Id = app.Id
@@ -355,7 +356,6 @@ func (r *Reporter) findUnregisteredApps(repoPath, repoID string) ([]*model.Appli
 				zap.String("config-file-path", cfgRelPath),
 				zap.Error(err),
 			)
-			// Continue reading so that it can return apps as much as possible.
 			return nil
 		}
 
