@@ -50,7 +50,7 @@ const useStyles = makeStyles((theme) => ({
     maxWidth: 150,
     overflow: "hidden",
     textOverflow: "ellipsis",
-    whiteSpace: "nowrap"
+    whiteSpace: "nowrap",
   },
   linkIcon: {
     fontSize: 16,
