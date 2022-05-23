@@ -33,23 +33,3 @@ do
         exit 1
     fi
 done
-
-declare -A versioncases
-#versioncases["helm-2.16.7"]="Client: \&version.Version{SemVer:\"v2.16.7\", GitCommit:\"5f2584fd3d35552c4af26036f0c464191287986b\", GitTreeState:\"clean\"}"
-versioncases["helm"]="version.BuildInfo{Version:\"v3.2.1\", GitCommit:\"fe51cd1e31e6a202cba7dead9552a6d418ded79a\", GitTreeState:\"clean\", GoVersion:\"go1.13.10\"}"
-
-for h in "${!versioncases[@]}"
-do
-    got=$($h version --client)
-    want=${versioncases[$h]}
-    if [[ ${got} == ${want} ]]; then
-        echo -e "PASSED: Correct version for ${h}."
-        echo "  want: ${want}"
-        echo "  got : ${got}"
-    else
-        echo "FAILED: Wrong version for ${h}."
-        echo "  want: ${want}"
-        echo "  got : ${got}"
-        exit 1
-    fi
-done
