@@ -355,12 +355,12 @@ type HelmChartRegistry struct {
 	Password string `json:"password"`
 }
 
-func (r *HelmChartRegistry) IsOCIRegistry() bool {
+func (r *HelmChartRegistry) IsOCI() bool {
 	return r.Type == OCIHelmChartRegistry
 }
 
 func (r *HelmChartRegistry) Validate() error {
-	if r.IsOCIRegistry() {
+	if r.IsOCI() {
 		if r.Address == "" {
 			return errors.New("address must be set")
 		}
@@ -373,7 +373,7 @@ func (r *HelmChartRegistry) Validate() error {
 func (s *PipedSpec) OCIHelmChartRegistries() []HelmChartRegistry {
 	regs := make([]HelmChartRegistry, 0, len(s.ChartRegistries))
 	for _, r := range s.ChartRegistries {
-		if r.IsOCIRegistry() {
+		if r.IsOCI() {
 			regs = append(regs, r)
 		}
 	}
