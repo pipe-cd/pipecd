@@ -597,14 +597,19 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		})
 	}
 
+	rawCfg, err := os.ReadFile(p.configFile)
+	if err != nil {
+		return err
+	}
+
 	var (
 		req = &pipedservice.ReportPipedMetaRequest{
 			Version:        version.Get().Version,
+			Config:         string(rawCfg),
 			Repositories:   repos,
 			CloudProviders: make([]*model.Piped_CloudProvider, 0, len(cfg.CloudProviders)),
 		}
 		retry = pipedservice.NewRetry(5)
-		err   error
 	)
 
 	// Configure the list of specified cloud providers.

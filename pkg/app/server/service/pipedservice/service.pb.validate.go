@@ -271,6 +271,8 @@ func (m *ReportPipedMetaRequest) validate(all bool) error {
 
 	// no validation rules for Version
 
+	// no validation rules for Config
+
 	for idx, item := range m.GetCloudProviders() {
 		_, _ = idx, item
 
