@@ -1,0 +1,51 @@
+name: build
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - tool/**
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  tool:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Determine version
+        run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7)" >> $GITHUB_ENV
+
+      - name: Build actions-gh-release image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: tool/actions-gh-release
+          tags: ${{ env.REGISTRY }}/pipe-cd/actions-gh-release:${{ env.PIPECD_VERSION }}
+
+      - name: Build actions-plan-preview image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: tool/actions-plan-preview
+          tags: ${{ env.REGISTRY }}/pipe-cd/actions-plan-preview:${{ env.PIPECD_VERSION }}
+
+      - name: Build codegen image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: tool/codegen
+          tags: ${{ env.REGISTRY }}/pipe-cd/codegen:${{ env.PIPECD_VERSION }}
+
+      - name: Build piped-base image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: tool/piped-base
+          tags: ${{ env.REGISTRY }}/pipe-cd/piped-base:${{ env.PIPECD_VERSION }}
+
+      - name: Build piped-base-okd image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: tool/piped-base-okd
+          tags: ${{ env.REGISTRY }}/pipe-cd/piped-base-okd:${{ env.PIPECD_VERSION }}
