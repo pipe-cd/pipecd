@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-    paths:
-      - tool/**
 
 env:
   REGISTRY: ghcr.io
