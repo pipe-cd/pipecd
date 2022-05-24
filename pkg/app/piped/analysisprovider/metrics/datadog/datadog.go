@@ -129,9 +129,6 @@ func (p *Provider) QueryPoints(ctx context.Context, query string, queryRange met
 	if httpResp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected HTTP status code from %s: %d", httpResp.Request.URL, httpResp.StatusCode)
 	}
-	if resp.Series == nil || len(*resp.Series) == 0 {
-		return nil, fmt.Errorf("no query metadata found: %w", metrics.ErrNoDataFound)
-	}
 
 	// Collect data points given by the provider.
 	var size int
