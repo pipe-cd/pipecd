@@ -101,6 +101,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const hasOldKey = piped ? piped.keysList.length > 1 : false;
   const [openOldKeyAlert, setOpenOldKeyAlert] = useState(false);
+  const [openConfigAlert, setOpenConfigAlert] = useState(false);
 
   const handleMenuOpen = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -115,6 +116,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
 
   const handleAlertClose = useCallback(() => {
     setOpenOldKeyAlert(false);
+    setOpenConfigAlert(false);
   }, []);
 
   const handleEdit = useCallback(() => {
@@ -146,7 +148,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
 
   const handleOpenPipedConfig = useCallback(() => {
     setAnchorEl(null);
-    window.open('https://example.com', "_blank")
+    setOpenConfigAlert(true);
   }, []);
 
   const handleEnable = useCallback(() => {
@@ -270,6 +272,22 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
             OK
           </Button>
         </DialogActions>
+      </Dialog>
+
+      <Dialog open={openConfigAlert} onClose={handleAlertClose}>
+        <DialogTitle>
+          <CopyIconButton name="Piped config" value={`${piped.config}`} />
+          Piped config
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            <pre>
+              <code>
+                {piped.config}
+              </code>
+            </pre>
+          </DialogContentText>
+        </DialogContent>
       </Dialog>
     </>
   );
