@@ -331,12 +331,13 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		return nil
 	}
 
+	// If push fails because the branch is not fresh, retries to updateVelues in the next interval.
 	if err == git.ErrBranchNotFresh {
 		w.logger.Warn("failed to push commits", zap.Error(err))
 		return nil
 	}
 
-	// If push fails, re-set all statuses to FAILURE.
+	// If push fails because of the other reason, re-set all statuses to FAILURE.
 	for i := range handledEvents {
 		if handledEvents[i].Status == model.EventStatus_EVENT_FAILURE {
 			continue
