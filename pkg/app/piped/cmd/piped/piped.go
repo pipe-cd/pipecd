@@ -182,10 +182,10 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			switch r.Type {
 			case config.OCIHelmChartRegistry:
 				if r.Username != "" && r.Password != "" {
-					err := loginToOCIRegistry(ctx, helm, r.Address, r.Username, r.Password)
-					if err != nil {
+					if err := loginToOCIRegistry(ctx, helm, r.Address, r.Username, r.Password); err != nil {
 						return err
 					}
+					input.Logger.Info("successfully logged in to Helm chart registry", zap.String("address", r.Address))
 				}
 			}
 		}
