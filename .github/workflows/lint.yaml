@@ -1,4 +1,4 @@
-name: Lint
+name: lint
 
 on:
   push:
@@ -13,7 +13,6 @@ env:
 
 jobs:
   go:
-    name: Go
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -21,7 +20,6 @@ jobs:
         run: make lint/go
 
   web:
-    name: Web
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

@@ -1,9 +1,9 @@
-name: Labeler
+name: labeler
 on:
 - pull_request_target
 
 jobs:
-  triage:
+  assign:
     permissions:
       contents: read
       pull-requests: write
