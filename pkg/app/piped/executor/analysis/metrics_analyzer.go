@@ -136,6 +136,10 @@ func (a *metricsAnalyzer) analyzeWithThreshold(ctx context.Context) (bool, error
 	if err != nil {
 		return false, fmt.Errorf("failed to run query: %w", err)
 	}
+	if len(points) == 0 {
+		a.logPersister.Infof("[%s] The data point of the metrics is empty, so this analysis is exited", a.id)
+		return true, nil
+	}
 
 	var outiler metrics.DataPoint
 	expected := true
@@ -200,7 +204,7 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (expected, fi
 	for i := range prevPoints {
 		prevValues = append(prevValues, prevPoints[i].Value)
 	}
-	expected, err = compare(values, prevValues, a.cfg.Deviation)
+	expected, err = a.compare(values, prevValues, a.cfg.Deviation)
 	if err != nil {
 		a.logPersister.Errorf("[%s] Failed to compare data points: %v", a.id, err)
 		a.logPersister.Infof("[%s] Performed query: %q", a.id, a.cfg.Query)
@@ -265,7 +269,7 @@ func (a *metricsAnalyzer) analyzeWithCanaryBaseline(ctx context.Context) (bool, 
 		baselineValues = append(baselineValues, baselinePoints[i].Value)
 	}
 
-	expected, err := compare(canaryValues, baselineValues, a.cfg.Deviation)
+	expected, err := a.compare(canaryValues, baselineValues, a.cfg.Deviation)
 	if err != nil {
 		a.logPersister.Errorf("[%s] Failed to compare data points: %v", a.id, err)
 		a.logPersister.Infof("[%s] Performed query for Canary: %q", a.id, canaryQuery)
@@ -327,7 +331,7 @@ func (a *metricsAnalyzer) analyzeWithCanaryPrimary(ctx context.Context) (bool, e
 	for i := range primaryPoints {
 		primaryValues = append(primaryValues, primaryPoints[i].Value)
 	}
-	expected, err := compare(canaryValues, primaryValues, a.cfg.Deviation)
+	expected, err := a.compare(canaryValues, primaryValues, a.cfg.Deviation)
 	if err != nil {
 		a.logPersister.Errorf("[%s] Failed to compare data points: %v", a.id, err)
 		a.logPersister.Infof("[%s] Performed query for Canary: %q", a.id, canaryQuery)
@@ -355,8 +359,9 @@ func (a *metricsAnalyzer) analyzeWithCanaryPrimary(ctx context.Context) (bool, e
 // compare compares the given two samples using Mann-Whitney U test.
 // Considered as failure if it deviates in the specified direction as the third argument.
 // If both of the point values is empty, this returns true.
-func compare(experiment, control []float64, deviation string) (acceptable bool, err error) {
+func (a *metricsAnalyzer) compare(experiment, control []float64, deviation string) (acceptable bool, err error) {
 	if len(experiment) == 0 && len(control) == 0 {
+		a.logPersister.Infof("[%s] The two data points required for comparison is empty, so this analysis is exited", a.id)
 		return true, nil
 	}
 	if len(experiment) == 0 {
