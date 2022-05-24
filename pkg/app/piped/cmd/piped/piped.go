@@ -774,9 +774,8 @@ func loginToOCIRegistry(ctx context.Context, execPath, address, username, passwo
 		address,
 	}
 
-	var stdout, stderr bytes.Buffer
+	var stderr bytes.Buffer
 	cmd := exec.CommandContext(ctx, execPath, args...)
-	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
