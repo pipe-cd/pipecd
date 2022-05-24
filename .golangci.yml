@@ -16,13 +16,6 @@ linters:
     - revive
     - misspell
 
-issues:
-  max-same-issues: 0
-  exclude-rules:
-    - path: _test.go
-      linters:
-        - errcheck
-
 linters-settings:
   depguard:
     list-type: blacklist
