@@ -1,5 +1,6 @@
-# pipecd/pipectl-base:0.2.0
-FROM gcr.io/pipecd/pipectl-base@sha256:0cf7eacedb0cc8d759248f0e25bd8eddf659de6f2c1db315ac95a272ec2e60cc
+FROM alpine:3.13
+
+RUN apk add --no-cache git
 
 ADD .artifacts/pipectl /usr/local/bin/pipectl
 
