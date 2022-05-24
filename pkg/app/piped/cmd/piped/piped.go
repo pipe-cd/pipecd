@@ -170,12 +170,12 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		}
 	}
 
-	// Login to OCI registry.
+	// Login to chart registries.
 	if regs := cfg.ChartRegistries; len(regs) > 0 {
 		reg := toolregistry.DefaultRegistry()
 		helm, _, err := reg.Helm(ctx, "")
 		if err != nil {
-			return fmt.Errorf("failed to find helm to login to OCI registry (%w)", err)
+			return fmt.Errorf("failed to find helm while login to chart registries (%w)", err)
 		}
 
 		for _, r := range regs {
