@@ -1,7 +1,7 @@
 ---
 title: "Configuring notifications"
 linkTitle: "Configuring notifications"
-weight: 9
+weight: 8
 description: >
   This page describes how to configure piped to send notifications to external services.
 ---

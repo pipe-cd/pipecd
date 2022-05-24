@@ -1,7 +1,7 @@
 ---
 title: "Configuration reference"
 linkTitle: "Configuration reference"
-weight: 10
+weight: 9
 description: >
   This page describes all configurable fields in the piped configuration.
 ---

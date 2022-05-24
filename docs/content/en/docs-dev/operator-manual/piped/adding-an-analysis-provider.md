@@ -1,7 +1,7 @@
 ---
 title: "Adding an analysis provider"
 linkTitle: "Adding analysis provider"
-weight: 7
+weight: 6
 description: >
   This page describes how to add an analysis provider for doing deployment analysis.
 ---
