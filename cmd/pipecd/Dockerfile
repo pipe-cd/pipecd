@@ -1,5 +1,16 @@
-# pipecd/pipecd-base:0.1.0
-FROM gcr.io/pipecd/pipecd-base@sha256:f3e98a27b85b8ead610c4f93cec8d936c760a43866cf817d32563daf9b198358
+FROM alpine:3.13
+
+ARG GOOGLE_CLOUD_SDK_VERSION=324.0.0
+
+RUN \
+    apk add --no-cache \
+        python3 \
+        curl && \
+    curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86.tar.gz && \
+    tar -zxvf ./google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86.tar.gz && \
+    ./google-cloud-sdk/install.sh --quiet
+
+ENV PATH="/google-cloud-sdk/bin:${PATH}"
 
 RUN mkdir -p web/static
 
