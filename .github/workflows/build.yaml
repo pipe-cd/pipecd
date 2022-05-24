@@ -1,4 +1,4 @@
-name: Build
+name: build
 
 on:
   push:
@@ -15,7 +15,6 @@ env:
 
 jobs:
   go:
-    name: Go
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -26,7 +25,6 @@ jobs:
         run: make build/go
 
   web:
-    name: Web
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -49,7 +47,6 @@ jobs:
         run: make build/web
 
   chart:
-    name: Helm Chart
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

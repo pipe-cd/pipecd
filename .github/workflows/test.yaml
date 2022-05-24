@@ -1,4 +1,4 @@
-name: Test
+name: test
 
 on:
   push:
@@ -14,7 +14,6 @@ env:
 
 jobs:
   go:
-    name: Go
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -25,7 +24,6 @@ jobs:
         run: make test/go
 
   web:
-    name: Web
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -48,7 +46,6 @@ jobs:
         run: make test/web
 
   integration:
-    name: Integration
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
