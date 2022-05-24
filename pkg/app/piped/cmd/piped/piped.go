@@ -171,7 +171,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	}
 
 	// Login to OCI registry.
-	if regs := cfg.OCIHelmChartRegistries(); len(regs) > 0 {
+	if regs := cfg.ChartRegistries; len(regs) > 0 {
 		reg := toolregistry.DefaultRegistry()
 		helm, _, err := reg.Helm(ctx, "")
 		if err != nil {
@@ -179,10 +179,13 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		}
 
 		for _, r := range regs {
-			if r.Username != "" && r.Password != "" {
-				err := loginToOCIRegistry(ctx, helm, r.Address, r.Username, r.Password)
-				if err != nil {
-					return err
+			switch r.Type {
+			case config.OCIHelmChartRegistry:
+				if r.Username != "" && r.Password != "" {
+					err := loginToOCIRegistry(ctx, helm, r.Address, r.Username, r.Password)
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}

@@ -370,16 +370,6 @@ func (r *HelmChartRegistry) Validate() error {
 	return fmt.Errorf("%s registry must be configured", OCIHelmChartRegistry)
 }
 
-func (s *PipedSpec) OCIHelmChartRegistries() []HelmChartRegistry {
-	regs := make([]HelmChartRegistry, 0, len(s.ChartRegistries))
-	for _, r := range s.ChartRegistries {
-		if r.IsOCI() {
-			regs = append(regs, r)
-		}
-	}
-	return regs
-}
-
 type PipedCloudProvider struct {
 	Name string
 	Type model.ApplicationKind
