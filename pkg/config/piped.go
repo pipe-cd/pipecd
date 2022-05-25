@@ -34,15 +34,15 @@ var defaultKubernetesCloudProvider = PipedCloudProvider{
 // PipedSpec contains configurable data used to while running Piped.
 type PipedSpec struct {
 	// The identifier of the PipeCD project where this piped belongs to.
-	ProjectID string
+	ProjectID string `json:"projectID" public:"ok"`
 	// The unique identifier generated for this piped.
-	PipedID string
+	PipedID string `json:"pipedID" public:"ok"`
 	// The path to the file containing the generated Key string for this piped.
-	PipedKeyFile string
+	PipedKeyFile string `json:"pipedKeyFile"`
 	// Base64 encoded string of Piped key.
-	PipedKeyData string
+	PipedKeyData string `json:"pipedKeyData"`
 	// The name of this piped.
-	Name string
+	Name string `json:"name"`
 	// The address used to connect to the control-plane's API.
 	APIAddress string `json:"apiAddress"`
 	// The address to the control-plane's Web.
