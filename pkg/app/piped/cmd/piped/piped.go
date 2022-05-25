@@ -181,7 +181,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		for _, r := range regs {
 			switch r.Type {
 			case config.OCIHelmChartRegistry:
-				if r.Username != "" && r.Password != "" {
+				if r.Username == "" || r.Password == "" {
 					continue
 				}
 
