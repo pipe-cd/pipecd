@@ -120,48 +120,63 @@ func (c *OAuthClient) GetUser(ctx context.Context) (*model.User, error) {
 	return &model.User{
 		Username:  user.GetLogin(),
 		AvatarUrl: user.GetAvatarURL(),
-		Role: &model.Role{
-			ProjectId:   c.project.Id,
-			ProjectRole: role,
-		},
+		Role:      role,
 	}, nil
 }
 
-func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role model.Role_ProjectRole, err error) {
-	var found bool
+func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role *model.Role, err error) {
+	var (
+		groups    = c.project.GetAllUserGroups()
+		rbacRoles = c.project.GetAllRBACRoles()
+	)
 
-	for _, team := range teams {
-		slug := team.GetSlug()
-		org := team.Organization.GetLogin()
-		if org == "" || slug == "" {
-			continue
-		}
-
-		t := fmt.Sprintf("%s/%s", org, slug)
-		switch t {
-		case c.adminTeam:
-			role = model.Role_ADMIN
-			return
-		case c.editorTeam:
-			role = model.Role_EDITOR
-			found = true
-		case c.viewerTeam:
-			if role != model.Role_EDITOR {
-				role = model.Role_VIEWER
-				found = true
-			}
-		}
+	role = &model.Role{
+		ProjectId: c.project.Id,
 	}
+	roles := make(map[string]*model.ProjectRBACRole, len(rbacRoles))
+	for _, v := range rbacRoles {
+		roles[v.Name] = v
+	}
+	// The priority of the applied Roles is determined by the order in which
+	// the UserGroups are defined.
+	for _, group := range groups {
+		for _, team := range teams {
+			slug := team.GetSlug()
+			org := team.Organization.GetLogin()
+			if org == "" || slug == "" {
+				continue
+			}
 
-	if found {
-		return
+			t := fmt.Sprintf("%s/%s", org, slug)
+			if group.SsoGroup != t {
+				continue
+			}
+			r, ok := roles[group.Role]
+			if !ok {
+				continue
+			}
+			role.ProjectPolicies = r.Policies
+			if !r.IsBuiltin {
+				return
+			}
+			switch t {
+			case c.adminTeam:
+				role.ProjectRole = model.Role_ADMIN
+			case c.editorTeam:
+				role.ProjectRole = model.Role_EDITOR
+			case c.viewerTeam:
+				role.ProjectRole = model.Role_VIEWER
+			}
+			return
+		}
 	}
 
 	// In case the current user does not belong to any registered
 	// teams, if AllowStrayAsViewer option is set, assign Viewer role
 	// as user's role.
 	if c.project.AllowStrayAsViewer {
-		role = model.Role_VIEWER
+		role.ProjectRole = model.Role_VIEWER
+		role.ProjectPolicies = model.BuiltinViewerRBACPolicies
 		return
 	}
 
