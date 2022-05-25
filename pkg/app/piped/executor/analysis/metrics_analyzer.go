@@ -137,7 +137,7 @@ func (a *metricsAnalyzer) analyzeWithThreshold(ctx context.Context) (bool, error
 		return false, fmt.Errorf("failed to run query: %w", err)
 	}
 	if len(points) == 0 {
-		a.logPersister.Infof("[%s] The data point of the metrics is empty, so this analysis is exited", a.id)
+		a.logPersister.Infof("[%s] This analysis stage will be skipped since there was no data point to compare", a.id)
 		return true, nil
 	}
 
