@@ -186,10 +186,13 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 				}
 
 				if err := loginToOCIRegistry(ctx, helm, r.Address, r.Username, r.Password); err != nil {
-					input.Logger.Error(fmt.Sprintf("failed to login to %s chart registry", r.Address), zap.Error(err))
+					input.Logger.Error(fmt.Sprintf("failed to login to %s Helm chart registry", r.Address), zap.Error(err))
 					return err
 				}
 				input.Logger.Info("successfully logged in to Helm chart registry", zap.String("address", r.Address))
+
+			default:
+				return fmt.Errorf("unsupported Helm chart registry type: %s", r.Type)
 			}
 		}
 	}
