@@ -1,0 +1,32 @@
+name: PipeCD
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  plan-preview:
+    name: Plan Preview
+    runs-on: ubuntu-latest
+    if: "github.event_name == 'pull_request'"
+    steps:
+      - uses: pipe-cd/actions-plan-preview@v1.7.2
+        with:
+          address: ${{ secrets.PIPECD_API_ADDRESS }}
+          api-key: ${{ secrets.PIPECD_PLAN_PREVIEW_API_KEY }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  plan-preview-on-comment:
+    name: Plan Preview
+    runs-on: ubuntu-latest
+    if: "github.event_name == 'issue_comment' && github.event.issue.pull_request && startsWith(github.event.comment.body, '/pipecd plan-preview')"
+    steps:
+      - uses: pipe-cd/actions-plan-preview@v1.7.2
+        with:
+          address: ${{ secrets.PIPECD_API_ADDRESS }}
+          api-key: ${{ secrets.PIPECD_PLAN_PREVIEW_API_KEY }}
+          token: ${{ secrets.GITHUB_TOKEN }}

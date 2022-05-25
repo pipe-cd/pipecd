@@ -24,7 +24,9 @@ jobs:
           echo "Repo examples"
           ls -la ori-examples
           cp -rf pipecd/examples .
-          cp -rf ori-examples/.git .
+          cp -rf ori-examples/.git examples/
           ls
           ls -la examples
-          
+          cd examples
+          git status
+
