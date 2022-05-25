@@ -22,4 +22,4 @@ jobs:
           echo "Repo pipecd"
           ls pipecd
           echo "Repo examples"
-          ls examples
+          ls -la examples
