@@ -89,12 +89,15 @@ spec:
       {{- end }}
       {{- if .Values.quickstart.enabled }}
       initContainers:
-        - name: minio-checker
-          image: alpine/curl:3.14
-          command: ["sh", "-c", "until curl {{ include "pipecd.fullname" . }}-minio:{{ .Values.minio.port }}; do echo waiting for minio; sleep 2; done"]
-        - name: mysql-checker
+        - name: dep-waiter
           image: alpine:3.14
-          command: ["sh", "-c", "until nc -z {{ include "pipecd.fullname" . }}-mysql {{ .Values.mysql.port }}; do echo waiting for mysql; sleep 2; done"]
+          command: ["sh", "-c"]
+          args:
+            - |
+              until nc -z {{ include "pipecd.fullname" . }}-minio {{ .Values.minio.port }} && nc -z {{ include "pipecd.fullname" . }}-mysql {{ .Values.mysql.port }}
+              do
+                sleep 2;
+              done;
       {{- end }}
       containers:
 {{- if .Values.cloudSQLProxy.enabled }}
@@ -241,12 +244,15 @@ spec:
     spec:
       {{- if .Values.quickstart.enabled }}
       initContainers:
-        - name: minio-checker
-          image: alpine/curl:3.14
-          command: ["sh", "-c", "until curl {{ include "pipecd.fullname" . }}-minio:{{ .Values.minio.port }}; do echo waiting for minio; sleep 2; done"]
-        - name: mysql-checker
+        - name: dep-waiter
           image: alpine:3.14
-          command: ["sh", "-c", "until nc -z {{ include "pipecd.fullname" . }}-mysql {{ .Values.mysql.port }}; do echo waiting for mysql; sleep 2; done"]
+          command: ["sh", "-c"]
+          args:
+            - |
+              until nc -z {{ include "pipecd.fullname" . }}-minio {{ .Values.minio.port }} && nc -z {{ include "pipecd.fullname" . }}-mysql {{ .Values.mysql.port }}
+              do
+                sleep 2;
+              done;
       {{- end }}
       containers:
 {{- if .Values.cloudSQLProxy.enabled }}
