@@ -29,6 +29,7 @@ spec:
 | git | [Git](#git) | Git configuration needed for Git commands. | No |
 | repositories | [][Repository](/docs/operator-manual/piped/configuration-reference/#gitrepository) | List of Git repositories this piped will handle. | No |
 | chartRepositories | [][ChartRepository](/docs/operator-manual/piped/configuration-reference/#chartrepository) | List of Helm chart repositories that should be added while starting up. | No |
+| chartRegistries | [][ChartRegistry](/docs/operator-manual/piped/configuration-reference/#chartregistry) | List of helm chart registries that should be logged in while starting up. | No |
 | cloudProviders | [][CloudProvider](/docs/operator-manual/piped/configuration-reference/#cloudprovider) | List of cloud providers can be used by this piped. | No |
 | analysisProviders | [][AnalysisProvider](/docs/operator-manual/piped/configuration-reference/#analysisprovider) | List of analysis providers can be used by this piped. | No |
 | eventWatcher | [EventWatcher](/docs/operator-manual/piped/configuration-reference/#eventwatcher) | Optional Event watcher settings. | No |
@@ -68,6 +69,15 @@ spec:
 | insecure | bool | Whether to skip TLS certificate checks for the repository or not. | No |
 | gitRemote | string | Remote address of the Git repository used to clone Helm charts. | Yes if type is GIT |
 | sshKeyFile | string | The path to the private ssh key file used while cloning Helm charts from above Git repository. | No |
+
+## ChartRegistry
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| type | string | The registry type. Currently, only OCI is supported. Default is OCI. | No |
+| address | string | The address to the registry. | Yes |
+| username | string | Username used for the registry authentication. | No |
+| password | string | Password used for the registry authentication. | No |
 
 ## CloudProvider
 

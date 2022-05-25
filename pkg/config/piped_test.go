@@ -76,6 +76,14 @@ func TestPipedConfig(t *testing.T) {
 						Insecure: true,
 					},
 				},
+				ChartRegistries: []HelmChartRegistry{
+					{
+						Type:     OCIHelmChartRegistry,
+						Address:  "registry.example.com",
+						Username: "sample-username",
+						Password: "sample-password",
+					},
+				},
 				CloudProviders: []PipedCloudProvider{
 					{
 						Name: "kubernetes-default",
