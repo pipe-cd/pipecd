@@ -361,7 +361,7 @@ func (a *metricsAnalyzer) analyzeWithCanaryPrimary(ctx context.Context) (bool, e
 // If both of the point values is empty, this returns true.
 func (a *metricsAnalyzer) compare(experiment, control []float64, deviation string) (acceptable bool, err error) {
 	if len(experiment) == 0 && len(control) == 0 {
-		a.logPersister.Infof("[%s] The two data points required for comparison is empty, so this analysis is exited", a.id)
+		a.logPersister.Infof("[%s] The analysis stage will be skipped since there was no data point to compare", a.id)
 		return true, nil
 	}
 	if len(experiment) == 0 {
