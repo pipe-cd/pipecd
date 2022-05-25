@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Generate code
       uses: docker://gcr.io/pipecd/codegen@sha256:b5694bfadb0098bc8f5cc4898d06e64b9a5244c0a6136910d8db4e4027aeca95 #v0.8.0
       with:
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Generate stable docs
       run: make gen/stable-docs
     - name: Show Git status
