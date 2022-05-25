@@ -87,6 +87,13 @@ spec:
       {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
       serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
       {{- end }}
+      initContainers:
+        - name: minio-checker
+          image: alpine/curl:3.14
+          command: ["sh", "-c", "until curl pipecd-minio:9000; do echo waiting for minio; sleep 1; done"]
+        - name: mysql-checker
+          image: alpine:3.14
+          command: ["sh", "-c", "until nc pipecd-mysql 3306; do echo waiting for mysql; sleep 1; done"]
       containers:
 {{- if .Values.cloudSQLProxy.enabled }}
         - name: cloud-sql-proxy
@@ -230,6 +237,13 @@ spec:
         {{- include "pipecd.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: ops
     spec:
+      initContainers:
+        - name: minio-checker
+          image: alpine/curl:3.14
+          command: ["sh", "-c", "until curl pipecd-minio:9000; do echo waiting for minio; sleep 1; done"]
+        - name: mysql-checker
+          image: alpine:3.14
+          command: ["sh", "-c", "until nc pipecd-mysql 3306; do echo waiting for mysql; sleep 1; done"]
       containers:
 {{- if .Values.cloudSQLProxy.enabled }}
         - name: cloud-sql-proxy
