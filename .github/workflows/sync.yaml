@@ -1,0 +1,19 @@
+name: sync
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        with:
+          repository: pipe-cd/examples
+          path: examples-repo
+      - run: |
+          ls
+          pwd
