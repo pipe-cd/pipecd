@@ -10,10 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          path: pipecd
       - uses: actions/checkout@v3
         with:
           repository: pipe-cd/examples
-          path: examples-repo
+          path: examples
       - run: |
           ls
           pwd
+          echo "Repo pipecd"
+          ls pipecd
+          echo "Repo examples"
+          ls examples
