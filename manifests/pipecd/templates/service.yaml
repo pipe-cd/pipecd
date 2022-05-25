@@ -129,7 +129,7 @@ spec:
   type: ClusterIP
   ports:
     - name: service
-      port: 3306
+      port: {{ .Values.mysql.port }}
       targetPort: mysql
   selector:
     {{- include "pipecd.selectorLabels" . | nindent 4 }}
@@ -147,7 +147,7 @@ spec:
   type: ClusterIP
   ports:
     - name: service
-      port: 9000
+      port: {{ .Values.minio.port }}
       targetPort: minio
   selector:
     {{- include "pipecd.selectorLabels" . | nindent 4 }}
