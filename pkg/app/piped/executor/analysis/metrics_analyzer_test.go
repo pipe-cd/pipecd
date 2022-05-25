@@ -138,7 +138,7 @@ func Test_metricsAnalyzer_analyzeWithThreshold(t *testing.T) {
 	}
 }
 
-func Test_compare(t *testing.T) {
+func Test_metricsAnalyzer_compare(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -147,13 +147,24 @@ func Test_compare(t *testing.T) {
 		deviation  string
 	}
 	testcases := []struct {
-		name         string
-		args         args
-		wantExpected bool
-		wantErr      bool
+		name            string
+		metricsAnalyzer *metricsAnalyzer
+		args            args
+		wantExpected    bool
+		wantErr         bool
 	}{
 		{
 			name: "empty data points given",
+			metricsAnalyzer: &metricsAnalyzer{
+				id: "id",
+				cfg: config.AnalysisMetrics{
+					Provider: "provider",
+					Query:    "query",
+				},
+				provider:     &fakeMetricsProvider{},
+				logger:       zap.NewNop(),
+				logPersister: &fakeLogPersister{},
+			},
 			args: args{
 				experiment: []float64{},
 				control:    []float64{0.1, 0.2, 0.3, 0.4, 0.5},
@@ -164,6 +175,16 @@ func Test_compare(t *testing.T) {
 		},
 		{
 			name: "no significance",
+			metricsAnalyzer: &metricsAnalyzer{
+				id: "id",
+				cfg: config.AnalysisMetrics{
+					Provider: "provider",
+					Query:    "query",
+				},
+				provider:     &fakeMetricsProvider{},
+				logger:       zap.NewNop(),
+				logPersister: &fakeLogPersister{},
+			},
 			args: args{
 				experiment: []float64{0.1, 0.2, 0.3, 0.4, 0.5},
 				control:    []float64{0.1, 0.2, 0.3, 0.4, 0.5},
@@ -174,6 +195,16 @@ func Test_compare(t *testing.T) {
 		},
 		{
 			name: "deviation on high direction as expected",
+			metricsAnalyzer: &metricsAnalyzer{
+				id: "id",
+				cfg: config.AnalysisMetrics{
+					Provider: "provider",
+					Query:    "query",
+				},
+				provider:     &fakeMetricsProvider{},
+				logger:       zap.NewNop(),
+				logPersister: &fakeLogPersister{},
+			},
 			args: args{
 				experiment: []float64{10.1, 10.2, 10.3, 10.4, 10.5},
 				control:    []float64{0.1, 0.2, 0.3, 0.4, 0.5},
@@ -184,6 +215,16 @@ func Test_compare(t *testing.T) {
 		},
 		{
 			name: "deviation on low direction as expected",
+			metricsAnalyzer: &metricsAnalyzer{
+				id: "id",
+				cfg: config.AnalysisMetrics{
+					Provider: "provider",
+					Query:    "query",
+				},
+				provider:     &fakeMetricsProvider{},
+				logger:       zap.NewNop(),
+				logPersister: &fakeLogPersister{},
+			},
 			args: args{
 				experiment: []float64{0.1, 0.2, 0.3, 0.4, 0.5},
 				control:    []float64{10.1, 10.2, 10.3, 10.4, 10.5},
@@ -194,6 +235,16 @@ func Test_compare(t *testing.T) {
 		},
 		{
 			name: "deviation on high direction as unexpected",
+			metricsAnalyzer: &metricsAnalyzer{
+				id: "id",
+				cfg: config.AnalysisMetrics{
+					Provider: "provider",
+					Query:    "query",
+				},
+				provider:     &fakeMetricsProvider{},
+				logger:       zap.NewNop(),
+				logPersister: &fakeLogPersister{},
+			},
 			args: args{
 				experiment: []float64{10.1, 10.2, 10.3, 10.4, 10.5},
 				control:    []float64{0.1, 0.2, 0.3, 0.4, 0.5},
@@ -204,6 +255,16 @@ func Test_compare(t *testing.T) {
 		},
 		{
 			name: "deviation on low direction as unexpected",
+			metricsAnalyzer: &metricsAnalyzer{
+				id: "id",
+				cfg: config.AnalysisMetrics{
+					Provider: "provider",
+					Query:    "query",
+				},
+				provider:     &fakeMetricsProvider{},
+				logger:       zap.NewNop(),
+				logPersister: &fakeLogPersister{},
+			},
 			args: args{
 				experiment: []float64{0.1, 0.2, 0.3, 0.4, 0.5},
 				control:    []float64{10.1, 10.2, 10.3, 10.4, 10.5},
@@ -214,6 +275,16 @@ func Test_compare(t *testing.T) {
 		},
 		{
 			name: "deviation as unexpected",
+			metricsAnalyzer: &metricsAnalyzer{
+				id: "id",
+				cfg: config.AnalysisMetrics{
+					Provider: "provider",
+					Query:    "query",
+				},
+				provider:     &fakeMetricsProvider{},
+				logger:       zap.NewNop(),
+				logPersister: &fakeLogPersister{},
+			},
 			args: args{
 				experiment: []float64{0.1, 0.2, 5.3, 0.2, 0.5},
 				control:    []float64{0.1, 0.1, 0.1, 0.1, 0.1},
@@ -222,10 +293,30 @@ func Test_compare(t *testing.T) {
 			wantExpected: false,
 			wantErr:      false,
 		},
+		{
+			name: "the data points is empty",
+			metricsAnalyzer: &metricsAnalyzer{
+				id: "id",
+				cfg: config.AnalysisMetrics{
+					Provider: "provider",
+					Query:    "query",
+				},
+				provider:     &fakeMetricsProvider{},
+				logger:       zap.NewNop(),
+				logPersister: &fakeLogPersister{},
+			},
+			args: args{
+				experiment: nil,
+				control:    nil,
+				deviation:  "EITHER",
+			},
+			wantExpected: true,
+			wantErr:      false,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := compare(tc.args.experiment, tc.args.control, tc.args.deviation)
+			got, err := tc.metricsAnalyzer.compare(tc.args.experiment, tc.args.control, tc.args.deviation)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.wantExpected, got)
 		})
