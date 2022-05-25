@@ -246,7 +246,7 @@ export const Header: FC = memo(function Header() {
           target="_blank"
           rel="noreferrer"
         >
-          Repository
+          GitHub
           <OpenInNew className={classes.iconOpenInNew} />
         </MenuItem>
         <MenuItem disabled={true} dense={true} button={false}>
