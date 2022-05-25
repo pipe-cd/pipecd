@@ -17,16 +17,10 @@ jobs:
           repository: pipe-cd/examples
           path: ori-examples
       - run: |
-          ls
-          pwd
-          echo "Repo pipecd"
-          ls pipecd
-          echo "Repo examples"
-          ls -la ori-examples
           cp -rf pipecd/examples .
           cp -rf ori-examples/.git examples/
-          ls
-          ls -la examples
           cd examples
           git status
-
+          git add .
+          git commit -m "Sync with the examples directory in pipe-cd/pipecd repository"
+          git push origin master
