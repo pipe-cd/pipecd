@@ -137,9 +137,6 @@ func (p *Provider) QueryPoints(ctx context.Context, query string, queryRange met
 			{Timestamp: res.Timestamp.Unix(), Value: float64(res.Value)},
 		}, nil
 	case model.Vector:
-		if len(res) == 0 {
-			return nil, fmt.Errorf("zero value in instant vector type returned: %w", metrics.ErrNoDataFound)
-		}
 		points := make([]metrics.DataPoint, 0, len(res))
 		for _, s := range res {
 			if s == nil {
@@ -155,10 +152,6 @@ func (p *Provider) QueryPoints(ctx context.Context, query string, queryRange met
 		}
 		return points, nil
 	case model.Matrix:
-		if len(res) == 0 {
-			return nil, fmt.Errorf("no time series data points in range vector type: %w", metrics.ErrNoDataFound)
-		}
-
 		var size int
 		for _, r := range res {
 			size += len(r.Values)
