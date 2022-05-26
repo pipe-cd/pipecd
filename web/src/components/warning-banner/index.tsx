@@ -1,7 +1,6 @@
 import { FC, memo } from "react";
-import { AppBar } from "@material-ui/core";
+import { AppBar, makeStyles } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
-import { makeStyles } from "@material-ui/core";
 
 const APP_BANNER_HEIGHT = 30;
 
