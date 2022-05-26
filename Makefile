@@ -124,7 +124,7 @@ lint/go:
 
 .PHONY: lint/web
 lint/web:
-	@echo "Unimplemented"
+	yarn --cwd web lint
 
 # Update commands
 
