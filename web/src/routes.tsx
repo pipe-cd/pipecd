@@ -1,6 +1,6 @@
 import loadable from "@loadable/component";
 import { EntityId } from "@reduxjs/toolkit";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 import {
   Redirect,
   Route,
@@ -9,8 +9,9 @@ import {
   RouteComponentProps,
 } from "react-router-dom";
 import { ApplicationIndexPage } from "~/components/applications-page";
+import { WarningBanner } from "~/components/warning-banner";
 import { DeploymentIndexPage } from "~/components/deployments-page";
-import { DeploymentChainsIndexPage } from "./components/deployment-chains-page";
+import { DeploymentChainsIndexPage } from "~/components/deployment-chains-page";
 import { Header } from "~/components/header";
 import { LoginPage } from "~/components/login-page";
 import { Toasts } from "~/components/toasts";
@@ -95,6 +96,8 @@ const useCommandsStatusChecking = (): void => {
 };
 
 const REDIRECT_PATH_KEY = "redirect_path";
+const BANNER_VERSION_KEY = "banner_version";
+
 export const Routes: FC = () => {
   const dispatch = useAppDispatch();
   const me = useAppSelector((state) => state.me);
@@ -113,6 +116,10 @@ export const Routes: FC = () => {
       onLoadProject(me.projectId);
     }
   }, [location, me, onLoadProject]);
+
+  const [showWarningBanner, setShowWarningBaner] = useState(
+    localStorage.getItem(BANNER_VERSION_KEY) !== `${process.env.PIPECD_VERSION}`
+  );
 
   if (me === null) {
     return (
@@ -147,8 +154,16 @@ export const Routes: FC = () => {
     );
   }
 
+  const handleCloseWarningBanner = (): void => {
+    localStorage.setItem(BANNER_VERSION_KEY, `${process.env.PIPECD_VERSION}`);
+    setShowWarningBaner(false);
+  };
+
   return (
     <>
+      {showWarningBanner && (
+        <WarningBanner onClose={handleCloseWarningBanner} />
+      )}
       <Header />
       <Switch>
         <Route
