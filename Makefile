@@ -146,7 +146,7 @@ update/docsy:
 
 .PHONY: gen/code
 gen/code:
-	docker run --rm -v ${PWD}:/repo -it gcr.io/pipecd/codegen:0.8.0 /repo
+	docker run --rm -v ${PWD}:/repo -it ghcr.io/pipe-cd/codegen:v0.32.0 /repo
 
 .PHONY: gen/release
 gen/release:
