@@ -134,11 +134,11 @@ func (s *PipedSpec) Mask() {
 		s.PipedKeyData = maskString
 	}
 	s.Git.Mask()
-	for _, r := range s.ChartRepositories {
-		r.Mask()
+	for i := 0; i < len(s.ChartRepositories); i++ {
+		s.ChartRepositories[i].Mask()
 	}
-	for _, r := range s.ChartRegistries {
-		r.Mask()
+	for i := 0; i < len(s.ChartRegistries); i++ {
+		s.ChartRegistries[i].Mask()
 	}
 	for _, p := range s.CloudProviders {
 		p.Mask()
@@ -146,6 +146,7 @@ func (s *PipedSpec) Mask() {
 	for _, p := range s.AnalysisProviders {
 		p.Mask()
 	}
+	s.Notifications.Mask()
 	if s.SecretManagement != nil {
 		s.SecretManagement.Mask()
 	}
@@ -757,6 +758,12 @@ type Notifications struct {
 	Receivers []NotificationReceiver `json:"receivers"`
 }
 
+func (n *Notifications) Mask() {
+	for _, r := range n.Receivers {
+		r.Mask()
+	}
+}
+
 type NotificationRoute struct {
 	Name         string            `json:"name"`
 	Receiver     string            `json:"receiver"`
@@ -779,8 +786,23 @@ type NotificationReceiver struct {
 	Webhook *NotificationReceiverWebhook `json:"webhook"`
 }
 
+func (n *NotificationReceiver) Mask() {
+	if n.Slack != nil {
+		n.Slack.Mask()
+	}
+	if n.Webhook != nil {
+		n.Webhook.Mask()
+	}
+}
+
 type NotificationReceiverSlack struct {
 	HookURL string `json:"hookURL"`
+}
+
+func (n *NotificationReceiverSlack) Mask() {
+	if len(n.HookURL) != 0 {
+		n.HookURL = maskString
+	}
 }
 
 type NotificationReceiverWebhook struct {
@@ -788,6 +810,21 @@ type NotificationReceiverWebhook struct {
 	SignatureKey       string `json:"signatureKey" default:"PipeCD-Signature"`
 	SignatureValue     string `json:"signatureValue"`
 	SignatureValueFile string `json:"signatureValueFile"`
+}
+
+func (n *NotificationReceiverWebhook) Mask() {
+	if len(n.URL) != 0 {
+		n.URL = maskString
+	}
+	if len(n.SignatureKey) != 0 {
+		n.SignatureKey = maskString
+	}
+	if len(n.SignatureValue) != 0 {
+		n.SignatureValue = maskString
+	}
+	if len(n.SignatureValueFile) != 0 {
+		n.SignatureValueFile = maskString
+	}
 }
 
 func (n *NotificationReceiverWebhook) LoadSignatureValue() (string, error) {
