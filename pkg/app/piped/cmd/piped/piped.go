@@ -172,6 +172,33 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		}
 	}
 
+	// Login to chart registries.
+	if regs := cfg.ChartRegistries; len(regs) > 0 {
+		reg := toolregistry.DefaultRegistry()
+		helm, _, err := reg.Helm(ctx, "")
+		if err != nil {
+			return fmt.Errorf("failed to find helm while login to chart registries (%w)", err)
+		}
+
+		for _, r := range regs {
+			switch r.Type {
+			case config.OCIHelmChartRegistry:
+				if r.Username == "" || r.Password == "" {
+					continue
+				}
+
+				if err := loginToOCIRegistry(ctx, helm, r.Address, r.Username, r.Password); err != nil {
+					input.Logger.Error(fmt.Sprintf("failed to login to %s Helm chart registry", r.Address), zap.Error(err))
+					return err
+				}
+				input.Logger.Info("successfully logged in to Helm chart registry", zap.String("address", r.Address))
+
+			default:
+				return fmt.Errorf("unsupported Helm chart registry type: %s", r.Type)
+			}
+		}
+	}
+
 	pipedKey, err := cfg.LoadPipedKey()
 	if err != nil {
 		input.Logger.Error("failed to load piped key", zap.Error(err))
@@ -755,4 +782,25 @@ func registerMetrics(pipedID, projectID, launcherVersion string) *prometheus.Reg
 	planpreviewmetrics.Register(wrapped)
 
 	return r
+}
+
+func loginToOCIRegistry(ctx context.Context, execPath, address, username, password string) error {
+	args := []string{
+		"registry",
+		"login",
+		"-u",
+		username,
+		"-p",
+		password,
+		address,
+	}
+
+	var stderr bytes.Buffer
+	cmd := exec.CommandContext(ctx, execPath, args...)
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("%w: %s", err, stderr.String())
+	}
+	return nil
 }

@@ -27,12 +27,6 @@ spec:
     enabled: true
     autoAssign: true
 
-  # A plugin that lints changed go files and
-  # adds review comments on pull request.
-  # See more: https://kapetanios.dev/docs/plugins/golinter
-  goLinter:
-    enabled: true
-
   cla:
     enabled: true
     url: "https://github.com/pipe-cd/pipecd/blob/master/CLA.md"

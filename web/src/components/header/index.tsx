@@ -240,6 +240,15 @@ export const Header: FC = memo(function Header() {
           Documentation
           <OpenInNew className={classes.iconOpenInNew} />
         </MenuItem>
+        <MenuItem
+          component={Link}
+          href="https://github.com/pipe-cd/pipecd"
+          target="_blank"
+          rel="noreferrer"
+        >
+          GitHub
+          <OpenInNew className={classes.iconOpenInNew} />
+        </MenuItem>
         <MenuItem disabled={true} dense={true} button={false}>
           {process.env.PIPECD_VERSION}
         </MenuItem>

@@ -1,4 +1,4 @@
-name: Test
+name: test
 
 on:
   push:
@@ -17,11 +17,10 @@ env:
   NODE_VERSION: 16.13.0
 
 jobs:
-  backend:
-    name: Tool
+  tool:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ env.GO_VERSION }}

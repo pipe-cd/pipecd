@@ -1,4 +1,4 @@
-name: Publish
+name: publish
 
 on:
   push:
@@ -10,19 +10,17 @@ env:
 
 jobs:
   gh_release:
-    name: GitHub Release
     runs-on: ubuntu-latest
     steps:
       - run: echo "not implemented"
 
   binary:
-    name: Binary
     runs-on: ubuntu-latest
     needs: gh_release
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - uses: actions/setup-go@v2

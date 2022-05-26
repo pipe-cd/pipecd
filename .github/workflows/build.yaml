@@ -1,4 +1,4 @@
-name: Build
+name: build
 
 on:
   push:
@@ -15,10 +15,9 @@ env:
 
 jobs:
   go:
-    name: Go
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ env.GO_VERSION }}
@@ -26,10 +25,9 @@ jobs:
         run: make build/go
 
   web:
-    name: Web
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -49,10 +47,9 @@ jobs:
         run: make build/web
 
   chart:
-    name: Helm Chart
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Install helm

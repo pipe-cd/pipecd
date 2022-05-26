@@ -87,6 +87,18 @@ spec:
       {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
       serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
       {{- end }}
+      {{- if .Values.quickstart.enabled }}
+      initContainers:
+        - name: dep-waiter
+          image: alpine:3.14
+          command: ["sh", "-c"]
+          args:
+            - |
+              until nc -z {{ include "pipecd.fullname" . }}-minio {{ .Values.minio.port }} && nc -z {{ include "pipecd.fullname" . }}-mysql {{ .Values.mysql.port }}
+              do
+                sleep 2;
+              done;
+      {{- end }}
       containers:
 {{- if .Values.cloudSQLProxy.enabled }}
         - name: cloud-sql-proxy
@@ -230,6 +242,18 @@ spec:
         {{- include "pipecd.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: ops
     spec:
+      {{- if .Values.quickstart.enabled }}
+      initContainers:
+        - name: dep-waiter
+          image: alpine:3.14
+          command: ["sh", "-c"]
+          args:
+            - |
+              until nc -z {{ include "pipecd.fullname" . }}-minio {{ .Values.minio.port }} && nc -z {{ include "pipecd.fullname" . }}-mysql {{ .Values.mysql.port }}
+              do
+                sleep 2;
+              done;
+      {{- end }}
       containers:
 {{- if .Values.cloudSQLProxy.enabled }}
         - name: cloud-sql-proxy
@@ -321,7 +345,7 @@ spec:
               value: {{ .Values.mysql.database }}
           ports:
             - name: mysql
-              containerPort: 3306
+              containerPort: {{ .Values.mysql.port }}
               protocol: TCP
 {{- if .Values.mysql.resources }}
           resources:
@@ -367,7 +391,7 @@ spec:
                 key: {{ .Values.secret.minioSecretKey.fileName }}
           ports:
             - name: minio
-              containerPort: 9000
+              containerPort: {{ .Values.minio.port }}
               protocol: TCP
 {{- if .Values.minio.resources }}
           resources:

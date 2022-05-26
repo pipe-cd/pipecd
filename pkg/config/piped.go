@@ -63,6 +63,8 @@ type PipedSpec struct {
 	Repositories []PipedRepository `json:"repositories"`
 	// List of helm chart repositories that should be added while starting up.
 	ChartRepositories []HelmChartRepository `json:"chartRepositories"`
+	// List of helm chart registries that should be logged in while starting up.
+	ChartRegistries []HelmChartRegistry `json:"chartRegistries"`
 	// List of cloud providers can be used by this piped.
 	CloudProviders []PipedCloudProvider `json:"cloudProviders"`
 	// List of analysis providers can be used by this piped.
@@ -380,6 +382,40 @@ func (s *PipedSpec) GitHelmChartRepositories() []HelmChartRepository {
 		}
 	}
 	return repos
+}
+
+type HelmChartRegistryType string
+
+// The registry types that hosts Helm charts.
+const (
+	OCIHelmChartRegistry HelmChartRegistryType = "OCI"
+)
+
+type HelmChartRegistry struct {
+	// The registry type. Currently, only OCI is supported.
+	Type HelmChartRegistryType `json:"type" default:"OCI"`
+
+	// The address to the Helm chart registry.
+	Address string `json:"address"`
+	// Username used for the registry authentication.
+	Username string `json:"username"`
+	// Password used for the registry authentication.
+	Password string `json:"password"`
+}
+
+func (r *HelmChartRegistry) IsOCI() bool {
+	return r.Type == OCIHelmChartRegistry
+}
+
+func (r *HelmChartRegistry) Validate() error {
+	if r.IsOCI() {
+		if r.Address == "" {
+			return errors.New("address must be set")
+		}
+		return nil
+	}
+
+	return fmt.Errorf("%s registry must be configured", OCIHelmChartRegistry)
 }
 
 type PipedCloudProvider struct {
