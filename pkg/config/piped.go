@@ -137,6 +137,9 @@ func (s *PipedSpec) Mask() {
 	for _, r := range s.ChartRepositories {
 		r.Mask()
 	}
+	for _, r := range s.ChartRegistries {
+		r.Mask()
+	}
 	for _, p := range s.CloudProviders {
 		p.Mask()
 	}
