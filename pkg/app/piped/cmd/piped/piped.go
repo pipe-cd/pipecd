@@ -29,6 +29,7 @@ import (
 	"time"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
+	"github.com/jinzhu/copier"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/spf13/cobra"
@@ -36,6 +37,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 	"google.golang.org/grpc/credentials"
+	"sigs.k8s.io/yaml"
 
 	"github.com/pipe-cd/pipecd/pkg/admin"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/analysisresultstore"
@@ -597,7 +599,15 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		})
 	}
 
-	rawCfg, err := os.ReadFile(p.configFile)
+	copiedCfg := &config.PipedSpec{}
+	err := copier.CopyWithOption(copiedCfg, cfg, copier.Option{IgnoreEmpty: false, DeepCopy: true})
+	if err != nil {
+		return err
+	}
+
+	copiedCfg.Mask()
+
+	maskedCfgYAML, err := yaml.Marshal(copiedCfg)
 	if err != nil {
 		return err
 	}
@@ -605,7 +615,7 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	var (
 		req = &pipedservice.ReportPipedMetaRequest{
 			Version:        version.Get().Version,
-			Config:         string(rawCfg),
+			Config:         string(maskedCfgYAML),
 			Repositories:   repos,
 			CloudProviders: make([]*model.Piped_CloudProvider, 0, len(cfg.CloudProviders)),
 		}

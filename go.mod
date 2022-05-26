@@ -31,6 +31,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/hashicorp/golang-lru v0.5.3
 	github.com/hashicorp/hcl/v2 v2.0.0
+	github.com/jinzhu/copier v0.3.5 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect

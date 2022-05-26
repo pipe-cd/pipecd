@@ -25,6 +25,10 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
+const (
+	maskString = "******"
+)
+
 var defaultKubernetesCloudProvider = PipedCloudProvider{
 	Name:             "kubernetes-default",
 	Type:             model.ApplicationKind_KUBERNETES,
@@ -112,6 +116,29 @@ func (s *PipedSpec) Validate() error {
 		}
 	}
 	return nil
+}
+
+// Mask masks confidential fields.
+func (s *PipedSpec) Mask() {
+	if len(s.PipedKeyFile) != 0 {
+		s.PipedKeyFile = maskString
+	}
+	if len(s.PipedKeyData) != 0 {
+		s.PipedKeyData = maskString
+	}
+	s.Git.Mask()
+	for _, r := range s.ChartRepositories {
+		r.Mask()
+	}
+	for _, p := range s.CloudProviders {
+		p.Mask()
+	}
+	for _, p := range s.AnalysisProviders {
+		p.Mask()
+	}
+	if s.SecretManagement != nil {
+		s.SecretManagement.Mask()
+	}
 }
 
 // EnableDefaultKubernetesCloudProvider adds the default kubernetes cloud provider if it was not specified.
@@ -242,6 +269,18 @@ func (g PipedGit) LoadSSHKey() ([]byte, error) {
 	return nil, errors.New("either sshKeyFile or sshKeyData must be set")
 }
 
+func (g *PipedGit) Mask() {
+	if len(g.SSHConfigFilePath) != 0 {
+		g.SSHConfigFilePath = maskString
+	}
+	if len(g.SSHKeyFile) != 0 {
+		g.SSHKeyFile = maskString
+	}
+	if len(g.SSHKeyData) != 0 {
+		g.SSHKeyData = maskString
+	}
+}
+
 type PipedRepository struct {
 	// Unique identifier for this repository.
 	// This must be unique in the piped scope.
@@ -312,6 +351,15 @@ func (r *HelmChartRepository) Validate() error {
 	}
 
 	return fmt.Errorf("either %s repository or %s repository must be configured", HTTPHelmChartRepository, GITHelmChartRepository)
+}
+
+func (r *HelmChartRepository) Mask() {
+	if len(r.Password) != 0 {
+		r.Password = maskString
+	}
+	if len(r.SSHKeyFile) != 0 {
+		r.SSHKeyFile = maskString
+	}
 }
 
 func (s *PipedSpec) HTTPHelmChartRepositories() []HelmChartRepository {
@@ -392,6 +440,18 @@ func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+func (p *PipedCloudProvider) Mask() {
+	if p.CloudRunConfig != nil {
+		p.CloudRunConfig.Mask()
+	}
+	if p.LambdaConfig != nil {
+		p.LambdaConfig.Mask()
+	}
+	if p.ECSConfig != nil {
+		p.ECSConfig.Mask()
+	}
+}
+
 type CloudProviderKubernetesConfig struct {
 	// The master URL of the kubernetes cluster.
 	// Empty means in-cluster.
@@ -439,6 +499,12 @@ type CloudProviderCloudRunConfig struct {
 	CredentialsFile string `json:"credentialsFile"`
 }
 
+func (c *CloudProviderCloudRunConfig) Mask() {
+	if len(c.CredentialsFile) != 0 {
+		c.CredentialsFile = maskString
+	}
+}
+
 type CloudProviderLambdaConfig struct {
 	// The region to send requests to. This parameter is required.
 	// e.g. "us-west-2"
@@ -454,6 +520,18 @@ type CloudProviderLambdaConfig struct {
 	// If empty, the environment variable "AWS_PROFILE" is used.
 	// "default" is populated if the environment variable is also not set.
 	Profile string `json:"profile"`
+}
+
+func (c *CloudProviderLambdaConfig) Mask() {
+	if len(c.CredentialsFile) != 0 {
+		c.CredentialsFile = maskString
+	}
+	if len(c.RoleARN) != 0 {
+		c.RoleARN = maskString
+	}
+	if len(c.TokenFile) != 0 {
+		c.TokenFile = maskString
+	}
 }
 
 type CloudProviderECSConfig struct {
@@ -473,6 +551,18 @@ type CloudProviderECSConfig struct {
 	Profile string `json:"profile"`
 }
 
+func (c *CloudProviderECSConfig) Mask() {
+	if len(c.CredentialsFile) != 0 {
+		c.CredentialsFile = maskString
+	}
+	if len(c.RoleARN) != 0 {
+		c.RoleARN = maskString
+	}
+	if len(c.TokenFile) != 0 {
+		c.TokenFile = maskString
+	}
+}
+
 type PipedAnalysisProvider struct {
 	Name string                     `json:"name"`
 	Type model.AnalysisProviderType `json:"type"`
@@ -480,6 +570,18 @@ type PipedAnalysisProvider struct {
 	PrometheusConfig  *AnalysisProviderPrometheusConfig  `json:"prometheus"`
 	DatadogConfig     *AnalysisProviderDatadogConfig     `json:"datadog"`
 	StackdriverConfig *AnalysisProviderStackdriverConfig `json:"stackdriver"`
+}
+
+func (p *PipedAnalysisProvider) Mask() {
+	if p.PrometheusConfig != nil {
+		p.PrometheusConfig.Mask()
+	}
+	if p.DatadogConfig != nil {
+		p.DatadogConfig.Mask()
+	}
+	if p.StackdriverConfig != nil {
+		p.StackdriverConfig.Mask()
+	}
 }
 
 type genericPipedAnalysisProvider struct {
@@ -547,6 +649,12 @@ func (a *AnalysisProviderPrometheusConfig) Validate() error {
 	return nil
 }
 
+func (a *AnalysisProviderPrometheusConfig) Mask() {
+	if len(a.PasswordFile) != 0 {
+		a.PasswordFile = maskString
+	}
+}
+
 type AnalysisProviderDatadogConfig struct {
 	// The address of Datadog API server.
 	// Only "datadoghq.com", "us3.datadoghq.com", "datadoghq.eu", "ddog-gov.com" are available.
@@ -568,9 +676,24 @@ func (a *AnalysisProviderDatadogConfig) Validate() error {
 	return nil
 }
 
+func (a *AnalysisProviderDatadogConfig) Mask() {
+	if len(a.APIKeyFile) != 0 {
+		a.APIKeyFile = maskString
+	}
+	if len(a.ApplicationKeyFile) != 0 {
+		a.ApplicationKeyFile = maskString
+	}
+}
+
 type AnalysisProviderStackdriverConfig struct {
 	// The path to the service account file.
 	ServiceAccountFile string `json:"serviceAccountFile"`
+}
+
+func (a *AnalysisProviderStackdriverConfig) Mask() {
+	if len(a.ServiceAccountFile) != 0 {
+		a.ServiceAccountFile = maskString
+	}
 }
 
 func (a *AnalysisProviderStackdriverConfig) Validate() error {
@@ -643,6 +766,15 @@ type SecretManagement struct {
 	GCPKMS  *SecretManagementGCPKMS
 }
 
+func (s *SecretManagement) Mask() {
+	if s.KeyPair != nil {
+		s.KeyPair.Mask()
+	}
+	if s.GCPKMS != nil {
+		s.GCPKMS.Mask()
+	}
+}
+
 func (s *SecretManagement) Validate() error {
 	switch s.Type {
 	case model.SecretManagementTypeKeyPair:
@@ -679,6 +811,15 @@ func (s *SecretManagementKeyPair) Validate() error {
 		return errors.New("only publicKeyFile or publicKeyData can be set")
 	}
 	return nil
+}
+
+func (s *SecretManagementKeyPair) Mask() {
+	if len(s.PrivateKeyFile) != 0 {
+		s.PrivateKeyFile = maskString
+	}
+	if len(s.PrivateKeyData) != 0 {
+		s.PrivateKeyData = maskString
+	}
 }
 
 func (s *SecretManagementKeyPair) LoadPrivateKey() ([]byte, error) {
@@ -722,6 +863,15 @@ func (s *SecretManagementGCPKMS) Validate() error {
 		return fmt.Errorf("encryptServiceAccountFile must be set")
 	}
 	return nil
+}
+
+func (s *SecretManagementGCPKMS) Mask() {
+	if len(s.DecryptServiceAccountFile) != 0 {
+		s.DecryptServiceAccountFile = maskString
+	}
+	if len(s.EncryptServiceAccountFile) != 0 {
+		s.EncryptServiceAccountFile = maskString
+	}
 }
 
 type genericSecretManagement struct {
