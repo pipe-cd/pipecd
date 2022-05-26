@@ -104,6 +104,11 @@ func (s *PipedSpec) Validate() error {
 			return err
 		}
 	}
+	for _, r := range s.ChartRegistries {
+		if err := r.Validate(); err != nil {
+			return err
+		}
+	}
 	if s.SecretManagement != nil {
 		if err := s.SecretManagement.Validate(); err != nil {
 			return err
@@ -416,6 +421,12 @@ func (r *HelmChartRegistry) Validate() error {
 	}
 
 	return fmt.Errorf("%s registry must be configured", OCIHelmChartRegistry)
+}
+
+func (r *HelmChartRegistry) Mask() {
+	if len(r.Password) != 0 {
+		r.Password = maskString
+	}
 }
 
 type PipedCloudProvider struct {
