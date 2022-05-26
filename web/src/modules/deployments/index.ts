@@ -184,7 +184,7 @@ export const skipStage = createAsyncThunk<
 export const updateSkippableState = createAsyncThunk<
   void,
   { stageId: string; skippable: boolean }
->("deployments/skippable", () => {});
+>("deployments/skippable", () => undefined);
 
 export const cancelDeployment = createAsyncThunk<
   void,
