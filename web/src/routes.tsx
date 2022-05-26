@@ -106,12 +106,13 @@ export const Routes: FC = () => {
   useCommandsStatusChecking();
 
   const location = useLocation();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, onLoadProject] = useQueryString("project", "");
   useEffect(() => {
     if (me?.isLogin) {
       onLoadProject(me.projectId);
     }
-  }, [location]);
+  }, [location, me, onLoadProject]);
 
   if (me === null) {
     return (

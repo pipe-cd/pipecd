@@ -309,8 +309,8 @@ export {
 export const selectDeploymentStageIsSkippable = (id?: EntityId | null) => (
   state: AppState
 ): boolean => {
-  if (id && typeof state.deployments.skippable[id] !== "undefined") {
-    return state.deployments.skippable[id]!;
+  if (id) {
+    return state.deployments.skippable[id] || true;
   }
   return true;
 };

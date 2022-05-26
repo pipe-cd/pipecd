@@ -4,7 +4,6 @@ import dagre from "dagre";
 import { FC, useState } from "react";
 import { CloudRunResourceState } from "~/modules/applications-live-state";
 import { theme } from "~/theme";
-import { uniqueArray } from "~/utils/unique-array";
 import { CloudRunResource } from "./cloudrun-resource";
 import { CloudRunResourceDetail } from "./cloudrun-resource-detail";
 
@@ -43,8 +42,7 @@ const STROKE_WIDTH = 2;
 const SVG_RENDER_PADDING = STROKE_WIDTH * 2;
 
 function useGraph(
-  resources: CloudRunResourceState.AsObject[],
-  showKinds: string[]
+  resources: CloudRunResourceState.AsObject[]
 ): dagre.graphlib.Graph<{
   resource: CloudRunResourceState.AsObject;
 }> {
@@ -81,17 +79,7 @@ export const CloudRunStateView: FC<CloudRunStateViewProps> = ({
     setSelectedResource,
   ] = useState<CloudRunResourceState.AsObject | null>(null);
 
-  const kinds: string[] = uniqueArray(resources.map((r) => r.kind));
-  const [filterState] = useState<Record<string, boolean>>(
-    kinds.reduce<Record<string, boolean>>((prev, current) => {
-      prev[current] = true;
-      return prev;
-    }, {})
-  );
-  const graph = useGraph(
-    resources,
-    Object.keys(filterState).filter((key) => filterState[key])
-  );
+  const graph = useGraph(resources);
   const nodes = graph
     .nodes()
     .map((v) => graph.node(v))
