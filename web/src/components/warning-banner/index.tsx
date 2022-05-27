@@ -2,12 +2,10 @@ import { FC, memo } from "react";
 import { AppBar, makeStyles } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 
-const APP_BANNER_HEIGHT = 30;
-
 const useStyles = makeStyles((theme) => ({
   container: {
     zIndex: theme.zIndex.drawer + 1,
-    height: APP_BANNER_HEIGHT,
+    height: "30px",
     backgroundColor: "#403f4c",
   },
   content: {
