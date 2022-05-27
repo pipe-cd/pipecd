@@ -18,7 +18,7 @@
 # for example, with the release file content:
 # version: v0.21.0
 # the version docs string will be v0.21.x
-LATEST_DOCS_VERSION="$(cut -d ' ' -f 2 release/RELEASE | cut -d '.' -f -2).x"
+LATEST_DOCS_VERSION="$(head -n 1 RELEASE | cut -d ' ' -f 2 | cut -d '.' -f -2).x"
 
 # parse params
 if [[ -z "$1" ]]
