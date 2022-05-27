@@ -35,15 +35,16 @@ export const WarningBanner: FC<WarningBannerProps> = memo(
     return (
       <AppBar position="static" className={classes.container}>
         <div className={classes.content}>
-          Piped version {process.env.PIPECD_VERSION} is available! Find all{" "}
+          Piped version{" "}
           <a
             href={releaseNoteURL}
             target="_blank"
             rel="noreferrer"
             className={classes.highlight}
           >
-            details on this release note here.
-          </a>
+            {process.env.PIPECD_VERSION}
+          </a>{" "}
+          is available!
         </div>
         <CloseIcon className={classes.close} onClick={onClose} />
       </AppBar>
