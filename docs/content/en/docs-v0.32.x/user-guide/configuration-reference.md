@@ -446,7 +446,7 @@ Note: You can get examples for those object from [here](/docs/examples/#ecs-appl
 |-|-|-|-|
 | provider | string | The unique name of provider defined in the Piped Configuration. | Yes |
 | strategy | string | The strategy name. One of `THRESHOLD` or `PREVIOUS` or `CANARY_BASELINE` or `CANARY_PRIMARY` is available. Defaults to `THRESHOLD`. | No |
-| query | string | A query performed against the [Analysis Provider](/docs/concepts/#analysis-provider). If there was no data point as a result of this query, that stage will be skipped. | Yes |
+| query | string | A query performed against the [Analysis Provider](/docs/concepts/#analysis-provider). The stage will be skipped if no data points were returned | Yes |
 | expected | [AnalysisExpected](#analysisexpected) | The statically defined expected query result. This field is ignored if there was no data point as a result of the query. | Yes if the strategy is `THRESHOLD` |
 | interval | duration | Run a query at specified intervals. | Yes |
 | failureLimit | int | Acceptable number of failures. e.g. If 1 is set, the `ANALYSIS` stage will end with failure after two queries results failed. Defaults to 1. | No |
