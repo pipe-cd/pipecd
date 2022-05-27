@@ -60,7 +60,7 @@ export const UpgradePipedDialog: FC<UpgradePipedProps> = memo(
       onClose();
       setUpgradeVersion("");
       setUpgradePipedIds([]);
-    }, []);
+    }, [onClose]);
 
     const handleSubmit = async (e: FormEvent): Promise<void> => {
       e.preventDefault();
