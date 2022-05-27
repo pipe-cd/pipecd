@@ -1,25 +1,6 @@
 version: v1
 kind: Plugin
 spec:
-  # A plugin provides command to generate the changelog from latest release.
-  # See more: https://kapetanios.dev/docs/plugins/changelog
-  changelog:
-    enabled: true
-    useReleaseNote: true
-
-  # A plugin that generates changelog and makes github release
-  # when VERSION file was updated.
-  # See more: https://kapetanios.dev/docs/plugins/release
-  release:
-    enabled: true
-    useReleaseNote: true
-
-  # A plugin to ensure the release note should be included
-  # in pull request description.
-  # See more: https://kapetanios.dev/docs/plugins/releasenote
-  releaseNote:
-    enabled: true
-
   # A plugin that automatically creates issues when merging
   # pull request based on specified keywords.
   # See more: https://kapetanios.dev/docs/plugins/todo
