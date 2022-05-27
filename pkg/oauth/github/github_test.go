@@ -58,23 +58,6 @@ func TestDecideRole(t *testing.T) {
 							Role:     "Viewer",
 						},
 					},
-					RbacRoles: []*model.ProjectRBACRole{
-						{
-							Name:      "Admin",
-							Policies:  model.BuiltinAdminRBACPolicies,
-							IsBuiltin: true,
-						},
-						{
-							Name:      "Editor",
-							Policies:  model.BuiltinEditorRBACPolicies,
-							IsBuiltin: true,
-						},
-						{
-							Name:      "Viewer",
-							Policies:  model.BuiltinViewerRBACPolicies,
-							IsBuiltin: true,
-						},
-					},
 				},
 			},
 			teams: []*github.Team{
@@ -109,23 +92,6 @@ func TestDecideRole(t *testing.T) {
 							Role:     "Viewer",
 						},
 					},
-					RbacRoles: []*model.ProjectRBACRole{
-						{
-							Name:      "Admin",
-							Policies:  model.BuiltinAdminRBACPolicies,
-							IsBuiltin: true,
-						},
-						{
-							Name:      "Editor",
-							Policies:  model.BuiltinEditorRBACPolicies,
-							IsBuiltin: true,
-						},
-						{
-							Name:      "Viewer",
-							Policies:  model.BuiltinViewerRBACPolicies,
-							IsBuiltin: true,
-						},
-					},
 				},
 			},
 			teams: []*github.Team{
@@ -135,9 +101,9 @@ func TestDecideRole(t *testing.T) {
 				},
 			},
 			role: &model.Role{
-				ProjectId:       "id",
-				ProjectRole:     model.Role_VIEWER,
-				ProjectPolicies: model.BuiltinViewerRBACPolicies,
+				ProjectId:            "id",
+				ProjectRole:          model.Role_VIEWER,
+				ProjectRbacRoleNames: []string{},
 			},
 			wantErr: false,
 		},
@@ -165,23 +131,6 @@ func TestDecideRole(t *testing.T) {
 							Role:     "Viewer",
 						},
 					},
-					RbacRoles: []*model.ProjectRBACRole{
-						{
-							Name:      "Admin",
-							Policies:  model.BuiltinAdminRBACPolicies,
-							IsBuiltin: true,
-						},
-						{
-							Name:      "Editor",
-							Policies:  model.BuiltinEditorRBACPolicies,
-							IsBuiltin: true,
-						},
-						{
-							Name:      "Viewer",
-							Policies:  model.BuiltinViewerRBACPolicies,
-							IsBuiltin: true,
-						},
-					},
 				},
 			},
 			teams: []*github.Team{
@@ -199,9 +148,9 @@ func TestDecideRole(t *testing.T) {
 				},
 			},
 			role: &model.Role{
-				ProjectId:       "id",
-				ProjectRole:     model.Role_ADMIN,
-				ProjectPolicies: model.BuiltinAdminRBACPolicies,
+				ProjectId:            "id",
+				ProjectRole:          model.Role_ADMIN,
+				ProjectRbacRoleNames: []string{"Admin"},
 			},
 			wantErr: false,
 		},
@@ -229,23 +178,6 @@ func TestDecideRole(t *testing.T) {
 							Role:     "Viewer",
 						},
 					},
-					RbacRoles: []*model.ProjectRBACRole{
-						{
-							Name:      "Admin",
-							Policies:  model.BuiltinAdminRBACPolicies,
-							IsBuiltin: true,
-						},
-						{
-							Name:      "Editor",
-							Policies:  model.BuiltinEditorRBACPolicies,
-							IsBuiltin: true,
-						},
-						{
-							Name:      "Viewer",
-							Policies:  model.BuiltinViewerRBACPolicies,
-							IsBuiltin: true,
-						},
-					},
 				},
 			},
 			teams: []*github.Team{
@@ -263,9 +195,9 @@ func TestDecideRole(t *testing.T) {
 				},
 			},
 			role: &model.Role{
-				ProjectId:       "id",
-				ProjectRole:     model.Role_EDITOR,
-				ProjectPolicies: model.BuiltinEditorRBACPolicies,
+				ProjectId:            "id",
+				ProjectRole:          model.Role_EDITOR,
+				ProjectRbacRoleNames: []string{"Editor", "Viewer"},
 			},
 			wantErr: false,
 		},
@@ -293,23 +225,6 @@ func TestDecideRole(t *testing.T) {
 							Role:     "Viewer",
 						},
 					},
-					RbacRoles: []*model.ProjectRBACRole{
-						{
-							Name:      "Admin",
-							Policies:  model.BuiltinAdminRBACPolicies,
-							IsBuiltin: true,
-						},
-						{
-							Name:      "Editor",
-							Policies:  model.BuiltinEditorRBACPolicies,
-							IsBuiltin: true,
-						},
-						{
-							Name:      "Viewer",
-							Policies:  model.BuiltinViewerRBACPolicies,
-							IsBuiltin: true,
-						},
-					},
 				},
 			},
 			teams: []*github.Team{
@@ -327,9 +242,9 @@ func TestDecideRole(t *testing.T) {
 				},
 			},
 			role: &model.Role{
-				ProjectId:       "id",
-				ProjectRole:     model.Role_VIEWER,
-				ProjectPolicies: model.BuiltinViewerRBACPolicies,
+				ProjectId:            "id",
+				ProjectRole:          model.Role_VIEWER,
+				ProjectRbacRoleNames: []string{"Viewer"},
 			},
 		},
 	}

@@ -29,10 +29,10 @@ var (
 
 	builtinAdminRBACRole = &ProjectRBACRole{
 		Name:      builtinRBACRoleAdmin.String(),
-		Policies:  BuiltinAdminRBACPolicies,
+		Policies:  builtinAdminRBACPolicies,
 		IsBuiltin: true,
 	}
-	BuiltinAdminRBACPolicies = []*ProjectRBACPolicy{
+	builtinAdminRBACPolicies = []*ProjectRBACPolicy{
 		{
 			Resources: []*ProjectRBACResource{
 				{
@@ -46,10 +46,10 @@ var (
 	}
 	builtinEditorRBACRole = &ProjectRBACRole{
 		Name:      builtinRBACRoleEditor.String(),
-		Policies:  BuiltinEditorRBACPolicies,
+		Policies:  builtinEditorRBACPolicies,
 		IsBuiltin: true,
 	}
-	BuiltinEditorRBACPolicies = []*ProjectRBACPolicy{
+	builtinEditorRBACPolicies = []*ProjectRBACPolicy{
 		{
 			Resources: []*ProjectRBACResource{
 				{Type: ProjectRBACResource_APPLICATION},
@@ -88,10 +88,10 @@ var (
 	}
 	builtinViewerRBACRole = &ProjectRBACRole{
 		Name:      builtinRBACRoleViewer.String(),
-		Policies:  BuiltinViewerRBACPolicies,
+		Policies:  builtinViewerRBACPolicies,
 		IsBuiltin: true,
 	}
-	BuiltinViewerRBACPolicies = []*ProjectRBACPolicy{
+	builtinViewerRBACPolicies = []*ProjectRBACPolicy{
 		{
 			Resources: []*ProjectRBACResource{
 				{Type: ProjectRBACResource_APPLICATION},

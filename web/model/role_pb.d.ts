@@ -1,7 +1,6 @@
 import * as jspb from 'google-protobuf'
 
 import * as google_protobuf_descriptor_pb from 'google-protobuf/google/protobuf/descriptor_pb';
-import * as pkg_model_project_pb from 'pipecd/web/model/project_pb';
 
 
 export class Role extends jspb.Message {
@@ -11,10 +10,10 @@ export class Role extends jspb.Message {
   getProjectRole(): Role.ProjectRole;
   setProjectRole(value: Role.ProjectRole): Role;
 
-  getProjectPoliciesList(): Array<pkg_model_project_pb.ProjectRBACPolicy>;
-  setProjectPoliciesList(value: Array<pkg_model_project_pb.ProjectRBACPolicy>): Role;
-  clearProjectPoliciesList(): Role;
-  addProjectPolicies(value?: pkg_model_project_pb.ProjectRBACPolicy, index?: number): pkg_model_project_pb.ProjectRBACPolicy;
+  getProjectRbacRoleNamesList(): Array<string>;
+  setProjectRbacRoleNamesList(value: Array<string>): Role;
+  clearProjectRbacRoleNamesList(): Role;
+  addProjectRbacRoleNames(value: string, index?: number): Role;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Role.AsObject;
@@ -28,7 +27,7 @@ export namespace Role {
   export type AsObject = {
     projectId: string,
     projectRole: Role.ProjectRole,
-    projectPoliciesList: Array<pkg_model_project_pb.ProjectRBACPolicy.AsObject>,
+    projectRbacRoleNamesList: Array<string>,
   }
 
   export enum ProjectRole { 

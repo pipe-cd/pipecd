@@ -125,50 +125,53 @@ func (c *OAuthClient) GetUser(ctx context.Context) (*model.User, error) {
 }
 
 func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role *model.Role, err error) {
-	var (
-		groups    = c.project.GetAllUserGroups()
-		rbacRoles = c.project.GetAllRBACRoles()
-	)
+	var found bool
 
 	role = &model.Role{
-		ProjectId: c.project.Id,
+		ProjectId:            c.project.Id,
+		ProjectRbacRoleNames: make([]string, 0, len(teams)),
 	}
-	roles := make(map[string]*model.ProjectRBACRole, len(rbacRoles))
-	for _, v := range rbacRoles {
-		roles[v.Name] = v
+	groups := c.project.GetAllUserGroups()
+	names := make(map[string]string, len(groups))
+	for _, g := range groups {
+		names[g.SsoGroup] = g.Role
 	}
-	// The priority of the applied Roles is determined by the order in which
-	// the UserGroups are defined.
-	for _, group := range groups {
-		for _, team := range teams {
-			slug := team.GetSlug()
-			org := team.Organization.GetLogin()
-			if org == "" || slug == "" {
-				continue
-			}
 
-			t := fmt.Sprintf("%s/%s", org, slug)
-			if group.SsoGroup != t {
-				continue
-			}
-			r, ok := roles[group.Role]
-			if !ok {
-				continue
-			}
-			role.ProjectPolicies = r.Policies
-			if !r.IsBuiltin {
-				return
-			}
-			switch t {
-			case c.adminTeam:
-				role.ProjectRole = model.Role_ADMIN
-			case c.editorTeam:
-				role.ProjectRole = model.Role_EDITOR
-			case c.viewerTeam:
-				role.ProjectRole = model.Role_VIEWER
-			}
-			return
+	for _, team := range teams {
+		slug := team.GetSlug()
+		org := team.Organization.GetLogin()
+		if org == "" || slug == "" {
+			continue
 		}
+
+		t := fmt.Sprintf("%s/%s", org, slug)
+		if v, ok := names[t]; ok {
+			role.ProjectRbacRoleNames = append(role.ProjectRbacRoleNames, v)
+		}
+
+		switch t {
+		case c.adminTeam:
+			role.ProjectRole = model.Role_ADMIN
+			return
+		case c.editorTeam:
+			role.ProjectRole = model.Role_EDITOR
+			found = true
+		case c.viewerTeam:
+			if role.ProjectRole != model.Role_EDITOR {
+				role.ProjectRole = model.Role_VIEWER
+				found = true
+			}
+		}
+	}
+
+	if found {
+		return
+	}
+
+	// If the ProjectRBACConfig was not defined or the current user does not belong to it but
+	// the current user belongs to any of the UserGroups, returns role.
+	if len(role.ProjectRbacRoleNames) != 0 {
+		return
 	}
 
 	// In case the current user does not belong to any registered
@@ -176,7 +179,6 @@ func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role *model
 	// as user's role.
 	if c.project.AllowStrayAsViewer {
 		role.ProjectRole = model.Role_VIEWER
-		role.ProjectPolicies = model.BuiltinViewerRBACPolicies
 		return
 	}
 

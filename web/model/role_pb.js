@@ -23,8 +23,6 @@ var global = (function() {
 
 var google_protobuf_descriptor_pb = require('google-protobuf/google/protobuf/descriptor_pb.js');
 goog.object.extend(proto, google_protobuf_descriptor_pb);
-var pkg_model_project_pb = require('pipecd/web/model/project_pb.js');
-goog.object.extend(proto, pkg_model_project_pb);
 goog.exportSymbol('proto.model.Role', null, global);
 goog.exportSymbol('proto.model.Role.ProjectRole', null, global);
 goog.exportSymbol('proto.model.role', null, global);
@@ -90,8 +88,7 @@ proto.model.Role.toObject = function(includeInstance, msg) {
   var f, obj = {
     projectId: jspb.Message.getFieldWithDefault(msg, 1, ""),
     projectRole: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    projectPoliciesList: jspb.Message.toObjectList(msg.getProjectPoliciesList(),
-    pkg_model_project_pb.ProjectRBACPolicy.toObject, includeInstance)
+    projectRbacRoleNamesList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -137,9 +134,8 @@ proto.model.Role.deserializeBinaryFromReader = function(msg, reader) {
       msg.setProjectRole(value);
       break;
     case 3:
-      var value = new pkg_model_project_pb.ProjectRBACPolicy;
-      reader.readMessage(value,pkg_model_project_pb.ProjectRBACPolicy.deserializeBinaryFromReader);
-      msg.addProjectPolicies(value);
+      var value = /** @type {string} */ (reader.readString());
+      msg.addProjectRbacRoleNames(value);
       break;
     default:
       reader.skipField();
@@ -184,12 +180,11 @@ proto.model.Role.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getProjectPoliciesList();
+  f = message.getProjectRbacRoleNamesList();
   if (f.length > 0) {
-    writer.writeRepeatedMessage(
+    writer.writeRepeatedString(
       3,
-      f,
-      pkg_model_project_pb.ProjectRBACPolicy.serializeBinaryToWriter
+      f
     );
   }
 };
@@ -241,31 +236,30 @@ proto.model.Role.prototype.setProjectRole = function(value) {
 
 
 /**
- * repeated ProjectRBACPolicy project_policies = 3;
- * @return {!Array<!proto.model.ProjectRBACPolicy>}
+ * repeated string project_rbac_role_names = 3;
+ * @return {!Array<string>}
  */
-proto.model.Role.prototype.getProjectPoliciesList = function() {
-  return /** @type{!Array<!proto.model.ProjectRBACPolicy>} */ (
-    jspb.Message.getRepeatedWrapperField(this, pkg_model_project_pb.ProjectRBACPolicy, 3));
+proto.model.Role.prototype.getProjectRbacRoleNamesList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 3));
 };
 
 
 /**
- * @param {!Array<!proto.model.ProjectRBACPolicy>} value
+ * @param {!Array<string>} value
  * @return {!proto.model.Role} returns this
-*/
-proto.model.Role.prototype.setProjectPoliciesList = function(value) {
-  return jspb.Message.setRepeatedWrapperField(this, 3, value);
+ */
+proto.model.Role.prototype.setProjectRbacRoleNamesList = function(value) {
+  return jspb.Message.setField(this, 3, value || []);
 };
 
 
 /**
- * @param {!proto.model.ProjectRBACPolicy=} opt_value
+ * @param {string} value
  * @param {number=} opt_index
- * @return {!proto.model.ProjectRBACPolicy}
+ * @return {!proto.model.Role} returns this
  */
-proto.model.Role.prototype.addProjectPolicies = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 3, opt_value, proto.model.ProjectRBACPolicy, opt_index);
+proto.model.Role.prototype.addProjectRbacRoleNames = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 3, value, opt_index);
 };
 
 
@@ -273,8 +267,8 @@ proto.model.Role.prototype.addProjectPolicies = function(opt_value, opt_index) {
  * Clears the list making it empty but non-null.
  * @return {!proto.model.Role} returns this
  */
-proto.model.Role.prototype.clearProjectPoliciesList = function() {
-  return this.setProjectPoliciesList([]);
+proto.model.Role.prototype.clearProjectRbacRoleNamesList = function() {
+  return this.setProjectRbacRoleNamesList([]);
 };
 
 
