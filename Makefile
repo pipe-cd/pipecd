@@ -114,7 +114,7 @@ run/web:
 
 .PHONY: run/site
 run/site:
-	env RELEASE=$(shell cut -c10- release/RELEASE) hugo server --source=docs
+	env RELEASE=$(shell head -n 1 RELEASE | cut -d ' ' -f 2) hugo server --source=docs
 
 # Lint commands
 
@@ -146,7 +146,7 @@ update/docsy:
 
 .PHONY: gen/code
 gen/code:
-	docker run --rm -v ${PWD}:/repo -it ghcr.io/pipe-cd/codegen:$(shell cut -d ' ' -f 2 release/RELEASE) /repo
+	docker run --rm -v ${PWD}:/repo -it ghcr.io/pipe-cd/codegen:$(shell head -n 1 RELEASE | cut -d ' ' -f 2) /repo
 
 .PHONY: gen/release
 gen/release:
