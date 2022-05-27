@@ -1,0 +1,17 @@
+tag: v0.32.0
+
+releaseNoteGenerator:
+  useReleaseNoteBlock: true
+  usePullRequestMetadata: true
+
+commitCategories:
+  - title: "Breaking Changes"
+    contains:
+      - change-category/breaking-change
+  - title: "New Features"
+    contains:
+      - change-category/new-feature
+  - title: "Notable Changes"
+    contains:
+      - change-category/notable-change
+  - title: "Internal Changes"
