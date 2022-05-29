@@ -118,7 +118,7 @@ type InputHelmOptions struct {
 	// Set of supported Kubernetes API versions.
 	APIVersions []string `json:"apiVersions"`
 	// Kubernetes version used for Capabilities.KubeVersion
-	KubeVersion string `json"kubeVersion"`
+	KubeVersion string `json:"kubeVersion"`
 }
 
 type KubernetesTrafficRoutingMethod string
