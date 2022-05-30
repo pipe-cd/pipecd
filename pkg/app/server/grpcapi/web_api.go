@@ -1434,7 +1434,7 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 
 // GetInsightData returns the accumulated insight data.
 func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	return nil, status.Error(codes.Unimplemented, "GetInsightData API is not yet implemented.")
 
 	// claims, err := rpcauth.ExtractClaims(ctx)
 	// if err != nil {
