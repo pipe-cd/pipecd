@@ -88,7 +88,7 @@ proto.model.Role.toObject = function(includeInstance, msg) {
   var f, obj = {
     projectId: jspb.Message.getFieldWithDefault(msg, 1, ""),
     projectRole: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    projectRbacRoleNamesList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
+    projectRbacRolesList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -135,7 +135,7 @@ proto.model.Role.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
-      msg.addProjectRbacRoleNames(value);
+      msg.addProjectRbacRoles(value);
       break;
     default:
       reader.skipField();
@@ -180,7 +180,7 @@ proto.model.Role.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getProjectRbacRoleNamesList();
+  f = message.getProjectRbacRolesList();
   if (f.length > 0) {
     writer.writeRepeatedString(
       3,
@@ -236,10 +236,10 @@ proto.model.Role.prototype.setProjectRole = function(value) {
 
 
 /**
- * repeated string project_rbac_role_names = 3;
+ * repeated string project_rbac_roles = 3;
  * @return {!Array<string>}
  */
-proto.model.Role.prototype.getProjectRbacRoleNamesList = function() {
+proto.model.Role.prototype.getProjectRbacRolesList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 3));
 };
 
@@ -248,7 +248,7 @@ proto.model.Role.prototype.getProjectRbacRoleNamesList = function() {
  * @param {!Array<string>} value
  * @return {!proto.model.Role} returns this
  */
-proto.model.Role.prototype.setProjectRbacRoleNamesList = function(value) {
+proto.model.Role.prototype.setProjectRbacRolesList = function(value) {
   return jspb.Message.setField(this, 3, value || []);
 };
 
@@ -258,7 +258,7 @@ proto.model.Role.prototype.setProjectRbacRoleNamesList = function(value) {
  * @param {number=} opt_index
  * @return {!proto.model.Role} returns this
  */
-proto.model.Role.prototype.addProjectRbacRoleNames = function(value, opt_index) {
+proto.model.Role.prototype.addProjectRbacRoles = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 3, value, opt_index);
 };
 
@@ -267,8 +267,8 @@ proto.model.Role.prototype.addProjectRbacRoleNames = function(value, opt_index) 
  * Clears the list making it empty but non-null.
  * @return {!proto.model.Role} returns this
  */
-proto.model.Role.prototype.clearProjectRbacRoleNamesList = function() {
-  return this.setProjectRbacRoleNamesList([]);
+proto.model.Role.prototype.clearProjectRbacRolesList = function() {
+  return this.setProjectRbacRolesList([]);
 };
 
 

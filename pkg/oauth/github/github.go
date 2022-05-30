@@ -128,13 +128,13 @@ func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role *model
 	var found bool
 
 	role = &model.Role{
-		ProjectId:            c.project.Id,
-		ProjectRbacRoleNames: make([]string, 0, len(teams)),
+		ProjectId:        c.project.Id,
+		ProjectRbacRoles: make([]string, 0, len(teams)),
 	}
 	groups := c.project.GetAllUserGroups()
-	names := make(map[string]string, len(groups))
+	roles := make(map[string]string, len(groups))
 	for _, g := range groups {
-		names[g.SsoGroup] = g.Role
+		roles[g.SsoGroup] = g.Role
 	}
 
 	for _, team := range teams {
@@ -145,8 +145,8 @@ func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role *model
 		}
 
 		t := fmt.Sprintf("%s/%s", org, slug)
-		if v, ok := names[t]; ok {
-			role.ProjectRbacRoleNames = append(role.ProjectRbacRoleNames, v)
+		if v, ok := roles[t]; ok {
+			role.ProjectRbacRoles = append(role.ProjectRbacRoles, v)
 		}
 
 		switch t {
@@ -170,7 +170,7 @@ func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role *model
 
 	// If the ProjectRBACConfig was not defined or the current user does not belong to it but
 	// the current user belongs to any of the UserGroups, returns role.
-	if len(role.ProjectRbacRoleNames) != 0 {
+	if len(role.ProjectRbacRoles) != 0 {
 		return
 	}
 
@@ -179,6 +179,7 @@ func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role *model
 	// as user's role.
 	if c.project.AllowStrayAsViewer {
 		role.ProjectRole = model.Role_VIEWER
+		role.ProjectRbacRoles = []string{model.BuiltinRBACRoleViewer.String()}
 		return
 	}
 
