@@ -23,9 +23,6 @@ export class Piped extends jspb.Message {
   getVersion(): string;
   setVersion(value: string): Piped;
 
-  getConfig(): string;
-  setConfig(value: string): Piped;
-
   getStartedAt(): number;
   setStartedAt(value: number): Piped;
 
@@ -41,6 +38,9 @@ export class Piped extends jspb.Message {
 
   getStatus(): Piped.ConnectionStatus;
   setStatus(value: Piped.ConnectionStatus): Piped;
+
+  getConfig(): string;
+  setConfig(value: string): Piped;
 
   getSecretEncryption(): Piped.SecretEncryption | undefined;
   setSecretEncryption(value?: Piped.SecretEncryption): Piped;
@@ -80,11 +80,11 @@ export namespace Piped {
     keyHash: string,
     projectId: string,
     version: string,
-    config: string,
     startedAt: number,
     cloudProvidersList: Array<Piped.CloudProvider.AsObject>,
     repositoriesList: Array<pkg_model_common_pb.ApplicationGitRepository.AsObject>,
     status: Piped.ConnectionStatus,
+    config: string,
     secretEncryption?: Piped.SecretEncryption.AsObject,
     keysList: Array<PipedKey.AsObject>,
     desiredVersion: string,

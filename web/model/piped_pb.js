@@ -120,7 +120,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.model.Piped.repeatedFields_ = [10,11,20];
+proto.model.Piped.repeatedFields_ = [9,10,20];
 
 
 
@@ -159,13 +159,13 @@ proto.model.Piped.toObject = function(includeInstance, msg) {
     keyHash: jspb.Message.getFieldWithDefault(msg, 4, ""),
     projectId: jspb.Message.getFieldWithDefault(msg, 5, ""),
     version: jspb.Message.getFieldWithDefault(msg, 7, ""),
-    config: jspb.Message.getFieldWithDefault(msg, 8, ""),
-    startedAt: jspb.Message.getFieldWithDefault(msg, 9, 0),
+    startedAt: jspb.Message.getFieldWithDefault(msg, 8, 0),
     cloudProvidersList: jspb.Message.toObjectList(msg.getCloudProvidersList(),
     proto.model.Piped.CloudProvider.toObject, includeInstance),
     repositoriesList: jspb.Message.toObjectList(msg.getRepositoriesList(),
     pkg_model_common_pb.ApplicationGitRepository.toObject, includeInstance),
-    status: jspb.Message.getFieldWithDefault(msg, 12, 0),
+    status: jspb.Message.getFieldWithDefault(msg, 11, 0),
+    config: jspb.Message.getFieldWithDefault(msg, 12, ""),
     secretEncryption: (f = msg.getSecretEncryption()) && proto.model.Piped.SecretEncryption.toObject(includeInstance, f),
     keysList: jspb.Message.toObjectList(msg.getKeysList(),
     proto.model.PipedKey.toObject, includeInstance),
@@ -234,26 +234,26 @@ proto.model.Piped.deserializeBinaryFromReader = function(msg, reader) {
       msg.setVersion(value);
       break;
     case 8:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setConfig(value);
-      break;
-    case 9:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setStartedAt(value);
       break;
-    case 10:
+    case 9:
       var value = new proto.model.Piped.CloudProvider;
       reader.readMessage(value,proto.model.Piped.CloudProvider.deserializeBinaryFromReader);
       msg.addCloudProviders(value);
       break;
-    case 11:
+    case 10:
       var value = new pkg_model_common_pb.ApplicationGitRepository;
       reader.readMessage(value,pkg_model_common_pb.ApplicationGitRepository.deserializeBinaryFromReader);
       msg.addRepositories(value);
       break;
-    case 12:
+    case 11:
       var value = /** @type {!proto.model.Piped.ConnectionStatus} */ (reader.readEnum());
       msg.setStatus(value);
+      break;
+    case 12:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setConfig(value);
       break;
     case 21:
       var value = new proto.model.Piped.SecretEncryption;
@@ -352,24 +352,17 @@ proto.model.Piped.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getConfig();
-  if (f.length > 0) {
-    writer.writeString(
-      8,
-      f
-    );
-  }
   f = message.getStartedAt();
   if (f !== 0) {
     writer.writeInt64(
-      9,
+      8,
       f
     );
   }
   f = message.getCloudProvidersList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
-      10,
+      9,
       f,
       proto.model.Piped.CloudProvider.serializeBinaryToWriter
     );
@@ -377,7 +370,7 @@ proto.model.Piped.serializeBinaryToWriter = function(message, writer) {
   f = message.getRepositoriesList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
-      11,
+      10,
       f,
       pkg_model_common_pb.ApplicationGitRepository.serializeBinaryToWriter
     );
@@ -385,6 +378,13 @@ proto.model.Piped.serializeBinaryToWriter = function(message, writer) {
   f = message.getStatus();
   if (f !== 0.0) {
     writer.writeEnum(
+      11,
+      f
+    );
+  }
+  f = message.getConfig();
+  if (f.length > 0) {
+    writer.writeString(
       12,
       f
     );
@@ -904,29 +904,11 @@ proto.model.Piped.prototype.setVersion = function(value) {
 
 
 /**
- * optional string config = 8;
- * @return {string}
- */
-proto.model.Piped.prototype.getConfig = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 8, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.model.Piped} returns this
- */
-proto.model.Piped.prototype.setConfig = function(value) {
-  return jspb.Message.setProto3StringField(this, 8, value);
-};
-
-
-/**
- * optional int64 started_at = 9;
+ * optional int64 started_at = 8;
  * @return {number}
  */
 proto.model.Piped.prototype.getStartedAt = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 9, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
 };
 
 
@@ -935,17 +917,17 @@ proto.model.Piped.prototype.getStartedAt = function() {
  * @return {!proto.model.Piped} returns this
  */
 proto.model.Piped.prototype.setStartedAt = function(value) {
-  return jspb.Message.setProto3IntField(this, 9, value);
+  return jspb.Message.setProto3IntField(this, 8, value);
 };
 
 
 /**
- * repeated CloudProvider cloud_providers = 10;
+ * repeated CloudProvider cloud_providers = 9;
  * @return {!Array<!proto.model.Piped.CloudProvider>}
  */
 proto.model.Piped.prototype.getCloudProvidersList = function() {
   return /** @type{!Array<!proto.model.Piped.CloudProvider>} */ (
-    jspb.Message.getRepeatedWrapperField(this, proto.model.Piped.CloudProvider, 10));
+    jspb.Message.getRepeatedWrapperField(this, proto.model.Piped.CloudProvider, 9));
 };
 
 
@@ -954,7 +936,7 @@ proto.model.Piped.prototype.getCloudProvidersList = function() {
  * @return {!proto.model.Piped} returns this
 */
 proto.model.Piped.prototype.setCloudProvidersList = function(value) {
-  return jspb.Message.setRepeatedWrapperField(this, 10, value);
+  return jspb.Message.setRepeatedWrapperField(this, 9, value);
 };
 
 
@@ -964,7 +946,7 @@ proto.model.Piped.prototype.setCloudProvidersList = function(value) {
  * @return {!proto.model.Piped.CloudProvider}
  */
 proto.model.Piped.prototype.addCloudProviders = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 10, opt_value, proto.model.Piped.CloudProvider, opt_index);
+  return jspb.Message.addToRepeatedWrapperField(this, 9, opt_value, proto.model.Piped.CloudProvider, opt_index);
 };
 
 
@@ -978,12 +960,12 @@ proto.model.Piped.prototype.clearCloudProvidersList = function() {
 
 
 /**
- * repeated ApplicationGitRepository repositories = 11;
+ * repeated ApplicationGitRepository repositories = 10;
  * @return {!Array<!proto.model.ApplicationGitRepository>}
  */
 proto.model.Piped.prototype.getRepositoriesList = function() {
   return /** @type{!Array<!proto.model.ApplicationGitRepository>} */ (
-    jspb.Message.getRepeatedWrapperField(this, pkg_model_common_pb.ApplicationGitRepository, 11));
+    jspb.Message.getRepeatedWrapperField(this, pkg_model_common_pb.ApplicationGitRepository, 10));
 };
 
 
@@ -992,7 +974,7 @@ proto.model.Piped.prototype.getRepositoriesList = function() {
  * @return {!proto.model.Piped} returns this
 */
 proto.model.Piped.prototype.setRepositoriesList = function(value) {
-  return jspb.Message.setRepeatedWrapperField(this, 11, value);
+  return jspb.Message.setRepeatedWrapperField(this, 10, value);
 };
 
 
@@ -1002,7 +984,7 @@ proto.model.Piped.prototype.setRepositoriesList = function(value) {
  * @return {!proto.model.ApplicationGitRepository}
  */
 proto.model.Piped.prototype.addRepositories = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 11, opt_value, proto.model.ApplicationGitRepository, opt_index);
+  return jspb.Message.addToRepeatedWrapperField(this, 10, opt_value, proto.model.ApplicationGitRepository, opt_index);
 };
 
 
@@ -1016,11 +998,11 @@ proto.model.Piped.prototype.clearRepositoriesList = function() {
 
 
 /**
- * optional ConnectionStatus status = 12;
+ * optional ConnectionStatus status = 11;
  * @return {!proto.model.Piped.ConnectionStatus}
  */
 proto.model.Piped.prototype.getStatus = function() {
-  return /** @type {!proto.model.Piped.ConnectionStatus} */ (jspb.Message.getFieldWithDefault(this, 12, 0));
+  return /** @type {!proto.model.Piped.ConnectionStatus} */ (jspb.Message.getFieldWithDefault(this, 11, 0));
 };
 
 
@@ -1029,7 +1011,25 @@ proto.model.Piped.prototype.getStatus = function() {
  * @return {!proto.model.Piped} returns this
  */
 proto.model.Piped.prototype.setStatus = function(value) {
-  return jspb.Message.setProto3EnumField(this, 12, value);
+  return jspb.Message.setProto3EnumField(this, 11, value);
+};
+
+
+/**
+ * optional string config = 12;
+ * @return {string}
+ */
+proto.model.Piped.prototype.getConfig = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 12, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.Piped} returns this
+ */
+proto.model.Piped.prototype.setConfig = function(value) {
+  return jspb.Message.setProto3StringField(this, 12, value);
 };
 
 

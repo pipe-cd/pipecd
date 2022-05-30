@@ -95,8 +95,6 @@ func (m *Piped) validate(all bool) error {
 
 	// no validation rules for Version
 
-	// no validation rules for Config
-
 	// no validation rules for StartedAt
 
 	for idx, item := range m.GetCloudProviders() {
@@ -177,6 +175,8 @@ func (m *Piped) validate(all bool) error {
 		}
 		errors = append(errors, err)
 	}
+
+	// no validation rules for Config
 
 	if all {
 		switch v := interface{}(m.GetSecretEncryption()).(type) {
