@@ -1,6 +1,7 @@
 tag: v0.32.0
 
 releaseNoteGenerator:
+  showCommitter: false
   useReleaseNoteBlock: true
   usePullRequestMetadata: true
 
