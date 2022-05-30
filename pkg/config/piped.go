@@ -104,11 +104,6 @@ func (s *PipedSpec) Validate() error {
 			return err
 		}
 	}
-	for _, r := range s.ChartRegistries {
-		if err := r.Validate(); err != nil {
-			return err
-		}
-	}
 	if s.SecretManagement != nil {
 		if err := s.SecretManagement.Validate(); err != nil {
 			return err
