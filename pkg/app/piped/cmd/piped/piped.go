@@ -19,6 +19,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -29,7 +30,6 @@ import (
 	"time"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
-	"github.com/jinzhu/copier"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/spf13/cobra"
@@ -627,7 +627,7 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	}
 
 	copiedCfg := &config.PipedSpec{}
-	err := copier.CopyWithOption(copiedCfg, cfg, copier.Option{IgnoreEmpty: false, DeepCopy: true})
+	err := deepcopy(copiedCfg, cfg)
 	if err != nil {
 		return err
 	}
@@ -802,5 +802,19 @@ func loginToOCIRegistry(ctx context.Context, execPath, address, username, passwo
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("%w: %s", err, stderr.String())
 	}
+	return nil
+}
+
+func deepcopy(dst interface{}, src interface{}) error {
+	b, err := json.Marshal(src)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(b, dst)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

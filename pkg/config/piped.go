@@ -429,8 +429,8 @@ func (r *HelmChartRegistry) Mask() {
 }
 
 type PipedCloudProvider struct {
-	Name string
-	Type model.ApplicationKind
+	Name string                `json:"name"`
+	Type model.ApplicationKind `json:"type,string"`
 
 	KubernetesConfig *CloudProviderKubernetesConfig
 	TerraformConfig  *CloudProviderTerraformConfig
