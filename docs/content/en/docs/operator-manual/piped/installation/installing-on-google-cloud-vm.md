@@ -108,8 +108,7 @@ description: >
 # This allows upgrading Piped to a new version from the web console.
 
   gcloud compute instances create-with-container vm-piped \
-    --container-image="gcr.io/pipecd/piped:{{< blocks/latest_version >}}" \
-    --container-command="/launcher" \
+    --container-image="ghcr.io/pipe-cd/launcher:{{< blocks/latest_version >}}" \
     --container-arg="launcher" \
     --container-arg="--config-from-gcp-secret=true" \
     --container-arg="--gcp-secret-id=projects/{GCP_PROJECT_ID}/secrets/vm-piped-config/versions/{SECRET_VERSION}" \
@@ -123,7 +122,7 @@ description: >
 # Whenever you want to upgrade that Piped to a new version or update its config data you have to restart it.
 
   gcloud compute instances create-with-container vm-piped \
-    --container-image="gcr.io/pipecd/piped:{{< blocks/latest_version >}}" \
+    --container-image="ghcr.io/pipe-cd/piped:{{< blocks/latest_version >}}" \
     --container-arg="piped" \
     --container-arg="--config-gcp-secret=projects/{GCP_PROJECT_ID}/secrets/vm-piped-config/versions/{SECRET_VERSION}" \
     --network="{VPC_NETWORK}" \

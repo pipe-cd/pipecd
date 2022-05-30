@@ -94,13 +94,13 @@ description: >
     {
       "name": "piped",
       "essential": true,
-      "image": "gcr.io/pipecd/piped:{{< blocks/latest_version >}}",
+      "image": "ghcr.io/pipe-cd/launcher:{{< blocks/latest_version >}}",
       "entryPoint": [
         "sh",
         "-c"
       ],
       "command": [
-        "/bin/sh -c \"/launcher launcher --config-data=$(echo $CONFIG_DATA)\""
+        "/bin/sh -c \"launcher launcher --config-data=$(echo $CONFIG_DATA)\""
       ],
       "secrets": [
         {
@@ -129,13 +129,13 @@ description: >
     {
       "name": "piped",
       "essential": true,
-      "image": "gcr.io/pipecd/piped:{{< blocks/latest_version >}}",
+      "image": "ghcr.io/pipe-cd/piped:{{< blocks/latest_version >}}",
       "entryPoint": [
         "sh",
         "-c"
       ],
       "command": [
-        "/bin/sh -c \"/piped piped --config-data=$(echo $CONFIG_DATA)\""
+        "/bin/sh -c \"piped piped --config-data=$(echo $CONFIG_DATA)\""
       ],
       "secrets": [
         {
