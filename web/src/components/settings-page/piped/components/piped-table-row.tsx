@@ -27,7 +27,7 @@ import { DELETE_OLD_PIPED_KEY_SUCCESS } from "~/constants/toast-text";
 import {
   UI_TEXT_ADD_NEW_KEY,
   UI_TEXT_DELETE_OLD_KEY,
-  UI_TEXT_OPEN_PIPED_CONFIG,
+  UI_TEXT_VIEW_THE_CONFIGURATION,
   UI_TEXT_DISABLE,
   UI_TEXT_EDIT,
   UI_TEXT_ENABLE,
@@ -85,7 +85,7 @@ const ITEM_HEIGHT = 48;
 const menuStyle = {
   style: {
     maxHeight: ITEM_HEIGHT * 4.5,
-    width: "20ch",
+    width: "25ch",
   },
 };
 
@@ -254,7 +254,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
               key="piped-menu-open-piped-config"
               onClick={handleOpenPipedConfig}
             >
-              {UI_TEXT_OPEN_PIPED_CONFIG}
+              {UI_TEXT_VIEW_THE_CONFIGURATION}
             </MenuItem>,
             <MenuItem key="piped-menu-disable" onClick={handleDisable}>
               {UI_TEXT_DISABLE}
