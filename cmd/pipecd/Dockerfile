@@ -8,6 +8,7 @@ RUN \
         curl && \
     curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86.tar.gz && \
     tar -zxvf ./google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86.tar.gz && \
+    rm ./google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86.tar.gz && \
     ./google-cloud-sdk/install.sh --quiet
 
 ENV PATH="/google-cloud-sdk/bin:${PATH}"
