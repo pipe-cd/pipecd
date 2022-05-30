@@ -54,16 +54,16 @@ message Piped {
 
     // Currently running version.
     string version = 7;
-    // Currently applied config.
-    string config = 8;
     // Unix time when the piped is started up.
-    int64 started_at = 9;
+    int64 started_at = 8;
     // List of configured cloud providers.
-    repeated CloudProvider cloud_providers = 10;
+    repeated CloudProvider cloud_providers = 9;
     // List of configured repositories.
-    repeated ApplicationGitRepository repositories = 11;
+    repeated ApplicationGitRepository repositories = 10;
     // The latest connection status of piped.
-    ConnectionStatus status = 12 [(validate.rules).enum.defined_only = true];
+    ConnectionStatus status = 11 [(validate.rules).enum.defined_only = true];
+    // Currently applied config.
+    string config = 12;
     // The public key/service account for encrypting the secret data.
     SecretEncryption secret_encryption = 21;
 
