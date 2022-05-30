@@ -4,7 +4,6 @@ import {
   ListItem,
   ListItemText,
   makeStyles,
-  Toolbar,
 } from "@material-ui/core";
 import { FC, memo } from "react";
 import { NavLink, Redirect, Route, Switch } from "react-router-dom";
@@ -31,6 +30,7 @@ const useStyles = makeStyles((theme) => ({
     flexShrink: 0,
   },
   drawerPaper: {
+    top: "auto",
     width: drawerWidth,
   },
   drawerContainer: {
@@ -64,7 +64,6 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
         variant="permanent"
         classes={{ paper: classes.drawerPaper }}
       >
-        <Toolbar variant="dense" />
         <div className={classes.drawerContainer}>
           <List>
             {MENU_ITEMS.map(([text, link]) => (
