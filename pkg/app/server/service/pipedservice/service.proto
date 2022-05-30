@@ -189,10 +189,10 @@ message ReportStatResponse {
 
 message ReportPipedMetaRequest {
     string version = 1;
-    string config = 2;
-    repeated model.Piped.CloudProvider cloud_providers = 3;
-    repeated model.ApplicationGitRepository repositories = 4;
-    model.Piped.SecretEncryption secret_encryption = 5;
+    repeated model.Piped.CloudProvider cloud_providers = 2;
+    repeated model.ApplicationGitRepository repositories = 3;
+    model.Piped.SecretEncryption secret_encryption = 4;
+    string config = 5;
 }
 
 message ReportPipedMetaResponse {
