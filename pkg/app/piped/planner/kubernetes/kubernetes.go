@@ -200,7 +200,12 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 			return
 		}
 
-		loader := provider.NewLoader(in.ApplicationName, runningDs.AppDir, runningDs.RepoDir, in.GitPath.ConfigFilename, cfg.Input, in.GitClient, in.Logger)
+		runningCfg := runningDs.ApplicationConfig.KubernetesApplicationSpec
+		if runningCfg == nil {
+			err = fmt.Errorf("unable to find the running configuration (%v)", err)
+			return
+		}
+		loader := provider.NewLoader(in.ApplicationName, runningDs.AppDir, runningDs.RepoDir, in.GitPath.ConfigFilename, runningCfg.Input, in.GitClient, in.Logger)
 		oldManifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			err = fmt.Errorf("failed to load previously deployed manifests: %w", err)
