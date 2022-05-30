@@ -96,9 +96,7 @@ spec:
     spec:
       containerConcurrency: 1                           # This must be 1 to ensure Piped work correctly.
       containers:
-        - image: gcr.io/pipecd/piped:{{< blocks/latest_version >}}
-          command:
-            - /launcher
+        - image: ghcr.io/pipe-cd/launcher:{{< blocks/latest_version >}}
           args:
             - launcher
             - --launcher-admin-port=9086
@@ -140,7 +138,7 @@ spec:
     spec:
       containerConcurrency: 1                           # This must be 1.
       containers:
-        - image: gcr.io/pipecd/piped:{{< blocks/latest_version >}}
+        - image: ghcr.io/pipe-cd/piped:{{< blocks/latest_version >}}
           args:
             - piped
             - --config-file=/etc/piped-config/config.yaml
