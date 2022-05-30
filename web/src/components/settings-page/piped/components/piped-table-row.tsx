@@ -250,7 +250,10 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
             >
               {UI_TEXT_DELETE_OLD_KEY}
             </MenuItem>,
-            <MenuItem key="piped-menu-open-piped-config" onClick={handleOpenPipedConfig}>
+            <MenuItem
+              key="piped-menu-open-piped-config"
+              onClick={handleOpenPipedConfig}
+            >
               {UI_TEXT_OPEN_PIPED_CONFIG}
             </MenuItem>,
             <MenuItem key="piped-menu-disable" onClick={handleDisable}>
@@ -282,9 +285,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
         <DialogContent>
           <DialogContentText>
             <pre>
-              <code>
-                {piped.config}
-              </code>
+              <code>{piped.config}</code>
             </pre>
           </DialogContentText>
         </DialogContent>
