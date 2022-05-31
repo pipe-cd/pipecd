@@ -244,9 +244,11 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 			input.Logger.Warn("LAUNCHER: it seems the launched Piped has stopped unexpectedly")
 		}
 
-		if shouldRelaunchWithCurrentCfg {
+		if shouldRelaunchWithNewCfg {
 			input.Logger.Info("LAUNCHER: will relaunch a new Piped because some changes in version/config were detected")
-		} else {
+		}
+
+		if shouldRelaunchWithCurrentCfg {
 			input.Logger.Info("LAUNCHER: will relaunch a new Piped because a restart was indicated")
 		}
 
@@ -569,5 +571,5 @@ func parseConfig(data []byte) (*config.LauncherSpec, error) {
 }
 
 func makeDownloadURL(version string) string {
-	return fmt.Sprintf(pipedDownloadURL, version, version, runtime.GOOS)
+	return fmt.Sprintf(pipedDownloadURL, "v0.32.2", "v0.32.1", runtime.GOOS)
 }

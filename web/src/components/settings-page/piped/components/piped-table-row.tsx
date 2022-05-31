@@ -126,8 +126,8 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
 
   const handleRestart = useCallback(() => {
     setAnchorEl(null);
-    onDisable(pipedId);
-  }, [pipedId, onDisable]);
+    onRestart(pipedId);
+  }, [pipedId, onRestart]);
 
   const handleAddNewKey = useCallback(() => {
     setAnchorEl(null);
