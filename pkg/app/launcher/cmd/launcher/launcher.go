@@ -461,7 +461,7 @@ func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {
 	}, ", "))
 }
 
-func (l *launcher) getNeedRestart(ctx context.Context, address, projectID, pipedID string, pipedKey []byte, logger *zap.Logger) (bool, error) {
+func (l *launcher) initClient(ctx context.Context, address, projectID, pipedID string, pipedKey []byte, logger *zap.Logger) error {
 	clientKey := fmt.Sprintf("%s,%s,%s,%s", address, projectID, pipedID, string(pipedKey))
 
 	// In order to reduce the time of initializing gRPC client
@@ -470,10 +470,19 @@ func (l *launcher) getNeedRestart(ctx context.Context, address, projectID, piped
 		client, err := l.createAPIClient(ctx, address, projectID, pipedID, pipedKey)
 		if err != nil {
 			logger.Error("LAUNCHER: failed to create api client", zap.Error(err))
-			return false, err
+			return err
 		}
 		l.clientKey = clientKey
 		l.client = client
+	}
+
+	return nil
+}
+
+func (l *launcher) getNeedRestart(ctx context.Context, address, projectID, pipedID string, pipedKey []byte, logger *zap.Logger) (bool, error) {
+	err := l.initClient(ctx, address, projectID, pipedID, pipedKey, logger)
+	if err != nil {
+		return false, err
 	}
 
 	resp, err := l.client.GetNeedRestart(ctx, &pipedservice.GetNeedRestartRequest{})
@@ -485,18 +494,9 @@ func (l *launcher) getNeedRestart(ctx context.Context, address, projectID, piped
 }
 
 func (l *launcher) getDesiredVersion(ctx context.Context, address, projectID, pipedID string, pipedKey []byte, logger *zap.Logger) (string, error) {
-	clientKey := fmt.Sprintf("%s,%s,%s,%s", address, projectID, pipedID, string(pipedKey))
-
-	// In order to reduce the time of initializing gRPC client
-	// we reuse the client when no configuration changes occurred.
-	if clientKey != l.clientKey {
-		client, err := l.createAPIClient(ctx, address, projectID, pipedID, pipedKey)
-		if err != nil {
-			logger.Error("LAUNCHER: failed to create api client", zap.Error(err))
-			return "", err
-		}
-		l.clientKey = clientKey
-		l.client = client
+	err := l.initClient(ctx, address, projectID, pipedID, pipedKey, logger)
+	if err != nil {
+		return "", err
 	}
 
 	resp, err := l.client.GetDesiredVersion(ctx, &pipedservice.GetDesiredVersionRequest{})
