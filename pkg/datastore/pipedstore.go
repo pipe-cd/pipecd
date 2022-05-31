@@ -115,7 +115,7 @@ type PipedStore interface {
 	EnablePiped(ctx context.Context, id string) error
 	DisablePiped(ctx context.Context, id string) error
 	UpdateDesiredVersion(ctx context.Context, id, version string) error
-	UpdateMetadata(ctx context.Context, id, version string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error
+	UpdateMetadata(ctx context.Context, id, version string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, needRestart bool, startedAt int64) error
 	AddKey(ctx context.Context, id, keyHash, creator string, createdAt time.Time) error
 	DeleteOldKeys(ctx context.Context, id string) error
 }
