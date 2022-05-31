@@ -121,8 +121,8 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
 
   const handleEdit = useCallback(() => {
     setAnchorEl(null);
-    onRestart(pipedId);
-  }, [pipedId, onRestart]);
+    onEdit(pipedId);
+  }, [pipedId, onEdit]);
 
   const handleRestart = useCallback(() => {
     setAnchorEl(null);
