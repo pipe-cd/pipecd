@@ -571,5 +571,5 @@ func parseConfig(data []byte) (*config.LauncherSpec, error) {
 }
 
 func makeDownloadURL(version string) string {
-	return fmt.Sprintf(pipedDownloadURL, "v0.32.2", "v0.32.1", runtime.GOOS)
+	return fmt.Sprintf(pipedDownloadURL, version, version, runtime.GOOS)
 }
