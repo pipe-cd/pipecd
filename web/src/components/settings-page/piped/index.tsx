@@ -25,6 +25,7 @@ import Alert from "@material-ui/lab/Alert";
 import { createSelector } from "@reduxjs/toolkit";
 import { FC, memo, useCallback, useState } from "react";
 import { TextWithCopyButton } from "~/components/text-with-copy-button";
+import { RESTART_PIPED_SUCCESS } from "~/constants/toast-text";
 import {
   UI_TEXT_ADD,
   UI_TEXT_CLOSE,
@@ -44,6 +45,7 @@ import {
   RegisteredPiped,
   selectAllPipeds,
 } from "~/modules/pipeds";
+import { addToast } from "~/modules/toasts";
 import { AppState } from "~/store";
 import { useSettingsStyles } from "../styles";
 import { AddPipedDrawer } from "./components/add-piped-drawer";
@@ -109,6 +111,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     (id: string) => {
       dispatch(restartPiped({ pipedId: id })).then(() => {
         dispatch(fetchPipeds(true));
+        dispatch(addToast({ message: RESTART_PIPED_SUCCESS, severity: "success" }));
       });
     },
     [dispatch]
