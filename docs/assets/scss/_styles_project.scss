@@ -6,9 +6,17 @@
     }
 }
 
+@media screen and (min-width: 1000px) {
+    .lp-cover-container {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+    }
+}
+
 .headline {
     font-size: 1.5rem;
-    margin-bottom: 5px;
+    font-weight: 600;
+    margin-bottom: 25px;
 }
 
 .description {
@@ -16,6 +24,7 @@
 }
 
 .long-description {
+    font-weight: 600;
     color: $gray-500;
     margin-bottom: 2.5rem;
 }
@@ -44,7 +53,7 @@
 .release-panel {
     padding: 0 1.5rem;
     display: inline-block;
-    line-height: 4.25rem;
+    line-height: 3.5rem;
     text-align: center;
     min-width: 4.5rem;
     border-radius: .5rem;
