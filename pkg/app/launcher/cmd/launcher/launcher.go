@@ -227,7 +227,7 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 	)
 
 	execute := func() error {
-		version, config, relaunch, err := l.shouldRelaunch(ctx, input.Logger)
+		version, config, shouldRelaunchWithCurrentCfg, shouldRelaunchWithNewCfg, err := l.shouldRelaunch(ctx, input.Logger)
 		if err != nil {
 			input.Logger.Error("LAUNCHER: failed while checking desired version and config",
 				zap.String("version", version),
@@ -236,14 +236,19 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 			return err
 		}
 
-		if !relaunch {
+		if !shouldRelaunchWithCurrentCfg && !shouldRelaunchWithNewCfg {
 			if runningPiped != nil && runningPiped.IsRunning() {
 				input.Logger.Info("LAUNCHER: everything up-to-date", zap.String("version", l.runningVersion))
 				return nil
 			}
 			input.Logger.Warn("LAUNCHER: it seems the launched Piped has stopped unexpectedly")
 		}
-		input.Logger.Info("LAUNCHER: will relaunch a new Piped because some changes in version/config were detected")
+
+		if shouldRelaunchWithCurrentCfg {
+			input.Logger.Info("LAUNCHER: will relaunch a new Piped because some changes in version/config were detected")
+		} else {
+			input.Logger.Info("LAUNCHER: will relaunch a new Piped because a restart was indicated")
+		}
 
 		// Stop old piped process and clean its data.
 		if err := l.cleanOldPiped(runningPiped, workingDir, input.Logger); err != nil {
@@ -305,7 +310,7 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 // shouldRelaunch fetches the latest state of desired version and config
 // to determine whether a new Piped should be launched or not.
 // This also returns the desired version and config.
-func (l *launcher) shouldRelaunch(ctx context.Context, logger *zap.Logger) (version string, config []byte, should bool, err error) {
+func (l *launcher) shouldRelaunch(ctx context.Context, logger *zap.Logger) (version string, config []byte, shouldRelaunchWithCurrentCfg, shouldRelaunchWithNewCfg bool, err error) {
 	config, err = l.loadConfigData(ctx)
 	if err != nil {
 		logger.Error("LAUNCHER: error on loading Piped configuration data", zap.Error(err))
@@ -324,13 +329,19 @@ func (l *launcher) shouldRelaunch(ctx context.Context, logger *zap.Logger) (vers
 		return
 	}
 
+	shouldRelaunchWithCurrentCfg, err = l.getNeedRestart(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey, logger)
+	if err != nil {
+		logger.Error("LAUNCHER: error on checking restart flag", zap.Error(err))
+		return
+	}
+
 	version, err = l.getDesiredVersion(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey, logger)
 	if err != nil {
 		logger.Error("LAUNCHER: error on checking desired version", zap.Error(err))
 		return
 	}
 
-	should = version != l.runningVersion || !bytes.Equal(config, l.runningConfigData)
+	shouldRelaunchWithNewCfg = version != l.runningVersion || !bytes.Equal(config, l.runningConfigData)
 	return
 }
 
@@ -436,6 +447,29 @@ func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {
 		"config-from-gcp-secret",
 		"config-from-git-repo",
 	}, ", "))
+}
+
+func (l *launcher) getNeedRestart(ctx context.Context, address, projectID, pipedID string, pipedKey []byte, logger *zap.Logger) (bool, error) {
+	clientKey := fmt.Sprintf("%s,%s,%s,%s", address, projectID, pipedID, string(pipedKey))
+
+	// In order to reduce the time of initializing gRPC client
+	// we reuse the client when no configuration changes occurred.
+	if clientKey != l.clientKey {
+		client, err := l.createAPIClient(ctx, address, projectID, pipedID, pipedKey)
+		if err != nil {
+			logger.Error("LAUNCHER: failed to create api client", zap.Error(err))
+			return false, err
+		}
+		l.clientKey = clientKey
+		l.client = client
+	}
+
+	resp, err := l.client.GetNeedRestart(ctx, &pipedservice.GetNeedRestartRequest{})
+	if err != nil {
+		return false, err
+	}
+
+	return resp.NeedRestart, nil
 }
 
 func (l *launcher) getDesiredVersion(ctx context.Context, address, projectID, pipedID string, pipedKey []byte, logger *zap.Logger) (string, error) {

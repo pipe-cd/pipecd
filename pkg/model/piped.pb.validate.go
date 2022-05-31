@@ -241,6 +241,8 @@ func (m *Piped) validate(all bool) error {
 
 	// no validation rules for DesiredVersion
 
+	// no validation rules for NeedRestart
+
 	// no validation rules for Disabled
 
 	if m.GetCreatedAt() <= 0 {

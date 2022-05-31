@@ -52,6 +52,9 @@ export class Piped extends jspb.Message {
   getDesiredVersion(): string;
   setDesiredVersion(value: string): Piped;
 
+  getNeedRestart(): boolean;
+  setNeedRestart(value: boolean): Piped;
+
   getDisabled(): boolean;
   setDisabled(value: boolean): Piped;
 
@@ -84,6 +87,7 @@ export namespace Piped {
     secretEncryption?: Piped.SecretEncryption.AsObject,
     keysList: Array<PipedKey.AsObject>,
     desiredVersion: string,
+    needRestart: boolean,
     disabled: boolean,
     createdAt: number,
     updatedAt: number,

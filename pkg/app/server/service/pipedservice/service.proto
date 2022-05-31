@@ -154,6 +154,9 @@ service PipedService {
     rpc PutLatestAnalysisResult(PutLatestAnalysisResultRequest) returns (PutLatestAnalysisResultResponse) {}
 
     // GetDesiredVersion returns the desired version of the given Piped.
+    rpc GetNeedRestart(GetNeedRestartRequest) returns (GetNeedRestartResponse) {}
+
+    // GetDesiredVersion returns the desired version of the given Piped.
     rpc GetDesiredVersion(GetDesiredVersionRequest) returns (GetDesiredVersionResponse) {}
 
     // UpdateApplicationConfigurations updates application configurations.
@@ -477,6 +480,13 @@ message PutLatestAnalysisResultRequest {
 }
 
 message PutLatestAnalysisResultResponse {
+}
+
+message GetNeedRestartRequest {
+}
+
+message GetNeedRestartResponse {
+    bool need_restart = 1;
 }
 
 message GetDesiredVersionRequest {

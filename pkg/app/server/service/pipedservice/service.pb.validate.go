@@ -7085,6 +7085,212 @@ var _ interface {
 	ErrorName() string
 } = PutLatestAnalysisResultResponseValidationError{}
 
+// Validate checks the field values on GetNeedRestartRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetNeedRestartRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetNeedRestartRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetNeedRestartRequestMultiError, or nil if none found.
+func (m *GetNeedRestartRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetNeedRestartRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return GetNeedRestartRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetNeedRestartRequestMultiError is an error wrapping multiple validation
+// errors returned by GetNeedRestartRequest.ValidateAll() if the designated
+// constraints aren't met.
+type GetNeedRestartRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetNeedRestartRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetNeedRestartRequestMultiError) AllErrors() []error { return m }
+
+// GetNeedRestartRequestValidationError is the validation error returned by
+// GetNeedRestartRequest.Validate if the designated constraints aren't met.
+type GetNeedRestartRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetNeedRestartRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetNeedRestartRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetNeedRestartRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetNeedRestartRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetNeedRestartRequestValidationError) ErrorName() string {
+	return "GetNeedRestartRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetNeedRestartRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetNeedRestartRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetNeedRestartRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetNeedRestartRequestValidationError{}
+
+// Validate checks the field values on GetNeedRestartResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetNeedRestartResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetNeedRestartResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetNeedRestartResponseMultiError, or nil if none found.
+func (m *GetNeedRestartResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetNeedRestartResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for NeedRestart
+
+	if len(errors) > 0 {
+		return GetNeedRestartResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetNeedRestartResponseMultiError is an error wrapping multiple validation
+// errors returned by GetNeedRestartResponse.ValidateAll() if the designated
+// constraints aren't met.
+type GetNeedRestartResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetNeedRestartResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetNeedRestartResponseMultiError) AllErrors() []error { return m }
+
+// GetNeedRestartResponseValidationError is the validation error returned by
+// GetNeedRestartResponse.Validate if the designated constraints aren't met.
+type GetNeedRestartResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetNeedRestartResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetNeedRestartResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetNeedRestartResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetNeedRestartResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetNeedRestartResponseValidationError) ErrorName() string {
+	return "GetNeedRestartResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetNeedRestartResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetNeedRestartResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetNeedRestartResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetNeedRestartResponseValidationError{}
+
 // Validate checks the field values on GetDesiredVersionRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

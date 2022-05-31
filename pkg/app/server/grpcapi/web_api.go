@@ -75,6 +75,7 @@ type webApiPipedStore interface {
 	AddKey(ctx context.Context, id, keyHash, creator string, createdAt time.Time) error
 	DeleteOldKeys(ctx context.Context, id string) error
 	UpdateInfo(ctx context.Context, id, name, desc string) error
+	RestartPiped(ctx context.Context, id string) error
 	EnablePiped(ctx context.Context, id string) error
 	DisablePiped(ctx context.Context, id string) error
 	UpdateDesiredVersion(ctx context.Context, id, version string) error
@@ -256,6 +257,13 @@ func (a *WebAPI) DeleteOldPipedKeys(ctx context.Context, req *webservice.DeleteO
 	}
 
 	return &webservice.DeleteOldPipedKeysResponse{}, nil
+}
+
+func (a *WebAPI) RestartPiped(ctx context.Context, req *webservice.RestartPipedRequest) (*webservice.RestartPipedResponse, error) {
+	if err := a.updatePiped(ctx, req.PipedId, a.pipedStore.RestartPiped); err != nil {
+		return nil, err
+	}
+	return &webservice.RestartPipedResponse{}, nil
 }
 
 func (a *WebAPI) EnablePiped(ctx context.Context, req *webservice.EnablePipedRequest) (*webservice.EnablePipedResponse, error) {

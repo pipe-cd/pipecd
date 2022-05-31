@@ -863,6 +863,22 @@ func (a *PipedAPI) PutLatestAnalysisResult(ctx context.Context, req *pipedservic
 	return &pipedservice.PutLatestAnalysisResultResponse{}, nil
 }
 
+func (a *PipedAPI) GetNeedRestart(ctx context.Context, _ *pipedservice.GetNeedRestartRequest) (*pipedservice.GetNeedRestartResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	piped, err := getPiped(ctx, a.pipedStore, pipedID, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pipedservice.GetNeedRestartResponse{
+		NeedRestart: piped.NeedRestart,
+	}, nil
+}
+
 func (a *PipedAPI) GetDesiredVersion(ctx context.Context, _ *pipedservice.GetDesiredVersionRequest) (*pipedservice.GetDesiredVersionResponse, error) {
 	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {

@@ -119,6 +119,8 @@ type PipedServiceClient interface {
 	// GetLatestAnalysisResult updates the most successful analysis result.
 	PutLatestAnalysisResult(ctx context.Context, in *PutLatestAnalysisResultRequest, opts ...grpc.CallOption) (*PutLatestAnalysisResultResponse, error)
 	// GetDesiredVersion returns the desired version of the given Piped.
+	GetNeedRestart(ctx context.Context, in *GetNeedRestartRequest, opts ...grpc.CallOption) (*GetNeedRestartResponse, error)
+	// GetDesiredVersion returns the desired version of the given Piped.
 	GetDesiredVersion(ctx context.Context, in *GetDesiredVersionRequest, opts ...grpc.CallOption) (*GetDesiredVersionResponse, error)
 	// UpdateApplicationConfigurations updates application configurations.
 	UpdateApplicationConfigurations(ctx context.Context, in *UpdateApplicationConfigurationsRequest, opts ...grpc.CallOption) (*UpdateApplicationConfigurationsResponse, error)
@@ -395,6 +397,15 @@ func (c *pipedServiceClient) PutLatestAnalysisResult(ctx context.Context, in *Pu
 	return out, nil
 }
 
+func (c *pipedServiceClient) GetNeedRestart(ctx context.Context, in *GetNeedRestartRequest, opts ...grpc.CallOption) (*GetNeedRestartResponse, error) {
+	out := new(GetNeedRestartResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.pipedservice.PipedService/GetNeedRestart", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *pipedServiceClient) GetDesiredVersion(ctx context.Context, in *GetDesiredVersionRequest, opts ...grpc.CallOption) (*GetDesiredVersionResponse, error) {
 	out := new(GetDesiredVersionResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.pipedservice.PipedService/GetDesiredVersion", in, out, opts...)
@@ -541,6 +552,8 @@ type PipedServiceServer interface {
 	// GetLatestAnalysisResult updates the most successful analysis result.
 	PutLatestAnalysisResult(context.Context, *PutLatestAnalysisResultRequest) (*PutLatestAnalysisResultResponse, error)
 	// GetDesiredVersion returns the desired version of the given Piped.
+	GetNeedRestart(context.Context, *GetNeedRestartRequest) (*GetNeedRestartResponse, error)
+	// GetDesiredVersion returns the desired version of the given Piped.
 	GetDesiredVersion(context.Context, *GetDesiredVersionRequest) (*GetDesiredVersionResponse, error)
 	// UpdateApplicationConfigurations updates application configurations.
 	UpdateApplicationConfigurations(context.Context, *UpdateApplicationConfigurationsRequest) (*UpdateApplicationConfigurationsResponse, error)
@@ -645,6 +658,9 @@ func (UnimplementedPipedServiceServer) GetLatestAnalysisResult(context.Context, 
 }
 func (UnimplementedPipedServiceServer) PutLatestAnalysisResult(context.Context, *PutLatestAnalysisResultRequest) (*PutLatestAnalysisResultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PutLatestAnalysisResult not implemented")
+}
+func (UnimplementedPipedServiceServer) GetNeedRestart(context.Context, *GetNeedRestartRequest) (*GetNeedRestartResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNeedRestart not implemented")
 }
 func (UnimplementedPipedServiceServer) GetDesiredVersion(context.Context, *GetDesiredVersionRequest) (*GetDesiredVersionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDesiredVersion not implemented")
@@ -1178,6 +1194,24 @@ func _PipedService_PutLatestAnalysisResult_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PipedService_GetNeedRestart_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNeedRestartRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PipedServiceServer).GetNeedRestart(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.pipedservice.PipedService/GetNeedRestart",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PipedServiceServer).GetNeedRestart(ctx, req.(*GetNeedRestartRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PipedService_GetDesiredVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetDesiredVersionRequest)
 	if err := dec(in); err != nil {
@@ -1386,6 +1420,10 @@ var PipedService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PutLatestAnalysisResult",
 			Handler:    _PipedService_PutLatestAnalysisResult_Handler,
+		},
+		{
+			MethodName: "GetNeedRestart",
+			Handler:    _PipedService_GetNeedRestart_Handler,
 		},
 		{
 			MethodName: "GetDesiredVersion",
