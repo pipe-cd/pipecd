@@ -111,7 +111,9 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     (id: string) => {
       dispatch(restartPiped({ pipedId: id })).then(() => {
         dispatch(fetchPipeds(true));
-        dispatch(addToast({ message: RESTART_PIPED_SUCCESS, severity: "success" }));
+        dispatch(
+          addToast({ message: RESTART_PIPED_SUCCESS, severity: "success" })
+        );
       });
     },
     [dispatch]
