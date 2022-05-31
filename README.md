@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  Continuous Delivery for Declarative Kubernetes, Serverless and Infrastructure Applications
+  A GitOps style continuous delivery platform that provides consistent deployment and operations experience for any applications
   <br/>
   <a href="https://pipecd.dev"><strong>Explore PipeCD docs »</strong></a>
   <a href="https://play.pipecd.dev?project=play"><strong>Play with live demo »</strong></a>
@@ -79,6 +79,7 @@ We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/
 <a href="https://github.com/ffjlabo"><img src="https://avatars.githubusercontent.com/u/40124947?v=4" title="ffjlabo" width="80" height="80"></a>
 <a href="https://github.com/chaspy"><img src="https://avatars.githubusercontent.com/u/10370988?v=4" title="chaspy" width="80" height="80"></a>
 <a href="https://github.com/tnqv"><img src="https://avatars.githubusercontent.com/u/23372024?v=4" title="tnqv" width="80" height="80"></a>
+<a href="https://github.com/Szarny"><img src="https://avatars.githubusercontent.com/u/26561120?v=4" title="Szarny" width="80" height="80"></a>
 <a href="https://github.com/tennashi"><img src="https://avatars.githubusercontent.com/u/10219626?v=4" title="tennashi" width="80" height="80"></a>
 <a href="https://github.com/sivchari"><img src="https://avatars.githubusercontent.com/u/55221074?v=4" title="sivchari" width="80" height="80"></a>
 <a href="https://github.com/p0tr3c"><img src="https://avatars.githubusercontent.com/u/12850042?v=4" title="p0tr3c" width="80" height="80"></a>
@@ -100,7 +101,6 @@ We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/
 <a href="https://github.com/RikiyaFujii"><img src="https://avatars.githubusercontent.com/u/23261497?v=4" title="RikiyaFujii" width="80" height="80"></a>
 <a href="https://github.com/Lennie"><img src="https://avatars.githubusercontent.com/u/330102?v=4" title="Lennie" width="80" height="80"></a>
 <a href="https://github.com/kentakozuka"><img src="https://avatars.githubusercontent.com/u/16733673?v=4" title="kentakozuka" width="80" height="80"></a>
-<a href="https://github.com/Szarny"><img src="https://avatars.githubusercontent.com/u/26561120?v=4" title="Szarny" width="80" height="80"></a>
 <a href="https://github.com/amaany3"><img src="https://avatars.githubusercontent.com/u/25783732?v=4" title="amaany3" width="80" height="80"></a>
 <a href="https://github.com/masaaania"><img src="https://avatars.githubusercontent.com/u/2755429?v=4" title="masaaania" width="80" height="80"></a>
 <a href="https://github.com/hori-ryota"><img src="https://avatars.githubusercontent.com/u/2936501?v=4" title="hori-ryota" width="80" height="80"></a>
