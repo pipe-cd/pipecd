@@ -1,11 +1,6 @@
-name: release
+name: prerelease
 
 on:
-  push:
-    branches:    
-      - master
-    paths:
-      - 'RELEASE'
   pull_request:
     types: [opened, synchronize]
     branches:
