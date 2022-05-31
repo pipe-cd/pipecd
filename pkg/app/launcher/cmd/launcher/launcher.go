@@ -227,7 +227,7 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 	)
 
 	execute := func() error {
-		version, config, shouldRelaunchWithCurrentCfg, shouldRelaunchWithNewCfg, err := l.shouldRelaunch(ctx, input.Logger)
+		version, config, relaunchOption, err := l.shouldRelaunch(ctx, input.Logger)
 		if err != nil {
 			input.Logger.Error("LAUNCHER: failed while checking desired version and config",
 				zap.String("version", version),
@@ -236,7 +236,7 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 			return err
 		}
 
-		if !shouldRelaunchWithCurrentCfg && !shouldRelaunchWithNewCfg {
+		if !relaunchOption.ShouldRelaunch() {
 			if runningPiped != nil && runningPiped.IsRunning() {
 				input.Logger.Info("LAUNCHER: everything up-to-date", zap.String("version", l.runningVersion))
 				return nil
@@ -244,12 +244,12 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 			input.Logger.Warn("LAUNCHER: it seems the launched Piped has stopped unexpectedly")
 		}
 
-		if shouldRelaunchWithNewCfg {
+		if relaunchOption.withNewCfg {
 			input.Logger.Info("LAUNCHER: will relaunch a new Piped because some changes in version/config were detected")
-		}
-
-		if shouldRelaunchWithCurrentCfg {
-			input.Logger.Info("LAUNCHER: will relaunch a new Piped because a restart was indicated")
+		} else if relaunchOption.withCurrentCfg {
+			// The restart request can be ignored when a new config is detected,
+			// because Piped will be relaunch anyway.
+			input.Logger.Info("LAUNCHER: will relaunch a new Piped because a restart request was sent")
 		}
 
 		// Stop old piped process and clean its data.
@@ -309,10 +309,19 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 	return nil
 }
 
+type RelaunchOption struct {
+	withCurrentCfg bool
+	withNewCfg     bool
+}
+
+func (o *RelaunchOption) ShouldRelaunch() bool {
+	return o.withCurrentCfg || o.withNewCfg
+}
+
 // shouldRelaunch fetches the latest state of desired version and config
 // to determine whether a new Piped should be launched or not.
 // This also returns the desired version and config.
-func (l *launcher) shouldRelaunch(ctx context.Context, logger *zap.Logger) (version string, config []byte, shouldRelaunchWithCurrentCfg, shouldRelaunchWithNewCfg bool, err error) {
+func (l *launcher) shouldRelaunch(ctx context.Context, logger *zap.Logger) (version string, config []byte, relaunchOption RelaunchOption, err error) {
 	config, err = l.loadConfigData(ctx)
 	if err != nil {
 		logger.Error("LAUNCHER: error on loading Piped configuration data", zap.Error(err))
@@ -331,11 +340,12 @@ func (l *launcher) shouldRelaunch(ctx context.Context, logger *zap.Logger) (vers
 		return
 	}
 
-	shouldRelaunchWithCurrentCfg, err = l.getNeedRestart(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey, logger)
+	shouldRelaunchWithCurrentCfg, err := l.getNeedRestart(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey, logger)
 	if err != nil {
 		logger.Error("LAUNCHER: error on checking restart flag", zap.Error(err))
 		return
 	}
+	relaunchOption.withCurrentCfg = shouldRelaunchWithCurrentCfg
 
 	version, err = l.getDesiredVersion(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey, logger)
 	if err != nil {
@@ -343,7 +353,7 @@ func (l *launcher) shouldRelaunch(ctx context.Context, logger *zap.Logger) (vers
 		return
 	}
 
-	shouldRelaunchWithNewCfg = version != l.runningVersion || !bytes.Equal(config, l.runningConfigData)
+	relaunchOption.withNewCfg = version != l.runningVersion || !bytes.Equal(config, l.runningConfigData)
 	return
 }
 
