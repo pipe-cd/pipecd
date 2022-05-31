@@ -52,6 +52,8 @@ func (a *authorizer) Authorize(method string, r model.Role) bool {
 		return isAdmin(r)
 	case "/grpc.service.webservice.WebService/DeleteOldPipedKeys":
 		return isAdmin(r)
+	case "/grpc.service.webservice.WebService/RestartPiped":
+		return isAdmin(r)
 	case "/grpc.service.webservice.WebService/EnablePiped":
 		return isAdmin(r)
 	case "/grpc.service.webservice.WebService/DisablePiped":

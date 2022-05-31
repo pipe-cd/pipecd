@@ -30,6 +30,7 @@ import {
   UI_TEXT_DISABLE,
   UI_TEXT_EDIT,
   UI_TEXT_ENABLE,
+  UI_TEXT_RESTART,
 } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
@@ -76,6 +77,7 @@ const useStyles = makeStyles((theme) => ({
 interface Props {
   pipedId: string;
   onEdit: (id: string) => void;
+  onRestart: (id: string) => void;
   onDisable: (id: string) => void;
   onEnable: (id: string) => void;
 }
@@ -90,6 +92,7 @@ const menuStyle = {
 
 export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
   pipedId,
+  onRestart,
   onEnable,
   onDisable,
   onEdit,
@@ -118,8 +121,13 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
 
   const handleEdit = useCallback(() => {
     setAnchorEl(null);
-    onEdit(pipedId);
-  }, [pipedId, onEdit]);
+    onRestart(pipedId);
+  }, [pipedId, onRestart]);
+
+  const handleRestart = useCallback(() => {
+    setAnchorEl(null);
+    onDisable(pipedId);
+  }, [pipedId, onDisable]);
 
   const handleAddNewKey = useCallback(() => {
     setAnchorEl(null);
@@ -231,6 +239,9 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
           [
             <MenuItem key="piped-menu-edit" onClick={handleEdit}>
               {UI_TEXT_EDIT}
+            </MenuItem>,
+            <MenuItem key="piped-menu-restart" onClick={handleRestart}>
+              {UI_TEXT_RESTART}
             </MenuItem>,
             <MenuItem key="piped-menu-add-new-key" onClick={handleAddNewKey}>
               {UI_TEXT_ADD_NEW_KEY}

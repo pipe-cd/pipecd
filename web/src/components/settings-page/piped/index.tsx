@@ -36,6 +36,7 @@ import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { useInterval } from "~/hooks/use-interval";
 import {
   clearRegisteredPipedInfo,
+  restartPiped,
   disablePiped,
   enablePiped,
   fetchPipeds,
@@ -104,6 +105,14 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     (state) => state.pipeds.registeredPiped
   );
 
+  const handleRestart = useCallback(
+    (id: string) => {
+      dispatch(restartPiped({ pipedId: id })).then(() => {
+        dispatch(fetchPipeds(true));
+      });
+    },
+    [dispatch]
+  );
   const handleDisable = useCallback(
     (id: string) => {
       dispatch(disablePiped({ pipedId: id })).then(() => {
@@ -197,6 +206,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
                   key={piped.id}
                   pipedId={piped.id}
                   onEdit={handleEdit}
+                  onRestart={handleRestart}
                   onDisable={handleDisable}
                   onEnable={handleEnable}
                 />
