@@ -811,10 +811,5 @@ func deepcopy(dst interface{}, src interface{}) error {
 		return err
 	}
 
-	err = json.Unmarshal(b, dst)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return json.Unmarshal(b, dst)
 }
