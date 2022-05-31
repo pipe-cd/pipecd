@@ -72,7 +72,7 @@ message Piped {
     // Launcher uses this value to compare with the currently running version
     // to determine whether Piped should be restarted with another version or not.
     string desired_version = 30;
-    // The flag to determine whether Piped should be restarted with current version or not.
+    // The flag to determine whether Piped should be restarted with current config.
     bool need_restart = 31;
 
     // Whether the piped is disabled or not.
