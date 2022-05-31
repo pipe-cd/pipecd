@@ -120,7 +120,7 @@ type Piped struct {
 	// Launcher uses this value to compare with the currently running version
 	// to determine whether Piped should be restarted with another version or not.
 	DesiredVersion string `protobuf:"bytes,30,opt,name=desired_version,json=desiredVersion,proto3" json:"desired_version,omitempty"`
-	// The flag to determine whether Piped should be restarted with current version or not.
+	// The flag to determine whether Piped should be restarted with current config.
 	NeedRestart bool `protobuf:"varint,31,opt,name=need_restart,json=needRestart,proto3" json:"need_restart,omitempty"`
 	// Whether the piped is disabled or not.
 	Disabled bool `protobuf:"varint,13,opt,name=disabled,proto3" json:"disabled,omitempty"`
