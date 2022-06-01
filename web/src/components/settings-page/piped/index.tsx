@@ -127,6 +127,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     },
     [dispatch]
   );
+  
   const handleEnable = useCallback(
     (id: string) => {
       dispatch(enablePiped({ pipedId: id })).then(() => {
