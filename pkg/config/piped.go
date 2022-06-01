@@ -120,6 +120,22 @@ func (s *PipedSpec) Validate() error {
 	return nil
 }
 
+// Clone generates a cloned PipedSpec object.
+func (s *PipedSpec) Clone() (*PipedSpec, error) {
+	clone := &PipedSpec{}
+
+	js, err := json.Marshal(s)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = json.Unmarshal(js, clone); err != nil {
+		return nil, err
+	}
+
+	return clone, nil
+}
+
 // Mask masks confidential fields.
 func (s *PipedSpec) Mask() {
 	if len(s.PipedKeyFile) != 0 {

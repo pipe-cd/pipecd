@@ -625,13 +625,13 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		})
 	}
 
-	clone, err := (&config.Config{PipedSpec: cfg}).Clone()
+	cloneCfg, err := cfg.Clone()
 	if err != nil {
 		return err
 	}
 
-	clone.PipedSpec.Mask()
-	maskedCfg, err := yaml.Marshal(clone.PipedSpec)
+	cloneCfg.Mask()
+	maskedCfg, err := yaml.Marshal(cloneCfg)
 	if err != nil {
 		return err
 	}
