@@ -111,10 +111,11 @@ type PipedStore interface {
 	Get(ctx context.Context, id string) (*model.Piped, error)
 	List(ctx context.Context, opts ListOptions) ([]*model.Piped, error)
 	UpdateInfo(ctx context.Context, id, name, desc string) error
+	RestartPiped(ctx context.Context, id string) error
 	EnablePiped(ctx context.Context, id string) error
 	DisablePiped(ctx context.Context, id string) error
 	UpdateDesiredVersion(ctx context.Context, id, version string) error
-	UpdateMetadata(ctx context.Context, id, version string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, needRestart bool, startedAt int64) error
+	UpdateMetadata(ctx context.Context, id, version, config string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, needRestart bool, startedAt int64) error
 	AddKey(ctx context.Context, id, keyHash, creator string, createdAt time.Time) error
 	DeleteOldKeys(ctx context.Context, id string) error
 }
@@ -229,13 +230,14 @@ func (s *pipedStore) UpdateDesiredVersion(ctx context.Context, id, version strin
 	})
 }
 
-func (s *pipedStore) UpdateMetadata(ctx context.Context, id, version string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, needRestart bool, startedAt int64) error {
+func (s *pipedStore) UpdateMetadata(ctx context.Context, id, version, config string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, needRestart bool, startedAt int64) error {
 	return s.update(ctx, id, func(piped *model.Piped) error {
 		piped.CloudProviders = cps
 		piped.Repositories = repos
 		piped.SecretEncryption = se
 		piped.Version = version
 		piped.NeedRestart = needRestart
+		piped.Config = config
 		piped.StartedAt = startedAt
 		return nil
 	})

@@ -372,3 +372,370 @@ func TestNotificationReceiverWebhook_LoadSignatureValue(t *testing.T) {
 		})
 	}
 }
+
+func TestPipedConfigMask(t *testing.T) {
+	testcase := []struct {
+		name    string
+		spec    *PipedSpec
+		want    *PipedSpec
+		wantErr bool
+	}{
+		{
+			name: "mask",
+			spec: &PipedSpec{
+				ProjectID:             "foo",
+				PipedID:               "foo",
+				PipedKeyFile:          "foo",
+				PipedKeyData:          "foo",
+				Name:                  "foo",
+				APIAddress:            "foo",
+				WebAddress:            "foo",
+				SyncInterval:          Duration(time.Minute),
+				AppConfigSyncInterval: Duration(time.Minute),
+				Git: PipedGit{
+					Username:          "foo",
+					Email:             "foo",
+					SSHConfigFilePath: "foo",
+					Host:              "foo",
+					HostName:          "foo",
+					SSHKeyFile:        "foo",
+					SSHKeyData:        "foo",
+				},
+				Repositories: []PipedRepository{
+					{
+						RepoID: "foo",
+						Remote: "foo",
+						Branch: "foo",
+					},
+				},
+				ChartRepositories: []HelmChartRepository{
+					{
+						Type:       "foo",
+						Name:       "foo",
+						Address:    "foo",
+						Username:   "foo",
+						Password:   "foo",
+						Insecure:   true,
+						GitRemote:  "foo",
+						SSHKeyFile: "foo",
+					},
+				},
+				ChartRegistries: []HelmChartRegistry{
+					{
+						Type:     "foo",
+						Address:  "foo",
+						Username: "foo",
+						Password: "foo",
+					},
+				},
+				CloudProviders: []PipedCloudProvider{
+					{
+						Name: "foo",
+						Type: 1,
+						KubernetesConfig: &CloudProviderKubernetesConfig{
+							MasterURL:      "foo",
+							KubeConfigPath: "foo",
+							AppStateInformer: KubernetesAppStateInformer{
+								Namespace: "",
+								IncludeResources: []KubernetesResourceMatcher{
+									{
+										APIVersion: "foo",
+										Kind:       "foo",
+									},
+								},
+								ExcludeResources: []KubernetesResourceMatcher{
+									{
+										APIVersion: "foo",
+										Kind:       "foo",
+									},
+								},
+							},
+						},
+						TerraformConfig: &CloudProviderTerraformConfig{
+							Vars: []string{"foo"},
+						},
+						CloudRunConfig: &CloudProviderCloudRunConfig{
+							Project:         "foo",
+							Region:          "foo",
+							CredentialsFile: "foo",
+						},
+						LambdaConfig: &CloudProviderLambdaConfig{
+							Region:          "foo",
+							CredentialsFile: "foo",
+							RoleARN:         "foo",
+							TokenFile:       "foo",
+							Profile:         "foo",
+						},
+						ECSConfig: &CloudProviderECSConfig{
+							Region:          "foo",
+							CredentialsFile: "foo",
+							RoleARN:         "foo",
+							TokenFile:       "foo",
+							Profile:         "foo",
+						},
+					},
+				},
+				AnalysisProviders: []PipedAnalysisProvider{
+					{
+						Name: "foo",
+						Type: "foo",
+						PrometheusConfig: &AnalysisProviderPrometheusConfig{
+							Address:      "foo",
+							UsernameFile: "foo",
+							PasswordFile: "foo",
+						},
+						DatadogConfig: &AnalysisProviderDatadogConfig{
+							Address:            "foo",
+							APIKeyFile:         "foo",
+							ApplicationKeyFile: "foo",
+						},
+						StackdriverConfig: &AnalysisProviderStackdriverConfig{
+							ServiceAccountFile: "foo",
+						},
+					},
+				},
+				Notifications: Notifications{
+					Routes: []NotificationRoute{
+						{
+							Name:         "foo",
+							Receiver:     "foo",
+							Events:       []string{"foo"},
+							IgnoreEvents: []string{"foo"},
+							Groups:       []string{"foo"},
+							IgnoreGroups: []string{"foo"},
+							Apps:         []string{"foo"},
+							IgnoreApps:   []string{"foo"},
+							Labels:       map[string]string{"foo": "foo"},
+							IgnoreLabels: map[string]string{"foo": "foo"},
+							Envs:         []string{"foo"},
+							IgnoreEnvs:   []string{"foo"},
+						},
+					},
+					Receivers: []NotificationReceiver{
+						{
+							Name: "foo",
+							Slack: &NotificationReceiverSlack{
+								HookURL: "foo",
+							},
+							Webhook: &NotificationReceiverWebhook{
+								URL:                "foo",
+								SignatureKey:       "foo",
+								SignatureValue:     "foo",
+								SignatureValueFile: "foo",
+							},
+						},
+					},
+				},
+				SecretManagement: &SecretManagement{
+					Type: "foo",
+					KeyPair: &SecretManagementKeyPair{
+						PrivateKeyFile: "foo",
+						PrivateKeyData: "foo",
+						PublicKeyFile:  "foo",
+						PublicKeyData:  "foo",
+					},
+					GCPKMS: &SecretManagementGCPKMS{
+						KeyName:                   "foo",
+						DecryptServiceAccountFile: "foo",
+						EncryptServiceAccountFile: "foo",
+					},
+				},
+				EventWatcher: PipedEventWatcher{
+					CheckInterval: Duration(time.Minute),
+					GitRepos: []PipedEventWatcherGitRepo{
+						{
+							RepoID:        "foo",
+							CommitMessage: "foo",
+							Includes:      []string{"foo"},
+							Excludes:      []string{"foo"},
+						},
+					},
+				},
+				AppSelector: map[string]string{
+					"foo": "foo",
+				},
+			},
+			want: &PipedSpec{
+				ProjectID:             "foo",
+				PipedID:               "foo",
+				PipedKeyFile:          maskString,
+				PipedKeyData:          maskString,
+				Name:                  "foo",
+				APIAddress:            "foo",
+				WebAddress:            "foo",
+				SyncInterval:          Duration(time.Minute),
+				AppConfigSyncInterval: Duration(time.Minute),
+				Git: PipedGit{
+					Username:          "foo",
+					Email:             "foo",
+					SSHConfigFilePath: maskString,
+					Host:              "foo",
+					HostName:          "foo",
+					SSHKeyFile:        maskString,
+					SSHKeyData:        maskString,
+				},
+				Repositories: []PipedRepository{
+					{
+						RepoID: "foo",
+						Remote: "foo",
+						Branch: "foo",
+					},
+				},
+				ChartRepositories: []HelmChartRepository{
+					{
+						Type:       "foo",
+						Name:       "foo",
+						Address:    "foo",
+						Username:   "foo",
+						Password:   maskString,
+						Insecure:   true,
+						GitRemote:  "foo",
+						SSHKeyFile: maskString,
+					},
+				},
+				ChartRegistries: []HelmChartRegistry{
+					{
+						Type:     "foo",
+						Address:  "foo",
+						Username: "foo",
+						Password: maskString,
+					},
+				},
+				CloudProviders: []PipedCloudProvider{
+					{
+						Name: "foo",
+						Type: 1,
+						KubernetesConfig: &CloudProviderKubernetesConfig{
+							MasterURL:      "foo",
+							KubeConfigPath: "foo",
+							AppStateInformer: KubernetesAppStateInformer{
+								Namespace: "",
+								IncludeResources: []KubernetesResourceMatcher{
+									{
+										APIVersion: "foo",
+										Kind:       "foo",
+									},
+								},
+								ExcludeResources: []KubernetesResourceMatcher{
+									{
+										APIVersion: "foo",
+										Kind:       "foo",
+									},
+								},
+							},
+						},
+						TerraformConfig: &CloudProviderTerraformConfig{
+							Vars: []string{"foo"},
+						},
+						CloudRunConfig: &CloudProviderCloudRunConfig{
+							Project:         "foo",
+							Region:          "foo",
+							CredentialsFile: maskString,
+						},
+						LambdaConfig: &CloudProviderLambdaConfig{
+							Region:          "foo",
+							CredentialsFile: maskString,
+							RoleARN:         maskString,
+							TokenFile:       maskString,
+							Profile:         "foo",
+						},
+						ECSConfig: &CloudProviderECSConfig{
+							Region:          "foo",
+							CredentialsFile: maskString,
+							RoleARN:         maskString,
+							TokenFile:       maskString,
+							Profile:         "foo",
+						},
+					},
+				},
+				AnalysisProviders: []PipedAnalysisProvider{
+					{
+						Name: "foo",
+						Type: "foo",
+						PrometheusConfig: &AnalysisProviderPrometheusConfig{
+							Address:      "foo",
+							UsernameFile: "foo",
+							PasswordFile: maskString,
+						},
+						DatadogConfig: &AnalysisProviderDatadogConfig{
+							Address:            "foo",
+							APIKeyFile:         maskString,
+							ApplicationKeyFile: maskString,
+						},
+						StackdriverConfig: &AnalysisProviderStackdriverConfig{
+							ServiceAccountFile: maskString,
+						},
+					},
+				},
+				Notifications: Notifications{
+					Routes: []NotificationRoute{
+						{
+							Name:         "foo",
+							Receiver:     "foo",
+							Events:       []string{"foo"},
+							IgnoreEvents: []string{"foo"},
+							Groups:       []string{"foo"},
+							IgnoreGroups: []string{"foo"},
+							Apps:         []string{"foo"},
+							IgnoreApps:   []string{"foo"},
+							Labels:       map[string]string{"foo": "foo"},
+							IgnoreLabels: map[string]string{"foo": "foo"},
+							Envs:         []string{"foo"},
+							IgnoreEnvs:   []string{"foo"},
+						},
+					},
+					Receivers: []NotificationReceiver{
+						{
+							Name: "foo",
+							Slack: &NotificationReceiverSlack{
+								HookURL: maskString,
+							},
+							Webhook: &NotificationReceiverWebhook{
+								URL:                maskString,
+								SignatureKey:       maskString,
+								SignatureValue:     maskString,
+								SignatureValueFile: maskString,
+							},
+						},
+					},
+				},
+				SecretManagement: &SecretManagement{
+					Type: "foo",
+					KeyPair: &SecretManagementKeyPair{
+						PrivateKeyFile: maskString,
+						PrivateKeyData: maskString,
+						PublicKeyFile:  "foo",
+						PublicKeyData:  "foo",
+					},
+					GCPKMS: &SecretManagementGCPKMS{
+						KeyName:                   "foo",
+						DecryptServiceAccountFile: maskString,
+						EncryptServiceAccountFile: maskString,
+					},
+				},
+				EventWatcher: PipedEventWatcher{
+					CheckInterval: Duration(time.Minute),
+					GitRepos: []PipedEventWatcherGitRepo{
+						{
+							RepoID:        "foo",
+							CommitMessage: "foo",
+							Includes:      []string{"foo"},
+							Excludes:      []string{"foo"},
+						},
+					},
+				},
+				AppSelector: map[string]string{
+					"foo": "foo",
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range testcase {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.spec.Mask()
+			assert.Equal(t, tc.want, tc.spec)
+		})
+	}
+}
