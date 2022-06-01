@@ -12,17 +12,17 @@ _Published by the PipeCD dev team every few months, this update will provide you
 ### What's changed
 ---
 
-It's been a while from last update about the development of our PipeCD project, but you can be assured, our PipeCD development is going well. Since the last report, PipeCD team has introduced 5 major release (from [v0.27.0](#) to the latest [v0.32.3](#)) with serveral UI improvements and some interesting features that I can wait to show you now. This blog post walks you through some of notable changes. For all other changes, please check out each release note.
+It's been a while from last update about the development of our PipeCD project, but you can be assured, our PipeCD development is going well. Since the last report, PipeCD team has introduced 5 major releases (from [v0.27.0](#) to the latest [v0.32.3](#)) with serveral UI improvements and some interesting features that I can't wait to show you now. This blog post walks you through some of notable changes. For all other changes, please check out each release note.
 
 #### Cloud Run live state
 
-Until now, you may notice that only applications of kind Kubernetes have a part in its application detail page named live-state which show you the situation of components of the current running PipeCD application. From [version v0.27.0](https://github.com/pipe-cd/pipecd/releases/tag/v0.27.0) we made that feature available for applications of kind Cloud Run too.
+Until now, you may notice that only application of kind Kubernetes has a part in its application detail page named live-state which shows you the situation of components of the current running PipeCD application. From version [v0.27.0](https://github.com/pipe-cd/pipecd/releases/tag/v0.27.0), we made that feature available for applications of kind Cloud Run too.
 
 ![](/images/cloudrun-live-state.png)
 
 #### Make analysis stage skippable
 
-One of the outstanding features PipeCD has is [Automated deployment analysis (ADA)](/docs/user-guide/automated-deployment-analysis/) which helps you evaluate the impact of the current deployment right middle its running. Though it’s necessary to have that kind of stage for the stability of your service, sometimes you may want to skip the stage for some kind of quick/hot fixes. In that case, this feature is for you.
+One of the outstanding features PipeCD has is [Automated deployment analysis (ADA)](/docs/user-guide/automated-deployment-analysis/), which helps you evaluate the impact of the current deployment right middle its running. Though it’s necessary to have that kind of stage for the stability of your service, sometimes you may want to skip the stage for some kind of quick/hot fixes. In that case, this feature is for you.
 
 ![](/images/analysis-skippable.png)
 
@@ -66,7 +66,7 @@ And many other UI improvements are updated to the PipeCD web console, let's chec
 
 ### We're opening more and more
 
-PipeCD is an OSS project! And we want to make not just the source code open, but the whole deployment process should be opened as well in order to get more contribution and support from the open community. We moved almost all of our CI flow to the open Github Actions platform, and as the result, everyone who makes contributions to our PipeCD repository can easily follow/access the CI stages via Github Actions UI. At the time I write this blog, PipeCD CI flow is opened and can be accessed via this [link](https://github.com/pipe-cd/pipecd/actions).
+PipeCD is an OSS project! And we want to make not just the source code open, but the whole deployment process should be opened as well in order to get more contribution and support from the open community. We moved almost all of our CI flow to the open Github Actions platform, and as the result, everyone who makes contributions to our PipeCD repository can easily follow/access the CI stages via Github Actions UI. At the time I wrote this blog, PipeCD CI flow is opened and can be accessed via this [link](https://github.com/pipe-cd/pipecd/actions).
 
 ### What are next
 ---
