@@ -627,8 +627,7 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	}
 
 	copiedCfg := &config.PipedSpec{}
-	err := deepcopy(copiedCfg, cfg)
-	if err != nil {
+	if err := deepcopy(copiedCfg, cfg); err != nil {
 		return err
 	}
 
