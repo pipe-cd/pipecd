@@ -49,7 +49,6 @@ export const addPiped = createAsyncThunk<
   return { ...res, isNewKey: false };
 });
 
-
 export const restartPiped = createAsyncThunk<void, { pipedId: string }>(
   `${MODULE_NAME}/restart`,
   async ({ pipedId }) => {
