@@ -114,7 +114,7 @@ type PipedStore interface {
 	EnablePiped(ctx context.Context, id string) error
 	DisablePiped(ctx context.Context, id string) error
 	UpdateDesiredVersion(ctx context.Context, id, version string) error
-	UpdateMetadata(ctx context.Context, id, version string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error
+	UpdateMetadata(ctx context.Context, id, version string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, needRestart bool, startedAt int64) error
 	AddKey(ctx context.Context, id, keyHash, creator string, createdAt time.Time) error
 	DeleteOldKeys(ctx context.Context, id string) error
 }
@@ -198,6 +198,14 @@ func (s *pipedStore) UpdateInfo(ctx context.Context, id, name, desc string) erro
 	})
 }
 
+func (s *pipedStore) RestartPiped(ctx context.Context, id string) error {
+	return s.update(ctx, id, func(piped *model.Piped) error {
+		piped.NeedRestart = true
+		piped.UpdatedAt = time.Now().Unix()
+		return nil
+	})
+}
+
 func (s *pipedStore) EnablePiped(ctx context.Context, id string) error {
 	return s.update(ctx, id, func(piped *model.Piped) error {
 		piped.Disabled = false
@@ -221,12 +229,13 @@ func (s *pipedStore) UpdateDesiredVersion(ctx context.Context, id, version strin
 	})
 }
 
-func (s *pipedStore) UpdateMetadata(ctx context.Context, id, version string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error {
+func (s *pipedStore) UpdateMetadata(ctx context.Context, id, version string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, needRestart bool, startedAt int64) error {
 	return s.update(ctx, id, func(piped *model.Piped) error {
 		piped.CloudProviders = cps
 		piped.Repositories = repos
 		piped.SecretEncryption = se
 		piped.Version = version
+		piped.NeedRestart = needRestart
 		piped.StartedAt = startedAt
 		return nil
 	})

@@ -69,7 +69,7 @@ type pipedApiDeploymentChainStore interface {
 
 type pipedApiPipedStore interface {
 	Get(ctx context.Context, id string) (*model.Piped, error)
-	UpdateMetadata(ctx context.Context, id, version string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error
+	UpdateMetadata(ctx context.Context, id, version string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, needRestart bool, startedAt int64) error
 }
 
 type pipedApiEventStore interface {
@@ -178,6 +178,7 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 		req.CloudProviders,
 		req.Repositories,
 		req.SecretEncryption,
+		false,
 		now,
 	); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update metadata of piped %s", pipedID))
@@ -861,6 +862,22 @@ func (a *PipedAPI) PutLatestAnalysisResult(ctx context.Context, req *pipedservic
 	}
 
 	return &pipedservice.PutLatestAnalysisResultResponse{}, nil
+}
+
+func (a *PipedAPI) GetNeedRestart(ctx context.Context, _ *pipedservice.GetNeedRestartRequest) (*pipedservice.GetNeedRestartResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	piped, err := getPiped(ctx, a.pipedStore, pipedID, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pipedservice.GetNeedRestartResponse{
+		NeedRestart: piped.NeedRestart,
+	}, nil
 }
 
 func (a *PipedAPI) GetDesiredVersion(ctx context.Context, _ *pipedservice.GetDesiredVersionRequest) (*pipedservice.GetDesiredVersionResponse, error) {
