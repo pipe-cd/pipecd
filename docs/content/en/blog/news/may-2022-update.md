@@ -12,7 +12,7 @@ _Published by the PipeCD dev team every few months, this update will provide you
 ### What's changed
 ---
 
-It's been a while from last update about the development of our PipeCD project, but you can be assured, our PipeCD development is going well. Since the last report, PipeCD team has introduced 5 major releases (from [v0.27.0](#) to the latest [v0.32.3](#)) with serveral UI improvements and some interesting features that I can't wait to show you now. This blog post walks you through some of notable changes. For all other changes, please check out each release note.
+It's been a while from the last update about the development of our PipeCD project, but you can be assured that our PipeCD development is going well. Since the last report, PipeCD team has introduced 5 major releases (from [v0.27.0](https://github.com/pipe-cd/pipecd/releases/tag/v0.27.0) to the latest [v0.32.3](https://github.com/pipe-cd/pipecd/releases/tag/v0.32.3)) with several UI improvements and some interesting features that I can't wait to show you now. This blog post walks you through some notable changes. For all other changes, please check out each release note.
 
 #### Cloud Run live state
 
