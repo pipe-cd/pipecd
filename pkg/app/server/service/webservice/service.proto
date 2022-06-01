@@ -50,6 +50,9 @@ service WebService {
     rpc DeleteOldPipedKeys(DeleteOldPipedKeysRequest) returns (DeleteOldPipedKeysResponse) {
         option (model.role).project_role = ADMIN;
     }
+    rpc RestartPiped(RestartPipedRequest) returns (RestartPipedResponse) {
+        option (model.role).project_role = ADMIN;
+    }
     rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {
         option (model.role).project_role = ADMIN;
     }
@@ -223,6 +226,13 @@ message DeleteOldPipedKeysRequest {
 }
 
 message DeleteOldPipedKeysResponse {
+}
+
+message RestartPipedRequest {
+    string piped_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message RestartPipedResponse {
 }
 
 message EnablePipedRequest {

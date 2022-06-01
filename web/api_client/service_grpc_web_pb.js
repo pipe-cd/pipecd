@@ -351,6 +351,67 @@ proto.grpc.service.webservice.WebServicePromiseClient.prototype.deleteOldPipedKe
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.grpc.service.webservice.RestartPipedRequest,
+ *   !proto.grpc.service.webservice.RestartPipedResponse>}
+ */
+const methodDescriptor_WebService_RestartPiped = new grpc.web.MethodDescriptor(
+  '/grpc.service.webservice.WebService/RestartPiped',
+  grpc.web.MethodType.UNARY,
+  proto.grpc.service.webservice.RestartPipedRequest,
+  proto.grpc.service.webservice.RestartPipedResponse,
+  /**
+   * @param {!proto.grpc.service.webservice.RestartPipedRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.grpc.service.webservice.RestartPipedResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.grpc.service.webservice.RestartPipedRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.grpc.service.webservice.RestartPipedResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.grpc.service.webservice.RestartPipedResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.grpc.service.webservice.WebServiceClient.prototype.restartPiped =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/RestartPiped',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_RestartPiped,
+      callback);
+};
+
+
+/**
+ * @param {!proto.grpc.service.webservice.RestartPipedRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.grpc.service.webservice.RestartPipedResponse>}
+ *     Promise that resolves to the response
+ */
+proto.grpc.service.webservice.WebServicePromiseClient.prototype.restartPiped =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/grpc.service.webservice.WebService/RestartPiped',
+      request,
+      metadata || {},
+      methodDescriptor_WebService_RestartPiped);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.grpc.service.webservice.EnablePipedRequest,
  *   !proto.grpc.service.webservice.EnablePipedResponse>}
  */

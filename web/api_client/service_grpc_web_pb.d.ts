@@ -36,6 +36,13 @@ export class WebServiceClient {
                response: pkg_app_server_service_webservice_service_pb.DeleteOldPipedKeysResponse) => void
   ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.DeleteOldPipedKeysResponse>;
 
+  restartPiped(
+    request: pkg_app_server_service_webservice_service_pb.RestartPipedRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: pkg_app_server_service_webservice_service_pb.RestartPipedResponse) => void
+  ): grpcWeb.ClientReadableStream<pkg_app_server_service_webservice_service_pb.RestartPipedResponse>;
+
   enablePiped(
     request: pkg_app_server_service_webservice_service_pb.EnablePipedRequest,
     metadata: grpcWeb.Metadata | undefined,
@@ -377,6 +384,11 @@ export class WebServicePromiseClient {
     request: pkg_app_server_service_webservice_service_pb.DeleteOldPipedKeysRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<pkg_app_server_service_webservice_service_pb.DeleteOldPipedKeysResponse>;
+
+  restartPiped(
+    request: pkg_app_server_service_webservice_service_pb.RestartPipedRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<pkg_app_server_service_webservice_service_pb.RestartPipedResponse>;
 
   enablePiped(
     request: pkg_app_server_service_webservice_service_pb.EnablePipedRequest,

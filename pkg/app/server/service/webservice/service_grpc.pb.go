@@ -27,6 +27,7 @@ type WebServiceClient interface {
 	UpdatePiped(ctx context.Context, in *UpdatePipedRequest, opts ...grpc.CallOption) (*UpdatePipedResponse, error)
 	RecreatePipedKey(ctx context.Context, in *RecreatePipedKeyRequest, opts ...grpc.CallOption) (*RecreatePipedKeyResponse, error)
 	DeleteOldPipedKeys(ctx context.Context, in *DeleteOldPipedKeysRequest, opts ...grpc.CallOption) (*DeleteOldPipedKeysResponse, error)
+	RestartPiped(ctx context.Context, in *RestartPipedRequest, opts ...grpc.CallOption) (*RestartPipedResponse, error)
 	EnablePiped(ctx context.Context, in *EnablePipedRequest, opts ...grpc.CallOption) (*EnablePipedResponse, error)
 	DisablePiped(ctx context.Context, in *DisablePipedRequest, opts ...grpc.CallOption) (*DisablePipedResponse, error)
 	ListPipeds(ctx context.Context, in *ListPipedsRequest, opts ...grpc.CallOption) (*ListPipedsResponse, error)
@@ -121,6 +122,15 @@ func (c *webServiceClient) RecreatePipedKey(ctx context.Context, in *RecreatePip
 func (c *webServiceClient) DeleteOldPipedKeys(ctx context.Context, in *DeleteOldPipedKeysRequest, opts ...grpc.CallOption) (*DeleteOldPipedKeysResponse, error) {
 	out := new(DeleteOldPipedKeysResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/DeleteOldPipedKeys", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *webServiceClient) RestartPiped(ctx context.Context, in *RestartPipedRequest, opts ...grpc.CallOption) (*RestartPipedResponse, error) {
+	out := new(RestartPipedResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/RestartPiped", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -541,6 +551,7 @@ type WebServiceServer interface {
 	UpdatePiped(context.Context, *UpdatePipedRequest) (*UpdatePipedResponse, error)
 	RecreatePipedKey(context.Context, *RecreatePipedKeyRequest) (*RecreatePipedKeyResponse, error)
 	DeleteOldPipedKeys(context.Context, *DeleteOldPipedKeysRequest) (*DeleteOldPipedKeysResponse, error)
+	RestartPiped(context.Context, *RestartPipedRequest) (*RestartPipedResponse, error)
 	EnablePiped(context.Context, *EnablePipedRequest) (*EnablePipedResponse, error)
 	DisablePiped(context.Context, *DisablePipedRequest) (*DisablePipedResponse, error)
 	ListPipeds(context.Context, *ListPipedsRequest) (*ListPipedsResponse, error)
@@ -613,6 +624,9 @@ func (UnimplementedWebServiceServer) RecreatePipedKey(context.Context, *Recreate
 }
 func (UnimplementedWebServiceServer) DeleteOldPipedKeys(context.Context, *DeleteOldPipedKeysRequest) (*DeleteOldPipedKeysResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteOldPipedKeys not implemented")
+}
+func (UnimplementedWebServiceServer) RestartPiped(context.Context, *RestartPipedRequest) (*RestartPipedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestartPiped not implemented")
 }
 func (UnimplementedWebServiceServer) EnablePiped(context.Context, *EnablePipedRequest) (*EnablePipedResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EnablePiped not implemented")
@@ -830,6 +844,24 @@ func _WebService_DeleteOldPipedKeys_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(WebServiceServer).DeleteOldPipedKeys(ctx, req.(*DeleteOldPipedKeysRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WebService_RestartPiped_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RestartPipedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebServiceServer).RestartPiped(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.webservice.WebService/RestartPiped",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebServiceServer).RestartPiped(ctx, req.(*RestartPipedRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1666,6 +1698,10 @@ var WebService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteOldPipedKeys",
 			Handler:    _WebService_DeleteOldPipedKeys_Handler,
+		},
+		{
+			MethodName: "RestartPiped",
+			Handler:    _WebService_RestartPiped_Handler,
 		},
 		{
 			MethodName: "EnablePiped",

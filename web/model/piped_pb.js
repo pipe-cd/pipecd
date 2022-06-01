@@ -169,6 +169,7 @@ proto.model.Piped.toObject = function(includeInstance, msg) {
     keysList: jspb.Message.toObjectList(msg.getKeysList(),
     proto.model.PipedKey.toObject, includeInstance),
     desiredVersion: jspb.Message.getFieldWithDefault(msg, 30, ""),
+    needRestart: jspb.Message.getBooleanFieldWithDefault(msg, 31, false),
     disabled: jspb.Message.getBooleanFieldWithDefault(msg, 13, false),
     createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
     updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
@@ -263,6 +264,10 @@ proto.model.Piped.deserializeBinaryFromReader = function(msg, reader) {
     case 30:
       var value = /** @type {string} */ (reader.readString());
       msg.setDesiredVersion(value);
+      break;
+    case 31:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setNeedRestart(value);
       break;
     case 13:
       var value = /** @type {boolean} */ (reader.readBool());
@@ -397,6 +402,13 @@ proto.model.Piped.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       30,
+      f
+    );
+  }
+  f = message.getNeedRestart();
+  if (f) {
+    writer.writeBool(
+      31,
       f
     );
   }
@@ -1093,6 +1105,24 @@ proto.model.Piped.prototype.getDesiredVersion = function() {
  */
 proto.model.Piped.prototype.setDesiredVersion = function(value) {
   return jspb.Message.setProto3StringField(this, 30, value);
+};
+
+
+/**
+ * optional bool need_restart = 31;
+ * @return {boolean}
+ */
+proto.model.Piped.prototype.getNeedRestart = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 31, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.model.Piped} returns this
+ */
+proto.model.Piped.prototype.setNeedRestart = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 31, value);
 };
 
 

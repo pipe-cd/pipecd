@@ -170,6 +170,38 @@ export namespace DeleteOldPipedKeysResponse {
   }
 }
 
+export class RestartPipedRequest extends jspb.Message {
+  getPipedId(): string;
+  setPipedId(value: string): RestartPipedRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): RestartPipedRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: RestartPipedRequest): RestartPipedRequest.AsObject;
+  static serializeBinaryToWriter(message: RestartPipedRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RestartPipedRequest;
+  static deserializeBinaryFromReader(message: RestartPipedRequest, reader: jspb.BinaryReader): RestartPipedRequest;
+}
+
+export namespace RestartPipedRequest {
+  export type AsObject = {
+    pipedId: string,
+  }
+}
+
+export class RestartPipedResponse extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): RestartPipedResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: RestartPipedResponse): RestartPipedResponse.AsObject;
+  static serializeBinaryToWriter(message: RestartPipedResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RestartPipedResponse;
+  static deserializeBinaryFromReader(message: RestartPipedResponse, reader: jspb.BinaryReader): RestartPipedResponse;
+}
+
+export namespace RestartPipedResponse {
+  export type AsObject = {
+  }
+}
+
 export class EnablePipedRequest extends jspb.Message {
   getPipedId(): string;
   setPipedId(value: string): EnablePipedRequest;
