@@ -73,7 +73,7 @@ PipeCD is an OSS project! And we want to make not just the source code open, but
 
 The team continues actively working on improving the PipeCD product. Besides fixing the reported issues, enhancing the existing features, here are some new features you may catch for few next releases:
 
-- Piped configuration management via web console: restartable and update configuration checkable.
+- Piped management via web console: restartable and configuration checkable.
 - RBAC for PipeCD resources based on the Label mechanism
 
 If you have any features want to request or find out a problem, please let us know by creating issues to the [pipe-cd/pipecd](https://github.com/pipe-cd/pipecd/issues) repository.
