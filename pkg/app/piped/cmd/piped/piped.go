@@ -19,7 +19,6 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -626,14 +625,13 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		})
 	}
 
-	copiedCfg := &config.PipedSpec{}
-	if err := deepcopy(copiedCfg, cfg); err != nil {
+	clone, err := (&config.Config{PipedSpec: cfg}).Clone()
+	if err != nil {
 		return err
 	}
 
-	copiedCfg.Mask()
-
-	maskedCfgYAML, err := yaml.Marshal(copiedCfg)
+	clone.PipedSpec.Mask()
+	maskedCfg, err := yaml.Marshal(clone.PipedSpec)
 	if err != nil {
 		return err
 	}
@@ -641,7 +639,7 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	var (
 		req = &pipedservice.ReportPipedMetaRequest{
 			Version:        version.Get().Version,
-			Config:         string(maskedCfgYAML),
+			Config:         string(maskedCfg),
 			Repositories:   repos,
 			CloudProviders: make([]*model.Piped_CloudProvider, 0, len(cfg.CloudProviders)),
 		}
@@ -802,13 +800,4 @@ func loginToOCIRegistry(ctx context.Context, execPath, address, username, passwo
 		return fmt.Errorf("%w: %s", err, stderr.String())
 	}
 	return nil
-}
-
-func deepcopy(dst interface{}, src interface{}) error {
-	b, err := json.Marshal(src)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(b, dst)
 }

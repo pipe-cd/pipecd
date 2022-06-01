@@ -213,6 +213,22 @@ func (c *Config) Validate() error {
 	return nil
 }
 
+// Generate config clone.
+func (c *Config) Clone() (*Config, error) {
+	clone := &Config{}
+
+	b, err := json.Marshal(c)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = json.Unmarshal(b, clone); err != nil {
+		return nil, err
+	}
+
+	return clone, nil
+}
+
 // LoadFromYAML reads and decodes a yaml file to construct the Config.
 func LoadFromYAML(file string) (*Config, error) {
 	data, err := os.ReadFile(file)
