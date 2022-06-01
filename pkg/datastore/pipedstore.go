@@ -111,6 +111,7 @@ type PipedStore interface {
 	Get(ctx context.Context, id string) (*model.Piped, error)
 	List(ctx context.Context, opts ListOptions) ([]*model.Piped, error)
 	UpdateInfo(ctx context.Context, id, name, desc string) error
+	RestartPiped(ctx context.Context, id string) error
 	EnablePiped(ctx context.Context, id string) error
 	DisablePiped(ctx context.Context, id string) error
 	UpdateDesiredVersion(ctx context.Context, id, version string) error
