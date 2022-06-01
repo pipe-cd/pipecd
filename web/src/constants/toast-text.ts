@@ -8,6 +8,7 @@ export const GENERATE_API_KEY_SUCCESS = "Successfully generated API Key.";
 export const DISABLE_API_KEY_SUCCESS = "Successfully disabled API Key.";
 
 // Piped
+export const RESTART_PIPED_SUCCESS = "Successfully requested to restart Piped.";
 export const ADD_PIPED_SUCCESS = "Successfully added Piped.";
 export const UPDATE_PIPED_SUCCESS = "Successfully updated Piped.";
 export const DELETE_OLD_PIPED_KEY_SUCCESS =
