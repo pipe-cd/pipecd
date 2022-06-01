@@ -28,11 +28,11 @@ One of the outstanding features PipeCD has is [Automated deployment analysis (AD
 
 #### Enable to load Helm chart from OCI registry
 
-With the release of Helm [version v3.8.0](https://helm.sh/blog/storing-charts-in-oci/), Helm is able to store and work with charts in container registries, as an alternative to Helm repositories. PipeCD adopts that feature right the way and for now, you're able to fetch Helm chart from wherever OCI registries and use it to deploy your services. You can find more about how to use this feature in detail in this [docs](/docs/operator-manual/piped/adding-helm-chart-repository-or-registry/#adding-helm-chart-registry).
+With the release of Helm [version v3.8.0](https://helm.sh/blog/storing-charts-in-oci/), Helm is able to store and work with charts in container registries, as an alternative to Helm repositories. PipeCD adopts that feature right a way and for now, you're able to fetch Helm chart from wherever OCI registries and use it to deploy your services. You can find more about how to use this feature in detail in this [docs](/docs/operator-manual/piped/adding-helm-chart-repository-or-registry/#adding-helm-chart-registry).
 
 #### The very first touchable FileDB
 
-It’s been a while since the first time we made a [tweet](https://twitter.com/nghialv2607/status/1480712569535209472) about how PipeCD aims to remove the database as its dependencies to make the installation easier and compact, today we want to make the first achievement on the road to #nodatabase world.\
+It’s been a while since the first time we made a [tweet](https://twitter.com/nghialv2607/status/1480712569535209472) about how PipeCD aims to remove the database as its dependencies to make the installation easier and compact, today we want to make the first achievement on the road to __#nodatabase__ world.\
 For now, you can have a quick shot of using the new FileDB “database” of PipeCD with the quickstart example easily on your local machine by changing the `quickstart/control-plane-values.yaml` file contains __config.data__ section to something like below:
 
 ```yaml
