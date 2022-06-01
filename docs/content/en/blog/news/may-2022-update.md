@@ -32,7 +32,7 @@ With the release of Helm [version v3.8.0](https://helm.sh/blog/storing-charts-in
 
 #### The very first touchable FileDB
 
-It’s been a while since the first time we made a [tweet](https://twitter.com/nghialv2607/status/1480712569535209472) about how PipeCD aims to remove the database as its dependencies to make the installation more easier and compact, today we want to make the first achievement on the road to #nodatabase world.  
+It’s been a while since the first time we made a [tweet](https://twitter.com/nghialv2607/status/1480712569535209472) about how PipeCD aims to remove the database as its dependencies to make the installation easier and compact, today we want to make the first achievement on the road to #nodatabase world.\
 For now, you can have a quick shot of using the new FileDB “database” of PipeCD with the quickstart example easily on your local machine by changing the `quickstart/control-plane-values.yaml` file contains __config.data__ section to something like below:
 
 ```yaml
