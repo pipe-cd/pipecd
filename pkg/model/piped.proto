@@ -62,8 +62,6 @@ message Piped {
     repeated ApplicationGitRepository repositories = 10;
     // The latest connection status of piped.
     ConnectionStatus status = 11 [(validate.rules).enum.defined_only = true];
-    // Currently applied config.
-    string config = 12;
     // The public key/service account for encrypting the secret data.
     SecretEncryption secret_encryption = 21;
 

@@ -192,7 +192,6 @@ message ReportPipedMetaRequest {
     repeated model.Piped.CloudProvider cloud_providers = 2;
     repeated model.ApplicationGitRepository repositories = 3;
     model.Piped.SecretEncryption secret_encryption = 4;
-    string config = 5;
 }
 
 message ReportPipedMetaResponse {
