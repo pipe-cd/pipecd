@@ -159,7 +159,7 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
                 <TableCell>Artifact Versions</TableCell>
                 {!isSmallScreen && <TableCell>Running Commit</TableCell>}
                 {!isSmallScreen && <TableCell>Deployed By</TableCell>}
-                <TableCell>Deployed At</TableCell>
+                <TableCell>Updated At</TableCell>
                 <TableCell />
               </TableRow>
             </TableHead>
