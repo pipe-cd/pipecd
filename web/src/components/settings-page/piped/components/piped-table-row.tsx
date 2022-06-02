@@ -277,7 +277,12 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openConfigAlert} onClose={handleAlertClose}>
+      <Dialog
+        fullWidth
+        maxWidth="md"
+        open={openConfigAlert}
+        onClose={handleAlertClose}
+      >
         <DialogTitle>
           <CopyIconButton name="Piped config" value={`${piped.config}`} />
           Piped configuration
