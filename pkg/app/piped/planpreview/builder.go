@@ -40,7 +40,8 @@ import (
 
 const (
 	workspacePattern    = "plan-preview-builder-*"
-	defaultAppWorkerNum = 3
+	defaultWorkerAppNum = 3
+	maxWorkerNum        = 100
 )
 
 var (
@@ -167,9 +168,13 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 		appCh    = make(chan *model.Application, numApps)
 		resultCh = make(chan *model.ApplicationPlanPreviewResult, numApps)
 	)
-	numWorkers := defaultAppWorkerNum
-	if numWorkers > numApps {
+	// Optimize the number of workers.
+	numWorkers := numApps / defaultWorkerAppNum
+	if numWorkers < 1 {
 		numWorkers = numApps
+	}
+	if numWorkers > maxWorkerNum {
+		numWorkers = maxWorkerNum
 	}
 
 	// Start some workers to speed up building time.
