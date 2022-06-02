@@ -230,9 +230,7 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
                     UI_TEXT_NOT_AVAILABLE_TEXT}
                 </TableCell>
               )}
-              <TableCell>
-                {dayjs(recentlyDeployment.startedAt * 1000).fromNow()}
-              </TableCell>
+              <TableCell>{dayjs(app.updatedAt * 1000).fromNow()}</TableCell>
             </>
           ) : (
             <EmptyDeploymentData displayAllProperties={displayAllProperties} />
