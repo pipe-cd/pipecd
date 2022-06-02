@@ -231,7 +231,7 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
                 </TableCell>
               )}
               <TableCell>
-                {dayjs(recentlyDeployment.startedAt * 1000).fromNow()}
+                {dayjs(app.updatedAt * 1000).fromNow()}
               </TableCell>
             </>
           ) : (
