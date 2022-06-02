@@ -66,7 +66,7 @@ And many other UI improvements are updated to the PipeCD web console, let's chec
 
 ### We're opening more and more
 
-PipeCD is an OSS project! And we want to make not just the source code open, but the whole deployment process should be opened as well in order to get more contribution and support from the open community. We moved almost all of our CI flow to the open Github Actions platform, and as the result, everyone who makes contributions to our PipeCD repository can easily follows/accesses the CI stages via Github Actions UI. At the time I wrote this blog, PipeCD CI flow had been opened and can be accessed via this [link](https://github.com/pipe-cd/pipecd/actions).
+PipeCD is an OSS project! And we want to make not just the source code open, but the whole deployment process should be opened as well in order to get more contribution and support from the open community. We moved almost all of our CI flow to the open Github Actions platform, and as the result, everyone who makes contributions to our PipeCD repository can easily follow/access the CI stages via Github Actions UI. At the time I wrote this blog, PipeCD CI flow had been opened and can be accessed via this [link](https://github.com/pipe-cd/pipecd/actions).
 
 ### What are next
 ---
