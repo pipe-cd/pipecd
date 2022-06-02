@@ -255,6 +255,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
             <MenuItem
               key="piped-menu-open-piped-config"
               onClick={handleOpenPipedConfig}
+              disabled={piped.config.length === 0}
             >
               {UI_TEXT_VIEW_THE_CONFIGURATION}
             </MenuItem>,
