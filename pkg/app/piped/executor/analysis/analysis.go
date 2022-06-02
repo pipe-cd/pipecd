@@ -137,11 +137,13 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 			e.LogPersister.Errorf("Failed to generate metrics provider: %v", err)
 			return model.StageStatus_STAGE_FAILURE
 		}
+
 		id := fmt.Sprintf("metrics-%d", i)
 		args := e.buildAppArgs(options.Metrics[i].Template.AppArgs)
 		analyzer := newMetricsAnalyzer(id, *cfg, e.startTime, provider, e.AnalysisResultStore, args, e.Logger, e.LogPersister)
+
 		eg.Go(func() error {
-			e.LogPersister.Infof("[%s] Start metrics analyzer. Every %s it runs this query: %q", analyzer.id, cfg.Interval.Duration(), cfg.Query)
+			e.LogPersister.Infof("[%s] Start metrics analyzer every %s with query template: %q", analyzer.id, cfg.Interval.Duration(), cfg.Query)
 			return analyzer.run(ctxWithTimeout)
 		})
 	}

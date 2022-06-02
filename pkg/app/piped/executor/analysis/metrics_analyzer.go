@@ -132,6 +132,8 @@ func (a *metricsAnalyzer) analyzeWithThreshold(ctx context.Context) (bool, error
 		From: now.Add(-a.cfg.Interval.Duration()),
 		To:   now,
 	}
+
+	a.logPersister.Infof("[%s] Run query: %q, in range: %s", a.cfg.Query, queryRange)
 	points, err := a.provider.QueryPoints(ctx, a.cfg.Query, queryRange)
 	if err != nil {
 		return false, fmt.Errorf("failed to run query: %w", err)
@@ -168,6 +170,8 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (expected, fi
 		From: now.Add(-a.cfg.Interval.Duration()),
 		To:   now,
 	}
+
+	a.logPersister.Infof("[%s] Run query: %q, in range: %s", a.cfg.Query, queryRange)
 	points, err := a.provider.QueryPoints(ctx, a.cfg.Query, queryRange)
 	if err != nil {
 		return false, false, fmt.Errorf("failed to run query: %w: performed query: %q", err, a.cfg.Query)
@@ -194,6 +198,8 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (expected, fi
 		From: prevFrom,
 		To:   prevTo,
 	}
+
+	a.logPersister.Infof("[%s] Run query: %q, in range: %s", a.cfg.Query, prevQueryRange)
 	prevPoints, err := a.provider.QueryPoints(ctx, a.cfg.Query, prevQueryRange)
 	if err != nil {
 		return false, false, fmt.Errorf("failed to run query to fetch metrics for the previous deployment: %w: performed query: %q", err, a.cfg.Query)
@@ -246,6 +252,7 @@ func (a *metricsAnalyzer) analyzeWithCanaryBaseline(ctx context.Context) (bool, 
 	}
 
 	// Fetch data points from Canary.
+	a.logPersister.Infof("[%s] Run query: %q, in range: %s", canaryQuery, queryRange)
 	canaryPoints, err := a.provider.QueryPoints(ctx, canaryQuery, queryRange)
 	if err != nil {
 		return false, fmt.Errorf("failed to run query to fetch metrics for the Canary variant: %w: query range: %s: performed query: %q", err, &queryRange, canaryQuery)
@@ -258,6 +265,7 @@ func (a *metricsAnalyzer) analyzeWithCanaryBaseline(ctx context.Context) (bool, 
 	}
 
 	// Fetch data points from Baseline.
+	a.logPersister.Infof("[%s] Run query: %q, in range: %s", baselineQuery, queryRange)
 	baselinePoints, err := a.provider.QueryPoints(ctx, baselineQuery, queryRange)
 	if err != nil {
 		return false, fmt.Errorf("failed to run query to fetch metrics for the Baseline variant: %w: query range: %s: performed query: %q", err, &queryRange, baselineQuery)
@@ -311,6 +319,7 @@ func (a *metricsAnalyzer) analyzeWithCanaryPrimary(ctx context.Context) (bool, e
 		return false, fmt.Errorf("failed to render query template for Primary: %w", err)
 	}
 
+	a.logPersister.Infof("[%s] Run query: %q, in range: %s", canaryQuery, queryRange)
 	canaryPoints, err := a.provider.QueryPoints(ctx, canaryQuery, queryRange)
 	if err != nil {
 		return false, fmt.Errorf("failed to run query to fetch metrics for the Canary variant: %w: performed query: %q", err, canaryQuery)
@@ -321,6 +330,8 @@ func (a *metricsAnalyzer) analyzeWithCanaryPrimary(ctx context.Context) (bool, e
 	for i := range canaryPoints {
 		canaryValues = append(canaryValues, canaryPoints[i].Value)
 	}
+
+	a.logPersister.Infof("[%s] Run query: %q, in range: %s", primaryQuery, queryRange)
 	primaryPoints, err := a.provider.QueryPoints(ctx, primaryQuery, queryRange)
 	if err != nil {
 		return false, fmt.Errorf("failed to run query to fetch metrics for the Primary variant: %w: performed query: %q", err, primaryQuery)
