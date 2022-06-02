@@ -33,6 +33,7 @@
     "@types/react-dom": "^17.0.3",
     "@types/react-redux": "^7.1.9",
     "@types/react-router-dom": "^5.1.5",
+    "@types/react-syntax-highlighter": "^15.5.1",
     "@types/redux-mock-store": "^1.0.2",
     "@typescript-eslint/eslint-plugin": "^4.26.1",
     "@typescript-eslint/parser": "^4.26.1",
@@ -95,6 +96,7 @@
     "react-markdown": "^6.0.2",
     "react-redux": "^7.2.0",
     "react-router-dom": "^5.2.0",
+    "react-syntax-highlighter": "^15.5.0",
     "redux": "^4.0.5",
     "yup": "^0.32.9"
   }

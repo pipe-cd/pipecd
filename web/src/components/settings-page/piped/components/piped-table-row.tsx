@@ -19,6 +19,8 @@ import {
 import { MoreVert as MoreVertIcon } from "@material-ui/icons";
 import clsx from "clsx";
 import dayjs from "dayjs";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import * as React from "react";
 import { FC, memo, useCallback, useState } from "react";
 import { CopyIconButton } from "~/components/copy-icon-button";
@@ -288,11 +290,9 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
           Piped configuration
         </DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            <pre>
-              <code>{piped.config}</code>
-            </pre>
-          </DialogContentText>
+          <SyntaxHighlighter language="yaml" style={coy}>
+            {piped.config}
+          </SyntaxHighlighter>
         </DialogContent>
       </Dialog>
     </>
