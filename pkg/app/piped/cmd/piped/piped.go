@@ -36,7 +36,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 	"google.golang.org/grpc/credentials"
-	"sigs.k8s.io/yaml"
 
 	"github.com/pipe-cd/pipecd/pkg/admin"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/analysisresultstore"
@@ -625,25 +624,14 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		})
 	}
 
-	cloneCfg, err := cfg.Clone()
-	if err != nil {
-		return err
-	}
-
-	cloneCfg.Mask()
-	maskedCfg, err := yaml.Marshal(cloneCfg)
-	if err != nil {
-		return err
-	}
-
 	var (
 		req = &pipedservice.ReportPipedMetaRequest{
 			Version:        version.Get().Version,
-			Config:         string(maskedCfg),
 			Repositories:   repos,
 			CloudProviders: make([]*model.Piped_CloudProvider, 0, len(cfg.CloudProviders)),
 		}
 		retry = pipedservice.NewRetry(5)
+		err   error
 	)
 
 	// Configure the list of specified cloud providers.

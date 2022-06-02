@@ -165,7 +165,6 @@ proto.model.Piped.toObject = function(includeInstance, msg) {
     repositoriesList: jspb.Message.toObjectList(msg.getRepositoriesList(),
     pkg_model_common_pb.ApplicationGitRepository.toObject, includeInstance),
     status: jspb.Message.getFieldWithDefault(msg, 11, 0),
-    config: jspb.Message.getFieldWithDefault(msg, 12, ""),
     secretEncryption: (f = msg.getSecretEncryption()) && proto.model.Piped.SecretEncryption.toObject(includeInstance, f),
     keysList: jspb.Message.toObjectList(msg.getKeysList(),
     proto.model.PipedKey.toObject, includeInstance),
@@ -250,10 +249,6 @@ proto.model.Piped.deserializeBinaryFromReader = function(msg, reader) {
     case 11:
       var value = /** @type {!proto.model.Piped.ConnectionStatus} */ (reader.readEnum());
       msg.setStatus(value);
-      break;
-    case 12:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setConfig(value);
       break;
     case 21:
       var value = new proto.model.Piped.SecretEncryption;
@@ -379,13 +374,6 @@ proto.model.Piped.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0.0) {
     writer.writeEnum(
       11,
-      f
-    );
-  }
-  f = message.getConfig();
-  if (f.length > 0) {
-    writer.writeString(
-      12,
       f
     );
   }
@@ -1012,24 +1000,6 @@ proto.model.Piped.prototype.getStatus = function() {
  */
 proto.model.Piped.prototype.setStatus = function(value) {
   return jspb.Message.setProto3EnumField(this, 11, value);
-};
-
-
-/**
- * optional string config = 12;
- * @return {string}
- */
-proto.model.Piped.prototype.getConfig = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 12, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.model.Piped} returns this
- */
-proto.model.Piped.prototype.setConfig = function(value) {
-  return jspb.Message.setProto3StringField(this, 12, value);
 };
 
 

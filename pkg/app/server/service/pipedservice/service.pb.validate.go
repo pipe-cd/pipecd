@@ -368,8 +368,6 @@ func (m *ReportPipedMetaRequest) validate(all bool) error {
 		}
 	}
 
-	// no validation rules for Config
-
 	if len(errors) > 0 {
 		return ReportPipedMetaRequestMultiError(errors)
 	}

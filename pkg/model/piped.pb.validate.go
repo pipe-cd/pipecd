@@ -176,8 +176,6 @@ func (m *Piped) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for Config
-
 	if all {
 		switch v := interface{}(m.GetSecretEncryption()).(type) {
 		case interface{ ValidateAll() error }:
