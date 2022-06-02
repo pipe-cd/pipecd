@@ -42,41 +42,41 @@ type PipedSpec struct {
 	// The unique identifier generated for this piped.
 	PipedID string `json:"pipedID"`
 	// The path to the file containing the generated Key string for this piped.
-	PipedKeyFile string `json:"pipedKeyFile"`
+	PipedKeyFile string `json:"pipedKeyFile,omitempty"`
 	// Base64 encoded string of Piped key.
-	PipedKeyData string `json:"pipedKeyData"`
+	PipedKeyData string `json:"pipedKeyData,omitempty"`
 	// The name of this piped.
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	// The address used to connect to the control-plane's API.
 	APIAddress string `json:"apiAddress"`
 	// The address to the control-plane's Web.
-	WebAddress string `json:"webAddress"`
+	WebAddress string `json:"webAddress,omitempty"`
 	// How often to check whether an application should be synced.
 	// Default is 1m.
-	SyncInterval Duration `json:"syncInterval" default:"1m"`
+	SyncInterval Duration `json:"syncInterval,omitempty" default:"1m"`
 	// How often to check whether an application configuration file should be synced.
 	// Default is 1m.
-	AppConfigSyncInterval Duration `json:"appConfigSyncInterval" default:"1m"`
+	AppConfigSyncInterval Duration `json:"appConfigSyncInterval,omitempty" default:"1m"`
 	// Git configuration needed for git commands.
-	Git PipedGit `json:"git"`
+	Git PipedGit `json:"git,omitempty"`
 	// List of git repositories this piped will handle.
-	Repositories []PipedRepository `json:"repositories"`
+	Repositories []PipedRepository `json:"repositories,omitempty"`
 	// List of helm chart repositories that should be added while starting up.
-	ChartRepositories []HelmChartRepository `json:"chartRepositories"`
+	ChartRepositories []HelmChartRepository `json:"chartRepositories,omitempty"`
 	// List of helm chart registries that should be logged in while starting up.
-	ChartRegistries []HelmChartRegistry `json:"chartRegistries"`
+	ChartRegistries []HelmChartRegistry `json:"chartRegistries,omitempty"`
 	// List of cloud providers can be used by this piped.
-	CloudProviders []PipedCloudProvider `json:"cloudProviders"`
+	CloudProviders []PipedCloudProvider `json:"cloudProviders,omitempty"`
 	// List of analysis providers can be used by this piped.
-	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders"`
+	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders,omitempty"`
 	// Sending notification to Slack, Webhook…
-	Notifications Notifications `json:"notifications"`
+	Notifications Notifications `json:"notifications,omitempty"`
 	// What secret management method should be used.
-	SecretManagement *SecretManagement `json:"secretManagement"`
+	SecretManagement *SecretManagement `json:"secretManagement,omitempty"`
 	// Optional settings for event watcher.
-	EventWatcher PipedEventWatcher `json:"eventWatcher"`
+	EventWatcher PipedEventWatcher `json:"eventWatcher,omitempty"`
 	// List of labels to filter all applications this piped will handle.
-	AppSelector map[string]string `json:"appSelector"`
+	AppSelector map[string]string `json:"appSelector,omitempty"`
 }
 
 // Validate validates configured data of all fields.
@@ -257,26 +257,26 @@ func (s *PipedSpec) LoadPipedKey() ([]byte, error) {
 type PipedGit struct {
 	// The username that will be configured for `git` user.
 	// Default is "piped".
-	Username string `json:"username"`
+	Username string `json:"username,omitempty"`
 	// The email that will be configured for `git` user.
 	// Default is "pipecd.dev@gmail.com".
-	Email string `json:"email"`
+	Email string `json:"email,omitempty"`
 	// Where to write ssh config file.
 	// Default is "$HOME/.ssh/config".
-	SSHConfigFilePath string `json:"sshConfigFilePath"`
+	SSHConfigFilePath string `json:"sshConfigFilePath,omitempty"`
 	// The host name.
 	// e.g. github.com, gitlab.com
 	// Default is "github.com".
-	Host string `json:"host"`
+	Host string `json:"host,omitempty"`
 	// The hostname or IP address of the remote git server.
 	// e.g. github.com, gitlab.com
 	// Default is the same value with Host.
-	HostName string `json:"hostName"`
+	HostName string `json:"hostName,omitempty"`
 	// The path to the private ssh key file.
 	// This will be used to clone the source code of the specified git repositories.
-	SSHKeyFile string `json:"sshKeyFile"`
+	SSHKeyFile string `json:"sshKeyFile,omitempty"`
 	// Base64 encoded string of ssh-key.
-	SSHKeyData string `json:"sshKeyData"`
+	SSHKeyData string `json:"sshKeyData,omitempty"`
 }
 
 func (g PipedGit) ShouldConfigureSSHConfig() bool {
@@ -333,22 +333,22 @@ type HelmChartRepository struct {
 
 	// Configuration for HTTP type.
 	// The name of the Helm chart repository.
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	// The address to the Helm chart repository.
-	Address string `json:"address"`
+	Address string `json:"address,omitempty"`
 	// Username used for the repository backed by HTTP basic authentication.
-	Username string `json:"username"`
+	Username string `json:"username,omitempty"`
 	// Password used for the repository backed by HTTP basic authentication.
-	Password string `json:"password"`
+	Password string `json:"password,omitempty"`
 	// Whether to skip TLS certificate checks for the repository or not.
 	Insecure bool `json:"insecure"`
 
 	// Configuration for GIT type.
 	// Remote address of the Git repository used to clone Helm charts.
 	// e.g. git@github.com:org/repo.git
-	GitRemote string `json:"gitRemote"`
+	GitRemote string `json:"gitRemote,omitempty"`
 	// The path to the private ssh key file used while cloning Helm charts from above Git repository.
-	SSHKeyFile string `json:"sshKeyFile"`
+	SSHKeyFile string `json:"sshKeyFile,omitempty"`
 }
 
 func (r *HelmChartRepository) IsHTTPRepository() bool {
@@ -423,9 +423,9 @@ type HelmChartRegistry struct {
 	// The address to the Helm chart registry.
 	Address string `json:"address"`
 	// Username used for the registry authentication.
-	Username string `json:"username"`
+	Username string `json:"username,omitempty"`
 	// Password used for the registry authentication.
-	Password string `json:"password"`
+	Password string `json:"password,omitempty"`
 }
 
 func (r *HelmChartRegistry) IsOCI() bool {
@@ -450,14 +450,14 @@ func (r *HelmChartRegistry) Mask() {
 }
 
 type PipedCloudProvider struct {
-	Name string                `json:"name"`
-	Type model.ApplicationKind `json:"type,string"`
+	Name string                `json:"name,omitempty"`
+	Type model.ApplicationKind `json:"type,string,omitempty"`
 
-	KubernetesConfig *CloudProviderKubernetesConfig
-	TerraformConfig  *CloudProviderTerraformConfig
-	CloudRunConfig   *CloudProviderCloudRunConfig
-	LambdaConfig     *CloudProviderLambdaConfig
-	ECSConfig        *CloudProviderECSConfig
+	KubernetesConfig *CloudProviderKubernetesConfig `json:"kubernetesConfig,omitempty"`
+	TerraformConfig  *CloudProviderTerraformConfig  `json:"terraformConfig,omitempty"`
+	CloudRunConfig   *CloudProviderCloudRunConfig   `json:"cloudRunConfig,omitempty"`
+	LambdaConfig     *CloudProviderLambdaConfig     `json:"lambdaConfig,omitempty"`
+	ECSConfig        *CloudProviderECSConfig        `json:"ecsConfig,omitempty"`
 }
 
 type genericPipedCloudProvider struct {
@@ -522,30 +522,30 @@ func (p *PipedCloudProvider) Mask() {
 type CloudProviderKubernetesConfig struct {
 	// The master URL of the kubernetes cluster.
 	// Empty means in-cluster.
-	MasterURL string `json:"masterURL"`
+	MasterURL string `json:"masterURL,omitempty"`
 	// The path to the kubeconfig file.
 	// Empty means in-cluster.
-	KubeConfigPath string `json:"kubeConfigPath"`
+	KubeConfigPath string `json:"kubeConfigPath,omitempty"`
 	// Configuration for application resource informer.
-	AppStateInformer KubernetesAppStateInformer `json:"appStateInformer"`
+	AppStateInformer KubernetesAppStateInformer `json:"appStateInformer,omitempty"`
 }
 
 type KubernetesAppStateInformer struct {
 	// Only watches the specified namespace.
 	// Empty means watching all namespaces.
-	Namespace string `json:"namespace"`
+	Namespace string `json:"namespace,omitempty"`
 	// List of resources that should be added to the watching targets.
-	IncludeResources []KubernetesResourceMatcher `json:"includeResources"`
+	IncludeResources []KubernetesResourceMatcher `json:"includeResources,omitempty"`
 	// List of resources that should be ignored from the watching targets.
-	ExcludeResources []KubernetesResourceMatcher `json:"excludeResources"`
+	ExcludeResources []KubernetesResourceMatcher `json:"excludeResources,omitempty"`
 }
 
 type KubernetesResourceMatcher struct {
 	// The APIVersion of the kubernetes resource.
-	APIVersion string `json:"apiVersion"`
+	APIVersion string `json:"apiVersion,omitempty"`
 	// The kind name of the kubernetes resource.
 	// Empty means all kinds are matching.
-	Kind string `json:"kind"`
+	Kind string `json:"kind,omitempty"`
 }
 
 type CloudProviderTerraformConfig struct {
@@ -554,7 +554,7 @@ type CloudProviderTerraformConfig struct {
 	// "image_id=ami-abc123"
 	// 'image_id_list=["ami-abc123","ami-def456"]'
 	// 'image_id_map={"us-east-1":"ami-abc123","us-east-2":"ami-def456"}'
-	Vars []string `json:"vars"`
+	Vars []string `json:"vars,omitempty"`
 }
 
 type CloudProviderCloudRunConfig struct {
@@ -563,7 +563,7 @@ type CloudProviderCloudRunConfig struct {
 	// The region of running CloudRun service.
 	Region string `json:"region"`
 	// The path to the service account file for accessing CloudRun service.
-	CredentialsFile string `json:"credentialsFile"`
+	CredentialsFile string `json:"credentialsFile,omitempty"`
 }
 
 func (c *CloudProviderCloudRunConfig) Mask() {
@@ -578,15 +578,15 @@ type CloudProviderLambdaConfig struct {
 	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
 	Region string `json:"region"`
 	// Path to the shared credentials file.
-	CredentialsFile string `json:"credentialsFile"`
+	CredentialsFile string `json:"credentialsFile,omitempty"`
 	// The IAM role arn to use when assuming an role.
-	RoleARN string `json:"roleARN"`
+	RoleARN string `json:"roleARN,omitempty"`
 	// Path to the WebIdentity token the SDK should use to assume a role with.
-	TokenFile string `json:"tokenFile"`
+	TokenFile string `json:"tokenFile,omitempty"`
 	// AWS Profile to extract credentials from the shared credentials file.
 	// If empty, the environment variable "AWS_PROFILE" is used.
 	// "default" is populated if the environment variable is also not set.
-	Profile string `json:"profile"`
+	Profile string `json:"profile,omitempty"`
 }
 
 func (c *CloudProviderLambdaConfig) Mask() {
@@ -607,15 +607,15 @@ type CloudProviderECSConfig struct {
 	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
 	Region string `json:"region"`
 	// Path to the shared credentials file.
-	CredentialsFile string `json:"credentialsFile"`
+	CredentialsFile string `json:"credentialsFile,omitempty"`
 	// The IAM role arn to use when assuming an role.
-	RoleARN string `json:"roleARN"`
+	RoleARN string `json:"roleARN,omitempty"`
 	// Path to the WebIdentity token the SDK should use to assume a role with.
-	TokenFile string `json:"tokenFile"`
+	TokenFile string `json:"tokenFile,omitempty"`
 	// AWS Profile to extract credentials from the shared credentials file.
 	// If empty, the environment variable "AWS_PROFILE" is used.
 	// "default" is populated if the environment variable is also not set.
-	Profile string `json:"profile"`
+	Profile string `json:"profile,omitempty"`
 }
 
 func (c *CloudProviderECSConfig) Mask() {
@@ -634,9 +634,9 @@ type PipedAnalysisProvider struct {
 	Name string                     `json:"name"`
 	Type model.AnalysisProviderType `json:"type"`
 
-	PrometheusConfig  *AnalysisProviderPrometheusConfig  `json:"prometheus"`
-	DatadogConfig     *AnalysisProviderDatadogConfig     `json:"datadog"`
-	StackdriverConfig *AnalysisProviderStackdriverConfig `json:"stackdriver"`
+	PrometheusConfig  *AnalysisProviderPrometheusConfig  `json:"prometheus,omitempty"`
+	DatadogConfig     *AnalysisProviderDatadogConfig     `json:"datadog,omitempty"`
+	StackdriverConfig *AnalysisProviderStackdriverConfig `json:"stackdriver,omitempty"`
 }
 
 func (p *PipedAnalysisProvider) Mask() {
@@ -704,9 +704,9 @@ func (p *PipedAnalysisProvider) Validate() error {
 type AnalysisProviderPrometheusConfig struct {
 	Address string `json:"address"`
 	// The path to the username file.
-	UsernameFile string `json:"usernameFile"`
+	UsernameFile string `json:"usernameFile,omitempty"`
 	// The path to the password file.
-	PasswordFile string `json:"passwordFile"`
+	PasswordFile string `json:"passwordFile,omitempty"`
 }
 
 func (a *AnalysisProviderPrometheusConfig) Validate() error {
@@ -726,7 +726,7 @@ type AnalysisProviderDatadogConfig struct {
 	// The address of Datadog API server.
 	// Only "datadoghq.com", "us3.datadoghq.com", "datadoghq.eu", "ddog-gov.com" are available.
 	// Defaults to "datadoghq.com"
-	Address string `json:"address"`
+	Address string `json:"address,omitempty"`
 	// Required: The path to the api key file.
 	APIKeyFile string `json:"apiKeyFile"`
 	// Required: The path to the application key file.
@@ -769,9 +769,9 @@ func (a *AnalysisProviderStackdriverConfig) Validate() error {
 
 type Notifications struct {
 	// List of notification routes.
-	Routes []NotificationRoute `json:"routes"`
+	Routes []NotificationRoute `json:"routes,omitempty"`
 	// List of notification receivers.
-	Receivers []NotificationReceiver `json:"receivers"`
+	Receivers []NotificationReceiver `json:"receivers,omitempty"`
 }
 
 func (n *Notifications) Mask() {
@@ -783,23 +783,23 @@ func (n *Notifications) Mask() {
 type NotificationRoute struct {
 	Name         string            `json:"name"`
 	Receiver     string            `json:"receiver"`
-	Events       []string          `json:"events"`
-	IgnoreEvents []string          `json:"ignoreEvents"`
-	Groups       []string          `json:"groups"`
-	IgnoreGroups []string          `json:"ignoreGroups"`
-	Apps         []string          `json:"apps"`
-	IgnoreApps   []string          `json:"ignoreApps"`
-	Labels       map[string]string `json:"labels"`
-	IgnoreLabels map[string]string `json:"ignoreLabels"`
+	Events       []string          `json:"events,omitempty"`
+	IgnoreEvents []string          `json:"ignoreEvents,omitempty"`
+	Groups       []string          `json:"groups,omitempty"`
+	IgnoreGroups []string          `json:"ignoreGroups,omitempty"`
+	Apps         []string          `json:"apps,omitempty"`
+	IgnoreApps   []string          `json:"ignoreApps,omitempty"`
+	Labels       map[string]string `json:"labels,omitempty"`
+	IgnoreLabels map[string]string `json:"ignoreLabels,omitempty"`
 	// Deprecated: Should use labels instead.
-	Envs       []string `json:"envs"`
-	IgnoreEnvs []string `json:"ignoreEnvs"`
+	Envs       []string `json:"envs,omitempty"`
+	IgnoreEnvs []string `json:"ignoreEnvs,omitempty"`
 }
 
 type NotificationReceiver struct {
 	Name    string                       `json:"name"`
-	Slack   *NotificationReceiverSlack   `json:"slack"`
-	Webhook *NotificationReceiverWebhook `json:"webhook"`
+	Slack   *NotificationReceiverSlack   `json:"slack,omitempty"`
+	Webhook *NotificationReceiverWebhook `json:"webhook,omitempty"`
 }
 
 func (n *NotificationReceiver) Mask() {
@@ -823,9 +823,9 @@ func (n *NotificationReceiverSlack) Mask() {
 
 type NotificationReceiverWebhook struct {
 	URL                string `json:"url"`
-	SignatureKey       string `json:"signatureKey" default:"PipeCD-Signature"`
-	SignatureValue     string `json:"signatureValue"`
-	SignatureValueFile string `json:"signatureValueFile"`
+	SignatureKey       string `json:"signatureKey,omitempty" default:"PipeCD-Signature"`
+	SignatureValue     string `json:"signatureValue,omitempty"`
+	SignatureValueFile string `json:"signatureValueFile,omitempty"`
 }
 
 func (n *NotificationReceiverWebhook) Mask() {
@@ -865,8 +865,8 @@ type SecretManagement struct {
 	// Available values: KEY_PAIR, GCP_KMS, AWS_KMS
 	Type model.SecretManagementType `json:"type"`
 
-	KeyPair *SecretManagementKeyPair
-	GCPKMS  *SecretManagementGCPKMS
+	KeyPair *SecretManagementKeyPair `json:"keyPair,omitempty"`
+	GCPKMS  *SecretManagementGCPKMS  `json:"gcpkms,omitempty"`
 }
 
 func (s *SecretManagement) Mask() {
@@ -893,11 +893,11 @@ type SecretManagementKeyPair struct {
 	// The path to the private RSA key file.
 	PrivateKeyFile string `json:"privateKeyFile"`
 	// Base64 encoded string of private key.
-	PrivateKeyData string `json:"privateKeyData"`
+	PrivateKeyData string `json:"privateKeyData,omitempty"`
 	// The path to the public RSA key file.
 	PublicKeyFile string `json:"publicKeyFile"`
 	// Base64 encoded string of public key.
-	PublicKeyData string `json:"publicKeyData"`
+	PublicKeyData string `json:"publicKeyData,omitempty"`
 }
 
 func (s *SecretManagementKeyPair) Validate() error {
@@ -1010,10 +1010,10 @@ func (s *SecretManagement) UnmarshalJSON(data []byte) error {
 
 type PipedEventWatcher struct {
 	// Interval to fetch the latest event and compare it with one defined in EventWatcher config files
-	CheckInterval Duration `json:"checkInterval"`
+	CheckInterval Duration `json:"checkInterval,omitempty"`
 	// The configuration list of git repositories to be observed.
 	// Only the repositories in this list will be observed by Piped.
-	GitRepos []PipedEventWatcherGitRepo `json:"gitRepos"`
+	GitRepos []PipedEventWatcherGitRepo `json:"gitRepos,omitempty"`
 }
 
 func (p *PipedEventWatcher) Validate() error {
@@ -1035,15 +1035,15 @@ func (p *PipedEventWatcher) Validate() error {
 type PipedEventWatcherGitRepo struct {
 	// Id of the git repository. This must be unique within
 	// the repos' elements.
-	RepoID string `json:"repoId"`
+	RepoID string `json:"repoId,omitempty"`
 	// The commit message used to push after replacing values.
 	// Default message is used if not given.
-	CommitMessage string `json:"commitMessage"`
+	CommitMessage string `json:"commitMessage,omitempty"`
 	// The file path patterns to be included.
 	// Patterns can be used like "foo/*.yaml".
-	Includes []string `json:"includes"`
+	Includes []string `json:"includes,omitempty"`
 	// The file path patterns to be excluded.
 	// Patterns can be used like "foo/*.yaml".
 	// This is prioritized if both includes and this one are given.
-	Excludes []string `json:"excludes"`
+	Excludes []string `json:"excludes,omitempty"`
 }
