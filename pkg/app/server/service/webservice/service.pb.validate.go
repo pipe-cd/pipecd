@@ -2208,6 +2208,8 @@ func (m *RestartPipedResponse) validate(all bool) error {
 
 	var errors []error
 
+	// no validation rules for CommandId
+
 	if len(errors) > 0 {
 		return RestartPipedResponseMultiError(errors)
 	}

@@ -5171,7 +5171,7 @@ proto.grpc.service.webservice.RestartPipedResponse.prototype.toObject = function
  */
 proto.grpc.service.webservice.RestartPipedResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-
+    commandId: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -5208,6 +5208,10 @@ proto.grpc.service.webservice.RestartPipedResponse.deserializeBinaryFromReader =
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCommandId(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -5237,6 +5241,31 @@ proto.grpc.service.webservice.RestartPipedResponse.prototype.serializeBinary = f
  */
 proto.grpc.service.webservice.RestartPipedResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getCommandId();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string command_id = 1;
+ * @return {string}
+ */
+proto.grpc.service.webservice.RestartPipedResponse.prototype.getCommandId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.grpc.service.webservice.RestartPipedResponse} returns this
+ */
+proto.grpc.service.webservice.RestartPipedResponse.prototype.setCommandId = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 

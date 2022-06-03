@@ -276,6 +276,7 @@ message RestartPipedRequest {
 }
 
 message RestartPipedResponse {
+    string command_id = 1;
 }
 
 message AddApplicationRequest {

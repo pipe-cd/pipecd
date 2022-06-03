@@ -394,6 +394,9 @@ export namespace RestartPipedRequest {
 }
 
 export class RestartPipedResponse extends jspb.Message {
+  getCommandId(): string;
+  setCommandId(value: string): RestartPipedResponse;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): RestartPipedResponse.AsObject;
   static toObject(includeInstance: boolean, msg: RestartPipedResponse): RestartPipedResponse.AsObject;
@@ -404,6 +407,7 @@ export class RestartPipedResponse extends jspb.Message {
 
 export namespace RestartPipedResponse {
   export type AsObject = {
+    commandId: string,
   }
 }
 
