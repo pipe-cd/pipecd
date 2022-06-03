@@ -19,6 +19,8 @@ import {
 import { MoreVert as MoreVertIcon } from "@material-ui/icons";
 import clsx from "clsx";
 import dayjs from "dayjs";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { coy } from "react-syntax-highlighter/dist/esm/styles/prism";
 import * as React from "react";
 import { FC, memo, useCallback, useState } from "react";
 import { CopyIconButton } from "~/components/copy-icon-button";
@@ -253,6 +255,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
             <MenuItem
               key="piped-menu-open-piped-config"
               onClick={handleOpenPipedConfig}
+              disabled={piped.config.length === 0}
             >
               {UI_TEXT_VIEW_THE_CONFIGURATION}
             </MenuItem>,
@@ -277,17 +280,20 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openConfigAlert} onClose={handleAlertClose}>
+      <Dialog
+        fullWidth
+        maxWidth="md"
+        open={openConfigAlert}
+        onClose={handleAlertClose}
+      >
         <DialogTitle>
           <CopyIconButton name="Piped config" value={`${piped.config}`} />
           Piped configuration
         </DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            <pre>
-              <code>{piped.config}</code>
-            </pre>
-          </DialogContentText>
+          <SyntaxHighlighter language="yaml" style={coy}>
+            {piped.config}
+          </SyntaxHighlighter>
         </DialogContent>
       </Dialog>
     </>
