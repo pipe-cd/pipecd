@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# get version from the release/RELEASE file and create the version docs string
+# get version from the RELEASE file and create the version docs string
 # for example, with the release file content:
 # version: v0.21.0
 # the version docs string will be v0.21.x
