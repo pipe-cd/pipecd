@@ -70,11 +70,11 @@ type PipedSpec struct {
 	// List of analysis providers can be used by this piped.
 	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders,omitempty"`
 	// Sending notification to Slack, Webhook…
-	Notifications Notifications `json:"notifications,omitempty"`
+	Notifications Notifications `json:"notifications"`
 	// What secret management method should be used.
 	SecretManagement *SecretManagement `json:"secretManagement,omitempty"`
 	// Optional settings for event watcher.
-	EventWatcher PipedEventWatcher `json:"eventWatcher,omitempty"`
+	EventWatcher PipedEventWatcher `json:"eventWatcher"`
 	// List of labels to filter all applications this piped will handle.
 	AppSelector map[string]string `json:"appSelector,omitempty"`
 }
