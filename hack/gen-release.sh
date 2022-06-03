@@ -24,8 +24,8 @@ done
 echo "Prepare release for version $1"
 
 # Update release file
-RELEASE_FILE=release/RELEASE
-echo -e "version: $1" > $RELEASE_FILE
+RELEASE_FILE=RELEASE
+sed -i '' "s/tag:.*/tag: $1/" $RELEASE_FILE
 
 CONTENT_DIR=docs/content/en
 # Render release note template
