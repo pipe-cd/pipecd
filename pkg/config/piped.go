@@ -527,7 +527,7 @@ type CloudProviderKubernetesConfig struct {
 	// Empty means in-cluster.
 	KubeConfigPath string `json:"kubeConfigPath,omitempty"`
 	// Configuration for application resource informer.
-	AppStateInformer KubernetesAppStateInformer `json:"appStateInformer,omitempty"`
+	AppStateInformer KubernetesAppStateInformer `json:"appStateInformer"`
 }
 
 type KubernetesAppStateInformer struct {
