@@ -19,6 +19,8 @@ import {
 import { MoreVert as MoreVertIcon } from "@material-ui/icons";
 import clsx from "clsx";
 import dayjs from "dayjs";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { coy } from "react-syntax-highlighter/dist/esm/styles/prism";
 import * as React from "react";
 import { FC, memo, useCallback, useState } from "react";
 import { CopyIconButton } from "~/components/copy-icon-button";
@@ -27,6 +29,7 @@ import { DELETE_OLD_PIPED_KEY_SUCCESS } from "~/constants/toast-text";
 import {
   UI_TEXT_ADD_NEW_KEY,
   UI_TEXT_DELETE_OLD_KEY,
+  UI_TEXT_VIEW_THE_CONFIGURATION,
   UI_TEXT_DISABLE,
   UI_TEXT_EDIT,
   UI_TEXT_ENABLE,
@@ -84,7 +87,7 @@ const ITEM_HEIGHT = 48;
 const menuStyle = {
   style: {
     maxHeight: ITEM_HEIGHT * 4.5,
-    width: "20ch",
+    width: "25ch",
   },
 };
 
@@ -100,6 +103,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const hasOldKey = piped ? piped.keysList.length > 1 : false;
   const [openOldKeyAlert, setOpenOldKeyAlert] = useState(false);
+  const [openConfigAlert, setOpenConfigAlert] = useState(false);
 
   const handleMenuOpen = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -114,6 +118,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
 
   const handleAlertClose = useCallback(() => {
     setOpenOldKeyAlert(false);
+    setOpenConfigAlert(false);
   }, []);
 
   const handleEdit = useCallback(() => {
@@ -142,6 +147,11 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
       );
     });
   }, [pipedId, dispatch]);
+
+  const handleOpenPipedConfig = useCallback(() => {
+    setAnchorEl(null);
+    setOpenConfigAlert(true);
+  }, []);
 
   const handleEnable = useCallback(() => {
     setAnchorEl(null);
@@ -242,6 +252,13 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
             >
               {UI_TEXT_DELETE_OLD_KEY}
             </MenuItem>,
+            <MenuItem
+              key="piped-menu-open-piped-config"
+              onClick={handleOpenPipedConfig}
+              disabled={piped.config.length === 0}
+            >
+              {UI_TEXT_VIEW_THE_CONFIGURATION}
+            </MenuItem>,
             <MenuItem key="piped-menu-disable" onClick={handleDisable}>
               {UI_TEXT_DISABLE}
             </MenuItem>,
@@ -261,6 +278,23 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
             OK
           </Button>
         </DialogActions>
+      </Dialog>
+
+      <Dialog
+        fullWidth
+        maxWidth="md"
+        open={openConfigAlert}
+        onClose={handleAlertClose}
+      >
+        <DialogTitle>
+          <CopyIconButton name="Piped config" value={`${piped.config}`} />
+          Piped configuration
+        </DialogTitle>
+        <DialogContent>
+          <SyntaxHighlighter language="yaml" style={coy}>
+            {piped.config}
+          </SyntaxHighlighter>
+        </DialogContent>
       </Dialog>
     </>
   );
