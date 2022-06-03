@@ -58,8 +58,6 @@ func (a *authorizer) Authorize(method string, r model.Role) bool {
 		return isAdmin(r)
 	case "/grpc.service.webservice.WebService/UpdatePipedDesiredVersion":
 		return isAdmin(r)
-	case "/grpc.service.webservice.WebService/RestartPiped":
-		return isAdmin(r)
 	case "/grpc.service.webservice.WebService/UpdateProjectStaticAdmin":
 		return isAdmin(r)
 	case "/grpc.service.webservice.WebService/EnableStaticAdmin":
@@ -76,6 +74,8 @@ func (a *authorizer) Authorize(method string, r model.Role) bool {
 		return isAdmin(r)
 	case "/grpc.service.webservice.WebService/ListAPIKeys":
 		return isAdmin(r)
+	case "/grpc.service.webservice.WebService/RestartPiped":
+		return isAdmin(r) || isEditor(r)
 	case "/grpc.service.webservice.WebService/AddApplication":
 		return isAdmin(r) || isEditor(r)
 	case "/grpc.service.webservice.WebService/UpdateApplication":
