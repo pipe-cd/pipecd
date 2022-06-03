@@ -2073,6 +2073,221 @@ var _ interface {
 	ErrorName() string
 } = UpdatePipedDesiredVersionResponseValidationError{}
 
+// Validate checks the field values on RestartPipedRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *RestartPipedRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on RestartPipedRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// RestartPipedRequestMultiError, or nil if none found.
+func (m *RestartPipedRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *RestartPipedRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetPipedId()) < 1 {
+		err := RestartPipedRequestValidationError{
+			field:  "PipedId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return RestartPipedRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// RestartPipedRequestMultiError is an error wrapping multiple validation
+// errors returned by RestartPipedRequest.ValidateAll() if the designated
+// constraints aren't met.
+type RestartPipedRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m RestartPipedRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m RestartPipedRequestMultiError) AllErrors() []error { return m }
+
+// RestartPipedRequestValidationError is the validation error returned by
+// RestartPipedRequest.Validate if the designated constraints aren't met.
+type RestartPipedRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e RestartPipedRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e RestartPipedRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e RestartPipedRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e RestartPipedRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e RestartPipedRequestValidationError) ErrorName() string {
+	return "RestartPipedRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e RestartPipedRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sRestartPipedRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = RestartPipedRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = RestartPipedRequestValidationError{}
+
+// Validate checks the field values on RestartPipedResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *RestartPipedResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on RestartPipedResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// RestartPipedResponseMultiError, or nil if none found.
+func (m *RestartPipedResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *RestartPipedResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return RestartPipedResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// RestartPipedResponseMultiError is an error wrapping multiple validation
+// errors returned by RestartPipedResponse.ValidateAll() if the designated
+// constraints aren't met.
+type RestartPipedResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m RestartPipedResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m RestartPipedResponseMultiError) AllErrors() []error { return m }
+
+// RestartPipedResponseValidationError is the validation error returned by
+// RestartPipedResponse.Validate if the designated constraints aren't met.
+type RestartPipedResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e RestartPipedResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e RestartPipedResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e RestartPipedResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e RestartPipedResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e RestartPipedResponseValidationError) ErrorName() string {
+	return "RestartPipedResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e RestartPipedResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sRestartPipedResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = RestartPipedResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = RestartPipedResponseValidationError{}
+
 // Validate checks the field values on AddApplicationRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

@@ -31,6 +31,7 @@ type APIServiceClient interface {
 	GetCommand(ctx context.Context, in *GetCommandRequest, opts ...grpc.CallOption) (*GetCommandResponse, error)
 	EnablePiped(ctx context.Context, in *EnablePipedRequest, opts ...grpc.CallOption) (*EnablePipedResponse, error)
 	DisablePiped(ctx context.Context, in *DisablePipedRequest, opts ...grpc.CallOption) (*DisablePipedResponse, error)
+	RestartPiped(ctx context.Context, in *RestartPipedRequest, opts ...grpc.CallOption) (*RestartPipedResponse, error)
 	RegisterEvent(ctx context.Context, in *RegisterEventRequest, opts ...grpc.CallOption) (*RegisterEventResponse, error)
 	RequestPlanPreview(ctx context.Context, in *RequestPlanPreviewRequest, opts ...grpc.CallOption) (*RequestPlanPreviewResponse, error)
 	GetPlanPreviewResults(ctx context.Context, in *GetPlanPreviewResultsRequest, opts ...grpc.CallOption) (*GetPlanPreviewResultsResponse, error)
@@ -126,6 +127,15 @@ func (c *aPIServiceClient) DisablePiped(ctx context.Context, in *DisablePipedReq
 	return out, nil
 }
 
+func (c *aPIServiceClient) RestartPiped(ctx context.Context, in *RestartPipedRequest, opts ...grpc.CallOption) (*RestartPipedResponse, error) {
+	out := new(RestartPipedResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/RestartPiped", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *aPIServiceClient) RegisterEvent(ctx context.Context, in *RegisterEventRequest, opts ...grpc.CallOption) (*RegisterEventResponse, error) {
 	out := new(RegisterEventResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/RegisterEvent", in, out, opts...)
@@ -175,6 +185,7 @@ type APIServiceServer interface {
 	GetCommand(context.Context, *GetCommandRequest) (*GetCommandResponse, error)
 	EnablePiped(context.Context, *EnablePipedRequest) (*EnablePipedResponse, error)
 	DisablePiped(context.Context, *DisablePipedRequest) (*DisablePipedResponse, error)
+	RestartPiped(context.Context, *RestartPipedRequest) (*RestartPipedResponse, error)
 	RegisterEvent(context.Context, *RegisterEventRequest) (*RegisterEventResponse, error)
 	RequestPlanPreview(context.Context, *RequestPlanPreviewRequest) (*RequestPlanPreviewResponse, error)
 	GetPlanPreviewResults(context.Context, *GetPlanPreviewResultsRequest) (*GetPlanPreviewResultsResponse, error)
@@ -212,6 +223,9 @@ func (UnimplementedAPIServiceServer) EnablePiped(context.Context, *EnablePipedRe
 }
 func (UnimplementedAPIServiceServer) DisablePiped(context.Context, *DisablePipedRequest) (*DisablePipedResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DisablePiped not implemented")
+}
+func (UnimplementedAPIServiceServer) RestartPiped(context.Context, *RestartPipedRequest) (*RestartPipedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestartPiped not implemented")
 }
 func (UnimplementedAPIServiceServer) RegisterEvent(context.Context, *RegisterEventRequest) (*RegisterEventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterEvent not implemented")
@@ -400,6 +414,24 @@ func _APIService_DisablePiped_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _APIService_RestartPiped_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RestartPipedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(APIServiceServer).RestartPiped(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.apiservice.APIService/RestartPiped",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(APIServiceServer).RestartPiped(ctx, req.(*RestartPipedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _APIService_RegisterEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RegisterEventRequest)
 	if err := dec(in); err != nil {
@@ -514,6 +546,10 @@ var APIService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DisablePiped",
 			Handler:    _APIService_DisablePiped_Handler,
+		},
+		{
+			MethodName: "RestartPiped",
+			Handler:    _APIService_RestartPiped_Handler,
 		},
 		{
 			MethodName: "RegisterEvent",
