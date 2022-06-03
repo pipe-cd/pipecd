@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -28,6 +29,10 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/chartrepo"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/config"
+)
+
+var (
+	allowedURLSchemes = []string{"http", "https"}
 )
 
 type Helm struct {
@@ -63,6 +68,10 @@ func (c *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 
 	if opts != nil {
 		for _, v := range opts.ValueFiles {
+			if err := checkHelmValueFilePath(appDir, chartPath, v); err != nil {
+				c.logger.Error("failed to verify value file path", zap.Error(err))
+				return "", err
+			}
 			args = append(args, "-f", v)
 		}
 		for k, v := range opts.SetFiles {
@@ -198,4 +207,44 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 		return "", err
 	}
 	return executor()
+}
+
+// checkHelmValueFilePath checks if the path of the values file points
+// outside the path where the Chart file is located.
+func checkHelmValueFilePath(appDir, chartPath, valueFilePath string) error {
+	url, err := url.Parse(valueFilePath)
+	if err == nil && url.Scheme != "" {
+		for _, s := range allowedURLSchemes {
+			if strings.EqualFold(url.Scheme, s) {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("scheme %s is not allowed", url.Scheme)
+	}
+
+	// absAppDir is a path where ".pipecd.yaml" is located.
+	absAppDir, err := filepath.Abs(appDir)
+	if err != nil {
+		return err
+	}
+
+	// absChartPath is a path where "Chart.yaml" and some manifest templates is located.
+	absChartPath := filepath.Join(absAppDir, chartPath)
+
+	// absValueFilePath is a path where Helm values file (e.g. "values.yaml") is located.
+	// TODO: resolve symbolic link
+	absValueFilePath := valueFilePath
+	if !filepath.IsAbs(absValueFilePath) {
+		absValueFilePath = filepath.Join(absChartPath, absValueFilePath)
+	}
+
+	// If a path outside of absChartPath is specified as the path for the values file,
+	// it may indicate that someone trying to illegally read a file that
+	// exists in the environment where Piped is running.
+	if !strings.HasPrefix(absValueFilePath, absChartPath) {
+		return fmt.Errorf("value file %s references outside the chart directory", valueFilePath)
+	}
+
+	return nil
 }
