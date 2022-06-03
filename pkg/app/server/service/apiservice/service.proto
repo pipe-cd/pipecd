@@ -39,7 +39,6 @@ service APIService {
 
     rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {}
     rpc DisablePiped(DisablePipedRequest) returns (DisablePipedResponse) {}
-    rpc RestartPiped(RestartPipedRequest) returns (RestartPipedResponse) {}
 
     rpc RegisterEvent(RegisterEventRequest) returns (RegisterEventResponse) {}
 
@@ -133,14 +132,6 @@ message DisablePipedRequest {
 }
 
 message DisablePipedResponse {
-}
-
-message RestartPipedRequest {
-    string piped_id = 1 [(validate.rules).string.min_len = 1];
-}
-
-message RestartPipedResponse {
-    string command_id = 1;
 }
 
 message RegisterEventRequest {
