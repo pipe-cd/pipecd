@@ -20,6 +20,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -451,7 +453,7 @@ func (r *HelmChartRegistry) Mask() {
 
 type PipedCloudProvider struct {
 	Name string                `json:"name,omitempty"`
-	Type model.ApplicationKind `json:"type,string,omitempty"`
+	Type model.ApplicationKind `json:"type,string"`
 
 	KubernetesConfig *CloudProviderKubernetesConfig `json:"kubernetesConfig,omitempty"`
 	TerraformConfig  *CloudProviderTerraformConfig  `json:"terraformConfig,omitempty"`
@@ -473,7 +475,17 @@ func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	p.Name = gp.Name
-	p.Type = model.ApplicationKind(model.ApplicationKind_value[gp.Type])
+
+	digitMatcher := regexp.MustCompile(`^\d$`)
+	if digitMatcher.MatchString(gp.Type) {
+		i, err := strconv.Atoi(gp.Type)
+		if err != nil {
+			return err
+		}
+		p.Type = model.ApplicationKind(i)
+	} else {
+		p.Type = model.ApplicationKind(model.ApplicationKind_value[gp.Type])
+	}
 
 	switch p.Type {
 	case model.ApplicationKind_KUBERNETES:
