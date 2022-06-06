@@ -16,6 +16,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -853,7 +854,10 @@ func TestPipedCloudProviderUnmarshal(t *testing.T) {
 	for _, tc := range testcase {
 		t.Run(tc.name, func(t *testing.T) {
 			p := &PipedCloudProvider{}
-			json.Unmarshal(tc.spec, p)
+			err := json.Unmarshal(tc.spec, p)
+			if err != nil {
+				assert.Fail(t, fmt.Sprint(err))
+			}
 			assert.Equal(t, tc.want, p)
 		})
 	}
