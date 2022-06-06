@@ -54,13 +54,6 @@ The default file name is `app.pipecd.yaml`.
 A directory in Git repository containing application configuration file and application manifests.
 Each application must have one application directory.
 
-### Quick Sync
-
-Quick sync is a fast way to sync application to the state specified in a Git commit without any progressive strategy or manual approving. Its pipeline contains just only one predefined `SYNC` stage. For examples:
-- quick sync a Kubernetes application is just applying all manifests
-- quick sync a Terraform application is automatically applying all detected changes
-- quick sync a CloudRun/Lambda application is rolling out the new version and routing all traffic to it
-
 ### Pipeline
 
 A list of stages specified by user in the application configuration file that tells `piped` how the application should be deployed. If the pipeline is not specified, the application will be deployed by Quick Sync way.
@@ -68,6 +61,13 @@ A list of stages specified by user in the application configuration file that te
 ### Stage
 
 A temporary middle state between current state and desired state of a deployment process.
+
+### Sync Strategies
+
+There are 3 strategies that PipeCD supports while syncing your application state with its configuration stored in Git. Which are:
+- Quick Sync: A fast way to make the running application state as same as its Git stored configuration. The generated pipeline contains only one predefined `SYNC` stage.
+- Pipeline Sync: Sync the running application state with its Git stored configuration through a pipeline defined in its application configuration.
+- Auto Sync: Depends on your defined application configuration, `piped` will decide the best way to sync your application state with its Git stored configuration.
 
 ### Cloud Provider
 
