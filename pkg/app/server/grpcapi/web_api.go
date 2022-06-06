@@ -392,6 +392,10 @@ func (a *WebAPI) RestartPiped(ctx context.Context, req *webservice.RestartPipedR
 		return nil, err
 	}
 
+	if claims.Role.ProjectId != piped.ProjectId {
+		return nil, status.Error(codes.PermissionDenied, "Requested Piped does not belong to your project")
+	}
+
 	cmd := model.Command{
 		Id:        uuid.New().String(),
 		PipedId:   piped.Id,
