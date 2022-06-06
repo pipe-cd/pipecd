@@ -476,6 +476,8 @@ func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
 	}
 	p.Name = gp.Name
 
+	// Consider the case where the Cloud Provider Type
+	// has already been converted to a int32.
 	digitMatcher := regexp.MustCompile(`^\d$`)
 	if digitMatcher.MatchString(gp.Type) {
 		i, err := strconv.Atoi(gp.Type)
