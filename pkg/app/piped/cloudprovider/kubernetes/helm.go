@@ -253,6 +253,9 @@ func verifyHelmValueFilePath(appDir, valueFilePath string) error {
 func resolveSymlink(path string) (string, error) {
 	lstat, err := os.Lstat(path)
 	if err != nil {
+		if _, ok := err.(*os.PathError); ok {
+			return path, nil
+		}
 		return "", err
 	}
 
