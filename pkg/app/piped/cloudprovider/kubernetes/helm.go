@@ -68,7 +68,7 @@ func (c *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 
 	if opts != nil {
 		for _, v := range opts.ValueFiles {
-			if err := verifyHelmValueFilePath(appDir, chartPath, v); err != nil {
+			if err := verifyHelmValueFilePath(appDir, v); err != nil {
 				c.logger.Error("failed to verify value file path", zap.Error(err))
 				return "", err
 			}
@@ -210,8 +210,8 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 }
 
 // verifyHelmValueFilePath verifies if the path of the values file references
-// inside the path where the Chart file is located.
-func verifyHelmValueFilePath(appDir, chartPath, valueFilePath string) error {
+// a remote URL or inside the path where the application configuration file (i.e. *.pipecd.yaml) is located.
+func verifyHelmValueFilePath(appDir, valueFilePath string) error {
 	url, err := url.Parse(valueFilePath)
 	if err == nil && url.Scheme != "" {
 		for _, s := range allowedURLSchemes {
@@ -220,7 +220,7 @@ func verifyHelmValueFilePath(appDir, chartPath, valueFilePath string) error {
 			}
 		}
 
-		return fmt.Errorf("scheme %s is not allowed", url.Scheme)
+		return fmt.Errorf("scheme %s is not allowed to load values file", url.Scheme)
 	}
 
 	// absAppDir is a path where ".pipecd.yaml" is located.
@@ -229,13 +229,9 @@ func verifyHelmValueFilePath(appDir, chartPath, valueFilePath string) error {
 		return err
 	}
 
-	// absChartPath is a path where "Chart.yaml" and some manifest templates is located.
-	absChartPath := filepath.Join(absAppDir, chartPath)
-
-	// absValueFilePath is a path where Helm values file (e.g. "values.yaml") is located.
-	// TODO: resolve symbolic link
+	// valueFilePath is a path where non-default Helm values file is located.
 	if !filepath.IsAbs(valueFilePath) {
-		valueFilePath = filepath.Join(absChartPath, valueFilePath)
+		valueFilePath = filepath.Join(absAppDir, valueFilePath)
 	}
 
 	valueFilePath, err = resolveSymlink(valueFilePath)
@@ -243,11 +239,11 @@ func verifyHelmValueFilePath(appDir, chartPath, valueFilePath string) error {
 		return err
 	}
 
-	// If a path outside of absChartPath is specified as the path for the values file,
+	// If a path outside of absAppDir is specified as the path for the values file,
 	// it may indicate that someone trying to illegally read a file that
 	// exists in the environment where Piped is running.
-	if !strings.HasPrefix(valueFilePath, absChartPath) {
-		return fmt.Errorf("value file %s references outside the chart directory", valueFilePath)
+	if !strings.HasPrefix(valueFilePath, absAppDir) {
+		return fmt.Errorf("value file %s references outside the application configuration directory", valueFilePath)
 	}
 
 	return nil
