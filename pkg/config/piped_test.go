@@ -15,6 +15,7 @@
 package config
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -736,6 +737,124 @@ func TestPipedConfigMask(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.spec.Mask()
 			assert.Equal(t, tc.want, tc.spec)
+		})
+	}
+}
+
+func TestPipedCloudProviderUnmarshal(t *testing.T) {
+	testcase := []struct {
+		name    string
+		spec    []byte
+		want    *PipedCloudProvider
+		wantErr bool
+	}{
+		{
+			name: "Kubernetes, key string",
+			spec: []byte(`{"name":"kubernetes","type":"KUBERNETES"}`),
+			want: &PipedCloudProvider{
+				Name:             "kubernetes",
+				Type:             model.ApplicationKind_KUBERNETES,
+				KubernetesConfig: &CloudProviderKubernetesConfig{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Kubernetes, number",
+			spec: []byte(`{"name":"kubernetes","type":"0"}`),
+			want: &PipedCloudProvider{
+				Name:             "kubernetes",
+				Type:             model.ApplicationKind_KUBERNETES,
+				KubernetesConfig: &CloudProviderKubernetesConfig{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Terraform, key string",
+			spec: []byte(`{"name":"terraform","type":"TERRAFORM"}`),
+			want: &PipedCloudProvider{
+				Name:            "terraform",
+				Type:            model.ApplicationKind_TERRAFORM,
+				TerraformConfig: &CloudProviderTerraformConfig{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Terraform, number",
+			spec: []byte(`{"name":"terraform","type":"1"}`),
+			want: &PipedCloudProvider{
+				Name:            "terraform",
+				Type:            model.ApplicationKind_TERRAFORM,
+				TerraformConfig: &CloudProviderTerraformConfig{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Lambda and key string",
+			spec: []byte(`{"name":"lambda","type":"LAMBDA"}`),
+			want: &PipedCloudProvider{
+				Name:         "lambda",
+				Type:         model.ApplicationKind_LAMBDA,
+				LambdaConfig: &CloudProviderLambdaConfig{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Lambda and number",
+			spec: []byte(`{"name":"lambda","type":"3"}`),
+			want: &PipedCloudProvider{
+				Name:         "lambda",
+				Type:         model.ApplicationKind_LAMBDA,
+				LambdaConfig: &CloudProviderLambdaConfig{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "CloudRun and key string",
+			spec: []byte(`{"name":"cloudrun","type":"CLOUDRUN"}`),
+			want: &PipedCloudProvider{
+				Name:           "cloudrun",
+				Type:           model.ApplicationKind_CLOUDRUN,
+				CloudRunConfig: &CloudProviderCloudRunConfig{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "CloudRun and number",
+			spec: []byte(`{"name":"cloudrun","type":"4"}`),
+			want: &PipedCloudProvider{
+				Name:           "cloudrun",
+				Type:           model.ApplicationKind_CLOUDRUN,
+				CloudRunConfig: &CloudProviderCloudRunConfig{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "ECS and key string",
+			spec: []byte(`{"name":"ECS","type":"ECS"}`),
+			want: &PipedCloudProvider{
+				Name:      "ECS",
+				Type:      model.ApplicationKind_ECS,
+				ECSConfig: &CloudProviderECSConfig{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "ECS and number",
+			spec: []byte(`{"name":"ECS","type":"5"}`),
+			want: &PipedCloudProvider{
+				Name:      "ECS",
+				Type:      model.ApplicationKind_ECS,
+				ECSConfig: &CloudProviderECSConfig{},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range testcase {
+		t.Run(tc.name, func(t *testing.T) {
+			p := &PipedCloudProvider{}
+			json.Unmarshal(tc.spec, p)
+			assert.Equal(t, tc.want, p)
 		})
 	}
 }
