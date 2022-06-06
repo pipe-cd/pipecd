@@ -68,6 +68,7 @@ type gitClient interface {
 type apiClient interface {
 	GetLatestEvent(ctx context.Context, req *pipedservice.GetLatestEventRequest, opts ...grpc.CallOption) (*pipedservice.GetLatestEventResponse, error)
 	ReportEventStatuses(ctx context.Context, req *pipedservice.ReportEventStatusesRequest, opts ...grpc.CallOption) (*pipedservice.ReportEventStatusesResponse, error)
+	ListApplications(ctx context.Context, in *pipedservice.ListApplicationsRequest, opts ...grpc.CallOption) (*pipedservice.ListApplicationsResponse, error)
 }
 
 type watcher struct {
@@ -107,20 +108,15 @@ func (w *watcher) Run(ctx context.Context) error {
 	defer os.RemoveAll(workingDir)
 	w.workingDir = workingDir
 
-	repoCfgs := w.config.GetRepositoryMap()
-	for _, r := range w.config.EventWatcher.GitRepos {
-		cfg, ok := repoCfgs[r.RepoID]
-		if !ok {
-			return fmt.Errorf("repo id %q doesn't exist in the Piped repositories list", r.RepoID)
-		}
-		repo, err := w.cloneRepo(ctx, cfg)
+	for _, r := range w.config.Repositories {
+		repo, err := w.cloneRepo(ctx, r)
 		if err != nil {
 			return err
 		}
 		defer repo.Clean()
 
 		w.wg.Add(1)
-		go w.run(ctx, repo, cfg)
+		go w.run(ctx, repo, r)
 	}
 
 	w.wg.Wait()
@@ -186,10 +182,43 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 			}
 			cfg, err := config.LoadEventWatcher(repo.GetPath(), includedCfgs, excludedCfgs)
 			if errors.Is(err, config.ErrNotFound) {
-				w.logger.Info("configuration file for Event Watcher not found",
+				w.logger.Info("configuration file for Event Watcher in ./pipe not found",
 					zap.String("repo-id", repoCfg.RepoID),
 					zap.Error(err),
 				)
+				resp, err := w.apiClient.ListApplications(ctx, &pipedservice.ListApplicationsRequest{})
+				if err != nil {
+					w.logger.Error("failed to list registered application", zap.Error(err))
+					continue
+				}
+				cfgs := make([]*config.GenericApplicationSpec, 0, len(resp.Applications))
+				for _, app := range resp.Applications {
+					if app.GitPath.Repo.Id != repoCfg.RepoID {
+						continue
+					}
+					cfg, err := loadApplicationConfiguration(repo.GetPath(), app)
+					if err != nil {
+						w.logger.Error("failed to load application configuration", zap.Error(err))
+						continue
+					}
+					cfgs = append(cfgs, cfg)
+				}
+				for _, cfg := range cfgs {
+					if cfg.Events == nil {
+						w.logger.Info("configuration file for Event Watcher in application configuration not found",
+							zap.String("repo-id", repoCfg.RepoID),
+							zap.String("app-name", cfg.Name),
+						)
+						continue
+					}
+					if err := w.updateValues(ctx, repo, repoCfg.RepoID, cfg.Events, commitMsg); err != nil {
+						w.logger.Error("failed to update the values from application configuration",
+							zap.String("repo-id", repoCfg.RepoID),
+							zap.Error(err),
+						)
+						continue
+					}
+				}
 				continue
 			}
 			if err != nil {
@@ -204,9 +233,35 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 					zap.String("repo-id", repoCfg.RepoID),
 					zap.Error(err),
 				)
+				continue
 			}
 		}
 	}
+}
+
+func loadApplicationConfiguration(repoPath string, app *model.Application) (*config.GenericApplicationSpec, error) {
+	var (
+		relPath = app.GitPath.GetApplicationConfigFilePath()
+		absPath = filepath.Join(repoPath, relPath)
+	)
+
+	cfg, err := config.LoadFromYAML(absPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("application config file %s was not found in Git", relPath)
+		}
+		return nil, err
+	}
+	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
+		return nil, fmt.Errorf("invalid application kind in the application config file, got: %s, expected: %s", appKind, app.Kind)
+	}
+
+	spec, ok := cfg.GetGenericApplication()
+	if !ok {
+		return nil, fmt.Errorf("unsupported application kind: %s", app.Kind)
+	}
+
+	return &spec, nil
 }
 
 // cloneRepo clones the git repository under the working directory.
@@ -248,6 +303,15 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		outDatedDuration = time.Hour
 	)
 	for _, e := range eventCfgs {
+		// If the pushHandler was defined in the event watcher event configuration, override the values.
+		if e.PushHandler.CommitMessage != "" {
+			commitMsg = e.PushHandler.CommitMessage
+		}
+		replacements := e.Replacements
+		if e.PushHandler.Replacements != nil {
+			replacements = e.PushHandler.Replacements
+		}
+
 		notHandledEvents := w.eventLister.ListNotHandled(e.Name, e.Labels, milestone+1, numToMakeOutdated)
 		if len(notHandledEvents) == 0 {
 			continue
@@ -302,7 +366,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
 			Id:                latestEvent.Id,
 			Status:            model.EventStatus_EVENT_SUCCESS,
-			StatusDescription: fmt.Sprintf("Successfully updated %d files in the %q repository", len(e.Replacements), repoID),
+			StatusDescription: fmt.Sprintf("Successfully updated %d files in the %q repository", len(replacements), repoID),
 		})
 		if latestEvent.CreatedAt > maxTimestamp {
 			maxTimestamp = latestEvent.CreatedAt
@@ -354,9 +418,13 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 
 // commitFiles commits changes if the data in Git is different from the latest event.
 func (w *watcher) commitFiles(ctx context.Context, latestData string, eventCfg config.EventWatcherEvent, repo git.Repo, commitMsg string) error {
+	replacements := eventCfg.Replacements
+	if eventCfg.PushHandler.Replacements != nil {
+		replacements = eventCfg.PushHandler.Replacements
+	}
 	// Determine files to be changed by comparing with the latest event.
-	changes := make(map[string][]byte, len(eventCfg.Replacements))
-	for _, r := range eventCfg.Replacements {
+	changes := make(map[string][]byte, len(replacements))
+	for _, r := range replacements {
 		var (
 			path       = filepath.Join(repo.GetPath(), r.File)
 			newContent []byte

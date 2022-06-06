@@ -36,6 +36,8 @@ type EventWatcherEvent struct {
 	Labels map[string]string `json:"labels"`
 	// List of places where will be replaced when the new event matches.
 	Replacements []EventWatcherReplacement `json:"replacements"`
+	// The configuration of push event.
+	PushHandler EventWatcherPushHandler `json:"pushHandler"`
 }
 
 type EventWatcherReplacement struct {
@@ -54,6 +56,14 @@ type EventWatcherReplacement struct {
 	// Only the first capturing group enclosed by `()` will be replaced with the new value.
 	// e.g. "host.xz/foo/bar:(v[0-9].[0-9].[0-9])"
 	Regex string `json:"regex"`
+}
+
+type EventWatcherPushHandler struct {
+	// The commit message used to push after replacing values.
+	// Default message is used if not given.
+	CommitMessage string `json:"commitMessage,omitempty"`
+	// List of places where will be replaced when the new event matches.
+	Replacements []EventWatcherReplacement `json:"replacements"`
 }
 
 // LoadEventWatcher gives back parsed EventWatcher config after merging config files placed under
