@@ -89,6 +89,7 @@ func (p *pipedCollection) Encode(e interface{}) (map[Shard][]byte, error) {
 		CreatedAt: me.CreatedAt,
 		UpdatedAt: me.UpdatedAt,
 		// Fields which value only available in AgentShard.
+		Config:           me.Config,
 		CloudProviders:   me.CloudProviders,
 		Repositories:     me.Repositories,
 		StartedAt:        me.StartedAt,
