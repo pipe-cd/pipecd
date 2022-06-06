@@ -68,7 +68,7 @@ func (c *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 
 	if opts != nil {
 		for _, v := range opts.ValueFiles {
-			if err := checkHelmValueFilePath(appDir, chartPath, v); err != nil {
+			if err := verifyHelmValueFilePath(appDir, chartPath, v); err != nil {
 				c.logger.Error("failed to verify value file path", zap.Error(err))
 				return "", err
 			}
@@ -209,9 +209,9 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 	return executor()
 }
 
-// checkHelmValueFilePath checks if the path of the values file points
-// outside the path where the Chart file is located.
-func checkHelmValueFilePath(appDir, chartPath, valueFilePath string) error {
+// verifyHelmValueFilePath verifies if the path of the values file references
+// inside the path where the Chart file is located.
+func verifyHelmValueFilePath(appDir, chartPath, valueFilePath string) error {
 	url, err := url.Parse(valueFilePath)
 	if err == nil && url.Scheme != "" {
 		for _, s := range allowedURLSchemes {
@@ -234,17 +234,40 @@ func checkHelmValueFilePath(appDir, chartPath, valueFilePath string) error {
 
 	// absValueFilePath is a path where Helm values file (e.g. "values.yaml") is located.
 	// TODO: resolve symbolic link
-	absValueFilePath := valueFilePath
-	if !filepath.IsAbs(absValueFilePath) {
-		absValueFilePath = filepath.Join(absChartPath, absValueFilePath)
+	if !filepath.IsAbs(valueFilePath) {
+		valueFilePath = filepath.Join(absChartPath, valueFilePath)
+	}
+
+	valueFilePath, err = resolveSymlink(valueFilePath)
+	if err != nil {
+		return err
 	}
 
 	// If a path outside of absChartPath is specified as the path for the values file,
 	// it may indicate that someone trying to illegally read a file that
 	// exists in the environment where Piped is running.
-	if !strings.HasPrefix(absValueFilePath, absChartPath) {
+	if !strings.HasPrefix(valueFilePath, absChartPath) {
 		return fmt.Errorf("value file %s references outside the chart directory", valueFilePath)
 	}
 
 	return nil
+}
+
+// resolveSymlink resolves symbolic link.
+func resolveSymlink(path string) (string, error) {
+	lstat, err := os.Lstat(path)
+	if err != nil {
+		return "", err
+	}
+
+	if lstat.Mode()&os.ModeSymlink == os.ModeSymlink {
+		resolved, err := os.Readlink(path)
+		if err != nil {
+			return "", err
+		}
+
+		return resolveSymlink(resolved)
+	}
+
+	return path, nil
 }
