@@ -19,7 +19,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -303,7 +302,7 @@ func (b *builder) cloneHeadCommit(ctx context.Context, headBranch, headCommit st
 func (b *builder) findTriggerApps(ctx context.Context, repo git.Repo, apps []*model.Application, headCommit string) (triggerApps []*model.Application, failedResults []*model.ApplicationPlanPreviewResult, err error) {
 	d := trigger.NewOnCommitDeterminer(repo, headCommit, b.commitGetter, b.logger)
 	determine := func(app *model.Application) (bool, error) {
-		appCfg, err := loadApplicationConfiguration(repo.GetPath(), app)
+		appCfg, err := config.LoadApplication(repo.GetPath(), app)
 		if err != nil {
 			return false, err
 		}
@@ -409,29 +408,4 @@ func (b *builder) getMostRecentlySuccessfulDeployment(ctx context.Context, appli
 	}
 
 	return deploy.(*model.ApplicationDeploymentReference), nil
-}
-
-func loadApplicationConfiguration(repoPath string, app *model.Application) (*config.GenericApplicationSpec, error) {
-	var (
-		relPath = app.GitPath.GetApplicationConfigFilePath()
-		absPath = filepath.Join(repoPath, relPath)
-	)
-
-	cfg, err := config.LoadFromYAML(absPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("application config file %s was not found in Git", relPath)
-		}
-		return nil, err
-	}
-	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
-		return nil, fmt.Errorf("invalid application kind in the application config file, got: %s, expected: %s", appKind, app.Kind)
-	}
-
-	spec, ok := cfg.GetGenericApplication()
-	if !ok {
-		return nil, fmt.Errorf("unsupported application kind: %s", app.Kind)
-	}
-
-	return &spec, nil
 }

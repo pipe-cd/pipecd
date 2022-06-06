@@ -17,6 +17,8 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -643,4 +645,29 @@ func (c *DeploymentChainTriggerCondition) Validate() error {
 		return fmt.Errorf("missing commitPrefix configration as deployment chain trigger condition")
 	}
 	return nil
+}
+
+func LoadApplication(repoPath string, app *model.Application) (*GenericApplicationSpec, error) {
+	var (
+		relPath = app.GitPath.GetApplicationConfigFilePath()
+		absPath = filepath.Join(repoPath, relPath)
+	)
+
+	cfg, err := LoadFromYAML(absPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("application config file %s was not found in Git", relPath)
+		}
+		return nil, err
+	}
+	if appKind, ok := ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
+		return nil, fmt.Errorf("invalid application kind in the application config file, got: %s, expected: %s", appKind, app.Kind)
+	}
+
+	spec, ok := cfg.GetGenericApplication()
+	if !ok {
+		return nil, fmt.Errorf("unsupported application kind: %s", app.Kind)
+	}
+
+	return &spec, nil
 }

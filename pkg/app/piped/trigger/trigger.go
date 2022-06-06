@@ -20,8 +20,6 @@ package trigger
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
 	"time"
 
 	"go.uber.org/zap"
@@ -219,7 +217,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			continue
 		}
 
-		appCfg, err := loadApplicationConfiguration(gitRepo.GetPath(), app)
+		appCfg, err := config.LoadApplication(gitRepo.GetPath(), app)
 		if err != nil {
 			t.logger.Error("failed to load application config file",
 				zap.String("app", app.Name),
@@ -492,29 +490,4 @@ func (t *Trigger) notifyDeploymentTriggerFailed(app *model.Application, appCfg *
 			Reason:            reason,
 		},
 	})
-}
-
-func loadApplicationConfiguration(repoPath string, app *model.Application) (*config.GenericApplicationSpec, error) {
-	var (
-		relPath = app.GitPath.GetApplicationConfigFilePath()
-		absPath = filepath.Join(repoPath, relPath)
-	)
-
-	cfg, err := config.LoadFromYAML(absPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("application config file %s was not found in Git", relPath)
-		}
-		return nil, err
-	}
-	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
-		return nil, fmt.Errorf("invalid application kind in the application config file, got: %s, expected: %s", appKind, app.Kind)
-	}
-
-	spec, ok := cfg.GetGenericApplication()
-	if !ok {
-		return nil, fmt.Errorf("unsupported application kind: %s", app.Kind)
-	}
-
-	return &spec, nil
 }
