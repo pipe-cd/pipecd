@@ -647,26 +647,23 @@ func (c *DeploymentChainTriggerCondition) Validate() error {
 	return nil
 }
 
-func LoadApplication(repoPath string, app *model.Application) (*GenericApplicationSpec, error) {
-	var (
-		relPath = app.GitPath.GetApplicationConfigFilePath()
-		absPath = filepath.Join(repoPath, relPath)
-	)
+func LoadApplication(repoPath, configRelPath string, appKind model.ApplicationKind) (*GenericApplicationSpec, error) {
+	var absPath = filepath.Join(repoPath, configRelPath)
 
 	cfg, err := LoadFromYAML(absPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("application config file %s was not found in Git", relPath)
+			return nil, fmt.Errorf("application config file %s was not found in Git", configRelPath)
 		}
 		return nil, err
 	}
-	if appKind, ok := ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
-		return nil, fmt.Errorf("invalid application kind in the application config file, got: %s, expected: %s", appKind, app.Kind)
+	if kind, ok := ToApplicationKind(cfg.Kind); !ok || kind != appKind {
+		return nil, fmt.Errorf("invalid application kind in the application config file, got: %s, expected: %s", kind, appKind)
 	}
 
 	spec, ok := cfg.GetGenericApplication()
 	if !ok {
-		return nil, fmt.Errorf("unsupported application kind: %s", app.Kind)
+		return nil, fmt.Errorf("unsupported application kind: %s", appKind)
 	}
 
 	return &spec, nil

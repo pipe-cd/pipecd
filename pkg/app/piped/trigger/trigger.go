@@ -217,7 +217,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			continue
 		}
 
-		appCfg, err := config.LoadApplication(gitRepo.GetPath(), app)
+		appCfg, err := config.LoadApplication(gitRepo.GetPath(), app.GitPath.GetApplicationConfigFilePath(), app.Kind)
 		if err != nil {
 			t.logger.Error("failed to load application config file",
 				zap.String("app", app.Name),

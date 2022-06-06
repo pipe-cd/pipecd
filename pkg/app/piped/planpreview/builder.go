@@ -302,7 +302,7 @@ func (b *builder) cloneHeadCommit(ctx context.Context, headBranch, headCommit st
 func (b *builder) findTriggerApps(ctx context.Context, repo git.Repo, apps []*model.Application, headCommit string) (triggerApps []*model.Application, failedResults []*model.ApplicationPlanPreviewResult, err error) {
 	d := trigger.NewOnCommitDeterminer(repo, headCommit, b.commitGetter, b.logger)
 	determine := func(app *model.Application) (bool, error) {
-		appCfg, err := config.LoadApplication(repo.GetPath(), app)
+		appCfg, err := config.LoadApplication(repo.GetPath(), app.GitPath.GetApplicationConfigFilePath(), app.Kind)
 		if err != nil {
 			return false, err
 		}
