@@ -77,3 +77,92 @@ func TestTemplateLocalChart_WithNamespace(t *testing.T) {
 		require.Equal(t, namespace, metadata["namespace"])
 	}
 }
+
+func TestVerifyHelmValueFilePath(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name          string
+		appDir        string
+		valueFilePath string
+		wantErr       bool
+	}{
+		{
+			name:          "Values file locates inside the app dir",
+			appDir:        "testdata/testhelm/appconfdir",
+			valueFilePath: "values.yaml",
+			wantErr:       false,
+		},
+		{
+			name:          "Values file locates inside the app dir (with ..)",
+			appDir:        "testdata/testhelm/appconfdir",
+			valueFilePath: "../../../testdata/testhelm/appconfdir/values.yaml",
+			wantErr:       false,
+		},
+		{
+			name:          "Values file locates under the app dir",
+			appDir:        "testdata/testhelm/appconfdir",
+			valueFilePath: "dir/values.yaml",
+			wantErr:       false,
+		},
+		{
+			name:          "Values file locates under the app dir (with ..)",
+			appDir:        "testdata/testhelm/appconfdir",
+			valueFilePath: "../../../testdata/testhelm/appconfdir/dir/values.yaml",
+			wantErr:       false,
+		},
+		{
+			name:          "arbitrary file locates outside the app dir",
+			appDir:        "testdata/testhelm/appconfdir",
+			valueFilePath: "/etc/hosts",
+			wantErr:       true,
+		},
+		{
+			name:          "arbitrary file locates outside the app dir (with ..)",
+			appDir:        "testdata/testhelm/appconfdir",
+			valueFilePath: "../../../../../../../../../../../../etc/hosts",
+			wantErr:       true,
+		},
+		{
+			name:          "Values file locates allowed remote URL (http)",
+			appDir:        "testdata/testhelm/appconfdir",
+			valueFilePath: "http://exmaple.com/values.yaml",
+			wantErr:       false,
+		},
+		{
+			name:          "Values file locates allowed remote URL (https)",
+			appDir:        "testdata/testhelm/appconfdir",
+			valueFilePath: "https://exmaple.com/values.yaml",
+			wantErr:       false,
+		},
+		{
+			name:          "Values file locates disallowed remote URL (ftp)",
+			appDir:        "testdata/testhelm/appconfdir",
+			valueFilePath: "ftp://exmaple.com/values.yaml",
+			wantErr:       true,
+		},
+		{
+			name:          "Values file is symlink targeting valid values file",
+			appDir:        "testdata/testhelm/appconfdir",
+			valueFilePath: "valid-symlink",
+			wantErr:       false,
+		},
+		{
+			name:          "Values file is symlink targeting invalid values file",
+			appDir:        "testdata/testhelm/appconfdir",
+			valueFilePath: "invalid-symlink",
+			wantErr:       true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := verifyHelmValueFilePath(tc.appDir, tc.valueFilePath)
+			if tc.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}

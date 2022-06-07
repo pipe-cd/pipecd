@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -28,6 +29,10 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/chartrepo"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/config"
+)
+
+var (
+	allowedURLSchemes = []string{"http", "https"}
 )
 
 type Helm struct {
@@ -63,6 +68,10 @@ func (c *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 
 	if opts != nil {
 		for _, v := range opts.ValueFiles {
+			if err := verifyHelmValueFilePath(appDir, v); err != nil {
+				c.logger.Error("failed to verify values file path", zap.Error(err))
+				return "", err
+			}
 			args = append(args, "-f", v)
 		}
 		for k, v := range opts.SetFiles {
@@ -99,7 +108,7 @@ type helmRemoteGitChart struct {
 }
 
 func (c *Helm) TemplateRemoteGitChart(ctx context.Context, appName, appDir, namespace string, chart helmRemoteGitChart, gitClient gitClient, opts *config.InputHelmOptions) (string, error) {
-	// Firstly, we need to download the remote repositoy.
+	// Firstly, we need to download the remote repository.
 	repoDir, err := os.MkdirTemp("", "helm-remote-chart")
 	if err != nil {
 		return "", fmt.Errorf("unable to created temporary directory for storing remote helm chart: %w", err)
@@ -153,6 +162,10 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 
 	if opts != nil {
 		for _, v := range opts.ValueFiles {
+			if err := verifyHelmValueFilePath(appDir, v); err != nil {
+				c.logger.Error("failed to verify values file path", zap.Error(err))
+				return "", err
+			}
 			args = append(args, "-f", v)
 		}
 		for k, v := range opts.SetFiles {
@@ -198,4 +211,63 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 		return "", err
 	}
 	return executor()
+}
+
+// verifyHelmValueFilePath verifies if the path of the values file references
+// a remote URL or inside the path where the application configuration file (i.e. *.pipecd.yaml) is located.
+func verifyHelmValueFilePath(appDir, valueFilePath string) error {
+	url, err := url.Parse(valueFilePath)
+	if err == nil && url.Scheme != "" {
+		for _, s := range allowedURLSchemes {
+			if strings.EqualFold(url.Scheme, s) {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("scheme %s is not allowed to load values file", url.Scheme)
+	}
+
+	// valueFilePath is a path where non-default Helm values file is located.
+	if !filepath.IsAbs(valueFilePath) {
+		valueFilePath = filepath.Join(appDir, valueFilePath)
+	}
+
+	if isSymlink(valueFilePath) {
+		if valueFilePath, err = resolveSymlinkToAbsPath(valueFilePath, appDir); err != nil {
+			return err
+		}
+	}
+
+	// If a path outside of appDir is specified as the path for the values file,
+	// it may indicate that someone trying to illegally read a file as values file that
+	// exists in the environment where Piped is running.
+	if !strings.HasPrefix(valueFilePath, appDir) {
+		return fmt.Errorf("values file %s references outside the application configuration directory", valueFilePath)
+	}
+
+	return nil
+}
+
+// isSymlink returns the path is whether symbolic link or not.
+func isSymlink(path string) bool {
+	lstat, err := os.Lstat(path)
+	if err != nil {
+		return false
+	}
+
+	return lstat.Mode()&os.ModeSymlink == os.ModeSymlink
+}
+
+// resolveSymlinkToAbsPath resolves symbolic link to an absolute path.
+func resolveSymlinkToAbsPath(path, absParentDir string) (string, error) {
+	resolved, err := os.Readlink(path)
+	if err != nil {
+		return "", err
+	}
+
+	if !filepath.IsAbs(resolved) {
+		resolved = filepath.Join(absParentDir, resolved)
+	}
+
+	return resolved, nil
 }
