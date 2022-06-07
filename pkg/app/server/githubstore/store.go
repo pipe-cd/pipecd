@@ -40,7 +40,7 @@ func NewStore() Store {
 }
 
 func (s *store) ListReleasedVersions(ctx context.Context) ([]string, error) {
-	releases, _, err := s.Client.Repositories.ListReleases(ctx, pipecdGithubOwner, pipecdGithubRepo, nil)
+	releases, _, err := s.Repositories.ListReleases(ctx, pipecdGithubOwner, pipecdGithubRepo, nil)
 	if err != nil {
 		return nil, err
 	}
