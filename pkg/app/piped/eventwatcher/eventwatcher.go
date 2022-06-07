@@ -329,7 +329,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 			})
 			continue
 		}
-		if err := w.commitFiles(ctx, latestEvent.Data, e, tmpRepo, commitMsg); err != nil {
+		if err := w.commitFiles(ctx, latestEvent.Data, e.Name, commitMsg, replacements, tmpRepo); err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
 			handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
 				Id:                latestEvent.Id,
@@ -392,11 +392,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 }
 
 // commitFiles commits changes if the data in Git is different from the latest event.
-func (w *watcher) commitFiles(ctx context.Context, latestData string, eventCfg config.EventWatcherEvent, repo git.Repo, commitMsg string) error {
-	replacements := eventCfg.Replacements
-	if eventCfg.PushHandler.Replacements != nil {
-		replacements = eventCfg.PushHandler.Replacements
-	}
+func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commitMsg string, replacements []config.EventWatcherReplacement, repo git.Repo) error {
 	// Determine files to be changed by comparing with the latest event.
 	changes := make(map[string][]byte, len(replacements))
 	for _, r := range replacements {
@@ -433,12 +429,12 @@ func (w *watcher) commitFiles(ctx context.Context, latestData string, eventCfg c
 	}
 
 	if commitMsg == "" {
-		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, latestData, eventCfg.Name)
+		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, latestData, eventName)
 	}
 	if err := repo.CommitChanges(ctx, repo.GetClonedBranch(), commitMsg, false, changes); err != nil {
 		return fmt.Errorf("failed to perform git commit: %w", err)
 	}
-	w.logger.Info(fmt.Sprintf("event watcher will update values of Event %q", eventCfg.Name))
+	w.logger.Info(fmt.Sprintf("event watcher will update values of Event %q", eventName))
 	return nil
 }
 
