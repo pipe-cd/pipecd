@@ -100,7 +100,7 @@ export const UpgradePipedDialog: FC<UpgradePipedProps> = memo(
                   setUpgradeVersion(e.target.value as string);
                 }}
               >
-                {releasedVersions.map((v) => (
+                {releasedVersions.slice(0, 6).map((v) => (
                   <MenuItem value={v} key={`version-${v}`}>
                     {v}
                   </MenuItem>

@@ -149,7 +149,6 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
 
   useInterval(() => {
     dispatch(fetchPipeds(true));
-    dispatch(fetchReleasedVersions());
   }, FETCH_INTERVAL);
 
   return (
