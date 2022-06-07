@@ -29,6 +29,13 @@ export const selectPipedIds = (state: AppState): EntityId[] =>
 export const selectAllPipeds = (state: AppState): Piped.AsObject[] =>
   selectAll(state.pipeds);
 
+export const fetchReleasedVersions = createAsyncThunk<string[]>(
+  `${MODULE_NAME}/fetchReleasedVersions`,
+  () => {
+    return ["0.32.0", "0.31.0", "0.30.0", "0.27.0"];
+  }
+);
+
 export const fetchPipeds = createAsyncThunk<Piped.AsObject[], boolean>(
   `${MODULE_NAME}/fetchList`,
   async (withStatus: boolean) => {
@@ -104,9 +111,11 @@ export const pipedsSlice = createSlice({
   initialState: pipedsAdapter.getInitialState<{
     registeredPiped: RegisteredPiped | null;
     updating: boolean;
+    releasedVersions: string[];
   }>({
     registeredPiped: null,
     updating: false,
+    releasedVersions: [],
   }),
   reducers: {
     clearRegisteredPipedInfo(state) {
@@ -137,6 +146,9 @@ export const pipedsSlice = createSlice({
       })
       .addCase(editPiped.fulfilled, (state) => {
         state.updating = false;
+      })
+      .addCase(fetchReleasedVersions.fulfilled, (state, action) => {
+        state.releasedVersions = action.payload;
       });
   },
 });

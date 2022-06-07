@@ -23,7 +23,7 @@ import {
 } from "@material-ui/icons";
 import Alert from "@material-ui/lab/Alert";
 import { createSelector } from "@reduxjs/toolkit";
-import { FC, memo, useCallback, useState } from "react";
+import { FC, memo, useCallback, useEffect, useState } from "react";
 import { TextWithCopyButton } from "~/components/text-with-copy-button";
 import {
   UI_TEXT_ADD,
@@ -39,6 +39,7 @@ import {
   disablePiped,
   enablePiped,
   fetchPipeds,
+  fetchReleasedVersions,
   Piped,
   RegisteredPiped,
   selectAllPipeds,
@@ -97,6 +98,14 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     selectFilteredPipeds(state, filterValues.enabled)
   );
 
+  useEffect(() => {
+    dispatch(fetchReleasedVersions());
+  }, [dispatch]);
+
+  const releasedVersions = useAppSelector<string[]>(
+    (state) => state.pipeds.releasedVersions
+  );
+
   const [isUpgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const handleUpgradeDialogClose = (): void => setUpgradeDialogOpen(false);
 
@@ -140,6 +149,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
 
   useInterval(() => {
     dispatch(fetchPipeds(true));
+    dispatch(fetchReleasedVersions());
   }, FETCH_INTERVAL);
 
   return (
@@ -215,6 +225,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
       <UpgradePipedDialog
         open={isUpgradeDialogOpen}
         pipeds={pipeds}
+        releasedVersions={releasedVersions}
         onClose={handleUpgradeDialogClose}
       />
 
