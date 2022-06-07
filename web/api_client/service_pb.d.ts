@@ -411,6 +411,40 @@ export namespace RestartPipedResponse {
   }
 }
 
+export class ListReleasedVersionsRequest extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListReleasedVersionsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ListReleasedVersionsRequest): ListReleasedVersionsRequest.AsObject;
+  static serializeBinaryToWriter(message: ListReleasedVersionsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListReleasedVersionsRequest;
+  static deserializeBinaryFromReader(message: ListReleasedVersionsRequest, reader: jspb.BinaryReader): ListReleasedVersionsRequest;
+}
+
+export namespace ListReleasedVersionsRequest {
+  export type AsObject = {
+  }
+}
+
+export class ListReleasedVersionsResponse extends jspb.Message {
+  getVersionsList(): Array<string>;
+  setVersionsList(value: Array<string>): ListReleasedVersionsResponse;
+  clearVersionsList(): ListReleasedVersionsResponse;
+  addVersions(value: string, index?: number): ListReleasedVersionsResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListReleasedVersionsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ListReleasedVersionsResponse): ListReleasedVersionsResponse.AsObject;
+  static serializeBinaryToWriter(message: ListReleasedVersionsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListReleasedVersionsResponse;
+  static deserializeBinaryFromReader(message: ListReleasedVersionsResponse, reader: jspb.BinaryReader): ListReleasedVersionsResponse;
+}
+
+export namespace ListReleasedVersionsResponse {
+  export type AsObject = {
+    versionsList: Array<string>,
+  }
+}
+
 export class AddApplicationRequest extends jspb.Message {
   getName(): string;
   setName(value: string): AddApplicationRequest;

@@ -30,6 +30,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/applicationlivestatestore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandstore"
+	"github.com/pipe-cd/pipecd/pkg/app/server/githubstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/webservice"
 	"github.com/pipe-cd/pipecd/pkg/app/server/stagelogstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/unregisteredappstore"
@@ -115,6 +116,7 @@ type WebAPI struct {
 	commandStore              commandstore.Store
 	insightStore              insightstore.Store
 	unregisteredAppStore      unregisteredappstore.Store
+	githubStore               githubstore.Store
 	encrypter                 encrypter
 
 	appProjectCache        cache.Cache
@@ -1741,5 +1743,22 @@ func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsReque
 	return &webservice.ListEventsResponse{
 		Events: filtered,
 		Cursor: cursor,
+	}, nil
+}
+
+func (a *WebAPI) ListReleasedVersions(ctx context.Context, req *webservice.ListReleasedVersionsRequest) (*webservice.ListReleasedVersionsResponse, error) {
+	_, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	versions, err := a.githubStore.ListReleasedVersions(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "Failed to list released versions")
+	}
+
+	return &webservice.ListReleasedVersionsResponse{
+		Versions: versions,
 	}, nil
 }

@@ -31,8 +31,9 @@ export const selectAllPipeds = (state: AppState): Piped.AsObject[] =>
 
 export const fetchReleasedVersions = createAsyncThunk<string[]>(
   `${MODULE_NAME}/fetchReleasedVersions`,
-  () => {
-    return ["0.32.0", "0.31.0", "0.30.0", "0.27.0"];
+  async () => {
+    const { versionsList } = await pipedsApi.listReleasedVersions();
+    return versionsList;
   }
 );
 
