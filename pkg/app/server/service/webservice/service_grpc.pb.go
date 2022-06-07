@@ -32,6 +32,7 @@ type WebServiceClient interface {
 	ListPipeds(ctx context.Context, in *ListPipedsRequest, opts ...grpc.CallOption) (*ListPipedsResponse, error)
 	GetPiped(ctx context.Context, in *GetPipedRequest, opts ...grpc.CallOption) (*GetPipedResponse, error)
 	UpdatePipedDesiredVersion(ctx context.Context, in *UpdatePipedDesiredVersionRequest, opts ...grpc.CallOption) (*UpdatePipedDesiredVersionResponse, error)
+	RestartPiped(ctx context.Context, in *RestartPipedRequest, opts ...grpc.CallOption) (*RestartPipedResponse, error)
 	// Application
 	AddApplication(ctx context.Context, in *AddApplicationRequest, opts ...grpc.CallOption) (*AddApplicationResponse, error)
 	UpdateApplication(ctx context.Context, in *UpdateApplicationRequest, opts ...grpc.CallOption) (*UpdateApplicationResponse, error)
@@ -166,6 +167,15 @@ func (c *webServiceClient) GetPiped(ctx context.Context, in *GetPipedRequest, op
 func (c *webServiceClient) UpdatePipedDesiredVersion(ctx context.Context, in *UpdatePipedDesiredVersionRequest, opts ...grpc.CallOption) (*UpdatePipedDesiredVersionResponse, error) {
 	out := new(UpdatePipedDesiredVersionResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/UpdatePipedDesiredVersion", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *webServiceClient) RestartPiped(ctx context.Context, in *RestartPipedRequest, opts ...grpc.CallOption) (*RestartPipedResponse, error) {
+	out := new(RestartPipedResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.webservice.WebService/RestartPiped", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -546,6 +556,7 @@ type WebServiceServer interface {
 	ListPipeds(context.Context, *ListPipedsRequest) (*ListPipedsResponse, error)
 	GetPiped(context.Context, *GetPipedRequest) (*GetPipedResponse, error)
 	UpdatePipedDesiredVersion(context.Context, *UpdatePipedDesiredVersionRequest) (*UpdatePipedDesiredVersionResponse, error)
+	RestartPiped(context.Context, *RestartPipedRequest) (*RestartPipedResponse, error)
 	// Application
 	AddApplication(context.Context, *AddApplicationRequest) (*AddApplicationResponse, error)
 	UpdateApplication(context.Context, *UpdateApplicationRequest) (*UpdateApplicationResponse, error)
@@ -628,6 +639,9 @@ func (UnimplementedWebServiceServer) GetPiped(context.Context, *GetPipedRequest)
 }
 func (UnimplementedWebServiceServer) UpdatePipedDesiredVersion(context.Context, *UpdatePipedDesiredVersionRequest) (*UpdatePipedDesiredVersionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdatePipedDesiredVersion not implemented")
+}
+func (UnimplementedWebServiceServer) RestartPiped(context.Context, *RestartPipedRequest) (*RestartPipedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestartPiped not implemented")
 }
 func (UnimplementedWebServiceServer) AddApplication(context.Context, *AddApplicationRequest) (*AddApplicationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddApplication not implemented")
@@ -920,6 +934,24 @@ func _WebService_UpdatePipedDesiredVersion_Handler(srv interface{}, ctx context.
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(WebServiceServer).UpdatePipedDesiredVersion(ctx, req.(*UpdatePipedDesiredVersionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WebService_RestartPiped_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RestartPipedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebServiceServer).RestartPiped(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.webservice.WebService/RestartPiped",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebServiceServer).RestartPiped(ctx, req.(*RestartPipedRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1686,6 +1718,10 @@ var WebService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdatePipedDesiredVersion",
 			Handler:    _WebService_UpdatePipedDesiredVersion_Handler,
+		},
+		{
+			MethodName: "RestartPiped",
+			Handler:    _WebService_RestartPiped_Handler,
 		},
 		{
 			MethodName: "AddApplication",

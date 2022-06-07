@@ -380,6 +380,38 @@ func (a *WebAPI) UpdatePipedDesiredVersion(ctx context.Context, req *webservice.
 	return &webservice.UpdatePipedDesiredVersionResponse{}, nil
 }
 
+func (a *WebAPI) RestartPiped(ctx context.Context, req *webservice.RestartPipedRequest) (*webservice.RestartPipedResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	if claims.Role.ProjectId != piped.ProjectId {
+		return nil, status.Error(codes.PermissionDenied, "Requested Piped does not belong to your project")
+	}
+
+	cmd := model.Command{
+		Id:        uuid.New().String(),
+		PipedId:   piped.Id,
+		ProjectId: piped.ProjectId,
+		Type:      model.Command_RESTART_PIPED,
+		Commander: claims.Subject,
+	}
+	if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
+		return nil, err
+	}
+
+	return &webservice.RestartPipedResponse{
+		CommandId: cmd.Id,
+	}, nil
+}
+
 // validatePipedBelongsToProject checks if the given piped belongs to the given project.
 // It gives back error unless the piped belongs to the project.
 func (a *WebAPI) validatePipedBelongsToProject(ctx context.Context, pipedID, projectID string) error {
