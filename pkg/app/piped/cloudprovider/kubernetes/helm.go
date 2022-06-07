@@ -252,7 +252,7 @@ func verifyHelmValueFilePath(appDir, valueFilePath string) error {
 	// it may indicate that someone trying to illegally read a file as values file that
 	// exists in the environment where Piped is running.
 	if !strings.HasPrefix(valueFilePath, absAppDir) {
-		return fmt.Errorf("value file %s references outside the application configuration directory", valueFilePath)
+		return fmt.Errorf("values file %s references outside the application configuration directory", valueFilePath)
 	}
 
 	return nil
