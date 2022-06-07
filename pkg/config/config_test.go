@@ -98,7 +98,7 @@ func TestKind_ToApplicationKind(t *testing.T) {
 		{
 			name:   "Not an app config",
 			k:      KindPiped,
-			want:   -1,
+			want:   model.ApplicationKind_KUBERNETES,
 			wantOk: false,
 		},
 	}

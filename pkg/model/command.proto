@@ -36,6 +36,7 @@ message Command {
         BUILD_PLAN_PREVIEW = 4;
         CHAIN_SYNC_APPLICATION = 5;
         SKIP_STAGE = 6;
+        RESTART_PIPED = 7;
     }
 
     message SyncApplication {
@@ -80,6 +81,10 @@ message Command {
         string stage_id = 2 [(validate.rules).string.min_len = 1];
     }
 
+    message RestartPiped {
+        string piped_id = 1 [(validate.rules).string.min_len = 1];
+    }
+
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
     string piped_id = 2 [(validate.rules).string.min_len = 1];
@@ -102,6 +107,7 @@ message Command {
     BuildPlanPreview build_plan_preview = 35;
     ChainSyncApplication chain_sync_application = 36;
     SkipStage skip_stage = 37;
+    RestartPiped restart_piped = 38;
 
     int64 created_at = 100 [(validate.rules).int64.gt = 0];
     int64 updated_at = 101 [(validate.rules).int64.gt = 0];

@@ -73,6 +73,11 @@ export class Command extends jspb.Message {
   hasSkipStage(): boolean;
   clearSkipStage(): Command;
 
+  getRestartPiped(): Command.RestartPiped | undefined;
+  setRestartPiped(value?: Command.RestartPiped): Command;
+  hasRestartPiped(): boolean;
+  clearRestartPiped(): Command;
+
   getCreatedAt(): number;
   setCreatedAt(value: number): Command;
 
@@ -107,6 +112,7 @@ export namespace Command {
     buildPlanPreview?: Command.BuildPlanPreview.AsObject,
     chainSyncApplication?: Command.ChainSyncApplication.AsObject,
     skipStage?: Command.SkipStage.AsObject,
+    restartPiped?: Command.RestartPiped.AsObject,
     createdAt: number,
     updatedAt: number,
   }
@@ -300,6 +306,25 @@ export namespace Command {
   }
 
 
+  export class RestartPiped extends jspb.Message {
+    getPipedId(): string;
+    setPipedId(value: string): RestartPiped;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): RestartPiped.AsObject;
+    static toObject(includeInstance: boolean, msg: RestartPiped): RestartPiped.AsObject;
+    static serializeBinaryToWriter(message: RestartPiped, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): RestartPiped;
+    static deserializeBinaryFromReader(message: RestartPiped, reader: jspb.BinaryReader): RestartPiped;
+  }
+
+  export namespace RestartPiped {
+    export type AsObject = {
+      pipedId: string,
+    }
+  }
+
+
   export enum Type { 
     SYNC_APPLICATION = 0,
     UPDATE_APPLICATION_CONFIG = 1,
@@ -308,6 +333,7 @@ export namespace Command {
     BUILD_PLAN_PREVIEW = 4,
     CHAIN_SYNC_APPLICATION = 5,
     SKIP_STAGE = 6,
+    RESTART_PIPED = 7,
   }
 }
 
