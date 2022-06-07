@@ -18,6 +18,9 @@ spec:
         {{- include "pipecd.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: gateway
     spec:
+      {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
+      serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
+      {{- end }}
       containers:
         - name: envoy
           image: envoyproxy/envoy-alpine:{{ .Values.gateway.imageTag }}
@@ -201,6 +204,9 @@ spec:
         {{- include "pipecd.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: cache
     spec:
+      {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
+      serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
+      {{- end }}
       containers:
         - name: cache
           image: redis:{{ .Values.cache.imageTag }}
@@ -242,6 +248,9 @@ spec:
         {{- include "pipecd.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: ops
     spec:
+      {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
+      serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
+      {{- end }}
       {{- if .Values.quickstart.enabled }}
       initContainers:
         - name: dep-waiter
@@ -323,6 +332,9 @@ metadata:
     {{- include "pipecd.labels" . | nindent 4 }}
     app.kubernetes.io/component: mysql
 spec:
+  {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
+  serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
+  {{- end }}
   replicas: 1
   selector:
     matchLabels:
@@ -361,6 +373,9 @@ metadata:
     {{- include "pipecd.labels" . | nindent 4 }}
     app.kubernetes.io/component: minio
 spec:
+  {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
+  serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
+  {{- end }}
   replicas: 1
   selector:
     matchLabels:
