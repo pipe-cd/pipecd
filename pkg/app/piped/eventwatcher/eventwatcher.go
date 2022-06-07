@@ -196,7 +196,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 					if app.GitPath.Repo.Id != repoCfg.RepoID {
 						continue
 					}
-					cfg, err := loadApplicationConfiguration(repo.GetPath(), app)
+					cfg, err := config.LoadApplication(repo.GetPath(), app.GitPath.GetApplicationConfigFilePath(), app.Kind)
 					if err != nil {
 						w.logger.Error("failed to load application configuration", zap.Error(err))
 						continue
@@ -237,31 +237,6 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 			}
 		}
 	}
-}
-
-func loadApplicationConfiguration(repoPath string, app *model.Application) (*config.GenericApplicationSpec, error) {
-	var (
-		relPath = app.GitPath.GetApplicationConfigFilePath()
-		absPath = filepath.Join(repoPath, relPath)
-	)
-
-	cfg, err := config.LoadFromYAML(absPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("application config file %s was not found in Git", relPath)
-		}
-		return nil, err
-	}
-	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
-		return nil, fmt.Errorf("invalid application kind in the application config file, got: %s, expected: %s", appKind, app.Kind)
-	}
-
-	spec, ok := cfg.GetGenericApplication()
-	if !ok {
-		return nil, fmt.Errorf("unsupported application kind: %s", app.Kind)
-	}
-
-	return &spec, nil
 }
 
 // cloneRepo clones the git repository under the working directory.
