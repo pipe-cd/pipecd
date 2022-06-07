@@ -66,7 +66,7 @@ service WebService {
         option (model.role).project_role = ADMIN;
     }
     rpc RestartPiped(RestartPipedRequest) returns (RestartPipedResponse) {
-        option (model.role).project_role = EDITOR;
+        option (model.role).project_role = ADMIN;
     }
 
     // Application
