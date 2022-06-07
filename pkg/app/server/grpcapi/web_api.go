@@ -1765,8 +1765,8 @@ func (a *WebAPI) ListReleasedVersions(ctx context.Context, req *webservice.ListR
 
 	versions := make([]string, 0, len(releases))
 	for _, release := range releases {
-		// Ignore pre-release tagged release.
-		if *release.Prerelease {
+		// Ignore pre-release tagged or draft release.
+		if *release.Prerelease || *release.Draft {
 			continue
 		}
 		versions = append(versions, *release.TagName)
