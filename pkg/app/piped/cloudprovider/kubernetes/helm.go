@@ -243,12 +243,13 @@ func verifyHelmValueFilePath(appDir, valueFilePath string) error {
 		return err
 	}
 
+	// convert to absolute path again in case symlink is resolved.
 	if !filepath.IsAbs(valueFilePath) {
 		valueFilePath = filepath.Join(absAppDir, valueFilePath)
 	}
 
 	// If a path outside of absAppDir is specified as the path for the values file,
-	// it may indicate that someone trying to illegally read a file that
+	// it may indicate that someone trying to illegally read a file as values file that
 	// exists in the environment where Piped is running.
 	if !strings.HasPrefix(valueFilePath, absAppDir) {
 		return fmt.Errorf("value file %s references outside the application configuration directory", valueFilePath)
