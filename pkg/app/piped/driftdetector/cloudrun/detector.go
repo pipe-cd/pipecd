@@ -287,7 +287,7 @@ func (d *detector) loadApplicationConfiguration(repoPath string, app *model.Appl
 	if err != nil {
 		return nil, err
 	}
-	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
+	if appKind, ok := cfg.Kind.ToApplicationKind(); !ok || appKind != app.Kind {
 		return nil, fmt.Errorf("application in application configuration file is not match, got: %s, expected: %s", appKind, app.Kind)
 	}
 	return cfg, nil
