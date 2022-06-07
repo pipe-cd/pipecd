@@ -227,27 +227,21 @@ func verifyHelmValueFilePath(appDir, valueFilePath string) error {
 		return fmt.Errorf("scheme %s is not allowed to load values file", url.Scheme)
 	}
 
-	// absAppDir is a path where ".pipecd.yaml" is located.
-	absAppDir, err := filepath.Abs(appDir)
-	if err != nil {
-		return err
-	}
-
 	// valueFilePath is a path where non-default Helm values file is located.
 	if !filepath.IsAbs(valueFilePath) {
-		valueFilePath = filepath.Join(absAppDir, valueFilePath)
+		valueFilePath = filepath.Join(appDir, valueFilePath)
 	}
 
 	if isSymlink(valueFilePath) {
-		if valueFilePath, err = resolveSymlinkToAbsPath(valueFilePath, absAppDir); err != nil {
+		if valueFilePath, err = resolveSymlinkToAbsPath(valueFilePath, appDir); err != nil {
 			return err
 		}
 	}
 
-	// If a path outside of absAppDir is specified as the path for the values file,
+	// If a path outside of appDir is specified as the path for the values file,
 	// it may indicate that someone trying to illegally read a file as values file that
 	// exists in the environment where Piped is running.
-	if !strings.HasPrefix(valueFilePath, absAppDir) {
+	if !strings.HasPrefix(valueFilePath, appDir) {
 		return fmt.Errorf("values file %s references outside the application configuration directory", valueFilePath)
 	}
 
