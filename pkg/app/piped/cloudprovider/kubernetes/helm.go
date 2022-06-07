@@ -265,7 +265,7 @@ func isSymlink(path string) bool {
 	return lstat.Mode()&os.ModeSymlink == os.ModeSymlink
 }
 
-// resolveSymlink resolves symbolic link to an absolute path.
+// resolveSymlinkToAbsPath resolves symbolic link to an absolute path.
 func resolveSymlinkToAbsPath(path, absParentDir string) (string, error) {
 	resolved, err := os.Readlink(path)
 	if err != nil {
