@@ -314,7 +314,7 @@ One of `yamlField` or `regex` is required.
 | Field | Type | Description | Required |
 |-|-|-|-|
 | releaseName | string | The release name of helm deployment. By default, the release name is equal to the application name. | No |
-| valueFiles | []string | List of value files should be loaded. The paths that can be specified are limited to the directory where the application configuration file exists or under it. | No |
+| valueFiles | []string | List of value files should be loaded. The paths that can be specified are limited to the inside of the directory where the application configuration file exists. | No |
 | setFiles | map[string]string | List of file path for values. | No |
 | apiVersions | []string | Kubernetes api versions used for Capabilities.APIVersions. | No |
 | kubeVersion | string | Kubernetes version used for Capabilities.KubeVersion. | No |
