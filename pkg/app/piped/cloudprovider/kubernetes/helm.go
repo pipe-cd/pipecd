@@ -239,6 +239,10 @@ func verifyHelmValueFilePath(appDir, valueFilePath string) error {
 		return err
 	}
 
+	if !filepath.IsAbs(valueFilePath) {
+		valueFilePath = filepath.Join(absAppDir, valueFilePath)
+	}
+
 	// If a path outside of absAppDir is specified as the path for the values file,
 	// it may indicate that someone trying to illegally read a file that
 	// exists in the environment where Piped is running.
@@ -251,6 +255,7 @@ func verifyHelmValueFilePath(appDir, valueFilePath string) error {
 
 // resolveSymlink resolves symbolic link.
 func resolveSymlink(path string) (string, error) {
+	fmt.Println("path:", path)
 	lstat, err := os.Lstat(path)
 	if err != nil {
 		if _, ok := err.(*os.PathError); ok {

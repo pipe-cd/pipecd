@@ -130,7 +130,7 @@ func TestVerifyHelmValueFilePath(t *testing.T) {
 			wantErr:       false,
 		},
 		{
-			name:          "Values file locates remote URL (http)",
+			name:          "Values file locates remote URL (https)",
 			appDir:        "testdata/testhelm/appconfdir",
 			valueFilePath: "https://exmaple.com/values.yaml",
 			wantErr:       false,
