@@ -14,8 +14,7 @@ import {
   TableHead,
   TableRow,
   Typography,
-  Select,
-  MenuItem,
+  TextField,
 } from "@material-ui/core";
 import { FC, memo, useCallback, useState, FormEvent } from "react";
 import { UPGRADE_PIPEDS_SUCCESS } from "~/constants/toast-text";
@@ -24,6 +23,7 @@ import { UI_TEXT_CANCEL, UI_TEXT_UPGRADE } from "~/constants/ui-text";
 import { Piped, updatePipedDesiredVersion } from "~/modules/pipeds";
 import { addToast } from "~/modules/toasts";
 import { useSettingsStyles } from "../../../styles";
+import { Autocomplete } from "@material-ui/lab";
 
 export interface UpgradePipedProps {
   open: boolean;
@@ -89,23 +89,18 @@ export const UpgradePipedDialog: FC<UpgradePipedProps> = memo(
           <DialogContent>
             <Box mb={3}>
               <Typography>1. Input your desired version</Typography>
-              <Select
-                labelId="version-sel"
-                id="version-sel"
-                value={upgradeVersion}
-                fullWidth
-                margin="dense"
-                variant="outlined"
-                onChange={(e) => {
-                  setUpgradeVersion(e.target.value as string);
+              <Autocomplete
+                id="version"
+                freeSolo
+                autoSelect
+                options={releasedVersions}
+                onChange={(_, value) => {
+                  setUpgradeVersion(value || "");
                 }}
-              >
-                {releasedVersions.slice(0, 6).map((v) => (
-                  <MenuItem value={v} key={`version-${v}`}>
-                    {v}
-                  </MenuItem>
-                ))}
-              </Select>
+                renderInput={(params) => (
+                  <TextField {...params} variant="outlined" />
+                )}
+              />
             </Box>
 
             <Typography>2. Select pipeds to upgrade</Typography>
