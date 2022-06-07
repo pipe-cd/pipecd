@@ -21,6 +21,7 @@ export const COMMAND_TYPE_TEXT: Record<Command.Type, string> = {
   [Command.Type.BUILD_PLAN_PREVIEW]: "Build Plan Preview",
   [Command.Type.CHAIN_SYNC_APPLICATION]: "Chain Sync Application",
   [Command.Type.SKIP_STAGE]: "Skip Stage",
+  [Command.Type.RESTART_PIPED]: "Restart Piped",
 };
 
 const commandsAdapter = createEntityAdapter<Command.AsObject>();
