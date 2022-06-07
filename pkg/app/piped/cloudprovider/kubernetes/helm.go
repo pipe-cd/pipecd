@@ -238,9 +238,8 @@ func verifyHelmValueFilePath(appDir, valueFilePath string) error {
 		valueFilePath = filepath.Join(absAppDir, valueFilePath)
 	}
 
-	for isSymlink(valueFilePath) {
-		valueFilePath, err = resolveSymlinkToAbsPath(valueFilePath, absAppDir)
-		if err != nil {
+	if isSymlink(valueFilePath) {
+		if valueFilePath, err = resolveSymlinkToAbsPath(valueFilePath, absAppDir); err != nil {
 			return err
 		}
 	}
