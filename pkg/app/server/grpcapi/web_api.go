@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/go-github/v29/github"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -30,7 +31,6 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/applicationlivestatestore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandstore"
-	"github.com/pipe-cd/pipecd/pkg/app/server/githubstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/webservice"
 	"github.com/pipe-cd/pipecd/pkg/app/server/stagelogstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/unregisteredappstore"
@@ -116,8 +116,8 @@ type WebAPI struct {
 	commandStore              commandstore.Store
 	insightStore              insightstore.Store
 	unregisteredAppStore      unregisteredappstore.Store
-	githubStore               githubstore.Store
 	encrypter                 encrypter
+	githubCli                 *github.Client
 
 	appProjectCache        cache.Cache
 	deploymentProjectCache cache.Cache
@@ -137,7 +137,6 @@ func NewWebAPI(
 	sls stagelogstore.Store,
 	alss applicationlivestatestore.Store,
 	uas unregisteredappstore.Store,
-	gs githubstore.Store,
 	is insightstore.Store,
 	psc cache.Cache,
 	ic cache.Cache,
@@ -159,9 +158,9 @@ func NewWebAPI(
 		commandStore:              commandstore.NewStore(w, ds, sc, logger),
 		insightStore:              is,
 		unregisteredAppStore:      uas,
-		githubStore:               gs,
 		projectsInConfig:          projs,
 		encrypter:                 encrypter,
+		githubCli:                 github.NewClient(nil),
 		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
@@ -1755,9 +1754,22 @@ func (a *WebAPI) ListReleasedVersions(ctx context.Context, req *webservice.ListR
 		return nil, err
 	}
 
-	versions, err := a.githubStore.ListReleasedVersions(ctx)
+	releases, _, err := a.githubCli.Repositories.ListReleases(ctx, "pipe-cd", "pipecd", nil)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Failed to list released versions")
+	}
+
+	if len(releases) == 0 {
+		return &webservice.ListReleasedVersionsResponse{}, nil
+	}
+
+	versions := make([]string, 0, len(releases))
+	for _, release := range releases {
+		// Ignore pre-release tagged release.
+		if *release.Prerelease {
+			continue
+		}
+		versions = append(versions, *release.TagName)
 	}
 
 	return &webservice.ListReleasedVersionsResponse{

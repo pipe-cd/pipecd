@@ -33,7 +33,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/apikeyverifier"
 	"github.com/pipe-cd/pipecd/pkg/app/server/applicationlivestatestore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandoutputstore"
-	"github.com/pipe-cd/pipecd/pkg/app/server/githubstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/grpcapi"
 	"github.com/pipe-cd/pipecd/pkg/app/server/httpapi"
 	"github.com/pipe-cd/pipecd/pkg/app/server/httpapi/httpapimetrics"
@@ -278,9 +277,8 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			return err
 		}
 		insightCache := rediscache.NewTTLCache(rd, 3*time.Hour)
-		gs := githubstore.NewStore()
 
-		service := grpcapi.NewWebAPI(ctx, ds, cache, sls, alss, unregisteredAppStore, gs, is, statCache, insightCache, cfg.ProjectMap(), encryptDecrypter, input.Logger)
+		service := grpcapi.NewWebAPI(ctx, ds, cache, sls, alss, unregisteredAppStore, is, statCache, insightCache, cfg.ProjectMap(), encryptDecrypter, input.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
