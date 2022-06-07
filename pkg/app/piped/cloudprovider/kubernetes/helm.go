@@ -258,9 +258,8 @@ func verifyHelmValueFilePath(appDir, valueFilePath string) error {
 	return nil
 }
 
-// resolveSymlink resolves symbolic link.
+// resolveSymlink resolves symbolic link recursively.
 func resolveSymlink(path string) (string, error) {
-	fmt.Println("path:", path)
 	lstat, err := os.Lstat(path)
 	if err != nil {
 		if _, ok := err.(*os.PathError); ok {
