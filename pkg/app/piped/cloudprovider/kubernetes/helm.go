@@ -69,7 +69,7 @@ func (c *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 	if opts != nil {
 		for _, v := range opts.ValueFiles {
 			if err := verifyHelmValueFilePath(appDir, v); err != nil {
-				c.logger.Error("failed to verify value file path", zap.Error(err))
+				c.logger.Error("failed to verify values file path", zap.Error(err))
 				return "", err
 			}
 			args = append(args, "-f", v)
@@ -108,7 +108,7 @@ type helmRemoteGitChart struct {
 }
 
 func (c *Helm) TemplateRemoteGitChart(ctx context.Context, appName, appDir, namespace string, chart helmRemoteGitChart, gitClient gitClient, opts *config.InputHelmOptions) (string, error) {
-	// Firstly, we need to download the remote repositoy.
+	// Firstly, we need to download the remote repository.
 	repoDir, err := os.MkdirTemp("", "helm-remote-chart")
 	if err != nil {
 		return "", fmt.Errorf("unable to created temporary directory for storing remote helm chart: %w", err)
@@ -162,6 +162,10 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 
 	if opts != nil {
 		for _, v := range opts.ValueFiles {
+			if err := verifyHelmValueFilePath(appDir, v); err != nil {
+				c.logger.Error("failed to verify values file path", zap.Error(err))
+				return "", err
+			}
 			args = append(args, "-f", v)
 		}
 		for k, v := range opts.SetFiles {
