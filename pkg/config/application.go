@@ -657,7 +657,7 @@ func LoadApplication(repoPath, configRelPath string, appKind model.ApplicationKi
 		}
 		return nil, err
 	}
-	if kind, ok := ToApplicationKind(cfg.Kind); !ok || kind != appKind {
+	if kind, ok := cfg.Kind.ToApplicationKind(); !ok || kind != appKind {
 		return nil, fmt.Errorf("invalid application kind in the application config file, got: %s, expected: %s", kind, appKind)
 	}
 
