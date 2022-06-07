@@ -516,7 +516,9 @@ const CloudProviderFilter: FC<CloudProviderFilterProps> = memo(
     const ps = useAppSelector((state) => selectAllPipeds(state));
     const pipeds = ps.filter((piped) => !piped.disabled);
 
-    const [selectedPipedId, setSelectedPipedId] = useState("");
+    const [selectedPipedId, setSelectedPipedId] = useState(
+      pipeds.length === 1 ? pipeds[0].id : ""
+    );
     const selectedPiped = useAppSelector(selectPipedById(selectedPipedId));
     const cloudProviders = selectedPiped
       ? selectedPiped.cloudProvidersList
@@ -537,6 +539,7 @@ const CloudProviderFilter: FC<CloudProviderFilterProps> = memo(
             labelId="filter-piped"
             id="filter-piped"
             label="Piped"
+            value={selectedPipedId}
             className={classes.select}
             onChange={(e) => {
               setSelectedPipedId(e.target.value as string);
