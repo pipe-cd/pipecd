@@ -31,7 +31,7 @@ const (
 
 var defaultKubernetesCloudProvider = PipedCloudProvider{
 	Name:             "kubernetes-default",
-	Type:             model.ApplicationKind_KUBERNETES,
+	Type:             model.CloudProviderKubernetes,
 	KubernetesConfig: &CloudProviderKubernetesConfig{},
 }
 
@@ -180,11 +180,12 @@ func (s *PipedSpec) EnableDefaultKubernetesCloudProvider() {
 
 // HasCloudProvider checks whether the given provider is configured or not.
 func (s *PipedSpec) HasCloudProvider(name string, t model.ApplicationKind) bool {
+	requiredProviderType := t.CompatibleCloudProviderType()
 	for _, cp := range s.CloudProviders {
 		if cp.Name != name {
 			continue
 		}
-		if cp.Type != t {
+		if cp.Type != requiredProviderType {
 			continue
 		}
 		return true
@@ -194,11 +195,12 @@ func (s *PipedSpec) HasCloudProvider(name string, t model.ApplicationKind) bool 
 
 // FindCloudProvider finds and returns a Cloud Provider by name and type.
 func (s *PipedSpec) FindCloudProvider(name string, t model.ApplicationKind) (PipedCloudProvider, bool) {
+	requiredProviderType := t.CompatibleCloudProviderType()
 	for _, p := range s.CloudProviders {
 		if p.Name != name {
 			continue
 		}
-		if p.Type != t {
+		if p.Type != requiredProviderType {
 			continue
 		}
 		return p, true
@@ -450,8 +452,8 @@ func (r *HelmChartRegistry) Mask() {
 }
 
 type PipedCloudProvider struct {
-	Name string                `json:"name,omitempty"`
-	Type model.ApplicationKind `json:"type,string,omitempty"`
+	Name string                  `json:"name"`
+	Type model.CloudProviderType `json:"type"`
 
 	KubernetesConfig *CloudProviderKubernetesConfig `json:"kubernetesConfig,omitempty"`
 	TerraformConfig  *CloudProviderTerraformConfig  `json:"terraformConfig,omitempty"`
@@ -461,9 +463,9 @@ type PipedCloudProvider struct {
 }
 
 type genericPipedCloudProvider struct {
-	Name   string          `json:"name"`
-	Type   string          `json:"type"`
-	Config json.RawMessage `json:"config"`
+	Name   string                  `json:"name"`
+	Type   model.CloudProviderType `json:"type"`
+	Config json.RawMessage         `json:"config"`
 }
 
 func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
@@ -473,30 +475,30 @@ func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	p.Name = gp.Name
-	p.Type = model.ApplicationKind(model.ApplicationKind_value[gp.Type])
+	p.Type = gp.Type
 
 	switch p.Type {
-	case model.ApplicationKind_KUBERNETES:
+	case model.CloudProviderKubernetes:
 		p.KubernetesConfig = &CloudProviderKubernetesConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.KubernetesConfig)
 		}
-	case model.ApplicationKind_TERRAFORM:
+	case model.CloudProviderTerraform:
 		p.TerraformConfig = &CloudProviderTerraformConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.TerraformConfig)
 		}
-	case model.ApplicationKind_CLOUDRUN:
+	case model.CloudProviderCloudRun:
 		p.CloudRunConfig = &CloudProviderCloudRunConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.CloudRunConfig)
 		}
-	case model.ApplicationKind_LAMBDA:
+	case model.CloudProviderLambda:
 		p.LambdaConfig = &CloudProviderLambdaConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.LambdaConfig)
 		}
-	case model.ApplicationKind_ECS:
+	case model.CloudProviderECS:
 		p.ECSConfig = &CloudProviderECSConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.ECSConfig)

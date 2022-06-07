@@ -96,7 +96,7 @@ func NewDetector(
 
 	for _, cp := range cfg.CloudProviders {
 		switch cp.Type {
-		case model.ApplicationKind_KUBERNETES:
+		case model.CloudProviderKubernetes:
 			sg, ok := stateGetter.KubernetesGetter(cp.Name)
 			if !ok {
 				return nil, fmt.Errorf(format, cp.Name)
@@ -113,7 +113,7 @@ func NewDetector(
 				logger,
 			))
 
-		case model.ApplicationKind_CLOUDRUN:
+		case model.CloudProviderCloudRun:
 			sg, ok := stateGetter.CloudRunGetter(cp.Name)
 			if !ok {
 				return nil, fmt.Errorf(format, cp.Name)
