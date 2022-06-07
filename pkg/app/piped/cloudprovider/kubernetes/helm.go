@@ -238,14 +238,11 @@ func verifyHelmValueFilePath(appDir, valueFilePath string) error {
 		valueFilePath = filepath.Join(absAppDir, valueFilePath)
 	}
 
-	valueFilePath, err = resolveSymlink(valueFilePath)
-	if err != nil {
-		return err
-	}
-
-	// convert to absolute path again in case symlink is resolved.
-	if !filepath.IsAbs(valueFilePath) {
-		valueFilePath = filepath.Join(absAppDir, valueFilePath)
+	for isSymlink(valueFilePath) {
+		valueFilePath, err = resolveSymlinkToAbsPath(valueFilePath, absAppDir)
+		if err != nil {
+			return err
+		}
 	}
 
 	// If a path outside of absAppDir is specified as the path for the values file,
@@ -258,24 +255,26 @@ func verifyHelmValueFilePath(appDir, valueFilePath string) error {
 	return nil
 }
 
-// resolveSymlink resolves symbolic link recursively.
-func resolveSymlink(path string) (string, error) {
+// isSymlink returns the path is whether symbolic link or not.
+func isSymlink(path string) bool {
 	lstat, err := os.Lstat(path)
 	if err != nil {
-		if _, ok := err.(*os.PathError); ok {
-			return path, nil
-		}
+		return false
+	}
+
+	return lstat.Mode()&os.ModeSymlink == os.ModeSymlink
+}
+
+// resolveSymlink resolves symbolic link to an absolute path.
+func resolveSymlinkToAbsPath(path, absParentDir string) (string, error) {
+	resolved, err := os.Readlink(path)
+	if err != nil {
 		return "", err
 	}
 
-	if lstat.Mode()&os.ModeSymlink == os.ModeSymlink {
-		resolved, err := os.Readlink(path)
-		if err != nil {
-			return "", err
-		}
-
-		return resolveSymlink(resolved)
+	if !filepath.IsAbs(resolved) {
+		resolved = filepath.Join(absParentDir, resolved)
 	}
 
-	return path, nil
+	return resolved, nil
 }
