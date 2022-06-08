@@ -18,6 +18,8 @@ import {
   DeleteOldPipedKeysResponse,
   UpdatePipedDesiredVersionRequest,
   UpdatePipedDesiredVersionResponse,
+  ListReleasedVersionsResponse,
+  ListReleasedVersionsRequest,
 } from "pipecd/web/api_client/service_pb";
 
 export const getPipeds = ({
@@ -26,6 +28,13 @@ export const getPipeds = ({
   const req = new ListPipedsRequest();
   req.setWithStatus(withStatus);
   return apiRequest(req, apiClient.listPipeds);
+};
+
+export const listReleasedVersions = (): Promise<
+  ListReleasedVersionsResponse.AsObject
+> => {
+  const req = new ListReleasedVersionsRequest();
+  return apiRequest(req, apiClient.listReleasedVersions);
 };
 
 export const registerPiped = ({

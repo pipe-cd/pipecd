@@ -25,6 +25,7 @@ describe("DeploymentDetailPage", () => {
         ids: [dummyPiped.id],
         registeredPiped: null,
         updating: false,
+        releasedVersions: [],
       },
     });
 

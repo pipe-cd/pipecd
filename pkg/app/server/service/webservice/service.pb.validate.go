@@ -2290,6 +2290,212 @@ var _ interface {
 	ErrorName() string
 } = RestartPipedResponseValidationError{}
 
+// Validate checks the field values on ListReleasedVersionsRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListReleasedVersionsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListReleasedVersionsRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListReleasedVersionsRequestMultiError, or nil if none found.
+func (m *ListReleasedVersionsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListReleasedVersionsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return ListReleasedVersionsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListReleasedVersionsRequestMultiError is an error wrapping multiple
+// validation errors returned by ListReleasedVersionsRequest.ValidateAll() if
+// the designated constraints aren't met.
+type ListReleasedVersionsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListReleasedVersionsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListReleasedVersionsRequestMultiError) AllErrors() []error { return m }
+
+// ListReleasedVersionsRequestValidationError is the validation error returned
+// by ListReleasedVersionsRequest.Validate if the designated constraints
+// aren't met.
+type ListReleasedVersionsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListReleasedVersionsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListReleasedVersionsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListReleasedVersionsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListReleasedVersionsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListReleasedVersionsRequestValidationError) ErrorName() string {
+	return "ListReleasedVersionsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListReleasedVersionsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListReleasedVersionsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListReleasedVersionsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListReleasedVersionsRequestValidationError{}
+
+// Validate checks the field values on ListReleasedVersionsResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListReleasedVersionsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListReleasedVersionsResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListReleasedVersionsResponseMultiError, or nil if none found.
+func (m *ListReleasedVersionsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListReleasedVersionsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return ListReleasedVersionsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListReleasedVersionsResponseMultiError is an error wrapping multiple
+// validation errors returned by ListReleasedVersionsResponse.ValidateAll() if
+// the designated constraints aren't met.
+type ListReleasedVersionsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListReleasedVersionsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListReleasedVersionsResponseMultiError) AllErrors() []error { return m }
+
+// ListReleasedVersionsResponseValidationError is the validation error returned
+// by ListReleasedVersionsResponse.Validate if the designated constraints
+// aren't met.
+type ListReleasedVersionsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListReleasedVersionsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListReleasedVersionsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListReleasedVersionsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListReleasedVersionsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListReleasedVersionsResponseValidationError) ErrorName() string {
+	return "ListReleasedVersionsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListReleasedVersionsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListReleasedVersionsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListReleasedVersionsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListReleasedVersionsResponseValidationError{}
+
 // Validate checks the field values on AddApplicationRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

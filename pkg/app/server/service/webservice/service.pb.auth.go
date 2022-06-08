@@ -100,6 +100,8 @@ func (a *authorizer) Authorize(method string, r model.Role) bool {
 		return isAdmin(r) || isEditor(r) || isViewer(r)
 	case "/grpc.service.webservice.WebService/GetPiped":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
+	case "/grpc.service.webservice.WebService/ListReleasedVersions":
+		return isAdmin(r) || isEditor(r) || isViewer(r)
 	case "/grpc.service.webservice.WebService/ListApplications":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
 	case "/grpc.service.webservice.WebService/GetApplication":

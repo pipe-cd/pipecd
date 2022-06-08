@@ -37,6 +37,7 @@ const initialState = {
     },
     registeredPiped: null,
     updating: false,
+    releasedVersions: [],
   },
   applications: {
     loading: false,

@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/go-github/v29/github"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -116,6 +117,7 @@ type WebAPI struct {
 	insightStore              insightstore.Store
 	unregisteredAppStore      unregisteredappstore.Store
 	encrypter                 encrypter
+	githubCli                 *github.Client
 
 	appProjectCache        cache.Cache
 	deploymentProjectCache cache.Cache
@@ -158,6 +160,7 @@ func NewWebAPI(
 		unregisteredAppStore:      uas,
 		projectsInConfig:          projs,
 		encrypter:                 encrypter,
+		githubCli:                 github.NewClient(nil),
 		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
@@ -1741,5 +1744,35 @@ func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsReque
 	return &webservice.ListEventsResponse{
 		Events: filtered,
 		Cursor: cursor,
+	}, nil
+}
+
+func (a *WebAPI) ListReleasedVersions(ctx context.Context, req *webservice.ListReleasedVersionsRequest) (*webservice.ListReleasedVersionsResponse, error) {
+	_, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	releases, _, err := a.githubCli.Repositories.ListReleases(ctx, "pipe-cd", "pipecd", nil)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "Failed to list released versions")
+	}
+
+	if len(releases) == 0 {
+		return &webservice.ListReleasedVersionsResponse{}, nil
+	}
+
+	versions := make([]string, 0, len(releases))
+	for _, release := range releases {
+		// Ignore pre-release tagged or draft release.
+		if *release.Prerelease || *release.Draft {
+			continue
+		}
+		versions = append(versions, *release.TagName)
+	}
+
+	return &webservice.ListReleasedVersionsResponse{
+		Versions: versions,
 	}, nil
 }

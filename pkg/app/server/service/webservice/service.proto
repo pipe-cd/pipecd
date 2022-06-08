@@ -68,6 +68,9 @@ service WebService {
     rpc RestartPiped(RestartPipedRequest) returns (RestartPipedResponse) {
         option (model.role).project_role = ADMIN;
     }
+    rpc ListReleasedVersions(ListReleasedVersionsRequest) returns (ListReleasedVersionsResponse) {
+        option (model.role).project_role = VIEWER;
+    }
 
     // Application
     rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {
@@ -277,6 +280,13 @@ message RestartPipedRequest {
 
 message RestartPipedResponse {
     string command_id = 1;
+}
+
+message ListReleasedVersionsRequest {
+}
+
+message ListReleasedVersionsResponse {
+    repeated string versions = 1;
 }
 
 message AddApplicationRequest {
