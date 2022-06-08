@@ -24,7 +24,9 @@ import {
 import Alert from "@material-ui/lab/Alert";
 import { createSelector } from "@reduxjs/toolkit";
 import { FC, memo, useCallback, useEffect, useState } from "react";
+import { restartPiped } from "~/api/piped";
 import { TextWithCopyButton } from "~/components/text-with-copy-button";
+import { RESTART_PIPED_SUCCESS } from "~/constants/toast-text";
 import {
   UI_TEXT_ADD,
   UI_TEXT_CLOSE,
@@ -44,6 +46,7 @@ import {
   RegisteredPiped,
   selectAllPipeds,
 } from "~/modules/pipeds";
+import { addToast } from "~/modules/toasts";
 import { AppState } from "~/store";
 import { useSettingsStyles } from "../styles";
 import { AddPipedDrawer } from "./components/add-piped-drawer";
@@ -113,6 +116,18 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     (state) => state.pipeds.registeredPiped
   );
 
+  const handleRestart = useCallback(
+    (id: string) => {
+      dispatch(restartPiped({ pipedId: id })).then(() => {
+        dispatch(fetchPipeds(true));
+        dispatch(
+          addToast({ message: RESTART_PIPED_SUCCESS, severity: "success" })
+        );
+      });
+    },
+    [dispatch]
+  ); 
+  
   const handleDisable = useCallback(
     (id: string) => {
       dispatch(disablePiped({ pipedId: id })).then(() => {
@@ -206,6 +221,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
                   key={piped.id}
                   pipedId={piped.id}
                   onEdit={handleEdit}
+                  onRestart={handleRestart}
                   onDisable={handleDisable}
                   onEnable={handleEnable}
                 />

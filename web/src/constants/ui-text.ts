@@ -18,4 +18,5 @@ export const UI_TEXT_UPGRADE = "UPGRADE";
 // piped
 export const UI_TEXT_ADD_NEW_KEY = "Add new Key";
 export const UI_TEXT_DELETE_OLD_KEY = "Delete old Key";
+export const UI_TEXT_RESTART = "Restart";
 export const UI_TEXT_VIEW_THE_CONFIGURATION = "View the configuration";
