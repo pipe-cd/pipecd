@@ -126,8 +126,8 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
       });
     },
     [dispatch]
-  ); 
-  
+  );
+
   const handleDisable = useCallback(
     (id: string) => {
       dispatch(disablePiped({ pipedId: id })).then(() => {

@@ -132,7 +132,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
   const handleRestart = useCallback(() => {
     setAnchorEl(null);
     onRestart(pipedId);
-  }, [pipedId, onRestart])
+  }, [pipedId, onRestart]);
 
   const handleAddNewKey = useCallback(() => {
     setAnchorEl(null);
@@ -260,10 +260,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
             >
               {UI_TEXT_DELETE_OLD_KEY}
             </MenuItem>,
-            <MenuItem
-              key="piped-menu-restart"
-              onClick={handleRestart}
-            >
+            <MenuItem key="piped-menu-restart" onClick={handleRestart}>
               {UI_TEXT_RESTART}
             </MenuItem>,
             <MenuItem
