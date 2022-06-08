@@ -1,4 +1,4 @@
-import { sortedSet } from "./unique-array";
+import { sortedSet } from "./sorted-set";
 
 test("uniqueArray", () => {
   expect(sortedSet([])).toEqual([]);

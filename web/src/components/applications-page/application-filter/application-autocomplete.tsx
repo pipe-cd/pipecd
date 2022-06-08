@@ -3,7 +3,7 @@ import Autocomplete from "@material-ui/lab/Autocomplete";
 import { FC } from "react";
 import { useAppSelector } from "~/hooks/redux";
 import { selectAll as selectAllApplications } from "~/modules/applications";
-import { sortedSet } from "~/utils/unique-array";
+import { sortedSet } from "~/utils/sorted-set";
 
 interface Props {
   value: string | null;

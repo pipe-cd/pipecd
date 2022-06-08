@@ -4,7 +4,7 @@ import dagre from "dagre";
 import { FC, useState } from "react";
 import { KubernetesResourceState } from "~/modules/applications-live-state";
 import { theme } from "~/theme";
-import { sortedSet } from "~/utils/unique-array";
+import { sortedSet } from "~/utils/sorted-set";
 import { KubernetesResource } from "./kubernetes-resource";
 import { KubernetesResourceDetail } from "./kubernetes-resource-detail";
 import { ResourceFilterPopover } from "./resource-filter-popover";
