@@ -93,7 +93,7 @@ export const UpgradePipedDialog: FC<UpgradePipedProps> = memo(
                 id="version"
                 freeSolo
                 autoSelect
-                options={releasedVersions}
+                options={releasedVersions.slice(0, 6)}
                 onChange={(_, value) => {
                   setUpgradeVersion(value || "");
                 }}
