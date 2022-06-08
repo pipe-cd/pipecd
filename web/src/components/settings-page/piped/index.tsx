@@ -24,7 +24,6 @@ import {
 import Alert from "@material-ui/lab/Alert";
 import { createSelector } from "@reduxjs/toolkit";
 import { FC, memo, useCallback, useEffect, useState } from "react";
-import { restartPiped } from "~/api/piped";
 import { TextWithCopyButton } from "~/components/text-with-copy-button";
 import { RESTART_PIPED_SUCCESS } from "~/constants/toast-text";
 import {
@@ -38,6 +37,7 @@ import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { useInterval } from "~/hooks/use-interval";
 import {
   clearRegisteredPipedInfo,
+  restartPiped,
   disablePiped,
   enablePiped,
   fetchPipeds,

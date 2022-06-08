@@ -20,6 +20,8 @@ import {
   UpdatePipedDesiredVersionResponse,
   ListReleasedVersionsResponse,
   ListReleasedVersionsRequest,
+  RestartPipedRequest,
+  RestartPipedResponse,
 } from "pipecd/web/api_client/service_pb";
 
 export const getPipeds = ({
@@ -45,6 +47,14 @@ export const registerPiped = ({
   req.setName(name);
   req.setDesc(desc);
   return apiRequest(req, apiClient.registerPiped);
+};
+
+export const restartPiped = ({
+  pipedId,
+}: RestartPipedRequest.AsObject): Promise<RestartPipedResponse.AsObject> => {
+  const req = new RestartPipedRequest();
+  req.setPipedId(pipedId);
+  return apiRequest(req, apiClient.restartPiped);
 };
 
 export const disablePiped = ({
