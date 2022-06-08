@@ -3,7 +3,7 @@ import Autocomplete from "@material-ui/lab/Autocomplete";
 import { FC } from "react";
 import { useAppSelector } from "~/hooks/redux";
 import { selectAll as selectAllApplications } from "~/modules/applications";
-import { uniqueArray } from "~/utils/unique-array";
+import { sortedSet } from "~/utils/unique-array";
 
 interface Props {
   value: string | null;
@@ -13,7 +13,7 @@ interface Props {
 export const ApplicationAutocomplete: FC<Props> = ({ value, onChange }) => {
   const applications = useAppSelector<string[]>(
     (state) =>
-      uniqueArray(
+      sortedSet(
         selectAllApplications(state.applications).map((app) => app.name)
       ),
     (left, right) => JSON.stringify(left) === JSON.stringify(right)

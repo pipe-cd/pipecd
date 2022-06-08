@@ -1,7 +1,7 @@
-import { uniqueArray } from "./unique-array";
+import { sortedSet } from "./unique-array";
 
 test("uniqueArray", () => {
-  expect(uniqueArray([])).toEqual([]);
-  expect(uniqueArray([1, 2, 3])).toEqual([1, 2, 3]);
-  expect(uniqueArray([1, 2, 2, 3])).toEqual([1, 2, 3]);
+  expect(sortedSet([])).toEqual([]);
+  expect(sortedSet([1, 2, 3])).toEqual([1, 2, 3]);
+  expect(sortedSet([1, 2, 2, 3])).toEqual([1, 2, 3]);
 });
