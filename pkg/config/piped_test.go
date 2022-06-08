@@ -87,7 +87,7 @@ func TestPipedConfig(t *testing.T) {
 				CloudProviders: []PipedCloudProvider{
 					{
 						Name: "kubernetes-default",
-						Type: model.ApplicationKind_KUBERNETES,
+						Type: model.CloudProviderKubernetes,
 						KubernetesConfig: &CloudProviderKubernetesConfig{
 							AppStateInformer: KubernetesAppStateInformer{
 								IncludeResources: []KubernetesResourceMatcher{
@@ -110,12 +110,12 @@ func TestPipedConfig(t *testing.T) {
 					},
 					{
 						Name:             "kubernetes-dev",
-						Type:             model.ApplicationKind_KUBERNETES,
+						Type:             model.CloudProviderKubernetes,
 						KubernetesConfig: &CloudProviderKubernetesConfig{},
 					},
 					{
 						Name: "terraform",
-						Type: model.ApplicationKind_TERRAFORM,
+						Type: model.CloudProviderTerraform,
 						TerraformConfig: &CloudProviderTerraformConfig{
 							Vars: []string{
 								"project=gcp-project",
@@ -125,7 +125,7 @@ func TestPipedConfig(t *testing.T) {
 					},
 					{
 						Name: "cloudrun",
-						Type: model.ApplicationKind_CLOUDRUN,
+						Type: model.CloudProviderCloudRun,
 						CloudRunConfig: &CloudProviderCloudRunConfig{
 							Project:         "gcp-project-id",
 							Region:          "cloud-run-region",
@@ -134,7 +134,7 @@ func TestPipedConfig(t *testing.T) {
 					},
 					{
 						Name: "lambda",
-						Type: model.ApplicationKind_LAMBDA,
+						Type: model.CloudProviderLambda,
 						LambdaConfig: &CloudProviderLambdaConfig{
 							Region: "us-east-1",
 						},
@@ -431,7 +431,7 @@ func TestPipedConfigMask(t *testing.T) {
 				CloudProviders: []PipedCloudProvider{
 					{
 						Name: "foo",
-						Type: 1,
+						Type: model.CloudProviderKubernetes,
 						KubernetesConfig: &CloudProviderKubernetesConfig{
 							MasterURL:      "foo",
 							KubeConfigPath: "foo",
@@ -450,28 +450,6 @@ func TestPipedConfigMask(t *testing.T) {
 									},
 								},
 							},
-						},
-						TerraformConfig: &CloudProviderTerraformConfig{
-							Vars: []string{"foo"},
-						},
-						CloudRunConfig: &CloudProviderCloudRunConfig{
-							Project:         "foo",
-							Region:          "foo",
-							CredentialsFile: "foo",
-						},
-						LambdaConfig: &CloudProviderLambdaConfig{
-							Region:          "foo",
-							CredentialsFile: "foo",
-							RoleARN:         "foo",
-							TokenFile:       "foo",
-							Profile:         "foo",
-						},
-						ECSConfig: &CloudProviderECSConfig{
-							Region:          "foo",
-							CredentialsFile: "foo",
-							RoleARN:         "foo",
-							TokenFile:       "foo",
-							Profile:         "foo",
 						},
 					},
 				},
@@ -604,7 +582,7 @@ func TestPipedConfigMask(t *testing.T) {
 				CloudProviders: []PipedCloudProvider{
 					{
 						Name: "foo",
-						Type: 1,
+						Type: model.CloudProviderKubernetes,
 						KubernetesConfig: &CloudProviderKubernetesConfig{
 							MasterURL:      "foo",
 							KubeConfigPath: "foo",
@@ -623,28 +601,6 @@ func TestPipedConfigMask(t *testing.T) {
 									},
 								},
 							},
-						},
-						TerraformConfig: &CloudProviderTerraformConfig{
-							Vars: []string{"foo"},
-						},
-						CloudRunConfig: &CloudProviderCloudRunConfig{
-							Project:         "foo",
-							Region:          "foo",
-							CredentialsFile: maskString,
-						},
-						LambdaConfig: &CloudProviderLambdaConfig{
-							Region:          "foo",
-							CredentialsFile: maskString,
-							RoleARN:         maskString,
-							TokenFile:       maskString,
-							Profile:         "foo",
-						},
-						ECSConfig: &CloudProviderECSConfig{
-							Region:          "foo",
-							CredentialsFile: maskString,
-							RoleARN:         maskString,
-							TokenFile:       maskString,
-							Profile:         "foo",
 						},
 					},
 				},

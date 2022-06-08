@@ -89,6 +89,23 @@ func (a *Application) SetUpdatedAt(t int64) {
 	a.UpdatedAt = t
 }
 
+func (k *ApplicationKind) CompatibleCloudProviderType() CloudProviderType {
+	switch *k {
+	case ApplicationKind_KUBERNETES:
+		return CloudProviderKubernetes
+	case ApplicationKind_TERRAFORM:
+		return CloudProviderTerraform
+	case ApplicationKind_LAMBDA:
+		return CloudProviderLambda
+	case ApplicationKind_CLOUDRUN:
+		return CloudProviderCloudRun
+	case ApplicationKind_ECS:
+		return CloudProviderECS
+	default:
+		return CloudProviderKubernetes
+	}
+}
+
 func IsApplicationConfigFile(filename string) bool {
 	return filename == DefaultApplicationConfigFilename || strings.HasSuffix(filename, applicationConfigFileExtention) || filename == oldDefaultApplicationConfigFilename
 }
