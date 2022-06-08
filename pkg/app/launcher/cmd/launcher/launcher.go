@@ -37,10 +37,12 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/pipe-cd/pipecd/pkg/admin"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
+	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
 	"github.com/pipe-cd/pipecd/pkg/version"
@@ -80,12 +82,21 @@ type launcher struct {
 	configRepo git.Repo
 	clientKey  string
 	client     pipedservice.Client
+
+	commandLister commandLister
+}
+
+type commandLister interface {
+	ListPipedCommands() []model.ReportableCommand
 }
 
 func NewCommand() *cobra.Command {
+	var commandLister commandstore.Lister
+
 	l := &launcher{
 		checkInterval: time.Minute,
 		gracePeriod:   30 * time.Second,
+		commandLister: commandLister,
 	}
 	cmd := &cobra.Command{
 		Use:   "launcher",
