@@ -171,8 +171,8 @@ no = 'Sorry to hear that. Please <a href="https://github.com/pipe-cd/pipecd/issu
   url = "/docs-dev/"
 
 [[params.versions]]
-  version = "v0.33.0"
-  url = "/docs-v0.33.0/"
+  version = "v0.33.x"
+  url = "/docs-v0.33.x/"
 
 [[params.versions]]
   version = "v0.32.x"
