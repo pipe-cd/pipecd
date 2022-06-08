@@ -24,6 +24,7 @@ authentication, showing deployment list/details, application list/details, deliv
 
 Control Plane contains the following components:
 - `server`: a service to provide api for piped, web and serve static assets for web.
+- `ops`: a service to provide administrative features for Control Plane owner like adding/managing projects.
 - `cache`: a redis cache service for caching internal data.
 - `datastore`: data storage for storing deployment, application data
   - this can be a fully-managed service such as `Firestore`, `Cloud SQL`...
@@ -31,3 +32,5 @@ Control Plane contains the following components:
 - `filestore`: file storage for storing logs, application states
   - this can a fully-managed service such as `GCS`, `S3`...
   - or a self-managed service such as `Minio`
+
+For more information, see [Architecture overview of Control Plane](../operator-manual/control-plane/architecture-overview.md).
