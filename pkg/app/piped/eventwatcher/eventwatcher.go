@@ -182,7 +182,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 			}
 			cfg, err := config.LoadEventWatcher(repo.GetPath(), includedCfgs, excludedCfgs)
 			if errors.Is(err, config.ErrNotFound) {
-				w.logger.Info("configuration file for Event Watcher in ./pipe not found",
+				w.logger.Info("configuration file for Event Watcher in .pipe/ not found",
 					zap.String("repo-id", repoCfg.RepoID),
 					zap.Error(err),
 				)
