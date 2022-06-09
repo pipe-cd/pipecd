@@ -180,56 +180,58 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 				}
 				continue
 			}
+			// Check whether the config file exists in .pipe/ or not and updates values if it exists.
+			// NOTE: This will be removed.
 			cfg, err := config.LoadEventWatcher(repo.GetPath(), includedCfgs, excludedCfgs)
-			if errors.Is(err, config.ErrNotFound) {
-				w.logger.Info("configuration file for Event Watcher in .pipe/ not found",
-					zap.String("repo-id", repoCfg.RepoID),
-					zap.Error(err),
-				)
-				resp, err := w.apiClient.ListApplications(ctx, &pipedservice.ListApplicationsRequest{})
-				if err != nil {
-					w.logger.Error("failed to list registered application", zap.Error(err))
-					continue
-				}
-				cfgs := make([]*config.GenericApplicationSpec, 0, len(resp.Applications))
-				for _, app := range resp.Applications {
-					if app.GitPath.Repo.Id != repoCfg.RepoID {
-						continue
-					}
-					cfg, err := config.LoadApplication(repo.GetPath(), app.GitPath.GetApplicationConfigFilePath(), app.Kind)
-					if err != nil {
-						w.logger.Error("failed to load application configuration", zap.Error(err))
-						continue
-					}
-					cfgs = append(cfgs, cfg)
-				}
-				for _, cfg := range cfgs {
-					if cfg.EventWatcher == nil {
-						w.logger.Info("configuration for Event Watcher in application configuration not found",
-							zap.String("repo-id", repoCfg.RepoID),
-							zap.String("app-name", cfg.Name),
-						)
-						continue
-					}
-					if err := w.execute(ctx, repo, repoCfg.RepoID, cfg.EventWatcher); err != nil {
-						w.logger.Error("failed to execute the event from application configuration",
-							zap.String("repo-id", repoCfg.RepoID),
-							zap.Error(err),
-						)
-						continue
-					}
-				}
-				continue
-			}
-			if err != nil {
+			if !errors.Is(err, config.ErrNotFound) && err != nil {
 				w.logger.Error("failed to load configuration file for Event Watcher",
 					zap.String("repo-id", repoCfg.RepoID),
 					zap.Error(err),
 				)
 				continue
 			}
-			if err := w.updateValues(ctx, repo, repoCfg.RepoID, cfg.Events, commitMsg); err != nil {
-				w.logger.Error("failed to update the values",
+			if errors.Is(err, config.ErrNotFound) {
+				w.logger.Info("configuration file for Event Watcher in .pipe/ not found",
+					zap.String("repo-id", repoCfg.RepoID),
+					zap.Error(err),
+				)
+			} else {
+				if err := w.updateValues(ctx, repo, repoCfg.RepoID, cfg.Events, commitMsg); err != nil {
+					w.logger.Error("failed to update the values",
+						zap.String("repo-id", repoCfg.RepoID),
+						zap.Error(err),
+					)
+				}
+			}
+			// If event watcher config exist in the application config file, they are handled.
+			resp, err := w.apiClient.ListApplications(ctx, &pipedservice.ListApplicationsRequest{})
+			if err != nil {
+				w.logger.Error("failed to list registered application", zap.Error(err))
+				continue
+			}
+			cfgs := make([]config.EventWatcherConfig, 0, len(resp.Applications))
+			for _, app := range resp.Applications {
+				if app.GitPath.Repo.Id != repoCfg.RepoID {
+					continue
+				}
+				appCfg, err := config.LoadApplication(repo.GetPath(), app.GitPath.GetApplicationConfigFilePath(), app.Kind)
+				if err != nil {
+					w.logger.Error("failed to load application configuration", zap.Error(err))
+					continue
+				}
+				if appCfg.EventWatcher == nil {
+					continue
+				}
+				cfgs = append(cfgs, appCfg.EventWatcher...)
+			}
+			if len(cfgs) == 0 {
+				w.logger.Info("configuration for Event Watcher in application configuration not found",
+					zap.String("repo-id", repoCfg.RepoID),
+				)
+				continue
+			}
+			if err := w.execute(ctx, repo, repoCfg.RepoID, cfgs); err != nil {
+				w.logger.Error("failed to execute the event from application configuration",
 					zap.String("repo-id", repoCfg.RepoID),
 					zap.Error(err),
 				)
@@ -403,6 +405,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 }
 
 // updateValues inspects all Event-definition and pushes the changes to git repo if there is.
+// NOTE: This will be removed.
 func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string, eventCfgs []config.EventWatcherEvent, commitMsg string) error {
 	// Copy the repo to another directory to modify local file to avoid reverting previous changes.
 	tmpDir, err := os.MkdirTemp(w.workingDir, "repo")
