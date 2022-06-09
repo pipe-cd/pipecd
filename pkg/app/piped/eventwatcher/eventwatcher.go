@@ -204,15 +204,15 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 					cfgs = append(cfgs, cfg)
 				}
 				for _, cfg := range cfgs {
-					if cfg.Events == nil {
-						w.logger.Info("configuration file for Event Watcher in application configuration not found",
+					if cfg.EventWatchers == nil {
+						w.logger.Info("configuration for Event Watcher in application configuration not found",
 							zap.String("repo-id", repoCfg.RepoID),
 							zap.String("app-name", cfg.Name),
 						)
 						continue
 					}
-					if err := w.updateValues(ctx, repo, repoCfg.RepoID, cfg.Events, commitMsg); err != nil {
-						w.logger.Error("failed to update the values from application configuration",
+					if err := w.execute(ctx, repo, repoCfg.RepoID, cfg.EventWatchers); err != nil {
+						w.logger.Error("failed to execute the event from application configuration",
 							zap.String("repo-id", repoCfg.RepoID),
 							zap.Error(err),
 						)
@@ -233,7 +233,6 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 					zap.String("repo-id", repoCfg.RepoID),
 					zap.Error(err),
 				)
-				continue
 			}
 		}
 	}
@@ -250,6 +249,157 @@ func (w *watcher) cloneRepo(ctx context.Context, repoCfg config.PipedRepository)
 		return nil, fmt.Errorf("failed to clone repository %s: %w", repoCfg.RepoID, err)
 	}
 	return repo, nil
+}
+
+// execute inspects all Event-definition and handles the events per EventWatcherHandlerType if there are.
+func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eventCfgs []config.EventWatcher) error {
+	// Copy the repo to another directory to modify local file to avoid reverting previous changes.
+	tmpDir, err := os.MkdirTemp(w.workingDir, "repo")
+	if err != nil {
+		return fmt.Errorf("failed to create a new temporary directory: %w", err)
+	}
+	tmpRepo, err := repo.Copy(filepath.Join(tmpDir, "tmp-repo"))
+	if err != nil {
+		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
+	}
+	// nolint: errcheck
+	defer tmpRepo.Clean()
+
+	var milestone int64
+	firstRead := true
+	if v, ok := w.milestoneMap.Load(repoID); ok {
+		milestone = v.(int64)
+		firstRead = false
+	}
+	var (
+		handledEvents    = make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventCfgs))
+		outDatedEvents   = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
+		maxTimestamp     int64
+		outDatedDuration = time.Hour
+		gitUpdateEvent   = false
+	)
+	for _, e := range eventCfgs {
+		var (
+			matcher = e.Matcher
+			handler = e.Handler
+		)
+		notHandledEvents := w.eventLister.ListNotHandled(matcher.Name, matcher.Labels, milestone+1, numToMakeOutdated)
+		if len(notHandledEvents) == 0 {
+			continue
+		}
+		if len(notHandledEvents) > 1 {
+			// Events other than the latest will be OUTDATED.
+			for _, e := range notHandledEvents[1:] {
+				outDatedEvents = append(outDatedEvents, &pipedservice.ReportEventStatusesRequest_Event{
+					Id:                e.Id,
+					Status:            model.EventStatus_EVENT_OUTDATED,
+					StatusDescription: fmt.Sprintf("The new event %q has been created", notHandledEvents[0].Id),
+				})
+			}
+		}
+
+		latestEvent := notHandledEvents[0]
+		if firstRead {
+			resp, err := w.apiClient.GetLatestEvent(ctx, &pipedservice.GetLatestEventRequest{
+				Name:   matcher.Name,
+				Labels: matcher.Labels,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to get the latest event: %w", err)
+			}
+			// The case where the latest event has already been handled.
+			if resp.Event.CreatedAt > latestEvent.CreatedAt {
+				outDatedEvents = append(outDatedEvents, &pipedservice.ReportEventStatusesRequest_Event{
+					Id:                notHandledEvents[0].Id,
+					Status:            model.EventStatus_EVENT_OUTDATED,
+					StatusDescription: fmt.Sprintf("The new event %q has been created", resp.Event.Id),
+				})
+				continue
+			}
+		}
+		if time.Since(time.Unix(latestEvent.CreatedAt, 0)) > outDatedDuration {
+			outDatedEvents = append(outDatedEvents, &pipedservice.ReportEventStatusesRequest_Event{
+				Id:                latestEvent.Id,
+				Status:            model.EventStatus_EVENT_OUTDATED,
+				StatusDescription: fmt.Sprintf("Too much time has passed since the event %q was created", latestEvent.Id),
+			})
+			continue
+		}
+
+		switch handler.Type {
+		case config.EventWatcherHandlerTypeGitUpdate:
+			if err := w.commitFiles(ctx, latestEvent.Data, matcher.Name, handler.Config.CommitMessage, handler.Config.Replacements, tmpRepo); err != nil {
+				w.logger.Error("failed to commit outdated files", zap.Error(err))
+				handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
+					Id:                latestEvent.Id,
+					Status:            model.EventStatus_EVENT_FAILURE,
+					StatusDescription: fmt.Sprintf("Failed to change files: %v", err),
+				})
+				continue
+			}
+			handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
+				Id:                latestEvent.Id,
+				Status:            model.EventStatus_EVENT_SUCCESS,
+				StatusDescription: fmt.Sprintf("Successfully updated %d files in the %q repository", len(handler.Config.Replacements), repoID),
+			})
+			if latestEvent.CreatedAt > maxTimestamp {
+				maxTimestamp = latestEvent.CreatedAt
+			}
+			gitUpdateEvent = true
+		default:
+			w.logger.Error(fmt.Sprintf("event watcher handler type %s is not supported yet", handler.Type),
+				zap.String("event-name", latestEvent.Name),
+				zap.String("event-id", latestEvent.Id),
+			)
+			continue
+		}
+	}
+	if len(outDatedEvents) > 0 {
+		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: outDatedEvents}); err != nil {
+			return fmt.Errorf("failed to report event statuses: %w", err)
+		}
+		w.logger.Info(fmt.Sprintf("successfully made %d events OUTDATED", len(outDatedEvents)))
+	}
+	if len(handledEvents) == 0 {
+		return nil
+	}
+
+	if !gitUpdateEvent {
+		return nil
+	}
+
+	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
+	_, err = retry.Do(ctx, func() (interface{}, error) {
+		err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch())
+		return nil, err
+	})
+	if err == nil {
+		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
+			return fmt.Errorf("failed to report event statuses: %w", err)
+		}
+		w.milestoneMap.Store(repoID, maxTimestamp)
+		return nil
+	}
+
+	// If push fails because the local branch was not fresh, exit to retry again in the next interval.
+	if err == git.ErrBranchNotFresh {
+		w.logger.Warn("failed to push commits", zap.Error(err))
+		return nil
+	}
+
+	// If push fails because of the other reason, re-set all statuses to FAILURE.
+	for i := range handledEvents {
+		if handledEvents[i].Status == model.EventStatus_EVENT_FAILURE {
+			continue
+		}
+		handledEvents[i].Status = model.EventStatus_EVENT_FAILURE
+		handledEvents[i].StatusDescription = fmt.Sprintf("Failed to push changed files: %v", err)
+	}
+	if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
+		return fmt.Errorf("failed to report event statuses: %w", err)
+	}
+	w.milestoneMap.Store(repoID, maxTimestamp)
+	return fmt.Errorf("failed to push commits: %w", err)
 }
 
 // updateValues inspects all Event-definition and pushes the changes to git repo if there is.
@@ -278,15 +428,6 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		outDatedDuration = time.Hour
 	)
 	for _, e := range eventCfgs {
-		// If the pushHandler was defined in the event watcher event configuration, override the values.
-		if e.PushHandler.CommitMessage != "" {
-			commitMsg = e.PushHandler.CommitMessage
-		}
-		replacements := e.Replacements
-		if e.PushHandler.Replacements != nil {
-			replacements = e.PushHandler.Replacements
-		}
-
 		notHandledEvents := w.eventLister.ListNotHandled(e.Name, e.Labels, milestone+1, numToMakeOutdated)
 		if len(notHandledEvents) == 0 {
 			continue
@@ -329,7 +470,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 			})
 			continue
 		}
-		if err := w.commitFiles(ctx, latestEvent.Data, e.Name, commitMsg, replacements, tmpRepo); err != nil {
+		if err := w.commitFiles(ctx, latestEvent.Data, e.Name, commitMsg, e.Replacements, tmpRepo); err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
 			handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
 				Id:                latestEvent.Id,
@@ -341,7 +482,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 		handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
 			Id:                latestEvent.Id,
 			Status:            model.EventStatus_EVENT_SUCCESS,
-			StatusDescription: fmt.Sprintf("Successfully updated %d files in the %q repository", len(replacements), repoID),
+			StatusDescription: fmt.Sprintf("Successfully updated %d files in the %q repository", len(e.Replacements), repoID),
 		})
 		if latestEvent.CreatedAt > maxTimestamp {
 			maxTimestamp = latestEvent.CreatedAt

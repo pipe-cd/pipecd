@@ -36,8 +36,36 @@ type EventWatcherEvent struct {
 	Labels map[string]string `json:"labels"`
 	// List of places where will be replaced when the new event matches.
 	Replacements []EventWatcherReplacement `json:"replacements"`
-	// The configuration of push event.
-	PushHandler EventWatcherPushHandler `json:"pushHandler"`
+}
+
+type EventWatcher struct {
+	// Matcher represents which event will be handled.
+	Matcher EventWatcherMatcher `json:"matcher"`
+	// Handler represents how the matched event will be handled.
+	Handler EventWatcherHandler `json:"handler"`
+}
+
+type EventWatcherMatcher struct {
+	// The handled event name.
+	Name string `json:"name"`
+	// Additional attributes of event. This can make an event definition
+	// unique even if the one with the same name exists.
+	Labels map[string]string `json:"labels"`
+}
+
+type EventWatcherHandler struct {
+	// The handler type of event watcher.
+	Type EventWatcherHandlerType `json:"type,omitempty"`
+	// The config for the event watcher handler.
+	Config EventWatcherHandlerConfig `json:"config"`
+}
+
+type EventWatcherHandlerConfig struct {
+	// The commit message used to push after replacing values.
+	// Default message is used if not given.
+	CommitMessage string `json:"commitMessage,omitempty"`
+	// List of places where will be replaced when the new event matches.
+	Replacements []EventWatcherReplacement `json:"replacements"`
 }
 
 type EventWatcherReplacement struct {
@@ -58,13 +86,13 @@ type EventWatcherReplacement struct {
 	Regex string `json:"regex"`
 }
 
-type EventWatcherPushHandler struct {
-	// The commit message used to push after replacing values.
-	// Default message is used if not given.
-	CommitMessage string `json:"commitMessage,omitempty"`
-	// List of places where will be replaced when the new event matches.
-	Replacements []EventWatcherReplacement `json:"replacements"`
-}
+// EventWatcherHandlerType represents the type of an event watcher handler.
+type EventWatcherHandlerType string
+
+const (
+	// EventWatcherHandlerTypeGitUpdate represents the handler type for git updating.
+	EventWatcherHandlerTypeGitUpdate = "GIT_UPDATE"
+)
 
 // LoadEventWatcher gives back parsed EventWatcher config after merging config files placed under
 // the .pipe directory. With "includes" and "excludes", you can filter the files included the result.

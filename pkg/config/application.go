@@ -66,8 +66,8 @@ type GenericApplicationSpec struct {
 	// The list of sealed secrets that should be decrypted.
 	// Deprecated.
 	SealedSecrets []SealedSecretMapping `json:"sealedSecrets"`
-	// List of events for event watcher.
-	Events []EventWatcherEvent `json:"events"`
+	// List of the configuration for event watcher.
+	EventWatchers []EventWatcher `json:"eventWatchers"`
 }
 
 type DeploymentPlanner struct {
