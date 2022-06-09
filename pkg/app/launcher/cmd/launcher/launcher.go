@@ -29,6 +29,7 @@ import (
 	"time"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
+	"github.com/docker/cli/cli/context/store"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -93,7 +94,16 @@ type commandLister interface {
 }
 
 func NewCommand() *cobra.Command {
+	// Start running command store.
 	var commandLister commandstore.Lister
+	{
+		// TODO: implement
+		// store := commandstore.NewStore(apiClient, p.gracePeriod, input.Logger)
+		// group.Go(func() error {
+		// 	return store.Run(ctx)
+		// })
+		commandLister = store.Lister()
+	}
 
 	l := &launcher{
 		checkInterval: time.Minute,
@@ -622,5 +632,5 @@ func parseConfig(data []byte) (*config.LauncherSpec, error) {
 }
 
 func makeDownloadURL(version string) string {
-	return fmt.Sprintf(pipedDownloadURL, version, version, runtime.GOOS)
+	return fmt.Sprintf(pipedDownloadURL, "v0.33.0", "v0.33.0", runtime.GOOS)
 }
