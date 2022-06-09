@@ -38,7 +38,7 @@ type EventWatcherEvent struct {
 	Replacements []EventWatcherReplacement `json:"replacements"`
 }
 
-type EventWatcher struct {
+type EventWatcherConfig struct {
 	// Matcher represents which event will be handled.
 	Matcher EventWatcherMatcher `json:"matcher"`
 	// Handler represents how the matched event will be handled.

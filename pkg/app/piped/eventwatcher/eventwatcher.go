@@ -204,14 +204,14 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 					cfgs = append(cfgs, cfg)
 				}
 				for _, cfg := range cfgs {
-					if cfg.EventWatchers == nil {
+					if cfg.EventWatcher == nil {
 						w.logger.Info("configuration for Event Watcher in application configuration not found",
 							zap.String("repo-id", repoCfg.RepoID),
 							zap.String("app-name", cfg.Name),
 						)
 						continue
 					}
-					if err := w.execute(ctx, repo, repoCfg.RepoID, cfg.EventWatchers); err != nil {
+					if err := w.execute(ctx, repo, repoCfg.RepoID, cfg.EventWatcher); err != nil {
 						w.logger.Error("failed to execute the event from application configuration",
 							zap.String("repo-id", repoCfg.RepoID),
 							zap.Error(err),
@@ -252,7 +252,7 @@ func (w *watcher) cloneRepo(ctx context.Context, repoCfg config.PipedRepository)
 }
 
 // execute inspects all Event-definition and handles the events per EventWatcherHandlerType if there are.
-func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eventCfgs []config.EventWatcher) error {
+func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eventCfgs []config.EventWatcherConfig) error {
 	// Copy the repo to another directory to modify local file to avoid reverting previous changes.
 	tmpDir, err := os.MkdirTemp(w.workingDir, "repo")
 	if err != nil {
