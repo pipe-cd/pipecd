@@ -108,6 +108,12 @@ run/piped: INSECURE ?= false
 run/piped:
 	go run cmd/piped/main.go piped --tools-dir=/tmp/piped-bin --config-file=$(CONFIG_FILE) --insecure=$(INSECURE)
 
+.PHONY: run/launcher
+run/launcher: CONFIG_FILE ?=
+run/launcher: INSECURE ?= false
+run/launcher: 
+	go run cmd/launcher/main.go launcher --config-file=$(CONFIG_FILE) --insecure=$(INSECURE)
+
 .PHONY: run/web
 run/web:
 	yarn --cwd web dev
