@@ -105,8 +105,13 @@ stop/pipecd:
 .PHONY: run/piped
 run/piped: CONFIG_FILE ?=
 run/piped: INSECURE ?= false
+run/piped: LAUNCHER ?= false
 run/piped:
+ifeq ($(LAUNCHER),true)
+	go run cmd/launcher/main.go launcher --config-file=$(CONFIG_FILE) --insecure=$(INSECURE)
+else
 	go run cmd/piped/main.go piped --tools-dir=/tmp/piped-bin --config-file=$(CONFIG_FILE) --insecure=$(INSECURE)
+endif
 
 .PHONY: run/web
 run/web:
