@@ -83,6 +83,8 @@ type launcher struct {
 	clientKey  string
 	client     pipedservice.Client
 
+	commandCh     chan model.ReportableCommand
+	prevCommands  map[string]struct{}
 	commandLister commandLister
 }
 
@@ -278,6 +280,21 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 		return nil
 	}
 
+	commandHandler := func(ctx context.Context, cmdCh <-chan model.ReportableCommand) {
+		input.Logger.Info("started a worker for handling plan-preview command")
+		for {
+			select {
+			case cmd := <-cmdCh:
+				l.handleCommand(ctx, input, cmd)
+
+			case <-ctx.Done():
+				input.Logger.Info("a worker has been stopped")
+				return
+			}
+		}
+	}
+	go commandHandler(ctx, l.commandCh)
+
 	group.Go(func() error {
 		// Execute the first time immediately.
 		if err := execute(); err != nil {
@@ -290,6 +307,7 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 			select {
 			case <-ticker.C:
 				// Don't return an error to continue piped execution.
+				l.enqueueNewCommands(ctx, input)
 				execute()
 
 			case <-ctx.Done():
@@ -311,6 +329,64 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 		return err
 	}
 	return nil
+}
+
+func (l *launcher) enqueueNewCommands(ctx context.Context, input cli.Input) {
+	input.Logger.Info("fetching unhandled commands to enqueue")
+
+	commands := l.commandLister.ListPipedCommands()
+	if len(commands) == 0 {
+		input.Logger.Info("there is no command to enqueue")
+		return
+	}
+
+	news := make([]model.ReportableCommand, 0, len(commands))
+	cmds := make(map[string]struct{}, len(commands))
+	for _, cmd := range commands {
+		cmds[cmd.Id] = struct{}{}
+		if _, ok := l.prevCommands[cmd.Id]; !ok {
+			news = append(news, cmd)
+		}
+	}
+
+	input.Logger.Info("fetched unhandled commands to enqueue",
+		zap.Any("pre-commands", l.prevCommands),
+		zap.Any("commands", cmds),
+		zap.Int("news", len(news)),
+	)
+
+	if len(news) == 0 {
+		input.Logger.Info("there is no new command to enqueue")
+		return
+	}
+
+	l.prevCommands = cmds
+	input.Logger.Info(fmt.Sprintf("will enqueue %d new commands", len(news)))
+
+	for _, cmd := range news {
+		select {
+		case l.commandCh <- cmd:
+			input.Logger.Info("queued a new new command", zap.String("command", cmd.Id))
+
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func (l *launcher) handleCommand(ctx context.Context, input cli.Input, cmd model.ReportableCommand) {
+	logger := input.Logger.With(
+		zap.String("command", cmd.Id),
+	)
+	logger.Info("received a restart piped command to handle")
+
+	if cmd.RestartPiped == nil {
+		// TODO: error handling
+		return
+	}
+
+	input.Logger.Info(fmt.Sprintf("[DEBUG] %s\n", cmd.RestartPiped.PipedId))
+	input.Logger.Info("successfully reported a success command")
 }
 
 // shouldRelaunch fetches the latest state of desired version and config
