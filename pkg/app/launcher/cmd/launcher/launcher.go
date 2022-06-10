@@ -232,26 +232,19 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 		l.configRepo = repo
 	}
 
-	rawCfg, err := l.loadConfigData(ctx)
+	spec, err := l.getSpec(ctx)
 	if err != nil {
-		input.Logger.Error("LAUNCHER: error on loading Piped configuration data", zap.Error(err))
-		return err
+		input.Logger.Error(err.Error(), zap.Error(err))
 	}
 
-	cfg, err := parseConfig(rawCfg)
-	if err != nil {
-		input.Logger.Error("LAUNCHER: error on parsing Piped configuration data", zap.Error(err))
-		return err
-	}
-
-	pipedKey, err := cfg.LoadPipedKey()
+	pipedKey, err := spec.LoadPipedKey()
 	if err != nil {
 		input.Logger.Error("failed to load piped key", zap.Error(err))
 		return err
 	}
 
 	// Make gRPC client and connect to the API.
-	apiClient, err := l.createAPIClient(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey)
+	apiClient, err := l.createAPIClient(ctx, spec.APIAddress, spec.ProjectID, spec.PipedID, pipedKey)
 	if err != nil {
 		input.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
 		return err
@@ -422,31 +415,38 @@ func (l *launcher) handleCommand(ctx context.Context, input cli.Input, cmd model
 	input.Logger.Info("successfully handled a restart piped command")
 }
 
+func (l *launcher) getSpec(ctx context.Context) (*config.LauncherSpec, error) {
+	config, err := l.loadConfigData(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("LAUNCHER: error on loading Piped configuration data")
+	}
+
+	spec, err := parseConfig(config)
+	if err != nil {
+		return nil, fmt.Errorf("LAUNCHER: error on parsing Piped configuration data")
+	}
+
+	return spec, nil
+}
+
 // shouldRelaunch fetches the latest state of desired version and config
 // to determine whether a new Piped should be launched or not.
 // This also takes into account whether or not a command
 // has been received to make the restart decision.
 // This also returns the desired version and config.
 func (l *launcher) shouldRelaunch(ctx context.Context, logger *zap.Logger) (version string, config []byte, should bool, err error) {
-	config, err = l.loadConfigData(ctx)
+	spec, err := l.getSpec(ctx)
 	if err != nil {
-		logger.Error("LAUNCHER: error on loading Piped configuration data", zap.Error(err))
-		return
+		logger.Error(err.Error(), zap.Error(err))
 	}
 
-	cfg, err := parseConfig(config)
-	if err != nil {
-		logger.Error("LAUNCHER: error on parsing Piped configuration data", zap.Error(err))
-		return
-	}
-
-	pipedKey, err := cfg.LoadPipedKey()
+	pipedKey, err := spec.LoadPipedKey()
 	if err != nil {
 		logger.Error("LAUNCHER: error on loading Piped key", zap.Error(err))
 		return
 	}
 
-	version, err = l.getDesiredVersion(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey, logger)
+	version, err = l.getDesiredVersion(ctx, spec.APIAddress, spec.ProjectID, spec.PipedID, pipedKey, logger)
 	if err != nil {
 		logger.Error("LAUNCHER: error on checking desired version", zap.Error(err))
 		return
