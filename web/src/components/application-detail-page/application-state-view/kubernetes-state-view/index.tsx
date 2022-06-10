@@ -4,7 +4,7 @@ import dagre from "dagre";
 import { FC, useState } from "react";
 import { KubernetesResourceState } from "~/modules/applications-live-state";
 import { theme } from "~/theme";
-import { uniqueArray } from "~/utils/unique-array";
+import { sortedSet } from "~/utils/sorted-set";
 import { KubernetesResource } from "./kubernetes-resource";
 import { KubernetesResourceDetail } from "./kubernetes-resource-detail";
 import { ResourceFilterPopover } from "./resource-filter-popover";
@@ -95,7 +95,7 @@ export const KubernetesStateView: FC<KubernetesStateViewProps> = ({
     setSelectedResource,
   ] = useState<KubernetesResourceState.AsObject | null>(null);
 
-  const kinds: string[] = uniqueArray(resources.map((r) => r.kind));
+  const kinds: string[] = sortedSet(resources.map((r) => r.kind));
   const [filterState, setFilterState] = useState<Record<string, boolean>>(
     kinds.reduce<Record<string, boolean>>((prev, current) => {
       prev[current] = true;

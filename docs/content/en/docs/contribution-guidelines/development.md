@@ -25,6 +25,7 @@ description: >
 - `make test/web`: runs all unit tests of web.
 - `make test/integration`: runs integration tests.
 
+- `make run/piped`: runs Piped locally (for more information, see [here](#how-to-run-piped-agent-locally)).
 - `make run/site`: runs PipeCD site locally (requires [hugo](https://github.com/gohugoio/hugo) with `_extended` version `0.92.1` or later to be installed).
 
 - `make gen/code`: generate Go and Typescript code from protos and mock configs. You need to run it if you modified any proto or mock definition files.
@@ -63,7 +64,7 @@ For the full list of available commands, please see the Makefile at the root of 
 
 2. Ensure that your `kube-context` is connecting to the right kubernetes cluster
 
-3. Run the following command to start running `piped`
+3. Run the following command to start running `piped` (if you want to connect Piped to a locally running Control Plane, add `INSECURE=true` option)
 
     ``` console
     make run/piped CONFIG_FILE=piped-config.yaml
