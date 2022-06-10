@@ -306,7 +306,7 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 	}
 
 	commandHandler := func(ctx context.Context, cmdCh <-chan model.ReportableCommand) {
-		input.Logger.Info("started a worker for handling plan-preview command")
+		input.Logger.Info("started a worker for handling restart piped command")
 		for {
 			select {
 			case cmd := <-cmdCh:
@@ -663,5 +663,5 @@ func parseConfig(data []byte) (*config.LauncherSpec, error) {
 }
 
 func makeDownloadURL(version string) string {
-	return fmt.Sprintf(pipedDownloadURL, "v0.33.0", "v0.33.0", runtime.GOOS)
+	return fmt.Sprintf(pipedDownloadURL, version, version, runtime.GOOS)
 }
