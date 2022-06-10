@@ -29,7 +29,6 @@ import (
 	"time"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
-	"github.com/docker/cli/cli/context/store"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -84,9 +83,10 @@ type launcher struct {
 	clientKey  string
 	client     pipedservice.Client
 
-	commandCh     chan model.ReportableCommand
-	prevCommands  map[string]struct{}
-	commandLister commandLister
+	commandCh            chan model.ReportableCommand
+	prevCommands         map[string]struct{}
+	commandLister        commandLister
+	detectRestartCommand bool
 }
 
 type commandLister interface {
@@ -94,21 +94,10 @@ type commandLister interface {
 }
 
 func NewCommand() *cobra.Command {
-	// Start running command store.
-	var commandLister commandstore.Lister
-	{
-		// TODO: implement
-		// store := commandstore.NewStore(apiClient, p.gracePeriod, input.Logger)
-		// group.Go(func() error {
-		// 	return store.Run(ctx)
-		// })
-		commandLister = store.Lister()
-	}
-
 	l := &launcher{
 		checkInterval: time.Minute,
 		gracePeriod:   30 * time.Second,
-		commandLister: commandLister,
+		commandCh:     make(chan model.ReportableCommand),
 	}
 	cmd := &cobra.Command{
 		Use:   "launcher",
@@ -241,6 +230,39 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 		defer repo.Clean()
 
 		l.configRepo = repo
+	}
+
+	rawCfg, err := l.loadConfigData(ctx)
+	if err != nil {
+		input.Logger.Error("LAUNCHER: error on loading Piped configuration data", zap.Error(err))
+		return err
+	}
+
+	cfg, err := parseConfig(rawCfg)
+	if err != nil {
+		input.Logger.Error("LAUNCHER: error on parsing Piped configuration data", zap.Error(err))
+		return err
+	}
+
+	pipedKey, err := cfg.LoadPipedKey()
+	if err != nil {
+		input.Logger.Error("failed to load piped key", zap.Error(err))
+		return err
+	}
+
+	// Make gRPC client and connect to the API.
+	apiClient, err := l.createAPIClient(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey)
+	if err != nil {
+		input.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
+		return err
+	}
+
+	{
+		store := commandstore.NewStore(apiClient, time.Minute, input.Logger)
+		group.Go(func() error {
+			return store.Run(ctx)
+		})
+		l.commandLister = store.Lister()
 	}
 
 	var (
@@ -390,13 +412,14 @@ func (l *launcher) handleCommand(ctx context.Context, input cli.Input, cmd model
 	)
 	logger.Info("received a restart piped command to handle")
 
-	if cmd.RestartPiped == nil {
-		// TODO: error handling
+	l.detectRestartCommand = true
+
+	if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, []byte{}); err != nil {
+		logger.Error("failed to report command status", zap.Error(err))
 		return
 	}
 
-	input.Logger.Info(fmt.Sprintf("[DEBUG] %s\n", cmd.RestartPiped.PipedId))
-	input.Logger.Info("successfully reported a success command")
+	input.Logger.Info("successfully handled a restart piped command")
 }
 
 // shouldRelaunch fetches the latest state of desired version and config
@@ -427,7 +450,12 @@ func (l *launcher) shouldRelaunch(ctx context.Context, logger *zap.Logger) (vers
 		return
 	}
 
-	should = version != l.runningVersion || !bytes.Equal(config, l.runningConfigData)
+	should = version != l.runningVersion || !bytes.Equal(config, l.runningConfigData) || l.detectRestartCommand
+
+	if l.detectRestartCommand {
+		l.detectRestartCommand = false
+	}
+
 	return
 }
 
