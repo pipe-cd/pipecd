@@ -415,6 +415,7 @@ func (l *launcher) handleCommand(ctx context.Context, input cli.Input, cmd model
 	input.Logger.Info("successfully handled a restart piped command")
 }
 
+// getSpec returns launcher's spec.
 func (l *launcher) getSpec(ctx context.Context) (*config.LauncherSpec, error) {
 	config, err := l.loadConfigData(ctx)
 	if err != nil {
