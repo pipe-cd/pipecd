@@ -414,7 +414,7 @@ func (l *launcher) handleCommand(ctx context.Context, input cli.Input, cmd model
 
 	l.detectRestartCommand = true
 
-	if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, []byte{}); err != nil {
+	if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, []byte(cmd.Id)); err != nil {
 		logger.Error("failed to report command status", zap.Error(err))
 		return
 	}
@@ -424,6 +424,8 @@ func (l *launcher) handleCommand(ctx context.Context, input cli.Input, cmd model
 
 // shouldRelaunch fetches the latest state of desired version and config
 // to determine whether a new Piped should be launched or not.
+// This also takes into account whether or not a command
+// has been received to make the restart decision.
 // This also returns the desired version and config.
 func (l *launcher) shouldRelaunch(ctx context.Context, logger *zap.Logger) (version string, config []byte, should bool, err error) {
 	config, err = l.loadConfigData(ctx)
