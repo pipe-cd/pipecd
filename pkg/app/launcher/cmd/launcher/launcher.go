@@ -305,20 +305,30 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 		return nil
 	}
 
-	commandHandler := func(ctx context.Context, cmdCh <-chan model.ReportableCommand) {
+	commandHandler := func(ctx context.Context, cmdCh <-chan model.ReportableCommand) error {
 		input.Logger.Info("started a worker for handling restart piped command")
 		for {
 			select {
 			case cmd := <-cmdCh:
-				l.handleCommand(ctx, input, cmd)
+				if err := l.handleCommand(ctx, input, cmd); err != nil {
+					return err
+				}
 
 			case <-ctx.Done():
 				input.Logger.Info("a worker has been stopped")
-				return
+				return nil
 			}
 		}
 	}
-	go commandHandler(ctx, l.commandCh)
+	group.Go(func() error {
+		if err := commandHandler(ctx, l.commandCh); err != nil {
+			input.Logger.Info("LAUNCHER: failed to handle restart piped command",
+				zap.Error(err),
+			)
+			return err
+		}
+		return nil
+	})
 
 	group.Go(func() error {
 		// Execute the first time immediately.
@@ -399,7 +409,7 @@ func (l *launcher) enqueueNewCommands(ctx context.Context, input cli.Input) {
 	}
 }
 
-func (l *launcher) handleCommand(ctx context.Context, input cli.Input, cmd model.ReportableCommand) {
+func (l *launcher) handleCommand(ctx context.Context, input cli.Input, cmd model.ReportableCommand) error {
 	logger := input.Logger.With(
 		zap.String("command", cmd.Id),
 	)
@@ -409,10 +419,11 @@ func (l *launcher) handleCommand(ctx context.Context, input cli.Input, cmd model
 
 	if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, []byte(cmd.Id)); err != nil {
 		logger.Error("failed to report command status", zap.Error(err))
-		return
+		return err
 	}
 
 	input.Logger.Info("successfully handled a restart piped command")
+	return nil
 }
 
 // getSpec returns launcher's spec.
