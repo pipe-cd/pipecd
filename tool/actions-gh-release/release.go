@@ -54,7 +54,7 @@ type ReleaseCommitCategoryConfig struct {
 
 type ReleaseNoteGeneratorConfig struct {
 	ShowAbbrevHash         bool                       `json:"showAbbrevHash,omitempty" default:"false"`
-	ShowCommitter          bool                       `json:"showCommitter,omitempty" default:"false"`
+	ShowCommitter          *bool                      `json:"showCommitter,omitempty" default:"true"`
 	UseReleaseNoteBlock    bool                       `json:"useReleaseNoteBlock,omitempty" default:"false"`
 	UsePullRequestMetadata bool                       `json:"usePullRequestMetadata,omitempty" default:"false"`
 	CommitInclude          ReleaseCommitMatcherConfig `json:"commitInclude,omitempty"`
@@ -359,7 +359,7 @@ func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 		if gen.ShowAbbrevHash {
 			b.WriteString(fmt.Sprintf(" [%s](https://github.com/%s/%s/commit/%s)", c.AbbreviatedHash, p.Owner, p.Repo, c.Hash))
 		}
-		if gen.ShowCommitter {
+		if gen.ShowCommitter != nil && *gen.ShowCommitter {
 			b.WriteString(fmt.Sprintf(" - by %s", c.Committer))
 		}
 		b.WriteString("\n")
