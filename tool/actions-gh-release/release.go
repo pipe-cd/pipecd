@@ -107,10 +107,13 @@ func parseReleaseConfig(data []byte) (*ReleaseConfig, error) {
 	if err := json.Unmarshal(js, c); err != nil {
 		return nil, err
 	}
+	log.Printf("Unmarshal release config: %v\n", c.ReleaseNoteGenerator)
 
 	if err := defaults.Set(c); err != nil {
 		return nil, err
 	}
+	log.Printf("Set default value of release config: %v\n", c.ReleaseNoteGenerator)
+
 	for i := range c.CommitCategories {
 		if c.CommitCategories[i].ID == "" {
 			c.CommitCategories[i].ID = fmt.Sprintf("_category_%d", i)
@@ -346,6 +349,7 @@ func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 	b.WriteString(fmt.Sprintf("## Release %s with changes since %s\n\n", p.Tag, p.PreTag))
 
 	gen := cfg.ReleaseNoteGenerator
+	log.Printf("Render release note: %v\n", gen)
 	renderCommit := func(c ReleaseCommit) {
 		b.WriteString(fmt.Sprintf("* %s", c.ReleaseNote))
 		if gen.UsePullRequestMetadata && c.PullRequestNumber != 0 {
