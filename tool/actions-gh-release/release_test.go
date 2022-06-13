@@ -24,6 +24,7 @@ import (
 )
 
 func TestParseReleaseConfig(t *testing.T) {
+	fakeShowCommitter := true
 	testcases := []struct {
 		name        string
 		configFile  string
@@ -80,7 +81,7 @@ func TestParseReleaseConfig(t *testing.T) {
 					},
 				},
 				ReleaseNoteGenerator: ReleaseNoteGeneratorConfig{
-					ShowCommitter:       true,
+					ShowCommitter:       &fakeShowCommitter,
 					UseReleaseNoteBlock: true,
 				},
 			},
@@ -101,6 +102,7 @@ func TestParseReleaseConfig(t *testing.T) {
 
 func TestBuildReleaseCommits(t *testing.T) {
 	ctx := context.Background()
+	fakeShowCommitter := true
 	config := ReleaseConfig{
 		Tag:  "v1.1.0",
 		Name: "hello",
@@ -143,7 +145,7 @@ func TestBuildReleaseCommits(t *testing.T) {
 			},
 		},
 		ReleaseNoteGenerator: ReleaseNoteGeneratorConfig{
-			ShowCommitter:       true,
+			ShowCommitter:       &fakeShowCommitter,
 			UseReleaseNoteBlock: true,
 		},
 	}
