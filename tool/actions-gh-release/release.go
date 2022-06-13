@@ -54,7 +54,7 @@ type ReleaseCommitCategoryConfig struct {
 
 type ReleaseNoteGeneratorConfig struct {
 	ShowAbbrevHash         bool                       `json:"showAbbrevHash,omitempty" default:"false"`
-	ShowCommitter          bool                       `json:"showCommitter,omitempty" default:"true"`
+	ShowCommitter          bool                       `json:"showCommitter,omitempty" default:"false"`
 	UseReleaseNoteBlock    bool                       `json:"useReleaseNoteBlock,omitempty" default:"false"`
 	UsePullRequestMetadata bool                       `json:"usePullRequestMetadata,omitempty" default:"false"`
 	CommitInclude          ReleaseCommitMatcherConfig `json:"commitInclude,omitempty"`
