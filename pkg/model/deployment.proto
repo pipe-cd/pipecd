@@ -68,7 +68,11 @@ message Deployment {
     ApplicationGitPath git_path = 8 [(validate.rules).message.required = true];
     // The name of cloud provider where to deploy this application.
     // This must be one of the provider names registered in the piped.
-    string cloud_provider = 9 [(validate.rules).string.min_len = 1];
+    // Depracated: use PlatformProvider instead.
+    string cloud_provider = 9 [deprecated=true];
+    // The name of platform provider where to deploy this application.
+    // This must be one of the provider names registered in the piped.
+    string platform_provider = 11;
 
     // Custom attributes to identify applications.
     map<string, string> labels = 10;
