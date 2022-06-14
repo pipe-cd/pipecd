@@ -237,7 +237,7 @@ type Deployment struct {
 	GitPath         *ApplicationGitPath `protobuf:"bytes,8,opt,name=git_path,json=gitPath,proto3" json:"git_path,omitempty"`
 	// The name of cloud provider where to deploy this application.
 	// This must be one of the provider names registered in the piped.
-	// Depracated: use PlatformProvider instead.
+	// Deprecated: use PlatformProvider instead.
 	//
 	// Deprecated: Do not use.
 	CloudProvider string `protobuf:"bytes,9,opt,name=cloud_provider,json=cloudProvider,proto3" json:"cloud_provider,omitempty"`
