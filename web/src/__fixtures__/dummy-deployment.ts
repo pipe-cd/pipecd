@@ -31,7 +31,6 @@ export const dummyDeployment: Deployment.AsObject = {
   summary:
     "Quick sync by deploying the new version and configuring all traffic to it because no pipeline was configured",
   gitPath: {
-    configPath: "",
     configFilename: "",
     path: "",
     url: "",

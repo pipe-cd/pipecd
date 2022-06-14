@@ -26,7 +26,6 @@ export const dummyApplication: Application.AsObject = {
   cloudProvider: "kubernetes-default",
   disabled: false,
   gitPath: {
-    configPath: "",
     configFilename: "",
     path: "dir/dir1",
     url: "",
