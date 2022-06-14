@@ -22,9 +22,6 @@ export class Event extends jspb.Message {
   getEventKey(): string;
   setEventKey(value: string): Event;
 
-  getHandled(): boolean;
-  setHandled(value: boolean): Event;
-
   getStatus(): EventStatus;
   setStatus(value: EventStatus): Event;
 
@@ -56,7 +53,6 @@ export namespace Event {
     projectId: string,
     labelsMap: Array<[string, string]>,
     eventKey: string,
-    handled: boolean,
     status: EventStatus,
     statusDescription: string,
     handledAt: number,
