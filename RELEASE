@@ -1,9 +1,8 @@
-tag: v0.33.0
+tag: v0.33.1
 
 releaseNoteGenerator:
   showCommitter: false
   useReleaseNoteBlock: true
-  usePullRequestMetadata: true
 
 commitCategories:
   - title: "Breaking Changes"
