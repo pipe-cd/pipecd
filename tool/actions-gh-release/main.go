@@ -50,7 +50,7 @@ func main() {
 	}
 
 	if err := addSafeDirectory(ctx, gitExecPath, workspace); err != nil {
-		log.Fatalf("Failed to add safe directory: %v\n", err)
+		log.Fatalf("Failed to add %s as a safe directory: %v\n", workspace, err)
 	}
 
 	cfg := &githubClientConfig{Token: args.Token}
