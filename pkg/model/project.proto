@@ -68,10 +68,10 @@ message ProjectStaticUser {
 
 message ProjectSSOConfig {
     enum Provider {
+        // The old deprecated enum values are marked as reserved.
+        reserved 1;
+
         GITHUB = 0;
-        // This was deprecated.
-        // For GitHub Enterprise, use GITHUB provider and specify the baseUrl in the config.
-        GITHUB_ENTERPRISE = 1 [deprecated = true];
         GOOGLE = 2;
     }
 
