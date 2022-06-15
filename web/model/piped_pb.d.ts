@@ -14,9 +14,6 @@ export class Piped extends jspb.Message {
   getDesc(): string;
   setDesc(value: string): Piped;
 
-  getKeyHash(): string;
-  setKeyHash(value: string): Piped;
-
   getProjectId(): string;
   setProjectId(value: string): Piped;
 
@@ -77,7 +74,6 @@ export namespace Piped {
     id: string,
     name: string,
     desc: string,
-    keyHash: string,
     projectId: string,
     version: string,
     startedAt: number,

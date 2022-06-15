@@ -21,7 +21,7 @@ import "validate/validate.proto";
 import "pkg/model/common.proto";
 
 message Piped {
-    reserved 6;
+    reserved 4, 6;
 
     message CloudProvider {
         string name = 1 [(validate.rules).string.min_len = 1];
@@ -46,9 +46,6 @@ message Piped {
     string name = 2 [(validate.rules).string.min_len = 1];
     // The additional description about the piped.
     string desc = 3;
-    // The hash value of the secret key generated for the piped.
-    // This is used to authenticate while communicating with the control plane.
-    string key_hash = 4 [deprecated=true];
     // The ID of the project this piped belongs to.
     string project_id = 5 [(validate.rules).string.min_len = 1];
 
