@@ -80,8 +80,6 @@ func (m *Piped) validate(all bool) error {
 
 	// no validation rules for Desc
 
-	// no validation rules for KeyHash
-
 	if utf8.RuneCountInString(m.GetProjectId()) < 1 {
 		err := PipedValidationError{
 			field:  "ProjectId",

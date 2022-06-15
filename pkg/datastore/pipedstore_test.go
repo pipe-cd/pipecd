@@ -46,7 +46,6 @@ func TestAddPiped(t *testing.T) {
 			piped: &model.Piped{
 				Id:        "id",
 				Name:      "name",
-				KeyHash:   "key-hash",
 				ProjectId: "project-id",
 				CreatedAt: 1,
 				UpdatedAt: 1,

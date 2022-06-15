@@ -156,7 +156,6 @@ proto.model.Piped.toObject = function(includeInstance, msg) {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     name: jspb.Message.getFieldWithDefault(msg, 2, ""),
     desc: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    keyHash: jspb.Message.getFieldWithDefault(msg, 4, ""),
     projectId: jspb.Message.getFieldWithDefault(msg, 5, ""),
     version: jspb.Message.getFieldWithDefault(msg, 7, ""),
     startedAt: jspb.Message.getFieldWithDefault(msg, 8, 0),
@@ -220,10 +219,6 @@ proto.model.Piped.deserializeBinaryFromReader = function(msg, reader) {
     case 3:
       var value = /** @type {string} */ (reader.readString());
       msg.setDesc(value);
-      break;
-    case 4:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setKeyHash(value);
       break;
     case 5:
       var value = /** @type {string} */ (reader.readString());
@@ -328,13 +323,6 @@ proto.model.Piped.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       3,
-      f
-    );
-  }
-  f = message.getKeyHash();
-  if (f.length > 0) {
-    writer.writeString(
-      4,
       f
     );
   }
@@ -846,24 +834,6 @@ proto.model.Piped.prototype.getDesc = function() {
  */
 proto.model.Piped.prototype.setDesc = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
-};
-
-
-/**
- * optional string key_hash = 4;
- * @return {string}
- */
-proto.model.Piped.prototype.getKeyHash = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.model.Piped} returns this
- */
-proto.model.Piped.prototype.setKeyHash = function(value) {
-  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
