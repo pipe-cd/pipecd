@@ -49,6 +49,10 @@ func main() {
 		log.Fatal("GITHUB_WORKSPACE was not defined")
 	}
 
+	if err := addSafeDirectory(ctx, gitExecPath, workspace); err != nil {
+		log.Fatalf("Failed to add %s as a safe directory: %v\n", workspace, err)
+	}
+
 	cfg := &githubClientConfig{Token: args.Token}
 	ghClient := newGitHubClient(ctx, cfg)
 
