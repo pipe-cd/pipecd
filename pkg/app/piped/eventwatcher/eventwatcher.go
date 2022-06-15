@@ -84,10 +84,13 @@ type watcher struct {
 	// Maximum timestamp of the last Event read.
 	// A map from repo-id to the UNIX timestamp that has been read.
 	milestoneMap sync.Map
-	// Cache for the last scanned commit for each application.
-	lastScannedCommits sync.Map
-	// Cache for the last scanned the event watcher config in application.
-	lastScannedEventWatcherConfig sync.Map
+	// Cache for the last scanned commit and event watcher configs for each application.
+	lastScannedConfig sync.Map
+}
+
+type eventWatcherCache struct {
+	HeadCommit string
+	Configs    []config.EventWatcherConfig
 }
 
 func NewWatcher(cfg *config.PipedSpec, eventLister eventLister, gitClient gitClient, apiClient apiClient, logger *zap.Logger) Watcher {
@@ -227,23 +230,34 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 					continue
 				}
 				// Return a last scanned application if there is no new commit pushed from last scanned time for this application.
-				if lc, ok := w.lastScannedCommits.Load(app.Id); ok && lc.(string) == headCommit.Hash {
-					if cfg, ok := w.lastScannedEventWatcherConfig.Load(app.Id); ok {
-						cfgs = append(cfgs, cfg.(config.EventWatcherConfig))
+				if v, ok := w.lastScannedConfig.Load(app.Id); ok {
+					c := v.(eventWatcherCache)
+					if c.HeadCommit == headCommit.Hash && c.Configs == nil {
+						continue
 					}
-					continue
+					if c.HeadCommit == headCommit.Hash {
+						cfgs = append(cfgs, c.Configs...)
+						continue
+					}
 				}
+
 				appCfg, err := config.LoadApplication(repo.GetPath(), app.GitPath.GetApplicationConfigFilePath(), app.Kind)
 				if err != nil {
 					w.logger.Error("failed to load application configuration", zap.Error(err))
 					continue
 				}
-				w.lastScannedCommits.Store(app.Id, headCommit.Hash)
+
+				// Save as a cache regardless of whether the event watcher configuration exists or not in an application configuration.
+				cache := &eventWatcherCache{
+					HeadCommit: headCommit.Hash,
+					Configs:    appCfg.EventWatcher,
+				}
+				w.lastScannedConfig.Store(app.Id, cache)
 
 				if appCfg.EventWatcher == nil {
 					continue
 				}
-				w.lastScannedEventWatcherConfig.Store(app.Id, appCfg.EventWatcher)
+
 				cfgs = append(cfgs, appCfg.EventWatcher...)
 			}
 			if len(cfgs) == 0 {
