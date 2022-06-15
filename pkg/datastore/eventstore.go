@@ -144,8 +144,6 @@ func (s *eventStore) UpdateStatus(ctx context.Context, eventID string, status mo
 			now := s.nowFunc().Unix()
 			event.HandledAt = now
 			event.UpdatedAt = now
-			// For older Piped agents, this is required.
-			event.Handled = true
 		}
 		return nil
 	})

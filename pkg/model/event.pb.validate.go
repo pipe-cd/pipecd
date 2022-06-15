@@ -113,8 +113,6 @@ func (m *Event) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for Handled
-
 	if _, ok := EventStatus_name[int32(m.GetStatus())]; !ok {
 		err := EventValidationError{
 			field:  "Status",

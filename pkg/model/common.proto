@@ -34,11 +34,12 @@ enum ApplicationActiveStatus {
 }
 
 message ApplicationGitPath {
+    reserved 3;
+
     // The repository that was configured at piped.
     ApplicationGitRepository repo = 1 [(validate.rules).message.required = true];
     // TODO: Make this field immutable.
     string path = 2 [(validate.rules).string.pattern = "^[^/].+$"];
-    string config_path = 3 [deprecated=true];
     string config_filename = 4;
     string url = 5;
 }

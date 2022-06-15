@@ -23,7 +23,6 @@ export const updateApplication = createAsyncThunk<
     pipedId: string;
     repo: ApplicationGitRepository.AsObject;
     repoPath: string;
-    configPath?: string;
     configFilename?: string;
     kind: ApplicationKind;
     cloudProvider: string;

@@ -84,7 +84,6 @@ proto.model.Event.toObject = function(includeInstance, msg) {
     projectId: jspb.Message.getFieldWithDefault(msg, 4, ""),
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : [],
     eventKey: jspb.Message.getFieldWithDefault(msg, 6, ""),
-    handled: jspb.Message.getBooleanFieldWithDefault(msg, 7, false),
     status: jspb.Message.getFieldWithDefault(msg, 8, 0),
     statusDescription: jspb.Message.getFieldWithDefault(msg, 9, ""),
     handledAt: jspb.Message.getFieldWithDefault(msg, 13, 0),
@@ -151,10 +150,6 @@ proto.model.Event.deserializeBinaryFromReader = function(msg, reader) {
     case 6:
       var value = /** @type {string} */ (reader.readString());
       msg.setEventKey(value);
-      break;
-    case 7:
-      var value = /** @type {boolean} */ (reader.readBool());
-      msg.setHandled(value);
       break;
     case 8:
       var value = /** @type {!proto.model.EventStatus} */ (reader.readEnum());
@@ -241,13 +236,6 @@ proto.model.Event.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       6,
-      f
-    );
-  }
-  f = message.getHandled();
-  if (f) {
-    writer.writeBool(
-      7,
       f
     );
   }
@@ -398,24 +386,6 @@ proto.model.Event.prototype.getEventKey = function() {
  */
 proto.model.Event.prototype.setEventKey = function(value) {
   return jspb.Message.setProto3StringField(this, 6, value);
-};
-
-
-/**
- * optional bool handled = 7;
- * @return {boolean}
- */
-proto.model.Event.prototype.getHandled = function() {
-  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 7, false));
-};
-
-
-/**
- * @param {boolean} value
- * @return {!proto.model.Event} returns this
- */
-proto.model.Event.prototype.setHandled = function(value) {
-  return jspb.Message.setProto3BooleanField(this, 7, value);
 };
 
 

@@ -12,9 +12,6 @@ export class ApplicationGitPath extends jspb.Message {
   getPath(): string;
   setPath(value: string): ApplicationGitPath;
 
-  getConfigPath(): string;
-  setConfigPath(value: string): ApplicationGitPath;
-
   getConfigFilename(): string;
   setConfigFilename(value: string): ApplicationGitPath;
 
@@ -33,7 +30,6 @@ export namespace ApplicationGitPath {
   export type AsObject = {
     repo?: ApplicationGitRepository.AsObject,
     path: string,
-    configPath: string,
     configFilename: string,
     url: string,
   }
