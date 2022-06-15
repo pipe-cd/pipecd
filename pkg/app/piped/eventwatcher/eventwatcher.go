@@ -84,6 +84,10 @@ type watcher struct {
 	// Maximum timestamp of the last Event read.
 	// A map from repo-id to the UNIX timestamp that has been read.
 	milestoneMap sync.Map
+	// Cache for the last scanned commit for each application.
+	lastScannedCommits sync.Map
+	// Cache for the last scanned the event watcher config in application.
+	lastScannedEventWatcherConfig sync.Map
 }
 
 func NewWatcher(cfg *config.PipedSpec, eventLister eventLister, gitClient gitClient, apiClient apiClient, logger *zap.Logger) Watcher {
@@ -180,8 +184,16 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 				}
 				continue
 			}
+			headCommit, err := repo.GetLatestCommit(ctx)
+			if err != nil {
+				w.logger.Error("failed to get latest commit",
+					zap.String("repo-id", repoCfg.RepoID),
+					zap.Error(err),
+				)
+				continue
+			}
 			// Check whether the config file exists in .pipe/ or not and updates values if it exists.
-			// NOTE: This will be removed.
+			// NOTE: This was deprecated and will be deleted in the future.
 			cfg, err := config.LoadEventWatcher(repo.GetPath(), includedCfgs, excludedCfgs)
 			if !errors.Is(err, config.ErrNotFound) && err != nil {
 				w.logger.Error("failed to load configuration file for Event Watcher",
@@ -191,7 +203,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 				continue
 			}
 			if errors.Is(err, config.ErrNotFound) {
-				w.logger.Info("configuration file for Event Watcher in .pipe/ not found",
+				w.logger.Info("there was no config file for Event Watcher in .pipe directory",
 					zap.String("repo-id", repoCfg.RepoID),
 					zap.Error(err),
 				)
@@ -214,14 +226,24 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 				if app.GitPath.Repo.Id != repoCfg.RepoID {
 					continue
 				}
+				// Return a last scanned application if there is no new commit pushed from last scanned time for this application.
+				if lc, ok := w.lastScannedCommits.Load(app.Id); ok && lc.(string) == headCommit.Hash {
+					if cfg, ok := w.lastScannedEventWatcherConfig.Load(app.Id); ok {
+						cfgs = append(cfgs, cfg.(config.EventWatcherConfig))
+					}
+					continue
+				}
 				appCfg, err := config.LoadApplication(repo.GetPath(), app.GitPath.GetApplicationConfigFilePath(), app.Kind)
 				if err != nil {
 					w.logger.Error("failed to load application configuration", zap.Error(err))
 					continue
 				}
+				w.lastScannedCommits.Store(app.Id, headCommit.Hash)
+
 				if appCfg.EventWatcher == nil {
 					continue
 				}
+				w.lastScannedEventWatcherConfig.Store(app.Id, appCfg.EventWatcher)
 				cfgs = append(cfgs, appCfg.EventWatcher...)
 			}
 			if len(cfgs) == 0 {
