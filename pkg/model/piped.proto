@@ -28,6 +28,11 @@ message Piped {
         string type = 2 [(validate.rules).string.min_len = 1];
     }
 
+    message PlatformProvider {
+        string name = 1 [(validate.rules).string.min_len = 1];
+        string type = 2 [(validate.rules).string.min_len = 1];
+    }
+
     message SecretEncryption {
         string type = 1 [(validate.rules).string = {in: ["KEY_PAIR", "GCP_KMS", "AWS_KMS", "NONE"]}];
         string public_key = 2;
@@ -54,13 +59,16 @@ message Piped {
     // Unix time when the piped is started up.
     int64 started_at = 8;
     // List of configured cloud providers.
-    repeated CloudProvider cloud_providers = 9;
+    // Deprecated: use PlatformProvider instead.
+    repeated CloudProvider cloud_providers = 9 [deprecated=true];
     // List of configured repositories.
     repeated ApplicationGitRepository repositories = 10;
     // The latest connection status of piped.
     ConnectionStatus status = 11 [(validate.rules).enum.defined_only = true];
     // Currently applied config.
     string config = 12;
+    // List of configured platform providers.
+    repeated PlatformProvider platform_providers = 16;
     // The public key/service account for encrypting the secret data.
     SecretEncryption secret_encryption = 21;
 

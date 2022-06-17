@@ -152,16 +152,9 @@ func (m *Application) validate(all bool) error {
 		}
 	}
 
-	if utf8.RuneCountInString(m.GetCloudProvider()) < 1 {
-		err := ApplicationValidationError{
-			field:  "CloudProvider",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for CloudProvider
+
+	// no validation rules for PlatformProvider
 
 	// no validation rules for Description
 
