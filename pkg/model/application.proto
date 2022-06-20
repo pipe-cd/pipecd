@@ -38,7 +38,11 @@ message Application {
     ApplicationGitPath git_path = 7 [(validate.rules).message.required = true];
     // The name of cloud provider where to deploy this application.
     // This must be one of the provider names registered in the piped.
-    string cloud_provider = 8 [(validate.rules).string.min_len = 1];
+    string cloud_provider = 8 [deprecated=true];
+    // The name of platform provider where to deploy this application.
+    // This must be one of the provider names registered in the piped.
+    // TODO: Add validation for this field.
+    string platform_provider = 15;
     // Additional description about application.
     string description = 9;
     // Custom attributes to identify applications.

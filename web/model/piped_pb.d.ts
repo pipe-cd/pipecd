@@ -39,6 +39,11 @@ export class Piped extends jspb.Message {
   getConfig(): string;
   setConfig(value: string): Piped;
 
+  getPlatformProvidersList(): Array<Piped.PlatformProvider>;
+  setPlatformProvidersList(value: Array<Piped.PlatformProvider>): Piped;
+  clearPlatformProvidersList(): Piped;
+  addPlatformProviders(value?: Piped.PlatformProvider, index?: number): Piped.PlatformProvider;
+
   getSecretEncryption(): Piped.SecretEncryption | undefined;
   setSecretEncryption(value?: Piped.SecretEncryption): Piped;
   hasSecretEncryption(): boolean;
@@ -81,6 +86,7 @@ export namespace Piped {
     repositoriesList: Array<pkg_model_common_pb.ApplicationGitRepository.AsObject>,
     status: Piped.ConnectionStatus,
     config: string,
+    platformProvidersList: Array<Piped.PlatformProvider.AsObject>,
     secretEncryption?: Piped.SecretEncryption.AsObject,
     keysList: Array<PipedKey.AsObject>,
     desiredVersion: string,
@@ -105,6 +111,29 @@ export namespace Piped {
   }
 
   export namespace CloudProvider {
+    export type AsObject = {
+      name: string,
+      type: string,
+    }
+  }
+
+
+  export class PlatformProvider extends jspb.Message {
+    getName(): string;
+    setName(value: string): PlatformProvider;
+
+    getType(): string;
+    setType(value: string): PlatformProvider;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): PlatformProvider.AsObject;
+    static toObject(includeInstance: boolean, msg: PlatformProvider): PlatformProvider.AsObject;
+    static serializeBinaryToWriter(message: PlatformProvider, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): PlatformProvider;
+    static deserializeBinaryFromReader(message: PlatformProvider, reader: jspb.BinaryReader): PlatformProvider;
+  }
+
+  export namespace PlatformProvider {
     export type AsObject = {
       name: string,
       type: string,

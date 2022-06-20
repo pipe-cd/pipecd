@@ -24,6 +24,7 @@ const [createdAt, startedAt, updatedAt] = createRandTimes(3);
 export const dummyApplication: Application.AsObject = {
   id: randomUUID(),
   cloudProvider: "kubernetes-default",
+  platformProvider: "",
   disabled: false,
   gitPath: {
     configFilename: "",

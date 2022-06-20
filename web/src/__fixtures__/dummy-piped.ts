@@ -16,6 +16,7 @@ export const dummyPiped: Piped.AsObject = {
       type: "TERRAFORM",
     },
   ],
+  platformProvidersList: [],
   desc: randomText(1),
   disabled: false,
   id: randomUUID(),

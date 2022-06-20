@@ -29,6 +29,9 @@ export class Application extends jspb.Message {
   getCloudProvider(): string;
   setCloudProvider(value: string): Application;
 
+  getPlatformProvider(): string;
+  setPlatformProvider(value: string): Application;
+
   getDescription(): string;
   setDescription(value: string): Application;
 
@@ -85,6 +88,7 @@ export namespace Application {
     kind: pkg_model_common_pb.ApplicationKind,
     gitPath?: pkg_model_common_pb.ApplicationGitPath.AsObject,
     cloudProvider: string,
+    platformProvider: string,
     description: string,
     labelsMap: Array<[string, string]>,
     mostRecentlySuccessfulDeployment?: ApplicationDeploymentReference.AsObject,

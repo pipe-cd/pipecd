@@ -337,7 +337,8 @@ func TestAddDeployment(t *testing.T) {
 					Repo: &model.ApplicationGitRepository{Id: "id"},
 					Path: "path",
 				},
-				CloudProvider: "cloud-provider",
+				CloudProvider:    "cloud-provider",
+				PlatformProvider: "platform-provider",
 				Trigger: &model.DeploymentTrigger{
 					Commit: &model.Commit{
 						Hash:      "hash",
