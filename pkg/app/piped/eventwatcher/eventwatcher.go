@@ -232,9 +232,6 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 				// Return a last scanned application if there is no new commit pushed from last scanned time for this application.
 				if v, ok := w.lastScannedConfig.Load(app.Id); ok {
 					c := v.(eventWatcherCache)
-					if c.HeadCommit == headCommit.Hash && c.Configs == nil {
-						continue
-					}
 					if c.HeadCommit == headCommit.Hash {
 						cfgs = append(cfgs, c.Configs...)
 						continue
