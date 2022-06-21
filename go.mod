@@ -3,9 +3,11 @@ module github.com/pipe-cd/pipecd
 go 1.16
 
 require (
-	cloud.google.com/go v0.65.0
-	cloud.google.com/go/firestore v1.2.0
-	cloud.google.com/go/storage v1.11.0
+	cloud.google.com/go v0.102.1 // indirect
+	cloud.google.com/go/firestore v1.6.1
+	cloud.google.com/go/profiler v0.3.0
+	cloud.google.com/go/secretmanager v1.4.0
+	cloud.google.com/go/storage v1.22.1
 	github.com/DataDog/datadog-api-client-go v1.0.0-beta.16
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/agext/levenshtein v1.2.2 // indirect
@@ -23,7 +25,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/goccy/go-yaml v1.9.3
 	github.com/golang-jwt/jwt v3.2.1+incompatible
-	github.com/golang/mock v1.4.4
+	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.2
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/go-github/v29 v29.0.3
@@ -44,13 +46,13 @@ require (
 	go.uber.org/multierr v1.2.0 // indirect
 	go.uber.org/zap v1.10.1-0.20190709142728-9a9fa7d4b5f0
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
-	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d
-	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	google.golang.org/api v0.31.0
-	google.golang.org/genproto v0.0.0-20201019141844-1ed22bb0c154
-	google.golang.org/grpc v1.43.0
-	google.golang.org/protobuf v1.27.1
+	golang.org/x/net v0.0.0-20220607020251-c690dde0001d
+	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb
+	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
+	google.golang.org/api v0.84.0
+	google.golang.org/genproto v0.0.0-20220617124728-180714bec0ad
+	google.golang.org/grpc v1.47.0
+	google.golang.org/protobuf v1.28.0
 	istio.io/api v0.0.0-20200710191538-00b73d23c685
 	k8s.io/api v0.22.3
 	k8s.io/apimachinery v0.22.3
