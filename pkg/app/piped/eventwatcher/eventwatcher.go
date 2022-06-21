@@ -621,7 +621,7 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 		if err := os.WriteFile(path, newContent, os.ModePerm); err != nil {
 			return fmt.Errorf("failed to write file: %w", err)
 		}
-		changes[r.File] = newContent
+		changes[filePath] = newContent
 	}
 	if len(changes) == 0 {
 		return nil
