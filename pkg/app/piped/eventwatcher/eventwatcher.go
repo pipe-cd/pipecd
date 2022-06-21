@@ -81,9 +81,13 @@ type watcher struct {
 
 	// All cloned repository will be placed under this.
 	workingDir string
-	// Maximum timestamp of the last Event read.
+	// Maximum timestamp of the last Event read from .pipe/.
 	// A map from repo-id to the UNIX timestamp that has been read.
 	milestoneMap sync.Map
+
+	// Maximum timestamp of the last Event read from the application config.
+	// A map from repo-id to the UNIX timestamp that has been read.
+	executionMilestoneMap sync.Map
 	// Cache for the last scanned commit and event watcher configs for each application.
 	lastScannedConfig sync.Map
 }
@@ -317,7 +321,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 
 	var milestone int64
 	firstRead := true
-	if v, ok := w.milestoneMap.Load(repoID); ok {
+	if v, ok := w.executionMilestoneMap.Load(repoID); ok {
 		milestone = v.(int64)
 		firstRead = false
 	}
@@ -429,7 +433,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
 			return fmt.Errorf("failed to report event statuses: %w", err)
 		}
-		w.milestoneMap.Store(repoID, maxTimestamp)
+		w.executionMilestoneMap.Store(repoID, maxTimestamp)
 		return nil
 	}
 
@@ -450,7 +454,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 	if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
 		return fmt.Errorf("failed to report event statuses: %w", err)
 	}
-	w.milestoneMap.Store(repoID, maxTimestamp)
+	w.executionMilestoneMap.Store(repoID, maxTimestamp)
 	return fmt.Errorf("failed to push commits: %w", err)
 }
 
