@@ -237,7 +237,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 				}
 				// Return a last scanned application if there is no new commit pushed from last scanned time for this application.
 				if v, ok := w.lastScannedConfig.Load(app.Id); ok {
-					c := v.(eventWatcherCache)
+					c := v.(*eventWatcherCache)
 					if c.HeadCommit == headCommit.Hash {
 						ew := eventWatcherConfig{
 							GitPath: c.GitPath,
@@ -621,7 +621,7 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 		if err := os.WriteFile(path, newContent, os.ModePerm); err != nil {
 			return fmt.Errorf("failed to write file: %w", err)
 		}
-		changes[r.File] = newContent
+		changes[filePath] = newContent
 	}
 	if len(changes) == 0 {
 		return nil
