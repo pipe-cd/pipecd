@@ -18,7 +18,8 @@ While it empowers you to build pretty versatile workflows, the canonical use cas
 This guide walks you through configuring Event watcher and how to push an Event.
 
 ## Prerequisites
-Before we get into configuring EventWatcher, be sure to configure Piped. See [here](/docs/operator-manual/piped/configuring-event-watcher/) for more details.
+If you want to use EventWatcher configuration files under the `.pipe/` directory, before we get into configuring EventWatcher, be sure to configure Piped. See [here](/docs/operator-manual/piped/configuring-event-watcher/) for more details.
+In other cases, there is no prerequisite. Let's move on to Usage.
 
 ## Usage
 File updating can be done by registering the latest value corresponding to the Event in the Control Plane and comparing it with the current value.
@@ -28,6 +29,9 @@ Therefore, you mainly need to:
 1. integrate a step to push an Event to the Control Plane using `pipectl` into your CI workflow.
 
 ### 1. Defining Events
+#### Use the `.pipe/` directory
+>NOTE: This way is deprecated and will be removed in the future, so please use the application configuration.
+
 Prepare EventWatcher configuration files under the `.pipe/` directory at the root of your Git repository.
 In that files, you define which values in which files should be updated when the Piped found out a new Event.
 
@@ -45,6 +49,31 @@ spec:
 ```
 
 The full list of configurable `EventWatcher` fields are [here](/docs/user-guide/configuration-reference/#event-watcher-configuration).
+
+#### Use the application configuration
+
+Define what to do for which event in the application configuration file of the target application.
+
+- `matcher`: Which event should be handled.
+- `handler`: What to do for the event which is specified by matcher.
+
+For instance, suppose you want to update the Kubernetes manifest defined in `helloworld/deployment.yaml` when an Event with the name `helloworld-image-update` occurs:
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: helloworld
+  eventWatcher:
+    - matcher:
+        name: helloworld-image-update
+      handler:
+        config:
+          replacements:
+            - file: deployment.yaml
+              yamlField: $.spec.template.spec.containers[0].image
+```
+
+The full list of configurable `eventWatcher` fields are [here](/docs/user-guide/configuration-reference/#eventwatcher).
 
 ### 2. Pushing an Event with `pipectl`
 To register a new value corresponding to Event such as the above in the Control Plane, you need to perform `pipectl`.
