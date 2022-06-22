@@ -56,7 +56,7 @@ type EventWatcherMatcher struct {
 type EventWatcherHandler struct {
 	// The handler type of event watcher.
 	Type EventWatcherHandlerType `json:"type,omitempty"`
-	// The config for the event watcher handler.
+	// The config for event watcher handler.
 	Config EventWatcherHandlerConfig `json:"config"`
 }
 
