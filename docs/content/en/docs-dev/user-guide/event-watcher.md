@@ -167,7 +167,7 @@ Note that it is considered a match only when labels are an exact match.
 ## Examples
 Suppose you want to update your configuration file after releasing a new Helm chart.
 
-You define the configuration for event watcher in the application configuration file like:
+You define the configuration for event watcher in `helloworld/app.pipecd.yaml` file like:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1

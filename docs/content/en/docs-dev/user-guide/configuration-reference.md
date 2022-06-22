@@ -37,7 +37,7 @@ spec:
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
 | variantLabel | [KubernetesVariantLabel](#kubernetesvariantlabel) | The label will be configured to variant manifests used to distinguish them. | No |
-| eventWatcher | [][EventWatcher](#eventWatcher) | Configuration for event watcher. | No |
+| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
 
 ## Terraform application
 
