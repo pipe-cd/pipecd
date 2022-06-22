@@ -9,6 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  GCR: gcr.io
   HELM_VERSION: 3.8.2
   GO_VERSION: 1.17.6
   NODE_VERSION: 16.13.0
@@ -74,7 +75,9 @@ jobs:
           push: true
           context: .
           file: cmd/piped/Dockerfile
-          tags: ${{ env.REGISTRY }}/pipe-cd/piped:${{ env.PIPECD_VERSION }}
+          tags: |
+            ${{ env.REGISTRY }}/pipe-cd/piped:${{ env.PIPECD_VERSION }}
+            ${{ env.GCR }}/pipe-cd/piped:${{ env.PIPECD_VERSION }}
       - name: Build and push piped-okd image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
@@ -88,7 +91,9 @@ jobs:
           push: true
           context: .
           file: cmd/launcher/Dockerfile
-          tags: ${{ env.REGISTRY }}/pipe-cd/launcher:${{ env.PIPECD_VERSION }}
+          tags: |
+            ${{ env.REGISTRY }}/pipe-cd/launcher:${{ env.PIPECD_VERSION }}
+            ${{ env.GCR }}/pipe-cd/launcher:${{ env.PIPECD_VERSION }}
       - name: Build and push launcher-okd image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
