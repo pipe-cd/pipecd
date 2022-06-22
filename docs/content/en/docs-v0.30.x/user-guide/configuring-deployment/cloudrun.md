@@ -1,6 +1,6 @@
 ---
-title: "CloudRun"
-linkTitle: "CloudRun"
+title: "Cloud Run"
+linkTitle: "Cloud Run"
 weight: 3
 description: >
   Specific guide for configuring Cloud Run deployment.
