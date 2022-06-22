@@ -73,7 +73,7 @@ spec:
               yamlField: $.spec.template.spec.containers[0].image
 ```
 
-The full list of configurable `eventWatcher` fields are [here](/docs/user-guide/configuration-reference/#eventwatcher).
+The full list of configurable `eventWatcher` fields are [here](/docs-dev/user-guide/configuration-reference/#eventwatcher).
 
 ### 2. Pushing an Event with `pipectl`
 To register a new value corresponding to Event such as the above in the Control Plane, you need to perform `pipectl`.
@@ -117,6 +117,7 @@ Event watcher is a project-wide feature, hence an event name is unique inside a 
 On the contrary, if you want to explicitly distinguish those, we recommend using labels. You can make an event definition unique by using any number of labels with arbitrary keys and values.
 Suppose you define an event with the labels `env: dev` and `appName: helloworld`:
 
+When you use the `.pipe/` directory, you can configure like below.
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: EventWatcher
@@ -129,6 +130,25 @@ spec:
       replacements:
         - file: helloworld/deployment.yaml
           yamlField: $.spec.template.spec.containers[0].image
+```
+
+The other example is like below.
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: ApplicationKind
+spec:
+  name: helloworld
+  eventWatcher:
+    - matcher:
+        name: image-update
+        labels:
+          env: dev
+          appName: helloworld
+      handler:
+        config:
+          replacements:
+            - file: deployment.yaml
+              yamlField: $.spec.template.spec.containers[0].image
 ```
 
 The file update will be executed only when the labels are explicitly specified with the `--labels` flag.
@@ -147,20 +167,27 @@ Note that it is considered a match only when labels are an exact match.
 ## Examples
 Suppose you want to update your configuration file after releasing a new Helm chart.
 
-You define `.pipe/event-watcher.yaml` like:
+You define the configuration for event watcher in the application configuration file like:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
-kind: EventWatcher
+kind: KubernetesApp
 spec:
-  events:
-    - name: helm-release
-      labels:
-        env: dev
-        appName: helloworld
-      replacements:
-        - file: helloworld/app.pipecd.yaml
-          yamlField: $.spec.input.helmChart.version
+  input:
+    helmChart:
+      name: helloworld
+      version: 0.1.0
+  eventWatcher:
+    - matcher:
+        name: image-update
+        labels:
+          env: dev
+          appName: helloworld
+      handler:
+        config:
+          replacements:
+            - file: app.pipecd.yaml
+              yamlField: $.spec.input.helmChart.version
 ```
 
 Push a new version `0.2.0` as data when the Helm release is completed.
@@ -185,6 +212,17 @@ spec:
       name: helloworld
 -     version: 0.1.0
 +     version: 0.2.0
+  eventWatcher:
+    - matcher:
+        name: image-update
+        labels:
+          env: dev
+          appName: helloworld
+      handler:
+        config:
+          replacements:
+            - file: app.pipecd.yaml
+              yamlField: $.spec.input.helmChart.version
 ```
 
 See [here](https://github.com/pipe-cd/examples/blob/master/.pipe) for more examples.
