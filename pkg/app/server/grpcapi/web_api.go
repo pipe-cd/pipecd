@@ -467,7 +467,6 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 	}, nil
 }
 
-// TODO: Validate the specified piped to ensure that it belongs to the specified environment.
 func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicationRequest) (*webservice.AddApplicationResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
