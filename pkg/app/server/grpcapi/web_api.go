@@ -496,15 +496,16 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 	}
 
 	app := model.Application{
-		Id:            uuid.New().String(),
-		Name:          req.Name,
-		PipedId:       req.PipedId,
-		ProjectId:     claims.Role.ProjectId,
-		GitPath:       gitpath,
-		Kind:          req.Kind,
-		CloudProvider: req.CloudProvider,
-		Description:   req.Description,
-		Labels:        req.Labels,
+		Id:               uuid.New().String(),
+		Name:             req.Name,
+		PipedId:          req.PipedId,
+		ProjectId:        claims.Role.ProjectId,
+		GitPath:          gitpath,
+		Kind:             req.Kind,
+		CloudProvider:    req.CloudProvider,
+		PlatformProvider: req.CloudProvider,
+		Description:      req.Description,
+		Labels:           req.Labels,
 	}
 	if err = a.applicationStore.Add(ctx, &app); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add application %s", app.Id))
