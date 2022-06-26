@@ -596,6 +596,20 @@ func (mr *MockApplicationStoreMockRecorder) UpdateMostRecentDeployment(arg0, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMostRecentDeployment", reflect.TypeOf((*MockApplicationStore)(nil).UpdateMostRecentDeployment), arg0, arg1, arg2, arg3)
 }
 
+// UpdatePlatformProvider mocks base method.
+func (m *MockApplicationStore) UpdatePlatformProvider(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePlatformProvider", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePlatformProvider indicates an expected call of UpdatePlatformProvider.
+func (mr *MockApplicationStoreMockRecorder) UpdatePlatformProvider(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePlatformProvider", reflect.TypeOf((*MockApplicationStore)(nil).UpdatePlatformProvider), arg0, arg1, arg2)
+}
+
 // UpdateSyncState mocks base method.
 func (m *MockApplicationStore) UpdateSyncState(arg0 context.Context, arg1 string, arg2 *model.ApplicationSyncState) error {
 	m.ctrl.T.Helper()

@@ -197,6 +197,7 @@ type ApplicationStore interface {
 	UpdateDeployingStatus(ctx context.Context, id string, deploying bool) error
 	UpdateBasicInfo(ctx context.Context, id, name, description string, labels map[string]string) error
 	UpdateConfiguration(ctx context.Context, id, pipedID, cloudProvider, configFilename string) error
+	UpdatePlatformProvider(ctx context.Context, id string, provider string) error
 }
 
 type applicationStore struct {
@@ -365,6 +366,13 @@ func (s *applicationStore) UpdateConfiguration(ctx context.Context, id, pipedID,
 		app.PipedId = pipedID
 		app.CloudProvider = cloudProvider
 		app.GitPath.ConfigFilename = configFilename
+		return nil
+	})
+}
+
+func (s *applicationStore) UpdatePlatformProvider(ctx context.Context, id string, provider string) error {
+	return s.update(ctx, id, func(app *model.Application) error {
+		app.PlatformProvider = provider
 		return nil
 	})
 }
