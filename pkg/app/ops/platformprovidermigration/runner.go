@@ -91,13 +91,6 @@ func (r *Runner) migrate(ctx context.Context) (int, error) {
 				Direction: datastore.Asc,
 			},
 		},
-		Filters: []datastore.ListFilter{
-			{
-				Field:    "Deleted",
-				Operator: datastore.OperatorEqual,
-				Value:    false,
-			},
-		},
 	}
 
 	apps, _, err := r.applicationStore.List(ctx, opts)
