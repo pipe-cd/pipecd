@@ -78,7 +78,7 @@ func (r *Runner) Migrate(ctx context.Context) error {
 // migrate runs the migration task to update all applications in the database.
 // It returns the number represents how many application remained/failed to update/migrate.
 // We expect the number is 0 (zero) means all applications are migrated. If it returns -1
-// means error occured before the number of actually remained apps is not yet be calculated.
+// means error occurred before the number of actually remained apps is not yet be calculated.
 func (r *Runner) migrate(ctx context.Context) (int, error) {
 	opts := datastore.ListOptions{
 		Orders: []datastore.Order{
@@ -102,9 +102,11 @@ func (r *Runner) migrate(ctx context.Context) (int, error) {
 	appCnt := len(apps)
 	for _, app := range apps {
 		if app.PlatformProvider == "" {
+			// lint:ignore SA1019: app.CloudProvider is deprecated.
 			if err = r.applicationStore.UpdatePlatformProvider(ctx, app.Id, app.CloudProvider); err != nil {
 				r.logger.Error("failed to update application platform provider value",
 					zap.String("id", app.Id),
+					// lint:ignore SA1019: app.CloudProvider is deprecated.
 					zap.String("provider", app.CloudProvider),
 					zap.Error(err),
 				)
