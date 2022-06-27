@@ -8,7 +8,7 @@ on:
       - 'v*'
 
 env:
-  REGISTRY: ghcr.io
+  GHCR: ghcr.io
   GCR: gcr.io
   HELM_VERSION: 3.8.2
   GO_VERSION: 1.17.6
@@ -57,7 +57,7 @@ jobs:
       - name: Log in to the container registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ${{ env.GHCR }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -75,7 +75,7 @@ jobs:
           push: true
           context: .
           file: cmd/pipecd/Dockerfile
-          tags: ${{ env.REGISTRY }}/pipe-cd/pipecd:${{ env.PIPECD_VERSION }}
+          tags: ${{ env.GHCR }}/pipe-cd/pipecd:${{ env.PIPECD_VERSION }}
       - name: Build and push piped image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
@@ -91,7 +91,7 @@ jobs:
           push: true
           context: .
           file: cmd/piped/Dockerfile-okd
-          tags: ${{ env.REGISTRY }}/pipe-cd/piped-okd:${{ env.PIPECD_VERSION }}
+          tags: ${{ env.GHCR }}/pipe-cd/piped-okd:${{ env.PIPECD_VERSION }}
       - name: Build and push launcher image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
@@ -107,21 +107,23 @@ jobs:
           push: true
           context: .
           file: cmd/launcher/Dockerfile-okd
-          tags: ${{ env.REGISTRY }}/pipe-cd/launcher-okd:${{ env.PIPECD_VERSION }}
+          tags: ${{ env.GHCR }}/pipe-cd/launcher-okd:${{ env.PIPECD_VERSION }}
       - name: Build and push pipectl image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           push: true
           context: .
           file: cmd/pipectl/Dockerfile
-          tags: ${{ env.REGISTRY }}/pipe-cd/pipectl:${{ env.PIPECD_VERSION }}
+          tags: ${{ env.GHCR }}/pipe-cd/pipectl:${{ env.PIPECD_VERSION }}
       - name: Build and push helloworld image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           push: true
           context: .
           file: cmd/helloworld/Dockerfile
-          tags: ${{ env.REGISTRY }}/pipe-cd/helloworld:${{ env.PIPECD_VERSION }}
+          tags: |
+            ${{ env.GHCR }}/pipe-cd/helloworld:${{ env.PIPECD_VERSION }}
+            ${{ env.GCR }}/pipecd/helloworld:${{ env.PIPECD_VERSION }}
 
       # Building and pushing Helm charts.
       - name: Install helm
@@ -130,13 +132,13 @@ jobs:
           version: ${{ env.HELM_VERSION }}
       - name: Login to OCI using Helm
         run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.REGISTRY }} --username ${{ github.repository_owner }} --password-stdin
+          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.GHCR }} --username ${{ github.repository_owner }} --password-stdin
       - name: Publish helm charts
         run: |
           make build/chart VERSION=${{ env.PIPECD_VERSION }}
-          helm push .artifacts/pipecd-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.REGISTRY }}/pipe-cd/chart
-          helm push .artifacts/piped-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.REGISTRY }}/pipe-cd/chart
-          helm push .artifacts/helloworld-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.REGISTRY }}/pipe-cd/chart
+          helm push .artifacts/pipecd-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
+          helm push .artifacts/piped-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
+          helm push .artifacts/helloworld-${{ env.PIPECD_VERSION }}.tgz oci://${{ env.GHCR }}/pipe-cd/chart
 
       # Notify PipeCD to trigger deployment via EventWatcher.
       - uses: pipe-cd/actions-event-register@v1
