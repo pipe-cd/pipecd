@@ -31,10 +31,14 @@ jobs:
 
       - name: Build binary artifacts
         run: |
-          make build/go MOD=piped BUILD_OS=linux BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_linux_amd64
-          make build/go MOD=piped BUILD_OS=darwin BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_darwin_amd64
-          make build/go MOD=pipectl BUILD_OS=linux BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_linux_amd64
-          make build/go MOD=pipectl BUILD_OS=darwin BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_darwin_amd64
+          make build/go MOD=piped BUILD_OS=linux BUILD_ARCH=amd64 BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_linux_amd64
+          make build/go MOD=piped BUILD_OS=linux BUILD_ARCH=arm64 BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_linux_arm64
+          make build/go MOD=piped BUILD_OS=darwin BUILD_ARCH=amd64 BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_darwin_amd64
+          make build/go MOD=piped BUILD_OS=darwin BUILD_ARCH=arm64 BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_darwin_arm64
+          make build/go MOD=pipectl BUILD_OS=linux BUILD_ARCH=amd64 BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_linux_amd64
+          make build/go MOD=pipectl BUILD_OS=linux BUILD_ARCH=arm64 BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_linux_arm64
+          make build/go MOD=pipectl BUILD_OS=darwin BUILD_ARCH=amd64 BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_darwin_amd64
+          make build/go MOD=pipectl BUILD_OS=darwin BUILD_ARCH=arm64 BIN_SUFFIX=_${{ env.PIPECD_VERSION }}_darwin_arm64
 
       - name: Publish binary artifacts
         uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5 #v0.1.14
@@ -42,6 +46,10 @@ jobs:
         with:
           files: |
             ./.artifacts/piped_${{ env.PIPECD_VERSION }}_linux_amd64
+            ./.artifacts/piped_${{ env.PIPECD_VERSION }}_linux_arm64
             ./.artifacts/piped_${{ env.PIPECD_VERSION }}_darwin_amd64
+            ./.artifacts/piped_${{ env.PIPECD_VERSION }}_darwin_arm64
             ./.artifacts/pipectl_${{ env.PIPECD_VERSION }}_linux_amd64
+            ./.artifacts/pipectl_${{ env.PIPECD_VERSION }}_linux_arm64
             ./.artifacts/pipectl_${{ env.PIPECD_VERSION }}_darwin_amd64
+            ./.artifacts/pipectl_${{ env.PIPECD_VERSION }}_darwin_arm64
