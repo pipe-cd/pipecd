@@ -102,11 +102,11 @@ func (r *Runner) migrate(ctx context.Context) (int, error) {
 	appCnt := len(apps)
 	for _, app := range apps {
 		if app.PlatformProvider == "" {
-			// lint:ignore SA1019: app.CloudProvider is deprecated.
+			//lint:ignore SA1019 app.CloudProvider is deprecated.
 			if err = r.applicationStore.UpdatePlatformProvider(ctx, app.Id, app.CloudProvider); err != nil {
 				r.logger.Error("failed to update application platform provider value",
 					zap.String("id", app.Id),
-					// lint:ignore SA1019: app.CloudProvider is deprecated.
+					//lint:ignore SA1019 app.CloudProvider is deprecated.
 					zap.String("provider", app.CloudProvider),
 					zap.Error(err),
 				)
