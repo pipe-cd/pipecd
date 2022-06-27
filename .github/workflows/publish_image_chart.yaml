@@ -84,7 +84,7 @@ jobs:
           file: cmd/piped/Dockerfile
           tags: |
             ${{ env.REGISTRY }}/pipe-cd/piped:${{ env.PIPECD_VERSION }}
-            ${{ env.GCR }}/pipe-cd/piped:${{ env.PIPECD_VERSION }}
+            ${{ env.GCR }}/pipecd/piped:${{ env.PIPECD_VERSION }}
       - name: Build and push piped-okd image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
@@ -100,7 +100,7 @@ jobs:
           file: cmd/launcher/Dockerfile
           tags: |
             ${{ env.REGISTRY }}/pipe-cd/launcher:${{ env.PIPECD_VERSION }}
-            ${{ env.GCR }}/pipe-cd/launcher:${{ env.PIPECD_VERSION }}
+            ${{ env.GCR }}/pipecd/launcher:${{ env.PIPECD_VERSION }}
       - name: Build and push launcher-okd image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
