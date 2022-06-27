@@ -66,7 +66,7 @@ jobs:
         with:
           registry: ${{ env.GCR }}
           username: _json_key_base64
-          password: __TODO__
+          password: ${{ secrets.GCR_SA }}
 
       # Building and pushing container images.
       - name: Build and push pipecd image
