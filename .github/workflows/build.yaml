@@ -14,8 +14,19 @@ env:
   GO_VERSION: 1.17.6
   NODE_VERSION: 16.13.0
   HELM_VERSION: 3.8.2
+  GCR: gcr.io
 
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to GCR
+        uses: docker/login-action@49ed152c8eca782a232dede0303416e8f356c37b #v2.0.0
+        with:
+          registry: ${{ env.GCR }}
+          username: _json_key
+          password: ${{ secrets.GCR_KEY }}
+
   go:
     runs-on: ubuntu-latest
     steps:
