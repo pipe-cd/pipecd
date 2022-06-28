@@ -57,6 +57,9 @@ const useStyles = makeStyles((theme) => ({
     verticalAlign: "text-bottom",
     marginLeft: theme.spacing(0.5),
   },
+  warning: {
+    color: "red",
+  },
 }));
 
 const EmptyDeploymentData: FC<{ displayAllProperties: boolean }> = ({
@@ -258,14 +261,18 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
             },
           }}
         >
-          <MenuItem onClick={handleEdit}>Edit</MenuItem>
-          <MenuItem onClick={handleGenerateSecret}>Encrypt Secret</MenuItem>
           {app && app.disabled ? (
             <MenuItem onClick={handleEnable}>Enable</MenuItem>
           ) : (
-            <MenuItem onClick={handleDisable}>Disable</MenuItem>
+            <>
+              <MenuItem onClick={handleEdit}>Edit</MenuItem>
+              <MenuItem onClick={handleGenerateSecret}>Encrypt Secret</MenuItem>
+              <MenuItem onClick={handleDisable}>Disable</MenuItem>
+            </>
           )}
-          <MenuItem onClick={handleDelete}>Delete</MenuItem>
+          <MenuItem className={classes.warning} onClick={handleDelete}>
+            Delete
+          </MenuItem>
         </Menu>
       </>
     );
