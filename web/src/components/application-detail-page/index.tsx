@@ -14,6 +14,7 @@ import {
 import { setDeletingAppId } from "~/modules/delete-application";
 import { DeleteApplicationDialog } from "../applications-page/application-list/delete-application-dialog";
 import { DisableApplicationDialog } from "../applications-page/application-list/disable-application-dialog";
+import { SealedSecretDialog } from "../applications-page/application-list/sealed-secret-dialog";
 import { ApplicationDetail } from "./application-detail";
 import { ApplicationStateView } from "./application-state-view";
 
@@ -46,6 +47,7 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [openDisableDialog, setOpenDisableDialog] = useState(false);
+  const [openEncryptSecretDialog, setOpenEncryptSecretDialog] = useState(false);
 
   useEffect(() => {
     if (applicationId) {
@@ -66,15 +68,20 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
     selectById(state.applications, applicationId)
   );
 
+  const handleEncryptSecretClick = (): void => {
+    setOpenEncryptSecretDialog(true);
+    setAnchorEl(null);
+  };
+
   const handleEnableClick = useCallback(async () => {
     await dispatch(enableApplication({ applicationId: applicationId }));
     setAnchorEl(null);
   }, [dispatch, applicationId]);
 
-  const handleDisableClick = useCallback(async () => {
+  const handleDisableClick = (): void => {
     setOpenDisableDialog(true);
     setAnchorEl(null);
-  }, []);
+  };
 
   const handleDeleteClick = useCallback(() => {
     dispatch(setDeletingAppId(applicationId));
@@ -110,12 +117,23 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
         {app && app.disabled ? (
           <MenuItem onClick={handleEnableClick}>Enable</MenuItem>
         ) : (
-          <MenuItem onClick={handleDisableClick}>Disable</MenuItem>
+          <>
+            <MenuItem onClick={handleEncryptSecretClick}>
+              Encrypt Secret
+            </MenuItem>
+            <MenuItem onClick={handleDisableClick}>Disable</MenuItem>
+          </>
         )}
         <MenuItem className={classes.warning} onClick={handleDeleteClick}>
           Delete
         </MenuItem>
       </Menu>
+
+      <SealedSecretDialog
+        open={openEncryptSecretDialog}
+        applicationId={applicationId}
+        onClose={() => setOpenEncryptSecretDialog(false)}
+      />
 
       <DisableApplicationDialog
         open={openDisableDialog}
