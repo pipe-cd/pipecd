@@ -65,7 +65,7 @@ jobs:
         uses: docker/login-action@49ed152c8eca782a232dede0303416e8f356c37b #v2.0.0
         with:
           registry: ${{ env.GCR }}
-          username: _json_key_base64
+          username: _json_key
           password: ${{ secrets.GCR_SA }}
 
       # Building and pushing container images.
