@@ -16,7 +16,6 @@ package platformprovidermigration
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -51,14 +50,9 @@ func (r *Runner) Migrate(ctx context.Context) error {
 	r.logger.Info("start running application migration task")
 
 	// Run migration task once on start this ops migration.
-	appCnt, err := r.migrate(ctx)
+	cursor, err := r.migrate(ctx, "")
 	if err != nil {
 		r.logger.Error("unable to finish application platform provider migration task in first run", zap.Error(err))
-	}
-
-	if appCnt == 0 {
-		r.logger.Info("application platform provider migration task done successfully")
-		return nil
 	}
 
 	taskRunTicker := time.NewTicker(migrationRunInterval)
@@ -69,39 +63,51 @@ func (r *Runner) Migrate(ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		case <-taskRunTicker.C:
-			appCnt, _ := r.migrate(ctx)
-			r.logger.Warn(fmt.Sprintf("there are %d application(s) remained from platform provider migration task running", appCnt))
+			cursor, err = r.migrate(ctx, cursor)
+			if err != nil {
+				r.logger.Info("application migration task finished successfully")
+				return nil
+			}
 		}
 	}
 }
 
 // migrate runs the migration task to update all applications in the database.
-// It returns the number represents how many application remained/failed to update/migrate.
-// We expect the number is 0 (zero) means all applications are migrated. If it returns -1
-// means error occurred before the number of actually remained apps is not yet be calculated.
-func (r *Runner) migrate(ctx context.Context) (int, error) {
-	opts := datastore.ListOptions{
-		Orders: []datastore.Order{
-			{
-				Field:     "UpdatedAt",
-				Direction: datastore.Desc,
-			},
-			{
-				Field:     "Id",
-				Direction: datastore.Asc,
-			},
+// In case of error occurred, it returns error and a cursor string which contains
+// the information so that next time we can pass that value to keep migrating from
+// failed application, not from start.
+func (r *Runner) migrate(ctx context.Context, cursor string) (string, error) {
+	order := []datastore.Order{
+		{
+			Field:     "UpdatedAt",
+			Direction: datastore.Desc,
+		},
+		{
+			Field:     "Id",
+			Direction: datastore.Asc,
 		},
 	}
 
-	apps, _, err := r.applicationStore.List(ctx, opts)
-	if err != nil {
-		r.logger.Error("failed to fetch all applications to run migrate task", zap.Error(err))
-		return -1, err
-	}
+	for {
+		apps, nextCur, err := r.applicationStore.List(ctx, datastore.ListOptions{
+			Orders: order,
+			Limit:  100,
+			Cursor: cursor,
+		})
+		if err != nil {
+			r.logger.Error("failed to fetch applications to run migrate task", zap.Error(err))
+			return cursor, err
+		}
 
-	appCnt := len(apps)
-	for _, app := range apps {
-		if app.PlatformProvider == "" {
+		if len(apps) == 0 {
+			return "", nil
+		}
+
+		for _, app := range apps {
+			if app.PlatformProvider != "" {
+				continue
+			}
+
 			//lint:ignore SA1019 app.CloudProvider is deprecated.
 			if err = r.applicationStore.UpdatePlatformProvider(ctx, app.Id, app.CloudProvider); err != nil {
 				r.logger.Error("failed to update application platform provider value",
@@ -110,11 +116,10 @@ func (r *Runner) migrate(ctx context.Context) (int, error) {
 					zap.String("provider", app.CloudProvider),
 					zap.Error(err),
 				)
-				continue
+				return cursor, err
 			}
 		}
-		appCnt--
-	}
 
-	return appCnt, nil
+		cursor = nextCur
+	}
 }
