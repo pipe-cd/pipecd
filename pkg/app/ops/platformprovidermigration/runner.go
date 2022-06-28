@@ -64,7 +64,7 @@ func (r *Runner) Migrate(ctx context.Context) error {
 			return nil
 		case <-taskRunTicker.C:
 			cursor, err = r.migrate(ctx, cursor)
-			if err != nil {
+			if err == nil {
 				r.logger.Info("application migration task finished successfully")
 				return nil
 			}
