@@ -117,12 +117,12 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
         {app && app.disabled ? (
           <MenuItem onClick={handleEnableClick}>Enable</MenuItem>
         ) : (
-          <>
+          <div>
             <MenuItem onClick={handleEncryptSecretClick}>
               Encrypt Secret
             </MenuItem>
             <MenuItem onClick={handleDisableClick}>Disable</MenuItem>
-          </>
+          </div>
         )}
         <MenuItem className={classes.warning} onClick={handleDeleteClick}>
           Delete
