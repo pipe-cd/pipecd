@@ -264,11 +264,11 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
           {app && app.disabled ? (
             <MenuItem onClick={handleEnable}>Enable</MenuItem>
           ) : (
-            <>
+            <div>
               <MenuItem onClick={handleEdit}>Edit</MenuItem>
               <MenuItem onClick={handleGenerateSecret}>Encrypt Secret</MenuItem>
               <MenuItem onClick={handleDisable}>Disable</MenuItem>
-            </>
+            </div>
           )}
           <MenuItem className={classes.warning} onClick={handleDelete}>
             Delete
