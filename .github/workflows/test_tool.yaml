@@ -21,9 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GO_VERSION }}
+          cache: true
       - name: Run unit tests for actions-plan-preview
         working-directory: tool/actions-plan-preview
         run: go test ./...
