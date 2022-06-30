@@ -26,6 +26,12 @@ linters:
     - depguard
     - goimports
 
+issues:
+  exclude-rules:
+    - linters:
+        - staticcheck
+      text: "SA1019"
+
 output:
   sort-results: true
 
