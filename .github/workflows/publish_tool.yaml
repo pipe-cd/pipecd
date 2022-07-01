@@ -65,3 +65,10 @@ jobs:
           context: tool/piped-base-okd
           tags: ${{ env.GHCR }}/pipe-cd/piped-base-okd:${{ env.PIPECD_VERSION }}
           push: true
+
+      - name: Build and push firestore-emulator image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: tool/firestore-emulator
+          tags: ${{ env.GHCR }}/pipe-cd/firestore-emulator:${{ env.PIPECD_VERSION }}
+          push: true
