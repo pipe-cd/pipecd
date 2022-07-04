@@ -25,7 +25,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/pipe-cd/pipecd/pkg/datastore"
-	"github.com/pipe-cd/pipecd/pkg/datastore/firestore"
 )
 
 type Entity struct {
@@ -51,11 +50,7 @@ func TestGet(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	store, err := firestore.NewFireStore(ctx, "project", "namespace", "environment")
-	require.NoError(t, err)
-	defer store.Close()
-
-	err = store.Create(ctx, col, "id", &Entity{Name: "name"})
+	err := store.Create(ctx, col, "id", &Entity{Name: "name"})
 	require.NoError(t, err)
 
 	testcases := []struct {
@@ -93,11 +88,7 @@ func TestFind(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	store, err := firestore.NewFireStore(ctx, "project", "namespace", "environment")
-	require.NoError(t, err)
-	defer store.Close()
-
-	err = store.Create(ctx, col, "id-1", &Entity{Name: "name-1"})
+	err := store.Create(ctx, col, "id-1", &Entity{Name: "name-1"})
 	require.NoError(t, err)
 	err = store.Create(ctx, col, "id-2", &Entity{Name: "name-2"})
 	require.NoError(t, err)
@@ -183,11 +174,7 @@ func TestCreate(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	store, err := firestore.NewFireStore(ctx, "project", "namespace", "environment")
-	require.NoError(t, err)
-	defer store.Close()
-
-	err = store.Create(ctx, col, "id", &Entity{Name: "name"})
+	err := store.Create(ctx, col, "id", &Entity{Name: "name"})
 	require.NoError(t, err)
 
 	testcases := []struct {
@@ -225,11 +212,7 @@ func TestUpdate(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	store, err := firestore.NewFireStore(ctx, "project", "namespace", "environment")
-	require.NoError(t, err)
-	defer store.Close()
-
-	err = store.Create(ctx, col, "id", &Entity{Name: "name"})
+	err := store.Create(ctx, col, "id", &Entity{Name: "name"})
 	require.NoError(t, err)
 
 	testcases := []struct {

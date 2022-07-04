@@ -13,6 +13,7 @@ on:
 env:
   GO_VERSION: 1.17.6
   NODE_VERSION: 16.13.0
+  GHCR: ghcr.io
 
 jobs:
   go:
@@ -51,6 +52,14 @@ jobs:
   integration:
     runs-on: ubuntu-latest
     steps:
+      # Login to push container images.
+      - name: Log in to the container registry
+        uses: docker/login-action@49ed152c8eca782a232dede0303416e8f356c37b #v2.0.0
+        with:
+          registry: ${{ env.GHCR }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - uses: actions/checkout@v3
       - name: Run integration tests
         run: make test/integration

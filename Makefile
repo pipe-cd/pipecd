@@ -68,7 +68,7 @@ test/web:
 
 .PHONY: test/integration
 test/integration:
-	@echo "Unimplemented"
+	go test ./test/integration/...
 
 # Run commands
 
