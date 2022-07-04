@@ -17,7 +17,9 @@ spec:
         {{- include "piped.selectorLabels" . | nindent 8 }}
       annotations:
         sidecar.istio.io/inject: "false"
+        {{- if .Values.args.forceRestart }}
         rollme: {{ randAlphaNum 5 | quote }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "piped.serviceAccountName" . }}
       containers:
