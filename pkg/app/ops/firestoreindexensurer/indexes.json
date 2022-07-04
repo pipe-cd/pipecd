@@ -126,6 +126,22 @@
     ]
   },
   {
+    "collectionGroup": "Application",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "UpdatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
     "collectionGroup": "Command",
     "queryScope": "COLLECTION",
     "fields": [
