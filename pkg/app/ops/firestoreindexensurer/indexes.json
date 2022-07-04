@@ -46,27 +46,6 @@
     "queryScope": "COLLECTION",
     "fields": [
       {
-        "fieldPath": "EnvId",
-        "order": "ASCENDING",
-        "arrayConfig": ""
-      },
-      {
-        "fieldPath": "UpdatedAt",
-        "order": "DESCENDING",
-        "arrayConfig": ""
-      },
-      {
-        "fieldPath": "Id",
-        "order": "ASCENDING",
-        "arrayConfig": ""
-      }
-    ]
-  },
-  {
-    "collectionGroup": "Application",
-    "queryScope": "COLLECTION",
-    "fields": [
-      {
         "fieldPath": "Name",
         "order": "ASCENDING",
         "arrayConfig": ""
@@ -189,27 +168,6 @@
     "fields": [
       {
         "fieldPath": "ApplicationName",
-        "order": "ASCENDING",
-        "arrayConfig": ""
-      },
-      {
-        "fieldPath": "UpdatedAt",
-        "order": "DESCENDING",
-        "arrayConfig": ""
-      },
-      {
-        "fieldPath": "Id",
-        "order": "ASCENDING",
-        "arrayConfig": ""
-      }
-    ]
-  },
-  {
-    "collectionGroup": "Deployment",
-    "queryScope": "COLLECTION",
-    "fields": [
-      {
-        "fieldPath": "EnvId",
         "order": "ASCENDING",
         "arrayConfig": ""
       },
