@@ -49,3 +49,9 @@ jobs:
         with:
           context: tool/piped-base-okd
           tags: ${{ env.REGISTRY }}/pipe-cd/piped-base-okd:${{ env.PIPECD_VERSION }}
+
+      - name: Build firestore-emulator image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: tool/firestore-emulator
+          tags: ${{ env.REGISTRY }}/pipe-cd/firestore-emulator:${{ env.PIPECD_VERSION }}
