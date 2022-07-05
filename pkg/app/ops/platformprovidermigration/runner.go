@@ -16,6 +16,7 @@ package platformprovidermigration
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -51,9 +52,12 @@ func (r *Runner) Migrate(ctx context.Context) error {
 
 	// Run migration task once on start this ops migration.
 	cursor, err := r.migrate(ctx, "")
-	if err != nil {
-		r.logger.Error("unable to finish application platform provider migration task in first run", zap.Error(err))
+	if err == nil {
+		r.logger.Info("application migration task finished successfully")
+		return nil
 	}
+
+	r.logger.Error("unable to finish application platform provider migration task in first run", zap.Error(err))
 
 	taskRunTicker := time.NewTicker(migrationRunInterval)
 	defer taskRunTicker.Stop()
@@ -109,6 +113,8 @@ func (r *Runner) migrate(ctx context.Context, cursor string) (string, error) {
 		if len(apps) == 0 {
 			return "", nil
 		}
+
+		r.logger.Info(fmt.Sprintf("migrate platform provider value for %d application(s)", len(apps)))
 
 		for _, app := range apps {
 			if app.PlatformProvider != "" {
