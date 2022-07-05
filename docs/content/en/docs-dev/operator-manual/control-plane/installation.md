@@ -97,7 +97,7 @@ __Caution__: In case of using `MySQL` as Control Plane's datastore, please note 
 
 ### 4. Accessing the PipeCD web
 
-If your installation was including an [ingress](https://github.com/pipe-cd/manifests/blob/master/manifests/pipecd/values.yaml#L6), the PipeCD web can be accessed by the ingress's IP address or domain.
+If your installation was including an [ingress](https://github.com/pipe-cd/pipecd/blob/master/manifests/pipecd/values.yaml#L7), the PipeCD web can be accessed by the ingress's IP address or domain.
 Otherwise, private PipeCD web can be accessed by using `kubectl port-forward` to expose the installed Control Plane on your localhost:
 
 ``` console
@@ -112,7 +112,7 @@ This part provides guidance for a production hardened deployment of the control 
 
 - Publishing the control plane
 
-    You can allow external access to the control plane by enabling the [ingress](https://github.com/pipe-cd/manifests/blob/master/manifests/pipecd/values.yaml#L6) configuration.
+    You can allow external access to the control plane by enabling the [ingress](https://github.com/pipe-cd/pipecd/blob/master/manifests/pipecd/values.yaml#L7) configuration.
 
 - End-to-End TLS
 
@@ -123,7 +123,7 @@ This part provides guidance for a production hardened deployment of the control 
     ``` console
     openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN={YOUR_DOMAIN}"
     ```
-    Those key and cert can be configured via [`secret.internalTLSKey.data`](https://github.com/pipe-cd/manifests/blob/master/manifests/pipecd/values.yaml#L83) and [`secret.internalTLSCert.data`](https://github.com/pipe-cd/manifests/blob/master/manifests/pipecd/values.yaml#L86).
+    Those key and cert can be configured via [`secret.internalTLSKey.data`](https://github.com/pipe-cd/pipecd/blob/master/manifests/pipecd/values.yaml#L118) and [`secret.internalTLSCert.data`](https://github.com/pipe-cd/pipecd/blob/master/manifests/pipecd/values.yaml#L121).
 
     To enable internal tls connection, please set the `gateway.internalTLS.enabled` parameter to be `true`.
 
