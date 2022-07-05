@@ -36,6 +36,13 @@ type KubernetesApplicationSpec struct {
 	TrafficRouting *KubernetesTrafficRouting `json:"trafficRouting"`
 	// The label will be configured to variant manifests used to distinguish them.
 	VariantLabel KubernetesVariantLabel `json:"variantLabel"`
+	// List of matching conditions to resolve the destinations for application resources.
+	// Each resource will be checked over the match conditions of each destination.
+	// If matches, it will be applied to that destination,
+	// otherwise, it will be fallen through the next destination to check.
+	// Any resource which does not match any specified destination will be applied
+	// to the default destination which had been specified while registering the application.
+	ResourceDestinations []KubernetesResourceDestination `json:"resourceDestinations"`
 }
 
 type KubernetesVariantLabel struct {
@@ -280,4 +287,14 @@ func (opts K8sTrafficRoutingStageOptions) Percentages() (primary, canary, baseli
 		return
 	}
 	return opts.Primary.Int(), opts.Canary.Int(), opts.Baseline.Int()
+}
+
+type KubernetesResourceDestination struct {
+	Provider string                                `json:"provider"`
+	Match    *KubernetesResourceDestinationMatcher `json:"match"`
+}
+
+type KubernetesResourceDestinationMatcher struct {
+	Kind string `json:"kind"`
+	Name string `json:"name"`
 }

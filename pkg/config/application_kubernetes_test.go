@@ -111,6 +111,59 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 			},
 			expectedError: nil,
 		},
+		{
+			fileName:           "testdata/application/k8s-app-resource-destination.yaml",
+			expectedKind:       KindKubernetesApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedSpec: &KubernetesApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
+					Timeout: Duration(6 * time.Hour),
+					Trigger: Trigger{
+						OnCommit: OnCommit{
+							Disabled: false,
+						},
+						OnCommand: OnCommand{
+							Disabled: false,
+						},
+						OnOutOfSync: OnOutOfSync{
+							Disabled:  newBoolPointer(true),
+							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
+						},
+					},
+				},
+				Input: KubernetesDeploymentInput{
+					AutoRollback: newBoolPointer(true),
+				},
+				VariantLabel: KubernetesVariantLabel{
+					Key:           "pipecd.dev/variant",
+					PrimaryValue:  "primary",
+					BaselineValue: "baseline",
+					CanaryValue:   "canary",
+				},
+				ResourceDestinations: []KubernetesResourceDestination{
+					{
+						Provider: "ConfigCluster",
+						Match: &KubernetesResourceDestinationMatcher{
+							Kind: "Ingress",
+						},
+					},
+					{
+						Provider: "ConfigCluster",
+						Match: &KubernetesResourceDestinationMatcher{
+							Kind: "Service",
+							Name: "Foo",
+						},
+					},
+					{
+						Provider: "WorkloadCluster",
+					},
+				},
+			},
+			expectedError: nil,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.fileName, func(t *testing.T) {
