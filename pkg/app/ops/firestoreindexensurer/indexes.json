@@ -130,8 +130,8 @@
     "queryScope": "COLLECTION",
     "fields": [
       {
-        "fieldPath": "UpdatedAt",
-        "order": "DESCENDING",
+        "fieldPath": "CreatedAt",
+        "order": "ASCENDING",
         "arrayConfig": ""
       },
       {

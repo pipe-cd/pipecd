@@ -79,8 +79,8 @@ func (r *Runner) Migrate(ctx context.Context) error {
 func (r *Runner) migrate(ctx context.Context, cursor string) (string, error) {
 	order := []datastore.Order{
 		{
-			Field:     "UpdatedAt",
-			Direction: datastore.Desc,
+			Field:     "CreatedAt",
+			Direction: datastore.Asc,
 		},
 		{
 			Field:     "Id",

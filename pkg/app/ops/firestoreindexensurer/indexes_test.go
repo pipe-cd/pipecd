@@ -154,8 +154,8 @@ func TestParseIndexes(t *testing.T) {
 			QueryScope:      "COLLECTION",
 			Fields: []field{
 				{
-					FieldPath:   "UpdatedAt",
-					Order:       "DESCENDING",
+					FieldPath:   "CreatedAt",
+					Order:       "ASCENDING",
 					ArrayConfig: "",
 				},
 				{
