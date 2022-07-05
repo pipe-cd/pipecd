@@ -85,7 +85,7 @@ helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks
 
   Note: Be sure to set `--set args.insecure=true` if your Control Plane has not TLS-enabled yet.
 
-  See [values.yaml](https://github.com/pipe-cd/manifests/blob/master/manifests/piped/values.yaml) for the full values.
+  See [values.yaml](https://github.com/pipe-cd/pipecd/blob/master/manifests/piped/values.yaml) for the full values.
 
 ## In the namespaced mode
 The previous way requires installing cluster-level resources. If you want to restrict Piped's permission within the namespace where Piped runs on, this way is for you.
