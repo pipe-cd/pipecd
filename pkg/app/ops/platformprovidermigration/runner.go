@@ -77,21 +77,28 @@ func (r *Runner) Migrate(ctx context.Context) error {
 // the information so that next time we can pass that value to keep migrating from
 // failed application, not from start.
 func (r *Runner) migrate(ctx context.Context, cursor string) (string, error) {
-	order := []datastore.Order{
-		{
-			Field:     "CreatedAt",
-			Direction: datastore.Asc,
-		},
-		{
-			Field:     "Id",
-			Direction: datastore.Asc,
-		},
-	}
+	const limit = 100
 
 	for {
 		apps, nextCur, err := r.applicationStore.List(ctx, datastore.ListOptions{
-			Orders: order,
-			Limit:  100,
+			Filters: []datastore.ListFilter{
+				{
+					Field:    "Deleted",
+					Operator: datastore.OperatorEqual,
+					Value:    false,
+				},
+			},
+			Orders: []datastore.Order{
+				{
+					Field:     "CreatedAt",
+					Direction: datastore.Asc,
+				},
+				{
+					Field:     "Id",
+					Direction: datastore.Asc,
+				},
+			},
+			Limit:  limit,
 			Cursor: cursor,
 		})
 		if err != nil {

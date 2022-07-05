@@ -126,22 +126,6 @@
     ]
   },
   {
-    "collectionGroup": "Application",
-    "queryScope": "COLLECTION",
-    "fields": [
-      {
-        "fieldPath": "CreatedAt",
-        "order": "ASCENDING",
-        "arrayConfig": ""
-      },
-      {
-        "fieldPath": "Id",
-        "order": "ASCENDING",
-        "arrayConfig": ""
-      }
-    ]
-  },
-  {
     "collectionGroup": "Command",
     "queryScope": "COLLECTION",
     "fields": [
