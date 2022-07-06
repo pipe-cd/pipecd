@@ -17,8 +17,8 @@
 # parse params
 while [[ -z "$1" ]]
 do
-    echo "Missing docs version..."
-    exit 1
+  echo "Missing docs version..."
+  exit 1
 done
 
 echo "Prepare version docs"
@@ -50,6 +50,15 @@ linkTitle: "Documentation [$1]"
 type: docs
 ---
 EOT
+
+# Check whether docs/config.toml file contains route for new version docs /docs-$1/
+# If it contained already, skip updating docs/config.toml
+grep "/docs-$1/" docs/config.toml > /dev/null
+if [ $? -eq 0 ]
+then
+  echo "Version docs has been prepared successfully at $CONTENT_DIR/docs-$1/"
+  exit 0
+fi
 
 # Update docs/config.toml
 tail -r docs/config.toml | tail -n +5 | tail -r >> docs/config.toml.tmp
