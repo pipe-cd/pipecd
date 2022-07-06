@@ -112,7 +112,7 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			fileName:           "testdata/application/k8s-app-resource-destination.yaml",
+			fileName:           "testdata/application/k8s-app-resource-route.yaml",
 			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &KubernetesApplicationSpec{
@@ -143,16 +143,16 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 					BaselineValue: "baseline",
 					CanaryValue:   "canary",
 				},
-				ResourceDestinations: []KubernetesResourceDestination{
+				ResourceRoutes: []KubernetesResourceRoute{
 					{
 						Provider: "ConfigCluster",
-						Match: &KubernetesResourceDestinationMatcher{
+						Match: &KubernetesResourceRouteMatcher{
 							Kind: "Ingress",
 						},
 					},
 					{
 						Provider: "ConfigCluster",
-						Match: &KubernetesResourceDestinationMatcher{
+						Match: &KubernetesResourceRouteMatcher{
 							Kind: "Service",
 							Name: "Foo",
 						},
