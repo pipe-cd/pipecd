@@ -16,6 +16,7 @@ package firestore
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -27,10 +28,11 @@ import (
 )
 
 const (
-	env          = "FIRESTORE_EMULATOR_HOST"
-	emulatorHost = "localhost:8080"
-	repository   = "ghcr.io/pipe-cd/firestore-emulator"
-	tag          = "v0.33.0-36-gf17740a"
+	env        = "FIRESTORE_EMULATOR_HOST"
+	port       = "8080"
+	repository = "ghcr.io/pipe-cd/firestore-emulator"
+	tag        = "v0.34.0-3-gf22c209"
+	project    = "pipecd-test"
 )
 
 var store *firestore.FireStore
@@ -54,10 +56,13 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("Failed to start resource: %s", err)
 	}
-	os.Setenv(env, emulatorHost)
+
+	portID := fmt.Sprintf("%s/tcp", port)
+	host := fmt.Sprintf("localhost:%s", res.GetPort(portID))
+	os.Setenv(env, host)
 
 	ctx := context.Background()
-	store, err = firestore.NewFireStore(ctx, "project", "namespace", "environment")
+	store, err = firestore.NewFireStore(ctx, project, "namespace", "environment")
 	if err != nil {
 		log.Fatalf("Failed to connect to docker: %s", err)
 	}
