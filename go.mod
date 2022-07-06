@@ -20,7 +20,7 @@ require (
 	github.com/creasty/defaults v1.5.2
 	github.com/envoyproxy/protoc-gen-validate v0.6.6
 	github.com/fsouza/fake-gcs-server v1.21.0
-	github.com/go-sql-driver/mysql v1.5.0
+	github.com/go-sql-driver/mysql v1.6.0
 	github.com/goccy/go-yaml v1.9.3
 	github.com/golang-jwt/jwt v3.2.1+incompatible
 	github.com/golang/mock v1.4.4
@@ -34,12 +34,13 @@ require (
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
+	github.com/ory/dockertest/v3 v3.9.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/common v0.26.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	go.uber.org/atomic v1.7.0
 	go.uber.org/multierr v1.2.0 // indirect
 	go.uber.org/zap v1.10.1-0.20190709142728-9a9fa7d4b5f0
