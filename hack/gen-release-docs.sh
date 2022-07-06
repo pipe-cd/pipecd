@@ -40,6 +40,7 @@ menu:
 EOT
 
 # Create new $CONTENT_DIR/docs-$1
+rm -rf $CONTENT_DIR/docs-$1
 cp -rf $CONTENT_DIR/docs-dev $CONTENT_DIR/docs-$1
 cp -rf docs/themes/docsy/layouts/docs/ docs/layouts/docs-$1
 cat <<EOT > $CONTENT_DIR/docs-$1/_index.md
