@@ -59,13 +59,13 @@ getenv = ['^HUGO_', 'RELEASE']
 [languages]
 [languages.en]
 title = "PipeCD"
-description = "Continuous Delivery for Declarative Kubernetes, Serverless and Infrastructure Applications"
+description = "The One CD for All {applications, platforms, operations}"
 languageName ="English"
 # Weight used for sorting.
 weight = 1
 [languages.ja]
 title = "PipeCD"
-description = "Continuous Delivery for Declarative Kubernetes, Serverless and Infrastructure Applications"
+description = "The One CD for All {applications, platforms, operations}"
 languageName ="日本語"
 contentDir = "content/ja"
 time_format_default = "2006年01月02日"
