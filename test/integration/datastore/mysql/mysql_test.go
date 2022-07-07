@@ -19,8 +19,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pipe-cd/pipecd/pkg/datastore"
 )
 
 type Entity struct {
