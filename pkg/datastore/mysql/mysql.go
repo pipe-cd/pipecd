@@ -17,6 +17,7 @@ package mysql
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 
@@ -80,6 +81,10 @@ func NewMySQL(url, database string, opts ...Option) (*MySQL, error) {
 // Find implementation for MySQL
 func (m *MySQL) Find(ctx context.Context, col datastore.Collection, opts datastore.ListOptions) (datastore.Iterator, error) {
 	kind := col.Kind()
+	if opts.Cursor != "" && len(opts.Orders) == 0 {
+		return nil, errors.New("opts.Cursor also requires Orders to be set")
+	}
+
 	query, err := buildFindQuery(kind, opts)
 	if err != nil {
 		m.logger.Error("failed to build find entities query",
@@ -251,6 +256,11 @@ func (m *MySQL) Update(ctx context.Context, col datastore.Collection, id string,
 // Close implementation for MySQL
 func (m *MySQL) Close() error {
 	return m.client.Close()
+}
+
+// Ping implementation for MySQL
+func (m *MySQL) Ping() error {
+	return m.client.Ping()
 }
 
 // BuildDataSourceName returns source name to make connection to database.
