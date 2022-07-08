@@ -44,7 +44,6 @@ func TestGetAPIKey(t *testing.T) {
 		CreatedAt: 1,
 		UpdatedAt: 1,
 	}
-
 	err := client.Create(ctx, col, "get-id", fakeAPIKey)
 	require.NoError(t, err)
 
@@ -183,7 +182,6 @@ func TestCreateAPIKey(t *testing.T) {
 		CreatedAt: 1,
 		UpdatedAt: 1,
 	}
-
 	err := client.Create(ctx, col, "create-id", fakeAPIKey)
 	require.NoError(t, err)
 
@@ -232,7 +230,6 @@ func TestUpdateAPIKey(t *testing.T) {
 		CreatedAt: 1,
 		UpdatedAt: 1,
 	}
-
 	err := client.Create(ctx, col, "update-id", fakeAPIKey)
 	require.NoError(t, err)
 

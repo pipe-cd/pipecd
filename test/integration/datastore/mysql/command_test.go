@@ -28,52 +28,45 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-func TestGetApplication(t *testing.T) {
-	col := &collection{kind: "Application"}
+func TestGetCommand(t *testing.T) {
+	col := &collection{kind: "Command"}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	fakeApplication := &model.Application{
-		Id:        "get-id",
-		Name:      "name",
-		PipedId:   "piped-id",
-		ProjectId: "project-id",
-		Kind:      model.ApplicationKind_KUBERNETES,
-		GitPath: &model.ApplicationGitPath{
-			Repo: &model.ApplicationGitRepository{Id: "id"},
-			Path: "path",
-		},
-		CloudProvider: "cloud-provider",
-
-		CreatedAt: 1,
-		UpdatedAt: 1,
+	fakeCommand := &model.Command{
+		Id:            "get-id",
+		ApplicationId: "app-id",
+		PipedId:       "piped-id",
+		ProjectId:     "project-id",
+		CreatedAt:     1,
+		UpdatedAt:     1,
 	}
-	err := client.Create(ctx, col, "get-id", fakeApplication)
+	err := client.Create(ctx, col, "get-id", fakeCommand)
 	require.NoError(t, err)
 
 	testcases := []struct {
 		name    string
 		id      string
-		want    *model.Application
+		want    *model.Command
 		wantErr error
 	}{
 		{
 			name:    "entity found",
 			id:      "get-id",
-			want:    fakeApplication,
+			want:    fakeCommand,
 			wantErr: nil,
 		},
 		{
 			name:    "not found",
 			id:      "id-wrong",
-			want:    &model.Application{},
+			want:    &model.Command{},
 			wantErr: datastore.ErrNotFound,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := &model.Application{}
+			got := &model.Command{}
 			err := client.Get(ctx, col, tc.id, got)
 			assert.Equal(t, tc.wantErr, err)
 			assert.Equal(t, tc.want, got)
@@ -81,66 +74,53 @@ func TestGetApplication(t *testing.T) {
 	}
 }
 
-func TestFindApplication(t *testing.T) {
-	col := &collection{kind: "Application"}
+func TestFindCommand(t *testing.T) {
+	col := &collection{kind: "Command"}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	fakeApplication := &model.Application{
-		Id:        "find-id-1",
-		Name:      "name-1",
-		PipedId:   "piped-id",
-		ProjectId: "project-id",
-		Kind:      model.ApplicationKind_KUBERNETES,
-		GitPath: &model.ApplicationGitPath{
-			Repo: &model.ApplicationGitRepository{Id: "id"},
-			Path: "path",
-		},
-		CloudProvider: "cloud-provider",
-
-		CreatedAt: 1,
-		UpdatedAt: 1,
+	fakeCommand := &model.Command{
+		Id:            "find-id-1",
+		ApplicationId: "app-id",
+		PipedId:       "find-piped-id",
+		ProjectId:     "project-id",
+		CreatedAt:     1,
+		UpdatedAt:     1,
 	}
-	fakeApplication2 := &model.Application{
-		Id:        "find-id-2",
-		Name:      "name-2",
-		PipedId:   "piped-id",
-		ProjectId: "project-id",
-		Kind:      model.ApplicationKind_KUBERNETES,
-		GitPath: &model.ApplicationGitPath{
-			Repo: &model.ApplicationGitRepository{Id: "id"},
-			Path: "path",
-		},
-		CloudProvider: "cloud-provider",
-
-		CreatedAt: 2,
-		UpdatedAt: 2,
+	fakeCommand2 := &model.Command{
+		Id:            "find-id-2",
+		ApplicationId: "app-id",
+		PipedId:       "find-piped-id",
+		ProjectId:     "project-id",
+		CreatedAt:     1,
+		UpdatedAt:     1,
 	}
-	err := client.Create(ctx, col, "find-id-1", fakeApplication)
+	err := client.Create(ctx, col, "find-id-1", fakeCommand)
 	require.NoError(t, err)
-	err = client.Create(ctx, col, "find-id-2", fakeApplication2)
+	err = client.Create(ctx, col, "find-id-2", fakeCommand2)
 	require.NoError(t, err)
 
 	testcases := []struct {
 		name    string
 		opts    datastore.ListOptions
-		want    []*model.Application
+		want    []*model.Command
 		wantErr bool
 	}{
 		{
-			name: "fetch by name",
+			name: "fetch by piped_id",
 			opts: datastore.ListOptions{
 				Filters: []datastore.ListFilter{
 					{
-						Field:    "Name",
+						Field:    "PipedId",
 						Operator: datastore.OperatorEqual,
-						Value:    "name-1",
+						Value:    "find-piped-id",
 					},
 				},
 			},
-			want: []*model.Application{
-				fakeApplication,
+			want: []*model.Command{
+				fakeCommand,
+				fakeCommand2,
 			},
 			wantErr: false,
 		},
@@ -149,7 +129,7 @@ func TestFindApplication(t *testing.T) {
 			opts: datastore.ListOptions{
 				Cursor: "cursor",
 			},
-			want:    []*model.Application{},
+			want:    []*model.Command{},
 			wantErr: true,
 		},
 	}
@@ -157,20 +137,20 @@ func TestFindApplication(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			it, err := client.Find(ctx, col, tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
-			got, err := listApplications(it)
+			got, err := listCommands(it)
 			require.NoError(t, err)
 			assert.Equal(t, tc.want, got)
 		})
 	}
 }
 
-func listApplications(it datastore.Iterator) ([]*model.Application, error) {
-	ret := make([]*model.Application, 0)
+func listCommands(it datastore.Iterator) ([]*model.Command, error) {
+	ret := make([]*model.Command, 0)
 	if it == nil {
 		return ret, nil
 	}
 	for {
-		var v model.Application
+		var v model.Command
 		err := it.Next(&v)
 		if errors.Is(err, datastore.ErrIteratorDone) {
 			break
@@ -183,28 +163,21 @@ func listApplications(it datastore.Iterator) ([]*model.Application, error) {
 	return ret, nil
 }
 
-func TestCreateApplication(t *testing.T) {
-	col := &collection{kind: "Application"}
+func TestCreateCommand(t *testing.T) {
+	col := &collection{kind: "Command"}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	fakeApplication := &model.Application{
-		Id:        "create-id",
-		Name:      "name",
-		PipedId:   "piped-id",
-		ProjectId: "project-id",
-		Kind:      model.ApplicationKind_KUBERNETES,
-		GitPath: &model.ApplicationGitPath{
-			Repo: &model.ApplicationGitRepository{Id: "id"},
-			Path: "path",
-		},
-		CloudProvider: "cloud-provider",
-
-		CreatedAt: 1,
-		UpdatedAt: 1,
+	fakeCommand := &model.Command{
+		Id:            "create-id",
+		ApplicationId: "app-id",
+		PipedId:       "piped-id",
+		ProjectId:     "project-id",
+		CreatedAt:     1,
+		UpdatedAt:     1,
 	}
-	err := client.Create(ctx, col, "create-id", fakeApplication)
+	err := client.Create(ctx, col, "create-id", fakeCommand)
 	require.NoError(t, err)
 
 	testcases := []struct {
@@ -225,39 +198,32 @@ func TestCreateApplication(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := client.Create(ctx, col, tc.id, fakeApplication)
+			err := client.Create(ctx, col, tc.id, fakeCommand)
 			assert.Equal(t, tc.wantErr, err)
 		})
 	}
 }
 
-func TestUpdateApplication(t *testing.T) {
+func TestUpdateCommand(t *testing.T) {
 	col := &collection{
-		kind: "Application",
+		kind: "Command",
 		factory: func() interface{} {
-			return &model.Application{}
+			return &model.Command{}
 		},
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	fakeApplication := &model.Application{
-		Id:        "update-id",
-		Name:      "name",
-		PipedId:   "piped-id",
-		ProjectId: "project-id",
-		Kind:      model.ApplicationKind_KUBERNETES,
-		GitPath: &model.ApplicationGitPath{
-			Repo: &model.ApplicationGitRepository{Id: "id"},
-			Path: "path",
-		},
-		CloudProvider: "cloud-provider",
-
-		CreatedAt: 1,
-		UpdatedAt: 1,
+	fakeCommand := &model.Command{
+		Id:            "update-id",
+		ApplicationId: "app-id",
+		PipedId:       "piped-id",
+		ProjectId:     "project-id",
+		CreatedAt:     1,
+		UpdatedAt:     1,
 	}
-	err := client.Create(ctx, col, "update-id", fakeApplication)
+	err := client.Create(ctx, col, "update-id", fakeCommand)
 	require.NoError(t, err)
 
 	testcases := []struct {
@@ -283,8 +249,8 @@ func TestUpdateApplication(t *testing.T) {
 			name: "successful update",
 			id:   "update-id",
 			updater: func(e interface{}) error {
-				v := e.(*model.Application)
-				v.Name = "new-name"
+				v := e.(*model.Command)
+				v.Status = model.CommandStatus_COMMAND_SUCCEEDED
 				return nil
 			},
 			wantErr: nil,
