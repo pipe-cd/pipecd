@@ -218,7 +218,7 @@ func TestUpdateCommand(t *testing.T) {
 	fakeCommand := &model.Command{
 		Id:            "update-id",
 		ApplicationId: "app-id",
-		PipedId:       "find-piped-id",
+		PipedId:       "piped-id",
 		ProjectId:     "project-id",
 		CreatedAt:     1,
 		UpdatedAt:     1,
