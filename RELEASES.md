@@ -40,11 +40,15 @@ This refers to the release of new features.
 
 - Create a tagged release. The release should start with "v" and be followed by the version number.
 
-- Create a branch from the tagged release, e.g. "release-0.1". This will be used for the stable release.
+- Create a branch from the tagged release, e.g. "release-X.Y". This will be used for the stable release.
 
 ## Stable release
 This refers to the release of critical bug fixes.
 A bugfix for a functional issue (not a data loss or security issue) that only affects an alpha feature does not qualify as a critical bug fix.
+
+### Prerequisites
+- The release branch exists, e.g. "release-X.Y".
+- `gh` was already installed and ran `gh auth login`. Please refer to [cli/cli](https://github.com/cli/cli).
 
 ### Fix bugs
 - Create a pull request to fix a bug on the `master` branch.
@@ -52,8 +56,12 @@ A bugfix for a functional issue (not a data loss or security issue) that only af
 - Get a review and merge.
 
 ### Backport fixes
-- Cherry-pick the original commit to the latest release branch.
-  Release branches have a name of `release-MAJOR.MINO`.
+- Run the cherry-pick script
+
+  This example assumes that the name of release branch is `release-X.Y` and the number of pull request is `#1234`:
+  ```shell
+  hack/cherry-pick.sh release-X.Y 1234
+  ````
 
 - Get a review and merge.
 
@@ -63,10 +71,7 @@ A bugfix for a functional issue (not a data loss or security issue) that only af
 - Get a review and merge.
 
 ### Backport Release Note
-- Cherry-pick the original commit of creating release note to the latest release branch.
-  Release branches have a name of `release-MAJOR.MINO`.
-
-- Get a review and merge.
+- This is same as [Backport fixes](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md#backport-fixes).
 
 ### Cut a new release
 - Before cutting a new release, wait for all jobs in GitHub Actions to pass on release branch.
