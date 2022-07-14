@@ -19,12 +19,15 @@ set -o nounset
 set -o pipefail
 
 QUIET='false'
-while getopts 'q' opt; do
-  case "$opt" in
+CLEANUP_BRANCH='false'
+while getopts 'qc' opt; do
+  case $opt in
     q)
       QUIET='true' ;;
+    c)
+      CLEANUP_BRANCH='true' ;;
     ?)
-      echo "Usage: hack/cherry-pick.sh [-q] <branch> <pull-requests>" >&2
+      echo "Usage: hack/cherry-pick.sh [-q] [-c] <branch> <pull-requests>" >&2
       exit 1 ;;
   esac
 done
@@ -65,7 +68,7 @@ git cherry-pick ${COMMITS}
 echo
 
 # Check whether to push commits and create a pull request or not
-if [[ !${QUIET}  ]]; then
+if ! ${QUIET}; then
   read -p "+++ Do you push commits and create a pull request? [y/n] " -r
   if ! [[ "${REPLY}" =~ ^[yY]$  ]]; then
     echo "Skipped." >&2
@@ -99,3 +102,10 @@ If no, just write "NONE" in the release-note block below.
 EOF
 )
 gh pr create --title="${pull_title}" --body="${pull_body}" --head "${NEWBRANCH}" --base "${BRANCH}"
+
+# Delete a working branch
+if ${CLEANUP_BRANCH}; then
+  echo "+++ Deleting a working branch..."
+  git checkout -
+  git branch -D ${NEWBRANCH}
+if
