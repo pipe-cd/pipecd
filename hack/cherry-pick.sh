@@ -18,6 +18,18 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+QUIET='false'
+while getopts 'q' opt; do
+  case "$opt" in
+    q)
+      QUIET='true' ;;
+    ?)
+      echo "Usage: hack/cherry-pick.sh [-q] <branch> <pull-requests>" >&2
+      exit 1 ;;
+  esac
+done
+shift "$(($OPTIND -1))"
+
 BRANCH=$1; shift 1
 PULL_REQUESTS=($@)
 
@@ -51,6 +63,15 @@ COMMITS=$(join " " "${COMMIT_HASHS[@]}")
 echo "+++ Cherry-picking pull requests"
 git cherry-pick ${COMMITS}
 echo
+
+# Check whether to push commits and create a pull request or not
+if [[ !${QUIET}  ]]; then
+  read -p "+++ Do you push commits and create a pull request? [y/n] " -r
+  if ! [[ "${REPLY}" =~ ^[yY]$  ]]; then
+    echo "Skipped." >&2
+    exit 0
+  fi
+fi
 
 # Push commits to remote branch
 echo "+++ Pushing commits to remote branch..."
