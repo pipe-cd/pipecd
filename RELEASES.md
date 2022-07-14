@@ -1,7 +1,7 @@
 # Release Process
 *This release process have not been fixed yet, hence this is subject to frequent change.*
 
-This document explains the process to release new version and to address stable release.
+This document explains the process to release new version and to address patch release.
 
 ## Major release
 This refers to the release of new features.
@@ -25,7 +25,7 @@ This refers to the release of new features.
 
   It is recommended to commit the above changes once here.
 
-### Create Document
+### Generate document for new version
 - Run the release document script
 
   This example assumes that `vX.Y.Z` will be released:
@@ -40,15 +40,15 @@ This refers to the release of new features.
 
 - Create a tagged release. The release should start with "v" and be followed by the version number.
 
-- Create a branch from the tagged release, e.g. "release-X.Y". This will be used for the stable release.
+- Create a branch from the tagged release, e.g. "release-X.Y". This will be used for the patch release.
 
-## Stable release
+## Patch release
 This refers to the release of critical bug fixes.
 A bugfix for a functional issue (not a data loss or security issue) that only affects an alpha feature does not qualify as a critical bug fix.
 
 ### Prerequisites
 - The release branch exists, e.g. "release-X.Y".
-- `gh` was already installed and ran `gh auth login`. Please refer to [cli/cli](https://github.com/cli/cli).
+- (optional) If you create a pull request with the cherry-pick script, `gh` is needed to be installed and ran `gh auth login`. Please refer to [cli/cli](https://github.com/cli/cli).
 
 ### Fix bugs
 - Create a pull request to fix a bug on the `master` branch.
