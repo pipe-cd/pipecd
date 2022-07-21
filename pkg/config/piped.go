@@ -29,10 +29,10 @@ const (
 	maskString = "******"
 )
 
-var defaultKubernetesCloudProvider = PipedCloudProvider{
+var defaultKubernetesPlatformProvider = PipedPlatformProvider{
 	Name:             "kubernetes-default",
-	Type:             model.CloudProviderKubernetes,
-	KubernetesConfig: &CloudProviderKubernetesConfig{},
+	Type:             model.PlatformProviderKubernetes,
+	KubernetesConfig: &PlatformProviderKubernetesConfig{},
 }
 
 // PipedSpec contains configurable data used to while running Piped.
@@ -66,7 +66,10 @@ type PipedSpec struct {
 	// List of helm chart registries that should be logged in while starting up.
 	ChartRegistries []HelmChartRegistry `json:"chartRegistries,omitempty"`
 	// List of cloud providers can be used by this piped.
-	CloudProviders []PipedCloudProvider `json:"cloudProviders,omitempty"`
+	// deprecated: use PlatformProvider instead.
+	CloudProviders []PipedPlatformProvider `json:"cloudProviders,omitempty"`
+	// List of platform providers can be used by this piped.
+	PlatformProviders []PipedPlatformProvider `json:"platformProviders,omitempty"`
 	// List of analysis providers can be used by this piped.
 	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders,omitempty"`
 	// Sending notification to Slack, Webhook…
@@ -171,11 +174,11 @@ func (s *PipedSpec) Mask() {
 // EnableDefaultKubernetesCloudProvider adds the default kubernetes cloud provider if it was not specified.
 func (s *PipedSpec) EnableDefaultKubernetesCloudProvider() {
 	for _, cp := range s.CloudProviders {
-		if cp.Name == defaultKubernetesCloudProvider.Name {
+		if cp.Name == defaultKubernetesPlatformProvider.Name {
 			return
 		}
 	}
-	s.CloudProviders = append(s.CloudProviders, defaultKubernetesCloudProvider)
+	s.CloudProviders = append(s.CloudProviders, defaultKubernetesPlatformProvider)
 }
 
 // HasCloudProvider checks whether the given provider is configured or not.
@@ -194,7 +197,7 @@ func (s *PipedSpec) HasCloudProvider(name string, t model.ApplicationKind) bool 
 }
 
 // FindCloudProvider finds and returns a Cloud Provider by name and type.
-func (s *PipedSpec) FindCloudProvider(name string, t model.ApplicationKind) (PipedCloudProvider, bool) {
+func (s *PipedSpec) FindCloudProvider(name string, t model.ApplicationKind) (PipedPlatformProvider, bool) {
 	requiredProviderType := t.CompatibleCloudProviderType()
 	for _, p := range s.CloudProviders {
 		if p.Name != name {
@@ -205,7 +208,7 @@ func (s *PipedSpec) FindCloudProvider(name string, t model.ApplicationKind) (Pip
 		}
 		return p, true
 	}
-	return PipedCloudProvider{}, false
+	return PipedPlatformProvider{}, false
 }
 
 // GetRepositoryMap returns a map of repositories where key is repo id.
@@ -451,24 +454,24 @@ func (r *HelmChartRegistry) Mask() {
 	}
 }
 
-type PipedCloudProvider struct {
-	Name string                  `json:"name"`
-	Type model.CloudProviderType `json:"type"`
+type PipedPlatformProvider struct {
+	Name string                     `json:"name"`
+	Type model.PlatformProviderType `json:"type"`
 
-	KubernetesConfig *CloudProviderKubernetesConfig `json:"kubernetesConfig,omitempty"`
-	TerraformConfig  *CloudProviderTerraformConfig  `json:"terraformConfig,omitempty"`
-	CloudRunConfig   *CloudProviderCloudRunConfig   `json:"cloudRunConfig,omitempty"`
-	LambdaConfig     *CloudProviderLambdaConfig     `json:"lambdaConfig,omitempty"`
-	ECSConfig        *CloudProviderECSConfig        `json:"ecsConfig,omitempty"`
+	KubernetesConfig *PlatformProviderKubernetesConfig `json:"kubernetesConfig,omitempty"`
+	TerraformConfig  *PlatformProviderTerraformConfig  `json:"terraformConfig,omitempty"`
+	CloudRunConfig   *PlatformProviderCloudRunConfig   `json:"cloudRunConfig,omitempty"`
+	LambdaConfig     *PlatformProviderLambdaConfig     `json:"lambdaConfig,omitempty"`
+	ECSConfig        *PlatformProviderECSConfig        `json:"ecsConfig,omitempty"`
 }
 
 type genericPipedCloudProvider struct {
-	Name   string                  `json:"name"`
-	Type   model.CloudProviderType `json:"type"`
-	Config json.RawMessage         `json:"config"`
+	Name   string                     `json:"name"`
+	Type   model.PlatformProviderType `json:"type"`
+	Config json.RawMessage            `json:"config"`
 }
 
-func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
+func (p *PipedPlatformProvider) UnmarshalJSON(data []byte) error {
 	var err error
 	gp := genericPipedCloudProvider{}
 	if err = json.Unmarshal(data, &gp); err != nil {
@@ -478,28 +481,28 @@ func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
 	p.Type = gp.Type
 
 	switch p.Type {
-	case model.CloudProviderKubernetes:
-		p.KubernetesConfig = &CloudProviderKubernetesConfig{}
+	case model.PlatformProviderKubernetes:
+		p.KubernetesConfig = &PlatformProviderKubernetesConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.KubernetesConfig)
 		}
-	case model.CloudProviderTerraform:
-		p.TerraformConfig = &CloudProviderTerraformConfig{}
+	case model.PlatformProviderTerraform:
+		p.TerraformConfig = &PlatformProviderTerraformConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.TerraformConfig)
 		}
-	case model.CloudProviderCloudRun:
-		p.CloudRunConfig = &CloudProviderCloudRunConfig{}
+	case model.PlatformProviderCloudRun:
+		p.CloudRunConfig = &PlatformProviderCloudRunConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.CloudRunConfig)
 		}
-	case model.CloudProviderLambda:
-		p.LambdaConfig = &CloudProviderLambdaConfig{}
+	case model.PlatformProviderLambda:
+		p.LambdaConfig = &PlatformProviderLambdaConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.LambdaConfig)
 		}
-	case model.CloudProviderECS:
-		p.ECSConfig = &CloudProviderECSConfig{}
+	case model.PlatformProviderECS:
+		p.ECSConfig = &PlatformProviderECSConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.ECSConfig)
 		}
@@ -509,7 +512,7 @@ func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
 	return err
 }
 
-func (p *PipedCloudProvider) Mask() {
+func (p *PipedPlatformProvider) Mask() {
 	if p.CloudRunConfig != nil {
 		p.CloudRunConfig.Mask()
 	}
@@ -521,7 +524,7 @@ func (p *PipedCloudProvider) Mask() {
 	}
 }
 
-type CloudProviderKubernetesConfig struct {
+type PlatformProviderKubernetesConfig struct {
 	// The master URL of the kubernetes cluster.
 	// Empty means in-cluster.
 	MasterURL string `json:"masterURL,omitempty"`
@@ -550,7 +553,7 @@ type KubernetesResourceMatcher struct {
 	Kind string `json:"kind,omitempty"`
 }
 
-type CloudProviderTerraformConfig struct {
+type PlatformProviderTerraformConfig struct {
 	// List of variables that will be set directly on terraform commands with "-var" flag.
 	// The variable must be formatted by "key=value" as below:
 	// "image_id=ami-abc123"
@@ -559,7 +562,7 @@ type CloudProviderTerraformConfig struct {
 	Vars []string `json:"vars,omitempty"`
 }
 
-type CloudProviderCloudRunConfig struct {
+type PlatformProviderCloudRunConfig struct {
 	// The GCP project hosting the CloudRun service.
 	Project string `json:"project"`
 	// The region of running CloudRun service.
@@ -568,13 +571,13 @@ type CloudProviderCloudRunConfig struct {
 	CredentialsFile string `json:"credentialsFile,omitempty"`
 }
 
-func (c *CloudProviderCloudRunConfig) Mask() {
+func (c *PlatformProviderCloudRunConfig) Mask() {
 	if len(c.CredentialsFile) != 0 {
 		c.CredentialsFile = maskString
 	}
 }
 
-type CloudProviderLambdaConfig struct {
+type PlatformProviderLambdaConfig struct {
 	// The region to send requests to. This parameter is required.
 	// e.g. "us-west-2"
 	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
@@ -591,7 +594,7 @@ type CloudProviderLambdaConfig struct {
 	Profile string `json:"profile,omitempty"`
 }
 
-func (c *CloudProviderLambdaConfig) Mask() {
+func (c *PlatformProviderLambdaConfig) Mask() {
 	if len(c.CredentialsFile) != 0 {
 		c.CredentialsFile = maskString
 	}
@@ -603,7 +606,7 @@ func (c *CloudProviderLambdaConfig) Mask() {
 	}
 }
 
-type CloudProviderECSConfig struct {
+type PlatformProviderECSConfig struct {
 	// The region to send requests to. This parameter is required.
 	// e.g. "us-west-2"
 	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
@@ -620,7 +623,7 @@ type CloudProviderECSConfig struct {
 	Profile string `json:"profile,omitempty"`
 }
 
-func (c *CloudProviderECSConfig) Mask() {
+func (c *PlatformProviderECSConfig) Mask() {
 	if len(c.CredentialsFile) != 0 {
 		c.CredentialsFile = maskString
 	}

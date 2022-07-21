@@ -39,7 +39,7 @@ type Applier interface {
 
 type applier struct {
 	input         config.KubernetesDeploymentInput
-	cloudProvider config.CloudProviderKubernetesConfig
+	cloudProvider config.PlatformProviderKubernetesConfig
 	logger        *zap.Logger
 
 	kubectl  *Kubectl
@@ -47,7 +47,7 @@ type applier struct {
 	initErr  error
 }
 
-func NewApplier(input config.KubernetesDeploymentInput, cp config.CloudProviderKubernetesConfig, logger *zap.Logger) Applier {
+func NewApplier(input config.KubernetesDeploymentInput, cp config.PlatformProviderKubernetesConfig, logger *zap.Logger) Applier {
 	return &applier{
 		input:         input,
 		cloudProvider: cp,

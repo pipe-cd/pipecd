@@ -56,7 +56,7 @@ type Detector interface {
 }
 
 type detector struct {
-	provider          config.PipedCloudProvider
+	provider          config.PipedPlatformProvider
 	appLister         applicationLister
 	gitClient         gitClient
 	stateGetter       cloudrun.Getter
@@ -71,7 +71,7 @@ type detector struct {
 }
 
 func NewDetector(
-	cp config.PipedCloudProvider,
+	cp config.PipedPlatformProvider,
 	appLister applicationLister,
 	gitClient gitClient,
 	stateGetter cloudrun.Getter,

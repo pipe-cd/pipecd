@@ -44,7 +44,7 @@ type State struct {
 	Version   model.ApplicationLiveStateVersion
 }
 
-func NewStore(ctx context.Context, cfg *config.CloudProviderCloudRunConfig, cloudProvider string, logger *zap.Logger) (*Store, error) {
+func NewStore(ctx context.Context, cfg *config.PlatformProviderCloudRunConfig, cloudProvider string, logger *zap.Logger) (*Store, error) {
 	logger = logger.Named("cloudrun").
 		With(zap.String("cloud-provider", cloudProvider))
 

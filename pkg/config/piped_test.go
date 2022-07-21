@@ -84,11 +84,11 @@ func TestPipedConfig(t *testing.T) {
 						Password: "sample-password",
 					},
 				},
-				CloudProviders: []PipedCloudProvider{
+				CloudProviders: []PipedPlatformProvider{
 					{
 						Name: "kubernetes-default",
-						Type: model.CloudProviderKubernetes,
-						KubernetesConfig: &CloudProviderKubernetesConfig{
+						Type: model.PlatformProviderKubernetes,
+						KubernetesConfig: &PlatformProviderKubernetesConfig{
 							AppStateInformer: KubernetesAppStateInformer{
 								IncludeResources: []KubernetesResourceMatcher{
 									{
@@ -110,13 +110,13 @@ func TestPipedConfig(t *testing.T) {
 					},
 					{
 						Name:             "kubernetes-dev",
-						Type:             model.CloudProviderKubernetes,
-						KubernetesConfig: &CloudProviderKubernetesConfig{},
+						Type:             model.PlatformProviderKubernetes,
+						KubernetesConfig: &PlatformProviderKubernetesConfig{},
 					},
 					{
 						Name: "terraform",
-						Type: model.CloudProviderTerraform,
-						TerraformConfig: &CloudProviderTerraformConfig{
+						Type: model.PlatformProviderTerraform,
+						TerraformConfig: &PlatformProviderTerraformConfig{
 							Vars: []string{
 								"project=gcp-project",
 								"region=us-centra1",
@@ -125,8 +125,8 @@ func TestPipedConfig(t *testing.T) {
 					},
 					{
 						Name: "cloudrun",
-						Type: model.CloudProviderCloudRun,
-						CloudRunConfig: &CloudProviderCloudRunConfig{
+						Type: model.PlatformProviderCloudRun,
+						CloudRunConfig: &PlatformProviderCloudRunConfig{
 							Project:         "gcp-project-id",
 							Region:          "cloud-run-region",
 							CredentialsFile: "/etc/piped-secret/gcp-service-account.json",
@@ -134,8 +134,8 @@ func TestPipedConfig(t *testing.T) {
 					},
 					{
 						Name: "lambda",
-						Type: model.CloudProviderLambda,
-						LambdaConfig: &CloudProviderLambdaConfig{
+						Type: model.PlatformProviderLambda,
+						LambdaConfig: &PlatformProviderLambdaConfig{
 							Region: "us-east-1",
 						},
 					},
@@ -428,11 +428,11 @@ func TestPipedConfigMask(t *testing.T) {
 						Password: "foo",
 					},
 				},
-				CloudProviders: []PipedCloudProvider{
+				CloudProviders: []PipedPlatformProvider{
 					{
 						Name: "foo",
-						Type: model.CloudProviderKubernetes,
-						KubernetesConfig: &CloudProviderKubernetesConfig{
+						Type: model.PlatformProviderKubernetes,
+						KubernetesConfig: &PlatformProviderKubernetesConfig{
 							MasterURL:      "foo",
 							KubeConfigPath: "foo",
 							AppStateInformer: KubernetesAppStateInformer{
@@ -579,11 +579,11 @@ func TestPipedConfigMask(t *testing.T) {
 						Password: maskString,
 					},
 				},
-				CloudProviders: []PipedCloudProvider{
+				CloudProviders: []PipedPlatformProvider{
 					{
 						Name: "foo",
-						Type: model.CloudProviderKubernetes,
-						KubernetesConfig: &CloudProviderKubernetesConfig{
+						Type: model.PlatformProviderKubernetes,
+						KubernetesConfig: &PlatformProviderKubernetesConfig{
 							MasterURL:      "foo",
 							KubeConfigPath: "foo",
 							AppStateInformer: KubernetesAppStateInformer{

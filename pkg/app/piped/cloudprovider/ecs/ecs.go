@@ -50,7 +50,7 @@ type ELB interface {
 
 // Registry holds a pool of aws client wrappers.
 type Registry interface {
-	Client(name string, cfg *config.CloudProviderECSConfig, logger *zap.Logger) (Client, error)
+	Client(name string, cfg *config.PlatformProviderECSConfig, logger *zap.Logger) (Client, error)
 }
 
 // LoadServiceDefinition returns ServiceDefinition object from a given service definition file.
@@ -76,7 +76,7 @@ type registry struct {
 	newGroup *singleflight.Group
 }
 
-func (r *registry) Client(name string, cfg *config.CloudProviderECSConfig, logger *zap.Logger) (Client, error) {
+func (r *registry) Client(name string, cfg *config.PlatformProviderECSConfig, logger *zap.Logger) (Client, error) {
 	r.mu.RLock()
 	client, ok := r.clients[name]
 	r.mu.RUnlock()

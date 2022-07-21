@@ -14,16 +14,16 @@
 
 package model
 
-type CloudProviderType string
+type PlatformProviderType string
 
 const (
-	CloudProviderKubernetes CloudProviderType = "KUBERNETES"
-	CloudProviderTerraform  CloudProviderType = "TERRAFORM"
-	CloudProviderLambda     CloudProviderType = "LAMBDA"
-	CloudProviderCloudRun   CloudProviderType = "CLOUDRUN"
-	CloudProviderECS        CloudProviderType = "ECS"
+	PlatformProviderKubernetes PlatformProviderType = "KUBERNETES"
+	PlatformProviderTerraform  PlatformProviderType = "TERRAFORM"
+	PlatformProviderLambda     PlatformProviderType = "LAMBDA"
+	PlatformProviderCloudRun   PlatformProviderType = "CLOUDRUN"
+	PlatformProviderECS        PlatformProviderType = "ECS"
 )
 
-func (t CloudProviderType) String() string {
+func (t PlatformProviderType) String() string {
 	return string(t)
 }

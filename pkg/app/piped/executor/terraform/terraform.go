@@ -80,7 +80,7 @@ func findTerraform(ctx context.Context, version string, lp executor.LogPersister
 	return path, true
 }
 
-func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProviderTerraformConfig, found bool) {
+func findCloudProvider(in *executor.Input) (name string, cfg *config.PlatformProviderTerraformConfig, found bool) {
 	name = in.Application.CloudProvider
 	if name == "" {
 		in.LogPersister.Error("Missing the CloudProvider name in the application configuration")

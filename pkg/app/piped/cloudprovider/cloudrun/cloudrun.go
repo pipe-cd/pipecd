@@ -75,7 +75,7 @@ type ListRevisionsOptions struct {
 }
 
 type Registry interface {
-	Client(ctx context.Context, name string, cfg *config.CloudProviderCloudRunConfig, logger *zap.Logger) (Client, error)
+	Client(ctx context.Context, name string, cfg *config.PlatformProviderCloudRunConfig, logger *zap.Logger) (Client, error)
 }
 
 func LoadServiceManifest(appDir, serviceFilename string) (ServiceManifest, error) {
@@ -101,7 +101,7 @@ type registry struct {
 	newGroup *singleflight.Group
 }
 
-func (r *registry) Client(ctx context.Context, name string, cfg *config.CloudProviderCloudRunConfig, logger *zap.Logger) (Client, error) {
+func (r *registry) Client(ctx context.Context, name string, cfg *config.PlatformProviderCloudRunConfig, logger *zap.Logger) (Client, error) {
 	r.mu.RLock()
 	client, ok := r.clients[name]
 	r.mu.RUnlock()

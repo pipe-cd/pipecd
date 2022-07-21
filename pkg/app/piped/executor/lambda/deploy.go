@@ -34,7 +34,7 @@ type deployExecutor struct {
 	deploySource      *deploysource.DeploySource
 	appCfg            *config.LambdaApplicationSpec
 	cloudProviderName string
-	cloudProviderCfg  *config.CloudProviderLambdaConfig
+	cloudProviderCfg  *config.PlatformProviderLambdaConfig
 }
 
 func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
