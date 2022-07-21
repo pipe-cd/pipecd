@@ -47,7 +47,7 @@ type Reporter interface {
 }
 
 type reporter struct {
-	provider              config.PipedCloudProvider
+	provider              config.PipedPlatformProvider
 	appLister             applicationLister
 	stateGetter           kubernetes.Getter
 	eventIterator         kubernetes.EventIterator
@@ -59,7 +59,7 @@ type reporter struct {
 	snapshotVersions map[string]model.ApplicationLiveStateVersion
 }
 
-func NewReporter(cp config.PipedCloudProvider, appLister applicationLister, stateGetter kubernetes.Getter, apiClient apiClient, logger *zap.Logger) Reporter {
+func NewReporter(cp config.PipedPlatformProvider, appLister applicationLister, stateGetter kubernetes.Getter, apiClient apiClient, logger *zap.Logger) Reporter {
 	logger = logger.Named("kubernetes-reporter").With(
 		zap.String("cloud-provider", cp.Name),
 	)

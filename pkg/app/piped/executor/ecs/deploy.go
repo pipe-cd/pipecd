@@ -29,7 +29,7 @@ type deployExecutor struct {
 	deploySource      *deploysource.DeploySource
 	appCfg            *config.ECSApplicationSpec
 	cloudProviderName string
-	cloudProviderCfg  *config.CloudProviderECSConfig
+	cloudProviderCfg  *config.PlatformProviderECSConfig
 }
 
 func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {

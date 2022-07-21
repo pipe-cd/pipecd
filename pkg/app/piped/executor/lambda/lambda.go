@@ -55,7 +55,7 @@ func Register(r registerer) {
 	})
 }
 
-func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProviderLambdaConfig, found bool) {
+func findCloudProvider(in *executor.Input) (name string, cfg *config.PlatformProviderLambdaConfig, found bool) {
 	name = in.Application.CloudProvider
 	if name == "" {
 		in.LogPersister.Errorf("Missing the CloudProvider name in the application configuration")
@@ -86,7 +86,7 @@ func loadFunctionManifest(in *executor.Input, functionManifestFile string, ds *d
 	return fm, true
 }
 
-func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderLambdaConfig, fm provider.FunctionManifest) bool {
+func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderLambdaConfig, fm provider.FunctionManifest) bool {
 	in.LogPersister.Infof("Start applying the lambda function manifest")
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
@@ -144,7 +144,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	return true
 }
 
-func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderLambdaConfig, fm provider.FunctionManifest) bool {
+func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderLambdaConfig, fm provider.FunctionManifest) bool {
 	in.LogPersister.Infof("Start rolling out the lambda function: %s", fm.Spec.Name)
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
@@ -184,7 +184,7 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	return true
 }
 
-func promote(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderLambdaConfig, fm provider.FunctionManifest) bool {
+func promote(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderLambdaConfig, fm provider.FunctionManifest) bool {
 	in.LogPersister.Infof("Start promote new version of the lambda function: %s", fm.Spec.Name)
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {

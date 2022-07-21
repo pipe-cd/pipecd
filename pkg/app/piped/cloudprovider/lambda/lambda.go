@@ -41,7 +41,7 @@ type Client interface {
 
 // Registry holds a pool of aws client wrappers.
 type Registry interface {
-	Client(name string, cfg *config.CloudProviderLambdaConfig, logger *zap.Logger) (Client, error)
+	Client(name string, cfg *config.PlatformProviderLambdaConfig, logger *zap.Logger) (Client, error)
 }
 
 // LoadFunctionManifest returns FunctionManifest object from a given Function config manifest file.
@@ -56,7 +56,7 @@ type registry struct {
 	newGroup *singleflight.Group
 }
 
-func (r *registry) Client(name string, cfg *config.CloudProviderLambdaConfig, logger *zap.Logger) (Client, error) {
+func (r *registry) Client(name string, cfg *config.PlatformProviderLambdaConfig, logger *zap.Logger) (Client, error) {
 	r.mu.RLock()
 	client, ok := r.clients[name]
 	r.mu.RUnlock()

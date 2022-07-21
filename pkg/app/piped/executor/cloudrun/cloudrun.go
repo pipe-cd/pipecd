@@ -58,7 +58,7 @@ func loadServiceManifest(in *executor.Input, serviceManifestFile string, ds *dep
 	return sm, true
 }
 
-func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProviderCloudRunConfig, found bool) {
+func findCloudProvider(in *executor.Input) (name string, cfg *config.PlatformProviderCloudRunConfig, found bool) {
 	name = in.Application.CloudProvider
 	if name == "" {
 		in.LogPersister.Error("Missing the CloudProvider name in the application configuration")
