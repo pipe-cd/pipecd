@@ -104,7 +104,8 @@ func (s *PipedSpec) UnmarshalJSON(data []byte) error {
 	s.ChartRegistries = ps.ChartRegistries
 	s.ChartRepositories = ps.ChartRepositories
 	// Add all CloudProviders configuration as PlatformProviders configuration.
-	s.PlatformProviders = append(ps.PlatformProviders, ps.CloudProviders...)
+	s.PlatformProviders = append(s.PlatformProviders, ps.PlatformProviders...)
+	s.PlatformProviders = append(s.PlatformProviders, ps.CloudProviders...)
 	s.AnalysisProviders = ps.AnalysisProviders
 	s.Notifications = ps.Notifications
 	s.SecretManagement = ps.SecretManagement
