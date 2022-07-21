@@ -542,7 +542,7 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 			return nil, fmt.Errorf("wrong configuration kind for piped: %v", cfg.Kind)
 		}
 		if p.enableDefaultKubernetesCloudProvider {
-			cfg.PipedSpec.EnableDefaultKubernetesCloudProvider()
+			cfg.PipedSpec.EnableDefaultKubernetesPlatformProvider()
 		}
 		return cfg.PipedSpec, nil
 	}
@@ -641,19 +641,10 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 			Version:           version.Get().Version,
 			Config:            string(maskedCfg),
 			Repositories:      repos,
-			CloudProviders:    make([]*model.Piped_CloudProvider, 0, len(cfg.CloudProviders)),
 			PlatformProviders: make([]*model.Piped_PlatformProvider, 0, len(cfg.PlatformProviders)),
 		}
 		retry = pipedservice.NewRetry(5)
 	)
-
-	// Configure the list of specified cloud providers.
-	for _, cp := range cfg.CloudProviders {
-		req.CloudProviders = append(req.CloudProviders, &model.Piped_CloudProvider{
-			Name: cp.Name,
-			Type: cp.Type.String(),
-		})
-	}
 
 	// Configure the list of specified platform providers.
 	for _, cp := range cfg.PlatformProviders {

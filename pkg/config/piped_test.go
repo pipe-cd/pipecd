@@ -84,7 +84,7 @@ func TestPipedConfig(t *testing.T) {
 						Password: "sample-password",
 					},
 				},
-				CloudProviders: []PipedPlatformProvider{
+				PlatformProviders: []PipedPlatformProvider{
 					{
 						Name: "kubernetes-default",
 						Type: model.PlatformProviderKubernetes,
@@ -428,7 +428,7 @@ func TestPipedConfigMask(t *testing.T) {
 						Password: "foo",
 					},
 				},
-				CloudProviders: []PipedPlatformProvider{
+				PlatformProviders: []PipedPlatformProvider{
 					{
 						Name: "foo",
 						Type: model.PlatformProviderKubernetes,
@@ -579,7 +579,7 @@ func TestPipedConfigMask(t *testing.T) {
 						Password: maskString,
 					},
 				},
-				CloudProviders: []PipedPlatformProvider{
+				PlatformProviders: []PipedPlatformProvider{
 					{
 						Name: "foo",
 						Type: model.PlatformProviderKubernetes,

@@ -36,7 +36,9 @@ var defaultKubernetesPlatformProvider = PipedPlatformProvider{
 }
 
 // PipedSpec contains configurable data used to while running Piped.
-type PipedSpec struct {
+type PipedSpec pipedSpec
+
+type pipedSpec struct {
 	// The identifier of the PipeCD project where this piped belongs to.
 	ProjectID string `json:"projectID"`
 	// The unique identifier generated for this piped.
@@ -80,6 +82,36 @@ type PipedSpec struct {
 	EventWatcher PipedEventWatcher `json:"eventWatcher"`
 	// List of labels to filter all applications this piped will handle.
 	AppSelector map[string]string `json:"appSelector,omitempty"`
+}
+
+func (s *PipedSpec) UnmarshalJSON(data []byte) error {
+	ps := pipedSpec{}
+	if err := json.Unmarshal(data, &ps); err != nil {
+		return err
+	}
+
+	s.ProjectID = ps.ProjectID
+	s.PipedID = ps.PipedID
+	s.PipedKeyFile = ps.PipedKeyFile
+	s.PipedKeyData = ps.PipedKeyData
+	s.Name = ps.Name
+	s.APIAddress = ps.APIAddress
+	s.WebAddress = ps.WebAddress
+	s.SyncInterval = ps.SyncInterval
+	s.AppConfigSyncInterval = ps.AppConfigSyncInterval
+	s.Git = ps.Git
+	s.Repositories = ps.Repositories
+	s.ChartRegistries = ps.ChartRegistries
+	s.ChartRepositories = ps.ChartRepositories
+	// Add all CloudProviders configuration as PlatformProviders configuration.
+	s.PlatformProviders = append(ps.PlatformProviders, ps.CloudProviders...)
+	s.AnalysisProviders = ps.AnalysisProviders
+	s.Notifications = ps.Notifications
+	s.SecretManagement = ps.SecretManagement
+	s.EventWatcher = ps.EventWatcher
+	s.AppSelector = ps.AppSelector
+
+	return nil
 }
 
 // Validate validates configured data of all fields.
@@ -159,9 +191,6 @@ func (s *PipedSpec) Mask() {
 	for i := 0; i < len(s.ChartRegistries); i++ {
 		s.ChartRegistries[i].Mask()
 	}
-	for _, p := range s.CloudProviders {
-		p.Mask()
-	}
 	for _, p := range s.PlatformProviders {
 		p.Mask()
 	}
@@ -174,19 +203,17 @@ func (s *PipedSpec) Mask() {
 	}
 }
 
-// EnableDefaultKubernetesCloudProvider adds the default kubernetes cloud provider if it was not specified.
-func (s *PipedSpec) EnableDefaultKubernetesCloudProvider() {
-	for _, cp := range s.CloudProviders {
+// EnableDefaultKubernetesPlatformProvider adds the default kubernetes cloud provider if it was not specified.
+func (s *PipedSpec) EnableDefaultKubernetesPlatformProvider() {
+	for _, cp := range s.PlatformProviders {
 		if cp.Name == defaultKubernetesPlatformProvider.Name {
 			return
 		}
 	}
-	s.CloudProviders = append(s.CloudProviders, defaultKubernetesPlatformProvider)
+	s.PlatformProviders = append(s.PlatformProviders, defaultKubernetesPlatformProvider)
 }
 
 // HasPlatformProvider checks whether the given provider is configured or not.
-// Note: Currently check both list CloudProviders & PlatformProviders for configuration but we
-// will disable CloudProviders support next few versions.
 func (s *PipedSpec) HasPlatformProvider(name string, t model.ApplicationKind) bool {
 	requiredProviderType := t.CompatiblePlatformProviderType()
 	for _, cp := range s.PlatformProviders {
@@ -194,29 +221,13 @@ func (s *PipedSpec) HasPlatformProvider(name string, t model.ApplicationKind) bo
 			return true
 		}
 	}
-	for _, pp := range s.CloudProviders {
-		if pp.Name == name && pp.Type == requiredProviderType {
-			return true
-		}
-	}
 	return false
 }
 
 // FindPlatformProvider finds and returns a Platform Provider by name and type.
-// Note: Currently check both list CloudProviders & PlatformProviders for configuration but we
-// will disable CloudProviders support next few versions.
 func (s *PipedSpec) FindPlatformProvider(name string, t model.ApplicationKind) (PipedPlatformProvider, bool) {
 	requiredProviderType := t.CompatiblePlatformProviderType()
 	for _, p := range s.PlatformProviders {
-		if p.Name != name {
-			continue
-		}
-		if p.Type != requiredProviderType {
-			continue
-		}
-		return p, true
-	}
-	for _, p := range s.CloudProviders {
 		if p.Name != name {
 			continue
 		}
