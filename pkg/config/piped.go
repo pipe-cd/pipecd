@@ -215,13 +215,8 @@ func (s *PipedSpec) EnableDefaultKubernetesPlatformProvider() {
 
 // HasPlatformProvider checks whether the given provider is configured or not.
 func (s *PipedSpec) HasPlatformProvider(name string, t model.ApplicationKind) bool {
-	requiredProviderType := t.CompatiblePlatformProviderType()
-	for _, cp := range s.PlatformProviders {
-		if cp.Name == name && cp.Type == requiredProviderType {
-			return true
-		}
-	}
-	return false
+	_, contains := s.FindPlatformProvider(name, t)
+	return contains
 }
 
 // FindPlatformProvider finds and returns a Platform Provider by name and type.
