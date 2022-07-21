@@ -34,7 +34,7 @@ type deployExecutor struct {
 }
 
 func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
-	_, cloudProviderCfg, found := findCloudProvider(&e.Input)
+	cloudProviderCfg, found := findCloudProvider(&e.Input)
 	if !found {
 		return model.StageStatus_STAGE_FAILURE
 	}

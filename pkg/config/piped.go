@@ -66,7 +66,7 @@ type PipedSpec struct {
 	// List of helm chart registries that should be logged in while starting up.
 	ChartRegistries []HelmChartRegistry `json:"chartRegistries,omitempty"`
 	// List of cloud providers can be used by this piped.
-	// deprecated: use PlatformProvider instead.
+	// Deprecated: use PlatformProvider instead.
 	CloudProviders []PipedPlatformProvider `json:"cloudProviders,omitempty"`
 	// List of platform providers can be used by this piped.
 	PlatformProviders []PipedPlatformProvider `json:"platformProviders,omitempty"`
