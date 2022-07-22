@@ -175,11 +175,13 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					}, nil)
 					return p
 				}(),
-				applier: func() provider.Applier {
-					p := kubernetestest.NewMockApplier(ctrl)
-					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
-					return p
-				}(),
+				applierGetter: &applierGroup{
+					defaultApplier: func() provider.Applier {
+						p := kubernetestest.NewMockApplier(ctrl)
+						p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
+						return p
+					}(),
+				},
 				appCfg: &config.KubernetesApplicationSpec{},
 			},
 		},
@@ -228,11 +230,13 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					}, nil)
 					return p
 				}(),
-				applier: func() provider.Applier {
-					p := kubernetestest.NewMockApplier(ctrl)
-					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
-					return p
-				}(),
+				applierGetter: &applierGroup{
+					defaultApplier: func() provider.Applier {
+						p := kubernetestest.NewMockApplier(ctrl)
+						p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
+						return p
+					}(),
+				},
 				appCfg: &config.KubernetesApplicationSpec{},
 			},
 		},

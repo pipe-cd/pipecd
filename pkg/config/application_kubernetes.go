@@ -45,6 +45,14 @@ type KubernetesApplicationSpec struct {
 	ResourceRoutes []KubernetesResourceRoute `json:"resourceRoutes"`
 }
 
+// Validate returns an error if any wrong configuration value was found.
+func (s *KubernetesApplicationSpec) Validate() error {
+	if err := s.GenericApplicationSpec.Validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
 type KubernetesVariantLabel struct {
 	// The key of the label.
 	// Default is pipecd.dev/variant.
@@ -58,14 +66,6 @@ type KubernetesVariantLabel struct {
 	// The label value for BASELINE variant.
 	// Default is baseline.
 	BaselineValue string `json:"baselineValue" default:"baseline"`
-}
-
-// Validate returns an error if any wrong configuration value was found.
-func (s *KubernetesApplicationSpec) Validate() error {
-	if err := s.GenericApplicationSpec.Validate(); err != nil {
-		return err
-	}
-	return nil
 }
 
 // KubernetesDeploymentInput represents needed input for triggering a Kubernetes deployment.

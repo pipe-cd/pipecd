@@ -102,7 +102,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 
 	// Start rolling out the resources for CANARY variant.
 	e.LogPersister.Info("Start rolling out CANARY variant...")
-	if err := applyManifests(ctx, e.applier, canaryManifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, e.applierGetter, canaryManifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -118,7 +118,7 @@ func (e *deployExecutor) ensureCanaryClean(ctx context.Context) model.StageStatu
 	}
 
 	resources := strings.Split(value, ",")
-	if err := removeCanaryResources(ctx, e.applier, resources, e.LogPersister); err != nil {
+	if err := removeCanaryResources(ctx, e.applierGetter, resources, e.LogPersister); err != nil {
 		e.LogPersister.Errorf("Unable to remove canary resources: %v", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -187,7 +187,7 @@ func (e *deployExecutor) generateCanaryManifests(manifests []provider.Manifest, 
 	return canaryManifests, nil
 }
 
-func removeCanaryResources(ctx context.Context, applier provider.Applier, resources []string, lp executor.LogPersister) error {
+func removeCanaryResources(ctx context.Context, ag applierGetter, resources []string, lp executor.LogPersister) error {
 	if len(resources) == 0 {
 		return nil
 	}
@@ -211,13 +211,13 @@ func removeCanaryResources(ctx context.Context, applier provider.Applier, resour
 
 	// We delete the service first to close all incoming connections.
 	lp.Info("Starting finding and deleting service resources of CANARY variant")
-	if err := deleteResources(ctx, applier, serviceKeys, lp); err != nil {
+	if err := deleteResources(ctx, ag, serviceKeys, lp); err != nil {
 		return err
 	}
 
 	// Next, delete all workloads.
 	lp.Info("Starting finding and deleting workload resources of CANARY variant")
-	if err := deleteResources(ctx, applier, workloadKeys, lp); err != nil {
+	if err := deleteResources(ctx, ag, workloadKeys, lp); err != nil {
 		return err
 	}
 

@@ -135,20 +135,14 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	cp, ok := e.PipedConfig.FindCloudProvider(e.Deployment.CloudProvider, model.ApplicationKind_KUBERNETES)
-	if !ok {
-		e.LogPersister.Errorf("Not found cloud provider %q", e.Deployment.CloudProvider)
+	ag, err := newApplierGroup(e.Deployment.CloudProvider, *appCfg, e.PipedConfig, e.Logger)
+	if err != nil {
+		e.LogPersister.Error(err.Error())
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	applier := provider.NewApplier(
-		appCfg.Input,
-		*cp.KubernetesConfig,
-		e.Logger,
-	)
-
 	// Start applying all manifests to add or update running resources.
-	if err := applyManifests(ctx, applier, manifests, appCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, ag, manifests, appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -158,7 +152,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	e.LogPersister.Info("Start checking to ensure that the CANARY variant should be removed")
 	if value, ok := e.MetadataStore.Shared().Get(addedCanaryResourcesMetadataKey); ok {
 		resources := strings.Split(value, ",")
-		if err := removeCanaryResources(ctx, applier, resources, e.LogPersister); err != nil {
+		if err := removeCanaryResources(ctx, ag, resources, e.LogPersister); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -167,7 +161,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	e.LogPersister.Info("Start checking to ensure that the BASELINE variant should be removed")
 	if value, ok := e.MetadataStore.Shared().Get(addedBaselineResourcesMetadataKey); ok {
 		resources := strings.Split(value, ",")
-		if err := removeBaselineResources(ctx, applier, resources, e.LogPersister); err != nil {
+		if err := removeBaselineResources(ctx, ag, resources, e.LogPersister); err != nil {
 			errs = append(errs, err)
 		}
 	}
