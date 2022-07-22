@@ -67,6 +67,7 @@ func newApplierGroup(defaultProvider string, appCfg config.KubernetesApplication
 	return d, nil
 }
 
+// TODO: Add test for this applierGroup function.
 func (d applierGroup) Get(rk provider.ResourceKey) (provider.Applier, error) {
 	for _, r := range d.resourceRoutes {
 		if r.Match == nil {
