@@ -170,13 +170,22 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 		return nil, err
 	}
 
+	platformProviders := make([]*model.Piped_PlatformProvider, 0, len(req.CloudProviders)+len(req.PlatformProviders))
+	for _, cp := range req.CloudProviders {
+		platformProviders = append(platformProviders, &model.Piped_PlatformProvider{
+			Name: cp.Name,
+			Type: cp.Type,
+		})
+	}
+	platformProviders = append(platformProviders, req.PlatformProviders...)
+
 	now := time.Now().Unix()
 	if err = a.pipedStore.UpdateMetadata(
 		ctx,
 		pipedID,
 		req.Version,
 		req.Config,
-		req.PlatformProviders,
+		platformProviders,
 		req.Repositories,
 		req.SecretEncryption,
 		now,
