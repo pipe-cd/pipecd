@@ -115,7 +115,7 @@ type PipedStore interface {
 	EnablePiped(ctx context.Context, id string) error
 	DisablePiped(ctx context.Context, id string) error
 	UpdateDesiredVersion(ctx context.Context, id, version string) error
-	UpdateMetadata(ctx context.Context, id, version, config string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error
+	UpdateMetadata(ctx context.Context, id, version, config string, pps []*model.Piped_PlatformProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error
 	AddKey(ctx context.Context, id, keyHash, creator string, createdAt time.Time) error
 	DeleteOldKeys(ctx context.Context, id string) error
 }
@@ -222,9 +222,9 @@ func (s *pipedStore) UpdateDesiredVersion(ctx context.Context, id, version strin
 	})
 }
 
-func (s *pipedStore) UpdateMetadata(ctx context.Context, id, version, config string, cps []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error {
+func (s *pipedStore) UpdateMetadata(ctx context.Context, id, version, config string, pps []*model.Piped_PlatformProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error {
 	return s.update(ctx, id, func(piped *model.Piped) error {
-		piped.CloudProviders = cps
+		piped.PlatformProviders = pps
 		piped.Repositories = repos
 		piped.SecretEncryption = se
 		piped.Version = version

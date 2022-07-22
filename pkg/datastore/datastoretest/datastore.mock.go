@@ -403,7 +403,7 @@ func (mr *MockPipedStoreMockRecorder) UpdateInfo(arg0, arg1, arg2, arg3 interfac
 }
 
 // UpdateMetadata mocks base method.
-func (m *MockPipedStore) UpdateMetadata(arg0 context.Context, arg1, arg2, arg3 string, arg4 []*model.Piped_CloudProvider, arg5 []*model.ApplicationGitRepository, arg6 *model.Piped_SecretEncryption, arg7 int64) error {
+func (m *MockPipedStore) UpdateMetadata(arg0 context.Context, arg1, arg2, arg3 string, arg4 []*model.Piped_PlatformProvider, arg5 []*model.ApplicationGitRepository, arg6 *model.Piped_SecretEncryption, arg7 int64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateMetadata", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 	ret0, _ := ret[0].(error)
