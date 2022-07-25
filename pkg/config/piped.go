@@ -162,6 +162,9 @@ func (s *PipedSpec) Mask() {
 	for _, p := range s.CloudProviders {
 		p.Mask()
 	}
+	for _, p := range s.PlatformProviders {
+		p.Mask()
+	}
 	for _, p := range s.AnalysisProviders {
 		p.Mask()
 	}
@@ -181,24 +184,38 @@ func (s *PipedSpec) EnableDefaultKubernetesCloudProvider() {
 	s.CloudProviders = append(s.CloudProviders, defaultKubernetesPlatformProvider)
 }
 
-// HasCloudProvider checks whether the given provider is configured or not.
-func (s *PipedSpec) HasCloudProvider(name string, t model.ApplicationKind) bool {
-	requiredProviderType := t.CompatibleCloudProviderType()
-	for _, cp := range s.CloudProviders {
-		if cp.Name != name {
-			continue
+// HasPlatformProvider checks whether the given provider is configured or not.
+// Note: Currently check both list CloudProviders & PlatformProviders for configuration but we
+// will disable CloudProviders support next few versions.
+func (s *PipedSpec) HasPlatformProvider(name string, t model.ApplicationKind) bool {
+	requiredProviderType := t.CompatiblePlatformProviderType()
+	for _, cp := range s.PlatformProviders {
+		if cp.Name == name && cp.Type == requiredProviderType {
+			return true
 		}
-		if cp.Type != requiredProviderType {
-			continue
+	}
+	for _, pp := range s.CloudProviders {
+		if pp.Name == name && pp.Type == requiredProviderType {
+			return true
 		}
-		return true
 	}
 	return false
 }
 
-// FindCloudProvider finds and returns a Cloud Provider by name and type.
-func (s *PipedSpec) FindCloudProvider(name string, t model.ApplicationKind) (PipedPlatformProvider, bool) {
-	requiredProviderType := t.CompatibleCloudProviderType()
+// FindPlatformProvider finds and returns a Platform Provider by name and type.
+// Note: Currently check both list CloudProviders & PlatformProviders for configuration but we
+// will disable CloudProviders support next few versions.
+func (s *PipedSpec) FindPlatformProvider(name string, t model.ApplicationKind) (PipedPlatformProvider, bool) {
+	requiredProviderType := t.CompatiblePlatformProviderType()
+	for _, p := range s.PlatformProviders {
+		if p.Name != name {
+			continue
+		}
+		if p.Type != requiredProviderType {
+			continue
+		}
+		return p, true
+	}
 	for _, p := range s.CloudProviders {
 		if p.Name != name {
 			continue

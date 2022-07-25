@@ -116,7 +116,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().IntVar(&p.adminPort, "admin-port", p.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
 
 	cmd.Flags().StringVar(&p.toolsDir, "tools-dir", p.toolsDir, "The path to directory where to install needed tools such as kubectl, helm, kustomize.")
-	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not.")
+	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not. this feature is deprecated.")
 	cmd.Flags().BoolVar(&p.addLoginUserToPasswd, "add-login-user-to-passwd", p.addLoginUserToPasswd, "Whether to add login user to $HOME/passwd. This is typically for applications running as a random user ID.")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
 
@@ -638,10 +638,11 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 
 	var (
 		req = &pipedservice.ReportPipedMetaRequest{
-			Version:        version.Get().Version,
-			Config:         string(maskedCfg),
-			Repositories:   repos,
-			CloudProviders: make([]*model.Piped_CloudProvider, 0, len(cfg.CloudProviders)),
+			Version:           version.Get().Version,
+			Config:            string(maskedCfg),
+			Repositories:      repos,
+			CloudProviders:    make([]*model.Piped_CloudProvider, 0, len(cfg.CloudProviders)),
+			PlatformProviders: make([]*model.Piped_PlatformProvider, 0, len(cfg.PlatformProviders)),
 		}
 		retry = pipedservice.NewRetry(5)
 	)
@@ -649,6 +650,14 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	// Configure the list of specified cloud providers.
 	for _, cp := range cfg.CloudProviders {
 		req.CloudProviders = append(req.CloudProviders, &model.Piped_CloudProvider{
+			Name: cp.Name,
+			Type: cp.Type.String(),
+		})
+	}
+
+	// Configure the list of specified platform providers.
+	for _, cp := range cfg.PlatformProviders {
+		req.PlatformProviders = append(req.PlatformProviders, &model.Piped_PlatformProvider{
 			Name: cp.Name,
 			Type: cp.Type.String(),
 		})

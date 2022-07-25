@@ -58,24 +58,43 @@ type providerReporter interface {
 
 func NewReporter(appLister applicationLister, stateGetter livestatestore.Getter, apiClient apiClient, cfg *config.PipedSpec, logger *zap.Logger) Reporter {
 	r := &reporter{
-		reporters: make([]providerReporter, 0, len(cfg.CloudProviders)),
+		reporters: make([]providerReporter, 0, len(cfg.CloudProviders)+len(cfg.PlatformProviders)),
 		logger:    logger.Named("live-state-reporter"),
 	}
 
+	const errFmt = "unable to find live state getter for cloud/platform provider: %s"
 	for _, cp := range cfg.CloudProviders {
-		errFmt := fmt.Sprintf("unable to find live state getter for cloud provider: %s", cp.Name)
 		switch cp.Type {
 		case model.PlatformProviderKubernetes:
 			sg, ok := stateGetter.KubernetesGetter(cp.Name)
 			if !ok {
-				r.logger.Error(errFmt)
+				r.logger.Error(fmt.Sprintf(errFmt, cp.Name))
 				continue
 			}
 			r.reporters = append(r.reporters, kubernetes.NewReporter(cp, appLister, sg, apiClient, logger))
 		case model.PlatformProviderCloudRun:
 			sg, ok := stateGetter.CloudRunGetter(cp.Name)
 			if !ok {
-				r.logger.Error(errFmt)
+				r.logger.Error(fmt.Sprintf(errFmt, cp.Name))
+				continue
+			}
+			r.reporters = append(r.reporters, cloudrun.NewReporter(cp, appLister, sg, apiClient, logger))
+		}
+	}
+
+	for _, cp := range cfg.PlatformProviders {
+		switch cp.Type {
+		case model.PlatformProviderKubernetes:
+			sg, ok := stateGetter.KubernetesGetter(cp.Name)
+			if !ok {
+				r.logger.Error(fmt.Sprintf(errFmt, cp.Name))
+				continue
+			}
+			r.reporters = append(r.reporters, kubernetes.NewReporter(cp, appLister, sg, apiClient, logger))
+		case model.PlatformProviderCloudRun:
+			sg, ok := stateGetter.CloudRunGetter(cp.Name)
+			if !ok {
+				r.logger.Error(fmt.Sprintf(errFmt, cp.Name))
 				continue
 			}
 			r.reporters = append(r.reporters, cloudrun.NewReporter(cp, appLister, sg, apiClient, logger))

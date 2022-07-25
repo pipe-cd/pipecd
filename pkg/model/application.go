@@ -89,7 +89,7 @@ func (a *Application) SetUpdatedAt(t int64) {
 	a.UpdatedAt = t
 }
 
-func (k *ApplicationKind) CompatibleCloudProviderType() PlatformProviderType {
+func (k *ApplicationKind) CompatiblePlatformProviderType() PlatformProviderType {
 	switch *k {
 	case ApplicationKind_KUBERNETES:
 		return PlatformProviderKubernetes

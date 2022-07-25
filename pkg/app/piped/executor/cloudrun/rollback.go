@@ -34,7 +34,7 @@ func (e *rollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		status         model.StageStatus
 	)
 
-	cpName, cpCfg, found := findCloudProvider(&e.Input)
+	cpName, cpCfg, found := findPlatformProvider(&e.Input)
 	if !found {
 		return model.StageStatus_STAGE_FAILURE
 	}

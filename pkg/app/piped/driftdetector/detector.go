@@ -87,14 +87,54 @@ func NewDetector(
 
 	d := &detector{
 		apiClient:  apiClient,
-		detectors:  make([]providerDetector, 0, len(cfg.CloudProviders)),
+		detectors:  make([]providerDetector, 0, len(cfg.CloudProviders)+len(cfg.PlatformProviders)),
 		syncStates: make(map[string]model.ApplicationSyncState),
 		logger:     logger.Named("drift-detector"),
 	}
 
-	const format = "unable to find live state getter for cloud provider: %s"
+	const format = "unable to find live state getter for cloud/platform provider: %s"
 
 	for _, cp := range cfg.CloudProviders {
+		switch cp.Type {
+		case model.PlatformProviderKubernetes:
+			sg, ok := stateGetter.KubernetesGetter(cp.Name)
+			if !ok {
+				return nil, fmt.Errorf(format, cp.Name)
+			}
+			d.detectors = append(d.detectors, kubernetes.NewDetector(
+				cp,
+				appLister,
+				gitClient,
+				sg,
+				d,
+				appManifestsCache,
+				cfg,
+				sd,
+				logger,
+			))
+
+		case model.PlatformProviderCloudRun:
+			sg, ok := stateGetter.CloudRunGetter(cp.Name)
+			if !ok {
+				return nil, fmt.Errorf(format, cp.Name)
+			}
+			d.detectors = append(d.detectors, cloudrun.NewDetector(
+				cp,
+				appLister,
+				gitClient,
+				sg,
+				d,
+				appManifestsCache,
+				cfg,
+				sd,
+				logger,
+			))
+
+		default:
+		}
+	}
+
+	for _, cp := range cfg.PlatformProviders {
 		switch cp.Type {
 		case model.PlatformProviderKubernetes:
 			sg, ok := stateGetter.KubernetesGetter(cp.Name)

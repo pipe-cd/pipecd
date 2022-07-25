@@ -131,6 +131,34 @@ func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationL
 		}
 	}
 
+	for _, cp := range cfg.PlatformProviders {
+		switch cp.Type {
+		case model.PlatformProviderKubernetes:
+			store := kubernetes.NewStore(cp.KubernetesConfig, cfg, cp.Name, logger)
+			s.kubernetesStores[cp.Name] = store
+
+		case model.PlatformProviderTerraform:
+			store := terraform.NewStore(cp.TerraformConfig, cp.Name, appLister, logger)
+			s.terraformStores[cp.Name] = store
+
+		case model.PlatformProviderCloudRun:
+			store, err := cloudrun.NewStore(ctx, cp.CloudRunConfig, cp.Name, logger)
+			if err != nil {
+				logger.Error("failed to create a new cloudrun's livestatestore", zap.Error(err))
+				continue
+			}
+			s.cloudrunStores[cp.Name] = store
+
+		case model.PlatformProviderLambda:
+			store := lambda.NewStore(cp.LambdaConfig, cp.Name, appLister, logger)
+			s.lambdaStores[cp.Name] = store
+
+		case model.PlatformProviderECS:
+			store := ecs.NewStore(cp.ECSConfig, cp.Name, appLister, logger)
+			s.ecsStores[cp.Name] = store
+		}
+	}
+
 	return s
 }
 
