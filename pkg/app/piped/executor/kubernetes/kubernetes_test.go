@@ -470,7 +470,8 @@ spec:
 			ctx := context.Background()
 			manifests, err := provider.ParseManifests(tc.manifest)
 			require.NoError(t, err)
-			err = applyManifests(ctx, tc.applier, manifests, tc.namespace, &fakeLogPersister{})
+			ag := &applierGroup{defaultApplier: tc.applier}
+			err = applyManifests(ctx, ag, manifests, tc.namespace, &fakeLogPersister{})
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
@@ -538,7 +539,8 @@ func TestDeleteResources(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
-			err := deleteResources(ctx, tc.applier, tc.resources, &fakeLogPersister{})
+			ag := &applierGroup{defaultApplier: tc.applier}
+			err := deleteResources(ctx, ag, tc.resources, &fakeLogPersister{})
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
