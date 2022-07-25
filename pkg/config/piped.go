@@ -36,9 +36,7 @@ var defaultKubernetesPlatformProvider = PipedPlatformProvider{
 }
 
 // PipedSpec contains configurable data used to while running Piped.
-type PipedSpec pipedSpec
-
-type pipedSpec struct {
+type PipedSpec struct {
 	// The identifier of the PipeCD project where this piped belongs to.
 	ProjectID string `json:"projectID"`
 	// The unique identifier generated for this piped.
@@ -85,33 +83,19 @@ type pipedSpec struct {
 }
 
 func (s *PipedSpec) UnmarshalJSON(data []byte) error {
-	ps := pipedSpec{}
+	type Alias PipedSpec
+	ps := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(s),
+	}
 	if err := json.Unmarshal(data, &ps); err != nil {
 		return err
 	}
 
-	s.ProjectID = ps.ProjectID
-	s.PipedID = ps.PipedID
-	s.PipedKeyFile = ps.PipedKeyFile
-	s.PipedKeyData = ps.PipedKeyData
-	s.Name = ps.Name
-	s.APIAddress = ps.APIAddress
-	s.WebAddress = ps.WebAddress
-	s.SyncInterval = ps.SyncInterval
-	s.AppConfigSyncInterval = ps.AppConfigSyncInterval
-	s.Git = ps.Git
-	s.Repositories = ps.Repositories
-	s.ChartRegistries = ps.ChartRegistries
-	s.ChartRepositories = ps.ChartRepositories
 	// Add all CloudProviders configuration as PlatformProviders configuration.
-	s.PlatformProviders = append(s.PlatformProviders, ps.PlatformProviders...)
 	s.PlatformProviders = append(s.PlatformProviders, ps.CloudProviders...)
-	s.AnalysisProviders = ps.AnalysisProviders
-	s.Notifications = ps.Notifications
-	s.SecretManagement = ps.SecretManagement
-	s.EventWatcher = ps.EventWatcher
-	s.AppSelector = ps.AppSelector
-
+	s.CloudProviders = nil
 	return nil
 }
 
