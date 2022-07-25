@@ -40,7 +40,7 @@ export const EditApplicationDrawer: FC<EditApplicationDrawerProps> = memo(
             repoPath: app.gitPath?.path || "",
             repo: app.gitPath?.repo || { id: "", remote: "", branch: "" },
             configFilename: app.gitPath?.configFilename || "",
-            cloudProvider: app.cloudProvider,
+            platformProvider: app.platformProvider,
             labels: app.labelsMap,
           }
         : emptyFormValues,

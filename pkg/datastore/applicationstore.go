@@ -361,10 +361,10 @@ func (s *applicationStore) UpdateBasicInfo(ctx context.Context, id, name, descri
 	})
 }
 
-func (s *applicationStore) UpdateConfiguration(ctx context.Context, id, pipedID, cloudProvider, configFilename string) error {
+func (s *applicationStore) UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error {
 	return s.update(ctx, id, func(app *model.Application) error {
 		app.PipedId = pipedID
-		app.CloudProvider = cloudProvider
+		app.PlatformProvider = platformProvider
 		app.GitPath.ConfigFilename = configFilename
 		return nil
 	})

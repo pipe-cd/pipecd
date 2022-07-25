@@ -54,7 +54,7 @@ type webApiApplicationStore interface {
 	Get(ctx context.Context, id string) (*model.Application, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Application, string, error)
 	Delete(ctx context.Context, id string) error
-	UpdateConfiguration(ctx context.Context, id, pipedID, cloudProvider, configFilename string) error
+	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error
 	Enable(ctx context.Context, id string) error
 	Disable(ctx context.Context, id string) error
 }
@@ -501,8 +501,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		ProjectId:        claims.Role.ProjectId,
 		GitPath:          gitpath,
 		Kind:             req.Kind,
-		CloudProvider:    req.CloudProvider,
-		PlatformProvider: req.CloudProvider,
+		PlatformProvider: req.PlatformProvider,
 		Description:      req.Description,
 		Labels:           req.Labels,
 	}
@@ -531,7 +530,7 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 		return nil, status.Error(codes.PermissionDenied, "Requested piped does not belong to your project")
 	}
 
-	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.CloudProvider, req.ConfigFilename); err != nil {
+	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.PlatformProvider, req.ConfigFilename); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("failed to update application %s", req.ApplicationId))
 	}
 

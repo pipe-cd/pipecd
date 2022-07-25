@@ -144,8 +144,7 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 		ProjectId:        key.ProjectId,
 		GitPath:          gitpath,
 		Kind:             req.Kind,
-		CloudProvider:    req.CloudProvider,
-		PlatformProvider: req.CloudProvider,
+		PlatformProvider: req.PlatformProvider,
 		Description:      req.Description,
 	}
 	if err := a.applicationStore.Add(ctx, &app); err != nil {

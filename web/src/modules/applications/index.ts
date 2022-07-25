@@ -99,7 +99,7 @@ export const addApplication = createAsyncThunk<
     repoPath: string;
     configFilename?: string;
     kind: ApplicationKind;
-    cloudProvider: string;
+    platformProvider: string;
     labels: Array<[string, string]>;
   }
 >(`${MODULE_NAME}/add`, async (props) => {
@@ -112,7 +112,7 @@ export const addApplication = createAsyncThunk<
       configFilename: props.configFilename || "",
       url: "",
     },
-    cloudProvider: props.cloudProvider,
+    platformProvider: props.platformProvider,
     kind: props.kind,
     description: "",
     labelsMap: props.labels,
