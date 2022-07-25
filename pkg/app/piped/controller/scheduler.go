@@ -434,8 +434,8 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	}
 
 	// Check the existence of the specified cloud provider.
-	if !s.pipedConfig.HasCloudProvider(s.deployment.CloudProvider, s.deployment.Kind) {
-		lp.Errorf("This piped is not having the specified cloud provider in this deployment: %v", s.deployment.CloudProvider)
+	if !s.pipedConfig.HasPlatformProvider(s.deployment.PlatformProvider, s.deployment.Kind) {
+		lp.Errorf("This piped is not having the specified platform provider in this deployment: %v", s.deployment.PlatformProvider)
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
 			s.logger.Error("failed to report stage status", zap.Error(err))
 		}

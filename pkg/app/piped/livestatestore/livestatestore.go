@@ -103,7 +103,7 @@ func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationL
 		gracePeriod:      gracePeriod,
 		logger:           logger,
 	}
-	for _, cp := range cfg.CloudProviders {
+	for _, cp := range cfg.PlatformProviders {
 		switch cp.Type {
 		case model.PlatformProviderKubernetes:
 			store := kubernetes.NewStore(cp.KubernetesConfig, cfg, cp.Name, logger)

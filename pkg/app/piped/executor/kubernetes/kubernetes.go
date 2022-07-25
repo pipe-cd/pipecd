@@ -94,7 +94,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		}
 	}
 
-	e.applierGetter, err = newApplierGroup(e.Deployment.CloudProvider, *e.appCfg, e.PipedConfig, e.Logger)
+	e.applierGetter, err = newApplierGroup(e.Deployment.PlatformProvider, *e.appCfg, e.PipedConfig, e.Logger)
 	if err != nil {
 		e.LogPersister.Error(err.Error())
 		return model.StageStatus_STAGE_FAILURE

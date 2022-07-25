@@ -82,6 +82,23 @@ type PipedSpec struct {
 	AppSelector map[string]string `json:"appSelector,omitempty"`
 }
 
+func (s *PipedSpec) UnmarshalJSON(data []byte) error {
+	type Alias PipedSpec
+	ps := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(s),
+	}
+	if err := json.Unmarshal(data, &ps); err != nil {
+		return err
+	}
+
+	// Add all CloudProviders configuration as PlatformProviders configuration.
+	s.PlatformProviders = append(s.PlatformProviders, ps.CloudProviders...)
+	s.CloudProviders = nil
+	return nil
+}
+
 // Validate validates configured data of all fields.
 func (s *PipedSpec) Validate() error {
 	if s.ProjectID == "" {
@@ -159,7 +176,7 @@ func (s *PipedSpec) Mask() {
 	for i := 0; i < len(s.ChartRegistries); i++ {
 		s.ChartRegistries[i].Mask()
 	}
-	for _, p := range s.CloudProviders {
+	for _, p := range s.PlatformProviders {
 		p.Mask()
 	}
 	for _, p := range s.AnalysisProviders {
@@ -171,35 +188,26 @@ func (s *PipedSpec) Mask() {
 	}
 }
 
-// EnableDefaultKubernetesCloudProvider adds the default kubernetes cloud provider if it was not specified.
-func (s *PipedSpec) EnableDefaultKubernetesCloudProvider() {
-	for _, cp := range s.CloudProviders {
+// EnableDefaultKubernetesPlatformProvider adds the default kubernetes cloud provider if it was not specified.
+func (s *PipedSpec) EnableDefaultKubernetesPlatformProvider() {
+	for _, cp := range s.PlatformProviders {
 		if cp.Name == defaultKubernetesPlatformProvider.Name {
 			return
 		}
 	}
-	s.CloudProviders = append(s.CloudProviders, defaultKubernetesPlatformProvider)
+	s.PlatformProviders = append(s.PlatformProviders, defaultKubernetesPlatformProvider)
 }
 
-// HasCloudProvider checks whether the given provider is configured or not.
-func (s *PipedSpec) HasCloudProvider(name string, t model.ApplicationKind) bool {
-	requiredProviderType := t.CompatibleCloudProviderType()
-	for _, cp := range s.CloudProviders {
-		if cp.Name != name {
-			continue
-		}
-		if cp.Type != requiredProviderType {
-			continue
-		}
-		return true
-	}
-	return false
+// HasPlatformProvider checks whether the given provider is configured or not.
+func (s *PipedSpec) HasPlatformProvider(name string, t model.ApplicationKind) bool {
+	_, contains := s.FindPlatformProvider(name, t)
+	return contains
 }
 
-// FindCloudProvider finds and returns a Cloud Provider by name and type.
-func (s *PipedSpec) FindCloudProvider(name string, t model.ApplicationKind) (PipedPlatformProvider, bool) {
-	requiredProviderType := t.CompatibleCloudProviderType()
-	for _, p := range s.CloudProviders {
+// FindPlatformProvider finds and returns a Platform Provider by name and type.
+func (s *PipedSpec) FindPlatformProvider(name string, t model.ApplicationKind) (PipedPlatformProvider, bool) {
+	requiredProviderType := t.CompatiblePlatformProviderType()
+	for _, p := range s.PlatformProviders {
 		if p.Name != name {
 			continue
 		}

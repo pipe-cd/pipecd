@@ -65,7 +65,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	cloudProviderName, cloudProviderCfg, found := findCloudProvider(&e.Input)
+	cloudProviderName, cloudProviderCfg, found := findPlatformProvider(&e.Input)
 	if !found {
 		return model.StageStatus_STAGE_FAILURE
 	}

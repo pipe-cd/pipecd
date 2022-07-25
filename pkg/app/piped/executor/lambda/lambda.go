@@ -55,16 +55,16 @@ func Register(r registerer) {
 	})
 }
 
-func findCloudProvider(in *executor.Input) (name string, cfg *config.PlatformProviderLambdaConfig, found bool) {
-	name = in.Application.CloudProvider
+func findPlatformProvider(in *executor.Input) (name string, cfg *config.PlatformProviderLambdaConfig, found bool) {
+	name = in.Application.PlatformProvider
 	if name == "" {
-		in.LogPersister.Errorf("Missing the CloudProvider name in the application configuration")
+		in.LogPersister.Errorf("Missing the PlatformProvider name in the application configuration")
 		return
 	}
 
-	cp, ok := in.PipedConfig.FindCloudProvider(name, model.ApplicationKind_LAMBDA)
+	cp, ok := in.PipedConfig.FindPlatformProvider(name, model.ApplicationKind_LAMBDA)
 	if !ok {
-		in.LogPersister.Errorf("The specified cloud provider %q was not found in piped configuration", name)
+		in.LogPersister.Errorf("The specified platform provider %q was not found in piped configuration", name)
 		return
 	}
 

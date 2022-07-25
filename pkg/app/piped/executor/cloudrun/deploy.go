@@ -52,7 +52,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	cpName, cpCfg, found := findCloudProvider(&e.Input)
+	cpName, cpCfg, found := findPlatformProvider(&e.Input)
 	if !found {
 		return model.StageStatus_STAGE_FAILURE
 	}
