@@ -1,6 +1,4 @@
 # Release Process
-*This release process have not been fixed yet, hence this is subject to frequent change.*
-
 This document explains the process to release new version and to address patch release.
 
 ## Major release
