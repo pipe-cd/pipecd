@@ -158,7 +158,11 @@ func (t *Trigger) Run(ctx context.Context) error {
 
 		case <-ondemandTicker.C:
 			candidates := t.listCommandCandidates()
-			t.logger.Info(fmt.Sprintf("found %d command candidates", len(candidates)))
+			if len(candidates) > 0 {
+				t.logger.Info(fmt.Sprintf("found %d command candidates", len(candidates)))
+			} else {
+				t.logger.Debug(fmt.Sprintf("found %d command candidates", len(candidates)))
+			}
 			t.checkCandidates(ctx, candidates)
 
 		case <-ctx.Done():
