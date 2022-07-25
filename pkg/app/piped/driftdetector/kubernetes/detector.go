@@ -182,11 +182,11 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return err
 	}
 	headManifests = filterIgnoringManifests(headManifests)
-	d.logger.Info(fmt.Sprintf("application %s has %d manifests at commit %s", app.Id, len(headManifests), headCommit.Hash))
+	d.logger.Debug(fmt.Sprintf("application %s has %d manifests at commit %s", app.Id, len(headManifests), headCommit.Hash))
 
 	liveManifests := d.stateGetter.GetAppLiveManifests(app.Id)
 	liveManifests = filterIgnoringManifests(liveManifests)
-	d.logger.Info(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
+	d.logger.Debug(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
 
 	result, err := provider.DiffList(
 		headManifests,

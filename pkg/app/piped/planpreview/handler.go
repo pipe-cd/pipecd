@@ -190,11 +190,11 @@ func (h *Handler) Run(ctx context.Context) error {
 }
 
 func (h *Handler) enqueueNewCommands(ctx context.Context) {
-	h.logger.Info("fetching unhandled commands to enqueue")
+	h.logger.Debug("fetching unhandled commands to enqueue")
 
 	commands := h.commandLister.ListBuildPlanPreviewCommands()
 	if len(commands) == 0 {
-		h.logger.Info("there is no command to enqueue")
+		h.logger.Debug("there is no command to enqueue")
 		return
 	}
 
