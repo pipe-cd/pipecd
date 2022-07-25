@@ -35,7 +35,7 @@ type applierGroup struct {
 }
 
 func newApplierGroup(defaultProvider string, appCfg config.KubernetesApplicationSpec, pipedCfg *config.PipedSpec, logger *zap.Logger) (*applierGroup, error) {
-	cp, ok := pipedCfg.FindCloudProvider(defaultProvider, model.ApplicationKind_KUBERNETES)
+	cp, ok := pipedCfg.FindPlatformProvider(defaultProvider, model.ApplicationKind_KUBERNETES)
 	if !ok {
 		return nil, fmt.Errorf("provider %s was not found", defaultProvider)
 	}
@@ -56,7 +56,7 @@ func newApplierGroup(defaultProvider string, appCfg config.KubernetesApplication
 			continue
 		}
 
-		cp, ok := pipedCfg.FindCloudProvider(r.Provider, model.ApplicationKind_KUBERNETES)
+		cp, ok := pipedCfg.FindPlatformProvider(r.Provider, model.ApplicationKind_KUBERNETES)
 		if !ok {
 			return nil, fmt.Errorf("provider %s specified in resourceRoutes was not found", r.Provider)
 		}
