@@ -31,7 +31,6 @@ type add struct {
 	appName          string
 	appKind          string
 	pipedID          string
-	cloudProvider    string
 	platformProvider string
 	description      string
 
@@ -54,8 +53,7 @@ func newAddCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&c.appName, "app-name", c.appName, "The application name.")
 	cmd.Flags().StringVar(&c.appKind, "app-kind", c.appKind, "The kind of application. (KUBERNETES|TERRAFORM|LAMBDA|CLOUDRUN)")
 	cmd.Flags().StringVar(&c.pipedID, "piped-id", c.pipedID, "The ID of piped that should handle this application.")
-	cmd.Flags().StringVar(&c.cloudProvider, "cloud-provider", c.cloudProvider, "The cloud provider name. One of the registered providers in the piped configuration. This field is deprecated, use platform-provider instead.")
-	cmd.Flags().StringVar(&c.platformProvider, "platform-provider", c.platformProvider, "The platform provider name. One of the registered providers in the piped configuration.")
+	cmd.Flags().StringVar(&c.platformProvider, "platform-provider", c.platformProvider, "The platform provider name. One of the registered providers in the piped configuration. Previous name of this field is cloud-provider.")
 
 	cmd.Flags().StringVar(&c.repoID, "repo-id", c.repoID, "The repository ID. One the registered repositories in the piped configuration.")
 	cmd.Flags().StringVar(&c.appDir, "app-dir", c.appDir, "The relative path from the root of repository to the application directory.")
