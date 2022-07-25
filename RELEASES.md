@@ -28,7 +28,7 @@ This refers to the release of new features.
 
   This example assumes that `vX.Y.Z` will be released:
   ```shell
-  make release-docs version=vX.Y.Z
+  make gen/release-docs version=vX.Y.Z
   ````
 
 - Push the above changes and get a review and merge.
