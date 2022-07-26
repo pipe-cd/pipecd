@@ -51,7 +51,7 @@ A bugfix for a functional issue (not a data loss or security issue) that only af
 ### Fix bugs
 - Create a pull request to fix a bug on the `master` branch.
 
-- Get a review and merge.
+- Get reviews and merge.
 
 ### Backport fixes
 - Run the cherry-pick script
