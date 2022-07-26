@@ -41,7 +41,7 @@ This refers to the release of new features.
 - Create a branch from the tagged release, e.g. "release-X.Y". This will be used for the patch release.
 
 ## Patch release
-This refers to the release of critical bug fixes.
+This refers to the release of critical bug fixes. \
 A bugfix for a functional issue (not a data loss or security issue) that only affects an alpha feature does not qualify as a critical bug fix.
 
 ### Prerequisites
