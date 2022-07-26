@@ -502,6 +502,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		GitPath:          gitpath,
 		Kind:             req.Kind,
 		PlatformProvider: req.PlatformProvider,
+		CloudProvider:    req.PlatformProvider,
 		Description:      req.Description,
 		Labels:           req.Labels,
 	}
