@@ -365,6 +365,7 @@ func (s *applicationStore) UpdateConfiguration(ctx context.Context, id, pipedID,
 	return s.update(ctx, id, func(app *model.Application) error {
 		app.PipedId = pipedID
 		app.PlatformProvider = platformProvider
+		app.CloudProvider = platformProvider
 		app.GitPath.ConfigFilename = configFilename
 		return nil
 	})
