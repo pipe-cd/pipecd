@@ -31,7 +31,7 @@ This refers to the release of new features.
   make gen/release-docs version=vX.Y.Z
   ````
 
-- Push the above changes and get a review and merge.
+- Make a pull request to `master` branch with the above changes and get reviews and merge.
 
 ### Cut a new release
 - Before cutting a new release, wait for all jobs in GitHub Actions to pass on master branch.
