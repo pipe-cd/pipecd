@@ -28,10 +28,10 @@ This refers to the release of new features.
 
   This example assumes that `vX.Y.Z` will be released:
   ```shell
-  make release-docs version=vX.Y.Z
+  make gen/release-docs version=vX.Y.Z
   ````
 
-- Push the above changes and get a review and merge.
+- Make a pull request to `master` branch with the above changes and get reviews and merge.
 
 ### Cut a new release
 - Before cutting a new release, wait for all jobs in GitHub Actions to pass on master branch.
@@ -41,7 +41,7 @@ This refers to the release of new features.
 - Create a branch from the tagged release, e.g. "release-vX.Y.x". This will be used for the patch release.
 
 ## Patch release
-This refers to the release of critical bug fixes.
+This refers to the release of critical bug fixes. \
 A bugfix for a functional issue (not a data loss or security issue) that only affects an alpha feature does not qualify as a critical bug fix.
 
 ### Prerequisites
@@ -51,7 +51,7 @@ A bugfix for a functional issue (not a data loss or security issue) that only af
 ### Fix bugs
 - Create a pull request to fix a bug on the `master` branch.
 
-- Get a review and merge.
+- Get reviews and merge.
 
 ### Backport fixes
 - Run the cherry-pick script
