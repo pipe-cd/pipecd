@@ -68,12 +68,12 @@ func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) er
 	}
 
 	var (
-		kind           model.ApplicationKind
-		name           string
-		pipedId        string
-		configFilename string
-		cloudProvider  string
-		updatedAt      int64
+		kind             model.ApplicationKind
+		name             string
+		pipedId          string
+		configFilename   string
+		platformProvider string
+		updatedAt        int64
 	)
 	for shard, p := range parts {
 		if err := json.Unmarshal(p, &app); err != nil {
@@ -85,11 +85,11 @@ func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) er
 		// Values of below fields from ClientShard have a higher priority:
 		// - PipedId
 		// - GitPath.ConfigFilename
-		// - CloudProvider
+		// - PlatformProvider
 		if shard == ClientShard {
 			pipedId = app.PipedId
 			configFilename = app.GitPath.ConfigFilename
-			cloudProvider = app.CloudProvider
+			platformProvider = app.PlatformProvider
 		}
 		// Values of below fields from AgentShard have a higher priority:
 		// - Kind
@@ -103,7 +103,7 @@ func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) er
 	app.Kind = kind
 	app.Name = name
 	app.PipedId = pipedId
-	app.CloudProvider = cloudProvider
+	app.PlatformProvider = platformProvider
 	app.GitPath.ConfigFilename = configFilename
 	app.UpdatedAt = updatedAt
 	return nil
@@ -136,8 +136,8 @@ func (a *applicationCollection) Encode(e interface{}) (map[Shard][]byte, error) 
 		Name: me.Name,
 		// Fields which exist in both AgentShard and ClientShard but ClientShard has
 		// a higher priority since those fields can only be updated by WebCommander.
-		PipedId:       me.PipedId,
-		CloudProvider: me.CloudProvider,
+		PipedId:          me.PipedId,
+		PlatformProvider: me.PlatformProvider,
 		// Note: Only GitPath.ConfigFilename is changeable.
 		GitPath: me.GitPath,
 		// Fields which exist only in ClientShard.
@@ -162,9 +162,9 @@ func (a *applicationCollection) Encode(e interface{}) (map[Shard][]byte, error) 
 		Name: me.Name,
 		// Fields which exist in both AgentShard and ClientShard but ClientShard has
 		// a higher priority since those fields can only be updated by WebCommander.
-		PipedId:       me.PipedId,
-		GitPath:       me.GitPath,
-		CloudProvider: me.CloudProvider,
+		PipedId:          me.PipedId,
+		GitPath:          me.GitPath,
+		PlatformProvider: me.PlatformProvider,
 		// Fields which exist only in AgentShard.
 		Description:                      me.Description,
 		Labels:                           me.Labels,

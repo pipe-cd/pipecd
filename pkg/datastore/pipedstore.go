@@ -89,12 +89,12 @@ func (p *pipedCollection) Encode(e interface{}) (map[Shard][]byte, error) {
 		CreatedAt: me.CreatedAt,
 		UpdatedAt: me.UpdatedAt,
 		// Fields which value only available in AgentShard.
-		Config:           me.Config,
-		CloudProviders:   me.CloudProviders,
-		Repositories:     me.Repositories,
-		StartedAt:        me.StartedAt,
-		Version:          me.Version,
-		SecretEncryption: me.SecretEncryption,
+		Config:            me.Config,
+		PlatformProviders: me.PlatformProviders,
+		Repositories:      me.Repositories,
+		StartedAt:         me.StartedAt,
+		Version:           me.Version,
+		SecretEncryption:  me.SecretEncryption,
 	}
 	adata, err := json.Marshal(&agentShardStruct)
 	if err != nil {
