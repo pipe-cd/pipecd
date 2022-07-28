@@ -70,7 +70,7 @@ func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) er
 	var (
 		kind             model.ApplicationKind
 		name             string
-		pipedId          string
+		pipedID          string
 		configFilename   string
 		platformProvider string
 		updatedAt        int64
@@ -87,7 +87,7 @@ func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) er
 		// - GitPath.ConfigFilename
 		// - PlatformProvider
 		if shard == ClientShard {
-			pipedId = app.PipedId
+			pipedID = app.PipedId
 			configFilename = app.GitPath.ConfigFilename
 			platformProvider = app.PlatformProvider
 		}
@@ -102,7 +102,7 @@ func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) er
 
 	app.Kind = kind
 	app.Name = name
-	app.PipedId = pipedId
+	app.PipedId = pipedID
 	app.PlatformProvider = platformProvider
 	app.GitPath.ConfigFilename = configFilename
 	app.UpdatedAt = updatedAt
