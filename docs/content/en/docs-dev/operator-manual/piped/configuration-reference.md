@@ -1,7 +1,7 @@
 ---
 title: "Configuration reference"
 linkTitle: "Configuration reference"
-weight: 9
+weight: 10
 description: >
   This page describes all configurable fields in the piped configuration.
 ---
@@ -30,7 +30,8 @@ spec:
 | repositories | [][Repository](#gitrepository) | List of Git repositories this piped will handle. | No |
 | chartRepositories | [][ChartRepository](#chartrepository) | List of Helm chart repositories that should be added while starting up. | No |
 | chartRegistries | [][ChartRegistry](#chartregistry) | List of helm chart registries that should be logged in while starting up. | No |
-| cloudProviders | [][CloudProvider](#cloudprovider) | List of cloud providers can be used by this piped. | No |
+| cloudProviders | [][CloudProvider](#cloudprovider) | List of cloud providers can be used by this piped. This field is deprecated, use `platformProviders` instead. | No |
+| platformProviders | [][PlatformProvider](#platformprovider) | List of platform providers can be used by this piped. | No |
 | analysisProviders | [][AnalysisProvider](#analysisprovider) | List of analysis providers can be used by this piped. | No |
 | eventWatcher | [EventWatcher](#eventwatcher) | Optional Event watcher settings. | No |
 | secretManagement | [SecretManagement](#secretmanagement) | The using secret management method. | No |
@@ -124,6 +125,60 @@ Must be one of the following structs:
 | profile | string | The profile to use for logging into AWS cluster. The default value is `default`. | No |
 
 ### CloudProviderECSConfig
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| region | string | The region of running ECS cluster. | Yes |
+| credentialsFile | string | The path to the credential file for logging into AWS cluster. If this value is not provided, piped will read credential info from environment variables. It expects the format [~/.aws/credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) | No |
+| roleARN | string | The IAM role arn to use when assuming an role. Required if you want to use the AWS SecurityTokenService. | No |
+| tokenFile | string | The path to the WebIdentity token the SDK should use to assume a role with. Required if you want to use the AWS SecurityTokenService. | No |
+| profile | string | The profile to use for logging into AWS cluster. The default value is `default`. | No |
+
+## PlatformProvider
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| name | string | The name of the platform provider. | Yes |
+| type | string | The platform provider type. Must be one of the following values:<br>`KUBERNETES`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`. | Yes |
+| config | [PlatformProviderConfig](#platformproviderconfig) | Specific configuration for the specified type of platform provider. | No |
+
+## PlatformProviderConfig
+
+Must be one of the following structs:
+
+### PlatformProviderKubernetesConfig
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| masterURL | string | The master URL of the kubernetes cluster. Empty means in-cluster. | No |
+| kubeConfigPath | string | The path to the kubeconfig file. Empty means in-cluster. | No |
+| appStateInformer | [KubernetesAppStateInformer](#kubernetesappstateinformer) | Configuration for application resource informer. | No |
+
+### PlatformProviderTerraformConfig
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| vars | []string | List of variables that will be set directly on terraform commands with `-var` flag. The variable must be formatted by `key=value`. | No |
+
+### PlatformProviderCloudRunConfig
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| project | string | The GCP project hosting the Cloud Run service. | Yes |
+| region | string | The region of running Cloud Run service. | Yes |
+| credentialsFile | string | The path to the service account file for accessing Cloud Run service. | No |
+
+### PlatformProviderLambdaConfig
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| region | string | The region of running Lambda service. | Yes |
+| credentialsFile | string | The path to the credential file for logging into AWS cluster. If this value is not provided, piped will read credential info from environment variables. It expects the format [~/.aws/credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html). | No |
+| roleARN | string | The IAM role arn to use when assuming an role. Required if you want to use the AWS SecurityTokenService. | No |
+| tokenFile | string | The path to the WebIdentity token the SDK should use to assume a role with. Required if you want to use the AWS SecurityTokenService. | No |
+| profile | string | The profile to use for logging into AWS cluster. The default value is `default`. | No |
+
+### PlatformProviderECSConfig
 
 | Field | Type | Description | Required |
 |-|-|-|-|

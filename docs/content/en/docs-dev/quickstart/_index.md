@@ -64,7 +64,7 @@ Navigate to the `Applications` page, click on the `ADD` button on the top left c
 
 Go to the `ADD FROM SUGGESTIONS` tab, then select:
 - Piped: `dev` (you just registered)
-- CloudProvider: `kubernetes-default`
+- PlatformProvider: `kubernetes-default`
 
 You should see a lot of suggested applications. Select the `canary` application and click the `SAVE` button to register.
 

@@ -1,53 +1,51 @@
 ---
-title: "Adding a cloud provider"
-linkTitle: "Adding cloud provider"
-weight: 4
+title: "Adding a platform provider"
+linkTitle: "Adding platform provider"
+weight: 5
 description: >
-  This page describes how to add a cloud provider to enable its applications.
+  This page describes how to add a platform provider to enable its applications.
 ---
 
-> NOTE: Starting from version v0.35.0, the CloudProvider concept is being replaced by PlatformProvider. It's a name change due to the PipeCD vision improvement. __The CloudProvider configuration is marked as deprecated, please migrate your piped agent configuration to use PlatformProvider__.
+PipeCD supports multiple platforms and multiple application kinds which run on those platforms.
+Platform provider defines which platform and where the application should be deployed to.
+So while registering a new application, the name of a configured platform provider is required.
 
-PipeCD supports multiple clouds and multiple application kinds.
-Cloud provider defines which cloud and where the application should be deployed to.
-So while registering a new application, the name of a configured cloud provider is required.
+Currently, PipeCD is supporting these five kinds of platform providers: `KUBERNETES`, `ECS`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`.
+A new platform provider can be enabled by adding a [PlatformProvider](/docs/operator-manual/piped/configuration-reference/#platformprovider) struct to the piped configuration file.
+A piped can have one or multiple platform provider instances from the same or different platform provider kind.
 
-Currently, PipeCD is supporting these five kinds of cloud providers: `KUBERNETES`, `ECS`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`.
-A new cloud provider can be enabled by adding a [CloudProvider](/docs/operator-manual/piped/configuration-reference/#cloudprovider) struct to the piped configuration file.
-A piped can have one or multiple cloud provider instances from the same or different cloud provider kind.
+The next sections show the specific configuration for each kind of platform provider.
 
-The next sections show the specific configuration for each kind of cloud provider.
+### Configuring Kubernetes platform provider
 
-### Configuring Kubernetes cloud provider
-
-By default, piped deploys Kubernetes application to the cluster where the piped is running in. An external cluster can be connected by specifying the `masterURL` and `kubeConfigPath` in the [configuration](/docs/operator-manual/piped/configuration-reference/#cloudproviderkubernetesconfig).
+By default, piped deploys Kubernetes application to the cluster where the piped is running in. An external cluster can be connected by specifying the `masterURL` and `kubeConfigPath` in the [configuration](/docs/operator-manual/piped/configuration-reference/#platformproviderkubernetesconfig).
 
 And, the default resources (defined at [here](https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/cloudprovider/kubernetes/resourcekey.go#L24-L74)) from all namespaces of the Kubernetes cluster will be watched for rendering the application state in realtime and detecting the configuration drift. In case you want to restrict piped to watch only a single namespace, let specify the namespace in the [KubernetesAppStateInformer](/docs/operator-manual/piped/configuration-reference/#kubernetesappstateinformer) field. You can also add other resources or exclude resources to/from the watching targets by that field.
 
-Below configuration snippet just specifies a name and type of cloud provider. It means the cloud provider `kubernetes-dev` will connect to the Kubernetes cluster where the piped is running in, and this cloud provider watches all of the predefined resources from all namespaces inside that cluster.
+Below configuration snippet just specifies a name and type of platform provider. It means the platform provider `kubernetes-dev` will connect to the Kubernetes cluster where the piped is running in, and this platform provider watches all of the predefined resources from all namespaces inside that cluster.
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
   ...
-  cloudProviders:
+  platformProviders:
     - name: kubernetes-dev
       type: KUBERNETES
 ```
 
-See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudproviderkubernetesconfig) for the full configuration.
+See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#platformproviderkubernetesconfig) for the full configuration.
 
-### Configuring Terraform cloud provider
+### Configuring Terraform platform provider
 
-A terraform cloud provider contains a list of shared terraform variables that will be applied while running the deployment of its applications.
+A terraform platform provider contains a list of shared terraform variables that will be applied while running the deployment of its applications.
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
   ...
-  cloudProviders:
+  platformProviders:
     - name: terraform-dev
       type: TERRAFORM
       config:
@@ -55,9 +53,9 @@ spec:
           - "project=pipecd"
 ```
 
-See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudproviderterraformconfig) for the full configuration.
+See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#platformproviderterraformconfig) for the full configuration.
 
-### Configuring Cloud Run cloud provider
+### Configuring Cloud Run platform provider
 
 Adding a Cloud Run provider requires the name of the Google Cloud project and the region name where Cloud Run service is running. A service account file for accessing to Cloud Run is also required if the machine running the piped does not have enough permissions to access.
 
@@ -66,7 +64,7 @@ apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
   ...
-  cloudProviders:
+  platformProviders:
     - name: cloudrun-dev
       type: CLOUDRUN
       config:
@@ -75,9 +73,9 @@ spec:
         credentialsFile: {PATH_TO_THE_SERVICE_ACCOUNT_FILE}
 ```
 
-See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudprovidercloudrunconfig) for the full configuration.
+See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#platformprovidercloudrunconfig) for the full configuration.
 
-### Configuring Lambda cloud provider
+### Configuring Lambda platform provider
 
 Adding a Lambda provider requires the region name where Lambda service is running.
 
@@ -86,7 +84,7 @@ apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
   ...
-  cloudProviders:
+  platformProviders:
     - name: lambda-dev
       type: LAMBDA
       config:
@@ -104,9 +102,9 @@ It attempts to retrieve credentials in the following order:
 
 Therefore, you don't have to set credentialsFile if you use the environment variables or the EC2 Instance Role. Keep in mind the IAM role/user that you use with your Piped must possess the IAM policy permission for at least `Lambda.Function` and `Lambda.Alias` resources controll (list/read/write).
 
-See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudproviderlambdaconfig) for the full configuration.
+See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#platformproviderlambdaconfig) for the full configuration.
 
-### Configuring ECS cloud provider
+### Configuring ECS platform provider
 
 Adding a ECS provider requires the region name where ECS cluster is running.
 
@@ -115,7 +113,7 @@ apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
   ...
-  cloudProviders:
+  platformProviders:
     - name: ecs-dev
       type: ECS
       config:
@@ -124,11 +122,11 @@ spec:
         credentialsFile: {PATH_TO_THE_CREDENTIAL_FILE}
 ```
 
-Just same as Lambda cloud provider, there are several ways to authorize Piped agent to enable it performs deployment jobs.
+Just same as Lambda platform provider, there are several ways to authorize Piped agent to enable it performs deployment jobs.
 It attempts to retrieve credentials in the following order:
 1. From the environment variables. Available environment variables are `AWS_ACCESS_KEY_ID` or `AWS_ACCESS_KEY` and `AWS_SECRET_ACCESS_KEY` or `AWS_SECRET_KEY`.
 2. From the given credentials file. (the `credentialsFile field in above sample`)
 3. From the pod running in EKS cluster via STS (SecurityTokenService).
 4. From the EC2 Instance Role.
 
-See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudproviderecsconfig) for the full configuration.
+See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#platformproviderecsconfig) for the full configuration.
