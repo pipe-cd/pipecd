@@ -28,11 +28,11 @@ import (
 type add struct {
 	root *command
 
-	appName       string
-	appKind       string
-	pipedID       string
-	cloudProvider string
-	description   string
+	appName          string
+	appKind          string
+	pipedID          string
+	platformProvider string
+	description      string
 
 	repoID         string
 	appDir         string
@@ -53,7 +53,7 @@ func newAddCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&c.appName, "app-name", c.appName, "The application name.")
 	cmd.Flags().StringVar(&c.appKind, "app-kind", c.appKind, "The kind of application. (KUBERNETES|TERRAFORM|LAMBDA|CLOUDRUN)")
 	cmd.Flags().StringVar(&c.pipedID, "piped-id", c.pipedID, "The ID of piped that should handle this application.")
-	cmd.Flags().StringVar(&c.cloudProvider, "cloud-provider", c.cloudProvider, "The cloud provider name. One of the registered providers in the piped configuration.")
+	cmd.Flags().StringVar(&c.platformProvider, "platform-provider", c.platformProvider, "The platform provider name. One of the registered providers in the piped configuration. Previous name of this field is cloud-provider.")
 
 	cmd.Flags().StringVar(&c.repoID, "repo-id", c.repoID, "The repository ID. One the registered repositories in the piped configuration.")
 	cmd.Flags().StringVar(&c.appDir, "app-dir", c.appDir, "The relative path from the root of repository to the application directory.")
@@ -92,9 +92,9 @@ func (c *add) run(ctx context.Context, input cli.Input) error {
 			Path:           c.appDir,
 			ConfigFilename: c.configFileName,
 		},
-		Kind:          model.ApplicationKind(appKind),
-		CloudProvider: c.cloudProvider,
-		Description:   c.description,
+		Kind:             model.ApplicationKind(appKind),
+		PlatformProvider: c.platformProvider,
+		Description:      c.description,
 	}
 
 	resp, err := cli.AddApplication(ctx, req)

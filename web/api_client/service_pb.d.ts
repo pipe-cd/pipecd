@@ -460,8 +460,8 @@ export class AddApplicationRequest extends jspb.Message {
   getKind(): pkg_model_common_pb.ApplicationKind;
   setKind(value: pkg_model_common_pb.ApplicationKind): AddApplicationRequest;
 
-  getCloudProvider(): string;
-  setCloudProvider(value: string): AddApplicationRequest;
+  getPlatformProvider(): string;
+  setPlatformProvider(value: string): AddApplicationRequest;
 
   getDescription(): string;
   setDescription(value: string): AddApplicationRequest;
@@ -483,7 +483,7 @@ export namespace AddApplicationRequest {
     pipedId: string,
     gitPath?: pkg_model_common_pb.ApplicationGitPath.AsObject,
     kind: pkg_model_common_pb.ApplicationKind,
-    cloudProvider: string,
+    platformProvider: string,
     description: string,
     labelsMap: Array<[string, string]>,
   }
@@ -520,8 +520,8 @@ export class UpdateApplicationRequest extends jspb.Message {
   getKind(): pkg_model_common_pb.ApplicationKind;
   setKind(value: pkg_model_common_pb.ApplicationKind): UpdateApplicationRequest;
 
-  getCloudProvider(): string;
-  setCloudProvider(value: string): UpdateApplicationRequest;
+  getPlatformProvider(): string;
+  setPlatformProvider(value: string): UpdateApplicationRequest;
 
   getConfigFilename(): string;
   setConfigFilename(value: string): UpdateApplicationRequest;
@@ -540,7 +540,7 @@ export namespace UpdateApplicationRequest {
     name: string,
     pipedId: string,
     kind: pkg_model_common_pb.ApplicationKind,
-    cloudProvider: string,
+    platformProvider: string,
     configFilename: string,
   }
 }

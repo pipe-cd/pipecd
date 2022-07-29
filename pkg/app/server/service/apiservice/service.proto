@@ -49,13 +49,13 @@ service APIService {
 }
 
 message AddApplicationRequest {
-    reserved 2;
+    reserved 2,6;
 
     string name = 1 [(validate.rules).string.min_len = 1];
     string piped_id = 3 [(validate.rules).string.min_len = 1];
     model.ApplicationGitPath git_path = 4 [(validate.rules).message.required = true];
     model.ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
-    string cloud_provider = 6 [(validate.rules).string.min_len = 1];
+    string platform_provider = 8 [(validate.rules).string.min_len = 1];
     string description = 7;
 }
 

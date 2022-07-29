@@ -72,7 +72,7 @@ export const getApplication = ({
 export const addApplication = async ({
   name,
   pipedId,
-  cloudProvider,
+  platformProvider,
   kind,
   gitPath,
   labelsMap,
@@ -82,7 +82,7 @@ export const addApplication = async ({
   const req = new AddApplicationRequest();
   req.setName(name);
   req.setPipedId(pipedId);
-  req.setCloudProvider(cloudProvider);
+  req.setPlatformProvider(platformProvider);
   req.setKind(kind);
   const appGitPath = new ApplicationGitPath();
   const repository = new ApplicationGitRepository();
@@ -137,7 +137,7 @@ export const enableApplication = async ({
 
 export const updateApplication = async ({
   applicationId,
-  cloudProvider,
+  platformProvider,
   kind,
   name,
   pipedId,
@@ -149,7 +149,7 @@ export const updateApplication = async ({
   req.setApplicationId(applicationId);
   req.setName(name);
   req.setPipedId(pipedId);
-  req.setCloudProvider(cloudProvider);
+  req.setPlatformProvider(platformProvider);
   req.setKind(kind);
   req.setConfigFilename(configFilename);
   return apiRequest(req, apiClient.updateApplication);

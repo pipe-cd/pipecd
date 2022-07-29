@@ -2591,9 +2591,9 @@ func (m *AddApplicationRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetCloudProvider()) < 1 {
+	if utf8.RuneCountInString(m.GetPlatformProvider()) < 1 {
 		err := AddApplicationRequestValidationError{
-			field:  "CloudProvider",
+			field:  "PlatformProvider",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {
@@ -2865,9 +2865,9 @@ func (m *UpdateApplicationRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetCloudProvider()) < 1 {
+	if utf8.RuneCountInString(m.GetPlatformProvider()) < 1 {
 		err := UpdateApplicationRequestValidationError{
-			field:  "CloudProvider",
+			field:  "PlatformProvider",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {

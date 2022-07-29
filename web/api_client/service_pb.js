@@ -5606,7 +5606,7 @@ proto.grpc.service.webservice.AddApplicationRequest.toObject = function(includeI
     pipedId: jspb.Message.getFieldWithDefault(msg, 3, ""),
     gitPath: (f = msg.getGitPath()) && pkg_model_common_pb.ApplicationGitPath.toObject(includeInstance, f),
     kind: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    cloudProvider: jspb.Message.getFieldWithDefault(msg, 6, ""),
+    platformProvider: jspb.Message.getFieldWithDefault(msg, 9, ""),
     description: jspb.Message.getFieldWithDefault(msg, 7, ""),
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : []
   };
@@ -5662,9 +5662,9 @@ proto.grpc.service.webservice.AddApplicationRequest.deserializeBinaryFromReader 
       var value = /** @type {!proto.model.ApplicationKind} */ (reader.readEnum());
       msg.setKind(value);
       break;
-    case 6:
+    case 9:
       var value = /** @type {string} */ (reader.readString());
-      msg.setCloudProvider(value);
+      msg.setPlatformProvider(value);
       break;
     case 7:
       var value = /** @type {string} */ (reader.readString());
@@ -5734,10 +5734,10 @@ proto.grpc.service.webservice.AddApplicationRequest.serializeBinaryToWriter = fu
       f
     );
   }
-  f = message.getCloudProvider();
+  f = message.getPlatformProvider();
   if (f.length > 0) {
     writer.writeString(
-      6,
+      9,
       f
     );
   }
@@ -5847,11 +5847,11 @@ proto.grpc.service.webservice.AddApplicationRequest.prototype.setKind = function
 
 
 /**
- * optional string cloud_provider = 6;
+ * optional string platform_provider = 9;
  * @return {string}
  */
-proto.grpc.service.webservice.AddApplicationRequest.prototype.getCloudProvider = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+proto.grpc.service.webservice.AddApplicationRequest.prototype.getPlatformProvider = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ""));
 };
 
 
@@ -5859,8 +5859,8 @@ proto.grpc.service.webservice.AddApplicationRequest.prototype.getCloudProvider =
  * @param {string} value
  * @return {!proto.grpc.service.webservice.AddApplicationRequest} returns this
  */
-proto.grpc.service.webservice.AddApplicationRequest.prototype.setCloudProvider = function(value) {
-  return jspb.Message.setProto3StringField(this, 6, value);
+proto.grpc.service.webservice.AddApplicationRequest.prototype.setPlatformProvider = function(value) {
+  return jspb.Message.setProto3StringField(this, 9, value);
 };
 
 
@@ -6070,7 +6070,7 @@ proto.grpc.service.webservice.UpdateApplicationRequest.toObject = function(inclu
     name: jspb.Message.getFieldWithDefault(msg, 2, ""),
     pipedId: jspb.Message.getFieldWithDefault(msg, 4, ""),
     kind: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    cloudProvider: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    platformProvider: jspb.Message.getFieldWithDefault(msg, 9, ""),
     configFilename: jspb.Message.getFieldWithDefault(msg, 8, "")
   };
 
@@ -6124,9 +6124,9 @@ proto.grpc.service.webservice.UpdateApplicationRequest.deserializeBinaryFromRead
       var value = /** @type {!proto.model.ApplicationKind} */ (reader.readEnum());
       msg.setKind(value);
       break;
-    case 7:
+    case 9:
       var value = /** @type {string} */ (reader.readString());
-      msg.setCloudProvider(value);
+      msg.setPlatformProvider(value);
       break;
     case 8:
       var value = /** @type {string} */ (reader.readString());
@@ -6189,10 +6189,10 @@ proto.grpc.service.webservice.UpdateApplicationRequest.serializeBinaryToWriter =
       f
     );
   }
-  f = message.getCloudProvider();
+  f = message.getPlatformProvider();
   if (f.length > 0) {
     writer.writeString(
-      7,
+      9,
       f
     );
   }
@@ -6279,11 +6279,11 @@ proto.grpc.service.webservice.UpdateApplicationRequest.prototype.setKind = funct
 
 
 /**
- * optional string cloud_provider = 7;
+ * optional string platform_provider = 9;
  * @return {string}
  */
-proto.grpc.service.webservice.UpdateApplicationRequest.prototype.getCloudProvider = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
+proto.grpc.service.webservice.UpdateApplicationRequest.prototype.getPlatformProvider = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ""));
 };
 
 
@@ -6291,8 +6291,8 @@ proto.grpc.service.webservice.UpdateApplicationRequest.prototype.getCloudProvide
  * @param {string} value
  * @return {!proto.grpc.service.webservice.UpdateApplicationRequest} returns this
  */
-proto.grpc.service.webservice.UpdateApplicationRequest.prototype.setCloudProvider = function(value) {
-  return jspb.Message.setProto3StringField(this, 7, value);
+proto.grpc.service.webservice.UpdateApplicationRequest.prototype.setPlatformProvider = function(value) {
+  return jspb.Message.setProto3StringField(this, 9, value);
 };
 
 
