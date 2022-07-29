@@ -22,15 +22,14 @@ import (
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider"
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
-
-	"go.uber.org/zap"
 )
 
 const (
@@ -157,7 +156,7 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	// Get current PRIMARY task set.
 	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, service)
 	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
-	if err != nil && !errors.Is(err, cloudprovider.ErrNotFound) {
+	if err != nil && !errors.Is(err, platformprovider.ErrNotFound) {
 		return err
 	}
 

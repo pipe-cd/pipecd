@@ -22,7 +22,7 @@ import (
 
 	"go.uber.org/zap"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/cloudrun"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
