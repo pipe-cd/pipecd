@@ -55,7 +55,7 @@ const ADD_FROM_GIT_CONFIRM_DIALOG_TITLE = "Add Application";
 const ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION =
   "Are you sure you want to add the application?";
 
-const createCloudProviderListFromPiped = ({
+const createPlatformProviderListFromPiped = ({
   kind,
   piped,
 }: {
@@ -66,7 +66,12 @@ const createCloudProviderListFromPiped = ({
     return [{ name: "None", value: "" }];
   }
 
-  return piped.cloudProvidersList
+  const providerList: Array<{ name: string; type: string }> = [
+    ...piped.cloudProvidersList,
+    ...piped.platformProvidersList,
+  ];
+
+  return providerList
     .filter((provider) => provider.type === APPLICATION_KIND_TEXT[kind])
     .map((provider) => ({
       name: provider.name,
@@ -357,7 +362,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
 
     const selectedPiped = useAppSelector(selectPipedById(values.pipedId));
 
-    const cloudProviders = createCloudProviderListFromPiped({
+    const platformProviders = createPlatformProviderListFromPiped({
       piped: selectedPiped,
       kind: values.kind,
     });
@@ -422,10 +427,10 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
               label="Platform Provider"
               value={values.platformProvider}
               onChange={({ value }) => setFieldValue("platformProvider", value)}
-              items={cloudProviders}
+              items={platformProviders}
               disabled={
                 selectedPiped === undefined ||
-                cloudProviders.length === 0 ||
+                platformProviders.length === 0 ||
                 isSubmitting
               }
             />
@@ -528,8 +533,14 @@ const PlatformProviderFilter: FC<PlatformProviderFilterProps> = memo(
       pipeds.length === 1 ? pipeds[0].id : ""
     );
     const selectedPiped = useAppSelector(selectPipedById(selectedPipedId));
-    const platformProviders = selectedPiped
-      ? selectedPiped.platformProvidersList
+    const platformProviders: Array<{
+      name: string;
+      type: string;
+    }> = selectedPiped
+      ? [
+          ...selectedPiped.platformProvidersList,
+          ...selectedPiped.cloudProvidersList,
+        ]
       : [];
 
     let options: PlatformProviderFilterOptions;
