@@ -194,14 +194,14 @@ func TestApplicationDecode(t *testing.T) {
 		{
 			name: "decode correctly",
 			parts: map[Shard][]byte{
-				ClientShard: []byte(`{"kind":1,"name":"name","piped_id":"new_piped","cloud_provider":"new_provider","git_path":{"config_filename":"new_file"},"updated_at":123}`),
-				AgentShard:  []byte(`{"kind":0,"name":"new_name","piped_id":"piped","cloud_provider":"provider","git_path":{"config_filename":"file"},"updated_at":1}`),
+				ClientShard: []byte(`{"kind":1,"name":"name","piped_id":"new_piped","platform_provider":"new_provider","git_path":{"config_filename":"new_file"},"updated_at":123}`),
+				AgentShard:  []byte(`{"kind":0,"name":"new_name","piped_id":"piped","platform_provider":"provider","git_path":{"config_filename":"file"},"updated_at":1}`),
 			},
 			expectApp: &model.Application{
-				Kind:          model.ApplicationKind_KUBERNETES,
-				Name:          "new_name",
-				PipedId:       "new_piped",
-				CloudProvider: "new_provider",
+				Kind:             model.ApplicationKind_KUBERNETES,
+				Name:             "new_name",
+				PipedId:          "new_piped",
+				PlatformProvider: "new_provider",
 				GitPath: &model.ApplicationGitPath{
 					ConfigFilename: "new_file",
 				},
