@@ -180,6 +180,10 @@ function a11yProps(index: number): { id: string; "aria-controls": string } {
   };
 }
 
+const sortComp = (a: string, b: string): number => {
+  return a > b ? 1 : -1;
+};
+
 export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
   const classes = useStyles();
 
@@ -347,7 +351,9 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
   }) {
     const classes = useStyles();
     const ps = useAppSelector((state) => selectAllPipeds(state));
-    const pipeds = ps.filter((piped) => !piped.disabled);
+    const pipeds = ps
+      .filter((piped) => !piped.disabled)
+      .sort((a, b) => sortComp(a.name, b.name));
 
     const selectedPiped = useAppSelector(selectPipedById(values.pipedId));
 
@@ -514,7 +520,9 @@ const CloudProviderFilter: FC<CloudProviderFilterProps> = memo(
   function CloudProviderFilter({ onChange }) {
     const classes = useStyles();
     const ps = useAppSelector((state) => selectAllPipeds(state));
-    const pipeds = ps.filter((piped) => !piped.disabled);
+    const pipeds = ps
+      .filter((piped) => !piped.disabled)
+      .sort((a, b) => sortComp(a.name, b.name));
 
     const [selectedPipedId, setSelectedPipedId] = useState(
       pipeds.length === 1 ? pipeds[0].id : ""
@@ -614,11 +622,13 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
 
     useEffect(() => {
       setFilteredApps(
-        apps.filter(
-          (app) =>
-            app.pipedId === selectedPipedId &&
-            app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
-        )
+        apps
+          .filter(
+            (app) =>
+              app.pipedId === selectedPipedId &&
+              app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
+          )
+          .sort((a, b) => sortComp(a.name, b.name))
       );
     }, [apps, selectedPipedId, selectedKind]);
 
