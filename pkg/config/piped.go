@@ -147,18 +147,19 @@ func (s *PipedSpec) Validate() error {
 
 // Clone generates a cloned PipedSpec object.
 func (s *PipedSpec) Clone() (*PipedSpec, error) {
-	clone := &PipedSpec{}
-
 	js, err := json.Marshal(s)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = json.Unmarshal(js, clone); err != nil {
+	// fmt.Println(string(js))
+
+	var clone PipedSpec
+	if err = json.Unmarshal(js, &clone); err != nil {
 		return nil, err
 	}
 
-	return clone, nil
+	return &clone, nil
 }
 
 // Mask masks confidential fields.

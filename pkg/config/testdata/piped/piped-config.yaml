@@ -36,10 +36,12 @@ spec:
       username: sample-username
       password: sample-password
 
-  cloudProviders:
+  platformProviders:
     - name: kubernetes-default
       type: KUBERNETES
       config:
+        masterURL: https://example.com
+        kubeConfigPath: /etc/kube/config
         appStateInformer:
           includeResources:
             - apiVersion: pipecd.dev/v1beta1
