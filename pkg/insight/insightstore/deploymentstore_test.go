@@ -552,9 +552,6 @@ func TestPutDeployment(t *testing.T) {
 				// get meta
 				fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(protojson.Marshal(c.storedMeta))
 
-				// get chunk
-				fs.EXPECT().Get(gomock.Any(), gomock.Any()).Return(protojson.Marshal(c.storedChunk))
-
 				// store meta
 				raw, err := protojson.Marshal(c.willStoreMeta)
 				assert.NoError(t, err)
