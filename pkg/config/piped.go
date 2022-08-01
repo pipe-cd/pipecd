@@ -152,8 +152,6 @@ func (s *PipedSpec) Clone() (*PipedSpec, error) {
 		return nil, err
 	}
 
-	// fmt.Println(string(js))
-
 	var clone PipedSpec
 	if err = json.Unmarshal(js, &clone); err != nil {
 		return nil, err
