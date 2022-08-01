@@ -937,8 +937,8 @@ type SecretManagement struct {
 	// Available values: KEY_PAIR, GCP_KMS, AWS_KMS
 	Type model.SecretManagementType `json:"type"`
 
-	KeyPair *SecretManagementKeyPair `json:"keyPair,omitempty"`
-	GCPKMS  *SecretManagementGCPKMS  `json:"gcpkms,omitempty"`
+	KeyPair *SecretManagementKeyPair
+	GCPKMS  *SecretManagementGCPKMS
 }
 
 type genericSecretManagement struct {
