@@ -467,22 +467,54 @@ type PipedPlatformProvider struct {
 	Name string                     `json:"name"`
 	Type model.PlatformProviderType `json:"type"`
 
-	KubernetesConfig *PlatformProviderKubernetesConfig `json:"kubernetesConfig,omitempty"`
-	TerraformConfig  *PlatformProviderTerraformConfig  `json:"terraformConfig,omitempty"`
-	CloudRunConfig   *PlatformProviderCloudRunConfig   `json:"cloudRunConfig,omitempty"`
-	LambdaConfig     *PlatformProviderLambdaConfig     `json:"lambdaConfig,omitempty"`
-	ECSConfig        *PlatformProviderECSConfig        `json:"ecsConfig,omitempty"`
+	KubernetesConfig *PlatformProviderKubernetesConfig
+	TerraformConfig  *PlatformProviderTerraformConfig
+	CloudRunConfig   *PlatformProviderCloudRunConfig
+	LambdaConfig     *PlatformProviderLambdaConfig
+	ECSConfig        *PlatformProviderECSConfig
 }
 
-type genericPipedCloudProvider struct {
+type genericPipedPlatformProvider struct {
 	Name   string                     `json:"name"`
 	Type   model.PlatformProviderType `json:"type"`
 	Config json.RawMessage            `json:"config"`
 }
 
+func (p *PipedPlatformProvider) MarshalJSON() ([]byte, error) {
+	var (
+		err    error
+		config json.RawMessage
+	)
+
+	switch p.Type {
+	case model.PlatformProviderKubernetes:
+		config, err = json.Marshal(p.KubernetesConfig)
+	case model.PlatformProviderTerraform:
+		config, err = json.Marshal(p.TerraformConfig)
+	case model.PlatformProviderCloudRun:
+		config, err = json.Marshal(p.CloudRunConfig)
+	case model.PlatformProviderLambda:
+		config, err = json.Marshal(p.LambdaConfig)
+	case model.PlatformProviderECS:
+		config, err = json.Marshal(p.ECSConfig)
+	default:
+		err = fmt.Errorf("unsupported platform provider type: %s", p.Name)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(&genericPipedPlatformProvider{
+		Name:   p.Name,
+		Type:   p.Type,
+		Config: config,
+	})
+}
+
 func (p *PipedPlatformProvider) UnmarshalJSON(data []byte) error {
 	var err error
-	gp := genericPipedCloudProvider{}
+	gp := genericPipedPlatformProvider{}
 	if err = json.Unmarshal(data, &gp); err != nil {
 		return err
 	}
@@ -516,7 +548,7 @@ func (p *PipedPlatformProvider) UnmarshalJSON(data []byte) error {
 			err = json.Unmarshal(gp.Config, p.ECSConfig)
 		}
 	default:
-		err = fmt.Errorf("unsupported cloud provider type: %s", p.Name)
+		err = fmt.Errorf("unsupported platform provider type: %s", p.Name)
 	}
 	return err
 }
@@ -648,9 +680,9 @@ type PipedAnalysisProvider struct {
 	Name string                     `json:"name"`
 	Type model.AnalysisProviderType `json:"type"`
 
-	PrometheusConfig  *AnalysisProviderPrometheusConfig  `json:"prometheus,omitempty"`
-	DatadogConfig     *AnalysisProviderDatadogConfig     `json:"datadog,omitempty"`
-	StackdriverConfig *AnalysisProviderStackdriverConfig `json:"stackdriver,omitempty"`
+	PrometheusConfig  *AnalysisProviderPrometheusConfig
+	DatadogConfig     *AnalysisProviderDatadogConfig
+	StackdriverConfig *AnalysisProviderStackdriverConfig
 }
 
 func (p *PipedAnalysisProvider) Mask() {
@@ -669,6 +701,34 @@ type genericPipedAnalysisProvider struct {
 	Name   string                     `json:"name"`
 	Type   model.AnalysisProviderType `json:"type"`
 	Config json.RawMessage            `json:"config"`
+}
+
+func (p *PipedAnalysisProvider) MarshalJSON() ([]byte, error) {
+	var (
+		err    error
+		config json.RawMessage
+	)
+
+	switch p.Type {
+	case model.AnalysisProviderDatadog:
+		config, err = json.Marshal(p.DatadogConfig)
+	case model.AnalysisProviderPrometheus:
+		config, err = json.Marshal(p.PrometheusConfig)
+	case model.AnalysisProviderStackdriver:
+		config, err = json.Marshal(p.StackdriverConfig)
+	default:
+		err = fmt.Errorf("unsupported analysis provider type: %s", p.Name)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(&genericPipedAnalysisProvider{
+		Name:   p.Name,
+		Type:   p.Type,
+		Config: config,
+	})
 }
 
 func (p *PipedAnalysisProvider) UnmarshalJSON(data []byte) error {
@@ -883,6 +943,62 @@ type SecretManagement struct {
 	GCPKMS  *SecretManagementGCPKMS  `json:"gcpkms,omitempty"`
 }
 
+type genericSecretManagement struct {
+	Type   model.SecretManagementType `json:"type"`
+	Config json.RawMessage            `json:"config"`
+}
+
+func (s *SecretManagement) MarshalJSON() ([]byte, error) {
+	var (
+		err    error
+		config json.RawMessage
+	)
+
+	switch s.Type {
+	case model.SecretManagementTypeKeyPair:
+		config, err = json.Marshal(s.KeyPair)
+	case model.SecretManagementTypeGCPKMS:
+		config, err = json.Marshal(s.GCPKMS)
+	default:
+		err = fmt.Errorf("unsupported secret management type: %s", s.Type)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(&genericSecretManagement{
+		Type:   s.Type,
+		Config: config,
+	})
+}
+
+func (s *SecretManagement) UnmarshalJSON(data []byte) error {
+	var err error
+	g := genericSecretManagement{}
+	if err = json.Unmarshal(data, &g); err != nil {
+		return err
+	}
+
+	switch g.Type {
+	case model.SecretManagementTypeKeyPair:
+		s.Type = model.SecretManagementTypeKeyPair
+		s.KeyPair = &SecretManagementKeyPair{}
+		if len(g.Config) > 0 {
+			err = json.Unmarshal(g.Config, s.KeyPair)
+		}
+	case model.SecretManagementTypeGCPKMS:
+		s.Type = model.SecretManagementTypeGCPKMS
+		s.GCPKMS = &SecretManagementGCPKMS{}
+		if len(g.Config) > 0 {
+			err = json.Unmarshal(g.Config, s.GCPKMS)
+		}
+	default:
+		err = fmt.Errorf("unsupported secret management type: %s", s.Type)
+	}
+	return err
+}
+
 func (s *SecretManagement) Mask() {
 	if s.KeyPair != nil {
 		s.KeyPair.Mask()
@@ -989,37 +1105,6 @@ func (s *SecretManagementGCPKMS) Mask() {
 	if len(s.EncryptServiceAccountFile) != 0 {
 		s.EncryptServiceAccountFile = maskString
 	}
-}
-
-type genericSecretManagement struct {
-	Type   model.SecretManagementType `json:"type"`
-	Config json.RawMessage            `json:"config"`
-}
-
-func (s *SecretManagement) UnmarshalJSON(data []byte) error {
-	var err error
-	g := genericSecretManagement{}
-	if err = json.Unmarshal(data, &g); err != nil {
-		return err
-	}
-
-	switch g.Type {
-	case model.SecretManagementTypeKeyPair:
-		s.Type = model.SecretManagementTypeKeyPair
-		s.KeyPair = &SecretManagementKeyPair{}
-		if len(g.Config) > 0 {
-			err = json.Unmarshal(g.Config, s.KeyPair)
-		}
-	case model.SecretManagementTypeGCPKMS:
-		s.Type = model.SecretManagementTypeGCPKMS
-		s.GCPKMS = &SecretManagementGCPKMS{}
-		if len(g.Config) > 0 {
-			err = json.Unmarshal(g.Config, s.GCPKMS)
-		}
-	default:
-		err = fmt.Errorf("unsupported secret management type: %s", s.Type)
-	}
-	return err
 }
 
 type PipedEventWatcher struct {
