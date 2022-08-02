@@ -55,8 +55,3 @@ RUN go install github.com/golang/mock/mockgen@v${GOMOCK_VER}
 
 VOLUME /repo
 WORKDIR /repo
-
-COPY ./codegen.sh /
-RUN chmod +x /codegen.sh
-
-ENTRYPOINT ["/codegen.sh"]
