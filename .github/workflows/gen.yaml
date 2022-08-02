@@ -12,8 +12,8 @@ jobs:
       uses: actions/checkout@v3
     - name: Generate code
       uses: docker://ghcr.io/pipe-cd/codegen@sha256:5e10b6416d507d54b8ca9ab58820f11633d88af1d9fdcce65b5e568abbbe3d9e #v0.32.0
-      run: ./tool/codegen/codegen.sh
       with:
+        entrypoint: ./tool/codegen/codegen.sh
         args: /github/workspace
     - name: Show Git status
       shell: bash
