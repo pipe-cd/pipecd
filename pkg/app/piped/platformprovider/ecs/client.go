@@ -28,7 +28,7 @@ import (
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
 )
 
 type client struct {
@@ -191,7 +191,7 @@ func (c *client) GetPrimaryTaskSet(ctx context.Context, service types.Service) (
 			return &taskSet, nil
 		}
 	}
-	return nil, cloudprovider.ErrNotFound
+	return nil, platformprovider.ErrNotFound
 }
 
 func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskSetArn string) error {
@@ -256,7 +256,7 @@ func (c *client) GetListener(ctx context.Context, targetGroup types.LoadBalancer
 		return "", err
 	}
 	if len(output.Listeners) == 0 {
-		return "", cloudprovider.ErrNotFound
+		return "", platformprovider.ErrNotFound
 	}
 	// Note: Suppose the load balancer only have one listener.
 	// TODO: Support multi listeners pattern.
@@ -276,7 +276,7 @@ func (c *client) getLoadBalancerArn(ctx context.Context, targetGroupArn string) 
 		return "", err
 	}
 	if len(output.TargetGroups) == 0 {
-		return "", cloudprovider.ErrNotFound
+		return "", platformprovider.ErrNotFound
 	}
 	// Note: Currently, only support TargetGroup which serves traffic from one Load Balancer.
 	return output.TargetGroups[0].LoadBalancerArns[0], nil

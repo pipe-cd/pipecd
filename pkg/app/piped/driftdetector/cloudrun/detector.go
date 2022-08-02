@@ -24,8 +24,8 @@ import (
 
 	"go.uber.org/zap"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/cloudrun"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/sourcedecrypter"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"

@@ -25,9 +25,9 @@ import (
 	"path/filepath"
 	"time"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/lambda"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/lambda"
 	"github.com/pipe-cd/pipecd/pkg/backoff"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
