@@ -163,6 +163,7 @@ proto.model.Deployment.toObject = function(includeInstance, msg) {
     kind: jspb.Message.getFieldWithDefault(msg, 7, 0),
     gitPath: (f = msg.getGitPath()) && pkg_model_common_pb.ApplicationGitPath.toObject(includeInstance, f),
     cloudProvider: jspb.Message.getFieldWithDefault(msg, 9, ""),
+    platformProvider: jspb.Message.getFieldWithDefault(msg, 11, ""),
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : [],
     trigger: (f = msg.getTrigger()) && proto.model.DeploymentTrigger.toObject(includeInstance, f),
     summary: jspb.Message.getFieldWithDefault(msg, 22, ""),
@@ -249,6 +250,10 @@ proto.model.Deployment.deserializeBinaryFromReader = function(msg, reader) {
     case 9:
       var value = /** @type {string} */ (reader.readString());
       msg.setCloudProvider(value);
+      break;
+    case 11:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPlatformProvider(value);
       break;
     case 10:
       var value = msg.getLabelsMap();
@@ -404,6 +409,13 @@ proto.model.Deployment.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       9,
+      f
+    );
+  }
+  f = message.getPlatformProvider();
+  if (f.length > 0) {
+    writer.writeString(
+      11,
       f
     );
   }
@@ -679,6 +691,24 @@ proto.model.Deployment.prototype.getCloudProvider = function() {
  */
 proto.model.Deployment.prototype.setCloudProvider = function(value) {
   return jspb.Message.setProto3StringField(this, 9, value);
+};
+
+
+/**
+ * optional string platform_provider = 11;
+ * @return {string}
+ */
+proto.model.Deployment.prototype.getPlatformProvider = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 11, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.Deployment} returns this
+ */
+proto.model.Deployment.prototype.setPlatformProvider = function(value) {
+  return jspb.Message.setProto3StringField(this, 11, value);
 };
 
 

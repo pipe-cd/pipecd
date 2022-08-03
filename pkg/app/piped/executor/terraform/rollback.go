@@ -17,8 +17,8 @@ package terraform
 import (
 	"context"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/terraform"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/terraform"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -52,7 +52,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	_, cloudProviderCfg, found := findCloudProvider(&e.Input)
+	providerCfg, found := findPlatformProvider(&e.Input)
 	if !found {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -74,8 +74,8 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	vars := make([]string, 0, len(cloudProviderCfg.Vars)+len(appCfg.Input.Vars))
-	vars = append(vars, cloudProviderCfg.Vars...)
+	vars := make([]string, 0, len(providerCfg.Vars)+len(appCfg.Input.Vars))
+	vars = append(vars, providerCfg.Vars...)
 	vars = append(vars, appCfg.Input.Vars...)
 
 	e.LogPersister.Infof("Start rolling back to the state defined at commit %s", e.Deployment.RunningCommitHash)

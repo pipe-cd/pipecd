@@ -20,9 +20,9 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider"
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -68,7 +68,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	cloudProviderName, cloudProviderCfg, found := findCloudProvider(&e.Input)
+	cloudProviderName, cloudProviderCfg, found := findPlatformProvider(&e.Input)
 	if !found {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -94,7 +94,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func rollback(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup types.LoadBalancer) bool {
+func rollback(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup types.LoadBalancer) bool {
 	in.LogPersister.Infof("Start rollback the ECS service and task family: %s and %s to original stage", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
@@ -121,7 +121,7 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 	// Get current PRIMARY task set.
 	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, *service)
 	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
-	if err != nil && !errors.Is(err, cloudprovider.ErrNotFound) {
+	if err != nil && !errors.Is(err, platformprovider.ErrNotFound) {
 		in.LogPersister.Errorf("Failed to determine current ECS PRIMARY taskSet of service %s for rollback: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}

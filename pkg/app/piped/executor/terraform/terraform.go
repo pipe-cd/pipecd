@@ -17,8 +17,8 @@ package terraform
 import (
 	"context"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/terraform"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/terraform"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -80,16 +80,16 @@ func findTerraform(ctx context.Context, version string, lp executor.LogPersister
 	return path, true
 }
 
-func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProviderTerraformConfig, found bool) {
-	name = in.Application.CloudProvider
+func findPlatformProvider(in *executor.Input) (cfg *config.PlatformProviderTerraformConfig, found bool) {
+	var name = in.Application.PlatformProvider
 	if name == "" {
-		in.LogPersister.Error("Missing the CloudProvider name in the application configuration")
+		in.LogPersister.Error("Missing the PlatformProvider name in the application configuration")
 		return
 	}
 
-	cp, ok := in.PipedConfig.FindCloudProvider(name, model.ApplicationKind_TERRAFORM)
+	cp, ok := in.PipedConfig.FindPlatformProvider(name, model.ApplicationKind_TERRAFORM)
 	if !ok {
-		in.LogPersister.Errorf("The specified cloud provider %q was not found in piped configuration", name)
+		in.LogPersister.Errorf("The specified platform provider %q was not found in piped configuration", name)
 		return
 	}
 

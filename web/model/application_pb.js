@@ -133,6 +133,7 @@ proto.model.Application.toObject = function(includeInstance, msg) {
     kind: jspb.Message.getFieldWithDefault(msg, 6, 0),
     gitPath: (f = msg.getGitPath()) && pkg_model_common_pb.ApplicationGitPath.toObject(includeInstance, f),
     cloudProvider: jspb.Message.getFieldWithDefault(msg, 8, ""),
+    platformProvider: jspb.Message.getFieldWithDefault(msg, 15, ""),
     description: jspb.Message.getFieldWithDefault(msg, 9, ""),
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : [],
     mostRecentlySuccessfulDeployment: (f = msg.getMostRecentlySuccessfulDeployment()) && proto.model.ApplicationDeploymentReference.toObject(includeInstance, f),
@@ -208,6 +209,10 @@ proto.model.Application.deserializeBinaryFromReader = function(msg, reader) {
     case 8:
       var value = /** @type {string} */ (reader.readString());
       msg.setCloudProvider(value);
+      break;
+    case 15:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPlatformProvider(value);
       break;
     case 9:
       var value = /** @type {string} */ (reader.readString());
@@ -334,6 +339,13 @@ proto.model.Application.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       8,
+      f
+    );
+  }
+  f = message.getPlatformProvider();
+  if (f.length > 0) {
+    writer.writeString(
+      15,
       f
     );
   }
@@ -559,6 +571,24 @@ proto.model.Application.prototype.getCloudProvider = function() {
  */
 proto.model.Application.prototype.setCloudProvider = function(value) {
   return jspb.Message.setProto3StringField(this, 8, value);
+};
+
+
+/**
+ * optional string platform_provider = 15;
+ * @return {string}
+ */
+proto.model.Application.prototype.getPlatformProvider = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 15, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.Application} returns this
+ */
+proto.model.Application.prototype.setPlatformProvider = function(value) {
+  return jspb.Message.setProto3StringField(this, 15, value);
 };
 
 

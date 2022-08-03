@@ -34,6 +34,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/ops/orphancommandcleaner"
 	"github.com/pipe-cd/pipecd/pkg/app/ops/pipedstatsbuilder"
 	"github.com/pipe-cd/pipecd/pkg/app/ops/planpreviewoutputcleaner"
+	"github.com/pipe-cd/pipecd/pkg/app/ops/platformprovidermigration"
 	"github.com/pipe-cd/pipecd/pkg/app/ops/staledpipedstatcleaner"
 	"github.com/pipe-cd/pipecd/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipecd/pkg/cli"
@@ -145,6 +146,15 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 		}
 	}()
 
+	// Start running CloudProvider to PlatformProvider migration task.
+	// TODO: Remove this task after a few releases.
+	{
+		runner := platformprovidermigration.NewRunner(ds, input.Logger)
+		group.Go(func() error {
+			return runner.Migrate(ctx)
+		})
+	}
+
 	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
 	// Start running staled piped stat cleaner.
 	{
@@ -179,10 +189,13 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 	}
 
 	// Start running insight collector.
-	ic := insightcollector.NewCollector(ds, fs, cfg.InsightCollector, input.Logger)
-	group.Go(func() error {
-		return ic.Run(ctx)
-	})
+	{
+		ic := insightcollector.NewCollector(ds, fs, cfg.InsightCollector, input.Logger)
+		group.Go(func() error {
+			return ic.Run(ctx)
+		})
+	}
+
 	insightMetricsCollector := insightmetrics.NewInsightMetricsCollector(insightstore.NewStore(fs), datastore.NewProjectStore(ds, datastore.OpsCommander))
 
 	// Start running HTTP server.

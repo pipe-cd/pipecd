@@ -108,8 +108,6 @@ func (m *ApplicationGitPath) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for ConfigPath
-
 	// no validation rules for ConfigFilename
 
 	// no validation rules for Url

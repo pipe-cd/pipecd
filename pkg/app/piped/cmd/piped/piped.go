@@ -46,7 +46,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/eventstore"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/appconfigreporter"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/chartrepo"
-	k8scloudprovidermetrics "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes/kubernetesmetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/controller"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/eventwatcher"
@@ -56,6 +55,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/notifier"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/planpreview"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/planpreview/planpreviewmetrics"
+	k8scloudprovidermetrics "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes/kubernetesmetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/statsreporter"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/trigger"
@@ -116,7 +116,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().IntVar(&p.adminPort, "admin-port", p.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
 
 	cmd.Flags().StringVar(&p.toolsDir, "tools-dir", p.toolsDir, "The path to directory where to install needed tools such as kubectl, helm, kustomize.")
-	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not.")
+	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not. This feature is deprecated.")
 	cmd.Flags().BoolVar(&p.addLoginUserToPasswd, "add-login-user-to-passwd", p.addLoginUserToPasswd, "Whether to add login user to $HOME/passwd. This is typically for applications running as a random user ID.")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
 
@@ -542,7 +542,7 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 			return nil, fmt.Errorf("wrong configuration kind for piped: %v", cfg.Kind)
 		}
 		if p.enableDefaultKubernetesCloudProvider {
-			cfg.PipedSpec.EnableDefaultKubernetesCloudProvider()
+			cfg.PipedSpec.EnableDefaultKubernetesPlatformProvider()
 		}
 		return cfg.PipedSpec, nil
 	}
@@ -638,17 +638,17 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 
 	var (
 		req = &pipedservice.ReportPipedMetaRequest{
-			Version:        version.Get().Version,
-			Config:         string(maskedCfg),
-			Repositories:   repos,
-			CloudProviders: make([]*model.Piped_CloudProvider, 0, len(cfg.CloudProviders)),
+			Version:           version.Get().Version,
+			Config:            string(maskedCfg),
+			Repositories:      repos,
+			PlatformProviders: make([]*model.Piped_PlatformProvider, 0, len(cfg.PlatformProviders)),
 		}
 		retry = pipedservice.NewRetry(5)
 	)
 
-	// Configure the list of specified cloud providers.
-	for _, cp := range cfg.CloudProviders {
-		req.CloudProviders = append(req.CloudProviders, &model.Piped_CloudProvider{
+	// Configure the list of specified platform providers.
+	for _, cp := range cfg.PlatformProviders {
+		req.PlatformProviders = append(req.PlatformProviders, &model.Piped_PlatformProvider{
 			Name: cp.Name,
 			Type: cp.Type.String(),
 		})

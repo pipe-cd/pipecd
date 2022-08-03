@@ -25,8 +25,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -39,8 +39,8 @@ type deployExecutor struct {
 	commit string
 	appCfg *config.KubernetesApplicationSpec
 
-	loader  provider.Loader
-	applier provider.Applier
+	loader        provider.Loader
+	applierGetter applierGetter
 }
 
 type registerer interface {
@@ -94,9 +94,9 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		}
 	}
 
-	cp, ok := e.PipedConfig.FindCloudProvider(e.Deployment.CloudProvider, model.ApplicationKind_KUBERNETES)
-	if !ok {
-		e.LogPersister.Errorf("Not found cloud provider %q", e.Deployment.CloudProvider)
+	e.applierGetter, err = newApplierGroup(e.Deployment.PlatformProvider, *e.appCfg, e.PipedConfig, e.Logger)
+	if err != nil {
+		e.LogPersister.Error(err.Error())
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -109,11 +109,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		e.GitClient,
 		e.Logger,
 	)
-	e.applier = provider.NewApplier(
-		e.appCfg.Input,
-		*cp.KubernetesConfig,
-		e.Logger,
-	)
+
 	e.Logger.Info("start executing kubernetes stage",
 		zap.String("stage-name", e.Stage.Name),
 		zap.String("app-dir", ds.AppDir),
@@ -226,13 +222,20 @@ func addBuiltinAnnotations(manifests []provider.Manifest, variantLabel, variant,
 	}
 }
 
-func applyManifests(ctx context.Context, applier provider.Applier, manifests []provider.Manifest, namespace string, lp executor.LogPersister) error {
+func applyManifests(ctx context.Context, ag applierGetter, manifests []provider.Manifest, namespace string, lp executor.LogPersister) error {
 	if namespace == "" {
 		lp.Infof("Start applying %d manifests", len(manifests))
 	} else {
 		lp.Infof("Start applying %d manifests to %q namespace", len(manifests), namespace)
 	}
+
 	for _, m := range manifests {
+		applier, err := ag.Get(m.Key)
+		if err != nil {
+			lp.Error(err.Error())
+			return err
+		}
+
 		annotation := m.GetAnnotations()[provider.LabelSyncReplace]
 		if annotation != provider.UseReplaceEnabled {
 			if err := applier.ApplyManifest(ctx, m); err != nil {
@@ -244,7 +247,7 @@ func applyManifests(ctx context.Context, applier provider.Applier, manifests []p
 		}
 		// Always try to replace first and create if it fails due to resource not found error.
 		// This is because we cannot know whether resource already exists before executing command.
-		err := applier.ReplaceManifest(ctx, m)
+		err = applier.ReplaceManifest(ctx, m)
 		if errors.Is(err, provider.ErrNotFound) {
 			lp.Infof("Specified resource does not exist, so create the resource: %s (%w)", m.Key.ReadableLogString(), err)
 			err = applier.CreateManifest(ctx, m)
@@ -260,7 +263,7 @@ func applyManifests(ctx context.Context, applier provider.Applier, manifests []p
 	return nil
 }
 
-func deleteResources(ctx context.Context, applier provider.Applier, resources []provider.ResourceKey, lp executor.LogPersister) error {
+func deleteResources(ctx context.Context, ag applierGetter, resources []provider.ResourceKey, lp executor.LogPersister) error {
 	resourcesLen := len(resources)
 	if resourcesLen == 0 {
 		lp.Info("No resources to delete")
@@ -271,7 +274,13 @@ func deleteResources(ctx context.Context, applier provider.Applier, resources []
 	var deletedCount int
 
 	for _, k := range resources {
-		err := applier.Delete(ctx, k)
+		applier, err := ag.Get(k)
+		if err != nil {
+			lp.Error(err.Error())
+			return err
+		}
+
+		err = applier.Delete(ctx, k)
 		if err == nil {
 			lp.Successf("- deleted resource: %s", k.ReadableLogString())
 			deletedCount++

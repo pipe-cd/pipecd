@@ -93,6 +93,10 @@ func (m *mysqlEnsurer) Close() error {
 	return m.client.Close()
 }
 
+func (m *mysqlEnsurer) Ping() error {
+	return m.client.Ping()
+}
+
 func makeCreateIndexStatements(indexesStatements string) []string {
 	items := strings.Split(strings.TrimSpace(indexesStatements), ";")
 	statements := make([]string, 0, len(items))

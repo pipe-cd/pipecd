@@ -403,7 +403,7 @@ func (mr *MockPipedStoreMockRecorder) UpdateInfo(arg0, arg1, arg2, arg3 interfac
 }
 
 // UpdateMetadata mocks base method.
-func (m *MockPipedStore) UpdateMetadata(arg0 context.Context, arg1, arg2, arg3 string, arg4 []*model.Piped_CloudProvider, arg5 []*model.ApplicationGitRepository, arg6 *model.Piped_SecretEncryption, arg7 int64) error {
+func (m *MockPipedStore) UpdateMetadata(arg0 context.Context, arg1, arg2, arg3 string, arg4 []*model.Piped_PlatformProvider, arg5 []*model.ApplicationGitRepository, arg6 *model.Piped_SecretEncryption, arg7 int64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateMetadata", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 	ret0, _ := ret[0].(error)
@@ -594,6 +594,20 @@ func (m *MockApplicationStore) UpdateMostRecentDeployment(arg0 context.Context, 
 func (mr *MockApplicationStoreMockRecorder) UpdateMostRecentDeployment(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateMostRecentDeployment", reflect.TypeOf((*MockApplicationStore)(nil).UpdateMostRecentDeployment), arg0, arg1, arg2, arg3)
+}
+
+// UpdatePlatformProvider mocks base method.
+func (m *MockApplicationStore) UpdatePlatformProvider(arg0 context.Context, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePlatformProvider", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePlatformProvider indicates an expected call of UpdatePlatformProvider.
+func (mr *MockApplicationStoreMockRecorder) UpdatePlatformProvider(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePlatformProvider", reflect.TypeOf((*MockApplicationStore)(nil).UpdatePlatformProvider), arg0, arg1, arg2)
 }
 
 // UpdateSyncState mocks base method.

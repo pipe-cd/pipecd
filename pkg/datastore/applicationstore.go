@@ -68,12 +68,12 @@ func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) er
 	}
 
 	var (
-		kind           model.ApplicationKind
-		name           string
-		pipedId        string
-		configFilename string
-		cloudProvider  string
-		updatedAt      int64
+		kind             model.ApplicationKind
+		name             string
+		pipedID          string
+		configFilename   string
+		platformProvider string
+		updatedAt        int64
 	)
 	for shard, p := range parts {
 		if err := json.Unmarshal(p, &app); err != nil {
@@ -85,11 +85,11 @@ func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) er
 		// Values of below fields from ClientShard have a higher priority:
 		// - PipedId
 		// - GitPath.ConfigFilename
-		// - CloudProvider
+		// - PlatformProvider
 		if shard == ClientShard {
-			pipedId = app.PipedId
+			pipedID = app.PipedId
 			configFilename = app.GitPath.ConfigFilename
-			cloudProvider = app.CloudProvider
+			platformProvider = app.PlatformProvider
 		}
 		// Values of below fields from AgentShard have a higher priority:
 		// - Kind
@@ -102,8 +102,8 @@ func (a *applicationCollection) Decode(e interface{}, parts map[Shard][]byte) er
 
 	app.Kind = kind
 	app.Name = name
-	app.PipedId = pipedId
-	app.CloudProvider = cloudProvider
+	app.PipedId = pipedID
+	app.PlatformProvider = platformProvider
 	app.GitPath.ConfigFilename = configFilename
 	app.UpdatedAt = updatedAt
 	return nil
@@ -136,8 +136,8 @@ func (a *applicationCollection) Encode(e interface{}) (map[Shard][]byte, error) 
 		Name: me.Name,
 		// Fields which exist in both AgentShard and ClientShard but ClientShard has
 		// a higher priority since those fields can only be updated by WebCommander.
-		PipedId:       me.PipedId,
-		CloudProvider: me.CloudProvider,
+		PipedId:          me.PipedId,
+		PlatformProvider: me.PlatformProvider,
 		// Note: Only GitPath.ConfigFilename is changeable.
 		GitPath: me.GitPath,
 		// Fields which exist only in ClientShard.
@@ -162,9 +162,9 @@ func (a *applicationCollection) Encode(e interface{}) (map[Shard][]byte, error) 
 		Name: me.Name,
 		// Fields which exist in both AgentShard and ClientShard but ClientShard has
 		// a higher priority since those fields can only be updated by WebCommander.
-		PipedId:       me.PipedId,
-		GitPath:       me.GitPath,
-		CloudProvider: me.CloudProvider,
+		PipedId:          me.PipedId,
+		GitPath:          me.GitPath,
+		PlatformProvider: me.PlatformProvider,
 		// Fields which exist only in AgentShard.
 		Description:                      me.Description,
 		Labels:                           me.Labels,
@@ -197,6 +197,7 @@ type ApplicationStore interface {
 	UpdateDeployingStatus(ctx context.Context, id string, deploying bool) error
 	UpdateBasicInfo(ctx context.Context, id, name, description string, labels map[string]string) error
 	UpdateConfiguration(ctx context.Context, id, pipedID, cloudProvider, configFilename string) error
+	UpdatePlatformProvider(ctx context.Context, id string, provider string) error
 }
 
 type applicationStore struct {
@@ -360,11 +361,19 @@ func (s *applicationStore) UpdateBasicInfo(ctx context.Context, id, name, descri
 	})
 }
 
-func (s *applicationStore) UpdateConfiguration(ctx context.Context, id, pipedID, cloudProvider, configFilename string) error {
+func (s *applicationStore) UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error {
 	return s.update(ctx, id, func(app *model.Application) error {
 		app.PipedId = pipedID
-		app.CloudProvider = cloudProvider
+		app.PlatformProvider = platformProvider
+		app.CloudProvider = platformProvider
 		app.GitPath.ConfigFilename = configFilename
+		return nil
+	})
+}
+
+func (s *applicationStore) UpdatePlatformProvider(ctx context.Context, id string, provider string) error {
+	return s.update(ctx, id, func(app *model.Application) error {
+		app.PlatformProvider = provider
 		return nil
 	})
 }

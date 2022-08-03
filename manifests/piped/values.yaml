@@ -10,6 +10,8 @@ args:
   # Specifies whether it adds logged-in user to /etc/passwd at runtime.
   # This is typically for applications running as a random user ID, such as OpenShift less than 4.2.
   addLoginUserToPasswd: false
+  # Ensure that the pod will be restarted by random an annotation value to key rollme.
+  forceRestart: true
 
 launcher:
   enabled: false

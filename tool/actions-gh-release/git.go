@@ -171,3 +171,21 @@ func readFileAtCommit(ctx context.Context, gitExecPath, repoDir, filePath, commi
 
 	return bytes.TrimSpace(out), nil
 }
+
+func addSafeDirectory(ctx context.Context, gitExecPath, repoDir string) error {
+	args := []string{
+		"config",
+		"--global",
+		"--add",
+		"safe.directory",
+		repoDir,
+	}
+
+	cmd := exec.CommandContext(ctx, gitExecPath, args...)
+	cmd.Dir = repoDir
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("err: %w, out: %s", err, string(out))
+	}
+	return nil
+}

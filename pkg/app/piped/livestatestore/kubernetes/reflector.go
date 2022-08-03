@@ -29,8 +29,8 @@ import (
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/kubernetes/kubernetesmetrics"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
@@ -137,7 +137,7 @@ var (
 // reflector watches the live state of application with the cluster
 // and triggers the specified callbacks.
 type reflector struct {
-	config      *config.CloudProviderKubernetesConfig
+	config      *config.PlatformProviderKubernetesConfig
 	kubeConfig  *restclient.Config
 	pipedConfig *config.PipedSpec
 

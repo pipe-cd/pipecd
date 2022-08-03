@@ -1127,7 +1127,6 @@ proto.model.ProjectSSOConfig.serializeBinaryToWriter = function(message, writer)
  */
 proto.model.ProjectSSOConfig.Provider = {
   GITHUB: 0,
-  GITHUB_ENTERPRISE: 1,
   GOOGLE: 2
 };
 

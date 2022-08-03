@@ -290,13 +290,13 @@ message ListReleasedVersionsResponse {
 }
 
 message AddApplicationRequest {
-    reserved 2;
+    reserved 2,6;
 
     string name = 1 [(validate.rules).string.min_len = 1];
     string piped_id = 3 [(validate.rules).string.min_len = 1];
     model.ApplicationGitPath git_path = 4 [(validate.rules).message.required = true];
     model.ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
-    string cloud_provider = 6 [(validate.rules).string.min_len = 1];
+    string platform_provider = 9 [(validate.rules).string.min_len = 1];
     string description = 7;
     map<string, string> labels = 8;
 }
@@ -306,13 +306,13 @@ message AddApplicationResponse {
 }
 
 message UpdateApplicationRequest {
-    reserved 3;
+    reserved 3,7;
 
     string application_id = 1 [(validate.rules).string.min_len = 1];
     string name = 2 [(validate.rules).string.min_len = 1];
     string piped_id = 4 [(validate.rules).string.min_len = 1];
     model.ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
-    string cloud_provider = 7 [(validate.rules).string.min_len = 1];
+    string platform_provider = 9 [(validate.rules).string.min_len = 1];
     string config_filename = 8;
 }
 

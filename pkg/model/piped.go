@@ -58,15 +58,6 @@ func GeneratePipedKey() (key, hash string, err error) {
 
 // CheckKey checks if the give key is one of the stored keys.
 func (p *Piped) CheckKey(key string) (err error) {
-	// The KeyHash field was deprecated.
-	// And this block will be removed in the future.
-	if p.KeyHash != "" {
-		err = bcrypt.CompareHashAndPassword([]byte(p.KeyHash), []byte(key))
-		if err == nil {
-			return nil
-		}
-	}
-
 	if len(p.Keys) == 0 {
 		return errors.New("piped does not contain any key")
 	}
@@ -104,9 +95,6 @@ func (p *Piped) AddKey(hash, creator string, createdAt time.Time) error {
 
 // DeleteOldPipedKeys removes all old keys to keep only the latest one.
 func (p *Piped) DeleteOldPipedKeys() {
-	// This field was deprecated so we reset it too.
-	p.KeyHash = ""
-
 	if len(p.Keys) < 2 {
 		return
 	}
@@ -121,7 +109,6 @@ func (p *Piped) DeleteOldPipedKeys() {
 }
 
 func (p *Piped) RedactSensitiveData() {
-	p.KeyHash = redactedMessage
 	for i := range p.Keys {
 		p.Keys[i].Hash = redactedMessage
 	}

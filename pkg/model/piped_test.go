@@ -104,18 +104,15 @@ func TestPipedDeleteOldPipedKeys(t *testing.T) {
 		{
 			name: "no key",
 			piped: Piped{
-				KeyHash: "hash-key",
-				Keys:    []*PipedKey{},
+				Keys: []*PipedKey{},
 			},
 			expected: Piped{
-				KeyHash: "",
-				Keys:    []*PipedKey{},
+				Keys: []*PipedKey{},
 			},
 		},
 		{
 			name: "has 1 key",
 			piped: Piped{
-				KeyHash: "hash-key",
 				Keys: []*PipedKey{
 					{
 						Hash:      "hash-1",
@@ -125,7 +122,6 @@ func TestPipedDeleteOldPipedKeys(t *testing.T) {
 				},
 			},
 			expected: Piped{
-				KeyHash: "",
 				Keys: []*PipedKey{
 					{
 						Hash:      "hash-1",
@@ -138,7 +134,6 @@ func TestPipedDeleteOldPipedKeys(t *testing.T) {
 		{
 			name: "has multiple keys",
 			piped: Piped{
-				KeyHash: "hash-key",
 				Keys: []*PipedKey{
 					{
 						Hash:      "hash-1",
@@ -158,7 +153,6 @@ func TestPipedDeleteOldPipedKeys(t *testing.T) {
 				},
 			},
 			expected: Piped{
-				KeyHash: "",
 				Keys: []*PipedKey{
 					{
 						Hash:      "hash-3",
@@ -185,9 +179,8 @@ func TestPipedRedactSensitiveData(t *testing.T) {
 		expected Piped
 	}{
 		{
-			name: "contains both KeyHash and Keys",
+			name: "contains multiple Keys",
 			piped: Piped{
-				KeyHash: "hash-key",
 				Keys: []*PipedKey{
 					{
 						Hash:      "hash-1",
@@ -207,7 +200,6 @@ func TestPipedRedactSensitiveData(t *testing.T) {
 				},
 			},
 			expected: Piped{
-				KeyHash: "redacted",
 				Keys: []*PipedKey{
 					{
 						Hash:      "redacted",

@@ -24,6 +24,7 @@ export const dummyDeployment: Deployment.AsObject = {
   version: "0.0.0",
   versionsList: [],
   cloudProvider: "kube-1",
+  platformProvider: "kube-1",
   labelsMap: [],
   createdAt: createdAt.unix(),
   updatedAt: completedAt.unix(),
@@ -31,7 +32,6 @@ export const dummyDeployment: Deployment.AsObject = {
   summary:
     "Quick sync by deploying the new version and configuring all traffic to it because no pipeline was configured",
   gitPath: {
-    configPath: "",
     configFilename: "",
     path: "",
     url: "",

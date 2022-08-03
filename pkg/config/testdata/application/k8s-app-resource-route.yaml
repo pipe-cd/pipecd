@@ -1,0 +1,12 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  resourceRoutes:
+    - match:
+        kind: Ingress
+      provider: ConfigCluster
+    - match:
+        kind: Service
+        name: Foo
+      provider: ConfigCluster
+    - provider: WorkloadCluster

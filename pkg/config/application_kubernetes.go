@@ -36,6 +36,21 @@ type KubernetesApplicationSpec struct {
 	TrafficRouting *KubernetesTrafficRouting `json:"trafficRouting"`
 	// The label will be configured to variant manifests used to distinguish them.
 	VariantLabel KubernetesVariantLabel `json:"variantLabel"`
+	// List of route configurations to resolve the platform provider for application resources.
+	// Each resource will be checked over the match conditions of each route.
+	// If matches, it will be applied to the route's provider,
+	// otherwise, it will be fallen through the next route to check.
+	// Any resource which does not match any specified route will be applied
+	// to the default platform provider which had been specified while registering the application.
+	ResourceRoutes []KubernetesResourceRoute `json:"resourceRoutes"`
+}
+
+// Validate returns an error if any wrong configuration value was found.
+func (s *KubernetesApplicationSpec) Validate() error {
+	if err := s.GenericApplicationSpec.Validate(); err != nil {
+		return err
+	}
+	return nil
 }
 
 type KubernetesVariantLabel struct {
@@ -51,14 +66,6 @@ type KubernetesVariantLabel struct {
 	// The label value for BASELINE variant.
 	// Default is baseline.
 	BaselineValue string `json:"baselineValue" default:"baseline"`
-}
-
-// Validate returns an error if any wrong configuration value was found.
-func (s *KubernetesApplicationSpec) Validate() error {
-	if err := s.GenericApplicationSpec.Validate(); err != nil {
-		return err
-	}
-	return nil
 }
 
 // KubernetesDeploymentInput represents needed input for triggering a Kubernetes deployment.
@@ -280,4 +287,14 @@ func (opts K8sTrafficRoutingStageOptions) Percentages() (primary, canary, baseli
 		return
 	}
 	return opts.Primary.Int(), opts.Canary.Int(), opts.Baseline.Int()
+}
+
+type KubernetesResourceRoute struct {
+	Provider string                          `json:"provider"`
+	Match    *KubernetesResourceRouteMatcher `json:"match"`
+}
+
+type KubernetesResourceRouteMatcher struct {
+	Kind string `json:"kind"`
+	Name string `json:"name"`
 }

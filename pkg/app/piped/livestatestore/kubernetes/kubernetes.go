@@ -25,13 +25,13 @@ import (
 	// Import to load the needs plugins such as gcp, azure, oidc, openstack.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type Store struct {
-	config                *config.CloudProviderKubernetesConfig
+	config                *config.PlatformProviderKubernetesConfig
 	pipedConfig           *config.PipedSpec
 	kubeConfig            *restclient.Config
 	store                 *store
@@ -64,7 +64,7 @@ func (it EventIterator) Next(maxNum int) []model.KubernetesResourceStateEvent {
 	return it.store.nextEvents(it.id, maxNum)
 }
 
-func NewStore(cfg *config.CloudProviderKubernetesConfig, pipedConfig *config.PipedSpec, cloudProvider string, logger *zap.Logger) *Store {
+func NewStore(cfg *config.PlatformProviderKubernetesConfig, pipedConfig *config.PipedSpec, cloudProvider string, logger *zap.Logger) *Store {
 	logger = logger.Named("kubernetes").
 		With(zap.String("cloud-provider", cloudProvider))
 

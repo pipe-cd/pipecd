@@ -18,8 +18,8 @@ import (
 	"context"
 	"fmt"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/lambda"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/lambda"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -65,7 +65,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	cloudProviderName, cloudProviderCfg, found := findCloudProvider(&e.Input)
+	cloudProviderName, cloudProviderCfg, found := findPlatformProvider(&e.Input)
 	if !found {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -82,7 +82,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func rollback(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderLambdaConfig, fm provider.FunctionManifest) bool {
+func rollback(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderLambdaConfig, fm provider.FunctionManifest) bool {
 	in.LogPersister.Infof("Start rollback the lambda function: %s to original stage", fm.Spec.Name)
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {

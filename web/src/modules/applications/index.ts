@@ -97,10 +97,9 @@ export const addApplication = createAsyncThunk<
     pipedId: string;
     repo: ApplicationGitRepository.AsObject;
     repoPath: string;
-    configPath?: string;
     configFilename?: string;
     kind: ApplicationKind;
-    cloudProvider: string;
+    platformProvider: string;
     labels: Array<[string, string]>;
   }
 >(`${MODULE_NAME}/add`, async (props) => {
@@ -110,11 +109,10 @@ export const addApplication = createAsyncThunk<
     gitPath: {
       repo: props.repo,
       path: props.repoPath,
-      configPath: props.configPath || "",
       configFilename: props.configFilename || "",
       url: "",
     },
-    cloudProvider: props.cloudProvider,
+    platformProvider: props.platformProvider,
     kind: props.kind,
     description: "",
     labelsMap: props.labels,

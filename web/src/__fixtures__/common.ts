@@ -8,7 +8,6 @@ export function createGitPathFromObject(
   path.setPath(o.path);
   path.setUrl(o.url);
   path.setConfigFilename(o.configFilename);
-  path.setConfigPath(o.configPath);
   if (o.repo) {
     path.setRepo(createApplicationGitRepository(o.repo));
   }

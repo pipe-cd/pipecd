@@ -138,14 +138,15 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 	}
 
 	app := model.Application{
-		Id:            uuid.New().String(),
-		Name:          req.Name,
-		PipedId:       req.PipedId,
-		ProjectId:     key.ProjectId,
-		GitPath:       gitpath,
-		Kind:          req.Kind,
-		CloudProvider: req.CloudProvider,
-		Description:   req.Description,
+		Id:               uuid.New().String(),
+		Name:             req.Name,
+		PipedId:          req.PipedId,
+		ProjectId:        key.ProjectId,
+		GitPath:          gitpath,
+		Kind:             req.Kind,
+		PlatformProvider: req.PlatformProvider,
+		CloudProvider:    req.PlatformProvider,
+		Description:      req.Description,
 	}
 	if err := a.applicationStore.Add(ctx, &app); err != nil {
 		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add application %s", app.Id))

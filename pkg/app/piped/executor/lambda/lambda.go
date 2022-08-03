@@ -25,9 +25,9 @@ import (
 	"path/filepath"
 	"time"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/lambda"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/lambda"
 	"github.com/pipe-cd/pipecd/pkg/backoff"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -55,16 +55,16 @@ func Register(r registerer) {
 	})
 }
 
-func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProviderLambdaConfig, found bool) {
-	name = in.Application.CloudProvider
+func findPlatformProvider(in *executor.Input) (name string, cfg *config.PlatformProviderLambdaConfig, found bool) {
+	name = in.Application.PlatformProvider
 	if name == "" {
-		in.LogPersister.Errorf("Missing the CloudProvider name in the application configuration")
+		in.LogPersister.Errorf("Missing the PlatformProvider name in the application configuration")
 		return
 	}
 
-	cp, ok := in.PipedConfig.FindCloudProvider(name, model.ApplicationKind_LAMBDA)
+	cp, ok := in.PipedConfig.FindPlatformProvider(name, model.ApplicationKind_LAMBDA)
 	if !ok {
-		in.LogPersister.Errorf("The specified cloud provider %q was not found in piped configuration", name)
+		in.LogPersister.Errorf("The specified platform provider %q was not found in piped configuration", name)
 		return
 	}
 
@@ -86,7 +86,7 @@ func loadFunctionManifest(in *executor.Input, functionManifestFile string, ds *d
 	return fm, true
 }
 
-func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderLambdaConfig, fm provider.FunctionManifest) bool {
+func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderLambdaConfig, fm provider.FunctionManifest) bool {
 	in.LogPersister.Infof("Start applying the lambda function manifest")
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
@@ -144,7 +144,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	return true
 }
 
-func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderLambdaConfig, fm provider.FunctionManifest) bool {
+func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderLambdaConfig, fm provider.FunctionManifest) bool {
 	in.LogPersister.Infof("Start rolling out the lambda function: %s", fm.Spec.Name)
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
@@ -184,7 +184,7 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	return true
 }
 
-func promote(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderLambdaConfig, fm provider.FunctionManifest) bool {
+func promote(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderLambdaConfig, fm provider.FunctionManifest) bool {
 	in.LogPersister.Infof("Start promote new version of the lambda function: %s", fm.Spec.Name)
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {

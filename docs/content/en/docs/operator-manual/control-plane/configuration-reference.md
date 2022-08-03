@@ -19,19 +19,19 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | stateKey | string | A randomly generated string used to sign oauth state. | Yes |
-| datastore | [DataStore](/docs/operator-manual/control-plane/configuration-reference/#datastore) | Storage for storing application, deployment data. | Yes |
-| filestore | [FileStore](/docs/operator-manual/control-plane/configuration-reference/#filestore) | File storage for storing deployment logs and application states. | Yes |
-| cache | [Cache](/docs/operator-manual/control-plane/configuration-reference/#cache) | Internal cache configuration. | No |
+| datastore | [DataStore](#datastore) | Storage for storing application, deployment data. | Yes |
+| filestore | [FileStore](#filestore) | File storage for storing deployment logs and application states. | Yes |
+| cache | [Cache](#cache) | Internal cache configuration. | No |
 | address | string | The address to the control plane. This is required if SSO is enabled. | No |
-| sharedSSOConfigs | [][SharedSSOConfig](/docs/operator-manual/control-plane/configuration-reference/#sharedssoconfig) | List of shared SSO configurations that can be used by any projects. | No |
-| projects | [][Project](/docs/operator-manual/control-plane/configuration-reference/#project) | List of debugging/quickstart projects. Please note that do not use this to configure the projects running in the production. | No |
+| sharedSSOConfigs | [][SharedSSOConfig](#sharedssoconfig) | List of shared SSO configurations that can be used by any projects. | No |
+| projects | [][Project](#project) | List of debugging/quickstart projects. Please note that do not use this to configure the projects running in the production. | No |
 
 ## DataStore
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 | type | string | Which type of data store should be used. Can be one of the following values<br>`FIRESTORE`, `MYSQL`. | Yes |
-| config | [DataStoreConfig](/docs/operator-manual/control-plane/configuration-reference/#datastoreconfig) | Specific configuration for the datastore type. This must be one of these DataStoreConfig. | Yes |
+| config | [DataStoreConfig](#datastoreconfig) | Specific configuration for the datastore type. This must be one of these DataStoreConfig. | Yes |
 
 ## DataStoreConfig
 
@@ -63,7 +63,7 @@ Must be one of the following objects:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | type | string | Which type of file store should be used. Can be one of the following values<br>`GCS`, `S3`, `MINIO` | Yes |
-| config | [FileStoreConfig](/docs/operator-manual/control-plane/configuration-reference/#filestoreconfig) | Specific configuration for the filestore type. This must be one of these FileStoreConfig. | Yes |
+| config | [FileStoreConfig](#filestoreconfig) | Specific configuration for the filestore type. This must be one of these FileStoreConfig. | Yes |
 
 ## FileStoreConfig
 
@@ -109,7 +109,7 @@ Must be one of the following objects:
 |-|-|-|-|
 | id | string | The unique identifier of the project. | Yes |
 | desc | string | The description about the project. | No |
-| staticAdmin | [ProjectStaticUser](/docs/operator-manual/control-plane/configuration-reference/#projectstaticuser) | Static admin account of the project. | Yes |
+| staticAdmin | [ProjectStaticUser](#projectstaticuser) | Static admin account of the project. | Yes |
 
 ## ProjectStaticUser
 
@@ -124,8 +124,8 @@ Must be one of the following objects:
 |-|-|-|-|
 | name | string | The unique name of the configuration. | Yes |
 | provider | string | The SSO service provider. Can be one of the following values<br>`GITHUB`, `GOOGLE`... | Yes |
-| github | [SSOConfigGitHub](/docs/operator-manual/control-plane/configuration-reference/#ssoconfiggithub) | GitHub sso configuration. | No |
-| google | [SSOConfigGoogle](/docs/operator-manual/control-plane/configuration-reference/#ssoconfiggoogle) | Google sso configuration. | No |
+| github | [SSOConfigGitHub](#ssoconfiggithub) | GitHub sso configuration. | No |
+| google | [SSOConfigGoogle](#ssoconfiggoogle) | Google sso configuration. | No |
 
 ## SSOConfigGitHub
 

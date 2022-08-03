@@ -25,7 +25,7 @@ import (
 	istiov1alpha3 "istio.io/api/networking/v1alpha3"
 	istiov1beta1 "istio.io/api/networking/v1beta1"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -134,7 +134,7 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 		canaryPercent,
 		baselinePercent,
 	)
-	if err := applyManifests(ctx, e.applier, []provider.Manifest{trafficRoutingManifest}, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, e.applierGetter, []provider.Manifest{trafficRoutingManifest}, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

@@ -25,12 +25,12 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/ecs"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/lambda"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/terraform"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -103,17 +103,17 @@ func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationL
 		gracePeriod:      gracePeriod,
 		logger:           logger,
 	}
-	for _, cp := range cfg.CloudProviders {
+	for _, cp := range cfg.PlatformProviders {
 		switch cp.Type {
-		case model.CloudProviderKubernetes:
+		case model.PlatformProviderKubernetes:
 			store := kubernetes.NewStore(cp.KubernetesConfig, cfg, cp.Name, logger)
 			s.kubernetesStores[cp.Name] = store
 
-		case model.CloudProviderTerraform:
+		case model.PlatformProviderTerraform:
 			store := terraform.NewStore(cp.TerraformConfig, cp.Name, appLister, logger)
 			s.terraformStores[cp.Name] = store
 
-		case model.CloudProviderCloudRun:
+		case model.PlatformProviderCloudRun:
 			store, err := cloudrun.NewStore(ctx, cp.CloudRunConfig, cp.Name, logger)
 			if err != nil {
 				logger.Error("failed to create a new cloudrun's livestatestore", zap.Error(err))
@@ -121,11 +121,11 @@ func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationL
 			}
 			s.cloudrunStores[cp.Name] = store
 
-		case model.CloudProviderLambda:
+		case model.PlatformProviderLambda:
 			store := lambda.NewStore(cp.LambdaConfig, cp.Name, appLister, logger)
 			s.lambdaStores[cp.Name] = store
 
-		case model.CloudProviderECS:
+		case model.PlatformProviderECS:
 			store := ecs.NewStore(cp.ECSConfig, cp.Name, appLister, logger)
 			s.ecsStores[cp.Name] = store
 		}

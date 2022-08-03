@@ -84,11 +84,13 @@ func TestPipedConfig(t *testing.T) {
 						Password: "sample-password",
 					},
 				},
-				CloudProviders: []PipedCloudProvider{
+				PlatformProviders: []PipedPlatformProvider{
 					{
 						Name: "kubernetes-default",
-						Type: model.CloudProviderKubernetes,
-						KubernetesConfig: &CloudProviderKubernetesConfig{
+						Type: model.PlatformProviderKubernetes,
+						KubernetesConfig: &PlatformProviderKubernetesConfig{
+							MasterURL:      "https://example.com",
+							KubeConfigPath: "/etc/kube/config",
 							AppStateInformer: KubernetesAppStateInformer{
 								IncludeResources: []KubernetesResourceMatcher{
 									{
@@ -110,13 +112,13 @@ func TestPipedConfig(t *testing.T) {
 					},
 					{
 						Name:             "kubernetes-dev",
-						Type:             model.CloudProviderKubernetes,
-						KubernetesConfig: &CloudProviderKubernetesConfig{},
+						Type:             model.PlatformProviderKubernetes,
+						KubernetesConfig: &PlatformProviderKubernetesConfig{},
 					},
 					{
 						Name: "terraform",
-						Type: model.CloudProviderTerraform,
-						TerraformConfig: &CloudProviderTerraformConfig{
+						Type: model.PlatformProviderTerraform,
+						TerraformConfig: &PlatformProviderTerraformConfig{
 							Vars: []string{
 								"project=gcp-project",
 								"region=us-centra1",
@@ -125,8 +127,8 @@ func TestPipedConfig(t *testing.T) {
 					},
 					{
 						Name: "cloudrun",
-						Type: model.CloudProviderCloudRun,
-						CloudRunConfig: &CloudProviderCloudRunConfig{
+						Type: model.PlatformProviderCloudRun,
+						CloudRunConfig: &PlatformProviderCloudRunConfig{
 							Project:         "gcp-project-id",
 							Region:          "cloud-run-region",
 							CredentialsFile: "/etc/piped-secret/gcp-service-account.json",
@@ -134,8 +136,8 @@ func TestPipedConfig(t *testing.T) {
 					},
 					{
 						Name: "lambda",
-						Type: model.CloudProviderLambda,
-						LambdaConfig: &CloudProviderLambdaConfig{
+						Type: model.PlatformProviderLambda,
+						LambdaConfig: &PlatformProviderLambdaConfig{
 							Region: "us-east-1",
 						},
 					},
@@ -428,11 +430,11 @@ func TestPipedConfigMask(t *testing.T) {
 						Password: "foo",
 					},
 				},
-				CloudProviders: []PipedCloudProvider{
+				PlatformProviders: []PipedPlatformProvider{
 					{
 						Name: "foo",
-						Type: model.CloudProviderKubernetes,
-						KubernetesConfig: &CloudProviderKubernetesConfig{
+						Type: model.PlatformProviderKubernetes,
+						KubernetesConfig: &PlatformProviderKubernetesConfig{
 							MasterURL:      "foo",
 							KubeConfigPath: "foo",
 							AppStateInformer: KubernetesAppStateInformer{
@@ -450,6 +452,15 @@ func TestPipedConfigMask(t *testing.T) {
 									},
 								},
 							},
+						},
+					},
+					{
+						Name: "bar",
+						Type: model.PlatformProviderCloudRun,
+						CloudRunConfig: &PlatformProviderCloudRunConfig{
+							Project:         "bar",
+							Region:          "bar",
+							CredentialsFile: "/etc/cloudrun/credentials",
 						},
 					},
 				},
@@ -579,11 +590,11 @@ func TestPipedConfigMask(t *testing.T) {
 						Password: maskString,
 					},
 				},
-				CloudProviders: []PipedCloudProvider{
+				PlatformProviders: []PipedPlatformProvider{
 					{
 						Name: "foo",
-						Type: model.CloudProviderKubernetes,
-						KubernetesConfig: &CloudProviderKubernetesConfig{
+						Type: model.PlatformProviderKubernetes,
+						KubernetesConfig: &PlatformProviderKubernetesConfig{
 							MasterURL:      "foo",
 							KubeConfigPath: "foo",
 							AppStateInformer: KubernetesAppStateInformer{
@@ -601,6 +612,15 @@ func TestPipedConfigMask(t *testing.T) {
 									},
 								},
 							},
+						},
+					},
+					{
+						Name: "bar",
+						Type: model.PlatformProviderCloudRun,
+						CloudRunConfig: &PlatformProviderCloudRunConfig{
+							Project:         "bar",
+							Region:          "bar",
+							CredentialsFile: "******",
 						},
 					},
 				},
@@ -692,6 +712,419 @@ func TestPipedConfigMask(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.spec.Mask()
 			assert.Equal(t, tc.want, tc.spec)
+		})
+	}
+}
+
+func TestPipedSpecClone(t *testing.T) {
+	testcases := []struct {
+		name          string
+		originalSpec  *PipedSpec
+		expectedSpec  *PipedSpec
+		expectedError error
+	}{
+		{
+			name: "clone success",
+			originalSpec: &PipedSpec{
+				ProjectID:             "test-project",
+				PipedID:               "test-piped",
+				PipedKeyFile:          "etc/piped/key",
+				APIAddress:            "your-pipecd.domain",
+				WebAddress:            "https://your-pipecd.domain",
+				SyncInterval:          Duration(time.Minute),
+				AppConfigSyncInterval: Duration(time.Minute),
+				Git: PipedGit{
+					Username:   "username",
+					Email:      "username@email.com",
+					SSHKeyFile: "/etc/piped-secret/ssh-key",
+				},
+				Repositories: []PipedRepository{
+					{
+						RepoID: "repo1",
+						Remote: "git@github.com:org/repo1.git",
+						Branch: "master",
+					},
+					{
+						RepoID: "repo2",
+						Remote: "git@github.com:org/repo2.git",
+						Branch: "master",
+					},
+				},
+				ChartRepositories: []HelmChartRepository{
+					{
+						Type:    HTTPHelmChartRepository,
+						Name:    "fantastic-charts",
+						Address: "https://fantastic-charts.storage.googleapis.com",
+					},
+					{
+						Type:     HTTPHelmChartRepository,
+						Name:     "private-charts",
+						Address:  "https://private-charts.com",
+						Username: "basic-username",
+						Password: "basic-password",
+						Insecure: true,
+					},
+				},
+				ChartRegistries: []HelmChartRegistry{
+					{
+						Type:     OCIHelmChartRegistry,
+						Address:  "registry.example.com",
+						Username: "sample-username",
+						Password: "sample-password",
+					},
+				},
+				PlatformProviders: []PipedPlatformProvider{
+					{
+						Name: "kubernetes-default",
+						Type: model.PlatformProviderKubernetes,
+						KubernetesConfig: &PlatformProviderKubernetesConfig{
+							MasterURL:      "https://example.com",
+							KubeConfigPath: "/etc/kube/config",
+							AppStateInformer: KubernetesAppStateInformer{
+								IncludeResources: []KubernetesResourceMatcher{
+									{
+										APIVersion: "pipecd.dev/v1beta1",
+									},
+									{
+										APIVersion: "networking.gke.io/v1beta1",
+										Kind:       "ManagedCertificate",
+									},
+								},
+								ExcludeResources: []KubernetesResourceMatcher{
+									{
+										APIVersion: "v1",
+										Kind:       "Endpoints",
+									},
+								},
+							},
+						},
+					},
+					{
+						Name:             "kubernetes-dev",
+						Type:             model.PlatformProviderKubernetes,
+						KubernetesConfig: &PlatformProviderKubernetesConfig{},
+					},
+					{
+						Name: "terraform",
+						Type: model.PlatformProviderTerraform,
+						TerraformConfig: &PlatformProviderTerraformConfig{
+							Vars: []string{
+								"project=gcp-project",
+								"region=us-centra1",
+							},
+						},
+					},
+					{
+						Name: "cloudrun",
+						Type: model.PlatformProviderCloudRun,
+						CloudRunConfig: &PlatformProviderCloudRunConfig{
+							Project:         "gcp-project-id",
+							Region:          "cloud-run-region",
+							CredentialsFile: "/etc/piped-secret/gcp-service-account.json",
+						},
+					},
+					{
+						Name: "lambda",
+						Type: model.PlatformProviderLambda,
+						LambdaConfig: &PlatformProviderLambdaConfig{
+							Region: "us-east-1",
+						},
+					},
+				},
+				AnalysisProviders: []PipedAnalysisProvider{
+					{
+						Name: "prometheus-dev",
+						Type: model.AnalysisProviderPrometheus,
+						PrometheusConfig: &AnalysisProviderPrometheusConfig{
+							Address: "https://your-prometheus.dev",
+						},
+					},
+					{
+						Name: "datadog-dev",
+						Type: model.AnalysisProviderDatadog,
+						DatadogConfig: &AnalysisProviderDatadogConfig{
+							Address:            "https://your-datadog.dev",
+							APIKeyFile:         "/etc/piped-secret/datadog-api-key",
+							ApplicationKeyFile: "/etc/piped-secret/datadog-application-key",
+						},
+					},
+					{
+						Name: "stackdriver-dev",
+						Type: model.AnalysisProviderStackdriver,
+						StackdriverConfig: &AnalysisProviderStackdriverConfig{
+							ServiceAccountFile: "/etc/piped-secret/gcp-service-account.json",
+						},
+					},
+				},
+				Notifications: Notifications{
+					Routes: []NotificationRoute{
+						{
+							Name: "dev-slack",
+							Labels: map[string]string{
+								"env":  "dev",
+								"team": "pipecd",
+							},
+							Receiver: "dev-slack-channel",
+						},
+						{
+							Name: "prod-slack",
+							Labels: map[string]string{
+								"env": "dev",
+							},
+							Events:   []string{"DEPLOYMENT_STARTED", "DEPLOYMENT_COMPLETED"},
+							Receiver: "prod-slack-channel",
+						},
+						{
+							Name:     "all-events-to-ci",
+							Receiver: "ci-webhook",
+						},
+					},
+					Receivers: []NotificationReceiver{
+						{
+							Name: "dev-slack-channel",
+							Slack: &NotificationReceiverSlack{
+								HookURL: "https://slack.com/dev",
+							},
+						},
+						{
+							Name: "prod-slack-channel",
+							Slack: &NotificationReceiverSlack{
+								HookURL: "https://slack.com/prod",
+							},
+						},
+						{
+							Name: "ci-webhook",
+							Webhook: &NotificationReceiverWebhook{
+								URL:            "https://pipecd.dev/dev-hook",
+								SignatureKey:   "PipeCD-Signature",
+								SignatureValue: "random-signature-string",
+							},
+						},
+					},
+				},
+				SecretManagement: &SecretManagement{
+					Type: model.SecretManagementTypeKeyPair,
+					KeyPair: &SecretManagementKeyPair{
+						PrivateKeyFile: "/etc/piped-secret/pair-private-key",
+						PublicKeyFile:  "/etc/piped-secret/pair-public-key",
+					},
+				},
+				EventWatcher: PipedEventWatcher{
+					CheckInterval: Duration(10 * time.Minute),
+					GitRepos: []PipedEventWatcherGitRepo{
+						{
+							RepoID:        "repo-1",
+							CommitMessage: "Update values by Event watcher",
+							Includes:      []string{"event-watcher-dev.yaml", "event-watcher-stg.yaml"},
+						},
+					},
+				},
+			},
+			expectedSpec: &PipedSpec{
+				ProjectID:             "test-project",
+				PipedID:               "test-piped",
+				PipedKeyFile:          "etc/piped/key",
+				APIAddress:            "your-pipecd.domain",
+				WebAddress:            "https://your-pipecd.domain",
+				SyncInterval:          Duration(time.Minute),
+				AppConfigSyncInterval: Duration(time.Minute),
+				Git: PipedGit{
+					Username:   "username",
+					Email:      "username@email.com",
+					SSHKeyFile: "/etc/piped-secret/ssh-key",
+				},
+				Repositories: []PipedRepository{
+					{
+						RepoID: "repo1",
+						Remote: "git@github.com:org/repo1.git",
+						Branch: "master",
+					},
+					{
+						RepoID: "repo2",
+						Remote: "git@github.com:org/repo2.git",
+						Branch: "master",
+					},
+				},
+				ChartRepositories: []HelmChartRepository{
+					{
+						Type:    HTTPHelmChartRepository,
+						Name:    "fantastic-charts",
+						Address: "https://fantastic-charts.storage.googleapis.com",
+					},
+					{
+						Type:     HTTPHelmChartRepository,
+						Name:     "private-charts",
+						Address:  "https://private-charts.com",
+						Username: "basic-username",
+						Password: "basic-password",
+						Insecure: true,
+					},
+				},
+				ChartRegistries: []HelmChartRegistry{
+					{
+						Type:     OCIHelmChartRegistry,
+						Address:  "registry.example.com",
+						Username: "sample-username",
+						Password: "sample-password",
+					},
+				},
+				PlatformProviders: []PipedPlatformProvider{
+					{
+						Name: "kubernetes-default",
+						Type: model.PlatformProviderKubernetes,
+						KubernetesConfig: &PlatformProviderKubernetesConfig{
+							MasterURL:      "https://example.com",
+							KubeConfigPath: "/etc/kube/config",
+							AppStateInformer: KubernetesAppStateInformer{
+								IncludeResources: []KubernetesResourceMatcher{
+									{
+										APIVersion: "pipecd.dev/v1beta1",
+									},
+									{
+										APIVersion: "networking.gke.io/v1beta1",
+										Kind:       "ManagedCertificate",
+									},
+								},
+								ExcludeResources: []KubernetesResourceMatcher{
+									{
+										APIVersion: "v1",
+										Kind:       "Endpoints",
+									},
+								},
+							},
+						},
+					},
+					{
+						Name:             "kubernetes-dev",
+						Type:             model.PlatformProviderKubernetes,
+						KubernetesConfig: &PlatformProviderKubernetesConfig{},
+					},
+					{
+						Name: "terraform",
+						Type: model.PlatformProviderTerraform,
+						TerraformConfig: &PlatformProviderTerraformConfig{
+							Vars: []string{
+								"project=gcp-project",
+								"region=us-centra1",
+							},
+						},
+					},
+					{
+						Name: "cloudrun",
+						Type: model.PlatformProviderCloudRun,
+						CloudRunConfig: &PlatformProviderCloudRunConfig{
+							Project:         "gcp-project-id",
+							Region:          "cloud-run-region",
+							CredentialsFile: "/etc/piped-secret/gcp-service-account.json",
+						},
+					},
+					{
+						Name: "lambda",
+						Type: model.PlatformProviderLambda,
+						LambdaConfig: &PlatformProviderLambdaConfig{
+							Region: "us-east-1",
+						},
+					},
+				},
+				AnalysisProviders: []PipedAnalysisProvider{
+					{
+						Name: "prometheus-dev",
+						Type: model.AnalysisProviderPrometheus,
+						PrometheusConfig: &AnalysisProviderPrometheusConfig{
+							Address: "https://your-prometheus.dev",
+						},
+					},
+					{
+						Name: "datadog-dev",
+						Type: model.AnalysisProviderDatadog,
+						DatadogConfig: &AnalysisProviderDatadogConfig{
+							Address:            "https://your-datadog.dev",
+							APIKeyFile:         "/etc/piped-secret/datadog-api-key",
+							ApplicationKeyFile: "/etc/piped-secret/datadog-application-key",
+						},
+					},
+					{
+						Name: "stackdriver-dev",
+						Type: model.AnalysisProviderStackdriver,
+						StackdriverConfig: &AnalysisProviderStackdriverConfig{
+							ServiceAccountFile: "/etc/piped-secret/gcp-service-account.json",
+						},
+					},
+				},
+				Notifications: Notifications{
+					Routes: []NotificationRoute{
+						{
+							Name: "dev-slack",
+							Labels: map[string]string{
+								"env":  "dev",
+								"team": "pipecd",
+							},
+							Receiver: "dev-slack-channel",
+						},
+						{
+							Name: "prod-slack",
+							Labels: map[string]string{
+								"env": "dev",
+							},
+							Events:   []string{"DEPLOYMENT_STARTED", "DEPLOYMENT_COMPLETED"},
+							Receiver: "prod-slack-channel",
+						},
+						{
+							Name:     "all-events-to-ci",
+							Receiver: "ci-webhook",
+						},
+					},
+					Receivers: []NotificationReceiver{
+						{
+							Name: "dev-slack-channel",
+							Slack: &NotificationReceiverSlack{
+								HookURL: "https://slack.com/dev",
+							},
+						},
+						{
+							Name: "prod-slack-channel",
+							Slack: &NotificationReceiverSlack{
+								HookURL: "https://slack.com/prod",
+							},
+						},
+						{
+							Name: "ci-webhook",
+							Webhook: &NotificationReceiverWebhook{
+								URL:            "https://pipecd.dev/dev-hook",
+								SignatureKey:   "PipeCD-Signature",
+								SignatureValue: "random-signature-string",
+							},
+						},
+					},
+				},
+				SecretManagement: &SecretManagement{
+					Type: model.SecretManagementTypeKeyPair,
+					KeyPair: &SecretManagementKeyPair{
+						PrivateKeyFile: "/etc/piped-secret/pair-private-key",
+						PublicKeyFile:  "/etc/piped-secret/pair-public-key",
+					},
+				},
+				EventWatcher: PipedEventWatcher{
+					CheckInterval: Duration(10 * time.Minute),
+					GitRepos: []PipedEventWatcherGitRepo{
+						{
+							RepoID:        "repo-1",
+							CommitMessage: "Update values by Event watcher",
+							Includes:      []string{"event-watcher-dev.yaml", "event-watcher-stg.yaml"},
+						},
+					},
+				},
+			},
+			expectedError: nil,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			cloned, err := tc.originalSpec.Clone()
+			require.Equal(t, tc.expectedError, err)
+			if err == nil {
+				assert.Equal(t, tc.expectedSpec, cloned)
+			}
 		})
 	}
 }

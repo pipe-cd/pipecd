@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"strings"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -85,7 +85,7 @@ func (e *deployExecutor) ensureBaselineRollout(ctx context.Context) model.StageS
 
 	// Start rolling out the resources for BASELINE variant.
 	e.LogPersister.Info("Start rolling out BASELINE variant...")
-	if err := applyManifests(ctx, e.applier, baselineManifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, e.applierGetter, baselineManifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -101,7 +101,7 @@ func (e *deployExecutor) ensureBaselineClean(ctx context.Context) model.StageSta
 	}
 
 	resources := strings.Split(value, ",")
-	if err := removeBaselineResources(ctx, e.applier, resources, e.LogPersister); err != nil {
+	if err := removeBaselineResources(ctx, e.applierGetter, resources, e.LogPersister); err != nil {
 		e.LogPersister.Errorf("Unable to remove baseline resources: %v", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -157,7 +157,7 @@ func (e *deployExecutor) generateBaselineManifests(manifests []provider.Manifest
 	return baselineManifests, nil
 }
 
-func removeBaselineResources(ctx context.Context, applier provider.Applier, resources []string, lp executor.LogPersister) error {
+func removeBaselineResources(ctx context.Context, ag applierGetter, resources []string, lp executor.LogPersister) error {
 	if len(resources) == 0 {
 		return nil
 	}
@@ -181,13 +181,13 @@ func removeBaselineResources(ctx context.Context, applier provider.Applier, reso
 
 	// We delete the service first to close all incoming connections.
 	lp.Info("Starting finding and deleting service resources of BASELINE variant")
-	if err := deleteResources(ctx, applier, serviceKeys, lp); err != nil {
+	if err := deleteResources(ctx, ag, serviceKeys, lp); err != nil {
 		return err
 	}
 
 	// Next, delete all workloads.
 	lp.Info("Starting finding and deleting workload resources of BASELINE variant")
-	if err := deleteResources(ctx, applier, workloadKeys, lp); err != nil {
+	if err := deleteResources(ctx, ag, workloadKeys, lp); err != nil {
 		return err
 	}
 

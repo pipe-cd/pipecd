@@ -55,7 +55,7 @@ const ADD_FROM_GIT_CONFIRM_DIALOG_TITLE = "Add Application";
 const ADD_FROM_GIT_CONFIRM_DIALOG_DESCRIPTION =
   "Are you sure you want to add the application?";
 
-const createCloudProviderListFromPiped = ({
+const createPlatformProviderListFromPiped = ({
   kind,
   piped,
 }: {
@@ -66,7 +66,12 @@ const createCloudProviderListFromPiped = ({
     return [{ name: "None", value: "" }];
   }
 
-  return piped.cloudProvidersList
+  const providerList: Array<{ name: string; type: string }> = [
+    ...piped.cloudProvidersList,
+    ...piped.platformProvidersList,
+  ];
+
+  return providerList
     .filter((provider) => provider.type === APPLICATION_KIND_TEXT[kind])
     .map((provider) => ({
       name: provider.name,
@@ -180,6 +185,10 @@ function a11yProps(index: number): { id: string; "aria-controls": string } {
   };
 }
 
+const sortComp = (a: string, b: string): number => {
+  return a > b ? 1 : -1;
+};
+
 export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
   const classes = useStyles();
 
@@ -292,7 +301,7 @@ export const validationSchema = yup.object().shape({
     .required(),
   repoPath: yup.string().required(),
   configFilename: yup.string().required(),
-  cloudProvider: yup.string().required(),
+  platformProvider: yup.string().required(),
 });
 
 export interface ApplicationFormValue {
@@ -301,7 +310,7 @@ export interface ApplicationFormValue {
   pipedId: string;
   repoPath: string;
   configFilename: string;
-  cloudProvider: string;
+  platformProvider: string;
   repo: {
     id: string;
     remote: string;
@@ -322,7 +331,7 @@ export const emptyFormValues: ApplicationFormValue = {
   pipedId: "",
   repoPath: "",
   configFilename: "app.pipecd.yaml",
-  cloudProvider: "",
+  platformProvider: "",
   repo: {
     id: "",
     remote: "",
@@ -347,11 +356,13 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
   }) {
     const classes = useStyles();
     const ps = useAppSelector((state) => selectAllPipeds(state));
-    const pipeds = ps.filter((piped) => !piped.disabled);
+    const pipeds = ps
+      .filter((piped) => !piped.disabled)
+      .sort((a, b) => sortComp(a.name, b.name));
 
     const selectedPiped = useAppSelector(selectPipedById(values.pipedId));
 
-    const cloudProviders = createCloudProviderListFromPiped({
+    const platformProviders = createPlatformProviderListFromPiped({
       piped: selectedPiped,
       kind: values.kind,
     });
@@ -412,14 +423,14 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
             />
             <div className={classes.inputGroupSpace} />
             <FormSelectInput
-              id="cloudProvider"
-              label="Cloud Provider"
-              value={values.cloudProvider}
-              onChange={({ value }) => setFieldValue("cloudProvider", value)}
-              items={cloudProviders}
+              id="platformProvider"
+              label="Platform Provider"
+              value={values.platformProvider}
+              onChange={({ value }) => setFieldValue("platformProvider", value)}
+              items={platformProviders}
               disabled={
                 selectedPiped === undefined ||
-                cloudProviders.length === 0 ||
+                platformProviders.length === 0 ||
                 isSubmitting
               }
             />
@@ -500,33 +511,41 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
   }
 );
 
-interface CloudProviderFilterOptions {
+interface PlatformProviderFilterOptions {
   pipedId: string;
-  cloudProvider: string;
+  platformProvider: string;
   kind: string;
 }
 
-interface CloudProviderFilterProps {
-  onChange: (options: CloudProviderFilterOptions) => void;
+interface PlatformProviderFilterProps {
+  onChange: (options: PlatformProviderFilterOptions) => void;
 }
 
-const CloudProviderFilter: FC<CloudProviderFilterProps> = memo(
-  function CloudProviderFilter({ onChange }) {
+const PlatformProviderFilter: FC<PlatformProviderFilterProps> = memo(
+  function PlatformProviderFilter({ onChange }) {
     const classes = useStyles();
     const ps = useAppSelector((state) => selectAllPipeds(state));
-    const pipeds = ps.filter((piped) => !piped.disabled);
+    const pipeds = ps
+      .filter((piped) => !piped.disabled)
+      .sort((a, b) => sortComp(a.name, b.name));
 
     const [selectedPipedId, setSelectedPipedId] = useState(
       pipeds.length === 1 ? pipeds[0].id : ""
     );
     const selectedPiped = useAppSelector(selectPipedById(selectedPipedId));
-    const cloudProviders = selectedPiped
-      ? selectedPiped.cloudProvidersList
+    const platformProviders: Array<{
+      name: string;
+      type: string;
+    }> = selectedPiped
+      ? [
+          ...selectedPiped.platformProvidersList,
+          ...selectedPiped.cloudProvidersList,
+        ]
       : [];
 
-    let options: CloudProviderFilterOptions;
+    let options: PlatformProviderFilterOptions;
     const handleUpdateFilterValue = (
-      optionPart: Partial<CloudProviderFilterOptions>
+      optionPart: Partial<PlatformProviderFilterOptions>
     ): void => {
       onChange({ ...options, ...optionPart });
     };
@@ -557,26 +576,28 @@ const CloudProviderFilter: FC<CloudProviderFilterProps> = memo(
         </FormControl>
         <div className={classes.inputGroupSpace} />
         <FormControl className={classes.formItem} variant="outlined">
-          <InputLabel id="filter-cloud-provider">Cloud Provider</InputLabel>
+          <InputLabel id="filter-platform-provider">
+            Platform Provider
+          </InputLabel>
           <Select
-            labelId="filter-cloud-provider"
-            id="filter-cloud-provider"
-            label="CloudProvider"
+            labelId="filter-platform-provider"
+            id="filter-platform-provider"
+            label="PlatformProvider"
             className={classes.select}
             disabled={selectedPipedId === ""}
             onChange={(e) => {
               const values = e.target.value as ReadonlyArray<string>;
               handleUpdateFilterValue({
-                cloudProvider: values[0],
+                platformProvider: values[0],
                 kind: values[1],
                 pipedId: selectedPipedId,
               });
             }}
           >
-            {cloudProviders.map((e) => (
+            {platformProviders.map((e) => (
               <MenuItem
                 value={[e.name, e.type] as ReadonlyArray<string>}
-                key={`cloud-provider-${e.name}`}
+                key={`platform-provider-${e.name}`}
               >
                 {e.name}
               </MenuItem>
@@ -602,7 +623,9 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
 
     const [selectedPipedId, setSelectedPipedId] = useState("");
     const [selectedKind, setSelectedKind] = useState("");
-    const [selectedCloudProvider, setSelectedCloudProvider] = useState("");
+    const [selectedPlatformProvider, setSelectedPlatformProvider] = useState(
+      ""
+    );
     const [selectedAppIndex, setSelectedAppIndex] = useState(-1);
     const [
       selectedApp,
@@ -614,11 +637,13 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
 
     useEffect(() => {
       setFilteredApps(
-        apps.filter(
-          (app) =>
-            app.pipedId === selectedPipedId &&
-            app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
-        )
+        apps
+          .filter(
+            (app) =>
+              app.pipedId === selectedPipedId &&
+              app.kind === APPLICATION_KIND_BY_NAME[selectedKind]
+          )
+          .sort((a, b) => sortComp(a.name, b.name))
       );
     }, [apps, selectedPipedId, selectedKind]);
 
@@ -629,21 +654,20 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
       pipedId: "",
       repo: {} as ApplicationGitRepository.AsObject,
       repoPath: "",
-      configPath: "",
       configFilename: "",
       kind: ApplicationKind.KUBERNETES,
-      cloudProvider: "",
+      platformProvider: "",
       labels: new Array<[string, string]>(),
     });
 
     const handleFilterChange = useCallback(
-      (options: CloudProviderFilterOptions) => {
+      (options: PlatformProviderFilterOptions) => {
         setSelectedApp(null);
         setSelectedAppIndex(-1);
         setSelectedPipedId(options.pipedId);
         setSelectedKind(options.kind);
-        setSelectedCloudProvider(options.cloudProvider);
-        setActiveStep(options.cloudProvider ? 1 : 0);
+        setSelectedPlatformProvider(options.platformProvider);
+        setActiveStep(options.platformProvider ? 1 : 0);
       },
       []
     );
@@ -658,12 +682,12 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
           </Typography>
           <Divider />
           <Stepper activeStep={activeStep} orientation="vertical">
-            <Step key="Select piped and cloud provider" active>
-              <StepLabel>Select piped and cloud provider</StepLabel>
+            <Step key="Select piped and platform provider" active>
+              <StepLabel>Select piped and platform provider</StepLabel>
               <StepContent>
                 <div className={classes.actionsContainer}>
                   <div>
-                    <CloudProviderFilter onChange={handleFilterChange} />
+                    <PlatformProviderFilter onChange={handleFilterChange} />
                   </div>
                 </div>
               </StepContent>
@@ -767,10 +791,9 @@ const SelectFromSuggestionsForm: FC<ApplicationFormProps> = memo(
                     id: selectedApp.repoId,
                   } as ApplicationGitRepository.AsObject,
                   repoPath: selectedApp.path,
-                  configPath: "",
                   configFilename: selectedApp.configFilename,
                   kind: selectedApp.kind,
-                  cloudProvider: selectedCloudProvider,
+                  platformProvider: selectedPlatformProvider,
                   labels: selectedApp.labelsMap,
                 });
                 setShowConfirm(true);

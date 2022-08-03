@@ -8,7 +8,7 @@ on:
       - 'v*'
 
 env:
-  REGISTRY: ghcr.io
+  GHCR: ghcr.io
 
 jobs:
   tool:
@@ -24,9 +24,9 @@ jobs:
 
       # Login to push container images.
       - name: Log in to the container registry
-        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        uses: docker/login-action@49ed152c8eca782a232dede0303416e8f356c37b #v2.0.0
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ${{ env.GHCR }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -35,33 +35,40 @@ jobs:
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: tool/actions-gh-release
-          tags: ${{ env.REGISTRY }}/pipe-cd/actions-gh-release:${{ env.PIPECD_VERSION }}
+          tags: ${{ env.GHCR }}/pipe-cd/actions-gh-release:${{ env.PIPECD_VERSION }}
           push: true
 
       - name: Build and push actions-plan-preview image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: tool/actions-plan-preview
-          tags: ${{ env.REGISTRY }}/pipe-cd/actions-plan-preview:${{ env.PIPECD_VERSION }}
+          tags: ${{ env.GHCR }}/pipe-cd/actions-plan-preview:${{ env.PIPECD_VERSION }}
           push: true
 
       - name: Build and push codegen image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: tool/codegen
-          tags: ${{ env.REGISTRY }}/pipe-cd/codegen:${{ env.PIPECD_VERSION }}
+          tags: ${{ env.GHCR }}/pipe-cd/codegen:${{ env.PIPECD_VERSION }}
           push: true
 
       - name: Build and push piped-base image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: tool/piped-base
-          tags: ${{ env.REGISTRY }}/pipe-cd/piped-base:${{ env.PIPECD_VERSION }}
+          tags: ${{ env.GHCR }}/pipe-cd/piped-base:${{ env.PIPECD_VERSION }}
           push: true
 
       - name: Build and push piped-base-okd image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: tool/piped-base-okd
-          tags: ${{ env.REGISTRY }}/pipe-cd/piped-base-okd:${{ env.PIPECD_VERSION }}
+          tags: ${{ env.GHCR }}/pipe-cd/piped-base-okd:${{ env.PIPECD_VERSION }}
+          push: true
+
+      - name: Build and push firestore-emulator image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: tool/firestore-emulator
+          tags: ${{ env.GHCR }}/pipe-cd/firestore-emulator:${{ env.PIPECD_VERSION }}
           push: true

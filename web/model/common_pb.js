@@ -149,7 +149,6 @@ proto.model.ApplicationGitPath.toObject = function(includeInstance, msg) {
   var f, obj = {
     repo: (f = msg.getRepo()) && proto.model.ApplicationGitRepository.toObject(includeInstance, f),
     path: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    configPath: jspb.Message.getFieldWithDefault(msg, 3, ""),
     configFilename: jspb.Message.getFieldWithDefault(msg, 4, ""),
     url: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
@@ -196,10 +195,6 @@ proto.model.ApplicationGitPath.deserializeBinaryFromReader = function(msg, reade
     case 2:
       var value = /** @type {string} */ (reader.readString());
       msg.setPath(value);
-      break;
-    case 3:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setConfigPath(value);
       break;
     case 4:
       var value = /** @type {string} */ (reader.readString());
@@ -250,13 +245,6 @@ proto.model.ApplicationGitPath.serializeBinaryToWriter = function(message, write
   if (f.length > 0) {
     writer.writeString(
       2,
-      f
-    );
-  }
-  f = message.getConfigPath();
-  if (f.length > 0) {
-    writer.writeString(
-      3,
       f
     );
   }
@@ -329,24 +317,6 @@ proto.model.ApplicationGitPath.prototype.getPath = function() {
  */
 proto.model.ApplicationGitPath.prototype.setPath = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
-};
-
-
-/**
- * optional string config_path = 3;
- * @return {string}
- */
-proto.model.ApplicationGitPath.prototype.getConfigPath = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.model.ApplicationGitPath} returns this
- */
-proto.model.ApplicationGitPath.prototype.setConfigPath = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 

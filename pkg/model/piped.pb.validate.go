@@ -80,8 +80,6 @@ func (m *Piped) validate(all bool) error {
 
 	// no validation rules for Desc
 
-	// no validation rules for KeyHash
-
 	if utf8.RuneCountInString(m.GetProjectId()) < 1 {
 		err := PipedValidationError{
 			field:  "ProjectId",
@@ -177,6 +175,40 @@ func (m *Piped) validate(all bool) error {
 	}
 
 	// no validation rules for Config
+
+	for idx, item := range m.GetPlatformProviders() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, PipedValidationError{
+						field:  fmt.Sprintf("PlatformProviders[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, PipedValidationError{
+						field:  fmt.Sprintf("PlatformProviders[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return PipedValidationError{
+					field:  fmt.Sprintf("PlatformProviders[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
 
 	if all {
 		switch v := interface{}(m.GetSecretEncryption()).(type) {
@@ -599,6 +631,130 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = Piped_CloudProviderValidationError{}
+
+// Validate checks the field values on Piped_PlatformProvider with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *Piped_PlatformProvider) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Piped_PlatformProvider with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// Piped_PlatformProviderMultiError, or nil if none found.
+func (m *Piped_PlatformProvider) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Piped_PlatformProvider) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := Piped_PlatformProviderValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetType()) < 1 {
+		err := Piped_PlatformProviderValidationError{
+			field:  "Type",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return Piped_PlatformProviderMultiError(errors)
+	}
+
+	return nil
+}
+
+// Piped_PlatformProviderMultiError is an error wrapping multiple validation
+// errors returned by Piped_PlatformProvider.ValidateAll() if the designated
+// constraints aren't met.
+type Piped_PlatformProviderMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m Piped_PlatformProviderMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m Piped_PlatformProviderMultiError) AllErrors() []error { return m }
+
+// Piped_PlatformProviderValidationError is the validation error returned by
+// Piped_PlatformProvider.Validate if the designated constraints aren't met.
+type Piped_PlatformProviderValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e Piped_PlatformProviderValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e Piped_PlatformProviderValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e Piped_PlatformProviderValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e Piped_PlatformProviderValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e Piped_PlatformProviderValidationError) ErrorName() string {
+	return "Piped_PlatformProviderValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e Piped_PlatformProviderValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPiped_PlatformProvider.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = Piped_PlatformProviderValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = Piped_PlatformProviderValidationError{}
 
 // Validate checks the field values on Piped_SecretEncryption with the rules
 // defined in the proto definition for this message. If any rules are

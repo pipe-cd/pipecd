@@ -24,9 +24,9 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes/kubernetestest"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes/kubernetestest"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/cachetest"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -137,11 +137,13 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					}, nil)
 					return p
 				}(),
-				applier: func() provider.Applier {
-					p := kubernetestest.NewMockApplier(ctrl)
-					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
-					return p
-				}(),
+				applierGetter: &applierGroup{
+					defaultApplier: func() provider.Applier {
+						p := kubernetestest.NewMockApplier(ctrl)
+						p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
+						return p
+					}(),
+				},
 				appCfg: &config.KubernetesApplicationSpec{},
 			},
 		},
@@ -190,12 +192,14 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					}, nil)
 					return p
 				}(),
-				applier: func() provider.Applier {
-					p := kubernetestest.NewMockApplier(ctrl)
-					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
-					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
-					return p
-				}(),
+				applierGetter: &applierGroup{
+					defaultApplier: func() provider.Applier {
+						p := kubernetestest.NewMockApplier(ctrl)
+						p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
+						p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
+						return p
+					}(),
+				},
 				appCfg: &config.KubernetesApplicationSpec{
 					Service: config.K8sResourceReference{
 						Kind: "Service",

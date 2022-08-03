@@ -18,7 +18,7 @@ import (
 	"context"
 	"time"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -76,7 +76,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 
 	// Start applying all manifests to add or update running resources.
-	if err := applyManifests(ctx, e.applier, manifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
+	if err := applyManifests(ctx, e.applierGetter, manifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -112,7 +112,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	e.LogPersister.Infof("Found %d live resources that are no longer defined in Git", len(removeKeys))
 
 	// Start deleting all running resources that are not defined in Git.
-	if err := deleteResources(ctx, e.applier, removeKeys, e.LogPersister); err != nil {
+	if err := deleteResources(ctx, e.applierGetter, removeKeys, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

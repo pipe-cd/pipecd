@@ -23,17 +23,16 @@ export const updateApplication = createAsyncThunk<
     pipedId: string;
     repo: ApplicationGitRepository.AsObject;
     repoPath: string;
-    configPath?: string;
     configFilename?: string;
     kind: ApplicationKind;
-    cloudProvider: string;
+    platformProvider: string;
   }
 >(`${MODULE_NAME}/update`, async (values) => {
   await applicationAPI.updateApplication({
     applicationId: values.applicationId,
     name: values.name,
     pipedId: values.pipedId,
-    cloudProvider: values.cloudProvider,
+    platformProvider: values.platformProvider,
     kind: values.kind,
     configFilename: values.configFilename || "",
   });

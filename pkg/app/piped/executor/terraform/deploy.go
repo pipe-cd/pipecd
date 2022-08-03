@@ -17,8 +17,8 @@ package terraform
 import (
 	"context"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/terraform"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/terraform"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -34,7 +34,7 @@ type deployExecutor struct {
 }
 
 func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
-	_, cloudProviderCfg, found := findCloudProvider(&e.Input)
+	providerCfg, found := findPlatformProvider(&e.Input)
 	if !found {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -55,8 +55,8 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	e.repoDir = ds.RepoDir
 	e.appDir = ds.AppDir
 
-	e.vars = make([]string, 0, len(cloudProviderCfg.Vars)+len(e.appCfg.Input.Vars))
-	e.vars = append(e.vars, cloudProviderCfg.Vars...)
+	e.vars = make([]string, 0, len(providerCfg.Vars)+len(e.appCfg.Input.Vars))
+	e.vars = append(e.vars, providerCfg.Vars...)
 	e.vars = append(e.vars, e.appCfg.Input.Vars...)
 
 	var (

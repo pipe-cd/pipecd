@@ -15,39 +15,67 @@
 package firestore
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"testing"
+
+	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
+
+	"github.com/pipe-cd/pipecd/pkg/datastore/firestore"
 )
 
-const emulatorHost = "localhost:8080"
+const (
+	env        = "FIRESTORE_EMULATOR_HOST"
+	port       = "8080"
+	repository = "ghcr.io/pipe-cd/firestore-emulator"
+	tag        = "v0.34.0-3-gf22c209"
+	project    = "pipecd-test"
+)
+
+var store *firestore.FireStore
 
 func TestMain(m *testing.M) {
-	ctx, cancel := context.WithCancel(context.Background())
-
-	os.Setenv("FIRESTORE_EMULATOR_HOST", emulatorHost)
-	cmd := exec.CommandContext(ctx, "gcloud", "beta", "emulators", "firestore", "start", fmt.Sprintf("--host-port=%s", emulatorHost))
-
-	b := new(bytes.Buffer)
-	cmd.Stdout = b
-	cmd.Stderr = b
-	defer func() {
-		cancel()
-		if err := cmd.Wait(); err != nil {
-			log.Fatal(err)
+	pool, err := dockertest.NewPool("")
+	if err != nil {
+		log.Fatalf("Failed to connect to docker: %s", err)
+	}
+	opts := &dockertest.RunOptions{
+		Repository: repository,
+		Tag:        tag,
+	}
+	hcOpts := func(config *docker.HostConfig) {
+		config.AutoRemove = true
+		config.RestartPolicy = docker.RestartPolicy{
+			Name: "no",
 		}
-		log.Printf("=== Firestore Emulator Output ===\n%s\n=== Firestore Emulator Output End ===\n", b.String())
-	}()
+	}
+	res, err := pool.RunWithOptions(opts, hcOpts)
+	if err != nil {
+		log.Fatalf("Failed to start resource: %s", err)
+	}
 
-	if err := cmd.Start(); err != nil {
-		log.Fatal(err)
+	portID := fmt.Sprintf("%s/tcp", port)
+	host := fmt.Sprintf("localhost:%s", res.GetPort(portID))
+	os.Setenv(env, host)
+
+	ctx := context.Background()
+	store, err = firestore.NewFireStore(ctx, project, "namespace", "environment")
+	if err != nil {
+		log.Fatalf("Failed to connect to docker: %s", err)
 	}
 
 	code := m.Run()
+
+	if err := res.Close(); err != nil {
+		log.Fatalf("Failed to purge resource: %s", err)
+	}
+
+	if err := store.Close(); err != nil {
+		log.Fatal(err)
+	}
 
 	os.Exit(code)
 }

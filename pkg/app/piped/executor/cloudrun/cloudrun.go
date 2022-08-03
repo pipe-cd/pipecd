@@ -17,9 +17,9 @@ package cloudrun
 import (
 	"context"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -58,16 +58,16 @@ func loadServiceManifest(in *executor.Input, serviceManifestFile string, ds *dep
 	return sm, true
 }
 
-func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProviderCloudRunConfig, found bool) {
-	name = in.Application.CloudProvider
+func findPlatformProvider(in *executor.Input) (name string, cfg *config.PlatformProviderCloudRunConfig, found bool) {
+	name = in.Application.PlatformProvider
 	if name == "" {
-		in.LogPersister.Error("Missing the CloudProvider name in the application configuration")
+		in.LogPersister.Error("Missing the PlatformProvider name in the application configuration")
 		return
 	}
 
-	cp, ok := in.PipedConfig.FindCloudProvider(name, model.ApplicationKind_CLOUDRUN)
+	cp, ok := in.PipedConfig.FindPlatformProvider(name, model.ApplicationKind_CLOUDRUN)
 	if !ok {
-		in.LogPersister.Errorf("The specified cloud provider %q was not found in piped configuration", name)
+		in.LogPersister.Errorf("The specified platform provider %q was not found in piped configuration", name)
 		return
 	}
 

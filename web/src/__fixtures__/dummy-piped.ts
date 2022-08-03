@@ -16,6 +16,7 @@ export const dummyPiped: Piped.AsObject = {
       type: "TERRAFORM",
     },
   ],
+  platformProvidersList: [],
   desc: randomText(1),
   disabled: false,
   id: randomUUID(),
@@ -29,7 +30,6 @@ export const dummyPiped: Piped.AsObject = {
   desiredVersion: "v1.0.0",
   status: Piped.ConnectionStatus.ONLINE,
   config: "apiVersion: pipecd.dev/v1beta1",
-  keyHash: "12345",
   keysList: [
     { hash: "key-1", creator: "user", createdAt: createdAt.unix() },
     { hash: "key-2", creator: "user", createdAt: createdAt.unix() },

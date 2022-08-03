@@ -34,7 +34,7 @@ type deployExecutor struct {
 	deploySource      *deploysource.DeploySource
 	appCfg            *config.LambdaApplicationSpec
 	cloudProviderName string
-	cloudProviderCfg  *config.CloudProviderLambdaConfig
+	cloudProviderCfg  *config.PlatformProviderLambdaConfig
 }
 
 func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
@@ -53,7 +53,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 
 	var found bool
-	e.cloudProviderName, e.cloudProviderCfg, found = findCloudProvider(&e.Input)
+	e.cloudProviderName, e.cloudProviderCfg, found = findPlatformProvider(&e.Input)
 	if !found {
 		return model.StageStatus_STAGE_FAILURE
 	}

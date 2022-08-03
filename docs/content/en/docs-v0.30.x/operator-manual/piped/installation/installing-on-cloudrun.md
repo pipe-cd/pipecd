@@ -1,9 +1,9 @@
 ---
-title: "Installing on CloudRun"
-linkTitle: "Installing on CloudRun"
+title: "Installing on Cloud Run"
+linkTitle: "Installing on Cloud Run"
 weight: 3
 description: >
-  This page describes how to install Piped on CloudRun.
+  This page describes how to install Piped on Cloud Run.
 ---
 
 ## Prerequisites
@@ -70,7 +70,7 @@ description: >
 
   then make sure that Cloud Run has the ability to access that secret as [this guide](https://cloud.google.com/run/docs/configuring/secrets#access-secret).
 
-- Running Piped in CloudRun
+- Running Piped in Cloud Run
 
   Prepare a Cloud Run service manifest file as below.
 

@@ -29,10 +29,10 @@ const (
 	maskString = "******"
 )
 
-var defaultKubernetesCloudProvider = PipedCloudProvider{
+var defaultKubernetesPlatformProvider = PipedPlatformProvider{
 	Name:             "kubernetes-default",
-	Type:             model.CloudProviderKubernetes,
-	KubernetesConfig: &CloudProviderKubernetesConfig{},
+	Type:             model.PlatformProviderKubernetes,
+	KubernetesConfig: &PlatformProviderKubernetesConfig{},
 }
 
 // PipedSpec contains configurable data used to while running Piped.
@@ -66,7 +66,10 @@ type PipedSpec struct {
 	// List of helm chart registries that should be logged in while starting up.
 	ChartRegistries []HelmChartRegistry `json:"chartRegistries,omitempty"`
 	// List of cloud providers can be used by this piped.
-	CloudProviders []PipedCloudProvider `json:"cloudProviders,omitempty"`
+	// Deprecated: use PlatformProvider instead.
+	CloudProviders []PipedPlatformProvider `json:"cloudProviders,omitempty"`
+	// List of platform providers can be used by this piped.
+	PlatformProviders []PipedPlatformProvider `json:"platformProviders,omitempty"`
 	// List of analysis providers can be used by this piped.
 	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders,omitempty"`
 	// Sending notification to Slack, Webhook…
@@ -77,6 +80,23 @@ type PipedSpec struct {
 	EventWatcher PipedEventWatcher `json:"eventWatcher"`
 	// List of labels to filter all applications this piped will handle.
 	AppSelector map[string]string `json:"appSelector,omitempty"`
+}
+
+func (s *PipedSpec) UnmarshalJSON(data []byte) error {
+	type Alias PipedSpec
+	ps := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(s),
+	}
+	if err := json.Unmarshal(data, &ps); err != nil {
+		return err
+	}
+
+	// Add all CloudProviders configuration as PlatformProviders configuration.
+	s.PlatformProviders = append(s.PlatformProviders, ps.CloudProviders...)
+	s.CloudProviders = nil
+	return nil
 }
 
 // Validate validates configured data of all fields.
@@ -127,18 +147,17 @@ func (s *PipedSpec) Validate() error {
 
 // Clone generates a cloned PipedSpec object.
 func (s *PipedSpec) Clone() (*PipedSpec, error) {
-	clone := &PipedSpec{}
-
 	js, err := json.Marshal(s)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = json.Unmarshal(js, clone); err != nil {
+	var clone PipedSpec
+	if err = json.Unmarshal(js, &clone); err != nil {
 		return nil, err
 	}
 
-	return clone, nil
+	return &clone, nil
 }
 
 // Mask masks confidential fields.
@@ -156,7 +175,7 @@ func (s *PipedSpec) Mask() {
 	for i := 0; i < len(s.ChartRegistries); i++ {
 		s.ChartRegistries[i].Mask()
 	}
-	for _, p := range s.CloudProviders {
+	for _, p := range s.PlatformProviders {
 		p.Mask()
 	}
 	for _, p := range s.AnalysisProviders {
@@ -168,35 +187,26 @@ func (s *PipedSpec) Mask() {
 	}
 }
 
-// EnableDefaultKubernetesCloudProvider adds the default kubernetes cloud provider if it was not specified.
-func (s *PipedSpec) EnableDefaultKubernetesCloudProvider() {
-	for _, cp := range s.CloudProviders {
-		if cp.Name == defaultKubernetesCloudProvider.Name {
+// EnableDefaultKubernetesPlatformProvider adds the default kubernetes cloud provider if it was not specified.
+func (s *PipedSpec) EnableDefaultKubernetesPlatformProvider() {
+	for _, cp := range s.PlatformProviders {
+		if cp.Name == defaultKubernetesPlatformProvider.Name {
 			return
 		}
 	}
-	s.CloudProviders = append(s.CloudProviders, defaultKubernetesCloudProvider)
+	s.PlatformProviders = append(s.PlatformProviders, defaultKubernetesPlatformProvider)
 }
 
-// HasCloudProvider checks whether the given provider is configured or not.
-func (s *PipedSpec) HasCloudProvider(name string, t model.ApplicationKind) bool {
-	requiredProviderType := t.CompatibleCloudProviderType()
-	for _, cp := range s.CloudProviders {
-		if cp.Name != name {
-			continue
-		}
-		if cp.Type != requiredProviderType {
-			continue
-		}
-		return true
-	}
-	return false
+// HasPlatformProvider checks whether the given provider is configured or not.
+func (s *PipedSpec) HasPlatformProvider(name string, t model.ApplicationKind) bool {
+	_, contains := s.FindPlatformProvider(name, t)
+	return contains
 }
 
-// FindCloudProvider finds and returns a Cloud Provider by name and type.
-func (s *PipedSpec) FindCloudProvider(name string, t model.ApplicationKind) (PipedCloudProvider, bool) {
-	requiredProviderType := t.CompatibleCloudProviderType()
-	for _, p := range s.CloudProviders {
+// FindPlatformProvider finds and returns a Platform Provider by name and type.
+func (s *PipedSpec) FindPlatformProvider(name string, t model.ApplicationKind) (PipedPlatformProvider, bool) {
+	requiredProviderType := t.CompatiblePlatformProviderType()
+	for _, p := range s.PlatformProviders {
 		if p.Name != name {
 			continue
 		}
@@ -205,7 +215,7 @@ func (s *PipedSpec) FindCloudProvider(name string, t model.ApplicationKind) (Pip
 		}
 		return p, true
 	}
-	return PipedCloudProvider{}, false
+	return PipedPlatformProvider{}, false
 }
 
 // GetRepositoryMap returns a map of repositories where key is repo id.
@@ -451,26 +461,58 @@ func (r *HelmChartRegistry) Mask() {
 	}
 }
 
-type PipedCloudProvider struct {
-	Name string                  `json:"name"`
-	Type model.CloudProviderType `json:"type"`
+type PipedPlatformProvider struct {
+	Name string                     `json:"name"`
+	Type model.PlatformProviderType `json:"type"`
 
-	KubernetesConfig *CloudProviderKubernetesConfig `json:"kubernetesConfig,omitempty"`
-	TerraformConfig  *CloudProviderTerraformConfig  `json:"terraformConfig,omitempty"`
-	CloudRunConfig   *CloudProviderCloudRunConfig   `json:"cloudRunConfig,omitempty"`
-	LambdaConfig     *CloudProviderLambdaConfig     `json:"lambdaConfig,omitempty"`
-	ECSConfig        *CloudProviderECSConfig        `json:"ecsConfig,omitempty"`
+	KubernetesConfig *PlatformProviderKubernetesConfig
+	TerraformConfig  *PlatformProviderTerraformConfig
+	CloudRunConfig   *PlatformProviderCloudRunConfig
+	LambdaConfig     *PlatformProviderLambdaConfig
+	ECSConfig        *PlatformProviderECSConfig
 }
 
-type genericPipedCloudProvider struct {
-	Name   string                  `json:"name"`
-	Type   model.CloudProviderType `json:"type"`
-	Config json.RawMessage         `json:"config"`
+type genericPipedPlatformProvider struct {
+	Name   string                     `json:"name"`
+	Type   model.PlatformProviderType `json:"type"`
+	Config json.RawMessage            `json:"config"`
 }
 
-func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
+func (p *PipedPlatformProvider) MarshalJSON() ([]byte, error) {
+	var (
+		err    error
+		config json.RawMessage
+	)
+
+	switch p.Type {
+	case model.PlatformProviderKubernetes:
+		config, err = json.Marshal(p.KubernetesConfig)
+	case model.PlatformProviderTerraform:
+		config, err = json.Marshal(p.TerraformConfig)
+	case model.PlatformProviderCloudRun:
+		config, err = json.Marshal(p.CloudRunConfig)
+	case model.PlatformProviderLambda:
+		config, err = json.Marshal(p.LambdaConfig)
+	case model.PlatformProviderECS:
+		config, err = json.Marshal(p.ECSConfig)
+	default:
+		err = fmt.Errorf("unsupported platform provider type: %s", p.Name)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(&genericPipedPlatformProvider{
+		Name:   p.Name,
+		Type:   p.Type,
+		Config: config,
+	})
+}
+
+func (p *PipedPlatformProvider) UnmarshalJSON(data []byte) error {
 	var err error
-	gp := genericPipedCloudProvider{}
+	gp := genericPipedPlatformProvider{}
 	if err = json.Unmarshal(data, &gp); err != nil {
 		return err
 	}
@@ -478,38 +520,38 @@ func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
 	p.Type = gp.Type
 
 	switch p.Type {
-	case model.CloudProviderKubernetes:
-		p.KubernetesConfig = &CloudProviderKubernetesConfig{}
+	case model.PlatformProviderKubernetes:
+		p.KubernetesConfig = &PlatformProviderKubernetesConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.KubernetesConfig)
 		}
-	case model.CloudProviderTerraform:
-		p.TerraformConfig = &CloudProviderTerraformConfig{}
+	case model.PlatformProviderTerraform:
+		p.TerraformConfig = &PlatformProviderTerraformConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.TerraformConfig)
 		}
-	case model.CloudProviderCloudRun:
-		p.CloudRunConfig = &CloudProviderCloudRunConfig{}
+	case model.PlatformProviderCloudRun:
+		p.CloudRunConfig = &PlatformProviderCloudRunConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.CloudRunConfig)
 		}
-	case model.CloudProviderLambda:
-		p.LambdaConfig = &CloudProviderLambdaConfig{}
+	case model.PlatformProviderLambda:
+		p.LambdaConfig = &PlatformProviderLambdaConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.LambdaConfig)
 		}
-	case model.CloudProviderECS:
-		p.ECSConfig = &CloudProviderECSConfig{}
+	case model.PlatformProviderECS:
+		p.ECSConfig = &PlatformProviderECSConfig{}
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.ECSConfig)
 		}
 	default:
-		err = fmt.Errorf("unsupported cloud provider type: %s", p.Name)
+		err = fmt.Errorf("unsupported platform provider type: %s", p.Name)
 	}
 	return err
 }
 
-func (p *PipedCloudProvider) Mask() {
+func (p *PipedPlatformProvider) Mask() {
 	if p.CloudRunConfig != nil {
 		p.CloudRunConfig.Mask()
 	}
@@ -521,7 +563,7 @@ func (p *PipedCloudProvider) Mask() {
 	}
 }
 
-type CloudProviderKubernetesConfig struct {
+type PlatformProviderKubernetesConfig struct {
 	// The master URL of the kubernetes cluster.
 	// Empty means in-cluster.
 	MasterURL string `json:"masterURL,omitempty"`
@@ -550,7 +592,7 @@ type KubernetesResourceMatcher struct {
 	Kind string `json:"kind,omitempty"`
 }
 
-type CloudProviderTerraformConfig struct {
+type PlatformProviderTerraformConfig struct {
 	// List of variables that will be set directly on terraform commands with "-var" flag.
 	// The variable must be formatted by "key=value" as below:
 	// "image_id=ami-abc123"
@@ -559,7 +601,7 @@ type CloudProviderTerraformConfig struct {
 	Vars []string `json:"vars,omitempty"`
 }
 
-type CloudProviderCloudRunConfig struct {
+type PlatformProviderCloudRunConfig struct {
 	// The GCP project hosting the CloudRun service.
 	Project string `json:"project"`
 	// The region of running CloudRun service.
@@ -568,13 +610,13 @@ type CloudProviderCloudRunConfig struct {
 	CredentialsFile string `json:"credentialsFile,omitempty"`
 }
 
-func (c *CloudProviderCloudRunConfig) Mask() {
+func (c *PlatformProviderCloudRunConfig) Mask() {
 	if len(c.CredentialsFile) != 0 {
 		c.CredentialsFile = maskString
 	}
 }
 
-type CloudProviderLambdaConfig struct {
+type PlatformProviderLambdaConfig struct {
 	// The region to send requests to. This parameter is required.
 	// e.g. "us-west-2"
 	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
@@ -591,7 +633,7 @@ type CloudProviderLambdaConfig struct {
 	Profile string `json:"profile,omitempty"`
 }
 
-func (c *CloudProviderLambdaConfig) Mask() {
+func (c *PlatformProviderLambdaConfig) Mask() {
 	if len(c.CredentialsFile) != 0 {
 		c.CredentialsFile = maskString
 	}
@@ -603,7 +645,7 @@ func (c *CloudProviderLambdaConfig) Mask() {
 	}
 }
 
-type CloudProviderECSConfig struct {
+type PlatformProviderECSConfig struct {
 	// The region to send requests to. This parameter is required.
 	// e.g. "us-west-2"
 	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
@@ -620,7 +662,7 @@ type CloudProviderECSConfig struct {
 	Profile string `json:"profile,omitempty"`
 }
 
-func (c *CloudProviderECSConfig) Mask() {
+func (c *PlatformProviderECSConfig) Mask() {
 	if len(c.CredentialsFile) != 0 {
 		c.CredentialsFile = maskString
 	}
@@ -636,9 +678,9 @@ type PipedAnalysisProvider struct {
 	Name string                     `json:"name"`
 	Type model.AnalysisProviderType `json:"type"`
 
-	PrometheusConfig  *AnalysisProviderPrometheusConfig  `json:"prometheus,omitempty"`
-	DatadogConfig     *AnalysisProviderDatadogConfig     `json:"datadog,omitempty"`
-	StackdriverConfig *AnalysisProviderStackdriverConfig `json:"stackdriver,omitempty"`
+	PrometheusConfig  *AnalysisProviderPrometheusConfig
+	DatadogConfig     *AnalysisProviderDatadogConfig
+	StackdriverConfig *AnalysisProviderStackdriverConfig
 }
 
 func (p *PipedAnalysisProvider) Mask() {
@@ -657,6 +699,34 @@ type genericPipedAnalysisProvider struct {
 	Name   string                     `json:"name"`
 	Type   model.AnalysisProviderType `json:"type"`
 	Config json.RawMessage            `json:"config"`
+}
+
+func (p *PipedAnalysisProvider) MarshalJSON() ([]byte, error) {
+	var (
+		err    error
+		config json.RawMessage
+	)
+
+	switch p.Type {
+	case model.AnalysisProviderDatadog:
+		config, err = json.Marshal(p.DatadogConfig)
+	case model.AnalysisProviderPrometheus:
+		config, err = json.Marshal(p.PrometheusConfig)
+	case model.AnalysisProviderStackdriver:
+		config, err = json.Marshal(p.StackdriverConfig)
+	default:
+		err = fmt.Errorf("unsupported analysis provider type: %s", p.Name)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(&genericPipedAnalysisProvider{
+		Name:   p.Name,
+		Type:   p.Type,
+		Config: config,
+	})
 }
 
 func (p *PipedAnalysisProvider) UnmarshalJSON(data []byte) error {
@@ -867,8 +937,64 @@ type SecretManagement struct {
 	// Available values: KEY_PAIR, GCP_KMS, AWS_KMS
 	Type model.SecretManagementType `json:"type"`
 
-	KeyPair *SecretManagementKeyPair `json:"keyPair,omitempty"`
-	GCPKMS  *SecretManagementGCPKMS  `json:"gcpkms,omitempty"`
+	KeyPair *SecretManagementKeyPair
+	GCPKMS  *SecretManagementGCPKMS
+}
+
+type genericSecretManagement struct {
+	Type   model.SecretManagementType `json:"type"`
+	Config json.RawMessage            `json:"config"`
+}
+
+func (s *SecretManagement) MarshalJSON() ([]byte, error) {
+	var (
+		err    error
+		config json.RawMessage
+	)
+
+	switch s.Type {
+	case model.SecretManagementTypeKeyPair:
+		config, err = json.Marshal(s.KeyPair)
+	case model.SecretManagementTypeGCPKMS:
+		config, err = json.Marshal(s.GCPKMS)
+	default:
+		err = fmt.Errorf("unsupported secret management type: %s", s.Type)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(&genericSecretManagement{
+		Type:   s.Type,
+		Config: config,
+	})
+}
+
+func (s *SecretManagement) UnmarshalJSON(data []byte) error {
+	var err error
+	g := genericSecretManagement{}
+	if err = json.Unmarshal(data, &g); err != nil {
+		return err
+	}
+
+	switch g.Type {
+	case model.SecretManagementTypeKeyPair:
+		s.Type = model.SecretManagementTypeKeyPair
+		s.KeyPair = &SecretManagementKeyPair{}
+		if len(g.Config) > 0 {
+			err = json.Unmarshal(g.Config, s.KeyPair)
+		}
+	case model.SecretManagementTypeGCPKMS:
+		s.Type = model.SecretManagementTypeGCPKMS
+		s.GCPKMS = &SecretManagementGCPKMS{}
+		if len(g.Config) > 0 {
+			err = json.Unmarshal(g.Config, s.GCPKMS)
+		}
+	default:
+		err = fmt.Errorf("unsupported secret management type: %s", s.Type)
+	}
+	return err
 }
 
 func (s *SecretManagement) Mask() {
@@ -977,37 +1103,6 @@ func (s *SecretManagementGCPKMS) Mask() {
 	if len(s.EncryptServiceAccountFile) != 0 {
 		s.EncryptServiceAccountFile = maskString
 	}
-}
-
-type genericSecretManagement struct {
-	Type   model.SecretManagementType `json:"type"`
-	Config json.RawMessage            `json:"config"`
-}
-
-func (s *SecretManagement) UnmarshalJSON(data []byte) error {
-	var err error
-	g := genericSecretManagement{}
-	if err = json.Unmarshal(data, &g); err != nil {
-		return err
-	}
-
-	switch g.Type {
-	case model.SecretManagementTypeKeyPair:
-		s.Type = model.SecretManagementTypeKeyPair
-		s.KeyPair = &SecretManagementKeyPair{}
-		if len(g.Config) > 0 {
-			err = json.Unmarshal(g.Config, s.KeyPair)
-		}
-	case model.SecretManagementTypeGCPKMS:
-		s.Type = model.SecretManagementTypeGCPKMS
-		s.GCPKMS = &SecretManagementGCPKMS{}
-		if len(g.Config) > 0 {
-			err = json.Unmarshal(g.Config, s.GCPKMS)
-		}
-	default:
-		err = fmt.Errorf("unsupported secret management type: %s", s.Type)
-	}
-	return err
 }
 
 type PipedEventWatcher struct {

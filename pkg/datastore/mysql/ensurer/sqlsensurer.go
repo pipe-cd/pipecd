@@ -34,4 +34,5 @@ type SQLEnsurer interface {
 	SchemaEnsurer
 	// Close closes database connection held by client.
 	Close() error
+	Ping() error
 }

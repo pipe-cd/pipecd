@@ -24,8 +24,8 @@ import (
 
 	"go.uber.org/zap"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/kubernetes"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/sourcedecrypter"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -56,7 +56,7 @@ type Detector interface {
 }
 
 type detector struct {
-	provider          config.PipedCloudProvider
+	provider          config.PipedPlatformProvider
 	appLister         applicationLister
 	gitClient         gitClient
 	stateGetter       kubernetes.Getter
@@ -72,7 +72,7 @@ type detector struct {
 }
 
 func NewDetector(
-	cp config.PipedCloudProvider,
+	cp config.PipedPlatformProvider,
 	appLister applicationLister,
 	gitClient gitClient,
 	stateGetter kubernetes.Getter,
@@ -182,11 +182,11 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return err
 	}
 	headManifests = filterIgnoringManifests(headManifests)
-	d.logger.Info(fmt.Sprintf("application %s has %d manifests at commit %s", app.Id, len(headManifests), headCommit.Hash))
+	d.logger.Debug(fmt.Sprintf("application %s has %d manifests at commit %s", app.Id, len(headManifests), headCommit.Hash))
 
 	liveManifests := d.stateGetter.GetAppLiveManifests(app.Id)
 	liveManifests = filterIgnoringManifests(liveManifests)
-	d.logger.Info(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
+	d.logger.Debug(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
 
 	result, err := provider.DiffList(
 		headManifests,

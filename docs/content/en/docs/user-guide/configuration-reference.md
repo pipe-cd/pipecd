@@ -37,6 +37,7 @@ spec:
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
 | variantLabel | [KubernetesVariantLabel](#kubernetesvariantlabel) | The label will be configured to variant manifests used to distinguish them. | No |
+| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
 
 ## Terraform application
 
@@ -64,6 +65,7 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
+| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
 
 ## Cloud Run application
 
@@ -91,6 +93,7 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
+| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
 
 ## Lambda application
 
@@ -116,6 +119,7 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
+| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
 
 ## ECS application
 
@@ -142,6 +146,7 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
+| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
 
 ## Analysis Template Configuration
 
@@ -163,7 +168,7 @@ spec:
 |-|-|-|-|
 | metrics | map[string][AnalysisMetrics](#analysismetrics) | Template for metrics. | No |
 
-## Event Watcher Configuration
+## Event Watcher Configuration (deprecated)
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -636,3 +641,31 @@ A wrapper of type `int` to represent percentage data. Basically, you can pass `1
 | op | string | The operation type. This must be one of `yaml-replace`, `yaml-add`, `yaml-remove`, `json-replace`, `text-regex`. Default is `yaml-replace`. | No |
 | path | string | The path string pointing to the manipulated field. For yaml operations it looks like `$.foo.array[0].bar`. | No |
 | value | string | The value string whose content will be used as new value for the field. | No |
+
+## EventWatcher
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| matcher | EventWatcherMatcher | Which event will be handled. | Yes |
+| handler | EventWatcherHandler | What to do for the event which matched by the above matcher. | Yes |
+
+### EventWatcherMatcher
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| name | string | The event name. | Yes |
+| labels | map[string]string | Additional attributes of event. This can make an event definition unique even if the one with the same name exists. | No |
+
+### EventWatcherHandler
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| type | string | The handler type. Currently, only `GIT_UPDATE` is supported. Default is `GIT_UPDATE`. | No |
+| config | EventWatcherHandlerConfig | Configuration for the event watcher handler. | Yes |
+
+### EventWatcherHandlerConfig
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| commitMessage | string | The commit message used to push after replacing values. Default message is used if not given. | No |
+| replacements | [][EventWatcherReplacement](#eventwatcherreplacement) | List of places where will be replaced when the new event matches. | Yes |

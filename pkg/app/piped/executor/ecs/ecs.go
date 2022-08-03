@@ -22,15 +22,14 @@ import (
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider"
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
-
-	"go.uber.org/zap"
 )
 
 const (
@@ -66,16 +65,16 @@ func Register(r registerer) {
 	})
 }
 
-func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProviderECSConfig, found bool) {
-	name = in.Application.CloudProvider
+func findPlatformProvider(in *executor.Input) (name string, cfg *config.PlatformProviderECSConfig, found bool) {
+	name = in.Application.PlatformProvider
 	if name == "" {
-		in.LogPersister.Errorf("Missing the CloudProvider name in the application configuration")
+		in.LogPersister.Errorf("Missing the PlatformProvider name in the application configuration")
 		return
 	}
 
-	cp, ok := in.PipedConfig.FindCloudProvider(name, model.ApplicationKind_ECS)
+	cp, ok := in.PipedConfig.FindPlatformProvider(name, model.ApplicationKind_ECS)
 	if !ok {
-		in.LogPersister.Errorf("The specified cloud provider %q was not found in piped configuration", name)
+		in.LogPersister.Errorf("The specified platform provider %q was not found in piped configuration", name)
 		return
 	}
 
@@ -157,7 +156,7 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	// Get current PRIMARY task set.
 	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, service)
 	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
-	if err != nil && !errors.Is(err, cloudprovider.ErrNotFound) {
+	if err != nil && !errors.Is(err, platformprovider.ErrNotFound) {
 		return err
 	}
 
@@ -184,7 +183,7 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	return nil
 }
 
-func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup types.LoadBalancer) bool {
+func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup types.LoadBalancer) bool {
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
@@ -215,7 +214,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	return true
 }
 
-func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup types.LoadBalancer) bool {
+func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup types.LoadBalancer) bool {
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
@@ -286,7 +285,7 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	return true
 }
 
-func clean(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig) bool {
+func clean(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderECSConfig) bool {
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
@@ -317,7 +316,7 @@ func clean(ctx context.Context, in *executor.Input, cloudProviderName string, cl
 	return true
 }
 
-func routing(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, primaryTargetGroup types.LoadBalancer, canaryTargetGroup types.LoadBalancer) bool {
+func routing(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderECSConfig, primaryTargetGroup types.LoadBalancer, canaryTargetGroup types.LoadBalancer) bool {
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)

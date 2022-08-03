@@ -17,8 +17,8 @@ package cloudrun
 import (
 	"context"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/cloudprovider/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -34,7 +34,7 @@ func (e *rollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		status         model.StageStatus
 	)
 
-	cpName, cpCfg, found := findCloudProvider(&e.Input)
+	cpName, cpCfg, found := findPlatformProvider(&e.Input)
 	if !found {
 		return model.StageStatus_STAGE_FAILURE
 	}
