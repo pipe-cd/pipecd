@@ -6,6 +6,8 @@ description: >
   This page describes how to add a cloud provider to enable its applications.
 ---
 
+> NOTE: Starting from version v0.35.0, the CloudProvider concept is being replaced by PlatformProvider. It's a name change due to the PipeCD vision improvement. __The CloudProvider configuration is marked as deprecated, please migrate your piped agent configuration to use PlatformProvider__.
+
 PipeCD supports multiple clouds and multiple application kinds.
 Cloud provider defines which cloud and where the application should be deployed to.
 So while registering a new application, the name of a configured cloud provider is required.
