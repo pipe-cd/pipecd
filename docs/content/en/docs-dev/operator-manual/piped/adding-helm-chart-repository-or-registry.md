@@ -1,7 +1,7 @@
 ---
 title: "Adding a Helm chart repository or registry"
 linkTitle: "Adding Helm chart repo or registry"
-weight: 5
+weight: 6
 description: >
   This page describes how to add a new Helm chart repository or registry.
 ---

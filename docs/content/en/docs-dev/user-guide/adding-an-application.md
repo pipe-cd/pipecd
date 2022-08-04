@@ -39,10 +39,10 @@ spec:
 Visit [here](/docs/user-guide/configuration-reference/) for supported fields.
 
 After waiting for a while (it depends on the Piped's setting), click the `+ADD` button at the top left corner of the application list page and then go to the `ADD FROM GIT` tab.
-Select the Piped and Cloud Provider that you deploy to, and the application you have just selected should appear as a candidate.
+Select the Piped and Platform Provider that you deploy to, and the application you have just selected should appear as a candidate.
 Click `ADD` to complete the registration.
 
-![](/images/registering-an-application-from-suggestions.png)
+![](/images/registering-an-application-from-suggestions-new.png)
 <p style="text-align: center;">
 </p>
 
@@ -50,7 +50,7 @@ Click `ADD` to complete the registration.
 In this way, you set the necessary information on the web.
 By clicking on `+ADD` button at the application list page, a popup will be revealed from the right side as below:
 
-![](/images/registering-an-application-manually.png)
+![](/images/registering-an-application-manually-new.png)
 <p style="text-align: center;">
 </p>
 
@@ -66,7 +66,7 @@ Here are the list of fields in the register form:
 | Repository | The Git repository contains application configuration and application configuration. Select one of the registered repositories in `piped` configuration. | Yes |
 | Path | The relative path from the root of the Git repository to the directory containing application configuration and application configuration. Use `./` means repository root. | Yes |
 | Config Filename | The name of application configuration file. Default is `app.pipecd.yaml`. | No |
-| Cloud Provider | Where the application will be deployed to. Select one of the registered cloud providers in `piped` configuration. | Yes |
+| Platform Provider | Where the application will be deployed to. Select one of the registered cloud/platform providers in `piped` configuration. This field name previously was `Cloud Provider`. | Yes |
 
 > Note: Labels couldn't be set via this form. If you want, try the way to register via the application configuration defined in the Git repository.
 

@@ -69,12 +69,14 @@ There are 3 strategies that PipeCD supports while syncing your application state
 - Pipeline Sync: Sync the running application state with its Git stored configuration through a pipeline defined in its application configuration.
 - Auto Sync: Depends on your defined application configuration, `piped` will decide the best way to sync your application state with its Git stored configuration.
 
-### Cloud Provider
+### Platform Provider
 
-PipeCD supports multiple clouds and multiple kinds of applications.
-Cloud Provider defines which cloud and where application should be deployed to.
+Note: The previous name of this concept was Cloud Provider.
 
-Currently, PipeCD is supporting these five cloud providers: `KUBERNETES`, `ECS`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`.
+PipeCD supports multiple platforms and multiple kinds of applications.
+Platform Provider defines which platform, cloud and where application should be deployed to.
+
+Currently, PipeCD is supporting these five platform providers: `KUBERNETES`, `ECS`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`.
 
 ### Analysis Provider
 An external product that provides metrics/logs to evaluate deployments, such as `Prometheus`, `Datadog`, `Stackdriver`, `CloudWatch` and so on.
