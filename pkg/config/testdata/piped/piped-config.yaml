@@ -39,6 +39,8 @@ spec:
   platformProviders:
     - name: kubernetes-default
       type: KUBERNETES
+      labels:
+        group: workload
       config:
         masterURL: https://example.com
         kubeConfigPath: /etc/kube/config
@@ -53,6 +55,8 @@ spec:
 
     - name: kubernetes-dev
       type: KUBERNETES
+      labels:
+        group: config
 
     - name: terraform
       type: TERRAFORM
