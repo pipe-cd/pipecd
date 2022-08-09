@@ -25,6 +25,11 @@ import {
   PAGE_PATH_SETTINGS,
   PAGE_PATH_TOP,
 } from "~/constants/path";
+import {
+  REDIRECT_PATH_KEY,
+  BANNER_VERSION_KEY,
+  USER_PROJECTS,
+} from "~/constants/localstorage";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { useInterval } from "~/hooks/use-interval";
 import useQueryString from "./hooks/use-query-string";
@@ -95,10 +100,6 @@ const useCommandsStatusChecking = (): void => {
     commandIds.length > 0 ? FETCH_COMMANDS_INTERVAL : null
   );
 };
-
-const REDIRECT_PATH_KEY = "redirect_path";
-const BANNER_VERSION_KEY = "banner_version";
-const USER_PROJECTS = "projects";
 
 export const Routes: FC = () => {
   const dispatch = useAppDispatch();
