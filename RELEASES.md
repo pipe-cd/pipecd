@@ -38,14 +38,11 @@ This refers to the release of new features.
 
 - Create a tagged release. The release should start with "v" and be followed by the version number.
 
-- Create a branch from the tagged release, e.g. "release-vX.Y.x". This will be used for the patch release.
-
 ## Patch release
 This refers to the release of critical bug fixes. \
 A bugfix for a functional issue (not a data loss or security issue) that only affects an alpha feature does not qualify as a critical bug fix.
 
 ### Prerequisites
-- The release branch exists, e.g. "release-vX.Y.x".
 - (optional) If you create a pull request with the cherry-pick script, `gh` is needed to be installed and ran `gh auth login`. Please refer to [cli/cli](https://github.com/cli/cli).
 
 ### Fix bugs

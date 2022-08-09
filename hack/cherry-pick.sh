@@ -56,6 +56,18 @@ echo "+++ Updating remote branches..."
 git remote update
 echo
 
+# Check whether remote branch exists
+echo "+++ Checking whether remote branch exists..."
+BASE_TAG=$(echo ${BRANCH} | sed -e 's/.*-//' -e 's/x/0/g')
+git ls-remote --exit-code --heads origin ${BRANCH} > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+  git checkout -b ${BRANCH} ${BASE_TAG}
+  git push origin ${BRANCH}
+else
+  echo "Branch ${BRANCH} already exists"
+fi
+echo
+
 # Create local branch
 echo "+++ Creating a local branch..."
 git checkout -b ${NEWBRANCH} "origin/${BRANCH}"
