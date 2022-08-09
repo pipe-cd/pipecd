@@ -145,20 +145,26 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 				},
 				ResourceRoutes: []KubernetesResourceRoute{
 					{
-						Provider: "ConfigCluster",
+						Provider: KubernetesProviderMatcher{
+							Name: "ConfigCluster",
+						},
 						Match: &KubernetesResourceRouteMatcher{
 							Kind: "Ingress",
 						},
 					},
 					{
-						Provider: "ConfigCluster",
+						Provider: KubernetesProviderMatcher{
+							Name: "ConfigCluster",
+						},
 						Match: &KubernetesResourceRouteMatcher{
 							Kind: "Service",
 							Name: "Foo",
 						},
 					},
 					{
-						Provider: "WorkloadCluster",
+						Provider: KubernetesProviderMatcher{
+							Name: "WorkloadCluster",
+						},
 					},
 				},
 			},

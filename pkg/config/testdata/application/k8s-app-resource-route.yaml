@@ -4,9 +4,12 @@ spec:
   resourceRoutes:
     - match:
         kind: Ingress
-      provider: ConfigCluster
+      provider:
+        name: ConfigCluster
     - match:
         kind: Service
         name: Foo
-      provider: ConfigCluster
-    - provider: WorkloadCluster
+      provider:
+        name: ConfigCluster
+    - provider:
+        name: WorkloadCluster
