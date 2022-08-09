@@ -36,6 +36,9 @@ const (
 	helmChartRepoName = "oci://ghcr.io/pipe-cd/chart/pipecd"
 
 	helmQuickstartValueRemotePath = "https://raw.githubusercontent.com/pipe-cd/pipecd/%s/quickstart/control-plane-values.yaml"
+
+	defaultEncryptionKeyFile        = "pipecd-encryption-key"
+	generateEncryptionKeyScriptTmpl = "cat /dev/urandom | head -c64 | base64 > %s"
 )
 
 type controlplane struct {
@@ -43,11 +46,11 @@ type controlplane struct {
 	version    string
 	namespace  string
 
-	toolsDir          string
-	values            string
-	configFile        string
-	encryptionKeyFile string
+	toolsDir   string
+	values     string
+	configFile string
 
+	encryptionKeyFile       string
 	firestoreServiceAccount string
 	gcsServiceAccount       string
 	cloudSQLServiceAccount  string
@@ -81,9 +84,9 @@ func newInstallControlplaneCommand() *cobra.Command {
 
 	cmd.Flags().StringVar(&c.toolsDir, "tools-dir", c.toolsDir, "The path to directory where to install needed tools such as helm.")
 	cmd.Flags().StringVar(&c.configFile, "config-file", c.configFile, "The path to the Control Plane configuration file.")
-	cmd.Flags().StringVar(&c.encryptionKeyFile, "encryption-key-file", c.encryptionKeyFile, "The path to the Control Plane encryption key file.")
 	cmd.Flags().StringVar(&c.values, "values", c.values, "The Helm chart '--values' flag, which specify values in a YAML file or a URL (can specify multiple).")
 
+	cmd.Flags().StringVar(&c.encryptionKeyFile, "encryption-key-file", c.encryptionKeyFile, "The path to the Control Plane encryption key file.")
 	cmd.Flags().StringVar(&c.firestoreServiceAccount, "firestore-service-account-file", c.firestoreServiceAccount, "The path to service account which used to access controlplane Firestore database (if using).")
 	cmd.Flags().StringVar(&c.cloudSQLServiceAccount, "cloud-sql-service-account-file", c.cloudSQLServiceAccount, "The path to service account which used to access controlplane Google cloud SQL database (if using).")
 	cmd.Flags().StringVar(&c.gcsServiceAccount, "gcs-service-account-file", c.gcsServiceAccount, "The path to service account which used to access controlplane Google Cloud Storage service (if using).")
@@ -163,16 +166,31 @@ func (c *controlplane) buildHelmArgs() ([]string, error) {
 		return args, nil
 	}
 
-	if c.configFile == "" || c.encryptionKeyFile == "" {
-		return nil, fmt.Errorf("missing required fields: config-file or encryption-key-file")
+	if c.configFile == "" {
+		return nil, fmt.Errorf("missing required fields: config-file")
 	}
 
 	args = append(args,
 		"--set-file",
 		fmt.Sprintf("config.data=%s", c.configFile),
-		"--set-file",
-		fmt.Sprintf("secret.encryptionKey.data=%s", c.encryptionKeyFile),
 	)
+
+	if c.encryptionKeyFile != "" {
+		args = append(args,
+			"--set-file",
+			fmt.Sprintf("secret.encryptionKey.data=%s", c.encryptionKeyFile),
+		)
+	} else {
+		// Generate encryption key data.
+		encryptionKeyFile, err := generateEncryptionKey()
+		if err != nil {
+			return nil, err
+		}
+		args = append(args,
+			"--set-file",
+			fmt.Sprintf("secret.encryptionKey.data=%s", encryptionKeyFile),
+		)
+	}
 
 	if c.firestoreServiceAccount != "" {
 		args = append(args,
@@ -228,4 +246,17 @@ func (c *controlplane) buildHelmArgs() ([]string, error) {
 	}
 
 	return args, nil
+}
+
+func generateEncryptionKey() (string, error) {
+	script := fmt.Sprintf(generateEncryptionKeyScriptTmpl, defaultEncryptionKeyFile)
+
+	var stderr bytes.Buffer
+	cmd := exec.Command("/bin/bash", "-c", script)
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		return "", fmt.Errorf("failed to generate encryption key: %w: %s", err, stderr.String())
+	}
+	return path.Join(".", defaultEncryptionKeyFile), nil
 }
