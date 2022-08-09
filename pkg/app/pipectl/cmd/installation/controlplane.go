@@ -65,7 +65,7 @@ func newInstallControlplaneCommand() *cobra.Command {
 	c := &controlplane{
 		version:   version.Get().Version,
 		namespace: pipecdDefaultNamespace,
-		toolsDir:  path.Join(home, ".piped", "tools"),
+		toolsDir:  path.Join(home, ".pipectl", "tools"),
 	}
 
 	cmd := &cobra.Command{
