@@ -224,6 +224,7 @@ func (s *pipedStore) UpdateDesiredVersion(ctx context.Context, id, version strin
 
 func (s *pipedStore) UpdateMetadata(ctx context.Context, id, version, config string, pps []*model.Piped_PlatformProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error {
 	return s.update(ctx, id, func(piped *model.Piped) error {
+		piped.CloudProviders = nil
 		piped.PlatformProviders = pps
 		piped.Repositories = repos
 		piped.SecretEncryption = se
