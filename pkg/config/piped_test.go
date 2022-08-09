@@ -88,6 +88,9 @@ func TestPipedConfig(t *testing.T) {
 					{
 						Name: "kubernetes-default",
 						Type: model.PlatformProviderKubernetes,
+						Labels: map[string]string{
+							"group": "workload",
+						},
 						KubernetesConfig: &PlatformProviderKubernetesConfig{
 							MasterURL:      "https://example.com",
 							KubeConfigPath: "/etc/kube/config",
@@ -111,8 +114,11 @@ func TestPipedConfig(t *testing.T) {
 						},
 					},
 					{
-						Name:             "kubernetes-dev",
-						Type:             model.PlatformProviderKubernetes,
+						Name: "kubernetes-dev",
+						Type: model.PlatformProviderKubernetes,
+						Labels: map[string]string{
+							"group": "config",
+						},
 						KubernetesConfig: &PlatformProviderKubernetesConfig{},
 					},
 					{
@@ -777,9 +783,6 @@ func TestPipedSpecClone(t *testing.T) {
 					{
 						Name: "kubernetes-default",
 						Type: model.PlatformProviderKubernetes,
-						Labels: map[string]string{
-							"group": "workload",
-						},
 						KubernetesConfig: &PlatformProviderKubernetesConfig{
 							MasterURL:      "https://example.com",
 							KubeConfigPath: "/etc/kube/config",
@@ -803,10 +806,7 @@ func TestPipedSpecClone(t *testing.T) {
 						},
 					},
 					{
-						Name: "kubernetes-dev",
-						Labels: map[string]string{
-							"group": "config",
-						},
+						Name:             "kubernetes-dev",
 						Type:             model.PlatformProviderKubernetes,
 						KubernetesConfig: &PlatformProviderKubernetesConfig{},
 					},
