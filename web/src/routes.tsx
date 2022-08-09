@@ -33,6 +33,7 @@ import {
   selectIds as selectCommandIds,
 } from "~/modules/commands";
 import { fetchPipeds } from "~/modules/pipeds";
+import { sortedSet } from "~/utils/sorted-set";
 
 const SettingsIndexPage = loadable(
   () => import(/* webpackChunkName: "settings" */ "~/components/settings-page"),
@@ -97,6 +98,7 @@ const useCommandsStatusChecking = (): void => {
 
 const REDIRECT_PATH_KEY = "redirect_path";
 const BANNER_VERSION_KEY = "banner_version";
+const USER_PROJECTS = "projects";
 
 export const Routes: FC = () => {
   const dispatch = useAppDispatch();
@@ -114,6 +116,11 @@ export const Routes: FC = () => {
   useEffect(() => {
     if (me?.isLogin) {
       onLoadProject(me.projectId);
+
+      // Add logged in users project to localstorage.
+      const projects = localStorage.getItem(USER_PROJECTS)?.split(",") || [];
+      projects.push(me.projectId);
+      localStorage.setItem(USER_PROJECTS, sortedSet(projects).join(","));
     }
   }, [location, me, onLoadProject]);
 

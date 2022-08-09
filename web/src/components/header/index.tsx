@@ -1,4 +1,4 @@
-import { FC, memo, useState } from "react";
+import { FC, memo, useEffect, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -91,6 +91,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const USER_PROJECTS = "projects";
+
 export const Header: FC = memo(function Header() {
   const classes = useStyles();
   const me = useAppSelector((state) => state.me);
@@ -100,6 +102,27 @@ export const Header: FC = memo(function Header() {
   const [moreAnchorEl, setMoreAnchorEl] = useState<HTMLButtonElement | null>(
     null
   );
+  const [
+    projectAnchorEl,
+    setProjectAnchorEl,
+  ] = useState<HTMLButtonElement | null>(null);
+
+  const [selectableProjects, setSelectableProjects] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (me?.isLogin) {
+      const projects =
+        localStorage
+          .getItem(USER_PROJECTS)
+          ?.split(",")
+          .filter((e) => e !== me.projectId) || [];
+      setSelectableProjects(projects);
+    }
+  }, [me]);
+
+  const handleSwitchProject = (proj: string): void => {
+    window.location.href = `${LOGOUT_ENDPOINT}?project=${proj}`;
+  };
 
   return (
     <AppBar position="static" className={classes.root}>
@@ -117,6 +140,7 @@ export const Header: FC = memo(function Header() {
               color="inherit"
               className={classes.projectName}
               endIcon={<ArrowDownIcon />}
+              onClick={(e) => setProjectAnchorEl(e.currentTarget)}
             >
               {me.projectId}
             </Button>
@@ -184,6 +208,21 @@ export const Header: FC = memo(function Header() {
           )}
         </div>
       </Toolbar>
+
+      <Menu
+        id="project-selection"
+        anchorEl={projectAnchorEl}
+        open={Boolean(projectAnchorEl) && selectableProjects.length !== 0}
+        onClose={(): void => {
+          setProjectAnchorEl(null);
+        }}
+      >
+        {selectableProjects.map((p) => (
+          <MenuItem key={p} onClick={() => handleSwitchProject(p)}>
+            {p}
+          </MenuItem>
+        ))}
+      </Menu>
 
       <Menu
         id="user-menu"
