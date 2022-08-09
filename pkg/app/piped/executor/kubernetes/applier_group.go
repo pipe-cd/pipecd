@@ -52,16 +52,17 @@ func newApplierGroup(defaultProvider string, appCfg config.KubernetesApplication
 	}
 
 	for _, r := range appCfg.ResourceRoutes {
-		if _, ok := d.appliers[r.Provider]; ok {
+		providerName := r.Provider.Name
+		if _, ok := d.appliers[providerName]; ok {
 			continue
 		}
 
-		cp, ok := pipedCfg.FindPlatformProvider(r.Provider, model.ApplicationKind_KUBERNETES)
+		cp, ok := pipedCfg.FindPlatformProvider(providerName, model.ApplicationKind_KUBERNETES)
 		if !ok {
-			return nil, fmt.Errorf("provider %s specified in resourceRoutes was not found", r.Provider)
+			return nil, fmt.Errorf("provider %s specified in resourceRoutes was not found", providerName)
 		}
 
-		d.appliers[r.Provider] = provider.NewApplier(appCfg.Input, *cp.KubernetesConfig, logger)
+		d.appliers[providerName] = provider.NewApplier(appCfg.Input, *cp.KubernetesConfig, logger)
 	}
 
 	return d, nil
@@ -70,11 +71,12 @@ func newApplierGroup(defaultProvider string, appCfg config.KubernetesApplication
 // TODO: Add test for this applierGroup function.
 func (d applierGroup) Get(rk provider.ResourceKey) (provider.Applier, error) {
 	for _, r := range d.resourceRoutes {
+		providerName := r.Provider.Name
 		if r.Match == nil {
-			if a, ok := d.appliers[r.Provider]; ok {
+			if a, ok := d.appliers[providerName]; ok {
 				return a, nil
 			}
-			return nil, fmt.Errorf("provider %s specified in resourceRoutes was not found", r.Provider)
+			return nil, fmt.Errorf("provider %s specified in resourceRoutes was not found", providerName)
 		}
 		if k := r.Match.Kind; k != "" && k != rk.Kind {
 			continue
@@ -82,10 +84,10 @@ func (d applierGroup) Get(rk provider.ResourceKey) (provider.Applier, error) {
 		if n := r.Match.Name; n != "" && n != rk.Name {
 			continue
 		}
-		if a, ok := d.appliers[r.Provider]; ok {
+		if a, ok := d.appliers[providerName]; ok {
 			return a, nil
 		}
-		return nil, fmt.Errorf("provider %s specified in resourceRoutes was not found", r.Provider)
+		return nil, fmt.Errorf("provider %s specified in resourceRoutes was not found", providerName)
 	}
 
 	return d.defaultApplier, nil

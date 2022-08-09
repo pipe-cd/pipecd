@@ -290,11 +290,16 @@ func (opts K8sTrafficRoutingStageOptions) Percentages() (primary, canary, baseli
 }
 
 type KubernetesResourceRoute struct {
-	Provider string                          `json:"provider"`
+	Provider KubernetesProviderMatcher       `json:"provider"`
 	Match    *KubernetesResourceRouteMatcher `json:"match"`
 }
 
 type KubernetesResourceRouteMatcher struct {
 	Kind string `json:"kind"`
 	Name string `json:"name"`
+}
+
+type KubernetesProviderMatcher struct {
+	Name   string            `json:"name"`
+	Labels map[string]string `json:"labels"`
 }
