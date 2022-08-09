@@ -44,6 +44,7 @@ type controlplane struct {
 	namespace  string
 
 	toolsDir          string
+	values            string
 	configFile        string
 	encryptionKeyFile string
 
@@ -81,6 +82,7 @@ func newInstallControlplaneCommand() *cobra.Command {
 	cmd.Flags().StringVar(&c.toolsDir, "tools-dir", c.toolsDir, "The path to directory where to install needed tools such as helm.")
 	cmd.Flags().StringVar(&c.configFile, "config-file", c.configFile, "The path to the Control Plane configuration file.")
 	cmd.Flags().StringVar(&c.encryptionKeyFile, "encryption-key-file", c.encryptionKeyFile, "The path to the Control Plane encryption key file.")
+	cmd.Flags().StringVar(&c.values, "values", c.values, "The Helm chart '--values' flag, which specify values in a YAML file or a URL (can specify multiple).")
 
 	cmd.Flags().StringVar(&c.firestoreServiceAccount, "firestore-service-account-file", c.firestoreServiceAccount, "The path to service account which used to access controlplane Firestore database (if using).")
 	cmd.Flags().StringVar(&c.cloudSQLServiceAccount, "cloud-sql-service-account-file", c.cloudSQLServiceAccount, "The path to service account which used to access controlplane Google cloud SQL database (if using).")
@@ -219,6 +221,10 @@ func (c *controlplane) buildHelmArgs() ([]string, error) {
 			"--set-file",
 			fmt.Sprintf("secret.internalTLSCert.data=%s", c.internalTLSCert),
 		)
+	}
+
+	if c.values != "" {
+		args = append(args, "--values", c.values)
 	}
 
 	return args, nil
