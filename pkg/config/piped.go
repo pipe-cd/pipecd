@@ -476,6 +476,7 @@ type PipedPlatformProvider struct {
 type genericPipedPlatformProvider struct {
 	Name   string                     `json:"name"`
 	Type   model.PlatformProviderType `json:"type"`
+	Labels map[string]string          `json:"labels,omitempty"`
 	Config json.RawMessage            `json:"config"`
 }
 
@@ -507,6 +508,7 @@ func (p *PipedPlatformProvider) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&genericPipedPlatformProvider{
 		Name:   p.Name,
 		Type:   p.Type,
+		Labels: p.Labels,
 		Config: config,
 	})
 }
@@ -519,6 +521,7 @@ func (p *PipedPlatformProvider) UnmarshalJSON(data []byte) error {
 	}
 	p.Name = gp.Name
 	p.Type = gp.Type
+	p.Labels = gp.Labels
 
 	switch p.Type {
 	case model.PlatformProviderKubernetes:
