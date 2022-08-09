@@ -167,3 +167,50 @@ func (a *applier) findKubectl(ctx context.Context, version string) (*Kubectl, er
 	}
 	return NewKubectl(version, path), nil
 }
+
+type multiApplier struct {
+	appliers []Applier
+}
+
+// NewMultiApplier creates an applier that duplicates its operations to all the provided appliers.
+func NewMultiApplier(appliers ...Applier) Applier {
+	return &multiApplier{
+		appliers: appliers,
+	}
+}
+
+func (a *multiApplier) ApplyManifest(ctx context.Context, manifest Manifest) error {
+	for _, a := range a.appliers {
+		if err := a.ApplyManifest(ctx, manifest); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (a *multiApplier) CreateManifest(ctx context.Context, manifest Manifest) error {
+	for _, a := range a.appliers {
+		if err := a.CreateManifest(ctx, manifest); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (a *multiApplier) ReplaceManifest(ctx context.Context, manifest Manifest) error {
+	for _, a := range a.appliers {
+		if err := a.ReplaceManifest(ctx, manifest); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (a *multiApplier) Delete(ctx context.Context, key ResourceKey) error {
+	for _, a := range a.appliers {
+		if err := a.Delete(ctx, key); err != nil {
+			return err
+		}
+	}
+	return nil
+}
