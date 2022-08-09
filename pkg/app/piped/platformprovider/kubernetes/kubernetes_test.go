@@ -28,7 +28,6 @@ func TestMain(m *testing.M) {
 	binDir := "/tmp/piped-bin"
 	if err := toolregistry.InitDefaultRegistry(binDir, zap.NewNop()); err != nil {
 		log.Fatal(err)
-		os.Exit(1)
 	}
 	os.Exit(m.Run())
 }
