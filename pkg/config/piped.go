@@ -462,8 +462,9 @@ func (r *HelmChartRegistry) Mask() {
 }
 
 type PipedPlatformProvider struct {
-	Name string                     `json:"name"`
-	Type model.PlatformProviderType `json:"type"`
+	Name   string                     `json:"name"`
+	Type   model.PlatformProviderType `json:"type"`
+	Labels map[string]string          `json:"labels,omitempty"`
 
 	KubernetesConfig *PlatformProviderKubernetesConfig
 	TerraformConfig  *PlatformProviderTerraformConfig
