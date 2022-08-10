@@ -14,6 +14,7 @@ import { PAGE_PATH_APPLICATIONS, PAGE_PATH_LOGIN } from "~/constants/path";
 import { getQueryStringValue } from "~/hooks/use-query-string";
 import { useAppSelector } from "~/hooks/redux";
 import { LoginForm } from "./login-form";
+import { LOGGING_IN_PROJECT } from "~/constants/localstorage";
 
 const CONTENT_WIDTH = 500;
 
@@ -58,7 +59,10 @@ export const LoginPage: FC = memo(function LoginPage() {
   const me = useAppSelector((state) => state.me);
   const [name, setName] = useState<string>("");
   const [cookies, , removeCookie] = useCookies(["error"]);
-  const project = getQueryStringValue("project") as string;
+  const queryProject = getQueryStringValue("project") as string;
+  const project = queryProject
+    ? queryProject
+    : localStorage.getItem(LOGGING_IN_PROJECT) || "";
 
   const handleCloseErrorAlert = (): void => {
     removeCookie("error");

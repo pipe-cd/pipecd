@@ -24,6 +24,7 @@ import {
   PAGE_PATH_EVENTS,
 } from "~/constants/path";
 import { APP_NAME } from "~/constants/common";
+import { LOGGING_IN_PROJECT, USER_PROJECTS } from "~/constants/localstorage";
 import { NavLink as RouterLink } from "react-router-dom";
 import ArrowDownIcon from "@material-ui/icons/ArrowDropDown";
 import logo from "~~/assets/logo.svg";
@@ -91,8 +92,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const USER_PROJECTS = "projects";
-
 export const Header: FC = memo(function Header() {
   const classes = useStyles();
   const me = useAppSelector((state) => state.me);
@@ -121,7 +120,8 @@ export const Header: FC = memo(function Header() {
   }, [me]);
 
   const handleSwitchProject = (proj: string): void => {
-    window.location.href = `${LOGOUT_ENDPOINT}?project=${proj}`;
+    localStorage.setItem(LOGGING_IN_PROJECT, proj);
+    window.location.href = LOGOUT_ENDPOINT;
   };
 
   return (
