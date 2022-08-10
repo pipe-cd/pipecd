@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -249,7 +250,17 @@ func (c *controlplane) buildHelmArgs() ([]string, error) {
 }
 
 func generateEncryptionKey() (string, error) {
-	script := fmt.Sprintf(generateEncryptionKeyScriptTmpl, defaultEncryptionKeyFile)
+	ekPath := path.Join(".", defaultEncryptionKeyFile)
+	fs, err := os.Stat(ekPath)
+	if err != nil && !os.IsNotExist(err) {
+		return "", fmt.Errorf("failed while generate encryption key: %w", err)
+	}
+
+	if fs != nil {
+		ekPath = fmt.Sprintf("%s-%d", ekPath, time.Now().Unix())
+	}
+
+	script := fmt.Sprintf(generateEncryptionKeyScriptTmpl, ekPath)
 
 	var stderr bytes.Buffer
 	cmd := exec.Command("/bin/bash", "-c", script)
@@ -258,5 +269,5 @@ func generateEncryptionKey() (string, error) {
 	if err := cmd.Run(); err != nil {
 		return "", fmt.Errorf("failed to generate encryption key: %w: %s", err, stderr.String())
 	}
-	return path.Join(".", defaultEncryptionKeyFile), nil
+	return ekPath, nil
 }
