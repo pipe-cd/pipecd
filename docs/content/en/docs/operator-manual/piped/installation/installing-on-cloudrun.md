@@ -39,7 +39,7 @@ description: >
         branch: {GIT_BRANCH}
 
     # Optional
-    # Enable this Piped to handle CLOUDRUN application.
+    # Enable this Piped to handle Cloud Run application.
     platformProviders:
       - name: cloudrun-in-project
         type: CLOUDRUN
