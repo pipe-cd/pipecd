@@ -135,6 +135,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 		ContainerDefinitions:    taskDefinition.ContainerDefinitions,
 		RequiresCompatibilities: taskDefinition.RequiresCompatibilities,
 		ExecutionRoleArn:        taskDefinition.ExecutionRoleArn,
+		TaskRoleArn:             taskDefinition.TaskRoleArn,
 		NetworkMode:             taskDefinition.NetworkMode,
 		Volumes:                 taskDefinition.Volumes,
 		// Requires defined at task level in case Fargate is used.
