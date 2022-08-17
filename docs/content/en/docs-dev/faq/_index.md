@@ -8,7 +8,7 @@ description: >
 
 If you have any other questions, please feel free to create the issue in the [pipe-cd/pipecd](https://github.com/pipe-cd/pipecd/issues/new/choose) repository or contact us on [Cloud Native Slack](https://slack.cncf.io) (channel [#pipecd](https://app.slack.com/client/T08PSQ7BQ/C01B27F9T0X)).
 
-### 1. What kind of application (cloud provider) will be supported?
+### 1. What kind of application (platform provider) will be supported?
 
 Currently, PipeCD can be used to deploy `Kubernetes`, `ECS`, `Terraform`, `CloudRun`, `Lambda` applications.
 
