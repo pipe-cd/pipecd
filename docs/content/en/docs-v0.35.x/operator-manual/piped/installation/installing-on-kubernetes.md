@@ -110,7 +110,7 @@ Most parts are identical to the previous way, but some are slightly different.
         branch: {GIT_BRANCH}
     syncInterval: 1m
     # This is needed to restrict to limit the access range to within a namespace.
-    cloudProviders:
+    platformProviders:
       - name: my-kubernetes
         type: KUBERNETES
         config:
