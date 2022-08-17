@@ -40,7 +40,7 @@ description: >
   
     # Optional
     # Enable this Piped to handle ECS application.
-    cloudProviders:
+    platformProviders:
       - name: ecs-dev
         type: ECS
         config:

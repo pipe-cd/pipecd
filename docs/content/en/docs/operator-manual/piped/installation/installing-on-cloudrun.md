@@ -40,7 +40,7 @@ description: >
 
     # Optional
     # Enable this Piped to handle CLOUD_RUN application.
-    cloudProviders:
+    platformProviders:
       - name: cloudrun-in-project
         type: CLOUDRUN
         config:
