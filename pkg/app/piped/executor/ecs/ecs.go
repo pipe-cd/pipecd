@@ -130,7 +130,7 @@ func loadTargetGroups(in *executor.Input, appCfg *config.ECSApplicationSpec, ds 
 func applyTaskDefinition(ctx context.Context, cli provider.Client, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
 	td, err := cli.RegisterTaskDefinition(ctx, taskDefinition)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to register ECS task definition of family %s: %v", *taskDefinition.Family, err)
 	}
 	return td, nil
 }
@@ -198,7 +198,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	in.LogPersister.Infof("Start applying the ECS task definition")
 	td, err := applyTaskDefinition(ctx, client, taskDefinition)
 	if err != nil {
-		in.LogPersister.Errorf("Failed to register ECS task definition of family %s: %v", *taskDefinition.Family, err)
+		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
 		return false
 	}
 
@@ -229,7 +229,7 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	in.LogPersister.Infof("Start applying the ECS task definition")
 	td, err := applyTaskDefinition(ctx, client, taskDefinition)
 	if err != nil {
-		in.LogPersister.Errorf("Failed to register ECS task definition of family %s: %v", *taskDefinition.Family, err)
+		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
 		return false
 	}
 
