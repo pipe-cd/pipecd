@@ -60,17 +60,17 @@ func newApplierGroup(defaultProvider string, appCfg config.KubernetesApplication
 			if _, ok := d.appliers[name]; ok {
 				continue
 			}
-			cp, ok := pipedCfg.FindPlatformProvider(name, model.ApplicationKind_KUBERNETES)
-			if !ok {
+			cp, found := pipedCfg.FindPlatformProvider(name, model.ApplicationKind_KUBERNETES)
+			if !found {
 				return nil, fmt.Errorf("provider %s specified in resourceRoutes was not found", name)
 			}
 			d.appliers[name] = provider.NewApplier(appCfg.Input, *cp.KubernetesConfig, logger)
 			continue
 		}
 		if labels := r.Provider.Labels; len(labels) > 0 {
-			cps := pipedCfg.FindPlatformProvidersByLabel(labels, model.ApplicationKind_KUBERNETES)
+			cps := pipedCfg.FindPlatformProvidersByLabels(labels, model.ApplicationKind_KUBERNETES)
 			if len(cps) == 0 {
-				return nil, fmt.Errorf("there are no provider that matches the specified labels (%v)", labels)
+				return nil, fmt.Errorf("there is no provider that matches the specified labels (%v)", labels)
 			}
 			names := make([]string, 0, len(cps))
 			for _, cp := range cps {
