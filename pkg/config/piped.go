@@ -218,6 +218,32 @@ func (s *PipedSpec) FindPlatformProvider(name string, t model.ApplicationKind) (
 	return PipedPlatformProvider{}, false
 }
 
+// FindPlatformProvidersByLabel finds all PlatformProviders which match the provided labels.
+func (s *PipedSpec) FindPlatformProvidersByLabel(labels map[string]string, t model.ApplicationKind) []PipedPlatformProvider {
+	requiredProviderType := t.CompatiblePlatformProviderType()
+	out := make([]PipedPlatformProvider, 0)
+
+	labelMatch := func(providerLabels map[string]string) bool {
+		for k, v := range labels {
+			if v != providerLabels[k] {
+				return false
+			}
+		}
+		return true
+	}
+
+	for _, p := range s.PlatformProviders {
+		if p.Type != requiredProviderType {
+			continue
+		}
+		if !labelMatch(p.Labels) {
+			continue
+		}
+		out = append(out, p)
+	}
+	return out
+}
+
 // GetRepositoryMap returns a map of repositories where key is repo id.
 func (s *PipedSpec) GetRepositoryMap() map[string]PipedRepository {
 	m := make(map[string]PipedRepository, len(s.Repositories))
