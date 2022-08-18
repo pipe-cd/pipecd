@@ -1138,7 +1138,7 @@ func TestPipedSpecClone(t *testing.T) {
 func TestFindPlatformProvidersByLabel(t *testing.T) {
 	pipedSpec := &PipedSpec{
 		PlatformProviders: []PipedPlatformProvider{
-			PipedPlatformProvider{
+			{
 				Name: "provider-1",
 				Type: model.PlatformProviderKubernetes,
 				Labels: map[string]string{
@@ -1146,7 +1146,7 @@ func TestFindPlatformProvidersByLabel(t *testing.T) {
 					"foo":   "foo-1",
 				},
 			},
-			PipedPlatformProvider{
+			{
 				Name: "provider-2",
 				Type: model.PlatformProviderKubernetes,
 				Labels: map[string]string{
@@ -1154,7 +1154,7 @@ func TestFindPlatformProvidersByLabel(t *testing.T) {
 					"foo":   "foo-2",
 				},
 			},
-			PipedPlatformProvider{
+			{
 				Name: "provider-3",
 				Type: model.PlatformProviderCloudRun,
 				Labels: map[string]string{
@@ -1162,7 +1162,7 @@ func TestFindPlatformProvidersByLabel(t *testing.T) {
 					"foo":   "foo-3",
 				},
 			},
-			PipedPlatformProvider{
+			{
 				Name: "provider-4",
 				Type: model.PlatformProviderKubernetes,
 				Labels: map[string]string{
@@ -1191,7 +1191,7 @@ func TestFindPlatformProvidersByLabel(t *testing.T) {
 				"group": "group-1",
 			},
 			want: []PipedPlatformProvider{
-				PipedPlatformProvider{
+				{
 					Name: "provider-1",
 					Type: model.PlatformProviderKubernetes,
 					Labels: map[string]string{
@@ -1207,7 +1207,7 @@ func TestFindPlatformProvidersByLabel(t *testing.T) {
 				"group": "group-1",
 			},
 			want: []PipedPlatformProvider{
-				PipedPlatformProvider{
+				{
 					Name: "provider-1",
 					Type: model.PlatformProviderKubernetes,
 					Labels: map[string]string{
@@ -1221,7 +1221,7 @@ func TestFindPlatformProvidersByLabel(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := pipedSpec.FindPlatformProvidersByLabel(tc.labels, model.ApplicationKind_KUBERNETES)
+			got, _ := pipedSpec.FindPlatformProvidersByLabels(tc.labels, model.ApplicationKind_KUBERNETES)
 			assert.Equal(t, tc.want, got)
 		})
 	}
