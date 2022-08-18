@@ -218,8 +218,8 @@ func (s *PipedSpec) FindPlatformProvider(name string, t model.ApplicationKind) (
 	return PipedPlatformProvider{}, false
 }
 
-// FindPlatformProviderByLabel finds all PlatformProviders which match the provided labels.
-func (s *PipedSpec) FindPlatformProviderByLabel(labels map[string]string, t model.ApplicationKind) []PipedPlatformProvider {
+// FindPlatformProvidersByLabel finds all PlatformProviders which match the provided labels.
+func (s *PipedSpec) FindPlatformProvidersByLabel(labels map[string]string, t model.ApplicationKind) []PipedPlatformProvider {
 	requiredProviderType := t.CompatiblePlatformProviderType()
 	out := make([]PipedPlatformProvider, 0)
 
