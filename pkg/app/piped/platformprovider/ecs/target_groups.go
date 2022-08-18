@@ -17,6 +17,7 @@ package ecs
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
@@ -24,9 +25,11 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
+var ErrNoTargetGroup = errors.New("no target group")
+
 func loadTargetGroups(targetGroups config.ECSTargetGroups) (*types.LoadBalancer, *types.LoadBalancer, error) {
 	if len(targetGroups.Primary) == 0 {
-		return nil, nil, fmt.Errorf("primary target group definition is required")
+		return nil, nil, ErrNoTargetGroup
 	}
 
 	// Decode Primary target group config.

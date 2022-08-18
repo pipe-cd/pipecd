@@ -113,9 +113,14 @@ func loadTargetGroups(in *executor.Input, appCfg *config.ECSApplicationSpec, ds 
 	in.LogPersister.Infof("Loading target groups config at the commit %s", ds.Revision)
 
 	primary, canary, err := provider.LoadTargetGroups(appCfg.Input.TargetGroups)
-	if err != nil {
+	if err != nil && !errors.Is(err, provider.ErrNoTargetGroup) {
 		in.LogPersister.Errorf("Failed to load TargetGroups (%v)", err)
 		return nil, nil, false
+	}
+
+	if errors.Is(err, provider.ErrNoTargetGroup) {
+		in.LogPersister.Infof("No target groups were set at commit %s", ds.Revision)
+		return nil, nil, true
 	}
 
 	in.LogPersister.Infof("Successfully loaded the ECS target groups at commit %s", ds.Revision)
@@ -152,7 +157,7 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 	return service, nil
 }
 
-func createPrimaryTaskSet(ctx context.Context, client provider.Client, service types.Service, taskDef types.TaskDefinition, targetGroup types.LoadBalancer) error {
+func createPrimaryTaskSet(ctx context.Context, client provider.Client, service types.Service, taskDef types.TaskDefinition, targetGroup *types.LoadBalancer) error {
 	// Get current PRIMARY task set.
 	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, service)
 	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
@@ -183,7 +188,7 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	return nil
 }
 
-func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup types.LoadBalancer) bool {
+func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
@@ -214,7 +219,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	return true
 }
 
-func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup types.LoadBalancer) bool {
+func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
