@@ -163,7 +163,9 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 					},
 					{
 						Provider: KubernetesProviderMatcher{
-							Name: "WorkloadCluster",
+							Labels: map[string]string{
+								"group": "workload",
+							},
 						},
 					},
 				},
