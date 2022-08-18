@@ -92,7 +92,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !sync(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, servicedefinition, *primary) {
+	if !sync(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, servicedefinition, primary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -113,8 +113,12 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
+	if primary == nil {
+		e.LogPersister.Error("Primary target group is required to enable rolling out PRIMARY variant")
+		return model.StageStatus_STAGE_FAILURE
+	}
 
-	if !rollout(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, servicedefinition, *primary) {
+	if !rollout(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, servicedefinition, primary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -140,7 +144,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !rollout(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, servicedefinition, *canary) {
+	if !rollout(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, servicedefinition, canary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -152,8 +156,8 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
-	if canary == nil {
-		e.LogPersister.Error("Canary target group is required to enable traffic routing")
+	if primary == nil || canary == nil {
+		e.LogPersister.Error("Primary/Canary target group are required to enable traffic routing")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
