@@ -12,4 +12,5 @@ spec:
       provider:
         name: ConfigCluster
     - provider:
-        name: WorkloadCluster
+        labels:
+          group: workload
