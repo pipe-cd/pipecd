@@ -1135,7 +1135,7 @@ func TestPipedSpecClone(t *testing.T) {
 	}
 }
 
-func TestFindPlatformProviderByLabel(t *testing.T) {
+func TestFindPlatformProvidersByLabel(t *testing.T) {
 	pipedSpec := &PipedSpec{
 		PlatformProviders: []PipedPlatformProvider{
 			PipedPlatformProvider{
@@ -1221,7 +1221,7 @@ func TestFindPlatformProviderByLabel(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := pipedSpec.FindPlatformProviderByLabel(tc.labels, model.ApplicationKind_KUBERNETES)
+			got := pipedSpec.FindPlatformProvidersByLabel(tc.labels, model.ApplicationKind_KUBERNETES)
 			assert.Equal(t, tc.want, got)
 		})
 	}
