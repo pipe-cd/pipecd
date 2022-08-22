@@ -43,7 +43,7 @@ In PipeCD model, we need a Piped which actually runs the deployment and a contro
 
 In the dog cluster, we host a PipeCD controlplane, which manages exactly only one Piped, that deploys the Production controlplane we talked about above.
 
-> If you ask which Piped deploys this dog controlplane, it's the point interesting thing comes. The Piped which is registered to the Production controlplane is the one that deploys this dog cluster controlplane. They deploy each other!
+> If you ask, which Piped deploys this dog controlplane? It's the point interesting thing comes. The Piped which is registered to the Production controlplane is the one that deploys this dog cluster controlplane. Production and dog deploy each other!
 
 ##### 3. The dev, internal play and external play clusters
 
