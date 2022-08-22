@@ -16,7 +16,7 @@ Good news, we're developing a powerful CD platform as well - __the PipeCD__! In 
 > __Eating your own dog food__ or "__dogfooding__" is the practice of using one's own products or services. This can be a way for an organization to test its products in real-world usage using product management techniques (via [wiki](https://en.wikipedia.org/wiki/Eating_your_own_dog_food)).
 
 
-It's a good idea to use your product (at least in the context of software production), which helps the developer team have an early look at any not-good points and problems of their product. Even though you can have test, dev, staging, and so on separated environments to test your own product in some ways that are well-defined, using your product still brings some new looks and ideas to improve and keep the product alive.
+It's a good idea to use your own product (at least in the context of software production), which helps the developers have an early look at any not-good points and problems of their product. Even though you can have test, dev, staging, and so on separated environments to test your own product in some ways that are well-defined, using your own product still brings some new looks and ideas to improve and keep the product alive.
 
 PipeCD team adopts that idea, we design our CD flow for PipeCD as below.
 
