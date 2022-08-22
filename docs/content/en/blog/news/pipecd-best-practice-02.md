@@ -35,7 +35,7 @@ This cluster host the PipeCD controlplane for our internal company use. The Pipe
 
 PipeCD uses `project` as a logical context to separate applications of different teams and different purposes. You can host only one PipeCD controlplane for company-wide use like us with this controlplane.
 
-Based on that idea, aside with projects of other company teams, we use this controlplane to manage our PipeCD’s applications, which are: dog, dev, internal play, and external play.
+Based on that idea, aside with projects of other company teams, we also use this controlplane to manage our PipeCD’s applications' deployments under a PipeCD project named `platform`.
 
 ##### 2. The dog cluster
 
