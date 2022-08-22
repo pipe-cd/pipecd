@@ -52,6 +52,8 @@ All three other clusters are used for the development of PipeCD which are:
 - The internal play cluster: run the internal play controlplane and piped. Basically, it's a demonstrate environment to show the PipeCD users some early access versions which not yet been published.
 - The external play cluster: run the external play controlplane and piped, we published it as [play.pipecd.dev](https://play.pipecd.dev).
 
+These clusters: dog, dev, internal play and external play and their running controlplane deployment are all deployed by a Piped which is managed by Production controlplane under `project: platform` project.
+
 #### Some notes you can learn from PipeCD's self CD architecture
 
 - It's best practice to store the applications' configuration of different projects in separated repositories. But in our case, for simplicity, we stored our all PipeCD applications in the same place. We can do it with confidence because the applications' configurations in case of using PipeCD are all encrypted or be a part of the Piped configuration, not in the applications' configuration itself. In case of different teams using the same controlplane, those teams should have their own applications' configuration repo to reduce the miss.
