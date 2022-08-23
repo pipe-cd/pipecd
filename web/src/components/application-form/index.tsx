@@ -215,7 +215,7 @@ export const ApplicationFormTabs: React.FC<ApplicationFormProps> = (props) => {
             icon={
               <IconButton
                 size="small"
-                href="https://pipecd.dev/docs/user-guide/adding-an-application/#from-the-application-configuration-in-your-git-repository-recommended"
+                href="https://pipecd.dev/docs/user-guide/adding-an-application/#picking-from-a-list-of-unused-apps-suggested-by-pipeds"
                 target="_blank"
                 rel="noopener noreferrer"
               >
