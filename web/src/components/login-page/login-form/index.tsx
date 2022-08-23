@@ -69,7 +69,9 @@ export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
 
   const handleOnBack = (): void => {
     localStorage.removeItem(LOGGING_IN_PROJECT);
-    window.location.href = PAGE_PATH_LOGIN;
+    setTimeout(() => {
+      window.location.href = PAGE_PATH_LOGIN;
+    }, 300);
   };
 
   return (
