@@ -28,11 +28,11 @@ var (
 	githubScopes = []string{"read:org"}
 
 	builtinAdminRBACRole = &ProjectRBACRole{
-		Name:      builtinRBACRoleAdmin.String(),
-		Policies:  builtinAdminRBACPolicy,
+		Name:      BuiltinRBACRoleAdmin.String(),
+		Policies:  builtinAdminRBACPolicies,
 		IsBuiltin: true,
 	}
-	builtinAdminRBACPolicy = []*ProjectRBACPolicy{
+	builtinAdminRBACPolicies = []*ProjectRBACPolicy{
 		{
 			Resources: []*ProjectRBACResource{
 				{
@@ -45,11 +45,11 @@ var (
 		},
 	}
 	builtinEditorRBACRole = &ProjectRBACRole{
-		Name:      builtinRBACRoleEditor.String(),
-		Policies:  builtinEditorRBACPolicy,
+		Name:      BuiltinRBACRoleEditor.String(),
+		Policies:  builtinEditorRBACPolicies,
 		IsBuiltin: true,
 	}
-	builtinEditorRBACPolicy = []*ProjectRBACPolicy{
+	builtinEditorRBACPolicies = []*ProjectRBACPolicy{
 		{
 			Resources: []*ProjectRBACResource{
 				{Type: ProjectRBACResource_APPLICATION},
@@ -87,11 +87,11 @@ var (
 		},
 	}
 	builtinViewerRBACRole = &ProjectRBACRole{
-		Name:      builtinRBACRoleViewer.String(),
-		Policies:  builtinViewerRBACPolicy,
+		Name:      BuiltinRBACRoleViewer.String(),
+		Policies:  builtinViewerRBACPolicies,
 		IsBuiltin: true,
 	}
-	builtinViewerRBACPolicy = []*ProjectRBACPolicy{
+	builtinViewerRBACPolicies = []*ProjectRBACPolicy{
 		{
 			Resources: []*ProjectRBACResource{
 				{Type: ProjectRBACResource_APPLICATION},
@@ -126,9 +126,9 @@ var (
 type BuiltinRBACRole string
 
 const (
-	builtinRBACRoleAdmin  BuiltinRBACRole = "Admin"
-	builtinRBACRoleEditor BuiltinRBACRole = "Editor"
-	builtinRBACRoleViewer BuiltinRBACRole = "Viewer"
+	BuiltinRBACRoleAdmin  BuiltinRBACRole = "Admin"
+	BuiltinRBACRoleEditor BuiltinRBACRole = "Editor"
+	BuiltinRBACRoleViewer BuiltinRBACRole = "Viewer"
 )
 
 func (b BuiltinRBACRole) String() string {
@@ -387,19 +387,19 @@ func (p *Project) GetAllUserGroups() []*ProjectUserGroup {
 	if rbac.Admin != "" {
 		all = append(all, &ProjectUserGroup{
 			SsoGroup: rbac.Admin,
-			Role:     builtinRBACRoleAdmin.String(),
+			Role:     BuiltinRBACRoleAdmin.String(),
 		})
 	}
 	if rbac.Editor != "" && rbac.Editor != rbac.Admin {
 		all = append(all, &ProjectUserGroup{
 			SsoGroup: rbac.Editor,
-			Role:     builtinRBACRoleEditor.String(),
+			Role:     BuiltinRBACRoleEditor.String(),
 		})
 	}
 	if rbac.Viewer != "" && rbac.Viewer != rbac.Admin && rbac.Viewer != rbac.Editor {
 		all = append(all, &ProjectUserGroup{
 			SsoGroup: rbac.Viewer,
-			Role:     builtinRBACRoleViewer.String(),
+			Role:     BuiltinRBACRoleViewer.String(),
 		})
 	}
 	all = append(all, p.UserGroups...)
@@ -468,9 +468,9 @@ func (p *Project) GetAllRBACRoles() []*ProjectRBACRole {
 
 // isBuiltinRBACRole checks whether the name is the name of built-in role.
 func isBuiltinRBACRole(name string) bool {
-	return name == builtinRBACRoleAdmin.String() ||
-		name == builtinRBACRoleEditor.String() ||
-		name == builtinRBACRoleViewer.String()
+	return name == BuiltinRBACRoleAdmin.String() ||
+		name == BuiltinRBACRoleEditor.String() ||
+		name == BuiltinRBACRoleViewer.String()
 }
 
 // AddRBACRole adds a custom RBAC role.

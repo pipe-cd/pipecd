@@ -10,6 +10,11 @@ export class Role extends jspb.Message {
   getProjectRole(): Role.ProjectRole;
   setProjectRole(value: Role.ProjectRole): Role;
 
+  getProjectRbacRolesList(): Array<string>;
+  setProjectRbacRolesList(value: Array<string>): Role;
+  clearProjectRbacRolesList(): Role;
+  addProjectRbacRoles(value: string, index?: number): Role;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Role.AsObject;
   static toObject(includeInstance: boolean, msg: Role): Role.AsObject;
@@ -22,6 +27,7 @@ export namespace Role {
   export type AsObject = {
     projectId: string,
     projectRole: Role.ProjectRole,
+    projectRbacRolesList: Array<string>,
   }
 
   export enum ProjectRole { 

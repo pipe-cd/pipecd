@@ -31,7 +31,7 @@ func TestDecideRole(t *testing.T) {
 		username string
 		oc       *OAuthClient
 		teams    []*github.Team
-		role     model.Role_ProjectRole
+		role     *model.Role
 		wantErr  bool
 	}{
 		{
@@ -42,7 +42,22 @@ func TestDecideRole(t *testing.T) {
 				editorTeam: "org/team-editor",
 				viewerTeam: "org/team-viewer",
 				project: &model.Project{
+					Id:                 "id",
 					AllowStrayAsViewer: false,
+					UserGroups: []*model.ProjectUserGroup{
+						{
+							SsoGroup: "org/team-admin",
+							Role:     "Admin",
+						},
+						{
+							SsoGroup: "org/team-editor",
+							Role:     "Editor",
+						},
+						{
+							SsoGroup: "org/team-viewer",
+							Role:     "Viewer",
+						},
+					},
 				},
 			},
 			teams: []*github.Team{
@@ -61,7 +76,22 @@ func TestDecideRole(t *testing.T) {
 				editorTeam: "org/team-editor",
 				viewerTeam: "org/team-viewer",
 				project: &model.Project{
+					Id:                 "id",
 					AllowStrayAsViewer: true,
+					UserGroups: []*model.ProjectUserGroup{
+						{
+							SsoGroup: "org/team-admin",
+							Role:     "Admin",
+						},
+						{
+							SsoGroup: "org/team-editor",
+							Role:     "Editor",
+						},
+						{
+							SsoGroup: "org/team-viewer",
+							Role:     "Viewer",
+						},
+					},
 				},
 			},
 			teams: []*github.Team{
@@ -70,7 +100,13 @@ func TestDecideRole(t *testing.T) {
 					Slug:         stringPointer("team1"),
 				},
 			},
-			role:    model.Role_VIEWER,
+			role: &model.Role{
+				ProjectId:   "id",
+				ProjectRole: model.Role_VIEWER,
+				ProjectRbacRoles: []string{
+					model.BuiltinRBACRoleViewer.String(),
+				},
+			},
 			wantErr: false,
 		},
 		{
@@ -80,6 +116,24 @@ func TestDecideRole(t *testing.T) {
 				adminTeam:  "org/team-admin",
 				editorTeam: "org/team-editor",
 				viewerTeam: "org/team-viewer",
+				project: &model.Project{
+					Id:                 "id",
+					AllowStrayAsViewer: false,
+					UserGroups: []*model.ProjectUserGroup{
+						{
+							SsoGroup: "org/team-admin",
+							Role:     "Admin",
+						},
+						{
+							SsoGroup: "org/team-editor",
+							Role:     "Editor",
+						},
+						{
+							SsoGroup: "org/team-viewer",
+							Role:     "Viewer",
+						},
+					},
+				},
 			},
 			teams: []*github.Team{
 				{
@@ -95,7 +149,14 @@ func TestDecideRole(t *testing.T) {
 					Slug:         stringPointer("team-viewer"),
 				},
 			},
-			role: model.Role_ADMIN,
+			role: &model.Role{
+				ProjectId:   "id",
+				ProjectRole: model.Role_ADMIN,
+				ProjectRbacRoles: []string{
+					model.BuiltinRBACRoleAdmin.String(),
+				},
+			},
+			wantErr: false,
 		},
 		{
 			name:     "editor",
@@ -104,6 +165,24 @@ func TestDecideRole(t *testing.T) {
 				adminTeam:  "org/team-admin",
 				editorTeam: "org/team-editor",
 				viewerTeam: "org/team-viewer",
+				project: &model.Project{
+					Id:                 "id",
+					AllowStrayAsViewer: false,
+					UserGroups: []*model.ProjectUserGroup{
+						{
+							SsoGroup: "org/team-admin",
+							Role:     "Admin",
+						},
+						{
+							SsoGroup: "org/team-editor",
+							Role:     "Editor",
+						},
+						{
+							SsoGroup: "org/team-viewer",
+							Role:     "Viewer",
+						},
+					},
+				},
 			},
 			teams: []*github.Team{
 				{
@@ -119,7 +198,15 @@ func TestDecideRole(t *testing.T) {
 					Slug:         stringPointer("team-viewer"),
 				},
 			},
-			role: model.Role_EDITOR,
+			role: &model.Role{
+				ProjectId:   "id",
+				ProjectRole: model.Role_EDITOR,
+				ProjectRbacRoles: []string{
+					model.BuiltinRBACRoleEditor.String(),
+					model.BuiltinRBACRoleViewer.String(),
+				},
+			},
+			wantErr: false,
 		},
 		{
 			name:     "viewer",
@@ -128,6 +215,24 @@ func TestDecideRole(t *testing.T) {
 				adminTeam:  "org/team-admin",
 				editorTeam: "org/team-editor",
 				viewerTeam: "org/team-viewer",
+				project: &model.Project{
+					Id:                 "id",
+					AllowStrayAsViewer: false,
+					UserGroups: []*model.ProjectUserGroup{
+						{
+							SsoGroup: "org/team-admin",
+							Role:     "Admin",
+						},
+						{
+							SsoGroup: "org/team-editor",
+							Role:     "Editor",
+						},
+						{
+							SsoGroup: "org/team-viewer",
+							Role:     "Viewer",
+						},
+					},
+				},
 			},
 			teams: []*github.Team{
 				{
@@ -143,7 +248,13 @@ func TestDecideRole(t *testing.T) {
 					Slug:         stringPointer("team-viewer"),
 				},
 			},
-			role: model.Role_VIEWER,
+			role: &model.Role{
+				ProjectId:   "id",
+				ProjectRole: model.Role_VIEWER,
+				ProjectRbacRoles: []string{
+					model.BuiltinRBACRoleViewer.String(),
+				},
+			},
 		},
 	}
 

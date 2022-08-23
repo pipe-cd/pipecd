@@ -37,7 +37,7 @@ goog.exportSymbol('proto.model.role', null, global);
  * @constructor
  */
 proto.model.Role = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.model.Role.repeatedFields_, null);
 };
 goog.inherits(proto.model.Role, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -47,6 +47,13 @@ if (goog.DEBUG && !COMPILED) {
    */
   proto.model.Role.displayName = 'proto.model.Role';
 }
+
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.model.Role.repeatedFields_ = [3];
 
 
 
@@ -80,7 +87,8 @@ proto.model.Role.prototype.toObject = function(opt_includeInstance) {
 proto.model.Role.toObject = function(includeInstance, msg) {
   var f, obj = {
     projectId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    projectRole: jspb.Message.getFieldWithDefault(msg, 2, 0)
+    projectRole: jspb.Message.getFieldWithDefault(msg, 2, 0),
+    projectRbacRolesList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -125,6 +133,10 @@ proto.model.Role.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {!proto.model.Role.ProjectRole} */ (reader.readEnum());
       msg.setProjectRole(value);
       break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addProjectRbacRoles(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -165,6 +177,13 @@ proto.model.Role.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0.0) {
     writer.writeEnum(
       2,
+      f
+    );
+  }
+  f = message.getProjectRbacRolesList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      3,
       f
     );
   }
@@ -213,6 +232,43 @@ proto.model.Role.prototype.getProjectRole = function() {
  */
 proto.model.Role.prototype.setProjectRole = function(value) {
   return jspb.Message.setProto3EnumField(this, 2, value);
+};
+
+
+/**
+ * repeated string project_rbac_roles = 3;
+ * @return {!Array<string>}
+ */
+proto.model.Role.prototype.getProjectRbacRolesList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 3));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.model.Role} returns this
+ */
+proto.model.Role.prototype.setProjectRbacRolesList = function(value) {
+  return jspb.Message.setField(this, 3, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.model.Role} returns this
+ */
+proto.model.Role.prototype.addProjectRbacRoles = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 3, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.model.Role} returns this
+ */
+proto.model.Role.prototype.clearProjectRbacRolesList = function() {
+  return this.setProjectRbacRolesList([]);
 };
 
 

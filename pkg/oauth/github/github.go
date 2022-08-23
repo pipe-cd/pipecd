@@ -120,15 +120,22 @@ func (c *OAuthClient) GetUser(ctx context.Context) (*model.User, error) {
 	return &model.User{
 		Username:  user.GetLogin(),
 		AvatarUrl: user.GetAvatarURL(),
-		Role: &model.Role{
-			ProjectId:   c.project.Id,
-			ProjectRole: role,
-		},
+		Role:      role,
 	}, nil
 }
 
-func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role model.Role_ProjectRole, err error) {
+func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role *model.Role, err error) {
 	var found bool
+
+	role = &model.Role{
+		ProjectId:        c.project.Id,
+		ProjectRbacRoles: make([]string, 0, len(teams)),
+	}
+	groups := c.project.GetAllUserGroups()
+	roles := make(map[string]string, len(groups))
+	for _, g := range groups {
+		roles[g.SsoGroup] = g.Role
+	}
 
 	for _, team := range teams {
 		slug := team.GetSlug()
@@ -138,16 +145,20 @@ func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role model.
 		}
 
 		t := fmt.Sprintf("%s/%s", org, slug)
+		if v, ok := roles[t]; ok {
+			role.ProjectRbacRoles = append(role.ProjectRbacRoles, v)
+		}
+
 		switch t {
 		case c.adminTeam:
-			role = model.Role_ADMIN
+			role.ProjectRole = model.Role_ADMIN
 			return
 		case c.editorTeam:
-			role = model.Role_EDITOR
+			role.ProjectRole = model.Role_EDITOR
 			found = true
 		case c.viewerTeam:
-			if role != model.Role_EDITOR {
-				role = model.Role_VIEWER
+			if role.ProjectRole != model.Role_EDITOR {
+				role.ProjectRole = model.Role_VIEWER
 				found = true
 			}
 		}
@@ -157,11 +168,18 @@ func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role model.
 		return
 	}
 
+	// If the ProjectRBACConfig was not defined or the current user does not belong to it but
+	// the current user belongs to any of the UserGroups, returns role.
+	if len(role.ProjectRbacRoles) != 0 {
+		return
+	}
+
 	// In case the current user does not belong to any registered
 	// teams, if AllowStrayAsViewer option is set, assign Viewer role
 	// as user's role.
 	if c.project.AllowStrayAsViewer {
-		role = model.Role_VIEWER
+		role.ProjectRole = model.Role_VIEWER
+		role.ProjectRbacRoles = []string{model.BuiltinRBACRoleViewer.String()}
 		return
 	}
 

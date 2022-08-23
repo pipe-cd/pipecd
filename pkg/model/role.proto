@@ -35,6 +35,8 @@ message Role {
   string project_id = 1;
   // project_role represents the roles you have in the project.
   ProjectRole project_role = 2;
+  // project_rbac_roles represents the names of role you have in the project.
+  repeated string project_rbac_roles = 3;
 }
 
 // Required role applied at the method level.
