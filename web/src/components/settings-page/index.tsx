@@ -36,6 +36,9 @@ const useStyles = makeStyles((theme) => ({
   drawerContainer: {
     overflow: "auto",
   },
+  listGroup: {
+    paddingTop: 0,
+  },
   content: {
     display: "flex",
     flexDirection: "column",
@@ -65,7 +68,7 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
         classes={{ paper: classes.drawerPaper }}
       >
         <div className={classes.drawerContainer}>
-          <List>
+          <List className={classes.listGroup}>
             {MENU_ITEMS.map(([text, link]) => (
               <ListItem
                 key={`menu-item-${text}`}
@@ -73,6 +76,7 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
                 component={NavLink}
                 to={link}
                 activeClassName={classes.activeNav}
+                selected={link === location.pathname}
               >
                 <ListItemText primary={text} />
               </ListItem>
