@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"sort"
+	"strconv"
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
@@ -21,15 +22,19 @@ type FileParams struct {
 }
 
 type Method struct {
-	Name string // The name of the RPC
-	Role string // ADMIN,EDITOR,VIEWER
+	Name     string // The name of the RPC
+	Resource string // APPLICAION,DEPLOYMENT,EVENT,PIPED,DEPLOYMENT_CHAIN,PROJECT,API_KEY,INSIGHT
+	Action   string // GET,LIST,CREATE,UPDATE,DELETE
+	Ignored  bool   // Whether ignore authorization or not
 }
 
 const (
-	filePrefix              = "pkg/app/server/service/webservice"
-	generatedFileNameSuffix = ".pb.auth.go"
-	protoFileExtention      = ".proto"
-	methodOptionsRole       = "role"
+	filePrefix               = "pkg/app/server/service/webservice"
+	generatedFileNameSuffix  = ".pb.auth.go"
+	protoFileExtention       = ".proto"
+	methodOptionsRBACResouce = "rbac_resource"
+	methodOptionsRBACPolicy  = "rbac_policy"
+	methodOptionsAuth        = "auth"
 )
 
 func main() {
@@ -57,7 +62,7 @@ func main() {
 			gf := p.NewGeneratedFile(filename, f.GoImportPath)
 
 			sort.SliceStable(methods, func(i, j int) bool {
-				return methods[i].Role < methods[j].Role
+				return methods[i].Resource < methods[j].Resource
 			})
 
 			inputPath := fmt.Sprintf("%s%s", f.GeneratedFilenamePrefix, protoFileExtention)
@@ -103,18 +108,25 @@ func generateMethods(extTypes *protoregistry.Types, ms []*protogen.Method) ([]*M
 				return true
 			}
 
-			if fd.Name() == methodOptionsRole {
-				// FIXME: This way can not parse the first value of enum for some reasons hence
-				// set VIEWER for default value.
-				method.Role = "VIEWER"
-				if v.String() != "" {
-					method.Role = strings.SplitN(v.String(), ":", 2)[1]
+			var value string
+			if v.String() != "" {
+				value = strings.SplitN(v.String(), ":", 2)[1]
+			}
+
+			switch fd.Name() {
+			case methodOptionsRBACResouce:
+				method.Resource = value
+			case methodOptionsRBACPolicy:
+				method.Action = value
+			case methodOptionsAuth:
+				if v, err := strconv.ParseBool(value); err == nil {
+					method.Ignored = v
 				}
 			}
 			return true
 		})
 
-		if method.Role != "" {
+		if method.Ignored || (method.Resource != "" && method.Action != "") {
 			ret = append(ret, method)
 		}
 	}
