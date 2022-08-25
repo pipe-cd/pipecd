@@ -32,6 +32,7 @@ const (
 	LabelIgnoreDriftDirection = "pipecd.dev/ignore-drift-detection" // Whether the drift detection should ignore this resource.
 	LabelSyncReplace          = "pipecd.dev/sync-by-replace"        // Use replace instead of apply.
 	AnnotationConfigHash      = "pipecd.dev/config-hash"            // The hash value of all mouting config resources.
+	AnnotationIndex           = "pipecd.dev/index"                  // The index of resource used to sort them before using.
 	ManagedByPiped            = "piped"
 	IgnoreDriftDetectionTrue  = "true"
 	UseReplaceEnabled         = "enabled"

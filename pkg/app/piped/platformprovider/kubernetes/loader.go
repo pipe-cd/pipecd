@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
+	"strconv"
 	"sync"
 
 	"go.uber.org/zap"
@@ -81,6 +83,9 @@ func NewLoader(
 
 // LoadManifests renders and loads all manifests for application.
 func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err error) {
+	defer func() {
+		sortManifests(manifests)
+	}()
 	l.initOnce.Do(func() {
 		l.templatingMethod = determineTemplatingMethod(l.input, l.appDir)
 		switch l.templatingMethod {
@@ -159,6 +164,23 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 	}
 
 	return
+}
+
+func sortManifests(manifests []Manifest) {
+	if len(manifests) < 2 {
+		return
+	}
+	sort.Slice(manifests, func(i, j int) bool {
+		iAns := manifests[i].GetAnnotations()
+		// Ignore the converting error since it is not so much important.
+		iIndex, _ := strconv.Atoi(iAns[AnnotationIndex])
+
+		jAns := manifests[j].GetAnnotations()
+		// Ignore the converting error since it is not so much important.
+		jIndex, _ := strconv.Atoi(jAns[AnnotationIndex])
+
+		return iIndex < jIndex
+	})
 }
 
 func (l *loader) findKustomize(ctx context.Context, version string) (*Kustomize, error) {
