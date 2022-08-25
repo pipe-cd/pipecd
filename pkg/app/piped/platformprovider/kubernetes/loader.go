@@ -173,11 +173,11 @@ func sortManifests(manifests []Manifest) {
 	sort.Slice(manifests, func(i, j int) bool {
 		iAns := manifests[i].GetAnnotations()
 		// Ignore the converting error since it is not so much important.
-		iIndex, _ := strconv.Atoi(iAns[AnnotationIndex])
+		iIndex, _ := strconv.Atoi(iAns[AnnotationOrder])
 
 		jAns := manifests[j].GetAnnotations()
 		// Ignore the converting error since it is not so much important.
-		jIndex, _ := strconv.Atoi(jAns[AnnotationIndex])
+		jIndex, _ := strconv.Atoi(jAns[AnnotationOrder])
 
 		return iIndex < jIndex
 	})

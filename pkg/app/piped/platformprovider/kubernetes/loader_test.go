@@ -44,27 +44,27 @@ func TestSortManifests(t *testing.T) {
 		{
 			name: "one manifest",
 			manifests: []Manifest{
-				maker("name-1", map[string]string{AnnotationIndex: "0"}),
+				maker("name-1", map[string]string{AnnotationOrder: "0"}),
 			},
 			want: []Manifest{
-				maker("name-1", map[string]string{AnnotationIndex: "0"}),
+				maker("name-1", map[string]string{AnnotationOrder: "0"}),
 			},
 		},
 		{
 			name: "multiple manifests",
 			manifests: []Manifest{
-				maker("name-2", map[string]string{AnnotationIndex: "2"}),
-				maker("name--1", map[string]string{AnnotationIndex: "-1"}),
+				maker("name-2", map[string]string{AnnotationOrder: "2"}),
+				maker("name--1", map[string]string{AnnotationOrder: "-1"}),
 				maker("name-nil", nil),
-				maker("name-0", map[string]string{AnnotationIndex: "0"}),
-				maker("name-1", map[string]string{AnnotationIndex: "1"}),
+				maker("name-0", map[string]string{AnnotationOrder: "0"}),
+				maker("name-1", map[string]string{AnnotationOrder: "1"}),
 			},
 			want: []Manifest{
-				maker("name--1", map[string]string{AnnotationIndex: "-1"}),
+				maker("name--1", map[string]string{AnnotationOrder: "-1"}),
 				maker("name-nil", nil),
-				maker("name-0", map[string]string{AnnotationIndex: "0"}),
-				maker("name-1", map[string]string{AnnotationIndex: "1"}),
-				maker("name-2", map[string]string{AnnotationIndex: "2"}),
+				maker("name-0", map[string]string{AnnotationOrder: "0"}),
+				maker("name-1", map[string]string{AnnotationOrder: "1"}),
+				maker("name-2", map[string]string{AnnotationOrder: "2"}),
 			},
 		},
 	}
