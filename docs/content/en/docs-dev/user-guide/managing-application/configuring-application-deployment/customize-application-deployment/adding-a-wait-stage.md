@@ -1,7 +1,7 @@
 ---
 title: "Adding a wait stage"
 linkTitle: "Adding a wait stage"
-weight: 7
+weight: 1
 description: >
   This page describes how to add a WAIT stage.
 ---

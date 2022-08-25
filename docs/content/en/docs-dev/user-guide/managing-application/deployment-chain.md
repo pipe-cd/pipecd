@@ -41,7 +41,7 @@ In the context of the deployment chain in PipeCD, a chain is made up of many `bl
 
 __Tip__:
 
-1. If you followed all the configuration references and built your deployment chain configuration, but some deployments in your defined chain are not triggered as you want, please re-check those deployments [`trigger configuration`](/docs/user-guide/triggering-a-deployment/#trigger-configuration). The `onChain` trigger is __disabled by default__; you need to enable that configuration to enable your deployment to be triggered as a node in the deployment chain.
+1. If you followed all the configuration references and built your deployment chain configuration, but some deployments in your defined chain are not triggered as you want, please re-check those deployments [`trigger configuration`](/docs/user-guide/managing-application/triggering-a-deployment/#trigger-configuration). The `onChain` trigger is __disabled by default__; you need to enable that configuration to enable your deployment to be triggered as a node in the deployment chain.
 2. Values configured under `postSync.chain.applications` - we call it __Application matcher__'s values are merged using `AND` operator. Currently, only `name` and `kind` are supported, but `labels` will also be supported soon.
 
 See [Examples](/docs/examples/#deployment-chain) for more specific.

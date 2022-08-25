@@ -1,7 +1,7 @@
 ---
 title: "FAQ"
 linkTitle: "FAQ"
-weight: 9
+weight: 8
 description: >
   List of frequently asked questions.
 ---

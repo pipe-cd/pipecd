@@ -1,7 +1,7 @@
 ---
 title: "Rolling back a deployment"
 linkTitle: "Rolling back a deployment"
-weight: 4
+weight: 5
 description: >
   This page describes when a deployment is rolled back automatically and how to manually rollback a deployment.
 ---

@@ -10,7 +10,7 @@ description: >
 
 ##### Having piped's ID and Key strings
 - Ensure that the `piped` has been registered and you are having its `PIPED_ID` and `PIPED_KEY` strings.
-- If you are not having them, this [page](/docs/operator-manual/control-plane/registering-a-piped/) guides you how to register a new one.
+- If you are not having them, this [page](/docs/user-guide/managing-controlplane/registering-a-piped/) guides you how to register a new one.
 
 ##### Preparing SSH key
 - If your Git repositories are private, `piped` requires a private SSH key to access those repositories.
@@ -54,7 +54,7 @@ description: >
 
     # Optional
     # Uncomment this if you want to enable SecretManagement feature.
-    # https://pipecd.dev/docs/user-guide/secret-management
+    # https://pipecd.dev//docs/user-guide/managing-application/secret-management/
     # secretManagement:
     #   type: KEY_PAIR
     #   config:
@@ -104,7 +104,7 @@ description: >
   {{< tabpane >}}
   {{< tab lang="console" header="Piped with Remote-upgrade" >}}
 # Enable remote-upgrade feature of Piped.
-# https://pipecd.dev/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-upgrade
+# https://pipecd.dev/docs/user-guide/managing-piped/remote-upgrade-remote-config/#remote-upgrade
 # This allows upgrading Piped to a new version from the web console.
 
   gcloud compute instances create-with-container vm-piped \

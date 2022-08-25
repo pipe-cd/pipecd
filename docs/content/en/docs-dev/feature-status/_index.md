@@ -1,7 +1,7 @@
 ---
 title: "Feature Status"
 linkTitle: "Feature Status"
-weight: 8
+weight: 7
 description: >
   This page lists the relative maturity of every PipeCD features.
 ---

@@ -10,7 +10,7 @@ description: >
 
 ##### Having piped's ID and Key strings
 - Ensure that the `piped` has been registered and you are having its PIPED_ID and PIPED_KEY strings.
-- If you are not having them, this [page](/docs/operator-manual/control-plane/registering-a-piped/) guides you how to register a new one.
+- If you are not having them, this [page](/docs/user-guide/managing-controlplane/registering-a-piped/) guides you how to register a new one.
 
 ##### Preparing SSH key
 - If your Git repositories are private, `piped` requires a private SSH key to access those repositories.
@@ -54,7 +54,7 @@ helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks
   {{< /tab >}}
   {{< tab lang="bash" header="Piped with Remote-upgrade" >}}
 # Enable remote-upgrade feature of Piped.
-# https://pipecd.dev/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-upgrade
+# https://pipecd.dev/docs/user-guide/managing-piped/remote-upgrade-remote-config/#remote-upgrade
 # This allows upgrading Piped to a new version from the web console.
 # But we still need to restart Piped when we want to update its config data.
 
@@ -66,7 +66,7 @@ helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks
   {{< /tab >}}
   {{< tab lang="bash" header="Piped with Remote-upgrade and Remote-config" >}}
 # Enable both remote-upgrade and remote-config features of Piped.
-# https://pipecd.dev/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-config
+# https://pipecd.dev/docs/user-guide/managing-piped/remote-upgrade-remote-config/#remote-config
 # Beside of the ability to upgrade Piped to a new version from the web console,
 # remote-config allows loading the Piped config stored in a remote location such as a Git repository.
 # Whenever the config data is changed, it loads the new config and restarts Piped to use that new config.
@@ -135,7 +135,7 @@ helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks
   {{< /tab >}}
   {{< tab lang="bash" header="Piped with Remote-upgrade" >}}
 # Enable remote-upgrade feature of Piped.
-# https://pipecd.dev/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-upgrade
+# https://pipecd.dev/docs/user-guide/managing-piped/remote-upgrade-remote-config/#remote-upgrade
 # This allows upgrading Piped to a new version from the web console.
 # But we still need to restart Piped when we want to update its config data.
 
@@ -149,7 +149,7 @@ helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks
   {{< /tab >}}
   {{< tab lang="bash" header="Piped with Remote-upgrade and Remote-config" >}}
 # Enable both remote-upgrade and remote-config features of Piped.
-# https://pipecd.dev/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-config
+# https://pipecd.dev/docs/user-guide/managing-piped/remote-upgrade-remote-config/#remote-config
 # Beside of the ability to upgrade Piped to a new version from the web console,
 # remote-config allows loading the Piped config stored in a remote location such as a Git repository.
 # Whenever the config data is changed, it loads the new config and restarts Piped to use that new config.
@@ -198,7 +198,7 @@ helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks
   {{< /tab >}}
   {{< tab lang="bash" header="Piped with Remote-upgrade" >}}
 # Enable remote-upgrade feature of Piped.
-# https://pipecd.dev/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-upgrade
+# https://pipecd.dev/docs/user-guide/managing-piped/remote-upgrade-remote-config/#remote-upgrade
 # This allows upgrading Piped to a new version from the web console.
 # But we still need to restart Piped when we want to update its config data.
 
@@ -218,7 +218,7 @@ helm upgrade -i dev-piped oci://ghcr.io/pipe-cd/chart/piped --version={{< blocks
   {{< /tab >}}
   {{< tab lang="bash" header="Piped with Remote-upgrade and Remote-config" >}}
 # Enable both remote-upgrade and remote-config features of Piped.
-# https://pipecd.dev/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-config
+# https://pipecd.dev/docs/user-guide/managing-piped/remote-upgrade-remote-config/#remote-config
 # Beside of the ability to upgrade Piped to a new version from the web console,
 # remote-config allows loading the Piped config stored in a remote location such as a Git repository.
 # Whenever the config data is changed, it loads the new config and restarts Piped to use that new config.

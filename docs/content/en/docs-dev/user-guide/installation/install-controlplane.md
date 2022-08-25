@@ -104,7 +104,25 @@ Otherwise, private PipeCD web can be accessed by using `kubectl port-forward` to
 kubectl port-forward svc/pipecd 8080 --namespace={NAMESPACE}
 ```
 
-Now go to [http://localhost:8080](http://localhost:8080) on your browser, you will see a page to login to your project. But before logging in, you need to initialize a new project by following the [next section](/docs/operator-manual/control-plane/adding-a-project/).
+Now go to [http://localhost:8080](http://localhost:8080) on your browser, you will see a page to login to your project.
+
+Up to here, you have a installed PipeCD's Control Plane. To logging in, you need to initialize a new project.
+
+### 5. Initialize a new project
+
+To create a new project, you need to access to the `ops` pod in your installed PipeCD control plane, using `kubectl port-forward` command:
+
+```console
+kubectl port-forward service/pipecd-ops 9082 --namespace={NAMESPACE}
+```
+
+Then, access to [http://localhost:9082](http://localhost:9082).
+
+On that page, you will see the list of registered projects and a link to register new projects. Registering a new project requires only a unique ID string and an optional description text.
+
+Once a new project has been registered, a static admin (username, password) will be automatically generated for the project admin, you can use that to login via the login form in the above section.
+
+For more about adding a new project in detail, please read the following [docs](/docs/user-guide/managing-controlplane/adding-a-project/).
 
 ## Production Hardening
 

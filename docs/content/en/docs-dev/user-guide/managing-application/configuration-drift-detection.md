@@ -1,7 +1,7 @@
 ---
 title: "Configuration drift detection"
 linkTitle: "Configuration drift detection"
-weight: 11
+weight: 7
 description: >
   Automatically detecting the configuration drift.
 ---
@@ -52,4 +52,4 @@ This status means the application is deploying and the configuration drift detec
 
 This feature is automatically enabled for all applications.
 
-You can change the checking interval as well as [configure the notification](/docs/operator-manual/piped/configuring-notifications/) for these events in `piped` configuration.
+You can change the checking interval as well as [configure the notification](/docs/user-guide/managing-piped/configuring-notifications/) for these events in `piped` configuration.

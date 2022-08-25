@@ -1,5 +1,5 @@
 ---
-title: "Event watcher"
+title: "Connect between CI and CD with event watcher"
 linkTitle: "Event watcher"
 weight: 3
 description: >
@@ -18,7 +18,7 @@ While it empowers you to build pretty versatile workflows, the canonical use cas
 This guide walks you through configuring Event watcher and how to push an Event.
 
 ## Prerequisites
-If you want to use EventWatcher configuration files under the `.pipe/` directory, before we get into configuring EventWatcher, be sure to configure Piped. See [here](/docs/operator-manual/piped/configuring-event-watcher/) for more details.
+If you want to use EventWatcher configuration files under the `.pipe/` directory, before we get into configuring EventWatcher, be sure to configure Piped. See [here](/docs/user-guide/managing-piped/configuring-event-watcher/) for more details.
 In other cases, there is no prerequisite. Let's move on to Usage.
 
 ## Usage
@@ -48,7 +48,7 @@ spec:
           yamlField: $.spec.template.spec.containers[0].image
 ```
 
-The full list of configurable `EventWatcher` fields are [here](/docs/user-guide/configuration-reference/#event-watcher-configuration).
+The full list of configurable `EventWatcher` fields are [here](/docs/user-guide/configuration-reference/#event-watcher-configuration-deprecated).
 
 #### Use the application configuration
 
@@ -73,7 +73,7 @@ spec:
               yamlField: $.spec.template.spec.containers[0].image
 ```
 
-The full list of configurable `eventWatcher` fields are [here](/docs-dev/user-guide/configuration-reference/#eventwatcher).
+The full list of configurable `eventWatcher` fields are [here](/docs/user-guide/configuration-reference/#eventwatcher).
 
 ### 2. Pushing an Event with `pipectl`
 To register a new value corresponding to Event such as the above in the Control Plane, you need to perform `pipectl`.
@@ -109,7 +109,7 @@ After a while, Piped will create a commit as shown below:
 +        image: gcr.io/pipecd/helloworld:v0.2.0
 ```
 
-NOTE: Keep in mind that it may take a little while because Piped periodically fetches the new events from the Control Plane. You can change its interval according to [here](/docs/operator-manual/piped/configuring-event-watcher/#optional-settings-for-watcher).
+NOTE: Keep in mind that it may take a little while because Piped periodically fetches the new events from the Control Plane. You can change its interval according to [here](/docs/user-guide/managing-piped/configuration-reference/#eventwatcher).
 
 ### [optional] Using labels
 Event watcher is a project-wide feature, hence an event name is unique inside a project. That is, you can update multiple repositories at the same time if you use the same event name for different events.

@@ -120,7 +120,7 @@ and other common stages:
 - `WAIT_APPROVAL`
 - `ANALYSIS`
 
-See the description of each stage at [Configuration Reference](/docs/user-guide/configuration-reference/#stageoptions).
+See the description of each stage at [Customize application deployment](/docs/user-guide/managing-application/configuring-application-deployment/customize-application-deployment/).
 
 Here is an example that rolls out the new version gradually:
 
