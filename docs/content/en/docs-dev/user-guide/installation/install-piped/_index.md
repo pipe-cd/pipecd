@@ -1,7 +1,7 @@
 ---
-title: "Installation"
-linkTitle: "Installation"
-weight: 1
+title: "Install Piped"
+linkTitle: "Install Piped"
+weight: 3
 description: >
   This page describes how to install a Piped.
 ---

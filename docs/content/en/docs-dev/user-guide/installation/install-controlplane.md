@@ -1,6 +1,6 @@
 ---
-title: "Installation"
-linkTitle: "Installation"
+title: "Install Control Plane"
+linkTitle: "Install Control Plane"
 weight: 2
 description: >
   This page describes how to install control plane on a Kubernetes cluster.

@@ -1,7 +1,7 @@
 ---
 title: "Event watcher"
 linkTitle: "Event watcher"
-weight: 14
+weight: 3
 description: >
   A helper facility to automatically update files when it finds out a new event.
 ---
