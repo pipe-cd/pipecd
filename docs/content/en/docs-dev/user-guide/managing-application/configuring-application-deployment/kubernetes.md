@@ -3,7 +3,7 @@ title: "Kubernetes"
 linkTitle: "Kubernetes"
 weight: 1
 description: >
-  Specific guide for configuring Kubernetes deployment.
+  Specific guide to configuring deployment for Kubernetes application.
 ---
 
 Based on the application configuration and the pull request changes, PipeCD plans how to execute the deployment: doing quick sync or doing progressive sync with the specified pipeline.
@@ -61,7 +61,7 @@ and other common stages:
 - `WAIT_APPROVAL`
 - `ANALYSIS`
 
-See the description of each stage at [Customize application deployment](/docs/user-guide/managing-application/configuring-application-deployment/customize-application-deployment/).
+See the description of each stage at [Customize application deployment](/docs/user-guide/managing-application/customize-application-deployment/).
 
 ## Manifest Templating
 

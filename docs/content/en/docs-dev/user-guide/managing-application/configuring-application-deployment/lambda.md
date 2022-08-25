@@ -3,7 +3,7 @@ title: "Lambda"
 linkTitle: "Lambda"
 weight: 4
 description: >
-  Specific guide for configuring Lambda deployment.
+  Specific guide to configuring deployment for Lambda application.
 ---
 
 Deploying a Lambda application requires a `function.yaml` file placing inside the application directory. That file contains values to be used to deploy Lambda function on your AWS cluster.
@@ -120,7 +120,7 @@ and other common stages:
 - `WAIT_APPROVAL`
 - `ANALYSIS`
 
-See the description of each stage at [Customize application deployment](/docs/user-guide/managing-application/configuring-application-deployment/customize-application-deployment/).
+See the description of each stage at [Customize application deployment](/docs/user-guide/managing-application/customize-application-deployment/).
 
 Here is an example that rolls out the new version gradually:
 

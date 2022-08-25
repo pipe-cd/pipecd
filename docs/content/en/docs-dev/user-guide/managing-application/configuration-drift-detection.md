@@ -1,7 +1,7 @@
 ---
 title: "Configuration drift detection"
 linkTitle: "Configuration drift detection"
-weight: 7
+weight: 8
 description: >
   Automatically detecting the configuration drift.
 ---

@@ -1,7 +1,7 @@
 ---
 title: "Authentication and authorization"
 linkTitle: "Authentication and authorization"
-weight: 5
+weight: 3
 description: >
   This page describes about PipeCD Authentication and Authorization.
 ---
@@ -10,7 +10,7 @@ description: >
 
 ### Static Admin
 
-When the PipeCD owner [adds a new project](/docs/operator-manual/control-plane/adding-a-project/), an admin account will be automatically generated for the project. After that, PipeCD owner sends that static admin information including username, password strings to the project admin, who can use that information to log in to PipeCD web with the admin role.
+When the PipeCD owner [adds a new project](/docs/user-guide/managing-controlplane/adding-a-project/), an admin account will be automatically generated for the project. After that, PipeCD owner sends that static admin information including username, password strings to the project admin, who can use that information to log in to PipeCD web with the admin role.
 
 After logging, the project admin should change the provided username and password. Or disable the static admin account after configuring the single sign-on for the project.
 

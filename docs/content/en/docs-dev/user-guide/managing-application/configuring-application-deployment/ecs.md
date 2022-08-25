@@ -3,7 +3,7 @@ title: "ECS"
 linkTitle: "ECS"
 weight: 5
 description: >
-  Specific guide for configuring Amazon ECS deployment.
+  Specific guide to configuring deployment for Amazon ECS application.
 ---
 
 Deploying an Amazon ECS application requires `TaskDefinition` and `Service` configuration files placing inside the application directory. Those files contain all configuration for [ECS TaskDefinition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html) object and [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html) object, and will be used by Piped agent while deploy your application/service to ECS cluster.
@@ -36,7 +36,7 @@ and other common stages:
 - `WAIT_APPROVAL`
 - `ANALYSIS`
 
-See the description of each stage at [Customize application deployment](/docs/user-guide/managing-application/configuring-application-deployment/customize-application-deployment/).
+See the description of each stage at [Customize application deployment](/docs/user-guide/managing-application/customize-application-deployment/).
 
 Here is an example that rolls out the new version gradually:
 

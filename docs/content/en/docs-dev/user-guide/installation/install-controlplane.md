@@ -26,7 +26,12 @@ cat /dev/urandom | head -c64 | base64 > encryption-key
 
 ### 2. Preparing Control Plane configuration file and installing
 
-As described at the [architecture overview](/docs/operator-manual/control-plane/architecture-overview/) page, the Control Plane's data can be stored in one of the provided fully-managed or self-managed services. So you have to decide which kind of [data store](/docs/operator-manual/control-plane/architecture-overview/#data-store) and [file store](/docs/operator-manual/control-plane/architecture-overview/#file-store) you want to use and prepare a Control Plane configuration file suitable for that choice.
+![](/images/control-plane-components.png)
+<p style="text-align: center;">
+Control Plane Architecture
+</p>
+
+The Control Plane of PipeCD constructed by serval components as the above graph (for more in detail please read [Control Plane architecture overview docs](/docs/user-guide/managing-controlplane/architecture-overview/)). As mentioned in the graph, the data can be stored in one of the provided fully-managed or self-managed services. So you have to decide which kind of [data store](/docs/user-guide/managing-controlplane/architecture-overview/#data-store) and [file store](/docs/user-guide/managing-controlplane/architecture-overview/#file-store) you want to use and prepare a Control Plane configuration file suitable for that choice.
 
 #### Using Firestore and GCS
 
@@ -55,7 +60,7 @@ spec:
       credentialsFile: /etc/pipecd-secret/gcs-service-account
 ```
 
-See [ConfigurationReference](/docs/operator-manual/control-plane/configuration-reference/) for the full configuration.
+See [ConfigurationReference](/docs/user-guide/managing-controlplane/configuration-reference/) for the full configuration.
 
 After all, install the Control Plane as bellow:
 
@@ -91,11 +96,11 @@ spec:
       autoCreateBucket: true
 ```
 
-You can find required configurations to use other datastores and filestores from [ConfigurationReference](/docs/operator-manual/control-plane/configuration-reference/).
+You can find required configurations to use other datastores and filestores from [ConfigurationReference](/docs/user-guide/managing-controlplane/configuration-reference/).
 
 __Caution__: In case of using `MySQL` as Control Plane's datastore, please note that the implementation of PipeCD requires some features that only available on [MySQL v8](https://dev.mysql.com/doc/refman/8.0/en/), make sure your MySQL service is satisfied the requirement.
 
-### 4. Accessing the PipeCD web
+### 3. Accessing the PipeCD web
 
 If your installation was including an [ingress](https://github.com/pipe-cd/pipecd/blob/master/manifests/pipecd/values.yaml#L7), the PipeCD web can be accessed by the ingress's IP address or domain.
 Otherwise, private PipeCD web can be accessed by using `kubectl port-forward` to expose the installed Control Plane on your localhost:
@@ -108,7 +113,7 @@ Now go to [http://localhost:8080](http://localhost:8080) on your browser, you wi
 
 Up to here, you have a installed PipeCD's Control Plane. To logging in, you need to initialize a new project.
 
-### 5. Initialize a new project
+### 4. Initialize a new project
 
 To create a new project, you need to access to the `ops` pod in your installed PipeCD control plane, using `kubectl port-forward` command:
 

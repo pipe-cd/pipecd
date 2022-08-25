@@ -1,7 +1,7 @@
 ---
 title: "Adding a cloud provider"
 linkTitle: "Adding cloud provider"
-weight: 4
+weight: 3
 description: >
   This page describes how to add a cloud provider to enable its applications.
 ---
@@ -13,16 +13,16 @@ Cloud provider defines which cloud and where the application should be deployed 
 So while registering a new application, the name of a configured cloud provider is required.
 
 Currently, PipeCD is supporting these five kinds of cloud providers: `KUBERNETES`, `ECS`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`.
-A new cloud provider can be enabled by adding a [CloudProvider](/docs/operator-manual/piped/configuration-reference/#cloudprovider) struct to the piped configuration file.
+A new cloud provider can be enabled by adding a [CloudProvider](/docs/user-guide/managing-piped/configuration-reference/#cloudprovider) struct to the piped configuration file.
 A piped can have one or multiple cloud provider instances from the same or different cloud provider kind.
 
 The next sections show the specific configuration for each kind of cloud provider.
 
 ### Configuring Kubernetes cloud provider
 
-By default, piped deploys Kubernetes application to the cluster where the piped is running in. An external cluster can be connected by specifying the `masterURL` and `kubeConfigPath` in the [configuration](/docs/operator-manual/piped/configuration-reference/#cloudproviderkubernetesconfig).
+By default, piped deploys Kubernetes application to the cluster where the piped is running in. An external cluster can be connected by specifying the `masterURL` and `kubeConfigPath` in the [configuration](/docs/user-guide/managing-piped/configuration-reference/#cloudproviderkubernetesconfig).
 
-And, the default resources (defined at [here](https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/cloudprovider/kubernetes/resourcekey.go#L24-L74)) from all namespaces of the Kubernetes cluster will be watched for rendering the application state in realtime and detecting the configuration drift. In case you want to restrict piped to watch only a single namespace, let specify the namespace in the [KubernetesAppStateInformer](/docs/operator-manual/piped/configuration-reference/#kubernetesappstateinformer) field. You can also add other resources or exclude resources to/from the watching targets by that field.
+And, the default resources (defined at [here](https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/cloudprovider/kubernetes/resourcekey.go#L24-L74)) from all namespaces of the Kubernetes cluster will be watched for rendering the application state in realtime and detecting the configuration drift. In case you want to restrict piped to watch only a single namespace, let specify the namespace in the [KubernetesAppStateInformer](/docs/user-guide/managing-piped/configuration-reference/#kubernetesappstateinformer) field. You can also add other resources or exclude resources to/from the watching targets by that field.
 
 Below configuration snippet just specifies a name and type of cloud provider. It means the cloud provider `kubernetes-dev` will connect to the Kubernetes cluster where the piped is running in, and this cloud provider watches all of the predefined resources from all namespaces inside that cluster.
 
@@ -36,7 +36,7 @@ spec:
       type: KUBERNETES
 ```
 
-See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudproviderkubernetesconfig) for the full configuration.
+See [ConfigurationReference](/docs/user-guide/managing-piped/configuration-reference/#cloudproviderkubernetesconfig) for the full configuration.
 
 ### Configuring Terraform cloud provider
 
@@ -55,7 +55,7 @@ spec:
           - "project=pipecd"
 ```
 
-See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudproviderterraformconfig) for the full configuration.
+See [ConfigurationReference](/docs/user-guide/managing-piped/configuration-reference/#cloudproviderterraformconfig) for the full configuration.
 
 ### Configuring Cloud Run cloud provider
 
@@ -75,7 +75,7 @@ spec:
         credentialsFile: {PATH_TO_THE_SERVICE_ACCOUNT_FILE}
 ```
 
-See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudprovidercloudrunconfig) for the full configuration.
+See [ConfigurationReference](/docs/user-guide/managing-piped/configuration-reference/#cloudprovidercloudrunconfig) for the full configuration.
 
 ### Configuring Lambda cloud provider
 
@@ -104,7 +104,7 @@ It attempts to retrieve credentials in the following order:
 
 Therefore, you don't have to set credentialsFile if you use the environment variables or the EC2 Instance Role. Keep in mind the IAM role/user that you use with your Piped must possess the IAM policy permission for at least `Lambda.Function` and `Lambda.Alias` resources controll (list/read/write).
 
-See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudproviderlambdaconfig) for the full configuration.
+See [ConfigurationReference](/docs/user-guide/managing-piped/configuration-reference/#cloudproviderlambdaconfig) for the full configuration.
 
 ### Configuring ECS cloud provider
 
@@ -131,4 +131,4 @@ It attempts to retrieve credentials in the following order:
 3. From the pod running in EKS cluster via STS (SecurityTokenService).
 4. From the EC2 Instance Role.
 
-See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudproviderecsconfig) for the full configuration.
+See [ConfigurationReference](/docs/user-guide/managing-piped/configuration-reference/#cloudproviderecsconfig) for the full configuration.

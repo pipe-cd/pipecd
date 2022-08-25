@@ -3,7 +3,7 @@ title: "Cloud Run"
 linkTitle: "Cloud Run"
 weight: 3
 description: >
-  Specific guide for configuring Cloud Run deployment.
+  Specific guide to configuring deployment for Cloud Run application.
 ---
 
 Deploying a Cloud Run application requires a `service.yaml` file placing inside the application directory. That file contains the service specification used by Cloud Run as following: 
@@ -52,7 +52,7 @@ and other common stages:
 - `WAIT_APPROVAL`
 - `ANALYSIS`
 
-See the description of each stage at [Customize application deployment](/docs/user-guide/managing-application/configuring-application-deployment/customize-application-deployment/).
+See the description of each stage at [Customize application deployment](/docs/user-guide/managing-application/customize-application-deployment/).
 
 Here is an example that rolls out the new version gradually:
 

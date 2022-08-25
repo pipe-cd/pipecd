@@ -1,7 +1,7 @@
 ---
 title: "Remote upgrade and remote config"
 linkTitle: "Remote upgrade and remote config"
-weight: 2
+weight: 1
 description: >
   This page describes how to use remote upgrade and remote config features.
 ---
@@ -14,7 +14,7 @@ All Pipeds that are running by the provided Piped container image can be enabled
 It means Pipeds running on a Kubernetes cluster, a virtual machine, a serverless service can be upgraded remotely from the web console.
 
 Basically, in order to use this feature you must run Piped with `/launcher` command instead of `/piped` command as usual.
-Please check the [installation](/docs/operator-manual/piped/installation/) guide on each environment to see the details.
+Please check the [installation](/docs/user-guide/installation/install-piped/) guide on each environment to see the details.
 
 After starting Piped with the remote-upgrade feature, you can go to the Settings page then click on `UPGRADE` button on the top-right corner.
 A dialog will be shown for selecting which Pipeds you want to upgrade and what version they should run.
@@ -30,7 +30,7 @@ Although the remote-upgrade allows you remotely restart your Pipeds to run any n
 
 Remote-config is the ability to load Piped config data from a remote location such as a Git repository. Not only that, but it also watches the config periodically to detect any changes on that config and restarts Piped to reflect the new configuration automatically.
 
-This feature requires the remote-upgrade feature to be enabled simultaneously. Currently, we only support remote config from a Git repository, but other remote locations could be supported in the future. Please check the [installation](/docs/operator-manual/piped/installation/) guide on each environment to know how to configure Piped to load a remote config file.
+This feature requires the remote-upgrade feature to be enabled simultaneously. Currently, we only support remote config from a Git repository, but other remote locations could be supported in the future. Please check the [installation](/docs/user-guide/installation/install-piped/) guide on each environment to know how to configure Piped to load a remote config file.
 
 
 ## Summary

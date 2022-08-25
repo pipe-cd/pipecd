@@ -1,7 +1,7 @@
 ---
 title: "Cancelling a deployment"
 linkTitle: "Cancelling a deployment"
-weight: 4
+weight: 5
 description: >
   This page describes how to cancel a running deployment.
 ---

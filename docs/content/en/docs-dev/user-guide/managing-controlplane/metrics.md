@@ -1,7 +1,7 @@
 ---
 title: "Metrics"
 linkTitle: "Metrics"
-weight: 6
+weight: 5
 description: >
   This page describes how to enable monitoring system for collecting PipeCD' metrics.
 ---
@@ -10,7 +10,7 @@ PipeCD comes with a monitoring system including Prometheus, Alertmanager, and Gr
 This page walks you through how to set up and use them.
 
 ## Enable monitoring system
-To enable monitoring system for PipeCD, you first need to set the following value to `helm install` when [installing](/docs/operator-manual/control-plane/installation/#3-preparing-control-plane-configuration-file-and-installing).
+To enable monitoring system for PipeCD, you first need to set the following value to `helm install` when [installing](/docs/user-guide/installation/install-controlplane/#2-preparing-control-plane-configuration-file-and-installing).
 
 ```
 --set monitoring.enabled=true
@@ -63,7 +63,7 @@ prometheus:
             - channel: '#your-channel'
 ```
 
-And give it to the `helm install` command when [installing](/docs/operator-manual/control-plane/installation/#3-preparing-control-plane-configuration-file-and-installing).
+And give it to the `helm install` command when [installing](/docs/user-guide/installation/install-controlplane/#2-preparing-control-plane-configuration-file-and-installing).
 
 ```
 --values=values.yaml

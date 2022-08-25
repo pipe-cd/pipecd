@@ -1,7 +1,7 @@
 ---
 title: "Configuring notifications"
 linkTitle: "Configuring notifications"
-weight: 9
+weight: 8
 description: >
   This page describes how to configure piped to send notifications to external services.
 ---
@@ -13,7 +13,7 @@ Notification configuration including:
 - a list of `Route`s which used to match events and decide where the event should be sent to
 - a list of `Receiver`s which used to know how to send events to the external service
 
-[Notification Route](/docs/operator-manual/piped/configuration-reference/#notificationroute) matches events based on their metadata like `name`, `group`, `app`, `labels`.
+[Notification Route](/docs/user-guide/managing-piped/configuration-reference/#notificationroute) matches events based on their metadata like `name`, `group`, `app`, `labels`.
 Below is the list of supporting event names and their groups.
 
 | Event | Group | Supported |
@@ -78,7 +78,7 @@ A piped has been started
 </p>
 
 
-For detailed configuration, please check the [configuration reference for Notifications](/docs/operator-manual/piped/configuration-reference/#notifications) section.
+For detailed configuration, please check the [configuration reference for Notifications](/docs/user-guide/managing-piped/configuration-reference/#notifications) section.
 
 ### Sending notifications to external services via webhook
 
@@ -98,4 +98,4 @@ spec:
           signatureValue: {RANDOM_SIGNATURE_STRING}
 ```
 
-For detailed configuration, please check the [configuration reference for NotificationReceiverWebhook](/docs/operator-manual/piped/configuration-reference/#notificationreceiverwebhook) section.
+For detailed configuration, please check the [configuration reference for NotificationReceiverWebhook](/docs/user-guide/managing-piped/configuration-reference/#notificationreceiverwebhook) section.

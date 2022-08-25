@@ -1,5 +1,5 @@
 ---
-title: "Plan preview"
+title: "Confidently review your changes with Plan Preview"
 linkTitle: "Plan preview"
 weight: 4
 description: >

@@ -220,7 +220,7 @@ pipectl event register \
 
 Encrypt the plaintext entered either in stdin or via the `--input-file` flag.
 
-You can encrypt it the same way you do [from the web](/docs/user-guide/secret-management/#encrypting-secret-data).
+You can encrypt it the same way you do [from the web](/docs/user-guide/managing-application/secret-management/#encrypting-secret-data).
 
 - From stdin:
 
@@ -243,4 +243,4 @@ You can encrypt it the same way you do [from the web](/docs/user-guide/secret-ma
 
 ### You want more?
 
-We always want to add more needed commands into pipectl. Please let us know what command you want to add by creating issues in the [pipe-cd/pipe ](https://github.com/pipe-cd/pipecd/issues) repository. We also welcome your pull request to add the command.
+We always want to add more needed commands into pipectl. Please let us know what command you want to add by creating issues in the [pipe-cd/pipe](https://github.com/pipe-cd/pipecd/issues) repository. We also welcome your pull request to add the command.

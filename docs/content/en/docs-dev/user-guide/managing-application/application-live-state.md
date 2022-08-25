@@ -1,7 +1,7 @@
 ---
 title: "Application live state"
 linkTitle: "Application live state"
-weight: 6
+weight: 7
 description: >
   The live states of application components as well as their health status.
 ---
