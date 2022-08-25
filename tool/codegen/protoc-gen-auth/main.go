@@ -23,18 +23,19 @@ type FileParams struct {
 
 type Method struct {
 	Name     string // The name of the RPC
-	Resource string // APPLICAION,DEPLOYMENT,EVENT,PIPED,DEPLOYMENT_CHAIN,PROJECT,API_KEY,INSIGHT
+	Resource string // APPLICATION,DEPLOYMENT,EVENT,PIPED,DEPLOYMENT_CHAIN,PROJECT,API_KEY,INSIGHT
 	Action   string // GET,LIST,CREATE,UPDATE,DELETE
 	Ignored  bool   // Whether ignore authorization or not
 }
 
 const (
-	filePrefix               = "pkg/app/server/service/webservice"
-	generatedFileNameSuffix  = ".pb.auth.go"
-	protoFileExtention       = ".proto"
-	methodOptionsRBACResouce = "rbac_resource"
-	methodOptionsRBACPolicy  = "rbac_policy"
-	methodOptionsAuth        = "auth"
+	filePrefix                  = "pkg/app/server/service/webservice"
+	generatedFileNameSuffix     = ".pb.auth.go"
+	protoFileExtention          = ".proto"
+	methodOptionsRBAC           = "rbac"
+	keyMethodOptionsRBACResouce = "resource"
+	keyMethodOptionsRBACAction  = "action"
+	keyMethodOptionsRBACIgnored = "ignored"
 )
 
 func main() {
@@ -104,23 +105,24 @@ func generateMethods(extTypes *protoregistry.Types, ms []*protogen.Method) ([]*M
 
 		method := &Method{Name: m.GoName}
 		opts.ProtoReflect().Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
-			if !fd.IsExtension() {
+			if !fd.IsExtension() || fd.Name() != methodOptionsRBAC || v.String() == "" {
 				return true
 			}
 
-			var value string
-			if v.String() != "" {
-				value = strings.SplitN(v.String(), ":", 2)[1]
-			}
+			vs := strings.Split(v.String(), " ")
+			for _, v := range vs {
+				kv := strings.SplitN(v, ":", 2)
+				key, value := kv[0], kv[1]
 
-			switch fd.Name() {
-			case methodOptionsRBACResouce:
-				method.Resource = value
-			case methodOptionsRBACPolicy:
-				method.Action = value
-			case methodOptionsAuth:
-				if v, err := strconv.ParseBool(value); err == nil {
-					method.Ignored = v
+				switch key {
+				case keyMethodOptionsRBACResouce:
+					method.Resource = value
+				case keyMethodOptionsRBACAction:
+					method.Action = value
+				case keyMethodOptionsRBACIgnored:
+					if v, err := strconv.ParseBool(value); err == nil {
+						method.Ignored = v
+					}
 				}
 			}
 			return true

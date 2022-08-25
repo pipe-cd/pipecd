@@ -18,12 +18,15 @@ package model;
 option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 
 import "google/protobuf/descriptor.proto";
+import "pkg/model/project.proto";
 
 // Authorization represents whether a specific RPC is ignored or not.
-message Authorization {
-    bool ignored = 1;
+message RBAC { 
+    model.ProjectRBACResource.ResourceType resource = 1;
+    model.ProjectRBACPolicy.Action action = 2;
+    bool ignored = 3;
 }
 
 extend google.protobuf.MethodOptions {
-    Authorization auth = 59093;
+    RBAC rbac = 59091;
 }

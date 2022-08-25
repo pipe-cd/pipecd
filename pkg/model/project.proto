@@ -145,10 +145,6 @@ message ProjectRBACResource {
     map<string, string> labels = 2 [(validate.rules).map.keys.string.min_len = 1, (validate.rules).map.values.string.min_len = 1];
 }
 
-extend google.protobuf.MethodOptions {
-    ProjectRBACResource rbac_resource = 59091;
-}
-
 message ProjectRBACPolicy {
     enum Action {
       ALL = 0;
@@ -163,8 +159,4 @@ message ProjectRBACPolicy {
     repeated ProjectRBACResource resources = 1;
     // The types of action.
     repeated Action actions = 2;
-}
-
-extend google.protobuf.MethodOptions {
-    ProjectRBACPolicy rbac_policy = 59092;
 }
