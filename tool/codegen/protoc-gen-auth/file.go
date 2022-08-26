@@ -49,18 +49,6 @@ func NewRBACAuthorizer(ctx context.Context, ds datastore.DataStore) rpcauth.RBAC
 	}
 }
 
-func isAdmin(r model.Role) bool {
-	return r.ProjectRole == model.Role_ADMIN
-}
-
-func isEditor(r model.Role) bool {
-	return r.ProjectRole == model.Role_EDITOR
-}
-
-func isViewer(r model.Role) bool {
-	return r.ProjectRole == model.Role_VIEWER
-}
-
 func (a *authorizer) getRBAC(ctx context.Context, projectID string) (*rbac, error) {
 	r, err := a.rbacCache.Get(projectID)
 	if err != nil {
