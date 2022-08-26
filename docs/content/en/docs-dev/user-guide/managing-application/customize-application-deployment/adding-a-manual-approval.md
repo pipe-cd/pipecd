@@ -1,6 +1,6 @@
 ---
 title: "Adding a manual approval stage"
-linkTitle: "Adding a manual approval stage"
+linkTitle: "Manual approval stage"
 weight: 2
 description: >
   This page describes how to add a manual approval stage.

@@ -1,12 +1,12 @@
 ---
 title: "Installation"
 linkTitle: "Installation"
-weight: 1
+weight: 4
 description: >
-  This guide is to install and configure PipeCD's components.
+  Complete guideline for installing and configuring PipeCD on your own.
 ---
 
-Before starting to use PipeCD, let's have a look at PipeCD’s components, determine what is your role and which components should you interact with while using PipeCD. You’re recommended to read about PipeCD’s [Control Plane](https://pipecd.dev/docs/concepts/#control-plane) and [Piped](/docs/concepts/#piped) on the concepts page.
+Before starting to install PipeCD, let’s have a look at PipeCD’s components, determine your role, and which components you will interact with while installing/using PipeCD. You’re recommended to read about PipeCD’s [Control Plane](https://pipecd.dev/docs/concepts/#control-plane) and [Piped](/docs/concepts/#piped) on the concepts page.
 
 ![](/images/architecture-overview-with-roles.png)
 <p style="text-align: center;">

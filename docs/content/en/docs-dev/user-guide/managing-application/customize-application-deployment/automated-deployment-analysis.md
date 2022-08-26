@@ -1,6 +1,6 @@
 ---
-title: "Automated deployment analysis"
-linkTitle: "Automated deployment analysis"
+title: "Adding an automated deployment analysis stage"
+linkTitle: "Automated deployment analysis stage"
 weight: 3
 description: >
   This page describes how to configure Automated Deployment Analysis feature.
