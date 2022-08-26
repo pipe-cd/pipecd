@@ -11,6 +11,7 @@ import * as pkg_model_deployment_chain_pb from 'pipecd/web/model/deployment_chai
 import * as pkg_model_logblock_pb from 'pipecd/web/model/logblock_pb';
 import * as pkg_model_piped_pb from 'pipecd/web/model/piped_pb';
 import * as pkg_model_role_pb from 'pipecd/web/model/role_pb';
+import * as pkg_model_rbac_pb from 'pipecd/web/model/rbac_pb';
 import * as pkg_model_project_pb from 'pipecd/web/model/project_pb';
 import * as pkg_model_apikey_pb from 'pipecd/web/model/apikey_pb';
 import * as pkg_model_event_pb from 'pipecd/web/model/event_pb';
