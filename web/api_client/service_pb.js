@@ -43,6 +43,8 @@ var pkg_model_piped_pb = require('pipecd/web/model/piped_pb.js');
 goog.object.extend(proto, pkg_model_piped_pb);
 var pkg_model_role_pb = require('pipecd/web/model/role_pb.js');
 goog.object.extend(proto, pkg_model_role_pb);
+var pkg_model_rbac_pb = require('pipecd/web/model/rbac_pb.js');
+goog.object.extend(proto, pkg_model_rbac_pb);
 var pkg_model_project_pb = require('pipecd/web/model/project_pb.js');
 goog.object.extend(proto, pkg_model_project_pb);
 var pkg_model_apikey_pb = require('pipecd/web/model/apikey_pb.js');

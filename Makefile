@@ -152,7 +152,7 @@ update/docsy:
 .PHONY: gen/code
 gen/code:
 	# TODO: Specify a specific version temporally until the next release.
-	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:23095150115e963de404530c3dd4475bf00eaf9fb3e45293ead2d5ab38cd43de /repo #v0.36.0-11-g74edd57
+	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:4ae69608d93efc7511f4d98322bbeafcccf007bb45be11c08f9805b75013a169 /repo #v0.36.0-12-g7458262
 
 .PHONY: gen/release
 gen/release:

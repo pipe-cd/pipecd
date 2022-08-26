@@ -28,6 +28,7 @@ import "pkg/model/deployment_chain.proto";
 import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
 import "pkg/model/role.proto";
+import "pkg/model/rbac.proto";
 import "pkg/model/project.proto";
 import "pkg/model/apikey.proto";
 import "pkg/model/event.proto";
@@ -39,117 +40,152 @@ import "google/protobuf/descriptor.proto";
 service WebService {
     // Piped
     rpc RegisterPiped(RegisterPipedRequest) returns (RegisterPipedResponse) {
-        option (model.role).project_role = ADMIN;
+        option (model.rbac).resource = PIPED;
+        option (model.rbac).action = CREATE;
     }
     rpc UpdatePiped(UpdatePipedRequest) returns (UpdatePipedResponse) {
-        option (model.role).project_role = ADMIN;
+        option (model.rbac).resource = PIPED;
+        option (model.rbac).action = UPDATE;
     }
     rpc RecreatePipedKey(RecreatePipedKeyRequest) returns (RecreatePipedKeyResponse) {
-        option (model.role).project_role = ADMIN;
+        option (model.rbac).resource = PIPED;
+        option (model.rbac).action = UPDATE;
     }
     rpc DeleteOldPipedKeys(DeleteOldPipedKeysRequest) returns (DeleteOldPipedKeysResponse) {
-        option (model.role).project_role = ADMIN;
+        option (model.rbac).resource = PIPED;
+        option (model.rbac).action = UPDATE;
     }
     rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {
-        option (model.role).project_role = ADMIN;
+        option (model.rbac).resource = PIPED;
+        option (model.rbac).action = UPDATE;
     }
     rpc DisablePiped(DisablePipedRequest) returns (DisablePipedResponse) {
-        option (model.role).project_role = ADMIN;
+        option (model.rbac).resource = PIPED;
+        option (model.rbac).action = UPDATE;
     }
     rpc ListPipeds(ListPipedsRequest) returns (ListPipedsResponse) {
-        option (model.role).project_role = VIEWER;
+        option (model.rbac).resource = PIPED;
+        option (model.rbac).action = LIST;
     }
     rpc GetPiped(GetPipedRequest) returns (GetPipedResponse) {
-        option (model.role).project_role = VIEWER;
+        option (model.rbac).resource = PIPED;
+        option (model.rbac).action = GET;
     }
     rpc UpdatePipedDesiredVersion(UpdatePipedDesiredVersionRequest) returns (UpdatePipedDesiredVersionResponse) {
-        option (model.role).project_role = ADMIN;
+        option (model.rbac).resource = PIPED;
+        option (model.rbac).action = UPDATE;
     }
     rpc RestartPiped(RestartPipedRequest) returns (RestartPipedResponse) {
-        option (model.role).project_role = ADMIN;
+        option (model.rbac).resource = PIPED;
+        option (model.rbac).action = UPDATE;
     }
     rpc ListReleasedVersions(ListReleasedVersionsRequest) returns (ListReleasedVersionsResponse) {
-        option (model.role).project_role = VIEWER;
+        option (model.rbac).resource = PIPED;
+        option (model.rbac).action = LIST;
     }
 
     // Application
     rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {
-        option (model.role).project_role = EDITOR;
+        option (model.rbac).resource = APPLICATION;
+        option (model.rbac).action = CREATE;
     }
     rpc UpdateApplication(UpdateApplicationRequest) returns (UpdateApplicationResponse) {
-        option (model.role).project_role = EDITOR;
+        option (model.rbac).resource = APPLICATION;
+        option (model.rbac).action = UPDATE;
     }
     rpc EnableApplication(EnableApplicationRequest) returns (EnableApplicationResponse) {
-        option (model.role).project_role = EDITOR;
+        option (model.rbac).resource = APPLICATION;
+        option (model.rbac).action = UPDATE;
     }
     rpc DisableApplication(DisableApplicationRequest) returns (DisableApplicationResponse) {
-        option (model.role).project_role = EDITOR;
+        option (model.rbac).resource = APPLICATION;
+        option (model.rbac).action = UPDATE;
     }
     rpc DeleteApplication(DeleteApplicationRequest) returns (DeleteApplicationResponse) {
-        option (model.role).project_role = EDITOR;
+        option (model.rbac).resource = APPLICATION;
+        option (model.rbac).action = DELETE;
     }
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {
-        option (model.role).project_role = VIEWER;
+	option (model.rbac).resource = APPLICATION;
+        option (model.rbac).action = LIST;
     }
     rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {
-        option (model.role).project_role = EDITOR;
+	option (model.rbac).resource = APPLICATION;
+        option (model.rbac).action = UPDATE;
     }
     rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {
-        option (model.role).project_role = VIEWER;
+	option (model.rbac).resource = APPLICATION;
+        option (model.rbac).action = GET;
     }
     rpc GenerateApplicationSealedSecret(GenerateApplicationSealedSecretRequest) returns (GenerateApplicationSealedSecretResponse) {
-        option (model.role).project_role = EDITOR;
+        option (model.rbac).resource = APPLICATION;
+        option (model.rbac).action = UPDATE;
     }
     rpc ListUnregisteredApplications(ListUnregisteredApplicationsRequest) returns (ListUnregisteredApplicationsResponse) {
-        option (model.role).project_role = VIEWER;
+        option (model.rbac).resource = APPLICATION;
+        option (model.rbac).action = LIST;
     }
 
     // Deployment
     rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {
-        option (model.role).project_role = VIEWER;
+        option (model.rbac).resource = DEPLOYMENT;
+        option (model.rbac).action = LIST;
     }
     rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {
-        option (model.role).project_role = VIEWER;
+        option (model.rbac).resource = DEPLOYMENT;
+        option (model.rbac).action = GET;
     }
     rpc GetStageLog(GetStageLogRequest) returns (GetStageLogResponse) {
-        option (model.role).project_role = VIEWER;
+        option (model.rbac).resource = DEPLOYMENT;
+        option (model.rbac).action = GET;
     }
     rpc CancelDeployment(CancelDeploymentRequest) returns (CancelDeploymentResponse) {
-        option (model.role).project_role = EDITOR;
+        option (model.rbac).resource = DEPLOYMENT;
+        option (model.rbac).action = UPDATE;
     }
     rpc SkipStage(SkipStageRequest) returns (SkipStageResponse) {
-        option (model.role).project_role = EDITOR;
+        option (model.rbac).resource = DEPLOYMENT;
+        option (model.rbac).action = UPDATE;
     }
     rpc ApproveStage(ApproveStageRequest) returns (ApproveStageResponse) {
-        option (model.role).project_role = EDITOR;
+        option (model.rbac).resource = DEPLOYMENT;
+        option (model.rbac).action = UPDATE;
     }
 
     // ApplicationLiveState
     rpc GetApplicationLiveState(GetApplicationLiveStateRequest) returns (GetApplicationLiveStateResponse) {
-        option (model.role).project_role = VIEWER;
+        option (model.rbac).resource = APPLICATION;
+        option (model.rbac).action = GET;
     }
 
     // Account
     rpc GetProject(GetProjectRequest) returns (GetProjectResponse) {
-        option (model.role).project_role = VIEWER;
+        option (model.rbac).resource = PROJECT;
+        option (model.rbac).action = GET;
     }
     rpc UpdateProjectStaticAdmin(UpdateProjectStaticAdminRequest) returns (UpdateProjectStaticAdminResponse) {
-        option (model.role).project_role = ADMIN; 
+        option (model.rbac).resource = PROJECT;
+        option (model.rbac).action = UPDATE;
     }
     rpc EnableStaticAdmin(EnableStaticAdminRequest) returns (EnableStaticAdminResponse) {
-        option (model.role).project_role = ADMIN; 
+        option (model.rbac).resource = PROJECT;
+        option (model.rbac).action = UPDATE;
     }
     rpc DisableStaticAdmin(DisableStaticAdminRequest) returns (DisableStaticAdminResponse) {
-        option (model.role).project_role = ADMIN; 
+        option (model.rbac).resource = PROJECT;
+        option (model.rbac).action = UPDATE;
     }
     rpc UpdateProjectSSOConfig(UpdateProjectSSOConfigRequest) returns (UpdateProjectSSOConfigResponse) {
-        option (model.role).project_role = ADMIN; 
+        option (model.rbac).resource = PROJECT;
+        option (model.rbac).action = UPDATE;
     }
     rpc UpdateProjectRBACConfig(UpdateProjectRBACConfigRequest) returns (UpdateProjectRBACConfigResponse) {
-        option (model.role).project_role = ADMIN; 
+        option (model.rbac).resource = PROJECT;
+        option (model.rbac).action = UPDATE;
     }
     rpc GetMe(GetMeRequest) returns (GetMeResponse) {
-        option (model.role).project_role = VIEWER;
+        option (model.rbac).resource = PROJECT;
+        option (model.rbac).action = GET;
     }
     rpc ListProjectRBACRoles(ListProjectRBACRolesRequest) returns (ListProjectRBACRolesResponse) {}
     rpc AddProjectRBACRole(AddProjectRBACRoleRequest) returns (AddProjectRBACRoleResponse) {}
@@ -161,26 +197,31 @@ service WebService {
 
     // Command
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {
-        option (model.role).project_role = VIEWER;
+        option (model.rbac).ignored = true;
     }
 
     // API Key
     rpc GenerateAPIKey(GenerateAPIKeyRequest) returns (GenerateAPIKeyResponse) {
-        option (model.role).project_role = ADMIN; 
+        option (model.rbac).resource = API_KEY;
+        option (model.rbac).action = CREATE;
     }
     rpc DisableAPIKey(DisableAPIKeyRequest) returns (DisableAPIKeyResponse) {
-        option (model.role).project_role = ADMIN; 
+        option (model.rbac).resource = API_KEY;
+        option (model.rbac).action = UPDATE;
     }
     rpc ListAPIKeys(ListAPIKeysRequest) returns (ListAPIKeysResponse) {
-        option (model.role).project_role = ADMIN; 
+        option (model.rbac).resource = API_KEY;
+        option (model.rbac).action = LIST;
     }
 
     // Insights
     rpc GetInsightData(GetInsightDataRequest) returns (GetInsightDataResponse) {
-        option (model.role).project_role = VIEWER;
+        option (model.rbac).resource = INSIGHT;
+        option (model.rbac).action = GET;
     }
     rpc GetInsightApplicationCount(GetInsightApplicationCountRequest) returns (GetInsightApplicationCountResponse) {
-        option (model.role).project_role = VIEWER;
+        option (model.rbac).resource = INSIGHT;
+        option (model.rbac).action = GET;
     }
 
     // DeploymentChain
@@ -189,7 +230,8 @@ service WebService {
 
     // Events
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {
-        option (model.role).project_role = VIEWER;
+        option (model.rbac).resource = EVENT;
+        option (model.rbac).action = LIST;
     }
 }
 
