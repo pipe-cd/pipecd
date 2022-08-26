@@ -11,7 +11,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     - name: Generate code
-      uses: docker://ghcr.io/pipe-cd/codegen@sha256:5e10b6416d507d54b8ca9ab58820f11633d88af1d9fdcce65b5e568abbbe3d9e #v0.32.0
+      uses: docker://ghcr.io/pipe-cd/codegen@sha256:9ccd18fb8976fb3ff206755a32ae79f0d4f42a444e6a30024db4d35313db30fa #v0.36.0-13-g2685eec
       with:
         entrypoint: ./tool/codegen/codegen.sh
         args: /github/workspace
