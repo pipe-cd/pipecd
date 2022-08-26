@@ -18,6 +18,7 @@ package model;
 option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 
 import "validate/validate.proto";
+import "google/protobuf/descriptor.proto";
 
 // Project contains needed data for a PipeCD project.
 // Each project can have multiple pipeds, applications, etc.

@@ -23,6 +23,8 @@ var global = (function() {
 
 
 
+var google_protobuf_descriptor_pb = require('google-protobuf/google/protobuf/descriptor_pb.js');
+goog.object.extend(proto, google_protobuf_descriptor_pb);
 goog.exportSymbol('proto.model.Project', null, global);
 goog.exportSymbol('proto.model.ProjectRBACConfig', null, global);
 goog.exportSymbol('proto.model.ProjectRBACPolicy', null, global);

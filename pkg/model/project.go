@@ -518,3 +518,33 @@ func (p *Project) DeleteRBACRole(name string) error {
 	}
 	return fmt.Errorf("%s role does nott exist", name)
 }
+
+func (p *ProjectRBACRole) HasPermission(typ ProjectRBACResource_ResourceType, action ProjectRBACPolicy_Action) bool {
+	for _, v := range p.Policies {
+		if v.HasPermission(typ, action) {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *ProjectRBACPolicy) HasPermission(typ ProjectRBACResource_ResourceType, action ProjectRBACPolicy_Action) bool {
+	var hasResource bool
+	for _, r := range p.Resources {
+		if r.Type == typ || r.Type == ProjectRBACResource_ALL {
+			hasResource = true
+			break
+		}
+	}
+
+	if !hasResource {
+		return false
+	}
+
+	for _, a := range p.Actions {
+		if a == action || a == ProjectRBACPolicy_ALL {
+			return true
+		}
+	}
+	return false
+}
