@@ -21,7 +21,6 @@ package webservice
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/cache"
