@@ -31,7 +31,7 @@ cat /dev/urandom | head -c64 | base64 > encryption-key
 Control Plane Architecture
 </p>
 
-The Control Plane of PipeCD constructed by serval components as the above graph (for more in detail please read [Control Plane architecture overview docs](/docs/user-guide/managing-controlplane/architecture-overview/)). As mentioned in the graph, the data can be stored in one of the provided fully-managed or self-managed services. So you have to decide which kind of [data store](/docs/user-guide/managing-controlplane/architecture-overview/#data-store) and [file store](/docs/user-guide/managing-controlplane/architecture-overview/#file-store) you want to use and prepare a Control Plane configuration file suitable for that choice.
+The Control Plane of PipeCD is constructed by several components, as shown in the above graph (for more in detail please read [Control Plane architecture overview docs](/docs/user-guide/managing-controlplane/architecture-overview/)). As mentioned in the graph, the PipeCD's data can be stored in one of the provided fully-managed or self-managed services. So you have to decide which kind of [data store](/docs/user-guide/managing-controlplane/architecture-overview/#data-store) and [file store](/docs/user-guide/managing-controlplane/architecture-overview/#file-store) you want to use and prepare a Control Plane configuration file suitable for that choice.
 
 #### Using Firestore and GCS
 
