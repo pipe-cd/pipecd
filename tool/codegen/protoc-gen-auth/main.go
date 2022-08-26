@@ -109,7 +109,7 @@ func generateMethods(extTypes *protoregistry.Types, ms []*protogen.Method) ([]*M
 				return true
 			}
 
-			vs := strings.Split(v.String(), " ")
+			vs := strings.Split(v.String(), "  ")
 			for _, v := range vs {
 				kv := strings.SplitN(v, ":", 2)
 				key, value := kv[0], kv[1]
