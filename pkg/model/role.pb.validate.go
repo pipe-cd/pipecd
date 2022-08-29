@@ -58,8 +58,6 @@ func (m *Role) validate(all bool) error {
 
 	// no validation rules for ProjectId
 
-	// no validation rules for ProjectRole
-
 	if len(errors) > 0 {
 		return RoleMultiError(errors)
 	}

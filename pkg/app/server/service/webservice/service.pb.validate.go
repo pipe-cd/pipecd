@@ -8122,8 +8122,6 @@ func (m *GetMeResponse) validate(all bool) error {
 
 	// no validation rules for ProjectId
 
-	// no validation rules for ProjectRole
-
 	if len(errors) > 0 {
 		return GetMeResponseMultiError(errors)
 	}

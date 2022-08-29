@@ -41,8 +41,6 @@ var pkg_model_logblock_pb = require('pipecd/web/model/logblock_pb.js');
 goog.object.extend(proto, pkg_model_logblock_pb);
 var pkg_model_piped_pb = require('pipecd/web/model/piped_pb.js');
 goog.object.extend(proto, pkg_model_piped_pb);
-var pkg_model_role_pb = require('pipecd/web/model/role_pb.js');
-goog.object.extend(proto, pkg_model_role_pb);
 var pkg_model_rbac_pb = require('pipecd/web/model/rbac_pb.js');
 goog.object.extend(proto, pkg_model_rbac_pb);
 var pkg_model_project_pb = require('pipecd/web/model/project_pb.js');
@@ -13076,8 +13074,7 @@ proto.grpc.service.webservice.GetMeResponse.toObject = function(includeInstance,
   var f, obj = {
     subject: jspb.Message.getFieldWithDefault(msg, 1, ""),
     avatarUrl: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    projectId: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    projectRole: jspb.Message.getFieldWithDefault(msg, 4, 0)
+    projectId: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -13126,10 +13123,6 @@ proto.grpc.service.webservice.GetMeResponse.deserializeBinaryFromReader = functi
       var value = /** @type {string} */ (reader.readString());
       msg.setProjectId(value);
       break;
-    case 4:
-      var value = /** @type {!proto.model.Role.ProjectRole} */ (reader.readEnum());
-      msg.setProjectRole(value);
-      break;
     default:
       reader.skipField();
       break;
@@ -13177,13 +13170,6 @@ proto.grpc.service.webservice.GetMeResponse.serializeBinaryToWriter = function(m
   if (f.length > 0) {
     writer.writeString(
       3,
-      f
-    );
-  }
-  f = message.getProjectRole();
-  if (f !== 0.0) {
-    writer.writeEnum(
-      4,
       f
     );
   }
@@ -13241,24 +13227,6 @@ proto.grpc.service.webservice.GetMeResponse.prototype.getProjectId = function() 
  */
 proto.grpc.service.webservice.GetMeResponse.prototype.setProjectId = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
-};
-
-
-/**
- * optional model.Role.ProjectRole project_role = 4;
- * @return {!proto.model.Role.ProjectRole}
- */
-proto.grpc.service.webservice.GetMeResponse.prototype.getProjectRole = function() {
-  return /** @type {!proto.model.Role.ProjectRole} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
-};
-
-
-/**
- * @param {!proto.model.Role.ProjectRole} value
- * @return {!proto.grpc.service.webservice.GetMeResponse} returns this
- */
-proto.grpc.service.webservice.GetMeResponse.prototype.setProjectRole = function(value) {
-  return jspb.Message.setProto3EnumField(this, 4, value);
 };
 
 

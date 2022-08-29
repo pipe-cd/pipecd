@@ -27,7 +27,6 @@ import "pkg/model/deployment.proto";
 import "pkg/model/deployment_chain.proto";
 import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
-import "pkg/model/role.proto";
 import "pkg/model/rbac.proto";
 import "pkg/model/project.proto";
 import "pkg/model/apikey.proto";
@@ -559,10 +558,11 @@ message GetMeRequest {
 }
 
 message GetMeResponse {
+    reserved 4;
+
     string subject = 1;
     string avatar_url = 2;
     string project_id = 3;
-    model.Role.ProjectRole project_role = 4;
 }
 
 message ListProjectRBACRolesRequest {
