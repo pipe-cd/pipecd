@@ -18,7 +18,6 @@ test("getMe() call", async () => {
           Object {
             "avatarUrl": "avatar-url",
             "projectId": "pipecd",
-            "projectRole": 2,
             "subject": "userName",
           }
         `);

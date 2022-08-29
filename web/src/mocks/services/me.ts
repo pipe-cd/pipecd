@@ -7,7 +7,6 @@ export const getMeHandler = createHandler<GetMeResponse>("/GetMe", () => {
   response.setSubject(dummyMe.subject);
   response.setProjectId(dummyMe.projectId);
   response.setAvatarUrl(dummyMe.avatarUrl);
-  response.setProjectRole(dummyMe.projectRole);
   return response;
 });
 
