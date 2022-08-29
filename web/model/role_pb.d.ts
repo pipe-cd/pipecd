@@ -7,9 +7,6 @@ export class Role extends jspb.Message {
   getProjectId(): string;
   setProjectId(value: string): Role;
 
-  getProjectRole(): Role.ProjectRole;
-  setProjectRole(value: Role.ProjectRole): Role;
-
   getProjectRbacRolesList(): Array<string>;
   setProjectRbacRolesList(value: Array<string>): Role;
   clearProjectRbacRolesList(): Role;
@@ -26,14 +23,7 @@ export class Role extends jspb.Message {
 export namespace Role {
   export type AsObject = {
     projectId: string,
-    projectRole: Role.ProjectRole,
     projectRbacRolesList: Array<string>,
-  }
-
-  export enum ProjectRole { 
-    VIEWER = 0,
-    EDITOR = 1,
-    ADMIN = 2,
   }
 }
 

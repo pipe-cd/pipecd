@@ -10,7 +10,6 @@ import * as pkg_model_deployment_pb from 'pipecd/web/model/deployment_pb';
 import * as pkg_model_deployment_chain_pb from 'pipecd/web/model/deployment_chain_pb';
 import * as pkg_model_logblock_pb from 'pipecd/web/model/logblock_pb';
 import * as pkg_model_piped_pb from 'pipecd/web/model/piped_pb';
-import * as pkg_model_role_pb from 'pipecd/web/model/role_pb';
 import * as pkg_model_rbac_pb from 'pipecd/web/model/rbac_pb';
 import * as pkg_model_project_pb from 'pipecd/web/model/project_pb';
 import * as pkg_model_apikey_pb from 'pipecd/web/model/apikey_pb';
@@ -1462,9 +1461,6 @@ export class GetMeResponse extends jspb.Message {
   getProjectId(): string;
   setProjectId(value: string): GetMeResponse;
 
-  getProjectRole(): pkg_model_role_pb.Role.ProjectRole;
-  setProjectRole(value: pkg_model_role_pb.Role.ProjectRole): GetMeResponse;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetMeResponse.AsObject;
   static toObject(includeInstance: boolean, msg: GetMeResponse): GetMeResponse.AsObject;
@@ -1478,7 +1474,6 @@ export namespace GetMeResponse {
     subject: string,
     avatarUrl: string,
     projectId: string,
-    projectRole: pkg_model_role_pb.Role.ProjectRole,
   }
 }
 

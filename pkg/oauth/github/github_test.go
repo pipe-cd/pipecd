@@ -101,8 +101,7 @@ func TestDecideRole(t *testing.T) {
 				},
 			},
 			role: &model.Role{
-				ProjectId:   "id",
-				ProjectRole: model.Role_VIEWER,
+				ProjectId: "id",
 				ProjectRbacRoles: []string{
 					model.BuiltinRBACRoleViewer.String(),
 				},
@@ -150,10 +149,11 @@ func TestDecideRole(t *testing.T) {
 				},
 			},
 			role: &model.Role{
-				ProjectId:   "id",
-				ProjectRole: model.Role_ADMIN,
+				ProjectId: "id",
 				ProjectRbacRoles: []string{
 					model.BuiltinRBACRoleAdmin.String(),
+					model.BuiltinRBACRoleEditor.String(),
+					model.BuiltinRBACRoleViewer.String(),
 				},
 			},
 			wantErr: false,
@@ -199,8 +199,7 @@ func TestDecideRole(t *testing.T) {
 				},
 			},
 			role: &model.Role{
-				ProjectId:   "id",
-				ProjectRole: model.Role_EDITOR,
+				ProjectId: "id",
 				ProjectRbacRoles: []string{
 					model.BuiltinRBACRoleEditor.String(),
 					model.BuiltinRBACRoleViewer.String(),
@@ -249,8 +248,7 @@ func TestDecideRole(t *testing.T) {
 				},
 			},
 			role: &model.Role{
-				ProjectId:   "id",
-				ProjectRole: model.Role_VIEWER,
+				ProjectId: "id",
 				ProjectRbacRoles: []string{
 					model.BuiltinRBACRoleViewer.String(),
 				},

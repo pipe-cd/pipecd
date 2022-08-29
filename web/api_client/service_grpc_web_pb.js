@@ -36,8 +36,6 @@ var pkg_model_logblock_pb = require('pipecd/web/model/logblock_pb.js')
 
 var pkg_model_piped_pb = require('pipecd/web/model/piped_pb.js')
 
-var pkg_model_role_pb = require('pipecd/web/model/role_pb.js')
-
 var pkg_model_rbac_pb = require('pipecd/web/model/rbac_pb.js')
 
 var pkg_model_project_pb = require('pipecd/web/model/project_pb.js')

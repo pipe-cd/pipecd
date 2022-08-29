@@ -125,8 +125,6 @@ func (c *OAuthClient) GetUser(ctx context.Context) (*model.User, error) {
 }
 
 func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role *model.Role, err error) {
-	var found bool
-
 	role = &model.Role{
 		ProjectId:        c.project.Id,
 		ProjectRbacRoles: make([]string, 0, len(teams)),
@@ -148,28 +146,8 @@ func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role *model
 		if v, ok := roles[t]; ok {
 			role.ProjectRbacRoles = append(role.ProjectRbacRoles, v)
 		}
-
-		switch t {
-		case c.adminTeam:
-			role.ProjectRole = model.Role_ADMIN
-			return
-		case c.editorTeam:
-			role.ProjectRole = model.Role_EDITOR
-			found = true
-		case c.viewerTeam:
-			if role.ProjectRole != model.Role_EDITOR {
-				role.ProjectRole = model.Role_VIEWER
-				found = true
-			}
-		}
 	}
 
-	if found {
-		return
-	}
-
-	// If the ProjectRBACConfig was not defined or the current user does not belong to it but
-	// the current user belongs to any of the UserGroups, returns role.
 	if len(role.ProjectRbacRoles) != 0 {
 		return
 	}
@@ -178,7 +156,6 @@ func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role *model
 	// teams, if AllowStrayAsViewer option is set, assign Viewer role
 	// as user's role.
 	if c.project.AllowStrayAsViewer {
-		role.ProjectRole = model.Role_VIEWER
 		role.ProjectRbacRoles = []string{model.BuiltinRBACRoleViewer.String()}
 		return
 	}
