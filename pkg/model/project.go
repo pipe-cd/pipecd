@@ -53,6 +53,7 @@ var (
 		{
 			Resources: []*ProjectRBACResource{
 				{Type: ProjectRBACResource_APPLICATION},
+				{Type: ProjectRBACResource_DEPLOYMENT},
 			},
 			Actions: []ProjectRBACPolicy_Action{
 				ProjectRBACPolicy_ALL,
@@ -60,7 +61,6 @@ var (
 		},
 		{
 			Resources: []*ProjectRBACResource{
-				{Type: ProjectRBACResource_DEPLOYMENT},
 				{Type: ProjectRBACResource_PIPED},
 				{Type: ProjectRBACResource_DEPLOYMENT_CHAIN},
 			},
@@ -79,6 +79,7 @@ var (
 		},
 		{
 			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_PROJECT},
 				{Type: ProjectRBACResource_INSIGHT},
 			},
 			Actions: []ProjectRBACPolicy_Action{
@@ -114,6 +115,7 @@ var (
 		},
 		{
 			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_PROJECT},
 				{Type: ProjectRBACResource_INSIGHT},
 			},
 			Actions: []ProjectRBACPolicy_Action{
