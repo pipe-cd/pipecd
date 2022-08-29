@@ -19,7 +19,6 @@ package webservice
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/cache"
@@ -49,18 +48,15 @@ func NewRBACAuthorizer(ctx context.Context, ds datastore.DataStore) rpcauth.RBAC
 
 func (a *authorizer) getRBAC(ctx context.Context, projectID string) (*rbac, error) {
 	r, err := a.rbacCache.Get(projectID)
+	if err == nil {
+		return r.(*rbac), nil
+	}
+	project, err := a.projectStore.Get(ctx, projectID)
 	if err != nil {
-		project, err := a.projectStore.Get(ctx, projectID)
-		if err != nil {
-			return nil, err
-		}
-		r = &rbac{project.RbacRoles}
-		a.rbacCache.Put(projectID, r)
+		return nil, err
 	}
-	v, ok := r.(*rbac)
-	if !ok {
-		return nil, fmt.Errorf("unable to parse project rbac role")
-	}
+	v := &rbac{project.RbacRoles}
+	a.rbacCache.Put(projectID, v)
 	return v, nil
 }
 
