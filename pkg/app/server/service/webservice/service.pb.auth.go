@@ -29,7 +29,7 @@ import (
 )
 
 type webApiProjectStore interface {
-	Get(ctx context.Context, id string) (*model.Project, error)
+	GetAllProjectRBACRoles(ctx context.Context, id string) ([]*model.ProjectRBACRole, error)
 }
 
 type authorizer struct {
@@ -51,11 +51,11 @@ func (a *authorizer) getRBAC(ctx context.Context, projectID string) (*rbac, erro
 	if err == nil {
 		return r.(*rbac), nil
 	}
-	project, err := a.projectStore.Get(ctx, projectID)
+	roles, err := a.projectStore.GetAllProjectRBACRoles(ctx, projectID)
 	if err != nil {
 		return nil, err
 	}
-	v := &rbac{project.RbacRoles}
+	v := &rbac{roles}
 	a.rbacCache.Put(projectID, v)
 	return v, nil
 }
