@@ -136,8 +136,8 @@ func (h *authHandler) handleStaticAdminLogin(w http.ResponseWriter, r *http.Requ
 		"",
 		defaultTokenTTL,
 		model.Role{
-			ProjectId:   projectID,
-			ProjectRole: model.Role_ADMIN,
+			ProjectId:        projectID,
+			ProjectRbacRoles: []string{model.BuiltinRBACRoleAdmin.String()},
 		},
 	)
 	signedToken, err := h.signer.Sign(claims)
@@ -149,7 +149,7 @@ func (h *authHandler) handleStaticAdminLogin(w http.ResponseWriter, r *http.Requ
 	h.logger.Info("a new user has been logged in",
 		zap.String("user", admin.Username),
 		zap.String("project-id", projectID),
-		zap.String("project-role", model.Role_ADMIN.String()),
+		zap.String("project-role", model.BuiltinRBACRoleAdmin.String()),
 	)
 	http.SetCookie(w, makeTokenCookie(signedToken, h.secureCookie))
 	http.Redirect(w, r, rootPath, http.StatusFound)
