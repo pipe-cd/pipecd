@@ -1,5 +1,5 @@
 ---
-title: "ECS"
+title: "Configuring ECS application"
 linkTitle: "ECS"
 weight: 5
 description: >

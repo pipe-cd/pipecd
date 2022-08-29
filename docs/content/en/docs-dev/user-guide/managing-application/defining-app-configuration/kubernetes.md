@@ -1,5 +1,5 @@
 ---
-title: "Kubernetes"
+title: "Configuring Kubernetes application"
 linkTitle: "Kubernetes"
 weight: 1
 description: >

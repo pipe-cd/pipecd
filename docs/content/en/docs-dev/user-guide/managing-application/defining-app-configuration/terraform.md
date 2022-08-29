@@ -1,5 +1,5 @@
 ---
-title: "Terraform"
+title: "Configuring Terraform application"
 linkTitle: "Terraform"
 weight: 2
 description: >

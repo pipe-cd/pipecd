@@ -96,4 +96,5 @@ kubectl delete svc canary -n pipecd
 ```
 
 ### What's next?
-You want to know some details on how to set up for a production environment? Visit [Operating Control Plane](/docs/operator-manual/control-plane/) at first. After reading that, the [Operating Piped](/docs/operator-manual/piped/) page will be for you.
+
+To prepare your PipeCD for a production environment, please visit the [Installation](/docs/installation/) guideline. For guidelines to use PipeCD to deploy your application in daily usage, please visit the [User guide](/docs/user-guide/) docs.

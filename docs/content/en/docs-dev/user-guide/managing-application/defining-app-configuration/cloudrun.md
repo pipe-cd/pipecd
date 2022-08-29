@@ -1,5 +1,5 @@
 ---
-title: "Cloud Run"
+title: "Configuring Cloud Run application"
 linkTitle: "Cloud Run"
 weight: 3
 description: >

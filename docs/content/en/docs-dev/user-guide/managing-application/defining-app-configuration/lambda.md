@@ -1,5 +1,5 @@
 ---
-title: "Lambda"
+title: "Configuring Lambda application"
 linkTitle: "Lambda"
 weight: 4
 description: >
