@@ -23,6 +23,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
+	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
@@ -35,18 +36,25 @@ type webApiProjectStore interface {
 type authorizer struct {
 	projectStore webApiProjectStore
 	rbacCache    cache.Cache
+	// List of debugging/quickstart projects.
+	projectsInConfig map[string]config.ControlPlaneProject
 }
 
 // NewRBACAuthorizer returns an RBACAuthorizer object for checking requested method based on RBAC.
-func NewRBACAuthorizer(ctx context.Context, ds datastore.DataStore) rpcauth.RBACAuthorizer {
+func NewRBACAuthorizer(ctx context.Context, ds datastore.DataStore, projects map[string]config.ControlPlaneProject) rpcauth.RBACAuthorizer {
 	w := datastore.WebCommander
 	return &authorizer{
-		projectStore: datastore.NewProjectStore(ds, w),
-		rbacCache:    memorycache.NewTTLCache(ctx, 10*time.Minute, 5*time.Minute),
+		projectStore:     datastore.NewProjectStore(ds, w),
+		rbacCache:        memorycache.NewTTLCache(ctx, 10*time.Minute, 5*time.Minute),
+		projectsInConfig: projects,
 	}
 }
 
 func (a *authorizer) getRBAC(ctx context.Context, projectID string) (*rbac, error) {
+	if _, ok := a.projectsInConfig[projectID]; ok {
+		p := &model.Project{Id: projectID}
+		return &rbac{p.GetAllRBACRoles()}, nil
+	}
 	r, err := a.rbacCache.Get(projectID)
 	if err == nil {
 		return r.(*rbac), nil
