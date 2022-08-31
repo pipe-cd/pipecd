@@ -1188,6 +1188,7 @@ func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectReque
 
 	// Redact all sensitive data inside project message before sending to the client.
 	project.RedactSensitiveData()
+	project.SetBuiltinRBAC()
 
 	return &webservice.GetProjectResponse{
 		Project: project,

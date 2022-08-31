@@ -521,6 +521,12 @@ func (p *Project) DeleteRBACRole(name string) error {
 	return fmt.Errorf("%s role does nott exist", name)
 }
 
+// SetBuiltinRBAC sets built-in RBAC roles and user groups being assigned with it.
+func (p *Project) SetBuiltinRBAC() {
+	p.UserGroups = p.GetAllUserGroups()
+	p.RbacRoles = p.GetAllRBACRoles()
+}
+
 func (p *ProjectRBACRole) HasPermission(typ ProjectRBACResource_ResourceType, action ProjectRBACPolicy_Action) bool {
 	for _, v := range p.Policies {
 		if v.HasPermission(typ, action) {

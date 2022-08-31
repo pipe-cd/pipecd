@@ -186,11 +186,9 @@ service WebService {
         option (model.rbac).resource = PROJECT;
         option (model.rbac).action = GET;
     }
-    rpc ListProjectRBACRoles(ListProjectRBACRolesRequest) returns (ListProjectRBACRolesResponse) {}
     rpc AddProjectRBACRole(AddProjectRBACRoleRequest) returns (AddProjectRBACRoleResponse) {}
     rpc UpdateProjectRBACRole(UpdateProjectRBACRoleRequest) returns (UpdateProjectRBACRoleResponse) {}
     rpc DeleteProjectRBACRole(DeleteProjectRBACRoleRequest) returns (DeleteProjectRBACRoleResponse) {}
-    rpc ListProjectUserGroups(ListProjectUserGroupsRequest) returns (ListProjectUserGroupsResponses) {}
     rpc AddProjectUserGroup(AddProjectUserGroupRequest) returns (AddProjectUserGroupResponse) {}
     rpc DeleteProjectUserGroup(DeleteProjectUserGroupRequest) returns (DeleteProjectUserGroupResponse) {}
 
