@@ -30,7 +30,7 @@ import (
 )
 
 type webApiProjectStore interface {
-	GetAllProjectRBACRoles(ctx context.Context, id string) ([]*model.ProjectRBACRole, error)
+	Get(ctx context.Context, id string) (*model.Project, error)
 }
 
 type authorizer struct {
@@ -53,17 +53,18 @@ func NewRBACAuthorizer(ctx context.Context, ds datastore.DataStore, projects map
 func (a *authorizer) getRBAC(ctx context.Context, projectID string) (*rbac, error) {
 	if _, ok := a.projectsInConfig[projectID]; ok {
 		p := &model.Project{Id: projectID}
-		return &rbac{p.GetAllRBACRoles()}, nil
+		p.SetBuiltinRBACRoles()
+		return &rbac{p.RbacRoles}, nil
 	}
 	r, err := a.rbacCache.Get(projectID)
 	if err == nil {
 		return r.(*rbac), nil
 	}
-	roles, err := a.projectStore.GetAllProjectRBACRoles(ctx, projectID)
+	p, err := a.projectStore.Get(ctx, projectID)
 	if err != nil {
 		return nil, err
 	}
-	v := &rbac{roles}
+	v := &rbac{p.RbacRoles}
 	a.rbacCache.Put(projectID, v)
 	return v, nil
 }

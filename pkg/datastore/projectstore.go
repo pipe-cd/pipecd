@@ -78,11 +78,9 @@ type ProjectStore interface {
 	DisableStaticAdmin(ctx context.Context, id string) error
 	UpdateProjectSSOConfig(ctx context.Context, id string, sso *model.ProjectSSOConfig) error
 	UpdateProjectRBACConfig(ctx context.Context, id string, rbac *model.ProjectRBACConfig) error
-	GetAllProjectRBACRoles(ctx context.Context, id string) ([]*model.ProjectRBACRole, error)
 	AddProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error
 	UpdateProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error
 	DeleteProjectRBACRole(ctx context.Context, id, name string) error
-	GetAllProjectUserGroups(ctx context.Context, id string) ([]*model.ProjectUserGroup, error)
 	AddProjectUserGroup(ctx context.Context, id, sso, role string) error
 	DeleteProjectUserGroup(ctx context.Context, id, sso string) error
 }
@@ -123,6 +121,8 @@ func (s *projectStore) Get(ctx context.Context, id string) (*model.Project, erro
 	if err := s.ds.Get(ctx, s.col, id, &entity); err != nil {
 		return nil, err
 	}
+	entity.SetLegacyUserGroups()
+	entity.SetBuiltinRBACRoles()
 	return &entity, nil
 }
 
@@ -203,15 +203,6 @@ func (s *projectStore) UpdateProjectRBACConfig(ctx context.Context, id string, r
 	})
 }
 
-// GetAllProjectRBACRoles returns the custom rbacs roles and built-in rbac roles.
-func (s *projectStore) GetAllProjectRBACRoles(ctx context.Context, id string) ([]*model.ProjectRBACRole, error) {
-	p, err := s.Get(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return p.GetAllRBACRoles(), nil
-}
-
 // AddProjectRBACRole adds the custom rbac role.
 func (s *projectStore) AddProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error {
 	return s.update(ctx, id, func(p *model.Project) error {
@@ -231,15 +222,6 @@ func (s *projectStore) DeleteProjectRBACRole(ctx context.Context, id, name strin
 	return s.update(ctx, id, func(p *model.Project) error {
 		return p.DeleteRBACRole(name)
 	})
-}
-
-// GetAllProjectUserGroups returns the user groups.
-func (s *projectStore) GetAllProjectUserGroups(ctx context.Context, id string) ([]*model.ProjectUserGroup, error) {
-	p, err := s.Get(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return p.GetAllUserGroups(), nil
 }
 
 // AddProjectUserGroup adds the user group.

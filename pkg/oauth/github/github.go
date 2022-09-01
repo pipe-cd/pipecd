@@ -129,7 +129,7 @@ func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role *model
 		ProjectId:        c.project.Id,
 		ProjectRbacRoles: make([]string, 0, len(teams)),
 	}
-	groups := c.project.GetAllUserGroups()
+	groups := c.project.UserGroups
 	roles := make(map[string]string, len(groups))
 	for _, g := range groups {
 		roles[g.SsoGroup] = g.Role
