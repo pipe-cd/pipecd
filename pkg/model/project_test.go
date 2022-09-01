@@ -278,16 +278,16 @@ func TestProject_HasUserGroup(t *testing.T) {
 	assert.False(t, p.HasUserGroup("team/foo"))
 }
 
-func TestProject_GetAllUserGroups(t *testing.T) {
+func TestProject_SetLegacyUserGroups(t *testing.T) {
 	testcases := []struct {
 		name    string
 		project *Project
-		want    []*ProjectUserGroup
+		want    *Project
 	}{
 		{
 			name:    "empty",
 			project: &Project{},
-			want:    nil,
+			want:    &Project{},
 		},
 		{
 			name: "merge rbac config and user group",
@@ -308,26 +308,33 @@ func TestProject_GetAllUserGroups(t *testing.T) {
 					},
 				},
 			},
-			want: []*ProjectUserGroup{
-				{
-					Role:     "Admin",
-					SsoGroup: "team/admin",
+			want: &Project{
+				Rbac: &ProjectRBACConfig{
+					Admin:  "team/admin",
+					Editor: "team/editor",
+					Viewer: "team/viewer",
 				},
-				{
-					Role:     "Editor",
-					SsoGroup: "team/editor",
-				},
-				{
-					Role:     "Viewer",
-					SsoGroup: "team/viewer",
-				},
-				{
-					Role:     "Tester",
-					SsoGroup: "team/tester",
-				},
-				{
-					Role:     "Owner",
-					SsoGroup: "team/owner",
+				UserGroups: []*ProjectUserGroup{
+					{
+						Role:     "Admin",
+						SsoGroup: "team/admin",
+					},
+					{
+						Role:     "Editor",
+						SsoGroup: "team/editor",
+					},
+					{
+						Role:     "Viewer",
+						SsoGroup: "team/viewer",
+					},
+					{
+						Role:     "Tester",
+						SsoGroup: "team/tester",
+					},
+					{
+						Role:     "Owner",
+						SsoGroup: "team/owner",
+					},
 				},
 			},
 		},
@@ -350,18 +357,25 @@ func TestProject_GetAllUserGroups(t *testing.T) {
 					},
 				},
 			},
-			want: []*ProjectUserGroup{
-				{
-					Role:     "Admin",
-					SsoGroup: "team/admin",
+			want: &Project{
+				Rbac: &ProjectRBACConfig{
+					Admin:  "team/admin",
+					Editor: "team/admin",
+					Viewer: "team/admin",
 				},
-				{
-					Role:     "Tester",
-					SsoGroup: "team/tester",
-				},
-				{
-					Role:     "Owner",
-					SsoGroup: "team/owner",
+				UserGroups: []*ProjectUserGroup{
+					{
+						Role:     "Admin",
+						SsoGroup: "team/admin",
+					},
+					{
+						Role:     "Tester",
+						SsoGroup: "team/tester",
+					},
+					{
+						Role:     "Owner",
+						SsoGroup: "team/owner",
+					},
 				},
 			},
 		},
@@ -369,7 +383,7 @@ func TestProject_GetAllUserGroups(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := tc.project.GetAllUserGroups()
+			got := tc.project.SetLegacyUserGroups()
 			assert.Equal(t, tc.want, got)
 		})
 	}
@@ -522,11 +536,11 @@ func TestProject_DeleteUserGroup(t *testing.T) {
 	}
 }
 
-func TestProject_GetAllRBACRoles(t *testing.T) {
+func TestProject_SetBuiltinRBACRoles(t *testing.T) {
 	testcases := []struct {
 		name    string
 		project *Project
-		want    []*ProjectRBACRole
+		want    *Project
 	}{
 		{
 			name: "ok",
@@ -549,21 +563,23 @@ func TestProject_GetAllRBACRoles(t *testing.T) {
 					},
 				},
 			},
-			want: []*ProjectRBACRole{
-				builtinAdminRBACRole,
-				builtinEditorRBACRole,
-				builtinViewerRBACRole,
-				{
-					Name: "Tester",
-					Policies: []*ProjectRBACPolicy{
-						{
-							Resources: []*ProjectRBACResource{
-								{
-									Type: ProjectRBACResource_APPLICATION,
+			want: &Project{
+				RbacRoles: []*ProjectRBACRole{
+					builtinAdminRBACRole,
+					builtinEditorRBACRole,
+					builtinViewerRBACRole,
+					{
+						Name: "Tester",
+						Policies: []*ProjectRBACPolicy{
+							{
+								Resources: []*ProjectRBACResource{
+									{
+										Type: ProjectRBACResource_APPLICATION,
+									},
 								},
-							},
-							Actions: []ProjectRBACPolicy_Action{
-								ProjectRBACPolicy_GET,
+								Actions: []ProjectRBACPolicy_Action{
+									ProjectRBACPolicy_GET,
+								},
 							},
 						},
 					},
@@ -573,7 +589,7 @@ func TestProject_GetAllRBACRoles(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := tc.project.GetAllRBACRoles()
+			got := tc.project.SetBuiltinRBACRoles()
 			assert.Equal(t, tc.want, got)
 		})
 	}

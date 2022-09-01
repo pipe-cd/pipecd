@@ -376,12 +376,12 @@ func (p *Project) HasUserGroup(sso string) bool {
 	return false
 }
 
-// GetAllUserGroups returns user groups and the old RBAC confg if exists.
-// If the same team exists in the old RBAC config, this method just only returns the user group that has the highest authority level.
-func (p *Project) GetAllUserGroups() []*ProjectUserGroup {
+// SetLegacyUserGroups sets the legacy RBAC config as user groups if exists.
+// If the same team exists in the legacy RBAC config, this method just only sets the user group that has the highest authority level.
+func (p *Project) SetLegacyUserGroups() *Project {
 	rbac := p.Rbac
 	if rbac == nil {
-		return p.UserGroups
+		return p
 	}
 
 	// The full list also contains 3 legacy user groups.
@@ -405,8 +405,8 @@ func (p *Project) GetAllUserGroups() []*ProjectUserGroup {
 		})
 	}
 	all = append(all, p.UserGroups...)
-
-	return all
+	p.UserGroups = all
+	return p
 }
 
 // AddUserGroup adds a user group.
@@ -451,21 +451,20 @@ func (p *Project) DeleteUserGroup(sso string) error {
 	return fmt.Errorf("%s user group does not exist", sso)
 }
 
-// GetAllRBACRoles returns user groups and built-in roles.
-func (p *Project) GetAllRBACRoles() []*ProjectRBACRole {
+// SetBuiltinRBACRoles sets built-in roles.
+func (p *Project) SetBuiltinRBACRoles() *Project {
 	builtin := []*ProjectRBACRole{
 		builtinAdminRBACRole,
 		builtinEditorRBACRole,
 		builtinViewerRBACRole,
 	}
-
 	all := make([]*ProjectRBACRole, 0, len(p.RbacRoles)+len(builtin))
 	// Set built-in rbac role.
 	all = append(all, builtin...)
 	// Set custom rbac role.
 	all = append(all, p.RbacRoles...)
-
-	return all
+	p.RbacRoles = all
+	return p
 }
 
 // isBuiltinRBACRole checks whether the name is the name of built-in role.
@@ -519,12 +518,6 @@ func (p *Project) DeleteRBACRole(name string) error {
 		}
 	}
 	return fmt.Errorf("%s role does nott exist", name)
-}
-
-// SetBuiltinRBAC sets built-in RBAC roles and user groups being assigned with it.
-func (p *Project) SetBuiltinRBAC() {
-	p.UserGroups = p.GetAllUserGroups()
-	p.RbacRoles = p.GetAllRBACRoles()
 }
 
 func (p *ProjectRBACRole) HasPermission(typ ProjectRBACResource_ResourceType, action ProjectRBACPolicy_Action) bool {
