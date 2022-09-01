@@ -121,9 +121,8 @@ func (s *projectStore) Get(ctx context.Context, id string) (*model.Project, erro
 	if err := s.ds.Get(ctx, s.col, id, &entity); err != nil {
 		return nil, err
 	}
-	entity.
-		SetLegacyUserGroups().
-		SetBuiltinRBACRoles()
+	entity.SetLegacyUserGroups()
+	entity.SetBuiltinRBACRoles()
 	return &entity, nil
 }
 

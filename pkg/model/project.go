@@ -378,10 +378,10 @@ func (p *Project) HasUserGroup(sso string) bool {
 
 // SetLegacyUserGroups sets the legacy RBAC config as user groups if exists.
 // If the same team exists in the legacy RBAC config, this method just only sets the user group that has the highest authority level.
-func (p *Project) SetLegacyUserGroups() *Project {
+func (p *Project) SetLegacyUserGroups() {
 	rbac := p.Rbac
 	if rbac == nil {
-		return p
+		return
 	}
 
 	// The full list also contains 3 legacy user groups.
@@ -406,7 +406,6 @@ func (p *Project) SetLegacyUserGroups() *Project {
 	}
 	all = append(all, p.UserGroups...)
 	p.UserGroups = all
-	return p
 }
 
 // AddUserGroup adds a user group.
@@ -452,7 +451,7 @@ func (p *Project) DeleteUserGroup(sso string) error {
 }
 
 // SetBuiltinRBACRoles sets built-in roles.
-func (p *Project) SetBuiltinRBACRoles() *Project {
+func (p *Project) SetBuiltinRBACRoles() {
 	builtin := []*ProjectRBACRole{
 		builtinAdminRBACRole,
 		builtinEditorRBACRole,
@@ -464,7 +463,6 @@ func (p *Project) SetBuiltinRBACRoles() *Project {
 	// Set custom rbac role.
 	all = append(all, p.RbacRoles...)
 	p.RbacRoles = all
-	return p
 }
 
 // isBuiltinRBACRole checks whether the name is the name of built-in role.

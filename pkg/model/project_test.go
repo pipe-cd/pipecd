@@ -383,8 +383,8 @@ func TestProject_SetLegacyUserGroups(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := tc.project.SetLegacyUserGroups()
-			assert.Equal(t, tc.want, got)
+			tc.project.SetLegacyUserGroups()
+			assert.Equal(t, tc.want, tc.project)
 		})
 	}
 }
@@ -589,8 +589,8 @@ func TestProject_SetBuiltinRBACRoles(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := tc.project.SetBuiltinRBACRoles()
-			assert.Equal(t, tc.want, got)
+			tc.project.SetBuiltinRBACRoles()
+			assert.Equal(t, tc.want, tc.project)
 		})
 	}
 }
