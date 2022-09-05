@@ -88,6 +88,11 @@ type webApiProjectStore interface {
 	DisableStaticAdmin(ctx context.Context, id string) error
 	UpdateProjectSSOConfig(ctx context.Context, id string, sso *model.ProjectSSOConfig) error
 	UpdateProjectRBACConfig(ctx context.Context, id string, sso *model.ProjectRBACConfig) error
+	AddProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error
+	UpdateProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error
+	DeleteProjectRBACRole(ctx context.Context, id, name string) error
+	AddProjectUserGroup(ctx context.Context, id, sso, role string) error
+	DeleteProjectUserGroup(ctx context.Context, id, sso string) error
 }
 
 type webApiEventStore interface {
@@ -1329,32 +1334,94 @@ func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webs
 	}, nil
 }
 
-func (a *WebAPI) ListProjectRBACRoles(_ context.Context, _ *webservice.ListProjectRBACRolesRequest) (*webservice.ListProjectRBACRolesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+func (a *WebAPI) AddProjectRBACRole(ctx context.Context, req *webservice.AddProjectRBACRoleRequest) (*webservice.AddProjectRBACRoleResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
+	}
+
+	if err := a.projectStore.AddProjectRBACRole(ctx, claims.Role.ProjectId, req.Name, req.Policies); err != nil {
+		a.logger.Error("failed to add rbac role", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to add rbac role")
+	}
+	return &webservice.AddProjectRBACRoleResponse{}, nil
 }
 
-func (a *WebAPI) AddProjectRBACRole(_ context.Context, _ *webservice.AddProjectRBACRoleRequest) (*webservice.AddProjectRBACRoleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+func (a *WebAPI) UpdateProjectRBACRole(ctx context.Context, req *webservice.UpdateProjectRBACRoleRequest) (*webservice.UpdateProjectRBACRoleResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
+	}
+
+	if err := a.projectStore.UpdateProjectRBACRole(ctx, claims.Role.ProjectId, req.Name, req.Policies); err != nil {
+		a.logger.Error("failed to update rbac role", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to update rbac role")
+	}
+	return &webservice.UpdateProjectRBACRoleResponse{}, nil
 }
 
-func (a *WebAPI) UpdateProjectRBACRole(_ context.Context, _ *webservice.UpdateProjectRBACRoleRequest) (*webservice.UpdateProjectRBACRoleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+func (a *WebAPI) DeleteProjectRBACRole(ctx context.Context, req *webservice.DeleteProjectRBACRoleRequest) (*webservice.DeleteProjectRBACRoleResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
+	}
+
+	if err := a.projectStore.DeleteProjectRBACRole(ctx, claims.Role.ProjectId, req.Name); err != nil {
+		a.logger.Error("failed to delete rbac role", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to delete rbac role")
+	}
+	return &webservice.DeleteProjectRBACRoleResponse{}, nil
 }
 
-func (a *WebAPI) DeleteProjectRBACRole(_ context.Context, _ *webservice.DeleteProjectRBACRoleRequest) (*webservice.DeleteProjectRBACRoleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+func (a *WebAPI) AddProjectUserGroup(ctx context.Context, req *webservice.AddProjectUserGroupRequest) (*webservice.AddProjectUserGroupResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
+	}
+
+	if err := a.projectStore.AddProjectUserGroup(ctx, claims.Role.ProjectId, req.SsoGroup, req.Role); err != nil {
+		a.logger.Error("failed to add user group", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to add user group")
+	}
+	return &webservice.AddProjectUserGroupResponse{}, nil
 }
 
-func (a *WebAPI) ListProjectUserGroups(_ context.Context, _ *webservice.ListProjectUserGroupsRequest) (*webservice.ListProjectUserGroupsResponses, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not implemented")
-}
+func (a *WebAPI) DeleteProjectUserGroup(ctx context.Context, req *webservice.DeleteProjectUserGroupRequest) (*webservice.DeleteProjectUserGroupResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
 
-func (a *WebAPI) AddProjectUserGroup(_ context.Context, _ *webservice.AddProjectUserGroupRequest) (*webservice.AddProjectUserGroupResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not implemented")
-}
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
+	}
 
-func (a *WebAPI) DeleteProjectUserGroup(_ context.Context, _ *webservice.DeleteProjectUserGroupRequest) (*webservice.DeleteProjectUserGroupResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+	if err := a.projectStore.DeleteProjectUserGroup(ctx, claims.Role.ProjectId, req.SsoGroup); err != nil {
+		a.logger.Error("failed to delete user group", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to delete user group")
+	}
+	return &webservice.DeleteProjectUserGroupResponse{}, nil
 }
 
 func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandRequest) (*webservice.GetCommandResponse, error) {
