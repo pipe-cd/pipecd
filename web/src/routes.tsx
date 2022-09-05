@@ -25,6 +25,11 @@ import {
   PAGE_PATH_SETTINGS,
   PAGE_PATH_TOP,
 } from "~/constants/path";
+import {
+  REDIRECT_PATH_KEY,
+  BANNER_VERSION_KEY,
+  USER_PROJECTS,
+} from "~/constants/localstorage";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { useInterval } from "~/hooks/use-interval";
 import useQueryString from "./hooks/use-query-string";
@@ -33,6 +38,7 @@ import {
   selectIds as selectCommandIds,
 } from "~/modules/commands";
 import { fetchPipeds } from "~/modules/pipeds";
+import { sortedSet } from "~/utils/sorted-set";
 
 const SettingsIndexPage = loadable(
   () => import(/* webpackChunkName: "settings" */ "~/components/settings-page"),
@@ -95,9 +101,6 @@ const useCommandsStatusChecking = (): void => {
   );
 };
 
-const REDIRECT_PATH_KEY = "redirect_path";
-const BANNER_VERSION_KEY = "banner_version";
-
 export const Routes: FC = () => {
   const dispatch = useAppDispatch();
   const me = useAppSelector((state) => state.me);
@@ -109,11 +112,15 @@ export const Routes: FC = () => {
   useCommandsStatusChecking();
 
   const location = useLocation();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, onLoadProject] = useQueryString("project", "");
+  const [, onLoadProject] = useQueryString("project", "");
   useEffect(() => {
     if (me?.isLogin) {
       onLoadProject(me.projectId);
+
+      // Add logged in users project to localstorage.
+      const projects = localStorage.getItem(USER_PROJECTS)?.split(",") || [];
+      projects.push(me.projectId);
+      localStorage.setItem(USER_PROJECTS, sortedSet(projects).join(","));
     }
   }, [location, me, onLoadProject]);
 

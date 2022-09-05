@@ -151,7 +151,8 @@ update/docsy:
 
 .PHONY: gen/code
 gen/code:
-	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen:$(shell head -n 1 RELEASE | cut -d ' ' -f 2) /repo
+	# NOTE: Specify a specific version temporally until the next release.
+	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:7c0488970a3fc3a88f15d6ebccc7c7ddf8557af61522395f6400fc30486567af /repo #v0.36.0-26-gbd3a30a
 
 .PHONY: gen/release
 gen/release:

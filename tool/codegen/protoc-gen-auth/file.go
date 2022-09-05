@@ -20,40 +20,100 @@ const fileTpl = `// Copyright 2022 The PipeCD Authors.
 package webservice
 
 import (
+	"context"
+	"time"
+
+	"github.com/pipe-cd/pipecd/pkg/cache"
+	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
 
-type authorizer struct{}
+type webApiProjectStore interface {
+	Get(ctx context.Context, id string) (*model.Project, error)
+}
+
+type authorizer struct {
+	projectStore webApiProjectStore
+	rbacCache    cache.Cache
+	// List of debugging/quickstart projects.
+	projectsInConfig map[string]config.ControlPlaneProject
+}
 
 // NewRBACAuthorizer returns an RBACAuthorizer object for checking requested method based on RBAC.
-func NewRBACAuthorizer() rpcauth.RBACAuthorizer {
-	return &authorizer{}
+func NewRBACAuthorizer(ctx context.Context, ds datastore.DataStore, projects map[string]config.ControlPlaneProject) rpcauth.RBACAuthorizer {
+	w := datastore.WebCommander
+	return &authorizer{
+		projectStore:     datastore.NewProjectStore(ds, w),
+		rbacCache:        memorycache.NewTTLCache(ctx, 10*time.Minute, 5*time.Minute),
+		projectsInConfig: projects,
+	}
 }
 
-func isAdmin(r model.Role) bool {
-	return r.ProjectRole == model.Role_ADMIN
+func (a *authorizer) getRBAC(ctx context.Context, projectID string) (*rbac, error) {
+	if _, ok := a.projectsInConfig[projectID]; ok {
+		p := &model.Project{Id: projectID}
+		p.SetBuiltinRBACRoles()
+		return &rbac{p.RbacRoles}, nil
+	}
+	r, err := a.rbacCache.Get(projectID)
+	if err == nil {
+		return r.(*rbac), nil
+	}
+	p, err := a.projectStore.Get(ctx, projectID)
+	if err != nil {
+		return nil, err
+	}
+	v := &rbac{p.RbacRoles}
+	a.rbacCache.Put(projectID, v)
+	return v, nil
 }
 
-func isEditor(r model.Role) bool {
-	return r.ProjectRole == model.Role_EDITOR
+type rbac struct {
+	Roles []*model.ProjectRBACRole
 }
 
-func isViewer(r model.Role) bool {
-	return r.ProjectRole == model.Role_VIEWER
+func (r *rbac) HasPermission(typ model.ProjectRBACResource_ResourceType, action model.ProjectRBACPolicy_Action) bool {
+	for _, v := range r.Roles {
+		if v.HasPermission(typ, action) {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *rbac) FilterByNames(names []string) *rbac {
+	roles := make([]*model.ProjectRBACRole, 0, len(names))
+	rs := make(map[string]*model.ProjectRBACRole, len(r.Roles))
+	for _, v := range r.Roles {
+		rs[v.Name] = v
+	}
+	for _, n := range names {
+		if v, ok := rs[n]; ok {
+			roles = append(roles, v)
+		}
+	}
+	r.Roles = roles
+	return r
 }
 
 // Authorize checks whether a role is enough for given gRPC method or not.
-func (a *authorizer) Authorize(method string, r model.Role) bool {
+func (a *authorizer) Authorize(ctx context.Context, method string, r model.Role) bool {
+	rbac, err := a.getRBAC(ctx, r.ProjectId)
+	if err != nil {
+		return false
+	}
+	rbac.FilterByNames(r.ProjectRbacRoles)
+
 	switch method {
 	{{- range .Methods }}
 	case "/grpc.service.webservice.WebService/{{ .Name }}":
-		{{- if eq .Role "VIEWER" }}
-			return isAdmin(r) || isEditor(r) || isViewer(r)
-		{{- else if eq .Role "EDITOR" }}
-			return isAdmin(r) || isEditor(r)
+	        {{- if .Ignored }}
+			return true
 		{{- else }}
-			return isAdmin(r)
+			return rbac.HasPermission(model.ProjectRBACResource_{{ .Resource }}, model.ProjectRBACPolicy_{{ .Action }})
 		{{- end }}
 	{{- end }}
 	}

@@ -150,36 +150,6 @@ func (mr *MockProjectStoreMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockProjectStore)(nil).Get), arg0, arg1)
 }
 
-// GetAllProjectRBACRoles mocks base method.
-func (m *MockProjectStore) GetAllProjectRBACRoles(arg0 context.Context, arg1 string) ([]*model.ProjectRBACRole, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllProjectRBACRoles", arg0, arg1)
-	ret0, _ := ret[0].([]*model.ProjectRBACRole)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAllProjectRBACRoles indicates an expected call of GetAllProjectRBACRoles.
-func (mr *MockProjectStoreMockRecorder) GetAllProjectRBACRoles(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllProjectRBACRoles", reflect.TypeOf((*MockProjectStore)(nil).GetAllProjectRBACRoles), arg0, arg1)
-}
-
-// GetAllProjectUserGroups mocks base method.
-func (m *MockProjectStore) GetAllProjectUserGroups(arg0 context.Context, arg1 string) ([]*model.ProjectUserGroup, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllProjectUserGroups", arg0, arg1)
-	ret0, _ := ret[0].([]*model.ProjectUserGroup)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAllProjectUserGroups indicates an expected call of GetAllProjectUserGroups.
-func (mr *MockProjectStoreMockRecorder) GetAllProjectUserGroups(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllProjectUserGroups", reflect.TypeOf((*MockProjectStore)(nil).GetAllProjectUserGroups), arg0, arg1)
-}
-
 // List mocks base method.
 func (m *MockProjectStore) List(arg0 context.Context, arg1 datastore.ListOptions) ([]model.Project, error) {
 	m.ctrl.T.Helper()

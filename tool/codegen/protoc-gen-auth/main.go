@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"sort"
+	"strconv"
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
@@ -21,15 +22,20 @@ type FileParams struct {
 }
 
 type Method struct {
-	Name string // The name of the RPC
-	Role string // ADMIN,EDITOR,VIEWER
+	Name     string // The name of the RPC
+	Resource string // APPLICATION,DEPLOYMENT,EVENT,PIPED,DEPLOYMENT_CHAIN,PROJECT,API_KEY,INSIGHT
+	Action   string // GET,LIST,CREATE,UPDATE,DELETE
+	Ignored  bool   // Whether ignore authorization or not
 }
 
 const (
-	filePrefix              = "pkg/app/server/service/webservice"
-	generatedFileNameSuffix = ".pb.auth.go"
-	protoFileExtention      = ".proto"
-	methodOptionsRole       = "role"
+	filePrefix                  = "pkg/app/server/service/webservice"
+	generatedFileNameSuffix     = ".pb.auth.go"
+	protoFileExtention          = ".proto"
+	methodOptionsRBAC           = "rbac"
+	keyMethodOptionsRBACResouce = "resource"
+	keyMethodOptionsRBACAction  = "action"
+	keyMethodOptionsRBACIgnored = "ignored"
 )
 
 func main() {
@@ -57,7 +63,7 @@ func main() {
 			gf := p.NewGeneratedFile(filename, f.GoImportPath)
 
 			sort.SliceStable(methods, func(i, j int) bool {
-				return methods[i].Role < methods[j].Role
+				return methods[i].Resource < methods[j].Resource
 			})
 
 			inputPath := fmt.Sprintf("%s%s", f.GeneratedFilenamePrefix, protoFileExtention)
@@ -99,22 +105,30 @@ func generateMethods(extTypes *protoregistry.Types, ms []*protogen.Method) ([]*M
 
 		method := &Method{Name: m.GoName}
 		opts.ProtoReflect().Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
-			if !fd.IsExtension() {
+			if !fd.IsExtension() || fd.Name() != methodOptionsRBAC || v.String() == "" {
 				return true
 			}
 
-			if fd.Name() == methodOptionsRole {
-				// FIXME: This way can not parse the first value of enum for some reasons hence
-				// set VIEWER for default value.
-				method.Role = "VIEWER"
-				if v.String() != "" {
-					method.Role = strings.SplitN(v.String(), ":", 2)[1]
+			vs := strings.Split(v.String(), "  ")
+			for _, v := range vs {
+				kv := strings.SplitN(v, ":", 2)
+				key, value := kv[0], kv[1]
+
+				switch key {
+				case keyMethodOptionsRBACResouce:
+					method.Resource = value
+				case keyMethodOptionsRBACAction:
+					method.Action = value
+				case keyMethodOptionsRBACIgnored:
+					if v, err := strconv.ParseBool(value); err == nil {
+						method.Ignored = v
+					}
 				}
 			}
 			return true
 		})
 
-		if method.Role != "" {
+		if method.Ignored || (method.Resource != "" && method.Action != "") {
 			ret = append(ret, method)
 		}
 	}

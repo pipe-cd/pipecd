@@ -1,12 +1,10 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { Role } from "pipecd/web/model/role_pb";
 import { getMe } from "~/api/me";
 
 interface Me {
   subject: string;
   avatarUrl: string;
   projectId: string;
-  projectRole: Role.ProjectRole;
   isLogin: true;
 }
 

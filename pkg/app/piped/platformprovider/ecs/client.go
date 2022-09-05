@@ -135,6 +135,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 		ContainerDefinitions:    taskDefinition.ContainerDefinitions,
 		RequiresCompatibilities: taskDefinition.RequiresCompatibilities,
 		ExecutionRoleArn:        taskDefinition.ExecutionRoleArn,
+		TaskRoleArn:             taskDefinition.TaskRoleArn,
 		NetworkMode:             taskDefinition.NetworkMode,
 		Volumes:                 taskDefinition.Volumes,
 		// Requires defined at task level in case Fargate is used.
@@ -149,7 +150,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 	return output.TaskDefinition, nil
 }
 
-func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup types.LoadBalancer, scale int) (*types.TaskSet, error) {
+func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale int) (*types.TaskSet, error) {
 	if taskDefinition.TaskDefinitionArn == nil {
 		return nil, fmt.Errorf("failed to create task set of task family %s: no task definition provided", *taskDefinition.Family)
 	}
@@ -162,7 +163,9 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 		// and you must specify a NetworkConfiguration when run a task with the task definition.
 		NetworkConfiguration: service.NetworkConfiguration,
 		LaunchType:           service.LaunchType,
-		LoadBalancers:        []types.LoadBalancer{targetGroup},
+	}
+	if targetGroup != nil {
+		input.LoadBalancers = []types.LoadBalancer{*targetGroup}
 	}
 	output, err := c.ecsClient.CreateTaskSet(ctx, input)
 	if err != nil {

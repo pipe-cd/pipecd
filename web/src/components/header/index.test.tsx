@@ -1,7 +1,6 @@
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { render, screen } from "~~/test-utils";
-import { Role } from "~/modules/me";
 import { Header } from "./";
 
 it("shows login link if user state is not exists", () => {
@@ -27,7 +26,6 @@ it("shows logout link if opened user menu", () => {
           subject: "user",
           isLogin: true,
           projectId: "pipecd",
-          projectRole: Role.ProjectRole.ADMIN,
         },
       },
     }

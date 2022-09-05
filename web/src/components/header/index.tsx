@@ -1,4 +1,4 @@
-import { FC, memo, useState } from "react";
+import { FC, memo, useEffect, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -24,6 +24,7 @@ import {
   PAGE_PATH_EVENTS,
 } from "~/constants/path";
 import { APP_NAME } from "~/constants/common";
+import { LOGGING_IN_PROJECT, USER_PROJECTS } from "~/constants/localstorage";
 import { NavLink as RouterLink } from "react-router-dom";
 import ArrowDownIcon from "@material-ui/icons/ArrowDropDown";
 import logo from "~~/assets/logo.svg";
@@ -100,6 +101,28 @@ export const Header: FC = memo(function Header() {
   const [moreAnchorEl, setMoreAnchorEl] = useState<HTMLButtonElement | null>(
     null
   );
+  const [
+    projectAnchorEl,
+    setProjectAnchorEl,
+  ] = useState<HTMLButtonElement | null>(null);
+
+  const [selectableProjects, setSelectableProjects] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (me?.isLogin) {
+      const projects =
+        localStorage
+          .getItem(USER_PROJECTS)
+          ?.split(",")
+          .filter((e) => e !== me.projectId) || [];
+      setSelectableProjects(projects);
+    }
+  }, [me]);
+
+  const handleSwitchProject = (proj: string): void => {
+    localStorage.setItem(LOGGING_IN_PROJECT, proj);
+    window.location.href = LOGOUT_ENDPOINT;
+  };
 
   return (
     <AppBar position="static" className={classes.root}>
@@ -117,6 +140,7 @@ export const Header: FC = memo(function Header() {
               color="inherit"
               className={classes.projectName}
               endIcon={<ArrowDownIcon />}
+              onClick={(e) => setProjectAnchorEl(e.currentTarget)}
             >
               {me.projectId}
             </Button>
@@ -184,6 +208,21 @@ export const Header: FC = memo(function Header() {
           )}
         </div>
       </Toolbar>
+
+      <Menu
+        id="project-selection"
+        anchorEl={projectAnchorEl}
+        open={Boolean(projectAnchorEl) && selectableProjects.length !== 0}
+        onClose={(): void => {
+          setProjectAnchorEl(null);
+        }}
+      >
+        {selectableProjects.map((p) => (
+          <MenuItem key={p} onClick={() => handleSwitchProject(p)}>
+            {p}
+          </MenuItem>
+        ))}
+      </Menu>
 
       <Menu
         id="user-menu"

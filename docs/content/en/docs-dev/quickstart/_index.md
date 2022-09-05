@@ -64,7 +64,7 @@ Navigate to the `Applications` page, click on the `ADD` button on the top left c
 
 Go to the `ADD FROM SUGGESTIONS` tab, then select:
 - Piped: `dev` (you just registered)
-- CloudProvider: `kubernetes-default`
+- PlatformProvider: `kubernetes-default`
 
 You should see a lot of suggested applications. Select the `canary` application and click the `SAVE` button to register.
 
@@ -96,4 +96,5 @@ kubectl delete svc canary -n pipecd
 ```
 
 ### What's next?
-You want to know some details on how to set up for a production environment? Visit [Operating Control Plane](/docs/operator-manual/control-plane/) at first. After reading that, the [Operating Piped](/docs/operator-manual/piped/) page will be for you.
+
+To prepare your PipeCD for a production environment, please visit the [Installation](/docs/installation/) guideline. For guidelines to use PipeCD to deploy your application in daily usage, please visit the [User guide](/docs/user-guide/) docs.

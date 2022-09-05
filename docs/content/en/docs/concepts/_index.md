@@ -38,15 +38,10 @@ There are three types of project roles:
 A collect of resources (containers, services, infrastructure components...) and configurations that are managed together.
 PipeCD supports multiple kinds of applications such as `KUBERNETES`, `TERRAFORM`, `ECS`, `CLOUDRUN`, `LAMBDA`...
 
-### Deployment
-
-A deployment is a process that does transition from the current state (running state) to the desired state (specified state in Git) of a specific application.
-When the deployment is success, it means the running state is synced with the desired state specified in the target commit.
-
 ### Application Configuration
 
-A yaml file that contains configuration data to define how to deploy the application.
-Each application requires one application configuration file at application directory in the Git repository.
+A YAML file that contains information to define and configure application.
+Each application requires one file at application directory stored in the Git repository.
 The default file name is `app.pipecd.yaml`.
 
 ### Application Directory
@@ -54,27 +49,26 @@ The default file name is `app.pipecd.yaml`.
 A directory in Git repository containing application configuration file and application manifests.
 Each application must have one application directory.
 
-### Pipeline
+### Deployment
 
-A list of stages specified by user in the application configuration file that tells `piped` how the application should be deployed. If the pipeline is not specified, the application will be deployed by Quick Sync way.
+A deployment is a process that does transition from the current state (running state) to the desired state (specified state in Git) of a specific application.
+When the deployment is success, it means the running state is being synced with the desired state specified in the target commit.
 
-### Stage
-
-A temporary middle state between current state and desired state of a deployment process.
-
-### Sync Strategies
+### Sync Strategy
 
 There are 3 strategies that PipeCD supports while syncing your application state with its configuration stored in Git. Which are:
-- Quick Sync: A fast way to make the running application state as same as its Git stored configuration. The generated pipeline contains only one predefined `SYNC` stage.
-- Pipeline Sync: Sync the running application state with its Git stored configuration through a pipeline defined in its application configuration.
-- Auto Sync: Depends on your defined application configuration, `piped` will decide the best way to sync your application state with its Git stored configuration.
+- Quick Sync: a fast way to make the running application state as same as its Git stored configuration. The generated pipeline contains only one predefined `SYNC` stage.
+- Pipeline Sync: sync the running application state with its Git stored configuration through a pipeline defined in its application configuration.
+- Auto Sync: depends on your defined application configuration, `piped` will decide the best way to sync your application state with its Git stored configuration.
 
-### Cloud Provider
+### Platform Provider
 
-PipeCD supports multiple clouds and multiple kinds of applications.
-Cloud Provider defines which cloud and where application should be deployed to.
+Note: The previous name of this concept was Cloud Provider.
 
-Currently, PipeCD is supporting these five cloud providers: `KUBERNETES`, `ECS`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`.
+PipeCD supports multiple platforms and multiple kinds of applications.
+Platform Provider defines which platform, cloud and where application should be deployed to.
+
+Currently, PipeCD is supporting these five platform providers: `KUBERNETES`, `ECS`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`.
 
 ### Analysis Provider
 An external product that provides metrics/logs to evaluate deployments, such as `Prometheus`, `Datadog`, `Stackdriver`, `CloudWatch` and so on.

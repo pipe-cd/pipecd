@@ -218,6 +218,36 @@ func (s *PipedSpec) FindPlatformProvider(name string, t model.ApplicationKind) (
 	return PipedPlatformProvider{}, false
 }
 
+// FindPlatformProvidersByLabels finds all PlatformProviders which match the provided labels.
+func (s *PipedSpec) FindPlatformProvidersByLabels(labels map[string]string, t model.ApplicationKind) []PipedPlatformProvider {
+	requiredProviderType := t.CompatiblePlatformProviderType()
+	out := make([]PipedPlatformProvider, 0)
+
+	labelMatch := func(providerLabels map[string]string) bool {
+		if len(providerLabels) < len(labels) {
+			return false
+		}
+
+		for k, v := range labels {
+			if v != providerLabels[k] {
+				return false
+			}
+		}
+		return true
+	}
+
+	for _, p := range s.PlatformProviders {
+		if p.Type != requiredProviderType {
+			continue
+		}
+		if !labelMatch(p.Labels) {
+			continue
+		}
+		out = append(out, p)
+	}
+	return out
+}
+
 // GetRepositoryMap returns a map of repositories where key is repo id.
 func (s *PipedSpec) GetRepositoryMap() map[string]PipedRepository {
 	m := make(map[string]PipedRepository, len(s.Repositories))
@@ -462,8 +492,9 @@ func (r *HelmChartRegistry) Mask() {
 }
 
 type PipedPlatformProvider struct {
-	Name string                     `json:"name"`
-	Type model.PlatformProviderType `json:"type"`
+	Name   string                     `json:"name"`
+	Type   model.PlatformProviderType `json:"type"`
+	Labels map[string]string          `json:"labels,omitempty"`
 
 	KubernetesConfig *PlatformProviderKubernetesConfig
 	TerraformConfig  *PlatformProviderTerraformConfig
@@ -475,6 +506,7 @@ type PipedPlatformProvider struct {
 type genericPipedPlatformProvider struct {
 	Name   string                     `json:"name"`
 	Type   model.PlatformProviderType `json:"type"`
+	Labels map[string]string          `json:"labels,omitempty"`
 	Config json.RawMessage            `json:"config"`
 }
 
@@ -506,6 +538,7 @@ func (p *PipedPlatformProvider) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&genericPipedPlatformProvider{
 		Name:   p.Name,
 		Type:   p.Type,
+		Labels: p.Labels,
 		Config: config,
 	})
 }
@@ -518,6 +551,7 @@ func (p *PipedPlatformProvider) UnmarshalJSON(data []byte) error {
 	}
 	p.Name = gp.Name
 	p.Type = gp.Type
+	p.Labels = gp.Labels
 
 	switch p.Type {
 	case model.PlatformProviderKubernetes:

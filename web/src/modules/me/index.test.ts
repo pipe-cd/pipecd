@@ -2,7 +2,7 @@ import { setupServer } from "msw/node";
 import { createStore } from "~~/test-utils";
 import { getMeHandler } from "~/mocks/services/me";
 import { dummyMe } from "~/__fixtures__/dummy-me";
-import { fetchMe, meSlice, Role, selectProjectName } from "./";
+import { fetchMe, meSlice, selectProjectName } from "./";
 
 const server = setupServer(getMeHandler);
 
@@ -56,7 +56,6 @@ describe("meSlice reducer", () => {
             subject: "userName",
             avatarUrl: "avatar-url",
             projectId: "pipecd",
-            projectRole: Role.ProjectRole.ADMIN,
             isLogin: true,
           },
         })
@@ -64,7 +63,6 @@ describe("meSlice reducer", () => {
         subject: "userName",
         avatarUrl: "avatar-url",
         projectId: "pipecd",
-        projectRole: Role.ProjectRole.ADMIN,
         isLogin: true,
       });
     });
@@ -89,7 +87,6 @@ describe("selectProjectName", () => {
           subject: "userName",
           avatarUrl: "avatar-url",
           projectId: "pipecd",
-          projectRole: Role.ProjectRole.ADMIN,
           isLogin: true,
         },
       })

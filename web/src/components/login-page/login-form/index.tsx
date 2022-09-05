@@ -6,6 +6,7 @@ import {
   PAGE_PATH_LOGIN,
 } from "~/constants/path";
 import { MarkGithubIcon } from "@primer/octicons-react";
+import { LOGGING_IN_PROJECT } from "~/constants/localstorage";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -67,7 +68,10 @@ export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
   const classes = useStyles();
 
   const handleOnBack = (): void => {
-    window.location.href = PAGE_PATH_LOGIN;
+    localStorage.removeItem(LOGGING_IN_PROJECT);
+    setTimeout(() => {
+      window.location.href = PAGE_PATH_LOGIN;
+    }, 300);
   };
 
   return (

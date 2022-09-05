@@ -88,6 +88,9 @@ func TestPipedConfig(t *testing.T) {
 					{
 						Name: "kubernetes-default",
 						Type: model.PlatformProviderKubernetes,
+						Labels: map[string]string{
+							"group": "workload",
+						},
 						KubernetesConfig: &PlatformProviderKubernetesConfig{
 							MasterURL:      "https://example.com",
 							KubeConfigPath: "/etc/kube/config",
@@ -111,8 +114,11 @@ func TestPipedConfig(t *testing.T) {
 						},
 					},
 					{
-						Name:             "kubernetes-dev",
-						Type:             model.PlatformProviderKubernetes,
+						Name: "kubernetes-dev",
+						Type: model.PlatformProviderKubernetes,
+						Labels: map[string]string{
+							"group": "config",
+						},
 						KubernetesConfig: &PlatformProviderKubernetesConfig{},
 					},
 					{
@@ -1125,6 +1131,98 @@ func TestPipedSpecClone(t *testing.T) {
 			if err == nil {
 				assert.Equal(t, tc.expectedSpec, cloned)
 			}
+		})
+	}
+}
+
+func TestFindPlatformProvidersByLabel(t *testing.T) {
+	pipedSpec := &PipedSpec{
+		PlatformProviders: []PipedPlatformProvider{
+			{
+				Name: "provider-1",
+				Type: model.PlatformProviderKubernetes,
+				Labels: map[string]string{
+					"group": "group-1",
+					"foo":   "foo-1",
+				},
+			},
+			{
+				Name: "provider-2",
+				Type: model.PlatformProviderKubernetes,
+				Labels: map[string]string{
+					"group": "group-2",
+					"foo":   "foo-2",
+				},
+			},
+			{
+				Name: "provider-3",
+				Type: model.PlatformProviderCloudRun,
+				Labels: map[string]string{
+					"group": "group-1",
+					"foo":   "foo-3",
+				},
+			},
+			{
+				Name: "provider-4",
+				Type: model.PlatformProviderKubernetes,
+				Labels: map[string]string{
+					"group": "group-2",
+					"foo":   "foo-4",
+				},
+			},
+		},
+	}
+
+	testcases := []struct {
+		name   string
+		labels map[string]string
+		want   []PipedPlatformProvider
+	}{
+		{
+			name: "empty due to missing label",
+			labels: map[string]string{
+				"group": "group-4",
+			},
+			want: []PipedPlatformProvider{},
+		},
+		{
+			name: "found exactly one provider",
+			labels: map[string]string{
+				"group": "group-1",
+			},
+			want: []PipedPlatformProvider{
+				{
+					Name: "provider-1",
+					Type: model.PlatformProviderKubernetes,
+					Labels: map[string]string{
+						"group": "group-1",
+						"foo":   "foo-1",
+					},
+				},
+			},
+		},
+		{
+			name: "found multiple providers",
+			labels: map[string]string{
+				"group": "group-1",
+			},
+			want: []PipedPlatformProvider{
+				{
+					Name: "provider-1",
+					Type: model.PlatformProviderKubernetes,
+					Labels: map[string]string{
+						"group": "group-1",
+						"foo":   "foo-1",
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := pipedSpec.FindPlatformProvidersByLabels(tc.labels, model.ApplicationKind_KUBERNETES)
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }

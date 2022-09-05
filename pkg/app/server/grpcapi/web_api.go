@@ -1323,10 +1323,9 @@ func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webs
 	}
 
 	return &webservice.GetMeResponse{
-		Subject:     claims.Subject,
-		AvatarUrl:   claims.AvatarURL,
-		ProjectId:   claims.Role.ProjectId,
-		ProjectRole: claims.Role.ProjectRole,
+		Subject:   claims.Subject,
+		AvatarUrl: claims.AvatarURL,
+		ProjectId: claims.Role.ProjectId,
 	}, nil
 }
 
