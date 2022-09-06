@@ -30,7 +30,7 @@ The application configuration file name must be suffixed by `.pipecd.yaml` becau
 {{< tabpane >}}
 {{< tab lang="yaml" header="KubernetesApp" >}}
 # For application's configuration in detail for KubernetesApp, please visit
-# https://pipecd.dev/docs/user-guide/managing-application/define-app-configuration/kubernetes/
+# https://pipecd.dev/docs/user-guide/managing-application/defining-app-configuration/kubernetes/
 
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
@@ -41,7 +41,7 @@ spec:
 {{< /tab >}}
 {{< tab lang="yaml" header="TerraformApp" >}}
 # For application's configuration in detail for TerraformApp, please visit
-# https://pipecd.dev/docs/user-guide/managing-application/define-app-configuration/terraform/
+# https://pipecd.dev/docs/user-guide/managing-application/defining-app-configuration/terraform/
 
 apiVersion: pipecd.dev/v1beta1
 kind: TerraformApp
@@ -52,7 +52,7 @@ spec:
 {{< /tab >}}
 {{< tab lang="yaml" header="LambdaApp" >}}
 # For application's configuration in detail for LambdaApp, please visit
-# https://pipecd.dev/docs/user-guide/managing-application/define-app-configuration/lambda/
+# https://pipecd.dev/docs/user-guide/managing-application/defining-app-configuration/lambda/
 
 apiVersion: pipecd.dev/v1beta1
 kind: LambdaApp
@@ -63,7 +63,7 @@ spec:
 {{< /tab >}}
 {{< tab lang="yaml" header="CloudRunApp" >}}
 # For application's configuration in detail for CloudRunApp, please visit
-# https://pipecd.dev/docs/user-guide/managing-application/define-app-configuration/cloudrun/
+# https://pipecd.dev/docs/user-guide/managing-application/defining-app-configuration/cloudrun/
 
 apiVersion: pipecd.dev/v1beta1
 kind: CloudRunApp
@@ -74,7 +74,7 @@ spec:
 {{< /tab >}}
 {{< tab lang="yaml" header="ECSApp" >}}
 # For application's configuration in detail for ECSApp, please visit
-# https://pipecd.dev/docs/user-guide/managing-application/define-app-configuration/ecs/
+# https://pipecd.dev/docs/user-guide/managing-application/defining-app-configuration/ecs/
 
 apiVersion: pipecd.dev/v1beta1
 kind: ECSApp
@@ -123,7 +123,7 @@ Here are the list of fields in the register form:
 
 After submitting the form, one more step left is adding the application configuration file for that application into the application directory in Git repository same as we prepared in [the above method](/docs-dev/user-guide/managing-application/adding-an-application/#picking-from-a-list-of-unused-apps-suggested-by-pipeds).
 
-Please refer [Define your app's configuration](/docs/user-guide/managing-application/define-app-configuration/) or [pipecd/examples](/docs/user-guide/examples/) for the examples of being supported application kind.
+Please refer [Define your app's configuration](/docs/user-guide/managing-application/defining-app-configuration/) or [pipecd/examples](/docs/user-guide/examples/) for the examples of being supported application kind.
 
 ## Updating an application
 Regardless of which method you used to register the application, the web console can only be used to disable/enable/delete the application, besides the adding operation. All updates on application information must be done via the application configuration file stored in Git as a single source of truth.
