@@ -61,7 +61,7 @@ and other common stages:
 - `WAIT_APPROVAL`
 - `ANALYSIS`
 
-See the description of each stage at [Customize application deployment](/docs/user-guide/managing-application/customize-app-deployment/).
+See the description of each stage at [Customize application deployment](/docs/user-guide/managing-application/customizing-deployment/).
 
 ## Manifest Templating
 

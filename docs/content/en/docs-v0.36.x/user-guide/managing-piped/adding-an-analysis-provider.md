@@ -6,7 +6,7 @@ description: >
   This page describes how to add an analysis provider for doing deployment analysis.
 ---
 
-To enable [Automated deployment analysis](/docs/user-guide/managing-application/customize-application-deployment/automated-deployment-analysis/) feature, you have to set the needed information for Piped to connect to the [Analysis Provider](/docs/concepts/#analysis-provider).
+To enable [Automated deployment analysis](/docs/user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) feature, you have to set the needed information for Piped to connect to the [Analysis Provider](/docs/concepts/#analysis-provider).
 
 Currently, PipeCD supports the following providers:
 - [Prometheus](https://prometheus.io/)
