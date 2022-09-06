@@ -85,7 +85,7 @@ spec:
 {{< /tab >}}
 {{< /tabpane >}}
 
-To define your application deployment pipeline which contains the guideline to show Piped how to deploy your application, please visit [Define your application's configuration](/docs/user-guide/managing-application/define-app-configuration/).
+To define your application deployment pipeline which contains the guideline to show Piped how to deploy your application, please visit [Defining app configuration](/docs/user-guide/managing-application/defining-app-configuration/).
 
 Go to the PipeCD web console on application list page, click the `+ADD` button at the top left corner of the application list page and then go to the `ADD FROM GIT` tab.
 
