@@ -1270,8 +1270,8 @@ func (a *WebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.Disable
 	}
 
 	if err := a.projectStore.DisableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
-		a.logger.Error("failed to disenable static admin login", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to disenable static admin login")
+		a.logger.Error("failed to disable static admin login", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to disable static admin login")
 	}
 	return &webservice.DisableStaticAdminResponse{}, nil
 }
@@ -1347,7 +1347,7 @@ func (a *WebAPI) AddProjectRBACRole(ctx context.Context, req *webservice.AddProj
 
 	if err := a.projectStore.AddProjectRBACRole(ctx, claims.Role.ProjectId, req.Name, req.Policies); err != nil {
 		a.logger.Error("failed to add rbac role", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to add rbac role")
+		return nil, gRPCEntityOperationError(err, "add rbac role")
 	}
 	return &webservice.AddProjectRBACRoleResponse{}, nil
 }
@@ -1365,7 +1365,7 @@ func (a *WebAPI) UpdateProjectRBACRole(ctx context.Context, req *webservice.Upda
 
 	if err := a.projectStore.UpdateProjectRBACRole(ctx, claims.Role.ProjectId, req.Name, req.Policies); err != nil {
 		a.logger.Error("failed to update rbac role", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to update rbac role")
+		return nil, gRPCEntityOperationError(err, "update rbac role")
 	}
 	return &webservice.UpdateProjectRBACRoleResponse{}, nil
 }
@@ -1383,7 +1383,7 @@ func (a *WebAPI) DeleteProjectRBACRole(ctx context.Context, req *webservice.Dele
 
 	if err := a.projectStore.DeleteProjectRBACRole(ctx, claims.Role.ProjectId, req.Name); err != nil {
 		a.logger.Error("failed to delete rbac role", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to delete rbac role")
+		return nil, gRPCEntityOperationError(err, "delete rbac role")
 	}
 	return &webservice.DeleteProjectRBACRoleResponse{}, nil
 }
@@ -1401,7 +1401,7 @@ func (a *WebAPI) AddProjectUserGroup(ctx context.Context, req *webservice.AddPro
 
 	if err := a.projectStore.AddProjectUserGroup(ctx, claims.Role.ProjectId, req.SsoGroup, req.Role); err != nil {
 		a.logger.Error("failed to add user group", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to add user group")
+		return nil, gRPCEntityOperationError(err, "add user group")
 	}
 	return &webservice.AddProjectUserGroupResponse{}, nil
 }
@@ -1419,7 +1419,7 @@ func (a *WebAPI) DeleteProjectUserGroup(ctx context.Context, req *webservice.Del
 
 	if err := a.projectStore.DeleteProjectUserGroup(ctx, claims.Role.ProjectId, req.SsoGroup); err != nil {
 		a.logger.Error("failed to delete user group", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to delete user group")
+		return nil, gRPCEntityOperationError(err, "delete user group")
 	}
 	return &webservice.DeleteProjectUserGroupResponse{}, nil
 }
@@ -1613,7 +1613,7 @@ func (a *WebAPI) GetInsightApplicationCount(ctx context.Context, req *webservice
 			return nil, status.Error(codes.NotFound, "Not found")
 		}
 		a.logger.Error("failed to load application counts", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to load application counts")
+		return nil, gRPCEntityOperationError(err, "load application counts")
 	}
 
 	counts := make([]*model.InsightApplicationCount, 0, len(c.Counts))
@@ -1791,7 +1791,7 @@ func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsReque
 		events, cursor, err = a.eventStore.List(ctx, options)
 		if err != nil {
 			a.logger.Error("failed to get events", zap.Error(err))
-			return nil, status.Error(codes.Internal, "Failed to get events")
+			return nil, gRPCEntityOperationError(err, "get events")
 		}
 		if len(events) == 0 {
 			break
