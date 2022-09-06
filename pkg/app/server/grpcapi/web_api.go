@@ -1613,7 +1613,7 @@ func (a *WebAPI) GetInsightApplicationCount(ctx context.Context, req *webservice
 			return nil, status.Error(codes.NotFound, "Not found")
 		}
 		a.logger.Error("failed to load application counts", zap.Error(err))
-		return nil, gRPCEntityOperationError(err, "load application counts")
+		return nil, status.Error(codes.Internal, "failed to load application counts")
 	}
 
 	counts := make([]*model.InsightApplicationCount, 0, len(c.Counts))
@@ -1791,7 +1791,7 @@ func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsReque
 		events, cursor, err = a.eventStore.List(ctx, options)
 		if err != nil {
 			a.logger.Error("failed to get events", zap.Error(err))
-			return nil, gRPCEntityOperationError(err, "get events")
+			return nil, status.Error(codes.Internal, "Failed to get events")
 		}
 		if len(events) == 0 {
 			break
