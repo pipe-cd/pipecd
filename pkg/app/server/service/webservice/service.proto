@@ -52,7 +52,7 @@ service WebService {
     }
     rpc DeleteOldPipedKeys(DeleteOldPipedKeysRequest) returns (DeleteOldPipedKeysResponse) {
         option (model.rbac).resource = PIPED;
-        option (model.rbac).action = DELETE;
+        option (model.rbac).action = UPDATE;
     }
     rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {
         option (model.rbac).resource = PIPED;
@@ -188,7 +188,7 @@ service WebService {
     }
     rpc AddProjectRBACRole(AddProjectRBACRoleRequest) returns (AddProjectRBACRoleResponse) {
         option (model.rbac).resource = PROJECT;
-        option (model.rbac).action = CREATE;
+        option (model.rbac).action = UPDATE;
     }
     rpc UpdateProjectRBACRole(UpdateProjectRBACRoleRequest) returns (UpdateProjectRBACRoleResponse) {
         option (model.rbac).resource = PROJECT;
@@ -196,15 +196,15 @@ service WebService {
     }
     rpc DeleteProjectRBACRole(DeleteProjectRBACRoleRequest) returns (DeleteProjectRBACRoleResponse) {
         option (model.rbac).resource = PROJECT;
-        option (model.rbac).action = DELETE;
+        option (model.rbac).action = UPDATE;
     }
     rpc AddProjectUserGroup(AddProjectUserGroupRequest) returns (AddProjectUserGroupResponse) {
         option (model.rbac).resource = PROJECT;
-        option (model.rbac).action = CREATE;
+        option (model.rbac).action = UPDATE;
     }
     rpc DeleteProjectUserGroup(DeleteProjectUserGroupRequest) returns (DeleteProjectUserGroupResponse) {
         option (model.rbac).resource = PROJECT;
-        option (model.rbac).action = DELETE;
+        option (model.rbac).action = UPDATE;
     }
 
     // Command

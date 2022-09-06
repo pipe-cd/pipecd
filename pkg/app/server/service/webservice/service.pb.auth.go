@@ -161,7 +161,7 @@ func (a *authorizer) Authorize(ctx context.Context, method string, r model.Role)
 	case "/grpc.service.webservice.WebService/RecreatePipedKey":
 		return rbac.HasPermission(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/DeleteOldPipedKeys":
-		return rbac.HasPermission(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_DELETE)
+		return rbac.HasPermission(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/EnablePiped":
 		return rbac.HasPermission(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/DisablePiped":
@@ -191,15 +191,15 @@ func (a *authorizer) Authorize(ctx context.Context, method string, r model.Role)
 	case "/grpc.service.webservice.WebService/GetMe":
 		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_GET)
 	case "/grpc.service.webservice.WebService/AddProjectRBACRole":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_CREATE)
+		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/UpdateProjectRBACRole":
 		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/DeleteProjectRBACRole":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_DELETE)
+		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/AddProjectUserGroup":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_CREATE)
+		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/DeleteProjectUserGroup":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_DELETE)
+		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	}
 	return false
 }
