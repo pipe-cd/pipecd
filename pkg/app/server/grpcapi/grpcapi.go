@@ -28,6 +28,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/filestore"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -167,7 +168,7 @@ func gRPCEntityOperationError(err error, msg string) error {
 	switch err {
 	case nil:
 		return nil
-	case datastore.ErrNotFound:
+	case datastore.ErrNotFound, filestore.ErrNotFound:
 		return status.Error(codes.NotFound, fmt.Sprintf("Entity was not found to %s", msg))
 	case datastore.ErrInvalidArgument:
 		return status.Error(codes.InvalidArgument, fmt.Sprintf("Invalid argument to %s", msg))

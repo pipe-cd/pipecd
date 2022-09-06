@@ -38,7 +38,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
-	"github.com/pipe-cd/pipecd/pkg/filestore"
 	"github.com/pipe-cd/pipecd/pkg/insight"
 	"github.com/pipe-cd/pipecd/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -1165,12 +1164,9 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 	}
 
 	snapshot, err := a.applicationLiveStateStore.GetStateSnapshot(ctx, req.ApplicationId)
-	if errors.Is(err, filestore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "Application live state not found")
-	}
 	if err != nil {
 		a.logger.Error("failed to get application live state", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get application live state")
+		return nil, gRPCEntityOperationError(err, "get application live state")
 	}
 
 	return &webservice.GetApplicationLiveStateResponse{
@@ -1609,11 +1605,8 @@ func (a *WebAPI) GetInsightApplicationCount(ctx context.Context, req *webservice
 	// TODO: Cache application counts in the cache service.
 	c, err := a.insightStore.LoadApplicationCounts(ctx, claims.Role.ProjectId)
 	if err != nil {
-		if err == filestore.ErrNotFound {
-			return nil, status.Error(codes.NotFound, "Not found")
-		}
 		a.logger.Error("failed to load application counts", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to load application counts")
+		return nil, gRPCEntityOperationError(err, "load application counts")
 	}
 
 	counts := make([]*model.InsightApplicationCount, 0, len(c.Counts))
