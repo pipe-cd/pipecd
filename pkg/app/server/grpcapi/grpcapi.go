@@ -25,6 +25,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandstore"
+	"github.com/pipe-cd/pipecd/pkg/app/server/stagelogstore"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
@@ -164,11 +165,11 @@ func getEncriptionKey(se *model.Piped_SecretEncryption) ([]byte, error) {
 	}
 }
 
-func gRPCEntityOperationError(err error, msg string) error {
+func gRPCStoreError(err error, msg string) error {
 	switch err {
 	case nil:
 		return nil
-	case datastore.ErrNotFound, filestore.ErrNotFound:
+	case datastore.ErrNotFound, filestore.ErrNotFound, stagelogstore.ErrNotFound:
 		return status.Error(codes.NotFound, fmt.Sprintf("Entity was not found to %s", msg))
 	case datastore.ErrInvalidArgument:
 		return status.Error(codes.InvalidArgument, fmt.Sprintf("Invalid argument to %s", msg))
