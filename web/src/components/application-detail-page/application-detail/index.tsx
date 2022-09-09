@@ -279,8 +279,8 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
                   />
                   <DetailTableRow label="Piped" value={piped.name} />
                   <DetailTableRow
-                    label="Cloud Provider"
-                    value={app.cloudProvider}
+                    label="Platform Provider"
+                    value={app.platformProvider}
                   />
 
                   {app.gitPath && (
