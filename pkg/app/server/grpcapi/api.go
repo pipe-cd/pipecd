@@ -149,7 +149,7 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 		Description:      req.Description,
 	}
 	if err := a.applicationStore.Add(ctx, &app); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add application %s", app.Id))
+		return nil, gRPCStoreError(err, fmt.Sprintf("add application %s", app.Id))
 	}
 
 	return &apiservice.AddApplicationResponse{
@@ -274,7 +274,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 
 	apps, cursor, err := a.applicationStore.List(ctx, opts)
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, "failed to list applications")
+		return nil, gRPCStoreError(err, "failed to list applications")
 	}
 
 	return &apiservice.ListApplicationsResponse{
@@ -292,13 +292,13 @@ func (a *API) RenameApplicationConfigFile(ctx context.Context, req *apiservice.R
 	for _, appID := range req.ApplicationIds {
 		app, err := a.applicationStore.Get(ctx, appID)
 		if err != nil {
-			return nil, gRPCEntityOperationError(err, fmt.Sprintf("failed to get application %s", appID))
+			return nil, gRPCStoreError(err, fmt.Sprintf("failed to get application %s", appID))
 		}
 		if app.ProjectId != key.ProjectId {
 			return nil, status.Error(codes.PermissionDenied, fmt.Sprintf("requested application %s does not belong to your project", appID))
 		}
 		if err = a.applicationStore.UpdateConfigFilename(ctx, appID, req.NewFilename); err != nil {
-			return nil, gRPCEntityOperationError(err, fmt.Sprintf("failed to update application %s config file name", appID))
+			return nil, gRPCStoreError(err, fmt.Sprintf("failed to update application %s config file name", appID))
 		}
 	}
 
@@ -371,7 +371,7 @@ func (a *API) updatePiped(ctx context.Context, pipedID string, updater func(cont
 	}
 
 	if err := updater(ctx, pipedID); err != nil {
-		return gRPCEntityOperationError(err, fmt.Sprintf("update piped %s", pipedID))
+		return gRPCStoreError(err, fmt.Sprintf("update piped %s", pipedID))
 	}
 	return nil
 }
@@ -394,7 +394,7 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 		StatusDescription: fmt.Sprintf("It is going to be replaced by %s", req.Data),
 	}
 	if err = a.eventStore.Add(ctx, event); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add event %s", id))
+		return nil, gRPCStoreError(err, fmt.Sprintf("add event %s", id))
 	}
 
 	return &apiservice.RegisterEventResponse{EventId: id}, nil
@@ -423,7 +423,7 @@ func (a *API) RequestPlanPreview(ctx context.Context, req *apiservice.RequestPla
 		},
 	})
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, "list pipeds")
+		return nil, gRPCStoreError(err, "list pipeds")
 	}
 
 	repositories := make(map[string]string, len(pipeds))
