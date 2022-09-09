@@ -2219,7 +2219,8 @@ proto.model.StageStatus = {
   STAGE_SUCCESS: 2,
   STAGE_FAILURE: 3,
   STAGE_CANCELLED: 4,
-  STAGE_SKIPPED: 5
+  STAGE_SKIPPED: 5,
+  STAGE_EXITING: 6
 };
 
 /**

@@ -75,13 +75,19 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		status = e.ensureSync(ctx)
 
 	case model.StageTerraformPlan:
-		status = e.ensurePlan(ctx)
+		var planResult provider.PlanResult
+		status, planResult = e.ensurePlan(ctx)
+		if status == model.StageStatus_STAGE_SUCCESS &&
+			e.StageConfig.TerraformPlanStageOptions.ExitOnNoChanges &&
+			planResult.NoChanges() {
+			status = model.StageStatus_STAGE_EXITING
+		}
 
 	case model.StageTerraformApply:
 		status = e.ensureApply(ctx)
 
 	default:
-		e.LogPersister.Errorf("Unsupported stage %s for cloudrun application", e.Stage.Name)
+		e.LogPersister.Errorf("Unsupported stage %s for terraform application", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -137,7 +143,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *deployExecutor) ensurePlan(ctx context.Context) model.StageStatus {
+func (e *deployExecutor) ensurePlan(ctx context.Context) (model.StageStatus, provider.PlanResult) {
 	var (
 		flags = e.appCfg.Input.CommandFlags
 		envs  = e.appCfg.Input.CommandEnvs
@@ -152,31 +158,31 @@ func (e *deployExecutor) ensurePlan(ctx context.Context) model.StageStatus {
 	)
 
 	if ok := showUsingVersion(ctx, cmd, e.LogPersister); !ok {
-		return model.StageStatus_STAGE_FAILURE
+		return model.StageStatus_STAGE_FAILURE, provider.PlanResult{}
 	}
 
 	if err := cmd.Init(ctx, e.LogPersister); err != nil {
 		e.LogPersister.Errorf("Failed to init (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
+		return model.StageStatus_STAGE_FAILURE, provider.PlanResult{}
 	}
 
 	if ok := selectWorkspace(ctx, cmd, e.appCfg.Input.Workspace, e.LogPersister); !ok {
-		return model.StageStatus_STAGE_FAILURE
+		return model.StageStatus_STAGE_FAILURE, provider.PlanResult{}
 	}
 
 	planResult, err := cmd.Plan(ctx, e.LogPersister)
 	if err != nil {
 		e.LogPersister.Errorf("Failed to plan (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
+		return model.StageStatus_STAGE_FAILURE, provider.PlanResult{}
 	}
 
 	if planResult.NoChanges() {
 		e.LogPersister.Success("No changes to apply")
-		return model.StageStatus_STAGE_SUCCESS
+		return model.StageStatus_STAGE_SUCCESS, planResult
 	}
 
 	e.LogPersister.Successf("Detected %d add, %d change, %d destroy.", planResult.Adds, planResult.Changes, planResult.Destroys)
-	return model.StageStatus_STAGE_SUCCESS
+	return model.StageStatus_STAGE_SUCCESS, planResult
 }
 
 func (e *deployExecutor) ensureApply(ctx context.Context) model.StageStatus {
