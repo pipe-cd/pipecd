@@ -13,7 +13,7 @@ import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import { SerializedError } from "@reduxjs/toolkit";
 import clsx from "clsx";
 import dayjs from "dayjs";
-import { FC, memo } from "react";
+import { FC, memo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { AppSyncStatus } from "~/components/app-sync-status";
@@ -34,6 +34,7 @@ import { SyncStrategy } from "~/modules/deployments";
 import { selectPipedById } from "~/modules/pipeds";
 import { AppLiveState } from "./app-live-state";
 import { SyncStateReason } from "./sync-state-reason";
+import { ArtifactVersion } from "~~/model/common_pb";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -75,6 +76,9 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(1),
   },
   markdown: { flex: 1 },
+  clickable: {
+    cursor: "pointer",
+  },
 }));
 
 export interface ApplicationDetailProps {
@@ -94,6 +98,73 @@ const useIsSyncingApplication = (
 };
 
 const ERROR_MESSAGE = "It was unable to fetch the application.";
+
+const ArtifactVersions: FC<{
+  deployment: ApplicationDeploymentReference.AsObject;
+}> = ({ deployment }) => {
+  const classes = useStyles();
+  const defaultDisplayLimit = 4;
+
+  const [showMore, setShowMore] = useState(false);
+
+  if (deployment.versionsList.length === 0) {
+    return <span>{deployment.version}</span>;
+  }
+
+  const buildLinkableArtifactVersion = (
+    v: ArtifactVersion.AsObject
+  ): React.ReactChild => {
+    return v.name === "" ? (
+      <>
+        <span>{v.version}</span>
+        <br />
+      </>
+    ) : (
+      <>
+        <Link
+          href={v.url.includes("://") ? v.url : `//${v.url}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {v.name}:{v.version}
+          <OpenInNewIcon className={classes.linkIcon} />
+        </Link>
+        <br />
+      </>
+    );
+  };
+
+  if (deployment.versionsList.length <= defaultDisplayLimit) {
+    return (
+      <>{deployment.versionsList.map((v) => buildLinkableArtifactVersion(v))}</>
+    );
+  }
+
+  return !showMore ? (
+    <>
+      {deployment.versionsList.map((v, idx) => {
+        if (idx >= defaultDisplayLimit) return;
+        return buildLinkableArtifactVersion(v);
+      })}
+      <span
+        className={classes.clickable}
+        onClick={() => setShowMore(!showMore)}
+      >
+        show more...
+      </span>
+    </>
+  ) : (
+    <>
+      {deployment.versionsList.map((v) => buildLinkableArtifactVersion(v))}
+      <span
+        className={classes.clickable}
+        onClick={() => setShowMore(!showMore)}
+      >
+        show less...
+      </span>
+    </>
+  );
+};
 
 const MostRecentlySuccessfulDeployment: FC<{
   deployment?: ApplicationDeploymentReference.AsObject;
@@ -127,34 +198,7 @@ const MostRecentlySuccessfulDeployment: FC<{
           />
           <DetailTableRow
             label="Artifact Versions"
-            value={
-              deployment.versionsList.length !== 0 ? (
-                <>
-                  {deployment.versionsList.map((v) =>
-                    v.name == "" ? (
-                      <>
-                        <span>{v.version}</span>
-                        <br />
-                      </>
-                    ) : (
-                      <>
-                        <Link
-                          href={v.url.includes("://") ? v.url : `//${v.url}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          {v.name}:{v.version}
-                          <OpenInNewIcon className={classes.linkIcon} />
-                        </Link>
-                        <br />
-                      </>
-                    )
-                  )}
-                </>
-              ) : (
-                <span>{deployment.version}</span>
-              )
-            }
+            value={<ArtifactVersions deployment={deployment} />}
           />
           <DetailTableRow label="Summary" value={deployment.summary} />
         </tbody>
