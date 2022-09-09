@@ -23,8 +23,8 @@ const [createdAt, startedAt, updatedAt] = createRandTimes(3);
 
 export const dummyApplication: Application.AsObject = {
   id: randomUUID(),
-  cloudProvider: "kubernetes-default",
-  platformProvider: "",
+  cloudProvider: "",
+  platformProvider: "kubernetes-default",
   disabled: false,
   gitPath: {
     configFilename: "",
@@ -73,28 +73,28 @@ export const dummyApps: Record<ApplicationKind, Application.AsObject> = {
     id: randomUUID(),
     name: "Terraform App",
     kind: ApplicationKind.TERRAFORM,
-    cloudProvider: "terraform-default",
+    platformProvider: "terraform-default",
   },
   [ApplicationKind.LAMBDA]: {
     ...dummyApplication,
     id: randomUUID(),
     name: "Lambda App",
     kind: ApplicationKind.LAMBDA,
-    cloudProvider: "lambda-default",
+    platformProvider: "lambda-default",
   },
   [ApplicationKind.CLOUDRUN]: {
     ...dummyApplication,
     id: randomUUID(),
     name: "CloudRun App",
     kind: ApplicationKind.CLOUDRUN,
-    cloudProvider: "cloud-run-default",
+    platformProvider: "cloud-run-default",
   },
   [ApplicationKind.ECS]: {
     ...dummyApplication,
     id: randomUUID(),
     name: "ECS App",
     kind: ApplicationKind.ECS,
-    cloudProvider: "ecs-default",
+    platformProvider: "ecs-default",
   },
 };
 
@@ -130,7 +130,7 @@ export function createApplicationFromObject(
 ): Application {
   const app = new Application();
   app.setId(o.id);
-  app.setCloudProvider(o.cloudProvider);
+  app.setPlatformProvider(o.platformProvider);
   app.setDisabled(o.disabled);
   app.setKind(o.kind);
   app.setName(o.name);
