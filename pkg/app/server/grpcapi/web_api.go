@@ -1263,7 +1263,7 @@ func (a *WebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.Disable
 	}
 
 	if err := a.projectStore.DisableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
-		a.logger.Error("failed to disenable static admin login", zap.Error(err))
+		a.logger.Error("failed to disable static admin login", zap.Error(err))
 		return nil, gRPCStoreError(err, "disenable static admin login")
 	}
 	return &webservice.DisableStaticAdminResponse{}, nil
