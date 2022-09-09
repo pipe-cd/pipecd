@@ -7,6 +7,7 @@ require (
 	cloud.google.com/go/firestore v1.2.0
 	cloud.google.com/go/storage v1.11.0
 	github.com/DataDog/datadog-api-client-go v1.0.0-beta.16
+	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.6.0

@@ -18,6 +18,8 @@ import (
 	"bytes"
 	"fmt"
 	"text/template"
+
+	"github.com/Masterminds/sprig/v3"
 )
 
 // SealedSecretSpec holds the data of a sealed secret.
@@ -67,7 +69,7 @@ func (s *SealedSecretSpec) RenderOriginalContent(dcr sealedSecretDecrypter) ([]b
 		decryptedItems[k] = text
 	}
 
-	tmpl, err := template.New("sealedsecret").Option("missingkey=error").Parse(s.Template)
+	tmpl, err := template.New("sealedsecret").Funcs(sprig.TxtFuncMap()).Option("missingkey=error").Parse(s.Template)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse secret template (%w)", err)
 	}

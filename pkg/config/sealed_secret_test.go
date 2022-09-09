@@ -105,6 +105,16 @@ func TestSealedSecretRenderOrifinalContent(t *testing.T) {
 			expected: "Hello decrypted-encrypted-username",
 		},
 		{
+			name: "render with sprig functions",
+			spec: &SealedSecretSpec{
+				Template: "Hello {{ .encryptedItems.username | quote }}",
+				EncryptedItems: map[string]string{
+					"username": "encrypted-username",
+				},
+			},
+			expected: "Hello \"decrypted-encrypted-username\"",
+		},
+		{
 			name: "missing data",
 			spec: &SealedSecretSpec{
 				Template: "Hello {{ .encryptedItems.username }}, {{ .encryptedItems.other }}",
