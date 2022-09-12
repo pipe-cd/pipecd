@@ -46,7 +46,12 @@ type authorizer struct {
 }
 
 // NewRBACAuthorizer returns an RBACAuthorizer object for checking requested method based on RBAC.
-func NewRBACAuthorizer(ctx context.Context, ds datastore.DataStore, projects map[string]config.ControlPlaneProject, logger *zap.Logger) rpcauth.RBACAuthorizer {
+func NewRBACAuthorizer(
+	ctx context.Context,
+	ds datastore.DataStore,
+	projects map[string]config.ControlPlaneProject,
+	logger *zap.Logger,
+) rpcauth.RBACAuthorizer {
 	w := datastore.WebCommander
 	return &authorizer{
 		projectStore:     datastore.NewProjectStore(ds, w),
@@ -67,7 +72,7 @@ func (a *authorizer) getRBAC(ctx context.Context, projectID string) (*rbac, erro
 	if err == nil {
 		return r.(*rbac), nil
 	}
-	a.logger.Info("unable to get the rbac cache in memory cache", zap.Error(err))
+	a.logger.Debug("unable to get the rbac cache in memory cache", zap.Error(err))
 
 	p, err := a.projectStore.Get(ctx, projectID)
 	if err != nil {
@@ -78,7 +83,7 @@ func (a *authorizer) getRBAC(ctx context.Context, projectID string) (*rbac, erro
 		return nil, err
 	}
 	v := &rbac{p.RbacRoles}
-	if err := a.rbacCache.Put(projectID, v); err != nil {
+	if err = a.rbacCache.Put(projectID, v); err != nil {
 		a.logger.Warn("unable to store the rbac in memory cache",
 			zap.String("project", projectID),
 			zap.Error(err),
