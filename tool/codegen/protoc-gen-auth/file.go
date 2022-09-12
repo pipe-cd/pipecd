@@ -82,6 +82,7 @@ func (a *authorizer) getRBAC(ctx context.Context, projectID string) (*rbac, erro
 		)
 		return nil, err
 	}
+
 	v := &rbac{p.RbacRoles}
 	if err = a.rbacCache.Put(projectID, v); err != nil {
 		a.logger.Warn("unable to store the rbac in memory cache",
