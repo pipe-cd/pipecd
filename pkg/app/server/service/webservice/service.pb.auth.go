@@ -21,6 +21,8 @@ import (
 	"context"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -38,15 +40,22 @@ type authorizer struct {
 	rbacCache    cache.Cache
 	// List of debugging/quickstart projects.
 	projectsInConfig map[string]config.ControlPlaneProject
+	logger           *zap.Logger
 }
 
 // NewRBACAuthorizer returns an RBACAuthorizer object for checking requested method based on RBAC.
-func NewRBACAuthorizer(ctx context.Context, ds datastore.DataStore, projects map[string]config.ControlPlaneProject) rpcauth.RBACAuthorizer {
+func NewRBACAuthorizer(
+	ctx context.Context,
+	ds datastore.DataStore,
+	projects map[string]config.ControlPlaneProject,
+	logger *zap.Logger,
+) rpcauth.RBACAuthorizer {
 	w := datastore.WebCommander
 	return &authorizer{
 		projectStore:     datastore.NewProjectStore(ds, w),
 		rbacCache:        memorycache.NewTTLCache(ctx, 10*time.Minute, 5*time.Minute),
 		projectsInConfig: projects,
+		logger:           logger.Named("authorizer"),
 	}
 }
 
@@ -56,16 +65,29 @@ func (a *authorizer) getRBAC(ctx context.Context, projectID string) (*rbac, erro
 		p.SetBuiltinRBACRoles()
 		return &rbac{p.RbacRoles}, nil
 	}
+
 	r, err := a.rbacCache.Get(projectID)
 	if err == nil {
 		return r.(*rbac), nil
 	}
+	a.logger.Debug("unable to get the rbac cache in memory cache", zap.Error(err))
+
 	p, err := a.projectStore.Get(ctx, projectID)
 	if err != nil {
+		a.logger.Error("failed to get project",
+			zap.String("project", projectID),
+			zap.Error(err),
+		)
 		return nil, err
 	}
+
 	v := &rbac{p.RbacRoles}
-	a.rbacCache.Put(projectID, v)
+	if err = a.rbacCache.Put(projectID, v); err != nil {
+		a.logger.Warn("unable to store the rbac in memory cache",
+			zap.String("project", projectID),
+			zap.Error(err),
+		)
+	}
 	return v, nil
 }
 
