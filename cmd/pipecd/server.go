@@ -284,7 +284,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			rpc.WithGracePeriod(s.gracePeriod),
 			rpc.WithLogger(input.Logger),
 			rpc.WithLogUnaryInterceptor(input.Logger),
-			rpc.WithJWTAuthUnaryInterceptor(verifier, webservice.NewRBACAuthorizer(ctx, ds, cfg.ProjectMap()), input.Logger),
+			rpc.WithJWTAuthUnaryInterceptor(verifier, webservice.NewRBACAuthorizer(ctx, ds, cfg.ProjectMap(), input.Logger), input.Logger),
 			rpc.WithRequestValidationUnaryInterceptor(),
 		}
 		if s.tls {
