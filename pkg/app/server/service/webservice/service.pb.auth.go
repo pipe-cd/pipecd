@@ -19,6 +19,7 @@ package webservice
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"go.uber.org/zap"
@@ -66,11 +67,12 @@ func (a *authorizer) getRBAC(ctx context.Context, projectID string) (*rbac, erro
 		return &rbac{p.RbacRoles}, nil
 	}
 
+	a.logger.Info("call getting a rbac cache")
 	r, err := a.rbacCache.Get(projectID)
 	if err == nil {
 		return r.(*rbac), nil
 	}
-	a.logger.Debug("unable to get the rbac cache in memory cache", zap.Error(err))
+	a.logger.Info("unable to get the rbac cache in memory cache", zap.Error(err))
 
 	p, err := a.projectStore.Get(ctx, projectID)
 	if err != nil {
@@ -98,9 +100,11 @@ type rbac struct {
 func (r *rbac) HasPermission(typ model.ProjectRBACResource_ResourceType, action model.ProjectRBACPolicy_Action) bool {
 	for _, v := range r.Roles {
 		if v.HasPermission(typ, action) {
+			log.Printf("this rbac has a permission: %v", r.Roles)
 			return true
 		}
 	}
+	log.Printf("this rbac does not have a permission: %v", r.Roles)
 	return false
 }
 
@@ -123,9 +127,16 @@ func (r *rbac) FilterByNames(names []string) *rbac {
 func (a *authorizer) Authorize(ctx context.Context, method string, r model.Role) bool {
 	rbac, err := a.getRBAC(ctx, r.ProjectId)
 	if err != nil {
+		a.logger.Error("failed to get the rbac",
+			zap.String("project", r.ProjectId),
+			zap.Error(err),
+		)
 		return false
 	}
+
+	a.logger.Info("success to get the rbac", zap.Any("rbac", rbac))
 	rbac.FilterByNames(r.ProjectRbacRoles)
+	a.logger.Info("sucess to filter the rbac", zap.Any("filtered-rbac", rbac))
 
 	switch method {
 	case "/grpc.service.webservice.WebService/GetCommand":
