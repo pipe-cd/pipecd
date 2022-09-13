@@ -19,7 +19,6 @@ package webservice
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"go.uber.org/zap"
@@ -60,19 +59,34 @@ func NewRBACAuthorizer(
 	}
 }
 
-func (a *authorizer) getRBAC(ctx context.Context, projectID string) (*rbac, error) {
+func (a *authorizer) getProjectRBACRoles(ctx context.Context, projectID string, roles []string) ([]*model.ProjectRBACRole, error) {
+	all, err := a.getAllProjectRBACRoles(ctx, projectID)
+	if err != nil {
+		return nil, err
+	}
+	rs := make(map[string]*model.ProjectRBACRole, len(all))
+	for _, v := range all {
+		rs[v.Name] = v
+	}
+	ret := make([]*model.ProjectRBACRole, 0, len(roles))
+	for _, r := range roles {
+		if v, ok := rs[r]; ok {
+			ret = append(ret, v)
+		}
+	}
+	return ret, nil
+}
+
+func (a *authorizer) getAllProjectRBACRoles(ctx context.Context, projectID string) ([]*model.ProjectRBACRole, error) {
 	if _, ok := a.projectsInConfig[projectID]; ok {
 		p := &model.Project{Id: projectID}
 		p.SetBuiltinRBACRoles()
-		return &rbac{p.RbacRoles}, nil
+		return p.RbacRoles, nil
 	}
 
-	a.logger.Info("call getting a rbac cache")
-	r, err := a.rbacCache.Get(projectID)
-	if err == nil {
-		return r.(*rbac), nil
+	if v, err := a.rbacCache.Get(projectID); err == nil {
+		return v.([]*model.ProjectRBACRole), nil
 	}
-	a.logger.Info("unable to get the rbac cache in memory cache", zap.Error(err))
 
 	p, err := a.projectStore.Get(ctx, projectID)
 	if err != nil {
@@ -83,156 +97,138 @@ func (a *authorizer) getRBAC(ctx context.Context, projectID string) (*rbac, erro
 		return nil, err
 	}
 
-	v := &rbac{p.RbacRoles}
-	if err = a.rbacCache.Put(projectID, v); err != nil {
+	if err = a.rbacCache.Put(projectID, p.RbacRoles); err != nil {
 		a.logger.Warn("unable to store the rbac in memory cache",
 			zap.String("project", projectID),
 			zap.Error(err),
 		)
 	}
-	return v, nil
-}
-
-type rbac struct {
-	Roles []*model.ProjectRBACRole
-}
-
-func (r *rbac) HasPermission(typ model.ProjectRBACResource_ResourceType, action model.ProjectRBACPolicy_Action) bool {
-	for _, v := range r.Roles {
-		if v.HasPermission(typ, action) {
-			log.Printf("this rbac has a permission: %v", r.Roles)
-			return true
-		}
-	}
-	log.Printf("this rbac does not have a permission: %v", r.Roles)
-	return false
-}
-
-func (r *rbac) FilterByNames(names []string) *rbac {
-	roles := make([]*model.ProjectRBACRole, 0, len(names))
-	rs := make(map[string]*model.ProjectRBACRole, len(r.Roles))
-	for _, v := range r.Roles {
-		rs[v.Name] = v
-	}
-	for _, n := range names {
-		if v, ok := rs[n]; ok {
-			roles = append(roles, v)
-		}
-	}
-	r.Roles = roles
-	return r
+	return p.RbacRoles, nil
 }
 
 // Authorize checks whether a role is enough for given gRPC method or not.
 func (a *authorizer) Authorize(ctx context.Context, method string, r model.Role) bool {
-	rbac, err := a.getRBAC(ctx, r.ProjectId)
+	roles, err := a.getProjectRBACRoles(ctx, r.ProjectId, r.ProjectRbacRoles)
 	if err != nil {
-		a.logger.Error("failed to get the rbac",
+		a.logger.Error("failed to get rbac roles",
 			zap.String("project", r.ProjectId),
 			zap.Error(err),
 		)
 		return false
 	}
 
-	a.logger.Info("success to get the rbac", zap.Any("rbac", rbac))
-	rbac.FilterByNames(r.ProjectRbacRoles)
-	a.logger.Info("sucess to filter the rbac", zap.Any("filtered-rbac", rbac))
+	if len(roles) == 0 {
+		a.logger.Error("the user does not have existing RBAC roles",
+			zap.String("project", r.ProjectId),
+			zap.Strings("user-roles", r.ProjectRbacRoles),
+		)
+		return false
+	}
+
+	verify := func(typ model.ProjectRBACResource_ResourceType, action model.ProjectRBACPolicy_Action) bool {
+		for _, r := range roles {
+			if r.HasPermission(typ, action) {
+				return true
+			}
+		}
+		return false
+	}
 
 	switch method {
 	case "/grpc.service.webservice.WebService/GetCommand":
 		return true
 	case "/grpc.service.webservice.WebService/GenerateAPIKey":
-		return rbac.HasPermission(model.ProjectRBACResource_API_KEY, model.ProjectRBACPolicy_CREATE)
+		return verify(model.ProjectRBACResource_API_KEY, model.ProjectRBACPolicy_CREATE)
 	case "/grpc.service.webservice.WebService/DisableAPIKey":
-		return rbac.HasPermission(model.ProjectRBACResource_API_KEY, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_API_KEY, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/ListAPIKeys":
-		return rbac.HasPermission(model.ProjectRBACResource_API_KEY, model.ProjectRBACPolicy_LIST)
+		return verify(model.ProjectRBACResource_API_KEY, model.ProjectRBACPolicy_LIST)
 	case "/grpc.service.webservice.WebService/AddApplication":
-		return rbac.HasPermission(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_CREATE)
+		return verify(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_CREATE)
 	case "/grpc.service.webservice.WebService/UpdateApplication":
-		return rbac.HasPermission(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/EnableApplication":
-		return rbac.HasPermission(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/DisableApplication":
-		return rbac.HasPermission(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/DeleteApplication":
-		return rbac.HasPermission(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_DELETE)
+		return verify(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_DELETE)
 	case "/grpc.service.webservice.WebService/ListApplications":
-		return rbac.HasPermission(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_LIST)
+		return verify(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_LIST)
 	case "/grpc.service.webservice.WebService/SyncApplication":
-		return rbac.HasPermission(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/GetApplication":
-		return rbac.HasPermission(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_GET)
+		return verify(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_GET)
 	case "/grpc.service.webservice.WebService/GenerateApplicationSealedSecret":
-		return rbac.HasPermission(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/ListUnregisteredApplications":
-		return rbac.HasPermission(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_LIST)
+		return verify(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_LIST)
 	case "/grpc.service.webservice.WebService/GetApplicationLiveState":
-		return rbac.HasPermission(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_GET)
+		return verify(model.ProjectRBACResource_APPLICATION, model.ProjectRBACPolicy_GET)
 	case "/grpc.service.webservice.WebService/ListDeployments":
-		return rbac.HasPermission(model.ProjectRBACResource_DEPLOYMENT, model.ProjectRBACPolicy_LIST)
+		return verify(model.ProjectRBACResource_DEPLOYMENT, model.ProjectRBACPolicy_LIST)
 	case "/grpc.service.webservice.WebService/GetDeployment":
-		return rbac.HasPermission(model.ProjectRBACResource_DEPLOYMENT, model.ProjectRBACPolicy_GET)
+		return verify(model.ProjectRBACResource_DEPLOYMENT, model.ProjectRBACPolicy_GET)
 	case "/grpc.service.webservice.WebService/GetStageLog":
-		return rbac.HasPermission(model.ProjectRBACResource_DEPLOYMENT, model.ProjectRBACPolicy_GET)
+		return verify(model.ProjectRBACResource_DEPLOYMENT, model.ProjectRBACPolicy_GET)
 	case "/grpc.service.webservice.WebService/CancelDeployment":
-		return rbac.HasPermission(model.ProjectRBACResource_DEPLOYMENT, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_DEPLOYMENT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/SkipStage":
-		return rbac.HasPermission(model.ProjectRBACResource_DEPLOYMENT, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_DEPLOYMENT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/ApproveStage":
-		return rbac.HasPermission(model.ProjectRBACResource_DEPLOYMENT, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_DEPLOYMENT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/ListEvents":
-		return rbac.HasPermission(model.ProjectRBACResource_EVENT, model.ProjectRBACPolicy_LIST)
+		return verify(model.ProjectRBACResource_EVENT, model.ProjectRBACPolicy_LIST)
 	case "/grpc.service.webservice.WebService/GetInsightData":
-		return rbac.HasPermission(model.ProjectRBACResource_INSIGHT, model.ProjectRBACPolicy_GET)
+		return verify(model.ProjectRBACResource_INSIGHT, model.ProjectRBACPolicy_GET)
 	case "/grpc.service.webservice.WebService/GetInsightApplicationCount":
-		return rbac.HasPermission(model.ProjectRBACResource_INSIGHT, model.ProjectRBACPolicy_GET)
+		return verify(model.ProjectRBACResource_INSIGHT, model.ProjectRBACPolicy_GET)
 	case "/grpc.service.webservice.WebService/RegisterPiped":
-		return rbac.HasPermission(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_CREATE)
+		return verify(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_CREATE)
 	case "/grpc.service.webservice.WebService/UpdatePiped":
-		return rbac.HasPermission(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/RecreatePipedKey":
-		return rbac.HasPermission(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/DeleteOldPipedKeys":
-		return rbac.HasPermission(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/EnablePiped":
-		return rbac.HasPermission(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/DisablePiped":
-		return rbac.HasPermission(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/ListPipeds":
-		return rbac.HasPermission(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_LIST)
+		return verify(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_LIST)
 	case "/grpc.service.webservice.WebService/GetPiped":
-		return rbac.HasPermission(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_GET)
+		return verify(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_GET)
 	case "/grpc.service.webservice.WebService/UpdatePipedDesiredVersion":
-		return rbac.HasPermission(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/RestartPiped":
-		return rbac.HasPermission(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/ListReleasedVersions":
-		return rbac.HasPermission(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_LIST)
+		return verify(model.ProjectRBACResource_PIPED, model.ProjectRBACPolicy_LIST)
 	case "/grpc.service.webservice.WebService/GetProject":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_GET)
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_GET)
 	case "/grpc.service.webservice.WebService/UpdateProjectStaticAdmin":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/EnableStaticAdmin":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/DisableStaticAdmin":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/UpdateProjectSSOConfig":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/UpdateProjectRBACConfig":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/GetMe":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_GET)
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_GET)
 	case "/grpc.service.webservice.WebService/AddProjectRBACRole":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/UpdateProjectRBACRole":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/DeleteProjectRBACRole":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/AddProjectUserGroup":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	case "/grpc.service.webservice.WebService/DeleteProjectUserGroup":
-		return rbac.HasPermission(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
+		return verify(model.ProjectRBACResource_PROJECT, model.ProjectRBACPolicy_UPDATE)
 	}
 	return false
 }
