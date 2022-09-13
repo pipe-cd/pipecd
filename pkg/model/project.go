@@ -547,19 +547,3 @@ func (p *ProjectRBACPolicy) HasPermission(typ ProjectRBACResource_ResourceType, 
 	}
 	return false
 }
-
-func VerifyRBACPermission(typ ProjectRBACResource_ResourceType, action ProjectRBACPolicy_Action, userRoles []string, roles []*ProjectRBACRole) bool {
-	rs := make(map[string]*ProjectRBACRole, len(roles))
-	for _, v := range roles {
-		rs[v.Name] = v
-	}
-	for _, u := range userRoles {
-		if _, ok := rs[u]; !ok {
-			continue
-		}
-		if rs[u].HasPermission(typ, action) {
-			return true
-		}
-	}
-	return false
-}
