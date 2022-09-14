@@ -413,7 +413,7 @@ func (p *Project) AddUserGroup(sso, role string) error {
 	if p.HasUserGroup(sso) {
 		return fmt.Errorf("%s is already being used. The SSO group must be unique", sso)
 	}
-	if !p.HasRBACRole(role) {
+	if !p.HasRBACRole(role) && !isBuiltinRBACRole(role) {
 		return fmt.Errorf("%s role does not exist", role)
 	}
 	p.UserGroups = append(p.UserGroups, &ProjectUserGroup{

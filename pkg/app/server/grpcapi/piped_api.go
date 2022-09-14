@@ -190,7 +190,7 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 		req.SecretEncryption,
 		now,
 	); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update metadata of piped %s", pipedID))
+		return nil, gRPCStoreError(err, fmt.Sprintf("update metadata of piped %s", pipedID))
 	}
 
 	piped, err := getPiped(ctx, a.pipedStore, pipedID, a.logger)
@@ -234,7 +234,7 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 	// TODO: Support pagination in ListApplications
 	apps, _, err := a.applicationStore.List(ctx, opts)
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, "fetch applications")
+		return nil, gRPCStoreError(err, "fetch applications")
 	}
 
 	return &pipedservice.ListApplicationsResponse{
@@ -253,7 +253,7 @@ func (a *PipedAPI) ReportApplicationSyncState(ctx context.Context, req *pipedser
 	}
 
 	if err := a.applicationStore.UpdateSyncState(ctx, req.ApplicationId, req.State); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update sync state of application %s", req.ApplicationId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("update sync state of application %s", req.ApplicationId))
 	}
 
 	return &pipedservice.ReportApplicationSyncStateResponse{}, nil
@@ -270,7 +270,7 @@ func (a *PipedAPI) ReportApplicationDeployingStatus(ctx context.Context, req *pi
 	}
 
 	if err = a.applicationStore.UpdateDeployingStatus(ctx, req.ApplicationId, req.Deploying); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update deploying status of application %s", req.ApplicationId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("update deploying status of application %s", req.ApplicationId))
 	}
 
 	return &pipedservice.ReportApplicationDeployingStatusResponse{}, nil
@@ -289,7 +289,7 @@ func (a *PipedAPI) ReportApplicationMostRecentDeployment(ctx context.Context, re
 
 	err = a.applicationStore.UpdateMostRecentDeployment(ctx, req.ApplicationId, req.Status, req.Deployment)
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update deployment reference of application %s", req.ApplicationId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("update deployment reference of application %s", req.ApplicationId))
 	}
 	return &pipedservice.ReportApplicationMostRecentDeploymentResponse{}, nil
 }
@@ -306,7 +306,7 @@ func (a *PipedAPI) GetApplicationMostRecentDeployment(ctx context.Context, req *
 
 	app, err := a.applicationStore.Get(ctx, req.ApplicationId)
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("get application %s", req.ApplicationId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("get application %s", req.ApplicationId))
 	}
 
 	if req.Status == model.DeploymentStatus_DEPLOYMENT_SUCCESS && app.MostRecentlySuccessfulDeployment != nil {
@@ -369,7 +369,7 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 
 	deployments, cursor, err := a.deploymentStore.List(ctx, opts)
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("list deployments of piped %s", pipedID))
+		return nil, gRPCStoreError(err, fmt.Sprintf("list deployments of piped %s", pipedID))
 	}
 
 	return &pipedservice.ListNotCompletedDeploymentsResponse{
@@ -391,7 +391,7 @@ func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.Creat
 	}
 
 	if err := a.deploymentStore.Add(ctx, req.Deployment); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add deployment %s", req.Deployment.Id))
+		return nil, gRPCStoreError(err, fmt.Sprintf("add deployment %s", req.Deployment.Id))
 	}
 	return &pipedservice.CreateDeploymentResponse{}, nil
 }
@@ -418,7 +418,7 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 		req.Versions,
 		req.Stages,
 	); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update deployment %s as planned", req.DeploymentId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("update deployment %s as planned", req.DeploymentId))
 	}
 	return &pipedservice.ReportDeploymentPlannedResponse{}, nil
 }
@@ -435,7 +435,7 @@ func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *piped
 	}
 
 	if err = a.deploymentStore.UpdateStatus(ctx, req.DeploymentId, req.Status, req.StatusReason); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update status of deployment %s", req.DeploymentId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("update status of deployment %s", req.DeploymentId))
 	}
 	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
 }
@@ -452,7 +452,7 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 	}
 
 	if err = a.deploymentStore.UpdateToCompleted(ctx, req.DeploymentId, req.Status, req.StageStatuses, req.StatusReason, req.CompletedAt); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update deployment %s as completed", req.DeploymentId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("update deployment %s as completed", req.DeploymentId))
 	}
 	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
 }
@@ -468,7 +468,7 @@ func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice
 	}
 
 	if err = a.deploymentStore.UpdateMetadata(ctx, req.DeploymentId, req.Metadata); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update metadata of deployment %s", req.DeploymentId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("update metadata of deployment %s", req.DeploymentId))
 	}
 	return &pipedservice.SaveDeploymentMetadataResponse{}, nil
 }
@@ -485,7 +485,7 @@ func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.Save
 	}
 
 	if err = a.deploymentStore.UpdateStageMetadata(ctx, req.DeploymentId, req.StageId, req.Metadata); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update stage metadata of deployment %s", req.DeploymentId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("update stage metadata of deployment %s", req.DeploymentId))
 	}
 	return &pipedservice.SaveStageMetadataResponse{}, nil
 }
@@ -554,7 +554,7 @@ func (a *PipedAPI) ReportStageStatusChanged(ctx context.Context, req *pipedservi
 		req.RetriedCount,
 		req.CompletedAt,
 	); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update stage status of deployment %s", req.DeploymentId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("update stage status of deployment %s", req.DeploymentId))
 	}
 
 	return &pipedservice.ReportStageStatusChangedResponse{}, nil
@@ -576,7 +576,7 @@ func (a *PipedAPI) ListUnhandledCommands(ctx context.Context, req *pipedservice.
 
 	cmds, err := a.commandStore.ListUnhandledCommands(ctx, pipedID)
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("list unhandled commands of piped %s", pipedID))
+		return nil, gRPCStoreError(err, fmt.Sprintf("list unhandled commands of piped %s", pipedID))
 	}
 
 	return &pipedservice.ListUnhandledCommandsResponse{
@@ -612,7 +612,7 @@ func (a *PipedAPI) ReportCommandHandled(ctx context.Context, req *pipedservice.R
 	}
 
 	if err = a.commandStore.UpdateCommandHandled(ctx, req.CommandId, req.Status, req.Metadata, req.HandledAt); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("update command %s as handled", req.CommandId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("update command %s as handled", req.CommandId))
 	}
 
 	return &pipedservice.ReportCommandHandledResponse{}, nil
@@ -621,7 +621,7 @@ func (a *PipedAPI) ReportCommandHandled(ctx context.Context, req *pipedservice.R
 func (a *PipedAPI) getCommand(ctx context.Context, commandID string) (*model.Command, error) {
 	cmd, err := a.commandStore.GetCommand(ctx, commandID)
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("get command %s", commandID))
+		return nil, gRPCStoreError(err, fmt.Sprintf("get command %s", commandID))
 	}
 	return cmd, nil
 }
@@ -794,7 +794,7 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 
 	events, _, err := a.eventStore.List(ctx, opts)
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, "list events")
+		return nil, gRPCStoreError(err, "list events")
 	}
 
 	return &pipedservice.ListEventsResponse{
@@ -811,7 +811,7 @@ func (a *PipedAPI) ReportEventsHandled(ctx context.Context, req *pipedservice.Re
 
 	for _, id := range req.EventIds {
 		if err := a.eventStore.UpdateStatus(ctx, id, model.EventStatus_EVENT_SUCCESS, fmt.Sprintf("successfully handled by %q piped", pipedID)); err != nil {
-			return nil, gRPCEntityOperationError(err, fmt.Sprintf("update event %s as handled", id))
+			return nil, gRPCStoreError(err, fmt.Sprintf("update event %s as handled", id))
 		}
 	}
 
@@ -826,7 +826,7 @@ func (a *PipedAPI) ReportEventStatuses(ctx context.Context, req *pipedservice.Re
 	for _, e := range req.Events {
 		// TODO: For success status, change all previous events with the same event key to OUTDATED
 		if err := a.eventStore.UpdateStatus(ctx, e.Id, e.Status, e.StatusDescription); err != nil {
-			return nil, gRPCEntityOperationError(err, fmt.Sprintf("update status of event %s", e.Id))
+			return nil, gRPCStoreError(err, fmt.Sprintf("update status of event %s", e.Id))
 		}
 	}
 	return &pipedservice.ReportEventStatusesResponse{}, nil
@@ -902,7 +902,7 @@ func (a *PipedAPI) UpdateApplicationConfigurations(ctx context.Context, req *pip
 	}
 	for _, appInfo := range req.Applications {
 		if err := a.applicationStore.UpdateBasicInfo(ctx, appInfo.Id, appInfo.Name, appInfo.Description, appInfo.Labels); err != nil {
-			return nil, gRPCEntityOperationError(err, fmt.Sprintf("update config of application %s", appInfo.Id))
+			return nil, gRPCStoreError(err, fmt.Sprintf("update config of application %s", appInfo.Id))
 		}
 	}
 
@@ -1158,7 +1158,7 @@ func (a *PipedAPI) validateAppBelongsToPiped(ctx context.Context, appID, pipedID
 
 	app, err := a.applicationStore.Get(ctx, appID)
 	if err != nil {
-		return gRPCEntityOperationError(err, fmt.Sprintf("get application %s", appID))
+		return gRPCStoreError(err, fmt.Sprintf("get application %s", appID))
 	}
 
 	a.appPipedCache.Put(appID, app.PipedId)
@@ -1182,7 +1182,7 @@ func (a *PipedAPI) validateDeploymentBelongsToPiped(ctx context.Context, deploym
 
 	deployment, err := a.deploymentStore.Get(ctx, deploymentID)
 	if err != nil {
-		return gRPCEntityOperationError(err, fmt.Sprintf("get deployment %s", deploymentID))
+		return gRPCStoreError(err, fmt.Sprintf("get deployment %s", deploymentID))
 	}
 
 	a.deploymentPipedCache.Put(deploymentID, deployment.PipedId)

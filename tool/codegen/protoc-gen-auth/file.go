@@ -23,6 +23,8 @@ import (
 	"context"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -40,72 +42,99 @@ type authorizer struct {
 	rbacCache    cache.Cache
 	// List of debugging/quickstart projects.
 	projectsInConfig map[string]config.ControlPlaneProject
+	logger           *zap.Logger
 }
 
 // NewRBACAuthorizer returns an RBACAuthorizer object for checking requested method based on RBAC.
-func NewRBACAuthorizer(ctx context.Context, ds datastore.DataStore, projects map[string]config.ControlPlaneProject) rpcauth.RBACAuthorizer {
+func NewRBACAuthorizer(
+	ctx context.Context,
+	ds datastore.DataStore,
+	projects map[string]config.ControlPlaneProject,
+	logger *zap.Logger,
+) rpcauth.RBACAuthorizer {
 	w := datastore.WebCommander
 	return &authorizer{
 		projectStore:     datastore.NewProjectStore(ds, w),
 		rbacCache:        memorycache.NewTTLCache(ctx, 10*time.Minute, 5*time.Minute),
 		projectsInConfig: projects,
+		logger:           logger.Named("authorizer"),
 	}
 }
 
-func (a *authorizer) getRBAC(ctx context.Context, projectID string) (*rbac, error) {
-	if _, ok := a.projectsInConfig[projectID]; ok {
-		p := &model.Project{Id: projectID}
-		p.SetBuiltinRBACRoles()
-		return &rbac{p.RbacRoles}, nil
-	}
-	r, err := a.rbacCache.Get(projectID)
-	if err == nil {
-		return r.(*rbac), nil
-	}
-	p, err := a.projectStore.Get(ctx, projectID)
+func (a *authorizer) getProjectRBACRoles(ctx context.Context, projectID string, roles []string) ([]*model.ProjectRBACRole, error) {
+	all, err := a.getAllProjectRBACRoles(ctx, projectID)
 	if err != nil {
 		return nil, err
 	}
-	v := &rbac{p.RbacRoles}
-	a.rbacCache.Put(projectID, v)
-	return v, nil
-}
-
-type rbac struct {
-	Roles []*model.ProjectRBACRole
-}
-
-func (r *rbac) HasPermission(typ model.ProjectRBACResource_ResourceType, action model.ProjectRBACPolicy_Action) bool {
-	for _, v := range r.Roles {
-		if v.HasPermission(typ, action) {
-			return true
-		}
-	}
-	return false
-}
-
-func (r *rbac) FilterByNames(names []string) *rbac {
-	roles := make([]*model.ProjectRBACRole, 0, len(names))
-	rs := make(map[string]*model.ProjectRBACRole, len(r.Roles))
-	for _, v := range r.Roles {
+	rs := make(map[string]*model.ProjectRBACRole, len(all))
+	for _, v := range all {
 		rs[v.Name] = v
 	}
-	for _, n := range names {
-		if v, ok := rs[n]; ok {
-			roles = append(roles, v)
+	ret := make([]*model.ProjectRBACRole, 0, len(roles))
+	for _, r := range roles {
+		if v, ok := rs[r]; ok {
+			ret = append(ret, v)
 		}
 	}
-	r.Roles = roles
-	return r
+	return ret, nil
+}
+
+func (a *authorizer) getAllProjectRBACRoles(ctx context.Context, projectID string) ([]*model.ProjectRBACRole, error) {
+	if _, ok := a.projectsInConfig[projectID]; ok {
+		p := &model.Project{Id: projectID}
+		p.SetBuiltinRBACRoles()
+		return p.RbacRoles, nil
+	}
+
+	if v, err := a.rbacCache.Get(projectID); err == nil {
+		return v.([]*model.ProjectRBACRole), nil
+	}
+
+	p, err := a.projectStore.Get(ctx, projectID)
+	if err != nil {
+		a.logger.Error("failed to get project",
+			zap.String("project", projectID),
+			zap.Error(err),
+		)
+		return nil, err
+	}
+
+	if err = a.rbacCache.Put(projectID, p.RbacRoles); err != nil {
+		a.logger.Warn("unable to store the rbac in memory cache",
+			zap.String("project", projectID),
+			zap.Error(err),
+		)
+	}
+	return p.RbacRoles, nil
 }
 
 // Authorize checks whether a role is enough for given gRPC method or not.
 func (a *authorizer) Authorize(ctx context.Context, method string, r model.Role) bool {
-	rbac, err := a.getRBAC(ctx, r.ProjectId)
+	roles, err := a.getProjectRBACRoles(ctx, r.ProjectId, r.ProjectRbacRoles)
 	if err != nil {
+		a.logger.Error("failed to get rbac roles",
+			zap.String("project", r.ProjectId),
+			zap.Error(err),
+		)
 		return false
 	}
-	rbac.FilterByNames(r.ProjectRbacRoles)
+
+	if len(roles) == 0 {
+		a.logger.Error("the user does not have existing RBAC roles",
+			zap.String("project", r.ProjectId),
+			zap.Strings("user-roles", r.ProjectRbacRoles),
+		)
+		return false
+	}
+
+	verify := func(typ model.ProjectRBACResource_ResourceType, action model.ProjectRBACPolicy_Action) bool {
+		for _, r := range roles {
+			if r.HasPermission(typ, action) {
+				return true
+			}
+		}
+		return false
+	}
 
 	switch method {
 	{{- range .Methods }}
@@ -113,7 +142,7 @@ func (a *authorizer) Authorize(ctx context.Context, method string, r model.Role)
 	        {{- if .Ignored }}
 			return true
 		{{- else }}
-			return rbac.HasPermission(model.ProjectRBACResource_{{ .Resource }}, model.ProjectRBACPolicy_{{ .Action }})
+			return verify(model.ProjectRBACResource_{{ .Resource }}, model.ProjectRBACPolicy_{{ .Action }})
 		{{- end }}
 	{{- end }}
 	}
