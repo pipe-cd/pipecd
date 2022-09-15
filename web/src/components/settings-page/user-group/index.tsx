@@ -22,6 +22,11 @@ import { UI_TEXT_ADD } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { fetchProject, addUserGroup, deleteUserGroup } from "~/modules/project";
 import { AddUserGroupDialog } from "./components/add-user-group-dialog";
+import { addToast } from "~/modules/toasts";
+import {
+  ADD_USER_GROUP_SUCCESS,
+  DELETE_USER_GROUP_SUCCESS,
+} from "~/constants/toast-text";
 
 const useStyles = makeStyles(() => ({
   toolbarSpacer: {
@@ -42,6 +47,12 @@ export const SettingsUserGroupPage: FC = memo(function SettingsUserGroupPage() {
     (values: { ssoGroup: string; role: string }) => {
       dispatch(addUserGroup(values)).then(() => {
         dispatch(fetchProject());
+        dispatch(
+          addToast({
+            message: ADD_USER_GROUP_SUCCESS,
+            severity: "success",
+          })
+        );
       });
     },
     [dispatch]
@@ -67,6 +78,12 @@ export const SettingsUserGroupPage: FC = memo(function SettingsUserGroupPage() {
       setAnchorEl(null);
       dispatch(deleteUserGroup({ ssoGroup: ssoGroup })).then(() => {
         dispatch(fetchProject());
+        dispatch(
+          addToast({
+            message: DELETE_USER_GROUP_SUCCESS,
+            severity: "success",
+          })
+        );
       });
     },
     [dispatch]
@@ -88,7 +105,7 @@ export const SettingsUserGroupPage: FC = memo(function SettingsUserGroupPage() {
 
       <Box display="flex" flex={1} overflow="hidden">
         <TableContainer component={Paper} square>
-          <Table aria-label="piped list" size="small" stickyHeader>
+          <Table aria-label="user group list" size="small" stickyHeader>
             <TableHead>
               <TableRow>
                 <TableCell colSpan={2}>Group</TableCell>
