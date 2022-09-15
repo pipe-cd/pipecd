@@ -89,6 +89,8 @@ describe("projectSlice reducer", () => {
           sharedSSO: null,
           staticAdminDisabled: false,
           username: null,
+          userGroups: [],
+          rbacRoles: [],
         },
         {
           type: updateStaticAdmin.fulfilled.type,
@@ -116,6 +118,8 @@ describe("projectSlice reducer", () => {
           sharedSSO: null,
           staticAdminDisabled: false,
           username: null,
+          userGroups: [],
+          rbacRoles: [],
         },
         {
           type: updateStaticAdmin.rejected.type,

@@ -12,10 +12,12 @@ import {
   PAGE_PATH_SETTINGS_API_KEY,
   PAGE_PATH_SETTINGS_PIPED,
   PAGE_PATH_SETTINGS_PROJECT,
+  PAGE_PATH_SETTINGS_USER_GROUP,
 } from "~/constants/path";
 import { APIKeyPage } from "./api-key";
 import { SettingsPipedPage } from "./piped";
 import { SettingsProjectPage } from "./project";
+import { SettingsUserGroupPage } from "./user-group";
 
 const drawerWidth = 240;
 
@@ -55,6 +57,7 @@ const useStyles = makeStyles((theme) => ({
 const MENU_ITEMS = [
   ["Piped", PAGE_PATH_SETTINGS_PIPED],
   ["Project", PAGE_PATH_SETTINGS_PROJECT],
+  ["User Group", PAGE_PATH_SETTINGS_USER_GROUP],
   ["API Key", PAGE_PATH_SETTINGS_API_KEY],
 ];
 
@@ -100,6 +103,11 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
             exact
             path={PAGE_PATH_SETTINGS_PROJECT}
             component={SettingsProjectPage}
+          />
+          <Route
+            exact
+            path={PAGE_PATH_SETTINGS_USER_GROUP}
+            component={SettingsUserGroupPage}
           />
           <Route
             exact

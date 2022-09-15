@@ -11,6 +11,10 @@ import {
   UpdateProjectSSOConfigResponse,
   UpdateProjectStaticAdminRequest,
   UpdateProjectStaticAdminResponse,
+  AddProjectUserGroupRequest,
+  AddProjectUserGroupResponse,
+  DeleteProjectUserGroupRequest,
+  DeleteProjectUserGroupResponse,
 } from "pipecd/web/api_client/service_pb";
 import {
   ProjectRBACConfig,
@@ -88,4 +92,28 @@ export const updateGitHubSSO = ({
   sso.setGithub(github);
   req.setSso(sso);
   return apiRequest(req, apiClient.updateProjectSSOConfig);
+};
+
+export const addUserGroup = ({
+  ssoGroup,
+  role,
+}: {
+  ssoGroup: string;
+  role: string;
+}): Promise<AddProjectUserGroupResponse.AsObject> => {
+  const req = new AddProjectUserGroupRequest();
+  req.setSsoGroup(ssoGroup);
+  req.setRole(role);
+  console.log("req: ", req);
+  return apiRequest(req, apiClient.addProjectUserGroup);
+};
+
+export const deleteUserGroup = ({
+  ssoGroup,
+}: {
+  ssoGroup: string;
+}): Promise<DeleteProjectUserGroupResponse.AsObject> => {
+  const req = new DeleteProjectUserGroupRequest();
+  req.setSsoGroup(ssoGroup);
+  return apiRequest(req, apiClient.deleteProjectUserGroup);
 };
