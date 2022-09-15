@@ -16,5 +16,5 @@ spec:
     decryptionTargets:
       - secret.yaml
   description: |
-    This app demonstrates how to use [Secret Management](https://pipecd.dev/docs/user-guide/secret-management/) feature to store an encrypted credential in Git for embed in a Kubernetes manifest.\
-    References: [adding a new app](https://pipecd.dev/docs/user-guide/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
+    This app demonstrates how to use [Secret Management](https://pipecd.dev/docs/user-guide/managing-application/secret-management/) feature to store an encrypted credential in Git for embed in a Kubernetes manifest.\
+    References: [adding a new app](https://pipecd.dev/docs/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
