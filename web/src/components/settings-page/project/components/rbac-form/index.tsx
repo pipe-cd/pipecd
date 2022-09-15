@@ -1,69 +1,65 @@
 import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
+  Box,
+  Paper,
   IconButton,
-  TextField,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Typography,
 } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core/styles";
 import EditIcon from "@material-ui/icons/Edit";
-import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
-import * as React from "react";
-import { FC, memo, useState } from "react";
+import { FC, memo } from "react";
 import { RBAC_DESCRIPTION } from "~/constants/text";
-import { UPDATE_RBAC_SUCCESS } from "~/constants/toast-text";
-import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { fetchProject, Teams, updateRBAC } from "~/modules/project";
-import { addToast } from "~/modules/toasts";
+import { useAppSelector } from "~/hooks/redux";
 import { useProjectSettingStyles } from "~/styles/project-setting";
-import { ProjectSettingLabeledText } from "../project-setting-labeled-text";
+import {
+  RBACPolicy,
+  RBAC_RESOURCE_TYPE_TEXT,
+  RBAC_ACTION_TYPE_TEXT,
+} from "~/modules/project";
 
 const SECTION_TITLE = "Role-Based Access Control";
-const DIALOG_TITLE = `Edit ${SECTION_TITLE}`;
-const TEAM_LABELS = {
-  ADMIN: "Admin Team",
-  EDITOR: "Editor Team",
-  VIEWER: "Viewer Team",
-};
+const RESOURCE_ACTION_SEPARATOR = ";";
+const RESOURCES_KEY = "resources";
+const ACTIONS_KEY = "actions";
+
+const useStyles = makeStyles((theme) => ({
+  selectTableCell: {
+    width: 120,
+  },
+}));
 
 export const RBACForm: FC = memo(function RBACForm() {
+  const classes = useStyles();
+  const rbacRoles = useAppSelector((state) => state.project.rbacRoles);
   const projectSettingClasses = useProjectSettingStyles();
-  const teams = useAppSelector<Teams | null | undefined>(
-    (state) => state.project.teams
-  );
-  const dispatch = useAppDispatch();
-  const [isEdit, setIsEdit] = useState(false);
-  const [admin, setAdmin] = useState("");
-  const [editor, setEditor] = useState("");
-  const [viewer, setViewer] = useState("");
+  const formalizePoliciesFromPoliciesList = ({
+    policiesList,
+  }: {
+    policiesList: Array<RBACPolicy>;
+  }): Array<string> => {
+    const policies: Array<string> = [];
+    policiesList.map((policy, i) => {
+      const resources: Array<string> = [];
+      policy.resourcesList.map((resource) => {
+        resources.push(RBAC_RESOURCE_TYPE_TEXT[resource.type]);
+      });
 
-  const handleClose = (): void => {
-    setIsEdit(false);
-  };
-  const handleSave = (e: React.FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
-    dispatch(updateRBAC({ admin, editor, viewer })).then((result) => {
-      if (updateRBAC.fulfilled.match(result)) {
-        dispatch(fetchProject());
-        dispatch(
-          addToast({
-            message: UPDATE_RBAC_SUCCESS,
-            severity: "success",
-          })
-        );
-      }
+      const actions: Array<string> = [];
+      policy.actionsList.map((action) => {
+        actions.push(RBAC_ACTION_TYPE_TEXT[action]);
+      });
+
+      const resource = RESOURCES_KEY + "=" + resources.join(",");
+      const action = ACTIONS_KEY + "=" + actions.join(",");
+      policies.push(resource + RESOURCE_ACTION_SEPARATOR + action);
     });
-    setIsEdit(false);
+    return policies;
   };
-
-  const isNotModified =
-    !!teams &&
-    teams.admin === admin &&
-    teams.editor === editor &&
-    teams.viewer === viewer;
 
   return (
     <>
@@ -84,94 +80,38 @@ export const RBACForm: FC = memo(function RBACForm() {
         {RBAC_DESCRIPTION}
       </Typography>
 
-      <div className={projectSettingClasses.valuesWrapper}>
-        {teams ? (
-          <>
-            <div className={projectSettingClasses.values}>
-              <ProjectSettingLabeledText
-                label={TEAM_LABELS.ADMIN}
-                value={teams.admin}
-              />
-              <ProjectSettingLabeledText
-                label={TEAM_LABELS.EDITOR}
-                value={teams.editor}
-              />
-              <ProjectSettingLabeledText
-                label={TEAM_LABELS.VIEWER}
-                value={teams.viewer}
-              />
-            </div>
-          </>
-        ) : (
-          <div className={projectSettingClasses.values}>
-            {teams === undefined ? (
-              <>
-                <Skeleton width={200} height={28} />
-                <Skeleton width={200} height={28} />
-                <Skeleton width={200} height={28} />
-              </>
-            ) : (
-              <>
-                <Typography variant="body1" color="textSecondary">
-                  Not Configured
-                </Typography>
-              </>
-            )}
-          </div>
-        )}
-        <div>
-          <IconButton onClick={() => setIsEdit(true)}>
-            <EditIcon />
-          </IconButton>
-        </div>
-      </div>
-
-      <Dialog
-        open={isEdit}
-        onEnter={() => {
-          setAdmin(teams?.admin ?? "");
-          setEditor(teams?.editor ?? "");
-          setViewer(teams?.viewer ?? "");
-        }}
-        onClose={handleClose}
-      >
-        <form onSubmit={handleSave}>
-          <DialogTitle>{DIALOG_TITLE}</DialogTitle>
-          <DialogContent>
-            <TextField
-              value={admin}
-              variant="outlined"
-              margin="dense"
-              label={TEAM_LABELS.ADMIN}
-              fullWidth
-              autoFocus
-              onChange={(e) => setAdmin(e.currentTarget.value)}
-            />
-            <TextField
-              value={editor}
-              variant="outlined"
-              margin="dense"
-              label={TEAM_LABELS.EDITOR}
-              fullWidth
-              onChange={(e) => setEditor(e.currentTarget.value)}
-            />
-            <TextField
-              value={viewer}
-              variant="outlined"
-              margin="dense"
-              label={TEAM_LABELS.VIEWER}
-              fullWidth
-              onChange={(e) => setViewer(e.currentTarget.value)}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>{UI_TEXT_CANCEL}</Button>
-            <Button type="submit" color="primary" disabled={isNotModified}>
-              {UI_TEXT_SAVE}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
+      <Box display="flex" flex={1} overflow="hidden">
+        <TableContainer component={Paper} square>
+          <Table aria-label="rbac roles list" size="small" stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell align="left" />
+                <TableCell colSpan={2}>Role</TableCell>
+                <TableCell>Policies</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {rbacRoles.map((role) => (
+                <TableRow key={role.name}>
+                  <TableCell className={classes.selectTableCell}>
+                    <IconButton aria-label="edit" disabled={role.isBuiltin}>
+                      <EditIcon />
+                    </IconButton>
+                  </TableCell>
+                  <TableCell colSpan={2}>{role.name}</TableCell>
+                  <TableCell colSpan={2}>
+                    {formalizePoliciesFromPoliciesList({
+                      policiesList: role.policiesList,
+                    }).map((policy, i) => (
+                      <p key={i}>{policy}</p>
+                    ))}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
     </>
   );
 });

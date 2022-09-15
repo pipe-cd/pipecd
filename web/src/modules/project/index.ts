@@ -4,6 +4,8 @@ import {
   ProjectSSOConfig,
   ProjectUserGroup,
   ProjectRBACRole,
+  ProjectRBACPolicy,
+  ProjectRBACResource,
 } from "pipecd/web/model/project_pb";
 import * as projectAPI from "~/api/project";
 import type { AppState } from "~/store";
@@ -12,6 +14,31 @@ export type GitHubSSO = ProjectSSOConfig.GitHub.AsObject;
 export type Teams = ProjectRBACConfig.AsObject;
 export type UserGroup = ProjectUserGroup.AsObject;
 export type RBACRole = ProjectRBACRole.AsObject;
+export type RBACPolicy = ProjectRBACPolicy.AsObject;
+
+export const RBAC_RESOURCE_TYPE_TEXT: Record<
+  ProjectRBACResource.ResourceType,
+  string
+> = {
+  [ProjectRBACResource.ResourceType.ALL]: "*",
+  [ProjectRBACResource.ResourceType.APPLICATION]: "application",
+  [ProjectRBACResource.ResourceType.DEPLOYMENT]: "deployment",
+  [ProjectRBACResource.ResourceType.EVENT]: "event",
+  [ProjectRBACResource.ResourceType.PIPED]: "piped",
+  [ProjectRBACResource.ResourceType.DEPLOYMENT_CHAIN]: "deploymentChain",
+  [ProjectRBACResource.ResourceType.PROJECT]: "project",
+  [ProjectRBACResource.ResourceType.API_KEY]: "apiKey",
+  [ProjectRBACResource.ResourceType.INSIGHT]: "insight",
+};
+
+export const RBAC_ACTION_TYPE_TEXT: Record<ProjectRBACPolicy.Action, string> = {
+  [ProjectRBACPolicy.Action.ALL]: "*",
+  [ProjectRBACPolicy.Action.GET]: "get",
+  [ProjectRBACPolicy.Action.LIST]: "list",
+  [ProjectRBACPolicy.Action.CREATE]: "create",
+  [ProjectRBACPolicy.Action.UPDATE]: "update",
+  [ProjectRBACPolicy.Action.DELETE]: "delete",
+};
 
 export interface ProjectState {
   id: string | null;
