@@ -108,7 +108,7 @@ pipectl application add \
     --app-name=simple \
     --app-kind=KUBERNETES \
     --piped-id=PIPED_ID \
-    --cloud-provider=kubernetes-default \
+    --platform-provider=kubernetes-default \
     --repo-id=examples \
     --app-dir=kubernetes/simple
 ```
@@ -127,7 +127,7 @@ Flags:
       --app-dir string            The relative path from the root of repository to the application directory.
       --app-kind string           The kind of application. (KUBERNETES|TERRAFORM|LAMBDA|CLOUDRUN)
       --app-name string           The application name.
-      --cloud-provider string     The cloud provider name. One of the registered providers in the piped configuration.
+      --platform-provider string   The platform provider name. One of the registered providers in the piped configuration. Previous name of this field is cloud-provider.
       --config-file-name string   The configuration file name. (default "app.pipecd.yaml")
       --description string        The description of the application.
   -h, --help                      help for add
