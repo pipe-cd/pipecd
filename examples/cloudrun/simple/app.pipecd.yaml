@@ -6,6 +6,6 @@ spec:
     env: example
     team: abc
   description: |
-    This app demonstrates how to deploy a Cloud Run application with [Quick Sync](https://pipecd.dev/docs/concepts/#quick-sync) strategy.\
+    This app demonstrates how to deploy a Cloud Run application with [Quick Sync](https://pipecd.dev/docs/concepts/#sync-strategy) strategy.\
     No pipeline is specified then in each deployment PipeCD will roll out the new version and switch all traffic to it immediately.\
-    References: [adding a new app](https://pipecd.dev/docs/user-guide/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
+    References: [adding a new app](https://pipecd.dev/docs/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)

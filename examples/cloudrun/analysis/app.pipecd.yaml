@@ -30,4 +30,4 @@ spec:
   description: |
     This app demonstrates how to use ANALYSIS stage to analyze the deployment.\
     After new version has been deployed to receive 10% of traffic, Piped periodically sends http requests to the endpoint of the new version to verify its responses.\
-    References: [adding a new app](https://pipecd.dev/docs/user-guide/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
+    References: [adding a new app](https://pipecd.dev/docs/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)

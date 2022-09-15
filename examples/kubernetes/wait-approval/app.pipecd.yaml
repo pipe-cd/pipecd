@@ -29,4 +29,4 @@ spec:
   description: |
     This app demonstrates how to configure a Kubernetes app with a WAIT_APPROVAL stage.\
     This ensures that all deployments of this app must be approved manually on the web console.\
-    References: [adding a new app](https://pipecd.dev/docs/user-guide/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
+    References: [adding a new app](https://pipecd.dev/docs/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
