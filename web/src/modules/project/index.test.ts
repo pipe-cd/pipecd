@@ -14,6 +14,8 @@ describe("projectSlice reducer", () => {
       sharedSSO: null,
       staticAdminDisabled: false,
       username: null,
+      userGroups: [],
+      rbacRoles: [],
     });
   });
 
@@ -38,6 +40,32 @@ describe("projectSlice reducer", () => {
             baseUrl: "base-url",
             uploadUrl: "upload-url",
           },
+          userGroups: [
+            {
+              ssoGroup: "team-a",
+              role: "Admin",
+            },
+          ],
+          rbacRoles: [
+            {
+              name: "Admin",
+              isBuiltin: true,
+              policiesList: [
+                {
+                  resourcesList: [
+                    {
+                      type: 0,
+                    },
+                  ],
+                  actionsList: [
+                    {
+                      action: 0,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         },
       })
     ).toEqual({
@@ -59,6 +87,32 @@ describe("projectSlice reducer", () => {
         viewer: "viewer",
       },
       username: "User",
+      userGroups: [
+        {
+          ssoGroup: "team-a",
+          role: "Admin",
+        },
+      ],
+      rbacRoles: [
+        {
+          name: "Admin",
+          isBuiltin: true,
+          policiesList: [
+            {
+              resourcesList: [
+                {
+                  type: 0,
+                },
+              ],
+              actionsList: [
+                {
+                  action: 0,
+                },
+              ],
+            },
+          ],
+        },
+      ],
     });
   });
 
@@ -75,6 +129,8 @@ describe("projectSlice reducer", () => {
       sharedSSO: null,
       staticAdminDisabled: false,
       username: null,
+      userGroups: [],
+      rbacRoles: [],
     });
   });
 
@@ -104,6 +160,8 @@ describe("projectSlice reducer", () => {
       sharedSSO: null,
       staticAdminDisabled: false,
       username: null,
+      userGroups: [],
+      rbacRoles: [],
     });
   });
 
@@ -133,6 +191,8 @@ describe("projectSlice reducer", () => {
       sharedSSO: null,
       staticAdminDisabled: false,
       username: null,
+      userGroups: [],
+      rbacRoles: [],
     });
   });
 });

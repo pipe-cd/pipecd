@@ -129,7 +129,7 @@ lint/go:
 
 .PHONY: lint/web
 lint/web:
-	yarn --cwd web lint --fix
+	yarn --cwd web lint
 
 # Update commands
 
