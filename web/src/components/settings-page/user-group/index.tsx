@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Menu,
   MenuItem,
@@ -103,35 +102,30 @@ export const SettingsUserGroupPage: FC = memo(function SettingsUserGroupPage() {
       </Toolbar>
       <Divider />
 
-      <Box display="flex" flex={1} overflow="hidden">
-        <TableContainer component={Paper} square>
-          <Table aria-label="user group list" size="small" stickyHeader>
-            <TableHead>
-              <TableRow>
-                <TableCell colSpan={2}>Group</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell align="right" />
+      <TableContainer component={Paper} square>
+        <Table size="small" stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell>Group</TableCell>
+              <TableCell>Role</TableCell>
+              <TableCell align="right" />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {userGroups.map((group) => (
+              <TableRow key={group.ssoGroup}>
+                <TableCell>{group.ssoGroup}</TableCell>
+                <TableCell>{group.role}</TableCell>
+                <TableCell align="right">
+                  <IconButton data-id={group.ssoGroup} onClick={handleOpenMenu}>
+                    <MenuIcon />
+                  </IconButton>
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {userGroups.map((group) => (
-                <TableRow key={group.ssoGroup}>
-                  <TableCell colSpan={2}>{group.ssoGroup}</TableCell>
-                  <TableCell colSpan={2}>{group.role}</TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      data-id={group.ssoGroup}
-                      onClick={handleOpenMenu}
-                    >
-                      <MenuIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       <Menu
         id="user-group-menu"

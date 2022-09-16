@@ -104,7 +104,6 @@ export const addUserGroup = ({
   const req = new AddProjectUserGroupRequest();
   req.setSsoGroup(ssoGroup);
   req.setRole(role);
-  console.log("req: ", req);
   return apiRequest(req, apiClient.addProjectUserGroup);
 };
 

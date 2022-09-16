@@ -1,5 +1,4 @@
 import {
-  Box,
   Paper,
   IconButton,
   Table,
@@ -27,7 +26,7 @@ const RESOURCE_ACTION_SEPARATOR = ";";
 const RESOURCES_KEY = "resources";
 const ACTIONS_KEY = "actions";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   selectTableCell: {
     width: 120,
   },
@@ -43,7 +42,7 @@ export const RBACForm: FC = memo(function RBACForm() {
     policiesList: Array<RBACPolicy>;
   }): Array<string> => {
     const policies: Array<string> = [];
-    policiesList.map((policy, i) => {
+    policiesList.map((policy) => {
       const resources: Array<string> = [];
       policy.resourcesList.map((resource) => {
         resources.push(RBAC_RESOURCE_TYPE_TEXT[resource.type]);
@@ -80,38 +79,36 @@ export const RBACForm: FC = memo(function RBACForm() {
         {RBAC_DESCRIPTION}
       </Typography>
 
-      <Box display="flex" flex={1} overflow="hidden">
-        <TableContainer component={Paper} square>
-          <Table aria-label="rbac roles list" size="small" stickyHeader>
-            <TableHead>
-              <TableRow>
-                <TableCell align="left" />
-                <TableCell colSpan={2}>Role</TableCell>
-                <TableCell>Policies</TableCell>
+      <TableContainer component={Paper} square>
+        <Table size="small" stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell align="left" />
+              <TableCell>Role</TableCell>
+              <TableCell>Policies</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rbacRoles.map((role) => (
+              <TableRow key={role.name}>
+                <TableCell align="left" className={classes.selectTableCell}>
+                  <IconButton aria-label="edit" disabled={role.isBuiltin}>
+                    <EditIcon />
+                  </IconButton>
+                </TableCell>
+                <TableCell>{role.name}</TableCell>
+                <TableCell>
+                  {formalizePoliciesFromPoliciesList({
+                    policiesList: role.policiesList,
+                  }).map((policy, i) => (
+                    <p key={i}>{policy}</p>
+                  ))}
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {rbacRoles.map((role) => (
-                <TableRow key={role.name}>
-                  <TableCell className={classes.selectTableCell}>
-                    <IconButton aria-label="edit" disabled={role.isBuiltin}>
-                      <EditIcon />
-                    </IconButton>
-                  </TableCell>
-                  <TableCell colSpan={2}>{role.name}</TableCell>
-                  <TableCell colSpan={2}>
-                    {formalizePoliciesFromPoliciesList({
-                      policiesList: role.policiesList,
-                    }).map((policy, i) => (
-                      <p key={i}>{policy}</p>
-                    ))}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </>
   );
 });
