@@ -1477,40 +1477,6 @@ export namespace GetMeResponse {
   }
 }
 
-export class ListProjectRBACRolesRequest extends jspb.Message {
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): ListProjectRBACRolesRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: ListProjectRBACRolesRequest): ListProjectRBACRolesRequest.AsObject;
-  static serializeBinaryToWriter(message: ListProjectRBACRolesRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): ListProjectRBACRolesRequest;
-  static deserializeBinaryFromReader(message: ListProjectRBACRolesRequest, reader: jspb.BinaryReader): ListProjectRBACRolesRequest;
-}
-
-export namespace ListProjectRBACRolesRequest {
-  export type AsObject = {
-  }
-}
-
-export class ListProjectRBACRolesResponse extends jspb.Message {
-  getRbacRolesList(): Array<pkg_model_project_pb.ProjectRBACRole>;
-  setRbacRolesList(value: Array<pkg_model_project_pb.ProjectRBACRole>): ListProjectRBACRolesResponse;
-  clearRbacRolesList(): ListProjectRBACRolesResponse;
-  addRbacRoles(value?: pkg_model_project_pb.ProjectRBACRole, index?: number): pkg_model_project_pb.ProjectRBACRole;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): ListProjectRBACRolesResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: ListProjectRBACRolesResponse): ListProjectRBACRolesResponse.AsObject;
-  static serializeBinaryToWriter(message: ListProjectRBACRolesResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): ListProjectRBACRolesResponse;
-  static deserializeBinaryFromReader(message: ListProjectRBACRolesResponse, reader: jspb.BinaryReader): ListProjectRBACRolesResponse;
-}
-
-export namespace ListProjectRBACRolesResponse {
-  export type AsObject = {
-    rbacRolesList: Array<pkg_model_project_pb.ProjectRBACRole.AsObject>,
-  }
-}
-
 export class AddProjectRBACRoleRequest extends jspb.Message {
   getName(): string;
   setName(value: string): AddProjectRBACRoleRequest;
@@ -1616,40 +1582,6 @@ export class DeleteProjectRBACRoleResponse extends jspb.Message {
 
 export namespace DeleteProjectRBACRoleResponse {
   export type AsObject = {
-  }
-}
-
-export class ListProjectUserGroupsRequest extends jspb.Message {
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): ListProjectUserGroupsRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: ListProjectUserGroupsRequest): ListProjectUserGroupsRequest.AsObject;
-  static serializeBinaryToWriter(message: ListProjectUserGroupsRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): ListProjectUserGroupsRequest;
-  static deserializeBinaryFromReader(message: ListProjectUserGroupsRequest, reader: jspb.BinaryReader): ListProjectUserGroupsRequest;
-}
-
-export namespace ListProjectUserGroupsRequest {
-  export type AsObject = {
-  }
-}
-
-export class ListProjectUserGroupsResponses extends jspb.Message {
-  getUserGroupsList(): Array<pkg_model_project_pb.ProjectUserGroup>;
-  setUserGroupsList(value: Array<pkg_model_project_pb.ProjectUserGroup>): ListProjectUserGroupsResponses;
-  clearUserGroupsList(): ListProjectUserGroupsResponses;
-  addUserGroups(value?: pkg_model_project_pb.ProjectUserGroup, index?: number): pkg_model_project_pb.ProjectUserGroup;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): ListProjectUserGroupsResponses.AsObject;
-  static toObject(includeInstance: boolean, msg: ListProjectUserGroupsResponses): ListProjectUserGroupsResponses.AsObject;
-  static serializeBinaryToWriter(message: ListProjectUserGroupsResponses, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): ListProjectUserGroupsResponses;
-  static deserializeBinaryFromReader(message: ListProjectUserGroupsResponses, reader: jspb.BinaryReader): ListProjectUserGroupsResponses;
-}
-
-export namespace ListProjectUserGroupsResponses {
-  export type AsObject = {
-    userGroupsList: Array<pkg_model_project_pb.ProjectUserGroup.AsObject>,
   }
 }
 

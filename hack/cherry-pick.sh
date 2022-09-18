@@ -59,8 +59,8 @@ echo
 # Check whether remote branch exists
 echo "+++ Checking whether remote branch exists..."
 BASE_TAG=$(echo ${BRANCH} | sed -e 's/.*-//' -e 's/x/0/g')
-git ls-remote --exit-code --heads origin ${BRANCH} > /dev/null 2>&1
-if [ $? -ne 0 ]; then
+IS_EXIST=$(git ls-remote --heads origin ${BRANCH} | wc -l)
+if [ $IS_EXIST -ne 1 ]; then
   git checkout -b ${BRANCH} ${BASE_TAG}
   git push origin ${BRANCH}
 else

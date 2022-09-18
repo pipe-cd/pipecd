@@ -35,4 +35,4 @@ spec:
       host: mesh-istio-canary.default.svc.cluster.local
   description: |
     This app demonstrates how to deploy a Kubernetes app with Canary strategy by using Istio mesh.\
-    References: [adding a new app](https://pipecd.dev/docs/user-guide/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
+    References: [adding a new app](https://pipecd.dev/docs/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)

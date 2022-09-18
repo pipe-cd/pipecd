@@ -33,4 +33,4 @@ spec:
       host: mesh-istio-bluegreen
   description: |
     This app demonstrates how to deploy a Kubernetes app with BlueGreen strategy by using Istio mesh.\
-    References: [adding a new app](https://pipecd.dev/docs/user-guide/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
+    References: [adding a new app](https://pipecd.dev/docs/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)

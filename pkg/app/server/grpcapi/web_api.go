@@ -38,7 +38,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
-	"github.com/pipe-cd/pipecd/pkg/filestore"
 	"github.com/pipe-cd/pipecd/pkg/insight"
 	"github.com/pipe-cd/pipecd/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -88,6 +87,11 @@ type webApiProjectStore interface {
 	DisableStaticAdmin(ctx context.Context, id string) error
 	UpdateProjectSSOConfig(ctx context.Context, id string, sso *model.ProjectSSOConfig) error
 	UpdateProjectRBACConfig(ctx context.Context, id string, sso *model.ProjectRBACConfig) error
+	AddProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error
+	UpdateProjectRBACRole(ctx context.Context, id, name string, policies []*model.ProjectRBACPolicy) error
+	DeleteProjectRBACRole(ctx context.Context, id, name string) error
+	AddProjectUserGroup(ctx context.Context, id, sso, role string) error
+	DeleteProjectUserGroup(ctx context.Context, id, sso string) error
 }
 
 type webApiEventStore interface {
@@ -200,7 +204,7 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 	}
 
 	if err = a.pipedStore.Add(ctx, &piped); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add piped %s", piped.Id))
+		return nil, gRPCStoreError(err, fmt.Sprintf("add piped %s", piped.Id))
 	}
 
 	return &webservice.RegisterPipedResponse{
@@ -287,7 +291,7 @@ func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(c
 	}
 
 	if err := updater(ctx, pipedID); err != nil {
-		return gRPCEntityOperationError(err, fmt.Sprintf("update piped %s", pipedID))
+		return gRPCStoreError(err, fmt.Sprintf("update piped %s", pipedID))
 	}
 	return nil
 }
@@ -321,7 +325,7 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 
 	pipeds, err := a.pipedStore.List(ctx, opts)
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, "list pipeds")
+		return nil, gRPCStoreError(err, "list pipeds")
 	}
 
 	// Check piped connection status if necessary.
@@ -451,7 +455,7 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 	}
 	if err != nil {
 		a.logger.Error("failed to get unregistered apps", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get unregistered apps")
+		return nil, gRPCStoreError(err, "get unregistered apps")
 	}
 
 	if len(allApps) == 0 {
@@ -507,7 +511,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		Labels:           req.Labels,
 	}
 	if err = a.applicationStore.Add(ctx, &app); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add application %s", app.Id))
+		return nil, gRPCStoreError(err, fmt.Sprintf("add application %s", app.Id))
 	}
 
 	return &webservice.AddApplicationResponse{
@@ -524,7 +528,7 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 
 	piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("failed to get piped %s", req.PipedId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("failed to get piped %s", req.PipedId))
 	}
 
 	if piped.ProjectId != claims.Role.ProjectId {
@@ -532,7 +536,7 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 	}
 
 	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.PlatformProvider, req.ConfigFilename); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("failed to update application %s", req.ApplicationId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("failed to update application %s", req.ApplicationId))
 	}
 
 	return &webservice.UpdateApplicationResponse{}, nil
@@ -550,7 +554,7 @@ func (a *WebAPI) EnableApplication(ctx context.Context, req *webservice.EnableAp
 	}
 
 	if err := a.applicationStore.Enable(ctx, req.ApplicationId); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("enable application %s", req.ApplicationId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("enable application %s", req.ApplicationId))
 	}
 	return &webservice.EnableApplicationResponse{}, nil
 }
@@ -567,7 +571,7 @@ func (a *WebAPI) DisableApplication(ctx context.Context, req *webservice.Disable
 	}
 
 	if err := a.applicationStore.Disable(ctx, req.ApplicationId); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("disable application %s", req.ApplicationId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("disable application %s", req.ApplicationId))
 	}
 	return &webservice.DisableApplicationResponse{}, nil
 }
@@ -584,7 +588,7 @@ func (a *WebAPI) DeleteApplication(ctx context.Context, req *webservice.DeleteAp
 	}
 
 	if err := a.applicationStore.Delete(ctx, req.ApplicationId); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("delete application %s", req.ApplicationId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("delete application %s", req.ApplicationId))
 	}
 
 	return &webservice.DeleteApplicationResponse{}, nil
@@ -652,7 +656,7 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		Orders:  orders,
 	})
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, "list applications")
+		return nil, gRPCStoreError(err, "list applications")
 	}
 
 	if len(req.Options.Labels) == 0 {
@@ -856,7 +860,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 	deployments, cursor, err := a.deploymentStore.List(ctx, options)
 	if err != nil {
 		a.logger.Error("failed to get deployments", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get deployments")
+		return nil, gRPCStoreError(err, "get deployments")
 	}
 	labels := req.Options.Labels
 	if len(labels) == 0 || len(deployments) == 0 {
@@ -891,7 +895,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		deployments, cursor, err = a.deploymentStore.List(ctx, options)
 		if err != nil {
 			a.logger.Error("failed to get deployments", zap.Error(err))
-			return nil, status.Error(codes.Internal, "Failed to get deployments")
+			return nil, gRPCStoreError(err, "get deployments")
 		}
 		if len(deployments) == 0 {
 			break
@@ -969,12 +973,9 @@ func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogReq
 	}
 
 	blocks, completed, err := a.stageLogStore.FetchLogs(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.OffsetIndex)
-	if errors.Is(err, stagelogstore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "The stage log not found")
-	}
 	if err != nil {
 		a.logger.Error("failed to get stage logs", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get stage logs")
+		return nil, gRPCStoreError(err, "get stage logs")
 	}
 
 	return &webservice.GetStageLogResponse{
@@ -1160,12 +1161,9 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 	}
 
 	snapshot, err := a.applicationLiveStateStore.GetStateSnapshot(ctx, req.ApplicationId)
-	if errors.Is(err, filestore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "Application live state not found")
-	}
 	if err != nil {
 		a.logger.Error("failed to get application live state", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get application live state")
+		return nil, gRPCStoreError(err, "get application live state")
 	}
 
 	return &webservice.GetApplicationLiveStateResponse{
@@ -1208,7 +1206,7 @@ func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Proje
 
 	project, err := a.projectStore.Get(ctx, projectID)
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("get project %s", projectID))
+		return nil, gRPCStoreError(err, fmt.Sprintf("get project %s", projectID))
 	}
 
 	return project, nil
@@ -1228,7 +1226,7 @@ func (a *WebAPI) UpdateProjectStaticAdmin(ctx context.Context, req *webservice.U
 
 	if err := a.projectStore.UpdateProjectStaticAdmin(ctx, claims.Role.ProjectId, req.Username, req.Password); err != nil {
 		a.logger.Error("failed to update static admin", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to update static admin")
+		return nil, gRPCStoreError(err, "update static admin")
 	}
 	return &webservice.UpdateProjectStaticAdminResponse{}, nil
 }
@@ -1247,7 +1245,7 @@ func (a *WebAPI) EnableStaticAdmin(ctx context.Context, req *webservice.EnableSt
 
 	if err := a.projectStore.EnableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
 		a.logger.Error("failed to enable static admin login", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to enable static admin login")
+		return nil, gRPCStoreError(err, "enable static admin login")
 	}
 	return &webservice.EnableStaticAdminResponse{}, nil
 }
@@ -1265,8 +1263,8 @@ func (a *WebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.Disable
 	}
 
 	if err := a.projectStore.DisableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
-		a.logger.Error("failed to disenable static admin login", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to disenable static admin login")
+		a.logger.Error("failed to disable static admin login", zap.Error(err))
+		return nil, gRPCStoreError(err, "disable static admin login")
 	}
 	return &webservice.DisableStaticAdminResponse{}, nil
 }
@@ -1285,12 +1283,12 @@ func (a *WebAPI) UpdateProjectSSOConfig(ctx context.Context, req *webservice.Upd
 
 	if err := req.Sso.Encrypt(a.encrypter); err != nil {
 		a.logger.Error("failed to encrypt sensitive data in sso configurations", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to encrypt sensitive data in sso configurations")
+		return nil, gRPCStoreError(err, "encrypt sensitive data in sso configurations")
 	}
 
 	if err := a.projectStore.UpdateProjectSSOConfig(ctx, claims.Role.ProjectId, req.Sso); err != nil {
 		a.logger.Error("failed to update project single sign on settings", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to update project single sign on settings")
+		return nil, gRPCStoreError(err, "update project single sign on settings")
 	}
 	return &webservice.UpdateProjectSSOConfigResponse{}, nil
 }
@@ -1309,7 +1307,7 @@ func (a *WebAPI) UpdateProjectRBACConfig(ctx context.Context, req *webservice.Up
 
 	if err := a.projectStore.UpdateProjectRBACConfig(ctx, claims.Role.ProjectId, req.Rbac); err != nil {
 		a.logger.Error("failed to update project single sign on settings", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to update project single sign on settings")
+		return nil, gRPCStoreError(err, "update project single sign on settings")
 	}
 	return &webservice.UpdateProjectRBACConfigResponse{}, nil
 }
@@ -1329,32 +1327,94 @@ func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webs
 	}, nil
 }
 
-func (a *WebAPI) ListProjectRBACRoles(_ context.Context, _ *webservice.ListProjectRBACRolesRequest) (*webservice.ListProjectRBACRolesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+func (a *WebAPI) AddProjectRBACRole(ctx context.Context, req *webservice.AddProjectRBACRoleRequest) (*webservice.AddProjectRBACRoleResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
+	}
+
+	if err := a.projectStore.AddProjectRBACRole(ctx, claims.Role.ProjectId, req.Name, req.Policies); err != nil {
+		a.logger.Error("failed to add rbac role", zap.Error(err))
+		return nil, gRPCStoreError(err, "add rbac role")
+	}
+	return &webservice.AddProjectRBACRoleResponse{}, nil
 }
 
-func (a *WebAPI) AddProjectRBACRole(_ context.Context, _ *webservice.AddProjectRBACRoleRequest) (*webservice.AddProjectRBACRoleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+func (a *WebAPI) UpdateProjectRBACRole(ctx context.Context, req *webservice.UpdateProjectRBACRoleRequest) (*webservice.UpdateProjectRBACRoleResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
+	}
+
+	if err := a.projectStore.UpdateProjectRBACRole(ctx, claims.Role.ProjectId, req.Name, req.Policies); err != nil {
+		a.logger.Error("failed to update rbac role", zap.Error(err))
+		return nil, gRPCStoreError(err, "update rbac role")
+	}
+	return &webservice.UpdateProjectRBACRoleResponse{}, nil
 }
 
-func (a *WebAPI) UpdateProjectRBACRole(_ context.Context, _ *webservice.UpdateProjectRBACRoleRequest) (*webservice.UpdateProjectRBACRoleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+func (a *WebAPI) DeleteProjectRBACRole(ctx context.Context, req *webservice.DeleteProjectRBACRoleRequest) (*webservice.DeleteProjectRBACRoleResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
+	}
+
+	if err := a.projectStore.DeleteProjectRBACRole(ctx, claims.Role.ProjectId, req.Name); err != nil {
+		a.logger.Error("failed to delete rbac role", zap.Error(err))
+		return nil, gRPCStoreError(err, "delete rbac role")
+	}
+	return &webservice.DeleteProjectRBACRoleResponse{}, nil
 }
 
-func (a *WebAPI) DeleteProjectRBACRole(_ context.Context, _ *webservice.DeleteProjectRBACRoleRequest) (*webservice.DeleteProjectRBACRoleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+func (a *WebAPI) AddProjectUserGroup(ctx context.Context, req *webservice.AddProjectUserGroupRequest) (*webservice.AddProjectUserGroupResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
+	}
+
+	if err := a.projectStore.AddProjectUserGroup(ctx, claims.Role.ProjectId, req.SsoGroup, req.Role); err != nil {
+		a.logger.Error("failed to add user group", zap.Error(err))
+		return nil, gRPCStoreError(err, "add user group")
+	}
+	return &webservice.AddProjectUserGroupResponse{}, nil
 }
 
-func (a *WebAPI) ListProjectUserGroups(_ context.Context, _ *webservice.ListProjectUserGroupsRequest) (*webservice.ListProjectUserGroupsResponses, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not implemented")
-}
+func (a *WebAPI) DeleteProjectUserGroup(ctx context.Context, req *webservice.DeleteProjectUserGroupRequest) (*webservice.DeleteProjectUserGroupResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
 
-func (a *WebAPI) AddProjectUserGroup(_ context.Context, _ *webservice.AddProjectUserGroupRequest) (*webservice.AddProjectUserGroupResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not implemented")
-}
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
+	}
 
-func (a *WebAPI) DeleteProjectUserGroup(_ context.Context, _ *webservice.DeleteProjectUserGroupRequest) (*webservice.DeleteProjectUserGroupResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "not implemented")
+	if err := a.projectStore.DeleteProjectUserGroup(ctx, claims.Role.ProjectId, req.SsoGroup); err != nil {
+		a.logger.Error("failed to delete user group", zap.Error(err))
+		return nil, gRPCStoreError(err, "delete user group")
+	}
+	return &webservice.DeleteProjectUserGroupResponse{}, nil
 }
 
 func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandRequest) (*webservice.GetCommandResponse, error) {
@@ -1402,7 +1462,7 @@ func (a *WebAPI) GenerateAPIKey(ctx context.Context, req *webservice.GenerateAPI
 	}
 
 	if err = a.apiKeyStore.Add(ctx, &apiKey); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("add API key %s", apiKey.Id))
+		return nil, gRPCStoreError(err, fmt.Sprintf("add API key %s", apiKey.Id))
 	}
 
 	return &webservice.GenerateAPIKeyResponse{
@@ -1418,7 +1478,7 @@ func (a *WebAPI) DisableAPIKey(ctx context.Context, req *webservice.DisableAPIKe
 	}
 
 	if err := a.apiKeyStore.Disable(ctx, req.Id, claims.Role.ProjectId); err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("disable API key %s", req.Id))
+		return nil, gRPCStoreError(err, fmt.Sprintf("disable API key %s", req.Id))
 	}
 
 	return &webservice.DisableAPIKeyResponse{}, nil
@@ -1453,7 +1513,7 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 
 	apiKeys, err := a.apiKeyStore.List(ctx, opts)
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, "list API keys")
+		return nil, gRPCStoreError(err, "list API keys")
 	}
 
 	// Redact all sensitive data inside API key before sending to the client.
@@ -1542,11 +1602,8 @@ func (a *WebAPI) GetInsightApplicationCount(ctx context.Context, req *webservice
 	// TODO: Cache application counts in the cache service.
 	c, err := a.insightStore.LoadApplicationCounts(ctx, claims.Role.ProjectId)
 	if err != nil {
-		if err == filestore.ErrNotFound {
-			return nil, status.Error(codes.NotFound, "Not found")
-		}
 		a.logger.Error("failed to load application counts", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to load application counts")
+		return nil, gRPCStoreError(err, "load application counts")
 	}
 
 	counts := make([]*model.InsightApplicationCount, 0, len(c.Counts))
@@ -1601,7 +1658,7 @@ func (a *WebAPI) ListDeploymentChains(ctx context.Context, req *webservice.ListD
 
 	deploymentChains, cursor, err := a.deploymentChainStore.List(ctx, options)
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, "list deployment chains")
+		return nil, gRPCStoreError(err, "list deployment chains")
 	}
 
 	return &webservice.ListDeploymentChainsResponse{
@@ -1619,7 +1676,7 @@ func (a *WebAPI) GetDeploymentChain(ctx context.Context, req *webservice.GetDepl
 
 	dc, err := a.deploymentChainStore.Get(ctx, req.DeploymentChainId)
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, fmt.Sprintf("get deployment chain %s", req.DeploymentChainId))
+		return nil, gRPCStoreError(err, fmt.Sprintf("get deployment chain %s", req.DeploymentChainId))
 	}
 
 	if claims.Role.ProjectId != dc.ProjectId {
@@ -1688,7 +1745,7 @@ func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsReque
 	}
 	events, cursor, err := a.eventStore.List(ctx, options)
 	if err != nil {
-		return nil, gRPCEntityOperationError(err, "list events")
+		return nil, gRPCStoreError(err, "list events")
 	}
 
 	labels := req.Options.Labels
@@ -1724,7 +1781,7 @@ func (a *WebAPI) ListEvents(ctx context.Context, req *webservice.ListEventsReque
 		events, cursor, err = a.eventStore.List(ctx, options)
 		if err != nil {
 			a.logger.Error("failed to get events", zap.Error(err))
-			return nil, status.Error(codes.Internal, "Failed to get events")
+			return nil, gRPCStoreError(err, "Failed to get events")
 		}
 		if len(events) == 0 {
 			break

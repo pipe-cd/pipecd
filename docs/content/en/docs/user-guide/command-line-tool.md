@@ -1,7 +1,7 @@
 ---
 title: "Command-line tool: pipectl"
 linkTitle: "Command-line tool: pipectl"
-weight: 21
+weight: 8
 description: >
   This page describes how to install and use pipectl to manage PipeCD's resources.
 ---
@@ -108,7 +108,7 @@ pipectl application add \
     --app-name=simple \
     --app-kind=KUBERNETES \
     --piped-id=PIPED_ID \
-    --cloud-provider=kubernetes-default \
+    --platform-provider=kubernetes-default \
     --repo-id=examples \
     --app-dir=kubernetes/simple
 ```
@@ -127,7 +127,7 @@ Flags:
       --app-dir string            The relative path from the root of repository to the application directory.
       --app-kind string           The kind of application. (KUBERNETES|TERRAFORM|LAMBDA|CLOUDRUN)
       --app-name string           The application name.
-      --cloud-provider string     The cloud provider name. One of the registered providers in the piped configuration.
+      --platform-provider string  The platform provider name. One of the registered providers in the piped configuration. The previous name of this field is cloud-provider.
       --config-file-name string   The configuration file name. (default "app.pipecd.yaml")
       --description string        The description of the application.
   -h, --help                      help for add
@@ -220,7 +220,7 @@ pipectl event register \
 
 Encrypt the plaintext entered either in stdin or via the `--input-file` flag.
 
-You can encrypt it the same way you do [from the web](/docs/user-guide/secret-management/#encrypting-secret-data).
+You can encrypt it the same way you do [from the web](/docs/user-guide/managing-application/secret-management/#encrypting-secret-data).
 
 - From stdin:
 
@@ -243,4 +243,4 @@ You can encrypt it the same way you do [from the web](/docs/user-guide/secret-ma
 
 ### You want more?
 
-We always want to add more needed commands into pipectl. Please let us know what command you want to add by creating issues in the [pipe-cd/pipe ](https://github.com/pipe-cd/pipecd/issues) repository. We also welcome your pull request to add the command.
+We always want to add more needed commands into pipectl. Please let us know what command you want to add by creating issues in the [pipe-cd/pipe](https://github.com/pipe-cd/pipecd/issues) repository. We also welcome your pull request to add the command.

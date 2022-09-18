@@ -13,6 +13,6 @@ spec:
     decryptionTargets:
       - .credentials/service-account.json
   description: |
-    This app demonstrates how to deploy a Terraform application with [Quick Sync](https://pipecd.dev/docs/concepts/#quick-sync) strategy.\
+    This app demonstrates how to deploy a Terraform application with [Quick Sync](https://pipecd.dev/docs/concepts/#sync-strategy) strategy.\
     No pipeline is specified then in each deployment PipeCD does terraform plan and if there are any changes detected it applies those changes automatically.\
-    References: [adding a new app](https://pipecd.dev/docs/user-guide/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
+    References: [adding a new app](https://pipecd.dev/docs/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
