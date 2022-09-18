@@ -11,7 +11,7 @@ module.exports = (env) => {
       filename: "assets/[name].[contenthash:9].js",
       chunkFilename: "assets/[name].[contenthash:9].chunk.js",
       publicPath: "/",
-      path: path.resolve(__dirname, '../.artifacts/web-static'),
+      path: path.resolve(__dirname, "../.artifacts/web-static"),
     },
     optimization: {
       splitChunks: {
@@ -48,19 +48,19 @@ module.exports = (env) => {
     },
     plugins: [
       env.htmlTemplate &&
-      new HtmlWebpackPlugin({
-        filename: "index.html",
-        template: env.htmlTemplate,
-        favicon: path.join(__dirname, "assets/favicon.ico"),
-      }),
+        new HtmlWebpackPlugin({
+          filename: "index.html",
+          template: env.htmlTemplate,
+          favicon: path.join(__dirname, "assets/favicon.ico"),
+        }),
       process.env.ENABLE_MOCK &&
-      new CopyPlugin({
-        patterns: [
-          {
-            from: path.join(__dirname, "public/mockServiceWorker.js"),
-          },
-        ],
-      }),
+        new CopyPlugin({
+          patterns: [
+            {
+              from: path.join(__dirname, "public/mockServiceWorker.js"),
+            },
+          ],
+        }),
       new webpack.EnvironmentPlugin({
         ENABLE_MOCK: process.env.ENABLE_MOCK || null,
       }),
