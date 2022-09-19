@@ -7,7 +7,6 @@
   "scripts": {
     "build": "PIPECD_VERSION=`git describe --tags --always --dirty --abbrev=7` webpack build --mode production --env htmlTemplate=./base.html --config ./webpack.config.js",
     "dev": "PIPECD_VERSION=`git describe --tags --always --dirty --abbrev=7` webpack serve --env htmlTemplate=./base.html --config ./webpack.config.dev.js",
-    "gen": "scaffdog generate",
     "test": "TZ=Asia/Tokyo jest --config jest.config.local.js",
     "test:coverage": "yarn test --coverage",
     "lint": "eslint --ext .ts,.tsx ./src",
@@ -55,7 +54,6 @@
     "react-docgen-typescript-loader": "^3.7.2",
     "react-test-renderer": "^17.0.2",
     "redux-mock-store": "^1.5.4",
-    "scaffdog": "^1.0.0",
     "ts-jest": "^27.1.3",
     "ts-loader": "^9.1.0",
     "typescript": "^4.3.2",
