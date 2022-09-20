@@ -23,9 +23,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	networkingv1 "k8s.io/api/networking/v1"
-	networkingv1beta1 "k8s.io/api/networking/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -436,24 +434,8 @@ func determineIngressHealth(obj *unstructured.Unstructured) (status model.Kubern
 		return
 	}
 
-	// PipeCD keeps supporting Kubernetes < v1.22 for the meantime so checks deprecated versions as well.
-
-	betaIngress := &networkingv1beta1.Ingress{}
-	err = scheme.Scheme.Convert(obj, betaIngress, nil)
-	if err == nil {
-		check(betaIngress.Status.LoadBalancer.Ingress)
-		return
-	}
-
-	extensionIngress := &extensionsv1beta1.Ingress{}
-	err = scheme.Scheme.Convert(obj, extensionIngress, nil)
-	if err == nil {
-		check(extensionIngress.Status.LoadBalancer.Ingress)
-		return
-	}
-
 	status = model.KubernetesResourceState_OTHER
-	desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to neither %T, %T, nor %T: %v", obj, v1Ingress, betaIngress, extensionIngress, err)
+	desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, v1Ingress, err)
 	return
 }
 
