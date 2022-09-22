@@ -3,7 +3,6 @@ import {
   Menu,
   MenuItem,
   IconButton,
-  Divider,
   makeStyles,
   Paper,
   Table,
@@ -12,7 +11,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Toolbar,
+  Typography,
 } from "@material-ui/core";
 import * as React from "react";
 import { Add as AddIcon, MoreVert as MenuIcon } from "@material-ui/icons";
@@ -20,21 +19,31 @@ import { FC, memo, useCallback, useEffect, useState } from "react";
 import { UI_TEXT_ADD } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { fetchProject, addUserGroup, deleteUserGroup } from "~/modules/project";
-import { AddUserGroupDialog } from "./components/add-user-group-dialog";
+import { AddUserGroupDialog } from "../add-user-group-dialog";
+import { useProjectSettingStyles } from "~/styles/project-setting";
 import { addToast } from "~/modules/toasts";
 import {
   ADD_USER_GROUP_SUCCESS,
   DELETE_USER_GROUP_SUCCESS,
 } from "~/constants/toast-text";
 
-const useStyles = makeStyles(() => ({
-  toolbarSpacer: {
-    flexGrow: 1,
+const useStyles = makeStyles((theme) => ({
+  selectTableContainer: {
+    maxHeight: 450,
+  },
+  title: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingTop: theme.spacing(2),
   },
 }));
 
-export const SettingsUserGroupPage: FC = memo(function SettingsUserGroupPage() {
+const SUB_SECTION_TITLE = "User Group";
+
+export const UserGroupTable: FC = memo(function UserGroupTable() {
   const classes = useStyles();
+  const projectSettingClasses = useProjectSettingStyles();
   const dispatch = useAppDispatch();
   const userGroups = useAppSelector((state) => state.project.userGroups);
   const [isOpenAddForm, setIsOpenAddForm] = useState(false);
@@ -90,7 +99,14 @@ export const SettingsUserGroupPage: FC = memo(function SettingsUserGroupPage() {
 
   return (
     <>
-      <Toolbar variant="dense">
+      <div className={classes.title}>
+        <Typography
+          variant="h6"
+          className={projectSettingClasses.titleWithIcon}
+        >
+          {SUB_SECTION_TITLE}
+        </Typography>
+
         <Button
           color="primary"
           startIcon={<AddIcon />}
@@ -98,11 +114,13 @@ export const SettingsUserGroupPage: FC = memo(function SettingsUserGroupPage() {
         >
           {UI_TEXT_ADD}
         </Button>
-        <div className={classes.toolbarSpacer} />
-      </Toolbar>
-      <Divider />
+      </div>
 
-      <TableContainer component={Paper} square>
+      <TableContainer
+        component={Paper}
+        square
+        className={classes.selectTableContainer}
+      >
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
@@ -140,7 +158,7 @@ export const SettingsUserGroupPage: FC = memo(function SettingsUserGroupPage() {
             }
           }}
         >
-          Delete User Group
+          Delete
         </MenuItem>
       </Menu>
 

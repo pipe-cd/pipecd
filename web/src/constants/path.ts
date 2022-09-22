@@ -8,7 +8,6 @@ export const PAGE_PATH_LOGIN = "/login";
 export const PAGE_PATH_SETTINGS = "/settings";
 export const PAGE_PATH_SETTINGS_PIPED = "/settings/piped";
 export const PAGE_PATH_SETTINGS_PROJECT = "/settings/project";
-export const PAGE_PATH_SETTINGS_USER_GROUP = "/settings/user-group";
 export const PAGE_PATH_SETTINGS_API_KEY = "/settings/api-key";
 
 export const STATIC_LOGIN_ENDPOINT = "/auth/login/static";
