@@ -88,8 +88,6 @@ type Config struct {
 	ControlPlaneSpec     *ControlPlaneSpec
 	AnalysisTemplateSpec *AnalysisTemplateSpec
 	EventWatcherSpec     *EventWatcherSpec
-
-	SealedSecretSpec *SealedSecretSpec
 }
 
 type genericConfig struct {
@@ -134,10 +132,6 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 	case KindAnalysisTemplate:
 		c.AnalysisTemplateSpec = &AnalysisTemplateSpec{}
 		c.spec = c.AnalysisTemplateSpec
-
-	case KindSealedSecret:
-		c.SealedSecretSpec = &SealedSecretSpec{}
-		c.spec = c.SealedSecretSpec
 
 	case KindEventWatcher:
 		c.EventWatcherSpec = &EventWatcherSpec{}
