@@ -20,6 +20,7 @@ import { UI_TEXT_ADD } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { fetchProject, addUserGroup, deleteUserGroup } from "~/modules/project";
 import { AddUserGroupDialog } from "../add-user-group-dialog";
+import { DeleteUserGroupConfirmDialog } from "../delete-user-group-confirm-dialog";
 import { useProjectSettingStyles } from "~/styles/project-setting";
 import { addToast } from "~/modules/toasts";
 import {
@@ -47,6 +48,7 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
   const dispatch = useAppDispatch();
   const userGroups = useAppSelector((state) => state.project.userGroups);
   const [isOpenAddForm, setIsOpenAddForm] = useState(false);
+  const [deleteSSOGroup, setDeleteSSOGroup] = useState<null | string>(null);
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
   );
@@ -81,9 +83,12 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
     dispatch(fetchProject());
   }, [dispatch]);
 
+  const handleCancelDeleting = useCallback(() => {
+    setDeleteSSOGroup(null);
+  }, [setDeleteSSOGroup]);
+
   const handleDelete = useCallback(
     (ssoGroup: string) => {
-      setAnchorEl(null);
       dispatch(deleteUserGroup({ ssoGroup: ssoGroup })).then(() => {
         dispatch(fetchProject());
         dispatch(
@@ -93,6 +98,7 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
           })
         );
       });
+      setDeleteSSOGroup(null);
     },
     [dispatch]
   );
@@ -154,8 +160,9 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
         <MenuItem
           onClick={() => {
             if (anchorEl && anchorEl.dataset.id) {
-              handleDelete(anchorEl.dataset.id);
+              setDeleteSSOGroup(anchorEl.dataset.id);
             }
+            setAnchorEl(null);
           }}
         >
           Delete
@@ -166,6 +173,12 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
         open={isOpenAddForm}
         onClose={() => setIsOpenAddForm(false)}
         onSubmit={handleSubmit}
+      />
+
+      <DeleteUserGroupConfirmDialog
+        ssoGroup={deleteSSOGroup}
+        onCancel={handleCancelDeleting}
+        onDelete={handleDelete}
       />
     </>
   );
