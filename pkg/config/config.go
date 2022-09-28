@@ -49,8 +49,6 @@ const (
 	KindCloudRunApp Kind = "CloudRunApp"
 	// KindECSApp represents application configuration for an AWS ECS.
 	KindECSApp Kind = "ECSApp"
-	// KindSealedSecret represents a sealed secret.
-	KindSealedSecret Kind = "SealedSecret"
 )
 
 const (
