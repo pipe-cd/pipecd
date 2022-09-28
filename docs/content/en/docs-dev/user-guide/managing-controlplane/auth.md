@@ -6,7 +6,7 @@ description: >
   This page describes about PipeCD Authentication and Authorization.
 ---
 
-![](/images/settings-project.png)
+![](/images/settings-project-v0.38.x.png)
 
 ### Static Admin
 
@@ -32,12 +32,34 @@ The project can be configured to use a shared SSO configuration (shared OAuth ap
 
 Role-based access control (RBAC) allows restricting access on the PipeCD web-based on the roles of user groups within the project. Before using this feature, the SSO must be configured.
 
-PipeCD provides three roles:
+PipeCD provides three built-in roles:
 
-- `viewer`: has only permissions to view application, deployment list, and details.
-- `editor`: has all viewer permissions, plus permissions for actions that modify state, such as manually syncing application, canceling deployment...
-- `admin`: has all editor permissions, plus permissions for updating project configurations.
+- `Viewer`: has only permissions to view existing resources or data.
+- `Editor`: has all viewer permissions, plus permissions for actions that modify state, such as manually syncing application, canceling deployment...
+- `Admin`: has all editor permissions, plus permissions for updating project configurations.
 
-Configuring RBAC means setting up 3 teams (GitHub) /groups (Google) corresponding to 3 above roles. All users belong to a team/group will have all permissions of that team/group.
+The policies of the role are represent like this format.
+```
+resources=RESOURCE_NAMES;actions=ACTION_NAMES
+```
 
-![](/images/settings-update-rbac.png)
+#### Actions for all resources
+Currently, PipeCD has provided these resources and actions, and this table shows the being used actions per a resource.
+
+| resource | get | list | create | update | delete |
+|:--------------------|:------:|:-------:|:-------:|:-------:|:-------:|
+| application     | ○ | ○ | ○ | ○ | ○ |
+| deployment      | ○ | ○ |   | ○ |   |
+| event           |   | ○ |   |   |   |
+| piped           | ○ | ○ | ○ | ○ |   |
+| project         | ○ |   |   | ○ |   |
+| apiKey          |   | ○ | ○ | ○ |   |
+| insight         | ○ |   |   |   |   |
+
+The `*` represents all resources and all action for a resource.
+
+User Group represents a relation with a specific team (GitHub)/group (Google) and an arbitrary role. All users belong to a team/group will have all permissions of that team/group.
+
+You cannot assign multiple roles to a team/group.
+
+![](/images/settings-add-user-group.png)
