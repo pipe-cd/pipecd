@@ -130,7 +130,7 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell>Group</TableCell>
+              <TableCell>Team/Group</TableCell>
               <TableCell>Role</TableCell>
               <TableCell align="right" />
             </TableRow>
