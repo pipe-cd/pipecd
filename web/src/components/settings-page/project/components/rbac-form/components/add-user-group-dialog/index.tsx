@@ -67,7 +67,7 @@ export const AddUserGroupDialog: FC<AddUserGroupDialogProps> = ({
           <TextField
             id="ssoGroup"
             name="ssoGroup"
-            label="SSOGroup"
+            label="Team/Group"
             variant="outlined"
             margin="dense"
             autoFocus
