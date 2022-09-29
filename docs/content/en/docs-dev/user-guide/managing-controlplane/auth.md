@@ -38,25 +38,34 @@ PipeCD provides three built-in roles:
 - `Editor`: has all viewer permissions, plus permissions for actions that modify state, such as manually syncing application, canceling deployment...
 - `Admin`: has all editor permissions, plus permissions for updating project configurations.
 
-The policies of the role are represent like this format.
+#### Configuring the PipeCD's roles
+
+The below table represents PipeCD's resources with actions on those resources.
+
+| resource | get | list | create | update | delete |
+|:--------------------|:------:|:-------:|:-------:|:-------:|:-------:|
+| application | ○ | ○ | ○ | ○ | ○ |
+| deployment  | ○ | ○ |   | ○ |   |
+| event       |   | ○ |   |   |   |
+| piped       | ○ | ○ | ○ | ○ |   |
+| project     | ○ |   |   | ○ |   |
+| apiKey      |   | ○ | ○ | ○ |   |
+| insight     | ○ |   |   |   |   |
+
+
+Each role is defined as a combination of multiple policies under this format.
 ```
 resources=RESOURCE_NAMES;actions=ACTION_NAMES
 ```
 
-#### Actions for all resources
-Currently, PipeCD has provided these resources and actions, and this table shows the being used actions per a resource.
+The `*` represents all resources and all actions for a resource.
+```
+resources=*;actions=ACTION_NAMES
+resources=RESOURCE_NAMES;actions=*
+resources=*;actions=*
+```
 
-| resource | get | list | create | update | delete |
-|:--------------------|:------:|:-------:|:-------:|:-------:|:-------:|
-| application     | ○ | ○ | ○ | ○ | ○ |
-| deployment      | ○ | ○ |   | ○ |   |
-| event           |   | ○ |   |   |   |
-| piped           | ○ | ○ | ○ | ○ |   |
-| project         | ○ |   |   | ○ |   |
-| apiKey          |   | ○ | ○ | ○ |   |
-| insight         | ○ |   |   |   |   |
-
-The `*` represents all resources and all action for a resource.
+#### Configuring the PipeCD's user groups
 
 User Group represents a relation with a specific team (GitHub)/group (Google) and an arbitrary role. All users belong to a team/group will have all permissions of that team/group.
 
