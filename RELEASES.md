@@ -43,7 +43,7 @@ This refers to the release of critical bug fixes. \
 A bugfix for a functional issue (not a data loss or security issue) that only affects an alpha feature does not qualify as a critical bug fix.
 
 ### Prerequisites
-- (optional) If you create a pull request with the cherry-pick script, `gh` is needed to be installed and ran `gh auth login`. Please refer to [cli/cli](https://github.com/cli/cli).
+- `gh` is needed to be installed and ran `gh auth login`. Please refer to [cli/cli](https://github.com/cli/cli).
 
 ### Fix bugs
 - Create a pull request to fix a bug on the `master` branch.
