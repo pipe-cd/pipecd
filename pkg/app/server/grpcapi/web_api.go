@@ -1194,14 +1194,16 @@ func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectReque
 
 func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Project, error) {
 	if p, ok := a.projectsInConfig[projectID]; ok {
-		return &model.Project{
+		p := &model.Project{
 			Id:   p.Id,
 			Desc: p.Desc,
 			StaticAdmin: &model.ProjectStaticUser{
 				Username:     p.StaticAdmin.Username,
 				PasswordHash: p.StaticAdmin.PasswordHash,
 			},
-		}, nil
+		}
+		p.SetBuiltinRBACRoles()
+		return p, nil
 	}
 
 	project, err := a.projectStore.Get(ctx, projectID)
