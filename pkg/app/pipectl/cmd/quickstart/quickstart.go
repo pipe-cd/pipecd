@@ -19,6 +19,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"html/template"
 	"os"
 	"os/exec"
 	"path"
@@ -30,13 +31,13 @@ import (
 )
 
 const (
-	pipecdDefaultNamespace = "pipecd"
-
-	helmBinaryName    = "helm"
-	helmReleaseName   = "pipecd"
-	helmChartRepoName = "oci://ghcr.io/pipe-cd/chart/pipecd"
+	defaultHelmVersion = "3.8.2"
+	helmReleaseName    = "pipecd"
+	helmChartRepoName  = "oci://ghcr.io/pipe-cd/chart/pipecd"
 
 	helmQuickstartValueRemotePath = "https://raw.githubusercontent.com/pipe-cd/pipecd/%s/quickstart/control-plane-values.yaml"
+
+	pipecdDefaultNamespace = "pipecd"
 )
 
 type command struct {
@@ -50,14 +51,17 @@ type command struct {
 func NewCommand() *cobra.Command {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		{
-			panic(fmt.Sprintf("failed to detect the current user's home directory: %v", err))
-		}
+		panic(fmt.Sprintf("failed to detect the current user's home directory: %v", err))
+	}
+
+	defaultToolsDir := path.Join(home, ".pipectl", "tools")
+	if err = os.MkdirAll(defaultToolsDir, 0755); err != nil {
+		panic(fmt.Sprintf("failed to prepare tools dir: %v", err))
 	}
 
 	c := &command{
 		version:   version.Get().Version,
-		toolsDir:  path.Join(home, ".pipectl", "tools"),
+		toolsDir:  defaultToolsDir,
 		namespace: pipecdDefaultNamespace,
 	}
 
@@ -78,7 +82,7 @@ func NewCommand() *cobra.Command {
 }
 
 func (c *command) run(ctx context.Context, input cli.Input) error {
-	helm, err := c.getHelm()
+	helm, err := c.getHelm(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to prepare required tools (helm) for installation: %v", err)
 	}
@@ -86,7 +90,7 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 	var args []string
 
 	if c.uninstall {
-		input.Logger.Info("Uninstalling the controlplane...\n")
+		input.Logger.Info("Uninstalling the controlplane...")
 
 		args = []string{
 			"uninstall",
@@ -95,7 +99,7 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 			c.namespace,
 		}
 	} else {
-		input.Logger.Info("Installing the controlplane in quickstart mode...\n")
+		input.Logger.Info("Installing the controlplane in quickstart mode...")
 
 		args = []string{
 			"upgrade",
@@ -130,28 +134,49 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 //   1. pre-installed in command specified toolsDir (default is $HOME/.pipectl/tools)
 //   2. $PATH
 //   3. install new helm to command specified toolsDir
-func (c *command) getHelm() (string, error) {
-	fi, err := os.Stat(path.Join(c.toolsDir, helmBinaryName))
+func (c *command) getHelm(ctx context.Context) (string, error) {
+	binName := "helm"
+
+	fi, err := os.Stat(path.Join(c.toolsDir, binName))
 	if err != nil && !os.IsNotExist(err) {
 		return "", err
 	}
 
 	// If the Helm executable binary exists in tools dir, use it.
 	if fi != nil {
-		return path.Join(c.toolsDir, helmBinaryName), nil
+		return path.Join(c.toolsDir, binName), nil
 	}
 
 	// If the Helm executable binary exists in $PATH, use it.
-	path, err := exec.LookPath(helmBinaryName)
+	epath, err := exec.LookPath(binName)
 	if err != nil && !errors.Is(err, exec.ErrNotFound) {
 		return "", err
 	}
 
-	if path != "" {
-		return path, nil
+	if epath != "" {
+		return epath, nil
 	}
 
-	// TODO: Install helm to command toolsDir.
+	// Install helm to command toolsDir.
+	helmInstallScriptTmpl := template.Must(template.New("helm").Parse(helmInstallScript))
+	var (
+		buf  bytes.Buffer
+		data = map[string]interface{}{
+			"Version": defaultHelmVersion,
+			"BinDir":  c.toolsDir,
+		}
+	)
+	if err := helmInstallScriptTmpl.Execute(&buf, data); err != nil {
+		return "", fmt.Errorf("failed to install helm %s (%v)", defaultHelmVersion, err)
+	}
 
-	return path, nil
+	var (
+		script = buf.String()
+		cmd    = exec.CommandContext(ctx, "/bin/sh", "-c", script)
+	)
+	if _, err := cmd.CombinedOutput(); err != nil {
+		return "", fmt.Errorf("failed to install helm %s (%v)", defaultHelmVersion, err)
+	}
+
+	return path.Join(c.toolsDir, binName), nil
 }
