@@ -1,4 +1,4 @@
-name: "CLA Assistant"
+name: cla
 on:
   issue_comment:
     types: [created]
@@ -6,7 +6,7 @@ on:
     types: [opened,closed,synchronize]
 
 jobs:
-  cla:
+  sign:
     runs-on: ubuntu-latest
     steps:
       - name: "CLA Assistant"
