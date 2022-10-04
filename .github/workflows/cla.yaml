@@ -25,3 +25,4 @@ jobs:
           custom-allsigned-prcomment: 'All Contributors have signed the CLA.'
           lock-pullrequest-aftermerge: false
           branch: 'main'
+
