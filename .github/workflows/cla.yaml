@@ -19,9 +19,9 @@ jobs:
           remote-organization-name: pipe-cd
           remote-repository-name: pipecd-cla
           path-to-signatures: 'cla/signatures.json'
-          path-to-document: 'https://github.com/pipe-cd/pipecd/blob/master/CLA.md'
-          custom-notsigned-prcomment: "Welcome $contributorName!\nThanks for your contributing. It looks like this is your first PR to this repository 🎉. Before we can look at your pull request, you'll need to sign a Contributor License Agreement (CLA). Please read the [CLA](https://github.com/pipe-cd/pipecd/blob/master/CLA.md) and leave a `/cla sign` comment on this pull request to sign the CLA."
+          custom-notsigned-prcomment: "Welcome!\nThanks for your contributing. It looks like this is your first PR to this repository 🎉. Before we can look at your pull request, you'll need to sign a Contributor License Agreement (CLA). Please read the [CLA](https://github.com/pipe-cd/pipecd/blob/master/CLA.md) and leave a below comment on this pull request to sign the CLA."
           custom-pr-sign-comment: '/cla sign'
           custom-allsigned-prcomment: 'All Contributors have signed the CLA.'
           lock-pullrequest-aftermerge: false
           branch: 'main'
+          allowlist: dependabot
