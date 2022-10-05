@@ -20,6 +20,7 @@ import (
 	"path/filepath"
 	"text/template"
 
+	"github.com/Masterminds/sprig"
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
@@ -49,13 +50,11 @@ func DecryptSecrets(appDir string, enc config.SecretEncryption, dcr secretDecryp
 
 	for _, t := range enc.DecryptionTargets {
 		targetPath := filepath.Join(appDir, t)
-		tmpl, err := template.ParseFiles(targetPath)
+		fileName := filepath.Base(targetPath)
+		tmpl, err := template.New(fileName).Funcs(sprig.TxtFuncMap()).Option("missingkey=error").ParseFiles(targetPath)
 		if err != nil {
 			return fmt.Errorf("failed to parse decryption target %s (%w)", t, err)
 		}
-
-		// Return an error immediately if the target is using a nonexistent secret.
-		tmpl = tmpl.Option("missingkey=error")
 
 		f, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_TRUNC, 0644)
 		if err != nil {
