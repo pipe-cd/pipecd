@@ -97,10 +97,9 @@ export const updateGitHubSSO = ({
 export const addUserGroup = ({
   ssoGroup,
   role,
-}: {
-  ssoGroup: string;
-  role: string;
-}): Promise<AddProjectUserGroupResponse.AsObject> => {
+}: AddProjectUserGroupRequest.AsObject): Promise<
+  AddProjectUserGroupResponse.AsObject
+> => {
   const req = new AddProjectUserGroupRequest();
   req.setSsoGroup(ssoGroup);
   req.setRole(role);
@@ -109,9 +108,9 @@ export const addUserGroup = ({
 
 export const deleteUserGroup = ({
   ssoGroup,
-}: {
-  ssoGroup: string;
-}): Promise<DeleteProjectUserGroupResponse.AsObject> => {
+}: DeleteProjectUserGroupRequest.AsObject): Promise<
+  DeleteProjectUserGroupResponse.AsObject
+> => {
   const req = new DeleteProjectUserGroupRequest();
   req.setSsoGroup(ssoGroup);
   return apiRequest(req, apiClient.deleteProjectUserGroup);
