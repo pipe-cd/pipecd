@@ -46,8 +46,8 @@ import {
 } from "~/modules/pipeds";
 import { AppState } from "~/store";
 import { useSettingsStyles } from "../styles";
-import { AddPipedDrawer } from "./components/add-piped-drawer";
-import { EditPipedDrawer } from "./components/edit-piped-drawer";
+import { AddPipedDialog } from "./components/add-piped-dialog";
+import { EditPipedDialog } from "./components/edit-piped-dialog";
 import { FilterValues, PipedFilter } from "./components/piped-filter";
 import { PipedTableRow } from "./components/piped-table-row";
 import { UpgradePipedDialog } from "./components/upgrade-dialog";
@@ -219,8 +219,9 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
         )}
       </Box>
 
-      <AddPipedDrawer open={isOpenForm} onClose={handleClose} />
-      <EditPipedDrawer pipedId={editPipedId} onClose={handleEditClose} />
+      <AddPipedDialog open={isOpenForm} onClose={handleClose} />
+      <EditPipedDialog pipedId={editPipedId} onClose={handleEditClose} />
+
       <UpgradePipedDialog
         open={isUpgradeDialogOpen}
         pipeds={pipeds}
