@@ -1,4 +1,4 @@
-import { Drawer } from "@material-ui/core";
+import { Dialog } from "@material-ui/core";
 import { useFormik } from "formik";
 import { FC, memo, useCallback } from "react";
 import { UPDATE_PIPED_SUCCESS } from "~/constants/toast-text";
@@ -12,8 +12,8 @@ export interface EditPipedDrawerProps {
   onClose: () => void;
 }
 
-export const EditPipedDrawer: FC<EditPipedDrawerProps> = memo(
-  function EditPipedDrawer({ pipedId, onClose }) {
+export const EditPipedDialog: FC<EditPipedDrawerProps> = memo(
+  function EditPipedDialog({ pipedId, onClose }) {
     const dispatch = useAppDispatch();
     const piped = useAppSelector(selectPipedById(pipedId));
 
@@ -45,13 +45,13 @@ export const EditPipedDrawer: FC<EditPipedDrawerProps> = memo(
     }, [formik, onClose]);
 
     return (
-      <Drawer anchor="right" open={Boolean(piped)} onClose={handleClose}>
+      <Dialog open={Boolean(piped)} onClose={handleClose}>
         <PipedForm
           title={`Edit piped "${piped?.name}"`}
           {...formik}
           onClose={handleClose}
         />
-      </Drawer>
+      </Dialog>
     );
   }
 );

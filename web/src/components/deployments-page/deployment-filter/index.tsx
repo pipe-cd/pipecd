@@ -226,7 +226,6 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
               setAllLabels([value]);
             }}
             onChange={(_, newValue) => {
-              setAllLabels([]);
               setSelectedLabels(newValue);
               handleUpdateFilterValue({
                 labels: newValue,
