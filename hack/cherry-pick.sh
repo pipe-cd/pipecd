@@ -120,4 +120,4 @@ if ${CLEANUP_BRANCH}; then
   echo "+++ Deleting a working branch..."
   git checkout -
   git branch -D ${NEWBRANCH}
-if
+fi
