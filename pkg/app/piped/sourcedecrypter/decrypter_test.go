@@ -186,7 +186,7 @@ func TestDecryptSecrets(t *testing.T) {
 				p = filepath.Join(appDir, p)
 				err := os.MkdirAll(filepath.Dir(p), 0700)
 				require.NoError(t, err)
-				err = os.WriteFile(p, []byte(c), 0644)
+				err = os.WriteFile(p, []byte(c), 0600)
 				require.NoError(t, err)
 			}
 

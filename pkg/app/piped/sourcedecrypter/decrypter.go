@@ -21,6 +21,7 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
+
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
