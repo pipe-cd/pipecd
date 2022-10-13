@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"sync"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -43,6 +44,8 @@ const (
 	helmQuickstartValueRemotePath = "https://raw.githubusercontent.com/pipe-cd/pipecd/%s/quickstart/control-plane-values.yaml"
 
 	pipecdDefaultNamespace = "pipecd"
+
+	controlPlaneLocalhost = "http://localhost:8080/settings/piped?project=quickstart"
 )
 
 type command struct {
@@ -101,11 +104,19 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 		return err
 	}
 
-	// TODO: Use backoff/retry to ensure piped creating
+	var wg sync.WaitGroup
+	if err = c.exposeService(ctx, &wg); err != nil {
+		input.Logger.Error("Failed to expose PipeCD control plane service!!")
+		return err
+	}
+
 	if err = c.installPiped(ctx, helm, input); err != nil {
 		input.Logger.Error("Failed to install piped!!")
 		return err
 	}
+
+	// Block the terminal until user hits SIG_KILL.
+	wg.Wait()
 
 	return nil
 }
@@ -143,44 +154,78 @@ func (c *command) installControlPlane(ctx context.Context, helm string, input cl
 }
 
 func (c *command) installPiped(ctx context.Context, helm string, input cli.Input) error {
-	input.Logger.Info("Installing the piped for quickstart...")
+	input.Logger.Info("\nInstalling the piped for quickstart...")
 
-	// pipedName := getPromptInput("Piped Name")
-	// pipedDesc := getPromptInput("Piped Description")
-	// sourceRepo := getPromptInput("Apps manifest repo")
+	input.Logger.Info("\nOpenning PipeCD control plane at http://localhost:8080/\nPlease login using the following account:\n- Username: hello-pipecd\n- Password: hello-pipecd\nFor more information refer to https://pipecd.dev/docs/quickstart/\n")
 
-	// args := []string{
-	// 	"upgrade",
-	// 	"--install",
-	// 	helmPipedReleaseName,
-	// 	helmChartPipedRepoName,
-	// 	"--version",
-	// 	c.version,
-	// 	"--namespace",
-	// 	c.namespace,
-	// 	"--set",
-	// 	"quickstart.enable=true",
-	// 	"--set",
-	// 	fmt.Sprintf("quickstart.pipedId=%s", ""),
-	// 	"--set",
-	// 	fmt.Sprintf("secret.data.piped-key=%s", ""),
-	// 	"--set",
-	//  fmt.Sprintf("quickstart.gitRepoRemote=%s", sourceRepo),
-	// }
+	// TODO: Support other os.
+	if err := exec.Command("open", controlPlaneLocalhost).Start(); err != nil {
+		return fmt.Errorf("failed to open PipeCD control plane: %w", err)
+	}
 
-	// var stderr, stdout bytes.Buffer
-	// cmd := exec.CommandContext(ctx, helm, args...)
-	// cmd.Stderr = &stderr
-	// cmd.Stdout = &stdout
+	input.Logger.Info("Fill up your registered Piped information:")
 
-	// if err := cmd.Run(); err != nil {
-	// 	return fmt.Errorf("%w: %s", err, stderr.String())
-	// }
+	pipedId := getPromptInput("ID")
+	pipedKey := getPromptInput("Key")
+	sourceRepo := getPromptInput("Apps manifest repo")
 
-	// input.Logger.Info(stdout.String())
+	args := []string{
+		"upgrade",
+		"--install",
+		helmPipedReleaseName,
+		helmChartPipedRepoName,
+		"--version",
+		c.version,
+		"--namespace",
+		c.namespace,
+		"--set",
+		"quickstart.enabled=true",
+		"--set",
+		fmt.Sprintf("quickstart.pipedId=%s", pipedId),
+		"--set",
+		fmt.Sprintf("secret.data.piped-key=%s", pipedKey),
+		"--set",
+		fmt.Sprintf("quickstart.gitRepoRemote=%s", sourceRepo),
+	}
+
+	var stderr, stdout bytes.Buffer
+	cmd := exec.CommandContext(ctx, helm, args...)
+	cmd.Stderr = &stderr
+	cmd.Stdout = &stdout
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("%w: %s", err, stderr.String())
+	}
+
+	input.Logger.Info(stdout.String())
 	input.Logger.Info("Intalled the piped successfully!")
 
 	return nil
+}
+
+func (c *command) exposeService(ctx context.Context, wg *sync.WaitGroup) error {
+	kubectl, err := c.getKubectl(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to prepare required tool (kubectl) for installation: %v", err)
+	}
+
+	args := []string{
+		"port-forward",
+		"svc/pipecd",
+		"8080",
+		"-n",
+		c.namespace,
+	}
+	cmd := exec.CommandContext(ctx, kubectl, args...)
+
+	wg.Add(1)
+	go func() {
+		if err := cmd.Run(); err != nil {
+			err = fmt.Errorf("failed to expose PipeCD service: %w", err)
+		}
+		defer wg.Done()
+	}()
+	return err
 }
 
 func getPromptInput(label string) string {
@@ -227,6 +272,30 @@ func (c *command) uninstallAll(ctx context.Context, helm string, input cli.Input
 	input.Logger.Info("Unintalled the PipeCD components successfully!")
 
 	return nil
+}
+
+func (c *command) getKubectl(ctx context.Context) (string, error) {
+	binName := "kubectl"
+
+	fi, err := os.Stat(path.Join(c.toolsDir, binName))
+	if err != nil && !os.IsNotExist(err) {
+		return "", err
+	}
+
+	if fi != nil {
+		return path.Join(c.toolsDir, binName), nil
+	}
+
+	epath, err := exec.LookPath(binName)
+	if err != nil && !errors.Is(err, exec.ErrNotFound) {
+		return "", err
+	}
+
+	if epath != "" {
+		return epath, nil
+	}
+
+	return "", fmt.Errorf("%s not found", binName)
 }
 
 // getHelm finds and returns helm executable binary in the following priority:
