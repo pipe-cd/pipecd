@@ -24,6 +24,7 @@ import (
 	"os/exec"
 	"path"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 
 	"github.com/pipe-cd/pipecd/pkg/cli"
@@ -32,8 +33,12 @@ import (
 
 const (
 	defaultHelmVersion = "3.8.2"
-	helmReleaseName    = "pipecd"
-	helmChartRepoName  = "oci://ghcr.io/pipe-cd/chart/pipecd"
+
+	helmControlPlaneReleaseName = "pipecd"
+	helmPipedReleaseName        = "piped"
+
+	helmChartControlPlaneRepoName = "oci://ghcr.io/pipe-cd/chart/pipecd"
+	helmChartPipedRepoName        = "oci://ghcr.io/pipe-cd/chart/piped"
 
 	helmQuickstartValueRemotePath = "https://raw.githubusercontent.com/pipe-cd/pipecd/%s/quickstart/control-plane-values.yaml"
 
@@ -87,33 +92,39 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 		return fmt.Errorf("failed to prepare required tools (helm) for installation: %v", err)
 	}
 
-	var args []string
-
 	if c.uninstall {
-		input.Logger.Info("Uninstalling the controlplane...")
+		return c.uninstallAll(ctx, helm, input)
+	}
 
-		args = []string{
-			"uninstall",
-			helmReleaseName,
-			"--namespace",
-			c.namespace,
-		}
-	} else {
-		input.Logger.Info("Installing the controlplane in quickstart mode...")
+	if err = c.installControlPlane(ctx, helm, input); err != nil {
+		input.Logger.Error("Failed to install PipeCD control plane!!")
+		return err
+	}
 
-		args = []string{
-			"upgrade",
-			"--install",
-			helmReleaseName,
-			helmChartRepoName,
-			"--version",
-			c.version,
-			"--namespace",
-			c.namespace,
-			"--create-namespace",
-			"--values",
-			fmt.Sprintf(helmQuickstartValueRemotePath, c.version),
-		}
+	// TODO: Use backoff/retry to ensure piped creating
+	if err = c.installPiped(ctx, helm, input); err != nil {
+		input.Logger.Error("Failed to install piped!!")
+		return err
+	}
+
+	return nil
+}
+
+func (c *command) installControlPlane(ctx context.Context, helm string, input cli.Input) error {
+	input.Logger.Info("Installing the controlplane in quickstart mode...")
+
+	args := []string{
+		"upgrade",
+		"--install",
+		helmControlPlaneReleaseName,
+		helmChartControlPlaneRepoName,
+		"--version",
+		c.version,
+		"--namespace",
+		c.namespace,
+		"--create-namespace",
+		"--values",
+		fmt.Sprintf(helmQuickstartValueRemotePath, c.version),
 	}
 
 	var stderr, stdout bytes.Buffer
@@ -126,6 +137,94 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 	}
 
 	input.Logger.Info(stdout.String())
+	input.Logger.Info("Intalled the controlplane successfully!")
+
+	return nil
+}
+
+func (c *command) installPiped(ctx context.Context, helm string, input cli.Input) error {
+	input.Logger.Info("Installing the piped for quickstart...")
+
+	// pipedName := getPromptInput("Piped Name")
+	// pipedDesc := getPromptInput("Piped Description")
+	// sourceRepo := getPromptInput("Apps manifest repo")
+
+	// args := []string{
+	// 	"upgrade",
+	// 	"--install",
+	// 	helmPipedReleaseName,
+	// 	helmChartPipedRepoName,
+	// 	"--version",
+	// 	c.version,
+	// 	"--namespace",
+	// 	c.namespace,
+	// 	"--set",
+	// 	"quickstart.enable=true",
+	// 	"--set",
+	// 	fmt.Sprintf("quickstart.pipedId=%s", ""),
+	// 	"--set",
+	// 	fmt.Sprintf("secret.data.piped-key=%s", ""),
+	// 	"--set",
+	//  fmt.Sprintf("quickstart.gitRepoRemote=%s", sourceRepo),
+	// }
+
+	// var stderr, stdout bytes.Buffer
+	// cmd := exec.CommandContext(ctx, helm, args...)
+	// cmd.Stderr = &stderr
+	// cmd.Stdout = &stdout
+
+	// if err := cmd.Run(); err != nil {
+	// 	return fmt.Errorf("%w: %s", err, stderr.String())
+	// }
+
+	// input.Logger.Info(stdout.String())
+	input.Logger.Info("Intalled the piped successfully!")
+
+	return nil
+}
+
+func getPromptInput(label string) string {
+	validate := func(input string) error {
+		// TODO: Add validation based on input length for instance.
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    label,
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+
+	if err != nil {
+		return ""
+	}
+	return result
+}
+
+func (c *command) uninstallAll(ctx context.Context, helm string, input cli.Input) error {
+	input.Logger.Info("Uninstalling PipeCD components...")
+
+	args := []string{
+		"uninstall",
+		helmControlPlaneReleaseName,
+		"--namespace",
+		c.namespace,
+	}
+
+	// TODO: Remove piped.
+
+	var stderr, stdout bytes.Buffer
+	cmd := exec.CommandContext(ctx, helm, args...)
+	cmd.Stderr = &stderr
+	cmd.Stdout = &stdout
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("%w: %s", err, stderr.String())
+	}
+
+	input.Logger.Info(stdout.String())
+	input.Logger.Info("Unintalled the PipeCD components successfully!")
 
 	return nil
 }
