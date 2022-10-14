@@ -47,6 +47,10 @@ const (
 	pipecdDefaultNamespace = "pipecd"
 
 	controlPlaneLocalhost = "http://localhost:8080/settings/piped?project=quickstart"
+
+	pipedIDLabel       = "ID"
+	pipedKeyLabel      = "Key"
+	pipedGitRemoteRepo = "GitRemoteRepo"
 )
 
 type command struct {
@@ -161,9 +165,9 @@ func (c *command) installPiped(ctx context.Context, helm string, input cli.Input
 
 	input.Logger.Info("Fill up your registered Piped information:")
 
-	pipedID := getPromptInput("ID")
-	pipedKey := getPromptInput("Key")
-	sourceRepo := getPromptInput("Apps manifest repo")
+	pipedID := getPromptInput(pipedIDLabel)
+	pipedKey := getPromptInput(pipedKeyLabel)
+	sourceRepo := getPromptInput(pipedGitRemoteRepo)
 
 	args := []string{
 		"upgrade",
@@ -229,7 +233,20 @@ func (c *command) exposeService(ctx context.Context) error {
 
 func getPromptInput(label string) string {
 	validate := func(input string) error {
-		// TODO: Add validation based on input length for instance.
+		switch label {
+		case pipedIDLabel:
+			if len(input) != 36 {
+				return fmt.Errorf("invalid ID")
+			}
+		case pipedKeyLabel:
+			if len(input) != 50 {
+				return fmt.Errorf("invalid Key")
+			}
+		default:
+			if len(input) == 0 {
+				return fmt.Errorf("missing value: %s", label)
+			}
+		}
 		return nil
 	}
 
