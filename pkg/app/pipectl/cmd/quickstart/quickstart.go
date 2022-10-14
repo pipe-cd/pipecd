@@ -24,7 +24,7 @@ import (
 	"os/exec"
 	"path"
 	"runtime"
-	"sync"
+	"time"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -105,8 +105,7 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 		return err
 	}
 
-	var wg sync.WaitGroup
-	if err = c.exposeService(ctx, &wg); err != nil {
+	if err = c.exposeService(ctx); err != nil {
 		input.Logger.Error("Failed to expose PipeCD control plane service!!")
 		return err
 	}
@@ -115,9 +114,6 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 		input.Logger.Error("Failed to install piped!!")
 		return err
 	}
-
-	// Block the terminal until user hits SIG_KILL.
-	wg.Wait()
 
 	return nil
 }
@@ -203,7 +199,7 @@ func (c *command) installPiped(ctx context.Context, helm string, input cli.Input
 	return nil
 }
 
-func (c *command) exposeService(ctx context.Context, wg *sync.WaitGroup) error {
+func (c *command) exposeService(ctx context.Context) error {
 	kubectl, err := c.getKubectl()
 	if err != nil {
 		return fmt.Errorf("failed to prepare required tool (kubectl) for installation: %v", err)
@@ -216,13 +212,18 @@ func (c *command) exposeService(ctx context.Context, wg *sync.WaitGroup) error {
 		"-n",
 		c.namespace,
 	}
+	var stderr bytes.Buffer
 	cmd := exec.CommandContext(ctx, kubectl, args...)
+	cmd.Stderr = &stderr
 
-	wg.Add(1)
-	go func() {
-		cmd.Run()
-		defer wg.Done()
-	}()
+	// Wait the control plane service to be ready.
+	// TODO: Find a better way to handle this instead of time sleep
+	time.Sleep(time.Minute)
+
+	if err = cmd.Start(); err != nil {
+		return fmt.Errorf("%w: %s", err, stderr.String())
+	}
+
 	return nil
 }
 
