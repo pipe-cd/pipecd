@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"runtime"
 	"sync"
 
 	"github.com/manifoldco/promptui"
@@ -158,14 +159,13 @@ func (c *command) installPiped(ctx context.Context, helm string, input cli.Input
 
 	input.Logger.Info("\nOpenning PipeCD control plane at http://localhost:8080/\nPlease login using the following account:\n- Username: hello-pipecd\n- Password: hello-pipecd\nFor more information refer to https://pipecd.dev/docs/quickstart/\n")
 
-	// TODO: Support other os.
-	if err := exec.Command("open", controlPlaneLocalhost).Start(); err != nil {
+	if err := openbrowser(controlPlaneLocalhost); err != nil {
 		return fmt.Errorf("failed to open PipeCD control plane: %w", err)
 	}
 
 	input.Logger.Info("Fill up your registered Piped information:")
 
-	pipedId := getPromptInput("ID")
+	pipedID := getPromptInput("ID")
 	pipedKey := getPromptInput("Key")
 	sourceRepo := getPromptInput("Apps manifest repo")
 
@@ -181,7 +181,7 @@ func (c *command) installPiped(ctx context.Context, helm string, input cli.Input
 		"--set",
 		"quickstart.enabled=true",
 		"--set",
-		fmt.Sprintf("quickstart.pipedId=%s", pipedId),
+		fmt.Sprintf("quickstart.pipedId=%s", pipedID),
 		"--set",
 		fmt.Sprintf("secret.data.piped-key=%s", pipedKey),
 		"--set",
@@ -204,7 +204,7 @@ func (c *command) installPiped(ctx context.Context, helm string, input cli.Input
 }
 
 func (c *command) exposeService(ctx context.Context, wg *sync.WaitGroup) error {
-	kubectl, err := c.getKubectl(ctx)
+	kubectl, err := c.getKubectl()
 	if err != nil {
 		return fmt.Errorf("failed to prepare required tool (kubectl) for installation: %v", err)
 	}
@@ -220,12 +220,10 @@ func (c *command) exposeService(ctx context.Context, wg *sync.WaitGroup) error {
 
 	wg.Add(1)
 	go func() {
-		if err := cmd.Run(); err != nil {
-			err = fmt.Errorf("failed to expose PipeCD service: %w", err)
-		}
+		cmd.Run()
 		defer wg.Done()
 	}()
-	return err
+	return nil
 }
 
 func getPromptInput(label string) string {
@@ -247,9 +245,25 @@ func getPromptInput(label string) string {
 	return result
 }
 
+func openbrowser(url string) error {
+	var err error
+	switch runtime.GOOS {
+	case "linux":
+		err = exec.Command("xdg-open", url).Start()
+	case "darwin":
+		err = exec.Command("open", url).Start()
+	default:
+		err = fmt.Errorf("unsupported platform: %s", runtime.GOOS)
+	}
+	return err
+}
+
 func (c *command) uninstallAll(ctx context.Context, helm string, input cli.Input) error {
 	input.Logger.Info("Uninstalling PipeCD components...")
 
+	var stderr, stdout bytes.Buffer
+
+	// Uninstall PipeCD control plane.
 	args := []string{
 		"uninstall",
 		helmControlPlaneReleaseName,
@@ -257,10 +271,23 @@ func (c *command) uninstallAll(ctx context.Context, helm string, input cli.Input
 		c.namespace,
 	}
 
-	// TODO: Remove piped.
-
-	var stderr, stdout bytes.Buffer
 	cmd := exec.CommandContext(ctx, helm, args...)
+	cmd.Stderr = &stderr
+	cmd.Stdout = &stdout
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("%w: %s", err, stderr.String())
+	}
+
+	// Uninstall Piped.
+	args = []string{
+		"uninstall",
+		helmPipedReleaseName,
+		"--namespace",
+		c.namespace,
+	}
+
+	cmd = exec.CommandContext(ctx, helm, args...)
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
 
@@ -274,7 +301,7 @@ func (c *command) uninstallAll(ctx context.Context, helm string, input cli.Input
 	return nil
 }
 
-func (c *command) getKubectl(ctx context.Context) (string, error) {
+func (c *command) getKubectl() (string, error) {
 	binName := "kubectl"
 
 	fi, err := os.Stat(path.Join(c.toolsDir, binName))
