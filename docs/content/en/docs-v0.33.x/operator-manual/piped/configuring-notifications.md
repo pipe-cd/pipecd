@@ -51,7 +51,7 @@ spec:
       # labels `env: prod` and `team: pipecd` to prod-slack-channel.
       - name: prod-slack
         events:
-          - DEPLOYMENT_STARTED
+          - DEPLOYMENT_TRIGGERED
           - DEPLOYMENT_COMPLETED
         labels:
           env: prod
