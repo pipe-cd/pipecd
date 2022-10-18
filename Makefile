@@ -53,6 +53,18 @@ else
 	helm package manifests/$(MOD) --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
 endif
 
+.PHONY: push
+push/chart: BUCKET ?= charts.pipecd.dev
+push/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+push/chart: CREDENTIALS_FILE ?= ~/.config/gcloud/application_default_credentials.json
+push/chart:
+	@yq '.version = "${VERSION}"' -i manifests/pipecd/Chart.yaml
+	@yq '.version = "${VERSION}"' -i manifests/piped/Chart.yaml
+	@yq '.version = "${VERSION}"' -i manifests/site/Chart.yaml
+	@yq '.version = "${VERSION}"' -i manifests/helloworld/Chart.yaml
+	docker run --rm -it -v ${CREDENTIALS_FILE}:/secret -v ${PWD}:/repo gcr.io/pipecd/chart-releaser:1.2.0 /chart-releaser --bucket=${BUCKET} --manifests-dir=repo/manifests --credentials-file=secret
+	@git checkout manifest/
+
 # Test commands
 
 .PHONY: test
