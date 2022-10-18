@@ -8,6 +8,7 @@
 #   lint:   lint the source code
 #   update: update packages or dependencies to the newer versions
 #   gen:    execute code or docs generation
+#   push:   push artifacts such as helm chart
 ####################
 
 # Build commands
