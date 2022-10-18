@@ -24,11 +24,13 @@ import (
 	"os/exec"
 	"path"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 
+	"github.com/pipe-cd/pipecd/pkg/backoff"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/version"
 )
@@ -51,6 +53,9 @@ const (
 	pipedIDLabel       = "ID"
 	pipedKeyLabel      = "Key"
 	pipedGitRemoteRepo = "GitRemoteRepo"
+
+	deploymentReadyRetryTime     = 3
+	deploymentReadyRetryDuration = time.Minute
 )
 
 type command struct {
@@ -209,7 +214,34 @@ func (c *command) exposeService(ctx context.Context) error {
 		return fmt.Errorf("failed to prepare required tool (kubectl) for installation: %v", err)
 	}
 
+	// Wait the control plane service to be ready.
 	args := []string{
+		"rollout",
+		"status",
+		"deploy/pipecd-server",
+		"-n",
+		c.namespace,
+	}
+	var stdout bytes.Buffer
+	cmd := exec.CommandContext(ctx, kubectl, args...)
+	cmd.Stdout = &stdout
+
+	retry := backoff.NewRetry(deploymentReadyRetryTime, backoff.NewConstant(deploymentReadyRetryDuration))
+	var serverIsReady bool
+	for retry.WaitNext(ctx) {
+		cmd.Run()
+		if strings.Contains(stdout.String(), "successfully rolled out") {
+			serverIsReady = true
+			break
+		}
+	}
+
+	if !serverIsReady {
+		return fmt.Errorf("failed while waiting for server to be ready")
+	}
+
+	// Expose the PipeCD control plane to localhost:8080.
+	args = []string{
 		"port-forward",
 		"svc/pipecd",
 		"8080",
@@ -217,12 +249,8 @@ func (c *command) exposeService(ctx context.Context) error {
 		c.namespace,
 	}
 	var stderr bytes.Buffer
-	cmd := exec.CommandContext(ctx, kubectl, args...)
+	cmd = exec.CommandContext(ctx, kubectl, args...)
 	cmd.Stderr = &stderr
-
-	// Wait the control plane service to be ready.
-	// TODO: Find a better way to handle this instead of time sleep
-	time.Sleep(time.Minute)
 
 	if err = cmd.Start(); err != nil {
 		return fmt.Errorf("%w: %s", err, stderr.String())
