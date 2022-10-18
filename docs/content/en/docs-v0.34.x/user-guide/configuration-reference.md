@@ -37,7 +37,7 @@ spec:
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
 | variantLabel | [KubernetesVariantLabel](#kubernetesvariantlabel) | The label will be configured to variant manifests used to distinguish them. | No |
-| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
+| eventWatcher | [][EventWatcher](#eventwatcher) | List of configurations for event watcher. | No |
 
 ## Terraform application
 
@@ -65,7 +65,7 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
-| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
+| eventWatcher | [][EventWatcher](#eventwatcher) | List of configurations for event watcher. | No |
 
 ## Cloud Run application
 
@@ -93,7 +93,7 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
-| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
+| eventWatcher | [][EventWatcher](#eventwatcher) | List of configurations for event watcher. | No |
 
 ## Lambda application
 
@@ -119,7 +119,7 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
-| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
+| eventWatcher | [][EventWatcher](#eventwatcher) | List of configurations for event watcher. | No |
 
 ## ECS application
 
@@ -146,7 +146,7 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
-| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
+| eventWatcher | [][EventWatcher](#eventwatcher) | List of configurations for event watcher. | No |
 
 ## Analysis Template Configuration
 
