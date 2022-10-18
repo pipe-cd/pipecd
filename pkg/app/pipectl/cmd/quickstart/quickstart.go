@@ -256,7 +256,6 @@ func getPromptInput(label string) string {
 	}
 
 	result, err := prompt.Run()
-
 	if err != nil {
 		return ""
 	}
