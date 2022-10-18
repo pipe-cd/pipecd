@@ -25,6 +25,7 @@ import (
 	"path"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/manifoldco/promptui"
@@ -114,7 +115,8 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 		return err
 	}
 
-	if err = c.exposeService(ctx); err != nil {
+	var wg sync.WaitGroup
+	if err = c.exposeService(ctx, &wg); err != nil {
 		input.Logger.Error("Failed to expose PipeCD control plane service!!")
 		return err
 	}
@@ -123,6 +125,11 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 		input.Logger.Error("Failed to install piped!!")
 		return err
 	}
+
+	input.Logger.Info("\nPipeCD console is ready at http://localhost:8080/")
+
+	// Wait until users hit SIG_KILL.
+	wg.Wait()
 
 	return nil
 }
@@ -208,7 +215,7 @@ func (c *command) installPiped(ctx context.Context, helm string, input cli.Input
 	return nil
 }
 
-func (c *command) exposeService(ctx context.Context) error {
+func (c *command) exposeService(ctx context.Context, wg *sync.WaitGroup) error {
 	kubectl, err := c.getKubectl()
 	if err != nil {
 		return fmt.Errorf("failed to prepare required tool (kubectl) for installation: %v", err)
@@ -252,9 +259,11 @@ func (c *command) exposeService(ctx context.Context) error {
 	cmd = exec.CommandContext(ctx, kubectl, args...)
 	cmd.Stderr = &stderr
 
-	if err = cmd.Start(); err != nil {
-		return fmt.Errorf("%w: %s", err, stderr.String())
-	}
+	wg.Add(1)
+	go func() {
+		cmd.Run()
+		defer wg.Done()
+	}()
 
 	return nil
 }
