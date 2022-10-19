@@ -897,9 +897,6 @@ type NotificationRoute struct {
 	IgnoreApps   []string          `json:"ignoreApps,omitempty"`
 	Labels       map[string]string `json:"labels,omitempty"`
 	IgnoreLabels map[string]string `json:"ignoreLabels,omitempty"`
-	// Deprecated: Should use labels instead.
-	Envs       []string `json:"envs,omitempty"`
-	IgnoreEnvs []string `json:"ignoreEnvs,omitempty"`
 }
 
 type NotificationReceiver struct {

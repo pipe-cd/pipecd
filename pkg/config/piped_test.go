@@ -502,8 +502,6 @@ func TestPipedConfigMask(t *testing.T) {
 							IgnoreApps:   []string{"foo"},
 							Labels:       map[string]string{"foo": "foo"},
 							IgnoreLabels: map[string]string{"foo": "foo"},
-							Envs:         []string{"foo"},
-							IgnoreEnvs:   []string{"foo"},
 						},
 					},
 					Receivers: []NotificationReceiver{
@@ -662,8 +660,6 @@ func TestPipedConfigMask(t *testing.T) {
 							IgnoreApps:   []string{"foo"},
 							Labels:       map[string]string{"foo": "foo"},
 							IgnoreLabels: map[string]string{"foo": "foo"},
-							Envs:         []string{"foo"},
-							IgnoreEnvs:   []string{"foo"},
 						},
 					},
 					Receivers: []NotificationReceiver{
