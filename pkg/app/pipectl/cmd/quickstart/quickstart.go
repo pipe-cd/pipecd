@@ -23,21 +23,40 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"runtime"
+	"strings"
+	"sync"
+	"time"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 
+	"github.com/pipe-cd/pipecd/pkg/backoff"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/version"
 )
 
 const (
 	defaultHelmVersion = "3.8.2"
-	helmReleaseName    = "pipecd"
-	helmChartRepoName  = "oci://ghcr.io/pipe-cd/chart/pipecd"
+
+	helmControlPlaneReleaseName = "pipecd"
+	helmPipedReleaseName        = "piped"
+
+	helmChartControlPlaneRepoName = "oci://ghcr.io/pipe-cd/chart/pipecd"
+	helmChartPipedRepoName        = "oci://ghcr.io/pipe-cd/chart/piped"
 
 	helmQuickstartValueRemotePath = "https://raw.githubusercontent.com/pipe-cd/pipecd/%s/quickstart/control-plane-values.yaml"
 
 	pipecdDefaultNamespace = "pipecd"
+
+	controlPlaneLocalhost = "http://localhost:8080/settings/piped?project=quickstart"
+
+	pipedIDLabel       = "ID"
+	pipedKeyLabel      = "Key"
+	pipedGitRemoteRepo = "GitRemoteRepo"
+
+	deploymentReadyRetryTime     = 3
+	deploymentReadyRetryDuration = time.Minute
 )
 
 type command struct {
@@ -87,33 +106,49 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 		return fmt.Errorf("failed to prepare required tools (helm) for installation: %v", err)
 	}
 
-	var args []string
-
 	if c.uninstall {
-		input.Logger.Info("Uninstalling the controlplane...")
+		return c.uninstallAll(ctx, helm, input)
+	}
 
-		args = []string{
-			"uninstall",
-			helmReleaseName,
-			"--namespace",
-			c.namespace,
-		}
-	} else {
-		input.Logger.Info("Installing the controlplane in quickstart mode...")
+	if err = c.installControlPlane(ctx, helm, input); err != nil {
+		input.Logger.Error("Failed to install PipeCD control plane!!")
+		return err
+	}
 
-		args = []string{
-			"upgrade",
-			"--install",
-			helmReleaseName,
-			helmChartRepoName,
-			"--version",
-			c.version,
-			"--namespace",
-			c.namespace,
-			"--create-namespace",
-			"--values",
-			fmt.Sprintf(helmQuickstartValueRemotePath, c.version),
-		}
+	var wg sync.WaitGroup
+	if err = c.exposeService(ctx, &wg); err != nil {
+		input.Logger.Error("Failed to expose PipeCD control plane service!!")
+		return err
+	}
+
+	if err = c.installPiped(ctx, helm, input); err != nil {
+		input.Logger.Error("Failed to install piped!!")
+		return err
+	}
+
+	input.Logger.Info("\nPipeCD console is ready at http://localhost:8080/")
+
+	// Wait until users hit SIG_KILL.
+	wg.Wait()
+
+	return nil
+}
+
+func (c *command) installControlPlane(ctx context.Context, helm string, input cli.Input) error {
+	input.Logger.Info("Installing the controlplane in quickstart mode...")
+
+	args := []string{
+		"upgrade",
+		"--install",
+		helmControlPlaneReleaseName,
+		helmChartControlPlaneRepoName,
+		"--version",
+		c.version,
+		"--namespace",
+		c.namespace,
+		"--create-namespace",
+		"--values",
+		fmt.Sprintf(helmQuickstartValueRemotePath, c.version),
 	}
 
 	var stderr, stdout bytes.Buffer
@@ -126,8 +161,222 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 	}
 
 	input.Logger.Info(stdout.String())
+	input.Logger.Info("Intalled the controlplane successfully!")
 
 	return nil
+}
+
+func (c *command) installPiped(ctx context.Context, helm string, input cli.Input) error {
+	input.Logger.Info("\nInstalling the piped for quickstart...")
+
+	input.Logger.Info("\nOpenning PipeCD control plane at http://localhost:8080/\nPlease login using the following account:\n- Username: hello-pipecd\n- Password: hello-pipecd\nFor more information refer to https://pipecd.dev/docs/quickstart/\n")
+
+	if err := openbrowser(controlPlaneLocalhost); err != nil {
+		return fmt.Errorf("failed to open PipeCD control plane: %w", err)
+	}
+
+	input.Logger.Info("Fill up your registered Piped information:")
+
+	pipedID := getPromptInput(pipedIDLabel)
+	pipedKey := getPromptInput(pipedKeyLabel)
+	sourceRepo := getPromptInput(pipedGitRemoteRepo)
+
+	args := []string{
+		"upgrade",
+		"--install",
+		helmPipedReleaseName,
+		helmChartPipedRepoName,
+		"--version",
+		c.version,
+		"--namespace",
+		c.namespace,
+		"--set",
+		"quickstart.enabled=true",
+		"--set",
+		fmt.Sprintf("quickstart.pipedId=%s", pipedID),
+		"--set",
+		fmt.Sprintf("secret.data.piped-key=%s", pipedKey),
+		"--set",
+		fmt.Sprintf("quickstart.gitRepoRemote=%s", sourceRepo),
+	}
+
+	var stderr, stdout bytes.Buffer
+	cmd := exec.CommandContext(ctx, helm, args...)
+	cmd.Stderr = &stderr
+	cmd.Stdout = &stdout
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("%w: %s", err, stderr.String())
+	}
+
+	input.Logger.Info(stdout.String())
+	input.Logger.Info("Intalled the piped successfully!")
+
+	return nil
+}
+
+func (c *command) exposeService(ctx context.Context, wg *sync.WaitGroup) error {
+	kubectl, err := c.getKubectl()
+	if err != nil {
+		return fmt.Errorf("failed to prepare required tool (kubectl) for installation: %v", err)
+	}
+
+	// Wait the control plane service to be ready.
+	args := []string{
+		"rollout",
+		"status",
+		"deploy/pipecd-server",
+		"-n",
+		c.namespace,
+	}
+	var stdout bytes.Buffer
+	cmd := exec.CommandContext(ctx, kubectl, args...)
+	cmd.Stdout = &stdout
+
+	retry := backoff.NewRetry(deploymentReadyRetryTime, backoff.NewConstant(deploymentReadyRetryDuration))
+	var serverIsReady bool
+	for retry.WaitNext(ctx) {
+		cmd.Run()
+		if strings.Contains(stdout.String(), "successfully rolled out") {
+			serverIsReady = true
+			break
+		}
+	}
+
+	if !serverIsReady {
+		return fmt.Errorf("failed while waiting for server to be ready")
+	}
+
+	// Expose the PipeCD control plane to localhost:8080.
+	args = []string{
+		"port-forward",
+		"svc/pipecd",
+		"8080",
+		"-n",
+		c.namespace,
+	}
+	var stderr bytes.Buffer
+	cmd = exec.CommandContext(ctx, kubectl, args...)
+	cmd.Stderr = &stderr
+
+	wg.Add(1)
+	go func() {
+		cmd.Run()
+		defer wg.Done()
+	}()
+
+	return nil
+}
+
+func getPromptInput(label string) string {
+	validate := func(input string) error {
+		switch label {
+		case pipedIDLabel:
+			if len(input) != 36 {
+				return fmt.Errorf("invalid ID")
+			}
+		case pipedKeyLabel:
+			if len(input) != 50 {
+				return fmt.Errorf("invalid Key")
+			}
+		default:
+			if len(input) == 0 {
+				return fmt.Errorf("missing value: %s", label)
+			}
+		}
+		return nil
+	}
+
+	prompt := promptui.Prompt{
+		Label:    label,
+		Validate: validate,
+	}
+
+	result, err := prompt.Run()
+	if err != nil {
+		return ""
+	}
+	return result
+}
+
+func openbrowser(url string) error {
+	var err error
+	switch runtime.GOOS {
+	case "linux":
+		err = exec.Command("xdg-open", url).Start()
+	case "darwin":
+		err = exec.Command("open", url).Start()
+	default:
+		err = fmt.Errorf("unsupported platform: %s", runtime.GOOS)
+	}
+	return err
+}
+
+func (c *command) uninstallAll(ctx context.Context, helm string, input cli.Input) error {
+	input.Logger.Info("Uninstalling PipeCD components...")
+
+	var stderr, stdout bytes.Buffer
+
+	// Uninstall PipeCD control plane.
+	args := []string{
+		"uninstall",
+		helmControlPlaneReleaseName,
+		"--namespace",
+		c.namespace,
+	}
+
+	cmd := exec.CommandContext(ctx, helm, args...)
+	cmd.Stderr = &stderr
+	cmd.Stdout = &stdout
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("%w: %s", err, stderr.String())
+	}
+
+	// Uninstall Piped.
+	args = []string{
+		"uninstall",
+		helmPipedReleaseName,
+		"--namespace",
+		c.namespace,
+	}
+
+	cmd = exec.CommandContext(ctx, helm, args...)
+	cmd.Stderr = &stderr
+	cmd.Stdout = &stdout
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("%w: %s", err, stderr.String())
+	}
+
+	input.Logger.Info(stdout.String())
+	input.Logger.Info("Unintalled the PipeCD components successfully!")
+
+	return nil
+}
+
+func (c *command) getKubectl() (string, error) {
+	binName := "kubectl"
+
+	fi, err := os.Stat(path.Join(c.toolsDir, binName))
+	if err != nil && !os.IsNotExist(err) {
+		return "", err
+	}
+
+	if fi != nil {
+		return path.Join(c.toolsDir, binName), nil
+	}
+
+	epath, err := exec.LookPath(binName)
+	if err != nil && !errors.Is(err, exec.ErrNotFound) {
+		return "", err
+	}
+
+	if epath != "" {
+		return epath, nil
+	}
+
+	return "", fmt.Errorf("%s not found", binName)
 }
 
 // getHelm finds and returns helm executable binary in the following priority:
