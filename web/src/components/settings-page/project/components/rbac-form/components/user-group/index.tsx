@@ -29,9 +29,6 @@ import {
 } from "~/constants/toast-text";
 
 const useStyles = makeStyles((theme) => ({
-  selectTableContainer: {
-    maxHeight: 450,
-  },
   title: {
     display: "flex",
     alignItems: "center",
@@ -125,7 +122,6 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
       <TableContainer
         component={Paper}
         square
-        className={classes.selectTableContainer}
       >
         <Table size="small" stickyHeader>
           <TableHead>

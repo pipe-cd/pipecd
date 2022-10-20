@@ -25,9 +25,6 @@ import {
 } from "~/modules/project";
 
 const useStyles = makeStyles((theme) => ({
-  selectTableContainer: {
-    maxHeight: 450,
-  },
   title: {
     display: "flex",
     alignItems: "center",
@@ -104,7 +101,6 @@ export const RoleTable: FC = memo(function RoleTable() {
       <TableContainer
         component={Paper}
         square
-        className={classes.selectTableContainer}
       >
         <Table size="small" stickyHeader>
           <TableHead>
