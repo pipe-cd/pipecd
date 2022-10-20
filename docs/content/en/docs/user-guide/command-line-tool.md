@@ -83,6 +83,7 @@ Available Commands:
   help         Help about any command
   piped        Manage piped resources.
   plan-preview Show plan preview against the specified commit.
+  quickstart   Quick prepare PipeCD control plane in quickstart mode.
   version      Print the information of current binary.
 
 Flags:
@@ -243,4 +244,4 @@ You can encrypt it the same way you do [from the web](/docs/user-guide/managing-
 
 ### You want more?
 
-We always want to add more needed commands into pipectl. Please let us know what command you want to add by creating issues in the [pipe-cd/pipe](https://github.com/pipe-cd/pipecd/issues) repository. We also welcome your pull request to add the command.
+We always want to add more needed commands into pipectl. Please let us know what command you want to add by creating issues in the [pipe-cd/pipecd](https://github.com/pipe-cd/pipecd/issues) repository. We also welcome your pull request to add the command.
