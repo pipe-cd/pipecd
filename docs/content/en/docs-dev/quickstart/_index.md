@@ -29,12 +29,18 @@ Then make the pipectl binary executable
 chmod +x ./pipectl
 ```
 
+You can also move the pipectl binary to the $PATH for later use
+
+```console
+sudo mv ./pipectl /usr/local/bin/pipectl
+```
+
 ### 2. Installing PipeCD's component with pipectl
 
 We can simply use __pipectl quickstart__ command to start the PipeCD installation process and follow the instruction
 
 ```console
-./pipectl quickstart --version {{< blocks/latest_version >}}
+pipectl quickstart --version {{< blocks/latest_version >}}
 ```
 
 Follow the instruction, the PipeCD control plane will be available at [http://localhost:8080](http://localhost:8080) and pipectl command will open the PipeCD console automatically on your browser.
@@ -103,7 +109,7 @@ After a short wait, a new deployment will be started to update to `v0.2.0`.
 When you’re finished experimenting with PipeCD, you can uninstall with:
 
 ``` console
-./pipectl quickstart --uninstall
+pipectl quickstart --uninstall
 ```
 
 ### What's next?
