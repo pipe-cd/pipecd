@@ -98,10 +98,7 @@ export const RoleTable: FC = memo(function RoleTable() {
         </Typography>
       </div>
 
-      <TableContainer
-        component={Paper}
-        square
-      >
+      <TableContainer component={Paper} square>
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>

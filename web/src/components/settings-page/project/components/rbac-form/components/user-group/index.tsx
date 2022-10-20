@@ -119,10 +119,7 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
         </Button>
       </div>
 
-      <TableContainer
-        component={Paper}
-        square
-      >
+      <TableContainer component={Paper} square>
         <Table size="small" stickyHeader>
           <TableHead>
             <TableRow>
