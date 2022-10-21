@@ -66,6 +66,14 @@ const EmptyTableContent = memo(function EmptyTableContent() {
   );
 });
 
+const ITEM_HEIGHT = 48;
+const menuStyle = {
+  style: {
+    maxHeight: ITEM_HEIGHT * 4.5,
+    width: "25ch",
+  },
+};
+
 export const APIKeyPage: FC = memo(function APIKeyPage() {
   const dispatch = useAppDispatch();
   const [loading, keys] = useAppSelector<[boolean, APIKey.AsObject[]]>(
@@ -166,6 +174,7 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
         onClose={handleCloseMenu}
+        PaperProps={menuStyle}
       >
         <MenuItem
           onClick={() => {
