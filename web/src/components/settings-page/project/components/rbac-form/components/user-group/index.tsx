@@ -37,10 +37,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ITEM_HEIGHT = 48;
 const menuStyle = {
   style: {
-    maxHeight: ITEM_HEIGHT * 4.5,
     width: "15ch",
   },
 };
