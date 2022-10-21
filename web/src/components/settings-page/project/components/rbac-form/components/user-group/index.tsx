@@ -37,6 +37,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const ITEM_HEIGHT = 48;
+const menuStyle = {
+  style: {
+    maxHeight: ITEM_HEIGHT * 4.5,
+    width: "15ch",
+  },
+};
+
 const SUB_SECTION_TITLE = "User Group";
 
 export const UserGroupTable: FC = memo(function UserGroupTable() {
@@ -149,6 +157,7 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
         onClose={handleCloseMenu}
+        PaperProps={menuStyle}
       >
         <MenuItem
           onClick={() => {
