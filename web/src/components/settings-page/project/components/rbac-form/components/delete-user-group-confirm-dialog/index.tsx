@@ -34,7 +34,7 @@ export const DeleteUserGroupConfirmDialog: FC<DeleteUserGroupConfirmDialogProps>
     const classes = useStyles();
 
     return (
-      <Dialog open={Boolean(ssoGroup)}>
+      <Dialog open={Boolean(ssoGroup)} onClose={onCancel}>
         <DialogTitle>{DIALOG_TITLE}</DialogTitle>
         <DialogContent>
           <Alert severity="warning" className={classes.description}>
