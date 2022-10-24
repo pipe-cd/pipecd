@@ -905,6 +905,17 @@ func (m *ProjectRBACRole) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if len(m.GetPolicies()) < 1 {
+		err := ProjectRBACRoleValidationError{
+			field:  "Policies",
+			reason: "value must contain at least 1 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	for idx, item := range m.GetPolicies() {
 		_, _ = idx, item
 
@@ -1191,6 +1202,17 @@ func (m *ProjectRBACPolicy) validate(all bool) error {
 
 	var errors []error
 
+	if len(m.GetResources()) < 1 {
+		err := ProjectRBACPolicyValidationError{
+			field:  "Resources",
+			reason: "value must contain at least 1 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	for idx, item := range m.GetResources() {
 		_, _ = idx, item
 
@@ -1221,6 +1243,33 @@ func (m *ProjectRBACPolicy) validate(all bool) error {
 					cause:  err,
 				}
 			}
+		}
+
+	}
+
+	if len(m.GetActions()) < 1 {
+		err := ProjectRBACPolicyValidationError{
+			field:  "Actions",
+			reason: "value must contain at least 1 item(s)",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	for idx, item := range m.GetActions() {
+		_, _ = idx, item
+
+		if _, ok := ProjectRBACPolicy_Action_name[int32(item)]; !ok {
+			err := ProjectRBACPolicyValidationError{
+				field:  fmt.Sprintf("Actions[%v]", idx),
+				reason: "value must be one of the defined enum values",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
 		}
 
 	}
