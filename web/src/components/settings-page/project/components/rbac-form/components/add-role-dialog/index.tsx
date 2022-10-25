@@ -8,6 +8,7 @@ import {
 } from "@material-ui/core";
 import { useFormik } from "formik";
 import { FC } from "react";
+import { rbacResourceTypes, rbacActionTypes } from "~/modules/project";
 import * as yup from "yup";
 
 export interface AddRoleDialogProps {
@@ -16,9 +17,24 @@ export interface AddRoleDialogProps {
   onSubmit: (values: { name: string; policies: string }) => void;
 }
 
+const validationRgex = new RegExp(
+  "resources=(" +
+    rbacResourceTypes()
+      .map((v) => v.replace(/\*/, "\\*"))
+      .join("|") +
+    "|,);actions=(" +
+    rbacActionTypes()
+      .map((v) => v.replace(/\*/, "\\*"))
+      .join("|") +
+    "|,)"
+);
+
 const validationSchema = yup.object({
   name: yup.string().min(1).required(),
-  policies: yup.string().min(1).required(),
+  policies: yup
+    .string()
+    .matches(validationRgex, "Invalid policy format")
+    .required(),
 });
 
 export const AddRoleDialog: FC<AddRoleDialogProps> = ({

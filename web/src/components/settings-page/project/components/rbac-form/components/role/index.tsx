@@ -59,14 +59,16 @@ export const RoleTable: FC = memo(function RoleTable() {
         name: values.name,
         policies: parseRBACPolicies({ policies: values.policies }),
       };
-      dispatch(addRBACRole(params)).then(() => {
-        dispatch(fetchProject());
-        dispatch(
-          addToast({
-            message: ADD_RBAC_ROLE_SUCCESS,
-            severity: "success",
-          })
-        );
+      dispatch(addRBACRole(params)).then((result) => {
+        if (addRBACRole.fulfilled.match(result)) {
+          dispatch(fetchProject());
+          dispatch(
+            addToast({
+              message: ADD_RBAC_ROLE_SUCCESS,
+              severity: "success",
+            })
+          );
+        }
       });
     },
     [dispatch]
@@ -74,14 +76,16 @@ export const RoleTable: FC = memo(function RoleTable() {
 
   const handleDelete = useCallback(
     (role: string) => {
-      dispatch(deleteRBACRole({ name: role })).then(() => {
-        dispatch(fetchProject());
-        dispatch(
-          addToast({
-            message: DELETE_RBAC_ROLE_SUCCESS,
-            severity: "success",
-          })
-        );
+      dispatch(deleteRBACRole({ name: role })).then((result) => {
+        if (deleteRBACRole.fulfilled.match(result)) {
+          dispatch(fetchProject());
+          dispatch(
+            addToast({
+              message: DELETE_RBAC_ROLE_SUCCESS,
+              severity: "success",
+            })
+          );
+        }
       });
       setDeleteRole(null);
     },
@@ -98,14 +102,16 @@ export const RoleTable: FC = memo(function RoleTable() {
         name: values.name,
         policies: parseRBACPolicies({ policies: values.policies }),
       };
-      dispatch(updateRBACRole(params)).then(() => {
-        dispatch(fetchProject());
-        dispatch(
-          addToast({
-            message: UPDATE_RBAC_ROLE_SUCCESS,
-            severity: "success",
-          })
-        );
+      dispatch(updateRBACRole(params)).then((result) => {
+        if (updateRBACRole.fulfilled.match(result)) {
+          dispatch(fetchProject());
+          dispatch(
+            addToast({
+              message: UPDATE_RBAC_ROLE_SUCCESS,
+              severity: "success",
+            })
+          );
+        }
       });
       setEditRole(null);
     },

@@ -28,6 +28,14 @@ const RBAC_RESOURCE_TYPE_TEXT: Record<
   [ProjectRBACResource.ResourceType.INSIGHT]: "insight",
 };
 
+export const rbacResourceTypes = (): string[] => {
+  const resp: string[] = [];
+  Object.values(RBAC_RESOURCE_TYPE_TEXT).map((v) => {
+    resp.push(v);
+  });
+  return resp;
+};
+
 const TEXT_TO_RBAC_RESOURCE_TYPE: Record<
   string,
   ProjectRBACResource.ResourceType
@@ -50,6 +58,14 @@ const RBAC_ACTION_TYPE_TEXT: Record<ProjectRBACPolicy.Action, string> = {
   [ProjectRBACPolicy.Action.CREATE]: "create",
   [ProjectRBACPolicy.Action.UPDATE]: "update",
   [ProjectRBACPolicy.Action.DELETE]: "delete",
+};
+
+export const rbacActionTypes = (): string[] => {
+  const resp: string[] = [];
+  Object.values(RBAC_ACTION_TYPE_TEXT).map((v) => {
+    resp.push(v);
+  });
+  return resp;
 };
 
 const TEXT_TO_RBAC_ACTION_TYPE: Record<string, ProjectRBACPolicy.Action> = {

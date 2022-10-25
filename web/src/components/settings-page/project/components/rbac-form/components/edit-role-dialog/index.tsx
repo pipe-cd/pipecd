@@ -11,7 +11,11 @@ import {
 import { useFormik } from "formik";
 import { FC, memo } from "react";
 import { useAppSelector } from "~/hooks/redux";
-import { formalizePoliciesList } from "~/modules/project";
+import {
+  formalizePoliciesList,
+  rbacResourceTypes,
+  rbacActionTypes,
+} from "~/modules/project";
 import * as yup from "yup";
 
 const useStyles = makeStyles((theme) => ({
@@ -30,8 +34,24 @@ export interface EditRoleDialogProps {
   onUpdate: (values: { name: string; policies: string }) => void;
 }
 
+// resources=(application|deployment|event|piped|project|apiKey|insight|\*|,);actions=(get|list|create|update|delete|\*|,)
+const validationRgex = new RegExp(
+  "resources=(" +
+    rbacResourceTypes()
+      .map((v) => v.replace(/\*/, "\\*"))
+      .join("|") +
+    "|,);actions=(" +
+    rbacActionTypes()
+      .map((v) => v.replace(/\*/, "\\*"))
+      .join("|") +
+    "|,)"
+);
+
 const validationSchema = yup.object({
-  policies: yup.string().min(1).required(),
+  policies: yup
+    .string()
+    .matches(validationRgex, "Invalid policy format")
+    .required(),
 });
 
 const DIALOG_TITLE = "Edit Role";
