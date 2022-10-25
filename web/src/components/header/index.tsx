@@ -155,6 +155,7 @@ export const Header: FC = memo(function Header() {
                 activeClassName={classes.activeLink}
                 color="inherit"
                 to={PAGE_PATH_APPLICATIONS}
+                isActive={() => location.pathname === PAGE_PATH_APPLICATIONS}
               >
                 Applications
               </Link>
@@ -164,6 +165,7 @@ export const Header: FC = memo(function Header() {
                 activeClassName={classes.activeLink}
                 color="inherit"
                 to={PAGE_PATH_DEPLOYMENTS}
+                isActive={() => location.pathname === PAGE_PATH_DEPLOYMENTS}
               >
                 Deployments
               </Link>
@@ -173,6 +175,9 @@ export const Header: FC = memo(function Header() {
                 activeClassName={classes.activeLink}
                 color="inherit"
                 to={PAGE_PATH_DEPLOYMENT_CHAINS}
+                isActive={() =>
+                  location.pathname === PAGE_PATH_DEPLOYMENT_CHAINS
+                }
               >
                 Chains
               </Link>

@@ -1,5 +1,6 @@
 import { Button, makeStyles, Paper, Typography } from "@material-ui/core";
 import { FC, useState } from "react";
+import { CopyIconButton } from "~/components/copy-icon-button";
 import { DiffView } from "./diff-view";
 
 const useStyles = makeStyles((theme) => ({
@@ -18,6 +19,7 @@ const useStyles = makeStyles((theme) => ({
   showButton: {
     color: theme.palette.primary.light,
     marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
   },
 }));
 
@@ -39,14 +41,19 @@ export const SyncStateReason: FC<SyncStateReasonProps> = ({
           {summary}
         </Typography>
         {detail && (
-          <Button
-            variant="text"
-            size="small"
-            className={classes.showButton}
-            onClick={() => setShowReason(!showReason)}
-          >
-            {showReason ? "HIDE DETAILS" : "SHOW DETAILS"}
-          </Button>
+          <>
+            <Button
+              variant="text"
+              size="small"
+              className={classes.showButton}
+              onClick={() => setShowReason(!showReason)}
+            >
+              {showReason ? "HIDE DETAILS" : "SHOW DETAILS"}
+            </Button>
+            {showReason && (
+              <CopyIconButton name="Diff" value={detail} size="small" />
+            )}
+          </>
         )}
       </div>
 

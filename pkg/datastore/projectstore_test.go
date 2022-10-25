@@ -169,3 +169,160 @@ func TestListProjects(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateProject(t *testing.T) {
+	testcases := []struct {
+		name    string
+		project *model.Project
+		wantErr bool
+	}{
+		{
+			name: "ok",
+			project: &model.Project{
+				Id: "id",
+				StaticAdmin: &model.ProjectStaticUser{
+					Username:     "username",
+					PasswordHash: "password-hash",
+				},
+				CreatedAt: 1,
+				UpdatedAt: 1,
+			},
+			wantErr: false,
+		},
+		{
+			name: "policies validation error",
+			project: &model.Project{
+				Id: "id",
+				StaticAdmin: &model.ProjectStaticUser{
+					Username:     "username",
+					PasswordHash: "password-hash",
+				},
+				RbacRoles: []*model.ProjectRBACRole{
+					{
+						Name: "Tester",
+					},
+				},
+				CreatedAt: 1,
+				UpdatedAt: 1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "resources validation error",
+			project: &model.Project{
+				Id: "id",
+				StaticAdmin: &model.ProjectStaticUser{
+					Username:     "username",
+					PasswordHash: "password-hash",
+				},
+				RbacRoles: []*model.ProjectRBACRole{
+					{
+						Name: "Tester",
+						Policies: []*model.ProjectRBACPolicy{
+							{
+								Actions: []model.ProjectRBACPolicy_Action{
+									model.ProjectRBACPolicy_ALL,
+								},
+							},
+						},
+					},
+				},
+				CreatedAt: 1,
+				UpdatedAt: 1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "resource type validation error",
+			project: &model.Project{
+				Id: "id",
+				StaticAdmin: &model.ProjectStaticUser{
+					Username:     "username",
+					PasswordHash: "password-hash",
+				},
+				RbacRoles: []*model.ProjectRBACRole{
+					{
+						Name: "Tester",
+						Policies: []*model.ProjectRBACPolicy{
+							{
+								Resources: []*model.ProjectRBACResource{
+									{
+										Type:   99,
+										Labels: map[string]string{"key": "value"},
+									},
+								},
+								Actions: []model.ProjectRBACPolicy_Action{
+									model.ProjectRBACPolicy_ALL,
+								},
+							},
+						},
+					},
+				},
+				CreatedAt: 1,
+				UpdatedAt: 1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "actions validation error",
+			project: &model.Project{
+				Id: "id",
+				StaticAdmin: &model.ProjectStaticUser{
+					Username:     "username",
+					PasswordHash: "password-hash",
+				},
+				RbacRoles: []*model.ProjectRBACRole{
+					{
+						Name: "Tester",
+						Policies: []*model.ProjectRBACPolicy{
+							{
+								Resources: []*model.ProjectRBACResource{
+									{
+										Type: model.ProjectRBACResource_ALL,
+									},
+								},
+							},
+						},
+					},
+				},
+				CreatedAt: 1,
+				UpdatedAt: 1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "action type validation error",
+			project: &model.Project{
+				Id: "id",
+				StaticAdmin: &model.ProjectStaticUser{
+					Username:     "username",
+					PasswordHash: "password-hash",
+				},
+				RbacRoles: []*model.ProjectRBACRole{
+					{
+						Name: "Tester",
+						Policies: []*model.ProjectRBACPolicy{
+							{
+								Resources: []*model.ProjectRBACResource{
+									{
+										Type: model.ProjectRBACResource_ALL,
+									},
+								},
+								Actions: []model.ProjectRBACPolicy_Action{99, 100},
+							},
+						},
+					},
+				},
+				CreatedAt: 1,
+				UpdatedAt: 1,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.project.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
+		})
+	}
+}

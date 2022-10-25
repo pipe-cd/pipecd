@@ -66,6 +66,12 @@ const EmptyTableContent = memo(function EmptyTableContent() {
   );
 });
 
+const menuStyle = {
+  style: {
+    width: "25ch",
+  },
+};
+
 export const APIKeyPage: FC = memo(function APIKeyPage() {
   const dispatch = useAppDispatch();
   const [loading, keys] = useAppSelector<[boolean, APIKey.AsObject[]]>(
@@ -166,6 +172,7 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
         onClose={handleCloseMenu}
+        PaperProps={menuStyle}
       >
         <MenuItem
           onClick={() => {

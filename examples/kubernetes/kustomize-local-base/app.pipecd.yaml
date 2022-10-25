@@ -13,4 +13,4 @@ spec:
     kustomizeVersion: 3.5.5
   description: |
     This app demonstrates how to deploy a Kubernetes app that uses a Kustomize package sourced from the same Git repository.\
-    References: [adding a new app](https://pipecd.dev/docs/user-guide/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
+    References: [adding a new app](https://pipecd.dev/docs/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)

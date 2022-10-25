@@ -8,6 +8,7 @@
 #   lint:   lint the source code
 #   update: update packages or dependencies to the newer versions
 #   gen:    execute code or docs generation
+#   push:   push artifacts such as helm chart
 ####################
 
 # Build commands
@@ -52,6 +53,18 @@ ifndef MOD
 else
 	helm package manifests/$(MOD) --version $(VERSION) --app-version $(VERSION) --dependency-update --destination .artifacts
 endif
+
+.PHONY: push
+push/chart: BUCKET ?= charts.pipecd.dev
+push/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+push/chart: CREDENTIALS_FILE ?= ~/.config/gcloud/application_default_credentials.json
+push/chart:
+	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/pipecd/Chart.yaml
+	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/piped/Chart.yaml
+	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/site/Chart.yaml
+	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/helloworld/Chart.yaml
+	docker run --rm -it -v ${CREDENTIALS_FILE}:/secret -v ${PWD}:/repo gcr.io/pipecd/chart-releaser@sha256:fc432431b411a81d7658355c27ebaa924afe190962ab11d46f5a6cdff0833cc3 /chart-releaser --bucket=${BUCKET} --manifests-dir=repo/manifests --credentials-file=secret #v0.13.0
+	@git checkout manifests/
 
 # Test commands
 
@@ -152,7 +165,7 @@ update/docsy:
 .PHONY: gen/code
 gen/code:
 	# NOTE: Specify a specific version temporally until the next release.
-	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:7c0488970a3fc3a88f15d6ebccc7c7ddf8557af61522395f6400fc30486567af /repo #v0.36.0-26-gbd3a30a
+	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:16766336bd7fd7d7e24eabf29aabe471bfda0631a5c51e0a8d1470a249139a32 /repo #v0.37.0-10-ge573dda
 
 .PHONY: gen/release
 gen/release:

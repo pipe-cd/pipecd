@@ -62,18 +62,9 @@ var (
 		{
 			Resources: []*ProjectRBACResource{
 				{Type: ProjectRBACResource_PIPED},
-				{Type: ProjectRBACResource_DEPLOYMENT_CHAIN},
 			},
 			Actions: []ProjectRBACPolicy_Action{
 				ProjectRBACPolicy_GET,
-				ProjectRBACPolicy_LIST,
-			},
-		},
-		{
-			Resources: []*ProjectRBACResource{
-				{Type: ProjectRBACResource_EVENT},
-			},
-			Actions: []ProjectRBACPolicy_Action{
 				ProjectRBACPolicy_LIST,
 			},
 		},
@@ -84,6 +75,14 @@ var (
 			},
 			Actions: []ProjectRBACPolicy_Action{
 				ProjectRBACPolicy_GET,
+			},
+		},
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_EVENT},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_LIST,
 			},
 		},
 	}
@@ -98,18 +97,9 @@ var (
 				{Type: ProjectRBACResource_APPLICATION},
 				{Type: ProjectRBACResource_DEPLOYMENT},
 				{Type: ProjectRBACResource_PIPED},
-				{Type: ProjectRBACResource_DEPLOYMENT_CHAIN},
 			},
 			Actions: []ProjectRBACPolicy_Action{
 				ProjectRBACPolicy_GET,
-				ProjectRBACPolicy_LIST,
-			},
-		},
-		{
-			Resources: []*ProjectRBACResource{
-				{Type: ProjectRBACResource_EVENT},
-			},
-			Actions: []ProjectRBACPolicy_Action{
 				ProjectRBACPolicy_LIST,
 			},
 		},
@@ -120,6 +110,14 @@ var (
 			},
 			Actions: []ProjectRBACPolicy_Action{
 				ProjectRBACPolicy_GET,
+			},
+		},
+		{
+			Resources: []*ProjectRBACResource{
+				{Type: ProjectRBACResource_EVENT},
+			},
+			Actions: []ProjectRBACPolicy_Action{
+				ProjectRBACPolicy_LIST,
 			},
 		},
 	}
@@ -413,7 +411,7 @@ func (p *Project) AddUserGroup(sso, role string) error {
 	if p.HasUserGroup(sso) {
 		return fmt.Errorf("%s is already being used. The SSO group must be unique", sso)
 	}
-	if !p.HasRBACRole(role) {
+	if !p.HasRBACRole(role) && !isBuiltinRBACRole(role) {
 		return fmt.Errorf("%s role does not exist", role)
 	}
 	p.UserGroups = append(p.UserGroups, &ProjectUserGroup{
