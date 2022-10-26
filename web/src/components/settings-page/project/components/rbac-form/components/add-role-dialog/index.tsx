@@ -17,16 +17,17 @@ export interface AddRoleDialogProps {
   onSubmit: (values: { name: string; policies: string }) => void;
 }
 
+// resources=(\*|application|deployment|event|piped|deploymentChain|project|apiKey|insight|,)+;\s*actions=(\*|get|list|create|update|delete|,)+
 const validationRgex = new RegExp(
   "resources=(" +
     rbacResourceTypes()
       .map((v) => v.replace(/\*/, "\\*"))
       .join("|") +
-    "|,);actions=(" +
+    "|,)+;\\s*actions=(" +
     rbacActionTypes()
       .map((v) => v.replace(/\*/, "\\*"))
       .join("|") +
-    "|,)"
+    "|,)+"
 );
 
 const validationSchema = yup.object({
