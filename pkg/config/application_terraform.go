@@ -63,7 +63,7 @@ type TerraformSyncStageOptions struct {
 
 // TerraformPlanStageOptions contains all configurable values for a TERRAFORM_PLAN stage.
 type TerraformPlanStageOptions struct {
-	// Skip following stages if the result is "No Changes"
+	// Exit the pipeline if the result is "No Changes" with success status.
 	ExitOnNoChanges bool `json:"exitOnNoChanges"`
 }
 
