@@ -51,6 +51,7 @@ test("isStageRunning", () => {
   expect(isStageRunning(StageStatus.STAGE_SUCCESS)).toBeFalsy();
   expect(isStageRunning(StageStatus.STAGE_NOT_STARTED_YET)).toBeTruthy();
   expect(isStageRunning(StageStatus.STAGE_RUNNING)).toBeTruthy();
+  expect(isStageRunning(StageStatus.STAGE_EXITED)).toBeFalsy();
 });
 
 describe("deploymentsSlice reducer", () => {
