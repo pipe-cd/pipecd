@@ -173,7 +173,7 @@ func (e *deployExecutor) ensurePlan(ctx context.Context) model.StageStatus {
 	if planResult.NoChanges() {
 		e.LogPersister.Success("No changes to apply")
 		if e.StageConfig.TerraformPlanStageOptions.ExitOnNoChanges {
-			return model.StageStatus_STAGE_EXITING
+			return model.StageStatus_STAGE_EXITED
 		}
 		return model.StageStatus_STAGE_SUCCESS
 	}
