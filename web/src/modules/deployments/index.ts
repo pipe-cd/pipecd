@@ -64,6 +64,7 @@ export const isStageRunning = (status: StageStatus): boolean => {
     case StageStatus.STAGE_FAILURE:
     case StageStatus.STAGE_CANCELLED:
     case StageStatus.STAGE_SKIPPED:
+    case StageStatus.STAGE_EXITED:
       return false;
   }
 };

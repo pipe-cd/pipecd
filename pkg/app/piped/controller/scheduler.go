@@ -93,7 +93,6 @@ func newScheduler(
 	appManifestsCache cache.Cache,
 	logger *zap.Logger,
 ) *scheduler {
-
 	logger = logger.Named("scheduler").With(
 		zap.String("deployment-id", d.Id),
 		zap.String("app-id", d.ApplicationId),
@@ -328,6 +327,12 @@ func (s *scheduler) Run(ctx context.Context) error {
 			continue
 		}
 
+		// If the stage was completed with exited stage, exit this deployment with success.
+		if result == model.StageStatus_STAGE_EXITED {
+			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_SUCCESS
+			break
+		}
+
 		// The deployment was cancelled by a web user.
 		if result == model.StageStatus_STAGE_CANCELLED {
 			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
@@ -516,9 +521,11 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	// - State was canceled while running (cancel via Controlpane).
 	// - Apply state failed but not because of terminating piped process.
 	// - State was skipped via Controlpane (currently supports only ANALYSIS stage).
+	// - Apply state was exited.
 	if status == model.StageStatus_STAGE_SUCCESS ||
 		status == model.StageStatus_STAGE_CANCELLED ||
 		status == model.StageStatus_STAGE_SKIPPED ||
+		status == model.StageStatus_STAGE_EXITED ||
 		(status == model.StageStatus_STAGE_FAILURE && !sig.Terminated()) {
 
 		s.reportStageStatus(ctx, ps.Id, status, ps.Requires)

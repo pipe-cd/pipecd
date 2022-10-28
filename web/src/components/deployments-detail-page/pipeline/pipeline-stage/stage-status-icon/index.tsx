@@ -30,6 +30,9 @@ const useStyles = makeStyles((theme) => ({
   [StageStatus.STAGE_SKIPPED]: {
     color: theme.palette.grey[500],
   },
+  [StageStatus.STAGE_EXITED]: {
+    color: theme.palette.success.main,
+  },
   "@keyframes running": {
     "0%": {
       transform: "rotate(0deg)",
@@ -60,5 +63,7 @@ export const StageStatusIcon: FC<StageStatusIconProps> = ({ status }) => {
       return <Cached className={classes[status]} />;
     case StageStatus.STAGE_SKIPPED:
       return <Block className={classes[status]} />;
+    case StageStatus.STAGE_EXITED:
+      return <CheckCircle className={classes[status]} />;
   }
 };

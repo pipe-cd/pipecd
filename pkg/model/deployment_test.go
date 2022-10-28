@@ -142,6 +142,11 @@ func TestStageStatus_IsCompleted(t *testing.T) {
 			status: StageStatus_STAGE_SKIPPED,
 			want:   true,
 		},
+		{
+			name:   "exited",
+			status: StageStatus_STAGE_EXITED,
+			want:   true,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {

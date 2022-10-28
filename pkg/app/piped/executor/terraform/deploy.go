@@ -81,7 +81,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		status = e.ensureApply(ctx)
 
 	default:
-		e.LogPersister.Errorf("Unsupported stage %s for cloudrun application", e.Stage.Name)
+		e.LogPersister.Errorf("Unsupported stage %s for terraform application", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -172,6 +172,9 @@ func (e *deployExecutor) ensurePlan(ctx context.Context) model.StageStatus {
 
 	if planResult.NoChanges() {
 		e.LogPersister.Success("No changes to apply")
+		if e.StageConfig.TerraformPlanStageOptions.ExitOnNoChanges {
+			return model.StageStatus_STAGE_EXITED
+		}
 		return model.StageStatus_STAGE_SUCCESS
 	}
 
