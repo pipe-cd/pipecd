@@ -544,6 +544,7 @@ Therefore, note that all traffic will be routed to the primary if the the primar
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| exitOnNoChanges | bool | Whether exiting the pipeline when the result has no changes | No |
 
 ### TerraformApplyStageOptions
 
