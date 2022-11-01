@@ -39,6 +39,7 @@ type apiApplicationStore interface {
 	Add(ctx context.Context, app *model.Application) error
 	Get(ctx context.Context, id string) (*model.Application, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Application, string, error)
+	Delete(ctx context.Context, id string) error
 	UpdateConfigFilename(ctx context.Context, id, filename string) error
 }
 
@@ -280,6 +281,30 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 	return &apiservice.ListApplicationsResponse{
 		Applications: apps,
 		Cursor:       cursor,
+	}, nil
+}
+
+func (a *API) DeleteApplication(ctx context.Context, req *apiservice.GetApplicationRequest) (*apiservice.GetApplicationResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	app, err := getApplication(ctx, a.applicationStore, req.ApplicationId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	if app.ProjectId != key.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
+	}
+
+	if err := a.applicationStore.Delete(ctx, req.ApplicationId); err != nil {
+		return nil, gRPCStoreError(err, fmt.Sprintf("delete application %s", app.Id))
+	}
+
+	return &apiservice.DeleteApplicationResponse{
+		ApplicationId: app.Id,
 	}, nil
 }
 
