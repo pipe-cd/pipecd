@@ -27,6 +27,8 @@ spec:
 ```
 
 ### [optional] Specify Eventwatcher files Piped will use
+>NOTE: This way is valid only for defining events using [.pipe/](/docs/user-guide/event-watcher/#use-the-pipe-directory).
+
 If multiple Pipeds handle a single repository, you can prevent conflicts by splitting into the multiple EventWatcher files and setting `includes/excludes` to specify the files that should be monitored by this Piped.
 
 Say for instance, if you only want the Piped to use the Eventwatcher files under `.pipe/dev/`:

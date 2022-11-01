@@ -18,8 +18,7 @@ While it empowers you to build pretty versatile workflows, the canonical use cas
 This guide walks you through configuring Event watcher and how to push an Event.
 
 ## Prerequisites
-If you want to use EventWatcher configuration files under the `.pipe/` directory, before we get into configuring EventWatcher, be sure to configure Piped. See [here](/docs/operator-manual/piped/configuring-event-watcher/) for more details.
-In other cases, there is no prerequisite. Let's move on to Usage.
+Before we get into configuring EventWatcher, be sure to configure Piped. See [here](/docs/operator-manual/piped/configuring-event-watcher/) for more details.
 
 ## Usage
 File updating can be done by registering the latest value corresponding to the Event in the Control Plane and comparing it with the current value.
@@ -67,6 +66,7 @@ spec:
     - matcher:
         name: helloworld-image-update
       handler:
+        type: GIT_UPDATE
         config:
           replacements:
             - file: deployment.yaml
@@ -145,6 +145,7 @@ spec:
           env: dev
           appName: helloworld
       handler:
+        type: GIT_UPDATE
         config:
           replacements:
             - file: deployment.yaml
@@ -184,6 +185,7 @@ spec:
           env: dev
           appName: helloworld
       handler:
+        type: GIT_UPDATE
         config:
           replacements:
             - file: app.pipecd.yaml
@@ -219,13 +221,12 @@ spec:
           env: dev
           appName: helloworld
       handler:
+        type: GIT_UPDATE
         config:
           replacements:
             - file: app.pipecd.yaml
               yamlField: $.spec.input.helmChart.version
 ```
-
-See [here](https://github.com/pipe-cd/examples/blob/master/.pipe) for more examples.
 
 ## Github Actions
 If you're using Github Actions in your CI workflow, [actions-event-register](https://github.com/marketplace/actions/pipecd-register-event) is for you!
