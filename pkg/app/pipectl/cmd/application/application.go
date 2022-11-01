@@ -38,6 +38,7 @@ func NewCommand() *cobra.Command {
 		newSyncCommand(c),
 		newGetCommand(c),
 		newListCommand(c),
+		newDeleteCommand(c),
 	)
 
 	c.clientOptions.RegisterPersistentFlags(cmd)
