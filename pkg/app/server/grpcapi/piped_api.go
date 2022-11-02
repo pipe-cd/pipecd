@@ -30,6 +30,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/analysisresultstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/applicationlivestatestore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandstore"
+	"github.com/pipe-cd/pipecd/pkg/app/server/grpcapi/grpcapimetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/app/server/stagelogstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/unregisteredappstore"
@@ -382,7 +383,7 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 // that is managed by this piped.
 // This will be used by DeploymentTrigger component.
 func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.CreateDeploymentRequest) (*pipedservice.CreateDeploymentResponse, error) {
-	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	projectID, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -393,6 +394,9 @@ func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.Creat
 	if err := a.deploymentStore.Add(ctx, req.Deployment); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("add deployment %s", req.Deployment.Id))
 	}
+
+	grpcapimetrics.IncDeploymentCounter(projectID)
+
 	return &pipedservice.CreateDeploymentResponse{}, nil
 }
 
