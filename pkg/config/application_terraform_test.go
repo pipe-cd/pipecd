@@ -178,6 +178,58 @@ func TestTerraformApplicationtConfig(t *testing.T) {
 			},
 			expectedError: nil,
 		},
+		{
+			fileName:           "testdata/application/terraform-app-with-exit.yaml",
+			expectedKind:       KindTerraformApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedSpec: &TerraformApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
+					Pipeline: &DeploymentPipeline{
+						Stages: []PipelineStage{
+							{
+								Name: model.StageTerraformPlan,
+								TerraformPlanStageOptions: &TerraformPlanStageOptions{
+									ExitOnNoChanges: true,
+								},
+							},
+							{
+								Name: model.StageWaitApproval,
+								WaitApprovalStageOptions: &WaitApprovalStageOptions{
+									Approvers:      []string{"foo", "bar"},
+									Timeout:        defaultWaitApprovalTimeout,
+									MinApproverNum: 1,
+								},
+							},
+							{
+								Name:                       model.StageTerraformApply,
+								TerraformApplyStageOptions: &TerraformApplyStageOptions{},
+							},
+						},
+					},
+					Timeout: Duration(6 * time.Hour),
+					Trigger: Trigger{
+						OnCommit: OnCommit{
+							Disabled: false,
+						},
+						OnCommand: OnCommand{
+							Disabled: false,
+						},
+						OnOutOfSync: OnOutOfSync{
+							Disabled:  newBoolPointer(true),
+							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
+						},
+					},
+				},
+				Input: TerraformDeploymentInput{
+					Workspace:        "dev",
+					TerraformVersion: "0.12.23",
+				},
+			},
+			expectedError: nil,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.fileName, func(t *testing.T) {

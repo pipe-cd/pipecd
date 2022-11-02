@@ -63,13 +63,6 @@ description = "The One CD for All {applications, platforms, operations}"
 languageName ="English"
 # Weight used for sorting.
 weight = 1
-[languages.ja]
-title = "PipeCD"
-description = "The One CD for All {applications, platforms, operations}"
-languageName ="日本語"
-contentDir = "content/ja"
-time_format_default = "2006年01月02日"
-time_format_blog = "2006年01月02日"
 
 [markup]
 [markup.goldmark]
@@ -171,6 +164,10 @@ no = 'Sorry to hear that. Please <a href="https://github.com/pipe-cd/pipecd/issu
   url = "/docs-dev/"
 
 [[params.versions]]
+  version = "v0.38.x"
+  url = "/docs-v0.38.x/"
+
+[[params.versions]]
   version = "v0.37.x"
   url = "/docs-v0.37.x/"
 
@@ -185,11 +182,3 @@ no = 'Sorry to hear that. Please <a href="https://github.com/pipe-cd/pipecd/issu
 [[params.versions]]
   version = "v0.34.x"
   url = "/docs-v0.34.x/"
-
-[[params.versions]]
-  version = "v0.33.x"
-  url = "/docs-v0.33.x/"
-
-[[params.versions]]
-  version = "v0.32.x"
-  url = "/docs-v0.32.x/"

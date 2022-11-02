@@ -188,7 +188,7 @@ func TestPipedConfig(t *testing.T) {
 							Labels: map[string]string{
 								"env": "dev",
 							},
-							Events:   []string{"DEPLOYMENT_STARTED", "DEPLOYMENT_COMPLETED"},
+							Events:   []string{"DEPLOYMENT_TRIGGERED", "DEPLOYMENT_COMPLETED"},
 							Receiver: "prod-slack-channel",
 						},
 						{
@@ -502,8 +502,6 @@ func TestPipedConfigMask(t *testing.T) {
 							IgnoreApps:   []string{"foo"},
 							Labels:       map[string]string{"foo": "foo"},
 							IgnoreLabels: map[string]string{"foo": "foo"},
-							Envs:         []string{"foo"},
-							IgnoreEnvs:   []string{"foo"},
 						},
 					},
 					Receivers: []NotificationReceiver{
@@ -662,8 +660,6 @@ func TestPipedConfigMask(t *testing.T) {
 							IgnoreApps:   []string{"foo"},
 							Labels:       map[string]string{"foo": "foo"},
 							IgnoreLabels: map[string]string{"foo": "foo"},
-							Envs:         []string{"foo"},
-							IgnoreEnvs:   []string{"foo"},
 						},
 					},
 					Receivers: []NotificationReceiver{
@@ -877,7 +873,7 @@ func TestPipedSpecClone(t *testing.T) {
 							Labels: map[string]string{
 								"env": "dev",
 							},
-							Events:   []string{"DEPLOYMENT_STARTED", "DEPLOYMENT_COMPLETED"},
+							Events:   []string{"DEPLOYMENT_TRIGGERED", "DEPLOYMENT_COMPLETED"},
 							Receiver: "prod-slack-channel",
 						},
 						{
@@ -1072,7 +1068,7 @@ func TestPipedSpecClone(t *testing.T) {
 							Labels: map[string]string{
 								"env": "dev",
 							},
-							Events:   []string{"DEPLOYMENT_STARTED", "DEPLOYMENT_COMPLETED"},
+							Events:   []string{"DEPLOYMENT_TRIGGERED", "DEPLOYMENT_COMPLETED"},
 							Receiver: "prod-slack-channel",
 						},
 						{

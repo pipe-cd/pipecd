@@ -40,7 +40,7 @@ export const DisableAPIKeyConfirmDialog: FC<DisableAPIKeyConfirmDialogProps> = m
     const open = Boolean(apiKey);
 
     return (
-      <Dialog open={open}>
+      <Dialog open={open} onClose={onCancel}>
         <DialogTitle>{DIALOG_TITLE}</DialogTitle>
         <DialogContent>
           <Alert severity="warning" className={classes.description}>

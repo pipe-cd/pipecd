@@ -43,7 +43,8 @@ func (s StageStatus) IsCompleted() bool {
 	return s == StageStatus_STAGE_SUCCESS ||
 		s == StageStatus_STAGE_FAILURE ||
 		s == StageStatus_STAGE_CANCELLED ||
-		s == StageStatus_STAGE_SKIPPED
+		s == StageStatus_STAGE_SKIPPED ||
+		s == StageStatus_STAGE_EXITED
 }
 
 // CanUpdateDeploymentStatus checks whether the deployment can transit to the given status.

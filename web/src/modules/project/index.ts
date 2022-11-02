@@ -2,12 +2,43 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
   ProjectRBACConfig,
   ProjectSSOConfig,
+  ProjectUserGroup,
+  ProjectRBACRole,
+  ProjectRBACPolicy,
+  ProjectRBACResource,
 } from "pipecd/web/model/project_pb";
 import * as projectAPI from "~/api/project";
 import type { AppState } from "~/store";
 
 export type GitHubSSO = ProjectSSOConfig.GitHub.AsObject;
 export type Teams = ProjectRBACConfig.AsObject;
+export type UserGroup = ProjectUserGroup.AsObject;
+export type RBACRole = ProjectRBACRole.AsObject;
+export type RBACPolicy = ProjectRBACPolicy.AsObject;
+
+export const RBAC_RESOURCE_TYPE_TEXT: Record<
+  ProjectRBACResource.ResourceType,
+  string
+> = {
+  [ProjectRBACResource.ResourceType.ALL]: "*",
+  [ProjectRBACResource.ResourceType.APPLICATION]: "application",
+  [ProjectRBACResource.ResourceType.DEPLOYMENT]: "deployment",
+  [ProjectRBACResource.ResourceType.EVENT]: "event",
+  [ProjectRBACResource.ResourceType.PIPED]: "piped",
+  [ProjectRBACResource.ResourceType.DEPLOYMENT_CHAIN]: "deploymentChain",
+  [ProjectRBACResource.ResourceType.PROJECT]: "project",
+  [ProjectRBACResource.ResourceType.API_KEY]: "apiKey",
+  [ProjectRBACResource.ResourceType.INSIGHT]: "insight",
+};
+
+export const RBAC_ACTION_TYPE_TEXT: Record<ProjectRBACPolicy.Action, string> = {
+  [ProjectRBACPolicy.Action.ALL]: "*",
+  [ProjectRBACPolicy.Action.GET]: "get",
+  [ProjectRBACPolicy.Action.LIST]: "list",
+  [ProjectRBACPolicy.Action.CREATE]: "create",
+  [ProjectRBACPolicy.Action.UPDATE]: "update",
+  [ProjectRBACPolicy.Action.DELETE]: "delete",
+};
 
 export interface ProjectState {
   id: string | null;
@@ -19,6 +50,8 @@ export interface ProjectState {
   sharedSSO: string | null;
   teams?: Teams | null;
   github?: GitHubSSO | null;
+  userGroups: UserGroup[] | [];
+  rbacRoles: RBACRole[] | [];
 }
 
 const initialState: ProjectState = {
@@ -29,6 +62,8 @@ const initialState: ProjectState = {
   staticAdminDisabled: false,
   isUpdatingStaticAdmin: false,
   isUpdatingGitHubSSO: false,
+  userGroups: [],
+  rbacRoles: [],
 };
 
 export const fetchProject = createAsyncThunk<{
@@ -39,6 +74,8 @@ export const fetchProject = createAsyncThunk<{
   sharedSSO: string | null;
   staticAdminDisabled: boolean;
   github: GitHubSSO | null;
+  userGroups: UserGroup[] | [];
+  rbacRoles: RBACRole[] | [];
 }>("project/fetchProject", async () => {
   const { project } = await projectAPI.getProject();
 
@@ -51,6 +88,8 @@ export const fetchProject = createAsyncThunk<{
       teams: null,
       github: null,
       sharedSSO: null,
+      userGroups: [],
+      rbacRoles: [],
     };
   }
 
@@ -62,6 +101,8 @@ export const fetchProject = createAsyncThunk<{
     teams: project.rbac ?? null,
     github: project.sso?.github ?? null,
     sharedSSO: project.sharedSsoName,
+    userGroups: project.userGroupsList,
+    rbacRoles: project.rbacRolesList,
   };
 });
 
@@ -102,6 +143,20 @@ export const updateRBAC = createAsyncThunk<
   await projectAPI.updateRBAC(Object.assign({}, project.teams, params));
 });
 
+export const addUserGroup = createAsyncThunk<
+  void,
+  { ssoGroup: string; role: string }
+>("project/addUserGroup", async (params) => {
+  await projectAPI.addUserGroup(params);
+});
+
+export const deleteUserGroup = createAsyncThunk<void, { ssoGroup: string }>(
+  "project/deleteUserGroup",
+  async (params) => {
+    await projectAPI.deleteUserGroup(params);
+  }
+);
+
 export const projectSlice = createSlice({
   name: "project",
   initialState,
@@ -117,6 +172,8 @@ export const projectSlice = createSlice({
         state.teams = action.payload.teams;
         state.github = action.payload.github;
         state.sharedSSO = action.payload.sharedSSO;
+        state.userGroups = action.payload.userGroups;
+        state.rbacRoles = action.payload.rbacRoles;
       })
       // .addCase(fetchProject.rejected, (_, action) => {})
       .addCase(updateStaticAdmin.pending, (state) => {

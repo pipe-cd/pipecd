@@ -17,3 +17,7 @@ export const UPGRADE_PIPEDS_SUCCESS =
 
 // Application
 export const DELETE_APPLICATION_SUCCESS = "Successfully deleted Application.";
+
+// User Group
+export const ADD_USER_GROUP_SUCCESS = "Successfully added User Group.";
+export const DELETE_USER_GROUP_SUCCESS = "Successfully deleted User Group.";

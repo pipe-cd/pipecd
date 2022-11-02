@@ -120,7 +120,7 @@ message ProjectRBACRole {
     // The name of role.
     string name = 1 [(validate.rules).string.min_len = 1];
     // The policy of role.
-    repeated ProjectRBACPolicy policies = 2;
+    repeated ProjectRBACPolicy policies = 2 [(validate.rules).repeated.min_items = 1];
     // Whether built-in role or not.
     bool is_builtin = 3;
 }
@@ -156,7 +156,7 @@ message ProjectRBACPolicy {
     }
 
     // The resources of this project.
-    repeated ProjectRBACResource resources = 1;
+    repeated ProjectRBACResource resources = 1 [(validate.rules).repeated.min_items = 1];
     // The types of action.
-    repeated Action actions = 2;
+    repeated Action actions = 2 [(validate.rules).repeated.min_items = 1, (validate.rules).repeated.items.enum.defined_only = true];
 }

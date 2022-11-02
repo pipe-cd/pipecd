@@ -37,7 +37,7 @@ spec:
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
 | variantLabel | [KubernetesVariantLabel](#kubernetesvariantlabel) | The label will be configured to variant manifests used to distinguish them. | No |
-| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
+| eventWatcher | [][EventWatcher](#eventwatcher) | List of configurations for event watcher. | No |
 
 ## Terraform application
 
@@ -65,7 +65,7 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
-| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
+| eventWatcher | [][EventWatcher](#eventwatcher) | List of configurations for event watcher. | No |
 
 ## Cloud Run application
 
@@ -93,7 +93,7 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
-| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
+| eventWatcher | [][EventWatcher](#eventwatcher) | List of configurations for event watcher. | No |
 
 ## Lambda application
 
@@ -119,7 +119,7 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
-| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
+| eventWatcher | [][EventWatcher](#eventwatcher) | List of configurations for event watcher. | No |
 
 ## ECS application
 
@@ -146,7 +146,7 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
-| eventWatcher | [][EventWatcher](#eventWatcher) | List of configurations for event watcher. | No |
+| eventWatcher | [][EventWatcher](#eventwatcher) | List of configurations for event watcher. | No |
 
 ## Analysis Template Configuration
 
@@ -646,8 +646,8 @@ A wrapper of type `int` to represent percentage data. Basically, you can pass `1
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| matcher | EventWatcherMatcher | Which event will be handled. | Yes |
-| handler | EventWatcherHandler | What to do for the event which matched by the above matcher. | Yes |
+| matcher | [EventWatcherMatcher](#eventwatchermatcher) | Which event will be handled. | Yes |
+| handler | [EventWatcherHandler](#eventwatcherhandler) | What to do for the event which matched by the above matcher. | Yes |
 
 ### EventWatcherMatcher
 
@@ -660,8 +660,8 @@ A wrapper of type `int` to represent percentage data. Basically, you can pass `1
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| type | string | The handler type. Currently, only `GIT_UPDATE` is supported. Default is `GIT_UPDATE`. | No |
-| config | EventWatcherHandlerConfig | Configuration for the event watcher handler. | Yes |
+| type | string | The handler type. Currently, only `GIT_UPDATE` is supported. | Yes |
+| config | [EventWatcherHandlerConfig](#eventwatcherhandlerconfig) | Configuration for the event watcher handler. | Yes |
 
 ### EventWatcherHandlerConfig
 

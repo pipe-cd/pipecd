@@ -140,6 +140,40 @@ func TestDecryptSecrets(t *testing.T) {
 			},
 			expectedErrorPrefix: `failed to render decryption target resource.yaml (template: resource.yaml:1:69: executing "resource.yaml" at <.encryptedSecrets.nonexistent>: map has no entry for key "nonexistent")`,
 		},
+		{
+			name: "sprig functions",
+			sources: map[string]string{
+				"resource.yaml": "resource-data: {{ .encryptedSecrets.password | b64enc }}",
+			},
+			encryption: config.SecretEncryption{
+				EncryptedSecrets: map[string]string{
+					"password": "encrypted-password",
+				},
+				DecryptionTargets: []string{
+					"resource.yaml",
+				},
+			},
+			expected: map[string]string{
+				"resource.yaml": "resource-data: ZGVjcnlwdGVkLWVuY3J5cHRlZC1wYXNzd29yZA==",
+			},
+		},
+		{
+			name: "sub directory",
+			sources: map[string]string{
+				"sub/dir/resource.yaml": "resource-data: {{ .encryptedSecrets.password }}",
+			},
+			encryption: config.SecretEncryption{
+				EncryptedSecrets: map[string]string{
+					"password": "encrypted-password",
+				},
+				DecryptionTargets: []string{
+					"sub/dir/resource.yaml",
+				},
+			},
+			expected: map[string]string{
+				"sub/dir/resource.yaml": "resource-data: decrypted-encrypted-password",
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -150,7 +184,9 @@ func TestDecryptSecrets(t *testing.T) {
 			// Prepare source files.
 			for p, c := range tc.sources {
 				p = filepath.Join(appDir, p)
-				err := os.WriteFile(p, []byte(c), 0644)
+				err := os.MkdirAll(filepath.Dir(p), 0700)
+				require.NoError(t, err)
+				err = os.WriteFile(p, []byte(c), 0600)
 				require.NoError(t, err)
 			}
 
