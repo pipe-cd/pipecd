@@ -12,11 +12,8 @@ import type { AppState } from "~/store";
 
 export type GitHubSSO = ProjectSSOConfig.GitHub.AsObject;
 export type Teams = ProjectRBACConfig.AsObject;
-export type UserGroup = ProjectUserGroup.AsObject;
-export type RBACRole = ProjectRBACRole.AsObject;
-export type RBACPolicy = ProjectRBACPolicy.AsObject;
 
-export const RBAC_RESOURCE_TYPE_TEXT: Record<
+const RBAC_RESOURCE_TYPE_TEXT: Record<
   ProjectRBACResource.ResourceType,
   string
 > = {
@@ -31,13 +28,119 @@ export const RBAC_RESOURCE_TYPE_TEXT: Record<
   [ProjectRBACResource.ResourceType.INSIGHT]: "insight",
 };
 
-export const RBAC_ACTION_TYPE_TEXT: Record<ProjectRBACPolicy.Action, string> = {
+export const rbacResourceTypes = (): string[] => {
+  const resp: string[] = [];
+  Object.values(RBAC_RESOURCE_TYPE_TEXT).map((v) => {
+    resp.push(v);
+  });
+  return resp;
+};
+
+const TEXT_TO_RBAC_RESOURCE_TYPE: Record<
+  string,
+  ProjectRBACResource.ResourceType
+> = {
+  "*": ProjectRBACResource.ResourceType.ALL,
+  application: ProjectRBACResource.ResourceType.APPLICATION,
+  deployment: ProjectRBACResource.ResourceType.DEPLOYMENT,
+  event: ProjectRBACResource.ResourceType.EVENT,
+  piped: ProjectRBACResource.ResourceType.PIPED,
+  deploymentChain: ProjectRBACResource.ResourceType.DEPLOYMENT_CHAIN,
+  project: ProjectRBACResource.ResourceType.PROJECT,
+  apiKey: ProjectRBACResource.ResourceType.API_KEY,
+  insight: ProjectRBACResource.ResourceType.INSIGHT,
+};
+
+const RBAC_ACTION_TYPE_TEXT: Record<ProjectRBACPolicy.Action, string> = {
   [ProjectRBACPolicy.Action.ALL]: "*",
   [ProjectRBACPolicy.Action.GET]: "get",
   [ProjectRBACPolicy.Action.LIST]: "list",
   [ProjectRBACPolicy.Action.CREATE]: "create",
   [ProjectRBACPolicy.Action.UPDATE]: "update",
   [ProjectRBACPolicy.Action.DELETE]: "delete",
+};
+
+export const rbacActionTypes = (): string[] => {
+  const resp: string[] = [];
+  Object.values(RBAC_ACTION_TYPE_TEXT).map((v) => {
+    resp.push(v);
+  });
+  return resp;
+};
+
+const TEXT_TO_RBAC_ACTION_TYPE: Record<string, ProjectRBACPolicy.Action> = {
+  "*": ProjectRBACPolicy.Action.ALL,
+  get: ProjectRBACPolicy.Action.GET,
+  list: ProjectRBACPolicy.Action.LIST,
+  create: ProjectRBACPolicy.Action.CREATE,
+  update: ProjectRBACPolicy.Action.UPDATE,
+  delete: ProjectRBACPolicy.Action.DELETE,
+};
+
+const RESOURCE_ACTION_SEPARATOR = ";";
+const KEY_VALUE_SEPARATOR = "=";
+const VALUES_SEPARATOR = ",";
+const RESOURCES_KEY = "resources";
+const ACTIONS_KEY = "actions";
+
+export const parseRBACPolicies = ({
+  policies,
+}: {
+  policies: string;
+}): ProjectRBACPolicy[] => {
+  const ps = policies.split("\n\n").filter((p) => p);
+  const ret: ProjectRBACPolicy[] = [];
+  ps.map((p) => {
+    p = p.replace(/\s/g, "");
+    const policyResource: ProjectRBACPolicy = new ProjectRBACPolicy();
+    const policy = p.split(RESOURCE_ACTION_SEPARATOR);
+
+    const resources = policy[0].split(KEY_VALUE_SEPARATOR);
+    if (resources[0] == RESOURCES_KEY) {
+      resources[1].split(VALUES_SEPARATOR).map((v) => {
+        const res: ProjectRBACResource = new ProjectRBACResource();
+        res.setType(TEXT_TO_RBAC_RESOURCE_TYPE[v]);
+        policyResource.addResources(res);
+      });
+    }
+
+    const actions = policy[1].split(KEY_VALUE_SEPARATOR);
+    if (actions[0] == ACTIONS_KEY) {
+      actions[1].split(VALUES_SEPARATOR).map((v) => {
+        policyResource.addActions(TEXT_TO_RBAC_ACTION_TYPE[v]);
+      });
+    }
+
+    ret.push(policyResource);
+  });
+  return ret;
+};
+
+export const formalizePoliciesList = ({
+  policiesList,
+}: {
+  policiesList: ProjectRBACPolicy.AsObject[];
+}): string => {
+  const policies: string[] = [];
+  policiesList.map((policy) => {
+    const resources: string[] = [];
+    policy.resourcesList.map((resource) => {
+      resources.push(RBAC_RESOURCE_TYPE_TEXT[resource.type]);
+    });
+
+    const actions: string[] = [];
+    policy.actionsList.map((action) => {
+      actions.push(RBAC_ACTION_TYPE_TEXT[action]);
+    });
+
+    const resource =
+      RESOURCES_KEY + KEY_VALUE_SEPARATOR + resources.join(VALUES_SEPARATOR);
+    const action =
+      ACTIONS_KEY + KEY_VALUE_SEPARATOR + actions.join(VALUES_SEPARATOR);
+    policies.push(resource + RESOURCE_ACTION_SEPARATOR + action);
+  });
+
+  return policies.join("\n\n");
 };
 
 export interface ProjectState {
@@ -50,8 +153,8 @@ export interface ProjectState {
   sharedSSO: string | null;
   teams?: Teams | null;
   github?: GitHubSSO | null;
-  userGroups: UserGroup[] | [];
-  rbacRoles: RBACRole[] | [];
+  userGroups: ProjectUserGroup.AsObject[] | [];
+  rbacRoles: ProjectRBACRole.AsObject[] | [];
 }
 
 const initialState: ProjectState = {
@@ -74,8 +177,8 @@ export const fetchProject = createAsyncThunk<{
   sharedSSO: string | null;
   staticAdminDisabled: boolean;
   github: GitHubSSO | null;
-  userGroups: UserGroup[] | [];
-  rbacRoles: RBACRole[] | [];
+  userGroups: ProjectUserGroup.AsObject[] | [];
+  rbacRoles: ProjectRBACRole.AsObject[] | [];
 }>("project/fetchProject", async () => {
   const { project } = await projectAPI.getProject();
 
@@ -157,6 +260,27 @@ export const deleteUserGroup = createAsyncThunk<void, { ssoGroup: string }>(
   }
 );
 
+export const addRBACRole = createAsyncThunk<
+  void,
+  { name: string; policies: ProjectRBACPolicy[] }
+>("project/addRBACRole", async (params) => {
+  await projectAPI.addRBACRole(params);
+});
+
+export const deleteRBACRole = createAsyncThunk<void, { name: string }>(
+  "project/deleteRBACRole",
+  async (params) => {
+    await projectAPI.deleteRBACRole(params);
+  }
+);
+
+export const updateRBACRole = createAsyncThunk<
+  void,
+  { name: string; policies: ProjectRBACPolicy[] }
+>("project/updateRBACRole", async (params) => {
+  await projectAPI.updateRBACRole(params);
+});
+
 export const projectSlice = createSlice({
   name: "project",
   initialState,
@@ -197,5 +321,3 @@ export const projectSlice = createSlice({
     // .addCase(updateRBAC.rejected, (state, action) => {});
   },
 });
-
-export { ProjectSSOConfig } from "pipecd/web/model/project_pb";

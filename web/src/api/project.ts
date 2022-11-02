@@ -15,10 +15,17 @@ import {
   AddProjectUserGroupResponse,
   DeleteProjectUserGroupRequest,
   DeleteProjectUserGroupResponse,
+  AddProjectRBACRoleRequest,
+  AddProjectRBACRoleResponse,
+  DeleteProjectRBACRoleRequest,
+  DeleteProjectRBACRoleResponse,
+  UpdateProjectRBACRoleRequest,
+  UpdateProjectRBACRoleResponse,
 } from "pipecd/web/api_client/service_pb";
 import {
   ProjectRBACConfig,
   ProjectSSOConfig,
+  ProjectRBACPolicy,
 } from "pipecd/web/model/project_pb";
 import { apiClient, apiRequest } from "./client";
 
@@ -114,4 +121,40 @@ export const deleteUserGroup = ({
   const req = new DeleteProjectUserGroupRequest();
   req.setSsoGroup(ssoGroup);
   return apiRequest(req, apiClient.deleteProjectUserGroup);
+};
+
+export const addRBACRole = ({
+  name,
+  policies,
+}: {
+  name: string;
+  policies: ProjectRBACPolicy[];
+}): Promise<AddProjectRBACRoleResponse.AsObject> => {
+  const req = new AddProjectRBACRoleRequest();
+  req.setName(name);
+  req.setPoliciesList(policies);
+  return apiRequest(req, apiClient.addProjectRBACRole);
+};
+
+export const deleteRBACRole = ({
+  name,
+}: DeleteProjectRBACRoleRequest.AsObject): Promise<
+  DeleteProjectRBACRoleResponse.AsObject
+> => {
+  const req = new DeleteProjectRBACRoleRequest();
+  req.setName(name);
+  return apiRequest(req, apiClient.deleteProjectRBACRole);
+};
+
+export const updateRBACRole = ({
+  name,
+  policies,
+}: {
+  name: string;
+  policies: ProjectRBACPolicy[];
+}): Promise<UpdateProjectRBACRoleResponse.AsObject> => {
+  const req = new UpdateProjectRBACRoleRequest();
+  req.setName(name);
+  req.setPoliciesList(policies);
+  return apiRequest(req, apiClient.updateProjectRBACRole);
 };
