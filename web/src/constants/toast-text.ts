@@ -21,3 +21,8 @@ export const DELETE_APPLICATION_SUCCESS = "Successfully deleted Application.";
 // User Group
 export const ADD_USER_GROUP_SUCCESS = "Successfully added User Group.";
 export const DELETE_USER_GROUP_SUCCESS = "Successfully deleted User Group.";
+
+// RBAC Role
+export const ADD_RBAC_ROLE_SUCCESS = "Successfully added RBAC Role.";
+export const DELETE_RBAC_ROLE_SUCCESS = "Successfully deleted RBAC Role.";
+export const UPDATE_RBAC_ROLE_SUCCESS = "Successfully updated RBAC Role.";
