@@ -36,7 +36,7 @@ func newDeleteCommand(root *command) *cobra.Command {
 	}
 	cmd := &cobra.Command{
 		Use:   "delete",
-		Short: "Delete application.",
+		Short: "Delete an application.",
 		RunE:  cli.WithContext(c.run),
 	}
 
