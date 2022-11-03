@@ -284,7 +284,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 	}, nil
 }
 
-func (a *API) DeleteApplication(ctx context.Context, req *apiservice.GetApplicationRequest) (*apiservice.GetApplicationResponse, error) {
+func (a *API) DeleteApplication(ctx context.Context, req *apiservice.DeleteApplicationRequest) (*apiservice.DeleteApplicationResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
 	if err != nil {
 		return nil, err
