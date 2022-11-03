@@ -31,12 +31,12 @@ type delete struct {
 }
 
 func newDeleteCommand(root *command) *cobra.Command {
-	c := &get{
+	c := &delete{
 		root: root,
 	}
 	cmd := &cobra.Command{
-		Use:   "get",
-		Short: "Show the information about the specified application.",
+		Use:   "delete",
+		Short: "Delete application.",
 		RunE:  cli.WithContext(c.run),
 	}
 
@@ -53,7 +53,7 @@ func (c *delete) run(ctx context.Context, input cli.Input) error {
 	}
 	defer cli.Close()
 
-	req := &apiservice.GetApplicationRequest{
+	req := &apiservice.DeleteApplicationRequest{
 		ApplicationId: c.appID,
 	}
 
@@ -62,6 +62,6 @@ func (c *delete) run(ctx context.Context, input cli.Input) error {
 		return fmt.Errorf("failed to delete application: %w", err)
 	}
 
-	input.Logger.Info(fmt.Sprintf("Successfully deleted application id = %s", c.appID))
+	input.Logger.Info(fmt.Sprintf("Successfully deleted application id = %s", resp.ApplicationId))
 	return nil
 }
