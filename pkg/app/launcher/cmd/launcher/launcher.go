@@ -83,10 +83,10 @@ type launcher struct {
 	clientKey  string
 	client     pipedservice.Client
 
-	commandCh            chan model.ReportableCommand
-	prevCommands         map[string]struct{}
-	commandLister        commandLister
-	detectRestartCommand bool
+	commandCh        chan model.ReportableCommand
+	prevCommands     map[string]struct{}
+	commandLister    commandLister
+	restartCommanded bool
 }
 
 type commandLister interface {
@@ -367,11 +367,11 @@ func (l *launcher) run(ctx context.Context, input cli.Input) error {
 }
 
 func (l *launcher) enqueueNewCommands(ctx context.Context, input cli.Input) {
-	input.Logger.Info("fetching unhandled commands to enqueue")
+	input.Logger.Info("LAUNCHER: fetching unhandled commands to enqueue")
 
 	commands := l.commandLister.ListPipedCommands()
 	if len(commands) == 0 {
-		input.Logger.Info("there is no command to enqueue")
+		input.Logger.Debug("LAUNCHER: there is no command to enqueue")
 		return
 	}
 
@@ -384,24 +384,18 @@ func (l *launcher) enqueueNewCommands(ctx context.Context, input cli.Input) {
 		}
 	}
 
-	input.Logger.Info("fetched unhandled commands to enqueue",
-		zap.Any("pre-commands", l.prevCommands),
-		zap.Any("commands", cmds),
-		zap.Int("news", len(news)),
-	)
-
 	if len(news) == 0 {
-		input.Logger.Info("there is no new command to enqueue")
+		input.Logger.Debug("LAUNCHER: there is no new command to enqueue")
 		return
 	}
 
 	l.prevCommands = cmds
-	input.Logger.Info(fmt.Sprintf("will enqueue %d new commands", len(news)))
+	input.Logger.Info(fmt.Sprintf("LAUNCHER: will enqueue %d new commands", len(news)))
 
 	for _, cmd := range news {
 		select {
 		case l.commandCh <- cmd:
-			input.Logger.Info("queued a new new command", zap.String("command", cmd.Id))
+			input.Logger.Info("LAUNCHER: queued a new command", zap.String("command", cmd.Id))
 
 		case <-ctx.Done():
 			return
@@ -413,16 +407,17 @@ func (l *launcher) handleCommand(ctx context.Context, input cli.Input, cmd model
 	logger := input.Logger.With(
 		zap.String("command", cmd.Id),
 	)
-	logger.Info("received a restart piped command to handle")
 
-	l.detectRestartCommand = true
+	if cmd.IsRestartPipedCmd() {
+		l.restartCommanded = true
+	}
 
 	if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, []byte(cmd.Id)); err != nil {
-		logger.Error("failed to report command status", zap.Error(err))
+		logger.Error("LAUNCHER: failed to report command status", zap.Error(err))
 		return err
 	}
 
-	input.Logger.Info("successfully handled a restart piped command")
+	input.Logger.Info("LAUNCHER: successfully handled command", zap.String("command", cmd.Id))
 	return nil
 }
 
@@ -464,10 +459,10 @@ func (l *launcher) shouldRelaunch(ctx context.Context, logger *zap.Logger) (vers
 		return
 	}
 
-	should = version != l.runningVersion || !bytes.Equal(config, l.runningConfigData) || l.detectRestartCommand
+	should = version != l.runningVersion || !bytes.Equal(config, l.runningConfigData) || l.restartCommanded
 
-	if l.detectRestartCommand {
-		l.detectRestartCommand = false
+	if l.restartCommanded {
+		l.restartCommanded = false
 	}
 
 	return
