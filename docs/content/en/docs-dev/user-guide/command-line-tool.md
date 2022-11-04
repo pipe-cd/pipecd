@@ -193,6 +193,17 @@ pipectl application list \
     --app-kind=KUBERNETES \
 ```
 
+### Deleting an application
+
+Delete an application with given id:
+
+``` console
+pipectl application delete \
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
+    --app-id={APPLICATION_ID}
+```
+
 ### Waiting a deployment status
 
 Wait until a given deployment reaches one of the specified statuses:
