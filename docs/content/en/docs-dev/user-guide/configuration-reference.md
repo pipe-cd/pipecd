@@ -544,6 +544,7 @@ Therefore, note that all traffic will be routed to the primary if the the primar
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| exitOnNoChanges | bool | Whether exiting the pipeline when the result has no changes | No |
 
 ### TerraformApplyStageOptions
 
@@ -646,8 +647,8 @@ A wrapper of type `int` to represent percentage data. Basically, you can pass `1
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| matcher | EventWatcherMatcher | Which event will be handled. | Yes |
-| handler | EventWatcherHandler | What to do for the event which matched by the above matcher. | Yes |
+| matcher | [EventWatcherMatcher](#eventwatchermatcher) | Which event will be handled. | Yes |
+| handler | [EventWatcherHandler](#eventwatcherhandler) | What to do for the event which matched by the above matcher. | Yes |
 
 ### EventWatcherMatcher
 
@@ -660,8 +661,8 @@ A wrapper of type `int` to represent percentage data. Basically, you can pass `1
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| type | string | The handler type. Currently, only `GIT_UPDATE` is supported. Default is `GIT_UPDATE`. | No |
-| config | EventWatcherHandlerConfig | Configuration for the event watcher handler. | Yes |
+| type | string | The handler type. Currently, only `GIT_UPDATE` is supported. | Yes |
+| config | [EventWatcherHandlerConfig](#eventwatcherhandlerconfig) | Configuration for the event watcher handler. | Yes |
 
 ### EventWatcherHandlerConfig
 

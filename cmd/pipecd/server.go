@@ -34,6 +34,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/applicationlivestatestore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandoutputstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/grpcapi"
+	"github.com/pipe-cd/pipecd/pkg/app/server/grpcapi/grpcapimetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/server/httpapi"
 	"github.com/pipe-cd/pipecd/pkg/app/server/httpapi/httpapimetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/server/pipedverifier"
@@ -495,5 +496,7 @@ func registerMetrics() *prometheus.Registry {
 
 	cachemetrics.Register(wrapped)
 	httpapimetrics.Register(wrapped)
+	grpcapimetrics.Register(wrapped)
+
 	return r
 }
