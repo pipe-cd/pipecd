@@ -58,14 +58,16 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
 
   const handleSubmit = useCallback(
     (values: { ssoGroup: string; role: string }) => {
-      dispatch(addUserGroup(values)).then(() => {
-        dispatch(fetchProject());
-        dispatch(
-          addToast({
-            message: ADD_USER_GROUP_SUCCESS,
-            severity: "success",
-          })
-        );
+      dispatch(addUserGroup(values)).then((result) => {
+        if (addUserGroup.fulfilled.match(result)) {
+          dispatch(fetchProject());
+          dispatch(
+            addToast({
+              message: ADD_USER_GROUP_SUCCESS,
+              severity: "success",
+            })
+          );
+        }
       });
     },
     [dispatch]
@@ -92,14 +94,16 @@ export const UserGroupTable: FC = memo(function UserGroupTable() {
 
   const handleDelete = useCallback(
     (ssoGroup: string) => {
-      dispatch(deleteUserGroup({ ssoGroup: ssoGroup })).then(() => {
-        dispatch(fetchProject());
-        dispatch(
-          addToast({
-            message: DELETE_USER_GROUP_SUCCESS,
-            severity: "success",
-          })
-        );
+      dispatch(deleteUserGroup({ ssoGroup: ssoGroup })).then((result) => {
+        if (deleteUserGroup.fulfilled.match(result)) {
+          dispatch(fetchProject());
+          dispatch(
+            addToast({
+              message: DELETE_USER_GROUP_SUCCESS,
+              severity: "success",
+            })
+          );
+        }
       });
       setDeleteSSOGroup(null);
     },
