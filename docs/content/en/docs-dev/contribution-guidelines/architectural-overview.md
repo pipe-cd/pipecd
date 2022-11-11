@@ -33,4 +33,4 @@ Control Plane contains the following components:
   - this can a fully-managed service such as `GCS`, `S3`...
   - or a self-managed service such as `Minio`
 
-For more information, see [Architecture overview of Control Plane](../operator-manual/control-plane/architecture-overview.md).
+For more information, see [Architecture overview of Control Plane](../../user-guide/managing-controlplane/architecture-overview/).
