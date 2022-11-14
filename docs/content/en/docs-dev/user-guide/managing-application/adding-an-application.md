@@ -19,7 +19,7 @@ Through the web console, you can register a new application in one of the follow
 - Picking from a list of unused apps suggested by Pipeds while scanning Git repositories (Recommended)
 - Manually configuring application information
 
-(If you prefer to use [`pipectl`](/docs/user-guide/command-line-tool/#adding-a-new-application) command-line tool, see its usage for the details.)
+(If you prefer to use [`pipectl`](../../command-line-tool/#adding-a-new-application) command-line tool, see its usage for the details.)
 
 ## Picking from a list of unused apps suggested by Pipeds
 
@@ -85,7 +85,7 @@ spec:
 {{< /tab >}}
 {{< /tabpane >}}
 
-To define your application deployment pipeline which contains the guideline to show Piped how to deploy your application, please visit [Defining app configuration](/docs/user-guide/managing-application/defining-app-configuration/).
+To define your application deployment pipeline which contains the guideline to show Piped how to deploy your application, please visit [Defining app configuration](../defining-app-configuration/).
 
 Go to the PipeCD web console on application list page, click the `+ADD` button at the top left corner of the application list page and then go to the `ADD FROM GIT` tab.
 
@@ -121,9 +121,9 @@ Here are the list of fields in the register form:
 
 > Note: Labels couldn't be set via this form. If you want, try the way to register via the application configuration defined in the Git repository.
 
-After submitting the form, one more step left is adding the application configuration file for that application into the application directory in Git repository same as we prepared in [the above method](/docs-dev/user-guide/managing-application/adding-an-application/#picking-from-a-list-of-unused-apps-suggested-by-pipeds).
+After submitting the form, one more step left is adding the application configuration file for that application into the application directory in Git repository same as we prepared in [the above method](../adding-an-application/#picking-from-a-list-of-unused-apps-suggested-by-pipeds).
 
-Please refer [Define your app's configuration](/docs/user-guide/managing-application/defining-app-configuration/) or [pipecd/examples](/docs/user-guide/examples/) for the examples of being supported application kind.
+Please refer [Define your app's configuration](../defining-app-configuration/) or [pipecd/examples](../../examples/) for the examples of being supported application kind.
 
 ## Updating an application
 Regardless of which method you used to register the application, the web console can only be used to disable/enable/delete the application, besides the adding operation. All updates on application information must be done via the application configuration file stored in Git as a single source of truth.
@@ -137,4 +137,4 @@ spec:
     team: new-team
 ```
 
-Refer to [configuration reference](/docs/user-guide/configuration-reference/) to see the full list of configurable fields.
+Refer to [configuration reference](../../configuration-reference/) to see the full list of configurable fields.
