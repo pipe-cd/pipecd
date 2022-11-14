@@ -14,7 +14,9 @@ Note: It's not required to install the PipeCD control plane to the cluster where
 - Having a Kubernetes cluster and connect to it via [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 - Forked the [Examples](https://github.com/pipe-cd/examples) repository
 
-### 1. Installing PipeCD client
+### 1. Installing PipeCD in quickstart mode
+
+#### 1.1. Installing PipeCD client
 
 The official PipeCD client named `pipectl` can be installed using the following command
 
@@ -35,7 +37,7 @@ You can also move the pipectl binary to the $PATH for later use
 sudo mv ./pipectl /usr/local/bin/pipectl
 ```
 
-### 2. Installing PipeCD's component with pipectl
+#### 1.2. Installing PipeCD's components
 
 We can simply use __pipectl quickstart__ command to start the PipeCD installation process and follow the instruction
 
@@ -43,7 +45,7 @@ We can simply use __pipectl quickstart__ command to start the PipeCD installatio
 pipectl quickstart --version {{< blocks/latest_version >}}
 ```
 
-Follow the instruction, the PipeCD control plane will be available at [http://localhost:8080](http://localhost:8080) and pipectl command will open the PipeCD console automatically on your browser.
+Follow the instruction, the PipeCD control plane will be installed with a default project named `quickstart`. You can access to the PipeCD console at [http://localhost:8080](http://localhost:8080?project=quickstart) and pipectl command will open the PipeCD console automatically on your browser.
 
 To login, you can use the configured static admin account as below:
 - username: `hello-pipecd`
@@ -56,17 +58,16 @@ After logged in successfully, the browser will redirect you to the PipeCD consol
 ![](/images/quickstart-adding-piped.png)
 
 Click on the `Save` button, and then you can see the piped-id and secret-key.
-Be sure to keep a copy for later use.
 
 ![](/images/quickstart-piped-registered.png)
 
-Use the above value to fill the form showing in the terminal you run `pipectl quickstart` command
+Use the above value to fill the form showing on the terminal you run __pipectl quickstart__ command
 
 ```console
 ...
 Fill up your registered Piped information:
-✔ ID: 2bf655c6-d7a8-4b97-8480-43fb0155539e█
-Key: 02s3b0b6bo07kvzr8662tke4i292uo5n8w1x9pn8q9rww5lk0b
+✔ ID: 2bf655c6-d7a8-4b97-8480-43fb0155539e
+✔ Key: 02s3b0b6bo07kvzr8662tke4i292uo5n8w1x9pn8q9rww5lk0b
 GitRemoteRepo: https://github.com/{FORKED_GITHUB_ORG}/examples.git
 
 ```
@@ -79,8 +80,12 @@ Note: The __pipectl quickstart__ command will keep running to expose your PipeCD
 kubectl -n pipecd port-forward svc/pipecd 8080
 ```
 
-### 3. Registering a kubernetes application
-Navigate to the `Applications` page, click on the `ADD` button on the top left corner.
+### 2. Deploy a kubernetes application with PipeCD
+
+Above are all we need to set up your own PipeCD (both control plane and agent), let's use the installed one to deploy your first Kubernetes application with PipeCD.
+
+#### 2.1. Registering a Kubernetes application
+Navigate to the `Applications` page, click on the `+ADD` button on the top left corner.
 
 Go to the `ADD FROM SUGGESTIONS` tab, then select:
 - Piped: `dev` (you just registered)
@@ -94,7 +99,7 @@ After a bit, the first deployment would be complete automatically to sync the ap
 
 ![](/images/quickstart-first-deployment.png)
 
-### 4. Let's deploy!
+#### 2.2. Let's deploy!
 Let's get started with deployment! All you have to do is to make a PR to update the image tag, scale the replicas, or change the manifests.
 
 For instance, open the `kubernetes/canary/deployment.yaml` under the forked examples' repository, then change the tag from `v0.1.0` to `v0.2.0`.
@@ -105,8 +110,8 @@ After a short wait, a new deployment will be started to update to `v0.2.0`.
 
 ![](/images/quickstart-deploying.png)
 
-### 5. Cleanup
-When you’re finished experimenting with PipeCD, you can uninstall with:
+### 3. Cleanup
+When you’re finished experimenting with PipeCD quickstart mode, you can uninstall it using:
 
 ``` console
 pipectl quickstart --uninstall
