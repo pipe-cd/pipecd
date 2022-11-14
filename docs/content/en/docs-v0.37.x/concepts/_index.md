@@ -72,4 +72,4 @@ Currently, PipeCD is supporting these five platform providers: `KUBERNETES`, `EC
 
 ### Analysis Provider
 An external product that provides metrics/logs to evaluate deployments, such as `Prometheus`, `Datadog`, `Stackdriver`, `CloudWatch` and so on.
-It is mainly used in the [Automated deployment analysis](/docs/user-guide/automated-deployment-analysis/) context.
+It is mainly used in the [Automated deployment analysis](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) context.

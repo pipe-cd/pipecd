@@ -27,7 +27,7 @@ spec:
 
 As above example, the deployment requires an approval from `user-abc` before `K8S_PRIMARY_ROLLOUT` stage can be executed.
 
-The value of user ID in the `approvers` list depends on your [SSO configuration](/docs/user-guide/managing-controlplane/auth/), it must be GitHub's user ID if your SSO was configured to use GitHub provider, it must be Gmail account if your SSO was configured to use Google provider.
+The value of user ID in the `approvers` list depends on your [SSO configuration](../../../managing-controlplane/auth/), it must be GitHub's user ID if your SSO was configured to use GitHub provider, it must be Gmail account if your SSO was configured to use Google provider.
 
 In case the `approvers` field was not configured, anyone in the project who has `Editor` or `Admin` role can approve the deployment pipeline.
 
