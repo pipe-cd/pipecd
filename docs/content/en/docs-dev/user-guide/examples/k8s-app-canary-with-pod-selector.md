@@ -6,7 +6,7 @@ description: >
   How to enable canary deployment for Kubernetes application with PodSelector.
 ---
 
-Using service mesh like [Istio](/docs/user-guide/examples/k8s-app-canary-with-istio/) helps you doing canary deployment easier with many powerful features, but not all teams are ready to use service mesh in their environment. This page will walk you through using PipeCD to enable canary deployment for Kubernetes application running in a non-mesh environment.
+Using service mesh like [Istio](../k8s-app-canary-with-istio/) helps you doing canary deployment easier with many powerful features, but not all teams are ready to use service mesh in their environment. This page will walk you through using PipeCD to enable canary deployment for Kubernetes application running in a non-mesh environment.
 
 Basically, the idea behind is described as this [Kubernetes document](https://kubernetes.io/docs/concepts/cluster-administration/manage-deployment/#canary-deployments); the Service resource uses the common label set to route the traffic to both canary and primary workloads, and percentage of traffic for each variant is based on their replicas number.
 
