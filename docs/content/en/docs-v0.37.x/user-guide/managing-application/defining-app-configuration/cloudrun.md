@@ -34,12 +34,12 @@ spec:
 
 ## Quick sync
 
-By default, when the [pipeline](/docs/user-guide/configuration-reference/#cloudrun-application) was not specified, PipeCD triggers a quick sync deployment for the merged pull request.
+By default, when the [pipeline](../../../configuration-reference/#cloud-run-application) was not specified, PipeCD triggers a quick sync deployment for the merged pull request.
 Quick sync for a Cloud Run deployment will roll out the new version and switch all traffic to it.
 
 ## Sync with the specified pipeline
 
-The [pipeline](/docs/user-guide/configuration-reference/#cloudrun-application) field in the application configuration is used to customize the way to do the deployment.
+The [pipeline](../../../configuration-reference/#cloud-run-application) field in the application configuration is used to customize the way to do the deployment.
 You can add a manual approval before routing traffic to the new version or add an analysis stage the do some smoke tests against the new version before allowing them to receive the real traffic.
 
 These are the provided stages for Cloud Run application you can use to build your pipeline:
@@ -52,7 +52,7 @@ and other common stages:
 - `WAIT_APPROVAL`
 - `ANALYSIS`
 
-See the description of each stage at [Customize application deployment](/docs/user-guide/managing-application/customizing-deployment/).
+See the description of each stage at [Customize application deployment](../../customizing-deployment/).
 
 Here is an example that rolls out the new version gradually:
 
@@ -84,4 +84,4 @@ spec:
 
 ## Reference
 
-See [Configuration Reference](/docs/user-guide/configuration-reference/#cloudrun-application) for the full configuration.
+See [Configuration Reference](../../../configuration-reference/#cloud-run-application) for the full configuration.

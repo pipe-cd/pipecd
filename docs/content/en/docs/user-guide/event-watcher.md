@@ -18,7 +18,7 @@ While it empowers you to build pretty versatile workflows, the canonical use cas
 This guide walks you through configuring Event watcher and how to push an Event.
 
 ## Prerequisites
-Before we get into configuring EventWatcher, be sure to configure Piped. See [here](/docs/user-guide/managing-piped/configuring-event-watcher/) for more details.
+Before we get into configuring EventWatcher, be sure to configure Piped. See [here](../managing-piped/configuring-event-watcher/) for more details.
 
 ## Usage
 File updating can be done by registering the latest value corresponding to the Event in the Control Plane and comparing it with the current value.
@@ -47,7 +47,7 @@ spec:
           yamlField: $.spec.template.spec.containers[0].image
 ```
 
-The full list of configurable `EventWatcher` fields are [here](/docs/user-guide/configuration-reference/#event-watcher-configuration-deprecated).
+The full list of configurable `EventWatcher` fields are [here](../configuration-reference/#event-watcher-configuration-deprecated).
 
 #### Use the application configuration
 
@@ -73,7 +73,7 @@ spec:
               yamlField: $.spec.template.spec.containers[0].image
 ```
 
-The full list of configurable `eventWatcher` fields are [here](/docs/user-guide/configuration-reference/#eventwatcher).
+The full list of configurable `eventWatcher` fields are [here](../configuration-reference/#eventwatcher).
 
 ### 2. Pushing an Event with `pipectl`
 To register a new value corresponding to Event such as the above in the Control Plane, you need to perform `pipectl`.
@@ -81,8 +81,8 @@ And we highly recommend integrating a step for that into your CI workflow.
 
 You first need to set-up the `pipectl`:
 
-- Install it on your CI system or where you want to run according to [this guide](/docs/user-guide/command-line-tool/#installation).
-- Grab the API key to which the `READ_WRITE` role is attached according to [this guide](/docs/user-guide/command-line-tool/#authentication).
+- Install it on your CI system or where you want to run according to [this guide](../command-line-tool/#installation).
+- Grab the API key to which the `READ_WRITE` role is attached according to [this guide](../command-line-tool/#authentication).
 
 Once you're all set up, pushing a new Event to the Control Plane by the following command:
 
@@ -109,7 +109,7 @@ After a while, Piped will create a commit as shown below:
 +        image: gcr.io/pipecd/helloworld:v0.2.0
 ```
 
-NOTE: Keep in mind that it may take a little while because Piped periodically fetches the new events from the Control Plane. You can change its interval according to [here](/docs/user-guide/managing-piped/configuration-reference/#eventwatcher).
+NOTE: Keep in mind that it may take a little while because Piped periodically fetches the new events from the Control Plane. You can change its interval according to [here](../managing-piped/configuration-reference/#eventwatcher).
 
 ### [optional] Using labels
 Event watcher is a project-wide feature, hence an event name is unique inside a project. That is, you can update multiple repositories at the same time if you use the same event name for different events.

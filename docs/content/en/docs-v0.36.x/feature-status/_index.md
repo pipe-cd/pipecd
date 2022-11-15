@@ -25,15 +25,15 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 |-|-|
 | Quick sync deployment | Beta |
 | Deployment with a defined pipeline (e.g. canary, analysis) | Beta |
-| [Automated rollback](/docs/user-guide/rolling-back-a-deployment/) | Beta |
-| [Automated configuration drift detection](/docs/user-guide/configuration-drift-detection/) | Beta |
-| [Application live state](/docs/user-guide/application-live-state/) | Beta |
+| [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
+| [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Beta |
+| [Application live state](../user-guide/managing-application/application-live-state/) | Beta |
 | Support Helm | Beta |
 | Support Kustomize | Beta |
 | Support Istio service mesh | Beta |
 | Support SMI service mesh | Incubating |
 | Support [AWS App Mesh](https://aws.amazon.com/app-mesh/) | Incubating |
-| [Plan preview](/docs/user-guide/plan-preview) | Beta |
+| [Plan preview](../user-guide/plan-preview) | Beta |
 
 ### Terraform
 
@@ -41,10 +41,10 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 |-|-|
 | Quick sync deployment | Beta |
 | Deployment with a defined pipeline (e.g. manual-approval) | Beta |
-| [Automated rollback](/docs/user-guide/rolling-back-a-deployment/) | Beta |
-| [Automated configuration drift detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
-| [Application live state](/docs/user-guide/application-live-state/) | Incubating |
-| [Plan preview](/docs/user-guide/plan-preview) | Beta |
+| [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
+| [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Incubating |
+| [Application live state](../user-guide/managing-application/application-live-state/) | Incubating |
+| [Plan preview](../user-guide/plan-preview) | Beta |
 
 ### Cloud Run
 
@@ -52,10 +52,10 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 |-|-|
 | Quick sync deployment | Beta |
 | Deployment with a defined pipeline (e.g. canary, analysis) | Beta |
-| [Automated rollback](/docs/user-guide/rolling-back-a-deployment/) | Beta |
-| [Automated configuration drift detection](/docs/user-guide/configuration-drift-detection/) | Alpha |
-| [Application live state](/docs/user-guide/application-live-state/) | Alpha |
-| [Plan preview](/docs/user-guide/plan-preview) | Alpha |
+| [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
+| [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Alpha |
+| [Application live state](../user-guide/managing-application/application-live-state/) | Alpha |
+| [Plan preview](../user-guide/plan-preview) | Alpha |
 
 ### Lambda
 
@@ -63,10 +63,10 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 |-|-|
 | Quick sync deployment | Beta |
 | Deployment with a defined pipeline (e.g. canary, analysis) | Beta |
-| [Automated rollback](/docs/user-guide/rolling-back-a-deployment/) | Beta |
-| [Automated configuration drift detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
-| [Application live state](/docs/user-guide/application-live-state/) | Incubating |
-| [Plan preview](/docs/user-guide/plan-preview) | Alpha |
+| [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
+| [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Incubating |
+| [Application live state](../user-guide/managing-application/application-live-state/) | Incubating |
+| [Plan preview](../user-guide/plan-preview) | Alpha |
 
 ### Amazon ECS
 
@@ -74,33 +74,33 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 |-|-|
 | Quick sync deployment | Alpha |
 | Deployment with a defined pipeline (e.g. canary, analysis) | Alpha |
-| [Automated rollback](/docs/user-guide/rolling-back-a-deployment/) | Beta |
-| [Automated configuration drift detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
-| [Application live state](/docs/user-guide/application-live-state/) | Incubating |
+| [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
+| [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Incubating |
+| [Application live state](../user-guide/managing-application/application-live-state/) | Incubating |
 | Support [AWS App Mesh](https://aws.amazon.com/app-mesh/) | Incubating |
-| [Plan preview](/docs/user-guide/plan-preview) | Alpha |
+| [Plan preview](../user-guide/plan-preview) | Alpha |
 
 ## Piped Agent
 
 | Feature | Phase |
 |-|-|
-| [Deployment wait stage](/docs/user-guide/adding-a-wait-stage/) | Beta |
-| [Deployment manual approval stage](/docs/user-guide/adding-a-manual-approval/) | Beta |
-| [Notification](/docs/operator-manual/piped/configuring-notifications/) to Slack | Beta |
-| [Notification](/docs/operator-manual/piped/configuring-notifications/) to external service via webhook | Alpha |
+| [Deployment wait stage](../user-guide/managing-application/customizing-deployment/adding-a-wait-stage/) | Beta |
+| [Deployment manual approval stage](../user-guide/managing-application/customizing-deployment/adding-a-manual-approval/) | Beta |
+| [Notification](../user-guide/managing-piped/configuring-notifications/) to Slack | Beta |
+| [Notification](../user-guide/managing-piped/configuring-notifications/) to external service via webhook | Alpha |
 | [Secrets management](/docs/user-guide/secret-management/) - Storing secrets safely in the Git repository | Beta |
-| [Event watcher](/docs/user-guide/event-watcher/) - Updating files in Git automatically for given events | Alpha |
-| [Pipectl](/docs/user-guide/command-line-tool/) - Command-line tool for interacting with Control Plane | Beta |
+| [Event watcher](../user-guide/event-watcher/) - Updating files in Git automatically for given events | Alpha |
+| [Pipectl](../user-guide/command-line-tool/) - Command-line tool for interacting with Control Plane | Beta |
 | Deployment plugin - Allow executing user-created deployment plugin | Incubating |
-| [ADA](/docs/user-guide/automated-deployment-analysis/) (Automated Deployment Analysis) by Prometheus metrics | Alpha |
-| [ADA](/docs/user-guide/automated-deployment-analysis/) by Datadog metrics | Alpha |
-| [ADA](/docs/user-guide/automated-deployment-analysis/) by Stackdriver metrics | Incubating |
-| [ADA](/docs/user-guide/automated-deployment-analysis/) by Stackdriver log | Incubating |
-| [ADA](/docs/user-guide/automated-deployment-analysis/) by CloudWatch metrics | Incubating |
-| [ADA](/docs/user-guide/automated-deployment-analysis/) by CloudWatch log | Incubating |
-| [ADA](/docs/user-guide/automated-deployment-analysis/) by HTTP request (smoke test...) | Incubating |
-| [Remote upgrade](/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-upgrade) - Ability to upgrade Piped from the web console | Beta |
-| [Remote config](/docs/operator-manual/piped/remote-upgrade-remote-config/#remote-config) - Watch and reload configuration from a remote location such as Git | Beta |
+| [ADA](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) (Automated Deployment Analysis) by Prometheus metrics | Alpha |
+| [ADA](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) by Datadog metrics | Alpha |
+| [ADA](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) by Stackdriver metrics | Incubating |
+| [ADA](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) by Stackdriver log | Incubating |
+| [ADA](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) by CloudWatch metrics | Incubating |
+| [ADA](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) by CloudWatch log | Incubating |
+| [ADA](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) by HTTP request (smoke test...) | Incubating |
+| [Remote upgrade](../user-guide/managing-piped/remote-upgrade-remote-config/#remote-upgrade) - Ability to upgrade Piped from the web console | Beta |
+| [Remote config](../user-guide/managing-piped/remote-upgrade-remote-config/#remote-config) - Watch and reload configuration from a remote location such as Git | Beta |
 
 ## Control Plane
 
@@ -120,6 +120,6 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Support AWS [S3](https://aws.amazon.com/s3/) as file store | Beta |
 | Support [Minio](https://github.com/minio/minio) as file store | Beta |
 | Support using file storage such as GCS, S3, Minio for both data store and file store (It means no database is required to run control plane) | Incubating |
-| [Insights](/docs/user-guide/insights/) - Show the delivery performance of a team or an application | Incubating |
-| [Deployment Chain](/docs/user-guide/deployment-chain/) - Allow rolling out to multiple clusters gradually or promoting across environments | Alpha |
-| [Metrics](/docs/operator-manual/control-plane/metrics/) - Dashboards for PipeCD and Piped metrics | Beta |
+| [Insights](../user-guide/insights/) - Show the delivery performance of a team or an application | Incubating |
+| [Deployment Chain](../user-guide/managing-application/deployment-chain/) - Allow rolling out to multiple clusters gradually or promoting across environments | Alpha |
+| [Metrics](../user-guide/managing-controlplane/metrics/) - Dashboards for PipeCD and Piped metrics | Beta |

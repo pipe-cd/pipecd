@@ -6,7 +6,7 @@ description: >
   How to enable blue-green deployment for Kubernetes application with Istio.
 ---
 
-Similar to [canary deployment](/docs/user-guide/examples/k8s-app-canary-with-istio/), PipeCD allows you to enable and automate the blue-green deployment strategy for your application based on Istio's weighted routing feature.
+Similar to [canary deployment](../k8s-app-canary-with-istio/), PipeCD allows you to enable and automate the blue-green deployment strategy for your application based on Istio's weighted routing feature.
 
 In both canary and blue-green strategies, the old version and the new version of the application get deployed at the same time.
 But while the canary strategy slowly routes the traffic to the new version, the blue-green strategy quickly routes all traffic to one of the versions.
@@ -17,7 +17,7 @@ Complete source code for this example is hosted in [pipe-cd/examples](https://gi
 
 ## Before you begin
 
-- Add a new Kubernetes application by following the instructions in [this guide](/docs/user-guide/adding-an-application/)
+- Add a new Kubernetes application by following the instructions in [this guide](../../managing-application/adding-an-application/)
 - Ensure having `pipecd.dev/variant: primary` [label](https://github.com/pipe-cd/examples/blob/master/kubernetes/mesh-istio-bluegreen/deployment.yaml#L17) and [selector](https://github.com/pipe-cd/examples/blob/master/kubernetes/mesh-istio-bluegreen/deployment.yaml#L12) in the workload template
 - Ensure having at least one Istio's `DestinationRule` and defining the needed subsets (`primary` and `canary`) with `pipecd.dev/variant` label
 
@@ -107,7 +107,7 @@ The number of workloads (e.g. pod) for canary variant is configured to be 100% o
 ![](/images/example-bluegreen-kubernetes-istio-stage-1.png)
 
 - Stage 2: `K8S_TRAFFIC_ROUTING` ensures that all traffic should be routed to canary variant. Because the `trafficRouting` is configured to use Istio, PipeCD will find Istio's VirtualService resource of this application to control the traffic percentage.
-(You can add an [ANALYSIS](/docs/user-guide/automated-deployment-analysis/) stage after this to validate the new version. When any negative impacts are detected, an auto-rollback stage will be executed to switch all traffic back to the primary variant.)
+(You can add an [ANALYSIS](../../managing-application/customizing-deployment/automated-deployment-analysis/) stage after this to validate the new version. When any negative impacts are detected, an auto-rollback stage will be executed to switch all traffic back to the primary variant.)
 
 ![](/images/example-bluegreen-kubernetes-istio-stage-2.png)
 

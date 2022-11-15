@@ -221,7 +221,7 @@ pipectl event register \
 
 Encrypt the plaintext entered either in stdin or via the `--input-file` flag.
 
-You can encrypt it the same way you do [from the web](/docs/user-guide/managing-application/secret-management/#encrypting-secret-data).
+You can encrypt it the same way you do [from the web](../managing-application/secret-management/#encrypting-secret-data).
 
 - From stdin:
 
