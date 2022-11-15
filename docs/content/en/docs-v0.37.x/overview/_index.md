@@ -50,16 +50,16 @@ PipeCD provides a unified continuous delivery solution for multiple application 
 
 ## Where should I go next?
 
-For a good understanding of the PipeCD's components, see the [Concepts](/docs/concepts) page.
+For a good understanding of the PipeCD's components, see the [Concepts](../concepts) page.
 
 If you are an **operator** wanting to install and configure PipeCD for other developers.
-- [Quickstart](/docs/quickstart/)
-- [Operating Control Plane](/docs/operator-manual/control-plane/)
-- [Operating Piped](/docs/operator-manual/piped/)
+- [Quickstart](../quickstart/)
+- [Managing Control Plane](../user-guide/managing-controlplane/)
+- [Managing Piped](../user-guide/managing-piped/)
 
 If you are a **user** using PipeCD to deploy your application/infrastructure:
-- [User Guide](/docs/user-guide/)
-- [Examples](/docs/user-guide/examples)
+- [User Guide](../user-guide/)
+- [Examples](../user-guide/examples)
 
 If you want to be a **contributor**:
-- [Contributor Guide](/docs/contribution-guidelines/)
+- [Contributor Guide](../contribution-guidelines/)

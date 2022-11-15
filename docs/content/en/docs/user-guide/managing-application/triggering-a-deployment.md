@@ -20,7 +20,7 @@ Configuration for the trigger used to determine whether we trigger a new deploym
 - `onOutOfSync`: Controls triggering new deployment when application is at `OUT_OF_SYNC` state.
 - `onChain`: Controls triggering new deployment when the application is counted as a node of some chains.
 
-See [Configuration Reference](/docs/user-guide/configuration-reference/#deploymenttrigger) for the full configuration.
+See [Configuration Reference](../../configuration-reference/#deploymenttrigger) for the full configuration.
 
 After a new deployment was triggered, it will be queued to handle by the appropriate `piped`. And at this time the deployment pipeline was not decided yet.
 `piped` schedules all deployments of applications to ensure that for each application only one deployment will be executed at the same time.
@@ -31,7 +31,7 @@ For example:
 - when the merged pull request updated a Deployment's container image or updated a mounting ConfigMap or Secret, `piped` planner will decide that the deployment should use the specified pipeline to do a progressive deployment.
 - when the merged pull request just updated the `replicas` number, `piped` planner will decide to use a quick sync to scale the resources.
 
-You can force `piped` planner to decide to use the [QuickSync](/docs/concepts/#quick-sync) or the specified pipeline based on the commit message by configuring [CommitMatcher](/docs/user-guide/configuration-reference/#commitmatcher) in the application configuration.
+You can force `piped` planner to decide to use the [QuickSync](../../../concepts/#sync-strategy) or the specified pipeline based on the commit message by configuring [CommitMatcher](../../configuration-reference/#commitmatcher) in the application configuration.
 
 After being planned, the deployment will be executed as the decided pipeline. The deployment execution including the state of each stage as well as their logs can be viewed in realtime at the deployment details page.
 

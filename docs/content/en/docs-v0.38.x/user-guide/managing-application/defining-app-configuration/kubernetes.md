@@ -13,7 +13,7 @@ Based on the application configuration and the pull request changes, PipeCD plan
 Quick sync is a fast way to sync application to the state specified in the target Git commit without any progressive strategy. It just applies all the defined manifiests to sync the application.
 The quick sync will be planned in one of the following cases:
 - no pipeline was specified in the application configuration file
-- [pipeline](/docs/user-guide/configuration-reference/#pipeline) was specified but the PR did not make any changes on workload (e.g. Deployment's pod template) or config (e.g. ConfigMap, Secret)
+- [pipeline](../../../configuration-reference/#pipeline) was specified but the PR did not make any changes on workload (e.g. Deployment's pod template) or config (e.g. ConfigMap, Secret)
 
 For example, the application configuration as below is missing the pipeline field. This means any pull request touches the application will trigger a quick sync deployment.
 
@@ -61,7 +61,7 @@ and other common stages:
 - `WAIT_APPROVAL`
 - `ANALYSIS`
 
-See the description of each stage at [Customize application deployment](/docs/user-guide/managing-application/customizing-deployment/).
+See the description of each stage at [Customize application deployment](../../customizing-deployment/).
 
 ## Manifest Templating
 
@@ -109,8 +109,8 @@ A kustomize base can be loaded from:
 - the same git repository with the application directory, we call as a `local base`
 - a different git repository, we call as a `remote base`
 
-See [Examples](/docs/user-guide/examples/#kubernetes-applications) for more specific.
+See [Examples](../../../examples/#kubernetes-applications) for more specific.
 
 ## Reference
 
-See [Configuration Reference](/docs/user-guide/configuration-reference/#kubernetes-application) for the full configuration.
+See [Configuration Reference](../../../configuration-reference/#kubernetes-application) for the full configuration.

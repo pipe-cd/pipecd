@@ -8,16 +8,16 @@ description: >
 
 Deploying an Amazon ECS application requires `TaskDefinition` and `Service` configuration files placing inside the application directory. Those files contain all configuration for [ECS TaskDefinition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html) object and [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html) object, and will be used by Piped agent while deploy your application/service to ECS cluster.
 
-If you're not familiar with ECS, you can get examples for those files from [here](/docs/examples/#ecs-applications).
+If you're not familiar with ECS, you can get examples for those files from [here](../../../../examples/#ecs-applications).
 
 ## Quick sync
 
-By default, when the [pipeline](/docs/user-guide/configuration-reference/#ecs-application) was not specified, PipeCD triggers a quick sync deployment for the merged pull request.
+By default, when the [pipeline](../../../configuration-reference/#ecs-application) was not specified, PipeCD triggers a quick sync deployment for the merged pull request.
 Quick sync for an ECS deployment will roll out the new version and switch all traffic to it immediately.
 
 ## Sync with the specified pipeline
 
-The [pipeline](/docs/user-guide/configuration-reference/#ecs-application) field in the application configuration is used to customize the way to do the deployment.
+The [pipeline](../../../configuration-reference/#ecs-application) field in the application configuration is used to customize the way to do the deployment.
 You can add a manual approval before routing traffic to the new version or add an analysis stage the do some smoke tests against the new version before allowing them to receive the real traffic.
 
 These are the provided stages for ECS application you can use to build your pipeline:
@@ -36,7 +36,7 @@ and other common stages:
 - `WAIT_APPROVAL`
 - `ANALYSIS`
 
-See the description of each stage at [Customize application deployment](/docs/user-guide/managing-application/customizing-deployment/).
+See the description of each stage at [Customize application deployment](../../customizing-deployment/).
 
 Here is an example that rolls out the new version gradually:
 
@@ -91,4 +91,4 @@ spec:
 
 ## Reference
 
-See [Configuration Reference](/docs/user-guide/configuration-reference/#ecs-application) for the full configuration.
+See [Configuration Reference](../../../configuration-reference/#ecs-application) for the full configuration.

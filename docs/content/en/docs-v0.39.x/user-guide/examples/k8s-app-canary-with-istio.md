@@ -9,7 +9,7 @@ description: >
 > Canary release is a technique to reduce the risk of introducing a new software version in production by slowly rolling out the change to a small subset of users before rolling it out to the entire infrastructure and making it available to everybody.
 > -- <cite>[martinfowler.com/canaryrelease](https://martinfowler.com/bliki/CanaryRelease.html)</cite>
 
-With Istio, we can accomplish this goal by configuring a sequence of rules that route a percentage of traffic to each [variant](/docs/user-guide/configuring-deployment/kubernetes/#sync-with-the-specified-pipeline) of the application.
+With Istio, we can accomplish this goal by configuring a sequence of rules that route a percentage of traffic to each [variant](../../managing-application/defining-app-configuration/kubernetes/#sync-with-the-specified-pipeline) of the application.
 And with PipeCD, you can enable and automate the canary strategy for your Kubernetes application even easier.
 
 In this guide, we will show you how to configure the application configuration file to send 10% of traffic to the new version and keep 90% to the primary variant. Then after waiting for manual approval, you will complete the migration by sending 100% of traffic to the new version.
@@ -18,7 +18,7 @@ Complete source code for this example is hosted in [pipe-cd/examples](https://gi
 
 ## Before you begin
 
-- Add a new Kubernetes application by following the instructions in [this guide](/docs/user-guide/adding-an-application/)
+- Add a new Kubernetes application by following the instructions in [this guide](../../managing-application/adding-an-application/)
 - Ensure having `pipecd.dev/variant: primary` [label](https://github.com/pipe-cd/examples/blob/master/kubernetes/mesh-istio-canary/deployment.yaml#L17) and [selector](https://github.com/pipe-cd/examples/blob/master/kubernetes/mesh-istio-canary/deployment.yaml#L12) in the workload template
 - Ensure having at least one Istio's `DestinationRule` and defining the needed subsets (`primary` and `canary`) with `pipecd.dev/variant` label
 

@@ -97,4 +97,4 @@ kubectl delete svc canary -n pipecd
 
 ### What's next?
 
-To prepare your PipeCD for a production environment, please visit the [Installation](/docs/installation/) guideline. For guidelines to use PipeCD to deploy your application in daily usage, please visit the [User guide](/docs/user-guide/) docs.
+To prepare your PipeCD for a production environment, please visit the [Installation](../installation/) guideline. For guidelines to use PipeCD to deploy your application in daily usage, please visit the [User guide](../user-guide/) docs.

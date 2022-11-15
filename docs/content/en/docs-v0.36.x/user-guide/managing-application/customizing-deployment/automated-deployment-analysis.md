@@ -13,7 +13,7 @@ The analysis of the newly deployed application is often carried out in a manual,
 ADA automates that and helps to build a robust deployment process.
 ADA is available as a stage in the pipeline specified in the application configuration file.
 
-ADA does the analysis by periodically performing queries against the [Analysis Provider](/docs/concepts/#analysis-provider) and evaluating the results to know the impact of the deployment. Then based on these evaluating results, the deployment can be rolled back immediately to minimize any negative impacts.
+ADA does the analysis by periodically performing queries against the [Analysis Provider](../../../../concepts/#analysis-provider) and evaluating the results to know the impact of the deployment. Then based on these evaluating results, the deployment can be rolled back immediately to minimize any negative impacts.
 
 The canonical use case for this stage is to determine if your canary deployment should proceed.
 
@@ -23,7 +23,7 @@ Automatic rollback based on the analysis result
 </p>
 
 ## Prerequisites
-Before enabling ADA inside the pipeline, all required Analysis Providers must be configured in the Piped Configuration according to [this guide](/docs/user-guide/managing-piped/adding-an-analysis-provider/).
+Before enabling ADA inside the pipeline, all required Analysis Providers must be configured in the Piped Configuration according to [this guide](../../../managing-piped/adding-an-analysis-provider/).
 
 ## Analysis by metrics
 ### Strategies
@@ -233,7 +233,7 @@ spec:
       - name: K8S_BASELINE_CLEAN
 ```
 
-The full list of configurable `ANALYSIS` stage fields are [here](/docs/user-guide/configuration-reference/#analysisstageoptions).
+The full list of configurable `ANALYSIS` stage fields are [here](../../../configuration-reference/#analysisstageoptions).
 
 See more the [example](https://github.com/pipe-cd/examples/blob/master/kubernetes/analysis-by-metrics/app.pipecd.yaml).
 
