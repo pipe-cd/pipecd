@@ -4,6 +4,7 @@ export const UI_TEXT_ADD = "Add";
 export const UI_TEXT_EDIT = "Edit";
 export const UI_TEXT_DISCARD = "Discard";
 export const UI_TEXT_DISABLE = "Disable";
+export const UI_TEXT_RESTART = "Restart";
 export const UI_TEXT_ENABLE = "Enable";
 export const UI_TEXT_REFRESH = "REFRESH";
 export const UI_TEXT_MORE = "MORE";

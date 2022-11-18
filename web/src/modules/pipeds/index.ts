@@ -71,6 +71,13 @@ export const enablePiped = createAsyncThunk<void, { pipedId: string }>(
   }
 );
 
+export const restartPiped = createAsyncThunk<void, { pipedId: string }>(
+  `${MODULE_NAME}/restart`,
+  async ({ pipedId }) => {
+    await pipedsApi.restartPiped({ pipedId });
+  }
+);
+
 export const addNewPipedKey = createAsyncThunk<string, { pipedId: string }>(
   `${MODULE_NAME}/addNewKey`,
   async ({ pipedId }) => {

@@ -32,18 +32,21 @@ import {
   UI_TEXT_HIDE_FILTER,
   UI_TEXT_UPGRADE,
 } from "~/constants/ui-text";
+import { REQUEST_PIPED_RESTART_SUCCESS } from "~/constants/toast-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { useInterval } from "~/hooks/use-interval";
 import {
   clearRegisteredPipedInfo,
   disablePiped,
   enablePiped,
+  restartPiped,
   fetchPipeds,
   fetchReleasedVersions,
   Piped,
   RegisteredPiped,
   selectAllPipeds,
 } from "~/modules/pipeds";
+import { addToast } from "~/modules/toasts";
 import { AppState } from "~/store";
 import { useSettingsStyles } from "../styles";
 import { AddPipedDialog } from "./components/add-piped-dialog";
@@ -129,6 +132,19 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     },
     [dispatch]
   );
+  const handleRestart = useCallback(
+    (id: string) => {
+      dispatch(restartPiped({ pipedId: id })).then(() => {
+        dispatch(
+          addToast({
+            message: REQUEST_PIPED_RESTART_SUCCESS,
+            severity: "success",
+          })
+        );
+      });
+    },
+    [dispatch]
+  );
 
   const handleEdit = useCallback((id: string) => {
     setEditPipedId(id);
@@ -208,6 +224,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
                   onEdit={handleEdit}
                   onDisable={handleDisable}
                   onEnable={handleEnable}
+                  onRestart={handleRestart}
                 />
               ))}
             </TableBody>
