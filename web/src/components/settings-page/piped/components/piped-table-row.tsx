@@ -267,7 +267,11 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
             >
               {UI_TEXT_VIEW_THE_CONFIGURATION}
             </MenuItem>,
-            <MenuItem key="piped-menu-restart" onClick={handleRestart}>
+            <MenuItem
+              key="piped-menu-restart"
+              onClick={handleRestart}
+              disabled={piped.status !== Piped.ConnectionStatus.ONLINE}
+            >
               {UI_TEXT_RESTART}
             </MenuItem>,
             <MenuItem key="piped-menu-disable" onClick={handleDisable}>
