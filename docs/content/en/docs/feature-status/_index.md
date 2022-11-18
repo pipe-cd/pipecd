@@ -76,7 +76,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Deployment with a defined pipeline (e.g. canary, analysis) | Alpha |
 | [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
 | [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Incubating |
-| [Application live state](../user-guide/application-live-state/) | Incubating |
+| [Application live state](../user-guide/managing-application/application-live-state/) | Incubating |
 | Support [AWS App Mesh](https://aws.amazon.com/app-mesh/) | Incubating |
 | [Plan preview](../user-guide/plan-preview) | Alpha |
 
