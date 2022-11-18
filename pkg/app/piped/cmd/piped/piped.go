@@ -126,7 +126,11 @@ func NewCommand() *cobra.Command {
 }
 
 func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
-	group, ctx := errgroup.WithContext(ctx)
+	// Make a cancellable context.
+	cCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	group, ctx := errgroup.WithContext(cCtx)
 	if p.addLoginUserToPasswd {
 		if err := p.insertLoginUserToPasswd(ctx); err != nil {
 			return fmt.Errorf("failed to insert logged-in user to passwd: %w", err)
@@ -484,6 +488,60 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 		group.Go(func() error {
 			return r.Run(ctx)
+		})
+	}
+
+	// Check for stop command.
+	{
+		stopCommandHandler := func(ctx context.Context) (bool, error) {
+			input.Logger.Debug("fetch unhandled piped commands")
+
+			commands := commandLister.ListPipedCommands()
+			if len(commands) == 0 {
+				return false, nil
+			}
+
+			var (
+				shouldStop bool
+				stopCmd    model.ReportableCommand
+			)
+			for _, command := range commands {
+				if command.IsRestartPipedCmd() {
+					shouldStop = true
+					stopCmd = command
+				}
+			}
+
+			if !shouldStop {
+				return false, nil
+			}
+
+			if err := stopCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, []byte(stopCmd.Id)); err != nil {
+				return false, fmt.Errorf("failed to report command %s: %w", stopCmd.Id, err)
+			}
+
+			return true, nil
+		}
+
+		group.Go(func() error {
+			ticker := time.NewTicker(p.gracePeriod)
+			for {
+				select {
+				case <-ticker.C:
+					shouldStop, err := stopCommandHandler(ctx)
+					// Don't return an error to continue this goroutine execution.
+					if err != nil {
+						input.Logger.Error("failed to check/handle piped stop command", zap.Error(err))
+					}
+					if shouldStop {
+						input.Logger.Info("stop piped due to restart piped requested")
+						cancel()
+					}
+				case <-ctx.Done():
+					input.Logger.Info("piped stop checker has been stopped")
+					return nil
+				}
+			}
 		})
 	}
 

@@ -36,13 +36,14 @@ type Store interface {
 	Lister() Lister
 }
 
-// Lister helps list comands.
+// Lister helps list commands.
 // All objects returned here must be treated as read-only.
 type Lister interface {
 	ListApplicationCommands() []model.ReportableCommand
 	ListDeploymentCommands() []model.ReportableCommand
 	ListStageCommands(deploymentID, stageID string) []model.ReportableCommand
 	ListBuildPlanPreviewCommands() []model.ReportableCommand
+	ListPipedCommands() []model.ReportableCommand
 }
 
 type store struct {
@@ -54,6 +55,7 @@ type store struct {
 	deploymentCommands  []model.ReportableCommand
 	stageCommands       []model.ReportableCommand
 	planPreviewCommands []model.ReportableCommand
+	pipedCommands       []model.ReportableCommand
 	handledCommands     map[string]time.Time
 	mu                  sync.RWMutex
 	gracePeriod         time.Duration
@@ -119,6 +121,7 @@ func (s *store) sync(ctx context.Context) error {
 		deploymentCommands  = make([]model.ReportableCommand, 0)
 		stageCommands       = make([]model.ReportableCommand, 0)
 		planPreviewCommands = make([]model.ReportableCommand, 0)
+		pipedCommands       = make([]model.ReportableCommand, 0)
 	)
 	for _, cmd := range resp.Commands {
 		switch cmd.Type {
@@ -130,6 +133,8 @@ func (s *store) sync(ctx context.Context) error {
 			stageCommands = append(stageCommands, s.makeReportableCommand(cmd))
 		case model.Command_BUILD_PLAN_PREVIEW:
 			planPreviewCommands = append(planPreviewCommands, s.makeReportableCommand(cmd))
+		case model.Command_RESTART_PIPED:
+			pipedCommands = append(pipedCommands, s.makeReportableCommand(cmd))
 		}
 	}
 
@@ -138,6 +143,7 @@ func (s *store) sync(ctx context.Context) error {
 	s.deploymentCommands = deploymentCommands
 	s.stageCommands = stageCommands
 	s.planPreviewCommands = planPreviewCommands
+	s.pipedCommands = pipedCommands
 	s.mu.Unlock()
 
 	return nil
@@ -211,6 +217,20 @@ func (s *store) ListBuildPlanPreviewCommands() []model.ReportableCommand {
 
 	commands := make([]model.ReportableCommand, 0, len(s.planPreviewCommands))
 	for _, cmd := range s.planPreviewCommands {
+		if _, ok := s.handledCommands[cmd.Id]; ok {
+			continue
+		}
+		commands = append(commands, cmd)
+	}
+	return commands
+}
+
+func (s *store) ListPipedCommands() []model.ReportableCommand {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	commands := make([]model.ReportableCommand, 0, len(s.pipedCommands))
+	for _, cmd := range s.pipedCommands {
 		if _, ok := s.handledCommands[cmd.Id]; ok {
 			continue
 		}
