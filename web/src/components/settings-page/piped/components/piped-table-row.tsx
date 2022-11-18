@@ -33,6 +33,7 @@ import {
   UI_TEXT_DISABLE,
   UI_TEXT_EDIT,
   UI_TEXT_ENABLE,
+  UI_TEXT_RESTART,
 } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
@@ -81,12 +82,13 @@ interface Props {
   onEdit: (id: string) => void;
   onDisable: (id: string) => void;
   onEnable: (id: string) => void;
+  onRestart: (id: string) => void;
 }
 
 const ITEM_HEIGHT = 48;
 const menuStyle = {
   style: {
-    maxHeight: ITEM_HEIGHT * 4.5,
+    maxHeight: ITEM_HEIGHT * 5.5,
     width: "25ch",
   },
 };
@@ -96,6 +98,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
   onEnable,
   onDisable,
   onEdit,
+  onRestart,
 }) {
   const classes = useStyles();
   const piped = useAppSelector(selectPipedById(pipedId));
@@ -162,6 +165,11 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
     setAnchorEl(null);
     onDisable(pipedId);
   }, [pipedId, onDisable]);
+
+  const handleRestart = useCallback(() => {
+    setAnchorEl(null);
+    onRestart(pipedId);
+  }, [pipedId, onRestart]);
 
   if (!piped) {
     return null;
@@ -258,6 +266,9 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
               disabled={piped.config.length === 0}
             >
               {UI_TEXT_VIEW_THE_CONFIGURATION}
+            </MenuItem>,
+            <MenuItem key="piped-menu-restart" onClick={handleRestart}>
+              {UI_TEXT_RESTART}
             </MenuItem>,
             <MenuItem key="piped-menu-disable" onClick={handleDisable}>
               {UI_TEXT_DISABLE}
