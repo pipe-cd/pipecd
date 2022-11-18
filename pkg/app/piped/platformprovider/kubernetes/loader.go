@@ -84,6 +84,9 @@ func NewLoader(
 // LoadManifests renders and loads all manifests for application.
 func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err error) {
 	defer func() {
+		// Override namespace if set because ParseManifests does not parse it
+		// if namespace is not explicitly specified in the manifests.
+		setNamespace(manifests, l.input.Namespace)
 		sortManifests(manifests)
 	}()
 	l.initOnce.Do(func() {
@@ -164,6 +167,15 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 	}
 
 	return
+}
+
+func setNamespace(manifests []Manifest, namespace string) {
+	if namespace == "" {
+		return
+	}
+	for _, m := range manifests {
+		m.Key.Namespace = namespace
+	}
 }
 
 func sortManifests(manifests []Manifest) {
