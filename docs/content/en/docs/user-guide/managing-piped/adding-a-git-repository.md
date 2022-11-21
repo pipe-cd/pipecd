@@ -1,7 +1,7 @@
 ---
 title: "Adding a git repository"
 linkTitle: "Adding git repository"
-weight: 2
+weight: 3
 description: >
   This page describes how to add a new Git repository.
 ---

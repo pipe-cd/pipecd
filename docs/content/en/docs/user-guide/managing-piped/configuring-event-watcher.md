@@ -1,7 +1,7 @@
 ---
 title: "Configuring event watcher"
 linkTitle: "Configuring event watcher"
-weight: 7
+weight: 8
 description: >
   This page describes how to configure piped to enable event watcher.
 ---

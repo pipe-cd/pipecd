@@ -1,7 +1,7 @@
 ---
 title: "Remote upgrade and remote config"
 linkTitle: "Remote upgrade and remote config"
-weight: 1
+weight: 2
 description: >
   This page describes how to use remote upgrade and remote config features.
 ---

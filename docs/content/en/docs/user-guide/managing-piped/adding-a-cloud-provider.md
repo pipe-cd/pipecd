@@ -1,7 +1,7 @@
 ---
 title: "Adding a cloud provider"
 linkTitle: "Adding cloud provider"
-weight: 3
+weight: 4
 description: >
   This page describes how to add a cloud provider to enable its applications.
 ---
