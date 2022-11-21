@@ -21,7 +21,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/pipe-cd/pipecd/pkg/datastore"
-	"github.com/pipe-cd/pipecd/pkg/insight/insightstore"
+	"github.com/pipe-cd/pipecd/pkg/insight"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -31,16 +31,16 @@ const (
 )
 
 type insightMetricsCollector struct {
-	applicationCountStore insightstore.ApplicationCountStore
-	projectStore          datastore.ProjectStore
+	insightProvider insight.Provider
+	projectStore    datastore.ProjectStore
 
 	applicationDesc *prometheus.Desc
 }
 
-func NewInsightMetricsCollector(acs insightstore.ApplicationCountStore, ps datastore.ProjectStore) prometheus.Collector {
+func NewInsightMetricsCollector(p insight.Provider, ps datastore.ProjectStore) prometheus.Collector {
 	return &insightMetricsCollector{
-		applicationCountStore: acs,
-		projectStore:          ps,
+		insightProvider: p,
+		projectStore:    ps,
 		applicationDesc: prometheus.NewDesc(
 			"insight_application_total",
 			"Number of applications currently controlled by control plane",
@@ -84,11 +84,13 @@ func (i *insightMetricsCollector) collectApplicationCount() (map[string]map[stri
 	}
 	data := make(map[string]map[string]int, len(projects))
 	for idx := range projects {
-		counts, err := i.applicationCountStore.LoadApplicationCounts(ctx, projects[idx].Id)
+		projectID := projects[idx].Id
+		counts, err := i.insightProvider.GetApplicationCounts(ctx, projectID)
 		if err != nil {
 			continue
 		}
-		data[projects[idx].Id] = groupApplicationCounts(counts.Counts)
+
+		data[projectID] = groupApplicationCounts(counts.Counts)
 	}
 	return data, nil
 }

@@ -40,6 +40,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/insight"
 	"github.com/pipe-cd/pipecd/pkg/insight/insightmetrics"
 	"github.com/pipe-cd/pipecd/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -188,19 +189,29 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 		})
 	}
 
+	insightStore := insightstore.NewStore(fs, input.Logger)
 	// Start running insight collector.
 	{
-		ic := insightcollector.NewCollector(ds, fs, cfg.InsightCollector, input.Logger)
+		ic := insightcollector.NewCollector(ds, insightStore, cfg.InsightCollector, input.Logger)
 		group.Go(func() error {
 			return ic.Run(ctx)
 		})
 	}
 
-	insightMetricsCollector := insightmetrics.NewInsightMetricsCollector(insightstore.NewStore(fs), datastore.NewProjectStore(ds, datastore.OpsCommander))
+	insightMetricsCollector := insightmetrics.NewInsightMetricsCollector(
+		insight.NewProvider(insightStore),
+		datastore.NewProjectStore(ds, datastore.OpsCommander),
+	)
 
 	// Start running HTTP server.
 	{
-		handler := handler.NewHandler(s.httpPort, datastore.NewProjectStore(ds, datastore.OpsCommander), insightstore.NewStore(fs), cfg.SharedSSOConfigs, s.gracePeriod, input.Logger)
+		handler := handler.NewHandler(
+			s.httpPort,
+			datastore.NewProjectStore(ds, datastore.OpsCommander),
+			cfg.SharedSSOConfigs,
+			s.gracePeriod,
+			input.Logger,
+		)
 		group.Go(func() error {
 			return handler.Run(ctx)
 		})

@@ -15747,7 +15747,7 @@ proto.grpc.service.webservice.GetInsightDataRequest.toObject = function(includeI
     rangeFrom: jspb.Message.getFieldWithDefault(msg, 2, 0),
     rangeTo: jspb.Message.getFieldWithDefault(msg, 3, 0),
     applicationId: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    offset: jspb.Message.getFieldWithDefault(msg, 5, 0)
+    labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {
@@ -15801,8 +15801,10 @@ proto.grpc.service.webservice.GetInsightDataRequest.deserializeBinaryFromReader 
       msg.setApplicationId(value);
       break;
     case 5:
-      var value = /** @type {number} */ (reader.readInt32());
-      msg.setOffset(value);
+      var value = msg.getLabelsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
       break;
     default:
       reader.skipField();
@@ -15861,12 +15863,9 @@ proto.grpc.service.webservice.GetInsightDataRequest.serializeBinaryToWriter = fu
       f
     );
   }
-  f = message.getOffset();
-  if (f !== 0) {
-    writer.writeInt32(
-      5,
-      f
-    );
+  f = message.getLabelsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(5, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
 };
 
@@ -15944,21 +15943,25 @@ proto.grpc.service.webservice.GetInsightDataRequest.prototype.setApplicationId =
 
 
 /**
- * optional int32 offset = 5;
- * @return {number}
+ * map<string, string> labels = 5;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
  */
-proto.grpc.service.webservice.GetInsightDataRequest.prototype.getOffset = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+proto.grpc.service.webservice.GetInsightDataRequest.prototype.getLabelsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 5, opt_noLazyCreate,
+      null));
 };
 
 
 /**
- * @param {number} value
+ * Clears values from the map. The map will be non-null.
  * @return {!proto.grpc.service.webservice.GetInsightDataRequest} returns this
  */
-proto.grpc.service.webservice.GetInsightDataRequest.prototype.setOffset = function(value) {
-  return jspb.Message.setProto3IntField(this, 5, value);
-};
+proto.grpc.service.webservice.GetInsightDataRequest.prototype.clearLabelsMap = function() {
+  this.getLabelsMap().clear();
+  return this;};
 
 
 

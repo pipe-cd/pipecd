@@ -189,15 +189,15 @@ type ControlPlaneInsightCollector struct {
 }
 
 type InsightCollectorApplication struct {
-	Enabled  bool   `json:"enabled" default:"true"`
+	Enabled bool `json:"enabled" default:"true"`
+	// Default is running every hour.
 	Schedule string `json:"schedule" default:"0 * * * *"`
 }
 
 type InsightCollectorDeployment struct {
-	Enabled       bool     `json:"enabled"`
-	Schedule      string   `json:"schedule" default:"30 0,12 * * *"`
-	Retries       int      `json:"retries" default:"3"`
-	RetryInterval Duration `json:"retryInterval" default:"1h"`
+	Enabled bool `json:"enabled"`
+	// Default is running every hour.
+	Schedule string `json:"schedule" default:"30 * * * *"`
 }
 
 func (c ControlPlaneCache) TTLDuration() time.Duration {

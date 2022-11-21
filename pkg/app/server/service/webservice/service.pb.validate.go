@@ -10394,7 +10394,7 @@ func (m *GetInsightDataRequest) validate(all bool) error {
 
 	// no validation rules for ApplicationId
 
-	// no validation rules for Offset
+	// no validation rules for Labels
 
 	if len(errors) > 0 {
 		return GetInsightDataRequestMultiError(errors)

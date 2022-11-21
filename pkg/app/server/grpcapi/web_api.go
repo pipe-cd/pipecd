@@ -39,7 +39,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/insight"
-	"github.com/pipe-cd/pipecd/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
@@ -118,7 +117,7 @@ type WebAPI struct {
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
-	insightStore              insightstore.Store
+	insightProvider           insight.Provider
 	unregisteredAppStore      unregisteredappstore.Store
 	encrypter                 encrypter
 	githubCli                 *github.Client
@@ -127,7 +126,6 @@ type WebAPI struct {
 	deploymentProjectCache cache.Cache
 	pipedProjectCache      cache.Cache
 	pipedStatCache         cache.Cache
-	insightCache           cache.Cache
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -141,9 +139,8 @@ func NewWebAPI(
 	sls stagelogstore.Store,
 	alss applicationlivestatestore.Store,
 	uas unregisteredappstore.Store,
-	is insightstore.Store,
+	ip insight.Provider,
 	psc cache.Cache,
-	ic cache.Cache,
 	projs map[string]config.ControlPlaneProject,
 	encrypter encrypter,
 	logger *zap.Logger,
@@ -160,7 +157,7 @@ func NewWebAPI(
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
 		commandStore:              commandstore.NewStore(w, ds, sc, logger),
-		insightStore:              is,
+		insightProvider:           ip,
 		unregisteredAppStore:      uas,
 		projectsInConfig:          projs,
 		encrypter:                 encrypter,
@@ -169,7 +166,6 @@ func NewWebAPI(
 		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            psc,
-		insightCache:              ic,
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -1530,68 +1526,55 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 
 // GetInsightData returns the accumulated insight data.
 func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "Not available")
-
-	// claims, err := rpcauth.ExtractClaims(ctx)
-	// if err != nil {
-	// 	a.logger.Error("failed to authenticate the current user", zap.Error(err))
-	// 	return nil, err
-	// }
-
-	// if math.Abs(float64(req.Offset)) > 86400 {
-	// 	return nil, status.Error(codes.InvalidArgument, "offset must between -86400 ~ 86400")
-	// }
-
-	// loc := time.FixedZone("", int(req.Offset))
-
-	// switch req.MetricsKind {
-	// case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-	// 	points, updatedAt, err := a.getDeploymentFrequency(ctx, claims.Role.ProjectId, req.ApplicationId, req.RangeFrom, req.RangeTo, loc)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	return &webservice.GetInsightDataResponse{
-	// 		UpdatedAt: updatedAt,
-	// 		Type:      model.InsightResultType_MATRIX,
-	// 		Matrix: []*model.InsightSampleStream{
-	// 			{DataPoints: points},
-	// 		},
-	// 	}, nil
-	// default:
-	// 	return nil, status.Error(codes.Unimplemented, "")
-	// }
-}
-
-// getDeploymentFrequency if applicationID is empty, collect all application
-func (a *WebAPI) getDeploymentFrequency(ctx context.Context, projectID string, applicationID string, from, to int64, loc *time.Location) ([]*model.InsightDataPoint, int64, error) {
-	const deploymentFrequencyMinimumVersion = model.InsightDeploymentVersion_V0
-
-	deployments, err := a.insightStore.List(ctx, projectID, from, to, deploymentFrequencyMinimumVersion)
-	var updatedAt int64
+	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		return nil, updatedAt, err
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
 
-	if applicationID != "" {
-		filtered := deployments[:0]
-		for _, v := range deployments {
-			if v.AppId == applicationID {
-				filtered = append(filtered, v)
-			}
-		}
-		deployments = filtered
+	if req.MetricsKind != model.InsightMetricsKind_DEPLOYMENT_FREQUENCY &&
+		req.MetricsKind != model.InsightMetricsKind_CHANGE_FAILURE_RATE {
+		return nil, status.Error(codes.Unimplemented, fmt.Sprintf("The insight metrics %s is not implemented yet", req.MetricsKind.String()))
 	}
 
-	dailyDeployments := insight.GroupDeploymentsByDaily(deployments, loc)
-	result := make([]*model.InsightDataPoint, 0, len(deployments))
-	for _, d := range dailyDeployments {
-		result = append(result, &model.InsightDataPoint{
-			Timestamp: insight.NormalizeUnixTime(d[0].StartedAt, loc),
-			Value:     float32(len(d)),
-		})
+	var points []*model.InsightDataPoint
+
+	switch req.MetricsKind {
+	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
+		points, err = a.insightProvider.GetDeploymentFrequencyDataPoints(
+			ctx,
+			claims.Role.ProjectId,
+			req.ApplicationId,
+			req.Labels,
+			req.RangeFrom,
+			req.RangeTo,
+		)
+
+	case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
+		points, err = a.insightProvider.GetDeploymentChangeFailureRateDataPoints(
+			ctx,
+			claims.Role.ProjectId,
+			req.ApplicationId,
+			req.Labels,
+			req.RangeFrom,
+			req.RangeTo,
+		)
+
+	default:
+		return nil, status.Error(codes.Unimplemented, fmt.Sprintf("The insight metrics %s is not implemented yet", req.MetricsKind.String()))
 	}
 
-	return result, updatedAt, nil
+	if err != nil {
+		a.logger.Error("failed to get insight data", zap.Error(err))
+		return nil, gRPCStoreError(err, "get insight data")
+	}
+
+	return &webservice.GetInsightDataResponse{
+		Type: model.InsightResultType_MATRIX,
+		Matrix: []*model.InsightSampleStream{
+			{DataPoints: points},
+		},
+	}, nil
 }
 
 func (a *WebAPI) GetInsightApplicationCount(ctx context.Context, req *webservice.GetInsightApplicationCountRequest) (*webservice.GetInsightApplicationCountResponse, error) {
@@ -1601,8 +1584,7 @@ func (a *WebAPI) GetInsightApplicationCount(ctx context.Context, req *webservice
 		return nil, err
 	}
 
-	// TODO: Cache application counts in the cache service.
-	c, err := a.insightStore.LoadApplicationCounts(ctx, claims.Role.ProjectId)
+	c, err := a.insightProvider.GetApplicationCounts(ctx, claims.Role.ProjectId)
 	if err != nil {
 		a.logger.Error("failed to load application counts", zap.Error(err))
 		return nil, gRPCStoreError(err, "load application counts")

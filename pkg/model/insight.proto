@@ -20,9 +20,22 @@ option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 import "validate/validate.proto";
 import "pkg/model/deployment.proto";
 
+enum InsightMetricsKind {
+  DEPLOYMENT_FREQUENCY = 0;
+  CHANGE_FAILURE_RATE = 1;
+  MTTR = 2;
+  LEAD_TIME = 3;
+  APPLICATIONS_COUNT = 4;
+}
+
 enum InsightResultType {
   MATRIX = 0;
   VECTOR = 1;
+}
+
+message InsightDataPoint {
+  int64 timestamp = 1 [(validate.rules).int64.gt = 0];
+  float value = 2 [(validate.rules).float.gt = 0];
 }
 
 message InsightSample {
@@ -35,19 +48,6 @@ message InsightSampleStream {
   repeated InsightDataPoint data_points = 2;
 }
 
-message InsightDataPoint {
-  int64 timestamp = 1 [(validate.rules).int64.gt = 0];
-  float value = 2 [(validate.rules).float.gt = 0];
-}
-
-enum InsightMetricsKind {
-  DEPLOYMENT_FREQUENCY = 0;
-  CHANGE_FAILURE_RATE = 1;
-  MTTR = 2;
-  LEAD_TIME = 3;
-  APPLICATIONS_COUNT = 4;
-}
-
 message InsightApplicationCount {
   map<string,string> labels = 1;
   int32 count = 2;
@@ -56,52 +56,4 @@ message InsightApplicationCount {
 enum InsightApplicationCountLabelKey {
   KIND = 0;
   ACTIVE_STATUS = 1;
-}
-
-enum InsightDeploymentVersion {
-  V0 = 0;
-}
-
-message InsightDeploymentChunk {
-  InsightDeploymentVersion version = 1;
-  // Time is the number of seconds since Unix epoch.
-  int64 from = 2 [(validate.rules).int64.gte = 0];
-  // Time is the number of seconds since Unix epoch.
-  int64 to = 3 [(validate.rules).int64.gte = 0];
-
-  repeated InsightDeployment deployments = 4;
-}
-
-message InsightDeployment {
-  string id = 1;
-  string app_id = 2;
-  map<string,string> labels = 3;
-
-  // Time is the number of seconds since Unix epoch.
-  int64 started_at = 4;
-  // Time is the number of seconds since Unix epoch.
-  int64 completed_at = 5;
-  // Time is the number of seconds since Unix epoch.
-  int64 rollback_started_at = 6;
-  model.DeploymentStatus complete_status = 7;
-}
-
-message InsightDeploymentChunkMetadata {
-  message ChunkMeta {
-     // Time is the number of seconds since Unix epoch.
-     int64 from = 1 [(validate.rules).int64.gte = 0];
-     // Time is the number of seconds since Unix epoch.
-     int64 to = 2 [(validate.rules).int64.gte = 0];
-     // chunk file name
-     string name = 3; 
-     int64 size = 4;
-     int64 count = 5;
- }
-
-  repeated ChunkMeta chunks = 1;
-
-  // Time is the number of seconds since Unix epoch.
-  int64 created_at = 14;
-  // Time is the number of seconds since Unix epoch.
-  int64 updated_at = 15;
 }

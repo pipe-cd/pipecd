@@ -86,10 +86,8 @@ func TestControlPlaneConfig(t *testing.T) {
 						Schedule: "0 * * * *",
 					},
 					Deployment: InsightCollectorDeployment{
-						Enabled:       true,
-						Schedule:      "0 10 * * *",
-						Retries:       3,
-						RetryInterval: Duration(time.Hour),
+						Enabled:  true,
+						Schedule: "0 10 * * *",
 					},
 				},
 			},
