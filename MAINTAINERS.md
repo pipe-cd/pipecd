@@ -4,7 +4,7 @@
 |-----------------|--------------------------------------------------|----------------------------------------------|
 | Le Van Nghia    | [@nghialv](https://github.com/nghialv)       | (See GitHub profile)                         |
 | Tran Cong Khanh | [@khanhtc1202](https://github.com/khanhtc1202)   | (See GitHub profile)                         |
-| Nanao Kenta     | [@knanao](https://github.com/knanao)             | (See GitHub profile)                         |
+| Kenta Nanao     | [@knanao](https://github.com/knanao)             | (See GitHub profile)                         |
 
 
 E-mail addresses are expected to be used for reporting security issues.
