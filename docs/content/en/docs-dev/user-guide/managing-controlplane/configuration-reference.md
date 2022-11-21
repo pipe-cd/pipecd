@@ -1,7 +1,7 @@
 ---
 title: "Configuration reference"
 linkTitle: "Configuration reference"
-weight: 6
+weight: 5
 description: >
   This page describes all configurable fields in the Control Plane configuration.
 ---

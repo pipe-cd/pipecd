@@ -1,7 +1,7 @@
 ---
 title: "Adding a platform provider"
 linkTitle: "Adding platform provider"
-weight: 4
+weight: 5
 description: >
   This page describes how to add a platform provider to enable its applications.
 ---
