@@ -2,7 +2,7 @@
 
 | Name            | GitHub ID (not Twitter ID)                       | E-mail address for reporting security issues |
 |-----------------|--------------------------------------------------|----------------------------------------------|
-| Le Van Nghia    | [@nghialv](https://github.com/nghialv)       | (See GitHub profile)                         |
+| Le Van Nghia    | [@nghialv](https://github.com/nghialv)           | (See GitHub profile)                         |
 | Tran Cong Khanh | [@khanhtc1202](https://github.com/khanhtc1202)   | (See GitHub profile)                         |
 | Kenta Nanao     | [@knanao](https://github.com/knanao)             | (See GitHub profile)                         |
 
