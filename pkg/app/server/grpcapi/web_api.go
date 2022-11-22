@@ -1532,11 +1532,6 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 		return nil, err
 	}
 
-	if req.MetricsKind != model.InsightMetricsKind_DEPLOYMENT_FREQUENCY &&
-		req.MetricsKind != model.InsightMetricsKind_CHANGE_FAILURE_RATE {
-		return nil, status.Error(codes.Unimplemented, fmt.Sprintf("The insight metrics %s is not implemented yet", req.MetricsKind.String()))
-	}
-
 	var points []*model.InsightDataPoint
 
 	switch req.MetricsKind {
