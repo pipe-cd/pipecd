@@ -8,7 +8,7 @@ description: >
 
 ## Prerequisites
 
-- [Go 1.17](https://go.dev/)
+- [Go 1.19](https://go.dev/)
 - [Docker Decktop](https://www.docker.com/products/docker-desktop/)
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) (If you want to run Control Plane locally)
 
