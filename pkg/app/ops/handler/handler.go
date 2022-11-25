@@ -27,7 +27,6 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
-	"github.com/pipe-cd/pipecd/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -48,21 +47,19 @@ type projectStore interface {
 }
 
 type Handler struct {
-	port                  int
-	projectStore          projectStore
-	applicationCountStore insightstore.ApplicationCountStore
-	sharedSSOConfigs      []config.SharedSSOConfig
-	server                *http.Server
-	gracePeriod           time.Duration
-	logger                *zap.Logger
+	port             int
+	projectStore     projectStore
+	sharedSSOConfigs []config.SharedSSOConfig
+	server           *http.Server
+	gracePeriod      time.Duration
+	logger           *zap.Logger
 }
 
-func NewHandler(port int, ps projectStore, acs insightstore.ApplicationCountStore, sharedSSOConfigs []config.SharedSSOConfig, gracePeriod time.Duration, logger *zap.Logger) *Handler {
+func NewHandler(port int, ps projectStore, sharedSSOConfigs []config.SharedSSOConfig, gracePeriod time.Duration, logger *zap.Logger) *Handler {
 	mux := http.NewServeMux()
 	h := &Handler{
-		projectStore:          ps,
-		applicationCountStore: acs,
-		sharedSSOConfigs:      sharedSSOConfigs,
+		projectStore:     ps,
+		sharedSSOConfigs: sharedSSOConfigs,
 		server: &http.Server{
 			Addr:    fmt.Sprintf(":%d", port),
 			Handler: mux,
@@ -74,7 +71,6 @@ func NewHandler(port int, ps projectStore, acs insightstore.ApplicationCountStor
 	mux.HandleFunc("/", h.handleTop)
 	mux.HandleFunc("/projects", h.handleListProjects)
 	mux.HandleFunc("/projects/add", h.handleAddProject)
-	mux.HandleFunc("/applicationcounts", h.handleApplicationCounts)
 
 	return h
 }
@@ -233,45 +229,6 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := addedProjectTmpl.Execute(w, data); err != nil {
 		h.logger.Error("failed to render AddedProject page template", zap.Error(err))
-	}
-}
-
-func (h *Handler) handleApplicationCounts(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "not found", http.StatusNotFound)
-		return
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	projects, err := h.projectStore.List(ctx, datastore.ListOptions{})
-	if err != nil {
-		h.logger.Error("failed to retrieve the list of projects", zap.Error(err))
-		http.Error(w, "Unable to retrieve projects", http.StatusInternalServerError)
-		return
-	}
-
-	data := make([]map[string]interface{}, 0, len(projects))
-	for i := range projects {
-		counts, err := h.applicationCountStore.LoadApplicationCounts(ctx, projects[i].Id)
-		if err != nil {
-			data = append(data, map[string]interface{}{
-				"Project": projects[i].Id,
-				"Error":   err.Error(),
-			})
-			continue
-		}
-		total, groups := groupApplicationCounts(counts.Counts)
-		data = append(data, map[string]interface{}{
-			"Project": projects[i].Id,
-			"Total":   total,
-			"Counts":  groups,
-		})
-	}
-
-	if err := applicationCountsTmpl.Execute(w, data); err != nil {
-		h.logger.Error("failed to render ApplicationCounts page template", zap.Error(err))
 	}
 }
 

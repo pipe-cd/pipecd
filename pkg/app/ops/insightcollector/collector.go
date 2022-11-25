@@ -16,187 +16,81 @@ package insightcollector
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"time"
 
 	"github.com/robfig/cron/v3"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/backoff"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
-	"github.com/pipe-cd/pipecd/pkg/filestore"
 	"github.com/pipe-cd/pipecd/pkg/insight"
-	"github.com/pipe-cd/pipecd/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-type applicationStore interface {
+type applicationLister interface {
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Application, string, error)
 }
 
-type deploymentStore interface {
+type deploymentLister interface {
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Deployment, string, error)
 }
 
 type Collector struct {
-	applicationStore applicationStore
-	deploymentStore  deploymentStore
-	insightstore     insightstore.Store
-
-	applicationHandlers []func(ctx context.Context, applications []*model.Application, target time.Time) error
-	deploymentHandlers  []func(ctx context.Context, developments []*model.Deployment) error
-
-	config config.ControlPlaneInsightCollector
-	logger *zap.Logger
+	applicationDataCol         *applicationDataCollector
+	completedDeploymentDataCol *completedDeploymentDataCollector
+	cfg                        config.ControlPlaneInsightCollector
+	logger                     *zap.Logger
 }
 
-func NewCollector(ds datastore.DataStore, fs filestore.Store, cfg config.ControlPlaneInsightCollector, logger *zap.Logger) *Collector {
-	w := datastore.OpsCommander
-	c := &Collector{
-		applicationStore: datastore.NewApplicationStore(ds, w),
-		deploymentStore:  datastore.NewDeploymentStore(ds, w),
-		insightstore:     insightstore.NewStore(fs),
-		config:           cfg,
-		logger:           logger.Named("insight-collector"),
-	}
+func NewCollector(ds datastore.DataStore, store insight.Store, cfg config.ControlPlaneInsightCollector, logger *zap.Logger) *Collector {
+	logger = logger.Named("insight-collector")
 
-	if cfg.Application.Enabled {
-		c.applicationHandlers = append(c.applicationHandlers, c.collectApplicationCount)
-	}
-	if cfg.Deployment.Enabled {
-		c.deploymentHandlers = append(c.deploymentHandlers, c.collectDevelopmentFrequency)
-	}
+	var (
+		w            = datastore.OpsCommander
+		appLister    = datastore.NewApplicationStore(ds, w)
+		deployLister = datastore.NewDeploymentStore(ds, w)
+		appCol       = newApplicationDataCollector(appLister, store, logger)
+		comDepCol    = newCompletedDeploymentDataCollector(deployLister, store, logger)
+	)
 
-	return c
+	return &Collector{
+		applicationDataCol:         appCol,
+		completedDeploymentDataCol: comDepCol,
+		cfg:                        cfg,
+		logger:                     logger,
+	}
 }
 
 func (c *Collector) Run(ctx context.Context) error {
-	c.logger.Info("start running insight collector", zap.Any("config", c.config))
+	c.logger.Info("start running insight collector", zap.Any("config", c.cfg))
 	cr := cron.New(cron.WithLocation(time.UTC))
 
-	if c.config.Application.Enabled {
-		_, err := cr.AddFunc(c.config.Application.Schedule, func() {
-			c.collectApplicationMetrics(ctx)
+	if c.cfg.Application.Enabled {
+		_, err := cr.AddFunc(c.cfg.Application.Schedule, func() {
+			c.applicationDataCol.Execute(ctx)
 		})
 		if err != nil {
-			c.logger.Error("failed to configure cron job for collecting application metrics", zap.Error(err))
+			c.logger.Error("failed to configure cron job to collect app data", zap.Error(err))
 			return err
 		}
-		c.logger.Info("added a cron job for collecting application metrics")
+		c.logger.Info("added a cron job to collect app data")
 	}
 
-	if c.config.Deployment.Enabled {
-		_, err := cr.AddFunc(c.config.Deployment.Schedule, func() {
-			c.collectDeploymentMetrics(ctx)
+	if c.cfg.Deployment.Enabled {
+		_, err := cr.AddFunc(c.cfg.Deployment.Schedule, func() {
+			c.completedDeploymentDataCol.Execute(ctx)
 		})
 		if err != nil {
-			c.logger.Error("failed to configure cron job for collecting deployment metrics", zap.Error(err))
+			c.logger.Error("failed to configure cron job to collect deployment data", zap.Error(err))
 			return err
 		}
-		c.logger.Info("added a cron job for collecting deployment metrics")
+		c.logger.Info("added a cron job to collect deployment data")
 	}
 
 	cr.Start()
 	<-ctx.Done()
+
 	cr.Stop()
 	c.logger.Info("insight collector has been stopped")
-	return nil
-}
-
-func (c *Collector) collectApplicationMetrics(ctx context.Context) {
-	if !c.config.Application.Enabled {
-		c.logger.Info("do not collecting application metrics because it was not enabled")
-		return
-	}
-
-	start := time.Now()
-	c.logger.Info("will retrieve all applications to build insight data")
-
-	apps, err := c.listApplications(ctx, start)
-	if err != nil {
-		c.logger.Error("failed to list applications", zap.Error(err))
-		return
-	}
-	c.logger.Info(fmt.Sprintf("there are %d applications to build insight data", len(apps)),
-		zap.Duration("duration", time.Since(start)),
-	)
-
-	for _, handler := range c.applicationHandlers {
-		if err := handler(ctx, apps, start); err != nil {
-			c.logger.Error("failed to execute a handler for applications", zap.Error(err))
-			// In order to give all handlers the chance to handle the received data, we do not return here.
-		}
-	}
-}
-
-func (c *Collector) collectDeploymentMetrics(ctx context.Context) {
-	if !c.config.Deployment.Enabled {
-		c.logger.Info("do not collecting deployment metrics because it was not enabled")
-		return
-	}
-
-	var (
-		cfg   = c.config.Deployment
-		retry = backoff.NewRetry(cfg.Retries, backoff.NewConstant(cfg.RetryInterval.Duration()))
-	)
-
-	for retry.WaitNext(ctx) {
-		start := time.Now()
-		if err := c.collectNewlyCompletedDeployments(ctx); err != nil {
-			c.logger.Error("failed to process the newly completed deployments", zap.Error(err))
-			c.logger.Info("will do another try to collect insight data")
-			continue
-		}
-		c.logger.Info("successfully processed the newly completed deployments",
-			zap.Duration("duration", time.Since(start)),
-		)
-		return
-	}
-}
-
-func (c *Collector) collectNewlyCompletedDeployments(ctx context.Context) error {
-	c.logger.Info("will retrieve newly completed deployments to build insight data")
-	now := time.Now()
-	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-
-	m, err := c.insightstore.LoadMilestone(ctx)
-	if err != nil {
-		if !errors.Is(err, filestore.ErrNotFound) {
-			c.logger.Error("failed to load milestone", zap.Error(err))
-			return err
-		}
-		m = &insight.Milestone{
-			// collect from 1 week ago.
-			DeploymentCreatedAtMilestone: targetDate.Add(-time.Hour * 24 * 7).Unix(),
-		}
-	}
-
-	dc, err := c.findDeploymentsCompletedInRange(ctx, m.DeploymentCompletedAtMilestone, targetDate.Unix())
-	if err != nil {
-		c.logger.Error("failed to find newly completed deployment", zap.Error(err))
-		return err
-	}
-
-	var handleErr error
-	for _, handler := range c.deploymentHandlers {
-		if err := handler(ctx, dc); err != nil {
-			c.logger.Error("failed to execute a handler for newly completed deployments", zap.Error(err))
-			// In order to give all handlers the chance to handle the received data, we do not return here.
-			handleErr = err
-		}
-	}
-
-	if handleErr != nil {
-		return handleErr
-	}
-
-	m.DeploymentCompletedAtMilestone = targetDate.Unix()
-	if err := c.insightstore.PutMilestone(ctx, m); err != nil {
-		c.logger.Error("failed to store milestone", zap.Error(err))
-		return err
-	}
-
 	return nil
 }

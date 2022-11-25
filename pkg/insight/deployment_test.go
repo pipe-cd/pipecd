@@ -14,12 +14,34 @@
 
 package insight
 
-type Milestone struct {
-	// Mark that our collector has handled all
-	// deployment that was created before this value
-	DeploymentCreatedAtMilestone int64 `json:"deployment_created_at_milestone"`
-	// Mark that our collector has handled all deployment
-	// that was completed before this value. This will be
-	// used while calculating CHANGE_FAILURE_RATE.
-	DeploymentCompletedAtMilestone int64 `json:"deployment_completed_at_milestone"`
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestRoundDay(t *testing.T) {
+	testcases := []struct {
+		name      string
+		timestamp int64
+		expected  int64
+	}{
+		{
+			name:      "zero",
+			timestamp: 0,
+			expected:  0,
+		},
+		{
+			name:      "normal time",
+			timestamp: 1668013222,
+			expected:  1667952000,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := roundDay(tc.timestamp)
+			assert.Equal(t, tc.expected, got)
+		})
+	}
 }

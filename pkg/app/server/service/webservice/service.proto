@@ -656,8 +656,7 @@ message GetInsightDataRequest {
     int64 range_from = 2 [(validate.rules).int64.gt = 0];
     int64 range_to = 3 [(validate.rules).int64.gt = 0];
     string application_id = 4;
-    // seconds east of UTC
-    int32 offset = 5;
+    map<string,string> labels = 5;
 }
 
 message GetInsightDataResponse {

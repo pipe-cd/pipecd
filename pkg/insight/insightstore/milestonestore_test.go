@@ -20,13 +20,14 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/filestore"
 	"github.com/pipe-cd/pipecd/pkg/filestore/filestoretest"
 	"github.com/pipe-cd/pipecd/pkg/insight"
 )
 
-func TestLoadMilestone(t *testing.T) {
+func TestGetMilestone(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -47,11 +48,9 @@ func TestLoadMilestone(t *testing.T) {
 		{
 			name: "file found in filestore",
 			content: `{
-				"deployment_created_at_milestone": 1234,
 				"deployment_completed_at_milestone": 1234
 			}`,
 			expected: &insight.Milestone{
-				DeploymentCreatedAtMilestone:   1234,
 				DeploymentCompletedAtMilestone: 1234,
 			},
 			readerErr:   nil,
@@ -59,14 +58,19 @@ func TestLoadMilestone(t *testing.T) {
 		},
 	}
 
-	fs := filestoretest.NewMockStore(ctrl)
-	s := &store{filestore: fs}
+	var (
+		fs = filestoretest.NewMockStore(ctrl)
+		s  = &store{
+			fileStore: fs,
+			logger:    zap.NewNop(),
+		}
+	)
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			obj := []byte(tc.content)
-			fs.EXPECT().Get(context.TODO(), milestonePath).Return(obj, tc.readerErr)
-			state, err := s.LoadMilestone(context.TODO())
+			fs.EXPECT().Get(context.TODO(), milestoneFilePath).Return(obj, tc.readerErr)
+			state, err := s.GetMilestone(context.TODO())
 			if err != nil {
 				if tc.expectedErr == nil {
 					assert.NoError(t, err)

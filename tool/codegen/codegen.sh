@@ -104,7 +104,7 @@ mockDestinations=(
   "pkg/cache/cachetest/cache.mock.go"
   "pkg/git/gittest/git.mock.go"
   "pkg/jwt/jwttest/jwt.mock.go"
-  "pkg/insight/insightstore/insightstoretest/insightstore.mock.go"
+  "pkg/insight/insighttest/insight.mock.go"
 )
 mockSources=(
   "github.com/pipe-cd/pipecd/pkg/redis"
@@ -114,7 +114,7 @@ mockSources=(
   "github.com/pipe-cd/pipecd/pkg/cache"
   "github.com/pipe-cd/pipecd/pkg/git"
   "github.com/pipe-cd/pipecd/pkg/jwt"
-  "github.com/pipe-cd/pipecd/pkg/insight/insightstore"
+  "github.com/pipe-cd/pipecd/pkg/insight"
 )
 mockInterfaces=(
   "Redis"

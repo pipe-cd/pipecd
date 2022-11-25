@@ -55,6 +55,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/filestore/gcs"
 	"github.com/pipe-cd/pipecd/pkg/filestore/minio"
 	"github.com/pipe-cd/pipecd/pkg/filestore/s3"
+	"github.com/pipe-cd/pipecd/pkg/insight"
 	"github.com/pipe-cd/pipecd/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipecd/pkg/jwt"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -186,14 +187,17 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 	}()
 	input.Logger.Info("successfully connected to data store")
 
-	cache := rediscache.NewTTLCache(rd, cfg.Cache.TTLDuration())
-	sls := stagelogstore.NewStore(fs, cache, input.Logger)
-	alss := applicationlivestatestore.NewStore(fs, cache, input.Logger)
-	las := analysisresultstore.NewStore(fs, input.Logger)
-	is := insightstore.NewStore(fs)
-	cmdOutputStore := commandoutputstore.NewStore(fs, input.Logger)
-	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
-	unregisteredAppStore := unregisteredappstore.NewStore(rd, input.Logger)
+	var (
+		cache                = rediscache.NewTTLCache(rd, cfg.Cache.TTLDuration())
+		sls                  = stagelogstore.NewStore(fs, cache, input.Logger)
+		alss                 = applicationlivestatestore.NewStore(fs, cache, input.Logger)
+		las                  = analysisresultstore.NewStore(fs, input.Logger)
+		insightStore         = insightstore.NewStore(fs, input.Logger)
+		insightProvider      = insight.NewProvider(insightStore)
+		cmdOutputStore       = commandoutputstore.NewStore(fs, input.Logger)
+		statCache            = rediscache.NewHashCache(rd, defaultPipedStatHashKey)
+		unregisteredAppStore = unregisteredappstore.NewStore(rd, input.Logger)
+	)
 
 	// Start a gRPC server for handling PipedAPI requests.
 	{
@@ -277,9 +281,20 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			input.Logger.Error("failed to create a new JWT verifier", zap.Error(err))
 			return err
 		}
-		insightCache := rediscache.NewTTLCache(rd, 3*time.Hour)
 
-		service := grpcapi.NewWebAPI(ctx, ds, cache, sls, alss, unregisteredAppStore, is, statCache, insightCache, cfg.ProjectMap(), encryptDecrypter, input.Logger)
+		service := grpcapi.NewWebAPI(
+			ctx,
+			ds,
+			cache,
+			sls,
+			alss,
+			unregisteredAppStore,
+			insightProvider,
+			statCache,
+			cfg.ProjectMap(),
+			encryptDecrypter,
+			input.Logger,
+		)
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),

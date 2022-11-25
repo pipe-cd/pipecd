@@ -1837,8 +1837,8 @@ export class GetInsightDataRequest extends jspb.Message {
   getApplicationId(): string;
   setApplicationId(value: string): GetInsightDataRequest;
 
-  getOffset(): number;
-  setOffset(value: number): GetInsightDataRequest;
+  getLabelsMap(): jspb.Map<string, string>;
+  clearLabelsMap(): GetInsightDataRequest;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetInsightDataRequest.AsObject;
@@ -1854,7 +1854,7 @@ export namespace GetInsightDataRequest {
     rangeFrom: number,
     rangeTo: number,
     applicationId: string,
-    offset: number,
+    labelsMap: Array<[string, string]>,
   }
 }
 

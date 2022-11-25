@@ -14,20 +14,75 @@
 
 package insightstore
 
-import "github.com/pipe-cd/pipecd/pkg/filestore"
+import (
+	"context"
+	"errors"
+	"fmt"
 
-type Store interface {
-	ApplicationCountStore
-	DeploymentStore
-	MileStoneStore
+	"go.uber.org/zap"
+
+	"github.com/pipe-cd/pipecd/pkg/insight"
+)
+
+var (
+	errInvalidArg    = errors.New("invalid arg")
+	errLargeDuration = errors.New("too large duration")
+)
+
+type fileStore interface {
+	Get(ctx context.Context, path string) ([]byte, error)
+	Put(ctx context.Context, path string, content []byte) error
 }
 
 type store struct {
-	filestore filestore.Store
+	fileStore       fileStore
+	maxItemsInChunk int
+	logger          *zap.Logger
 }
 
-func NewStore(fs filestore.Store) Store {
+func NewStore(fs fileStore, logger *zap.Logger) insight.Store {
 	return &store{
-		filestore: fs,
+		fileStore:       fs,
+		maxItemsInChunk: 1000,
+		logger:          logger,
 	}
+}
+
+// File hierarchy structure inside storage:
+//
+//	insights
+//	├─ {projectId}
+//	  ├─ applications
+//	     ├─ applications.json
+//	  ├─ completed-deployments
+//	     ├─ block-2021
+//	     ├─ block-2022
+//		     ├─ block_meta.json
+//		     ├─ chunk_0.json
+//		     ├─ chunk_1.json
+
+func makeApplicationsFilePath(projectID string) string {
+	return fmt.Sprintf("insights/%s/applications/applications.json", projectID)
+}
+
+func makeCompletedDeploymentsBlockPath(projectID, blockID string) string {
+	return fmt.Sprintf("insights/%s/completed-deployments/%s", projectID, blockID)
+}
+
+func makeCompletedDeploymentsBlockMetaFilePath(projectID, blockID string) string {
+	dir := makeCompletedDeploymentsBlockPath(projectID, blockID)
+	return fmt.Sprintf("%s/block_meta.json", dir)
+}
+
+func makeCompletedDeploymentsChunkFilePath(projectID, blockID, chunkID string) string {
+	dir := makeCompletedDeploymentsBlockPath(projectID, blockID)
+	return fmt.Sprintf("%s/%s.json", dir, chunkID)
+}
+
+func makeDeploymentBlockID(year int) string {
+	return fmt.Sprintf("block_%d", year)
+}
+
+func makeDeploymentChunkID(index int) string {
+	return fmt.Sprintf("chunk_%d", index)
 }

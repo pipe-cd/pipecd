@@ -21,30 +21,25 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/insight"
 )
 
-const (
-	milestoneFilePath = "insights/milestone.json"
-)
-
-func (s *store) GetMilestone(ctx context.Context) (*insight.Milestone, error) {
-	m := &insight.Milestone{}
-	content, err := s.fileStore.Get(ctx, milestoneFilePath)
+func (s *store) GetApplications(ctx context.Context, projectID string) (*insight.ProjectApplicationData, error) {
+	content, err := s.fileStore.Get(ctx, makeApplicationsFilePath(projectID))
 	if err != nil {
 		return nil, err
 	}
 
-	err = json.Unmarshal(content, m)
-	if err != nil {
+	data := &insight.ProjectApplicationData{}
+	if err := json.Unmarshal(content, data); err != nil {
 		return nil, err
 	}
 
-	return m, nil
+	return data, nil
 }
 
-func (s *store) PutMilestone(ctx context.Context, m *insight.Milestone) error {
-	data, err := json.Marshal(m)
+func (s *store) PutApplications(ctx context.Context, projectID string, as *insight.ProjectApplicationData) error {
+	data, err := json.Marshal(as)
 	if err != nil {
 		return err
 	}
 
-	return s.fileStore.Put(ctx, milestoneFilePath, data)
+	return s.fileStore.Put(ctx, makeApplicationsFilePath(projectID), data)
 }
