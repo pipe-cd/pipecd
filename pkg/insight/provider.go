@@ -156,7 +156,7 @@ func buildApplicationCounts(d *ProjectApplicationData) ApplicationCounts {
 		status string
 		kind   string
 	}
-	m := make(map[key]int)
+	m := make(map[key]int, len(d.Applications))
 	for _, app := range d.Applications {
 		k := key{
 			status: app.Status,
