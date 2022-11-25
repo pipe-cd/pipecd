@@ -533,62 +533,52 @@ func TestGroupCompletedDeploymentsByBlock(t *testing.T) {
 func TestOverlap(t *testing.T) {
 	t.Parallel()
 
-	const (
-		testDateUnix = 1647820800 // 2022/03/21:00:00:00 UTC
-		dayUnix      = int64(time.Hour * 24 / time.Second)
-	)
-
 	testcases := []struct {
-		name           string
-		lhsFrom, lhsTo int64
-		rhsFrom, rhsTo int64
-		expected       bool
+		name                 string
+		firstFrom, firstTo   int64
+		secondFrom, secondTo int64
+		expected             bool
 	}{
 		{
-			name:     "No overlap 1",
-			lhsFrom:  testDateUnix - dayUnix,
-			lhsTo:    testDateUnix,
-			rhsFrom:  testDateUnix,
-			rhsTo:    testDateUnix + dayUnix,
-			expected: false,
+			name:       "no overlap",
+			firstFrom:  2,
+			firstTo:    5,
+			secondFrom: 15,
+			secondTo:   20,
+			expected:   false,
 		},
 		{
-			name:     "No overlap 2",
-			lhsFrom:  testDateUnix,
-			lhsTo:    testDateUnix + dayUnix,
-			rhsFrom:  testDateUnix - dayUnix,
-			rhsTo:    testDateUnix,
-			expected: false,
+			name:       "overlap the boundary",
+			firstFrom:  2,
+			firstTo:    5,
+			secondFrom: 5,
+			secondTo:   20,
+			expected:   true,
 		},
 		{
-			name:     "Overlap same day",
-			lhsFrom:  testDateUnix,
-			lhsTo:    testDateUnix + dayUnix,
-			rhsFrom:  testDateUnix,
-			rhsTo:    testDateUnix + dayUnix,
-			expected: true,
+			name:       "overlap a part",
+			firstFrom:  2,
+			firstTo:    10,
+			secondFrom: 5,
+			secondTo:   20,
+			expected:   true,
 		},
 		{
-			name:     "Overlap",
-			lhsFrom:  testDateUnix - dayUnix,
-			lhsTo:    testDateUnix + dayUnix,
-			rhsFrom:  testDateUnix,
-			rhsTo:    testDateUnix + dayUnix,
-			expected: true,
-		},
-		{
-			name:     "Overlap contain",
-			lhsFrom:  testDateUnix - dayUnix,
-			lhsTo:    testDateUnix + dayUnix,
-			rhsFrom:  testDateUnix,
-			rhsTo:    testDateUnix,
-			expected: true,
+			name:       "overlap fully containing",
+			firstFrom:  2,
+			firstTo:    10,
+			secondFrom: 5,
+			secondTo:   8,
+			expected:   true,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := overlap(tc.lhsFrom, tc.lhsTo, tc.rhsFrom, tc.rhsTo)
+			got := overlap(tc.firstFrom, tc.firstTo, tc.secondFrom, tc.secondTo)
+			assert.Equal(t, tc.expected, got)
+
+			got = overlap(tc.secondFrom, tc.secondTo, tc.firstFrom, tc.firstTo)
 			assert.Equal(t, tc.expected, got)
 		})
 	}
