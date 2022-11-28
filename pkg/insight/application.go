@@ -26,8 +26,8 @@ type ApplicationData struct {
 }
 
 type ProjectApplicationData struct {
-	Applications []*ApplicationData
-	UpdatedAt    int64
+	Applications []*ApplicationData `json:"applications"`
+	UpdatedAt    int64              `json:"updated_at"`
 }
 
 func BuildApplicationData(a *model.Application) ApplicationData {
