@@ -37,7 +37,7 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   if (deploymentFrequency.length > 0) {
     deploymentFrequencyDataPoints.push({
       name: selectedAppName || "All",
-      points: deploymentFrequency
+      points: deploymentFrequency,
     });
   }
 
@@ -51,7 +51,7 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   if (deploymentChangeFailureRate.length > 0) {
     deploymentChangeFailureRateDataPoints.push({
       name: selectedAppName || "All",
-      points: deploymentChangeFailureRate
+      points: deploymentChangeFailureRate,
     });
   }
 
