@@ -210,7 +210,7 @@ func (s *store) putCompletedDeploymentsBlock(ctx context.Context, projectID, blo
 			continue
 		}
 		if chunkMD.Count >= s.maxItemsInChunk {
-			chunk.MD.Completed = true
+			chunkMD.Completed = true
 			continue
 		}
 
