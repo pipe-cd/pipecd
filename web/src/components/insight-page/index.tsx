@@ -32,7 +32,7 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   );
   const deploymentFrequencyDataPoints: {
     name: string;
-    points: InsightDataPoint.AsObject[]
+    points: InsightDataPoint.AsObject[];
   }[] = [];
   if (deploymentFrequency.length > 0) {
     deploymentFrequencyDataPoints.push({
@@ -46,7 +46,7 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   );
   const deploymentChangeFailureRateDataPoints: {
     name: string;
-    points: InsightDataPoint.AsObject[]
+    points: InsightDataPoint.AsObject[];
   }[] = [];
   if (deploymentChangeFailureRate.length > 0) {
     deploymentChangeFailureRateDataPoints.push({
