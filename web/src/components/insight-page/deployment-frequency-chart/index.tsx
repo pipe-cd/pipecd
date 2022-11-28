@@ -14,7 +14,7 @@ export const DeploymentFrequencyChart: FC<DeploymentFrequencyChartProps> = ({
     <ChartBase
       title="Deployment Frequency"
       data={data}
-      yName="Deployments"
+      yName="Number of Deployments"
       xName="Deployment Date"
       lineColor={chartColor[500]}
       areaColor={chartColor[200]}

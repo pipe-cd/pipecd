@@ -4,19 +4,21 @@ import dayjs from "dayjs";
 const MODULE_NAME = "insight";
 
 export interface InsightState {
-  applicationId: string;
   rangeFrom: number;
   rangeTo: number;
-  offset: number;
+  applicationId: string;
+  // Suppose to be like ["key-1:value-1"]
+  // sindresorhus/query-string doesn't support multidimensional arrays, that's why the format is a bit tricky.
+  labels: Array<string>;
 }
 
 const now = dayjs(Date.now());
 
 const initialState: InsightState = {
-  applicationId: "",
   rangeFrom: now.subtract(1, "month").valueOf(),
-  rangeTo: now.valueOf(),
-  offset: -new Date().getTimezoneOffset() * 60,
+  rangeTo: now.valueOf(), //-new Date().getTimezoneOffset() * 60,
+  applicationId: "",
+  labels: [],
 };
 
 export const insightSlice = createSlice({

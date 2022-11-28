@@ -7,6 +7,7 @@ import { applicationLiveStateSlice } from "./applications-live-state";
 import { commandsSlice } from "./commands";
 import { deleteApplicationSlice } from "./delete-application";
 import { deploymentFrequencySlice } from "./deployment-frequency";
+import { deploymentChangeFailureRateSlice } from "./deployment-change-failure-rate";
 import { deploymentsSlice } from "./deployments";
 import { insightSlice } from "./insight";
 import { meSlice } from "./me";
@@ -36,6 +37,7 @@ export const reducers = combineReducers({
   apiKeys: apiKeysSlice.reducer,
   insight: insightSlice.reducer,
   deploymentFrequency: deploymentFrequencySlice.reducer,
+  deploymentChangeFailureRate: deploymentChangeFailureRateSlice.reducer,
   applicationCounts: applicationCountsSlice.reducer,
   unregisteredApplications: unregisteredApplicationsSlice.reducer,
   events: eventsSlice.reducer,
