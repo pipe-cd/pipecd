@@ -55,7 +55,7 @@ func (p *provider) GetDeploymentFrequencyDataPoints(ctx context.Context, project
 	}
 
 	points := buildDeploymentFrequencyDataPoints(ds, appID, labels)
-	return points, nil
+	return fillUpDataPoints(points, rangeFrom, rangeTo), nil
 }
 
 // TODO: Add cache layer.
@@ -66,7 +66,7 @@ func (p *provider) GetDeploymentChangeFailureRateDataPoints(ctx context.Context,
 	}
 
 	points := buildDeploymentChangeFailureRateDataPoints(ds, appID, labels)
-	return points, nil
+	return fillUpDataPoints(points, rangeFrom, rangeTo), nil
 }
 
 func buildDeploymentFrequencyDataPoints(ds []*DeploymentData, appID string, labels map[string]string) []*model.InsightDataPoint {
@@ -190,4 +190,31 @@ func determineApplicationStatus(a *model.Application) model.ApplicationActiveSta
 		return model.ApplicationActiveStatus_DISABLED
 	}
 	return model.ApplicationActiveStatus_ENABLED
+}
+
+// fillUpDataPoints builds a full list of data points in range [from, to].
+// All missing data points will be filled with Zero value.
+// This is required for web to render the correct graph.
+func fillUpDataPoints(ds []*model.InsightDataPoint, from, to int64) []*model.InsightDataPoint {
+	const dayInSeconds = 24 * 3600
+	var (
+		fromDay = roundDay(from)
+		toDay   = roundDay(to)
+		out     = make([]*model.InsightDataPoint, 0, toDay-fromDay+1)
+		index   = 0
+	)
+
+	for day := fromDay; day <= toDay; day += dayInSeconds {
+		if index < len(ds) && ds[index].Timestamp == day {
+			out = append(out, ds[index])
+			index++
+			continue
+		}
+		out = append(out, &model.InsightDataPoint{
+			Timestamp: day,
+			Value:     0,
+		})
+	}
+
+	return out
 }

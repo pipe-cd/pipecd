@@ -14,7 +14,7 @@ export const ChangeFailureRateChart: FC<ChangeFailureRateChartProps> = ({
     <ChartBase
       title="Change Failure Rate"
       data={data}
-      yName="Failed release attempts (%)"
+      yName="Failed Deployments / Total"
       xName="Release Date"
       lineColor={chartColor[500]}
       areaColor={chartColor[200]}

@@ -134,3 +134,60 @@ func TestBuildDeploymentChangeFailureRateDataPoint(t *testing.T) {
 		})
 	}
 }
+
+func TestFillUpDataPoints(t *testing.T) {
+	testcases := []struct {
+		name     string
+		ds       []*model.InsightDataPoint
+		from, to int64
+		want     []*model.InsightDataPoint
+	}{
+		{
+			name: "missing head part",
+			ds: []*model.InsightDataPoint{
+				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
+				&model.InsightDataPoint{Timestamp: 259200, Value: 3},
+			},
+			from: 86400,
+			to:   259200,
+			want: []*model.InsightDataPoint{
+				&model.InsightDataPoint{Timestamp: 86400, Value: 0},
+				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
+				&model.InsightDataPoint{Timestamp: 259200, Value: 3},
+			},
+		},
+		{
+			name: "missing tail part",
+			ds: []*model.InsightDataPoint{
+				&model.InsightDataPoint{Timestamp: 86400, Value: 1},
+				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
+			},
+			from: 86400,
+			to:   259200,
+			want: []*model.InsightDataPoint{
+				&model.InsightDataPoint{Timestamp: 86400, Value: 1},
+				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
+				&model.InsightDataPoint{Timestamp: 259200, Value: 0},
+			},
+		},
+		{
+			name: "missing both parts",
+			ds: []*model.InsightDataPoint{
+				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
+			},
+			from: 86400,
+			to:   259200,
+			want: []*model.InsightDataPoint{
+				&model.InsightDataPoint{Timestamp: 86400, Value: 0},
+				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
+				&model.InsightDataPoint{Timestamp: 259200, Value: 0},
+			},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := fillUpDataPoints(tc.ds, tc.from, tc.to)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
