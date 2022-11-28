@@ -843,10 +843,10 @@ func stopCommandHandler(ctx context.Context, cmdLister commandstore.Lister, logg
 		return false, nil
 	}
 
-	stopCmds := make([]*model.ReportableCommand, 0, len(commands))
+	stopCmds := make([]model.ReportableCommand, 0, len(commands))
 	for _, command := range commands {
 		if command.IsRestartPipedCmd() {
-			stopCmds = append(stopCmds, &command)
+			stopCmds = append(stopCmds, command)
 			break
 		}
 	}
