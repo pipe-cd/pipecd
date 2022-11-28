@@ -141,8 +141,13 @@ lint/go:
 	@echo "Unimplemented"
 
 .PHONY: lint/web
+lint/web: FIX ?= false
 lint/web:
+ifeq ($(FIX),true)
+	yarn --cwd web lint:fix
+else
 	yarn --cwd web lint
+endif
 
 # Update commands
 
