@@ -30,17 +30,29 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   const deploymentFrequency = useAppSelector<InsightDataPoint.AsObject[]>(
     (state) => state.deploymentFrequency.data
   );
-  const deploymentFrequencyDataPoints: { name: string; points: InsightDataPoint.AsObject[] }[] = [];
+  const deploymentFrequencyDataPoints: {
+    name: string;
+    points: InsightDataPoint.AsObject[]
+  }[] = [];
   if (deploymentFrequency.length > 0) {
-    deploymentFrequencyDataPoints.push({ name: selectedAppName || "All", points: deploymentFrequency });
+    deploymentFrequencyDataPoints.push({
+      name: selectedAppName || "All",
+      points: deploymentFrequency
+    });
   }
 
   const deploymentChangeFailureRate = useAppSelector<InsightDataPoint.AsObject[]>(
     (state) => state.deploymentChangeFailureRate.data
   );
-  const deploymentChangeFailureRateDataPoints: { name: string; points: InsightDataPoint.AsObject[] }[] = [];
+  const deploymentChangeFailureRateDataPoints: {
+    name: string;
+    points: InsightDataPoint.AsObject[]
+  }[] = [];
   if (deploymentChangeFailureRate.length > 0) {
-    deploymentChangeFailureRateDataPoints.push({ name: selectedAppName || "All", points: deploymentChangeFailureRate });
+    deploymentChangeFailureRateDataPoints.push({
+      name: selectedAppName || "All",
+      points: deploymentChangeFailureRate
+    });
   }
 
   useEffect(() => {
