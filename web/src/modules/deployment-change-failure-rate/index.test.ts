@@ -4,7 +4,10 @@ import {
   fetchDeploymentChangeFailureRate,
 } from "./";
 
-const initialState: DeploymentChangeFailureRateState = { status: "idle", data: [] };
+const initialState: DeploymentChangeFailureRateState = {
+  status: "idle",
+  data: [],
+};
 
 describe("deploymentChangeFailureRateSlice reducer", () => {
   it("should return the initial state", () => {

@@ -9,7 +9,7 @@ export interface InsightState {
   applicationId: string;
   // Suppose to be like ["key-1:value-1"]
   // sindresorhus/query-string doesn't support multidimensional arrays, that's why the format is a bit tricky.
-  labels: Array<string>,
+  labels: Array<string>;
 }
 
 const now = dayjs(Date.now());
