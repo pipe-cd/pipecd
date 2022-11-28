@@ -312,6 +312,22 @@ func TestParseIndexes(t *testing.T) {
 			QueryScope:      "COLLECTION",
 			Fields: []field{
 				{
+					FieldPath:   "CompletedAt",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Deployment",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
 					FieldPath:   "CreatedAt",
 					Order:       "DESCENDING",
 					ArrayConfig: "",
