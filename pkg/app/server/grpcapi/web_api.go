@@ -405,6 +405,9 @@ func (a *WebAPI) RestartPiped(ctx context.Context, req *webservice.RestartPipedR
 		ProjectId: piped.ProjectId,
 		Type:      model.Command_RESTART_PIPED,
 		Commander: claims.Subject,
+		RestartPiped: &model.Command_RestartPiped{
+			PipedId: piped.Id,
+		},
 	}
 	if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
 		return nil, err
