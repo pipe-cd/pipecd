@@ -19,10 +19,10 @@ import (
 )
 
 type ApplicationData struct {
-	Id     string
-	Labels map[string]string
-	Kind   string
-	Status string
+	Id     string            `json:"id"`
+	Labels map[string]string `json:"labels"`
+	Kind   string            `json:"kind"`
+	Status string            `json:"status"`
 }
 
 type ProjectApplicationData struct {

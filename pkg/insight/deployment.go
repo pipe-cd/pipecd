@@ -21,14 +21,14 @@ import (
 )
 
 type DeploymentData struct {
-	Id                string
-	AppID             string
-	Labels            map[string]string
-	StartedAt         int64
-	CompletedAt       int64
-	CompletedAtDay    int64
-	CompleteStatus    string
-	RollbackStartedAt int64
+	Id                string            `json:"id"`
+	AppID             string            `json:"app_id"`
+	Labels            map[string]string `json:"labels"`
+	StartedAt         int64             `json:"started_at"`
+	CompletedAt       int64             `json:"completed_at"`
+	CompletedAtDay    int64             `json:"completed_at_day"`
+	CompleteStatus    string            `json:"complete_status"`
+	RollbackStartedAt int64             `json:"rollback_started_at"`
 }
 
 func BuildDeploymentData(d *model.Deployment) DeploymentData {
