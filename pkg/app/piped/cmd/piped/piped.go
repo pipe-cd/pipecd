@@ -847,7 +847,6 @@ func stopCommandHandler(ctx context.Context, cmdLister commandstore.Lister, logg
 	for _, command := range commands {
 		if command.IsRestartPipedCmd() {
 			stopCmds = append(stopCmds, command)
-			break
 		}
 	}
 
