@@ -1535,6 +1535,10 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 		return nil, err
 	}
 
+	if !config.FeatureFlagEnabled(config.FeatureFlagInsights) {
+		return nil, status.Error(codes.Unimplemented, "Unimplemented")
+	}
+
 	var points []*model.InsightDataPoint
 
 	switch req.MetricsKind {
