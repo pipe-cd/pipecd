@@ -209,6 +209,10 @@ func (s *store) putCompletedDeploymentsBlock(ctx context.Context, projectID, blo
 		if chunkMD.Completed {
 			continue
 		}
+		if chunkMD.Count >= s.maxItemsInChunk {
+			chunkMD.Completed = true
+			continue
+		}
 
 		var (
 			from     = index
@@ -217,6 +221,7 @@ func (s *store) putCompletedDeploymentsBlock(ctx context.Context, projectID, blo
 		if chunkMD.Count+addCount > s.maxItemsInChunk {
 			addCount = s.maxItemsInChunk - chunkMD.Count
 		}
+
 		index = from + addCount
 		adds := ds[from:index]
 

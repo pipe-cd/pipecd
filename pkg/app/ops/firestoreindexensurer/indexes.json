@@ -288,6 +288,22 @@
     "queryScope": "COLLECTION",
     "fields": [
       {
+        "fieldPath": "CompletedAt",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Deployment",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
         "fieldPath": "CreatedAt",
         "order": "DESCENDING",
         "arrayConfig": ""

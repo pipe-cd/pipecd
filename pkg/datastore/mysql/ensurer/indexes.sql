@@ -72,6 +72,9 @@ CREATE INDEX deployment_piped_id ON Deployment (PipedId);
 ALTER TABLE Deployment ADD COLUMN CompletedAt INT(11) GENERATED ALWAYS AS (data->>"$.completed_at") VIRTUAL NULL;
 CREATE INDEX deployment_completed_at_desc_id ON Deployment (CompletedAt DESC, Id);
 
+-- index on `CompletedAt` ASC and `Id` ASC
+CREATE INDEX deployment_completed_at_id_asc ON Deployment (CompletedAt, Id);
+
 -- index on `DeploymentChainId` ASC and `UpdatedAt` DESC
 ALTER TABLE Deployment ADD COLUMN DeploymentChainId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.deployment_chain_id") VIRTUAL NOT NULL;
 ALTER TABLE Deployment MODIFY DeploymentChainId VARCHAR(36) GENERATED ALWAYS AS (IFNULL(data->>"$.deployment_chain_id", "")) VIRTUAL NOT NULL;
