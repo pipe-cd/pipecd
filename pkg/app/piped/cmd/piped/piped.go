@@ -127,10 +127,10 @@ func NewCommand() *cobra.Command {
 
 func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Make a cancellable context.
-	cCtx, cancel := context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	group, ctx := errgroup.WithContext(cCtx)
+	group, ctx := errgroup.WithContext(ctx)
 	if p.addLoginUserToPasswd {
 		if err := p.insertLoginUserToPasswd(ctx); err != nil {
 			return fmt.Errorf("failed to insert logged-in user to passwd: %w", err)
@@ -501,18 +501,14 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 				return false, nil
 			}
 
-			var (
-				shouldStop bool
-				stopCmd    model.ReportableCommand
-			)
+			var stopCmd *model.ReportableCommand
 			for _, command := range commands {
 				if command.IsRestartPipedCmd() {
-					shouldStop = true
-					stopCmd = command
+					stopCmd = &command
+					break
 				}
 			}
-
-			if !shouldStop {
+			if stopCmd == nil {
 				return false, nil
 			}
 
