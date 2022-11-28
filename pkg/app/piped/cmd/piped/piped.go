@@ -843,20 +843,22 @@ func stopCommandHandler(ctx context.Context, cmdLister commandstore.Lister, logg
 		return false, nil
 	}
 
-	var stopCmd *model.ReportableCommand
+	stopCmds := make([]*model.ReportableCommand, 0, len(commands))
 	for _, command := range commands {
 		if command.IsRestartPipedCmd() {
-			stopCmd = &command
+			stopCmds = append(stopCmds, &command)
 			break
 		}
 	}
 
-	if stopCmd == nil {
+	if len(stopCmds) == 0 {
 		return false, nil
 	}
 
-	if err := stopCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, []byte(stopCmd.Id)); err != nil {
-		return false, fmt.Errorf("failed to report command %s: %w", stopCmd.Id, err)
+	for _, command := range stopCmds {
+		if err := command.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, []byte(command.Id)); err != nil {
+			return false, fmt.Errorf("failed to report command %s: %w", command.Id, err)
+		}
 	}
 
 	return true, nil
