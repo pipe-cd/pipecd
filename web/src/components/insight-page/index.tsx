@@ -14,8 +14,6 @@ import { ApplicationCounts } from "./application-counts";
 import { ChangeFailureRateChart } from "./change-failure-rate-chart";
 import { DeploymentFrequencyChart } from "./deployment-frequency-chart";
 import { InsightHeader } from "./insight-header";
-import { LeadTimeForChangesChart } from "./lead-time-for-changes-chart";
-import { MeanTimeToRestoreChart } from "./mean-time-to-restore-chart";
 import { fetchDeploymentFrequency } from "~/modules/deployment-frequency";
 
 export const InsightIndexPage: FC = memo(function InsightIndexPage() {
@@ -71,8 +69,6 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
       >
         <DeploymentFrequencyChart data={data} />
         <ChangeFailureRateChart data={[]} />
-        <LeadTimeForChangesChart data={[]} />
-        <MeanTimeToRestoreChart data={[]} />
       </Box>
     </Box>
   );
