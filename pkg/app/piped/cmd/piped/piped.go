@@ -506,17 +506,12 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 				stopCmd    model.ReportableCommand
 			)
 			for _, command := range commands {
-				input.Logger.Info("[DEBUG] Found a piped command", zap.String("id", command.Id))
-				input.Logger.Info("[DEBUG] Check restart piped or not", zap.Bool("checker", command.IsRestartPipedCmd()))
-				input.Logger.Info("[DEBUG] Check restart piped or not", zap.Any("restart", command.GetRestartPiped()))
 				if command.IsRestartPipedCmd() {
-					input.Logger.Info("[DEBUG] Found should stop command", zap.String("id", command.Id))
 					shouldStop = true
 					stopCmd = command
 				}
 			}
 
-			input.Logger.Info("[DEBUG] Found should stop command", zap.Bool("stop", shouldStop))
 			if !shouldStop {
 				return false, nil
 			}
