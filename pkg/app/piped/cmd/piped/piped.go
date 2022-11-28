@@ -76,6 +76,10 @@ import (
 	_ "github.com/pipe-cd/pipecd/pkg/app/piped/planner/registry"
 )
 
+const (
+	commandCheckPeriod time.Duration = 30 * time.Second
+)
+
 type piped struct {
 	configFile      string
 	configData      string
@@ -493,39 +497,13 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 
 	// Check for stop command.
 	{
-		stopCommandHandler := func(ctx context.Context) (bool, error) {
-			input.Logger.Debug("fetch unhandled piped commands")
-
-			commands := commandLister.ListPipedCommands()
-			if len(commands) == 0 {
-				return false, nil
-			}
-
-			var stopCmd *model.ReportableCommand
-			for _, command := range commands {
-				if command.IsRestartPipedCmd() {
-					stopCmd = &command
-					break
-				}
-			}
-			if stopCmd == nil {
-				return false, nil
-			}
-
-			if err := stopCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, []byte(stopCmd.Id)); err != nil {
-				return false, fmt.Errorf("failed to report command %s: %w", stopCmd.Id, err)
-			}
-
-			return true, nil
-		}
-
 		group.Go(func() error {
 			input.Logger.Info("start running piped stop checker")
-			ticker := time.NewTicker(p.gracePeriod)
+			ticker := time.NewTicker(commandCheckPeriod)
 			for {
 				select {
 				case <-ticker.C:
-					shouldStop, err := stopCommandHandler(ctx)
+					shouldStop, err := stopCommandHandler(ctx, commandLister, input.Logger)
 					// Don't return an error to continue this goroutine execution.
 					if err != nil {
 						input.Logger.Error("failed to check/handle piped stop command", zap.Error(err))
@@ -855,4 +833,31 @@ func loginToOCIRegistry(ctx context.Context, execPath, address, username, passwo
 		return fmt.Errorf("%w: %s", err, stderr.String())
 	}
 	return nil
+}
+
+func stopCommandHandler(ctx context.Context, cmdLister commandstore.Lister, logger *zap.Logger) (bool, error) {
+	logger.Debug("fetch unhandled piped commands")
+
+	commands := cmdLister.ListPipedCommands()
+	if len(commands) == 0 {
+		return false, nil
+	}
+
+	var stopCmd *model.ReportableCommand
+	for _, command := range commands {
+		if command.IsRestartPipedCmd() {
+			stopCmd = &command
+			break
+		}
+	}
+
+	if stopCmd == nil {
+		return false, nil
+	}
+
+	if err := stopCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, []byte(stopCmd.Id)); err != nil {
+		return false, fmt.Errorf("failed to report command %s: %w", stopCmd.Id, err)
+	}
+
+	return true, nil
 }
