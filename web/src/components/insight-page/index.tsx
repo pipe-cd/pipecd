@@ -15,30 +15,39 @@ import { ChangeFailureRateChart } from "./change-failure-rate-chart";
 import { DeploymentFrequencyChart } from "./deployment-frequency-chart";
 import { InsightHeader } from "./insight-header";
 import { fetchDeploymentFrequency } from "~/modules/deployment-frequency";
+import { fetchDeploymentChangeFailureRate } from "~/modules/deployment-change-failure-rate";
 
 export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   const dispatch = useAppDispatch();
   const history = useHistory();
 
-  const deploymentFrequency = useAppSelector<InsightDataPoint.AsObject[]>(
-    (state) => state.deploymentFrequency.data
-  );
   const selectedAppName = useAppSelector<string | undefined>((state) =>
     state.insight.applicationId
       ? selectById(state.applications, state.insight.applicationId)?.name
       : undefined
   );
 
-  const data: { name: string; points: InsightDataPoint.AsObject[] }[] = [];
-
+  const deploymentFrequency = useAppSelector<InsightDataPoint.AsObject[]>(
+    (state) => state.deploymentFrequency.data
+  );
+  const deploymentFrequencyDataPoints: { name: string; points: InsightDataPoint.AsObject[] }[] = [];
   if (deploymentFrequency.length > 0) {
-    data.push({ name: selectedAppName || "All", points: deploymentFrequency });
+    deploymentFrequencyDataPoints.push({ name: selectedAppName || "All", points: deploymentFrequency });
+  }
+
+  const deploymentChangeFailureRate = useAppSelector<InsightDataPoint.AsObject[]>(
+    (state) => state.deploymentChangeFailureRate.data
+  );
+  const deploymentChangeFailureRateDataPoints: { name: string; points: InsightDataPoint.AsObject[] }[] = [];
+  if (deploymentChangeFailureRate.length > 0) {
+    deploymentChangeFailureRateDataPoints.push({ name: selectedAppName || "All", points: deploymentChangeFailureRate });
   }
 
   useEffect(() => {
     dispatch(fetchApplications());
     dispatch(fetchApplicationCount());
     dispatch(fetchDeploymentFrequency());
+    dispatch(fetchDeploymentChangeFailureRate());
   }, [dispatch]);
 
   const updateURL = useCallback(
@@ -67,8 +76,8 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
         gridTemplateColumns="repeat(2, 1fr)"
         mt={2}
       >
-        <DeploymentFrequencyChart data={data} />
-        <ChangeFailureRateChart data={[]} />
+        <DeploymentFrequencyChart data={deploymentFrequencyDataPoints} />
+        <ChangeFailureRateChart data={deploymentChangeFailureRateDataPoints} />
       </Box>
     </Box>
   );

@@ -5,19 +5,19 @@ import * as InsightAPI from "~/api/insight";
 import { LoadingStatus } from "~/types/module";
 import { InsightResultType } from "pipecd/web/model/insight_pb";
 
-const MODULE_NAME = "deploymentFrequency";
+const MODULE_NAME = "deploymentChangeFailureRate";
 
-export interface DeploymentFrequencyState {
+export interface DeploymentChangeFailureRateState {
   status: LoadingStatus;
   data: InsightDataPoint.AsObject[];
 }
 
-const initialState: DeploymentFrequencyState = {
+const initialState: DeploymentChangeFailureRateState = {
   status: "idle",
   data: [],
 };
 
-export const fetchDeploymentFrequency = createAsyncThunk<
+export const fetchDeploymentChangeFailureRate = createAsyncThunk<
   InsightDataPoint.AsObject[],
   void,
   { state: AppState }
@@ -33,7 +33,7 @@ export const fetchDeploymentFrequency = createAsyncThunk<
   }
 
   const data = await InsightAPI.getInsightData({
-    metricsKind: InsightMetricsKind.DEPLOYMENT_FREQUENCY,
+    metricsKind: InsightMetricsKind.CHANGE_FAILURE_RATE,
     rangeFrom: state.insight.rangeFrom,
     rangeTo: state.insight.rangeTo,
     applicationId: state.insight.applicationId,
@@ -47,19 +47,19 @@ export const fetchDeploymentFrequency = createAsyncThunk<
   }
 });
 
-export const deploymentFrequencySlice = createSlice({
+export const deploymentChangeFailureRateSlice = createSlice({
   name: MODULE_NAME,
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchDeploymentFrequency.pending, (state) => {
+      .addCase(fetchDeploymentChangeFailureRate.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(fetchDeploymentFrequency.rejected, (state) => {
+      .addCase(fetchDeploymentChangeFailureRate.rejected, (state) => {
         state.status = "failed";
       })
-      .addCase(fetchDeploymentFrequency.fulfilled, (state, action) => {
+      .addCase(fetchDeploymentChangeFailureRate.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.data = action.payload;
       });

@@ -8,23 +8,28 @@ import {
 import { InsightResultType } from "pipecd/web/model/insight_pb";
 
 export const getInsightData = ({
-  applicationId,
   metricsKind,
   rangeFrom,
   rangeTo,
-  offset,
+  applicationId,
+  labelsMap,
 }: GetInsightDataRequest.AsObject): Promise<
   GetInsightDataResponse.AsObject
 > => {
   const req = new GetInsightDataRequest();
+  req.setMetricsKind(metricsKind);
+
   // Convert unix milli second to unix second.
   rangeFrom = Math.floor(rangeFrom / 1000);
   rangeTo = Math.floor(rangeTo / 1000);
-  req.setApplicationId(applicationId);
-  req.setMetricsKind(metricsKind);
   req.setRangeFrom(rangeFrom);
   req.setRangeTo(rangeTo);
-  req.setOffset(offset);
+
+  req.setApplicationId(applicationId);
+  for (const label of labelsMap) {
+    req.getLabelsMap().set(label[0], label[1]);
+  }
+
   const p = apiRequest(req, apiClient.getInsightData) as Promise<
     GetInsightDataResponse.AsObject
   >;

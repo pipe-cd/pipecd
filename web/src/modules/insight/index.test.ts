@@ -9,10 +9,10 @@ import {
 } from "./";
 
 const initialState: InsightState = {
-  applicationId: "",
   rangeFrom: -2678399999,
   rangeTo: 1,
-  offset: -new Date().getTimezoneOffset() * 60,
+  applicationId: "",
+  labels: [],
 };
 
 describe("insightSlice reducer", () => {
