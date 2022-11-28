@@ -41,8 +41,10 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
     });
   }
 
-  const deploymentChangeFailureRate = useAppSelector<InsightDataPoint.AsObject[]>(
-    (state) => state.deploymentChangeFailureRate.data
+  const deploymentChangeFailureRate = useAppSelector<
+    InsightDataPoint.AsObject[]
+    >(
+      (state) => state.deploymentChangeFailureRate.data
   );
   const deploymentChangeFailureRateDataPoints: {
     name: string;
