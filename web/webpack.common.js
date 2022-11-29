@@ -29,15 +29,10 @@ module.exports = (env) => {
       rules: [
         {
           test: /\.(png|svg|jpg|gif|ico)$/,
-          loader: "file-loader",
-          options: {
-            name(file) {
-              if (file.includes("/favicon.ico")) {
-                return "[name].[ext]";
-              }
-              return "assets/[name].[hash:8].[ext]";
-            },
-          },
+          type: "asset/resource",
+          generator: {
+            filename: "assets/[name].[hash:8][ext]"
+          }
         },
       ],
     },
