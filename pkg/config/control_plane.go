@@ -228,6 +228,7 @@ type DataStoreMySQLConfig struct {
 	// The url of MySQL. All of credentials can be specified via this field.
 	URL string `json:"url"`
 	// The name of the database.
+	// For those who don't want to include the database in the URL.
 	Database string `json:"database"`
 	// The path to the username file.
 	// For those who don't want to include the username in the URL.

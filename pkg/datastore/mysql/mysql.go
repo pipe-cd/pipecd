@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
@@ -269,7 +270,10 @@ func BuildDataSourceName(url, database, usernameFile, passwordFile string) (stri
 		return "", fmt.Errorf("url is required field")
 	}
 	if database == "" {
-		return "", fmt.Errorf("database is required field")
+		if !strings.Contains(url, "/") {
+			return "", fmt.Errorf("database is not set")
+		}
+		return url, nil
 	}
 	// In case username and password files are not provided,
 	// those values may be included in the URL already so just return the given URL attached with Database name.
