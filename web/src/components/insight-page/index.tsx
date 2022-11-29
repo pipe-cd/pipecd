@@ -9,7 +9,7 @@ import {
   selectById,
 } from "~/modules/applications";
 import { fetchApplicationCount } from "~/modules/application-counts";
-import { InsightDataPoint } from "~/modules/insight";
+import { InsightDataPoint, InsightStep } from "~/modules/insight";
 import { ApplicationCounts } from "./application-counts";
 import { ChangeFailureRateChart } from "./change-failure-rate-chart";
 import { DeploymentFrequencyChart } from "./deployment-frequency-chart";
@@ -27,6 +27,12 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
       : undefined
   );
 
+  const selectedLabels = useAppSelector<string>(
+    (state) => "{" + state.insight.labels.join(", ") + "}"
+  );
+
+  const step = useAppSelector<InsightStep>((state) => state.insight.step);
+
   const deploymentFrequency = useAppSelector<InsightDataPoint.AsObject[]>(
     (state) => state.deploymentFrequency.data
   );
@@ -36,7 +42,7 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   }[] = [];
   if (deploymentFrequency.length > 0) {
     deploymentFrequencyDataPoints.push({
-      name: selectedAppName || "All",
+      name: (selectedAppName || "All") + " " + selectedLabels,
       points: deploymentFrequency,
     });
   }
@@ -50,7 +56,7 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   }[] = [];
   if (deploymentChangeFailureRate.length > 0) {
     deploymentChangeFailureRateDataPoints.push({
-      name: selectedAppName || "All",
+      name: (selectedAppName || "All") + " " + selectedLabels,
       points: deploymentChangeFailureRate,
     });
   }
@@ -88,8 +94,14 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
         gridTemplateColumns="repeat(2, 1fr)"
         mt={2}
       >
-        <DeploymentFrequencyChart data={deploymentFrequencyDataPoints} />
-        <ChangeFailureRateChart data={deploymentChangeFailureRateDataPoints} />
+        <DeploymentFrequencyChart
+          step={step}
+          data={deploymentFrequencyDataPoints}
+        />
+        <ChangeFailureRateChart
+          step={step}
+          data={deploymentChangeFailureRateDataPoints}
+        />
       </Box>
     </Box>
   );

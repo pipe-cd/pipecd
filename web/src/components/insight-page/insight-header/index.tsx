@@ -1,16 +1,30 @@
-import DayJSUtils from "@date-io/dayjs";
-import { Box, makeStyles, TextField } from "@material-ui/core";
+import {
+  Box,
+  Grid,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  makeStyles,
+} from "@material-ui/core";
 import { Autocomplete } from "@material-ui/lab";
-import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
-import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
-import { FC, memo, useCallback, useEffect } from "react";
+import { FC, memo, useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { Application, selectAll, selectById } from "~/modules/applications";
+import { fetchDeploymentChangeFailureRate } from "~/modules/deployment-change-failure-rate";
 import { fetchDeploymentFrequency } from "~/modules/deployment-frequency";
 import {
+  changeRange,
+  changeStep,
   changeApplication,
-  changeRangeFrom,
-  changeRangeTo,
+  changeLabels,
+  InsightSteps,
+  InsightRanges,
+  INSIGHT_STEP_TEXT,
+  INSIGHT_RANGE_TEXT,
+  InsightStep,
+  InsightRange,
 } from "~/modules/insight";
 
 const useStyles = makeStyles((theme) => ({
@@ -26,98 +40,150 @@ export const InsightHeader: FC = memo(function InsightHeader() {
   const classes = useStyles();
   const dispatch = useAppDispatch();
 
-  const [applicationId, rangeFrom, rangeTo] = useAppSelector<
-    [string, number, number]
+  const [applicationId, labels, range, step] = useAppSelector<
+    [string, Array<string>, InsightRange, InsightStep]
   >((state) => [
     state.insight.applicationId,
-    state.insight.rangeFrom,
-    state.insight.rangeTo,
+    state.insight.labels,
+    state.insight.range,
+    state.insight.step,
   ]);
 
   const selectedApp = useAppSelector<Application.AsObject | null>(
     (state) => selectById(state.applications, applicationId) || null
   );
+
+  const [allLabels, setAllLabels] = useState(new Array<string>());
+  const [selectedLabels, setSelectedLabels] = useState(new Array<string>());
+
+  const [selectedRange, setSelectedRange] = useState(InsightRange.LAST_1_MONTH);
+  const [selectedStep, setSelectedStep] = useState(InsightStep.DAILY);
+
   const applications = useAppSelector<Application.AsObject[]>((state) =>
     selectAll(state.applications)
   );
 
-  const Picker = DatePicker;
-
-  const handleApplicationChange = useCallback(
-    (_, newValue: Application.AsObject | null) => {
-      if (newValue) {
-        dispatch(changeApplication(newValue.id));
-      } else {
-        dispatch(changeApplication(""));
-      }
-    },
-    [dispatch]
-  );
-
-  const handleRangeFromChange = useCallback(
-    (time: MaterialUiPickersDate) => {
-      if (time) {
-        dispatch(changeRangeFrom(time.startOf("date").valueOf()));
-      }
-    },
-    [dispatch]
-  );
-
-  const handleRangeToChange = useCallback(
-    (time: MaterialUiPickersDate) => {
-      if (time) {
-        dispatch(changeRangeTo(time.endOf("date").valueOf()));
-      }
-    },
-    [dispatch]
-  );
+  useEffect(() => {
+    const labels = new Set<string>();
+    applications
+      .filter((app) => app.labelsMap.length > 0)
+      .map((app) => {
+        app.labelsMap.map((label) => {
+          labels.add(`${label[0]}:${label[1]}`);
+        });
+      });
+    setAllLabels(Array.from(labels));
+  }, [applications]);
 
   useEffect(() => {
     dispatch(fetchDeploymentFrequency());
-  }, [dispatch, applicationId, rangeFrom, rangeTo]);
+    dispatch(fetchDeploymentChangeFailureRate());
+  }, [dispatch, applicationId, labels, range, step]);
 
   return (
-    <Box display="flex" alignItems="center" justifyContent="flex-end">
-      <Autocomplete
-        id="application"
-        style={{ width: 300 }}
-        value={selectedApp}
-        options={applications}
-        getOptionLabel={(option) => option.name}
-        onChange={handleApplicationChange}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Application"
-            margin="dense"
-            variant="outlined"
-            required
+    <Grid container spacing={2} style={{ marginTop: 26, marginBottom: 26 }}>
+      <Grid item xs={8}>
+        <Box display="flex" alignItems="left" justifyContent="flex-start">
+          <Autocomplete
+            id="application"
+            style={{ minWidth: 300 }}
+            value={selectedApp}
+            options={applications}
+            getOptionLabel={(option) => option.name}
+            onChange={(_, value) => {
+              if (value) {
+                dispatch(changeApplication(value.id));
+              } else {
+                dispatch(changeApplication(""));
+              }
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Application"
+                margin="dense"
+                variant="outlined"
+                required
+              />
+            )}
           />
-        )}
-      />
 
-      <MuiPickersUtilsProvider utils={DayJSUtils}>
-        <Picker
-          views={["date"]}
-          margin="dense"
-          inputVariant="outlined"
-          variant="dialog"
-          label="From"
-          value={rangeFrom}
-          onChange={handleRangeFromChange}
-          className={classes.headerItemMargin}
-        />
-        <Picker
-          views={["date"]}
-          margin="dense"
-          inputVariant="outlined"
-          variant="dialog"
-          label="To"
-          value={rangeTo}
-          onChange={handleRangeToChange}
-          className={classes.rangeMargin}
-        />
-      </MuiPickersUtilsProvider>
-    </Box>
+          <Autocomplete
+            multiple
+            autoHighlight
+            id="labels"
+            noOptionsText="No selectable labels"
+            style={{ minWidth: 300 }}
+            className={classes.headerItemMargin}
+            options={allLabels}
+            value={selectedLabels}
+            onInputChange={(_, value) => {
+              const label = value.split(":");
+              if (label.length !== 2) return;
+              if (label[0].length === 0) return;
+              if (label[1].length === 0) return;
+              setAllLabels([value]);
+            }}
+            onChange={(_, value) => {
+              setSelectedLabels(value);
+              dispatch(changeLabels(value));
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                label="Labels"
+                margin="dense"
+                placeholder="key:value"
+                fullWidth
+              />
+            )}
+          />
+        </Box>
+      </Grid>
+      <Grid item xs={4}>
+        <Box display="flex" alignItems="right" justifyContent="flex-end">
+          <FormControl className={classes.headerItemMargin} variant="outlined">
+            <InputLabel id="range-input">Range</InputLabel>
+            <Select
+              id="range"
+              label="Range"
+              value={selectedRange}
+              onChange={(e) => {
+                const value = e.target.value as InsightRange;
+                setSelectedRange(value);
+                dispatch(changeRange(value));
+              }}
+            >
+              {InsightRanges.map((e) => (
+                <MenuItem key={e} value={e}>
+                  {INSIGHT_RANGE_TEXT[e]}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl className={classes.headerItemMargin} variant="outlined">
+            <InputLabel id="step-input">Step</InputLabel>
+            <Select
+              id="step"
+              label="Step"
+              value={selectedStep}
+              onChange={(e) => {
+                const value = e.target.value as InsightStep;
+                setSelectedStep(value);
+                dispatch(changeStep(value));
+              }}
+            >
+              {InsightSteps.map((e) => (
+                <MenuItem key={e} value={e}>
+                  {INSIGHT_STEP_TEXT[e]}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      </Grid>
+    </Grid>
   );
 });
