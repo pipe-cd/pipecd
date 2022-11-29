@@ -53,7 +53,7 @@ Must be one of the following objects:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | url | string | The address to MySQL server. Should attach with the database port info as `127.0.0.1:3307` in case you want to use another port than the default value. | Yes |
-| database | string | The name of database. | Yes |
+| database | string | The name of database. | No (If you set it via URL) |
 | usernameFile | string | Path to the file containing the username. | No |
 | passwordFile | string | Path to the file containing the password. | No |
 

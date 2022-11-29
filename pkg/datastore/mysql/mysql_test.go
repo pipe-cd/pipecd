@@ -41,6 +41,12 @@ func TestBuildDataSourceName(t *testing.T) {
 			expectErr: true,
 		},
 		{
+			name:           "returns url with configured database",
+			url:            "test:test@tcp(localhost:3306)/test",
+			dataSourceName: "test:test@tcp(localhost:3306)/test",
+			expectErr:      false,
+		},
+		{
 			name:           "returns url/database in usernameFile or passwordFile are not provided",
 			url:            "test:test@tcp(localhost:3306)",
 			database:       "test",
