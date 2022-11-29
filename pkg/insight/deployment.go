@@ -44,3 +44,16 @@ func BuildDeploymentData(d *model.Deployment) DeploymentData {
 		CompleteStatus:    d.Status.String(),
 	}
 }
+
+func (d *DeploymentData) ContainLabels(labels map[string]string) bool {
+	if len(labels) == 0 {
+		return true
+	}
+
+	for k, v := range labels {
+		if dv := d.Labels[k]; dv != v {
+			return false
+		}
+	}
+	return true
+}

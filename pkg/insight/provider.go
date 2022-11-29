@@ -141,7 +141,9 @@ func filterDeploymentData(ds []*DeploymentData, appID string, labels map[string]
 		if appID != "" && d.AppID != appID {
 			continue
 		}
-		// TODO: Support filtering by labels.
+		if !d.ContainLabels(labels) {
+			continue
+		}
 		targets = append(targets, d)
 	}
 
