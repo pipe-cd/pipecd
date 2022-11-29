@@ -3,7 +3,7 @@ import type { AppState } from "~/store";
 import { InsightMetricsKind, InsightDataPoint } from "../insight";
 import * as InsightAPI from "~/api/insight";
 import { LoadingStatus } from "~/types/module";
-import { InsightResultType } from "pipecd/web/model/insight_pb";
+import { InsightResultType, InsightStep } from "pipecd/web/model/insight_pb";
 
 const MODULE_NAME = "deploymentChangeFailureRate";
 
@@ -36,6 +36,7 @@ export const fetchDeploymentChangeFailureRate = createAsyncThunk<
     metricsKind: InsightMetricsKind.CHANGE_FAILURE_RATE,
     rangeFrom: state.insight.rangeFrom,
     rangeTo: state.insight.rangeTo,
+    step: InsightStep.DAILY,
     applicationId: state.insight.applicationId,
     labelsMap: labels,
   });

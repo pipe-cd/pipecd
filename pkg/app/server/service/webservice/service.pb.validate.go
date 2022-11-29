@@ -10392,6 +10392,17 @@ func (m *GetInsightDataRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if _, ok := model.InsightStep_name[int32(m.GetStep())]; !ok {
+		err := GetInsightDataRequestValidationError{
+			field:  "Step",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	// no validation rules for ApplicationId
 
 	// no validation rules for Labels

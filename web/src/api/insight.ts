@@ -11,6 +11,7 @@ export const getInsightData = ({
   metricsKind,
   rangeFrom,
   rangeTo,
+  step,
   applicationId,
   labelsMap,
 }: GetInsightDataRequest.AsObject): Promise<
@@ -24,6 +25,7 @@ export const getInsightData = ({
   rangeTo = Math.floor(rangeTo / 1000);
   req.setRangeFrom(rangeFrom);
   req.setRangeTo(rangeTo);
+  req.setStep(step);
 
   req.setApplicationId(applicationId);
   for (const label of labelsMap) {

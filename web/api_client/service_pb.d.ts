@@ -1834,6 +1834,9 @@ export class GetInsightDataRequest extends jspb.Message {
   getRangeTo(): number;
   setRangeTo(value: number): GetInsightDataRequest;
 
+  getStep(): pkg_model_insight_pb.InsightStep;
+  setStep(value: pkg_model_insight_pb.InsightStep): GetInsightDataRequest;
+
   getApplicationId(): string;
   setApplicationId(value: string): GetInsightDataRequest;
 
@@ -1853,6 +1856,7 @@ export namespace GetInsightDataRequest {
     metricsKind: pkg_model_insight_pb.InsightMetricsKind,
     rangeFrom: number,
     rangeTo: number,
+    step: pkg_model_insight_pb.InsightStep,
     applicationId: string,
     labelsMap: Array<[string, string]>,
   }

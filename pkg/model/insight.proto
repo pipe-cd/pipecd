@@ -18,7 +18,6 @@ package model;
 option go_package = "github.com/pipe-cd/pipecd/pkg/model";
 
 import "validate/validate.proto";
-import "pkg/model/deployment.proto";
 
 enum InsightMetricsKind {
   DEPLOYMENT_FREQUENCY = 0;
@@ -31,6 +30,11 @@ enum InsightMetricsKind {
 enum InsightResultType {
   MATRIX = 0;
   VECTOR = 1;
+}
+
+enum InsightStep {
+  DAILY = 0;
+  MONTHLY = 1;
 }
 
 message InsightDataPoint {
