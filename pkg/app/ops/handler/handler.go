@@ -18,6 +18,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"html"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -164,9 +165,9 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		id                 = r.FormValue("ID")
-		description        = r.FormValue("Description")
-		sharedSSOName      = r.FormValue("SharedSSO")
+		id                 = html.EscapeString(r.FormValue("ID"))
+		description        = html.EscapeString(r.FormValue("Description"))
+		sharedSSOName      = html.EscapeString(r.FormValue("SharedSSO"))
 		allowStrayAsViewer = r.FormValue("AllowStrayAsViewer") == "on"
 	)
 	if id == "" {
