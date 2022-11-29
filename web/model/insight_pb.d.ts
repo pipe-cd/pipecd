@@ -1,7 +1,6 @@
 import * as jspb from 'google-protobuf'
 
 
-import * as pkg_model_deployment_pb from 'pipecd/web/model/deployment_pb';
 
 
 export class InsightDataPoint extends jspb.Message {
@@ -106,6 +105,10 @@ export enum InsightMetricsKind {
 export enum InsightResultType { 
   MATRIX = 0,
   VECTOR = 1,
+}
+export enum InsightStep { 
+  DAILY = 0,
+  MONTHLY = 1,
 }
 export enum InsightApplicationCountLabelKey { 
   KIND = 0,

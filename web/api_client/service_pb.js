@@ -15746,7 +15746,8 @@ proto.grpc.service.webservice.GetInsightDataRequest.toObject = function(includeI
     metricsKind: jspb.Message.getFieldWithDefault(msg, 1, 0),
     rangeFrom: jspb.Message.getFieldWithDefault(msg, 2, 0),
     rangeTo: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    applicationId: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    step: jspb.Message.getFieldWithDefault(msg, 4, 0),
+    applicationId: jspb.Message.getFieldWithDefault(msg, 10, ""),
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
@@ -15797,10 +15798,14 @@ proto.grpc.service.webservice.GetInsightDataRequest.deserializeBinaryFromReader 
       msg.setRangeTo(value);
       break;
     case 4:
+      var value = /** @type {!proto.model.InsightStep} */ (reader.readEnum());
+      msg.setStep(value);
+      break;
+    case 10:
       var value = /** @type {string} */ (reader.readString());
       msg.setApplicationId(value);
       break;
-    case 5:
+    case 11:
       var value = msg.getLabelsMap();
       reader.readMessage(value, function(message, reader) {
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
@@ -15856,16 +15861,23 @@ proto.grpc.service.webservice.GetInsightDataRequest.serializeBinaryToWriter = fu
       f
     );
   }
+  f = message.getStep();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      4,
+      f
+    );
+  }
   f = message.getApplicationId();
   if (f.length > 0) {
     writer.writeString(
-      4,
+      10,
       f
     );
   }
   f = message.getLabelsMap(true);
   if (f && f.getLength() > 0) {
-    f.serializeBinary(5, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+    f.serializeBinary(11, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
 };
 
@@ -15925,11 +15937,29 @@ proto.grpc.service.webservice.GetInsightDataRequest.prototype.setRangeTo = funct
 
 
 /**
- * optional string application_id = 4;
+ * optional model.InsightStep step = 4;
+ * @return {!proto.model.InsightStep}
+ */
+proto.grpc.service.webservice.GetInsightDataRequest.prototype.getStep = function() {
+  return /** @type {!proto.model.InsightStep} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+};
+
+
+/**
+ * @param {!proto.model.InsightStep} value
+ * @return {!proto.grpc.service.webservice.GetInsightDataRequest} returns this
+ */
+proto.grpc.service.webservice.GetInsightDataRequest.prototype.setStep = function(value) {
+  return jspb.Message.setProto3EnumField(this, 4, value);
+};
+
+
+/**
+ * optional string application_id = 10;
  * @return {string}
  */
 proto.grpc.service.webservice.GetInsightDataRequest.prototype.getApplicationId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
 };
 
 
@@ -15938,19 +15968,19 @@ proto.grpc.service.webservice.GetInsightDataRequest.prototype.getApplicationId =
  * @return {!proto.grpc.service.webservice.GetInsightDataRequest} returns this
  */
 proto.grpc.service.webservice.GetInsightDataRequest.prototype.setApplicationId = function(value) {
-  return jspb.Message.setProto3StringField(this, 4, value);
+  return jspb.Message.setProto3StringField(this, 10, value);
 };
 
 
 /**
- * map<string, string> labels = 5;
+ * map<string, string> labels = 11;
  * @param {boolean=} opt_noLazyCreate Do not create the map if
  * empty, instead returning `undefined`
  * @return {!jspb.Map<string,string>}
  */
 proto.grpc.service.webservice.GetInsightDataRequest.prototype.getLabelsMap = function(opt_noLazyCreate) {
   return /** @type {!jspb.Map<string,string>} */ (
-      jspb.Message.getMapField(this, 5, opt_noLazyCreate,
+      jspb.Message.getMapField(this, 11, opt_noLazyCreate,
       null));
 };
 

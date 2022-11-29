@@ -16,14 +16,15 @@ package insight
 
 import (
 	"context"
+	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type Provider interface {
 	GetApplicationCounts(ctx context.Context, projectID string) (*ApplicationCounts, error)
-	GetDeploymentFrequencyDataPoints(ctx context.Context, projectID, appID string, labels map[string]string, rangeFrom, rangeTo int64) ([]*model.InsightDataPoint, error)
-	GetDeploymentChangeFailureRateDataPoints(ctx context.Context, projectID, appID string, labels map[string]string, rangeFrom, rangeTo int64) ([]*model.InsightDataPoint, error)
+	GetDeploymentFrequencyDataPoints(ctx context.Context, projectID, appID string, labels map[string]string, rangeFrom, rangeTo int64, step model.InsightStep) ([]*model.InsightDataPoint, error)
+	GetDeploymentChangeFailureRateDataPoints(ctx context.Context, projectID, appID string, labels map[string]string, rangeFrom, rangeTo int64, step model.InsightStep) ([]*model.InsightDataPoint, error)
 }
 
 type provider struct {
@@ -48,28 +49,28 @@ func (p *provider) GetApplicationCounts(ctx context.Context, projectID string) (
 }
 
 // TODO: Add cache layer.
-func (p *provider) GetDeploymentFrequencyDataPoints(ctx context.Context, projectID, appID string, labels map[string]string, rangeFrom, rangeTo int64) ([]*model.InsightDataPoint, error) {
+func (p *provider) GetDeploymentFrequencyDataPoints(ctx context.Context, projectID, appID string, labels map[string]string, rangeFrom, rangeTo int64, step model.InsightStep) ([]*model.InsightDataPoint, error) {
 	ds, err := p.store.ListCompletedDeployments(ctx, projectID, rangeFrom, rangeTo)
 	if err != nil {
 		return nil, err
 	}
 
-	points := buildDeploymentFrequencyDataPoints(ds, appID, labels)
-	return fillUpDataPoints(points, rangeFrom, rangeTo), nil
+	points := buildDeploymentFrequencyDataPoints(ds, appID, labels, step)
+	return fillUpDataPoints(points, rangeFrom, rangeTo, step), nil
 }
 
 // TODO: Add cache layer.
-func (p *provider) GetDeploymentChangeFailureRateDataPoints(ctx context.Context, projectID, appID string, labels map[string]string, rangeFrom, rangeTo int64) ([]*model.InsightDataPoint, error) {
+func (p *provider) GetDeploymentChangeFailureRateDataPoints(ctx context.Context, projectID, appID string, labels map[string]string, rangeFrom, rangeTo int64, step model.InsightStep) ([]*model.InsightDataPoint, error) {
 	ds, err := p.store.ListCompletedDeployments(ctx, projectID, rangeFrom, rangeTo)
 	if err != nil {
 		return nil, err
 	}
 
-	points := buildDeploymentChangeFailureRateDataPoints(ds, appID, labels)
-	return fillUpDataPoints(points, rangeFrom, rangeTo), nil
+	points := buildDeploymentChangeFailureRateDataPoints(ds, appID, labels, step)
+	return fillUpDataPoints(points, rangeFrom, rangeTo, step), nil
 }
 
-func buildDeploymentFrequencyDataPoints(ds []*DeploymentData, appID string, labels map[string]string) []*model.InsightDataPoint {
+func buildDeploymentFrequencyDataPoints(ds []*DeploymentData, appID string, labels map[string]string, step model.InsightStep) []*model.InsightDataPoint {
 	ds = filterDeploymentData(ds, appID, labels)
 	if len(ds) == 0 {
 		return []*model.InsightDataPoint{}
@@ -80,9 +81,10 @@ func buildDeploymentFrequencyDataPoints(ds []*DeploymentData, appID string, labe
 		curPoint *model.InsightDataPoint
 	)
 	for _, d := range ds {
-		if curPoint == nil || curPoint.Timestamp != d.CompletedAtDay {
+		completedAt := roundTimeByStep(d.CompletedAt, step)
+		if curPoint == nil || curPoint.Timestamp != completedAt {
 			curPoint = &model.InsightDataPoint{
-				Timestamp: d.CompletedAtDay,
+				Timestamp: completedAt,
 			}
 			out = append(out, curPoint)
 		}
@@ -92,7 +94,7 @@ func buildDeploymentFrequencyDataPoints(ds []*DeploymentData, appID string, labe
 	return out
 }
 
-func buildDeploymentChangeFailureRateDataPoints(ds []*DeploymentData, appID string, labels map[string]string) []*model.InsightDataPoint {
+func buildDeploymentChangeFailureRateDataPoints(ds []*DeploymentData, appID string, labels map[string]string, step model.InsightStep) []*model.InsightDataPoint {
 	ds = filterDeploymentData(ds, appID, labels)
 	if len(ds) == 0 {
 		return []*model.InsightDataPoint{}
@@ -105,14 +107,15 @@ func buildDeploymentChangeFailureRateDataPoints(ds []*DeploymentData, appID stri
 		curFails                         = 0
 	)
 	for _, d := range ds {
-		if curPoint == nil || curPoint.Timestamp != d.CompletedAtDay {
+		completedAt := roundTimeByStep(d.CompletedAt, step)
+		if curPoint == nil || curPoint.Timestamp != completedAt {
 			if curPoint != nil {
 				curPoint.Value = float32(curFails) / float32(curTotal)
 				curTotal = 0
 				curFails = 0
 			}
 			curPoint = &model.InsightDataPoint{
-				Timestamp: d.CompletedAtDay,
+				Timestamp: completedAt,
 			}
 			out = append(out, curPoint)
 		}
@@ -195,26 +198,54 @@ func determineApplicationStatus(a *model.Application) model.ApplicationActiveSta
 // fillUpDataPoints builds a full list of data points in range [from, to].
 // All missing data points will be filled with Zero value.
 // This is required for web to render the correct graph.
-func fillUpDataPoints(ds []*model.InsightDataPoint, from, to int64) []*model.InsightDataPoint {
-	const dayInSeconds = 24 * 3600
+func fillUpDataPoints(ds []*model.InsightDataPoint, from, to int64, step model.InsightStep) []*model.InsightDataPoint {
 	var (
-		fromDay = roundDay(from)
-		toDay   = roundDay(to)
-		out     = make([]*model.InsightDataPoint, 0, toDay-fromDay+1)
-		index   = 0
+		fromStep = roundTimeByStep(from, step)
+		toStep   = roundTimeByStep(to, step)
+		out      = make([]*model.InsightDataPoint, 0, len(ds))
+		index    = 0
 	)
 
-	for day := fromDay; day <= toDay; day += dayInSeconds {
-		if index < len(ds) && ds[index].Timestamp == day {
+	for ts := fromStep; ts <= toStep; ts = nextStep(ts, step) {
+		if index < len(ds) && ds[index].Timestamp == ts {
 			out = append(out, ds[index])
 			index++
 			continue
 		}
 		out = append(out, &model.InsightDataPoint{
-			Timestamp: day,
+			Timestamp: ts,
 			Value:     0,
 		})
 	}
 
 	return out
+}
+
+func roundTimeByStep(n int64, step model.InsightStep) int64 {
+	t := time.Unix(n, 0).UTC()
+
+	if step == model.InsightStep_MONTHLY {
+		t = time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location())
+		return t.Unix()
+	}
+
+	t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+	return t.Unix()
+}
+
+func nextStep(cur int64, step model.InsightStep) int64 {
+	t := time.Unix(cur, 0).UTC()
+
+	if step == model.InsightStep_DAILY {
+		t = t.Add(24 * time.Hour)
+		return t.Unix()
+	}
+
+	if t.Month() == time.December {
+		t = time.Date(t.Year()+1, time.January, 1, 0, 0, 0, 0, t.Location())
+		return t.Unix()
+	}
+
+	t = time.Date(t.Year(), t.Month()+1, 1, 0, 0, 0, 0, t.Location())
+	return t.Unix()
 }
