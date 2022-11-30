@@ -12,9 +12,8 @@ import {
 import * as echarts from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
-import { InsightDataPoint } from "~/modules/insight";
+import { InsightDataPoint, InsightStep } from "~/modules/insight";
 import { dummyDataPointsList } from "~/__fixtures__/dummy-insight";
-
 const placeholderData = [{ name: "All", points: dummyDataPointsList }];
 
 echarts.use([
@@ -43,8 +42,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const labelFormatter = (time: number | string): string =>
-  dayjs(time).format("YYYY MMM DD");
+const labelFormatter = (time: number | string, step: InsightStep): string => {
+  if (step === InsightStep.MONTHLY) {
+    return dayjs(time).format("YYYY/MM");
+  }
+  return dayjs(time).format("YYYY/MM/DD");
+};
 
 const NO_DATA_TEXT = "No data is available.";
 
@@ -52,6 +55,7 @@ export interface ChartBaseProps {
   title: string;
   xName: string;
   yName: string;
+  step: InsightStep;
   data: { name: string; points: InsightDataPoint.AsObject[] }[];
   lineColor: string;
   areaColor: string;
@@ -65,6 +69,7 @@ export const ChartBase: FC<ChartBaseProps> = ({
   title,
   xName,
   yName,
+  step,
   data,
   lineColor,
   areaColor,
@@ -84,7 +89,7 @@ export const ChartBase: FC<ChartBaseProps> = ({
           name: xName,
           nameLocation: "center",
           nameGap: 32,
-          data: _data[0].points.map((v) => labelFormatter(v.timestamp)),
+          data: _data[0].points.map((v) => labelFormatter(v.timestamp, step)),
         },
         yAxis: {
           type: "value",
@@ -113,7 +118,7 @@ export const ChartBase: FC<ChartBaseProps> = ({
         })),
       });
     }
-  }, [chart, _data, lineColor, areaColor, xName, yName, title, isNoData]);
+  }, [chart, _data, step, lineColor, areaColor, xName, yName, title, isNoData]);
 
   useEffect(() => {
     if (chartElm.current) {

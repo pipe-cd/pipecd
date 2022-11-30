@@ -27,6 +27,7 @@ export const getInsightData = ({
   req.setRangeTo(rangeTo);
   req.setStep(step);
 
+  req.setStep(step);
   req.setApplicationId(applicationId);
   for (const label of labelsMap) {
     req.getLabelsMap().set(label[0], label[1]);
