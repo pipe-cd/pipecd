@@ -25,6 +25,7 @@ import (
 
 type Processor struct {
 	file *ast.File
+	newLineAtEOF bool
 }
 
 func NewProcessor(data []byte) (*Processor, error) {
@@ -33,8 +34,14 @@ func NewProcessor(data []byte) (*Processor, error) {
 		return nil, err
 	}
 
+	nl := false
+	if len(data) > 0 && data[len(data)-1] == '\n' {
+		nl = true
+	}
+
 	return &Processor{
 		file: f,
+		newLineAtEOF: nl,
 	}, nil
 }
 
@@ -104,5 +111,10 @@ func (p *Processor) ReplaceString(path, value string) error {
 }
 
 func (p *Processor) Bytes() []byte {
-	return []byte(p.file.String())
+	str := p.file.String()
+	if p.newLineAtEOF {
+		str += "\n"
+	}
+
+	return []byte(str)
 }

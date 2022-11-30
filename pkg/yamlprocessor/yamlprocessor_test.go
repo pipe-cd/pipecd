@@ -253,6 +253,16 @@ foo:
   - baz`),
 			wantErr: false,
 		},
+		{
+			name:    "new line at end of yml given",
+			yml:     `foo: bar
+`,
+			path:    "$.foo",
+			value:   "new-text",
+			want:    []byte(`foo: new-text
+`),
+			wantErr: false,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
