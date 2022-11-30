@@ -27,8 +27,10 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
       : undefined
   );
 
-  const selectedLabels = useAppSelector<string>(
-    (state) => "{" + state.insight.labels.join(", ") + "}"
+const selectedLabels = useAppSelector<string>((state) =>
+    state.insight.labels.length !== 0
+      ? "{" + state.insight.labels.join(", ") + "}"
+      : ""
   );
 
   const step = useAppSelector<InsightStep>((state) => state.insight.step);
