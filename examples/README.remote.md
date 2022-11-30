@@ -1,4 +1,4 @@
-# examples
+# Examples
 
 A repository contains some examples for PipeCD.
 
@@ -70,5 +70,3 @@ A repository contains some examples for PipeCD.
 | -- | [canary](https://github.com/pipe-cd/examples/tree/master/ecs/canary) | Deployment pipeline with canary strategy. |
 | -- | [bluegreen](https://github.com/pipe-cd/examples/tree/master/ecs/bluegreen) | Deployment pipeline with blue-green strategy. |
 | -- | [secret-management](https://github.com/pipe-cd/examples/tree/master/ecs/secret-management) | Demonstrate how to manage sensitive data by using [Secret Management](https://pipecd.dev/docs/user-guide/secret-management/) feature. |
-
-**Note** that the `.kapetanios` directory is for our CI configurations. It has nothing to do with PipeCD.
