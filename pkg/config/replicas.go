@@ -70,11 +70,11 @@ func (r *Replicas) UnmarshalJSON(b []byte) error {
 			replicas.IsPercentage = true
 			raw = strings.TrimSuffix(raw, "%")
 		}
-		value, err := strconv.ParseInt(raw, 10, 64)
+		value, err := strconv.Atoi(raw)
 		if err != nil {
 			return fmt.Errorf("invalid replicas: %v", err)
 		}
-		replicas.Number = int(value)
+		replicas.Number = value
 		*r = replicas
 		return nil
 	default:
