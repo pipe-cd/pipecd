@@ -202,9 +202,9 @@ func TestPutCompletedDeploymentsBlock(t *testing.T) {
 	var (
 		fs = newFakeFileStore()
 		s  = &store{
-			fileStore:       fs,
-			maxItemsInChunk: 3,
-			logger:          zap.NewNop(),
+			fileStore:     fs,
+			chunkMaxCount: 3,
+			logger:        zap.NewNop(),
 		}
 		projectID = "test-project"
 		blockID   = "block_2022"

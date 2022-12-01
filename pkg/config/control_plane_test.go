@@ -86,8 +86,9 @@ func TestControlPlaneConfig(t *testing.T) {
 						Schedule: "0 * * * *",
 					},
 					Deployment: InsightCollectorDeployment{
-						Enabled:  true,
-						Schedule: "0 10 * * *",
+						Enabled:       true,
+						Schedule:      "0 10 * * *",
+						ChunkMaxCount: 1000,
 					},
 				},
 			},

@@ -209,7 +209,7 @@ func (s *store) putCompletedDeploymentsBlock(ctx context.Context, projectID, blo
 		if chunkMD.Completed {
 			continue
 		}
-		if chunkMD.Count >= s.maxItemsInChunk {
+		if chunkMD.Count >= s.chunkMaxCount {
 			chunkMD.Completed = true
 			continue
 		}
@@ -218,8 +218,8 @@ func (s *store) putCompletedDeploymentsBlock(ctx context.Context, projectID, blo
 			from     = index
 			addCount = len(ds) - from
 		)
-		if chunkMD.Count+addCount > s.maxItemsInChunk {
-			addCount = s.maxItemsInChunk - chunkMD.Count
+		if chunkMD.Count+addCount > s.chunkMaxCount {
+			addCount = s.chunkMaxCount - chunkMD.Count
 		}
 
 		index = from + addCount
@@ -236,7 +236,7 @@ func (s *store) putCompletedDeploymentsBlock(ctx context.Context, projectID, blo
 
 		// Update chunk metadata in block.
 		chunkMD.Count += len(adds)
-		if chunkMD.Count >= s.maxItemsInChunk {
+		if chunkMD.Count >= s.chunkMaxCount {
 			chunkMD.Completed = true
 		}
 		if chunkMD.MinTimestamp > ds[from].CompletedAt {
