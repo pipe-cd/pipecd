@@ -14,8 +14,8 @@ import { ApplicationCounts } from "./application-counts";
 import { ChangeFailureRateChart } from "./change-failure-rate-chart";
 import { DeploymentFrequencyChart } from "./deployment-frequency-chart";
 import { InsightHeader } from "./insight-header";
-import { fetchDeploymentChangeFailureRate } from "~/modules/deployment-change-failure-rate";
-import { fetchDeploymentFrequency } from "~/modules/deployment-frequency";
+//import { fetchDeploymentChangeFailureRate } from "~/modules/deployment-change-failure-rate";
+//import { fetchDeploymentFrequency } from "~/modules/deployment-frequency";
 
 export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   const dispatch = useAppDispatch();
@@ -76,8 +76,9 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    dispatch(fetchDeploymentFrequency());
-    dispatch(fetchDeploymentChangeFailureRate());
+    //dispatch(fetchDeploymentFrequency());
+    //dispatch(fetchDeploymentChangeFailureRate());
+    console.log("deployment insights should be loaded");
   }, [dispatch, applicationId, labels, range, step]);
 
   const updateURL = useCallback(
