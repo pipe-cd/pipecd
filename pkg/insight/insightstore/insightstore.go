@@ -35,16 +35,16 @@ type fileStore interface {
 }
 
 type store struct {
-	fileStore       fileStore
-	maxItemsInChunk int
-	logger          *zap.Logger
+	fileStore     fileStore
+	chunkMaxCount int
+	logger        *zap.Logger
 }
 
-func NewStore(fs fileStore, logger *zap.Logger) insight.Store {
+func NewStore(fs fileStore, chunkMaxCount int, logger *zap.Logger) insight.Store {
 	return &store{
-		fileStore:       fs,
-		maxItemsInChunk: 1000,
-		logger:          logger,
+		fileStore:     fs,
+		chunkMaxCount: chunkMaxCount,
+		logger:        logger,
 	}
 }
 
