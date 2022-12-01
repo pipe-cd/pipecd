@@ -20,7 +20,7 @@ The official PipeCD client named `pipectl` can be installed using the following 
 
 ``` console
 # OS="darwin" or "linux"
-curl -Lo ./pipectl https://github.com/pipe-cd/pipecd/releases/download/{{< blocks/latest_version >}}/pipectl_{{< blocks/latest_version >}}_${OS}_amd64
+curl -Lo ./pipectl https://github.com/pipe-cd/pipecd/releases/download/{{< blocks/latest_version >}}/pipectl_{{< blocks/latest_version >}}_{OS}_amd64
 ```
 
 Then make the pipectl binary executable
