@@ -191,25 +191,7 @@ func (d *OnCommitDeterminer) ShouldTrigger(ctx context.Context, app *model.Appli
 		return false, err
 	}
 
-	// TODO: Remove deprecated `appCfg.TriggerPaths` configuration.
-	checkingPaths := make([]string, 0, len(appCfg.Trigger.OnCommit.Paths)+len(appCfg.TriggerPaths))
-	// Note: appCfg.TriggerPaths or appCfg.Trigger.OnCommit.Paths may contain "" (empty string)
-	// in case users use one of them without the other, that cause unexpected "" path in the checkingPaths list
-	// leads to always trigger deployment since "" path matched all other paths.
-	// The below logic is to remove that "" path from checking path list, will remove after remove the
-	// deprecated appCfg.TriggerPaths.
-	for _, p := range appCfg.Trigger.OnCommit.Paths {
-		if p != "" {
-			checkingPaths = append(checkingPaths, p)
-		}
-	}
-	for _, p := range appCfg.TriggerPaths {
-		if p != "" {
-			checkingPaths = append(checkingPaths, p)
-		}
-	}
-
-	touched, err := isTouchedByChangedFiles(app.GitPath.Path, checkingPaths, changedFiles)
+	touched, err := isTouchedByChangedFiles(app.GitPath.Path, appCfg.Trigger.OnCommit.Paths, changedFiles)
 	if err != nil {
 		return false, err
 	}
