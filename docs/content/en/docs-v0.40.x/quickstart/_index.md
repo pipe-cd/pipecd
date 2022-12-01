@@ -21,7 +21,7 @@ Note: It's not required to install the PipeCD control plane to the cluster where
 The official PipeCD client named `pipectl` can be installed using the following command
 
 ``` console
-OS="darwin" # or "linux"
+# OS="darwin" or "linux"
 curl -Lo ./pipectl https://github.com/pipe-cd/pipecd/releases/download/{{< blocks/latest_version >}}/pipectl_{{< blocks/latest_version >}}_${OS}_amd64
 ```
 
