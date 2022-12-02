@@ -31,7 +31,6 @@ spec:
 | service | [KubernetesService](#kubernetesservice) | Which Kubernetes resource should be considered as the Service of application. Empty means the first Service resource will be used. | No |
 | workloads | [][KubernetesWorkload](#kubernetesworkload) | Which Kubernetes resources should be considered as the Workloads of application. Empty means all Deployment resources. | No |
 | trafficRouting | [KubernetesTrafficRouting](#kubernetestrafficrouting) | How to change traffic routing percentages. | No |
-| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No (deprecated) |
 | encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
@@ -60,7 +59,6 @@ spec:
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [TerraformQuickSync](#terraformquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
-| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No (deprecated) |
 | encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
@@ -113,7 +111,6 @@ spec:
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [LambdaQuickSync](#lambdaquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
-| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No (deprecated) |
 | encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
@@ -141,7 +138,6 @@ spec:
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [ECSQuickSync](#ecsquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
-| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No (deprecated) |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
