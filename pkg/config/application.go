@@ -48,10 +48,6 @@ type GenericApplicationSpec struct {
 	CommitMatcher DeploymentCommitMatcher `json:"commitMatcher"`
 	// Pipeline for deploying progressively.
 	Pipeline *DeploymentPipeline `json:"pipeline"`
-	// List of directories or files where their changes will trigger the deployment.
-	// Regular expression can be used.
-	// Deprecated: use Trigger.Paths instead.
-	TriggerPaths []string `json:"triggerPaths,omitempty"`
 	// The trigger configuration use to determine trigger logic.
 	Trigger Trigger `json:"trigger"`
 	// Configuration to be used once the deployment is triggered successfully.

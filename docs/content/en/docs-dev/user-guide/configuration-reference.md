@@ -88,7 +88,6 @@ spec:
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [CloudRunQuickSync](#cloudrunquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
-| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. This field is `deprecated`, please use [`spec.trigger.onCommit.paths`](#deploymenttrigger) instead. | No (deprecated) |
 | encryption | [SecretEncryption](#secretencryption) | List of encrypted secrets and targets that should be decrypted before using. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
