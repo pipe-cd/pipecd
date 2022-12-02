@@ -59,9 +59,6 @@ type GenericApplicationSpec struct {
 	Encryption *SecretEncryption `json:"encryption"`
 	// Additional configuration used while sending notification to external services.
 	DeploymentNotification *DeploymentNotification `json:"notification"`
-	// The list of sealed secrets that should be decrypted.
-	// Deprecated.
-	SealedSecrets []SealedSecretMapping `json:"sealedSecrets"`
 	// List of the configuration for event watcher.
 	EventWatcher []EventWatcherConfig `json:"eventWatcher"`
 }
