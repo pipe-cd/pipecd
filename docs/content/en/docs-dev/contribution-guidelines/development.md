@@ -11,6 +11,7 @@ description: >
 - [Go 1.19](https://go.dev/)
 - [Docker Decktop](https://www.docker.com/products/docker-desktop/)
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) (If you want to run Control Plane locally)
+- [helm 3.8.2](https://helm.sh/docs/intro/install/) (If you want to run Control Plane locally)
 
 ## Repositories
 - [pipecd](https://github.com/pipe-cd/pipecd): contains all source code and documentation of PipeCD project.
