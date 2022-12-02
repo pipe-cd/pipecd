@@ -12,8 +12,7 @@ import { Autocomplete } from "@material-ui/lab";
 import { FC, memo, useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { Application, selectAll, selectById } from "~/modules/applications";
-import { fetchDeploymentChangeFailureRate } from "~/modules/deployment-change-failure-rate";
-import { fetchDeploymentFrequency } from "~/modules/deployment-frequency";
+
 import {
   changeRange,
   changeStep,
@@ -40,17 +39,9 @@ export const InsightHeader: FC = memo(function InsightHeader() {
   const classes = useStyles();
   const dispatch = useAppDispatch();
 
-  const [applicationId, labels, range, step] = useAppSelector<
-    [string, Array<string>, InsightRange, InsightStep]
-  >((state) => [
-    state.insight.applicationId,
-    state.insight.labels,
-    state.insight.range,
-    state.insight.step,
-  ]);
-
   const selectedApp = useAppSelector<Application.AsObject | null>(
-    (state) => selectById(state.applications, applicationId) || null
+    (state) =>
+      selectById(state.applications, state.insight.applicationId) || null
   );
 
   const [allLabels, setAllLabels] = useState(new Array<string>());
@@ -74,11 +65,6 @@ export const InsightHeader: FC = memo(function InsightHeader() {
       });
     setAllLabels(Array.from(labels));
   }, [applications]);
-
-  useEffect(() => {
-    dispatch(fetchDeploymentFrequency());
-    dispatch(fetchDeploymentChangeFailureRate());
-  }, [dispatch, applicationId, labels, range, step]);
 
   return (
     <Grid container spacing={2} style={{ marginTop: 26, marginBottom: 26 }}>
