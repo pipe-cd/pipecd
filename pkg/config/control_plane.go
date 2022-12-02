@@ -197,7 +197,8 @@ type InsightCollectorApplication struct {
 type InsightCollectorDeployment struct {
 	Enabled bool `json:"enabled"`
 	// Default is running every hour.
-	Schedule string `json:"schedule" default:"30 * * * *"`
+	Schedule      string `json:"schedule" default:"30 * * * *"`
+	ChunkMaxCount int    `json:"chunkMaxCount" default:"1000"`
 }
 
 func (c ControlPlaneCache) TTLDuration() time.Duration {

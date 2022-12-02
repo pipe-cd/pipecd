@@ -111,7 +111,7 @@ func TestReplicasUnmarshal(t *testing.T) {
 			name:        "wrong string format",
 			input:       "{\"Replicas\":\"1a%\"}",
 			expected:    nil,
-			expectedErr: fmt.Errorf("invalid replicas: strconv.ParseInt: parsing \"1a\": invalid syntax"),
+			expectedErr: fmt.Errorf("invalid replicas: strconv.Atoi: parsing \"1a\": invalid syntax"),
 		},
 	}
 	for _, tc := range testcases {

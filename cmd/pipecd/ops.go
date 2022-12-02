@@ -189,7 +189,11 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 		})
 	}
 
-	insightStore := insightstore.NewStore(fs, input.Logger)
+	insightStore := insightstore.NewStore(
+		fs,
+		cfg.InsightCollector.Deployment.ChunkMaxCount,
+		input.Logger,
+	)
 	// Start running insight collector.
 	{
 		ic := insightcollector.NewCollector(ds, insightStore, cfg.InsightCollector, input.Logger)

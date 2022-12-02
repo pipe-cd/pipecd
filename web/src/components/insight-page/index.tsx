@@ -9,17 +9,26 @@ import {
   selectById,
 } from "~/modules/applications";
 import { fetchApplicationCount } from "~/modules/application-counts";
-import { InsightDataPoint, InsightStep } from "~/modules/insight";
+import { InsightDataPoint, InsightStep, InsightRange } from "~/modules/insight";
 import { ApplicationCounts } from "./application-counts";
 import { ChangeFailureRateChart } from "./change-failure-rate-chart";
 import { DeploymentFrequencyChart } from "./deployment-frequency-chart";
 import { InsightHeader } from "./insight-header";
-import { fetchDeploymentFrequency } from "~/modules/deployment-frequency";
-import { fetchDeploymentChangeFailureRate } from "~/modules/deployment-change-failure-rate";
+//import { fetchDeploymentChangeFailureRate } from "~/modules/deployment-change-failure-rate";
+//import { fetchDeploymentFrequency } from "~/modules/deployment-frequency";
 
 export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   const dispatch = useAppDispatch();
   const history = useHistory();
+
+  const [applicationId, labels, range, step] = useAppSelector<
+    [string, Array<string>, InsightRange, InsightStep]
+  >((state) => [
+    state.insight.applicationId,
+    state.insight.labels,
+    state.insight.range,
+    state.insight.step,
+  ]);
 
   const selectedAppName = useAppSelector<string | undefined>((state) =>
     state.insight.applicationId
@@ -32,8 +41,6 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
       ? "{" + state.insight.labels.join(", ") + "}"
       : ""
   );
-
-  const step = useAppSelector<InsightStep>((state) => state.insight.step);
 
   const deploymentFrequency = useAppSelector<InsightDataPoint.AsObject[]>(
     (state) => state.deploymentFrequency.data
@@ -66,9 +73,13 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   useEffect(() => {
     dispatch(fetchApplications());
     dispatch(fetchApplicationCount());
-    dispatch(fetchDeploymentFrequency());
-    dispatch(fetchDeploymentChangeFailureRate());
   }, [dispatch]);
+
+  useEffect(() => {
+    //dispatch(fetchDeploymentFrequency());
+    //dispatch(fetchDeploymentChangeFailureRate());
+    console.log("deployment insights should be loaded");
+  }, [dispatch, applicationId, labels, range, step]);
 
   const updateURL = useCallback(
     (kind: ApplicationKind) => {
