@@ -34,9 +34,9 @@ This refers to the release of new features.
 - Make a pull request to `master` branch with the above changes and get reviews and merge.
 
 ### Cut a new release
-- Before cutting a new release, wait for all jobs in GitHub Actions to pass on master branch.
+- Before cutting a new release, wait for all jobs in GitHub Actions to pass on the master branch.
 
-- Create a tagged release. The release should start with "v" and be followed by the version number.
+- Create a tagged release from the master branch. The release should start with "v" and be followed by the version number.
 
 ## Patch release
 This refers to the release of critical bug fixes. \
@@ -50,25 +50,22 @@ A bugfix for a functional issue (not a data loss or security issue) that only af
 
 - Get reviews and merge.
 
-### Backport fixes
-- Run the cherry-pick script
-
-  This example assumes that the name of release branch is `release-vX.Y.x` and the number of pull request is `#1234`:
-  ```shell
-  hack/cherry-pick.sh release-vX.Y.x 1234
-  ````
-
-- Get a review and merge.
-
 ### Confirm the changelog and Create Release Note
 - As well as [Major release](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md#confirm-the-changelog-and-create-release-note), create a pull request to create a release note on the `master` branch.
 
 - Get a review and merge.
 
-### Backport Release Note
-- This is same as [Backport fixes](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md#backport-fixes).
+### Backport fixes and Release note
+- Run the cherry-pick script
+
+  This example assumes that the name of a release branch is `release-vX.Y.x` and the numbers of pull request are `#1234` and `#5678`:
+  ```shell
+  make gen/cherry-pick branch=release-vX.Y.x pull_numbers=1234 5678
+  ````
+
+- Get a review and merge.
 
 ### Cut a new release
-- Before cutting a new release, wait for all jobs in GitHub Actions to pass on release branch.
+- Before cutting a new release, wait for all jobs in GitHub Actions to pass on the release branch.
 
-- Create a tagged release. The release should start with "v" and be followed by the version number.
+- Create a tagged release from the release branch `release-vX.Y.x`. The release should start with "v" and be followed by the version number.
