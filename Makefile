@@ -192,6 +192,10 @@ gen/test-tls:
 		-subj "/CN=localhost" \
 		-config pkg/rpc/testdata/tls.config
 
+.PHONY: gen/cherry-pick
+gen/cherry-pick:
+	./hack/cherry-pick.sh ${branch} ${pull_numbers}
+
 # Other commands
 
 .PHONY: kind-up
