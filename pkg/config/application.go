@@ -487,17 +487,6 @@ type TemplatableAnalysisHTTP struct {
 	Template AnalysisTemplateRef `json:"template"`
 }
 
-type SealedSecretMapping struct {
-	// Relative path from the application directory to sealed secret file.
-	Path string `json:"path"`
-	// The filename for the decrypted secret.
-	// Empty means the same name with the sealed secret file.
-	OutFilename string `json:"outFilename"`
-	// The directory name where to put the decrypted secret.
-	// Empty means the same directory with the sealed secret file.
-	OutDir string `json:"outDir"`
-}
-
 type SecretEncryption struct {
 	// List of encrypted secrets.
 	EncryptedSecrets map[string]string `json:"encryptedSecrets"`
