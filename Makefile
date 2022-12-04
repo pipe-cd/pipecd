@@ -1,14 +1,15 @@
 ####################
 # All make commands are following the format as "make action/target"
 # "action" can be either:
-#   build:  build artifacts such as binary, container image, chart
-#   test:   execute test
-#   run:    run a module locally
-#   stop:   stop a locally running module
-#   lint:   lint the source code
-#   update: update packages or dependencies to the newer versions
-#   gen:    execute code or docs generation
-#   push:   push artifacts such as helm chart
+#   build:   build artifacts such as binary, container image, chart
+#   test:    execute test
+#   run:     run a module locally
+#   stop:    stop a locally running module
+#   lint:    lint the source code
+#   update:  update packages or dependencies to the newer versions
+#   gen:     execute code or docs generation
+#   release: commands used in release flow
+#   push:    push artifacts such as helm chart
 ####################
 
 # Build commands
@@ -172,14 +173,6 @@ gen/code:
 	# NOTE: Specify a specific version temporally until the next release.
 	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:16766336bd7fd7d7e24eabf29aabe471bfda0631a5c51e0a8d1470a249139a32 /repo #v0.37.0-10-ge573dda
 
-.PHONY: gen/release
-gen/release:
-	./hack/gen-release.sh $(version)
-
-.PHONY: gen/release-docs
-gen/release-docs:
-	./hack/gen-release-docs.sh $(version)
-
 .PHONY: gen/stable-docs
 gen/stable-docs:
 	./hack/gen-stable-docs.sh $(version)
@@ -192,9 +185,20 @@ gen/test-tls:
 		-subj "/CN=localhost" \
 		-config pkg/rpc/testdata/tls.config
 
-.PHONY: gen/cherry-pick
-gen/cherry-pick:
-	./hack/cherry-pick.sh ${branch} ${pull_numbers}
+.PHONY: release
+build: release/init release/docs
+
+.PHONY: release/init
+release/init:
+	./hack/gen-release.sh $(version)
+
+.PHONY: release/pick
+release/pick:
+	./hack/cherry-pick.sh $(branch) $(pull_numbers)
+
+.PHONY: release/docs
+release/docs:
+	./hack/gen-release-docs.sh $(version)
 
 # Other commands
 

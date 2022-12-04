@@ -9,7 +9,7 @@ This refers to the release of new features.
 
   This example assumes that `vX.Y.Z` will be released:
   ```shell
-  make gen/release version=vX.Y.Z
+  make release/init version=vX.Y.Z
   ````
 
   `RELEASE` file will be updated and `docs/content/en/blog/releases/vX.Y.Z.md` file will be created.
@@ -28,7 +28,7 @@ This refers to the release of new features.
 
   This example assumes that `vX.Y.Z` will be released:
   ```shell
-  make gen/release-docs version=vX.Y.Z
+  make release/docs version=vX.Y.Z
   ````
 
 - Make a pull request to `master` branch with the above changes and get reviews and merge.
@@ -56,11 +56,11 @@ A bugfix for a functional issue (not a data loss or security issue) that only af
 - Get a review and merge.
 
 ### Backport fixes and Release note
-- Run the cherry-pick script
+- Run release pick commits
 
   This example assumes that the name of a release branch is `release-vX.Y.x` and the numbers of pull request are `#1234` and `#5678`:
   ```shell
-  make gen/cherry-pick branch=release-vX.Y.x pull_numbers=1234 5678
+  make release/pick branch=release-vX.Y.x pull_numbers=1234 5678
   ````
 
 - Get a review and merge.
