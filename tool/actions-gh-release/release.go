@@ -54,13 +54,13 @@ type ReleaseCommitCategoryConfig struct {
 }
 
 type ReleaseNoteGeneratorConfig struct {
-	ShowAbbrevHash            bool                       `json:"showAbbrevHash,omitempty" default:"false"`
-	ShowCommitter             *bool                      `json:"showCommitter,omitempty" default:"true"`
-	UseReleaseNoteBlock       bool                       `json:"useReleaseNoteBlock,omitempty" default:"false"`
-	UsePullRequestMetadata    bool                       `json:"usePullRequestMetadata,omitempty" default:"false"`
-	CommitInclude             ReleaseCommitMatcherConfig `json:"commitInclude,omitempty"`
-	CommitExclude             ReleaseCommitMatcherConfig `json:"commitExclude,omitempty"`
-	ReplacePullRequestNumbers bool                       `json:"replacePullRequestNumbers,omitempty" default:"false"`
+	ShowAbbrevHash         bool                       `json:"showAbbrevHash,omitempty" default:"false"`
+	ShowCommitter          *bool                      `json:"showCommitter,omitempty" default:"true"`
+	UseReleaseNoteBlock    bool                       `json:"useReleaseNoteBlock,omitempty" default:"false"`
+	UsePullRequestMetadata bool                       `json:"usePullRequestMetadata,omitempty" default:"false"`
+	CommitInclude          ReleaseCommitMatcherConfig `json:"commitInclude,omitempty"`
+	CommitExclude          ReleaseCommitMatcherConfig `json:"commitExclude,omitempty"`
+	UsePullRequestLink     bool                       `json:"usePullRequestLink,omitempty" default:"false"`
 }
 
 type ReleaseCommitMatcherConfig struct {
@@ -350,7 +350,7 @@ func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 	gen := cfg.ReleaseNoteGenerator
 	renderCommit := func(c ReleaseCommit) {
 		// If the release note contains pull numbers, replaces it with its url.
-		if gen.ReplacePullRequestNumbers {
+		if gen.UsePullRequestLink {
 			numbers := releaseNotePullNumberRegex.FindAllString(c.ReleaseNote, -1)
 			if len(numbers) != 0 {
 				ns := make(map[string]struct{}, len(numbers))
