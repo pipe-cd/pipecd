@@ -54,12 +54,13 @@ type ReleaseCommitCategoryConfig struct {
 }
 
 type ReleaseNoteGeneratorConfig struct {
-	ShowAbbrevHash         bool                       `json:"showAbbrevHash,omitempty" default:"false"`
-	ShowCommitter          *bool                      `json:"showCommitter,omitempty" default:"true"`
-	UseReleaseNoteBlock    bool                       `json:"useReleaseNoteBlock,omitempty" default:"false"`
-	UsePullRequestMetadata bool                       `json:"usePullRequestMetadata,omitempty" default:"false"`
-	CommitInclude          ReleaseCommitMatcherConfig `json:"commitInclude,omitempty"`
-	CommitExclude          ReleaseCommitMatcherConfig `json:"commitExclude,omitempty"`
+	ShowAbbrevHash            bool                       `json:"showAbbrevHash,omitempty" default:"false"`
+	ShowCommitter             *bool                      `json:"showCommitter,omitempty" default:"true"`
+	UseReleaseNoteBlock       bool                       `json:"useReleaseNoteBlock,omitempty" default:"false"`
+	UsePullRequestMetadata    bool                       `json:"usePullRequestMetadata,omitempty" default:"false"`
+	CommitInclude             ReleaseCommitMatcherConfig `json:"commitInclude,omitempty"`
+	CommitExclude             ReleaseCommitMatcherConfig `json:"commitExclude,omitempty"`
+	ReplacePullRequestNumbers bool                       `json:"replacePullRequestNumbers,omitempty" default:"false"`
 }
 
 type ReleaseCommitMatcherConfig struct {
@@ -349,15 +350,17 @@ func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 	gen := cfg.ReleaseNoteGenerator
 	renderCommit := func(c ReleaseCommit) {
 		// If the release note contains pull numbers, replaces it with its url.
-		numbers := releaseNotePullNumberRegex.FindAllString(c.ReleaseNote, -1)
-		if len(numbers) != 0 {
-			ns := make(map[string]struct{}, len(numbers))
-			for _, n := range numbers {
-				ns[n] = struct{}{}
-			}
-			for k := range ns {
-				link := fmt.Sprintf("[%s](https://github.com/pipe-cd/pipecd/pull/%s)", k, string(k[1:]))
-				c.ReleaseNote = strings.ReplaceAll(c.ReleaseNote, k, link)
+		if gen.ReplacePullRequestNumbers {
+			numbers := releaseNotePullNumberRegex.FindAllString(c.ReleaseNote, -1)
+			if len(numbers) != 0 {
+				ns := make(map[string]struct{}, len(numbers))
+				for _, n := range numbers {
+					ns[n] = struct{}{}
+				}
+				for k := range ns {
+					link := fmt.Sprintf("[%s](https://github.com/pipe-cd/pipecd/pull/%s)", k, string(k[1:]))
+					c.ReleaseNote = strings.ReplaceAll(c.ReleaseNote, k, link)
+				}
 			}
 		}
 		b.WriteString(fmt.Sprintf("* %s", c.ReleaseNote))
