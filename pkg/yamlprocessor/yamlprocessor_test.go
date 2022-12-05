@@ -190,7 +190,7 @@ func TestReplaceString(t *testing.T) {
 			yml:     "foo: bar",
 			path:    "$.foo",
 			value:   "",
-			want:    []byte("foo: "),
+			want:    []byte("foo: \n"),
 			wantErr: false,
 		},
 		{
@@ -198,7 +198,7 @@ func TestReplaceString(t *testing.T) {
 			yml:     "foo: bar",
 			path:    "$.foo",
 			value:   "new-text",
-			want:    []byte("foo: new-text"),
+			want:    []byte("foo: new-text\n"),
 			wantErr: false,
 		},
 		{
@@ -208,7 +208,8 @@ foo: bar`,
 			path:  "$.foo",
 			value: "new-text",
 			want: []byte(`# comments
-foo: new-text`),
+foo: new-text
+`),
 			wantErr: false,
 		},
 		{
@@ -217,7 +218,7 @@ foo: new-text`),
 			`,
 			path:    "$.foo",
 			value:   "new-text",
-			want:    []byte("foo: new-text # comments"),
+			want:    []byte("foo: new-text # comments\n"),
 			wantErr: false,
 		},
 		{
@@ -229,7 +230,8 @@ foo: new-text`),
 			value: "new-text",
 			want: []byte(`foo:
   - new-text
-  - baz`),
+  - baz
+`),
 			wantErr: false,
 		},
 		{
@@ -237,7 +239,7 @@ foo: new-text`),
 			yml:     `foo: [bar, baz]`,
 			path:    "$.foo[0]",
 			value:   "new-text",
-			want:    []byte(`foo: [new-text, baz]`),
+			want:    []byte("foo: [new-text, baz]\n"),
 			wantErr: false,
 		},
 		{
@@ -250,16 +252,7 @@ foo:
 			value: "new-text",
 			want: []byte(`foo:
   - new-text
-  - baz`),
-			wantErr: false,
-		},
-		{
-			name:    "new line at end of yml given",
-			yml:     `foo: bar
-`,
-			path:    "$.foo",
-			value:   "new-text",
-			want:    []byte(`foo: new-text
+  - baz
 `),
 			wantErr: false,
 		},
