@@ -3,6 +3,7 @@ tag: v0.40.1
 releaseNoteGenerator:
   showCommitter: false
   useReleaseNoteBlock: true
+  usePullRequestLink: true
 
 commitCategories:
   - title: "Breaking Changes"
