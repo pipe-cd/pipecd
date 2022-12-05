@@ -28,7 +28,8 @@ import (
 )
 
 var (
-	releaseNoteBlockRegex = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
+	releaseNoteBlockRegex      = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
+	releaseNotePullNumberRegex = regexp.MustCompile(`#[0-9]+`)
 )
 
 type ReleaseConfig struct {
@@ -347,7 +348,21 @@ func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 
 	gen := cfg.ReleaseNoteGenerator
 	renderCommit := func(c ReleaseCommit) {
+		// If the release note contains pull numbers, replaces it with its url.
+		numbers := releaseNotePullNumberRegex.FindAllString(c.ReleaseNote, -1)
+		if len(numbers) != 0 {
+			ns := make(map[string]struct{}, len(numbers))
+			for _, n := range numbers {
+				ns[n] = struct{}{}
+			}
+			for k := range ns {
+				link := fmt.Sprintf("[%s](https://github.com/pipe-cd/pipecd/pull/%s)", k, string(k[1:]))
+				c.ReleaseNote = strings.ReplaceAll(c.ReleaseNote, k, link)
+			}
+		}
 		b.WriteString(fmt.Sprintf("* %s", c.ReleaseNote))
+
+		// If using a merge commit, prepares another options to add extra info.
 		if gen.UsePullRequestMetadata && c.PullRequestNumber != 0 {
 			b.WriteString(fmt.Sprintf(" ([#%d](https://github.com/%s/%s/pull/%d))", c.PullRequestNumber, p.Owner, p.Repo, c.PullRequestNumber))
 			if !gen.UseReleaseNoteBlock && c.PullRequestOwner != "" {
@@ -356,6 +371,7 @@ func renderReleaseNote(p ReleaseProposal, cfg ReleaseConfig) []byte {
 			b.WriteString("\n")
 			return
 		}
+
 		if gen.ShowAbbrevHash {
 			b.WriteString(fmt.Sprintf(" [%s](https://github.com/%s/%s/commit/%s)", c.AbbreviatedHash, p.Owner, p.Repo, c.Hash))
 		}
