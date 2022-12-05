@@ -106,6 +106,12 @@ func (p *Processor) ReplaceString(path, value string) error {
 func (p *Processor) Bytes() []byte {
 	str := p.file.String()
 
+	/*
+		TODO: Remove there when PR of go-yaml merged.
+		see also:
+		https://github.com/goccy/go-yaml/pull/329
+		https://github.com/pipe-cd/pipecd/pull/4033#discussion_r1039300377
+	*/
 	if len(str) > 0 && str[len(str)-1] != '\n' {
 		str += "\n"
 	}
