@@ -59,9 +59,6 @@ type GenericApplicationSpec struct {
 	Encryption *SecretEncryption `json:"encryption"`
 	// Additional configuration used while sending notification to external services.
 	DeploymentNotification *DeploymentNotification `json:"notification"`
-	// The list of sealed secrets that should be decrypted.
-	// Deprecated.
-	SealedSecrets []SealedSecretMapping `json:"sealedSecrets"`
 	// List of the configuration for event watcher.
 	EventWatcher []EventWatcherConfig `json:"eventWatcher"`
 }
@@ -488,17 +485,6 @@ type TemplatableAnalysisLog struct {
 type TemplatableAnalysisHTTP struct {
 	AnalysisHTTP
 	Template AnalysisTemplateRef `json:"template"`
-}
-
-type SealedSecretMapping struct {
-	// Relative path from the application directory to sealed secret file.
-	Path string `json:"path"`
-	// The filename for the decrypted secret.
-	// Empty means the same name with the sealed secret file.
-	OutFilename string `json:"outFilename"`
-	// The directory name where to put the decrypted secret.
-	// Empty means the same directory with the sealed secret file.
-	OutDir string `json:"outDir"`
 }
 
 type SecretEncryption struct {
