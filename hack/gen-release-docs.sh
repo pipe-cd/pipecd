@@ -64,14 +64,14 @@ then
 fi
 
 # Update docs/config.toml
-tail -r docs/config.toml | tail -n +5 | tail -r >> docs/config.toml.tmp
+LINE_NUM=$(($(grep -Fn "# Append the release versions here." docs/config.toml | cut -f1 -d ':')+5))
+head -n $LINE_NUM docs/config.toml >> docs/config.toml.tmp
 cat <<EOT >> docs/config.toml.tmp
-
 [[params.versions]]
   version = "$VERSION"
   url = "/docs-$VERSION/"
 EOT
-tail -4 docs/config.toml >> docs/config.toml.tmp
+tail -n +$LINE_NUM docs/config.toml >> docs/config.toml.tmp
 mv docs/config.toml.tmp docs/config.toml
 
 echo "Version docs has been prepared successfully at $CONTENT_DIR/docs-$VERSION/"
