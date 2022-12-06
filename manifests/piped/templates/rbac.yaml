@@ -26,7 +26,7 @@ roleRef:
   name: {{ include "piped.fullname" . }}
 subjects:
 - kind: ServiceAccount
-  name: {{ include "piped.fullname" . }}
+  name: {{ include "piped.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
 
 ---
@@ -52,7 +52,7 @@ roleRef:
   name: {{ include "piped.fullname" . }}
 subjects:
 - kind: ServiceAccount
-  name: {{ include "piped.fullname" . }}
+  name: {{ include "piped.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
 
 ---
