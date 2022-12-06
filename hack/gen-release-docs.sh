@@ -21,7 +21,10 @@ do
   exit 1
 done
 
-echo "Prepare version docs"
+v=$1
+VERSION=${v%.*}.x
+
+echo "Prepare version docs ${VERSION}"
 
 CONTENT_DIR=docs/content/en
 
@@ -39,24 +42,24 @@ menu:
 ---
 EOT
 
-# Create new $CONTENT_DIR/docs-$1
-rm -rf $CONTENT_DIR/docs-$1
-cp -rf $CONTENT_DIR/docs-dev $CONTENT_DIR/docs-$1
-cp -rf docs/themes/docsy/layouts/docs/ docs/layouts/docs-$1
-cat <<EOT > $CONTENT_DIR/docs-$1/_index.md
+# Create new $CONTENT_DIR/docs-$VERSION
+rm -rf $CONTENT_DIR/docs-$VERSION
+cp -rf $CONTENT_DIR/docs-dev $CONTENT_DIR/docs-$VERSION
+cp -rf docs/themes/docsy/layouts/docs/ docs/layouts/docs-$VERSION
+cat <<EOT > $CONTENT_DIR/docs-$VERSION/_index.md
 ---
 title: "Welcome to PipeCD"
-linkTitle: "Documentation [$1]"
+linkTitle: "Documentation [$VERSION]"
 type: docs
 ---
 EOT
 
-# Check whether docs/config.toml file contains route for new version docs /docs-$1/
+# Check whether docs/config.toml file contains route for new version docs /docs-$VERSION/
 # If it contained already, skip updating docs/config.toml
-grep "/docs-$1/" docs/config.toml > /dev/null
+grep "/docs-$VERSION/" docs/config.toml > /dev/null
 if [ $? -eq 0 ]
 then
-  echo "Version docs has been prepared successfully at $CONTENT_DIR/docs-$1/"
+  echo "Version docs has been prepared successfully at $CONTENT_DIR/docs-$VERSION/"
   exit 0
 fi
 
@@ -65,10 +68,10 @@ tail -r docs/config.toml | tail -n +5 | tail -r >> docs/config.toml.tmp
 cat <<EOT >> docs/config.toml.tmp
 
 [[params.versions]]
-  version = "$1"
-  url = "/docs-$1/"
+  version = "$VERSION"
+  url = "/docs-$VERSION/"
 EOT
 tail -4 docs/config.toml >> docs/config.toml.tmp
 mv docs/config.toml.tmp docs/config.toml
 
-echo "Version docs has been prepared successfully at $CONTENT_DIR/docs-$1/"
+echo "Version docs has been prepared successfully at $CONTENT_DIR/docs-$VERSION/"
