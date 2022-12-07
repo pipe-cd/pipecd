@@ -185,6 +185,9 @@ gen/test-tls:
 		-subj "/CN=localhost" \
 		-config pkg/rpc/testdata/tls.config
 
+.PHONY: release
+release: release/init release/docs
+
 .PHONY: release/init
 release/init:
 	./hack/gen-release.sh $(version)
