@@ -327,12 +327,15 @@ func (s *store) loadChunk(ctx context.Context, projectID, blockID, chunkID strin
 	if useCache {
 		if cdata, err := s.deploymentChunkCache.Get(cacheKey); err == nil {
 			data = cdata.([]byte)
+			s.logger.Info("successfully loaded deployment chunk from cache", zap.String("key", cacheKey))
 		} else {
 			data, err = s.fileStore.Get(ctx, path)
 			if err != nil {
 				return nil, err
 			}
-			s.deploymentChunkCache.Put(cacheKey, data)
+			if err := s.deploymentChunkCache.Put(cacheKey, data); err != nil {
+				s.logger.Error("failed to put deployment chunk to cache", zap.Error(err))
+			}
 		}
 	} else {
 		var err error

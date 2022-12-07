@@ -50,7 +50,7 @@ func NewStore(fs fileStore, chunkMaxCount int, rd redis.Redis, logger *zap.Logge
 		fileStore:            fs,
 		chunkMaxCount:        chunkMaxCount,
 		deploymentChunkCache: rediscache.NewTTLCache(rd, 7*24*time.Hour),
-		logger:               logger,
+		logger:               logger.Named("insight-store"),
 	}
 }
 
