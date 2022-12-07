@@ -191,7 +191,25 @@ func (d *OnCommitDeterminer) ShouldTrigger(ctx context.Context, app *model.Appli
 		return false, err
 	}
 
-	touched, err := isTouchedByChangedFiles(app.GitPath.Path, appCfg.Trigger.OnCommit.Paths, changedFiles)
+	// TODO: Remove deprecated `appCfg.Trigger.OnCommit.Paths` configuration.
+	includePaths := make([]string, 0, len(appCfg.Trigger.OnCommit.Paths)+len(appCfg.Trigger.OnCommit.Includes))
+	// Note: appCfg.Trigger.OnCommit.Includes or appCfg.Trigger.OnCommit.Paths may contain "" (empty string)
+	// in case users use one of them without the other, that cause unexpected "" path in the checkingPaths list
+	// leads to always trigger deployment since "" path matched all other paths.
+	// The below logic is to remove that "" path from checking path list, will remove after remove the
+	// deprecated appCfg.Trigger.OnCommit.Paths.
+	for _, p := range appCfg.Trigger.OnCommit.Paths {
+		if p != "" {
+			includePaths = append(includePaths, p)
+		}
+	}
+	for _, p := range appCfg.Trigger.OnCommit.Includes {
+		if p != "" {
+			includePaths = append(includePaths, p)
+		}
+	}
+
+	touched, err := isTouchedByChangedFiles(app.GitPath.Path, includePaths, appCfg.Trigger.OnCommit.Excludes, changedFiles)
 	if err != nil {
 		return false, err
 	}
@@ -204,22 +222,43 @@ func (d *OnCommitDeterminer) ShouldTrigger(ctx context.Context, app *model.Appli
 	return true, nil
 }
 
-func isTouchedByChangedFiles(appDir string, changes []string, changedFiles []string) (bool, error) {
+// isTouchedByChangedFiles checks whether this application changed files can trigger a new deployment or not (considered as "touched")
+// The logic of watching files pattern contains both "includes" and "excludes" filter and be implemented as flow:
+//  1. If both includes & excludes is empty, app is considered as touched
+//  2. If any of changed files is listed in excludes, app is NOT considered as touched
+//  3. If pass (2) and any of changed files is listed in includes, app is considered as touched
+func isTouchedByChangedFiles(appDir string, includes, excludes []string, changedFiles []string) (bool, error) {
 	if !strings.HasSuffix(appDir, "/") {
 		appDir += "/"
 	}
 
-	// If any files inside the application directory was changed
-	// this application is considered as touched.
-	for _, cf := range changedFiles {
-		if ok := strings.HasPrefix(cf, appDir); ok {
-			return true, nil
+	// In case includes and excludes do not contains any thing
+	// consider any files changed inside the application directory as touched.
+	if len(includes) == 0 && len(excludes) == 0 {
+		for _, cf := range changedFiles {
+			if ok := strings.HasPrefix(cf, appDir); ok {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
+
+	// If any changed files matches the specified "excludes"
+	// this application is consided as not touched.
+	for _, change := range excludes {
+		matcher, err := filematcher.NewPatternMatcher([]string{change})
+		if err != nil {
+			return false, err
+		}
+		if matcher.MatchesAny(changedFiles) {
+			return false, nil
 		}
 	}
 
-	// If any changed files matches the specified "changes"
-	// this application is consided as touched too.
-	for _, change := range changes {
+	// If all changed files do not match any specified "excludes",
+	// then if any changed files matches the specified "includes"
+	// this application is consided as touched.
+	for _, change := range includes {
 		matcher, err := filematcher.NewPatternMatcher([]string{change})
 		if err != nil {
 			return false, err

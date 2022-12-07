@@ -26,7 +26,8 @@ func TestIsTouchedByChangedFiles(t *testing.T) {
 	testcases := []struct {
 		name         string
 		appDir       string
-		changes      []string
+		includes     []string
+		excludes     []string
 		changedFiles []string
 		expected     bool
 	}{
@@ -57,9 +58,9 @@ func TestIsTouchedByChangedFiles(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:   "touched in the changes",
+			name:   "touched in the includes",
 			appDir: "app/demo",
-			changes: []string{
+			includes: []string{
 				"charts/demo",
 				"charts/bar/*",
 			},
@@ -69,11 +70,56 @@ func TestIsTouchedByChangedFiles(t *testing.T) {
 			},
 			expected: true,
 		},
+		{
+			name:   "touched in the includes, not excludes",
+			appDir: "app/demo",
+			excludes: []string{
+				"foo/*",
+			},
+			includes: []string{
+				"charts/demo",
+				"charts/bar/*",
+			},
+			changedFiles: []string{
+				"app/hello.txt",
+				"charts/bar/deployment.yaml",
+			},
+			expected: true,
+		},
+		{
+			name:   "touched in the excludes",
+			appDir: "app/demo",
+			excludes: []string{
+				"charts/demo",
+				"charts/bar/*",
+			},
+			changedFiles: []string{
+				"app/hello.txt",
+				"charts/bar/deployment.yaml",
+			},
+			expected: false,
+		},
+		{
+			name:   "touched in both the excludes and includes",
+			appDir: "app/demo",
+			excludes: []string{
+				"charts/demo",
+				"charts/bar/*",
+			},
+			includes: []string{
+				"charts/bar/deployment.yaml",
+			},
+			changedFiles: []string{
+				"app/hello.txt",
+				"charts/bar/deployment.yaml",
+			},
+			expected: false,
+		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := isTouchedByChangedFiles(tc.appDir, tc.changes, tc.changedFiles)
+			got, err := isTouchedByChangedFiles(tc.appDir, tc.includes, tc.excludes, tc.changedFiles)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expected, got)
 		})

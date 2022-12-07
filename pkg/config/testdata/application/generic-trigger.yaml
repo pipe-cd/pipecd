@@ -3,5 +3,5 @@ kind: KubernetesApp
 spec:
   trigger:
     onCommit:
-      paths:
+      includes:
         - deployment.yaml
