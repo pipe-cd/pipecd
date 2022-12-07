@@ -91,14 +91,10 @@ type OnCommit struct {
 	Disabled bool `json:"disabled,omitempty"`
 	// List of directories or files where their changes will trigger the deployment.
 	// Regular expression can be used.
-	// Deprecated: use includes instead.
 	Paths []string `json:"paths,omitempty"`
-	// List of directories or files where their changes will trigger the deployment.
-	// Regular expression can be used.
-	Includes []string `json:"includes,omitempty"`
 	// List of directories or files where their changes will be ignored.
 	// Regular expression can be used.
-	Excludes []string `json:"excludes,omitempty"`
+	Ignores []string `json:"ignores,omitempty"`
 }
 
 type OnCommand struct {

@@ -300,7 +300,7 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 					Trigger: Trigger{
 						OnCommit: OnCommit{
 							Disabled: false,
-							Includes: []string{
+							Paths: []string{
 								"deployment.yaml",
 							},
 						},
