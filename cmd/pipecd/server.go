@@ -192,7 +192,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 		sls                  = stagelogstore.NewStore(fs, cache, input.Logger)
 		alss                 = applicationlivestatestore.NewStore(fs, cache, input.Logger)
 		las                  = analysisresultstore.NewStore(fs, input.Logger)
-		insightStore         = insightstore.NewStore(fs, cfg.InsightCollector.Deployment.ChunkMaxCount, input.Logger)
+		insightStore         = insightstore.NewStore(fs, cfg.InsightCollector.Deployment.ChunkMaxCount, rd, input.Logger)
 		insightProvider      = insight.NewProvider(insightStore)
 		cmdOutputStore       = commandoutputstore.NewStore(fs, input.Logger)
 		statCache            = rediscache.NewHashCache(rd, defaultPipedStatHashKey)

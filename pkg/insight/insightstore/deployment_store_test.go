@@ -107,13 +107,13 @@ func TestChunkStoring(t *testing.T) {
 		ctx = context.TODO()
 	)
 
-	_, err := s.loadChunk(ctx, projectID, blockID, chunkID)
+	_, err := s.loadChunk(ctx, projectID, blockID, chunkID, false)
 	require.Equal(t, filestore.ErrNotFound, err)
 
 	err = s.saveChunk(ctx, projectID, blockID, &chunk)
 	require.NoError(t, err)
 
-	got, err := s.loadChunk(ctx, projectID, blockID, chunkID)
+	got, err := s.loadChunk(ctx, projectID, blockID, chunkID, false)
 	require.NoError(t, err)
 	assert.Equal(t, chunk, *got)
 }
@@ -132,7 +132,7 @@ func TestPutCompletedDeploymentsToChunk(t *testing.T) {
 	)
 
 	// Add to a non-existing chunk.
-	_, err := s.loadChunk(ctx, projectID, blockID, chunkID)
+	_, err := s.loadChunk(ctx, projectID, blockID, chunkID, false)
 	require.Equal(t, filestore.ErrNotFound, err)
 
 	ds := []*insight.DeploymentData{
@@ -157,7 +157,7 @@ func TestPutCompletedDeploymentsToChunk(t *testing.T) {
 			},
 		},
 	}
-	got, err := s.loadChunk(ctx, projectID, blockID, chunkID)
+	got, err := s.loadChunk(ctx, projectID, blockID, chunkID, false)
 	require.NoError(t, err)
 	assert.Equal(t, expected, got)
 
@@ -193,7 +193,7 @@ func TestPutCompletedDeploymentsToChunk(t *testing.T) {
 			},
 		},
 	}
-	got, err = s.loadChunk(ctx, projectID, blockID, chunkID)
+	got, err = s.loadChunk(ctx, projectID, blockID, chunkID, false)
 	require.NoError(t, err)
 	assert.Equal(t, expected, got)
 }
@@ -252,7 +252,7 @@ func TestPutCompletedDeploymentsBlock(t *testing.T) {
 		},
 	}
 	for _, expChunk := range expectedChunks {
-		got, err := s.loadChunk(ctx, projectID, blockID, expChunk.ChunkID)
+		got, err := s.loadChunk(ctx, projectID, blockID, expChunk.ChunkID, false)
 		require.NoError(t, err)
 		assert.Equal(t, expChunk, got)
 	}
@@ -329,7 +329,7 @@ func TestPutCompletedDeploymentsBlock(t *testing.T) {
 		},
 	}
 	for _, expChunk := range expectedChunks {
-		got, err := s.loadChunk(ctx, projectID, blockID, expChunk.ChunkID)
+		got, err := s.loadChunk(ctx, projectID, blockID, expChunk.ChunkID, false)
 		require.NoError(t, err)
 		assert.Equal(t, expChunk, got)
 	}
@@ -410,7 +410,7 @@ func TestPutCompletedDeploymentsBlock(t *testing.T) {
 		},
 	}
 	for _, expChunk := range expectedChunks {
-		got, err := s.loadChunk(ctx, projectID, blockID, expChunk.ChunkID)
+		got, err := s.loadChunk(ctx, projectID, blockID, expChunk.ChunkID, false)
 		require.NoError(t, err)
 		assert.Equal(t, expChunk, got)
 	}

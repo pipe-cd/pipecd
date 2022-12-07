@@ -192,6 +192,7 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 	insightStore := insightstore.NewStore(
 		fs,
 		cfg.InsightCollector.Deployment.ChunkMaxCount,
+		rd,
 		input.Logger,
 	)
 	// Start running insight collector.
