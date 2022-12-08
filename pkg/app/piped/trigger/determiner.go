@@ -191,7 +191,7 @@ func (d *OnCommitDeterminer) ShouldTrigger(ctx context.Context, app *model.Appli
 		return false, err
 	}
 
-	touched, err := isTouchedByChangedFiles(app.GitPath.Path, appCfg.Trigger.OnCommit.Paths, changedFiles)
+	touched, err := isTouchedByChangedFiles(app.GitPath.Path, appCfg.Trigger.OnCommit.Paths, appCfg.Trigger.OnCommit.Ignores, changedFiles)
 	if err != nil {
 		return false, err
 	}
@@ -204,22 +204,43 @@ func (d *OnCommitDeterminer) ShouldTrigger(ctx context.Context, app *model.Appli
 	return true, nil
 }
 
-func isTouchedByChangedFiles(appDir string, changes []string, changedFiles []string) (bool, error) {
+// isTouchedByChangedFiles checks whether this application changed files can trigger a new deployment or not (considered as "touched")
+// The logic of watching files pattern contains both "includes" and "excludes" filter and be implemented as flow:
+//  1. If both includes & excludes are empty, app is considered as touched
+//  2. If any of changed files are listed in excludes, app is NOT considered as touched
+//  3. If pass (2) and any of changed files are listed in includes, app is considered as touched
+func isTouchedByChangedFiles(appDir string, includes, excludes []string, changedFiles []string) (bool, error) {
 	if !strings.HasSuffix(appDir, "/") {
 		appDir += "/"
 	}
 
-	// If any files inside the application directory was changed
-	// this application is considered as touched.
-	for _, cf := range changedFiles {
-		if ok := strings.HasPrefix(cf, appDir); ok {
-			return true, nil
+	// In case includes and excludes do not contain anything,
+	// it's considered any files changed inside the application directory as touched.
+	if len(includes) == 0 && len(excludes) == 0 {
+		for _, cf := range changedFiles {
+			if ok := strings.HasPrefix(cf, appDir); ok {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
+
+	// If any changed files matches the specified "excludes"
+	// this application is consided as not touched.
+	for _, change := range excludes {
+		matcher, err := filematcher.NewPatternMatcher([]string{change})
+		if err != nil {
+			return false, err
+		}
+		if matcher.MatchesAny(changedFiles) {
+			return false, nil
 		}
 	}
 
-	// If any changed files matches the specified "changes"
-	// this application is consided as touched too.
-	for _, change := range changes {
+	// If all changed files do not match any specified "excludes",
+	// then if any changed files match the specified "includes"
+	// this application is consided as touched.
+	for _, change := range includes {
 		matcher, err := filematcher.NewPatternMatcher([]string{change})
 		if err != nil {
 			return false, err

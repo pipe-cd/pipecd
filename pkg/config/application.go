@@ -92,6 +92,9 @@ type OnCommit struct {
 	// List of directories or files where their changes will trigger the deployment.
 	// Regular expression can be used.
 	Paths []string `json:"paths,omitempty"`
+	// List of directories or files where their changes will be ignored.
+	// Regular expression can be used.
+	Ignores []string `json:"ignores,omitempty"`
 }
 
 type OnCommand struct {
