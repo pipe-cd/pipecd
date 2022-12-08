@@ -214,8 +214,8 @@ func isTouchedByChangedFiles(appDir string, includes, excludes []string, changed
 		appDir += "/"
 	}
 
-	// In case includes and excludes do not contains any thing
-	// consider any files changed inside the application directory as touched.
+	// In case includes and excludes do not contain anything,
+	// it's considered any files changed inside the application directory as touched.
 	if len(includes) == 0 && len(excludes) == 0 {
 		for _, cf := range changedFiles {
 			if ok := strings.HasPrefix(cf, appDir); ok {
