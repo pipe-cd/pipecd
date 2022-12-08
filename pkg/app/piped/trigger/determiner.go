@@ -238,7 +238,7 @@ func isTouchedByChangedFiles(appDir string, includes, excludes []string, changed
 	}
 
 	// If all changed files do not match any specified "excludes",
-	// then if any changed files matches the specified "includes"
+	// then if any changed files match the specified "includes"
 	// this application is consided as touched.
 	for _, change := range includes {
 		matcher, err := filematcher.NewPatternMatcher([]string{change})
