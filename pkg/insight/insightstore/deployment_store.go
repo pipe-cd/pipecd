@@ -66,14 +66,14 @@ func (c *DeploymentChunk) FindDeployments(from, to int64) []*insight.DeploymentD
 	return out
 }
 
-func (m *DeploymentBlockMetadata) FindChunks(from, to int64) []string {
-	var ids []string
+func (m *DeploymentBlockMetadata) FindChunks(from, to int64) []DeploymentChunkMetadata {
+	var out []DeploymentChunkMetadata
 	for _, m := range m.ChunkMetadata {
 		if overlap(from, to, m.MinTimestamp, m.MaxTimestamp) {
-			ids = append(ids, m.ChunkID)
+			out = append(out, *m)
 		}
 	}
-	return ids
+	return out
 }
 
 func overlap(firstFrom, firstTo, secondFrom, secondTo int64) bool {
@@ -106,13 +106,13 @@ func (s *store) ListCompletedDeployments(ctx context.Context, projectID string, 
 			return nil, err
 		}
 
-		chunkIDs := blockMetadata.FindChunks(from, to)
-		if len(chunkIDs) == 0 {
+		chunkMDs := blockMetadata.FindChunks(from, to)
+		if len(chunkMDs) == 0 {
 			continue
 		}
 
-		for _, chunkID := range chunkIDs {
-			chunk, err := s.loadChunk(ctx, projectID, blockID, chunkID)
+		for _, chunkMD := range chunkMDs {
+			chunk, err := s.loadChunk(ctx, projectID, blockID, chunkMD.ChunkID, chunkMD.Completed)
 			if errors.Is(err, filestore.ErrNotFound) {
 				continue
 			}
@@ -256,7 +256,7 @@ func (s *store) putCompletedDeploymentsBlock(ctx context.Context, projectID, blo
 }
 
 func (s *store) putCompletedDeploymentsToChunk(ctx context.Context, projectID, blockID, chunkID string, ds []*insight.DeploymentData) error {
-	chunk, err := s.loadChunk(ctx, projectID, blockID, chunkID)
+	chunk, err := s.loadChunk(ctx, projectID, blockID, chunkID, false)
 	if err != nil {
 		if !errors.Is(err, filestore.ErrNotFound) {
 			return err
@@ -317,11 +317,32 @@ func (s *store) saveBlockMetadata(ctx context.Context, projectID string, block *
 	return s.fileStore.Put(ctx, path, data)
 }
 
-func (s *store) loadChunk(ctx context.Context, projectID, blockID, chunkID string) (*DeploymentChunk, error) {
-	path := makeCompletedDeploymentsChunkFilePath(projectID, blockID, chunkID)
-	data, err := s.fileStore.Get(ctx, path)
-	if err != nil {
-		return nil, err
+func (s *store) loadChunk(ctx context.Context, projectID, blockID, chunkID string, useCache bool) (*DeploymentChunk, error) {
+	var (
+		cacheKey = makeCompletedDeploymentChunkCacheKey(projectID, blockID, chunkID)
+		path     = makeCompletedDeploymentsChunkFilePath(projectID, blockID, chunkID)
+		data     []byte
+	)
+
+	if useCache {
+		if cdata, err := s.deploymentChunkCache.Get(cacheKey); err == nil {
+			data = cdata.([]byte)
+			s.logger.Info("successfully loaded deployment chunk from cache", zap.String("key", cacheKey))
+		} else {
+			data, err = s.fileStore.Get(ctx, path)
+			if err != nil {
+				return nil, err
+			}
+			if err := s.deploymentChunkCache.Put(cacheKey, data); err != nil {
+				s.logger.Error("failed to put deployment chunk to cache", zap.Error(err))
+			}
+		}
+	} else {
+		var err error
+		data, err = s.fileStore.Get(ctx, path)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var c DeploymentChunk

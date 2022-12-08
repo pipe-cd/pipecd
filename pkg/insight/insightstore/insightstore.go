@@ -18,10 +18,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipecd/pkg/cache"
+	"github.com/pipe-cd/pipecd/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipecd/pkg/insight"
+	"github.com/pipe-cd/pipecd/pkg/redis"
 )
 
 var (
@@ -35,16 +39,18 @@ type fileStore interface {
 }
 
 type store struct {
-	fileStore     fileStore
-	chunkMaxCount int
-	logger        *zap.Logger
+	fileStore            fileStore
+	chunkMaxCount        int
+	deploymentChunkCache cache.Cache
+	logger               *zap.Logger
 }
 
-func NewStore(fs fileStore, chunkMaxCount int, logger *zap.Logger) insight.Store {
+func NewStore(fs fileStore, chunkMaxCount int, rd redis.Redis, logger *zap.Logger) insight.Store {
 	return &store{
-		fileStore:     fs,
-		chunkMaxCount: chunkMaxCount,
-		logger:        logger,
+		fileStore:            fs,
+		chunkMaxCount:        chunkMaxCount,
+		deploymentChunkCache: rediscache.NewTTLCache(rd, 7*24*time.Hour),
+		logger:               logger.Named("insight-store"),
 	}
 }
 
@@ -85,4 +91,8 @@ func makeDeploymentBlockID(year int) string {
 
 func makeDeploymentChunkID(index int) string {
 	return fmt.Sprintf("chunk_%d", index)
+}
+
+func makeCompletedDeploymentChunkCacheKey(projectID, blockID, chunkID string) string {
+	return fmt.Sprintf("insights-chunk/%s/%s/%s", projectID, blockID, chunkID)
 }

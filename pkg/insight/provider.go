@@ -37,7 +37,6 @@ func NewProvider(s Store) Provider {
 	}
 }
 
-// TODO: Add cache layer.
 func (p *provider) GetApplicationCounts(ctx context.Context, projectID string) (*ApplicationCounts, error) {
 	data, err := p.store.GetApplications(ctx, projectID)
 	if err != nil {
@@ -48,7 +47,6 @@ func (p *provider) GetApplicationCounts(ctx context.Context, projectID string) (
 	return &counts, nil
 }
 
-// TODO: Add cache layer.
 func (p *provider) GetDeploymentFrequencyDataPoints(ctx context.Context, projectID, appID string, labels map[string]string, rangeFrom, rangeTo int64, step model.InsightStep) ([]*model.InsightDataPoint, error) {
 	ds, err := p.store.ListCompletedDeployments(ctx, projectID, rangeFrom, rangeTo)
 	if err != nil {
@@ -59,7 +57,6 @@ func (p *provider) GetDeploymentFrequencyDataPoints(ctx context.Context, project
 	return fillUpDataPoints(points, rangeFrom, rangeTo, step), nil
 }
 
-// TODO: Add cache layer.
 func (p *provider) GetDeploymentChangeFailureRateDataPoints(ctx context.Context, projectID, appID string, labels map[string]string, rangeFrom, rangeTo int64, step model.InsightStep) ([]*model.InsightDataPoint, error) {
 	ds, err := p.store.ListCompletedDeployments(ctx, projectID, rangeFrom, rangeTo)
 	if err != nil {
