@@ -17,8 +17,9 @@ export const DeploymentFrequencyChart: FC<DeploymentFrequencyChartProps> = ({
       title="Deployment Frequency"
       step={step}
       data={data}
-      yName="Number of Deployments"
       xName=""
+      yName="Number of Deployments"
+      yMax={undefined}
       lineColor={chartColor[500]}
       areaColor={chartColor[200]}
     />
