@@ -51,18 +51,14 @@ func TestParseManifests(t *testing.T) {
 		},
 		{
 			name:      "empty2",
-			manifests: "",
-		},
-		{
-			name:      "empty3",
 			manifests: "---",
 		},
 		{
-			name:      "empty4",
+			name:      "empty3",
 			manifests: "\n---",
 		},
 		{
-			name:      "empty5",
+			name:      "empty4",
 			manifests: "\n---\n",
 		},
 		{
