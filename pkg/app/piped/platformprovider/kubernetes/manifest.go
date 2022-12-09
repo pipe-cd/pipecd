@@ -234,6 +234,9 @@ func ParseManifests(data string) ([]Manifest, error) {
 		if err := yaml.Unmarshal([]byte(part), &obj); err != nil {
 			return nil, err
 		}
+		if len(obj.Object) == 0 {
+			continue
+		}
 		manifests = append(manifests, Manifest{
 			Key: MakeResourceKey(&obj),
 			u:   &obj,
