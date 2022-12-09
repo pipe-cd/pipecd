@@ -226,6 +226,7 @@ One of `yamlField` or `regex` is required.
 |-|-|-|-|
 | disabled | bool | Whether to exclude application from triggering target when new Git commits touched it. Default is `false`. | No |
 | paths | []string | List of directories or files where any changes of them will be considered as touching the application. Regular expression can be used. Empty means watching all changes under the application directory. | No |
+| ignores | []string | List of directories or files where any changes of them will NOT be considered as touching the application. Regular expression can be used. This config has a higher priority compare to `paths`. | No |
 
 ## OnCommand
 
