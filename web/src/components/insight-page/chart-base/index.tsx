@@ -55,6 +55,7 @@ export interface ChartBaseProps {
   title: string;
   xName: string;
   yName: string;
+  yMax?: number;
   step: InsightStep;
   data: { name: string; points: InsightDataPoint.AsObject[] }[];
   lineColor: string;
@@ -69,6 +70,7 @@ export const ChartBase: FC<ChartBaseProps> = ({
   title,
   xName,
   yName,
+  yMax,
   step,
   data,
   lineColor,
@@ -95,7 +97,8 @@ export const ChartBase: FC<ChartBaseProps> = ({
           type: "value",
           name: yName,
           nameLocation: "center",
-          nameGap: 32,
+          nameGap: 50,
+          max: yMax,
         },
         tooltip,
         series: _data.map((v) => ({
