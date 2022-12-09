@@ -24,14 +24,11 @@ module.exports = (env) =>
       modules: [path.resolve(__dirname, "node_modules"), "node_modules"],
     },
     devServer: {
-      contentBase: [
-        path.join(__dirname, "dist"),
-        path.join(__dirname, "public"),
-      ],
+      static: [path.join(__dirname, "dist"), path.join(__dirname, "public")],
       compress: true,
       port: 9090,
       historyApiFallback: true,
-      disableHostCheck: true,
+      allowedHosts: "all",
       proxy: {
         "/api": {
           changeOrigin: true,
