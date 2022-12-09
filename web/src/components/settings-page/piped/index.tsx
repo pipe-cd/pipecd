@@ -61,15 +61,13 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const selectFilteredPipeds = createSelector<
-  AppState,
-  boolean | undefined,
-  Piped.AsObject[],
-  boolean | undefined,
-  Piped.AsObject[]
->(
-  selectAllPipeds,
-  (_, enabled) => enabled,
+const filterValue = (
+  _: AppState,
+  filterValue: FilterValues
+): boolean | undefined => filterValue.enabled;
+
+const selectFilteredPipeds = createSelector(
+  [selectAllPipeds, filterValue],
   (pipeds, enabled) => {
     switch (enabled) {
       case true:
@@ -97,8 +95,8 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     enabled: true,
   });
   const dispatch = useAppDispatch();
-  const pipeds = useAppSelector((state) =>
-    selectFilteredPipeds(state, filterValues.enabled)
+  const pipeds = useAppSelector<Piped.AsObject[]>((state) =>
+    selectFilteredPipeds(state, filterValues)
   );
 
   useEffect(() => {

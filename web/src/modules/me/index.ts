@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { getMe } from "~/api/me";
 
-interface Me {
+export interface Me {
   subject: string;
   avatarUrl: string;
   projectId: string;
