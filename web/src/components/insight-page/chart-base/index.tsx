@@ -121,7 +121,18 @@ export const ChartBase: FC<ChartBaseProps> = ({
         })),
       });
     }
-  }, [chart, _data, step, lineColor, areaColor, xName, yName, title, isNoData]);
+  }, [
+    chart,
+    _data,
+    step,
+    lineColor,
+    areaColor,
+    xName,
+    yName,
+    yMax,
+    title,
+    isNoData,
+  ]);
 
   useEffect(() => {
     if (chartElm.current) {
