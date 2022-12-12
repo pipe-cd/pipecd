@@ -103,6 +103,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		e.LogPersister.Info("There is no data about live resource so no resource will be removed")
 		return model.StageStatus_STAGE_SUCCESS
 	}
+	e.LogPersister.Successf("Successfully loaded %d live resources", len(liveResources))
 
 	removeKeys := findRemoveResources(manifests, liveResources)
 	if len(removeKeys) == 0 {
