@@ -3,7 +3,7 @@ name: codeql
 on:
   workflow_dispatch:
   schedule:
-    - cron: '00 12 * * 1'
+    - cron: '00 10 * * 1'
 
 jobs:
   analyze:
@@ -16,9 +16,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - uses: github/codeql-action/init@v1
+    - uses: github/codeql-action/init@v2
       with:
         languages: ${{ matrix.language }}
-    - uses: github/codeql-action/autobuild@v1
+    - uses: github/codeql-action/autobuild@v2
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+      uses: github/codeql-action/analyze@v2
