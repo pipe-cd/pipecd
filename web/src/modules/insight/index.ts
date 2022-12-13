@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { InsightStep } from "pipecd/web/model/insight_pb";
 import dayjs from "dayjs";
+import utc from 'dayjs/plugin/utc';
 
 const MODULE_NAME = "insight";
 
@@ -86,31 +87,52 @@ export {
   InsightStep,
 } from "pipecd/web/model/insight_pb";
 
-export function makeTimeRange(r: InsightRange): [number, number] {
-  const now = dayjs(Date.now());
-  const rangeTo = now.valueOf();
+export function determineTimeRange(r: InsightRange, s: InsightStep): [number, number] {
+  // Load utc plugin.
+  dayjs.extend(utc);
+
+  const rangeTo = dayjs.utc().endOf("day");
   let rangeFrom = rangeTo;
 
-  switch (r) {
-    case InsightRange.LAST_1_WEEK:
-      rangeFrom = now.subtract(1, "week").valueOf();
-      break;
-    case InsightRange.LAST_1_MONTH:
-      rangeFrom = now.subtract(1, "month").valueOf();
-      break;
-    case InsightRange.LAST_3_MONTHS:
-      rangeFrom = now.subtract(3, "month").valueOf();
-      break;
-    case InsightRange.LAST_6_MONTHS:
-      rangeFrom = now.subtract(6, "month").valueOf();
-      break;
-    case InsightRange.LAST_1_YEAR:
-      rangeFrom = now.subtract(1, "year").valueOf();
-      break;
-    case InsightRange.LAST_2_YEARS:
-      rangeFrom = now.subtract(2, "year").valueOf();
-      break;
+  if (s === InsightStep.DAILY) {
+    switch (r) {
+      case InsightRange.LAST_1_WEEK:
+        rangeFrom = rangeTo.subtract(7, "day");
+        break;
+      case InsightRange.LAST_1_MONTH:
+        rangeFrom = rangeTo.subtract(1, "month");
+        break;
+      case InsightRange.LAST_3_MONTHS:
+        rangeFrom = rangeTo.subtract(3, "month");
+        break;
+      case InsightRange.LAST_6_MONTHS:
+        rangeFrom = rangeTo.subtract(6, "month");
+        break;
+      case InsightRange.LAST_1_YEAR:
+        rangeFrom = rangeTo.subtract(1, "year");
+        break;
+      case InsightRange.LAST_2_YEARS:
+        rangeFrom = rangeTo.subtract(2, "year");
+        break;
+    }
+    rangeFrom = rangeFrom.add(1, "day").startOf("day");
+  } else {
+    switch (r) {
+      case InsightRange.LAST_3_MONTHS:
+        rangeFrom = rangeTo.subtract(2, "month");
+        break;
+      case InsightRange.LAST_6_MONTHS:
+        rangeFrom = rangeTo.subtract(5, "month");
+        break;
+      case InsightRange.LAST_1_YEAR:
+        rangeFrom = rangeTo.subtract(11, "month");
+        break;
+      case InsightRange.LAST_2_YEARS:
+        rangeFrom = rangeTo.subtract(23, "month");
+        break;
+    }
+    rangeFrom = rangeFrom.startOf("month");
   }
 
-  return [rangeFrom, rangeTo];
+  return [rangeFrom.valueOf(), rangeTo.valueOf()];
 }

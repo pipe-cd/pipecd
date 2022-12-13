@@ -4,7 +4,7 @@ import { InsightMetricsKind, InsightDataPoint } from "../insight";
 import * as InsightAPI from "~/api/insight";
 import { LoadingStatus } from "~/types/module";
 import { InsightResultType } from "pipecd/web/model/insight_pb";
-import { makeTimeRange } from "~/modules/insight";
+import { determineTimeRange } from "~/modules/insight";
 
 const MODULE_NAME = "deploymentChangeFailureRate";
 
@@ -33,7 +33,7 @@ export const fetchDeploymentChangeFailureRate = createAsyncThunk<
     }
   }
 
-  const [rangeFrom, rangeTo] = makeTimeRange(state.insight.range);
+  const [rangeFrom, rangeTo] = determineTimeRange(state.insight.range, state.insight.step);
 
   const data = await InsightAPI.getInsightData({
     metricsKind: InsightMetricsKind.CHANGE_FAILURE_RATE,
