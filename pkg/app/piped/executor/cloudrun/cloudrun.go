@@ -184,7 +184,7 @@ func waitRevisionReady(ctx context.Context, client provider.Client, revisionName
 		if len(unknownConds) > 0 {
 			return true, fmt.Errorf("%s", strings.Join(unknownConds, "\n"))
 		}
-		for k, _ := range mustPassConditions {
+		for k := range mustPassConditions {
 			if _, ok := trueConds[k]; !ok {
 				return true, fmt.Errorf("could not check status field %q", k)
 			}
