@@ -128,8 +128,7 @@ func apply(ctx context.Context, client provider.Client, sm provider.ServiceManif
 
 	lp.Infof("Service %s was not found, a new service will be created", sm.Name)
 
-	_, err = client.Create(ctx, sm)
-	if err != nil {
+	if _, err := client.Create(ctx, sm); err != nil {
 		lp.Errorf("Failed to create the service %s (%v)", sm.Name, err)
 		return false
 	}
