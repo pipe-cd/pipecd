@@ -719,13 +719,13 @@ func (c *controller) cancelDeployment(ctx context.Context, d *model.Deployment, 
 }
 
 type appLiveResourceLister struct {
-	lister        liveResourceLister
-	cloudProvider string
-	appID         string
+	lister           liveResourceLister
+	platformProvider string
+	appID            string
 }
 
 func (l appLiveResourceLister) ListKubernetesResources() ([]provider.Manifest, bool) {
-	return l.lister.ListKubernetesAppLiveResources(l.cloudProvider, l.appID)
+	return l.lister.ListKubernetesAppLiveResources(l.platformProvider, l.appID)
 }
 
 func reportApplicationDeployingStatus(ctx context.Context, c apiClient, appID string, deploying bool) error {

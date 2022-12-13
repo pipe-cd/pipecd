@@ -477,9 +477,9 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		stageID:      ps.Id,
 	}
 	alrLister := appLiveResourceLister{
-		lister:        s.liveResourceLister,
-		cloudProvider: app.CloudProvider,
-		appID:         app.Id,
+		lister:           s.liveResourceLister,
+		platformProvider: app.PlatformProvider,
+		appID:            app.Id,
 	}
 	aStore := appAnalysisResultStore{
 		store:         s.analysisResultStore,
