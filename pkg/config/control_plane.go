@@ -188,13 +188,13 @@ type ControlPlaneInsightCollector struct {
 }
 
 type InsightCollectorApplication struct {
-	Enabled bool `json:"enabled" default:"true"`
+	Enabled *bool `json:"enabled" default:"true"`
 	// Default is running every hour.
 	Schedule string `json:"schedule" default:"0 * * * *"`
 }
 
 type InsightCollectorDeployment struct {
-	Enabled bool `json:"enabled" default:"true"`
+	Enabled *bool `json:"enabled" default:"true"`
 	// Default is running every hour.
 	Schedule      string `json:"schedule" default:"30 * * * *"`
 	ChunkMaxCount int    `json:"chunkMaxCount" default:"1000"`

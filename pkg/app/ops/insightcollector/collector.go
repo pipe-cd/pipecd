@@ -65,7 +65,7 @@ func (c *Collector) Run(ctx context.Context) error {
 	c.logger.Info("start running insight collector", zap.Any("config", c.cfg))
 	cr := cron.New(cron.WithLocation(time.UTC))
 
-	if c.cfg.Application.Enabled {
+	if *c.cfg.Application.Enabled {
 		_, err := cr.AddFunc(c.cfg.Application.Schedule, func() {
 			c.applicationDataCol.Execute(ctx)
 		})
@@ -76,7 +76,7 @@ func (c *Collector) Run(ctx context.Context) error {
 		c.logger.Info("added a cron job to collect app data")
 	}
 
-	if c.cfg.Deployment.Enabled {
+	if *c.cfg.Deployment.Enabled {
 		_, err := cr.AddFunc(c.cfg.Deployment.Schedule, func() {
 			c.completedDeploymentDataCol.Execute(ctx)
 		})
