@@ -33,7 +33,10 @@ export const fetchDeploymentChangeFailureRate = createAsyncThunk<
     }
   }
 
-  const [rangeFrom, rangeTo] = determineTimeRange(state.insight.range, state.insight.step);
+  const [rangeFrom, rangeTo] = determineTimeRange(
+    state.insight.range,
+    state.insight.step
+  );
 
   const data = await InsightAPI.getInsightData({
     metricsKind: InsightMetricsKind.CHANGE_FAILURE_RATE,

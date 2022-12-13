@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { InsightStep } from "pipecd/web/model/insight_pb";
 import dayjs from "dayjs";
-import utc from 'dayjs/plugin/utc';
+import utc from "dayjs/plugin/utc";
 
 const MODULE_NAME = "insight";
 
@@ -87,7 +87,10 @@ export {
   InsightStep,
 } from "pipecd/web/model/insight_pb";
 
-export function determineTimeRange(r: InsightRange, s: InsightStep): [number, number] {
+export function determineTimeRange(
+  r: InsightRange,
+  s: InsightStep
+): [number, number] {
   // Load utc plugin.
   dayjs.extend(utc);
 
