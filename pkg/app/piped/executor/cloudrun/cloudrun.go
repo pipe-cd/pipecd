@@ -16,6 +16,9 @@ package cloudrun
 
 import (
 	"context"
+	"fmt"
+	"strings"
+	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
@@ -125,13 +128,91 @@ func apply(ctx context.Context, client provider.Client, sm provider.ServiceManif
 
 	lp.Infof("Service %s was not found, a new service will be created", sm.Name)
 
-	if _, err := client.Create(ctx, sm); err != nil {
+	_, err = client.Create(ctx, sm)
+	if err != nil {
 		lp.Errorf("Failed to create the service %s (%v)", sm.Name, err)
 		return false
 	}
 
 	lp.Infof("Successfully created the service %s", sm.Name)
 	return true
+}
+
+func waitRevisionReady(ctx context.Context, client provider.Client, revisionName string, retryDuration, retryTimeout time.Duration, lp executor.LogPersister) error {
+	shouldCheckConditions := map[string]struct{}{
+		"Active":              struct{}{},
+		"Ready":               struct{}{},
+		"ConfigurationsReady": struct{}{},
+		"RoutesReady":         struct{}{},
+		"ContainerHealthy":    struct{}{},
+		"ResourcesAvailable":  struct{}{},
+	}
+	mustPassConditions := map[string]struct{}{
+		"Ready":  struct{}{},
+		"Active": struct{}{},
+	}
+
+	doCheck := func() (bool, error) {
+		rvs, err := client.GetRevision(ctx, revisionName)
+		if err != nil {
+			return false, err
+		}
+
+		var (
+			trueConds    = make(map[string]struct{}, 0)
+			falseConds   = make([]string, 0, len(shouldCheckConditions))
+			unknownConds = make([]string, 0, len(shouldCheckConditions))
+		)
+		if rvs.Status != nil {
+			for _, cond := range rvs.Status.Conditions {
+				if _, ok := shouldCheckConditions[cond.Type]; !ok {
+					continue
+				}
+				switch cond.Status {
+				case "True":
+					trueConds[cond.Type] = struct{}{}
+				case "False":
+					falseConds = append(falseConds, cond.Message)
+				default:
+					unknownConds = append(unknownConds, cond.Message)
+				}
+			}
+		}
+
+		if len(falseConds) > 0 {
+			return false, fmt.Errorf("%s", strings.Join(falseConds, "\n"))
+		}
+		if len(unknownConds) > 0 {
+			return true, fmt.Errorf("%s", strings.Join(unknownConds, "\n"))
+		}
+		for k, _ := range mustPassConditions {
+			if _, ok := trueConds[k]; !ok {
+				return true, fmt.Errorf("could not check status field %q", k)
+			}
+		}
+		return false, nil
+	}
+
+	start := time.Now()
+	for {
+		retry, err := doCheck()
+		if !retry {
+			if err != nil {
+				lp.Errorf("Revision %s was not ready: %v", revisionName, err)
+				return err
+			}
+			lp.Infof("Revision %s is ready to receive traffic", revisionName)
+			return nil
+		}
+
+		if time.Since(start) > retryTimeout {
+			lp.Errorf("Revision %s was not ready: %v", revisionName, err)
+			return err
+		}
+
+		lp.Infof("Revision %s is still not ready (%v), will retry after %v", revisionName, err, retryDuration)
+		time.Sleep(retryDuration)
+	}
 }
 
 func revisionExists(ctx context.Context, client provider.Client, revisionName string, lp executor.LogPersister) (bool, error) {
