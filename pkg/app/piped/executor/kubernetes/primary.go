@@ -162,6 +162,9 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 		return model.StageStatus_STAGE_FAILURE
 	}
 	e.LogPersister.Successf("Successfully loaded %d live resources", len(runningManifests))
+	for _, m := range runningManifests {
+		e.LogPersister.Successf("- loaded live resource: %s", m.Key.ReadableLogString())
+	}
 
 	removeKeys := findRemoveManifests(runningManifests, manifests, e.appCfg.Input.Namespace)
 	if len(removeKeys) == 0 {

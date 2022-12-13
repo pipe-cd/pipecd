@@ -104,6 +104,9 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_SUCCESS
 	}
 	e.LogPersister.Successf("Successfully loaded %d live resources", len(liveResources))
+	for _, m := range liveResources {
+		e.LogPersister.Successf("- loaded live resource: %s", m.Key.ReadableLogString())
+	}
 
 	removeKeys := findRemoveResources(manifests, liveResources)
 	if len(removeKeys) == 0 {
