@@ -6,27 +6,30 @@ description: >
   This page describes how to see delivery performance.
 ---
 
-> TBA
+![](/images/insights.png)
 
-Based on executed deployment data, PipeCD provides the graphs at the `Insights` page that helps you understand the delivery performance of a single application or your whole project.
-The graph of the following metrics will be provided:
+### Application metrics
 
-### Lead Time for Changes
-How long does it take to go from code committed to code successfully running on production.
+The topmost block helps you understand how many applications your project has.
 
-> Screenshot
+### Deployment metrics
 
-### Deployment Frequency
+Based on your executed deployment data, PipeCD provides charts that help you better understand the delivery performance of your organization.
+
+You can view daily, and monthly data visualizations of your entire project, a specific application, or a group of applications that match a list of labels.
+
+#### Deployment Frequency
 How often does your application/project deploy code to production.
 
-> Screenshot
-
-### Mean Time To Restore
-How long does it generally take to restore service when a service incident occurs.
-
-> Screenshot
-
-### Change Failure Rate
+#### Change Failure Rate
 How often deployment failures occur in production that requires an immediate remedy (fix, rollback...).
 
-> Screenshot
+#### Lead Time for Changes
+How long does it take to go from code committed to code successfully running on production.
+
+> WIP
+
+#### Mean Time To Restore
+How long does it generally take to restore service when a service incident occurs.
+
+> WIP
