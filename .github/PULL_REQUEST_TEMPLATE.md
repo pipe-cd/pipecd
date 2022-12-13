@@ -5,9 +5,7 @@
 Fixes #
 
 **Does this PR introduce a user-facing change?**:
-<!--
-If no, just write "NONE" in the release-note block below.
--->
-```release-note
 
+```release-note
+NONE
 ```
