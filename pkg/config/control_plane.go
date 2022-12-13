@@ -38,7 +38,6 @@ type ControlPlaneSpec struct {
 	// The configuration of cache for control plane.
 	Cache ControlPlaneCache `json:"cache"`
 	// The configuration of insight collector.
-	// TODO: Enable collecting insight by default once this feature reached Beta.
 	InsightCollector ControlPlaneInsightCollector `json:"insightCollector"`
 	// List of debugging/quickstart projects defined in Control Plane configuration.
 	// Please note that do not use this to configure the projects running in the production.
@@ -189,13 +188,13 @@ type ControlPlaneInsightCollector struct {
 }
 
 type InsightCollectorApplication struct {
-	Enabled bool `json:"enabled" default:"true"`
+	Enabled *bool `json:"enabled" default:"true"`
 	// Default is running every hour.
 	Schedule string `json:"schedule" default:"0 * * * *"`
 }
 
 type InsightCollectorDeployment struct {
-	Enabled bool `json:"enabled"`
+	Enabled *bool `json:"enabled" default:"true"`
 	// Default is running every hour.
 	Schedule      string `json:"schedule" default:"30 * * * *"`
 	ChunkMaxCount int    `json:"chunkMaxCount" default:"1000"`

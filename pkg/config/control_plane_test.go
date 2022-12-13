@@ -82,11 +82,11 @@ func TestControlPlaneConfig(t *testing.T) {
 				},
 				InsightCollector: ControlPlaneInsightCollector{
 					Application: InsightCollectorApplication{
-						Enabled:  true,
+						Enabled:  newBoolPointer(true),
 						Schedule: "0 * * * *",
 					},
 					Deployment: InsightCollectorDeployment{
-						Enabled:       true,
+						Enabled:       newBoolPointer(true),
 						Schedule:      "0 10 * * *",
 						ChunkMaxCount: 1000,
 					},

@@ -23,6 +23,7 @@ spec:
 | filestore | [FileStore](#filestore) | File storage for storing deployment logs and application states. | Yes |
 | cache | [Cache](#cache) | Internal cache configuration. | No |
 | address | string | The address to the control plane. This is required if SSO is enabled. | No |
+| insightCollector | [InsightCollector](#insightcollector) | Option to run collector of Insights feature. | No |
 | sharedSSOConfigs | [][SharedSSOConfig](#sharedssoconfig) | List of shared SSO configurations that can be used by any projects. | No |
 | projects | [][Project](#project) | List of debugging/quickstart projects. Please note that do not use this to configure the projects running in the production. | No |
 
@@ -117,6 +118,28 @@ Must be one of the following objects:
 |-|-|-|-|
 | username | string | The username string. | Yes |
 | passwordHash | string | The bcrypt hashed value of the password string. | Yes |
+
+## InsightCollector
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| application | [InsightCollectorApplication](#insightcollectorapplication) | Application metrics collector. | No |
+| deployment | [InsightCollectorDeployment](#insightcollectordeployment) | Deployment metrics collector. | No |
+
+## InsightCollectorApplication
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| enabled | bool | Whether to enable. Default is `true` | No |
+| schedule | string | When collector will be executed. Default is `0 * * * *` | No |
+
+## InsightCollectorDeployment
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| enabled | bool | Whether to enable. Default is `true` | No |
+| schedule | string | When collector will be executed. Default is `30 * * * *` | No |
+| chunkMaxCount | int | The maximum number of deployment items could be stored in a chunk. Default is `1000` | No |
 
 ## SharedSSOConfig
 
