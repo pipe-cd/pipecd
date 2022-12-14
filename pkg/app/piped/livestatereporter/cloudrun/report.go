@@ -29,7 +29,7 @@ import (
 )
 
 type applicationLister interface {
-	ListByCloudProvider(name string) []*model.Application
+	ListByPlatformProvider(name string) []*model.Application
 }
 
 type apiClient interface {
@@ -97,7 +97,7 @@ func (r *reporter) ProviderName() string {
 }
 
 func (r *reporter) flushSnapshots(ctx context.Context) error {
-	apps := r.appLister.ListByCloudProvider(r.provider.Name)
+	apps := r.appLister.ListByPlatformProvider(r.provider.Name)
 	for _, app := range apps {
 		state, ok := r.stateGetter.GetState(app.Id)
 		if !ok {

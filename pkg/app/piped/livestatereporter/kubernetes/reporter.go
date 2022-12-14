@@ -33,7 +33,7 @@ const (
 )
 
 type applicationLister interface {
-	ListByCloudProvider(name string) []*model.Application
+	ListByPlatformProvider(name string) []*model.Application
 }
 
 type apiClient interface {
@@ -112,7 +112,7 @@ func (r *reporter) Run(ctx context.Context) error {
 func (r *reporter) flushSnapshots(ctx context.Context) error {
 	// TODO: In the future, maybe we should apply worker model for this or
 	// send multiple application states in one request.
-	apps := r.appLister.ListByCloudProvider(r.provider.Name)
+	apps := r.appLister.ListByPlatformProvider(r.provider.Name)
 	for _, app := range apps {
 		state, ok := r.stateGetter.GetKubernetesAppLiveState(app.Id)
 		if !ok {
