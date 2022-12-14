@@ -17,6 +17,7 @@ package cloudrun
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
@@ -27,7 +28,11 @@ import (
 	"go.uber.org/zap"
 )
 
-const promotePercentageMetadataKey = "promote-percentage"
+const (
+	promotePercentageMetadataKey = "promote-percentage"
+	revisionCheckDuration        = 10 * time.Second
+	revisionCheckTimeout         = 2 * time.Minute
+)
 
 type deployExecutor struct {
 	executor.Input
@@ -111,6 +116,17 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 
 	if !apply(ctx, e.client, sm, e.LogPersister) {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	if err := waitRevisionReady(
+		ctx,
+		e.client,
+		revision,
+		revisionCheckDuration,
+		revisionCheckTimeout,
+		e.LogPersister,
+	); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -204,6 +220,16 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	// TODO: Wait to ensure the traffic was fully configured.
+	if err := waitRevisionReady(
+		ctx,
+		e.client,
+		revision,
+		revisionCheckDuration,
+		revisionCheckTimeout,
+		e.LogPersister,
+	); err != nil {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	return model.StageStatus_STAGE_SUCCESS
 }
