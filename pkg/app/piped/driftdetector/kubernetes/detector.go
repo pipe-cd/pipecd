@@ -35,7 +35,7 @@ import (
 )
 
 type applicationLister interface {
-	ListByCloudProvider(name string) []*model.Application
+	ListByPlatformProvider(name string) []*model.Application
 }
 
 type gitClient interface {
@@ -282,7 +282,7 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 // and then groups them by repoID.
 func (d *detector) listGroupedApplication() map[string][]*model.Application {
 	var (
-		apps = d.appLister.ListByCloudProvider(d.provider.Name)
+		apps = d.appLister.ListByPlatformProvider(d.provider.Name)
 		m    = make(map[string][]*model.Application)
 	)
 	for _, app := range apps {

@@ -34,7 +34,7 @@ import (
 )
 
 type applicationLister interface {
-	ListByCloudProvider(name string) []*model.Application
+	ListByPlatformProvider(name string) []*model.Application
 }
 
 type apiClient interface {
