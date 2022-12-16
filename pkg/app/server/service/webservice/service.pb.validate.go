@@ -10392,9 +10392,9 @@ func (m *GetInsightDataRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if _, ok := model.InsightStep_name[int32(m.GetStep())]; !ok {
+	if _, ok := model.InsightResolution_name[int32(m.GetResolution())]; !ok {
 		err := GetInsightDataRequestValidationError{
-			field:  "Step",
+			field:  "Resolution",
 			reason: "value must be one of the defined enum values",
 		}
 		if !all {

@@ -9,7 +9,11 @@ import {
   selectById,
 } from "~/modules/applications";
 import { fetchApplicationCount } from "~/modules/application-counts";
-import { InsightDataPoint, InsightStep, InsightRange } from "~/modules/insight";
+import {
+  InsightDataPoint,
+  InsightResolution,
+  InsightRange,
+} from "~/modules/insight";
 import { ApplicationCounts } from "./application-counts";
 import { ChangeFailureRateChart } from "./change-failure-rate-chart";
 import { DeploymentFrequencyChart } from "./deployment-frequency-chart";
@@ -21,13 +25,13 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   const dispatch = useAppDispatch();
   const history = useHistory();
 
-  const [applicationId, labels, range, step] = useAppSelector<
-    [string, Array<string>, InsightRange, InsightStep]
+  const [applicationId, labels, range, resolution] = useAppSelector<
+    [string, Array<string>, InsightRange, InsightResolution]
   >((state) => [
     state.insight.applicationId,
     state.insight.labels,
     state.insight.range,
-    state.insight.step,
+    state.insight.resolution,
   ]);
 
   const selectedAppName = useAppSelector<string | undefined>((state) =>
@@ -79,7 +83,7 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
     dispatch(fetchDeploymentFrequency());
     dispatch(fetchDeploymentChangeFailureRate());
     console.log("deployment insights should be loaded");
-  }, [dispatch, applicationId, labels, range, step]);
+  }, [dispatch, applicationId, labels, range, resolution]);
 
   const updateURL = useCallback(
     (kind: ApplicationKind) => {
@@ -108,11 +112,11 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
         mt={2}
       >
         <DeploymentFrequencyChart
-          step={step}
+          resolution={resolution}
           data={deploymentFrequencyDataPoints}
         />
         <ChangeFailureRateChart
-          step={step}
+          resolution={resolution}
           data={deploymentChangeFailureRateDataPoints}
         />
       </Box>

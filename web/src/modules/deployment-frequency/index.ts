@@ -35,14 +35,14 @@ export const fetchDeploymentFrequency = createAsyncThunk<
 
   const [rangeFrom, rangeTo] = determineTimeRange(
     state.insight.range,
-    state.insight.step
+    state.insight.resolution
   );
 
   const data = await InsightAPI.getInsightData({
     metricsKind: InsightMetricsKind.DEPLOYMENT_FREQUENCY,
     rangeFrom: rangeFrom,
     rangeTo: rangeTo,
-    step: state.insight.step,
+    resolution: state.insight.resolution,
     applicationId: state.insight.applicationId,
     labelsMap: labels,
   });
