@@ -1,0 +1,6 @@
+assignPublicIp: ENABLED
+securityGroups:
+  - sg-YYYY
+subnets:
+  - subnet-YYYY
+  - subnet-YYYY
