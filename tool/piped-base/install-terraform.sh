@@ -21,7 +21,7 @@ set -o pipefail
 BASE_URL="https://releases.hashicorp.com"
 
 # Do not forget to update the version number at the following file when changing this.
-# https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/toolregistry/install.go#L33
+# https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/toolregistry/install.go
 VERSION="0.13.0"
 
 echo "Installing terraform-${VERSION} into ${PIPED_TOOLS_DIR}/terraform..."
