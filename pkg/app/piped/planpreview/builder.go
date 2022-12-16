@@ -250,6 +250,8 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 		dr, err = b.kubernetesDiff(ctx, app, targetDSP, preCommit, &buf)
 	case model.ApplicationKind_TERRAFORM:
 		dr, err = b.terraformDiff(ctx, app, targetDSP, &buf)
+	case model.ApplicationKind_CLOUDRUN:
+		dr, err = b.cloudrundiff(ctx, app, targetDSP, preCommit, &buf)
 	default:
 		// TODO: Calculating planpreview's diff for other application kinds.
 		dr = &diffResult{
