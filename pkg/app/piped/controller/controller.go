@@ -78,7 +78,7 @@ type applicationLister interface {
 }
 
 type liveResourceLister interface {
-	ListKubernetesAppLiveResources(cloudProvider, appID string) ([]provider.Manifest, bool)
+	ListKubernetesAppLiveResources(platformProvider, appID string) ([]provider.Manifest, bool)
 }
 
 type analysisResultStore interface {

@@ -86,11 +86,11 @@ func loadFunctionManifest(in *executor.Input, functionManifestFile string, ds *d
 	return fm, true
 }
 
-func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderLambdaConfig, fm provider.FunctionManifest) bool {
+func sync(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderLambdaConfig, fm provider.FunctionManifest) bool {
 	in.LogPersister.Infof("Start applying the lambda function manifest")
-	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
+	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
-		in.LogPersister.Errorf("Unable to create Lambda client for the provider %s: %v", cloudProviderName, err)
+		in.LogPersister.Errorf("Unable to create Lambda client for the provider %s: %v", platformProviderName, err)
 		return false
 	}
 
@@ -144,11 +144,11 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	return true
 }
 
-func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderLambdaConfig, fm provider.FunctionManifest) bool {
+func rollout(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderLambdaConfig, fm provider.FunctionManifest) bool {
 	in.LogPersister.Infof("Start rolling out the lambda function: %s", fm.Spec.Name)
-	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
+	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
-		in.LogPersister.Errorf("Unable to create Lambda client for the provider %s: %v", cloudProviderName, err)
+		in.LogPersister.Errorf("Unable to create Lambda client for the provider %s: %v", platformProviderName, err)
 		return false
 	}
 
@@ -184,11 +184,11 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	return true
 }
 
-func promote(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderLambdaConfig, fm provider.FunctionManifest) bool {
+func promote(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderLambdaConfig, fm provider.FunctionManifest) bool {
 	in.LogPersister.Infof("Start promote new version of the lambda function: %s", fm.Spec.Name)
-	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
+	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
-		in.LogPersister.Errorf("Unable to create Lambda client for the provider %s: %v", cloudProviderName, err)
+		in.LogPersister.Errorf("Unable to create Lambda client for the provider %s: %v", platformProviderName, err)
 		return false
 	}
 

@@ -65,7 +65,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	cloudProviderName, cloudProviderCfg, found := findPlatformProvider(&e.Input)
+	platformProviderName, platformProviderCfg, found := findPlatformProvider(&e.Input)
 	if !found {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -75,18 +75,18 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !rollback(ctx, &e.Input, cloudProviderName, cloudProviderCfg, fm) {
+	if !rollback(ctx, &e.Input, platformProviderName, platformProviderCfg, fm) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func rollback(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderLambdaConfig, fm provider.FunctionManifest) bool {
+func rollback(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderLambdaConfig, fm provider.FunctionManifest) bool {
 	in.LogPersister.Infof("Start rollback the lambda function: %s to original stage", fm.Spec.Name)
-	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
+	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
-		in.LogPersister.Errorf("Unable to create Lambda client for the provider %s: %v", cloudProviderName, err)
+		in.LogPersister.Errorf("Unable to create Lambda client for the provider %s: %v", platformProviderName, err)
 		return false
 	}
 

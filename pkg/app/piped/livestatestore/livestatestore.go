@@ -40,11 +40,11 @@ type applicationLister interface {
 }
 
 type Getter interface {
-	CloudRunGetter(cloudProvider string) (cloudrun.Getter, bool)
-	ECSRunGetter(cloudProvider string) (ecs.Getter, bool)
-	KubernetesGetter(cloudProvider string) (kubernetes.Getter, bool)
-	LambdaGetter(cloudProvider string) (lambda.Getter, bool)
-	TerraformGetter(cloudProvider string) (terraform.Getter, bool)
+	CloudRunGetter(platformProvider string) (cloudrun.Getter, bool)
+	ECSRunGetter(platformProvider string) (ecs.Getter, bool)
+	KubernetesGetter(platformProvider string) (kubernetes.Getter, bool)
+	LambdaGetter(platformProvider string) (lambda.Getter, bool)
+	TerraformGetter(platformProvider string) (terraform.Getter, bool)
 }
 
 type Store interface {
@@ -187,28 +187,28 @@ func (s *store) Getter() Getter {
 	return s
 }
 
-func (s *store) CloudRunGetter(cloudProvider string) (cloudrun.Getter, bool) {
-	ks, ok := s.cloudrunStores[cloudProvider]
+func (s *store) CloudRunGetter(platformProvider string) (cloudrun.Getter, bool) {
+	ks, ok := s.cloudrunStores[platformProvider]
 	return ks, ok
 }
 
-func (s *store) ECSRunGetter(cloudProvider string) (ecs.Getter, bool) {
-	ks, ok := s.ecsStores[cloudProvider]
+func (s *store) ECSRunGetter(platformProvider string) (ecs.Getter, bool) {
+	ks, ok := s.ecsStores[platformProvider]
 	return ks, ok
 }
 
-func (s *store) KubernetesGetter(cloudProvider string) (kubernetes.Getter, bool) {
-	ks, ok := s.kubernetesStores[cloudProvider]
+func (s *store) KubernetesGetter(platformProvider string) (kubernetes.Getter, bool) {
+	ks, ok := s.kubernetesStores[platformProvider]
 	return ks, ok
 }
 
-func (s *store) LambdaGetter(cloudProvider string) (lambda.Getter, bool) {
-	ks, ok := s.lambdaStores[cloudProvider]
+func (s *store) LambdaGetter(platformProvider string) (lambda.Getter, bool) {
+	ks, ok := s.lambdaStores[platformProvider]
 	return ks, ok
 }
 
-func (s *store) TerraformGetter(cloudProvider string) (terraform.Getter, bool) {
-	ks, ok := s.terraformStores[cloudProvider]
+func (s *store) TerraformGetter(platformProvider string) (terraform.Getter, bool) {
+	ks, ok := s.terraformStores[platformProvider]
 	return ks, ok
 }
 
@@ -216,8 +216,8 @@ type LiveResourceLister struct {
 	Getter
 }
 
-func (g LiveResourceLister) ListKubernetesAppLiveResources(cloudProvider, appID string) ([]provider.Manifest, bool) {
-	kg, ok := g.KubernetesGetter(cloudProvider)
+func (g LiveResourceLister) ListKubernetesAppLiveResources(platformProvider, appID string) ([]provider.Manifest, bool) {
+	kg, ok := g.KubernetesGetter(platformProvider)
 	if !ok {
 		return nil, false
 	}

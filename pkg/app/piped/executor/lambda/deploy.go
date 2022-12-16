@@ -31,10 +31,10 @@ const promotePercentageMetadataKey = "promote-percentage"
 type deployExecutor struct {
 	executor.Input
 
-	deploySource      *deploysource.DeploySource
-	appCfg            *config.LambdaApplicationSpec
-	cloudProviderName string
-	cloudProviderCfg  *config.PlatformProviderLambdaConfig
+	deploySource         *deploysource.DeploySource
+	appCfg               *config.LambdaApplicationSpec
+	platformProviderName string
+	platformProviderCfg  *config.PlatformProviderLambdaConfig
 }
 
 func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
@@ -53,7 +53,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 
 	var found bool
-	e.cloudProviderName, e.cloudProviderCfg, found = findPlatformProvider(&e.Input)
+	e.platformProviderName, e.platformProviderCfg, found = findPlatformProvider(&e.Input)
 	if !found {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -84,7 +84,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !sync(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, fm) {
+	if !sync(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, fm) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -109,7 +109,7 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !promote(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, fm) {
+	if !promote(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, fm) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -122,7 +122,7 @@ func (e *deployExecutor) ensureRollout(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !rollout(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, fm) {
+	if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, fm) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

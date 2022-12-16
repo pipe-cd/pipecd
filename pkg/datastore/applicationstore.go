@@ -196,7 +196,7 @@ type ApplicationStore interface {
 	UpdateConfigFilename(ctx context.Context, id, configFilename string) error
 	UpdateDeployingStatus(ctx context.Context, id string, deploying bool) error
 	UpdateBasicInfo(ctx context.Context, id, name, description string, labels map[string]string) error
-	UpdateConfiguration(ctx context.Context, id, pipedID, cloudProvider, configFilename string) error
+	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error
 	UpdatePlatformProvider(ctx context.Context, id string, provider string) error
 }
 

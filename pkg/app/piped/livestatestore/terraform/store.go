@@ -34,9 +34,9 @@ type Store struct {
 type Getter interface {
 }
 
-func NewStore(cfg *config.PlatformProviderTerraformConfig, cloudProvider string, appLister applicationLister, logger *zap.Logger) *Store {
+func NewStore(cfg *config.PlatformProviderTerraformConfig, platformProvider string, appLister applicationLister, logger *zap.Logger) *Store {
 	logger = logger.Named("terraform").
-		With(zap.String("cloud-provider", cloudProvider))
+		With(zap.String("cloud-provider", platformProvider))
 
 	return &Store{
 		logger: logger,

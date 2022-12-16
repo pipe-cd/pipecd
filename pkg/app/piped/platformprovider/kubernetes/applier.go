@@ -38,9 +38,9 @@ type Applier interface {
 }
 
 type applier struct {
-	input         config.KubernetesDeploymentInput
-	cloudProvider config.PlatformProviderKubernetesConfig
-	logger        *zap.Logger
+	input            config.KubernetesDeploymentInput
+	platformProvider config.PlatformProviderKubernetesConfig
+	logger           *zap.Logger
 
 	kubectl  *Kubectl
 	initOnce sync.Once
@@ -49,9 +49,9 @@ type applier struct {
 
 func NewApplier(input config.KubernetesDeploymentInput, cp config.PlatformProviderKubernetesConfig, logger *zap.Logger) Applier {
 	return &applier{
-		input:         input,
-		cloudProvider: cp,
-		logger:        logger.Named("kubernetes-applier"),
+		input:            input,
+		platformProvider: cp,
+		logger:           logger.Named("kubernetes-applier"),
 	}
 }
 
@@ -66,7 +66,7 @@ func (a *applier) ApplyManifest(ctx context.Context, manifest Manifest) error {
 
 	return a.kubectl.Apply(
 		ctx,
-		a.cloudProvider.KubeConfigPath,
+		a.platformProvider.KubeConfigPath,
 		a.getNamespaceToRun(manifest.Key),
 		manifest,
 	)
@@ -83,7 +83,7 @@ func (a *applier) CreateManifest(ctx context.Context, manifest Manifest) error {
 
 	return a.kubectl.Create(
 		ctx,
-		a.cloudProvider.KubeConfigPath,
+		a.platformProvider.KubeConfigPath,
 		a.getNamespaceToRun(manifest.Key),
 		manifest,
 	)
@@ -100,7 +100,7 @@ func (a *applier) ReplaceManifest(ctx context.Context, manifest Manifest) error 
 
 	err := a.kubectl.Replace(
 		ctx,
-		a.cloudProvider.KubeConfigPath,
+		a.platformProvider.KubeConfigPath,
 		a.getNamespaceToRun(manifest.Key),
 		manifest,
 	)
@@ -127,7 +127,7 @@ func (a *applier) Delete(ctx context.Context, k ResourceKey) (err error) {
 
 	m, err := a.kubectl.Get(
 		ctx,
-		a.cloudProvider.KubeConfigPath,
+		a.platformProvider.KubeConfigPath,
 		a.getNamespaceToRun(k),
 		k,
 	)
@@ -142,7 +142,7 @@ func (a *applier) Delete(ctx context.Context, k ResourceKey) (err error) {
 
 	return a.kubectl.Delete(
 		ctx,
-		a.cloudProvider.KubeConfigPath,
+		a.platformProvider.KubeConfigPath,
 		a.getNamespaceToRun(k),
 		k,
 	)
