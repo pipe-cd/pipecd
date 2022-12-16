@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/aws/aws-sdk-go-v2/service/ecs"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"go.uber.org/zap"
 
@@ -81,6 +82,32 @@ func findPlatformProvider(in *executor.Input) (name string, cfg *config.Platform
 	cfg = cp.ECSConfig
 	found = true
 	return
+}
+
+func LoadVpcConfiguration(in *executor.Input, vpcConfiguration string, ds *deploysource.DeploySource) (types.AwsVpcConfiguration, bool) {
+	in.LogPersister.Infof("Loading vpc manifest at commit %s", ds.Revision)
+
+	awsVpcConfiguration, err := provider.LoadVpcConfiguration(ds.AppDir, vpcConfiguration)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to load VPC configuration (%v)", err)
+		return types.AwsVpcConfiguration{}, false
+	}
+
+	in.LogPersister.Infof("Successfully loaded the VPC configuration at commit %s", ds.Revision)
+	return awsVpcConfiguration, true
+}
+
+func loadClusterDefinition(in *executor.Input, clusterDefinitionFile string, ds *deploysource.DeploySource) (types.Cluster, bool) {
+	in.LogPersister.Infof("Loading Cluster manifest at commit %s", ds.Revision)
+
+	clusterDefinition, err := provider.LoadClusterDefinition(ds.AppDir, clusterDefinitionFile)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to load ECS Cluster definition (%v)", err)
+		return types.Cluster{}, false
+	}
+
+	in.LogPersister.Infof("Successfully loaded the ECS cluster definition at commit %s", ds.Revision)
+	return clusterDefinition, true
 }
 
 func loadServiceDefinition(in *executor.Input, serviceDefinitionFile string, ds *deploysource.DeploySource) (types.Service, bool) {
@@ -155,6 +182,48 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 	}
 
 	return service, nil
+}
+
+func applyStandaloneTask(
+	ctx context.Context,
+	cli provider.Client,
+	clusterDefinition types.Cluster,
+	awsVpcConfiguration types.AwsVpcConfiguration,
+	taskDefinition types.TaskDefinition,
+) (*ecs.RunTaskOutput, error) {
+	output, err := cli.RunTask(ctx, clusterDefinition, awsVpcConfiguration, taskDefinition)
+	if err != nil {
+		return nil, fmt.Errorf("unable to run ECS task %s: %v", *taskDefinition.TaskDefinitionArn, err)
+	}
+	return output, nil
+}
+
+func isStandaloneTask(in *config.ECSDeploymentInput) bool {
+	existClusterFile := in.ClusterDefinitionFile != ""
+	existVpcConfFile := in.VpcConfigurationFile != ""
+	return existClusterFile && existVpcConfFile
+}
+
+func runStandaloneTask(
+	ctx context.Context,
+	in *executor.Input,
+	cloudProviderName string,
+	cloudProviderCfg *config.PlatformProviderECSConfig,
+	clusterDefinition types.Cluster,
+	awsVpcConfiguration types.AwsVpcConfiguration,
+	taskDefinition types.TaskDefinition,
+) bool {
+	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
+	if err != nil {
+		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
+		return false
+	}
+	_, err = applyStandaloneTask(ctx, client, clusterDefinition, awsVpcConfiguration, taskDefinition)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
+		return false
+	}
+	return true
 }
 
 func createPrimaryTaskSet(ctx context.Context, client provider.Client, service types.Service, taskDef types.TaskDefinition, targetGroup *types.LoadBalancer) error {

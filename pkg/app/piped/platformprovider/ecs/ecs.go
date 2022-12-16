@@ -19,6 +19,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/aws/aws-sdk-go-v2/service/ecs"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
@@ -37,6 +38,7 @@ type ECS interface {
 	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
+	RunTask(ctx context.Context, cluster types.Cluster, awsVpcConfiguration types.AwsVpcConfiguration, taskDefinition types.TaskDefinition) (*ecs.RunTaskOutput, error)
 	GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error)
 	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale int) (*types.TaskSet, error)
 	DeleteTaskSet(ctx context.Context, service types.Service, taskSetArn string) error
@@ -51,6 +53,18 @@ type ELB interface {
 // Registry holds a pool of aws client wrappers.
 type Registry interface {
 	Client(name string, cfg *config.PlatformProviderECSConfig, logger *zap.Logger) (Client, error)
+}
+
+// LoadVpcConfiguration returns AwsVpcConfiguration from a given vpc configuration file.
+func LoadVpcConfiguration(appDir, vpcConfigurationFilename string) (types.AwsVpcConfiguration, error) {
+	path := filepath.Join(appDir, vpcConfigurationFilename)
+	return loadVpcConfig(path)
+}
+
+// LoadClusterDefinition returns ClusterDifinition object from a given cluster definition file.
+func LoadClusterDefinition(appDir, clusterDefinitionFilename string) (types.Cluster, error) {
+	path := filepath.Join(appDir, clusterDefinitionFilename)
+	return loadClusterDefinition(path)
 }
 
 // LoadServiceDefinition returns ServiceDefinition object from a given service definition file.
