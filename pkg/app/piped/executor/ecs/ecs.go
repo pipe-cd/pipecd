@@ -188,10 +188,10 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	return nil
 }
 
-func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
-	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
+func sync(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
+	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
-		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
+		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
 		return false
 	}
 
@@ -219,10 +219,10 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	return true
 }
 
-func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
-	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
+func rollout(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
+	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
-		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
+		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
 		return false
 	}
 
@@ -290,10 +290,10 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	return true
 }
 
-func clean(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderECSConfig) bool {
-	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
+func clean(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig) bool {
+	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
-		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
+		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
 		return false
 	}
 
@@ -321,10 +321,10 @@ func clean(ctx context.Context, in *executor.Input, cloudProviderName string, cl
 	return true
 }
 
-func routing(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.PlatformProviderECSConfig, primaryTargetGroup types.LoadBalancer, canaryTargetGroup types.LoadBalancer) bool {
-	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
+func routing(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, primaryTargetGroup types.LoadBalancer, canaryTargetGroup types.LoadBalancer) bool {
+	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
-		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
+		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
 		return false
 	}
 

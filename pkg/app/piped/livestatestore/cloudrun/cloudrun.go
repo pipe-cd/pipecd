@@ -44,11 +44,11 @@ type State struct {
 	Version   model.ApplicationLiveStateVersion
 }
 
-func NewStore(ctx context.Context, cfg *config.PlatformProviderCloudRunConfig, cloudProvider string, logger *zap.Logger) (*Store, error) {
+func NewStore(ctx context.Context, cfg *config.PlatformProviderCloudRunConfig, platformProvider string, logger *zap.Logger) (*Store, error) {
 	logger = logger.Named("cloudrun").
-		With(zap.String("cloud-provider", cloudProvider))
+		With(zap.String("cloud-provider", platformProvider))
 
-	client, err := provider.DefaultRegistry().Client(ctx, cloudProvider, cfg, logger)
+	client, err := provider.DefaultRegistry().Client(ctx, platformProvider, cfg, logger)
 	if err != nil {
 		return nil, err
 	}

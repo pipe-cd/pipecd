@@ -26,10 +26,10 @@ import (
 type deployExecutor struct {
 	executor.Input
 
-	deploySource      *deploysource.DeploySource
-	appCfg            *config.ECSApplicationSpec
-	cloudProviderName string
-	cloudProviderCfg  *config.PlatformProviderECSConfig
+	deploySource         *deploysource.DeploySource
+	appCfg               *config.ECSApplicationSpec
+	platformProviderName string
+	platformProviderCfg  *config.PlatformProviderECSConfig
 }
 
 func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
@@ -48,7 +48,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 
 	var found bool
-	e.cloudProviderName, e.cloudProviderCfg, found = findPlatformProvider(&e.Input)
+	e.platformProviderName, e.platformProviderCfg, found = findPlatformProvider(&e.Input)
 	if !found {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -92,7 +92,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !sync(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, servicedefinition, primary) {
+	if !sync(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -118,7 +118,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !rollout(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, servicedefinition, primary) {
+	if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -144,7 +144,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !rollout(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, servicedefinition, canary) {
+	if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, canary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -161,14 +161,14 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !routing(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, *primary, *canary) {
+	if !routing(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, *primary, *canary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 	return model.StageStatus_STAGE_SUCCESS
 }
 
 func (e *deployExecutor) ensureCanaryClean(ctx context.Context) model.StageStatus {
-	if !clean(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg) {
+	if !clean(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
