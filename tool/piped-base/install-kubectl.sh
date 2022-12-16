@@ -20,7 +20,7 @@ set -o pipefail
 
 BASE_URL="https://storage.googleapis.com/kubernetes-release/release"
 # Do not forget to update the version number at the following file when changing this.
-# https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/toolregistry/install.go#L30
+# https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/toolregistry/install.go
 VERSION="1.18.2"
 
 echo "Installing kubectl-${VERSION} into ${PIPED_TOOLS_DIR}/kubectl..."

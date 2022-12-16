@@ -20,7 +20,7 @@ set -o pipefail
 
 BASE_URL="https://get.helm.sh"
 # Do not forget to update the version number at the following file when changing this.
-# https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/toolregistry/install.go#L32
+# https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/toolregistry/install.go
 VERSION="3.8.2"
 
 echo "Installing helm-${VERSION} into ${PIPED_TOOLS_DIR}/helm..."
