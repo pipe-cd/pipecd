@@ -606,6 +606,8 @@ type PlatformProviderKubernetesConfig struct {
 	KubeConfigPath string `json:"kubeConfigPath,omitempty"`
 	// Configuration for application resource informer.
 	AppStateInformer KubernetesAppStateInformer `json:"appStateInformer"`
+	// Version of kubectl will be used.
+	KubectlVersion string `json:"kubectlVersion"`
 }
 
 type KubernetesAppStateInformer struct {

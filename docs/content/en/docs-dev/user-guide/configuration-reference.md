@@ -281,7 +281,7 @@ One of `yamlField` or `regex` is required.
 | Field | Type | Description | Required |
 |-|-|-|-|
 | manifests | []string | List of manifest files in the application directory used to deploy. Empty means all manifest files in the directory will be used. | No |
-| kubectlVersion | string | Version of kubectl will be used. Empty means the [default version](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/install-kubectl.sh#L24) will be used. | No |
+| kubectlVersion | string | Version of kubectl will be used. Empty means the version set on [piped config](../managing-piped/configuration-reference/#platformproviderkubernetesconfig) or [default version](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/install-kubectl.sh#L24) will be used. | No |
 | kustomizeVersion | string | Version of kustomize will be used. Empty means the [default version](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/install-kustomize.sh#L24) will be used. | No |
 | kustomizeOptions | map[string]string | List of options that should be used by Kustomize commands. | No |
 | helmVersion | string | Version of helm will be used. Empty means the [default version](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/install-helm.sh#L24) will be used. | No |
