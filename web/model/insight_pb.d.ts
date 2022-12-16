@@ -106,7 +106,7 @@ export enum InsightResultType {
   MATRIX = 0,
   VECTOR = 1,
 }
-export enum InsightStep { 
+export enum InsightResolution { 
   DAILY = 0,
   MONTHLY = 1,
 }

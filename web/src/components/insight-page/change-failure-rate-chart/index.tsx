@@ -1,15 +1,15 @@
 import chartColor from "@material-ui/core/colors/deepPurple";
 import { FC } from "react";
-import { InsightDataPoint, InsightStep } from "~/modules/insight";
+import { InsightDataPoint, InsightResolution } from "~/modules/insight";
 import { ChartBase } from "../chart-base";
 
 export interface ChangeFailureRateChartProps {
-  step: InsightStep;
+  resolution: InsightResolution;
   data: { name: string; points: InsightDataPoint.AsObject[] }[];
 }
 
 export const ChangeFailureRateChart: FC<ChangeFailureRateChartProps> = ({
-  step,
+  resolution,
   data,
 }) => {
   // Find the best yMax value to make the graph more readable.
@@ -32,7 +32,7 @@ export const ChangeFailureRateChart: FC<ChangeFailureRateChartProps> = ({
   return (
     <ChartBase
       title="Change Failure Rate"
-      step={step}
+      resolution={resolution}
       data={data}
       xName=""
       yName="Failed Deployments / Total"

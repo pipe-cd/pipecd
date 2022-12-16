@@ -655,7 +655,7 @@ message GetInsightDataRequest {
     model.InsightMetricsKind metrics_kind = 1 [(validate.rules).enum.defined_only = true];
     int64 range_from = 2 [(validate.rules).int64.gt = 0];
     int64 range_to = 3 [(validate.rules).int64.gt = 0];
-    model.InsightStep step = 4 [(validate.rules).enum.defined_only = true];
+    model.InsightResolution resolution = 4 [(validate.rules).enum.defined_only = true];
 
     string application_id = 10;
     map<string,string> labels = 11;

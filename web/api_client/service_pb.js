@@ -15746,7 +15746,7 @@ proto.grpc.service.webservice.GetInsightDataRequest.toObject = function(includeI
     metricsKind: jspb.Message.getFieldWithDefault(msg, 1, 0),
     rangeFrom: jspb.Message.getFieldWithDefault(msg, 2, 0),
     rangeTo: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    step: jspb.Message.getFieldWithDefault(msg, 4, 0),
+    resolution: jspb.Message.getFieldWithDefault(msg, 4, 0),
     applicationId: jspb.Message.getFieldWithDefault(msg, 10, ""),
     labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : []
   };
@@ -15798,8 +15798,8 @@ proto.grpc.service.webservice.GetInsightDataRequest.deserializeBinaryFromReader 
       msg.setRangeTo(value);
       break;
     case 4:
-      var value = /** @type {!proto.model.InsightStep} */ (reader.readEnum());
-      msg.setStep(value);
+      var value = /** @type {!proto.model.InsightResolution} */ (reader.readEnum());
+      msg.setResolution(value);
       break;
     case 10:
       var value = /** @type {string} */ (reader.readString());
@@ -15861,7 +15861,7 @@ proto.grpc.service.webservice.GetInsightDataRequest.serializeBinaryToWriter = fu
       f
     );
   }
-  f = message.getStep();
+  f = message.getResolution();
   if (f !== 0.0) {
     writer.writeEnum(
       4,
@@ -15937,19 +15937,19 @@ proto.grpc.service.webservice.GetInsightDataRequest.prototype.setRangeTo = funct
 
 
 /**
- * optional model.InsightStep step = 4;
- * @return {!proto.model.InsightStep}
+ * optional model.InsightResolution resolution = 4;
+ * @return {!proto.model.InsightResolution}
  */
-proto.grpc.service.webservice.GetInsightDataRequest.prototype.getStep = function() {
-  return /** @type {!proto.model.InsightStep} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+proto.grpc.service.webservice.GetInsightDataRequest.prototype.getResolution = function() {
+  return /** @type {!proto.model.InsightResolution} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
 };
 
 
 /**
- * @param {!proto.model.InsightStep} value
+ * @param {!proto.model.InsightResolution} value
  * @return {!proto.grpc.service.webservice.GetInsightDataRequest} returns this
  */
-proto.grpc.service.webservice.GetInsightDataRequest.prototype.setStep = function(value) {
+proto.grpc.service.webservice.GetInsightDataRequest.prototype.setResolution = function(value) {
   return jspb.Message.setProto3EnumField(this, 4, value);
 };
 

@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { InsightStep } from "pipecd/web/model/insight_pb";
+import { InsightResolution } from "pipecd/web/model/insight_pb";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
@@ -32,16 +32,19 @@ export const InsightRanges = [
   InsightRange.LAST_2_YEARS,
 ];
 
-export const InsightSteps = [InsightStep.DAILY, InsightStep.MONTHLY];
+export const InsightResolutions = [
+  InsightResolution.DAILY,
+  InsightResolution.MONTHLY,
+];
 
-export const INSIGHT_STEP_TEXT: Record<InsightStep, string> = {
-  [InsightStep.DAILY]: "Daily",
-  [InsightStep.MONTHLY]: "Monthly",
+export const INSIGHT_RESOLUTION_TEXT: Record<InsightResolution, string> = {
+  [InsightResolution.DAILY]: "Daily",
+  [InsightResolution.MONTHLY]: "Monthly",
 };
 
 export interface InsightState {
   range: InsightRange;
-  step: InsightStep;
+  resolution: InsightResolution;
   applicationId: string;
   // Suppose to be like ["key-1:value-1"]
   // sindresorhus/query-string doesn't support multidimensional arrays, that's why the format is a bit tricky.
@@ -50,7 +53,7 @@ export interface InsightState {
 
 const initialState: InsightState = {
   range: InsightRange.LAST_1_MONTH,
-  step: InsightStep.DAILY,
+  resolution: InsightResolution.DAILY,
   applicationId: "",
   labels: [],
 };
@@ -62,8 +65,8 @@ export const insightSlice = createSlice({
     changeRange(state, action: PayloadAction<InsightRange>) {
       state.range = action.payload;
     },
-    changeStep(state, action: PayloadAction<InsightStep>) {
-      state.step = action.payload;
+    changeResolution(state, action: PayloadAction<InsightResolution>) {
+      state.resolution = action.payload;
     },
     changeApplication(state, action: PayloadAction<string>) {
       state.applicationId = action.payload;
@@ -76,7 +79,7 @@ export const insightSlice = createSlice({
 
 export const {
   changeRange,
-  changeStep,
+  changeResolution,
   changeApplication,
   changeLabels,
 } = insightSlice.actions;
@@ -84,12 +87,12 @@ export const {
 export {
   InsightMetricsKind,
   InsightDataPoint,
-  InsightStep,
+  InsightResolution,
 } from "pipecd/web/model/insight_pb";
 
 export function determineTimeRange(
   r: InsightRange,
-  s: InsightStep
+  s: InsightResolution
 ): [number, number] {
   // Load utc plugin.
   dayjs.extend(utc);
@@ -97,7 +100,7 @@ export function determineTimeRange(
   const rangeTo = dayjs.utc().endOf("day");
   let rangeFrom = rangeTo;
 
-  if (s === InsightStep.DAILY) {
+  if (s === InsightResolution.DAILY) {
     switch (r) {
       case InsightRange.LAST_1_WEEK:
         rangeFrom = rangeTo.subtract(7, "day");

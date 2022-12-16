@@ -1546,7 +1546,7 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 			req.Labels,
 			req.RangeFrom,
 			req.RangeTo,
-			req.Step,
+			req.Resolution,
 		)
 
 	case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
@@ -1557,7 +1557,7 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 			req.Labels,
 			req.RangeFrom,
 			req.RangeTo,
-			req.Step,
+			req.Resolution,
 		)
 
 	default:

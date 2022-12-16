@@ -24,24 +24,24 @@ import (
 
 func TestBuildDeploymentFrequencyDataPoint(t *testing.T) {
 	testcases := []struct {
-		name     string
-		ds       []*DeploymentData
-		step     model.InsightStep
-		expected []*model.InsightDataPoint
+		name       string
+		ds         []*DeploymentData
+		resolution model.InsightResolution
+		expected   []*model.InsightDataPoint
 	}{
 		{
-			name:     "nil",
-			step:     model.InsightStep_DAILY,
-			expected: []*model.InsightDataPoint{},
+			name:       "nil",
+			resolution: model.InsightResolution_DAILY,
+			expected:   []*model.InsightDataPoint{},
 		},
 		{
-			name:     "empty",
-			ds:       []*DeploymentData{},
-			step:     model.InsightStep_DAILY,
-			expected: []*model.InsightDataPoint{},
+			name:       "empty",
+			ds:         []*DeploymentData{},
+			resolution: model.InsightResolution_DAILY,
+			expected:   []*model.InsightDataPoint{},
 		},
 		{
-			name: "daily step",
+			name: "daily resolution",
 			ds: []*DeploymentData{
 				&DeploymentData{
 					CompletedAt: 1669574625,
@@ -53,7 +53,7 @@ func TestBuildDeploymentFrequencyDataPoint(t *testing.T) {
 					CompletedAt: 1669661030,
 				},
 			},
-			step: model.InsightStep_DAILY,
+			resolution: model.InsightResolution_DAILY,
 			expected: []*model.InsightDataPoint{
 				&model.InsightDataPoint{
 					Timestamp: 1669507200,
@@ -66,7 +66,7 @@ func TestBuildDeploymentFrequencyDataPoint(t *testing.T) {
 			},
 		},
 		{
-			name: "monthly step",
+			name: "monthly resolution",
 			ds: []*DeploymentData{
 				&DeploymentData{
 					CompletedAt: 1666982630,
@@ -78,7 +78,7 @@ func TestBuildDeploymentFrequencyDataPoint(t *testing.T) {
 					CompletedAt: 1669661010,
 				},
 			},
-			step: model.InsightStep_MONTHLY,
+			resolution: model.InsightResolution_MONTHLY,
 			expected: []*model.InsightDataPoint{
 				&model.InsightDataPoint{
 					Timestamp: 1664582400,
@@ -94,7 +94,7 @@ func TestBuildDeploymentFrequencyDataPoint(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := buildDeploymentFrequencyDataPoints(tc.ds, "", nil, tc.step)
+			got := buildDeploymentFrequencyDataPoints(tc.ds, "", nil, tc.resolution)
 			assert.Equal(t, tc.expected, got)
 		})
 	}
@@ -102,24 +102,24 @@ func TestBuildDeploymentFrequencyDataPoint(t *testing.T) {
 
 func TestBuildDeploymentChangeFailureRateDataPoint(t *testing.T) {
 	testcases := []struct {
-		name     string
-		ds       []*DeploymentData
-		step     model.InsightStep
-		expected []*model.InsightDataPoint
+		name       string
+		ds         []*DeploymentData
+		resolution model.InsightResolution
+		expected   []*model.InsightDataPoint
 	}{
 		{
-			name:     "nil",
-			step:     model.InsightStep_DAILY,
-			expected: []*model.InsightDataPoint{},
+			name:       "nil",
+			resolution: model.InsightResolution_DAILY,
+			expected:   []*model.InsightDataPoint{},
 		},
 		{
-			name:     "empty",
-			ds:       []*DeploymentData{},
-			step:     model.InsightStep_DAILY,
-			expected: []*model.InsightDataPoint{},
+			name:       "empty",
+			ds:         []*DeploymentData{},
+			resolution: model.InsightResolution_DAILY,
+			expected:   []*model.InsightDataPoint{},
 		},
 		{
-			name: "daily step",
+			name: "daily resolution",
 			ds: []*DeploymentData{
 				&DeploymentData{
 					CompletedAt: 1669340910,
@@ -139,7 +139,7 @@ func TestBuildDeploymentChangeFailureRateDataPoint(t *testing.T) {
 					CompletedAt: 1669686610,
 				},
 			},
-			step: model.InsightStep_DAILY,
+			resolution: model.InsightResolution_DAILY,
 			expected: []*model.InsightDataPoint{
 				&model.InsightDataPoint{
 					Timestamp: 1669334400,
@@ -156,7 +156,7 @@ func TestBuildDeploymentChangeFailureRateDataPoint(t *testing.T) {
 			},
 		},
 		{
-			name: "monthly step",
+			name: "monthly resolution",
 			ds: []*DeploymentData{
 				&DeploymentData{
 					CompletedAt: 1664416110,
@@ -176,7 +176,7 @@ func TestBuildDeploymentChangeFailureRateDataPoint(t *testing.T) {
 					CompletedAt: 1668908920,
 				},
 			},
-			step: model.InsightStep_MONTHLY,
+			resolution: model.InsightResolution_MONTHLY,
 			expected: []*model.InsightDataPoint{
 				&model.InsightDataPoint{
 					Timestamp: 1661990400,
@@ -196,7 +196,7 @@ func TestBuildDeploymentChangeFailureRateDataPoint(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := buildDeploymentChangeFailureRateDataPoints(tc.ds, "", nil, tc.step)
+			got := buildDeploymentChangeFailureRateDataPoints(tc.ds, "", nil, tc.resolution)
 			assert.Equal(t, tc.expected, got)
 		})
 	}
@@ -204,21 +204,21 @@ func TestBuildDeploymentChangeFailureRateDataPoint(t *testing.T) {
 
 func TestFillUpDataPoints(t *testing.T) {
 	testcases := []struct {
-		name     string
-		ds       []*model.InsightDataPoint
-		step     model.InsightStep
-		from, to int64
-		want     []*model.InsightDataPoint
+		name       string
+		ds         []*model.InsightDataPoint
+		resolution model.InsightResolution
+		from, to   int64
+		want       []*model.InsightDataPoint
 	}{
 		{
-			name: "daily step: missing head part",
+			name: "daily resolution: missing head part",
 			ds: []*model.InsightDataPoint{
 				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
 				&model.InsightDataPoint{Timestamp: 259200, Value: 3},
 			},
-			from: 86400,
-			to:   259200,
-			step: model.InsightStep_DAILY,
+			from:       86400,
+			to:         259200,
+			resolution: model.InsightResolution_DAILY,
 			want: []*model.InsightDataPoint{
 				&model.InsightDataPoint{Timestamp: 86400, Value: 0},
 				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
@@ -226,14 +226,14 @@ func TestFillUpDataPoints(t *testing.T) {
 			},
 		},
 		{
-			name: "daily step: missing tail part",
+			name: "daily resolution: missing tail part",
 			ds: []*model.InsightDataPoint{
 				&model.InsightDataPoint{Timestamp: 86400, Value: 1},
 				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
 			},
-			from: 86400,
-			to:   259200,
-			step: model.InsightStep_DAILY,
+			from:       86400,
+			to:         259200,
+			resolution: model.InsightResolution_DAILY,
 			want: []*model.InsightDataPoint{
 				&model.InsightDataPoint{Timestamp: 86400, Value: 1},
 				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
@@ -241,13 +241,13 @@ func TestFillUpDataPoints(t *testing.T) {
 			},
 		},
 		{
-			name: "daily step: missing both parts",
+			name: "daily resolution: missing both parts",
 			ds: []*model.InsightDataPoint{
 				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
 			},
-			from: 86400,
-			to:   259200,
-			step: model.InsightStep_DAILY,
+			from:       86400,
+			to:         259200,
+			resolution: model.InsightResolution_DAILY,
 			want: []*model.InsightDataPoint{
 				&model.InsightDataPoint{Timestamp: 86400, Value: 0},
 				&model.InsightDataPoint{Timestamp: 172800, Value: 2},
@@ -255,14 +255,14 @@ func TestFillUpDataPoints(t *testing.T) {
 			},
 		},
 		{
-			name: "monthly step: missing head part",
+			name: "monthly resolution: missing head part",
 			ds: []*model.InsightDataPoint{
 				&model.InsightDataPoint{Timestamp: 1664582400, Value: 2}, // 2022/10
 				&model.InsightDataPoint{Timestamp: 1667260800, Value: 3}, // 2022/11
 			},
-			from: 1661990401, // 2022/9
-			to:   1667260801, // 2022/11
-			step: model.InsightStep_MONTHLY,
+			from:       1661990401, // 2022/9
+			to:         1667260801, // 2022/11
+			resolution: model.InsightResolution_MONTHLY,
 			want: []*model.InsightDataPoint{
 				&model.InsightDataPoint{Timestamp: 1661990400, Value: 0},
 				&model.InsightDataPoint{Timestamp: 1664582400, Value: 2},
@@ -270,14 +270,14 @@ func TestFillUpDataPoints(t *testing.T) {
 			},
 		},
 		{
-			name: "monthly step: missing tail part",
+			name: "monthly resolution: missing tail part",
 			ds: []*model.InsightDataPoint{
 				&model.InsightDataPoint{Timestamp: 1661990400, Value: 2}, // 2022/9
 				&model.InsightDataPoint{Timestamp: 1664582400, Value: 3}, // 2022/10
 			},
-			from: 1661990401, // 2022/9
-			to:   1667260801, // 2022/11
-			step: model.InsightStep_MONTHLY,
+			from:       1661990401, // 2022/9
+			to:         1667260801, // 2022/11
+			resolution: model.InsightResolution_MONTHLY,
 			want: []*model.InsightDataPoint{
 				&model.InsightDataPoint{Timestamp: 1661990400, Value: 2},
 				&model.InsightDataPoint{Timestamp: 1664582400, Value: 3},
@@ -285,14 +285,14 @@ func TestFillUpDataPoints(t *testing.T) {
 			},
 		},
 		{
-			name: "monthly step: missing both parts",
+			name: "monthly resolution: missing both parts",
 			ds: []*model.InsightDataPoint{
 				&model.InsightDataPoint{Timestamp: 1664582400, Value: 2}, // 2022/10
 				&model.InsightDataPoint{Timestamp: 1667260800, Value: 3}, // 2022/11
 			},
-			from: 1661990401, // 2022/9
-			to:   1673344801, // 2023/1
-			step: model.InsightStep_MONTHLY,
+			from:       1661990401, // 2022/9
+			to:         1673344801, // 2023/1
+			resolution: model.InsightResolution_MONTHLY,
 			want: []*model.InsightDataPoint{
 				&model.InsightDataPoint{Timestamp: 1661990400, Value: 0},
 				&model.InsightDataPoint{Timestamp: 1664582400, Value: 2},
@@ -304,7 +304,7 @@ func TestFillUpDataPoints(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := fillUpDataPoints(tc.ds, tc.from, tc.to, tc.step)
+			got := fillUpDataPoints(tc.ds, tc.from, tc.to, tc.resolution)
 			assert.Equal(t, tc.want, got)
 		})
 	}

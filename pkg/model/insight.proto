@@ -32,7 +32,7 @@ enum InsightResultType {
   VECTOR = 1;
 }
 
-enum InsightStep {
+enum InsightResolution {
   DAILY = 0;
   MONTHLY = 1;
 }

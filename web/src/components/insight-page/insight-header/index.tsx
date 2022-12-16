@@ -15,14 +15,14 @@ import { Application, selectAll, selectById } from "~/modules/applications";
 
 import {
   changeRange,
-  changeStep,
+  changeResolution,
   changeApplication,
   changeLabels,
-  InsightSteps,
+  InsightResolutions,
   InsightRanges,
-  INSIGHT_STEP_TEXT,
+  INSIGHT_RESOLUTION_TEXT,
   INSIGHT_RANGE_TEXT,
-  InsightStep,
+  InsightResolution,
   InsightRange,
 } from "~/modules/insight";
 
@@ -48,7 +48,9 @@ export const InsightHeader: FC = memo(function InsightHeader() {
   const [selectedLabels, setSelectedLabels] = useState(new Array<string>());
 
   const [selectedRange, setSelectedRange] = useState(InsightRange.LAST_1_MONTH);
-  const [selectedStep, setSelectedStep] = useState(InsightStep.DAILY);
+  const [selectedResolution, setSelectedResolution] = useState(
+    InsightResolution.DAILY
+  );
 
   const applications = useAppSelector<Application.AsObject[]>((state) =>
     selectAll(state.applications)
@@ -150,20 +152,20 @@ export const InsightHeader: FC = memo(function InsightHeader() {
           </FormControl>
 
           <FormControl className={classes.headerItemMargin} variant="outlined">
-            <InputLabel id="step-input">Step</InputLabel>
+            <InputLabel id="resolution-input">Resolution</InputLabel>
             <Select
-              id="step"
-              label="Step"
-              value={selectedStep}
+              id="resolution"
+              label="Resolution"
+              value={selectedResolution}
               onChange={(e) => {
-                const value = e.target.value as InsightStep;
-                setSelectedStep(value);
-                dispatch(changeStep(value));
+                const value = e.target.value as InsightResolution;
+                setSelectedResolution(value);
+                dispatch(changeResolution(value));
               }}
             >
-              {InsightSteps.map((e) => (
+              {InsightResolutions.map((e) => (
                 <MenuItem key={e} value={e}>
-                  {INSIGHT_STEP_TEXT[e]}
+                  {INSIGHT_RESOLUTION_TEXT[e]}
                 </MenuItem>
               ))}
             </Select>

@@ -1,21 +1,21 @@
 import chartColor from "@material-ui/core/colors/blue";
 import { FC } from "react";
-import { InsightDataPoint, InsightStep } from "~/modules/insight";
+import { InsightDataPoint, InsightResolution } from "~/modules/insight";
 import { ChartBase } from "../chart-base";
 
 export interface DeploymentFrequencyChartProps {
-  step: InsightStep;
+  resolution: InsightResolution;
   data: { name: string; points: InsightDataPoint.AsObject[] }[];
 }
 
 export const DeploymentFrequencyChart: FC<DeploymentFrequencyChartProps> = ({
-  step,
+  resolution,
   data,
 }) => {
   return (
     <ChartBase
       title="Deployment Frequency"
-      step={step}
+      resolution={resolution}
       data={data}
       xName=""
       yName="Number of Deployments"
