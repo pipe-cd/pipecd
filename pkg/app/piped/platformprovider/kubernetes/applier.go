@@ -58,7 +58,7 @@ func NewApplier(input config.KubernetesDeploymentInput, cp config.PlatformProvid
 // ApplyManifest does applying the given manifest.
 func (a *applier) ApplyManifest(ctx context.Context, manifest Manifest) error {
 	a.initOnce.Do(func() {
-		a.kubectl, a.initErr = a.findKubectl(ctx, a.input.KubectlVersion)
+		a.kubectl, a.initErr = a.findKubectl(ctx, a.getToolVersionToRun())
 	})
 	if a.initErr != nil {
 		return a.initErr
@@ -75,7 +75,7 @@ func (a *applier) ApplyManifest(ctx context.Context, manifest Manifest) error {
 // CreateManifest uses kubectl to create the given manifests.
 func (a *applier) CreateManifest(ctx context.Context, manifest Manifest) error {
 	a.initOnce.Do(func() {
-		a.kubectl, a.initErr = a.findKubectl(ctx, a.input.KubectlVersion)
+		a.kubectl, a.initErr = a.findKubectl(ctx, a.getToolVersionToRun())
 	})
 	if a.initErr != nil {
 		return a.initErr
@@ -92,7 +92,7 @@ func (a *applier) CreateManifest(ctx context.Context, manifest Manifest) error {
 // ReplaceManifest uses kubectl to replace the given manifests.
 func (a *applier) ReplaceManifest(ctx context.Context, manifest Manifest) error {
 	a.initOnce.Do(func() {
-		a.kubectl, a.initErr = a.findKubectl(ctx, a.input.KubectlVersion)
+		a.kubectl, a.initErr = a.findKubectl(ctx, a.getToolVersionToRun())
 	})
 	if a.initErr != nil {
 		return a.initErr
@@ -119,7 +119,7 @@ func (a *applier) ReplaceManifest(ctx context.Context, manifest Manifest) error 
 // If the resource key is different, this returns ErrNotFound.
 func (a *applier) Delete(ctx context.Context, k ResourceKey) (err error) {
 	a.initOnce.Do(func() {
-		a.kubectl, a.initErr = a.findKubectl(ctx, a.input.KubectlVersion)
+		a.kubectl, a.initErr = a.findKubectl(ctx, a.getToolVersionToRun())
 	})
 	if a.initErr != nil {
 		return a.initErr
@@ -155,6 +155,15 @@ func (a *applier) getNamespaceToRun(k ResourceKey) string {
 		return a.input.Namespace
 	}
 	return k.Namespace
+}
+
+// getToolVersionToRun returns version of kubectl which should be used for commands.
+// priority: applicationConfig.KubectlVersion > pipedConfig.KubectlVersion
+func (a *applier) getToolVersionToRun() string {
+	if a.input.KubectlVersion != "" {
+		return a.input.KubectlVersion
+	}
+	return a.platformProvider.KubectlVersion
 }
 
 func (a *applier) findKubectl(ctx context.Context, version string) (*Kubectl, error) {
