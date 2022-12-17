@@ -29,7 +29,7 @@ func MakeResourceStates(svc *Service, revs []*Revision, updatedAt time.Time) []*
 	// Set service state.
 	sm, err := svc.ServiceManifest()
 	if err == nil {
-		status, desc := svc.HealthStatus()
+		status, desc := svc.StatusConditions().HealthStatus()
 		states = append(states, makeResourceState(sm.u, status, desc, updatedAt))
 	}
 
@@ -40,7 +40,7 @@ func MakeResourceStates(svc *Service, revs []*Revision, updatedAt time.Time) []*
 			continue
 		}
 
-		status, desc := r.HealthStatus()
+		status, desc := r.StatusConditions().HealthStatus()
 		states = append(states, makeResourceState(rm.u, status, desc, updatedAt))
 	}
 	return states

@@ -242,7 +242,7 @@ status:
   - revisionName: helloworld-v010-1234567
     percent: 100
 `,
-			want: model.CloudRunResourceState_UNKNOWN,
+			want: model.CloudRunResourceState_OTHER,
 		},
 		{
 			name: "unhealthy",
@@ -312,7 +312,7 @@ status:
 			require.NoError(t, err)
 
 			s := (*Service)(svc)
-			got, _ := s.HealthStatus()
+			got, _ := s.StatusConditions().HealthStatus()
 			require.Equal(t, tc.want, got)
 		})
 	}
@@ -603,7 +603,7 @@ status:
 			require.NoError(t, err)
 
 			r := (*Revision)(rev)
-			got, _ := r.HealthStatus()
+			got, _ := r.StatusConditions().HealthStatus()
 			require.Equal(t, tc.want, got)
 		})
 	}
