@@ -8,22 +8,22 @@ run:
 linters:
   disable-all: true
   enable:
-    - prealloc
-    - ineffassign
-    - goerr113
-    - misspell
-    - errcheck
-    - gosimple
+    # - prealloc
+    # - ineffassign
+    # - goerr113
+    # - misspell
+    # - errcheck
+    # - gosimple
     - staticcheck
-    - gosec
-    - gocritic
+    # - gosec
+    # - gocritic
     - unparam
-    - deadcode
-    - unconvert
+    # - deadcode
+    # - unconvert
     - typecheck
-    - stylecheck
+    # - stylecheck
     - exportloopref
-    - depguard
+    # - depguard
     - goimports
 
 issues:

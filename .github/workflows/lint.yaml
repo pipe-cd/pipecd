@@ -23,6 +23,8 @@ jobs:
         with:
           go_version: ${{ env.GO_VERSION }}
           golangci_lint_version: ${{ env.GOLANGCI_LINT_VERSION }}
+          filter_mode: nofilter
+          fail_on_error: true
 
   web:
     runs-on: ubuntu-latest
