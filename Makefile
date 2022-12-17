@@ -138,8 +138,15 @@ run/site:
 # Lint commands
 
 .PHONY: lint/go
+lint/go: FIX ?= false
+lint/go: VERSION ?= sha256:78d1bbd01a9886a395dc8374218a6c0b7b67694e725dd76f0c8ac1de411b85e8 #v1.46.2
+lint/go: FLAGS ?= --rm -e GOLANGCI_LINT_CACHE=/repo/.cache/golangci-lint -v ${PWD}:/repo -w /repo -it
 lint/go:
-	@echo "Unimplemented"
+ifeq ($(FIX),true)
+	docker run ${FLAGS} golangci/golangci-lint@${VERSION} golangci-lint run --fix
+else
+	docker run ${FLAGS} golangci/golangci-lint@${VERSION} golangci-lint run
+endif
 
 .PHONY: lint/web
 lint/web: FIX ?= false
