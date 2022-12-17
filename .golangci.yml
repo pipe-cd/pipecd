@@ -14,7 +14,7 @@ linters:
     # - misspell
     # - errcheck
     # - gosimple
-    - staticcheck
+    # - staticcheck
     # - gosec
     # - gocritic
     - unparam
