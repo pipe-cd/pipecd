@@ -140,7 +140,7 @@ run/site:
 .PHONY: lint/go
 lint/go: FIX ?= false
 lint/go: VERSION ?= sha256:78d1bbd01a9886a395dc8374218a6c0b7b67694e725dd76f0c8ac1de411b85e8 #v1.46.2
-lint/go: FLAGS ?= --rm -e GOLANGCI_LINT_CACHE=/repo/.cache/golangci-lint -v ${PWD}:/repo -w /repo -it
+lint/go: FLAGS ?= --rm --platform linux/amd64 -e GOLANGCI_LINT_CACHE=/repo/.cache/golangci-lint -v ${PWD}:/repo -w /repo -it
 lint/go:
 ifeq ($(FIX),true)
 	docker run ${FLAGS} golangci/golangci-lint@${VERSION} golangci-lint run --fix
