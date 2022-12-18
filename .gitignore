@@ -58,3 +58,6 @@ manifests/helloworld/charts
 
 # gomock generated reflect files
 gomock_reflect_*/
+
+# Cache
+.cache
