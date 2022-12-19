@@ -38,7 +38,7 @@ func (b *builder) cloudrundiff(
 		err                      error
 	)
 
-	newManifest, err = b.loadCloudRunManifests(ctx, *app, targetDSP)
+	newManifest, err = b.loadCloudRunManifest(ctx, *app, targetDSP)
 	if err != nil {
 		fmt.Fprintf(buf, "failed to load cloud run manifest at the head commit (%v)\n", err)
 		return nil, err
