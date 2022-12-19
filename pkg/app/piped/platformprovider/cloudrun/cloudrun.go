@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -40,9 +39,48 @@ var (
 	ErrRevisionNotFound = errors.New("not found")
 )
 
+var (
+	TypeConditions = map[string]struct{}{
+		"Active":              struct{}{},
+		"Ready":               struct{}{},
+		"ConfigurationsReady": struct{}{},
+		"RoutesReady":         struct{}{},
+		"ContainerHealthy":    struct{}{},
+		"ResourcesAvailable":  struct{}{},
+	}
+	TypeHealthyServiceConditions = map[string]struct{}{
+		"Ready":               struct{}{},
+		"ConfigurationsReady": struct{}{},
+		"RoutesReady":         struct{}{},
+	}
+	TypeHealthyRevisionConditions = map[string]struct{}{
+		"Ready":              struct{}{},
+		"Active":             struct{}{},
+		"ContainerHealthy":   struct{}{},
+		"ResourcesAvailable": struct{}{},
+	}
+)
+
+// Kind represents the kind of resource.
+type Kind string
+
+const (
+	KindService  Kind = "Service"
+	KindRevision Kind = "Revision"
+)
+
 type (
 	Service  run.Service
 	Revision run.Revision
+
+	StatusConditions struct {
+		Kind      Kind
+		TrueTypes map[string]struct{}
+
+		// Eliminate duplicated messages with the same reason.
+		FalseMessages   []string
+		UnknownMessages []string
+	}
 )
 
 const (
@@ -161,26 +199,46 @@ func (s *Service) ActiveRevisionNames() []string {
 	return ret
 }
 
-func (s *Service) HealthStatus() (model.CloudRunResourceState_HealthStatus, string) {
+func (s *Service) StatusConditions() *StatusConditions {
 	var (
-		status     = s.Status
-		errMessage = "Unexpected error while calculating: %s"
+		trueTypes   = make(map[string]struct{}, len(TypeConditions))
+		falseMsgs   = make(map[string]string, len(TypeConditions))
+		unknownMsgs = make(map[string]string, len(TypeConditions))
 	)
-	if status == nil {
-		return model.CloudRunResourceState_UNKNOWN, fmt.Sprintf(errMessage, "unable to find status")
+
+	if s.Status == nil {
+		return nil
+	}
+	for _, cond := range s.Status.Conditions {
+		if _, ok := TypeConditions[cond.Type]; !ok {
+			continue
+		}
+		switch cond.Status {
+		case "True":
+			trueTypes[cond.Type] = struct{}{}
+		case "False":
+			falseMsgs[cond.Reason] = cond.Message
+		default:
+			unknownMsgs[cond.Reason] = cond.Message
+		}
 	}
 
-	conds := status.Conditions
-	for _, c := range conds {
-		isHealthy, err := strconv.ParseBool(c.Status)
-		if err != nil {
-			return model.CloudRunResourceState_UNKNOWN, fmt.Sprintf(errMessage, "unable to parse status: %s", c.Status)
-		}
-		if !isHealthy {
-			return model.CloudRunResourceState_OTHER, c.Message
-		}
+	fMsgs := make([]string, 0, len(falseMsgs))
+	for _, v := range falseMsgs {
+		fMsgs = append(fMsgs, v)
 	}
-	return model.CloudRunResourceState_HEALTHY, ""
+
+	uMsgs := make([]string, 0, len(unknownMsgs))
+	for _, v := range unknownMsgs {
+		uMsgs = append(uMsgs, v)
+	}
+
+	return &StatusConditions{
+		Kind:            KindService,
+		TrueTypes:       trueTypes,
+		FalseMessages:   fMsgs,
+		UnknownMessages: uMsgs,
+	}
 }
 
 func (r *Revision) RevisionManifest() (RevisionManifest, error) {
@@ -192,23 +250,68 @@ func (r *Revision) RevisionManifest() (RevisionManifest, error) {
 	return ParseRevisionManifest(data)
 }
 
-func (r *Revision) HealthStatus() (model.CloudRunResourceState_HealthStatus, string) {
+func (r *Revision) StatusConditions() *StatusConditions {
 	var (
-		status     = r.Status
-		errMessage = "Unexpected error while calculating: %s"
+		trueTypes   = make(map[string]struct{}, len(TypeConditions))
+		falseMsgs   = make(map[string]string, len(TypeConditions))
+		unknownMsgs = make(map[string]string, len(TypeConditions))
 	)
-	if status == nil {
-		return model.CloudRunResourceState_UNKNOWN, fmt.Sprintf(errMessage, "unable to find status")
+
+	if r.Status == nil {
+		return nil
+	}
+	for _, cond := range r.Status.Conditions {
+		if _, ok := TypeConditions[cond.Type]; !ok {
+			continue
+		}
+		switch cond.Status {
+		case "True":
+			trueTypes[cond.Type] = struct{}{}
+		case "False":
+			falseMsgs[cond.Reason] = cond.Message
+		default:
+			unknownMsgs[cond.Reason] = cond.Message
+		}
 	}
 
-	conds := status.Conditions
-	for _, c := range conds {
-		isHealthy, err := strconv.ParseBool(c.Status)
-		if err != nil {
-			return model.CloudRunResourceState_UNKNOWN, fmt.Sprintf(errMessage, "unable to parse status: %s", c.Status)
-		}
-		if !isHealthy {
-			return model.CloudRunResourceState_OTHER, c.Message
+	fMsgs := make([]string, 0, len(falseMsgs))
+	for _, v := range falseMsgs {
+		fMsgs = append(fMsgs, v)
+	}
+
+	uMsgs := make([]string, 0, len(unknownMsgs))
+	for _, v := range unknownMsgs {
+		uMsgs = append(uMsgs, v)
+	}
+
+	return &StatusConditions{
+		Kind:            KindRevision,
+		TrueTypes:       trueTypes,
+		FalseMessages:   fMsgs,
+		UnknownMessages: uMsgs,
+	}
+}
+
+func (s *StatusConditions) HealthStatus() (model.CloudRunResourceState_HealthStatus, string) {
+	if s == nil {
+		return model.CloudRunResourceState_UNKNOWN, "Unexpected error while calculating: unable to find status"
+	}
+
+	if len(s.FalseMessages) > 0 {
+		return model.CloudRunResourceState_OTHER, strings.Join(s.FalseMessages, "; ")
+	}
+
+	if len(s.UnknownMessages) > 0 {
+		return model.CloudRunResourceState_UNKNOWN, strings.Join(s.UnknownMessages, "; ")
+	}
+
+	mustPassConditions := TypeHealthyServiceConditions
+	if s.Kind == KindRevision {
+		mustPassConditions = TypeHealthyRevisionConditions
+	}
+	for k := range mustPassConditions {
+		if _, ok := s.TrueTypes[k]; !ok {
+			return model.CloudRunResourceState_UNKNOWN, fmt.Sprintf("Could not check status field %q", k)
 		}
 	}
 	return model.CloudRunResourceState_HEALTHY, ""

@@ -91,12 +91,16 @@ func (s *ApplicationLiveStateSnapshot) determineCloudRunAppHealthStatus() {
 	if app == nil {
 		return
 	}
-	status := ApplicationLiveStateSnapshot_HEALTHY
 	for _, r := range app.Resources {
 		if r.HealthStatus == CloudRunResourceState_OTHER {
-			status = ApplicationLiveStateSnapshot_OTHER
-			break
+			s.HealthStatus = ApplicationLiveStateSnapshot_OTHER
+			return
+		}
+
+		if r.HealthStatus == CloudRunResourceState_UNKNOWN {
+			s.HealthStatus = ApplicationLiveStateSnapshot_UNKNOWN
+			return
 		}
 	}
-	s.HealthStatus = status
+	s.HealthStatus = ApplicationLiveStateSnapshot_HEALTHY
 }
