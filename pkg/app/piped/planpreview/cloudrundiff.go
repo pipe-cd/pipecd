@@ -38,7 +38,7 @@ func (b *builder) cloudrundiff(
 		err                      error
 	)
 
-	newManifest, err = b.loadCloudRunManifests(ctx, *app, targetDSP)
+	newManifest, err = b.loadCloudRunManifest(ctx, *app, targetDSP)
 	if err != nil {
 		fmt.Fprintf(buf, "failed to load cloud run manifest at the head commit (%v)\n", err)
 		return nil, err
@@ -51,7 +51,7 @@ func (b *builder) cloudrundiff(
 			*app.GitPath,
 			b.secretDecrypter,
 		)
-		oldManifest, err = b.loadCloudRunManifests(ctx, *app, runningDSP)
+		oldManifest, err = b.loadCloudRunManifest(ctx, *app, runningDSP)
 		if err != nil {
 			fmt.Fprintf(buf, "failed to load cloud run manifest at the running commit (%v)\n", err)
 			return nil, err
@@ -89,7 +89,7 @@ func (b *builder) cloudrundiff(
 
 }
 
-func (b *builder) loadCloudRunManifests(ctx context.Context, app model.Application, dsp deploysource.Provider) (manifest provider.ServiceManifest, err error) {
+func (b *builder) loadCloudRunManifest(ctx context.Context, app model.Application, dsp deploysource.Provider) (provider.ServiceManifest, error) {
 	commit := dsp.Revision()
 	cache := provider.ServiceManifestCache{
 		AppID:  app.Id,
@@ -99,25 +99,24 @@ func (b *builder) loadCloudRunManifests(ctx context.Context, app model.Applicati
 
 	manifest, ok := cache.Get(commit)
 	if ok {
-		return
+		return manifest, nil
 	}
 
 	ds, err := dsp.Get(ctx, io.Discard)
 	if err != nil {
-		return
+		return provider.ServiceManifest{}, err
 	}
 
 	appCfg := ds.ApplicationConfig.CloudRunApplicationSpec
 	if appCfg == nil {
-		err = fmt.Errorf("malformed application configuration file")
-		return
+		return provider.ServiceManifest{}, fmt.Errorf("malformed application configuration file")
 	}
 
 	manifest, err = provider.LoadServiceManifest(ds.AppDir, appCfg.Input.ServiceManifestFile)
 	if err != nil {
-		return
+		return provider.ServiceManifest{}, err
 	}
 
 	cache.Put(commit, manifest)
-	return
+	return manifest, nil
 }
