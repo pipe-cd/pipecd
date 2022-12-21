@@ -153,6 +153,10 @@ func waitRevisionReady(ctx context.Context, client provider.Client, revisionName
 
 	doCheck := func() (bool, error) {
 		rvs, err := client.GetRevision(ctx, revisionName)
+		// NotFound should be a retriable error.
+		if err == provider.ErrRevisionNotFound {
+			return true, err
+		}
 		if err != nil {
 			return false, err
 		}
