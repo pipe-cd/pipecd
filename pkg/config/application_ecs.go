@@ -34,11 +34,9 @@ func (s *ECSApplicationSpec) Validate() error {
 }
 
 type ECSDeploymentInput struct {
-	// The name of network definition file placing in application directory.
-	// Default is cluster.json
+	// The name of network configuration file placing in application directory.
 	VpcConfigurationFile string `json:"vpcConfigurationFile"`
 	// The name of cluster definition file placing in application directory.
-	// Default is cluster.json
 	ClusterDefinitionFile string `json:"clusterDefinitionFile"`
 	// The name of service definition file placing in application directory.
 	// Default is service.json
