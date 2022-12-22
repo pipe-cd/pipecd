@@ -51,6 +51,12 @@ type ECSDeploymentInput struct {
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
 }
 
+func (in *ECSDeploymentInput) IsStandaloneTask() bool {
+	existClusterFile := in.ClusterDefinitionFile != ""
+	existVpcConfFile := in.VpcConfigurationFile != ""
+	return existClusterFile && existVpcConfFile
+}
+
 type ECSTargetGroups struct {
 	Primary json.RawMessage `json:"primary"`
 	Canary  json.RawMessage `json:"canary"`

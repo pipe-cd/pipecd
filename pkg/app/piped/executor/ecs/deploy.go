@@ -83,8 +83,8 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if isStandaloneTask(&e.appCfg.Input) {
-		awsVpcConfiguration, ok := LoadVpcConfiguration(&e.Input, e.appCfg.Input.VpcConfigurationFile, e.deploySource)
+	if e.appCfg.Input.IsStandaloneTask() {
+		awsVpcConfiguration, ok := loadVpcConfiguration(&e.Input, e.appCfg.Input.VpcConfigurationFile, e.deploySource)
 		if !ok {
 			return model.StageStatus_STAGE_FAILURE
 		}

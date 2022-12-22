@@ -84,8 +84,8 @@ func findPlatformProvider(in *executor.Input) (name string, cfg *config.Platform
 	return
 }
 
-func LoadVpcConfiguration(in *executor.Input, vpcConfiguration string, ds *deploysource.DeploySource) (types.AwsVpcConfiguration, bool) {
-	in.LogPersister.Infof("Loading vpc manifest at commit %s", ds.Revision)
+func loadVpcConfiguration(in *executor.Input, vpcConfiguration string, ds *deploysource.DeploySource) (types.AwsVpcConfiguration, bool) {
+	in.LogPersister.Infof("Loading VPC manifest at commit %s", ds.Revision)
 
 	awsVpcConfiguration, err := provider.LoadVpcConfiguration(ds.AppDir, vpcConfiguration)
 	if err != nil {
@@ -98,11 +98,11 @@ func LoadVpcConfiguration(in *executor.Input, vpcConfiguration string, ds *deplo
 }
 
 func loadClusterDefinition(in *executor.Input, clusterDefinitionFile string, ds *deploysource.DeploySource) (types.Cluster, bool) {
-	in.LogPersister.Infof("Loading Cluster manifest at commit %s", ds.Revision)
+	in.LogPersister.Infof("Loading ECS cluster manifest at commit %s", ds.Revision)
 
 	clusterDefinition, err := provider.LoadClusterDefinition(ds.AppDir, clusterDefinitionFile)
 	if err != nil {
-		in.LogPersister.Errorf("Failed to load ECS Cluster definition (%v)", err)
+		in.LogPersister.Errorf("Failed to load ECS cluster definition (%v)", err)
 		return types.Cluster{}, false
 	}
 
@@ -196,12 +196,6 @@ func applyStandaloneTask(
 		return nil, fmt.Errorf("unable to run ECS task %s: %v", *taskDefinition.TaskDefinitionArn, err)
 	}
 	return output, nil
-}
-
-func isStandaloneTask(in *config.ECSDeploymentInput) bool {
-	existClusterFile := in.ClusterDefinitionFile != ""
-	existVpcConfFile := in.VpcConfigurationFile != ""
-	return existClusterFile && existVpcConfFile
 }
 
 func runStandaloneTask(

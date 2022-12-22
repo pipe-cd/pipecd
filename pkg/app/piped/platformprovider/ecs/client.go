@@ -162,7 +162,6 @@ func (c *client) RunTask(ctx context.Context, cluster types.Cluster, awsVpcConfi
 	}
 
 	output, err := c.ecsClient.RunTask(ctx, input)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to run ECS task %s: %w", *taskDefinition.TaskDefinitionArn, err)
 	}
