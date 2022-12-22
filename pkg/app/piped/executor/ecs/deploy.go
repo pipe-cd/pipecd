@@ -85,10 +85,14 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 
 	if isStandaloneTask(&e.appCfg.Input) {
 		awsVpcConfiguration, ok := LoadVpcConfiguration(&e.Input, e.appCfg.Input.VpcConfigurationFile, e.deploySource)
+		if !ok {
+			return model.StageStatus_STAGE_FAILURE
+		}
 		clusterDefinition, ok := loadClusterDefinition(&e.Input, e.appCfg.Input.ClusterDefinitionFile, e.deploySource)
 		if !ok {
 			return model.StageStatus_STAGE_FAILURE
 		}
+
 		if !runStandaloneTask(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, clusterDefinition, awsVpcConfiguration, taskDefinition) {
 			return model.StageStatus_STAGE_FAILURE
 		}
