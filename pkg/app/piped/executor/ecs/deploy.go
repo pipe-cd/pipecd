@@ -89,7 +89,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		if !ok {
 			return model.StageStatus_STAGE_FAILURE
 		}
-		if !runStandaloneTask(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, clusterDefinition, awsVpcConfiguration, taskDefinition) {
+		if !runStandaloneTask(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, clusterDefinition, awsVpcConfiguration, taskDefinition) {
 			return model.StageStatus_STAGE_FAILURE
 		}
 		return model.StageStatus_STAGE_SUCCESS
