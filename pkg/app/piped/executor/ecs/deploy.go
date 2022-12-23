@@ -78,17 +78,19 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 }
 
 func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
-	taskDefinition, ok := loadTaskDefinition(&e.Input, e.appCfg.Input.TaskDefinitionFile, e.deploySource)
+	ecsInput := e.appCfg.Input
+
+	taskDefinition, ok := loadTaskDefinition(&e.Input, ecsInput.TaskDefinitionFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if e.appCfg.Input.IsStandaloneTask() {
-		awsVpcConfiguration, ok := loadVpcConfiguration(&e.Input, e.appCfg.Input.VpcConfigurationFile, e.deploySource)
+	if ecsInput.IsStandaloneTask() {
+		awsVpcConfiguration, ok := loadVpcConfiguration(&e.Input, ecsInput.VpcConfigurationFile, e.deploySource)
 		if !ok {
 			return model.StageStatus_STAGE_FAILURE
 		}
-		clusterDefinition, ok := loadClusterDefinition(&e.Input, e.appCfg.Input.ClusterDefinitionFile, e.deploySource)
+		clusterDefinition, ok := loadClusterDefinition(&e.Input, ecsInput.ClusterDefinitionFile, e.deploySource)
 		if !ok {
 			return model.StageStatus_STAGE_FAILURE
 		}
@@ -99,7 +101,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_SUCCESS
 	}
 
-	servicedefinition, ok := loadServiceDefinition(&e.Input, e.appCfg.Input.ServiceDefinitionFile, e.deploySource)
+	servicedefinition, ok := loadServiceDefinition(&e.Input, ecsInput.ServiceDefinitionFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
