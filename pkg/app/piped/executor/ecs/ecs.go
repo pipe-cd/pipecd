@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/aws/aws-sdk-go-v2/service/ecs"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"go.uber.org/zap"
 
@@ -190,12 +189,12 @@ func applyStandaloneTask(
 	clusterDefinition types.Cluster,
 	awsVpcConfiguration types.AwsVpcConfiguration,
 	taskDefinition types.TaskDefinition,
-) (*ecs.RunTaskOutput, error) {
-	output, err := cli.RunTask(ctx, clusterDefinition, awsVpcConfiguration, taskDefinition)
+) error {
+	_, _, err := cli.RunTask(ctx, clusterDefinition, awsVpcConfiguration, taskDefinition)
 	if err != nil {
-		return nil, fmt.Errorf("unable to run ECS task %s: %v", *taskDefinition.TaskDefinitionArn, err)
+		return fmt.Errorf("unable to run ECS task %s: %v", *taskDefinition.TaskDefinitionArn, err)
 	}
-	return output, nil
+	return nil
 }
 
 func runStandaloneTask(
@@ -212,7 +211,7 @@ func runStandaloneTask(
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
 		return false
 	}
-	_, err = applyStandaloneTask(ctx, client, clusterDefinition, awsVpcConfiguration, taskDefinition)
+	err = applyStandaloneTask(ctx, client, clusterDefinition, awsVpcConfiguration, taskDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
 		return false

@@ -19,7 +19,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/aws/aws-sdk-go-v2/service/ecs"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
@@ -38,7 +37,7 @@ type ECS interface {
 	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
-	RunTask(ctx context.Context, cluster types.Cluster, awsVpcConfiguration types.AwsVpcConfiguration, taskDefinition types.TaskDefinition) (*ecs.RunTaskOutput, error)
+	RunTask(ctx context.Context, cluster types.Cluster, awsVpcConfiguration types.AwsVpcConfiguration, taskDefinition types.TaskDefinition) ([]types.Task, []types.Failure, error)
 	GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error)
 	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale int) (*types.TaskSet, error)
 	DeleteTaskSet(ctx context.Context, service types.Service, taskSetArn string) error

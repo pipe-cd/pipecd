@@ -150,7 +150,12 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 	return output.TaskDefinition, nil
 }
 
-func (c *client) RunTask(ctx context.Context, cluster types.Cluster, awsVpcConfiguration types.AwsVpcConfiguration, taskDefinition types.TaskDefinition) (*ecs.RunTaskOutput, error) {
+func (c *client) RunTask(
+	ctx context.Context,
+	cluster types.Cluster,
+	awsVpcConfiguration types.AwsVpcConfiguration,
+	taskDefinition types.TaskDefinition,
+) ([]types.Task, []types.Failure, error) {
 	input := &ecs.RunTaskInput{
 		TaskDefinition: taskDefinition.Family,
 		Cluster:        cluster.ClusterArn,
@@ -163,9 +168,9 @@ func (c *client) RunTask(ctx context.Context, cluster types.Cluster, awsVpcConfi
 
 	output, err := c.ecsClient.RunTask(ctx, input)
 	if err != nil {
-		return nil, fmt.Errorf("failed to run ECS task %s: %w", *taskDefinition.TaskDefinitionArn, err)
+		return nil, nil, fmt.Errorf("failed to run ECS task %s: %w", *taskDefinition.TaskDefinitionArn, err)
 	}
-	return output, nil
+	return output.Tasks, output.Failures, nil
 }
 
 func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale int) (*types.TaskSet, error) {
