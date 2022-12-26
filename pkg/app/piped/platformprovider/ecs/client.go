@@ -152,17 +152,19 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 
 func (c *client) RunTask(
 	ctx context.Context,
-	cluster types.Cluster,
-	awsVpcConfiguration types.AwsVpcConfiguration,
 	taskDefinition types.TaskDefinition,
+	capacityProviderStrategy []types.CapacityProviderStrategyItem,
+	clusterArn string,
+	launchType string,
+	awsVpcConfiguration *types.AwsVpcConfiguration,
 ) ([]types.Task, []types.Failure, error) {
 	input := &ecs.RunTaskInput{
-		TaskDefinition: taskDefinition.Family,
-		Cluster:        cluster.ClusterArn,
-		Group:          taskDefinition.Family,
-		LaunchType:     types.LaunchTypeFargate,
+		TaskDefinition:           taskDefinition.Family,
+		CapacityProviderStrategy: capacityProviderStrategy,
+		Cluster:                  aws.String(clusterArn),
+		LaunchType:               types.LaunchType(launchType),
 		NetworkConfiguration: &types.NetworkConfiguration{
-			AwsvpcConfiguration: &awsVpcConfiguration,
+			AwsvpcConfiguration: awsVpcConfiguration,
 		},
 	}
 

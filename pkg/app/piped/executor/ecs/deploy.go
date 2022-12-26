@@ -86,16 +86,17 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 
 	if ecsInput.IsStandaloneTask() {
-		awsVpcConfiguration, ok := loadVpcConfiguration(&e.Input, ecsInput.VpcConfigurationFile, e.deploySource)
-		if !ok {
-			return model.StageStatus_STAGE_FAILURE
-		}
-		clusterDefinition, ok := loadClusterDefinition(&e.Input, ecsInput.ClusterDefinitionFile, e.deploySource)
-		if !ok {
-			return model.StageStatus_STAGE_FAILURE
-		}
-
-		if !runStandaloneTask(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, clusterDefinition, awsVpcConfiguration, taskDefinition) {
+		if !runStandaloneTask(
+			ctx,
+			&e.Input,
+			e.platformProviderName,
+			e.platformProviderCfg,
+			taskDefinition,
+			ecsInput.CapacityProviderStrategy,
+			ecsInput.ClusterArn,
+			ecsInput.LaunchType,
+			&ecsInput.AwsVpcConfiguration,
+		) {
 			return model.StageStatus_STAGE_FAILURE
 		}
 		return model.StageStatus_STAGE_SUCCESS

@@ -14,7 +14,11 @@
 
 package config
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+)
 
 // ECSApplicationSpec represents an application configuration for ECS application.
 type ECSApplicationSpec struct {
@@ -36,11 +40,20 @@ func (s *ECSApplicationSpec) Validate() error {
 type ECSDeploymentInput struct {
 	// The name of network configuration file placing in application directory.
 	VpcConfigurationFile string `json:"vpcConfigurationFile"`
-	// The name of cluster definition file placing in application directory.
-	ClusterDefinitionFile string `json:"clusterDefinitionFile"`
+	// The Amazon Resource Name (ARN) that identifies the cluster.
+	ClusterArn string `json:"clusterArn"`
+	// The launch type on which to run your task.
+	// If a launchType is specified, the capacityProviderStrategy parameter must be omitted.
+	LaunchType string `json:"launchType"`
+	// VpcConfiguration ECSVpcConfiguration `json:"awsvpcConfiguration"`
+	AwsVpcConfiguration types.AwsVpcConfiguration `json:"awsvpcConfiguration"`
+	// The capacity provider strategy to use for the task.
+	// If a capacityProviderStrategy is specified,
+	// the launchType parameter must be omitted.
+	CapacityProviderStrategy []types.CapacityProviderStrategyItem `json:"capacityProviderStrategy"`
 	// The name of service definition file placing in application directory.
 	// Default is service.json
-	ServiceDefinitionFile string `json:"serviceDefinitionFile" default:"service.json"`
+	ServiceDefinitionFile string `json:"serviceDefinitionFile"`
 	// The name of task definition file placing in application directory.
 	// Default is taskdef.json
 	TaskDefinitionFile string `json:"taskDefinitionFile" default:"taskdef.json"`
@@ -52,9 +65,7 @@ type ECSDeploymentInput struct {
 }
 
 func (in *ECSDeploymentInput) IsStandaloneTask() bool {
-	existClusterFile := in.ClusterDefinitionFile != ""
-	existVpcConfFile := in.VpcConfigurationFile != ""
-	return existClusterFile && existVpcConfFile
+	return in.ServiceDefinitionFile == ""
 }
 
 type ECSTargetGroups struct {
