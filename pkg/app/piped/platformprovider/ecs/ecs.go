@@ -61,12 +61,6 @@ type Registry interface {
 	Client(name string, cfg *config.PlatformProviderECSConfig, logger *zap.Logger) (Client, error)
 }
 
-// LoadVpcConfiguration returns AwsVpcConfiguration from a given vpc configuration file.
-func LoadVpcConfiguration(appDir, vpcConfigurationFilename string) (types.AwsVpcConfiguration, error) {
-	path := filepath.Join(appDir, vpcConfigurationFilename)
-	return loadVpcConfig(path)
-}
-
 // LoadServiceDefinition returns ServiceDefinition object from a given service definition file.
 func LoadServiceDefinition(appDir, serviceDefinitionFilename string) (types.Service, error) {
 	path := filepath.Join(appDir, serviceDefinitionFilename)

@@ -83,19 +83,6 @@ func findPlatformProvider(in *executor.Input) (name string, cfg *config.Platform
 	return
 }
 
-func loadVpcConfiguration(in *executor.Input, vpcConfiguration string, ds *deploysource.DeploySource) (types.AwsVpcConfiguration, bool) {
-	in.LogPersister.Infof("Loading VPC manifest at commit %s", ds.Revision)
-
-	awsVpcConfiguration, err := provider.LoadVpcConfiguration(ds.AppDir, vpcConfiguration)
-	if err != nil {
-		in.LogPersister.Errorf("Failed to load VPC configuration (%v)", err)
-		return types.AwsVpcConfiguration{}, false
-	}
-
-	in.LogPersister.Infof("Successfully loaded the VPC configuration at commit %s", ds.Revision)
-	return awsVpcConfiguration, true
-}
-
 func loadServiceDefinition(in *executor.Input, serviceDefinitionFile string, ds *deploysource.DeploySource) (types.Service, bool) {
 	in.LogPersister.Infof("Loading service manifest at commit %s", ds.Revision)
 
