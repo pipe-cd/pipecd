@@ -86,17 +86,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 
 	if ecsInput.IsStandaloneTask() {
-		if !runStandaloneTask(
-			ctx,
-			&e.Input,
-			e.platformProviderName,
-			e.platformProviderCfg,
-			taskDefinition,
-			ecsInput.CapacityProviderStrategy,
-			ecsInput.ClusterArn,
-			ecsInput.LaunchType,
-			&ecsInput.AwsVpcConfiguration,
-		) {
+		if !runStandaloneTask(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, &ecsInput) {
 			return model.StageStatus_STAGE_FAILURE
 		}
 		return model.StageStatus_STAGE_SUCCESS

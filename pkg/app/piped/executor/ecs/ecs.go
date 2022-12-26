@@ -174,12 +174,17 @@ func applyStandaloneTask(
 	ctx context.Context,
 	cli provider.Client,
 	taskDefinition types.TaskDefinition,
-	capacityProviderStrategy []types.CapacityProviderStrategyItem,
-	clusterArn string,
-	launchType string,
-	awsVpcConfiguration *types.AwsVpcConfiguration,
+	ecsInput *config.ECSDeploymentInput,
 ) error {
-	_, _, err := cli.RunTask(ctx, taskDefinition, capacityProviderStrategy, clusterArn, launchType, awsVpcConfiguration)
+	_, _, err := cli.RunTask(
+		ctx,
+		taskDefinition,
+		ecsInput.CapacityProviderStrategy,
+		ecsInput.ClusterArn,
+		ecsInput.LaunchType,
+		&ecsInput.AwsVpcConfiguration,
+	)
+
 	if err != nil {
 		return fmt.Errorf("unable to run ECS task %s: %v", *taskDefinition.TaskDefinitionArn, err)
 	}
@@ -192,10 +197,7 @@ func runStandaloneTask(
 	cloudProviderName string,
 	cloudProviderCfg *config.PlatformProviderECSConfig,
 	taskDefinition types.TaskDefinition,
-	capacityProviderStrategy []types.CapacityProviderStrategyItem,
-	clusterArn string,
-	launchType string,
-	awsVpcConfiguration *types.AwsVpcConfiguration,
+	ecsInput *config.ECSDeploymentInput,
 ) bool {
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
@@ -203,7 +205,7 @@ func runStandaloneTask(
 		return false
 	}
 
-	err = applyStandaloneTask(ctx, client, taskDefinition, capacityProviderStrategy, clusterArn, launchType, awsVpcConfiguration)
+	err = applyStandaloneTask(ctx, client, taskDefinition, ecsInput)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
 		return false

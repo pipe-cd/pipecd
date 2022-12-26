@@ -48,8 +48,7 @@ type ECSDeploymentInput struct {
 	// VpcConfiguration ECSVpcConfiguration `json:"awsvpcConfiguration"`
 	AwsVpcConfiguration types.AwsVpcConfiguration `json:"awsvpcConfiguration"`
 	// The capacity provider strategy to use for the task.
-	// If a capacityProviderStrategy is specified,
-	// the launchType parameter must be omitted.
+	// If a capacityProviderStrategy is specified, the launchType parameter must be omitted.
 	CapacityProviderStrategy []types.CapacityProviderStrategyItem `json:"capacityProviderStrategy"`
 	// The name of service definition file placing in application directory.
 	// Default is service.json

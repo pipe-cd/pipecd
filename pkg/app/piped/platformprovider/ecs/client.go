@@ -163,9 +163,10 @@ func (c *client) RunTask(
 		CapacityProviderStrategy: capacityProviderStrategy,
 		Cluster:                  aws.String(clusterArn),
 		LaunchType:               types.LaunchType(launchType),
-		NetworkConfiguration: &types.NetworkConfiguration{
-			AwsvpcConfiguration: awsVpcConfiguration,
-		},
+	}
+
+	if len(awsVpcConfiguration.Subnets) > 0 {
+		input.NetworkConfiguration.AwsvpcConfiguration = awsVpcConfiguration
 	}
 
 	output, err := c.ecsClient.RunTask(ctx, input)
