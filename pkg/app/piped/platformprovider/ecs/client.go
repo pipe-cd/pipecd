@@ -168,7 +168,7 @@ func (c *client) RunTask(
 		input.NetworkConfiguration = &types.NetworkConfiguration{
 			AwsvpcConfiguration: &types.AwsVpcConfiguration{
 				Subnets:        awsVpcConfiguration.Subnets,
-				AssignPublicIp: types.AssignPublicIp(awsVpcConfiguration.AssignPublicIp),
+				AssignPublicIp: types.AssignPublicIp(awsVpcConfiguration.AssignPublicIP),
 				SecurityGroups: awsVpcConfiguration.SecurityGroups,
 			},
 		}

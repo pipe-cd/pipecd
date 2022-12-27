@@ -62,7 +62,7 @@ func (in *ECSDeploymentInput) IsStandaloneTask() bool {
 
 type ECSVpcConfiguration struct {
 	Subnets        []string
-	AssignPublicIp string
+	AssignPublicIP string
 	SecurityGroups []string
 }
 
