@@ -157,21 +157,6 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 	return service, nil
 }
 
-func applyStandaloneTask(
-	ctx context.Context,
-	cli provider.Client,
-	taskDefinition types.TaskDefinition,
-	ecsInput *config.ECSDeploymentInput,
-) error {
-	return cli.RunTask(
-		ctx,
-		taskDefinition,
-		ecsInput.ClusterArn,
-		ecsInput.LaunchType,
-		&ecsInput.AwsVpcConfiguration,
-	)
-}
-
 func runStandaloneTask(
 	ctx context.Context,
 	in *executor.Input,
@@ -186,7 +171,13 @@ func runStandaloneTask(
 		return false
 	}
 
-	err = applyStandaloneTask(ctx, client, taskDefinition, ecsInput)
+	err = client.RunTask(
+		ctx,
+		taskDefinition,
+		ecsInput.ClusterArn,
+		ecsInput.LaunchType,
+		&ecsInput.AwsVpcConfiguration,
+	)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
 		return false
