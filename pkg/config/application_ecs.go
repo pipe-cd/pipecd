@@ -38,20 +38,15 @@ func (s *ECSApplicationSpec) Validate() error {
 }
 
 type ECSDeploymentInput struct {
-	// The name of network configuration file placing in application directory.
-	VpcConfigurationFile string `json:"vpcConfigurationFile"`
 	// The Amazon Resource Name (ARN) that identifies the cluster.
 	ClusterArn string `json:"clusterArn"`
 	// The launch type on which to run your task.
-	// If a launchType is specified, the capacityProviderStrategy parameter must be omitted.
-	LaunchType string `json:"launchType"`
+	// https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_types.html
+	// Default is FARGATE
+	LaunchType string `json:"launchType" default:"FARGATE"`
 	// VpcConfiguration ECSVpcConfiguration `json:"awsvpcConfiguration"`
 	AwsVpcConfiguration types.AwsVpcConfiguration `json:"awsvpcConfiguration"`
-	// The capacity provider strategy to use for the task.
-	// If a capacityProviderStrategy is specified, the launchType parameter must be omitted.
-	CapacityProviderStrategy []types.CapacityProviderStrategyItem `json:"capacityProviderStrategy"`
 	// The name of service definition file placing in application directory.
-	// Default is service.json
 	ServiceDefinitionFile string `json:"serviceDefinitionFile"`
 	// The name of task definition file placing in application directory.
 	// Default is taskdef.json

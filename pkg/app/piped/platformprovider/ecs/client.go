@@ -153,27 +153,27 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 func (c *client) RunTask(
 	ctx context.Context,
 	taskDefinition types.TaskDefinition,
-	capacityProviderStrategy []types.CapacityProviderStrategyItem,
 	clusterArn string,
 	launchType string,
 	awsVpcConfiguration *types.AwsVpcConfiguration,
-) ([]types.Task, []types.Failure, error) {
+) error {
 	input := &ecs.RunTaskInput{
-		TaskDefinition:           taskDefinition.Family,
-		CapacityProviderStrategy: capacityProviderStrategy,
-		Cluster:                  aws.String(clusterArn),
-		LaunchType:               types.LaunchType(launchType),
+		TaskDefinition: taskDefinition.Family,
+		Cluster:        aws.String(clusterArn),
+		LaunchType:     types.LaunchType(launchType),
 	}
 
 	if len(awsVpcConfiguration.Subnets) > 0 {
-		input.NetworkConfiguration.AwsvpcConfiguration = awsVpcConfiguration
+		input.NetworkConfiguration = &types.NetworkConfiguration{
+			AwsvpcConfiguration: awsVpcConfiguration,
+		}
 	}
 
-	output, err := c.ecsClient.RunTask(ctx, input)
+	_, err := c.ecsClient.RunTask(ctx, input)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to run ECS task %s: %w", *taskDefinition.TaskDefinitionArn, err)
+		return fmt.Errorf("failed to run ECS task %s: %w", *taskDefinition.TaskDefinitionArn, err)
 	}
-	return output.Tasks, output.Failures, nil
+	return nil
 }
 
 func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale int) (*types.TaskSet, error) {

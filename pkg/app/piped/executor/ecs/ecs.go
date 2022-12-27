@@ -163,10 +163,9 @@ func applyStandaloneTask(
 	taskDefinition types.TaskDefinition,
 	ecsInput *config.ECSDeploymentInput,
 ) error {
-	_, _, err := cli.RunTask(
+	err := cli.RunTask(
 		ctx,
 		taskDefinition,
-		ecsInput.CapacityProviderStrategy,
 		ecsInput.ClusterArn,
 		ecsInput.LaunchType,
 		&ecsInput.AwsVpcConfiguration,
