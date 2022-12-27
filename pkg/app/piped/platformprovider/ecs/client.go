@@ -29,6 +29,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
+	appconfig "github.com/pipe-cd/pipecd/pkg/config"
 )
 
 type client struct {
@@ -148,6 +149,36 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 		return nil, fmt.Errorf("failed to register ECS task definition of family %s: %w", *taskDefinition.Family, err)
 	}
 	return output.TaskDefinition, nil
+}
+
+func (c *client) RunTask(
+	ctx context.Context,
+	taskDefinition types.TaskDefinition,
+	clusterArn string,
+	launchType string,
+	awsVpcConfiguration *appconfig.ECSVpcConfiguration,
+) error {
+	input := &ecs.RunTaskInput{
+		TaskDefinition: taskDefinition.Family,
+		Cluster:        aws.String(clusterArn),
+		LaunchType:     types.LaunchType(launchType),
+	}
+
+	if len(awsVpcConfiguration.Subnets) > 0 {
+		input.NetworkConfiguration = &types.NetworkConfiguration{
+			AwsvpcConfiguration: &types.AwsVpcConfiguration{
+				Subnets:        awsVpcConfiguration.Subnets,
+				AssignPublicIp: types.AssignPublicIp(awsVpcConfiguration.AssignPublicIP),
+				SecurityGroups: awsVpcConfiguration.SecurityGroups,
+			},
+		}
+	}
+
+	_, err := c.ecsClient.RunTask(ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to run ECS task %s: %w", *taskDefinition.TaskDefinitionArn, err)
+	}
+	return nil
 }
 
 func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale int) (*types.TaskSet, error) {

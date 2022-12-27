@@ -28,6 +28,7 @@ func TestECSApplicationConfig(t *testing.T) {
 		fileName           string
 		expectedKind       Kind
 		expectedAPIVersion string
+		expectedLaunchType string
 		expectedSpec       interface{}
 		expectedError      error
 	}{
@@ -60,6 +61,7 @@ func TestECSApplicationConfig(t *testing.T) {
 					TargetGroups: ECSTargetGroups{
 						Primary: json.RawMessage(`{"containerName":"web","containerPort":80,"targetGroupArn":"arn:aws:elasticloadbalancing:xyz"}`),
 					},
+					LaunchType:   "FARGATE",
 					AutoRollback: newBoolPointer(true),
 				},
 			},
