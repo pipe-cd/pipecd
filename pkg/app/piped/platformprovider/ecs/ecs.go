@@ -42,7 +42,7 @@ type ECS interface {
 		taskDefinition types.TaskDefinition,
 		clusterArn string,
 		launchType string,
-		awsVpcConfiguration *types.AwsVpcConfiguration,
+		awsVpcConfiguration *config.ECSVpcConfiguration,
 	) error
 	GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error)
 	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale int) (*types.TaskSet, error)

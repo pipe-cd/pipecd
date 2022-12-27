@@ -16,8 +16,6 @@ package config
 
 import (
 	"encoding/json"
-
-	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 )
 
 // ECSApplicationSpec represents an application configuration for ECS application.
@@ -45,7 +43,7 @@ type ECSDeploymentInput struct {
 	// Default is FARGATE
 	LaunchType string `json:"launchType" default:"FARGATE"`
 	// VpcConfiguration ECSVpcConfiguration `json:"awsvpcConfiguration"`
-	AwsVpcConfiguration types.AwsVpcConfiguration `json:"awsvpcConfiguration"`
+	AwsVpcConfiguration ECSVpcConfiguration `json:"awsvpcConfiguration"`
 	// The name of service definition file placing in application directory.
 	ServiceDefinitionFile string `json:"serviceDefinitionFile"`
 	// The name of task definition file placing in application directory.
@@ -60,6 +58,12 @@ type ECSDeploymentInput struct {
 
 func (in *ECSDeploymentInput) IsStandaloneTask() bool {
 	return in.ServiceDefinitionFile == ""
+}
+
+type ECSVpcConfiguration struct {
+	Subnets        []string
+	AssignPublicIp string
+	SecurityGroups []string
 }
 
 type ECSTargetGroups struct {

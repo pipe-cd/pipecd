@@ -29,6 +29,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
+	appconfig "github.com/pipe-cd/pipecd/pkg/config"
 )
 
 type client struct {
@@ -155,7 +156,7 @@ func (c *client) RunTask(
 	taskDefinition types.TaskDefinition,
 	clusterArn string,
 	launchType string,
-	awsVpcConfiguration *types.AwsVpcConfiguration,
+	awsVpcConfiguration *appconfig.ECSVpcConfiguration,
 ) error {
 	input := &ecs.RunTaskInput{
 		TaskDefinition: taskDefinition.Family,
@@ -165,7 +166,11 @@ func (c *client) RunTask(
 
 	if len(awsVpcConfiguration.Subnets) > 0 {
 		input.NetworkConfiguration = &types.NetworkConfiguration{
-			AwsvpcConfiguration: awsVpcConfiguration,
+			AwsvpcConfiguration: &types.AwsVpcConfiguration{
+				Subnets:        awsVpcConfiguration.Subnets,
+				AssignPublicIp: types.AssignPublicIp(awsVpcConfiguration.AssignPublicIp),
+				SecurityGroups: awsVpcConfiguration.SecurityGroups,
+			},
 		}
 	}
 

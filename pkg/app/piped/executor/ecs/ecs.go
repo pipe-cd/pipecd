@@ -163,18 +163,13 @@ func applyStandaloneTask(
 	taskDefinition types.TaskDefinition,
 	ecsInput *config.ECSDeploymentInput,
 ) error {
-	err := cli.RunTask(
+	return cli.RunTask(
 		ctx,
 		taskDefinition,
 		ecsInput.ClusterArn,
 		ecsInput.LaunchType,
 		&ecsInput.AwsVpcConfiguration,
 	)
-
-	if err != nil {
-		return fmt.Errorf("unable to run ECS task %s: %v", *taskDefinition.TaskDefinitionArn, err)
-	}
-	return nil
 }
 
 func runStandaloneTask(
