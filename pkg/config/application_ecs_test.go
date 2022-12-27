@@ -28,6 +28,7 @@ func TestECSApplicationConfig(t *testing.T) {
 		fileName           string
 		expectedKind       Kind
 		expectedAPIVersion string
+		expectedLaunchType string
 		expectedSpec       interface{}
 		expectedError      error
 	}{
@@ -35,6 +36,7 @@ func TestECSApplicationConfig(t *testing.T) {
 			fileName:           "testdata/application/ecs-app.yaml",
 			expectedKind:       KindECSApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedLaunchType: "FARGATE",
 			expectedSpec: &ECSApplicationSpec{
 				GenericApplicationSpec: GenericApplicationSpec{
 					Timeout: Duration(6 * time.Hour),
