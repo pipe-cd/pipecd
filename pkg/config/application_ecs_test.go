@@ -36,7 +36,6 @@ func TestECSApplicationConfig(t *testing.T) {
 			fileName:           "testdata/application/ecs-app.yaml",
 			expectedKind:       KindECSApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedLaunchType: "FARGATE",
 			expectedSpec: &ECSApplicationSpec{
 				GenericApplicationSpec: GenericApplicationSpec{
 					Timeout: Duration(6 * time.Hour),
@@ -62,6 +61,7 @@ func TestECSApplicationConfig(t *testing.T) {
 					TargetGroups: ECSTargetGroups{
 						Primary: json.RawMessage(`{"containerName":"web","containerPort":80,"targetGroupArn":"arn:aws:elasticloadbalancing:xyz"}`),
 					},
+					LaunchType:   "FARGATE",
 					AutoRollback: newBoolPointer(true),
 				},
 			},
