@@ -151,13 +151,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 	return output.TaskDefinition, nil
 }
 
-func (c *client) RunTask(
-	ctx context.Context,
-	taskDefinition types.TaskDefinition,
-	clusterArn string,
-	launchType string,
-	awsVpcConfiguration *appconfig.ECSVpcConfiguration,
-) error {
+func (c *client) RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *appconfig.ECSVpcConfiguration) error {
 	input := &ecs.RunTaskInput{
 		TaskDefinition: taskDefinition.Family,
 		Cluster:        aws.String(clusterArn),
