@@ -48,7 +48,7 @@ b: bv
 c:
 - 1
 - 2
-			`,
+`,
 		},
 	}
 	for _, tc := range testcases {
@@ -215,7 +215,7 @@ foo: new-text
 		{
 			name: "valid value with comment at the same line",
 			yml: `foo: bar # comments
-			`,
+`,
 			path:    "$.foo",
 			value:   "new-text",
 			want:    []byte("foo: new-text # comments\n"),
