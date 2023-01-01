@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/diff"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 const (
@@ -39,7 +40,19 @@ func (d *DiffResult) NoChange() bool {
 }
 
 func Diff(old, new ServiceManifest, opts ...diff.Option) (*DiffResult, error) {
-	d, err := diff.DiffUnstructureds(*old.u, *new.u, opts...)
+	var oldu, newu unstructured.Unstructured
+	if old.u == nil {
+		oldu = unstructured.Unstructured{}
+	} else {
+		oldu = *old.u
+	}
+	if new.u == nil {
+		newu = unstructured.Unstructured{}
+	} else {
+		newu = *new.u
+	}
+
+	d, err := diff.DiffUnstructureds(oldu, newu, opts...)
 	if err != nil {
 		return nil, err
 	}

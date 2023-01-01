@@ -32,15 +32,37 @@ func TestDiff(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, new)
 
+	empty := ServiceManifest{
+		Name: "empty-manifest",
+	}
+
 	// Have diff.
 	got, err := Diff(old, new)
 	require.NoError(t, err)
 	require.NotEmpty(t, got)
+	require.NotEmpty(t, got.Old.u)
+	require.NotEmpty(t, got.New.u)
+
+	// Have diff(old is empty).
+	got, err = Diff(empty, new)
+	require.NoError(t, err)
+	require.NotEmpty(t, got)
+	require.Empty(t, got.Old.u)
+	require.NotEmpty(t, got.New.u)
 
 	// Don't have diff.
 	got, err = Diff(old, old)
 	require.NoError(t, err)
 	require.NotEmpty(t, got)
+	require.Empty(t, got.Old)
+	require.Empty(t, got.New)
+
+	// Don't have diff(manifests are empty).
+	got, err = Diff(empty, empty)
+	require.NoError(t, err)
+	require.NotEmpty(t, got)
+	require.Empty(t, got.Old.u)
+	require.Empty(t, got.New.u)
 }
 
 func TestDiffResult_NoChange(t *testing.T) {
