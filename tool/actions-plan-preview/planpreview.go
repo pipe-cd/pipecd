@@ -176,9 +176,11 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 	}
 
 	b.WriteString(fmt.Sprintf(hasChangeTitleFormat, event.HeadCommit, len(r.Applications)))
-	b.WriteString("\n## Plans\n\n")
 
 	changedApps, pipelineApps, quickSyncApps := groupApplicationResults(r.Applications)
+	if len(changedApps)+len(pipelineApps)+len(quickSyncApps) > 0 {
+		b.WriteString("\n## Plans\n\n")
+	}
 
 	var detailLen int
 	for _, app := range changedApps {
