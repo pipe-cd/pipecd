@@ -176,13 +176,13 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 	}
 
 	b.WriteString(fmt.Sprintf(hasChangeTitleFormat, event.HeadCommit, len(r.Applications)))
+	b.WriteString("\n## Plans\n\n")
 
 	changedApps, pipelineApps, quickSyncApps := groupApplicationResults(r.Applications)
 
 	var detailLen int
-
 	for _, app := range changedApps {
-		fmt.Fprintf(&b, "\n## %s\n", makeTitleText(&app.ApplicationInfo))
+		fmt.Fprintf(&b, "\n### %s\n", makeTitleText(&app.ApplicationInfo))
 		fmt.Fprintf(&b, "Sync strategy: %s\n", app.SyncStrategy)
 		fmt.Fprintf(&b, "Summary: %s\n\n", app.PlanSummary)
 
@@ -211,7 +211,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 	}
 
 	if len(pipelineApps)+len(quickSyncApps) > 0 {
-		b.WriteString("\n## No resource changes were detected but the following apps will also be triggered\n")
+		b.WriteString("\n### No resource changes were detected but the following apps will also be triggered\n")
 
 		if len(pipelineApps) > 0 {
 			b.WriteString("\n###### `PIPELINE`\n")
@@ -232,13 +232,13 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		return b.String()
 	}
 
-	fmt.Fprintf(&b, "\n---\n\n## NOTE\n\n")
+	fmt.Fprintf(&b, "\n## NOTE\n\n")
 
 	if len(r.FailureApplications) > 0 {
 		fmt.Fprintf(&b, "**An error occurred while building plan-preview for the following applications**\n")
 
 		for _, app := range r.FailureApplications {
-			fmt.Fprintf(&b, "\n## %s\n", makeTitleText(&app.ApplicationInfo))
+			fmt.Fprintf(&b, "\n### %s\n", makeTitleText(&app.ApplicationInfo))
 			fmt.Fprintf(&b, "Reason: %s\n\n", app.Reason)
 
 			var lang = "diff"
@@ -256,7 +256,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		fmt.Fprintf(&b, "**An error occurred while building plan-preview for applications of the following Pipeds**\n")
 
 		for _, piped := range r.FailurePipeds {
-			fmt.Fprintf(&b, "\n## piped: [%s](%s)\n", piped.PipedID, piped.PipedURL)
+			fmt.Fprintf(&b, "\n### piped: [%s](%s)\n", piped.PipedID, piped.PipedURL)
 			fmt.Fprintf(&b, "Reason: %s\n\n", piped.Reason)
 		}
 	}
