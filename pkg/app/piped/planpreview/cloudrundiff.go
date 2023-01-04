@@ -44,18 +44,21 @@ func (b *builder) cloudrundiff(
 		return nil, err
 	}
 
-	if lastCommit != "" {
-		runningDSP := deploysource.NewProvider(
-			b.workingDir,
-			deploysource.NewGitSourceCloner(b.gitClient, b.repoCfg, "running", lastCommit),
-			*app.GitPath,
-			b.secretDecrypter,
-		)
-		oldManifest, err = b.loadCloudRunManifest(ctx, *app, runningDSP)
-		if err != nil {
-			fmt.Fprintf(buf, "failed to load cloud run manifest at the running commit (%v)\n", err)
-			return nil, err
-		}
+	if lastCommit == "" {
+		fmt.Fprintf(buf, "failed to find the commit of the last successful deployment")
+		return nil, fmt.Errorf("cannot get the old manifest without the last successful deployment")
+	}
+
+	runningDSP := deploysource.NewProvider(
+		b.workingDir,
+		deploysource.NewGitSourceCloner(b.gitClient, b.repoCfg, "running", lastCommit),
+		*app.GitPath,
+		b.secretDecrypter,
+	)
+	oldManifest, err = b.loadCloudRunManifest(ctx, *app, runningDSP)
+	if err != nil {
+		fmt.Fprintf(buf, "failed to load cloud run manifest at the running commit (%v)\n", err)
+		return nil, err
 	}
 
 	result, err := provider.Diff(
