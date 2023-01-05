@@ -171,15 +171,22 @@ func runStandaloneTask(
 		return false
 	}
 
+	in.LogPersister.Infof("Start applying the ECS task definition")
+	td, err := applyTaskDefinition(ctx, client, taskDefinition)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
+		return false
+	}
+
 	err = client.RunTask(
 		ctx,
-		taskDefinition,
+		*td,
 		ecsInput.ClusterArn,
 		ecsInput.LaunchType,
 		&ecsInput.AwsVpcConfiguration,
 	)
 	if err != nil {
-		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
+		in.LogPersister.Errorf("Failed to run ECS task: %v", err)
 		return false
 	}
 	return true
