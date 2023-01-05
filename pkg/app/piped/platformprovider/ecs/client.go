@@ -170,7 +170,7 @@ func (c *client) RunTask(ctx context.Context, taskDefinition types.TaskDefinitio
 
 	_, err := c.ecsClient.RunTask(ctx, input)
 	if err != nil {
-		return fmt.Errorf("failed to run ECS task %s: %w", *taskDefinition.TaskDefinitionArn, err)
+		return fmt.Errorf("failed to run ECS task %s: %w", *taskDefinition.Family, err)
 	}
 	return nil
 }
