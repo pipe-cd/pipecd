@@ -152,6 +152,10 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 }
 
 func (c *client) RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *appconfig.ECSVpcConfiguration) error {
+	if taskDefinition.TaskDefinitionArn == nil {
+		return fmt.Errorf("failed to run task of task family %s: no task definition provided", *taskDefinition.Family)
+	}
+
 	input := &ecs.RunTaskInput{
 		TaskDefinition: taskDefinition.Family,
 		Cluster:        aws.String(clusterArn),
@@ -170,7 +174,7 @@ func (c *client) RunTask(ctx context.Context, taskDefinition types.TaskDefinitio
 
 	_, err := c.ecsClient.RunTask(ctx, input)
 	if err != nil {
-		return fmt.Errorf("failed to run ECS task %s: %w", *taskDefinition.Family, err)
+		return fmt.Errorf("failed to run ECS task %s: %w", *taskDefinition.TaskDefinitionArn, err)
 	}
 	return nil
 }
