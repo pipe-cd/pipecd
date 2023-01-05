@@ -184,7 +184,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 
 	var detailLen int
 	for _, app := range changedApps {
-		fmt.Fprintf(&b, "\n### %s\n", makeTitleText(&app.ApplicationInfo))
+		fmt.Fprintf(&b, "### %s\n", makeTitleText(&app.ApplicationInfo))
 		fmt.Fprintf(&b, "Sync strategy: %s\n", app.SyncStrategy)
 		fmt.Fprintf(&b, "Summary: %s\n\n", app.PlanSummary)
 
@@ -213,7 +213,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 	}
 
 	if len(pipelineApps)+len(quickSyncApps) > 0 {
-		b.WriteString("\n### No resource changes were detected but the following apps will also be triggered\n")
+		b.WriteString("### No resource changes were detected but the following apps will also be triggered\n")
 
 		if len(pipelineApps) > 0 {
 			b.WriteString("\n###### `PIPELINE`\n")
