@@ -6,10 +6,6 @@ description: >
   Specific guide to configuring deployment for Amazon ECS application.
 ---
 
-To deploy an Amazon ECS application, `TaskDefinition` configuration file must be located in the application directory. This file contains all configuration for [ECS TaskDefinition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html) object and will be used by Piped agent while deploy your application/service to ECS cluster.
-
-> To deploy your application to run continually or to place it behind a load balancer, You need to create [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html). `Service` configuration file also must be located in the application directory. This file contains all configuration for [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html) object.
-
 There are two main ways to deploy an Amazon ECS application.
 - Your application is a one-time or periodic batch job.
   - it's a standalone task.
@@ -17,6 +13,9 @@ There are two main ways to deploy an Amazon ECS application.
 - Your application is deployed to run continuously or behind a load balancer.
   - you need to prepare `TaskDefinition` and `Service`
 
+To deploy an Amazon ECS application, the `TaskDefinition` configuration file must be located in the application directory. This file contains all configuration for [ECS TaskDefinition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html) object and will be used by Piped agent while deploying your application/service to the ECS cluster.
+
+To deploy your application to run continuously or to place it behind a load balancer, You need to create [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html). The `Service` configuration file also must be located in the application directory. This file contains all configurations for [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html) object.
 If you're not familiar with ECS, you can get examples for those files from [here](../../../../examples/#ecs-applications).
 
 ## Quick sync
@@ -25,8 +24,30 @@ By default, when the [pipeline](../../../configuration-reference/#ecs-applicatio
 Quick sync for an ECS deployment will roll out the new version and switch all traffic to it immediately.
 > In case of standalone task, only Quick sync is supported.
 
-Here is an example of running standalone task:
-```yaml
+Here is an example for Quick sync.
+
+  {{< tabpane >}}
+  {{< tab lang="yaml" header="application" >}}
+apiVersion: pipecd.dev/v1beta1
+kind: ECSApp
+spec:
+  name: simple
+  labels:
+    env: example
+    team: xyz
+  input:
+    # Path to Service configuration file in Yaml/JSON format.
+    serviceDefinitionFile: servicedef.yaml
+    # Path to TaskDefinition configuration file in Yaml/JSON format.
+    # Default is `taskdef.json`
+    taskDefinitionFile: taskdef.yaml
+    targetGroups:
+      primary:
+        targetGroupArn: arn:aws:elasticloadbalancing:ap-northeast-1:XXXX:targetgroup/ecs-lb/YYYY
+        containerName: web
+        containerPort: 80
+  {{< /tab >}}
+  {{< tab lang="yaml" header="standalone task" >}}
 apiVersion: pipecd.dev/v1beta1
 kind: ECSApp
 spec:
@@ -46,7 +67,8 @@ spec:
         - subnet-YYYY
       securityGroups:
           - sg-YYYY
-```
+  {{< /tab >}}
+  {{< /tabpane >}}
 
 ## Sync with the specified pipeline
 
@@ -79,7 +101,6 @@ kind: ECSApp
 spec:
   input:
     # Path to Service configuration file in Yaml/JSON format.
-    # Default is `service.json`
     serviceDefinitionFile: servicedef.yaml
     # Path to TaskDefinition configuration file in Yaml/JSON format.
     # Default is `taskdef.json`
