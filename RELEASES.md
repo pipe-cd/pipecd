@@ -60,7 +60,7 @@ A bugfix for a functional issue (not a data loss or security issue) that only af
 
   This example assumes that the name of a release branch is `release-vX.Y.x` and the numbers of pull request are `#1234` and `#5678`:
   ```shell
-  make release/pick branch=release-vX.Y.x pull_numbers=1234 5678
+  make release/pick branch=release-vX.Y.x pull_numbers="1234 5678"
   ````
 
 - Get a review and merge.
