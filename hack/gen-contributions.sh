@@ -21,7 +21,6 @@ head -n $LINE_NUM README.md >> README.md.tmp
 
 while read -r line
 do
-    # echo "$line"
     cat <<EOT >> README.md.tmp
 $line
 EOT
