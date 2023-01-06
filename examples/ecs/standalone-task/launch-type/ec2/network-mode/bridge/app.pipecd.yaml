@@ -1,0 +1,15 @@
+apiVersion: pipecd.dev/v1beta1
+kind: ECSApp
+spec:
+  name: standalonetask-ec2-bridge-1
+  labels:
+    env: example
+    team: xyz
+  input:
+    taskDefinitionFile: taskdef.yaml
+    launchType: EC2
+    clusterArn: arn:aws:ecs:ap-northeast-1:XXXX:cluster/test-cluster
+  description: |
+    This app demonstrates how to deploy an ECS application with [Quick Sync](https://pipecd.dev/docs/concepts/#sync-strategy) strategy.\
+    No pipeline is specified then in each deployment PipeCD will roll out the new version and switch all traffic to it immediately.\
+    References: [adding a new app](https://pipecd.dev/docs/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)
