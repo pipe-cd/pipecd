@@ -6,7 +6,16 @@ description: >
   Specific guide to configuring deployment for Amazon ECS application.
 ---
 
-Deploying an Amazon ECS application requires `TaskDefinition` and `Service` configuration files placing inside the application directory. Those files contain all configuration for [ECS TaskDefinition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html) object and [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html) object, and will be used by Piped agent while deploy your application/service to ECS cluster.
+To deploy an Amazon ECS application, `TaskDefinition` configuration file must be located in the application directory. This file contains all configuration for [ECS TaskDefinition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html) object and will be used by Piped agent while deploy your application/service to ECS cluster.
+
+> To deploy your application to run continually or to place it behind a load balancer, You need to create [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html). `Service` configuration file also must be located in the application directory. This file contains all configuration for [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html) object.
+
+There are two main ways to deploy an Amazon ECS application.
+- Your application is a one-time or periodic batch job.
+  - it's a standalone task.
+  - you need to prepare `TaskDefinition`
+- Your application is deployed to run continuously or behind a load balancer.
+  - you need to prepare `TaskDefinition` and `Service`
 
 If you're not familiar with ECS, you can get examples for those files from [here](../../../../examples/#ecs-applications).
 
@@ -14,6 +23,7 @@ If you're not familiar with ECS, you can get examples for those files from [here
 
 By default, when the [pipeline](../../../configuration-reference/#ecs-application) was not specified, PipeCD triggers a quick sync deployment for the merged pull request.
 Quick sync for an ECS deployment will roll out the new version and switch all traffic to it immediately.
+> In case of standalone task, only Quick sync is supported.
 
 ## Sync with the specified pipeline
 
