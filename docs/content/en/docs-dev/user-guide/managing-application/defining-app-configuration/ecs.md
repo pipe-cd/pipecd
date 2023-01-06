@@ -16,6 +16,7 @@ There are two main ways to deploy an Amazon ECS application.
 To deploy an Amazon ECS application, the `TaskDefinition` configuration file must be located in the application directory. This file contains all configuration for [ECS TaskDefinition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html) object and will be used by Piped agent while deploying your application/service to the ECS cluster.
 
 To deploy your application to run continuously or to place it behind a load balancer, You need to create [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html). The `Service` configuration file also must be located in the application directory. This file contains all configurations for [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html) object.
+
 If you're not familiar with ECS, you can get examples for those files from [here](../../../../examples/#ecs-applications).
 
 ## Quick sync
