@@ -25,6 +25,29 @@ By default, when the [pipeline](../../../configuration-reference/#ecs-applicatio
 Quick sync for an ECS deployment will roll out the new version and switch all traffic to it immediately.
 > In case of standalone task, only Quick sync is supported.
 
+Here is an example of running standalone task:
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: ECSApp
+spec:
+  name: standalonetask-fargate
+  labels:
+    env: example
+    team: xyz
+  input:
+    # Path to TaskDefinition configuration file in Yaml/JSON format.
+    # Default is `taskdef.json`
+    taskDefinitionFile: taskdef.yaml
+    clusterArn: arn:aws:ecs:ap-northeast-1:XXXX:cluster/test-cluster
+    awsvpcConfiguration:
+      assignPublicIp: ENABLED
+      subnets:
+        - subnet-YYYY
+        - subnet-YYYY
+      securityGroups:
+          - sg-YYYY
+```
+
 ## Sync with the specified pipeline
 
 The [pipeline](../../../configuration-reference/#ecs-application) field in the application configuration is used to customize the way to do the deployment.
