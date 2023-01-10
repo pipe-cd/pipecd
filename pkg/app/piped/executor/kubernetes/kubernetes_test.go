@@ -601,7 +601,7 @@ metadata:
   name: canary-by-config-change
 data:
   two: "2"
-			`,
+`,
 			expected: `
 apiVersion: apps/v1
 kind: Deployment
@@ -645,7 +645,7 @@ metadata:
   name: canary-by-config-change
 data:
   two: "2"
-			`,
+`,
 		},
 		{
 			name: "multiple configs",
@@ -704,7 +704,7 @@ metadata:
 type: my-type
 data:
   "one": "Mg=="
-			`,
+`,
 			expected: `
 apiVersion: apps/v1
 kind: Deployment
@@ -762,7 +762,7 @@ metadata:
 type: my-type
 data:
   "one": "Mg=="
-			`,
+`,
 		},
 	}
 
