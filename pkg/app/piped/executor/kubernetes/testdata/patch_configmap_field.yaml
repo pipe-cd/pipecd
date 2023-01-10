@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: envoy-config
 data:
-  envoy-config: |-
+  envoy-config: |
     admin:
       address:
         socket_address:
@@ -42,7 +42,7 @@ kind: ConfigMap
 metadata:
   name: envoy-config
 data:
-  envoy-config: |-
+  envoy-config: |
     admin:
       address:
         socket_address:
