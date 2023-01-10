@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-echo "Update the contributors list on README.md ..."
+echo "Updating the contributors list on README.md ..."
 
 LINE_NUM=$(($(grep -Fn "### Thanks to the contributors of PipeCD" README.md | cut -f1 -d ':')+1))
 head -n $LINE_NUM README.md >> README.md.tmp
