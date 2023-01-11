@@ -1049,6 +1049,232 @@ var _ interface {
 	ErrorName() string
 } = ListApplicationsResponseValidationError{}
 
+// Validate checks the field values on DisableApplicationRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DisableApplicationRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DisableApplicationRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DisableApplicationRequestMultiError, or nil if none found.
+func (m *DisableApplicationRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DisableApplicationRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetApplicationId()) < 1 {
+		err := DisableApplicationRequestValidationError{
+			field:  "ApplicationId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return DisableApplicationRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DisableApplicationRequestMultiError is an error wrapping multiple validation
+// errors returned by DisableApplicationRequest.ValidateAll() if the
+// designated constraints aren't met.
+type DisableApplicationRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DisableApplicationRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DisableApplicationRequestMultiError) AllErrors() []error { return m }
+
+// DisableApplicationRequestValidationError is the validation error returned by
+// DisableApplicationRequest.Validate if the designated constraints aren't met.
+type DisableApplicationRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DisableApplicationRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DisableApplicationRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DisableApplicationRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DisableApplicationRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DisableApplicationRequestValidationError) ErrorName() string {
+	return "DisableApplicationRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DisableApplicationRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDisableApplicationRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DisableApplicationRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DisableApplicationRequestValidationError{}
+
+// Validate checks the field values on DisableApplicationResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DisableApplicationResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DisableApplicationResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DisableApplicationResponseMultiError, or nil if none found.
+func (m *DisableApplicationResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DisableApplicationResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetApplicationId()) < 1 {
+		err := DisableApplicationResponseValidationError{
+			field:  "ApplicationId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return DisableApplicationResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// DisableApplicationResponseMultiError is an error wrapping multiple
+// validation errors returned by DisableApplicationResponse.ValidateAll() if
+// the designated constraints aren't met.
+type DisableApplicationResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DisableApplicationResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DisableApplicationResponseMultiError) AllErrors() []error { return m }
+
+// DisableApplicationResponseValidationError is the validation error returned
+// by DisableApplicationResponse.Validate if the designated constraints aren't met.
+type DisableApplicationResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DisableApplicationResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DisableApplicationResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DisableApplicationResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DisableApplicationResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DisableApplicationResponseValidationError) ErrorName() string {
+	return "DisableApplicationResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DisableApplicationResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDisableApplicationResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DisableApplicationResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DisableApplicationResponseValidationError{}
+
 // Validate checks the field values on DeleteApplicationRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
