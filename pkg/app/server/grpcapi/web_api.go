@@ -1454,12 +1454,13 @@ func (a *WebAPI) GenerateAPIKey(ctx context.Context, req *webservice.GenerateAPI
 	}
 
 	apiKey := model.APIKey{
-		Id:        id,
-		Name:      req.Name,
-		KeyHash:   hash,
-		ProjectId: claims.Role.ProjectId,
-		Role:      req.Role,
-		Creator:   claims.Subject,
+		Id:         id,
+		Name:       req.Name,
+		KeyHash:    hash,
+		ProjectId:  claims.Role.ProjectId,
+		Role:       req.Role,
+		Creator:    claims.Subject,
+		LastUsedAt: 0,
 	}
 
 	if err = a.apiKeyStore.Add(ctx, &apiKey); err != nil {

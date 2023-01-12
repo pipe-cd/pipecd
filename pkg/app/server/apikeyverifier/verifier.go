@@ -28,6 +28,7 @@ import (
 
 type apiKeyGetter interface {
 	Get(ctx context.Context, id string) (*model.APIKey, error)
+	UpdateLastUsedAt(ctx context.Context, id, projectID string) error
 }
 
 type Verifier struct {
@@ -65,6 +66,11 @@ func (v *Verifier) Verify(ctx context.Context, key string) (*model.APIKey, error
 	apiKey, err = v.apiKeyStore.Get(ctx, keyID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find API key %s from datastore, %w", keyID, err)
+	}
+
+	// update the time API key was last used
+	if err := v.apiKeyStore.UpdateLastUsedAt(ctx, keyID, apiKey.ProjectId); err != nil {
+		return nil, fmt.Errorf("unable to update the time API key %s was last used, %w", keyID, err)
 	}
 
 	if err := v.apiKeyCache.Put(keyID, apiKey); err != nil {
