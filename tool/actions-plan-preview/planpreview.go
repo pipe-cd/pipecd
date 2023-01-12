@@ -133,7 +133,7 @@ const (
 
 	noChangeTitleFormat     = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `0` updated application. It means no deployment will be triggered once this pull request got merged.\n"
 	hasChangeTitleFormat    = "Ran plan-preview against head commit %s of this pull request. PipeCD detected `%d` updated applications and here are their plan results. Once this pull request got merged their deployments will be triggered to run as these estimations.\n"
-	detailsFormat           = "<details>\n<summary>Details (Click me)</summary>\n<p>\n\n``` %s\n%s\n```\n</p>\n</details>\n"
+	detailsFormat           = "<details>\n<summary>Details (Click me)</summary>\n<p>\n\n``` %s\n%s\n```\n</p>\n</details>\n\n"
 	detailsOmittedMessage   = "The details are too long to display. Please check the actions log to see full details."
 	appInfoWithEnvFormat    = "app: [%s](%s), env: %s, kind: %s"
 	appInfoWithoutEnvFormat = "app: [%s](%s), kind: %s"
@@ -178,11 +178,13 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 	b.WriteString(fmt.Sprintf(hasChangeTitleFormat, event.HeadCommit, len(r.Applications)))
 
 	changedApps, pipelineApps, quickSyncApps := groupApplicationResults(r.Applications)
+	if len(changedApps)+len(pipelineApps)+len(quickSyncApps) > 0 {
+		b.WriteString("\n## Plans\n\n")
+	}
 
 	var detailLen int
-
 	for _, app := range changedApps {
-		fmt.Fprintf(&b, "\n## %s\n", makeTitleText(&app.ApplicationInfo))
+		fmt.Fprintf(&b, "### %s\n", makeTitleText(&app.ApplicationInfo))
 		fmt.Fprintf(&b, "Sync strategy: %s\n", app.SyncStrategy)
 		fmt.Fprintf(&b, "Summary: %s\n\n", app.PlanSummary)
 
@@ -211,7 +213,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 	}
 
 	if len(pipelineApps)+len(quickSyncApps) > 0 {
-		b.WriteString("\n## No resource changes were detected but the following apps will also be triggered\n")
+		b.WriteString("### No resource changes were detected but the following apps will also be triggered\n")
 
 		if len(pipelineApps) > 0 {
 			b.WriteString("\n###### `PIPELINE`\n")
@@ -232,13 +234,13 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		return b.String()
 	}
 
-	fmt.Fprintf(&b, "\n---\n\n## NOTE\n\n")
+	fmt.Fprintf(&b, "\n## NOTE\n\n")
 
 	if len(r.FailureApplications) > 0 {
 		fmt.Fprintf(&b, "**An error occurred while building plan-preview for the following applications**\n")
 
 		for _, app := range r.FailureApplications {
-			fmt.Fprintf(&b, "\n## %s\n", makeTitleText(&app.ApplicationInfo))
+			fmt.Fprintf(&b, "\n### %s\n", makeTitleText(&app.ApplicationInfo))
 			fmt.Fprintf(&b, "Reason: %s\n\n", app.Reason)
 
 			var lang = "diff"
@@ -256,7 +258,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		fmt.Fprintf(&b, "**An error occurred while building plan-preview for applications of the following Pipeds**\n")
 
 		for _, piped := range r.FailurePipeds {
-			fmt.Fprintf(&b, "\n## piped: [%s](%s)\n", piped.PipedID, piped.PipedURL)
+			fmt.Fprintf(&b, "\n### piped: [%s](%s)\n", piped.PipedID, piped.PipedURL)
 			fmt.Fprintf(&b, "Reason: %s\n\n", piped.Reason)
 		}
 	}
