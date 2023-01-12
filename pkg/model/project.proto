@@ -97,6 +97,8 @@ message ProjectSSOConfig {
     }
 
     Provider provider = 1 [(validate.rules).enum.defined_only = true];
+    // session ttl for users (munites)
+    int64 session_ttl = 2 [(validate.rules).int64.gt = 0];
     GitHub github = 10;
     Google google = 11;
 }
