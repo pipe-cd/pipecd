@@ -77,6 +77,8 @@ func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	fmt.Println(sso)
+
 	user, err := getUser(ctx, sso, proj.Rbac, proj, authCode)
 	if err != nil {
 		h.handleError(w, r, "Unable to find user", err)
