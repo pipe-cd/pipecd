@@ -151,19 +151,19 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 		commitMsg                  string
 		includedCfgs, excludedCfgs []string
 	)
+
+	// get rule to parse template
+	rules := map[string]string{}
+	for _, env := range os.Environ() {
+		arr := strings.SplitN(env, "=", 2)
+		rules[arr[0]] = arr[1]
+	}
+
 	// Use user-defined settings if there is.
 	for _, r := range w.config.EventWatcher.GitRepos {
 		if r.RepoID != repoCfg.RepoID {
 			continue
 		}
-
-		// get rule to parse template
-		rules := map[string]string{}
-		for _, env := range os.Environ() {
-			arr := strings.SplitN(env, "=", 2)
-			rules[arr[0]] = arr[1]
-		}
-
 		commitMsg = parseTemplate(r.CommitMessage, rules)
 		includedCfgs = r.Includes
 		excludedCfgs = r.Excludes
