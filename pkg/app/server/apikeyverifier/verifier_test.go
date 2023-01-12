@@ -42,6 +42,10 @@ func (g *fakeAPIKeyGetter) Get(_ context.Context, id string) (*model.APIKey, err
 	return nil, fmt.Errorf("not found")
 }
 
+func (g *fakeAPIKeyGetter) UpdateLastUsedAt(_ context.Context, id string, projectID string) error {
+	return nil
+}
+
 func TestVerify(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
