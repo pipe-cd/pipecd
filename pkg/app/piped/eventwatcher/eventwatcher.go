@@ -21,10 +21,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"html/template"
 	"os"
 	"path/filepath"
 	"regexp/syntax"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -154,7 +156,15 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 		if r.RepoID != repoCfg.RepoID {
 			continue
 		}
-		commitMsg = r.CommitMessage
+
+		// get rule to parse template
+		rules := map[string]string{}
+		for _, env := range os.Environ() {
+			arr := strings.SplitN(env, "=", 2)
+			rules[arr[0]] = arr[1]
+		}
+
+		commitMsg = parseTemplate(r.CommitMessage, rules)
 		includedCfgs = r.Includes
 		excludedCfgs = r.Excludes
 		break
@@ -746,4 +756,19 @@ func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 	}
 
 	return newText, false, nil
+}
+
+// parse msg according to rules
+func parseTemplate(msg string, rules map[string]string) string {
+	t, err := template.New("").Parse(msg)
+	if err != nil {
+		return msg
+	}
+
+	buf := new(strings.Builder)
+	if err = t.Execute(buf, rules); err != nil {
+		return msg
+	}
+
+	return buf.String()
 }
