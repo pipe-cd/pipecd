@@ -20,8 +20,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
-	"text/template"
 
 	"github.com/creasty/defaults"
 	"sigs.k8s.io/yaml"
@@ -217,9 +215,6 @@ func DecodeYAML(data []byte) (*Config, error) {
 	if err := defaults.Set(c); err != nil {
 		return nil, err
 	}
-	if err := c.ExpandTemplateForCommitMessage(); err != nil {
-		return nil, err
-	}
 	if err := c.Validate(); err != nil {
 		return nil, err
 	}
@@ -257,41 +252,4 @@ func (c *Config) GetGenericApplication() (GenericApplicationSpec, bool) {
 		return c.ECSApplicationSpec.GenericApplicationSpec, true
 	}
 	return GenericApplicationSpec{}, false
-}
-
-// expanding templateized commitMessage
-func (c *Config) ExpandTemplateForCommitMessage() error {
-	repos := (c.PipedSpec).EventWatcher.GitRepos
-
-	// get env
-	envMap := map[string]string{}
-	for _, env := range os.Environ() {
-		arr := strings.SplitN(env, "=", 2)
-		envMap[arr[0]] = arr[1]
-	}
-
-	// process for each commitMessages
-	for _, repo := range repos {
-		tmp, err := ExpandTemplates(envMap, "commitMessage", repo.CommitMessage)
-		if err != nil {
-			return err
-		}
-		repo.CommitMessage = tmp
-	}
-	return nil
-}
-
-// Expand the templated config according to the given rules.
-func ExpandTemplates(rules map[string]string, templateName string, targetText string) (string, error) {
-	t, err := template.New(templateName).Parse(targetText)
-	if err != nil {
-		return "", err
-	}
-
-	buf := new(strings.Builder)
-	if err = t.Execute(buf, rules); err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
 }
