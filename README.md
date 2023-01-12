@@ -109,4 +109,5 @@ We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/
 <a href="https://github.com/tnir"><img src="https://avatars.githubusercontent.com/u/10229505?v=4" title="tnir" width="80" height="80"></a>
 <a href="https://github.com/JohnTitor"><img src="https://avatars.githubusercontent.com/u/25030997?v=4" title="JohnTitor" width="80" height="80"></a>
 <a href="https://github.com/funera1"><img src="https://avatars.githubusercontent.com/u/60760935?v=4" title="funera1" width="80" height="80"></a>
+<a href="https://github.com/kevin55156"><img src="https://avatars.githubusercontent.com/u/68955641?v=4" title="kevin55156" width="80" height="80"></a>
 <a href="https://github.com/mugioka"><img src="https://avatars.githubusercontent.com/u/62197019?v=4" title="mugioka" width="80" height="80"></a>
