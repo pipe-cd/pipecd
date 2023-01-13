@@ -42,7 +42,7 @@ apiVersion: v1
 kind: ConfigMap
 data: {}
 binaryData: {}
-			`,
+`,
 			expected: "42745tchd9",
 		},
 		{
@@ -53,7 +53,7 @@ kind: ConfigMap
 data:
   one: ""
 binaryData: {}
-			`,
+`,
 			expected: "9g67k2htb6",
 		},
 		{
@@ -66,7 +66,7 @@ data:
   one: ""
   three: "3"
 binaryData: {}
-			`,
+`,
 			expected: "f5h7t85m9b",
 		},
 		{
@@ -76,7 +76,7 @@ apiVersion: v1
 kind: Secret
 type: my-type
 data: {}
-			`,
+`,
 			expected: "t75bgf6ctb",
 		},
 		{
@@ -87,7 +87,7 @@ kind: Secret
 type: my-type
 data:
   "one": ""
-			`,
+`,
 			expected: "74bd68bm66",
 		},
 		{
@@ -100,7 +100,7 @@ data:
   two: Mg==
   one: ""
   three: Mw==
-			`,
+`,
 			expected: "dgcb6h9tmk",
 		},
 		{
@@ -119,7 +119,7 @@ type: my-type
 data:
   one: ""
   three: Mw==
-			`,
+`,
 			expected: "57hhd7795k",
 		},
 		{
@@ -151,7 +151,7 @@ spec:
           - hello
         ports:
         - containerPort: 9085
-			`,
+`,
 			expected: "db48kd6689",
 		},
 	}

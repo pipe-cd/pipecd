@@ -98,7 +98,7 @@ func TestModifyYAML(t *testing.T) {
 			path:         "testdata/a.yaml",
 			field:        "$.foo",
 			newValue:     "2",
-			wantNewYml:   []byte("foo: 2"),
+			wantNewYml:   []byte("foo: 2\n"),
 			wantUpToDate: false,
 			wantErr:      false,
 		},
