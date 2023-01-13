@@ -6,6 +6,8 @@ config:
     apiVersion: "pipecd.dev/v1beta1"
     kind: ControlPlane
     spec:
+      stateKey: gnvraeiegrojblskgnlhej
+      address: http://127.0.0.1:8080
       datastore:
         type: MYSQL
         config:
@@ -27,6 +29,7 @@ config:
       sharedSSOConfigs:
         - name: test 
           provider: GITHUB
+          # session_ttl: 1
           github:
             clientId: e01a69664cc855a636cb
             clientSecret: 1231d8434651ba62c4fcf7cb170fb0aa22fab9b8
