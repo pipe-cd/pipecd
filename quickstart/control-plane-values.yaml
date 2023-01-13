@@ -26,12 +26,6 @@ config:
           staticAdmin:
             username: hello-pipecd
             passwordHash: "$2a$10$ye96mUqUqTnjUqgwQJbJzel/LJibRhUnmzyypACkvrTSnQpVFZ7qK" # bcrypt value of "hello-pipecd"
-      sharedSSOConfigs:
-        - name: test 
-          provider: GITHUB
-          github:
-            clientId: e01a69664cc855a636cb
-            clientSecret: 1231d8434651ba62c4fcf7cb170fb0aa22fab9b8
 
 secret:
   encryptionKey:
