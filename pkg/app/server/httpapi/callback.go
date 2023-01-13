@@ -69,12 +69,12 @@ func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 		h.handleError(w, r, fmt.Sprintf("Invalid SSO configuration: %v", err), nil)
 		return
 	}
-	sessionTtlFromConfig := sso.SessionTtl
-	var tokenTtl time.Duration
-	if sessionTtlFromConfig == 0 {
-		tokenTtl = defaultTokenTTL
+	sessionTTLFromConfig := sso.SessionTtl
+	var tokenTTL time.Duration
+	if sessionTTLFromConfig == 0 {
+		tokenTTL = defaultTokenTTL
 	} else {
-		tokenTtl = time.Duration(sessionTtlFromConfig) * time.Minute
+		tokenTTL = time.Duration(sessionTTLFromConfig) * time.Minute
 	}
 
 	if !shared {
@@ -92,7 +92,7 @@ func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	claims := jwt.NewClaims(
 		user.Username,
 		user.AvatarUrl,
-		tokenTtl,
+		tokenTTL,
 		*user.Role,
 	)
 	signedToken, err := h.signer.Sign(claims)
