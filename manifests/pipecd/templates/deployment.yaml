@@ -166,6 +166,10 @@ spec:
             - name: pipecd-config
               mountPath: /etc/pipecd-config
               readOnly: true
+          lifecycle:
+            preStop:
+              exec:
+                command: [ "/bin/sh", "-c", "sleep 5" ]
 {{- if .Values.server.resources }}
           resources:
             {{- toYaml .Values.server.resources | nindent 12 }}
