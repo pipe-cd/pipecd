@@ -14,7 +14,9 @@
 
 package config
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // ECSApplicationSpec represents an application configuration for ECS application.
 type ECSApplicationSpec struct {
@@ -34,9 +36,16 @@ func (s *ECSApplicationSpec) Validate() error {
 }
 
 type ECSDeploymentInput struct {
+	// The Amazon Resource Name (ARN) that identifies the cluster.
+	ClusterArn string `json:"clusterArn"`
+	// The launch type on which to run your task.
+	// https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_types.html
+	// Default is FARGATE
+	LaunchType string `json:"launchType" default:"FARGATE"`
+	// VpcConfiguration ECSVpcConfiguration `json:"awsvpcConfiguration"`
+	AwsVpcConfiguration ECSVpcConfiguration `json:"awsvpcConfiguration"`
 	// The name of service definition file placing in application directory.
-	// Default is service.json
-	ServiceDefinitionFile string `json:"serviceDefinitionFile" default:"service.json"`
+	ServiceDefinitionFile string `json:"serviceDefinitionFile"`
 	// The name of task definition file placing in application directory.
 	// Default is taskdef.json
 	TaskDefinitionFile string `json:"taskDefinitionFile" default:"taskdef.json"`
@@ -45,6 +54,16 @@ type ECSDeploymentInput struct {
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
+}
+
+func (in *ECSDeploymentInput) IsStandaloneTask() bool {
+	return in.ServiceDefinitionFile == ""
+}
+
+type ECSVpcConfiguration struct {
+	Subnets        []string
+	AssignPublicIP string
+	SecurityGroups []string
 }
 
 type ECSTargetGroups struct {

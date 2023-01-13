@@ -82,27 +82,103 @@ metadata:
 			},
 		},
 		{
+			name: "contains new line at the end of file",
+			manifests: `
+apiVersion: v1
+kind: Kind1
+metadata:
+  name: config
+  extra: |
+    single-new-line
+`,
+			want: []Manifest{
+				maker("config", "Kind1", map[string]interface{}{
+					"name":  "config",
+					"extra": "single-new-line\n",
+				}),
+			},
+		},
+		{
+			name: "not contains new line at the end of file",
+			manifests: `
+apiVersion: v1
+kind: Kind1
+metadata:
+  name: config
+  extra: |
+    no-new-line`,
+			want: []Manifest{
+				maker("config", "Kind1", map[string]interface{}{
+					"name":  "config",
+					"extra": "no-new-line",
+				}),
+			},
+		},
+		{
 			name: "multiple manifests",
 			manifests: `
 apiVersion: v1
 kind: Kind1
 metadata:
   name: config1
+  extra: |-
+    no-new-line
 ---
 apiVersion: v1
 kind: Kind2
 metadata:
   name: config2
+  extra: |
+    single-new-line-1
 ---
 apiVersion: v1
 kind: Kind3
 metadata:
   name: config3
-			`,
+  extra: |
+    single-new-line-2
+
+
+---
+apiVersion: v1
+kind: Kind4
+metadata:
+  name: config4
+  extra: |+
+    multiple-new-line-1
+
+
+---
+apiVersion: v1
+kind: Kind5
+metadata:
+  name: config5
+  extra: |+
+    multiple-new-line-2
+
+
+`,
 			want: []Manifest{
-				maker("config1", "Kind1", map[string]interface{}{"name": "config1"}),
-				maker("config2", "Kind2", map[string]interface{}{"name": "config2"}),
-				maker("config3", "Kind3", map[string]interface{}{"name": "config3"}),
+				maker("config1", "Kind1", map[string]interface{}{
+					"name":  "config1",
+					"extra": "no-new-line",
+				}),
+				maker("config2", "Kind2", map[string]interface{}{
+					"name":  "config2",
+					"extra": "single-new-line-1\n",
+				}),
+				maker("config3", "Kind3", map[string]interface{}{
+					"name":  "config3",
+					"extra": "single-new-line-2\n",
+				}),
+				maker("config4", "Kind4", map[string]interface{}{
+					"name":  "config4",
+					"extra": "multiple-new-line-1\n\n\n",
+				}),
+				maker("config5", "Kind5", map[string]interface{}{
+					"name":  "config5",
+					"extra": "multiple-new-line-2\n\n\n",
+				}),
 			},
 		},
 	}

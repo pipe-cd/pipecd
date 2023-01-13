@@ -157,6 +157,41 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 	return service, nil
 }
 
+func runStandaloneTask(
+	ctx context.Context,
+	in *executor.Input,
+	cloudProviderName string,
+	cloudProviderCfg *config.PlatformProviderECSConfig,
+	taskDefinition types.TaskDefinition,
+	ecsInput *config.ECSDeploymentInput,
+) bool {
+	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
+	if err != nil {
+		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
+		return false
+	}
+
+	in.LogPersister.Infof("Start applying the ECS task definition")
+	td, err := applyTaskDefinition(ctx, client, taskDefinition)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
+		return false
+	}
+
+	err = client.RunTask(
+		ctx,
+		*td,
+		ecsInput.ClusterArn,
+		ecsInput.LaunchType,
+		&ecsInput.AwsVpcConfiguration,
+	)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to run ECS task: %v", err)
+		return false
+	}
+	return true
+}
+
 func createPrimaryTaskSet(ctx context.Context, client provider.Client, service types.Service, taskDef types.TaskDefinition, targetGroup *types.LoadBalancer) error {
 	// Get current PRIMARY task set.
 	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, service)
