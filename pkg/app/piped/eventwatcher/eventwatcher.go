@@ -152,19 +152,12 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 		includedCfgs, excludedCfgs []string
 	)
 
-	// Get rule to parse template.
-	rules := map[string]string{}
-	for _, env := range os.Environ() {
-		arr := strings.SplitN(env, "=", 2)
-		rules[arr[0]] = arr[1]
-	}
-
 	// Use user-defined settings if there is.
 	for _, r := range w.config.EventWatcher.GitRepos {
 		if r.RepoID != repoCfg.RepoID {
 			continue
 		}
-		commitMsg = parseTemplate(r.CommitMessage, rules)
+		commitMsg = r.CommitMessage
 		includedCfgs = r.Includes
 		excludedCfgs = r.Excludes
 		break
@@ -643,6 +636,9 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 
 	if commitMsg == "" {
 		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, latestData, eventName)
+	} else {
+		rules := map[string]string{"Value": latestData, "EventName": eventName}
+		commitMsg = parseTemplate(commitMsg, rules)
 	}
 	if err := repo.CommitChanges(ctx, repo.GetClonedBranch(), commitMsg, false, changes); err != nil {
 		return fmt.Errorf("failed to perform git commit: %w", err)
