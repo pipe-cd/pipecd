@@ -758,7 +758,7 @@ func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 	return newText, false, nil
 }
 
-// parse msg according to rules
+// parseTemplate parses msg according to rules.
 func parseTemplate(msg string, rules map[string]string) string {
 	t, err := template.New("").Parse(msg)
 	if err != nil {
