@@ -40,6 +40,11 @@ export class ApplicationLiveStateSnapshot extends jspb.Message {
   hasLambda(): boolean;
   clearLambda(): ApplicationLiveStateSnapshot;
 
+  getEcs(): EcsApplicationLiveState | undefined;
+  setEcs(value?: EcsApplicationLiveState): ApplicationLiveStateSnapshot;
+  hasEcs(): boolean;
+  clearEcs(): ApplicationLiveStateSnapshot;
+
   getVersion(): ApplicationLiveStateVersion | undefined;
   setVersion(value?: ApplicationLiveStateVersion): ApplicationLiveStateSnapshot;
   hasVersion(): boolean;
@@ -64,6 +69,7 @@ export namespace ApplicationLiveStateSnapshot {
     terraform?: TerraformApplicationLiveState.AsObject,
     cloudrun?: CloudRunApplicationLiveState.AsObject,
     lambda?: LambdaApplicationLiveState.AsObject,
+    ecs?: EcsApplicationLiveState.AsObject,
     version?: ApplicationLiveStateVersion.AsObject,
   }
 
@@ -161,6 +167,26 @@ export class LambdaApplicationLiveState extends jspb.Message {
 
 export namespace LambdaApplicationLiveState {
   export type AsObject = {
+  }
+}
+
+export class EcsApplicationLiveState extends jspb.Message {
+  getResourcesList(): Array<EcsResourceState>;
+  setResourcesList(value: Array<EcsResourceState>): EcsApplicationLiveState;
+  clearResourcesList(): EcsApplicationLiveState;
+  addResources(value?: EcsResourceState, index?: number): EcsResourceState;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): EcsApplicationLiveState.AsObject;
+  static toObject(includeInstance: boolean, msg: EcsApplicationLiveState): EcsApplicationLiveState.AsObject;
+  static serializeBinaryToWriter(message: EcsApplicationLiveState, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): EcsApplicationLiveState;
+  static deserializeBinaryFromReader(message: EcsApplicationLiveState, reader: jspb.BinaryReader): EcsApplicationLiveState;
+}
+
+export namespace EcsApplicationLiveState {
+  export type AsObject = {
+    resourcesList: Array<EcsResourceState.AsObject>,
   }
 }
 
@@ -335,6 +361,74 @@ export namespace CloudRunResourceState {
     kind: string,
     namespace: string,
     healthStatus: CloudRunResourceState.HealthStatus,
+    healthDescription: string,
+    createdAt: number,
+    updatedAt: number,
+  }
+
+  export enum HealthStatus { 
+    UNKNOWN = 0,
+    HEALTHY = 1,
+    OTHER = 2,
+  }
+}
+
+export class EcsResourceState extends jspb.Message {
+  getId(): string;
+  setId(value: string): EcsResourceState;
+
+  getOwnerIdsList(): Array<string>;
+  setOwnerIdsList(value: Array<string>): EcsResourceState;
+  clearOwnerIdsList(): EcsResourceState;
+  addOwnerIds(value: string, index?: number): EcsResourceState;
+
+  getParentIdsList(): Array<string>;
+  setParentIdsList(value: Array<string>): EcsResourceState;
+  clearParentIdsList(): EcsResourceState;
+  addParentIds(value: string, index?: number): EcsResourceState;
+
+  getName(): string;
+  setName(value: string): EcsResourceState;
+
+  getApiVersion(): string;
+  setApiVersion(value: string): EcsResourceState;
+
+  getKind(): string;
+  setKind(value: string): EcsResourceState;
+
+  getNamespace(): string;
+  setNamespace(value: string): EcsResourceState;
+
+  getHealthStatus(): EcsResourceState.HealthStatus;
+  setHealthStatus(value: EcsResourceState.HealthStatus): EcsResourceState;
+
+  getHealthDescription(): string;
+  setHealthDescription(value: string): EcsResourceState;
+
+  getCreatedAt(): number;
+  setCreatedAt(value: number): EcsResourceState;
+
+  getUpdatedAt(): number;
+  setUpdatedAt(value: number): EcsResourceState;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): EcsResourceState.AsObject;
+  static toObject(includeInstance: boolean, msg: EcsResourceState): EcsResourceState.AsObject;
+  static serializeBinaryToWriter(message: EcsResourceState, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): EcsResourceState;
+  static deserializeBinaryFromReader(message: EcsResourceState, reader: jspb.BinaryReader): EcsResourceState;
+}
+
+export namespace EcsResourceState {
+  export type AsObject = {
+    id: string,
+    ownerIdsList: Array<string>,
+    parentIdsList: Array<string>,
+    name: string,
+    apiVersion: string,
+    kind: string,
+    namespace: string,
+    healthStatus: EcsResourceState.HealthStatus,
     healthDescription: string,
     createdAt: number,
     updatedAt: number,
