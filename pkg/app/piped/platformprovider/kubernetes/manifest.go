@@ -224,11 +224,14 @@ func ParseManifests(data string) ([]Manifest, error) {
 		manifests = make([]Manifest, 0, len(parts))
 	)
 
-	for _, part := range parts {
+	for i, part := range parts {
 		// Ignore all the cases where no content between separator.
-		part = strings.TrimSpace(part)
-		if len(part) == 0 {
+		if len(strings.TrimSpace(part)) == 0 {
 			continue
+		}
+		// Append new line which trim by document separator.
+		if i != len(parts)-1 {
+			part += "\n"
 		}
 		var obj unstructured.Unstructured
 		if err := yaml.Unmarshal([]byte(part), &obj); err != nil {

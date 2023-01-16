@@ -81,6 +81,8 @@ https://github.com/pipe-cd/examples
 | [bluegreen](https://github.com/pipe-cd/examples/tree/master/ecs/bluegreen) | Deployment pipeline with blue-green strategy. |
 | [secret-management](https://github.com/pipe-cd/examples/tree/master/ecs/secret-management) | Demonstrate how to manage sensitive data by using [Secret Management](../user-guide/managing-application/secret-management/) feature. |
 | [wait-approval](https://github.com/pipe-cd/examples/tree/master/ecs/wait-approval) | Deployment pipeline that contains a manual approval stage. |
+| [standalone-task](https://github.com/pipe-cd/examples/tree/master/ecs/standalone-task) | Deployment Standalone Task. (`Standalone task is only supported for Quick sync`) |
+
 
 ### Deployment chain
 

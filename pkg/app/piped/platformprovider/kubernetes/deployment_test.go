@@ -61,7 +61,7 @@ spec:
           - server
         ports:
         - containerPort: 9085
-		  `,
+`,
 			expected: nil,
 		},
 		{
@@ -100,7 +100,7 @@ spec:
         - name: config
           configMap:
             name: canary-by-config-change
-			`,
+`,
 			expected: []string{
 				"canary-by-config-change",
 			},
@@ -164,7 +164,7 @@ spec:
         - name: config2
           configMap:
             name: configmap-2
-			`,
+`,
 			expected: []string{
 				"canary-by-config-change",
 				"configmap-1",
@@ -228,7 +228,7 @@ spec:
           - server
         ports:
         - containerPort: 9085
-		  `,
+`,
 			expected: nil,
 		},
 		{
@@ -267,7 +267,7 @@ spec:
         - name: config
           secret:
             secretName: canary-by-config-change
-			`,
+`,
 			expected: []string{
 				"canary-by-config-change",
 			},
@@ -331,7 +331,7 @@ spec:
         - name: config2
           secret:
             secretName: secret-2
-			`,
+`,
 			expected: []string{
 				"canary-by-config-change",
 				"init-secret-1",
