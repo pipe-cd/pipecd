@@ -152,7 +152,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 		includedCfgs, excludedCfgs []string
 	)
 
-	// get rule to parse template
+	// Get rule to parse template.
 	rules := map[string]string{}
 	for _, env := range os.Environ() {
 		arr := strings.SplitN(env, "=", 2)
