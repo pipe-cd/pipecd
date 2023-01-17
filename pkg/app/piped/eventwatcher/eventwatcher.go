@@ -634,10 +634,10 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 		return nil
 	}
 
-   args := argsTemplate{
-      Value:     latestData,
-      EventName: eventName,
-   }
+	args := argsTemplate{
+		Value:     latestData,
+		EventName: eventName,
+	}
 	commitMsg = parseCommitMsg(commitMsg, args)
 	if err := repo.CommitChanges(ctx, repo.GetClonedBranch(), commitMsg, false, changes); err != nil {
 		return fmt.Errorf("failed to perform git commit: %w", err)
@@ -755,17 +755,17 @@ func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 
 // argsTemplate represents a collection of available template arguments.
 type argsTemplate struct {
-   Value     string 
-   EventName string
+	Value     string
+	EventName string
 }
 
 // parseCommitMsg parses event watcher's commit message.
 // Currently, only { .Vaule } and { .EventName } are supported.
 func parseCommitMsg(msg string, args argsTemplate) string {
-  if msg == "" {
-		return fmt.Sprintf(defaultCommitMessageFormat, latestData, eventName)
+	if msg == "" {
+		return fmt.Sprintf(defaultCommitMessageFormat, args.Value, args.EventName)
 	}
-	
+
 	t, err := template.New("EventWatcherCommitMsgTemplate").Parse(msg)
 	if err != nil {
 		return msg
