@@ -753,17 +753,27 @@ func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 	return newText, false, nil
 }
 
-// parseTemplate parses msg according to rules.
-func parseTemplate(msg string, rules map[string]string) string {
-	t, err := template.New("").Parse(msg)
+// argsTemplate represents a collection of available template arguments.
+type argsTemplate struct {
+   Value     string 
+   EventName string
+}
+
+// parseCommitMsg parses event watcher's commit message.
+// Currently, only { .Vaule } and { .EventName } are supported.
+func parseCommitMsg(msg string, args argsTemplate) string {
+  if msg == "" {
+		return fmt.Sprintf(defaultCommitMessageFormat, latestData, eventName)
+	}
+	
+	t, err := template.New("EventWatcherCommitMsgTemplate").Parse(msg)
 	if err != nil {
 		return msg
 	}
 
 	buf := new(strings.Builder)
-	if err = t.Execute(buf, rules); err != nil {
+	if err := t.Execute(buf, args); err != nil {
 		return msg
 	}
-
 	return buf.String()
 }
