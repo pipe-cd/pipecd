@@ -634,12 +634,11 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 		return nil
 	}
 
-	if commitMsg == "" {
-		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, latestData, eventName)
-	} else {
-		rules := map[string]string{"Value": latestData, "EventName": eventName}
-		commitMsg = parseTemplate(commitMsg, rules)
-	}
+   args := argsTemplate{
+      Value:     latestData,
+      EventName: eventName,
+   }
+	commitMsg = parseCommitMsg(commitMsg, args)
 	if err := repo.CommitChanges(ctx, repo.GetClonedBranch(), commitMsg, false, changes); err != nil {
 		return fmt.Errorf("failed to perform git commit: %w", err)
 	}
