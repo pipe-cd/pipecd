@@ -55,12 +55,12 @@ func (v *Verifier) Verify(ctx context.Context, key string) (*model.APIKey, error
 	item, err := v.apiKeyCache.Get(keyID)
 	if err == nil {
 		apiKey = item.(*model.APIKey)
-		if err := checkAPIKey(apiKey, keyID, key); err != nil {
+		if err := checkAPIKey(ctx, v, apiKey, keyID, key); err != nil {
 			return nil, err
 		}
 		return apiKey, nil
 	}
-
+	å
 	// If the cache data was not found,
 	// we have to retrieve from datastore and save it to the cache.
 	apiKey, err = v.apiKeyStore.Get(ctx, keyID)
@@ -69,27 +69,27 @@ func (v *Verifier) Verify(ctx context.Context, key string) (*model.APIKey, error
 	}
 
 	// update the time API key was last used
-	if err := v.apiKeyStore.UpdateLastUsedAt(ctx, keyID, apiKey.ProjectId); err != nil {
-		return nil, fmt.Errorf("unable to update the time API key %s was last used, %w", keyID, err)
-	}
 
 	if err := v.apiKeyCache.Put(keyID, apiKey); err != nil {
 		v.logger.Warn("unable to store API key in memory cache", zap.Error(err))
 	}
-	if err := checkAPIKey(apiKey, keyID, key); err != nil {
+	if err := checkAPIKey(ctx, v, apiKey, keyID, key); err != nil {
 		return nil, err
 	}
 
 	return apiKey, nil
 }
 
-func checkAPIKey(apiKey *model.APIKey, id, key string) error {
+func checkAPIKey(ctx context.Context, v *Verifier, apiKey *model.APIKey, id, key string) error {
 	if apiKey.Disabled {
 		return fmt.Errorf("the api key %s was already disabled", id)
 	}
 
 	if err := apiKey.CompareKey(key); err != nil {
 		return fmt.Errorf("invalid api key %s: %w", id, err)
+	}
+	if err := v.apiKeyStore.UpdateLastUsedAt(ctx, id, apiKey.ProjectId); err != nil {
+		return fmt.Errorf("unable to update the time API key %s was last used, %w", id, err)
 	}
 
 	return nil
