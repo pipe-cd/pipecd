@@ -60,7 +60,6 @@ func (v *Verifier) Verify(ctx context.Context, key string) (*model.APIKey, error
 		}
 		return apiKey, nil
 	}
-	å
 	// If the cache data was not found,
 	// we have to retrieve from datastore and save it to the cache.
 	apiKey, err = v.apiKeyStore.Get(ctx, keyID)

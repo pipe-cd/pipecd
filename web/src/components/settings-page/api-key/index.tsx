@@ -82,7 +82,6 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
   );
-  console.log(keys);
 
   useEffect(() => {
     dispatch(fetchAPIKeys({ enabled: true }));
