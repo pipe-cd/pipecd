@@ -6,8 +6,6 @@ config:
     apiVersion: "pipecd.dev/v1beta1"
     kind: ControlPlane
     spec:
-      stateKey: gnvraeiegrojblskgnlhej
-      address: http://127.0.0.1:8080
       datastore:
         type: MYSQL
         config:
