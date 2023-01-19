@@ -760,7 +760,7 @@ type argsTemplate struct {
 }
 
 // parseCommitMsg parses event watcher's commit message.
-// Currently, only { .Value } and { .EventName } are supported.
+// Currently, only {{ .Value }} and {{ .EventName }} are supported.
 func parseCommitMsg(msg string, args argsTemplate) string {
 	if msg == "" {
 		return fmt.Sprintf(defaultCommitMessageFormat, args.Value, args.EventName)
