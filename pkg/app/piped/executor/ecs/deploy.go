@@ -86,7 +86,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 
 	if ecsInput.IsStandaloneTask() {
-		if !runStandaloneTask(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, &ecsInput) {
+		if !runStandaloneTask(ctx, e.Deployment.ApplicationId, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, &ecsInput) {
 			return model.StageStatus_STAGE_FAILURE
 		}
 		return model.StageStatus_STAGE_SUCCESS
@@ -102,7 +102,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !sync(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary) {
+	if !sync(ctx, e.Deployment.ApplicationId, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

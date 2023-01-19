@@ -19,11 +19,16 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
+)
+
+const (
+	LabelApplication = "pipecd-dev-application" // The application this resource belongs to.
 )
 
 // Client is wrapper of ECS client.
@@ -34,9 +39,9 @@ type Client interface {
 
 type ECS interface {
 	ServiceExists(ctx context.Context, clusterName string, servicesName string) (bool, error)
-	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
+	CreateService(ctx context.Context, service types.Service, tags []types.Tag) (*types.Service, error)
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
-	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
+	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition, tags []types.Tag) (*types.TaskDefinition, error)
 	RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *config.ECSVpcConfiguration) error
 	GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error)
 	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale int) (*types.TaskSet, error)
@@ -108,4 +113,12 @@ var defaultRegistry = &registry{
 // DefaultRegistry returns a pool of aws clients and a mutex associated with it.
 func DefaultRegistry() Registry {
 	return defaultRegistry
+}
+
+func CreateTags(keyValue map[string]string) []types.Tag {
+	tags := make([]types.Tag, len(keyValue))
+	for key, value := range keyValue {
+		tags = append(tags, types.Tag{Key: aws.String(key), Value: aws.String(value)})
+	}
+	return tags
 }
