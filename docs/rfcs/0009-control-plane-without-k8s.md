@@ -19,8 +19,8 @@ Now we can deploy the control plane to kubernetes cluster, but some developers t
     - Pipecd can give the way to deploy control plane as Terraform template.
     - They can easily use managed database or storage system on cloud as datastore and filestore.
     - They can use either self-hosted envoy or managed Load Balancer as pipecd-gateway.
-    ![image](assets/control=plane-on-aws-1.jpeg)
-    ![image](assets/control=plane-on-aws-2.jpeg)
+    ![image](assets/control=plane-on-aws-1.jpg)
+    ![image](assets/control=plane-on-aws-2.jpg)
 
 # Alternatives
 
