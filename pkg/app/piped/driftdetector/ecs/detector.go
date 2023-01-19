@@ -17,9 +17,13 @@ package ecs
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/ecs"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/sourcedecrypter"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
@@ -187,9 +191,87 @@ func (d *detector) cloneGitRepository(ctx context.Context, repoID string) (git.R
 }
 
 func (d *detector) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit) error {
-	headManifests, err := d.loadHeadManifests(app, repo, headCommit)
+	headManifests, err := d.loadHeadManifests(ctx, app, repo, headCommit)
+	if err != nil {
+		return err
+	}
+	d.logger.Info(fmt.Sprintf("application %s has %d manifests at commit %s", app.Id, len(headManifests), headCommit.Hash))
+
+	liveManifests := d.stateGetter.GetAppLiveManifests(app.Id)
+	return nil
 }
 
-func (d *detector) loadHeadManifests(app *model.Application, repo git.Repo, headCommit git.Commit) ([]provider., error) {
+func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit) ([]provider.Manifest, error) {
+	var (
+		manifestCache = provider.AppManifestsCache{
+			AppID:  app.Id,
+			Cache:  d.appManifestsCache,
+			Logger: d.logger,
+		}
+		repoDir = repo.GetPath()
+		appDir  = filepath.Join(repoDir, app.GitPath.Path)
+	)
 
+	manifests, ok := manifestCache.Get(headCommit.Hash)
+	if !ok {
+		cfg, err := d.loadApplicationConfiguration(repoDir, app)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load application configuration: %w", err)
+		}
+		gds, ok := cfg.GetGenericApplication()
+		if !ok {
+			return nil, fmt.Errorf("unsuppot application kind %s", cfg.Kind)
+		}
+
+		if d.secretDecrypter != nil && gds.Encryption != nil {
+			// We have to copy repository into another directory because
+			// decrypting the sealed secrets might change the git repository.
+			dir, err := os.MkdirTemp("", "detector-git-decrypt")
+			if err != nil {
+				return nil, fmt.Errorf("failed to prepare a temporary directory for git repository (%w)", err)
+			}
+			defer os.RemoveAll(dir)
+
+			repo, err = repo.Copy(filepath.Join(dir, "repo"))
+			if err != nil {
+				return nil, fmt.Errorf("failed to copy the cloned git repository (%w)", err)
+			}
+			repoDir = repo.GetPath()
+			appDir = filepath.Join(repoDir, app.GitPath.Path)
+
+			if err := sourcedecrypter.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
+				return nil, fmt.Errorf("failed to decrypt secrets (%w)", err)
+			}
+		}
+
+		loader := provider.NewLoader(
+			app.Name,
+			appDir,
+			repoDir,
+			app.GitPath.ConfigFilename,
+			cfg.ECSApplicationSpec.Input,
+			d.gitClient,
+			d.logger,
+		)
+		manifests, err = loader.LoadManifests(ctx)
+		if err != nil {
+			err = fmt.Errorf("failed to load new manifests: %w", err)
+			return nil, err
+		}
+		manifestCache.Put(headCommit.Hash, manifests)
+	}
+
+	return manifests, nil
+}
+
+func (d *detector) loadApplicationConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
+	path := filepath.Join(repoPath, app.GitPath.GetApplicationConfigFilePath())
+	cfg, err := config.LoadFromYAML(path)
+	if err != nil {
+		return nil, err
+	}
+	if appKind, ok := cfg.Kind.ToApplicationKind(); !ok || appKind != app.Kind {
+		return nil, fmt.Errorf("application in application configuration file is not match, got: %s, expected: %s", appKind, app.Kind)
+	}
+	return cfg, nil
 }

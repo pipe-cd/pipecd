@@ -16,10 +16,12 @@ package ecs
 
 import (
 	"context"
+	"sync"
+	"sync/atomic"
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -27,25 +29,31 @@ type applicationLister interface {
 	List() []*model.Application
 }
 
-type Store struct {
+type store struct {
+	apps   atomic.Value
 	logger *zap.Logger
+	client provider.Client
+	mu     sync.RWMutex
 }
 
-type Getter interface {
+type app struct {
+	taskDefinisionManifest provider.Manifest
+	serviceManifest        provider.Manifest
+	states                 []*model.EcsApplicationLiveState
+	version                model.ApplicationLiveStateVersion
 }
 
-func NewStore(cfg *config.PlatformProviderECSConfig, platformProvider string, appLister applicationLister, logger *zap.Logger) *Store {
-	logger = logger.Named("ecs").
-		With(zap.String("cloud-provider", platformProvider))
-
-	return &Store{
-		logger: logger,
-	}
-}
-
-func (s *Store) Run(ctx context.Context) error {
+func (s *store) Run(ctx context.Context) error {
 	s.logger.Info("start running ecs app state store")
 
 	s.logger.Info("ecs app state store has been stopped")
 	return nil
+}
+
+func (s *store) loadApps() map[string]app {
+	apps := s.apps.Load()
+	if apps == nil {
+		return nil
+	}
+	return apps.(map[string]app)
 }
