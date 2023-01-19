@@ -127,15 +127,16 @@ func loadTargetGroups(in *executor.Input, appCfg *config.ECSApplicationSpec, ds 
 	return primary, canary, true
 }
 
-func applyTaskDefinition(ctx context.Context, cli provider.Client, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
-	td, err := cli.RegisterTaskDefinition(ctx, taskDefinition)
+func applyTaskDefinition(ctx context.Context, cli provider.Client, taskDefinition types.TaskDefinition, tags []types.Tag) (*types.TaskDefinition, error) {
+
+	td, err := cli.RegisterTaskDefinition(ctx, taskDefinition, tags)
 	if err != nil {
 		return nil, fmt.Errorf("unable to register ECS task definition of family %s: %v", *taskDefinition.Family, err)
 	}
 	return td, nil
 }
 
-func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDefinition types.Service) (*types.Service, error) {
+func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDefinition types.Service, tags []types.Tag) (*types.Service, error) {
 	found, err := cli.ServiceExists(ctx, *serviceDefinition.ClusterArn, *serviceDefinition.ServiceName)
 	if err != nil {
 		return nil, fmt.Errorf("unable to validate service name %s: %v", *serviceDefinition.ServiceName, err)
@@ -148,7 +149,7 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 			return nil, fmt.Errorf("failed to update ECS service %s: %v", *serviceDefinition.ServiceName, err)
 		}
 	} else {
-		service, err = cli.CreateService(ctx, serviceDefinition)
+		service, err = cli.CreateService(ctx, serviceDefinition, tags)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create ECS service %s: %v", *serviceDefinition.ServiceName, err)
 		}
@@ -159,6 +160,7 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 
 func runStandaloneTask(
 	ctx context.Context,
+	appID string,
 	in *executor.Input,
 	cloudProviderName string,
 	cloudProviderCfg *config.PlatformProviderECSConfig,
@@ -172,7 +174,8 @@ func runStandaloneTask(
 	}
 
 	in.LogPersister.Infof("Start applying the ECS task definition")
-	td, err := applyTaskDefinition(ctx, client, taskDefinition)
+	tags := provider.CreateTags(map[string]string{provider.LabelApplication: appID})
+	td, err := applyTaskDefinition(ctx, client, taskDefinition, tags)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
 		return false
@@ -223,22 +226,24 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	return nil
 }
 
-func sync(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
+func sync(ctx context.Context, appID string, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
 		return false
 	}
 
+	tags := provider.CreateTags(map[string]string{provider.LabelApplication: appID})
+
 	in.LogPersister.Infof("Start applying the ECS task definition")
-	td, err := applyTaskDefinition(ctx, client, taskDefinition)
+	td, err := applyTaskDefinition(ctx, client, taskDefinition, tags)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
 		return false
 	}
 
 	in.LogPersister.Infof("Start applying the ECS service definition")
-	service, err := applyServiceDefinition(ctx, client, serviceDefinition)
+	service, err := applyServiceDefinition(ctx, client, serviceDefinition, tags)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply service %s: %v", *serviceDefinition.ServiceName, err)
 		return false
@@ -254,22 +259,24 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 	return true
 }
 
-func rollout(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
+func rollout(ctx context.Context, appID string, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
 		return false
 	}
 
+	tags := provider.CreateTags(map[string]string{provider.LabelApplication: appID})
+
 	in.LogPersister.Infof("Start applying the ECS task definition")
-	td, err := applyTaskDefinition(ctx, client, taskDefinition)
+	td, err := applyTaskDefinition(ctx, client, taskDefinition, tags)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
 		return false
 	}
 
 	in.LogPersister.Infof("Start applying the ECS service definition")
-	service, err := applyServiceDefinition(ctx, client, serviceDefinition)
+	service, err := applyServiceDefinition(ctx, client, serviceDefinition, tags)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply service %s: %v", *serviceDefinition.ServiceName, err)
 		return false

@@ -71,10 +71,13 @@ func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logg
 	return c, nil
 }
 
-func (c *client) CreateService(ctx context.Context, service types.Service) (*types.Service, error) {
+func (c *client) CreateService(ctx context.Context, service types.Service, tags []types.Tag) (*types.Service, error) {
 	if service.DeploymentController == nil || service.DeploymentController.Type != types.DeploymentControllerTypeExternal {
 		return nil, fmt.Errorf("failed to create ECS service %s: deployment controller of type EXTERNAL is required", *service.ServiceName)
 	}
+
+	tags = append(tags, service.Tags...)
+
 	input := &ecs.CreateServiceInput{
 		Cluster:                       service.ClusterArn,
 		ServiceName:                   service.ServiceName,
@@ -90,7 +93,7 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		Role:                          service.RoleArn,
 		SchedulingStrategy:            service.SchedulingStrategy,
 		ServiceRegistries:             service.ServiceRegistries,
-		Tags:                          service.Tags,
+		Tags:                          tags,
 	}
 
 	output, err := c.ecsClient.CreateService(ctx, input)
@@ -130,7 +133,7 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 	return output.Service, nil
 }
 
-func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
+func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition, tags []types.Tag) (*types.TaskDefinition, error) {
 	input := &ecs.RegisterTaskDefinitionInput{
 		Family:                  taskDefinition.Family,
 		ContainerDefinitions:    taskDefinition.ContainerDefinitions,
@@ -142,6 +145,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 		// Requires defined at task level in case Fargate is used.
 		Cpu:    taskDefinition.Cpu,
 		Memory: taskDefinition.Memory,
+		Tags:   tags,
 		// TODO: Support tags for registering task definition.
 	}
 	output, err := c.ecsClient.RegisterTaskDefinition(ctx, input)
