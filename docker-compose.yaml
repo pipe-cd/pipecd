@@ -1,0 +1,63 @@
+version: '3'
+
+services:
+  pipecd-gateway:
+    image: envoyproxy/envoy-alpine:v1.18.3
+    command:
+      - -c /etc/envoy/envoy-config.yaml
+    ports:
+      - 9095:9095
+      - 8080:9090
+    volumes:
+      - ./docker/envoy:/etc/envoy
+      - ./docker/pipecd-secret:/etc/pipecd-secret
+
+  pipecd-server:
+    image: ghcr.io/pipe-cd/pipecd:v0.41.3
+    entrypoint: >
+      /bin/sh -c "
+      until (nc -z pipecd-minio 9000 && nc -z pipecd-mysql 3306) do sleep 2; done;
+      pipecd server --insecure-cookie=true --cache-address=pipecd-cache:6379 --config-file=/etc/pipecd-config/control-plane-config.yaml --enable-grpc-reflection=false --encryption-key-file=/etc/pipecd-secret/encryption-key --log-encoding=humanize --metrics=true;
+      "
+    volumes:
+      - ./docker/pipecd-config:/etc/pipecd-config
+      - ./docker/pipecd-secret:/etc/pipecd-secret
+      - ./docker/wait-for-init:/wait-for-init
+  
+  pipecd-cache:
+    image: redis:5.0.5-alpine3.9
+  
+  pipecd-ops:
+    image: ghcr.io/pipe-cd/pipecd:v0.41.3
+    entrypoint: >
+      /bin/sh -c "
+      until (nc -z pipecd-minio 9000 && nc -z pipecd-mysql 3306) do sleep 2; done;
+      pipecd ops --cache-address=pipecd-cache:6379 --config-file=/etc/pipecd-config/control-plane-config.yaml --log-encoding=humanize --metrics=true;
+      "
+    volumes:
+      - ./docker/pipecd-config:/etc/pipecd-config
+      - ./docker/pipecd-secret:/etc/pipecd-secret
+      - ./docker/wait-for-init:/wait-for-init
+    ports:
+      - 9085:9085
+
+  pipecd-mysql:
+    image: mysql:8.0.23
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: quickstart
+  
+  pipecd-minio:
+    image: minio/minio:RELEASE.2020-08-26T00-00-49Z
+    command: server /data
+    environment:
+      MINIO_ACCESS_KEY: cXVpY2tzdGFydC1hY2Nlc3Mta2V5
+      MINIO_SECRET_KEY: cXVpY2tzdGFydC1zZWNyZXQta2V5
+    ports:
+      - 9000:9000
+
+
+
+
+  
+    
