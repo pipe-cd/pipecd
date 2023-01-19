@@ -87,7 +87,8 @@ test/integration:
 # Run commands
 
 .PHONY: run/pipecd
-run/pipecd: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+run/pipecd: $(eval TIMESTAMP = $(shell date +%s))
+run/pipecd: BUILD_VERSION ?= "$(shell git describe --tags --always --abbrev=7)-$(TIMESTAMP)"
 run/pipecd: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
 run/pipecd: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
 run/pipecd: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
