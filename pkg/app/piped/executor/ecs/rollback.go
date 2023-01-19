@@ -87,14 +87,14 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !rollback(ctx, &e.Input, platformProviderName, platformProviderCfg, taskDefinition, serviceDefinition, primary) {
+	if !rollback(ctx, e.Deployment.ApplicationId, &e.Input, platformProviderName, platformProviderCfg, taskDefinition, serviceDefinition, primary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func rollback(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
+func rollback(ctx context.Context, appID string, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
 	in.LogPersister.Infof("Start rollback the ECS service and task family: %s and %s to original stage", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
@@ -102,10 +102,12 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 		return false
 	}
 
+	tags := provider.CreateTags(map[string]string{provider.LabelApplication: appID})
+
 	// Re-register TaskDef to get TaskDefArn.
 	// Consider using DescribeServices and get services[0].taskSets[0].taskDefinition (taskDefinition of PRIMARY taskSet)
 	// then store it in metadata store and use for rollback instead.
-	td, err := client.RegisterTaskDefinition(ctx, taskDefinition)
+	td, err := client.RegisterTaskDefinition(ctx, taskDefinition, tags)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to register new revision of ECS task definition %s: %v", *taskDefinition.Family, err)
 		return false
