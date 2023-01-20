@@ -137,19 +137,22 @@ func applyTaskDefinition(ctx context.Context, cli provider.Client, taskDefinitio
 }
 
 func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDefinition types.Service, tags []types.Tag) (*types.Service, error) {
-	found, err := cli.ServiceExists(ctx, *serviceDefinition.ClusterArn, *serviceDefinition.ServiceName)
+	service, found, err := cli.ServiceExists(ctx, *serviceDefinition.ClusterArn, *serviceDefinition.ServiceName)
 	if err != nil {
 		return nil, fmt.Errorf("unable to validate service name %s: %v", *serviceDefinition.ServiceName, err)
 	}
 
-	var service *types.Service
 	if found {
+		if err = cli.TagResource(ctx, *service.ServiceArn, tags); err != nil {
+			return nil, fmt.Errorf("failed to update tags of service %s: %v", *serviceDefinition.ServiceName, err)
+		}
 		service, err = cli.UpdateService(ctx, serviceDefinition)
 		if err != nil {
 			return nil, fmt.Errorf("failed to update ECS service %s: %v", *serviceDefinition.ServiceName, err)
 		}
 	} else {
-		service, err = cli.CreateService(ctx, serviceDefinition, tags)
+		serviceDefinition.Tags = append(serviceDefinition.Tags, tags...)
+		service, err = cli.CreateService(ctx, serviceDefinition)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create ECS service %s: %v", *serviceDefinition.ServiceName, err)
 		}
@@ -160,12 +163,12 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 
 func runStandaloneTask(
 	ctx context.Context,
-	appID string,
 	in *executor.Input,
 	cloudProviderName string,
 	cloudProviderCfg *config.PlatformProviderECSConfig,
 	taskDefinition types.TaskDefinition,
 	ecsInput *config.ECSDeploymentInput,
+	tags []types.Tag,
 ) bool {
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
@@ -174,7 +177,6 @@ func runStandaloneTask(
 	}
 
 	in.LogPersister.Infof("Start applying the ECS task definition")
-	tags := provider.CreateTags(map[string]string{provider.LabelApplication: appID})
 	td, err := applyTaskDefinition(ctx, client, taskDefinition, tags)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
@@ -187,6 +189,7 @@ func runStandaloneTask(
 		ecsInput.ClusterArn,
 		ecsInput.LaunchType,
 		&ecsInput.AwsVpcConfiguration,
+		tags,
 	)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to run ECS task: %v", err)
@@ -226,14 +229,12 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	return nil
 }
 
-func sync(ctx context.Context, appID string, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
+func sync(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer, tags []types.Tag) bool {
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
 		return false
 	}
-
-	tags := provider.CreateTags(map[string]string{provider.LabelApplication: appID})
 
 	in.LogPersister.Infof("Start applying the ECS task definition")
 	td, err := applyTaskDefinition(ctx, client, taskDefinition, tags)
@@ -259,14 +260,12 @@ func sync(ctx context.Context, appID string, in *executor.Input, platformProvide
 	return true
 }
 
-func rollout(ctx context.Context, appID string, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
+func rollout(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer, tags []types.Tag) bool {
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
 		return false
 	}
-
-	tags := provider.CreateTags(map[string]string{provider.LabelApplication: appID})
 
 	in.LogPersister.Infof("Start applying the ECS task definition")
 	td, err := applyTaskDefinition(ctx, client, taskDefinition, tags)

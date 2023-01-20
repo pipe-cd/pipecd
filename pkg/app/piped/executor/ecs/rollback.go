@@ -87,22 +87,21 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !rollback(ctx, e.Deployment.ApplicationId, &e.Input, platformProviderName, platformProviderCfg, taskDefinition, serviceDefinition, primary) {
+	tags := provider.CreateTags(map[string]string{provider.LabelApplication: e.Deployment.ApplicationId})
+	if !rollback(ctx, &e.Input, platformProviderName, platformProviderCfg, taskDefinition, serviceDefinition, primary, tags) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func rollback(ctx context.Context, appID string, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
+func rollback(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer, tags []types.Tag) bool {
 	in.LogPersister.Infof("Start rollback the ECS service and task family: %s and %s to original stage", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
 		return false
 	}
-
-	tags := provider.CreateTags(map[string]string{provider.LabelApplication: appID})
 
 	// Re-register TaskDef to get TaskDefArn.
 	// Consider using DescribeServices and get services[0].taskSets[0].taskDefinition (taskDefinition of PRIMARY taskSet)
