@@ -71,12 +71,10 @@ func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logg
 	return c, nil
 }
 
-func (c *client) CreateService(ctx context.Context, service types.Service, tags []types.Tag) (*types.Service, error) {
+func (c *client) CreateService(ctx context.Context, service types.Service) (*types.Service, error) {
 	if service.DeploymentController == nil || service.DeploymentController.Type != types.DeploymentControllerTypeExternal {
 		return nil, fmt.Errorf("failed to create ECS service %s: deployment controller of type EXTERNAL is required", *service.ServiceName)
 	}
-
-	tags = append(tags, service.Tags...)
 
 	input := &ecs.CreateServiceInput{
 		Cluster:                       service.ClusterArn,
@@ -93,7 +91,7 @@ func (c *client) CreateService(ctx context.Context, service types.Service, tags 
 		Role:                          service.RoleArn,
 		SchedulingStrategy:            service.SchedulingStrategy,
 		ServiceRegistries:             service.ServiceRegistries,
-		Tags:                          tags,
+		Tags:                          service.Tags,
 	}
 
 	output, err := c.ecsClient.CreateService(ctx, input)
@@ -155,7 +153,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 	return output.TaskDefinition, nil
 }
 
-func (c *client) RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *appconfig.ECSVpcConfiguration) error {
+func (c *client) RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *appconfig.ECSVpcConfiguration, tags []types.Tag) error {
 	if taskDefinition.TaskDefinitionArn == nil {
 		return fmt.Errorf("failed to run task of task family %s: no task definition provided", *taskDefinition.Family)
 	}
@@ -164,6 +162,7 @@ func (c *client) RunTask(ctx context.Context, taskDefinition types.TaskDefinitio
 		TaskDefinition: taskDefinition.Family,
 		Cluster:        aws.String(clusterArn),
 		LaunchType:     types.LaunchType(launchType),
+		Tags:           tags,
 	}
 
 	if len(awsVpcConfiguration.Subnets) > 0 {
@@ -255,7 +254,7 @@ func (c *client) UpdateServicePrimaryTaskSet(ctx context.Context, service types.
 	return output.TaskSet, nil
 }
 
-func (c *client) ServiceExists(ctx context.Context, clusterName string, serviceName string) (bool, error) {
+func (c *client) ServiceExists(ctx context.Context, clusterName string, serviceName string) (*types.Service, bool, error) {
 	input := &ecs.DescribeServicesInput{
 		Cluster:  aws.String(clusterName),
 		Services: []string{serviceName},
@@ -265,17 +264,17 @@ func (c *client) ServiceExists(ctx context.Context, clusterName string, serviceN
 		var nfe *types.ResourceNotFoundException
 		if errors.As(err, &nfe) {
 			// Only in case ResourceNotFound error occurred, the FunctionName is available for create so do not raise error.
-			return false, nil
+			return &types.Service{}, false, nil
 		}
-		return false, err
+		return &types.Service{}, false, err
 	}
 	// Note: In case of cluster's existing serviceName is set to inactive status, it's safe to recreate the service with the same serviceName.
 	for _, service := range output.Services {
 		if *service.ServiceName == serviceName && *service.Status == "ACTIVE" {
-			return true, nil
+			return &service, true, nil
 		}
 	}
-	return false, nil
+	return &types.Service{}, false, nil
 }
 
 func (c *client) GetListener(ctx context.Context, targetGroup types.LoadBalancer) (string, error) {
@@ -346,14 +345,14 @@ func (c *client) ModifyListener(ctx context.Context, listenerArn string, routing
 	return err
 }
 
-func (c *client) TagResource(ctx context.Context, resourceArn *string, tags []types.Tag) error {
+func (c *client) TagResource(ctx context.Context, resourceArn string, tags []types.Tag) error {
 	input := &ecs.TagResourceInput{
-		ResourceArn: resourceArn,
+		ResourceArn: aws.String(resourceArn),
 		Tags:        tags,
 	}
 	_, err := c.ecsClient.TagResource(ctx, input)
 	if err != nil {
-		return fmt.Errorf("failed to update tag of resource %s: %w", *resourceArn, err)
+		return fmt.Errorf("failed to update tag of resource %s: %w", resourceArn, err)
 	}
 	return nil
 }

@@ -38,16 +38,16 @@ type Client interface {
 }
 
 type ECS interface {
-	ServiceExists(ctx context.Context, clusterName string, servicesName string) (bool, error)
-	CreateService(ctx context.Context, service types.Service, tags []types.Tag) (*types.Service, error)
+	ServiceExists(ctx context.Context, clusterName string, servicesName string) (*types.Service, bool, error)
+	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition, tags []types.Tag) (*types.TaskDefinition, error)
-	RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *config.ECSVpcConfiguration) error
+	RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *config.ECSVpcConfiguration, tags []types.Tag) error
 	GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error)
 	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale int) (*types.TaskSet, error)
 	DeleteTaskSet(ctx context.Context, service types.Service, taskSetArn string) error
 	UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
-	TagResource(ctx context.Context, resourceArn *string, tags []types.Tag) error
+	TagResource(ctx context.Context, resourceArn string, tags []types.Tag) error
 }
 
 type ELB interface {

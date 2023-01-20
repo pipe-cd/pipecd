@@ -19,6 +19,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -79,6 +80,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 
 func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	ecsInput := e.appCfg.Input
+	tags := provider.CreateTags(map[string]string{provider.LabelApplication: e.Deployment.ApplicationId})
 
 	taskDefinition, ok := loadTaskDefinition(&e.Input, ecsInput.TaskDefinitionFile, e.deploySource)
 	if !ok {
@@ -86,7 +88,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 
 	if ecsInput.IsStandaloneTask() {
-		if !runStandaloneTask(ctx, e.Deployment.ApplicationId, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, &ecsInput) {
+		if !runStandaloneTask(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, &ecsInput, tags) {
 			return model.StageStatus_STAGE_FAILURE
 		}
 		return model.StageStatus_STAGE_SUCCESS
@@ -102,7 +104,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !sync(ctx, e.Deployment.ApplicationId, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary) {
+	if !sync(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary, tags) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -128,7 +130,8 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !rollout(ctx, e.Deployment.ApplicationId, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary) {
+	tags := provider.CreateTags(map[string]string{provider.LabelApplication: e.Deployment.ApplicationId})
+	if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary, tags) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -154,7 +157,8 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !rollout(ctx, e.Deployment.ApplicationId, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, canary) {
+	tags := provider.CreateTags(map[string]string{provider.LabelApplication: e.Deployment.ApplicationId})
+	if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, canary, tags) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
