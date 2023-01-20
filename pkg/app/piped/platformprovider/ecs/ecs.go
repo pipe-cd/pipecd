@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	LabelApplication = "pipecd-dev-application" // The application this resource belongs to.
+	LabelApplication string = "pipecd-dev-application" // The application this resource belongs to.
 )
 
 // Client is wrapper of ECS client.
@@ -116,7 +116,7 @@ func DefaultRegistry() Registry {
 }
 
 func CreateTags(keyValue map[string]string) []types.Tag {
-	tags := make([]types.Tag, len(keyValue))
+	tags := make([]types.Tag, 0, len(keyValue))
 	for key, value := range keyValue {
 		tags = append(tags, types.Tag{Key: aws.String(key), Value: aws.String(value)})
 	}
