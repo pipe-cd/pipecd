@@ -128,7 +128,6 @@ func loadTargetGroups(in *executor.Input, appCfg *config.ECSApplicationSpec, ds 
 }
 
 func applyTaskDefinition(ctx context.Context, cli provider.Client, taskDefinition types.TaskDefinition, tags []types.Tag) (*types.TaskDefinition, error) {
-
 	td, err := cli.RegisterTaskDefinition(ctx, taskDefinition, tags)
 	if err != nil {
 		return nil, fmt.Errorf("unable to register ECS task definition of family %s: %v", *taskDefinition.Family, err)

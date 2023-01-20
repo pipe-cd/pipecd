@@ -75,7 +75,6 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 	if service.DeploymentController == nil || service.DeploymentController.Type != types.DeploymentControllerTypeExternal {
 		return nil, fmt.Errorf("failed to create ECS service %s: deployment controller of type EXTERNAL is required", *service.ServiceName)
 	}
-
 	input := &ecs.CreateServiceInput{
 		Cluster:                       service.ClusterArn,
 		ServiceName:                   service.ServiceName,
@@ -93,7 +92,6 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		ServiceRegistries:             service.ServiceRegistries,
 		Tags:                          service.Tags,
 	}
-
 	output, err := c.ecsClient.CreateService(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ECS service %s: %w", *service.ServiceName, err)
