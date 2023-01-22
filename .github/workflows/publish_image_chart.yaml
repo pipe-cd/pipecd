@@ -74,6 +74,7 @@ jobs:
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           push: true
+          provenance: false
           context: .
           file: cmd/pipecd/Dockerfile
           tags: ${{ env.GHCR }}/pipe-cd/pipecd:${{ env.PIPECD_VERSION }}
@@ -81,6 +82,7 @@ jobs:
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           push: true
+          provenance: false
           context: .
           file: cmd/piped/Dockerfile
           tags: |
@@ -90,6 +92,7 @@ jobs:
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           push: true
+          provenance: false
           context: .
           file: cmd/piped/Dockerfile-okd
           tags: ${{ env.GHCR }}/pipe-cd/piped-okd:${{ env.PIPECD_VERSION }}
@@ -97,6 +100,7 @@ jobs:
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           push: true
+          provenance: false
           context: .
           file: cmd/launcher/Dockerfile
           tags: |
@@ -106,6 +110,7 @@ jobs:
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           push: true
+          provenance: false
           context: .
           file: cmd/launcher/Dockerfile-okd
           tags: ${{ env.GHCR }}/pipe-cd/launcher-okd:${{ env.PIPECD_VERSION }}
@@ -113,6 +118,7 @@ jobs:
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           push: true
+          provenance: false
           context: .
           file: cmd/pipectl/Dockerfile
           tags: ${{ env.GHCR }}/pipe-cd/pipectl:${{ env.PIPECD_VERSION }}
@@ -120,6 +126,7 @@ jobs:
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           push: true
+          provenance: false
           context: .
           file: cmd/helloworld/Dockerfile
           tags: |

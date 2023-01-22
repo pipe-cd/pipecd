@@ -36,6 +36,7 @@ jobs:
         with:
           context: tool/actions-gh-release
           tags: ${{ env.GHCR }}/pipe-cd/actions-gh-release:${{ env.PIPECD_VERSION }}
+          provenance: false
           push: true
 
       - name: Build and push actions-plan-preview image
@@ -43,6 +44,7 @@ jobs:
         with:
           context: tool/actions-plan-preview
           tags: ${{ env.GHCR }}/pipe-cd/actions-plan-preview:${{ env.PIPECD_VERSION }}
+          provenance: false
           push: true
 
       - name: Build and push codegen image
@@ -50,6 +52,7 @@ jobs:
         with:
           context: tool/codegen
           tags: ${{ env.GHCR }}/pipe-cd/codegen:${{ env.PIPECD_VERSION }}
+          provenance: false
           push: true
 
       - name: Build and push piped-base image
@@ -57,6 +60,7 @@ jobs:
         with:
           context: tool/piped-base
           tags: ${{ env.GHCR }}/pipe-cd/piped-base:${{ env.PIPECD_VERSION }}
+          provenance: false
           push: true
 
       - name: Build and push piped-base-okd image
@@ -64,6 +68,7 @@ jobs:
         with:
           context: tool/piped-base-okd
           tags: ${{ env.GHCR }}/pipe-cd/piped-base-okd:${{ env.PIPECD_VERSION }}
+          provenance: false
           push: true
 
       - name: Build and push firestore-emulator image
@@ -71,4 +76,5 @@ jobs:
         with:
           context: tool/firestore-emulator
           tags: ${{ env.GHCR }}/pipe-cd/firestore-emulator:${{ env.PIPECD_VERSION }}
+          provenance: false
           push: true
