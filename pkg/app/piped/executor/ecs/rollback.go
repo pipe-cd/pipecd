@@ -105,7 +105,7 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 	// Re-register TaskDef to get TaskDefArn.
 	// Consider using DescribeServices and get services[0].taskSets[0].taskDefinition (taskDefinition of PRIMARY taskSet)
 	// then store it in metadata store and use for rollback instead.
-	td, err := client.RegisterTaskDefinition(ctx, taskDefinition, serviceDefinition.Tags)
+	td, err := client.RegisterTaskDefinition(ctx, taskDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to register new revision of ECS task definition %s: %v", *taskDefinition.Family, err)
 		return false

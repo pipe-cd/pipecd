@@ -129,7 +129,7 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 	return output.Service, nil
 }
 
-func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition, tags []types.Tag) (*types.TaskDefinition, error) {
+func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
 	input := &ecs.RegisterTaskDefinitionInput{
 		Family:                  taskDefinition.Family,
 		ContainerDefinitions:    taskDefinition.ContainerDefinitions,
@@ -141,7 +141,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 		// Requires defined at task level in case Fargate is used.
 		Cpu:    taskDefinition.Cpu,
 		Memory: taskDefinition.Memory,
-		Tags:   tags,
+		// TODO: Support tags for registering task definition.
 	}
 	output, err := c.ecsClient.RegisterTaskDefinition(ctx, input)
 	if err != nil {

@@ -132,8 +132,8 @@ func loadTargetGroups(in *executor.Input, appCfg *config.ECSApplicationSpec, ds 
 	return primary, canary, true
 }
 
-func applyTaskDefinition(ctx context.Context, cli provider.Client, taskDefinition types.TaskDefinition, tags []types.Tag) (*types.TaskDefinition, error) {
-	td, err := cli.RegisterTaskDefinition(ctx, taskDefinition, tags)
+func applyTaskDefinition(ctx context.Context, cli provider.Client, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
+	td, err := cli.RegisterTaskDefinition(ctx, taskDefinition)
 	if err != nil {
 		return nil, fmt.Errorf("unable to register ECS task definition of family %s: %v", *taskDefinition.Family, err)
 	}
@@ -178,7 +178,7 @@ func runStandaloneTask(
 
 	in.LogPersister.Infof("Start applying the ECS task definition")
 	tags := provider.CreateTags(map[string]string{provider.LabelApplication: in.Application.Id})
-	td, err := applyTaskDefinition(ctx, client, taskDefinition, tags)
+	td, err := applyTaskDefinition(ctx, client, taskDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
 		return false
@@ -238,7 +238,7 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 	}
 
 	in.LogPersister.Infof("Start applying the ECS task definition")
-	td, err := applyTaskDefinition(ctx, client, taskDefinition, serviceDefinition.Tags)
+	td, err := applyTaskDefinition(ctx, client, taskDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
 		return false
@@ -269,7 +269,7 @@ func rollout(ctx context.Context, in *executor.Input, platformProviderName strin
 	}
 
 	in.LogPersister.Infof("Start applying the ECS task definition")
-	td, err := applyTaskDefinition(ctx, client, taskDefinition, serviceDefinition.Tags)
+	td, err := applyTaskDefinition(ctx, client, taskDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
 		return false
