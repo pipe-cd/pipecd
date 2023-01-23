@@ -94,6 +94,10 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		}
 	}
 
+	if e.appCfg.Input.KubectlVersion != "" {
+		e.LogPersister.Infof("kubectl version %s will be used.", e.appCfg.Input.KubectlVersion)
+	}
+
 	e.applierGetter, err = newApplierGroup(e.Deployment.PlatformProvider, *e.appCfg, e.PipedConfig, e.Logger)
 	if err != nil {
 		e.LogPersister.Error(err.Error())
