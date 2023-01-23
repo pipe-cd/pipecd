@@ -341,15 +341,3 @@ func (c *client) ModifyListener(ctx context.Context, listenerArn string, routing
 	_, err := c.elbClient.ModifyListener(ctx, input)
 	return err
 }
-
-func (c *client) TagResource(ctx context.Context, resourceArn string, tags []types.Tag) error {
-	input := &ecs.TagResourceInput{
-		ResourceArn: aws.String(resourceArn),
-		Tags:        tags,
-	}
-	_, err := c.ecsClient.TagResource(ctx, input)
-	if err != nil {
-		return fmt.Errorf("failed to update tag of resource %s: %w", resourceArn, err)
-	}
-	return nil
-}
