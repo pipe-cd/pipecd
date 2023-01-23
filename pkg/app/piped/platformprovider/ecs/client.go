@@ -142,7 +142,6 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 		Cpu:    taskDefinition.Cpu,
 		Memory: taskDefinition.Memory,
 		Tags:   tags,
-		// TODO: Support tags for registering task definition.
 	}
 	output, err := c.ecsClient.RegisterTaskDefinition(ctx, input)
 	if err != nil {
