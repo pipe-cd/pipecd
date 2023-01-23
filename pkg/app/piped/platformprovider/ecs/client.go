@@ -251,7 +251,7 @@ func (c *client) UpdateServicePrimaryTaskSet(ctx context.Context, service types.
 	return output.TaskSet, nil
 }
 
-func (c *client) ServiceExists(ctx context.Context, clusterName string, serviceName string) (*types.Service, bool, error) {
+func (c *client) ServiceExists(ctx context.Context, clusterName string, serviceName string) (bool, error) {
 	input := &ecs.DescribeServicesInput{
 		Cluster:  aws.String(clusterName),
 		Services: []string{serviceName},
@@ -261,17 +261,17 @@ func (c *client) ServiceExists(ctx context.Context, clusterName string, serviceN
 		var nfe *types.ResourceNotFoundException
 		if errors.As(err, &nfe) {
 			// Only in case ResourceNotFound error occurred, the FunctionName is available for create so do not raise error.
-			return &types.Service{}, false, nil
+			return false, nil
 		}
-		return &types.Service{}, false, err
+		return false, err
 	}
 	// Note: In case of cluster's existing serviceName is set to inactive status, it's safe to recreate the service with the same serviceName.
 	for _, service := range output.Services {
 		if *service.ServiceName == serviceName && *service.Status == "ACTIVE" {
-			return &service, true, nil
+			return true, nil
 		}
 	}
-	return &types.Service{}, false, nil
+	return false, nil
 }
 
 func (c *client) GetListener(ctx context.Context, targetGroup types.LoadBalancer) (string, error) {

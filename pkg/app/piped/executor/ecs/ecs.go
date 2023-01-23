@@ -141,11 +141,12 @@ func applyTaskDefinition(ctx context.Context, cli provider.Client, taskDefinitio
 }
 
 func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDefinition types.Service) (*types.Service, error) {
-	service, found, err := cli.ServiceExists(ctx, *serviceDefinition.ClusterArn, *serviceDefinition.ServiceName)
+	found, err := cli.ServiceExists(ctx, *serviceDefinition.ClusterArn, *serviceDefinition.ServiceName)
 	if err != nil {
 		return nil, fmt.Errorf("unable to validate service name %s: %v", *serviceDefinition.ServiceName, err)
 	}
 
+	var service *types.Service
 	if found {
 		service, err = cli.UpdateService(ctx, serviceDefinition)
 		if err != nil {
