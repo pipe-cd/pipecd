@@ -15,8 +15,10 @@
 package terraform
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -25,6 +27,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/terraform"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/terraform"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/sourcedecrypter"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -175,42 +178,39 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	)
 
 	cpCfg := d.provider.TerraformConfig
-	c, err := d.loadApplicationConfiguration(repoDir, app)
-	appCfg := c.TerraformApplicationSpec
+	cfg, err := d.loadApplicationConfiguration(repoDir, app)
+	appCfg := cfg.TerraformApplicationSpec
 	if err != nil {
 		return fmt.Errorf("failed to load application configuration: %w", err)
 	}
 
-	// この中なんなのか後でちゃんと確かめる
-	// ------------------------------------------------------------
-	// gds, ok := appCfg.GetGenericApplication()
-	// if !ok {
-	// 	return fmt.Errorf("unsupport application kind %s", appCfg.Kind)
-	// }
+	gds, ok := cfg.GetGenericApplication()
+	if !ok {
+		return fmt.Errorf("unsupport application kind %s", cfg.Kind)
+	}
 
-	// if d.secretDecrypter != nil && gds.Encryption != nil {
-	// 	// We have to copy repository into another directory because
-	// 	// decrypting the sealed secrets might change the git repository.
-	// 	dir, err := os.MkdirTemp("", "detector-git-decrypt")
-	// 	if err != nil {
-	// 		return fmt.Errorf("failed to prepare a temporary directory for git repository (%w)", err)
-	// 	}
-	// 	defer os.RemoveAll(dir)
+	if d.secretDecrypter != nil && gds.Encryption != nil {
+		// We have to copy repository into another directory because
+		// decrypting the sealed secrets might change the git repository.
+		dir, err := os.MkdirTemp("", "detector-git-decrypt")
+		if err != nil {
+			return fmt.Errorf("failed to prepare a temporary directory for git repository (%w)", err)
+		}
+		defer os.RemoveAll(dir)
 
-	// 	repo, err = repo.Copy(filepath.Join(dir, "repo"))
-	// 	if err != nil {
-	// 		return fmt.Errorf("failed to copy the cloned git repository (%w)", err)
-	// 	}
-	// 	repoDir = repo.GetPath()
-	// 	appDir = filepath.Join(repoDir, app.GitPath.Path)
+		repo, err = repo.Copy(filepath.Join(dir, "repo"))
+		if err != nil {
+			return fmt.Errorf("failed to copy the cloned git repository (%w)", err)
+		}
+		repoDir = repo.GetPath()
+		appDir = filepath.Join(repoDir, app.GitPath.Path)
 
-	// 	if err := sourcedecrypter.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
-	// 		return fmt.Errorf("failed to decrypt secrets (%w)", err)
-	// 	}
-	// }
-	// ------------------------------------------------------------
+		if err := sourcedecrypter.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
+			return fmt.Errorf("failed to decrypt secrets (%w)", err)
+		}
+	}
 
-	// NewTerraformする
+	// terraform plan
 	version := appCfg.Input.TerraformVersion
 	terraformPath, _, err := toolregistry.DefaultRegistry().Terraform(ctx, version)
 	if err != nil {
@@ -233,9 +233,27 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		provider.WithAdditionalEnvs(envs.Shared, envs.Init, envs.Plan, envs.Apply),
 	)
 
-	// TODO: 受け取りnilじゃだめかも
-	result, err := executor.Plan(ctx, nil)
+	buf := new(bytes.Buffer)
+	if err := executor.Init(ctx, buf); err != nil {
+		fmt.Fprintf(buf, "failed while executing terraform init (%v)\n", err)
+		return err
+	}
+
+	if ws := appCfg.Input.Workspace; ws != "" {
+		if err := executor.SelectWorkspace(ctx, ws); err != nil {
+			fmt.Fprintf(buf, "failed to select workspace %q (%v). You might need to create the workspace before using by command %q\n",
+				ws,
+				err,
+				"terraform workspace new "+ws,
+			)
+			return err
+		}
+		fmt.Fprintf(buf, "selected workspace %q\n", ws)
+	}
+
+	result, err := executor.Plan(ctx, buf)
 	if err != nil {
+		fmt.Fprintf(buf, "failed while executing terraform plan (%v)\n", err)
 		return err
 	}
 
@@ -263,17 +281,6 @@ func makeSyncState(r provider.PlanResult, commit string) model.ApplicationSyncSt
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit))
 	b.WriteString("--- Expected\n+++ Actual\n\n")
-
-	// details := r.Render(provider.DiffRenderOptions{
-	// 	MaskSecret:          true,
-	// 	MaskConfigMap:       true,
-	// 	MaxChangedManifests: 3,
-	// 	// Currently, we do not use the diff command to render the result
-	// 	// because Kubernetes adds a large number of default values to the
-	// 	// running manifest that causes a wrong diff text.
-	// 	UseDiffCommand: false,
-	// })
-	// b.WriteString(details)
 
 	return model.ApplicationSyncState{
 		Status:      model.ApplicationSyncStatus_OUT_OF_SYNC,
