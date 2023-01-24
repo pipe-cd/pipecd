@@ -21,6 +21,8 @@ import (
 	"strings"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/terraform"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/terraform"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
@@ -28,7 +30,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"go.uber.org/zap"
 )
 
 type applicationLister interface {
