@@ -177,6 +177,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		appDir  = filepath.Join(repoDir, app.GitPath.Path)
 	)
 
+	// Load config
 	cpCfg := d.provider.TerraformConfig
 	cfg, err := d.loadApplicationConfiguration(repoDir, app)
 	appCfg := cfg.TerraformApplicationSpec
@@ -210,7 +211,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		}
 	}
 
-	// terraform plan
+	// Set up terraform
 	version := appCfg.Input.TerraformVersion
 	terraformPath, _, err := toolregistry.DefaultRegistry().Terraform(ctx, version)
 	if err != nil {
