@@ -179,7 +179,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 
 	// Load config
 	cpCfg := d.provider.TerraformConfig
-	cfg, err := d.loadApplicationConfiguration(repoDir, app)
+	cfg, err := loadApplicationConfiguration(repoDir, app)
 	appCfg := cfg.TerraformApplicationSpec
 	if err != nil {
 		return fmt.Errorf("failed to load application configuration: %w", err)
