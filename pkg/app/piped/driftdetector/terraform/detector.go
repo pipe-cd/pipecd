@@ -179,11 +179,11 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 
 	// Load config
 	cpCfg := d.provider.TerraformConfig
-	cfg, err := d.loadApplicationConfiguration(repoDir, app)
-	appCfg := cfg.TerraformApplicationSpec
+	cfg, err := loadApplicationConfiguration(repoDir, app)
 	if err != nil {
 		return fmt.Errorf("failed to load application configuration: %w", err)
 	}
+	appCfg := cfg.TerraformApplicationSpec
 
 	gds, ok := cfg.GetGenericApplication()
 	if !ok {
@@ -258,12 +258,12 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return err
 	}
 
-	state := makeSyncState(result, headCommit.Hash)
+	state := makeSyncState(result, buf, headCommit.Hash)
 
 	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 }
 
-func makeSyncState(r provider.PlanResult, commit string) model.ApplicationSyncState {
+func makeSyncState(r provider.PlanResult, buf *bytes.Buffer, commit string) model.ApplicationSyncState {
 	if r.NoChanges() {
 		return model.ApplicationSyncState{
 			Status:      model.ApplicationSyncStatus_SYNCED,
@@ -282,6 +282,7 @@ func makeSyncState(r provider.PlanResult, commit string) model.ApplicationSyncSt
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit))
 	b.WriteString("--- Expected\n+++ Actual\n\n")
+	b.WriteString(buf.String())
 
 	return model.ApplicationSyncState{
 		Status:      model.ApplicationSyncStatus_OUT_OF_SYNC,
@@ -313,7 +314,7 @@ func (d *detector) listGroupedApplication() map[string][]*model.Application {
 	return m
 }
 
-func (d *detector) loadApplicationConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
+func loadApplicationConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
 	path := filepath.Join(repoPath, app.GitPath.GetApplicationConfigFilePath())
 	cfg, err := config.LoadFromYAML(path)
 	if err != nil {
