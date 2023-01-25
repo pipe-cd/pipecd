@@ -98,7 +98,6 @@ func NewDetector(
 		config:            cfg,
 		secretDecrypter:   sd,
 		gitRepos:          make(map[string]git.Repo),
-		syncStates:        make(map[string]model.ApplicationSyncState),
 		logger:            logger,
 	}
 }
