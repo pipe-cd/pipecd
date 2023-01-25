@@ -314,7 +314,7 @@ func (d *detector) listGroupedApplication() map[string][]*model.Application {
 	return m
 }
 
-func (d *detector) loadApplicationConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
+func loadApplicationConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
 	path := filepath.Join(repoPath, app.GitPath.GetApplicationConfigFilePath())
 	cfg, err := config.LoadFromYAML(path)
 	if err != nil {
