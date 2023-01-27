@@ -86,7 +86,7 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		PlacementConstraints:          service.PlacementConstraints,
 		PlacementStrategy:             service.PlacementStrategy,
 		PlatformVersion:               service.PlatformVersion,
-		PropagateTags:                 service.PropagateTags,
+		PropagateTags:                 types.PropagateTagsService,
 		Role:                          service.RoleArn,
 		SchedulingStrategy:            service.SchedulingStrategy,
 		ServiceRegistries:             service.ServiceRegistries,
