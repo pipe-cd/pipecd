@@ -98,7 +98,7 @@ func loadServiceDefinition(in *executor.Input, serviceDefinitionFile string, ds 
 
 	serviceDefinition.Tags = append(
 		serviceDefinition.Tags,
-		provider.CreateTags(map[string]string{
+		provider.MakeTags(map[string]string{
 			provider.LabelManagedBy:   provider.ManagedByPiped,
 			provider.LabelPiped:       in.PipedConfig.PipedID,
 			provider.LabelApplication: in.Deployment.ApplicationId,
@@ -190,7 +190,7 @@ func runStandaloneTask(
 	}
 
 	in.LogPersister.Infof("Start applying the ECS task definition")
-	tags := provider.CreateTags(map[string]string{
+	tags := provider.MakeTags(map[string]string{
 		provider.LabelManagedBy:   provider.ManagedByPiped,
 		provider.LabelPiped:       in.PipedConfig.PipedID,
 		provider.LabelApplication: in.Deployment.ApplicationId,

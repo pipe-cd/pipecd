@@ -120,10 +120,10 @@ func DefaultRegistry() Registry {
 	return defaultRegistry
 }
 
-func CreateTags(keyValue map[string]string) []types.Tag {
-	tags := make([]types.Tag, 0, len(keyValue))
-	for key, value := range keyValue {
-		tags = append(tags, types.Tag{Key: aws.String(key), Value: aws.String(value)})
+func MakeTags(tags map[string]string) []types.Tag {
+	resourceTags := make([]types.Tag, 0, len(tags))
+	for key, value := range tags {
+		resourceTags = append(resourceTags, types.Tag{Key: aws.String(key), Value: aws.String(value)})
 	}
-	return tags
+	return resourceTags
 }
