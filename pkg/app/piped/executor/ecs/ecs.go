@@ -92,6 +92,10 @@ func loadServiceDefinition(in *executor.Input, serviceDefinitionFile string, ds 
 		return types.Service{}, false
 	}
 
+	if serviceDefinition.PropagateTags == "" {
+		serviceDefinition.PropagateTags = types.PropagateTagsService
+	}
+
 	serviceDefinition.Tags = append(
 		serviceDefinition.Tags,
 		provider.CreateTags(map[string]string{
