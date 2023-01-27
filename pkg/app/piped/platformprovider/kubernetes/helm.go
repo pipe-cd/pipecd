@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/hashicorp/go-version"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/chartrepo"
@@ -65,6 +66,9 @@ func (h *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 
 	if namespace != "" {
 		args = append(args, fmt.Sprintf("--namespace=%s", namespace))
+		if h.hasCreateNamespaceFlag() {
+			args = append(args, "--create-namespace")
+		}
 	}
 
 	if opts != nil {
@@ -160,6 +164,9 @@ func (h *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 
 	if namespace != "" {
 		args = append(args, fmt.Sprintf("--namespace=%s", namespace))
+		if h.hasCreateNamespaceFlag() {
+			args = append(args, "--create-namespace")
+		}
 	}
 
 	if opts != nil {
@@ -289,6 +296,9 @@ func (h *Helm) UpgradeLocalChart(ctx context.Context, appName, appDir, namespace
 
 	if namespace != "" {
 		args = append(args, fmt.Sprintf("--namespace=%s", namespace))
+		if h.hasCreateNamespaceFlag() {
+			args = append(args, "--create-namespace")
+		}
 	}
 
 	if opts != nil {
@@ -362,6 +372,9 @@ func (h *Helm) UpgradeRemoteChart(ctx context.Context, appName, appDir, namespac
 
 	if namespace != "" {
 		args = append(args, fmt.Sprintf("--namespace=%s", namespace))
+		if h.hasCreateNamespaceFlag() {
+			args = append(args, "--create-namespace")
+		}
 	}
 
 	if opts != nil {
@@ -410,4 +423,18 @@ func (h *Helm) UpgradeRemoteChart(ctx context.Context, appName, appDir, namespac
 	}
 	return executor()
 
+}
+
+func (h *Helm) hasCreateNamespaceFlag() bool {
+	v, err := version.NewVersion(h.version)
+	if err != nil {
+		return false
+	}
+
+	constraints, err := version.NewConstraint(">= 3.0")
+	if err != nil {
+		return false
+	}
+
+	return constraints.Check(v)
 }

@@ -28,6 +28,7 @@ require (
 	github.com/google/go-github/v29 v29.0.3
 	github.com/google/uuid v1.2.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
+	github.com/hashicorp/go-version v1.6.0
 	github.com/hashicorp/golang-lru v0.5.3
 	github.com/hashicorp/hcl/v2 v2.0.0
 	github.com/manifoldco/promptui v0.9.0
