@@ -29,6 +29,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector/terraform"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cache"
@@ -119,6 +120,23 @@ func NewDetector(
 				return nil, fmt.Errorf(format, cp.Name)
 			}
 			d.detectors = append(d.detectors, cloudrun.NewDetector(
+				cp,
+				appLister,
+				gitClient,
+				sg,
+				d,
+				appManifestsCache,
+				cfg,
+				sd,
+				logger,
+			))
+
+		case model.PlatformProviderTerraform:
+			sg, ok := stateGetter.TerraformGetter(cp.Name)
+			if !ok {
+				return nil, fmt.Errorf(format, cp.Name)
+			}
+			d.detectors = append(d.detectors, terraform.NewDetector(
 				cp,
 				appLister,
 				gitClient,

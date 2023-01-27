@@ -193,6 +193,17 @@ pipectl application list \
     --app-kind=KUBERNETES \
 ```
 
+### Disable an application
+
+Disable an application with given id:
+
+``` console
+pipectl application disable \
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
+    --app-id={APPLICATION_ID}
+```
+
 ### Deleting an application
 
 Delete an application with given id:
