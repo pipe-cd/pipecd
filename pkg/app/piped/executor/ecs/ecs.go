@@ -94,7 +94,12 @@ func loadServiceDefinition(in *executor.Input, serviceDefinitionFile string, ds 
 
 	serviceDefinition.Tags = append(
 		serviceDefinition.Tags,
-		provider.CreateTags(map[string]string{provider.LabelApplication: in.Deployment.ApplicationId})...,
+		provider.CreateTags(map[string]string{
+			provider.LabelManagedBy:   provider.ManagedByPiped,
+			provider.LabelPiped:       in.PipedConfig.PipedID,
+			provider.LabelApplication: in.Deployment.ApplicationId,
+			provider.LabelCommitHash:  in.Deployment.CommitHash(),
+		})...,
 	)
 
 	in.LogPersister.Infof("Successfully loaded the ECS service definition at commit %s", ds.Revision)
@@ -177,7 +182,12 @@ func runStandaloneTask(
 	}
 
 	in.LogPersister.Infof("Start applying the ECS task definition")
-	tags := provider.CreateTags(map[string]string{provider.LabelApplication: in.Application.Id})
+	tags := provider.CreateTags(map[string]string{
+		provider.LabelManagedBy:   provider.ManagedByPiped,
+		provider.LabelPiped:       in.PipedConfig.PipedID,
+		provider.LabelApplication: in.Deployment.ApplicationId,
+		provider.LabelCommitHash:  in.Deployment.CommitHash(),
+	})
 	td, err := applyTaskDefinition(ctx, client, taskDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply ECS task definition: %v", err)
