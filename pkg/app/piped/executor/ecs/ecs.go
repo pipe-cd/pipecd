@@ -157,6 +157,10 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 		if err != nil {
 			return nil, fmt.Errorf("failed to update ECS service %s: %v", *serviceDefinition.ServiceName, err)
 		}
+		if err := cli.TagResource(ctx, *service.ServiceArn, serviceDefinition.Tags); err != nil {
+			return nil, fmt.Errorf("failed to update tags of ECS service %s: %v", *serviceDefinition.ServiceName, err)
+		}
+
 	} else {
 		service, err = cli.CreateService(ctx, serviceDefinition)
 		if err != nil {

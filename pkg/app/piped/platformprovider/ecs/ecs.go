@@ -51,6 +51,7 @@ type ECS interface {
 	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale int) (*types.TaskSet, error)
 	DeleteTaskSet(ctx context.Context, service types.Service, taskSetArn string) error
 	UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
+	TagResource(ctx context.Context, resourceArn string, tags []types.Tag) error
 }
 
 type ELB interface {
