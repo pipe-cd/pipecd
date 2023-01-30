@@ -38,6 +38,23 @@ type client struct {
 	logger    *zap.Logger
 }
 
+type ListClustersInput struct {
+	MaxResults int32
+	NextToken  string
+}
+
+type ListServicesInput struct {
+	Cluster    string
+	MaxResults int32
+	NextToken  string
+}
+
+type ListTasksInput struct {
+	Cluster    string
+	MaxResults int32
+	NextToken  string
+}
+
 func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logger *zap.Logger) (Client, error) {
 	if region == "" {
 		return nil, fmt.Errorf("region is required field")
@@ -352,4 +369,69 @@ func (c *client) TagResource(ctx context.Context, resourceArn string, tags []typ
 		return fmt.Errorf("failed to update tag of resource %s: %w", resourceArn, err)
 	}
 	return nil
+}
+
+func (c *client) ListClusters(ctx context.Context, clustersInput ListClustersInput) ([]string, *string, error) {
+	input := &ecs.ListClustersInput{
+		MaxResults: aws.Int32(clustersInput.MaxResults),
+		NextToken:  aws.String(clustersInput.NextToken),
+	}
+	output, err := c.ecsClient.ListClusters(ctx, input)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get list of cluster: %w", err)
+	}
+	return output.ClusterArns, output.NextToken, nil
+}
+
+func (c *client) ListServices(ctx context.Context, servicesInput ListServicesInput) ([]string, *string, error) {
+	input := &ecs.ListServicesInput{
+		Cluster:    aws.String(servicesInput.Cluster),
+		MaxResults: aws.Int32(servicesInput.MaxResults),
+		NextToken:  aws.String(servicesInput.NextToken),
+	}
+	output, err := c.ecsClient.ListServices(ctx, input)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get list of service in cluster: %s: %w", servicesInput.Cluster, err)
+	}
+
+	return output.ServiceArns, output.NextToken, nil
+}
+
+func (c *client) ListTasks(ctx context.Context, tasksInput ListTasksInput) ([]string, *string, error) {
+	input := &ecs.ListTasksInput{
+		Cluster:    aws.String(tasksInput.Cluster),
+		MaxResults: aws.Int32(tasksInput.MaxResults),
+		NextToken:  aws.String(tasksInput.NextToken),
+	}
+	output, err := c.ecsClient.ListTasks(ctx, input)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get list of task: %w", err)
+	}
+	return output.TaskArns, output.NextToken, nil
+}
+
+func (c *client) DescribeServices(ctx context.Context, serviceArns []string, clusterArn string) ([]types.Service, error) {
+	input := &ecs.DescribeServicesInput{
+		Services: serviceArns,
+		Cluster:  aws.String(clusterArn),
+		Include:  types.ServiceFieldTags.Values(),
+	}
+	output, err := c.ecsClient.DescribeServices(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to describe service: %w", err)
+	}
+	return output.Services, nil
+}
+
+func (c *client) DescribeTasks(ctx context.Context, taskArns []string, clusterArn string) ([]types.Task, error) {
+	input := &ecs.DescribeTasksInput{
+		Tasks:   taskArns,
+		Cluster: aws.String(clusterArn),
+		Include: types.TaskFieldTags.Values(),
+	}
+	output, err := c.ecsClient.DescribeTasks(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to describe task: %w", err)
+	}
+	return output.Tasks, nil
 }
