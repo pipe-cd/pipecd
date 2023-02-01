@@ -102,6 +102,9 @@ export class ProjectSSOConfig extends jspb.Message {
   getProvider(): ProjectSSOConfig.Provider;
   setProvider(value: ProjectSSOConfig.Provider): ProjectSSOConfig;
 
+  getSessionTtl(): number;
+  setSessionTtl(value: number): ProjectSSOConfig;
+
   getGithub(): ProjectSSOConfig.GitHub | undefined;
   setGithub(value?: ProjectSSOConfig.GitHub): ProjectSSOConfig;
   hasGithub(): boolean;
@@ -123,6 +126,7 @@ export class ProjectSSOConfig extends jspb.Message {
 export namespace ProjectSSOConfig {
   export type AsObject = {
     provider: ProjectSSOConfig.Provider,
+    sessionTtl: number,
     github?: ProjectSSOConfig.GitHub.AsObject,
     google?: ProjectSSOConfig.Google.AsObject,
   }
