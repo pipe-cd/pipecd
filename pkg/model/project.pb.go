@@ -425,7 +425,7 @@ type ProjectSSOConfig struct {
 	unknownFields protoimpl.UnknownFields
 
 	Provider ProjectSSOConfig_Provider `protobuf:"varint,1,opt,name=provider,proto3,enum=model.ProjectSSOConfig_Provider" json:"provider,omitempty"`
-	// session ttl for users (munites)
+	// The session ttl for users (hours)
 	SessionTtl int64                    `protobuf:"varint,2,opt,name=session_ttl,json=sessionTtl,proto3" json:"session_ttl,omitempty"`
 	Github     *ProjectSSOConfig_GitHub `protobuf:"bytes,10,opt,name=github,proto3" json:"github,omitempty"`
 	Google     *ProjectSSOConfig_Google `protobuf:"bytes,11,opt,name=google,proto3" json:"google,omitempty"`
