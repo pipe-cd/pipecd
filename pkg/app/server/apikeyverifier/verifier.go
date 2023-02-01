@@ -78,14 +78,14 @@ func (v *Verifier) Verify(ctx context.Context, key string) (*model.APIKey, error
 	if err := v.apiKeyCache.Put(keyID, apiKey); err != nil {
 		v.logger.Warn("unable to store API key in memory cache", zap.Error(err))
 	}
-	if err := checkAPIKey(ctx, v, apiKey, keyID, key); err != nil {
+	if err := v.checkAPIKey(ctx, apiKey, keyID, key); err != nil {
 		return nil, err
 	}
 
 	return apiKey, nil
 }
 
-func checkAPIKey(ctx context.Context, v *Verifier, apiKey *model.APIKey, id, key string) error {
+func (v *Verifier) checkAPIKey(ctx context.Context, apiKey *model.APIKey, id, key string) error {
 	if apiKey.Disabled {
 		return fmt.Errorf("the api key %s was already disabled", id)
 	}
