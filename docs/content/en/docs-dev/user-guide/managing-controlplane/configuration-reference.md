@@ -147,7 +147,7 @@ Must be one of the following objects:
 |-|-|-|-|
 | name | string | The unique name of the configuration. | Yes |
 | provider | string | The SSO service provider. Can be one of the following values<br>`GITHUB`, `GOOGLE`... | Yes |
-| sessionTtl | int | The time to live of session for SSO login. Unit is `minute`. Default is 7 hours. | No |
+| sessionTtl | int | The time to live of session for SSO login. Unit is `hour`. Default is 7 * 24 hours. | No |
 | github | [SSOConfigGitHub](#ssoconfiggithub) | GitHub sso configuration. | No |
 | google | [SSOConfigGoogle](#ssoconfiggoogle) | Google sso configuration. | No |
 

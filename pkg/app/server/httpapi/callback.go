@@ -74,7 +74,7 @@ func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	if sessionTTLFromConfig == 0 {
 		tokenTTL = defaultTokenTTL
 	} else {
-		tokenTTL = time.Duration(sessionTTLFromConfig) * time.Minute
+		tokenTTL = time.Duration(sessionTTLFromConfig) * time.Hour
 	}
 
 	if !shared {
