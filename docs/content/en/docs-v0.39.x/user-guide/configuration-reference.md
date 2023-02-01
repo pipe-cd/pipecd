@@ -486,7 +486,7 @@ Note: You can get examples for those object from [here](../../examples/#ecs-appl
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The template name to refer. | Yes |
-| args | map[string]string | The arguments for custom-args. | No |
+| appArgs | map[string]string | The arguments for custom-args. | No |
 
 ## StageOptions
 

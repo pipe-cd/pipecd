@@ -1017,6 +1017,7 @@ proto.model.ProjectSSOConfig.prototype.toObject = function(opt_includeInstance) 
 proto.model.ProjectSSOConfig.toObject = function(includeInstance, msg) {
   var f, obj = {
     provider: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    sessionTtl: jspb.Message.getFieldWithDefault(msg, 2, 0),
     github: (f = msg.getGithub()) && proto.model.ProjectSSOConfig.GitHub.toObject(includeInstance, f),
     google: (f = msg.getGoogle()) && proto.model.ProjectSSOConfig.Google.toObject(includeInstance, f)
   };
@@ -1058,6 +1059,10 @@ proto.model.ProjectSSOConfig.deserializeBinaryFromReader = function(msg, reader)
     case 1:
       var value = /** @type {!proto.model.ProjectSSOConfig.Provider} */ (reader.readEnum());
       msg.setProvider(value);
+      break;
+    case 2:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setSessionTtl(value);
       break;
     case 10:
       var value = new proto.model.ProjectSSOConfig.GitHub;
@@ -1102,6 +1107,13 @@ proto.model.ProjectSSOConfig.serializeBinaryToWriter = function(message, writer)
   if (f !== 0.0) {
     writer.writeEnum(
       1,
+      f
+    );
+  }
+  f = message.getSessionTtl();
+  if (f !== 0) {
+    writer.writeInt64(
+      2,
       f
     );
   }
@@ -1557,6 +1569,24 @@ proto.model.ProjectSSOConfig.prototype.getProvider = function() {
  */
 proto.model.ProjectSSOConfig.prototype.setProvider = function(value) {
   return jspb.Message.setProto3EnumField(this, 1, value);
+};
+
+
+/**
+ * optional int64 session_ttl = 2;
+ * @return {number}
+ */
+proto.model.ProjectSSOConfig.prototype.getSessionTtl = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.model.ProjectSSOConfig} returns this
+ */
+proto.model.ProjectSSOConfig.prototype.setSessionTtl = function(value) {
+  return jspb.Message.setProto3IntField(this, 2, value);
 };
 
 
