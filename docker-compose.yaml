@@ -22,7 +22,6 @@ services:
     volumes:
       - ./docker/pipecd-config:/etc/pipecd-config
       - ./docker/pipecd-secret:/etc/pipecd-secret
-      - ./docker/wait-for-init:/wait-for-init
   
   pipecd-cache:
     image: redis:5.0.5-alpine3.9
@@ -37,7 +36,6 @@ services:
     volumes:
       - ./docker/pipecd-config:/etc/pipecd-config
       - ./docker/pipecd-secret:/etc/pipecd-secret
-      - ./docker/wait-for-init:/wait-for-init
     ports:
       - 9085:9085
 
