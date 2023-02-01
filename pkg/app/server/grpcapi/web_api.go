@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -36,10 +37,12 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/unregisteredappstore"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
+	"github.com/pipe-cd/pipecd/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/insight"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/redis"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
 
@@ -103,6 +106,12 @@ type webApiAPIKeyStore interface {
 	Disable(ctx context.Context, id, projectID string) error
 }
 
+type webApiKeyLastUsedStore interface {
+	Get(k string) (interface{}, error)
+}
+
+const apiKeyLastUsedCacheHashKey = "HASHKEY:PIPED:API_KEYS"
+
 // WebAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
 	webservice.UnimplementedWebServiceServer
@@ -113,6 +122,7 @@ type WebAPI struct {
 	pipedStore                webApiPipedStore
 	projectStore              webApiProjectStore
 	apiKeyStore               webApiAPIKeyStore
+	apiKeyLastUsedStore       webApiKeyLastUsedStore
 	eventStore                webApiEventStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
@@ -136,6 +146,7 @@ func NewWebAPI(
 	ctx context.Context,
 	ds datastore.DataStore,
 	sc cache.Cache,
+	rd redis.Redis,
 	sls stagelogstore.Store,
 	alss applicationlivestatestore.Store,
 	uas unregisteredappstore.Store,
@@ -153,6 +164,7 @@ func NewWebAPI(
 		pipedStore:                datastore.NewPipedStore(ds, w),
 		projectStore:              datastore.NewProjectStore(ds, w),
 		apiKeyStore:               datastore.NewAPIKeyStore(ds, w),
+		apiKeyLastUsedStore:       rediscache.NewHashCache(rd, apiKeyLastUsedCacheHashKey),
 		eventStore:                datastore.NewEventStore(ds, w),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
@@ -1518,14 +1530,29 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 		return nil, gRPCStoreError(err, "list API keys")
 	}
 
-	// Redact all sensitive data inside API key before sending to the client.
 	for i := range apiKeys {
+		// Get LastUsedTIme from Redis
+		if lastUsedAt, error := a.apiKeyLastUsedStore.Get(apiKeys[i].Id); error == nil {
+			apiKeys[i].LastUsedAt = bytes2int64(lastUsedAt.([]byte))
+		} else {
+			apiKeys[i].LastUsedAt = 0
+		}
+		// Redact all sensitive data inside API key before sending to the client.
 		apiKeys[i].RedactSensitiveData()
 	}
 
 	return &webservice.ListAPIKeysResponse{
 		Keys: apiKeys,
 	}, nil
+}
+
+func bytes2int64(bytes []byte) int64 {
+	var numString string
+	for i := range bytes {
+		numString += string(bytes[i])
+	}
+	num, _ := strconv.ParseInt(numString, 10, 64)
+	return num
 }
 
 // GetInsightData returns the accumulated insight data.

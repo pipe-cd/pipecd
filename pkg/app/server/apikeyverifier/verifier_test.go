@@ -25,6 +25,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/redis"
 )
 
 type fakeAPIKeyGetter struct {
@@ -75,7 +76,10 @@ func TestVerify(t *testing.T) {
 			},
 		},
 	}
-	v := NewVerifier(ctx, apiKeyGetter, zap.NewNop())
+
+	// onlu use of default redis in cluster
+	rd := redis.NewRedis("pipecd-cache", "")
+	v := NewVerifier(ctx, apiKeyGetter, rd, zap.NewNop())
 
 	// Not found key.
 	notFoundKey, _, err := model.GenerateAPIKey("not-found-api-key")

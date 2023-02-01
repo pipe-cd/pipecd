@@ -23,7 +23,9 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
+	"github.com/pipe-cd/pipecd/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/redis"
 )
 
 type apiKeyGetter interface {
@@ -32,16 +34,20 @@ type apiKeyGetter interface {
 }
 
 type Verifier struct {
-	apiKeyCache cache.Cache
-	apiKeyStore apiKeyGetter
-	logger      *zap.Logger
+	apiKeyCache         cache.Cache
+	apiKeyStore         apiKeyGetter
+	apiKeyLastUsedCache cache.Cache
+	logger              *zap.Logger
 }
 
-func NewVerifier(ctx context.Context, getter apiKeyGetter, logger *zap.Logger) *Verifier {
+const apiKeyLastUsedCacheHashKey = "HASHKEY:PIPED:API_KEYS"
+
+func NewVerifier(ctx context.Context, getter apiKeyGetter, rd redis.Redis, logger *zap.Logger) *Verifier {
 	return &Verifier{
-		apiKeyCache: memorycache.NewTTLCache(ctx, 5*time.Minute, time.Minute),
-		apiKeyStore: getter,
-		logger:      logger,
+		apiKeyCache:         memorycache.NewTTLCache(ctx, 5*time.Minute, time.Minute),
+		apiKeyStore:         getter,
+		apiKeyLastUsedCache: rediscache.NewHashCache(rd, apiKeyLastUsedCacheHashKey),
+		logger:              logger,
 	}
 }
 
@@ -87,7 +93,8 @@ func checkAPIKey(ctx context.Context, v *Verifier, apiKey *model.APIKey, id, key
 	if err := apiKey.CompareKey(key); err != nil {
 		return fmt.Errorf("invalid api key %s: %w", id, err)
 	}
-	if err := v.apiKeyStore.UpdateLastUsedAt(ctx, id, apiKey.ProjectId); err != nil {
+	now := time.Now().Unix()
+	if err := v.apiKeyLastUsedCache.Put(id, now); err != nil {
 		return fmt.Errorf("unable to update the time API key %s was last used, %w", id, err)
 	}
 
