@@ -35,21 +35,36 @@ type Applier interface {
 	ReplaceManifest(ctx context.Context, manifest Manifest) error
 	// Delete deletes the given resource from Kubernetes cluster.
 	Delete(ctx context.Context, key ResourceKey) error
+	// Install does installing a release or upgrading it if it already exists.
+	Install(ctx context.Context) error
 }
 
 type applier struct {
+	appName          string
+	appDir           string
 	input            config.KubernetesDeploymentInput
 	platformProvider config.PlatformProviderKubernetesConfig
+	gc               gitClient
 	logger           *zap.Logger
 
 	kubectl  *Kubectl
+	helm     *Helm
 	initOnce sync.Once
 	initErr  error
 }
 
-func NewApplier(input config.KubernetesDeploymentInput, cp config.PlatformProviderKubernetesConfig, logger *zap.Logger) Applier {
+func NewApplier(
+	appName, appDir string,
+	input config.KubernetesDeploymentInput,
+	cp config.PlatformProviderKubernetesConfig,
+	gc gitClient,
+	logger *zap.Logger,
+) Applier {
 	return &applier{
+		appName:          appName,
+		appDir:           appDir,
 		input:            input,
+		gc:               gc,
 		platformProvider: cp,
 		logger:           logger.Named("kubernetes-applier"),
 	}
@@ -115,6 +130,68 @@ func (a *applier) ReplaceManifest(ctx context.Context, manifest Manifest) error 
 	return err
 }
 
+// Install uses helm to install or upgrade a release.
+func (a *applier) Install(ctx context.Context) (err error) {
+	a.initOnce.Do(func() {
+		a.helm, a.initErr = a.findHelm(ctx, a.input.HelmVersion)
+	})
+	if a.initErr != nil {
+		return a.initErr
+	}
+
+	switch {
+	case a.input.HelmChart.GitRemote != "":
+		chart := helmRemoteGitChart{
+			GitRemote: a.input.HelmChart.GitRemote,
+			Ref:       a.input.HelmChart.Ref,
+			Path:      a.input.HelmChart.Path,
+		}
+		err = a.helm.UpgradeRemoteGitChart(
+			ctx,
+			a.appName,
+			a.appDir,
+			a.input.Namespace,
+			chart,
+			a.gc,
+			a.input.HelmOptions,
+		)
+
+	case a.input.HelmChart.Repository != "":
+		chart := helmRemoteChart{
+			Repository: a.input.HelmChart.Repository,
+			Name:       a.input.HelmChart.Name,
+			Version:    a.input.HelmChart.Version,
+			Insecure:   a.input.HelmChart.Insecure,
+		}
+		err = a.helm.UpgradeRemoteChart(
+			ctx,
+			a.appName,
+			a.appDir,
+			a.input.Namespace,
+			chart,
+			a.input.HelmOptions,
+		)
+
+	default:
+		err = a.helm.UpgradeLocalChart(
+			ctx,
+			a.appName,
+			a.appDir,
+			a.input.Namespace,
+			a.input.HelmChart.Path,
+			a.input.HelmOptions,
+		)
+
+	}
+
+	if err != nil {
+		err = fmt.Errorf("unable to run helm upgrade: %w", err)
+		return
+	}
+
+	return nil
+}
+
 // Delete deletes the given resource from Kubernetes cluster.
 // If the resource key is different, this returns ErrNotFound.
 func (a *applier) Delete(ctx context.Context, k ResourceKey) (err error) {
@@ -177,6 +254,17 @@ func (a *applier) findKubectl(ctx context.Context, version string) (*Kubectl, er
 	return NewKubectl(version, path), nil
 }
 
+func (a *applier) findHelm(ctx context.Context, version string) (*Helm, error) {
+	path, installed, err := toolregistry.DefaultRegistry().Helm(ctx, version)
+	if err != nil {
+		return nil, fmt.Errorf("no helm %s (%v)", version, err)
+	}
+	if installed {
+		a.logger.Info(fmt.Sprintf("helm %s has just been installed because of no pre-installed binary for that version", version))
+	}
+	return NewHelm(version, path, a.logger), nil
+}
+
 type multiApplier struct {
 	appliers []Applier
 }
@@ -218,6 +306,15 @@ func (a *multiApplier) ReplaceManifest(ctx context.Context, manifest Manifest) e
 func (a *multiApplier) Delete(ctx context.Context, key ResourceKey) error {
 	for _, a := range a.appliers {
 		if err := a.Delete(ctx, key); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (a *multiApplier) Install(ctx context.Context) error {
+	for _, a := range a.appliers {
+		if err := a.Install(ctx); err != nil {
 			return err
 		}
 	}

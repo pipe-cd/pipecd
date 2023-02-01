@@ -274,7 +274,7 @@ func resolveSymlinkToAbsPath(path, absParentDir string) (string, error) {
 	return resolved, nil
 }
 
-func (h *Helm) UpgradeLocalChart(ctx context.Context, appName, appDir, namespace, chartPath string, opts *config.InputHelmOptions) (string, error) {
+func (h *Helm) UpgradeLocalChart(ctx context.Context, appName, appDir, namespace, chartPath string, opts *config.InputHelmOptions) error {
 	releaseName := appName
 	if opts != nil && opts.ReleaseName != "" {
 		releaseName = opts.ReleaseName
@@ -295,7 +295,7 @@ func (h *Helm) UpgradeLocalChart(ctx context.Context, appName, appDir, namespace
 		for _, v := range opts.ValueFiles {
 			if err := verifyHelmValueFilePath(appDir, v); err != nil {
 				h.logger.Error("failed to verify values file path", zap.Error(err))
-				return "", err
+				return err
 			}
 			args = append(args, "-f", v)
 		}
@@ -303,37 +303,35 @@ func (h *Helm) UpgradeLocalChart(ctx context.Context, appName, appDir, namespace
 			args = append(args, "--set-file", fmt.Sprintf("%s=%s", k, v))
 		}
 	}
-	var stdout, stderr bytes.Buffer
+	var stderr bytes.Buffer
 	cmd := exec.CommandContext(ctx, h.execPath, args...)
 	cmd.Dir = appDir
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
 
 	h.logger.Info(fmt.Sprintf("start upgrading a release (or cloned remote git chart) for application %s", appName),
 		zap.Any("args", args),
 	)
 
 	if err := cmd.Run(); err != nil {
-		return stdout.String(), fmt.Errorf("%w: %s", err, stderr.String())
+		return fmt.Errorf("%w: %s", err, stderr.String())
 	}
-	return stdout.String(), nil
+	return nil
 }
 
-func (h *Helm) UpgradeRemoteGitChart(ctx context.Context, appName, appDir, namespace string, chart helmRemoteGitChart, gitClient gitClient, opts *config.InputHelmOptions) (string, error) {
+func (h *Helm) UpgradeRemoteGitChart(ctx context.Context, appName, appDir, namespace string, chart helmRemoteGitChart, gitClient gitClient, opts *config.InputHelmOptions) error {
 	repoDir, err := os.MkdirTemp("", "helm-remote-chart")
 	if err != nil {
-		return "", fmt.Errorf("unable to created temporary directory for storing remote helm chart: %w", err)
+		return fmt.Errorf("unable to created temporary directory for storing remote helm chart: %w", err)
 	}
 	defer os.RemoveAll(repoDir)
 
 	repo, err := gitClient.Clone(ctx, chart.GitRemote, chart.GitRemote, "", repoDir)
 	if err != nil {
-		return "", fmt.Errorf("unable to clone git repository containing remote helm chart: %w", err)
+		return fmt.Errorf("unable to clone git repository containing remote helm chart: %w", err)
 	}
 
 	if chart.Ref != "" {
 		if err := repo.Checkout(ctx, chart.Ref); err != nil {
-			return "", fmt.Errorf("unable to checkout to specified ref %s: %w", chart.Ref, err)
+			return fmt.Errorf("unable to checkout to specified ref %s: %w", chart.Ref, err)
 		}
 	}
 	chartPath := filepath.Join(repoDir, chart.Path)
@@ -342,7 +340,7 @@ func (h *Helm) UpgradeRemoteGitChart(ctx context.Context, appName, appDir, names
 	return h.UpgradeLocalChart(ctx, appName, appDir, namespace, chartPath, opts)
 }
 
-func (h *Helm) UpgradeRemoteChart(ctx context.Context, appName, appDir, namespace string, chart helmRemoteChart, gitClient gitClient, opts *config.InputHelmOptions) (string, error) {
+func (h *Helm) UpgradeRemoteChart(ctx context.Context, appName, appDir, namespace string, chart helmRemoteChart, opts *config.InputHelmOptions) error {
 	releaseName := appName
 	if opts != nil && opts.ReleaseName != "" {
 		releaseName = opts.ReleaseName
@@ -368,7 +366,7 @@ func (h *Helm) UpgradeRemoteChart(ctx context.Context, appName, appDir, namespac
 		for _, v := range opts.ValueFiles {
 			if err := verifyHelmValueFilePath(appDir, v); err != nil {
 				h.logger.Error("failed to verify values file path", zap.Error(err))
-				return "", err
+				return err
 			}
 			args = append(args, "-f", v)
 		}
@@ -381,33 +379,31 @@ func (h *Helm) UpgradeRemoteChart(ctx context.Context, appName, appDir, namespac
 		zap.Any("args", args),
 	)
 
-	executor := func() (string, error) {
-		var stdout, stderr bytes.Buffer
+	executor := func() error {
+		var stderr bytes.Buffer
 		cmd := exec.CommandContext(ctx, h.execPath, args...)
 		cmd.Dir = appDir
-		cmd.Stdout = &stdout
 		cmd.Stderr = &stderr
 
 		if err := cmd.Run(); err != nil {
-			return stdout.String(), fmt.Errorf("%w: %s", err, stderr.String())
+			return fmt.Errorf("%w: %s", err, stderr.String())
 		}
-		return stdout.String(), nil
+		return nil
 	}
 
-	out, err := executor()
+	err := executor()
 	if err == nil {
-		return out, nil
+		return nil
 	}
 
 	if !strings.Contains(err.Error(), "helm repo update") {
-		return "", err
+		return err
 	}
 
 	// If the error is a "Not Found", we update the repositories and try again.
 	if e := chartrepo.Update(ctx, toolregistry.DefaultRegistry(), h.logger); e != nil {
 		h.logger.Error("failed to update Helm chart repositories", zap.Error(e))
-		return "", err
+		return err
 	}
 	return executor()
-
 }

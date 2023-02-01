@@ -135,7 +135,15 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	ag, err := newApplierGroup(e.Deployment.PlatformProvider, *appCfg, e.PipedConfig, e.Logger)
+	ag, err := newApplierGroup(
+		e.Deployment.ApplicationName,
+		ds.AppDir,
+		e.Deployment.PlatformProvider,
+		*appCfg,
+		e.PipedConfig,
+		e.GitClient,
+		e.Logger,
+	)
 	if err != nil {
 		e.LogPersister.Error(err.Error())
 		return model.StageStatus_STAGE_FAILURE

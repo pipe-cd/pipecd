@@ -15,6 +15,7 @@
 package kubernetes
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
@@ -23,11 +24,16 @@ import (
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type applierGetter interface {
 	Get(k provider.ResourceKey) (provider.Applier, error)
+}
+
+type gitClient interface {
+	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
 type applierGroup struct {
@@ -37,15 +43,18 @@ type applierGroup struct {
 	defaultApplier   provider.Applier
 }
 
-func newApplierGroup(defaultProvider string, appCfg config.KubernetesApplicationSpec, pipedCfg *config.PipedSpec, logger *zap.Logger) (*applierGroup, error) {
+func newApplierGroup(appName, appDir, defaultProvider string, appCfg config.KubernetesApplicationSpec, pipedCfg *config.PipedSpec, gc gitClient, logger *zap.Logger) (*applierGroup, error) {
 	cp, ok := pipedCfg.FindPlatformProvider(defaultProvider, model.ApplicationKind_KUBERNETES)
 	if !ok {
 		return nil, fmt.Errorf("provider %s was not found", defaultProvider)
 	}
 
 	defaultApplier := provider.NewApplier(
+		appName,
+		appDir,
 		appCfg.Input,
 		*cp.KubernetesConfig,
+		gc,
 		logger,
 	)
 	d := &applierGroup{
@@ -64,7 +73,14 @@ func newApplierGroup(defaultProvider string, appCfg config.KubernetesApplication
 			if !found {
 				return nil, fmt.Errorf("provider %s specified in resourceRoutes was not found", name)
 			}
-			d.appliers[name] = provider.NewApplier(appCfg.Input, *cp.KubernetesConfig, logger)
+			d.appliers[name] = provider.NewApplier(
+				appName,
+				appDir,
+				appCfg.Input,
+				*cp.KubernetesConfig,
+				gc,
+				logger,
+			)
 			continue
 		}
 		if labels := r.Provider.Labels; len(labels) > 0 {
@@ -75,7 +91,14 @@ func newApplierGroup(defaultProvider string, appCfg config.KubernetesApplication
 			names := make([]string, 0, len(cps))
 			for _, cp := range cps {
 				if _, ok := d.appliers[cp.Name]; !ok {
-					d.appliers[cp.Name] = provider.NewApplier(appCfg.Input, *cp.KubernetesConfig, logger)
+					d.appliers[cp.Name] = provider.NewApplier(
+						appName,
+						appDir,
+						appCfg.Input,
+						*cp.KubernetesConfig,
+						gc,
+						logger,
+					)
 				}
 				names = append(names, cp.Name)
 			}
