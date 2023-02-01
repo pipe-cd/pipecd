@@ -74,7 +74,6 @@ type APIKeyStore interface {
 	Get(ctx context.Context, id string) (*model.APIKey, error)
 	List(ctx context.Context, opts ListOptions) ([]*model.APIKey, error)
 	Disable(ctx context.Context, id, projectID string) error
-	UpdateLastUsedAt(ctx context.Context, id, projectID string) error
 }
 
 type apiKeyStore struct {
@@ -146,19 +145,6 @@ func (s *apiKeyStore) Disable(ctx context.Context, id, projectID string) error {
 
 		k.Disabled = true
 		k.UpdatedAt = now
-		return k.Validate()
-	})
-}
-
-func (s *apiKeyStore) UpdateLastUsedAt(ctx context.Context, id, projectID string) error {
-	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
-		k := e.(*model.APIKey)
-		if k.ProjectId != projectID {
-			return fmt.Errorf("invalid project id, expected %s, got %s", k.ProjectId, projectID)
-		}
-
-		k.LastUsedAt = now
 		return k.Validate()
 	})
 }
