@@ -30,7 +30,6 @@ import (
 
 type apiKeyGetter interface {
 	Get(ctx context.Context, id string) (*model.APIKey, error)
-	UpdateLastUsedAt(ctx context.Context, id, projectID string) error
 }
 
 type Verifier struct {
@@ -61,7 +60,7 @@ func (v *Verifier) Verify(ctx context.Context, key string) (*model.APIKey, error
 	item, err := v.apiKeyCache.Get(keyID)
 	if err == nil {
 		apiKey = item.(*model.APIKey)
-		if err := checkAPIKey(ctx, v, apiKey, keyID, key); err != nil {
+		if err := v.checkAPIKey(ctx, apiKey, keyID, key); err != nil {
 			return nil, err
 		}
 		return apiKey, nil
