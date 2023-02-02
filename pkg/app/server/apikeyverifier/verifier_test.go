@@ -18,14 +18,15 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/pipe-cd/pipecd/pkg/redis"
 )
 
 type fakeAPIKeyGetter struct {
@@ -43,10 +44,23 @@ func (g *fakeAPIKeyGetter) Get(_ context.Context, id string) (*model.APIKey, err
 	return nil, fmt.Errorf("not found")
 }
 
-func (g *fakeAPIKeyGetter) UpdateLastUsedAt(_ context.Context, id string, projectID string) error {
+type fakeRedisHashCache struct{}
+
+func (f *fakeRedisHashCache) Get(k string) (interface{}, error) {
+	return nil, nil
+}
+
+func (f *fakeRedisHashCache) Put(k string, v interface{}) error {
 	return nil
 }
 
+func (f *fakeRedisHashCache) Delete(k string) error {
+	return nil
+}
+
+func (r *fakeRedisHashCache) GetAll() (map[string]interface{}, error) {
+	return nil, nil
+}
 func TestVerify(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -76,10 +90,13 @@ func TestVerify(t *testing.T) {
 			},
 		},
 	}
-
-	// onlu use of default redis in cluster
-	rd := redis.NewRedis("pipecd-cache", "")
-	v := NewVerifier(ctx, apiKeyGetter, rd, zap.NewNop())
+	fakeRedisHashCache := &fakeRedisHashCache{}
+	v := &Verifier{
+		apiKeyCache:         memorycache.NewTTLCache(ctx, 5*time.Minute, time.Minute),
+		apiKeyStore:         apiKeyGetter,
+		apiKeyLastUsedCache: fakeRedisHashCache,
+		logger:              zap.NewNop(),
+	}
 
 	// Not found key.
 	notFoundKey, _, err := model.GenerateAPIKey("not-found-api-key")
