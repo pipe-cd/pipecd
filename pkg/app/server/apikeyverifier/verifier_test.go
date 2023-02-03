@@ -58,7 +58,7 @@ func (f *fakeRedisHashCache) Delete(k string) error {
 	return nil
 }
 
-func (r *fakeRedisHashCache) GetAll() (map[string]interface{}, error) {
+func (f *fakeRedisHashCache) GetAll() (map[string]interface{}, error) {
 	return nil, nil
 }
 func TestVerify(t *testing.T) {

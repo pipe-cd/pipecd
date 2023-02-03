@@ -106,11 +106,12 @@ type webApiAPIKeyStore interface {
 	Disable(ctx context.Context, id, projectID string) error
 }
 
-type webApiKeyLastUsedStore interface {
+// TODO: all structs webApi should be webAPI
+type webApiAPIKeyLastUsedStore interface { //nolint:stylecheck
 	Get(k string) (interface{}, error)
 }
 
-const apiKeyLastUsedCacheHashKey = "HASHKEY:PIPED:API_KEYS"
+const apiKeyLastUsedCacheHashKey = "HASHKEY:PIPED:API_KEYS" //nolint:gosec
 
 // WebAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
@@ -122,7 +123,7 @@ type WebAPI struct {
 	pipedStore                webApiPipedStore
 	projectStore              webApiProjectStore
 	apiKeyStore               webApiAPIKeyStore
-	apiKeyLastUsedStore       webApiKeyLastUsedStore
+	apiKeyLastUsedStore       webApiAPIKeyLastUsedStore
 	eventStore                webApiEventStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store

@@ -39,7 +39,7 @@ type Verifier struct {
 	logger              *zap.Logger
 }
 
-const apiKeyLastUsedCacheHashKey = "HASHKEY:PIPED:API_KEYS"
+const apiKeyLastUsedCacheHashKey = "HASHKEY:PIPED:API_KEYS" //nolint:gosec
 
 func NewVerifier(ctx context.Context, getter apiKeyGetter, rd redis.Redis, logger *zap.Logger) *Verifier {
 	return &Verifier{
