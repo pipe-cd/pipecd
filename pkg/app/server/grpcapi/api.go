@@ -28,6 +28,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
+	"github.com/pipe-cd/pipecd/pkg/app/server/stagelogstore"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
@@ -72,6 +73,7 @@ type API struct {
 	pipedStore          apiPipedStore
 	eventStore          apiEventStore
 	commandStore        commandstore.Store
+	stageLogStore       stagelogstore.Store
 	commandOutputGetter commandOutputGetter
 
 	encryptionKeyCache cache.Cache
@@ -372,6 +374,29 @@ func (a *API) GetDeployment(ctx context.Context, req *apiservice.GetDeploymentRe
 
 	return &apiservice.GetDeploymentResponse{
 		Deployment: deployment,
+	}, nil
+}
+
+func (a *API) GetStageLog(ctx context.Context, req *apiservice.GetStageLogRequest) (*apiservice.GetStageLogResponse, error) {
+	// claims, err := rpcauth.ExtractClaims(ctx)
+	// if err != nil {
+	// 	a.logger.Error("failed to authenticate the current user", zap.Error(err))
+	// 	return nil, err
+	// }
+
+	// if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
+	// 	return nil, err
+	// }
+
+	blocks, completed, err := a.stageLogStore.FetchLogs(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.OffsetIndex)
+	if err != nil {
+		a.logger.Error("failed to get stage logs", zap.Error(err))
+		return nil, gRPCStoreError(err, "get stage logs")
+	}
+
+	return &apiservice.GetStageLogResponse{
+		Blocks:    blocks,
+		Completed: completed,
 	}, nil
 }
 
