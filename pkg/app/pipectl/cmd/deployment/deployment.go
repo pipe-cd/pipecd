@@ -34,6 +34,7 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(newWaitStatusCommand(c))
+	cmd.AddCommand(newLogsCommand(c))
 
 	c.clientOptions.RegisterPersistentFlags(cmd)
 
