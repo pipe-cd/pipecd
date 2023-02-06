@@ -22,8 +22,9 @@ import (
 	"os/exec"
 	"text/template"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"go.uber.org/zap"
+
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 const (
