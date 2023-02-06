@@ -206,23 +206,12 @@ func (d *OnCommitDeterminer) ShouldTrigger(ctx context.Context, app *model.Appli
 
 // isTouchedByChangedFiles checks whether this application changed files can trigger a new deployment or not (considered as "touched")
 // The logic of watching files pattern contains both "includes" and "excludes" filter and be implemented as flow:
-//  1. If both includes & excludes are empty, app is considered as touched
-//  2. If any of changed files are listed in excludes, app is NOT considered as touched
-//  3. If pass (2) and any of changed files are listed in includes, app is considered as touched
+//  1. If any of changed files are listed in excludes, app is NOT considered as touched
+//  2. If pass (1) and any of changed files are listed in includes, app is considered as touched
+//  3. If any changes are under the app dir, app is considered as touched
 func isTouchedByChangedFiles(appDir string, includes, excludes []string, changedFiles []string) (bool, error) {
 	if !strings.HasSuffix(appDir, "/") {
 		appDir += "/"
-	}
-
-	// In case includes and excludes do not contain anything,
-	// it's considered any files changed inside the application directory as touched.
-	if len(includes) == 0 && len(excludes) == 0 {
-		for _, cf := range changedFiles {
-			if ok := strings.HasPrefix(cf, appDir); ok {
-				return true, nil
-			}
-		}
-		return false, nil
 	}
 
 	// If any changed files matches the specified "excludes"
@@ -246,6 +235,13 @@ func isTouchedByChangedFiles(appDir string, includes, excludes []string, changed
 			return false, err
 		}
 		if matcher.MatchesAny(changedFiles) {
+			return true, nil
+		}
+	}
+
+	// It's considered any files changed inside the application directory as touched.
+	for _, cf := range changedFiles {
+		if ok := strings.HasPrefix(cf, appDir); ok {
 			return true, nil
 		}
 	}
