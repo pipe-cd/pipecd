@@ -33,7 +33,7 @@ type Registry interface {
 	Kubectl(ctx context.Context, version string) (string, bool, error)
 	Kustomize(ctx context.Context, version string) (string, bool, error)
 	Helm(ctx context.Context, version string) (string, bool, error)
-	CustomTemplating(ctx context.Context, input config.InputCustomTemplating) (string, bool, error)
+	CustomTemplating(ctx context.Context, input *config.InputCustomTemplating) (string, bool, error)
 	Terraform(ctx context.Context, version string) (string, bool, error)
 }
 
@@ -193,8 +193,11 @@ func (r *registry) Helm(ctx context.Context, version string) (string, bool, erro
 	return path, true, nil
 }
 
-func (r *registry) CustomTemplating(ctx context.Context, input config.InputCustomTemplating) (string, bool, error) {
+func (r *registry) CustomTemplating(ctx context.Context, input *config.InputCustomTemplating) (string, bool, error) {
 	name := input.Command
+	if input.Version != "" {
+		name = fmt.Sprintf("%s-%s", name, input.Version)
+	}
 	path := filepath.Join(r.binDir, name)
 
 	r.mu.RLock()
@@ -204,12 +207,12 @@ func (r *registry) CustomTemplating(ctx context.Context, input config.InputCusto
 		return path, false, nil
 	}
 
-	// _, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
-	// 	return nil, r.installCustomTemplating(ctx, version)
-	// })
-	// if err != nil {
-	// 	return "", true, err
-	// }
+	_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
+		return nil, r.installCustomTemplating(ctx, input)
+	})
+	if err != nil {
+		return "", true, err
+	}
 
 	r.mu.Lock()
 	r.versions[name] = struct{}{}

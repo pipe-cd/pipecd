@@ -101,7 +101,7 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 			l.kustomize, l.initErr = l.findKustomize(ctx, l.input.KustomizeVersion)
 
 		case TemplatingMethodCustom:
-			l.customTemplating, l.initErr = l.findCustomTemplatimg(ctx, *l.input.CustomTemplating)
+			l.customTemplating, l.initErr = l.findCustomTemplatimg(ctx, l.input.CustomTemplating)
 		}
 
 	})
@@ -233,10 +233,10 @@ func (l *loader) findHelm(ctx context.Context, version string) (*Helm, error) {
 	return NewHelm(version, path, l.logger), nil
 }
 
-func (l *loader) findCustomTemplatimg(ctx context.Context, input config.InputCustomTemplating) (*CustomTemplating, error) {
+func (l *loader) findCustomTemplatimg(ctx context.Context, input *config.InputCustomTemplating) (*CustomTemplating, error) {
 	path, installed, err := toolregistry.DefaultRegistry().CustomTemplating(ctx, input)
 	if err != nil {
-		return nil, fmt.Errorf("no custom templating %s (%v)", path, err)
+		return nil, fmt.Errorf("no custom templating %s %s (%v)", path, input.Version, err)
 	}
 	if installed {
 		l.logger.Info(fmt.Sprintf("custom templating %s has just been installed because of no pre-installed binary", path))
