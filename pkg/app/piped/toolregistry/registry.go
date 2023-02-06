@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/pipe-cd/pipecd/pkg/config"
 	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
 )
@@ -32,6 +33,7 @@ type Registry interface {
 	Kubectl(ctx context.Context, version string) (string, bool, error)
 	Kustomize(ctx context.Context, version string) (string, bool, error)
 	Helm(ctx context.Context, version string) (string, bool, error)
+	CustomTemplating(ctx context.Context, input config.InputCustomTemplating) (string, bool, error)
 	Terraform(ctx context.Context, version string) (string, bool, error)
 }
 
@@ -88,6 +90,7 @@ func loadPreinstalledTool(binDir string) (map[string]struct{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(tools)
 	return tools, nil
 }
 
@@ -182,6 +185,31 @@ func (r *registry) Helm(ctx context.Context, version string) (string, bool, erro
 	if err != nil {
 		return "", true, err
 	}
+
+	r.mu.Lock()
+	r.versions[name] = struct{}{}
+	r.mu.Unlock()
+
+	return path, true, nil
+}
+
+func (r *registry) CustomTemplating(ctx context.Context, input config.InputCustomTemplating) (string, bool, error) {
+	name := input.Command
+	path := filepath.Join(r.binDir, name)
+
+	r.mu.RLock()
+	_, ok := r.versions[name]
+	r.mu.RUnlock()
+	if ok {
+		return path, false, nil
+	}
+
+	// _, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
+	// 	return nil, r.installCustomTemplating(ctx, version)
+	// })
+	// if err != nil {
+	// 	return "", true, err
+	// }
 
 	r.mu.Lock()
 	r.versions[name] = struct{}{}

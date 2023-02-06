@@ -88,6 +88,9 @@ type KubernetesDeploymentInput struct {
 	// Configurable parameters for helm commands.
 	HelmOptions *InputHelmOptions `json:"helmOptions"`
 
+	// Custom Templating
+	CustomTemplating *InputCustomTemplating `json:"customTemplating"`
+
 	// The namespace where manifests will be applied.
 	Namespace string `json:"namespace"`
 
@@ -126,6 +129,11 @@ type InputHelmOptions struct {
 	APIVersions []string `json:"apiVersions"`
 	// Kubernetes version used for Capabilities.KubeVersion
 	KubeVersion string `json:"kubeVersion"`
+}
+
+type InputCustomTemplating struct {
+	Command string   `json:"command"`
+	Args    []string `json:"args"`
 }
 
 type KubernetesTrafficRoutingMethod string

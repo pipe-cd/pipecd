@@ -35,6 +35,7 @@ type TemplatingMethod string
 const (
 	TemplatingMethodHelm      TemplatingMethod = "helm"
 	TemplatingMethodKustomize TemplatingMethod = "kustomize"
+	TemplatingMethodCustom    TemplatingMethod = "custom"
 	TemplatingMethodNone      TemplatingMethod = "none"
 )
 
@@ -59,6 +60,7 @@ type loader struct {
 	templatingMethod TemplatingMethod
 	kustomize        *Kustomize
 	helm             *Helm
+	customTemplating *CustomTemplating
 	initOnce         sync.Once
 	initErr          error
 }
@@ -97,7 +99,11 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 
 		case TemplatingMethodKustomize:
 			l.kustomize, l.initErr = l.findKustomize(ctx, l.input.KustomizeVersion)
+
+		case TemplatingMethodCustom:
+			l.customTemplating, l.initErr = l.findCustomTemplatimg(ctx, *l.input.CustomTemplating)
 		}
+
 	})
 	if l.initErr != nil {
 		return nil, l.initErr
@@ -159,6 +165,16 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 		}
 		manifests, err = ParseManifests(data)
 
+	case TemplatingMethodCustom:
+		var data string
+		data, err = l.customTemplating.Template(ctx, l.appName, l.appDir, l.input.CustomTemplating.Args)
+		if err != nil {
+			err = fmt.Errorf("unable to run custom templating template: %w", err)
+			return
+		}
+		fmt.Println(data)
+		manifests, err = ParseManifests(data)
+
 	case TemplatingMethodNone:
 		manifests, err = LoadPlainYAMLManifests(l.appDir, l.input.Manifests, l.configFileName)
 
@@ -217,12 +233,26 @@ func (l *loader) findHelm(ctx context.Context, version string) (*Helm, error) {
 	return NewHelm(version, path, l.logger), nil
 }
 
+func (l *loader) findCustomTemplatimg(ctx context.Context, input config.InputCustomTemplating) (*CustomTemplating, error) {
+	path, installed, err := toolregistry.DefaultRegistry().CustomTemplating(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("no custom templating %s (%v)", path, err)
+	}
+	if installed {
+		l.logger.Info(fmt.Sprintf("custom templating %s has just been installed because of no pre-installed binary", path))
+	}
+	return NewCustomTemplating(path, l.logger), nil
+}
+
 func determineTemplatingMethod(input config.KubernetesDeploymentInput, appDirPath string) TemplatingMethod {
 	if input.HelmChart != nil {
 		return TemplatingMethodHelm
 	}
 	if _, err := os.Stat(filepath.Join(appDirPath, kustomizationFileName)); err == nil {
 		return TemplatingMethodKustomize
+	}
+	if input.CustomTemplating != nil {
+		return TemplatingMethodCustom
 	}
 	return TemplatingMethodNone
 }
