@@ -388,16 +388,17 @@ func (a *API) GetStageLog(ctx context.Context, req *apiservice.GetStageLogReques
 	// 	return nil, err
 	// }
 
-	blocks, completed, err := a.stageLogStore.FetchLogs(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.OffsetIndex)
-	if err != nil {
-		a.logger.Error("failed to get stage logs", zap.Error(err))
-		return nil, gRPCStoreError(err, "get stage logs")
-	}
+	// blocks, completed, err := a.stageLogStore.FetchLogs(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.OffsetIndex)
+	// if err != nil {
+	// 	a.logger.Error("failed to get stage logs", zap.Error(err))
+	// 	return nil, gRPCStoreError(err, "get stage logs")
+	// }
 
-	return &apiservice.GetStageLogResponse{
-		Blocks:    blocks,
-		Completed: completed,
-	}, nil
+	// return &apiservice.GetStageLogResponse{
+	// 	Blocks:    blocks,
+	// 	Completed: completed,
+	// }, nil
+	return nil, nil
 }
 
 func (a *API) GetCommand(ctx context.Context, req *apiservice.GetCommandRequest) (*apiservice.GetCommandResponse, error) {
