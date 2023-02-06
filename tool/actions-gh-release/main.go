@@ -134,7 +134,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to marshal releases: %v\n", err)
 	}
-	fmt.Printf("::set-output name=releases::%s\n", string(releasesJSON))
+	os.Setenv("GITHUB_OUTPUT", fmt.Sprintf("releases=%s", string(releasesJSON)))
 	if args.OutputReleasesFilePath != "" {
 		if err := os.WriteFile(args.OutputReleasesFilePath, releasesJSON, 0644); err != nil {
 			log.Fatalf("Failed to write releases JSON to %s: %v\n", args.OutputReleasesFilePath, err)
