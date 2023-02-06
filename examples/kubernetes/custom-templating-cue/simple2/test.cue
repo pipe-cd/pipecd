@@ -17,9 +17,7 @@ deployment: simple2: {
 			metadata: {
 				labels: {
 					app:                  "simple2"
-					"pipecd.dev/variant": "primary"
 				}
-				annotations: "sidecar.istio.io/inject": "false"
 			}
 			spec: containers: [{
 				name:  "helloworld"
