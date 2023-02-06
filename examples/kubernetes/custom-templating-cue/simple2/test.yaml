@@ -9,7 +9,6 @@ spec:
   selector:
     matchLabels:
       app: simple2
-      pipecd.dev/variant: primary
   template:
     metadata:
       labels:
