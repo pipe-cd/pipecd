@@ -172,7 +172,6 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 			err = fmt.Errorf("unable to run custom templating template: %w", err)
 			return
 		}
-		fmt.Println(data)
 		manifests, err = ParseManifests(data)
 
 	case TemplatingMethodNone:
