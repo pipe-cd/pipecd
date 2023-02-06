@@ -37,6 +37,7 @@ type APIServiceClient interface {
 	RequestPlanPreview(ctx context.Context, in *RequestPlanPreviewRequest, opts ...grpc.CallOption) (*RequestPlanPreviewResponse, error)
 	GetPlanPreviewResults(ctx context.Context, in *GetPlanPreviewResultsRequest, opts ...grpc.CallOption) (*GetPlanPreviewResultsResponse, error)
 	Encrypt(ctx context.Context, in *EncryptRequest, opts ...grpc.CallOption) (*EncryptResponse, error)
+	GetStageLog(ctx context.Context, in *GetStageLogRequest, opts ...grpc.CallOption) (*GetStageLogResponse, error)
 }
 
 type aPIServiceClient struct {
@@ -182,6 +183,15 @@ func (c *aPIServiceClient) Encrypt(ctx context.Context, in *EncryptRequest, opts
 	return out, nil
 }
 
+func (c *aPIServiceClient) GetStageLog(ctx context.Context, in *GetStageLogRequest, opts ...grpc.CallOption) (*GetStageLogResponse, error) {
+	out := new(GetStageLogResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/GetStageLog", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // APIServiceServer is the server API for APIService service.
 // All implementations must embed UnimplementedAPIServiceServer
 // for forward compatibility
@@ -201,6 +211,7 @@ type APIServiceServer interface {
 	RequestPlanPreview(context.Context, *RequestPlanPreviewRequest) (*RequestPlanPreviewResponse, error)
 	GetPlanPreviewResults(context.Context, *GetPlanPreviewResultsRequest) (*GetPlanPreviewResultsResponse, error)
 	Encrypt(context.Context, *EncryptRequest) (*EncryptResponse, error)
+	GetStageLog(context.Context, *GetStageLogRequest) (*GetStageLogResponse, error)
 	mustEmbedUnimplementedAPIServiceServer()
 }
 
@@ -252,6 +263,9 @@ func (UnimplementedAPIServiceServer) GetPlanPreviewResults(context.Context, *Get
 }
 func (UnimplementedAPIServiceServer) Encrypt(context.Context, *EncryptRequest) (*EncryptResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Encrypt not implemented")
+}
+func (UnimplementedAPIServiceServer) GetStageLog(context.Context, *GetStageLogRequest) (*GetStageLogResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStageLog not implemented")
 }
 func (UnimplementedAPIServiceServer) mustEmbedUnimplementedAPIServiceServer() {}
 
@@ -536,6 +550,24 @@ func _APIService_Encrypt_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _APIService_GetStageLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetStageLogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(APIServiceServer).GetStageLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.apiservice.APIService/GetStageLog",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(APIServiceServer).GetStageLog(ctx, req.(*GetStageLogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // APIService_ServiceDesc is the grpc.ServiceDesc for APIService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -602,6 +634,10 @@ var APIService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Encrypt",
 			Handler:    _APIService_Encrypt_Handler,
+		},
+		{
+			MethodName: "GetStageLog",
+			Handler:    _APIService_GetStageLog_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

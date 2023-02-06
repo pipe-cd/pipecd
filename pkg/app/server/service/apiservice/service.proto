@@ -21,6 +21,7 @@ import "validate/validate.proto";
 import "pkg/model/common.proto";
 import "pkg/model/application.proto";
 import "pkg/model/deployment.proto";
+import "pkg/model/logblock.proto";
 import "pkg/model/command.proto";
 import "pkg/model/planpreview.proto";
 
@@ -48,6 +49,8 @@ service APIService {
     rpc GetPlanPreviewResults(GetPlanPreviewResultsRequest) returns (GetPlanPreviewResultsResponse) {}
 
     rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
+
+    rpc GetStageLog(GetStageLogRequest) returns (GetStageLogResponse) {}
 }
 
 message AddApplicationRequest {
@@ -194,4 +197,16 @@ message EncryptRequest {
 
 message EncryptResponse {
     string ciphertext = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetStageLogRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    int32 retried_count = 3;
+    int64 offset_index = 4;
+}
+
+message GetStageLogResponse {
+    repeated model.LogBlock blocks = 1;
+    bool completed = 2;
 }

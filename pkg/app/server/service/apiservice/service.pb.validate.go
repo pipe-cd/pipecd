@@ -3651,3 +3651,269 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = EncryptResponseValidationError{}
+
+// Validate checks the field values on GetStageLogRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetStageLogRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetStageLogRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetStageLogRequestMultiError, or nil if none found.
+func (m *GetStageLogRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetStageLogRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
+		err := GetStageLogRequestValidationError{
+			field:  "DeploymentId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetStageId()) < 1 {
+		err := GetStageLogRequestValidationError{
+			field:  "StageId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for RetriedCount
+
+	// no validation rules for OffsetIndex
+
+	if len(errors) > 0 {
+		return GetStageLogRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetStageLogRequestMultiError is an error wrapping multiple validation errors
+// returned by GetStageLogRequest.ValidateAll() if the designated constraints
+// aren't met.
+type GetStageLogRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetStageLogRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetStageLogRequestMultiError) AllErrors() []error { return m }
+
+// GetStageLogRequestValidationError is the validation error returned by
+// GetStageLogRequest.Validate if the designated constraints aren't met.
+type GetStageLogRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetStageLogRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetStageLogRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetStageLogRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetStageLogRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetStageLogRequestValidationError) ErrorName() string {
+	return "GetStageLogRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetStageLogRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetStageLogRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetStageLogRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetStageLogRequestValidationError{}
+
+// Validate checks the field values on GetStageLogResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetStageLogResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetStageLogResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetStageLogResponseMultiError, or nil if none found.
+func (m *GetStageLogResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetStageLogResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetBlocks() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, GetStageLogResponseValidationError{
+						field:  fmt.Sprintf("Blocks[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, GetStageLogResponseValidationError{
+						field:  fmt.Sprintf("Blocks[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return GetStageLogResponseValidationError{
+					field:  fmt.Sprintf("Blocks[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for Completed
+
+	if len(errors) > 0 {
+		return GetStageLogResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetStageLogResponseMultiError is an error wrapping multiple validation
+// errors returned by GetStageLogResponse.ValidateAll() if the designated
+// constraints aren't met.
+type GetStageLogResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetStageLogResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetStageLogResponseMultiError) AllErrors() []error { return m }
+
+// GetStageLogResponseValidationError is the validation error returned by
+// GetStageLogResponse.Validate if the designated constraints aren't met.
+type GetStageLogResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetStageLogResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetStageLogResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetStageLogResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetStageLogResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetStageLogResponseValidationError) ErrorName() string {
+	return "GetStageLogResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetStageLogResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetStageLogResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetStageLogResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetStageLogResponseValidationError{}
