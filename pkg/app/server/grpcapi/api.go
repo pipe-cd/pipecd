@@ -32,6 +32,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/filestore"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
@@ -87,6 +88,7 @@ type API struct {
 func NewAPI(
 	ctx context.Context,
 	ds datastore.DataStore,
+	fs filestore.Store,
 	sc cache.Cache,
 	cog commandOutputGetter,
 	psc cache.Cache,
@@ -100,6 +102,7 @@ func NewAPI(
 		pipedStore:          datastore.NewPipedStore(ds, w),
 		eventStore:          datastore.NewEventStore(ds, w),
 		commandStore:        commandstore.NewStore(w, ds, sc, logger),
+		stageLogStore:       stagelogstore.NewStore(fs, sc, logger),
 		commandOutputGetter: cog,
 		// Public key is variable but likely to be accessed multiple times in a short period.
 		encryptionKeyCache: memorycache.NewTTLCache(ctx, 5*time.Minute, 5*time.Minute),
@@ -378,27 +381,30 @@ func (a *API) GetDeployment(ctx context.Context, req *apiservice.GetDeploymentRe
 }
 
 func (a *API) GetStageLog(ctx context.Context, req *apiservice.GetStageLogRequest) (*apiservice.GetStageLogResponse, error) {
-	// claims, err := rpcauth.ExtractClaims(ctx)
-	// if err != nil {
-	// 	a.logger.Error("failed to authenticate the current user", zap.Error(err))
-	// 	return nil, err
-	// }
+	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
+	if err != nil {
+		return nil, err
+	}
 
-	// if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
-	// 	return nil, err
-	// }
+	deployment, err := getDeployment(ctx, a.deploymentStore, req.DeploymentId, a.logger)
+	if err != nil {
+		return nil, err
+	}
 
-	// blocks, completed, err := a.stageLogStore.FetchLogs(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.OffsetIndex)
-	// if err != nil {
-	// 	a.logger.Error("failed to get stage logs", zap.Error(err))
-	// 	return nil, gRPCStoreError(err, "get stage logs")
-	// }
+	if key.ProjectId != deployment.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested deployment does not belong to your project")
+	}
 
-	// return &apiservice.GetStageLogResponse{
-	// 	Blocks:    blocks,
-	// 	Completed: completed,
-	// }, nil
-	return nil, nil
+	blocks, completed, err := a.stageLogStore.FetchLogs(ctx, deployment.Id, req.StageId, req.RetriedCount, req.OffsetIndex)
+	if err != nil {
+		a.logger.Error("failed to get stage logs", zap.Error(err))
+		return nil, gRPCStoreError(err, "get stage logs")
+	}
+
+	return &apiservice.GetStageLogResponse{
+		Blocks:    blocks,
+		Completed: completed,
+	}, nil
 }
 
 func (a *API) GetCommand(ctx context.Context, req *apiservice.GetCommandRequest) (*apiservice.GetCommandResponse, error) {
