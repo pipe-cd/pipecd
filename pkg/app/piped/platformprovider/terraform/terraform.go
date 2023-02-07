@@ -15,6 +15,7 @@
 package terraform
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -164,6 +165,41 @@ type PlanResult struct {
 
 func (r PlanResult) NoChanges() bool {
 	return r.Adds == 0 && r.Changes == 0 && r.Destroys == 0
+}
+
+func (r PlanResult) Render() string {
+	header := "Terraform will perform the following actions:"
+	head := strings.LastIndex(r.PlanOutput, header) + len(header)
+	tail := strings.Index(r.PlanOutput, "Plan:")
+	body := r.PlanOutput[head:tail]
+	body = strings.Trim(body, " ")
+	body = strings.Trim(body, "\n")
+
+	ret := ""
+	// +/-を先頭とswap, ~を空白と置換
+	scanner := bufio.NewScanner(strings.NewReader(body))
+	for scanner.Scan() {
+		line := scanner.Text()
+		r := []rune(line)
+		h, pos := headRune(line)
+		if h == '+' || h == '-' {
+			r[0], r[pos] = r[pos], r[0]
+		} else if h == '~' {
+			r[pos] = ' '
+		}
+		ret += string(r)
+		fmt.Println(string(r))
+	}
+	return ret
+}
+
+func headRune(s string) (rune, int) {
+	for i, r := range s {
+		if r != ' ' {
+			return r, i
+		}
+	}
+	return ' ', -1
 }
 
 func GetExitCode(err error) int {
