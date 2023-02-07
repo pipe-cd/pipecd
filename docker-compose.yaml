@@ -53,9 +53,3 @@ services:
       MINIO_SECRET_KEY: cXVpY2tzdGFydC1zZWNyZXQta2V5
     ports:
       - 9000:9000
-
-
-
-
-  
-    
