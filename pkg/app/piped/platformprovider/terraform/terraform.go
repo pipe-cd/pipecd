@@ -158,6 +158,8 @@ type PlanResult struct {
 	Adds     int
 	Changes  int
 	Destroys int
+
+	PlanOutput string
 }
 
 func (r PlanResult) NoChanges() bool {
@@ -264,9 +266,10 @@ func parsePlanResult(out string, ansiIncluded bool) (PlanResult, error) {
 		adds, changes, destroys, err := parseNums(s[1], s[2], s[3])
 		if err == nil {
 			return PlanResult{
-				Adds:     adds,
-				Changes:  changes,
-				Destroys: destroys,
+				Adds:       adds,
+				Changes:    changes,
+				Destroys:   destroys,
+				PlanOutput: out,
 			}, nil
 		}
 	}
