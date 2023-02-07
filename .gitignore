@@ -62,5 +62,5 @@ gomock_reflect_*/
 # Cache
 .cache
 
-# docker-compoaw
+# docker-compose
 /docker/pipecd-secret
