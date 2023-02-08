@@ -25,8 +25,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-
-	"github.com/golang-collections/collections/stack"
 )
 
 type options struct {
@@ -178,8 +176,8 @@ func (r PlanResult) Render() string {
 	out := r.PlanOutput[startIndex:endIndex]
 
 	rendered := ""
-	curlyBracketStack := stack.New()
-	squareBracketStack := stack.New()
+	var curlyBracketStack []rune
+	var squareBracketStack []rune
 
 	scanner := bufio.NewScanner(strings.NewReader(out))
 	for scanner.Scan() {
@@ -192,7 +190,8 @@ func (r PlanResult) Render() string {
 		tail := r[len(r)-1]
 
 		// The outermost nest does not have a sign.
-		if tail == '{' && curlyBracketStack.Len() == 0 {
+		if tail == '{' && len(curlyBracketStack) == 0 {
+			// Terraform's outermost block would be resource block.
 			deadline := strings.Index(string(r), "resource")
 			for i := 0; i < deadline; i++ {
 				r[i] = ' '
@@ -212,16 +211,16 @@ func (r PlanResult) Render() string {
 
 		// Corresponding pairs with corresponding sign.
 		if tail == '{' {
-			curlyBracketStack.Push(r[0])
+			curlyBracketStack = append(curlyBracketStack, r[0])
 		}
 		if head == '}' {
-			r[0] = signMatchPair(*curlyBracketStack, r[0])
+			r[0] = signMatchBracket(&curlyBracketStack, r[0])
 		}
 		if tail == '[' {
-			squareBracketStack.Push(r[0])
+			squareBracketStack = append(squareBracketStack, r[0])
 		}
 		if head == ']' {
-			r[0] = signMatchPair(*squareBracketStack, r[0])
+			r[0] = signMatchBracket(&squareBracketStack, r[0])
 		}
 
 		rendered += string(r)
@@ -232,17 +231,14 @@ func (r PlanResult) Render() string {
 }
 
 // Return rune at the top of the stack, or r in case of error.
-func signMatchPair(st stack.Stack, r rune) rune {
-	pop := st.Pop()
-	if pop == nil {
+func signMatchBracket(l *[]rune, r rune) rune {
+	list := *l
+	if len(list) == 0 {
 		return r
 	}
-
-	c, ok := pop.(rune)
-	if ok {
-		return c
-	}
-	return r
+	v := list[0]
+	*l = list[1:]
+	return v
 }
 
 func headRuneWithoutWhiteSpace(r []rune) (rune, int) {
