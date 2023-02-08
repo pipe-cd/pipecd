@@ -40,7 +40,9 @@ export const DiffView: FC<DiffViewProps> = memo(function DiffView({ content }) {
           case "+":
             return (
               <div key={i} className={classes.line} data-testid="added-line">
-                <span key={i} className={classes.add}>{line}</span>
+                <span key={i} className={classes.add}>
+                  {line}
+                </span>
               </div>
             );
           case "-":
@@ -52,7 +54,7 @@ export const DiffView: FC<DiffViewProps> = memo(function DiffView({ content }) {
           case "~":
             return (
               <div key={i} className={classes.line} data-testid="changed-line">
-                <span key={i} className={classes.change}>{line}</span>
+                <span className={classes.change}>{line}</span>
               </div>
             );
           default:
