@@ -170,11 +170,11 @@ func (r PlanResult) NoChanges() bool {
 }
 
 func (r PlanResult) Render() string {
-	TERRAFORM_DIFF_START := "Terraform will perform the following actions:"
-	TERRAFORM_DIFF_END := "─"
+	terraformDiffStart := "Terraform will perform the following actions:"
+	terraformDiffEnd := "─"
 
-	startIndex := strings.Index(r.PlanOutput, TERRAFORM_DIFF_START) + len(TERRAFORM_DIFF_START)
-	endIndex := strings.Index(r.PlanOutput, TERRAFORM_DIFF_END)
+	startIndex := strings.Index(r.PlanOutput, terraformDiffStart) + len(terraformDiffStart)
+	endIndex := strings.Index(r.PlanOutput, terraformDiffEnd)
 	out := r.PlanOutput[startIndex:endIndex]
 
 	rendered := ""
