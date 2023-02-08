@@ -25,6 +25,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/golang-collections/collections/stack"
 )
 
 type options struct {
@@ -176,26 +178,59 @@ func (r PlanResult) Render() string {
 	body = strings.Trim(body, "\n")
 
 	ret := ""
-	// +/-を先頭とswap, ~を空白と置換
 	scanner := bufio.NewScanner(strings.NewReader(body))
+	curlyBracketStack := stack.New()
+	squareBracketStack := stack.New()
+
 	for scanner.Scan() {
 		line := scanner.Text()
-		r := []rune(line)
 		h, pos := headRune(line)
-		if h == '+' || h == '-' {
-			r[0], r[pos] = r[pos], r[0]
-		} else if h == '~' {
-			r[pos] = ' '
+		fmt.Println(h, pos)
+		// 空白以外何もなければcontinue
+		if pos < 0 {
+			continue
 		}
+
+		// +,-,~を先頭とswap, ~を空白と置換
+		r := []rune(line)
+		if h == '+' || h == '-' || h == '~' {
+			r[0], r[pos] = r[pos], r[0]
+		}
+
+		// 始まりかっこ[,{が末尾にあれば、stackに先頭の文字を入れる
+		// 括弧に対応して、先頭の文字をpushする
+		// TODO: 関数化する
+		tail := r[len(r)-1]
+		if tail == '{' {
+			curlyBracketStack.Push(r[0])
+		}
+		if tail == '}' {
+			c, ok := curlyBracketStack.Pop().(rune)
+			if ok {
+				r[0] = c
+			}
+		}
+		if tail == '[' {
+			squareBracketStack.Push(r[0])
+		}
+		if tail == ']' {
+			c, ok := squareBracketStack.Pop().(rune)
+			if ok {
+				r[0] = c
+			}
+		}
+
 		ret += string(r)
-		fmt.Println(string(r))
+		ret += "\n"
 	}
+
 	return ret
 }
 
+// 空白を抜いて、先頭の文字が何かとその位置を返す
 func headRune(s string) (rune, int) {
 	for i, r := range s {
-		if r != ' ' {
+		if !(r == '\t' || r == ' ') {
 			return r, i
 		}
 	}
