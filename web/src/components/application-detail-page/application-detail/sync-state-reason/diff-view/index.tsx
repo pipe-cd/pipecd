@@ -1,6 +1,7 @@
 import { makeStyles } from "@material-ui/core";
 import green from "@material-ui/core/colors/green";
 import red from "@material-ui/core/colors/red";
+import yellow from "@material-ui/core/colors/yellow";
 import { FC, memo } from "react";
 
 const useStyles = makeStyles((theme) => ({
@@ -16,6 +17,10 @@ const useStyles = makeStyles((theme) => ({
   del: {
     color: red[800],
     backgroundColor: red[50],
+  },
+  change: {
+    color: yellow[800],
+    backgroundColor: yellow[50],
   },
   line: {
     minHeight: `${theme.typography.body2.lineHeight}em`,
@@ -35,15 +40,19 @@ export const DiffView: FC<DiffViewProps> = memo(function DiffView({ content }) {
           case "+":
             return (
               <div key={i} className={classes.line} data-testid="added-line">
-                <span key={i} className={classes.add}>
-                  {line}
-                </span>
+                <span key={i} className={classes.add}>{line}</span>
               </div>
             );
           case "-":
             return (
               <div key={i} className={classes.line} data-testid="deleted-line">
                 <span className={classes.del}>{line}</span>
+              </div>
+            );
+          case "~":
+            return (
+              <div key={i} className={classes.line} data-testid="changed-line">
+                <span key={i} className={classes.change}>{line}</span>
               </div>
             );
           default:
