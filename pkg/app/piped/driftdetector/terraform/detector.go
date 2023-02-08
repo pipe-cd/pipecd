@@ -280,8 +280,7 @@ func makeSyncState(r provider.PlanResult, commit string) model.ApplicationSyncSt
 	}
 
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit))
-	b.WriteString("--- Expected\n+++ Actual\n\n")
+	b.WriteString("Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:-/+ destroy and then create replacement\n\n")
 
 	details := r.Render()
 	b.WriteString(details)

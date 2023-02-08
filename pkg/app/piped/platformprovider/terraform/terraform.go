@@ -170,11 +170,12 @@ func (r PlanResult) NoChanges() bool {
 }
 
 func (r PlanResult) Render() string {
-	const TERRAFORM_DIFF_START = "Terraform will perform the following actions:"
-	const TERRAFORM_DIFF_END = "─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
+	TERRAFORM_DIFF_START := "Terraform will perform the following actions:"
+	TERRAFORM_DIFF_END := "─"
 
-	startIndex := strings.LastIndex(r.PlanOutput, TERRAFORM_DIFF_START) + len(TERRAFORM_DIFF_START)
-	out := r.PlanOutput[startIndex:]
+	startIndex := strings.Index(r.PlanOutput, TERRAFORM_DIFF_START) + len(TERRAFORM_DIFF_START)
+	endIndex := strings.Index(r.PlanOutput, TERRAFORM_DIFF_END)
+	out := r.PlanOutput[startIndex:endIndex]
 
 	rendered := ""
 	curlyBracketStack := stack.New()
@@ -185,9 +186,6 @@ func (r PlanResult) Render() string {
 		line := scanner.Text()
 		if len(line) == 0 {
 			continue
-		}
-		if line == TERRAFORM_DIFF_END {
-			break
 		}
 
 		r := []rune(line)
