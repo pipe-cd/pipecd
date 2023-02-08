@@ -282,7 +282,7 @@ func makeSyncState(r provider.PlanResult, commit string) model.ApplicationSyncSt
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit))
 	b.WriteString("--- Expected\n+++ Actual\n\n")
-	// TODO: Should output diff details, but terraform provider hasn't implemented PlanResult.Render().
+
 	details := r.Render()
 	b.WriteString(details)
 
