@@ -169,69 +169,89 @@ func (r PlanResult) NoChanges() bool {
 	return r.Adds == 0 && r.Changes == 0 && r.Destroys == 0
 }
 
-func (r PlanResult) Render() string {
-	header := "Terraform will perform the following actions:"
-	head := strings.LastIndex(r.PlanOutput, header) + len(header)
-	tail := strings.Index(r.PlanOutput, "Plan:")
-	body := r.PlanOutput[head:tail]
-	body = strings.Trim(body, " ")
-	body = strings.Trim(body, "\n")
+func Render(out string) string {
+	const TERRAFORM_DIFF_START = "Terraform will perform the following actions:"
+	const TERRAFORM_DIFF_END = "─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
 
-	ret := ""
-	scanner := bufio.NewScanner(strings.NewReader(body))
+	startIndex := strings.LastIndex(out, TERRAFORM_DIFF_START) + len(TERRAFORM_DIFF_START)
+	out = out[startIndex:]
+
+	rendered := ""
 	curlyBracketStack := stack.New()
 	squareBracketStack := stack.New()
 
+	scanner := bufio.NewScanner(strings.NewReader(out))
 	for scanner.Scan() {
 		line := scanner.Text()
-		h, pos := headRune(line)
-		fmt.Println(h, pos)
-		// 空白以外何もなければcontinue
+		if len(line) == 0 {
+			continue
+		}
+		if line == TERRAFORM_DIFF_END {
+			break
+		}
+
+		r := []rune(line)
+		tail := r[len(r)-1]
+
+		// 一番外側のブロックかどうか
+		// 最初のブロックはresourceを含むはず
+		if tail == '{' && curlyBracketStack.Len() == 0 {
+			deadline := strings.Index(string(r), "resource")
+			for i := 0; i < deadline; i++ {
+				r[i] = ' '
+			}
+		}
+
+		// Get head rune without tab and space.
+		head, pos := headRuneWithoutWhiteSpace(r)
 		if pos < 0 {
 			continue
 		}
 
-		// +,-,~を先頭とswap, ~を空白と置換
-		r := []rune(line)
-		if h == '+' || h == '-' || h == '~' {
+		// Move sign to the beginning.
+		if head == '+' || head == '-' || head == '~' {
 			r[0], r[pos] = r[pos], r[0]
 		}
 
-		// 始まりかっこ[,{が末尾にあれば、stackに先頭の文字を入れる
-		// 括弧に対応して、先頭の文字をpushする
-		// TODO: 関数化する
-		tail := r[len(r)-1]
+		// Corresponding pairs with corresponding sign.
 		if tail == '{' {
 			curlyBracketStack.Push(r[0])
 		}
-		if tail == '}' {
-			c, ok := curlyBracketStack.Pop().(rune)
-			if ok {
-				r[0] = c
-			}
+		if head == '}' {
+			r[0] = signMatchPair(*curlyBracketStack, r[0])
 		}
 		if tail == '[' {
 			squareBracketStack.Push(r[0])
 		}
-		if tail == ']' {
-			c, ok := squareBracketStack.Pop().(rune)
-			if ok {
-				r[0] = c
-			}
+		if head == ']' {
+			r[0] = signMatchPair(*squareBracketStack, r[0])
 		}
 
-		ret += string(r)
-		ret += "\n"
+		rendered += string(r)
+		rendered += "\n"
 	}
 
-	return ret
+	return rendered
 }
 
-// 空白を抜いて、先頭の文字が何かとその位置を返す
-func headRune(s string) (rune, int) {
-	for i, r := range s {
-		if !(r == '\t' || r == ' ') {
-			return r, i
+// Return rune at the top of the stack, or r in case of error.
+func signMatchPair(st stack.Stack, r rune) rune {
+	pop := st.Pop()
+	if pop == nil {
+		return r
+	}
+
+	c, ok := pop.(rune)
+	if ok {
+		return c
+	}
+	return r
+}
+
+func headRuneWithoutWhiteSpace(r []rune) (rune, int) {
+	for i, ri := range r {
+		if !(ri == '\t' || ri == ' ') {
+			return ri, i
 		}
 	}
 	return ' ', -1
