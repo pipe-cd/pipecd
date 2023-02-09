@@ -111,8 +111,6 @@ type webApiAPIKeyLastUsedStore interface { //nolint:stylecheck
 	Get(k string) (interface{}, error)
 }
 
-const apiKeyLastUsedCacheHashKey = "HASHKEY:PIPED:API_KEYS" //nolint:gosec
-
 // WebAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
 	webservice.UnimplementedWebServiceServer

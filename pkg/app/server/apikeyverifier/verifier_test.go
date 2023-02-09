@@ -18,14 +18,12 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -91,12 +89,7 @@ func TestVerify(t *testing.T) {
 		},
 	}
 	fakeRedisHashCache := &fakeRedisHashCache{}
-	v := &Verifier{
-		apiKeyCache:         memorycache.NewTTLCache(ctx, 5*time.Minute, time.Minute),
-		apiKeyStore:         apiKeyGetter,
-		apiKeyLastUsedCache: fakeRedisHashCache,
-		logger:              zap.NewNop(),
-	}
+	v := NewVerifier(ctx, apiKeyGetter, fakeRedisHashCache, zap.NewNop())
 
 	// Not found key.
 	notFoundKey, _, err := model.GenerateAPIKey("not-found-api-key")

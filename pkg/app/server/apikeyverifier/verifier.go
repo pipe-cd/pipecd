@@ -23,9 +23,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
-	"github.com/pipe-cd/pipecd/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/pipe-cd/pipecd/pkg/redis"
 )
 
 type apiKeyGetter interface {
@@ -39,13 +37,11 @@ type Verifier struct {
 	logger              *zap.Logger
 }
 
-const apiKeyLastUsedCacheHashKey = "HASHKEY:PIPED:API_KEYS" //nolint:gosec
-
-func NewVerifier(ctx context.Context, getter apiKeyGetter, rd redis.Redis, logger *zap.Logger) *Verifier {
+func NewVerifier(ctx context.Context, getter apiKeyGetter, akluc cache.Cache, logger *zap.Logger) *Verifier {
 	return &Verifier{
 		apiKeyCache:         memorycache.NewTTLCache(ctx, 5*time.Minute, time.Minute),
 		apiKeyStore:         getter,
-		apiKeyLastUsedCache: rediscache.NewHashCache(rd, apiKeyLastUsedCacheHashKey),
+		apiKeyLastUsedCache: akluc,
 		logger:              logger,
 	}
 }
