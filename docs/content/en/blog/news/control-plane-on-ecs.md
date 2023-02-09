@@ -8,7 +8,7 @@ author: Yohei Namba ([@kevin55156](https://twitter.com/kevin55156))
 ---
 
 This blog is a part of PipeCD best practice series, a guideline for you to operate your own PipeCD on Amazon ECS.
-Now we can deploy the control plane to kubernetes cluster, but some developers that would like to introduce PipeCD can not prepare kubernetes environments. PipeCD started supporting deployment control plane on docker-compose, so this blog introduce one way how to deploy control plane on ECS.
+Currently, we can deploy the control plane to kubernetes cluster, but some developers that would like to introduce PipeCD can not prepare kubernetes environments. PipeCD started supporting deployment control plane on docker-compose, so this blog introduce one way how to deploy control plane on ECS.
 
 ### Architecture
 > Note: Please refer to [architecture-overview](docs/user-guide/managing-controlplane/architecture-overview/) docs for definitions of PipeCD components such as server, ops, cache, datastore and filestore.
@@ -16,7 +16,7 @@ Now we can deploy the control plane to kubernetes cluster, but some developers t
 ![](/images/control-plane-on-ecs.png)
 
 ### RDS(datastore)
-It is possible to use RDS as a datastore. Edit your configuration file for control plane according to your RDS setting.
+It is possible to use RDS as a datastore. Edit your configuration file for the control plane according to your RDS setting.
 ```yaml=
   datastore:
     type: MYSQL
@@ -156,7 +156,7 @@ secrets = [
 ```
 
 ### ALB
-You must prepare two target group for both of HTTP and gRPC. Make two hosts and listner rules as below. Listner protocol should be HTTPS becuase it use gRPC.
+You must prepare two target groups for both HTTP and gRPC. Make two hosts and listner rules as below. Listner protocol should be HTTPS becuase it uses gRPC.
 
 ![](/images/control-plane-alb.png)
 
@@ -208,7 +208,7 @@ locals {
 }
 ```
 
-4. Create a s3 bucket for filestore and write the bucket name for it to `control-plane-config.yaml` and `variables.tf`
+4. Create a S3 bucket for filestore and write the bucket name for it to `control-plane-config.yaml` and `variables.tf`
 ```
 apiVersion: "pipecd.dev/v1beta1"
 kind: ControlPlane
@@ -260,7 +260,7 @@ spec:
         passwordHash: "$2a$10$ye96mUqUqTnjUqgwQJbJzel/LJibRhUnmzyypACkvrTSnQpVFZ7qK" # bcrypt value of "hello-pipecd"
 ```
 
-6. Put encryption key and config file in secretsmanager and write the path to `variables.tf`
+6. Put an encryption key and config file in Secrets Manager and write the path to `variables.tf`
 ```
 locals {
   sm = {
@@ -277,7 +277,7 @@ terraform apply
 ```
 
 #### login admin console
-You can login pipecd-ops via ecs-exec
+You can login pipecd-ops via ECS exec.
 ```
 aws ssm start-session --target ecs:${CLUSTER}_${TASK_ID}_${CONTAINER_ID} --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["9082"],"localPortNumber":["19082"]}'
 ```
