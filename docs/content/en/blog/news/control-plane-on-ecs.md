@@ -7,7 +7,7 @@ description: "This blog is a part of PipeCD best practice series, a guideline fo
 author: Yohei Namba ([@kevin55156](https://twitter.com/kevin55156))
 ---
 
-This blog is a part of PipeCD best practice series, a guideline for you to operate your own PipeCD on Amazon ECS.
+This blog is a part of PipeCD best practice series, a guideline for you to operate your own PipeCD.
 Currently, we can deploy the control plane to kubernetes cluster, but some developers that would like to introduce PipeCD can not prepare kubernetes environments. PipeCD started supporting deployment control plane on docker-compose, so this blog introduce one way how to deploy control plane on ECS.
 
 ### Architecture
