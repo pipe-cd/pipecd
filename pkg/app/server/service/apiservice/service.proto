@@ -51,6 +51,7 @@ service APIService {
     rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
 
     rpc GetStageLog(GetStageLogRequest) returns (GetStageLogResponse) {}
+    rpc GetStageLogs(GetStageLogsRequest) returns (GetStageLogsResponse) {}
 }
 
 message AddApplicationRequest {
@@ -209,4 +210,12 @@ message GetStageLogRequest {
 message GetStageLogResponse {
     repeated model.LogBlock blocks = 1;
     bool completed = 2;
+}
+
+message GetStageLogsRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetStageLogsResponse {
+    repeated GetStageLogResponse blocks = 1;
 }

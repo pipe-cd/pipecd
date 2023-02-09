@@ -102,15 +102,15 @@ run/pipecd:
 	yarn --cwd web build
 
 	@echo "Building docker image and pushing it to local registry..."
-	docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) .
-	docker push localhost:5001/pipecd:$(BUILD_VERSION)
+	docker build -f cmd/pipecd/Dockerfile -t funera1/pipecd:$(BUILD_VERSION) .
+	docker push funera1/pipecd:$(BUILD_VERSION)
 
 	@echo "Installing Control Plane in kind..."
 	mkdir -p .artifacts
 	helm package manifests/pipecd --version $(BUILD_VERSION) --app-version $(BUILD_VERSION) --dependency-update --destination .artifacts
 	helm -n pipecd upgrade --install pipecd .artifacts/pipecd-$(BUILD_VERSION).tgz --create-namespace \
-		--set server.image.repository=localhost:5001/pipecd \
-		--set ops.image.repository=localhost:5001/pipecd \
+		--set server.image.repository=funera1/pipecd \
+		--set ops.image.repository=funera1/pipecd \
 		--values $(CONTROL_PLANE_VALUES)
 
 .PHONY: stop/pipecd

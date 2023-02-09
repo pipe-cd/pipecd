@@ -380,7 +380,7 @@ func (a *API) GetDeployment(ctx context.Context, req *apiservice.GetDeploymentRe
 	}, nil
 }
 
-func (a *API) GetStageLog(ctx context.Context, req *apiservice.GetStageLogRequest) (*apiservice.GetStageLogResponse, error) {
+func (a *API) GetStageLogs(ctx context.Context, req *apiservice.GetStageLogsRequest) (*apiservice.GetStageLogsResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
 	if err != nil {
 		return nil, err
@@ -395,15 +395,25 @@ func (a *API) GetStageLog(ctx context.Context, req *apiservice.GetStageLogReques
 		return nil, status.Error(codes.InvalidArgument, "Requested deployment does not belong to your project")
 	}
 
-	blocks, completed, err := a.stageLogStore.FetchLogs(ctx, deployment.Id, req.StageId, req.RetriedCount, req.OffsetIndex)
-	if err != nil {
-		a.logger.Error("failed to get stage logs", zap.Error(err))
-		return nil, gRPCStoreError(err, "get stage logs")
+	// blocks := make([]*model.LogBlocks, len(deployment.Stages))
+
+	var blocks []*apiservice.GetStageLogResponse
+
+	for _, stage := range deployment.Stages {
+		b, completed, err := a.stageLogStore.FetchLogs(ctx, deployment.Id, stage.Id, 0, 0)
+		if err != nil {
+			a.logger.Error("failed to get stage logs", zap.Error(err))
+			return nil, gRPCStoreError(err, "get stage logs")
+		}
+
+		blocks = append(blocks, &apiservice.GetStageLogResponse{
+			Blocks:    b,
+			Completed: completed,
+		})
 	}
 
-	return &apiservice.GetStageLogResponse{
-		Blocks:    blocks,
-		Completed: completed,
+	return &apiservice.GetStageLogsResponse{
+		Blocks: blocks,
 	}, nil
 }
 

@@ -59,14 +59,11 @@ func (c *logs) run(ctx context.Context, input cli.Input) error {
 	}
 	defer cli.Close()
 
-	req := &apiservice.GetStageLogRequest{
+	req := &apiservice.GetStageLogsRequest{
 		DeploymentId: c.deploymentID,
-		StageId:      "",
-		RetriedCount: 0,
-		OffsetIndex:  0,
 	}
 
-	resp, err := cli.GetStageLog(ctx, req)
+	resp, err := cli.GetStageLogs(ctx, req)
 	if err != nil {
 		return fmt.Errorf("failed to get stage log: %w", err)
 	}
