@@ -88,10 +88,14 @@ func (v *Verifier) checkAPIKey(ctx context.Context, apiKey *model.APIKey, id, ke
 	if err := apiKey.CompareKey(key); err != nil {
 		return fmt.Errorf("invalid api key %s: %w", id, err)
 	}
-	now := time.Now().Unix()
+	now := v.now()
 	if err := v.apiKeyLastUsedCache.Put(id, now); err != nil {
 		return fmt.Errorf("unable to update the time API key %s was last used, %w", id, err)
 	}
 
 	return nil
+}
+
+func (v *Verifier) now() int64 {
+	return time.Now().Unix()
 }
