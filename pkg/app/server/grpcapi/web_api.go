@@ -37,12 +37,10 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/server/unregisteredappstore"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
-	"github.com/pipe-cd/pipecd/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
 	"github.com/pipe-cd/pipecd/pkg/insight"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/pipe-cd/pipecd/pkg/redis"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
 
@@ -145,10 +143,10 @@ func NewWebAPI(
 	ctx context.Context,
 	ds datastore.DataStore,
 	sc cache.Cache,
-	rd redis.Redis,
 	sls stagelogstore.Store,
 	alss applicationlivestatestore.Store,
 	uas unregisteredappstore.Store,
+	akluc cache.Cache,
 	ip insight.Provider,
 	psc cache.Cache,
 	projs map[string]config.ControlPlaneProject,
@@ -163,7 +161,7 @@ func NewWebAPI(
 		pipedStore:                datastore.NewPipedStore(ds, w),
 		projectStore:              datastore.NewProjectStore(ds, w),
 		apiKeyStore:               datastore.NewAPIKeyStore(ds, w),
-		apiKeyLastUsedStore:       rediscache.NewHashCache(rd, apiKeyLastUsedCacheHashKey),
+		apiKeyLastUsedStore:       akluc,
 		eventStore:                datastore.NewEventStore(ds, w),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
