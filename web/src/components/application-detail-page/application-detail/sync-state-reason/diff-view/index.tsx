@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: red[50],
   },
   change: {
-    color: yellow[800],
+    color: yellow[900],
     backgroundColor: yellow[50],
   },
   line: {
