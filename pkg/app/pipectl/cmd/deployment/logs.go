@@ -31,6 +31,7 @@ type logs struct {
 	root *command
 
 	deploymentID string
+	stageID      string
 	stdout       io.Writer
 }
 
@@ -46,8 +47,10 @@ func newLogsCommand(root *command) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&c.deploymentID, "deployment-id", c.deploymentID, "The deployment ID.")
+	// cmd.Flags().StringVar(&c.stageID, "stage-id", c.stageID, "The stage ID.")
 
 	cmd.MarkFlagRequired("deployment-id")
+	// cmd.MarkFlagRequired("stage-id")
 
 	return cmd
 }

@@ -395,25 +395,26 @@ func (a *API) GetStageLogs(ctx context.Context, req *apiservice.GetStageLogsRequ
 		return nil, status.Error(codes.InvalidArgument, "Requested deployment does not belong to your project")
 	}
 
-	// blocks := make([]*model.LogBlocks, len(deployment.Stages))
-
-	var blocks []*apiservice.GetStageLogResponse
+	// blocks := make([]*apiservice.GetStageLogResponse, 0)
+	// var blockMap map[string]*apiservice.GetStageLogResponse
+	blockMap := map[string]*apiservice.GetStageLogResponse{}
 
 	for _, stage := range deployment.Stages {
 		b, completed, err := a.stageLogStore.FetchLogs(ctx, deployment.Id, stage.Id, 0, 0)
 		if err != nil {
-			a.logger.Error("failed to get stage logs", zap.Error(err))
-			return nil, gRPCStoreError(err, "get stage logs")
+			continue
+			// a.logger.Error("failed to get stage logs", zap.Error(err))
+			// return nil, gRPCStoreError(err, "get stage logs")
 		}
 
-		blocks = append(blocks, &apiservice.GetStageLogResponse{
+		blockMap[stage.Id] = &apiservice.GetStageLogResponse{
 			Blocks:    b,
 			Completed: completed,
-		})
+		}
 	}
 
 	return &apiservice.GetStageLogsResponse{
-		Blocks: blocks,
+		SteageLogDict: blockMap,
 	}, nil
 }
 

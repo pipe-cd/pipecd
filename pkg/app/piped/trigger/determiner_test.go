@@ -58,6 +58,31 @@ func TestIsTouchedByChangedFiles(t *testing.T) {
 			expected: true,
 		},
 		{
+			name:   "touched in app dir while not in includes",
+			appDir: "app/demo",
+			includes: []string{
+				"charts/demo",
+				"charts/bar/*",
+			},
+			changedFiles: []string{
+				"app/hello.txt",
+				"app/demo/deployment.yaml",
+			},
+			expected: true,
+		},
+		{
+			name:   "touched in app dir but listed in excluded",
+			appDir: "app/demo",
+			excludes: []string{
+				"*/hello.txt",
+			},
+			changedFiles: []string{
+				"app/hello.txt",
+				"app/demo/deployment.yaml",
+			},
+			expected: false,
+		},
+		{
 			name:   "touched in the includes",
 			appDir: "app/demo",
 			includes: []string{

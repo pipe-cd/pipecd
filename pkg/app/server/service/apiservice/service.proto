@@ -217,5 +217,6 @@ message GetStageLogsRequest {
 }
 
 message GetStageLogsResponse {
-    repeated GetStageLogResponse blocks = 1;
+    /* repeated GetStageLogResponse blocks = 1; */
+    map<string, GetStageLogResponse> steage_log_dict = 1;
 }
