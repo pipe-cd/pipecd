@@ -70,7 +70,7 @@ var (
 
 const (
 	defaultPipedStatHashKey    = "HASHKEY:PIPED:STATS"
-	apiKeyLastUsedCacheHashKey = "HASHKEY:PIPED:API_KEYS"
+	apiKeyLastUsedCacheHashKey = "HASHKEY:PIPED:API_KEYS" //nolint:gosec
 )
 
 type server struct {
