@@ -40,7 +40,7 @@ The app will be available at http://localhost:9090.
 ### Connect Real API server
 If you want to connect the real API server, additional settings on the `.env` file are needed.
 
-First, create your own `.env` file based on the `.env.example.env` file.
+First, create your own `.env` file based on the `.env.example` file.
 
 ```bash
 cp .env.example .env
