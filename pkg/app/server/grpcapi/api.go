@@ -398,7 +398,7 @@ func (a *API) ListStageLog(ctx context.Context, req *apiservice.ListStageLogRequ
 	stageLogs := map[string]*apiservice.StageLog{}
 
 	for _, stage := range deployment.Stages {
-		b, completed, err := a.stageLogStore.FetchLogs(ctx, deployment.Id, stage.Id, stage.RetriedCount, 0)
+		blocks, completed, err := a.stageLogStore.FetchLogs(ctx, deployment.Id, stage.Id, stage.RetriedCount, 0)
 		if err != nil {
 			stageLogs[stage.Id] = &apiservice.StageLog{
 				Message: err.Error(),
@@ -407,7 +407,7 @@ func (a *API) ListStageLog(ctx context.Context, req *apiservice.ListStageLogRequ
 		}
 
 		stageLogs[stage.Id] = &apiservice.StageLog{
-			Blocks:    b,
+			Blocks:    blocks,
 			Completed: completed,
 		}
 	}
