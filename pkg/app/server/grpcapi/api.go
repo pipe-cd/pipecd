@@ -17,6 +17,7 @@ package grpcapi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -399,6 +400,10 @@ func (a *API) ListStageLog(ctx context.Context, req *apiservice.ListStageLogRequ
 
 	for _, stage := range deployment.Stages {
 		blocks, completed, err := a.stageLogStore.FetchLogs(ctx, deployment.Id, stage.Id, stage.RetriedCount, 0)
+		if errors.Is(err, filestore.ErrNotFound) {
+			continue
+		}
+
 		if err != nil {
 			stageLogs[stage.Id] = &apiservice.StageLog{
 				Message: err.Error(),
