@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"os/exec"
 	"path"
@@ -249,6 +250,9 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			w.Write([]byte("ok"))
 		})
 		admin.Handle("/metrics", input.PrometheusMetricsHandlerFor(registry))
+		admin.HandleFunc("/debug/pprof/", pprof.Index)
+		admin.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		admin.HandleFunc("/debug/pprof/trace", pprof.Trace)
 
 		group.Go(func() error {
 			return admin.Run(ctx)
