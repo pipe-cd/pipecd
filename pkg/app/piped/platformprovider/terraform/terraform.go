@@ -169,10 +169,10 @@ func (r PlanResult) NoChanges() bool {
 
 func (r PlanResult) Render() string {
 	terraformDiffStart := "Terraform will perform the following actions:"
-	terraformDiffEnd := "─"
+	terraformDiffEnd := fmt.Sprintf("Plan: %d to add, %d to change, %d to destroy.", r.Adds, r.Changes, r.Destroys)
 
 	startIndex := strings.Index(r.PlanOutput, terraformDiffStart) + len(terraformDiffStart)
-	endIndex := strings.Index(r.PlanOutput, terraformDiffEnd)
+	endIndex := strings.Index(r.PlanOutput, terraformDiffEnd) + len(terraformDiffEnd)
 	out := r.PlanOutput[startIndex:endIndex]
 
 	rendered := ""
@@ -236,8 +236,9 @@ func signMatchBracket(l *[]rune, r rune) rune {
 	if len(list) == 0 {
 		return r
 	}
-	v := list[0]
-	*l = list[1:]
+	n := len(list) - 1
+	v := list[n]
+	*l = list[:n]
 	return v
 }
 
