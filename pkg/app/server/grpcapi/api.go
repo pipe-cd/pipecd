@@ -17,6 +17,7 @@ package grpcapi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -380,7 +381,7 @@ func (a *API) GetDeployment(ctx context.Context, req *apiservice.GetDeploymentRe
 	}, nil
 }
 
-func (a *API) ListStageLog(ctx context.Context, req *apiservice.ListStageLogRequest) (*apiservice.ListStageLogResponse, error) {
+func (a *API) ListStageLogs(ctx context.Context, req *apiservice.ListStageLogsRequest) (*apiservice.ListStageLogsResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
 	if err != nil {
 		return nil, err
@@ -399,10 +400,12 @@ func (a *API) ListStageLog(ctx context.Context, req *apiservice.ListStageLogRequ
 
 	for _, stage := range deployment.Stages {
 		blocks, completed, err := a.stageLogStore.FetchLogs(ctx, deployment.Id, stage.Id, stage.RetriedCount, 0)
-		if err != nil {
-			stageLogs[stage.Id] = &apiservice.StageLog{
-				Message: err.Error(),
-			}
+		if err != nil && !errors.Is(err, stagelogstore.ErrNotFound) {
+			return nil, err
+		}
+
+		// Rollback is generated automatically and returns nothing if not found
+		if err != nil && stage.Name == model.StageRollback.String() {
 			continue
 		}
 
@@ -412,7 +415,7 @@ func (a *API) ListStageLog(ctx context.Context, req *apiservice.ListStageLogRequ
 		}
 	}
 
-	return &apiservice.ListStageLogResponse{
+	return &apiservice.ListStageLogsResponse{
 		StageLogs: stageLogs,
 	}, nil
 }

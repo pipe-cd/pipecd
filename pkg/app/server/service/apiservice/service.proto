@@ -50,7 +50,7 @@ service APIService {
 
     rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
 
-    rpc ListStageLog(ListStageLogRequest) returns (ListStageLogResponse) {}
+    rpc ListStageLogs(ListStageLogsRequest) returns (ListStageLogsResponse) {}
 }
 
 message AddApplicationRequest {
@@ -205,10 +205,10 @@ message StageLog {
     string message = 3;
 }
 
-message ListStageLogRequest {
+message ListStageLogsRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
 }
 
-message ListStageLogResponse {
+message ListStageLogsResponse {
     map<string, StageLog> stage_logs = 1;
 }

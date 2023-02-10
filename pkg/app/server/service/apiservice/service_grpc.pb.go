@@ -37,7 +37,7 @@ type APIServiceClient interface {
 	RequestPlanPreview(ctx context.Context, in *RequestPlanPreviewRequest, opts ...grpc.CallOption) (*RequestPlanPreviewResponse, error)
 	GetPlanPreviewResults(ctx context.Context, in *GetPlanPreviewResultsRequest, opts ...grpc.CallOption) (*GetPlanPreviewResultsResponse, error)
 	Encrypt(ctx context.Context, in *EncryptRequest, opts ...grpc.CallOption) (*EncryptResponse, error)
-	ListStageLog(ctx context.Context, in *ListStageLogRequest, opts ...grpc.CallOption) (*ListStageLogResponse, error)
+	ListStageLogs(ctx context.Context, in *ListStageLogsRequest, opts ...grpc.CallOption) (*ListStageLogsResponse, error)
 }
 
 type aPIServiceClient struct {
@@ -183,9 +183,9 @@ func (c *aPIServiceClient) Encrypt(ctx context.Context, in *EncryptRequest, opts
 	return out, nil
 }
 
-func (c *aPIServiceClient) ListStageLog(ctx context.Context, in *ListStageLogRequest, opts ...grpc.CallOption) (*ListStageLogResponse, error) {
-	out := new(ListStageLogResponse)
-	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/ListStageLog", in, out, opts...)
+func (c *aPIServiceClient) ListStageLogs(ctx context.Context, in *ListStageLogsRequest, opts ...grpc.CallOption) (*ListStageLogsResponse, error) {
+	out := new(ListStageLogsResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/ListStageLogs", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +211,7 @@ type APIServiceServer interface {
 	RequestPlanPreview(context.Context, *RequestPlanPreviewRequest) (*RequestPlanPreviewResponse, error)
 	GetPlanPreviewResults(context.Context, *GetPlanPreviewResultsRequest) (*GetPlanPreviewResultsResponse, error)
 	Encrypt(context.Context, *EncryptRequest) (*EncryptResponse, error)
-	ListStageLog(context.Context, *ListStageLogRequest) (*ListStageLogResponse, error)
+	ListStageLogs(context.Context, *ListStageLogsRequest) (*ListStageLogsResponse, error)
 	mustEmbedUnimplementedAPIServiceServer()
 }
 
@@ -264,8 +264,8 @@ func (UnimplementedAPIServiceServer) GetPlanPreviewResults(context.Context, *Get
 func (UnimplementedAPIServiceServer) Encrypt(context.Context, *EncryptRequest) (*EncryptResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Encrypt not implemented")
 }
-func (UnimplementedAPIServiceServer) ListStageLog(context.Context, *ListStageLogRequest) (*ListStageLogResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListStageLog not implemented")
+func (UnimplementedAPIServiceServer) ListStageLogs(context.Context, *ListStageLogsRequest) (*ListStageLogsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListStageLogs not implemented")
 }
 func (UnimplementedAPIServiceServer) mustEmbedUnimplementedAPIServiceServer() {}
 
@@ -550,20 +550,20 @@ func _APIService_Encrypt_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _APIService_ListStageLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListStageLogRequest)
+func _APIService_ListStageLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListStageLogsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(APIServiceServer).ListStageLog(ctx, in)
+		return srv.(APIServiceServer).ListStageLogs(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.service.apiservice.APIService/ListStageLog",
+		FullMethod: "/grpc.service.apiservice.APIService/ListStageLogs",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(APIServiceServer).ListStageLog(ctx, req.(*ListStageLogRequest))
+		return srv.(APIServiceServer).ListStageLogs(ctx, req.(*ListStageLogsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -636,8 +636,8 @@ var APIService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _APIService_Encrypt_Handler,
 		},
 		{
-			MethodName: "ListStageLog",
-			Handler:    _APIService_ListStageLog_Handler,
+			MethodName: "ListStageLogs",
+			Handler:    _APIService_ListStageLogs_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
