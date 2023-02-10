@@ -3652,150 +3652,22 @@ var _ interface {
 	ErrorName() string
 } = EncryptResponseValidationError{}
 
-// Validate checks the field values on GetStageLogRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *GetStageLogRequest) Validate() error {
+// Validate checks the field values on StageLog with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *StageLog) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on GetStageLogRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// GetStageLogRequestMultiError, or nil if none found.
-func (m *GetStageLogRequest) ValidateAll() error {
+// ValidateAll checks the field values on StageLog with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in StageLogMultiError, or nil
+// if none found.
+func (m *StageLog) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *GetStageLogRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
-		err := GetStageLogRequestValidationError{
-			field:  "DeploymentId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetStageId()) < 1 {
-		err := GetStageLogRequestValidationError{
-			field:  "StageId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	// no validation rules for RetriedCount
-
-	// no validation rules for OffsetIndex
-
-	if len(errors) > 0 {
-		return GetStageLogRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// GetStageLogRequestMultiError is an error wrapping multiple validation errors
-// returned by GetStageLogRequest.ValidateAll() if the designated constraints
-// aren't met.
-type GetStageLogRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m GetStageLogRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m GetStageLogRequestMultiError) AllErrors() []error { return m }
-
-// GetStageLogRequestValidationError is the validation error returned by
-// GetStageLogRequest.Validate if the designated constraints aren't met.
-type GetStageLogRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e GetStageLogRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e GetStageLogRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e GetStageLogRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e GetStageLogRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e GetStageLogRequestValidationError) ErrorName() string {
-	return "GetStageLogRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e GetStageLogRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sGetStageLogRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = GetStageLogRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = GetStageLogRequestValidationError{}
-
-// Validate checks the field values on GetStageLogResponse with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *GetStageLogResponse) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on GetStageLogResponse with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// GetStageLogResponseMultiError, or nil if none found.
-func (m *GetStageLogResponse) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *GetStageLogResponse) validate(all bool) error {
+func (m *StageLog) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -3809,7 +3681,7 @@ func (m *GetStageLogResponse) validate(all bool) error {
 			switch v := interface{}(item).(type) {
 			case interface{ ValidateAll() error }:
 				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, GetStageLogResponseValidationError{
+					errors = append(errors, StageLogValidationError{
 						field:  fmt.Sprintf("Blocks[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -3817,7 +3689,7 @@ func (m *GetStageLogResponse) validate(all bool) error {
 				}
 			case interface{ Validate() error }:
 				if err := v.Validate(); err != nil {
-					errors = append(errors, GetStageLogResponseValidationError{
+					errors = append(errors, StageLogValidationError{
 						field:  fmt.Sprintf("Blocks[%v]", idx),
 						reason: "embedded message failed validation",
 						cause:  err,
@@ -3826,7 +3698,7 @@ func (m *GetStageLogResponse) validate(all bool) error {
 			}
 		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return GetStageLogResponseValidationError{
+				return StageLogValidationError{
 					field:  fmt.Sprintf("Blocks[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -3838,20 +3710,21 @@ func (m *GetStageLogResponse) validate(all bool) error {
 
 	// no validation rules for Completed
 
+	// no validation rules for Message
+
 	if len(errors) > 0 {
-		return GetStageLogResponseMultiError(errors)
+		return StageLogMultiError(errors)
 	}
 
 	return nil
 }
 
-// GetStageLogResponseMultiError is an error wrapping multiple validation
-// errors returned by GetStageLogResponse.ValidateAll() if the designated
-// constraints aren't met.
-type GetStageLogResponseMultiError []error
+// StageLogMultiError is an error wrapping multiple validation errors returned
+// by StageLog.ValidateAll() if the designated constraints aren't met.
+type StageLogMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m GetStageLogResponseMultiError) Error() string {
+func (m StageLogMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -3860,11 +3733,11 @@ func (m GetStageLogResponseMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m GetStageLogResponseMultiError) AllErrors() []error { return m }
+func (m StageLogMultiError) AllErrors() []error { return m }
 
-// GetStageLogResponseValidationError is the validation error returned by
-// GetStageLogResponse.Validate if the designated constraints aren't met.
-type GetStageLogResponseValidationError struct {
+// StageLogValidationError is the validation error returned by
+// StageLog.Validate if the designated constraints aren't met.
+type StageLogValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -3872,24 +3745,22 @@ type GetStageLogResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e GetStageLogResponseValidationError) Field() string { return e.field }
+func (e StageLogValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e GetStageLogResponseValidationError) Reason() string { return e.reason }
+func (e StageLogValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e GetStageLogResponseValidationError) Cause() error { return e.cause }
+func (e StageLogValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e GetStageLogResponseValidationError) Key() bool { return e.key }
+func (e StageLogValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e GetStageLogResponseValidationError) ErrorName() string {
-	return "GetStageLogResponseValidationError"
-}
+func (e StageLogValidationError) ErrorName() string { return "StageLogValidationError" }
 
 // Error satisfies the builtin error interface
-func (e GetStageLogResponseValidationError) Error() string {
+func (e StageLogValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -3901,14 +3772,14 @@ func (e GetStageLogResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sGetStageLogResponse.%s: %s%s",
+		"invalid %sStageLog.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = GetStageLogResponseValidationError{}
+var _ error = StageLogValidationError{}
 
 var _ interface {
 	Field() string
@@ -3916,24 +3787,24 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = GetStageLogResponseValidationError{}
+} = StageLogValidationError{}
 
-// Validate checks the field values on GetStageLogsRequest with the rules
+// Validate checks the field values on ListStageLogRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *GetStageLogsRequest) Validate() error {
+func (m *ListStageLogRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on GetStageLogsRequest with the rules
+// ValidateAll checks the field values on ListStageLogRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// GetStageLogsRequestMultiError, or nil if none found.
-func (m *GetStageLogsRequest) ValidateAll() error {
+// ListStageLogRequestMultiError, or nil if none found.
+func (m *ListStageLogRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *GetStageLogsRequest) validate(all bool) error {
+func (m *ListStageLogRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -3941,7 +3812,7 @@ func (m *GetStageLogsRequest) validate(all bool) error {
 	var errors []error
 
 	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
-		err := GetStageLogsRequestValidationError{
+		err := ListStageLogRequestValidationError{
 			field:  "DeploymentId",
 			reason: "value length must be at least 1 runes",
 		}
@@ -3952,19 +3823,19 @@ func (m *GetStageLogsRequest) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return GetStageLogsRequestMultiError(errors)
+		return ListStageLogRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// GetStageLogsRequestMultiError is an error wrapping multiple validation
-// errors returned by GetStageLogsRequest.ValidateAll() if the designated
+// ListStageLogRequestMultiError is an error wrapping multiple validation
+// errors returned by ListStageLogRequest.ValidateAll() if the designated
 // constraints aren't met.
-type GetStageLogsRequestMultiError []error
+type ListStageLogRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m GetStageLogsRequestMultiError) Error() string {
+func (m ListStageLogRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -3973,11 +3844,11 @@ func (m GetStageLogsRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m GetStageLogsRequestMultiError) AllErrors() []error { return m }
+func (m ListStageLogRequestMultiError) AllErrors() []error { return m }
 
-// GetStageLogsRequestValidationError is the validation error returned by
-// GetStageLogsRequest.Validate if the designated constraints aren't met.
-type GetStageLogsRequestValidationError struct {
+// ListStageLogRequestValidationError is the validation error returned by
+// ListStageLogRequest.Validate if the designated constraints aren't met.
+type ListStageLogRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -3985,24 +3856,24 @@ type GetStageLogsRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e GetStageLogsRequestValidationError) Field() string { return e.field }
+func (e ListStageLogRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e GetStageLogsRequestValidationError) Reason() string { return e.reason }
+func (e ListStageLogRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e GetStageLogsRequestValidationError) Cause() error { return e.cause }
+func (e ListStageLogRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e GetStageLogsRequestValidationError) Key() bool { return e.key }
+func (e ListStageLogRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e GetStageLogsRequestValidationError) ErrorName() string {
-	return "GetStageLogsRequestValidationError"
+func (e ListStageLogRequestValidationError) ErrorName() string {
+	return "ListStageLogRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e GetStageLogsRequestValidationError) Error() string {
+func (e ListStageLogRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -4014,14 +3885,14 @@ func (e GetStageLogsRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sGetStageLogsRequest.%s: %s%s",
+		"invalid %sListStageLogRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = GetStageLogsRequestValidationError{}
+var _ error = ListStageLogRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -4029,24 +3900,24 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = GetStageLogsRequestValidationError{}
+} = ListStageLogRequestValidationError{}
 
-// Validate checks the field values on GetStageLogsResponse with the rules
+// Validate checks the field values on ListStageLogResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *GetStageLogsResponse) Validate() error {
+func (m *ListStageLogResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on GetStageLogsResponse with the rules
+// ValidateAll checks the field values on ListStageLogResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// GetStageLogsResponseMultiError, or nil if none found.
-func (m *GetStageLogsResponse) ValidateAll() error {
+// ListStageLogResponseMultiError, or nil if none found.
+func (m *ListStageLogResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *GetStageLogsResponse) validate(all bool) error {
+func (m *ListStageLogResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -4054,33 +3925,33 @@ func (m *GetStageLogsResponse) validate(all bool) error {
 	var errors []error
 
 	{
-		sorted_keys := make([]string, len(m.GetSteageLogDict()))
+		sorted_keys := make([]string, len(m.GetStageLogs()))
 		i := 0
-		for key := range m.GetSteageLogDict() {
+		for key := range m.GetStageLogs() {
 			sorted_keys[i] = key
 			i++
 		}
 		sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
 		for _, key := range sorted_keys {
-			val := m.GetSteageLogDict()[key]
+			val := m.GetStageLogs()[key]
 			_ = val
 
-			// no validation rules for SteageLogDict[key]
+			// no validation rules for StageLogs[key]
 
 			if all {
 				switch v := interface{}(val).(type) {
 				case interface{ ValidateAll() error }:
 					if err := v.ValidateAll(); err != nil {
-						errors = append(errors, GetStageLogsResponseValidationError{
-							field:  fmt.Sprintf("SteageLogDict[%v]", key),
+						errors = append(errors, ListStageLogResponseValidationError{
+							field:  fmt.Sprintf("StageLogs[%v]", key),
 							reason: "embedded message failed validation",
 							cause:  err,
 						})
 					}
 				case interface{ Validate() error }:
 					if err := v.Validate(); err != nil {
-						errors = append(errors, GetStageLogsResponseValidationError{
-							field:  fmt.Sprintf("SteageLogDict[%v]", key),
+						errors = append(errors, ListStageLogResponseValidationError{
+							field:  fmt.Sprintf("StageLogs[%v]", key),
 							reason: "embedded message failed validation",
 							cause:  err,
 						})
@@ -4088,8 +3959,8 @@ func (m *GetStageLogsResponse) validate(all bool) error {
 				}
 			} else if v, ok := interface{}(val).(interface{ Validate() error }); ok {
 				if err := v.Validate(); err != nil {
-					return GetStageLogsResponseValidationError{
-						field:  fmt.Sprintf("SteageLogDict[%v]", key),
+					return ListStageLogResponseValidationError{
+						field:  fmt.Sprintf("StageLogs[%v]", key),
 						reason: "embedded message failed validation",
 						cause:  err,
 					}
@@ -4100,19 +3971,19 @@ func (m *GetStageLogsResponse) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return GetStageLogsResponseMultiError(errors)
+		return ListStageLogResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// GetStageLogsResponseMultiError is an error wrapping multiple validation
-// errors returned by GetStageLogsResponse.ValidateAll() if the designated
+// ListStageLogResponseMultiError is an error wrapping multiple validation
+// errors returned by ListStageLogResponse.ValidateAll() if the designated
 // constraints aren't met.
-type GetStageLogsResponseMultiError []error
+type ListStageLogResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m GetStageLogsResponseMultiError) Error() string {
+func (m ListStageLogResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -4121,11 +3992,11 @@ func (m GetStageLogsResponseMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m GetStageLogsResponseMultiError) AllErrors() []error { return m }
+func (m ListStageLogResponseMultiError) AllErrors() []error { return m }
 
-// GetStageLogsResponseValidationError is the validation error returned by
-// GetStageLogsResponse.Validate if the designated constraints aren't met.
-type GetStageLogsResponseValidationError struct {
+// ListStageLogResponseValidationError is the validation error returned by
+// ListStageLogResponse.Validate if the designated constraints aren't met.
+type ListStageLogResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -4133,24 +4004,24 @@ type GetStageLogsResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e GetStageLogsResponseValidationError) Field() string { return e.field }
+func (e ListStageLogResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e GetStageLogsResponseValidationError) Reason() string { return e.reason }
+func (e ListStageLogResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e GetStageLogsResponseValidationError) Cause() error { return e.cause }
+func (e ListStageLogResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e GetStageLogsResponseValidationError) Key() bool { return e.key }
+func (e ListStageLogResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e GetStageLogsResponseValidationError) ErrorName() string {
-	return "GetStageLogsResponseValidationError"
+func (e ListStageLogResponseValidationError) ErrorName() string {
+	return "ListStageLogResponseValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e GetStageLogsResponseValidationError) Error() string {
+func (e ListStageLogResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -4162,14 +4033,14 @@ func (e GetStageLogsResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sGetStageLogsResponse.%s: %s%s",
+		"invalid %sListStageLogResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = GetStageLogsResponseValidationError{}
+var _ error = ListStageLogResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -4177,4 +4048,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = GetStageLogsResponseValidationError{}
+} = ListStageLogResponseValidationError{}

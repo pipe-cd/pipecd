@@ -47,10 +47,8 @@ func newLogsCommand(root *command) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&c.deploymentID, "deployment-id", c.deploymentID, "The deployment ID.")
-	// cmd.Flags().StringVar(&c.stageID, "stage-id", c.stageID, "The stage ID.")
 
 	cmd.MarkFlagRequired("deployment-id")
-	// cmd.MarkFlagRequired("stage-id")
 
 	return cmd
 }
@@ -62,11 +60,11 @@ func (c *logs) run(ctx context.Context, input cli.Input) error {
 	}
 	defer cli.Close()
 
-	req := &apiservice.GetStageLogsRequest{
+	req := &apiservice.ListStageLogRequest{
 		DeploymentId: c.deploymentID,
 	}
 
-	resp, err := cli.GetStageLogs(ctx, req)
+	resp, err := cli.ListStageLog(ctx, req)
 	if err != nil {
 		return fmt.Errorf("failed to get stage log: %w", err)
 	}

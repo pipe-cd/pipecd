@@ -35,7 +35,3 @@ message LogBlock {
     // Unix time when the log block was created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
 }
-
-message LogBlocks {
-    repeated LogBlock logblocks = 1;
-}

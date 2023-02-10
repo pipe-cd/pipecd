@@ -50,8 +50,7 @@ service APIService {
 
     rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
 
-    rpc GetStageLog(GetStageLogRequest) returns (GetStageLogResponse) {}
-    rpc GetStageLogs(GetStageLogsRequest) returns (GetStageLogsResponse) {}
+    rpc ListStageLog(ListStageLogRequest) returns (ListStageLogResponse) {}
 }
 
 message AddApplicationRequest {
@@ -200,23 +199,16 @@ message EncryptResponse {
     string ciphertext = 1 [(validate.rules).string.min_len = 1];
 }
 
-message GetStageLogRequest {
-    string deployment_id = 1 [(validate.rules).string.min_len = 1];
-    string stage_id = 2 [(validate.rules).string.min_len = 1];
-    int32 retried_count = 3;
-    int64 offset_index = 4;
-}
-
-message GetStageLogResponse {
+message StageLog {
     repeated model.LogBlock blocks = 1;
     bool completed = 2;
+    string message = 3;
 }
 
-message GetStageLogsRequest {
+message ListStageLogRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
 }
 
-message GetStageLogsResponse {
-    /* repeated GetStageLogResponse blocks = 1; */
-    map<string, GetStageLogResponse> steage_log_dict = 1;
+message ListStageLogResponse {
+    map<string, StageLog> stage_logs = 1;
 }

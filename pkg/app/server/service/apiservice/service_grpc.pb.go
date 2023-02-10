@@ -37,8 +37,7 @@ type APIServiceClient interface {
 	RequestPlanPreview(ctx context.Context, in *RequestPlanPreviewRequest, opts ...grpc.CallOption) (*RequestPlanPreviewResponse, error)
 	GetPlanPreviewResults(ctx context.Context, in *GetPlanPreviewResultsRequest, opts ...grpc.CallOption) (*GetPlanPreviewResultsResponse, error)
 	Encrypt(ctx context.Context, in *EncryptRequest, opts ...grpc.CallOption) (*EncryptResponse, error)
-	GetStageLog(ctx context.Context, in *GetStageLogRequest, opts ...grpc.CallOption) (*GetStageLogResponse, error)
-	GetStageLogs(ctx context.Context, in *GetStageLogsRequest, opts ...grpc.CallOption) (*GetStageLogsResponse, error)
+	ListStageLog(ctx context.Context, in *ListStageLogRequest, opts ...grpc.CallOption) (*ListStageLogResponse, error)
 }
 
 type aPIServiceClient struct {
@@ -184,18 +183,9 @@ func (c *aPIServiceClient) Encrypt(ctx context.Context, in *EncryptRequest, opts
 	return out, nil
 }
 
-func (c *aPIServiceClient) GetStageLog(ctx context.Context, in *GetStageLogRequest, opts ...grpc.CallOption) (*GetStageLogResponse, error) {
-	out := new(GetStageLogResponse)
-	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/GetStageLog", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *aPIServiceClient) GetStageLogs(ctx context.Context, in *GetStageLogsRequest, opts ...grpc.CallOption) (*GetStageLogsResponse, error) {
-	out := new(GetStageLogsResponse)
-	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/GetStageLogs", in, out, opts...)
+func (c *aPIServiceClient) ListStageLog(ctx context.Context, in *ListStageLogRequest, opts ...grpc.CallOption) (*ListStageLogResponse, error) {
+	out := new(ListStageLogResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/ListStageLog", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -221,8 +211,7 @@ type APIServiceServer interface {
 	RequestPlanPreview(context.Context, *RequestPlanPreviewRequest) (*RequestPlanPreviewResponse, error)
 	GetPlanPreviewResults(context.Context, *GetPlanPreviewResultsRequest) (*GetPlanPreviewResultsResponse, error)
 	Encrypt(context.Context, *EncryptRequest) (*EncryptResponse, error)
-	GetStageLog(context.Context, *GetStageLogRequest) (*GetStageLogResponse, error)
-	GetStageLogs(context.Context, *GetStageLogsRequest) (*GetStageLogsResponse, error)
+	ListStageLog(context.Context, *ListStageLogRequest) (*ListStageLogResponse, error)
 	mustEmbedUnimplementedAPIServiceServer()
 }
 
@@ -275,11 +264,8 @@ func (UnimplementedAPIServiceServer) GetPlanPreviewResults(context.Context, *Get
 func (UnimplementedAPIServiceServer) Encrypt(context.Context, *EncryptRequest) (*EncryptResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Encrypt not implemented")
 }
-func (UnimplementedAPIServiceServer) GetStageLog(context.Context, *GetStageLogRequest) (*GetStageLogResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetStageLog not implemented")
-}
-func (UnimplementedAPIServiceServer) GetStageLogs(context.Context, *GetStageLogsRequest) (*GetStageLogsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetStageLogs not implemented")
+func (UnimplementedAPIServiceServer) ListStageLog(context.Context, *ListStageLogRequest) (*ListStageLogResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListStageLog not implemented")
 }
 func (UnimplementedAPIServiceServer) mustEmbedUnimplementedAPIServiceServer() {}
 
@@ -564,38 +550,20 @@ func _APIService_Encrypt_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _APIService_GetStageLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetStageLogRequest)
+func _APIService_ListStageLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListStageLogRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(APIServiceServer).GetStageLog(ctx, in)
+		return srv.(APIServiceServer).ListStageLog(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.service.apiservice.APIService/GetStageLog",
+		FullMethod: "/grpc.service.apiservice.APIService/ListStageLog",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(APIServiceServer).GetStageLog(ctx, req.(*GetStageLogRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _APIService_GetStageLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetStageLogsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(APIServiceServer).GetStageLogs(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/grpc.service.apiservice.APIService/GetStageLogs",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(APIServiceServer).GetStageLogs(ctx, req.(*GetStageLogsRequest))
+		return srv.(APIServiceServer).ListStageLog(ctx, req.(*ListStageLogRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -668,12 +636,8 @@ var APIService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _APIService_Encrypt_Handler,
 		},
 		{
-			MethodName: "GetStageLog",
-			Handler:    _APIService_GetStageLog_Handler,
-		},
-		{
-			MethodName: "GetStageLogs",
-			Handler:    _APIService_GetStageLogs_Handler,
+			MethodName: "ListStageLog",
+			Handler:    _APIService_ListStageLog_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
