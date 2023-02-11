@@ -25,7 +25,7 @@ for dir in ${goProtoDirs[*]}; do
   echo ""
   echo "- ${dir}"
   echo "deleting previously generated Go files..."
-  find ${dir} -name "*.pb.go" -o -name "*.pb.validate.go" -type f -delete
+  find ${dir} -name "*.pb.go" -o -name "*.pb.*.go" -type f -delete
   echo "successfully deleted"
 
   echo "generating new Go files..."
