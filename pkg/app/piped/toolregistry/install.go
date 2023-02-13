@@ -17,10 +17,12 @@ package toolregistry
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"text/template"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -206,19 +208,22 @@ func (r *registry) installCustomTemplating(ctx context.Context, input *config.In
 		)
 		return fmt.Errorf("failed to install %s %s (%v)", input.Command, input.Version, err)
 	}
-
-	var (
-		script = buf.String()
-		cmd    = exec.CommandContext(ctx, "/bin/sh", "-c", script)
-	)
-	if out, err := cmd.CombinedOutput(); err != nil {
+	script := fmt.Sprintf("cd %s\n", workingDir) + buf.String()
+	fmt.Println(script)
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctxWithTimeout, "/bin/sh", "-c", script)
+	if err := cmd.Run(); err != nil {
 		r.logger.Error("failed to install custom template",
 			zap.String("command", input.Command),
 			zap.String("version", input.Version),
 			zap.String("script", script),
-			zap.String("out", string(out)),
+			// zap.String("out", string(out)),
 			zap.Error(err),
 		)
+		if errors.Is(ctxWithTimeout.Err(), context.DeadlineExceeded) {
+			return fmt.Errorf("failed to install %s %s (%v) because of timeout", input.Command, input.Version, err)
+		}
 		return fmt.Errorf("failed to install %s %s (%v)", input.Command, input.Version, err)
 	}
 
@@ -257,7 +262,6 @@ func (r *registry) installTerraform(ctx context.Context, version string) error {
 		)
 		return fmt.Errorf("failed to install terraform %s (%w)", version, err)
 	}
-
 	var (
 		script = buf.String()
 		cmd    = exec.CommandContext(ctx, "/bin/sh", "-c", script)

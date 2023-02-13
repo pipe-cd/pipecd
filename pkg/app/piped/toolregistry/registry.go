@@ -194,6 +194,10 @@ func (r *registry) Helm(ctx context.Context, version string) (string, bool, erro
 	return path, true, nil
 }
 
+var retryCountCustomInstall = 0
+
+const maxRetryCountCustomInstall = 2
+
 func (r *registry) CustomTemplating(ctx context.Context, input *config.InputCustomTemplating) (string, bool, error) {
 	name := input.Command
 	if input.Version != "" {
@@ -209,7 +213,12 @@ func (r *registry) CustomTemplating(ctx context.Context, input *config.InputCust
 	}
 
 	_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
-		return nil, r.installCustomTemplating(ctx, input)
+		if retryCountCustomInstall < maxRetryCountCustomInstall {
+			retryCountCustomInstall += 1
+			return nil, r.installCustomTemplating(ctx, input)
+		} else {
+			return nil, fmt.Errorf("failed to install %s %s because of exceed max retry", name, input.Version)
+		}
 	})
 	if err != nil {
 		return "", true, err
