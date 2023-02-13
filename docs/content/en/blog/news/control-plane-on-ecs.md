@@ -15,6 +15,8 @@ Currently, you can deploy and operate the PipeCD control plane on a Kubernetes c
 
 ![](/images/control-plane-on-ecs.png)
 
+Following the above graph for PipeCD control plane runs on Amazon ECS, we have to prepare these next components
+
 ### RDS(datastore)
 It is possible to use RDS as a datastore. Edit your configuration file for the control plane according to your RDS setting.
 ```yaml=
