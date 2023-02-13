@@ -17,6 +17,7 @@ package grpcapi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -520,6 +521,50 @@ func (a *API) ListDeployments(ctx context.Context, req *apiservice.ListDeploymen
 	return &apiservice.ListDeploymentsResponse{
 		Deployments: filtered,
 		Cursor:      cursor,
+	}, nil
+}
+
+func (a *API) ListStageLogs(ctx context.Context, req *apiservice.ListStageLogsRequest) (*apiservice.ListStageLogsResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	deployment, err := getDeployment(ctx, a.deploymentStore, req.DeploymentId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	if key.ProjectId != deployment.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested deployment does not belong to your project")
+	}
+
+	stageLogs := map[string]*apiservice.StageLog{}
+
+	for _, stage := range deployment.Stages {
+		blocks, completed, err := a.stageLogStore.FetchLogs(ctx, deployment.Id, stage.Id, stage.RetriedCount, 0)
+		if err != nil && !errors.Is(err, stagelogstore.ErrNotFound) {
+			return nil, err
+		}
+
+		// StageRollback is generated automatically and returns nothing if not found.
+		if err != nil && stage.Name == model.StageRollback.String() {
+			continue
+		}
+
+		if err != nil {
+			stageLogs[stage.Id] = &apiservice.StageLog{}
+			continue
+		}
+
+		stageLogs[stage.Id] = &apiservice.StageLog{
+			Blocks:    blocks,
+			Completed: completed,
+		}
+	}
+
+	return &apiservice.ListStageLogsResponse{
+		StageLogs: stageLogs,
 	}, nil
 }
 
