@@ -94,7 +94,7 @@ func NewDetector(
 		stateGetter:       stateGetter,
 		reporter:          reporter,
 		appManifestsCache: appManifestsCache,
-		interval:          time.Minute,
+		interval:          10 * time.Minute,
 		config:            cfg,
 		secretDecrypter:   sd,
 		gitRepos:          make(map[string]git.Repo),
