@@ -65,20 +65,13 @@ func newListCommand(root *command) *cobra.Command {
 }
 
 func (c *list) run(ctx context.Context, _ cli.Input) error {
-	for _, status := range c.statuses {
-		if status != "" {
-			if _, ok := model.DeploymentStatus_value[status]; !ok {
-				return fmt.Errorf("%s is invalid deployment status", status)
-			}
-		}
+	err := validateDeploymentStatus(c.statuses)
+	if err != nil {
+		return err
 	}
-
-	for _, kind := range c.appKinds {
-		if kind != "" {
-			if _, ok := model.ApplicationKind_value[kind]; !ok {
-				return fmt.Errorf("%s is invalid application kind", kind)
-			}
-		}
+	err = validateApplicationKind(c.appKinds)
+	if err != nil {
+		return err
 	}
 
 	cli, err := c.root.clientOptions.NewClient(ctx)
@@ -111,5 +104,27 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 	}
 
 	fmt.Fprintln(c.stdout, string(bytes))
+	return nil
+}
+
+func validateDeploymentStatus(statuses []string) error {
+	for _, status := range statuses {
+		if status != "" {
+			if _, ok := model.DeploymentStatus_value[status]; !ok {
+				return fmt.Errorf("%s is invalid deployment status", status)
+			}
+		}
+	}
+	return nil
+}
+
+func validateApplicationKind(kinds []string) error {
+	for _, kind := range kinds {
+		if kind != "" {
+			if _, ok := model.ApplicationKind_value[kind]; !ok {
+				return fmt.Errorf("%s is invalid application kind", kind)
+			}
+		}
+	}
 	return nil
 }
