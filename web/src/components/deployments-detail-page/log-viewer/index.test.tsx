@@ -5,8 +5,6 @@ import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
 import { createStore, render, screen } from "~~/test-utils";
 import { LogViewer } from ".";
 
-Element.prototype.scrollIntoView = jest.fn();
-
 const activeStageId = createActiveStageKey({
   deploymentId: dummyDeployment.id,
   stageId: dummyDeployment.stagesList[0].id,
