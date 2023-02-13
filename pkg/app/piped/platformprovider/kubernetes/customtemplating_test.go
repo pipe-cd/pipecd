@@ -22,7 +22,7 @@ func TestVerifyCustomtemplatingArgs(t *testing.T) {
 			wantErr:       false,
 		},
 		{
-			name:          "Input arg is a path inside the app dir and does not have extention",
+			name:          "Input arg is a path inside the app dir and does not have extension",
 			appDir:        "testdata/testcustomtemplating/appconfdir",
 			valueFilePath: "test",
 			wantErr:       false,

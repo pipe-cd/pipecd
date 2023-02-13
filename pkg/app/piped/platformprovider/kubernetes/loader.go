@@ -244,14 +244,14 @@ func (l *loader) findCustomTemplatimg(ctx context.Context, input *config.InputCu
 }
 
 func determineTemplatingMethod(input config.KubernetesDeploymentInput, appDirPath string) TemplatingMethod {
+	if input.CustomTemplating != nil {
+		return TemplatingMethodCustom
+	}
 	if input.HelmChart != nil {
 		return TemplatingMethodHelm
 	}
 	if _, err := os.Stat(filepath.Join(appDirPath, kustomizationFileName)); err == nil {
 		return TemplatingMethodKustomize
-	}
-	if input.CustomTemplating != nil {
-		return TemplatingMethodCustom
 	}
 	return TemplatingMethodNone
 }
