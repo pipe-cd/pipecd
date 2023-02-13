@@ -404,13 +404,12 @@ func (a *API) ListStageLogs(ctx context.Context, req *apiservice.ListStageLogsRe
 			return nil, err
 		}
 
+		// StageRollback is generated automatically and returns nothing if not found.
+		if err != nil  && stage.Name == model.StageRollback.String() {
+			continue
+		}
 		if err != nil {
-			// Rollback is generated automatically and returns nothing if not found
-			if stage.Name == model.StageRollback.String() {
-				continue
-			} else {
-				stageLogs[stage.Id] = &apiservice.StageLog{}
-			}
+			stageLogs[stage.Id] = &apiservice.StageLog{}
 		}
 
 		stageLogs[stage.Id] = &apiservice.StageLog{
