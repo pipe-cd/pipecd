@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -280,7 +280,8 @@ func makeSyncState(r provider.PlanResult, commit string) model.ApplicationSyncSt
 	}
 
 	var b strings.Builder
-	b.WriteString("Resource actions are indicated with the following symbols:\n-/+ destroy and then create replacement\n\n")
+	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual live state:\n\n", commit))
+	b.WriteString("+++ Expected (Git)\n--- Actual   (LiveState)\n\n")
 
 	details := r.Render()
 	b.WriteString(details)
