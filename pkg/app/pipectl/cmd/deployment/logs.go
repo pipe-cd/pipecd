@@ -31,7 +31,6 @@ type logs struct {
 	root *command
 
 	deploymentID string
-	stageID      string
 	stdout       io.Writer
 }
 
