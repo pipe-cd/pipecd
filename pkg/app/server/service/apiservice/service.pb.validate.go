@@ -3710,8 +3710,6 @@ func (m *StageLog) validate(all bool) error {
 
 	// no validation rules for Completed
 
-	// no validation rules for Message
-
 	if len(errors) > 0 {
 		return StageLogMultiError(errors)
 	}
