@@ -202,7 +202,6 @@ message EncryptResponse {
 message StageLog {
     repeated model.LogBlock blocks = 1;
     bool completed = 2;
-    string message = 3;
 }
 
 message ListStageLogsRequest {
