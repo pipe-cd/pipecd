@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -134,7 +134,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to marshal releases: %v\n", err)
 	}
-	fmt.Printf("::set-output name=releases::%s\n", string(releasesJSON))
+	os.Setenv("GITHUB_OUTPUT", fmt.Sprintf("releases=%s", string(releasesJSON)))
 	if args.OutputReleasesFilePath != "" {
 		if err := os.WriteFile(args.OutputReleasesFilePath, releasesJSON, 0644); err != nil {
 			log.Fatalf("Failed to write releases JSON to %s: %v\n", args.OutputReleasesFilePath, err)

@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package terraform
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -158,10 +159,96 @@ type PlanResult struct {
 	Adds     int
 	Changes  int
 	Destroys int
+
+	PlanOutput string
 }
 
 func (r PlanResult) NoChanges() bool {
 	return r.Adds == 0 && r.Changes == 0 && r.Destroys == 0
+}
+
+func (r PlanResult) Render() string {
+	terraformDiffStart := "Terraform will perform the following actions:"
+	terraformDiffEnd := fmt.Sprintf("Plan: %d to add, %d to change, %d to destroy.", r.Adds, r.Changes, r.Destroys)
+
+	startIndex := strings.Index(r.PlanOutput, terraformDiffStart) + len(terraformDiffStart)
+	endIndex := strings.Index(r.PlanOutput, terraformDiffEnd) + len(terraformDiffEnd)
+	out := r.PlanOutput[startIndex:endIndex]
+
+	rendered := ""
+	var curlyBracketStack []rune
+	var squareBracketStack []rune
+
+	scanner := bufio.NewScanner(strings.NewReader(out))
+	for scanner.Scan() {
+		line := scanner.Text()
+		if len(line) == 0 {
+			continue
+		}
+
+		r := []rune(line)
+		tail := r[len(r)-1]
+
+		// The outermost nest does not have a sign.
+		if tail == '{' && len(curlyBracketStack) == 0 {
+			// Terraform's outermost block would be resource block.
+			deadline := strings.Index(string(r), "resource")
+			for i := 0; i < deadline; i++ {
+				r[i] = ' '
+			}
+		}
+
+		// Get head rune without tab and space.
+		head, pos := headRuneWithoutWhiteSpace(r)
+		if pos < 0 {
+			continue
+		}
+
+		// Move sign to the beginning.
+		if head == '+' || head == '-' || head == '~' {
+			r[0], r[pos] = r[pos], r[0]
+		}
+
+		// Corresponding pairs with corresponding sign.
+		if tail == '{' {
+			curlyBracketStack = append(curlyBracketStack, r[0])
+		}
+		if head == '}' {
+			r[0] = signMatchBracket(&curlyBracketStack, r[0])
+		}
+		if tail == '[' {
+			squareBracketStack = append(squareBracketStack, r[0])
+		}
+		if head == ']' {
+			r[0] = signMatchBracket(&squareBracketStack, r[0])
+		}
+
+		rendered += string(r)
+		rendered += "\n"
+	}
+
+	return rendered
+}
+
+// Return rune at the top of the stack, or r in case of error.
+func signMatchBracket(l *[]rune, r rune) rune {
+	list := *l
+	if len(list) == 0 {
+		return r
+	}
+	n := len(list) - 1
+	v := list[n]
+	*l = list[:n]
+	return v
+}
+
+func headRuneWithoutWhiteSpace(r []rune) (rune, int) {
+	for i, ri := range r {
+		if !(ri == '\t' || ri == ' ') {
+			return ri, i
+		}
+	}
+	return ' ', -1
 }
 
 func GetExitCode(err error) int {
@@ -264,9 +351,10 @@ func parsePlanResult(out string, ansiIncluded bool) (PlanResult, error) {
 		adds, changes, destroys, err := parseNums(s[1], s[2], s[3])
 		if err == nil {
 			return PlanResult{
-				Adds:     adds,
-				Changes:  changes,
-				Destroys: destroys,
+				Adds:       adds,
+				Changes:    changes,
+				Destroys:   destroys,
+				PlanOutput: out,
 			}, nil
 		}
 	}

@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(newWaitStatusCommand(c))
+	cmd.AddCommand(newLogsCommand(c))
 
 	c.clientOptions.RegisterPersistentFlags(cmd)
 

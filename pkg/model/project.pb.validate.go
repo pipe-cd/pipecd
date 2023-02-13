@@ -497,6 +497,17 @@ func (m *ProjectSSOConfig) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if m.GetSessionTtl() <= 0 {
+		err := ProjectSSOConfigValidationError{
+			field:  "SessionTtl",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if all {
 		switch v := interface{}(m.GetGithub()).(type) {
 		case interface{ ValidateAll() error }:
