@@ -413,7 +413,7 @@ func (a *API) ListDeployments(ctx context.Context, req *apiservice.ListDeploymen
 				if s != "" {
 					depstatus, ok := model.DeploymentStatus_value[s]
 					if !ok {
-						return nil, status.Errorf(codes.InvalidArgument, "%s is invalid deployment status", depstatus)
+						return nil, status.Errorf(codes.InvalidArgument, "%s is invalid deployment status", s)
 					}
 					statuses = append(statuses, model.DeploymentStatus(depstatus))
 				}
@@ -431,7 +431,7 @@ func (a *API) ListDeployments(ctx context.Context, req *apiservice.ListDeploymen
 				if k != "" {
 					kind, ok := model.ApplicationKind_value[k]
 					if !ok {
-						return nil, status.Errorf(codes.InvalidArgument, "%s is invalid application kind", kind)
+						return nil, status.Errorf(codes.InvalidArgument, "%s is invalid application kind", k)
 					}
 					kinds = append(kinds, model.ApplicationKind(kind))
 				}
