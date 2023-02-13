@@ -35,6 +35,7 @@ type Verifier struct {
 	apiKeyStore         apiKeyGetter
 	apiKeyLastUsedCache cache.Cache
 	logger              *zap.Logger
+	nowFunc             func() time.Time
 }
 
 func NewVerifier(ctx context.Context, getter apiKeyGetter, akluc cache.Cache, logger *zap.Logger) *Verifier {
@@ -43,6 +44,7 @@ func NewVerifier(ctx context.Context, getter apiKeyGetter, akluc cache.Cache, lo
 		apiKeyStore:         getter,
 		apiKeyLastUsedCache: akluc,
 		logger:              logger,
+		nowFunc:             time.Now,
 	}
 }
 
@@ -88,14 +90,10 @@ func (v *Verifier) checkAPIKey(ctx context.Context, apiKey *model.APIKey, id, ke
 	if err := apiKey.CompareKey(key); err != nil {
 		return fmt.Errorf("invalid api key %s: %w", id, err)
 	}
-	now := v.now()
+	now := v.nowFunc().Unix()
 	if err := v.apiKeyLastUsedCache.Put(id, now); err != nil {
 		return fmt.Errorf("unable to update the time API key %s was last used, %w", id, err)
 	}
 
 	return nil
-}
-
-func (v *Verifier) now() int64 {
-	return time.Now().Unix()
 }
