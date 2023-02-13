@@ -37,6 +37,7 @@ service APIService {
     rpc RenameApplicationConfigFile(RenameApplicationConfigFileRequest) returns (RenameApplicationConfigFileResponse) {}
 
     rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
+    rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {}
 
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
 
@@ -131,6 +132,26 @@ message GetDeploymentRequest {
 
 message GetDeploymentResponse {
     model.Deployment deployment = 1;
+}
+
+message ListDeploymentsRequest {
+    message Options {
+        reserved 4;
+
+        repeated string statuses = 1;
+        repeated string kinds = 2;
+        repeated string application_ids = 3;
+        string application_name = 5;
+        map<string, string> labels = 6;
+    }
+    Options options = 1;
+    int32 limit = 2;
+    string cursor = 3;
+}
+
+message ListDeploymentsResponse {
+    repeated model.Deployment deployments = 1;
+    string cursor = 2;
 }
 
 message GetCommandRequest {

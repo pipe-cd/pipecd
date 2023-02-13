@@ -17,7 +17,6 @@ package grpcapi
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
@@ -49,6 +48,7 @@ type apiApplicationStore interface {
 
 type apiDeploymentStore interface {
 	Get(ctx context.Context, id string) (*model.Deployment, error)
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Deployment, string, error)
 }
 
 type apiPipedStore interface {
@@ -381,47 +381,145 @@ func (a *API) GetDeployment(ctx context.Context, req *apiservice.GetDeploymentRe
 	}, nil
 }
 
-func (a *API) ListStageLogs(ctx context.Context, req *apiservice.ListStageLogsRequest) (*apiservice.ListStageLogsResponse, error) {
+func (a *API) ListDeployments(ctx context.Context, req *apiservice.ListDeploymentsRequest) (*apiservice.ListDeploymentsResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
 	if err != nil {
 		return nil, err
 	}
 
-	deployment, err := getDeployment(ctx, a.deploymentStore, req.DeploymentId, a.logger)
+	orders := []datastore.Order{
+		{
+			Field:     "UpdatedAt",
+			Direction: datastore.Desc,
+		},
+		{
+			Field:     "Id",
+			Direction: datastore.Asc,
+		},
+	}
+	filters := []datastore.ListFilter{
+		{
+			Field:    "ProjectId",
+			Operator: datastore.OperatorEqual,
+			Value:    key.ProjectId,
+		},
+	}
+	// Allowing multiple so that it can do In Query later.
+	// Currently only the first value is used.
+	if o := req.Options; o != nil {
+		if len(o.Statuses) > 0 {
+			statuses := []model.DeploymentStatus{}
+			for _, s := range o.Statuses {
+				if s != "" {
+					depstatus, ok := model.DeploymentStatus_value[s]
+					if !ok {
+						return nil, status.Errorf(codes.InvalidArgument, "%s is invalid deployment status", depstatus)
+					}
+					statuses = append(statuses, model.DeploymentStatus(depstatus))
+				}
+			}
+
+			filters = append(filters, datastore.ListFilter{
+				Field:    "Status",
+				Operator: datastore.OperatorEqual,
+				Value:    statuses[0],
+			})
+		}
+		if len(o.Kinds) > 0 {
+			kinds := []model.ApplicationKind{}
+			for _, k := range o.Kinds {
+				if k != "" {
+					kind, ok := model.ApplicationKind_value[k]
+					if !ok {
+						return nil, status.Errorf(codes.InvalidArgument, "%s is invalid application kind", kind)
+					}
+					kinds = append(kinds, model.ApplicationKind(kind))
+				}
+			}
+
+			filters = append(filters, datastore.ListFilter{
+				Field:    "Kind",
+				Operator: datastore.OperatorEqual,
+				Value:    kinds[0],
+			})
+		}
+		if len(o.ApplicationIds) > 0 {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "ApplicationId",
+				Operator: datastore.OperatorEqual,
+				Value:    o.ApplicationIds[0],
+			})
+		}
+		if o.ApplicationName != "" {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "ApplicationName",
+				Operator: datastore.OperatorEqual,
+				Value:    o.ApplicationName,
+			})
+		}
+	}
+
+	limit := int(req.Limit)
+
+	options := datastore.ListOptions{
+		Filters: filters,
+		Orders:  orders,
+		Limit:   limit,
+		Cursor:  req.Cursor,
+	}
+	deployments, cursor, err := a.deploymentStore.List(ctx, options)
 	if err != nil {
-		return nil, err
+		a.logger.Error("failed to get deployments", zap.Error(err))
+		return nil, gRPCStoreError(err, "get deployments")
+	}
+	labels := req.Options.Labels
+	if len(labels) == 0 || len(deployments) == 0 {
+		return &apiservice.ListDeploymentsResponse{
+			Deployments: deployments,
+			Cursor:      cursor,
+		}, nil
 	}
 
-	if key.ProjectId != deployment.ProjectId {
-		return nil, status.Error(codes.InvalidArgument, "Requested deployment does not belong to your project")
+	// Start filtering them by labels.
+	//
+	// NOTE: Filtering by labels is done by the application-side because we need to create composite indexes for every combination in the filter.
+	// We don't want to depend on any other search engine, that's why it filters here.
+	filtered := make([]*model.Deployment, 0, len(deployments))
+	for _, d := range deployments {
+		if d.ContainLabels(labels) {
+			filtered = append(filtered, d)
+		}
 	}
-
-	stageLogs := map[string]*apiservice.StageLog{}
-
-	for _, stage := range deployment.Stages {
-		blocks, completed, err := a.stageLogStore.FetchLogs(ctx, deployment.Id, stage.Id, stage.RetriedCount, 0)
-		if err != nil && !errors.Is(err, stagelogstore.ErrNotFound) {
-			return nil, err
-		}
-
-		// StageRollback is generated automatically and returns nothing if not found.
-		if err != nil && stage.Name == model.StageRollback.String() {
-			continue
-		}
-
+	// Stop running additional queries for more data, and return filtered deployments immediately with
+	// current cursor if the size before filtering is already less than the page size.
+	if len(deployments) < limit {
+		return &apiservice.ListDeploymentsResponse{
+			Deployments: filtered,
+			Cursor:      cursor,
+		}, nil
+	}
+	// Repeat the query until the number of filtered deployments reaches the page size,
+	// or until it finishes scanning to page_min_updated_at.
+	for len(filtered) < limit {
+		options.Cursor = cursor
+		deployments, cursor, err = a.deploymentStore.List(ctx, options)
 		if err != nil {
-			stageLogs[stage.Id] = &apiservice.StageLog{}
-			continue
+			a.logger.Error("failed to get deployments", zap.Error(err))
+			return nil, gRPCStoreError(err, "get deployments")
 		}
-
-		stageLogs[stage.Id] = &apiservice.StageLog{
-			Blocks:    blocks,
-			Completed: completed,
+		if len(deployments) == 0 {
+			break
+		}
+		for _, d := range deployments {
+			if d.ContainLabels(labels) {
+				filtered = append(filtered, d)
+			}
 		}
 	}
-
-	return &apiservice.ListStageLogsResponse{
-		StageLogs: stageLogs,
+	// TODO: Think about possibility that the response of ListDeployments exceeds the page size
+	return &apiservice.ListDeploymentsResponse{
+		Deployments: filtered,
+		Cursor:      cursor,
 	}, nil
 }
 
