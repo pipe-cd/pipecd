@@ -70,7 +70,7 @@ func (v *Verifier) Verify(ctx context.Context, key string) (*model.APIKey, error
 		return nil, fmt.Errorf("unable to find API key %s from datastore, %w", keyID, err)
 	}
 
-	// update the time API key was last used
+	// Update last time the API key was used.
 
 	if err := v.apiKeyCache.Put(keyID, apiKey); err != nil {
 		v.logger.Warn("unable to store API key in memory cache", zap.Error(err))
