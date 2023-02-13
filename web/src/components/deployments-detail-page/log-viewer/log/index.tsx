@@ -1,4 +1,4 @@
-import { FC, memo, useEffect, useRef } from "react";
+import { FC, memo } from "react";
 import { makeStyles, CircularProgress, Box } from "@material-ui/core";
 import { LogLine } from "../log-line";
 import { DEFAULT_BACKGROUND_COLOR } from "~/constants/term-colors";
@@ -25,12 +25,6 @@ export interface LogProps {
 
 export const Log: FC<LogProps> = memo(function Log({ logs, loading }) {
   const classes = useStyles();
-  const bottomRef = useRef<null | HTMLDivElement>(null);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [logs]);
-
   return (
     <div className={classes.container}>
       {logs.map((log, i) => (
@@ -47,7 +41,7 @@ export const Log: FC<LogProps> = memo(function Log({ logs, loading }) {
           <CircularProgress color="secondary" />
         </Box>
       )}
-      <div className={classes.space} ref={bottomRef} />
+      <div className={classes.space} />
     </div>
   );
 });
