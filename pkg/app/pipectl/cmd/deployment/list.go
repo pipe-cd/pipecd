@@ -68,8 +68,7 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 	for _, status := range c.statuses {
 		if status != "" {
 			if _, ok := model.DeploymentStatus_value[status]; !ok {
-				err := fmt.Errorf("%s is invalid deployment status", status)
-				return err
+				return errInvalidDeploymentStatus(status)
 
 			}
 		}
@@ -78,8 +77,7 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 	for _, kind := range c.appKinds {
 		if kind != "" {
 			if _, ok := model.ApplicationKind_value[kind]; !ok {
-				err := fmt.Errorf("%s is invalid application kind", kind)
-				return err
+				return errInvalidApplicationKind(kind)
 			}
 		}
 	}
@@ -115,4 +113,12 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 
 	fmt.Fprintln(c.stdout, string(bytes))
 	return nil
+}
+
+func errInvalidDeploymentStatus(s string) error {
+	return fmt.Errorf("%s is invalid deployment status", s)
+}
+
+func errInvalidApplicationKind(s string) error {
+	return fmt.Errorf("%s is invalid application kind", s)
 }
