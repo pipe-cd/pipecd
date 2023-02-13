@@ -19,7 +19,7 @@ Following the above graph for PipeCD control plane runs on Amazon ECS, we have t
 
 ### RDS(datastore)
 It is possible to use RDS as a datastore. Edit your configuration file for the control plane according to your RDS setting.
-```yaml=
+```yaml
   datastore:
     type: MYSQL
     config: 
