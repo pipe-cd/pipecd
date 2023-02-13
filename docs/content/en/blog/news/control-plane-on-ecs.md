@@ -8,7 +8,7 @@ author: Yohei Namba ([@kevin55156](https://twitter.com/kevin55156))
 ---
 
 This blog is a part of PipeCD best practice series, a guideline for you to operate your own PipeCD.
-Currently, we can deploy the control plane to kubernetes cluster, but some developers that would like to introduce PipeCD can not prepare kubernetes environments. PipeCD started supporting deployment control plane on docker-compose, so this blog introduce one way how to deploy control plane on ECS.
+Currently, you can deploy and operate the PipeCD control plane on a Kubernetes cluster easily, but some developers that would like to introduce PipeCD can not prepare Kubernetes environments. If you have the same problem, this blog is for you. We will show you how to deploy the PipeCD control plane on Amazon ECS.
 
 ### Architecture
 > Note: Please refer to [architecture-overview](docs/user-guide/managing-controlplane/architecture-overview/) docs for definitions of PipeCD components such as server, ops, cache, datastore and filestore.
