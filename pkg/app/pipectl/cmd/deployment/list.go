@@ -21,6 +21,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
@@ -68,7 +69,7 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 	for _, status := range c.statuses {
 		if status != "" {
 			if _, ok := model.DeploymentStatus_value[status]; !ok {
-				return fmt.Errorf("%s is invalid deployment status", status)
+				return errors.Errorf("%s is invalid deployment status", status)
 			}
 		}
 	}
@@ -76,7 +77,7 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 	for _, kind := range c.appKinds {
 		if kind != "" {
 			if _, ok := model.ApplicationKind_value[kind]; !ok {
-				return fmt.Errorf("%s is invalid application kind", kind)
+				return errors.Errorf("%s is invalid application kind", kind)
 			}
 		}
 	}
