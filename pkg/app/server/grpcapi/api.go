@@ -17,6 +17,7 @@ package grpcapi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -28,9 +29,11 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/commandstore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/apiservice"
+	"github.com/pipe-cd/pipecd/pkg/app/server/stagelogstore"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/filestore"
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
@@ -72,6 +75,7 @@ type API struct {
 	pipedStore          apiPipedStore
 	eventStore          apiEventStore
 	commandStore        commandstore.Store
+	stageLogStore       stagelogstore.Store
 	commandOutputGetter commandOutputGetter
 
 	encryptionKeyCache cache.Cache
@@ -85,6 +89,7 @@ type API struct {
 func NewAPI(
 	ctx context.Context,
 	ds datastore.DataStore,
+	fs filestore.Store,
 	sc cache.Cache,
 	cog commandOutputGetter,
 	psc cache.Cache,
@@ -98,6 +103,7 @@ func NewAPI(
 		pipedStore:          datastore.NewPipedStore(ds, w),
 		eventStore:          datastore.NewEventStore(ds, w),
 		commandStore:        commandstore.NewStore(w, ds, sc, logger),
+		stageLogStore:       stagelogstore.NewStore(fs, sc, logger),
 		commandOutputGetter: cog,
 		// Public key is variable but likely to be accessed multiple times in a short period.
 		encryptionKeyCache: memorycache.NewTTLCache(ctx, 5*time.Minute, 5*time.Minute),
@@ -372,6 +378,50 @@ func (a *API) GetDeployment(ctx context.Context, req *apiservice.GetDeploymentRe
 
 	return &apiservice.GetDeploymentResponse{
 		Deployment: deployment,
+	}, nil
+}
+
+func (a *API) ListStageLogs(ctx context.Context, req *apiservice.ListStageLogsRequest) (*apiservice.ListStageLogsResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	deployment, err := getDeployment(ctx, a.deploymentStore, req.DeploymentId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	if key.ProjectId != deployment.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested deployment does not belong to your project")
+	}
+
+	stageLogs := map[string]*apiservice.StageLog{}
+
+	for _, stage := range deployment.Stages {
+		blocks, completed, err := a.stageLogStore.FetchLogs(ctx, deployment.Id, stage.Id, stage.RetriedCount, 0)
+		if err != nil && !errors.Is(err, stagelogstore.ErrNotFound) {
+			return nil, err
+		}
+
+		// StageRollback is generated automatically and returns nothing if not found.
+		if err != nil && stage.Name == model.StageRollback.String() {
+			continue
+		}
+
+		if err != nil {
+			stageLogs[stage.Id] = &apiservice.StageLog{}
+			continue
+		}
+
+		stageLogs[stage.Id] = &apiservice.StageLog{
+			Blocks:    blocks,
+			Completed: completed,
+		}
+	}
+
+	return &apiservice.ListStageLogsResponse{
+		StageLogs: stageLogs,
 	}, nil
 }
 

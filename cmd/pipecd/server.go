@@ -245,7 +245,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 				input.Logger,
 			)
 
-			service = grpcapi.NewAPI(ctx, ds, cache, cmdOutputStore, statCache, cfg.Address, input.Logger)
+			service = grpcapi.NewAPI(ctx, ds, fs, cache, cmdOutputStore, statCache, cfg.Address, input.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.apiPort),
 				rpc.WithGracePeriod(s.gracePeriod),
