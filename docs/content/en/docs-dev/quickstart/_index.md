@@ -38,7 +38,7 @@ You can also move the pipectl binary to the $PATH for later use
 sudo mv ./pipectl /usr/local/bin/pipectl
 ```
 
-##### Method 2: [Asdf](https://asdf-vm.com/) Supported Install Method
+##### Method 2: [Asdf](https://asdf-vm.com/) Supported Installation
 
 ```console
 asdf plugin add pipectl && asdf install pipectl latest && asdf global pipectl latest
