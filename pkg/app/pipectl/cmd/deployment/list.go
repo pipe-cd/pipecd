@@ -86,7 +86,6 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 	for _, label := range c.labels {
 		sp := strings.SplitN(label, ":", 2)
 		if len(sp) == 2 {
-			fmt.Println(sp[0], sp[1])
 			labels[sp[0]] = sp[1]
 		}
 	}
