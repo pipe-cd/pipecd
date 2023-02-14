@@ -41,6 +41,29 @@ You can use pipectl to add and sync applications, wait for a deployment status.
     pipectl version
     ```
 
+### [Asdf](https://asdf-vm.com/)
+
+1. Add pipectl plugin to asdf. (If you have not yet `asdf add plugin add pipectl`.)
+    ```console
+    asdf add plugin pipectl
+    ```
+
+2. Install pipectl. Available versions are [here](https://github.com/pipe-cd/pipecd/releases).
+    ```console
+    asdf install pipectl {VERSION}
+    ```
+
+3. Set a version.
+    ```console
+    asdf global pipectl {VERSION}
+    ```
+
+4. Test to ensure the version you installed is up-to-date.
+
+    ``` console
+    pipectl version
+    ```
+
 ### Docker
 We are storing every version of docker image for pipectl on Google Cloud Container Registry.
 Available versions are [here](https://github.com/pipe-cd/pipecd/releases).
