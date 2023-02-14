@@ -36,7 +36,7 @@ type list struct {
 	appKinds []string
 	appIds   []string
 	appName  string
-	labels   map[string]string
+	labels   []string
 	limit    int32
 
 	cursor string
@@ -61,6 +61,7 @@ func newListCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&c.appName, "app-name", c.appName, "The application name.")
 	cmd.Flags().StringVar(&c.cursor, "cursor", c.cursor, "The cursor which returned by the previous request applications list.")
 	cmd.Flags().Int32Var(&c.limit, "limit", c.limit, "")
+	cmd.Flags().StringSliceVar(&c.labels, "label", c.labels, "labels")
 
 	return cmd
 }
@@ -82,6 +83,15 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 		}
 	}
 
+	labels := map[string]string{}
+	for _, label := range c.labels {
+		sp := strings.SplitN(label, ":", 2)
+		if len(sp) == 2 {
+			fmt.Println(sp[0], sp[1])
+			labels[sp[0]] = sp[1]
+		}
+	}
+
 	cli, err := c.root.clientOptions.NewClient(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to initialize client: %w", err)
@@ -95,6 +105,7 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 		ApplicationName: c.appName,
 		Limit:           c.limit,
 		Cursor:          c.cursor,
+		Labels:          labels,
 	}
 
 	resp, err := cli.ListDeployments(ctx, req)
