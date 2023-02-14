@@ -18,7 +18,7 @@ Note: It's not required to install the PipeCD control plane to the cluster where
 
 #### 1.1. Installing PipeCD client
 
-##### Method 1: Official Install
+##### Method 1: Official Installation
 The official PipeCD client named `pipectl` can be installed using the following command
 
 ``` console
