@@ -88,17 +88,13 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 	}
 	defer cli.Close()
 
-	opt := &apiservice.ListDeploymentsRequest_Options{
+	req := &apiservice.ListDeploymentsRequest{
 		Statuses:        c.statuses,
 		Kinds:           c.appKinds,
 		ApplicationIds:  c.appIds,
 		ApplicationName: c.appName,
-	}
-
-	req := &apiservice.ListDeploymentsRequest{
-		Options: opt,
-		Limit:   c.limit,
-		Cursor:  c.cursor,
+		Limit:           c.limit,
+		Cursor:          c.cursor,
 	}
 
 	resp, err := cli.ListDeployments(ctx, req)

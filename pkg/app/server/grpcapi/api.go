@@ -407,60 +407,62 @@ func (a *API) ListDeployments(ctx context.Context, req *apiservice.ListDeploymen
 	}
 	// Allowing multiple so that it can do In Query later.
 	// Currently only the first value is used.
-	if o := req.Options; o != nil {
-		if len(o.Statuses) > 0 {
-			statuses := []model.DeploymentStatus{}
-			for _, s := range o.Statuses {
-				if s != "" {
-					depstatus, ok := model.DeploymentStatus_value[s]
-					if !ok {
-						return nil, status.Errorf(codes.InvalidArgument, "%s is invalid deployment status", s)
-					}
-					statuses = append(statuses, model.DeploymentStatus(depstatus))
+	if len(req.Statuses) > 0 {
+		statuses := []model.DeploymentStatus{}
+		for _, s := range req.Statuses {
+			if s != "" {
+				depstatus, ok := model.DeploymentStatus_value[s]
+				if !ok {
+					return nil, status.Errorf(codes.InvalidArgument, "%s is invalid deployment status", s)
 				}
+				statuses = append(statuses, model.DeploymentStatus(depstatus))
 			}
-
-			filters = append(filters, datastore.ListFilter{
-				Field:    "Status",
-				Operator: datastore.OperatorEqual,
-				Value:    statuses[0],
-			})
 		}
-		if len(o.Kinds) > 0 {
-			kinds := []model.ApplicationKind{}
-			for _, k := range o.Kinds {
-				if k != "" {
-					kind, ok := model.ApplicationKind_value[k]
-					if !ok {
-						return nil, status.Errorf(codes.InvalidArgument, "%s is invalid application kind", k)
-					}
-					kinds = append(kinds, model.ApplicationKind(kind))
+
+		filters = append(filters, datastore.ListFilter{
+			Field:    "Status",
+			Operator: datastore.OperatorEqual,
+			Value:    statuses[0],
+		})
+	}
+	if len(req.Kinds) > 0 {
+		kinds := []model.ApplicationKind{}
+		for _, k := range req.Kinds {
+			if k != "" {
+				kind, ok := model.ApplicationKind_value[k]
+				if !ok {
+					return nil, status.Errorf(codes.InvalidArgument, "%s is invalid application kind", k)
 				}
+				kinds = append(kinds, model.ApplicationKind(kind))
 			}
+		}
 
-			filters = append(filters, datastore.ListFilter{
-				Field:    "Kind",
-				Operator: datastore.OperatorEqual,
-				Value:    kinds[0],
-			})
-		}
-		if len(o.ApplicationIds) > 0 {
-			filters = append(filters, datastore.ListFilter{
-				Field:    "ApplicationId",
-				Operator: datastore.OperatorEqual,
-				Value:    o.ApplicationIds[0],
-			})
-		}
-		if o.ApplicationName != "" {
-			filters = append(filters, datastore.ListFilter{
-				Field:    "ApplicationName",
-				Operator: datastore.OperatorEqual,
-				Value:    o.ApplicationName,
-			})
-		}
+		filters = append(filters, datastore.ListFilter{
+			Field:    "Kind",
+			Operator: datastore.OperatorEqual,
+			Value:    kinds[0],
+		})
+	}
+	if len(req.ApplicationIds) > 0 {
+		filters = append(filters, datastore.ListFilter{
+			Field:    "ApplicationId",
+			Operator: datastore.OperatorEqual,
+			Value:    req.ApplicationIds[0],
+		})
+	}
+	if req.ApplicationName != "" {
+		filters = append(filters, datastore.ListFilter{
+			Field:    "ApplicationName",
+			Operator: datastore.OperatorEqual,
+			Value:    req.ApplicationName,
+		})
 	}
 
-	limit := int(req.Limit)
+	// The default value of limit is 100000.
+	var limit int = 100000
+	if req.Limit > 0 {
+		limit = int(req.Limit)
+	}
 
 	options := datastore.ListOptions{
 		Filters: filters,
@@ -473,7 +475,7 @@ func (a *API) ListDeployments(ctx context.Context, req *apiservice.ListDeploymen
 		a.logger.Error("failed to get deployments", zap.Error(err))
 		return nil, gRPCStoreError(err, "get deployments")
 	}
-	labels := req.Options.Labels
+	labels := req.Labels
 	if len(labels) == 0 || len(deployments) == 0 {
 		return &apiservice.ListDeploymentsResponse{
 			Deployments: deployments,
