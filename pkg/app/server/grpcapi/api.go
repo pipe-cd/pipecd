@@ -285,8 +285,21 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 		return nil, gRPCStoreError(err, "failed to list applications")
 	}
 
+	if len(req.Labels) == 0 {
+		return &apiservice.ListApplicationsResponse{
+			Applications: apps,
+		}, nil
+	}
+
+	// NOTE: Filtering by labels is done by the application-side because we need to create composite indexes for every combination in the filter.
+	filtered := make([]*model.Application, 0, len(apps))
+	for _, a := range apps {
+		if a.ContainLabels(req.Labels) {
+			filtered = append(filtered, a)
+		}
+	}
 	return &apiservice.ListApplicationsResponse{
-		Applications: apps,
+		Applications: filtered,
 		Cursor:       cursor,
 	}, nil
 }
