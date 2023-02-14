@@ -54,14 +54,13 @@ func newListCommand(root *command) *cobra.Command {
 		RunE:  cli.WithContext(c.run),
 	}
 
-	// TODO: Support pipectl to list application by Label.
 	cmd.Flags().StringSliceVar(&c.statuses, "status", c.statuses, fmt.Sprintf("The list of waiting statuses. (%s)", strings.Join(model.DeploymentStatusStrings(), "|")))
 	cmd.Flags().StringSliceVar(&c.appIds, "app-id", c.appIds, fmt.Sprintf("The application id. (%s)", strings.Join(model.ApplicationKindStrings(), "|")))
 	cmd.Flags().StringSliceVar(&c.appKinds, "app-kind", c.appKinds, fmt.Sprintf("The kind of application. (%s)", strings.Join(model.ApplicationKindStrings(), "|")))
 	cmd.Flags().StringVar(&c.appName, "app-name", c.appName, "The application name.")
 	cmd.Flags().StringVar(&c.cursor, "cursor", c.cursor, "The cursor which returned by the previous request applications list.")
-	cmd.Flags().Int32Var(&c.limit, "limit", c.limit, "")
-	cmd.Flags().StringSliceVar(&c.labels, "label", c.labels, "labels")
+	cmd.Flags().Int32Var(&c.limit, "limit", c.limit, "Upper limit on the number of return values. Default value is 100000.")
+	cmd.Flags().StringSliceVar(&c.labels, "label", c.labels, "The application lable. Expect input in the form KEY:VALUE.")
 
 	return cmd
 }
