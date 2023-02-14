@@ -519,7 +519,6 @@ func (a *API) ListDeployments(ctx context.Context, req *apiservice.ListDeploymen
 			}
 		}
 	}
-	// TODO: Think about possibility that the response of ListDeployments exceeds the page size
 	return &apiservice.ListDeploymentsResponse{
 		Deployments: filtered,
 		Cursor:      cursor,
