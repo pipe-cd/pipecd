@@ -459,7 +459,7 @@ func (a *API) ListDeployments(ctx context.Context, req *apiservice.ListDeploymen
 	}
 
 	// The default value of limit is 100000.
-	var limit int = 100000
+	limit := 100000
 	if req.Limit > 0 {
 		limit = int(req.Limit)
 	}
