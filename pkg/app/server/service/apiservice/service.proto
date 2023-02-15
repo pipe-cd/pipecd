@@ -91,7 +91,7 @@ message ListApplicationsRequest {
     string name = 1;
     string kind = 2;
     bool disabled = 4;
-    // TODO: Enable to filter by labels
+    map<string, string> labels = 6;
     string cursor = 10;
 }
 

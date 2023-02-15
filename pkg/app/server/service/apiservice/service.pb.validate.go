@@ -829,6 +829,8 @@ func (m *ListApplicationsRequest) validate(all bool) error {
 
 	// no validation rules for Disabled
 
+	// no validation rules for Labels
+
 	// no validation rules for Cursor
 
 	if len(errors) > 0 {
