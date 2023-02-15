@@ -44,20 +44,8 @@ func (g *fakeAPIKeyGetter) Get(_ context.Context, id string) (*model.APIKey, err
 
 type fakeRedisHashCache struct{}
 
-func (f *fakeRedisHashCache) Get(k string) (interface{}, error) {
-	return nil, nil
-}
-
 func (f *fakeRedisHashCache) Put(k string, v interface{}) error {
 	return nil
-}
-
-func (f *fakeRedisHashCache) Delete(k string) error {
-	return nil
-}
-
-func (f *fakeRedisHashCache) GetAll() (map[string]interface{}, error) {
-	return nil, nil
 }
 func TestVerify(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())

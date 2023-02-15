@@ -30,15 +30,19 @@ type apiKeyGetter interface {
 	Get(ctx context.Context, id string) (*model.APIKey, error)
 }
 
+type apiKeyLastUsedPutter interface {
+	Put(k string, v interface{}) error
+}
+
 type Verifier struct {
 	apiKeyCache         cache.Cache
 	apiKeyStore         apiKeyGetter
-	apiKeyLastUsedCache cache.Cache
+	apiKeyLastUsedCache apiKeyLastUsedPutter
 	logger              *zap.Logger
 	nowFunc             func() time.Time
 }
 
-func NewVerifier(ctx context.Context, getter apiKeyGetter, akluc cache.Cache, logger *zap.Logger) *Verifier {
+func NewVerifier(ctx context.Context, getter apiKeyGetter, akluc apiKeyLastUsedPutter, logger *zap.Logger) *Verifier {
 	return &Verifier{
 		apiKeyCache:         memorycache.NewTTLCache(ctx, 5*time.Minute, time.Minute),
 		apiKeyStore:         getter,
