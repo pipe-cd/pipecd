@@ -273,18 +273,19 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			Value:    model.ApplicationKind(kind),
 		})
 	}
-	opts := datastore.ListOptions{
+	options := datastore.ListOptions{
 		Orders:  orders,
 		Filters: filters,
 		Limit:   limit,
 		Cursor:  req.Cursor,
 	}
 
-	apps, cursor, err := a.applicationStore.List(ctx, opts)
+	apps, cursor, err := a.applicationStore.List(ctx, options)
 	if err != nil {
 		return nil, gRPCStoreError(err, "failed to list applications")
 	}
 
+	labels := req.Labels
 	if len(req.Labels) == 0 {
 		return &apiservice.ListApplicationsResponse{
 			Applications: apps,
@@ -296,6 +297,32 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 	for _, a := range apps {
 		if a.ContainLabels(req.Labels) {
 			filtered = append(filtered, a)
+		}
+	}
+	// Stop running additional queries for more data, and return filtered deployments immediately with
+	// current cursor if the size before filtering is already less than the page size.
+	if len(apps) < limit {
+		return &apiservice.ListApplicationsResponse{
+			Applications: filtered,
+			Cursor:       cursor,
+		}, nil
+	}
+	// Repeat the query until the number of filtered deployments reaches the page size,
+	// or until it finishes scanning to page_min_updated_at.
+	for len(filtered) < limit {
+		options.Cursor = cursor
+		apps, cursor, err = a.applicationStore.List(ctx, options)
+		if err != nil {
+			a.logger.Error("failed to get applications", zap.Error(err))
+			return nil, gRPCStoreError(err, "get applications")
+		}
+		if len(apps) == 0 {
+			break
+		}
+		for _, d := range apps {
+			if d.ContainLabels(labels) {
+				filtered = append(filtered, d)
+			}
 		}
 	}
 	return &apiservice.ListApplicationsResponse{
