@@ -117,6 +117,32 @@ run/pipecd:
 stop/pipecd:
 	helm -n pipecd uninstall pipecd
 
+.PHONY: up/pipecd
+up/pipecd: $(eval TIMESTAMP = $(shell date +%s))
+up/pipecd: BUILD_VERSION ?= "$(shell git describe --tags --always --abbrev=7)-$(TIMESTAMP)"
+up/pipecd: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
+up/pipecd: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
+up/pipecd: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
+up/pipecd: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
+up/pipecd: CONTROL_PLANE_VALUES ?= ./quickstart/control-plane-values.yaml
+up/pipecd:
+	@echo "Building go binary of Control Plane..."
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd ./cmd/pipecd
+
+	@echo "Building web static files..."
+	yarn --cwd web build
+
+	@echo "Building docker image and pushing it to local registry..."
+	docker build -f cmd/pipecd/Dockerfile -t localhost:5001/pipecd:$(BUILD_VERSION) .
+	sed "s/localhost:5001\/pipecd/localhost:5001\/pipecd:$(BUILD_VERSION)/" docker-compose.yaml > docker-compose.$(BUILD_VERSION).yaml
+	@echo "docker-compose up..."
+	docker-compose -f docker-compose.$(BUILD_VERSION).yaml up -d
+	rm docker-compose.$(BUILD_VERSION).yaml
+
+.PHONY: down/pipecd
+down/pipecd:
+	docker-compose down
+
 .PHONY: run/piped
 run/piped: CONFIG_FILE ?=
 run/piped: INSECURE ?= false

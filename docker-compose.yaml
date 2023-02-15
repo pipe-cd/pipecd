@@ -13,7 +13,7 @@ services:
       - ./docker/pipecd-secret:/etc/pipecd-secret
 
   pipecd-server:
-    image: ghcr.io/pipe-cd/pipecd:v0.41.3
+    image: localhost:5001/pipecd
     entrypoint: >
       /bin/sh -c "
       until (nc -z pipecd-minio 9000 && nc -z pipecd-mysql 3306) do sleep 2; done;
@@ -27,7 +27,7 @@ services:
     image: redis:5.0.5-alpine3.9
   
   pipecd-ops:
-    image: ghcr.io/pipe-cd/pipecd:v0.41.3
+    image: localhost:5001/pipecd
     entrypoint: >
       /bin/sh -c "
       until (nc -z pipecd-minio 9000 && nc -z pipecd-mysql 3306) do sleep 2; done;
