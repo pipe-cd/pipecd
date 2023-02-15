@@ -60,7 +60,7 @@ func newListCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&c.appName, "app-name", c.appName, "The application name.")
 	cmd.Flags().StringVar(&c.cursor, "cursor", c.cursor, "The cursor which returned by the previous request applications list.")
 	cmd.Flags().Int32Var(&c.limit, "limit", c.limit, "Upper limit on the number of return values. Default value is 100000.")
-	cmd.Flags().StringSliceVar(&c.labels, "label", c.labels, "The application lable. Expect input in the form KEY:VALUE.")
+	cmd.Flags().StringSliceVar(&c.labels, "label", c.labels, "The application label. Expect input in the form KEY:VALUE.")
 
 	return cmd
 }
