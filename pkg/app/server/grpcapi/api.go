@@ -458,12 +458,7 @@ func (a *API) ListDeployments(ctx context.Context, req *apiservice.ListDeploymen
 		})
 	}
 
-	// The default value of limit is 30.
-	limit := 30
-	if req.Limit > 0 {
-		limit = int(req.Limit)
-	}
-
+	limit := int(req.Limit)
 	options := datastore.ListOptions{
 		Filters: filters,
 		Orders:  orders,
