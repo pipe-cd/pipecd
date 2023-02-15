@@ -37,6 +37,7 @@ type list struct {
 	disabled bool
 	cursor   string
 	labels   []string
+	limit    int32
 	stdout   io.Writer
 }
 
@@ -47,7 +48,7 @@ func newListCommand(root *command) *cobra.Command {
 	}
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "Show the list of applications. Currently, the maximum number of returned applications is 10.",
+		Short: "Show the list of applications.",
 		RunE:  cli.WithContext(c.run),
 	}
 
@@ -55,6 +56,7 @@ func newListCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&c.appKind, "app-kind", c.appKind, fmt.Sprintf("The kind of application. (%s)", strings.Join(model.ApplicationKindStrings(), "|")))
 	cmd.Flags().BoolVar(&c.disabled, "disabled", c.disabled, "True to show only disabled applications.")
 	cmd.Flags().StringVar(&c.cursor, "cursor", c.cursor, "The cursor which returned by the previous request applications list.")
+	cmd.Flags().Int32Var(&c.limit, "limit", 10, "Upper limit on the number of return values. Default value is 10.")
 	cmd.Flags().StringSliceVar(&c.labels, "label", c.labels, "The application label. Expect input in the form KEY:VALUE.")
 
 	return cmd
@@ -86,6 +88,7 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 		Kind:     c.appKind,
 		Disabled: c.disabled,
 		Cursor:   c.cursor,
+		Limit:    c.limit,
 		Labels:   labels,
 	}
 

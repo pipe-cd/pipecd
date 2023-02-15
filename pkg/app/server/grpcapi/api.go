@@ -231,7 +231,6 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 		return nil, err
 	}
 
-	const limit = 10
 	orders := []datastore.Order{
 		{
 			Field:     "UpdatedAt",
@@ -273,6 +272,8 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			Value:    model.ApplicationKind(kind),
 		})
 	}
+
+	limit := int(req.Limit)
 	options := datastore.ListOptions{
 		Orders:  orders,
 		Filters: filters,
