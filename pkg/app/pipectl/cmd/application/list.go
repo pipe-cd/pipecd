@@ -55,7 +55,7 @@ func newListCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&c.appKind, "app-kind", c.appKind, fmt.Sprintf("The kind of application. (%s)", strings.Join(model.ApplicationKindStrings(), "|")))
 	cmd.Flags().BoolVar(&c.disabled, "disabled", c.disabled, "True to show only disabled applications.")
 	cmd.Flags().StringVar(&c.cursor, "cursor", c.cursor, "The cursor which returned by the previous request applications list.")
-	cmd.Flags().StringSliceVar(&c.labels, "label", c.labels, "The application lable. Expect input in the form KEY:VALUE.")
+	cmd.Flags().StringSliceVar(&c.labels, "label", c.labels, "The application label. Expect input in the form KEY:VALUE.")
 
 	return cmd
 }
