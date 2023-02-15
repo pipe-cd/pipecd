@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -69,6 +69,13 @@ func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 		h.handleError(w, r, fmt.Sprintf("Invalid SSO configuration: %v", err), nil)
 		return
 	}
+	sessionTTLFromConfig := sso.SessionTtl
+	var tokenTTL time.Duration
+	if sessionTTLFromConfig == 0 {
+		tokenTTL = defaultTokenTTL
+	} else {
+		tokenTTL = time.Duration(sessionTTLFromConfig) * time.Hour
+	}
 
 	if !shared {
 		if err := sso.Decrypt(h.decrypter); err != nil {
@@ -76,7 +83,6 @@ func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
 	user, err := getUser(ctx, sso, proj.Rbac, proj, authCode)
 	if err != nil {
 		h.handleError(w, r, "Unable to find user", err)
@@ -86,7 +92,7 @@ func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	claims := jwt.NewClaims(
 		user.Username,
 		user.AvatarUrl,
-		defaultTokenTTL,
+		tokenTTL,
 		*user.Role,
 	)
 	signedToken, err := h.signer.Sign(claims)

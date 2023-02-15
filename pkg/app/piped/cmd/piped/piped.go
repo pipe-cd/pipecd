@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"os/exec"
 	"path"
@@ -249,6 +250,9 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			w.Write([]byte("ok"))
 		})
 		admin.Handle("/metrics", input.PrometheusMetricsHandlerFor(registry))
+		admin.HandleFunc("/debug/pprof/", pprof.Index)
+		admin.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		admin.HandleFunc("/debug/pprof/trace", pprof.Trace)
 
 		group.Go(func() error {
 			return admin.Run(ctx)

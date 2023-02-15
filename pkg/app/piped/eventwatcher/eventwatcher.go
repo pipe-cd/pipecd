@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,7 +25,9 @@ import (
 	"path/filepath"
 	"regexp/syntax"
 	"strconv"
+	"strings"
 	"sync"
+	"text/template"
 	"time"
 
 	"go.uber.org/zap"
@@ -149,6 +151,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 		commitMsg                  string
 		includedCfgs, excludedCfgs []string
 	)
+
 	// Use user-defined settings if there is.
 	for _, r := range w.config.EventWatcher.GitRepos {
 		if r.RepoID != repoCfg.RepoID {
@@ -631,9 +634,11 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 		return nil
 	}
 
-	if commitMsg == "" {
-		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, latestData, eventName)
+	args := argsTemplate{
+		Value:     latestData,
+		EventName: eventName,
 	}
+	commitMsg = parseCommitMsg(commitMsg, args)
 	if err := repo.CommitChanges(ctx, repo.GetClonedBranch(), commitMsg, false, changes); err != nil {
 		return fmt.Errorf("failed to perform git commit: %w", err)
 	}
@@ -746,4 +751,29 @@ func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 	}
 
 	return newText, false, nil
+}
+
+// argsTemplate represents a collection of available template arguments.
+type argsTemplate struct {
+	Value     string
+	EventName string
+}
+
+// parseCommitMsg parses event watcher's commit message.
+// Currently, only {{ .Value }} and {{ .EventName }} are supported.
+func parseCommitMsg(msg string, args argsTemplate) string {
+	if msg == "" {
+		return fmt.Sprintf(defaultCommitMessageFormat, args.Value, args.EventName)
+	}
+
+	t, err := template.New("EventWatcherCommitMsgTemplate").Parse(msg)
+	if err != nil {
+		return msg
+	}
+
+	buf := new(strings.Builder)
+	if err := t.Execute(buf, args); err != nil {
+		return msg
+	}
+	return buf.String()
 }

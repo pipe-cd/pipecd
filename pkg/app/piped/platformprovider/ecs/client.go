@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -86,13 +86,12 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		PlacementConstraints:          service.PlacementConstraints,
 		PlacementStrategy:             service.PlacementStrategy,
 		PlatformVersion:               service.PlatformVersion,
-		PropagateTags:                 service.PropagateTags,
+		PropagateTags:                 types.PropagateTagsService,
 		Role:                          service.RoleArn,
 		SchedulingStrategy:            service.SchedulingStrategy,
 		ServiceRegistries:             service.ServiceRegistries,
 		Tags:                          service.Tags,
 	}
-
 	output, err := c.ecsClient.CreateService(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ECS service %s: %w", *service.ServiceName, err)
@@ -151,7 +150,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 	return output.TaskDefinition, nil
 }
 
-func (c *client) RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *appconfig.ECSVpcConfiguration) error {
+func (c *client) RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *appconfig.ECSVpcConfiguration, tags []types.Tag) error {
 	if taskDefinition.TaskDefinitionArn == nil {
 		return fmt.Errorf("failed to run task of task family %s: no task definition provided", *taskDefinition.Family)
 	}
@@ -160,6 +159,7 @@ func (c *client) RunTask(ctx context.Context, taskDefinition types.TaskDefinitio
 		TaskDefinition: taskDefinition.Family,
 		Cluster:        aws.String(clusterArn),
 		LaunchType:     types.LaunchType(launchType),
+		Tags:           tags,
 	}
 
 	if len(awsVpcConfiguration.Subnets) > 0 {
@@ -340,4 +340,16 @@ func (c *client) ModifyListener(ctx context.Context, listenerArn string, routing
 	}
 	_, err := c.elbClient.ModifyListener(ctx, input)
 	return err
+}
+
+func (c *client) TagResource(ctx context.Context, resourceArn string, tags []types.Tag) error {
+	input := &ecs.TagResourceInput{
+		ResourceArn: aws.String(resourceArn),
+		Tags:        tags,
+	}
+	_, err := c.ecsClient.TagResource(ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to update tag of resource %s: %w", resourceArn, err)
+	}
+	return nil
 }
