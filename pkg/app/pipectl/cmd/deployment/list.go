@@ -54,13 +54,13 @@ func newListCommand(root *command) *cobra.Command {
 		RunE:  cli.WithContext(c.run),
 	}
 
-	cmd.Flags().StringSliceVar(&c.statuses, "status", c.statuses, fmt.Sprintf("The list of waiting statuses. (%s)", strings.Join(model.DeploymentStatusStrings(), "|")))
-	cmd.Flags().StringSliceVar(&c.appIds, "app-id", c.appIds, fmt.Sprintf("The application id. (%s)", strings.Join(model.ApplicationKindStrings(), "|")))
-	cmd.Flags().StringSliceVar(&c.appKinds, "app-kind", c.appKinds, fmt.Sprintf("The kind of application. (%s)", strings.Join(model.ApplicationKindStrings(), "|")))
-	cmd.Flags().StringVar(&c.appName, "app-name", c.appName, "The application name.")
+	cmd.Flags().StringSliceVar(&c.statuses, "status", c.statuses, fmt.Sprintf("The list of application statuses to filter. (%s)", strings.Join(model.DeploymentStatusStrings(), "|")))
+	cmd.Flags().StringSliceVar(&c.appIds, "app-id", c.appIds, fmt.Sprintf("The list of application ids to filter. (%s)", strings.Join(model.ApplicationKindStrings(), "|")))
+	cmd.Flags().StringSliceVar(&c.appKinds, "app-kind", c.appKinds, fmt.Sprintf("The list of application kinds to filter. (%s)", strings.Join(model.ApplicationKindStrings(), "|")))
+	cmd.Flags().StringVar(&c.appName, "app-name", c.appName, "The application name to filter.")
 	cmd.Flags().StringVar(&c.cursor, "cursor", c.cursor, "The cursor which returned by the previous request applications list.")
 	cmd.Flags().Int32Var(&c.limit, "limit", c.limit, "Upper limit on the number of return values. Default value is 0.")
-	cmd.Flags().StringSliceVar(&c.labels, "label", c.labels, "The application label. Expect input in the form KEY:VALUE.")
+	cmd.Flags().StringSliceVar(&c.labels, "label", c.labels, "The list of labels to filter. Expect input in the form KEY:VALUE.")
 
 	return cmd
 }
