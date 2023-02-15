@@ -17,6 +17,24 @@ Currently, you can deploy and operate the PipeCD control plane on a Kubernetes c
 
 Following the above graph for PipeCD control plane runs on Amazon ECS, we have to prepare these next components
 
+### Secrets Manager
+You should put config files (control-plane-config.yaml, envoy-config.yaml) on Secrets Manager because config files contain some credentials such as database passwords.
+The examples of config files for ECS are [here](https://github.com/pipe-cd/control-plane-aws-ecs-terraform-demo/tree/main/config). Please edit these files according to your environment.
+```
+aws secretsmanager create-secret --name control-plane-config \
+--description "Configuration of control plane" \
+--secret-string `base64 control-plane-config.yaml`
+aws secretsmanager create-secret --name envoy-config \
+--description "Configuration of control plane" \
+--secret-string `base64 enovy-config.yaml`
+```
+You should also put encryption key
+```
+aws secretsmanager create-secret --name encryption-key \
+--description "Encryption key for control plane" \
+--secret-string `openssl rand 64 | base64`
+```
+
 ### RDS(datastore)
 It is possible to use RDS as a datastore. Edit your configuration file for the control plane according to your RDS setting.
 ```yaml
@@ -33,24 +51,6 @@ It is possible to use redis as a cache. Note the endpoint of redis for the task 
 
 ### S3(filestore)
 It is possible to use S3 as a filestore. The filestore contains state files that describe your secure infrastructure, so make sure to make the bucket private. Only allow pipecd-server(ECS) to access this bucket..
-
-### Secrets Manager
-You should put config files (control-plane-config.yaml, envoy-config.yaml) on Secrets Manager because config files contain some credentials such as database passwords.
-```
-aws secretsmanager create-secret --name control-plane-config \
---description "Configuration of control plane" \
---secret-string `base64 control-plane-config.yaml`
-aws secretsmanager create-secret --name envoy-config \
---description "Configuration of control plane" \
---secret-string `base64 enovy-config.yaml`
-```
-You should also put encryption key
-```
-aws secretsmanager create-secret --name encryption-key \
---description "Encryption key for control plane" \
---secret-string `openssl rand 64 | base64`
-```
-
 
 ### ECS
 You need to create two different services for pipecd-server and a pipecd-ops because they have the same ports and different permissions. The pipecd-server can be accessed by external clients such as piped or web clients, so this service includes the pipe-cd gateway and this service must be connected to the application loadbalancer. The pipecd-ops can only be accessed by admin users, so this service must only be accessed via SSM session manager.
