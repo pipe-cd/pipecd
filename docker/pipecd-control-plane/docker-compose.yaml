@@ -13,7 +13,8 @@ services:
       - ./docker/pipecd-secret:/etc/pipecd-secret
 
   pipecd-server:
-    image: localhost:5001/pipecd
+    # change the tag according to your project
+    image: localhost:5001/pipecd:latest
     entrypoint: >
       /bin/sh -c "
       until (nc -z pipecd-minio 9000 && nc -z pipecd-mysql 3306) do sleep 2; done;
@@ -27,7 +28,8 @@ services:
     image: redis:5.0.5-alpine3.9
   
   pipecd-ops:
-    image: localhost:5001/pipecd
+    # change the tag according to your project
+    image: localhost:5001/pipecd:latest
     entrypoint: >
       /bin/sh -c "
       until (nc -z pipecd-minio 9000 && nc -z pipecd-mysql 3306) do sleep 2; done;
