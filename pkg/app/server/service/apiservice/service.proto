@@ -92,6 +92,7 @@ message ListApplicationsRequest {
     string kind = 2;
     bool disabled = 4;
     map<string, string> labels = 6;
+    int32 limit = 7;
     string cursor = 10;
 }
 
