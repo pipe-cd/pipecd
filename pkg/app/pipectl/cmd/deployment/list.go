@@ -113,7 +113,7 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 
 	bytes, err := json.Marshal(resp)
 	if err != nil {
-		return fmt.Errorf("failed to marshal applications: %w", err)
+		return fmt.Errorf("failed to marshal deployments: %w", err)
 	}
 
 	fmt.Fprintln(c.stdout, string(bytes))
