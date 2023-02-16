@@ -47,6 +47,7 @@ type fakeRedisHashCache struct{}
 func (f *fakeRedisHashCache) Put(k string, v interface{}) error {
 	return nil
 }
+
 func TestVerify(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
