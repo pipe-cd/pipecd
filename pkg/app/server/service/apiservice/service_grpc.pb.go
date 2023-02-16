@@ -30,6 +30,7 @@ type APIServiceClient interface {
 	DisableApplication(ctx context.Context, in *DisableApplicationRequest, opts ...grpc.CallOption) (*DisableApplicationResponse, error)
 	RenameApplicationConfigFile(ctx context.Context, in *RenameApplicationConfigFileRequest, opts ...grpc.CallOption) (*RenameApplicationConfigFileResponse, error)
 	GetDeployment(ctx context.Context, in *GetDeploymentRequest, opts ...grpc.CallOption) (*GetDeploymentResponse, error)
+	ListDeployments(ctx context.Context, in *ListDeploymentsRequest, opts ...grpc.CallOption) (*ListDeploymentsResponse, error)
 	GetCommand(ctx context.Context, in *GetCommandRequest, opts ...grpc.CallOption) (*GetCommandResponse, error)
 	EnablePiped(ctx context.Context, in *EnablePipedRequest, opts ...grpc.CallOption) (*EnablePipedResponse, error)
 	DisablePiped(ctx context.Context, in *DisablePipedRequest, opts ...grpc.CallOption) (*DisablePipedResponse, error)
@@ -120,6 +121,15 @@ func (c *aPIServiceClient) GetDeployment(ctx context.Context, in *GetDeploymentR
 	return out, nil
 }
 
+func (c *aPIServiceClient) ListDeployments(ctx context.Context, in *ListDeploymentsRequest, opts ...grpc.CallOption) (*ListDeploymentsResponse, error) {
+	out := new(ListDeploymentsResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/ListDeployments", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *aPIServiceClient) GetCommand(ctx context.Context, in *GetCommandRequest, opts ...grpc.CallOption) (*GetCommandResponse, error) {
 	out := new(GetCommandResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/GetCommand", in, out, opts...)
@@ -204,6 +214,7 @@ type APIServiceServer interface {
 	DisableApplication(context.Context, *DisableApplicationRequest) (*DisableApplicationResponse, error)
 	RenameApplicationConfigFile(context.Context, *RenameApplicationConfigFileRequest) (*RenameApplicationConfigFileResponse, error)
 	GetDeployment(context.Context, *GetDeploymentRequest) (*GetDeploymentResponse, error)
+	ListDeployments(context.Context, *ListDeploymentsRequest) (*ListDeploymentsResponse, error)
 	GetCommand(context.Context, *GetCommandRequest) (*GetCommandResponse, error)
 	EnablePiped(context.Context, *EnablePipedRequest) (*EnablePipedResponse, error)
 	DisablePiped(context.Context, *DisablePipedRequest) (*DisablePipedResponse, error)
@@ -242,6 +253,9 @@ func (UnimplementedAPIServiceServer) RenameApplicationConfigFile(context.Context
 }
 func (UnimplementedAPIServiceServer) GetDeployment(context.Context, *GetDeploymentRequest) (*GetDeploymentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeployment not implemented")
+}
+func (UnimplementedAPIServiceServer) ListDeployments(context.Context, *ListDeploymentsRequest) (*ListDeploymentsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDeployments not implemented")
 }
 func (UnimplementedAPIServiceServer) GetCommand(context.Context, *GetCommandRequest) (*GetCommandResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCommand not implemented")
@@ -420,6 +434,24 @@ func _APIService_GetDeployment_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(APIServiceServer).GetDeployment(ctx, req.(*GetDeploymentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _APIService_ListDeployments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDeploymentsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(APIServiceServer).ListDeployments(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.apiservice.APIService/ListDeployments",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(APIServiceServer).ListDeployments(ctx, req.(*ListDeploymentsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -606,6 +638,10 @@ var APIService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDeployment",
 			Handler:    _APIService_GetDeployment_Handler,
+		},
+		{
+			MethodName: "ListDeployments",
+			Handler:    _APIService_ListDeployments_Handler,
 		},
 		{
 			MethodName: "GetCommand",

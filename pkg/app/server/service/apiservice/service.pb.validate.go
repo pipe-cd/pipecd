@@ -1972,6 +1972,254 @@ var _ interface {
 	ErrorName() string
 } = GetDeploymentResponseValidationError{}
 
+// Validate checks the field values on ListDeploymentsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListDeploymentsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListDeploymentsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListDeploymentsRequestMultiError, or nil if none found.
+func (m *ListDeploymentsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListDeploymentsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ApplicationName
+
+	// no validation rules for Labels
+
+	// no validation rules for Limit
+
+	// no validation rules for Cursor
+
+	if len(errors) > 0 {
+		return ListDeploymentsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListDeploymentsRequestMultiError is an error wrapping multiple validation
+// errors returned by ListDeploymentsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListDeploymentsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListDeploymentsRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListDeploymentsRequestMultiError) AllErrors() []error { return m }
+
+// ListDeploymentsRequestValidationError is the validation error returned by
+// ListDeploymentsRequest.Validate if the designated constraints aren't met.
+type ListDeploymentsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListDeploymentsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListDeploymentsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListDeploymentsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListDeploymentsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListDeploymentsRequestValidationError) ErrorName() string {
+	return "ListDeploymentsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListDeploymentsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListDeploymentsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListDeploymentsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListDeploymentsRequestValidationError{}
+
+// Validate checks the field values on ListDeploymentsResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListDeploymentsResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListDeploymentsResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListDeploymentsResponseMultiError, or nil if none found.
+func (m *ListDeploymentsResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListDeploymentsResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetDeployments() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListDeploymentsResponseValidationError{
+						field:  fmt.Sprintf("Deployments[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListDeploymentsResponseValidationError{
+						field:  fmt.Sprintf("Deployments[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListDeploymentsResponseValidationError{
+					field:  fmt.Sprintf("Deployments[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	// no validation rules for Cursor
+
+	if len(errors) > 0 {
+		return ListDeploymentsResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListDeploymentsResponseMultiError is an error wrapping multiple validation
+// errors returned by ListDeploymentsResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ListDeploymentsResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListDeploymentsResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListDeploymentsResponseMultiError) AllErrors() []error { return m }
+
+// ListDeploymentsResponseValidationError is the validation error returned by
+// ListDeploymentsResponse.Validate if the designated constraints aren't met.
+type ListDeploymentsResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListDeploymentsResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListDeploymentsResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListDeploymentsResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListDeploymentsResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListDeploymentsResponseValidationError) ErrorName() string {
+	return "ListDeploymentsResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListDeploymentsResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListDeploymentsResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListDeploymentsResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListDeploymentsResponseValidationError{}
+
 // Validate checks the field values on GetCommandRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, the
 // first error encountered is returned, or nil if there are no violations.
