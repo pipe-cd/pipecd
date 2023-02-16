@@ -350,7 +350,7 @@ func makeSyncState(r *provider.DiffListResult, commit string) model.ApplicationS
 
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit))
-	b.WriteString("--- Expected\n+++ Actual\n\n")
+	b.WriteString("+++ Expected (Git)\n--- Actual   (LiveState)\n\n")
 
 	details := r.Render(provider.DiffRenderOptions{
 		MaskSecret:          true,

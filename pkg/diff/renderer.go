@@ -127,8 +127,8 @@ func (r *Renderer) Render(ns Nodes) string {
 		}
 
 		b.WriteString(fmt.Sprintf("%*s#%s\n", (r.leftPadding+pathLen-1)*2, "", n.PathString))
-		printValue("-", valueX, lastStep, r.leftPadding+pathLen-1)
-		printValue("+", valueY, lastStep, r.leftPadding+pathLen-1)
+		printValue("+", valueX, lastStep, r.leftPadding+pathLen-1)
+		printValue("-", valueY, lastStep, r.leftPadding+pathLen-1)
 		b.WriteString("\n")
 	}
 

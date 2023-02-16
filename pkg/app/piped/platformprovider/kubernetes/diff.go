@@ -142,11 +142,11 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 	index := 0
 	for _, delete := range r.Deletes {
 		index++
-		b.WriteString(fmt.Sprintf("- %d. %s\n\n", index, delete.Key.ReadableString()))
+		b.WriteString(fmt.Sprintf("+ %d. %s\n\n", index, delete.Key.ReadableString()))
 	}
 	for _, add := range r.Adds {
 		index++
-		b.WriteString(fmt.Sprintf("+ %d. %s\n\n", index, add.Key.ReadableString()))
+		b.WriteString(fmt.Sprintf("- %d. %s\n\n", index, add.Key.ReadableString()))
 	}
 
 	maxPrintDiffs := len(r.Changes)
