@@ -87,6 +87,11 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
     dispatch(fetchAPIKeys({ enabled: true }));
   }, [dispatch]);
 
+  const unixTimeToString = (unixTime: number): string => {
+    const dateTime = new Date(unixTime * 1000);
+    return dateTime.toString();
+  };
+
   const handleSubmit = useCallback(
     (values: { name: string; role: APIKey.Role }) => {
       dispatch(generateAPIKey(values)).then(() => {
@@ -142,6 +147,8 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
             <TableRow>
               <TableCell colSpan={2}>Name</TableCell>
               <TableCell>Role</TableCell>
+              <TableCell>CreatedAt</TableCell>
+              <TableCell>LastUsedAt</TableCell>
               <TableCell align="right" />
             </TableRow>
           </TableHead>
@@ -155,6 +162,12 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
                 <TableRow key={key.id}>
                   <TableCell colSpan={2}>{key.name}</TableCell>
                   <TableCell>{API_KEY_ROLE_TEXT[key.role]}</TableCell>
+                  <TableCell>{unixTimeToString(key.createdAt)}</TableCell>
+                  <TableCell>
+                    {key.lastUsedAt == 0
+                      ? "never used"
+                      : unixTimeToString(key.lastUsedAt)}
+                  </TableCell>
                   <TableCell align="right">
                     <IconButton data-id={key.id} onClick={handleOpenMenu}>
                       <MenuIcon />

@@ -84,6 +84,7 @@ proto.model.APIKey.toObject = function(includeInstance, msg) {
     projectId: jspb.Message.getFieldWithDefault(msg, 4, ""),
     role: jspb.Message.getFieldWithDefault(msg, 5, 0),
     creator: jspb.Message.getFieldWithDefault(msg, 6, ""),
+    lastUsedAt: jspb.Message.getFieldWithDefault(msg, 7, 0),
     disabled: jspb.Message.getBooleanFieldWithDefault(msg, 13, false),
     createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
     updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
@@ -146,6 +147,10 @@ proto.model.APIKey.deserializeBinaryFromReader = function(msg, reader) {
     case 6:
       var value = /** @type {string} */ (reader.readString());
       msg.setCreator(value);
+      break;
+    case 7:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setLastUsedAt(value);
       break;
     case 13:
       var value = /** @type {boolean} */ (reader.readBool());
@@ -227,6 +232,13 @@ proto.model.APIKey.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       6,
+      f
+    );
+  }
+  f = message.getLastUsedAt();
+  if (f !== 0) {
+    writer.writeInt64(
+      7,
       f
     );
   }
@@ -367,6 +379,24 @@ proto.model.APIKey.prototype.getCreator = function() {
  */
 proto.model.APIKey.prototype.setCreator = function(value) {
   return jspb.Message.setProto3StringField(this, 6, value);
+};
+
+
+/**
+ * optional int64 last_used_at = 7;
+ * @return {number}
+ */
+proto.model.APIKey.prototype.getLastUsedAt = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.model.APIKey} returns this
+ */
+proto.model.APIKey.prototype.setLastUsedAt = function(value) {
+  return jspb.Message.setProto3IntField(this, 7, value);
 };
 
 

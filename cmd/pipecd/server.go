@@ -69,7 +69,8 @@ var (
 )
 
 const (
-	defaultPipedStatHashKey = "HASHKEY:PIPED:STATS"
+	defaultPipedStatHashKey    = "HASHKEY:PIPED:STATS"
+	apiKeyLastUsedCacheHashKey = "HASHKEY:PIPED:API_KEYS" //nolint:gosec
 )
 
 type server struct {
@@ -197,6 +198,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 		cmdOutputStore       = commandoutputstore.NewStore(fs, input.Logger)
 		statCache            = rediscache.NewHashCache(rd, defaultPipedStatHashKey)
 		unregisteredAppStore = unregisteredappstore.NewStore(rd, input.Logger)
+		apiKeyLastUsedCache  = rediscache.NewHashCache(rd, apiKeyLastUsedCacheHashKey)
 	)
 
 	// Start a gRPC server for handling PipedAPI requests.
@@ -242,6 +244,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			verifier = apikeyverifier.NewVerifier(
 				ctx,
 				datastore.NewAPIKeyStore(ds, datastore.PipectlCommander),
+				apiKeyLastUsedCache,
 				input.Logger,
 			)
 
@@ -289,6 +292,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			sls,
 			alss,
 			unregisteredAppStore,
+			apiKeyLastUsedCache,
 			insightProvider,
 			statCache,
 			cfg.ProjectMap(),
