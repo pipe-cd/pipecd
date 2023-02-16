@@ -108,7 +108,7 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 
 	resp, err := cli.ListDeployments(ctx, req)
 	if err != nil {
-		return fmt.Errorf("failed to list application: %w", err)
+		return fmt.Errorf("failed to list deployment: %w", err)
 	}
 
 	bytes, err := json.Marshal(resp)
