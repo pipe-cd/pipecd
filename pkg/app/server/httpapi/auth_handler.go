@@ -146,7 +146,7 @@ func makeTokenCookie(value string, secure bool) *http.Cookie {
 		Path:     rootPath,
 		Secure:   secure,
 		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 }
 
@@ -158,7 +158,7 @@ func makeExpiredTokenCookie(secure bool) *http.Cookie {
 		Path:     rootPath,
 		Secure:   secure,
 		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 }
 
@@ -170,7 +170,7 @@ func makeStateCookie(value string, secure bool) *http.Cookie {
 		Path:     rootPath,
 		Secure:   secure,
 		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 }
 
@@ -182,7 +182,7 @@ func makeExpiredStateCookie(secure bool) *http.Cookie {
 		Path:     rootPath,
 		Secure:   secure,
 		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 }
 
@@ -194,6 +194,6 @@ func makeErrorCookie(value string, secure bool) *http.Cookie {
 		Path:     rootPath,
 		Secure:   secure,
 		HttpOnly: false,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 }
