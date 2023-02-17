@@ -27,8 +27,7 @@ import (
 )
 
 var (
-	commandTimeOut = 24 * time.Hour
-	interval       = 1 * time.Minute
+	interval = 1 * time.Minute
 )
 
 type apiKeyStore interface {
