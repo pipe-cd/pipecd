@@ -10,8 +10,7 @@ linters:
   enable:
     - prealloc
     - ineffassign
-    # ToDo: return it after this PR merged
-    # - goerr113
+    - goerr113
     - misspell
     - errcheck
     - gosimple

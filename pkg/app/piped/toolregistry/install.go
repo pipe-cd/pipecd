@@ -17,12 +17,13 @@ package toolregistry
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"text/template"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"go.uber.org/zap"
 
@@ -206,10 +207,9 @@ func (r *registry) installCustomTemplating(ctx context.Context, input *config.In
 			zap.String("version", input.Version),
 			zap.Error(err),
 		)
-		return fmt.Errorf("failed to install %s %s (%v)", input.Command, input.Version, err)
+		return errors.Errorf("failed to install %s %s (%v)", input.Command, input.Version, err)
 	}
 	script := fmt.Sprintf("cd %s\n", workingDir) + buf.String()
-	fmt.Println(script)
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	cmd := exec.CommandContext(ctxWithTimeout, "/bin/sh", "-c", script)
@@ -222,9 +222,9 @@ func (r *registry) installCustomTemplating(ctx context.Context, input *config.In
 			zap.Error(err),
 		)
 		if errors.Is(ctxWithTimeout.Err(), context.DeadlineExceeded) {
-			return fmt.Errorf("failed to install %s %s (%v) because of timeout", input.Command, input.Version, err)
+			return errors.Errorf("failed to install %s %s (%v) because of timeout", input.Command, input.Version, err)
 		}
-		return fmt.Errorf("failed to install %s %s (%v)", input.Command, input.Version, err)
+		return errors.Errorf("failed to install %s %s (%v)", input.Command, input.Version, err)
 	}
 
 	r.logger.Info("just installed custom template",
