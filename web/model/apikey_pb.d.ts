@@ -22,6 +22,9 @@ export class APIKey extends jspb.Message {
   getCreator(): string;
   setCreator(value: string): APIKey;
 
+  getLastUsedAt(): number;
+  setLastUsedAt(value: number): APIKey;
+
   getDisabled(): boolean;
   setDisabled(value: boolean): APIKey;
 
@@ -47,6 +50,7 @@ export namespace APIKey {
     projectId: string,
     role: APIKey.Role,
     creator: string,
+    lastUsedAt: number,
     disabled: boolean,
     createdAt: number,
     updatedAt: number,
