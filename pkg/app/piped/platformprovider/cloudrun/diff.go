@@ -29,9 +29,9 @@ const (
 )
 
 type DiffResult struct {
-	Diff *diff.Result
-	Old  ServiceManifest
-	New  ServiceManifest
+	Diff              *diff.Result
+	GitManifest       ServiceManifest
+	LiveStateManifest ServiceManifest
 }
 
 func (d *DiffResult) NoChange() bool {
@@ -47,9 +47,9 @@ func Diff(old, new ServiceManifest, opts ...diff.Option) (*DiffResult, error) {
 		return &DiffResult{Diff: d}, nil
 	}
 	ret := &DiffResult{
-		Old:  old,
-		New:  new,
-		Diff: d,
+		GitManifest:       new,
+		LiveStateManifest: old,
+		Diff:              d,
 	}
 	return ret, nil
 }
@@ -68,7 +68,7 @@ func (d *DiffResult) Render(opt DiffRenderOptions) string {
 	if !opt.UseDiffCommand {
 		b.WriteString(renderer.Render(d.Diff.Nodes()))
 	} else {
-		d, err := diffByCommand(diffCommand, d.Old, d.New)
+		d, err := diffByCommand(diffCommand, d.LiveStateManifest, d.GitManifest)
 		if err != nil {
 			b.WriteString(fmt.Sprintf("An error occurred while rendering diff (%v)", err))
 		} else {

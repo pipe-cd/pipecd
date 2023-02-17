@@ -45,9 +45,9 @@ func (r *DiffListResult) NoChange() bool {
 }
 
 type DiffListChange struct {
-	Old  Manifest
-	New  Manifest
-	Diff *diff.Result
+	GitManifest       Manifest
+	LiveStateManifest Manifest
+	Diff              *diff.Result
 }
 
 func Diff(old, new Manifest, logger *zap.Logger, opts ...diff.Option) (*diff.Result, error) {
@@ -85,9 +85,9 @@ func DiffList(olds, news []Manifest, logger *zap.Logger, opts ...diff.Option) (*
 			continue
 		}
 		cr.Changes = append(cr.Changes, DiffListChange{
-			Old:  oldChanges[i],
-			New:  newChanges[i],
-			Diff: result,
+			GitManifest:       newChanges[i],
+			LiveStateManifest: oldChanges[i],
+			Diff:              result,
 		})
 	}
 
@@ -156,7 +156,7 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 
 	var prints = 0
 	for _, change := range r.Changes {
-		key := change.Old.Key
+		key := change.GitManifest.Key
 		opts := []diff.RenderOption{
 			diff.WithLeftPadding(1),
 		}
@@ -181,7 +181,7 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 			b.WriteString(renderer.Render(change.Diff.Nodes()))
 		} else {
 			// TODO: Find a way to mask values in case of using unix `diff` command.
-			d, err := diffByCommand(diffCommand, change.Old, change.New)
+			d, err := diffByCommand(diffCommand, change.LiveStateManifest, change.GitManifest)
 			if err != nil {
 				b.WriteString(fmt.Sprintf("An error occurred while rendering diff (%v)", err))
 			} else {
