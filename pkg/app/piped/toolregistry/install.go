@@ -213,12 +213,12 @@ func (r *registry) installCustomTemplating(ctx context.Context, input *config.In
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	cmd := exec.CommandContext(ctxWithTimeout, "/bin/sh", "-c", script)
-	if err := cmd.Run(); err != nil {
+	if out, err := cmd.CombinedOutput(); err != nil {
 		r.logger.Error("failed to install custom template",
 			zap.String("command", input.Command),
 			zap.String("version", input.Version),
 			zap.String("script", script),
-			// zap.String("out", string(out)),
+			zap.String("out", string(out)),
 			zap.Error(err),
 		)
 		if errors.Is(ctxWithTimeout.Err(), context.DeadlineExceeded) {
