@@ -71,14 +71,14 @@ func (c *APIKeyLastUsedTimeUpdater) Run(ctx context.Context) error {
 
 		case <-t.C:
 			start := time.Now()
-			if err := c.updateOrphanCommandsStatus(ctx); err == nil {
+			if err := c.updateAPIKeyLastUsedTime(ctx); err == nil {
 				c.logger.Info("successfully update api key last used time", zap.Duration("duration", time.Since(start)))
 			}
 		}
 	}
 }
 
-func (c *APIKeyLastUsedTimeUpdater) updateOrphanCommandsStatus(ctx context.Context) error {
+func (c *APIKeyLastUsedTimeUpdater) updateAPIKeyLastUsedTime(ctx context.Context) error {
 	keys, err := c.apiKeyLastUsedTimeCache.GetAll()
 	if err != nil {
 		c.logger.Info("there are no cache of api key last used time on redis")
