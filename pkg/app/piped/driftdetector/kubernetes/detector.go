@@ -189,8 +189,8 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	d.logger.Debug(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
 
 	result, err := provider.DiffList(
-		headManifests,
 		liveManifests,
+		headManifests,
 		d.logger,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
