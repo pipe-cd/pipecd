@@ -153,7 +153,9 @@ func (s *apiKeyStore) Disable(ctx context.Context, id, projectID string) error {
 func (s *apiKeyStore) UpdateLastUsedAt(ctx context.Context, id string, time int64) error {
 	return s.ds.Update(ctx, s.col, id, func(e interface{}) error {
 		k := e.(*model.APIKey)
-		k.LastUsedAt = time
+		if !k.Disabled {
+			k.LastUsedAt = time
+		}
 		return k.Validate()
 	})
 }
