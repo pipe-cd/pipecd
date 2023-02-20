@@ -27,7 +27,7 @@ type differ struct {
 	ignoreAddingMapKeys           bool
 	equateEmpty                   bool
 	compareNumberAndNumericString bool
-	ignorePaths                   []string
+	ignorePathPrefixs             []string
 
 	result *Result
 }
@@ -58,9 +58,10 @@ func WithCompareNumberAndNumericString() Option {
 	}
 }
 
-func WithIgnorePaths(ignorePaths []string) Option {
+// WithIgnorePaths
+func WithIgnorePathPrefixs(ignorePathPrefixs []string) Option {
 	return func(d *differ) {
-		d.ignorePaths = ignorePaths
+		d.ignorePathPrefixs = ignorePathPrefixs
 	}
 }
 
@@ -85,9 +86,9 @@ func DiffUnstructureds(x, y unstructured.Unstructured, opts ...Option) (*Result,
 }
 
 func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
-	for _, ignorePath := range d.ignorePaths {
+	for _, ignorePathPrefix := range d.ignorePathPrefixs {
 		pathString := makePathString(path)
-		if strings.HasPrefix(pathString, ignorePath) {
+		if strings.HasPrefix(pathString, ignorePathPrefix) {
 			return nil
 		}
 	}
