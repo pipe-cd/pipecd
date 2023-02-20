@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -69,7 +69,8 @@ var (
 )
 
 const (
-	defaultPipedStatHashKey = "HASHKEY:PIPED:STATS"
+	defaultPipedStatHashKey    = "HASHKEY:PIPED:STATS"
+	apiKeyLastUsedCacheHashKey = "HASHKEY:PIPED:API_KEYS" //nolint:gosec
 )
 
 type server struct {
@@ -197,6 +198,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 		cmdOutputStore       = commandoutputstore.NewStore(fs, input.Logger)
 		statCache            = rediscache.NewHashCache(rd, defaultPipedStatHashKey)
 		unregisteredAppStore = unregisteredappstore.NewStore(rd, input.Logger)
+		apiKeyLastUsedCache  = rediscache.NewHashCache(rd, apiKeyLastUsedCacheHashKey)
 	)
 
 	// Start a gRPC server for handling PipedAPI requests.
@@ -242,10 +244,11 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			verifier = apikeyverifier.NewVerifier(
 				ctx,
 				datastore.NewAPIKeyStore(ds, datastore.PipectlCommander),
+				apiKeyLastUsedCache,
 				input.Logger,
 			)
 
-			service = grpcapi.NewAPI(ctx, ds, cache, cmdOutputStore, statCache, cfg.Address, input.Logger)
+			service = grpcapi.NewAPI(ctx, ds, fs, cache, cmdOutputStore, statCache, cfg.Address, input.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.apiPort),
 				rpc.WithGracePeriod(s.gracePeriod),
@@ -289,6 +292,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			sls,
 			alss,
 			unregisteredAppStore,
+			apiKeyLastUsedCache,
 			insightProvider,
 			statCache,
 			cfg.ProjectMap(),

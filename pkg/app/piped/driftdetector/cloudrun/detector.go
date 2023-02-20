@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -207,8 +207,8 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	d.logger.Info(fmt.Sprintf("application %s has a live service manifest", app.Id))
 
 	result, err := provider.Diff(
-		headManifest,
 		liveManifest,
+		headManifest,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
@@ -308,7 +308,7 @@ func makeSyncState(r *provider.DiffResult, commit string) model.ApplicationSyncS
 
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual live state:\n\n", commit))
-	b.WriteString("--- Expected\n+++ Actual\n\n")
+	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Git)\n\n")
 
 	details := r.Render(provider.DiffRenderOptions{
 		// Currently, we do not use the diff command to render the result

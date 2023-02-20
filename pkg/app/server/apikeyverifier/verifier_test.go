@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,6 +42,12 @@ func (g *fakeAPIKeyGetter) Get(_ context.Context, id string) (*model.APIKey, err
 	return nil, fmt.Errorf("not found")
 }
 
+type fakeRedisHashCache struct{}
+
+func (f *fakeRedisHashCache) Put(k string, v interface{}) error {
+	return nil
+}
+
 func TestVerify(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -71,7 +77,8 @@ func TestVerify(t *testing.T) {
 			},
 		},
 	}
-	v := NewVerifier(ctx, apiKeyGetter, zap.NewNop())
+	fakeRedisHashCache := &fakeRedisHashCache{}
+	v := NewVerifier(ctx, apiKeyGetter, fakeRedisHashCache, zap.NewNop())
 
 	// Not found key.
 	notFoundKey, _, err := model.GenerateAPIKey("not-found-api-key")

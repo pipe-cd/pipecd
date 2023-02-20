@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -146,7 +146,7 @@ func makeTokenCookie(value string, secure bool) *http.Cookie {
 		Path:     rootPath,
 		Secure:   secure,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteStrictMode,
 	}
 }
 
@@ -158,7 +158,7 @@ func makeExpiredTokenCookie(secure bool) *http.Cookie {
 		Path:     rootPath,
 		Secure:   secure,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteStrictMode,
 	}
 }
 
@@ -194,6 +194,6 @@ func makeErrorCookie(value string, secure bool) *http.Cookie {
 		Path:     rootPath,
 		Secure:   secure,
 		HttpOnly: false,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteStrictMode,
 	}
 }

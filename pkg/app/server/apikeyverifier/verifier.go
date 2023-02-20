@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,17 +30,25 @@ type apiKeyGetter interface {
 	Get(ctx context.Context, id string) (*model.APIKey, error)
 }
 
-type Verifier struct {
-	apiKeyCache cache.Cache
-	apiKeyStore apiKeyGetter
-	logger      *zap.Logger
+type apiKeyLastUsedPutter interface {
+	Put(k string, v interface{}) error
 }
 
-func NewVerifier(ctx context.Context, getter apiKeyGetter, logger *zap.Logger) *Verifier {
+type Verifier struct {
+	apiKeyCache         cache.Cache
+	apiKeyStore         apiKeyGetter
+	apiKeyLastUsedCache apiKeyLastUsedPutter
+	logger              *zap.Logger
+	nowFunc             func() time.Time
+}
+
+func NewVerifier(ctx context.Context, getter apiKeyGetter, akluc apiKeyLastUsedPutter, logger *zap.Logger) *Verifier {
 	return &Verifier{
-		apiKeyCache: memorycache.NewTTLCache(ctx, 5*time.Minute, time.Minute),
-		apiKeyStore: getter,
-		logger:      logger,
+		apiKeyCache:         memorycache.NewTTLCache(ctx, 5*time.Minute, time.Minute),
+		apiKeyStore:         getter,
+		apiKeyLastUsedCache: akluc,
+		logger:              logger,
+		nowFunc:             time.Now,
 	}
 }
 
@@ -54,12 +62,11 @@ func (v *Verifier) Verify(ctx context.Context, key string) (*model.APIKey, error
 	item, err := v.apiKeyCache.Get(keyID)
 	if err == nil {
 		apiKey = item.(*model.APIKey)
-		if err := checkAPIKey(apiKey, keyID, key); err != nil {
+		if err := v.checkAPIKey(ctx, apiKey, keyID, key); err != nil {
 			return nil, err
 		}
 		return apiKey, nil
 	}
-
 	// If the cache data was not found,
 	// we have to retrieve from datastore and save it to the cache.
 	apiKey, err = v.apiKeyStore.Get(ctx, keyID)
@@ -67,23 +74,29 @@ func (v *Verifier) Verify(ctx context.Context, key string) (*model.APIKey, error
 		return nil, fmt.Errorf("unable to find API key %s from datastore, %w", keyID, err)
 	}
 
+	// Update last time the API key was used.
+
 	if err := v.apiKeyCache.Put(keyID, apiKey); err != nil {
 		v.logger.Warn("unable to store API key in memory cache", zap.Error(err))
 	}
-	if err := checkAPIKey(apiKey, keyID, key); err != nil {
+	if err := v.checkAPIKey(ctx, apiKey, keyID, key); err != nil {
 		return nil, err
 	}
 
 	return apiKey, nil
 }
 
-func checkAPIKey(apiKey *model.APIKey, id, key string) error {
+func (v *Verifier) checkAPIKey(ctx context.Context, apiKey *model.APIKey, id, key string) error {
 	if apiKey.Disabled {
 		return fmt.Errorf("the api key %s was already disabled", id)
 	}
 
 	if err := apiKey.CompareKey(key); err != nil {
 		return fmt.Errorf("invalid api key %s: %w", id, err)
+	}
+	now := v.nowFunc().Unix()
+	if err := v.apiKeyLastUsedCache.Put(id, now); err != nil {
+		return fmt.Errorf("unable to update the time API key %s was last used, %w", id, err)
 	}
 
 	return nil

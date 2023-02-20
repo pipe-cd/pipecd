@@ -18,6 +18,7 @@ Note: It's not required to install the PipeCD control plane to the cluster where
 
 #### 1.1. Installing PipeCD client
 
+##### Method 1: Official Installation
 The official PipeCD client named `pipectl` can be installed using the following command
 
 ``` console
@@ -35,6 +36,12 @@ You can also move the pipectl binary to the $PATH for later use
 
 ```console
 sudo mv ./pipectl /usr/local/bin/pipectl
+```
+
+##### Method 2: [Asdf](https://asdf-vm.com/) Supported Installation
+
+```console
+asdf plugin add pipectl && asdf install pipectl latest && asdf global pipectl latest
 ```
 
 #### 1.2. Installing PipeCD's components

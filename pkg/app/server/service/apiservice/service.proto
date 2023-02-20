@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import "validate/validate.proto";
 import "pkg/model/common.proto";
 import "pkg/model/application.proto";
 import "pkg/model/deployment.proto";
+import "pkg/model/logblock.proto";
 import "pkg/model/command.proto";
 import "pkg/model/planpreview.proto";
 
@@ -36,6 +37,7 @@ service APIService {
     rpc RenameApplicationConfigFile(RenameApplicationConfigFileRequest) returns (RenameApplicationConfigFileResponse) {}
 
     rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
+    rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {}
 
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
 
@@ -48,6 +50,8 @@ service APIService {
     rpc GetPlanPreviewResults(GetPlanPreviewResultsRequest) returns (GetPlanPreviewResultsResponse) {}
 
     rpc Encrypt(EncryptRequest) returns (EncryptResponse) {}
+
+    rpc ListStageLogs(ListStageLogsRequest) returns (ListStageLogsResponse) {}
 }
 
 message AddApplicationRequest {
@@ -87,7 +91,8 @@ message ListApplicationsRequest {
     string name = 1;
     string kind = 2;
     bool disabled = 4;
-    // TODO: Enable to filter by labels
+    map<string, string> labels = 6;
+    int32 limit = 7;
     string cursor = 10;
 }
 
@@ -128,6 +133,21 @@ message GetDeploymentRequest {
 
 message GetDeploymentResponse {
     model.Deployment deployment = 1;
+}
+
+message ListDeploymentsRequest {
+    repeated string statuses = 1;
+    repeated string kinds = 2;
+    repeated string application_ids = 3;
+    string application_name = 4;
+    map<string, string> labels = 5;
+    int32 limit = 6;
+    string cursor = 7;
+}
+
+message ListDeploymentsResponse {
+    repeated model.Deployment deployments = 1;
+    string cursor = 2;
 }
 
 message GetCommandRequest {
@@ -194,4 +214,17 @@ message EncryptRequest {
 
 message EncryptResponse {
     string ciphertext = 1 [(validate.rules).string.min_len = 1];
+}
+
+message StageLog {
+    repeated model.LogBlock blocks = 1;
+    bool completed = 2;
+}
+
+message ListStageLogsRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message ListStageLogsResponse {
+    map<string, StageLog> stage_logs = 1;
 }
