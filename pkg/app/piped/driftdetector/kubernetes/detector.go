@@ -376,7 +376,7 @@ func makeSyncState(r *provider.DiffListResult, commit string) model.ApplicationS
 	}
 }
 
-func (d *detector) getDrifteDetectionConfig(repoDir string, app *model.Application) (*config.DriftDetection, error) {
+func (d *detector) getDriftDetectionConfig(repoDir string, app *model.Application) (*config.DriftDetection, error) {
 	cfg, err := d.loadApplicationConfiguration(repoDir, app)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load application configuration: %w", err)
