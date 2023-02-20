@@ -199,7 +199,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
-		diff.WithIgnorePaths(ddCfg.IgnoreFields),
+		diff.WithIgnorePathPrefixs(ddCfg.IgnoreFields),
 	)
 	if err != nil {
 		return err
