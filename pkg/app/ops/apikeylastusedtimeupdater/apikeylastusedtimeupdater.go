@@ -23,6 +23,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/redis"
 )
 
@@ -31,11 +32,12 @@ var (
 )
 
 type apiKeyStore interface {
+	List(ctx context.Context, opts datastore.ListOptions) ([]*model.APIKey, error)
 	UpdateLastUsedAt(ctx context.Context, id string, time int64) error
 }
 
 type apiKeyLastUsedTimeCache interface {
-	GetAll() (map[string]interface{}, error)
+	Get(k string) (interface{}, error)
 }
 
 type APIKeyLastUsedTimeUpdater struct {
@@ -78,19 +80,32 @@ func (c *APIKeyLastUsedTimeUpdater) Run(ctx context.Context) error {
 }
 
 func (c *APIKeyLastUsedTimeUpdater) updateAPIKeyLastUsedTime(ctx context.Context) error {
-	keys, err := c.apiKeyLastUsedTimeCache.GetAll()
-	if err != nil {
-		c.logger.Info("there are no cache of api key last used time on redis")
+
+	opts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "Disabled",
+				Operator: datastore.OperatorEqual,
+				Value:    false,
+			},
+		},
 	}
 
-	for id, time := range keys {
-		lastUsedTime := bytes2int64(time.([]byte))
-		if err := c.apiKeyStore.UpdateLastUsedAt(ctx, id, lastUsedTime); err != nil {
-			c.logger.Error("failed to update last used time",
-				zap.String("id", id),
-				zap.Error(err),
-			)
-			return err
+	apiKeys, err := c.apiKeyStore.List(ctx, opts)
+	if err != nil {
+		c.logger.Info("there are no enabled API key")
+	}
+
+	for _, apiKey := range apiKeys {
+		if lastUsedTimeByte, err := c.apiKeyLastUsedTimeCache.Get(apiKey.Id); err == nil {
+			lastUsedTime := bytes2int64(lastUsedTimeByte.([]byte))
+			if err := c.apiKeyStore.UpdateLastUsedAt(ctx, apiKey.Id, lastUsedTime); err != nil {
+				c.logger.Error("failed to update last used time",
+					zap.String("id", apiKey.Id),
+					zap.Error(err),
+				)
+				return err
+			}
 		}
 	}
 
