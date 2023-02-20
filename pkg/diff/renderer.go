@@ -44,12 +44,6 @@ func WithMaskPath(prefix string) RenderOption {
 	}
 }
 
-// func WithIgnorePath(prefixs []string) RenderOption {
-// 	return func(r *Renderer) {
-// 		r.ignorePathPrefixs = prefixs
-// 	}
-// }
-
 func NewRenderer(opts ...RenderOption) *Renderer {
 	r := &Renderer{}
 	for _, opt := range opts {
@@ -104,16 +98,6 @@ func (r *Renderer) Render(ns Nodes) string {
 	}
 
 	for _, n := range ns {
-		// isSkip := false
-		// for _, ignorePathPrefix := range r.ignorePathPrefixs {
-		// 	if strings.HasPrefix(n.PathString, ignorePathPrefix) {
-		// 		isSkip = true
-		// 	}
-		// }
-		// if isSkip {
-		// 	continue
-		// }
-
 		duplicateDepth := pathDuplicateDepth(n.Path, prePath)
 		prePath = n.Path
 		pathLen := len(n.Path)
