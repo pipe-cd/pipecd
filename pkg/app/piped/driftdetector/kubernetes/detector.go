@@ -188,7 +188,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	liveManifests = filterIgnoringManifests(liveManifests)
 	d.logger.Debug(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
 
-	ddCfg, err := d.getDrifteDetectionConfig(repo.GetPath(), app)
+	ddCfg, err := d.getDriftDetectionConfig(repo.GetPath(), app)
 	if err != nil {
 		return err
 	}
