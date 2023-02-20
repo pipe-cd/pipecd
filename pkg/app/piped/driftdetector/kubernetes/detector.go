@@ -200,7 +200,11 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return err
 	}
 
-	state := makeSyncState(result, headCommit.Hash)
+	ddCfg, err := d.getDrifteDetectionConfig(repo.GetPath(), app)
+	if err != nil {
+		return err
+	}
+	state := makeSyncState(result, headCommit.Hash, ddCfg.IgnoreFields)
 
 	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 }
@@ -332,7 +336,7 @@ func filterIgnoringManifests(manifests []provider.Manifest) []provider.Manifest 
 	return out
 }
 
-func makeSyncState(r *provider.DiffListResult, commit string) model.ApplicationSyncState {
+func makeSyncState(r *provider.DiffListResult, commit string, ignoreFields []string) model.ApplicationSyncState {
 	if r.NoChange() {
 		return model.ApplicationSyncState{
 			Status:      model.ApplicationSyncStatus_SYNCED,
@@ -356,6 +360,7 @@ func makeSyncState(r *provider.DiffListResult, commit string) model.ApplicationS
 		MaskSecret:          true,
 		MaskConfigMap:       true,
 		MaxChangedManifests: 3,
+		IgnoreFields:        ignoreFields,
 		// Currently, we do not use the diff command to render the result
 		// because Kubernetes adds a large number of default values to the
 		// running manifest that causes a wrong diff text.
@@ -369,4 +374,17 @@ func makeSyncState(r *provider.DiffListResult, commit string) model.ApplicationS
 		Reason:      b.String(),
 		Timestamp:   time.Now().Unix(),
 	}
+}
+
+func (d *detector) getDrifteDetectionConfig(repoDir string, app *model.Application) (*config.DriftDetection, error) {
+	cfg, err := d.loadApplicationConfiguration(repoDir, app)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load application configuration: %w", err)
+	}
+	gds, ok := cfg.GetGenericApplication()
+	if !ok {
+		return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
+	}
+
+	return gds.DriftDetection, nil
 }

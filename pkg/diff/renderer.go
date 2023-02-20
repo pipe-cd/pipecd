@@ -23,8 +23,9 @@ import (
 )
 
 type Renderer struct {
-	leftPadding    int
-	maskPathPrefix string
+	leftPadding      int
+	maskPathPrefix   string
+	ignorePathPrefix []string
 }
 
 type RenderOption func(*Renderer)
@@ -40,6 +41,12 @@ func WithLeftPadding(p int) RenderOption {
 func WithMaskPath(prefix string) RenderOption {
 	return func(r *Renderer) {
 		r.maskPathPrefix = prefix
+	}
+}
+
+func WithIgnorePath(prefixs []string) RenderOption {
+	return func(r *Renderer) {
+		r.ignorePathPrefix = prefixs
 	}
 }
 
@@ -97,6 +104,16 @@ func (r *Renderer) Render(ns Nodes) string {
 	}
 
 	for _, n := range ns {
+		isSkip := false
+		for _, ignorePathPrefix := range r.ignorePathPrefix {
+			if strings.HasPrefix(n.PathString, ignorePathPrefix) {
+				isSkip = true
+			}
+		}
+		if isSkip {
+			continue
+		}
+
 		duplicateDepth := pathDuplicateDepth(n.Path, prePath)
 		prePath = n.Path
 		pathLen := len(n.Path)
