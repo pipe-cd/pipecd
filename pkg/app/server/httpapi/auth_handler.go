@@ -170,7 +170,7 @@ func makeStateCookie(value string, secure bool) *http.Cookie {
 		Path:     rootPath,
 		Secure:   secure,
 		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 }
 
@@ -182,7 +182,7 @@ func makeExpiredStateCookie(secure bool) *http.Cookie {
 		Path:     rootPath,
 		Secure:   secure,
 		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 }
 

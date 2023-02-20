@@ -122,6 +122,17 @@ func (m *APIKey) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if m.GetLastUsedAt() < 0 {
+		err := APIKeyValidationError{
+			field:  "LastUsedAt",
+			reason: "value must be greater than or equal to 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	// no validation rules for Disabled
 
 	if m.GetCreatedAt() <= 0 {
