@@ -130,7 +130,6 @@ func normalizeNewSecret(old, new *unstructured.Unstructured) (*unstructured.Unst
 type DiffRenderOptions struct {
 	MaskSecret    bool
 	MaskConfigMap bool
-	IgnoreFields  []string
 	// Maximum number of changed manifests should be shown.
 	// Zero means rendering all.
 	MaxChangedManifests int
@@ -168,9 +167,6 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 			needMaskValue = true
 		} else if opt.MaskConfigMap && key.IsConfigMap() {
 			opts = append(opts, diff.WithMaskPath("data"))
-			needMaskValue = true
-		} else if len(opt.IgnoreFields) > 0 {
-			opts = append(opts, diff.WithIgnorePath(opt.IgnoreFields))
 			needMaskValue = true
 		}
 		renderer := diff.NewRenderer(opts...)

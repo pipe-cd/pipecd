@@ -188,6 +188,10 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	liveManifests = filterIgnoringManifests(liveManifests)
 	d.logger.Debug(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
 
+	ddCfg, err := d.getDrifteDetectionConfig(repo.GetPath(), app)
+	if err != nil {
+		return err
+	}
 	result, err := provider.DiffList(
 		liveManifests,
 		headManifests,
@@ -195,16 +199,13 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
+		diff.WithIgnorePaths(ddCfg.IgnoreFields),
 	)
 	if err != nil {
 		return err
 	}
 
-	ddCfg, err := d.getDrifteDetectionConfig(repo.GetPath(), app)
-	if err != nil {
-		return err
-	}
-	state := makeSyncState(result, headCommit.Hash, ddCfg.IgnoreFields)
+	state := makeSyncState(result, headCommit.Hash)
 
 	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 }
@@ -336,7 +337,7 @@ func filterIgnoringManifests(manifests []provider.Manifest) []provider.Manifest 
 	return out
 }
 
-func makeSyncState(r *provider.DiffListResult, commit string, ignoreFields []string) model.ApplicationSyncState {
+func makeSyncState(r *provider.DiffListResult, commit string) model.ApplicationSyncState {
 	if r.NoChange() {
 		return model.ApplicationSyncState{
 			Status:      model.ApplicationSyncStatus_SYNCED,
@@ -360,7 +361,6 @@ func makeSyncState(r *provider.DiffListResult, commit string, ignoreFields []str
 		MaskSecret:          true,
 		MaskConfigMap:       true,
 		MaxChangedManifests: 3,
-		IgnoreFields:        ignoreFields,
 		// Currently, we do not use the diff command to render the result
 		// because Kubernetes adds a large number of default values to the
 		// running manifest that causes a wrong diff text.

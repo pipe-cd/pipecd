@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
@@ -26,6 +27,7 @@ type differ struct {
 	ignoreAddingMapKeys           bool
 	equateEmpty                   bool
 	compareNumberAndNumericString bool
+	ignorePaths                   []string
 
 	result *Result
 }
@@ -56,6 +58,12 @@ func WithCompareNumberAndNumericString() Option {
 	}
 }
 
+func WithIgnorePaths(ignorePaths []string) Option {
+	return func(d *differ) {
+		d.ignorePaths = ignorePaths
+	}
+}
+
 // DiffUnstructureds calculates the diff between two unstructured objects.
 func DiffUnstructureds(x, y unstructured.Unstructured, opts ...Option) (*Result, error) {
 	var (
@@ -77,6 +85,13 @@ func DiffUnstructureds(x, y unstructured.Unstructured, opts ...Option) (*Result,
 }
 
 func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
+	for _, ignorePath := range d.ignorePaths {
+		pathString := makePathString(path)
+		if strings.HasPrefix(pathString, ignorePath) {
+			return nil
+		}
+	}
+
 	if !vx.IsValid() {
 		if d.equateEmpty && isEmptyInterface(vy) {
 			return nil
