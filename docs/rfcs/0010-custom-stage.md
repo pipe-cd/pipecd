@@ -27,9 +27,9 @@ Users can define quick sync jobs by themselves. After PipeCD detect a new commit
 apiVersion: pipecd.dev/v1beta1
 kind: CustomApp
 spec:
-  runs:
-    - "sam build"
-    - "sam deploy -g"
+	runs:
+		- "sam build"
+		- "sam deploy -g"
 ```
 
 1. Custom Pipeline
@@ -42,8 +42,8 @@ kind: CustomApp
 spec:
 	pipelines:
 		- id: sam-build
-      name: CUSTOM_STAGE
-      runs:
+			name: CUSTOM_STAGE
+			runs:
 				- "sam build"
     - name: WAIT_APPROVAL
 			with:
@@ -144,17 +144,17 @@ kind: Piped
 spec:
   ...
   customStages:
-    - name: SAM_DEPLOY     
-		  runs:
-		    - "sam build"
-		    - "sam deploy -g --profile {{ .AWS_PROFILE }}"
-		  externalBinary:
-		    - command: "sam"
-		      version: 1.7.3
-		      installScript: |
-		        wget https://github.com/aws/aws-sam-cli/releases/download/v{{ .Version }}/aws-sam-cli-macos-arm64.pkg
-		        echo {{ .encryptedSecrets.password }} | sudo -S installer -pkg aws-sam-cli-macos-arm64.pkg -target {{ .BinDir }}
-		        mv sam sam-{{ .Version }}
+		- name: SAM_DEPLOY     
+		runs:
+			- "sam build"
+			- "sam deploy -g --profile {{ .AWS_PROFILE }}"
+		externalBinary:
+			- command: "sam"
+				version: 1.7.3
+				installScript: |
+					wget https://github.com/aws/aws-sam-cli/releases/download/v{{ .Version }}/aws-sam-cli-macos-arm64.pkg
+					echo {{ .encryptedSecrets.password }} | sudo -S installer -pkg aws-sam-cli-macos-arm64.pkg -target {{ .BinDir }}
+					mv sam sam-{{ .Version }}
 ```
 
 application config file
