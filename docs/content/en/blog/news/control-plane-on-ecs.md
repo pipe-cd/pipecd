@@ -215,21 +215,21 @@ locals {
 apiVersion: "pipecd.dev/v1beta1"
 kind: ControlPlane
 spec:
-    datastore:
+  datastore:
     type: MYSQL
     config:
-        url: root:test@tcp(pipecd-mysql:3306)
-        database: quickstart
-    filestore:
+      url: root:test@tcp(pipecd-mysql:3306)
+      database: quickstart
+  filestore:
     type: S3
     config: # edit here
         bucket: example-pipecd-control-plane-filestore 
         region: ap-northeast-1
-    projects:
+  projects:
     - id: quickstart
         staticAdmin:
-        username: hello-pipecd
-        passwordHash: "$2a$10$ye96mUqUqTnjUqgwQJbJzel/LJibRhUnmzyypACkvrTSnQpVFZ7qK" # bcrypt value of "hello-pipecd"
+          username: hello-pipecd
+          passwordHash: "$2a$10$ye96mUqUqTnjUqgwQJbJzel/LJibRhUnmzyypACkvrTSnQpVFZ7qK" # bcrypt value of "hello-pipecd"
 ```
 ```
 //export
