@@ -230,6 +230,15 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 				zap.String("commit", headCommit.Hash),
 				zap.Error(err),
 			)
+
+			req := &pipedservice.ReportApplicationSyncStateRequest{
+				ApplicationId: app.Id,
+				State: &model.ApplicationSyncState{
+					Status: model.ApplicationSyncStatus_INVALID_CONFIG,
+					Reason: "Failed loading application config.",
+				},
+			}
+			t.apiClient.ReportApplicationSyncState(ctx, req)
 			// Do not notify this event to external services because it may cause annoying
 			// when one application is missing or having an invalid configuration file.
 			// So instead of notifying this as a notification,
