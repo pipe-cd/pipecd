@@ -41,7 +41,7 @@ It is possible to use RDS as a datastore. Edit your configuration file for the c
   datastore:
     type: MYSQL
     config: 
-        url: root:password@tcp(arn_of_rds:3306) 
+        url: root:password@tcp(endpoint_of_rds:3306) 
         database: quickstart
 ```
 
