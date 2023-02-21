@@ -218,7 +218,7 @@ spec:
   datastore:
     type: MYSQL
     config:
-      url: root:test@tcp(pipecd-mysql:3306)
+      url: sample:test@tcp(pipecd-mysql:3306)
       database: quickstart
   filestore:
     type: S3
@@ -248,7 +248,7 @@ spec:
   datastore:
     type: MYSQL
     config: # edit here
-      url: root:test@tcp(pipecd-mysql:3306)
+      url: sample:test@tcp(pipecd-mysql:3306)
       database: quickstart
   filestore:
     type: S3
