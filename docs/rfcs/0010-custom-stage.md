@@ -10,7 +10,6 @@ This RFC introduces a new way to enable users to use “custom stages” that us
 Currently, users can use only stages that PipeCD have already defined. But some users want to define new stages by their use-cases as bellow. 
 
 - Deploying infrastructure by tools other than that PipeCD supports (terraform and kubernetes) such as SAM, cloud formation….
-- Building Docker images with Kaniko
 - Running integration tests
 - Interacting with external systems
 - Performing database migrations
