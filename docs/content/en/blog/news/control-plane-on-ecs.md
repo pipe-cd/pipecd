@@ -26,7 +26,7 @@ aws secretsmanager create-secret --name control-plane-config \
 --secret-string `base64 control-plane-config.yaml`
 aws secretsmanager create-secret --name envoy-config \
 --description "Configuration of control plane" \
---secret-string `base64 enovy-config.yaml`
+--secret-string `base64 envoy-config.yaml`
 ```
 You should also put encryption key
 ```
