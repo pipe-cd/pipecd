@@ -13,6 +13,7 @@ export const dummyAPIKey: APIKey.AsObject = {
   disabled: false,
   createdAt: createdAt.unix(),
   updatedAt: createdAt.unix(),
+  lastUsedAt: createdAt.unix(),
 };
 
 export function createAPIKeyFromObject(o: APIKey.AsObject): APIKey {
