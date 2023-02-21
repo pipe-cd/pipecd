@@ -27,9 +27,9 @@ Users can define quick sync jobs by themselves. After PipeCD detect a new commit
 apiVersion: pipecd.dev/v1beta1
 kind: CustomApp
 spec:
-	runs:
-		- "sam build"
-		- "sam deploy -g"
+  runs:
+    - "sam build"
+    - "sam deploy -g"
 ```
 
 1. Custom Pipeline
@@ -40,19 +40,19 @@ Users can make a pipeline that is composed of custom stages that users defined. 
 apiVersion: pipecd.dev/v1beta1
 kind: CustomApp
 spec:
-	pipelines:
-		- id: sam-build
-			name: CUSTOM_STAGE
-			runs:
-				- "sam build"
-    - name: WAIT_APPROVAL
-			with:
-        approvers:
-          - nghialv
-		- id: sam-deploy 
+  pipelines:
+    - id: sam-build
       name: CUSTOM_STAGE
       runs:
-        - "sam deploy -g"
+         - "sam build"
+    - name: WAIT_APPROVAL
+      with:
+        approvers:
+          - nghialv
+    - id: sam-deploy 
+      name: CUSTOM_STAGE
+      runs:
+       - "sam deploy -g"
 ```
 
 1. Custom Stages in a platform provider’s pipeline
@@ -76,10 +76,10 @@ spec:
         with:
           approvers:
             - nghialv
-			- id: custom-web-hook
+      - id: custom-web-hook
         name: CUSTOM_STAGE
         runs:
-					- "curl https://hooks.slack.com"
+          - "curl https://hooks.slack.com"
       - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
 ```
@@ -95,7 +95,7 @@ spec:
   encryptedSecrets:
     password: encrypted-secrets
   variables:
-		AWS_PROFILE: default
+    AWS_PROFILE: default
   runs:
     - "echo {{ .encryptedSecrets.password }} | sudo -S su"
     - "sam build"
@@ -115,7 +115,7 @@ spec:
   encryptedSecrets:
     password: encrypted-secrets
   variables:
-		AWS_PROFILE: default
+    AWS_PROFILE: default
   runs:
     - "sam build"
     - "sam deploy -g --profile {{ .AWS_PROFILE }}"
@@ -127,6 +127,14 @@ spec:
         echo {{ .encryptedSecrets.password }} | sudo -S installer -pkg aws-sam-cli-macos-arm64.pkg -target {{ .BinDir }}
         mv sam sam-{{ .Version }}
 ```
+
+# Alternatives
+1. Add bin executer to exisisting XXX_SYNC
+- Must implement for every app kind.
+- What app kind is SAM app?
+
+1. Add QUICK_SYNC stage
+- It's a stage with a lot of freedom, but it's inconsistent with the use cases being narrowed down.
 
 # Unresolved questions
 
@@ -144,17 +152,17 @@ kind: Piped
 spec:
   ...
   customStages:
-		- name: SAM_DEPLOY     
-		runs:
-			- "sam build"
-			- "sam deploy -g --profile {{ .AWS_PROFILE }}"
-		externalBinary:
-			- command: "sam"
-				version: 1.7.3
-				installScript: |
-					wget https://github.com/aws/aws-sam-cli/releases/download/v{{ .Version }}/aws-sam-cli-macos-arm64.pkg
-					echo {{ .encryptedSecrets.password }} | sudo -S installer -pkg aws-sam-cli-macos-arm64.pkg -target {{ .BinDir }}
-					mv sam sam-{{ .Version }}
+    - name: SAM_DEPLOY     
+    runs:
+      - "sam build"
+      - "sam deploy -g --profile {{ .AWS_PROFILE }}"
+    externalBinary:
+      - command: "sam"
+        version: 1.7.3
+        installScript: |
+          wget https://github.com/aws/aws-sam-cli/releases/download/v{{ .Version }}/aws-sam-cli-macos-arm64.pkg
+          echo {{ .encryptedSecrets.password }} | sudo -S installer -pkg aws-sam-cli-macos-arm64.pkg -target {{ .BinDir }}
+          mv sam sam-{{ .Version }}
 ```
 
 application config file
@@ -163,12 +171,12 @@ application config file
 apiVersion: pipecd.dev/v1beta1
 kind: CustomApp
 spec:
-	pipelines:
+  pipelines:
     - name: SAM_DEPLOY
-		 encryptedSecrets:
-		    password: encrypted-secrets
-		  variables:
-				AWS_PROFILE: default
+     encryptedSecrets:
+        password: encrypted-secrets
+      variables:
+        AWS_PROFILE: default
     - name: WAIT_APPROVAL
 ```
 
@@ -182,25 +190,25 @@ application config file
 apiVersion: pipecd.dev/v1beta1
 kind: CustomApp
 spec:
-	pipelines:
+  pipelines:
     - name: CUSTOM_STAGE
       id: sum-deploy   
-		  encryptedSecrets:
-		    password: encrypted-secrets
-		  variables:
-				AWS_PROFILE: default
-		  runs:
-		    - "sam build"
-		    - "sam deploy -g --profile {{ .AWS_PROFILE }}"
-		  externalBinary:
-		    - command: "sam"
-		      version: 1.7.3
-		      installScript: |
-		        wget https://github.com/aws/aws-sam-cli/releases/download/v{{ .Version }}/aws-sam-cli-macos-arm64.pkg
-		        echo {{ .encryptedSecrets.password }} | sudo -S installer -pkg aws-sam-cli-macos-arm64.pkg -target {{ .BinDir }}
-		        mv sam sam-{{ .Version }}
+      encryptedSecrets:
+        password: encrypted-secrets
+      variables:
+        AWS_PROFILE: default
+      runs:
+        - "sam build"
+        - "sam deploy -g --profile {{ .AWS_PROFILE }}"
+      externalBinary:
+        - command: "sam"
+          version: 1.7.3
+          installScript: |
+            wget https://github.com/aws/aws-sam-cli/releases/download/v{{ .Version }}/aws-sam-cli-macos-arm64.pkg
+            echo {{ .encryptedSecrets.password }} | sudo -S installer -pkg aws-sam-cli-macos-arm64.pkg -target {{ .BinDir }}
+            mv sam sam-{{ .Version }}
     - name: WAIT_APPROVAL
-			with:
+      with:
         approvers:
           - nghialv
 ```
@@ -219,13 +227,13 @@ spec:
   ...
   customStages:
     - name: SAM_DEPLOY      
-		  externalBinary:
-		    - command: "sam"
-		      version: 1.7.3
-		      installScript: |
-		        wget https://github.com/aws/aws-sam-cli/releases/download/v{{ .Version }}/aws-sam-cli-macos-arm64.pkg
-		        echo password | sudo -S installer -pkg aws-sam-cli-macos-arm64.pkg -target {{ .BinDir }}
-		        mv sam sam-{{ .Version }}
+      externalBinary:
+        - command: "sam"
+          version: 1.7.3
+          installScript: |
+            wget https://github.com/aws/aws-sam-cli/releases/download/v{{ .Version }}/aws-sam-cli-macos-arm64.pkg
+            echo password | sudo -S installer -pkg aws-sam-cli-macos-arm64.pkg -target {{ .BinDir }}
+            mv sam sam-{{ .Version }}
 ```
 
 application config file
@@ -234,14 +242,14 @@ application config file
 apiVersion: pipecd.dev/v1beta1
 kind: CustomApp
 spec:
-	pipelines:
+  pipelines:
     - name: SAM_BUILD
-		  encryptedSecrets:
-		    password: encrypted-secrets
-		  variables:
-				AWS_PROFILE: default
-		  runs:
-		    - "sam build"
-		    - "sam deploy -g --profile {{ .AWS_PROFILE }}"
+      encryptedSecrets:
+        password: encrypted-secrets
+      variables:
+        AWS_PROFILE: default
+      runs:
+        - "sam build"
+        - "sam deploy -g --profile {{ .AWS_PROFILE }}"
     - name: WAIT_APPROVAL
 ```
