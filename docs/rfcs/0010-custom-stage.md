@@ -19,46 +19,25 @@ Currently, users can use only stages that PipeCD have already defined. But some 
 
 ## Application Configuration
 
-1. Custom Quick Sync
-
-Users can define quick sync jobs by themselves. After PipeCD detect a new commit, PipeCD runs scripts users defined. This application is not related with platform providers, so the kind of application is “CustomApp”
+Users can include custom stages that users defined in a pipeline.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
-kind: CustomApp
+kind: Lambda
 spec:
-  runs:
-    - "sam build"
-    - "sam deploy -g"
-```
-
-1. Custom Pipeline
-
-Users can make a pipeline that is composed of custom stages that users defined. They can also use stages (WAIT, WAIT_APPROVAL, ANALYSIS, ROLLBACK)that are not related with platform providers.
-
-```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: CustomApp
-spec:
-  pipelines:
-    - id: sam-build
-      name: CUSTOM_STAGE
-      runs:
+  name: wait-approval
+  labels:
+    env: example
+    team: product
+  pipeline:
+    stages:
+      - name: SAM_DEPLOY
+        runs:
          - "sam build"
-    - name: WAIT_APPROVAL
-      with:
-        approvers:
-          - nghialv
-    - id: sam-deploy 
-      name: CUSTOM_STAGE
-      runs:
-       - "sam deploy -g"
+         - "sam deploy -g"
 ```
 
-1. Custom Stages in a platform provider’s pipeline
-
-Users can make a platform provider’s pipeline that includes custom stages that users defined.
-
+Users can also use custom stages with default stages.
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
@@ -76,8 +55,7 @@ spec:
         with:
           approvers:
             - nghialv
-      - id: custom-web-hook
-        name: CUSTOM_STAGE
+      - name: CUSTOM_WEB_HOOK
         runs:
           - "curl https://hooks.slack.com"
       - name: K8S_PRIMARY_ROLLOUT
@@ -106,20 +84,14 @@ spec:
 
 When PipeCD runs script, it find commands in the specified directory (~/.piped/tools). The field externalBinary can manage these command binaries. If command binaries are not in the directory or command version is different from specified version, PipeCD downloads commands by installScript. The install script is run in a temporary directory that PipeCD creates.
 
-Users can use {{ .BinDir }} that is replacement of the directory (~/.piped/tools) where binary script should be installed and {{ .Version }} that is replacement of the value of the field `version` .
+Enumerate external binaries that users want to use in a piped configuration file. They can use {{ .BinDir }} that is replacement of the directory (~/.piped/tools) where binary script should be installed and {{ .Version }} that is replacement of the value of the field `version` .
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
-kind: CustomApp
+kind: Piped
 spec:
-  encryptedSecrets:
-    password: encrypted-secrets
-  variables:
-    AWS_PROFILE: default
-  runs:
-    - "sam build"
-    - "sam deploy -g --profile {{ .AWS_PROFILE }}"
-  externalBinary:
+  ...
+  externalBinaries:
     - command: "sam"
       version: 1.7.3
       installScript: |
@@ -129,6 +101,7 @@ spec:
 ```
 
 # Alternatives
+## How to define custom stages?
 1. Add bin executer to exisisting XXX_SYNC
 - Must implement for every app kind.
 - What app kind is SAM app?
@@ -136,12 +109,24 @@ spec:
 1. Add QUICK_SYNC stage
 - It's a stage with a lot of freedom, but it's inconsistent with the use cases being narrowed down.
 
-# Unresolved questions
+1. Add OtherApp to manage custom stages
+Users can define quick sync jobs by themselves. After PipeCD detect a new commit, PipeCD runs scripts users defined. This application is not related with platform providers, so the kind of application is “CustomApp”
 
-## where is the best to define custom stage?
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: OtherApp
+spec:
+  runs:
+    - "sam build"
+    - "sam deploy -g"
+```
 
-There are two configuration files to set an application, piped configuration file and application configuration file. 
+Users can make a pipeline that is composed of custom stages that users defined. They can also use stages (WAIT, WAIT_APPROVAL, ANALYSIS, ROLLBACK)that are not related with platform providers.
 
+- Users can define quick sync without a pipeline.
+- But it is difficult to understand of the meaning of "OtherApp". Every applications' kind shouold be either of platform providers.
+
+## Where users define custom stage
 1. Define custom stages only in a piped config file and refer defined stage name in an application config file.
 
 piped config file
@@ -151,11 +136,14 @@ apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
   ...
+  platformProviders:
+    - name: sam-app
+      type: CUSTOM
   customStages:
     - name: SAM_DEPLOY     
-    runs:
-      - "sam build"
-      - "sam deploy -g --profile {{ .AWS_PROFILE }}"
+      runs:
+        - "sam build"
+        - "sam deploy -g --profile {{ .AWS_PROFILE }}"
     externalBinary:
       - command: "sam"
         version: 1.7.3
@@ -215,41 +203,3 @@ spec:
 
 - The application config file will be large and complicated as the number of custom stages increase.
 - Users must write custom stage configurations in every application config file.
-
-1. hybrid(Define binary management in a piped config and run script in an application config file)
-
-piped config file
-
-```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: Piped
-spec:
-  ...
-  customStages:
-    - name: SAM_DEPLOY      
-      externalBinary:
-        - command: "sam"
-          version: 1.7.3
-          installScript: |
-            wget https://github.com/aws/aws-sam-cli/releases/download/v{{ .Version }}/aws-sam-cli-macos-arm64.pkg
-            echo password | sudo -S installer -pkg aws-sam-cli-macos-arm64.pkg -target {{ .BinDir }}
-            mv sam sam-{{ .Version }}
-```
-
-application config file
-
-```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: CustomApp
-spec:
-  pipelines:
-    - name: SAM_BUILD
-      encryptedSecrets:
-        password: encrypted-secrets
-      variables:
-        AWS_PROFILE: default
-      runs:
-        - "sam build"
-        - "sam deploy -g --profile {{ .AWS_PROFILE }}"
-    - name: WAIT_APPROVAL
-```
