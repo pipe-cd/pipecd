@@ -36,7 +36,7 @@ type Getter interface {
 
 func NewStore(cfg *config.PlatformProviderLambdaConfig, platformProvider string, appLister applicationLister, logger *zap.Logger) *Store {
 	logger = logger.Named("lambda").
-		With(zap.String("cloud-provider", platformProvider))
+		With(zap.String("platform-provider", platformProvider))
 
 	return &Store{
 		logger: logger,
