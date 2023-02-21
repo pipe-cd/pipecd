@@ -246,15 +246,15 @@ apiVersion: "pipecd.dev/v1beta1"
 kind: ControlPlane
 spec:
     datastore:
-    type: MYSQL
-    config: # edit here
-        url: root:test@tcp(pipecd-mysql:3306)
-        database: quickstart
+      type: MYSQL
+      config: # edit here
+          url: root:test@tcp(pipecd-mysql:3306)
+          database: quickstart
     filestore:
-    type: S3
-    config: 
-        bucket: example-pipecd-control-plane-filestore 
-        region: ap-northeast-1
+      type: S3
+      config: 
+          bucket: example-pipecd-control-plane-filestore 
+          region: ap-northeast-1
     projects:
     - id: quickstart
         staticAdmin:
