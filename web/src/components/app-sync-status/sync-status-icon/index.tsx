@@ -1,5 +1,5 @@
 import { makeStyles } from "@material-ui/core";
-import { Cached, CheckCircle, Error, Info, ReportOff } from "@material-ui/icons";
+import { Cached, CheckCircle, Error, Info, AssignmentLate } from "@material-ui/icons";
 import { FC } from "react";
 import { ApplicationSyncStatus } from "~/modules/applications";
 
@@ -47,6 +47,6 @@ export const SyncStatusIcon: FC<SyncStatusIconProps> = ({ status }) => {
     case ApplicationSyncStatus.OUT_OF_SYNC:
       return <Error className={classes[status]} />;
     case ApplicationSyncStatus.INVALID_CONFIG:
-      return <ReportOff className={classes[status]} />;
+      return <AssignmentLate className={classes[status]} />;
   }
 };
