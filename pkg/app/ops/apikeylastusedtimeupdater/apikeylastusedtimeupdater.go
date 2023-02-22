@@ -28,7 +28,7 @@ import (
 )
 
 var (
-	interval = 1 * time.Minute
+	interval = 10 * time.Minute
 )
 
 type apiKeyStore interface {
@@ -93,30 +93,48 @@ func (c *APIKeyLastUsedTimeUpdater) updateAPIKeyLastUsedTime(ctx context.Context
 
 	apiKeys, err := c.apiKeyStore.List(ctx, opts)
 	if err != nil {
-		c.logger.Info("there are no enabled API key")
+		c.logger.Error("failed to list API key", zap.Error(err))
+		return err
 	}
 
 	for _, apiKey := range apiKeys {
-		if lastUsedTimeByte, err := c.apiKeyLastUsedTimeCache.Get(apiKey.Id); err == nil {
-			lastUsedTime := bytes2int64(lastUsedTimeByte.([]byte))
-			if err := c.apiKeyStore.UpdateLastUsedAt(ctx, apiKey.Id, lastUsedTime); err != nil {
-				c.logger.Error("failed to update last used time",
-					zap.String("id", apiKey.Id),
-					zap.Error(err),
-				)
-				return err
-			}
+		lastUsedTimeByte, err := c.apiKeyLastUsedTimeCache.Get(apiKey.Id)
+		if err != nil {
+			c.logger.Error("failed to update last used time",
+				zap.String("id", apiKey.Id),
+				zap.Error(err),
+			)
+			continue
+		}
+
+		lastUsedTime, err := bytes2int64(lastUsedTimeByte.([]byte))
+		if err != nil {
+			c.logger.Error("failed to update last used time",
+				zap.String("id", apiKey.Id),
+				zap.Error(err),
+			)
+			continue
+		}
+		if lastUsedTime == apiKey.LastUsedAt {
+			continue
+		}
+		if err := c.apiKeyStore.UpdateLastUsedAt(ctx, apiKey.Id, lastUsedTime); err != nil {
+			c.logger.Error("failed to update last used time",
+				zap.String("id", apiKey.Id),
+				zap.Error(err),
+			)
+			continue
 		}
 	}
 
 	return nil
 }
 
-func bytes2int64(bytes []byte) int64 {
-	var numString string
-	for i := range bytes {
-		numString += string(bytes[i])
+func bytes2int64(bytes []byte) (int64, error) {
+	numString := string(bytes)
+	num, err := strconv.ParseInt(numString, 10, 64)
+	if err != nil {
+		return 0, err
 	}
-	num, _ := strconv.ParseInt(numString, 10, 64)
-	return num
+	return num, nil
 }
