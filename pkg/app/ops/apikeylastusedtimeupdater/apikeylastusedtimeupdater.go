@@ -107,7 +107,8 @@ func (c *APIKeyLastUsedTimeUpdater) updateAPIKeyLastUsedTime(ctx context.Context
 			continue
 		}
 
-		lastUsedTime, err := strconv.ParseInt(string(cachedLastUse.([]byte)), 10, 64)
+                s := string(cachedLastUse.([]byte))
+		lastUsedTime, err := strconv.ParseInt(s, 10, 64)
 		if err != nil {
 			c.logger.Error("failed to fetch last used time from cache",
 				zap.String("id", apiKey.Id),
