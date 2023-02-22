@@ -516,3 +516,74 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 		})
 	}
 }
+
+func TestCustomStageConfig(t *testing.T) {
+	testcases := []struct {
+		fileName           string
+		expectedKind       Kind
+		expectedAPIVersion string
+		expectedSpec       interface{}
+		expectedError      error
+	}{
+		{
+			fileName:           "testdata/application/custom-stage.yaml",
+			expectedKind:       KindLambdaApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedSpec: &LambdaApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
+					Timeout: Duration(6 * time.Hour),
+					Pipeline: &DeploymentPipeline{
+						Stages: []PipelineStage{
+							{
+								Name: model.StageCustomStage,
+								Desc: "build by sam",
+								CustomStageOptions: &CustomStageOptions{
+									Runs: []string{
+										"sam build",
+									},
+								},
+							},
+							{
+								Name: model.StageCustomStage,
+								Desc: "deploy by sam",
+								CustomStageOptions: &CustomStageOptions{
+									Env: map[string]string{
+										"AWS_PROFILE": "default",
+									},
+									Runs: []string{
+										"sam deploy -g {{ .AWS_PROFILE }}",
+									},
+								},
+							},
+						},
+					},
+					Trigger: Trigger{
+						OnOutOfSync: OnOutOfSync{
+							Disabled:  newBoolPointer(true),
+							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
+						},
+					},
+				},
+				Input: LambdaDeploymentInput{
+					FunctionManifestFile: "function.yaml",
+					AutoRollback:         newBoolPointer(true),
+				},
+			},
+			expectedError: nil,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.fileName, func(t *testing.T) {
+			cfg, err := LoadFromYAML(tc.fileName)
+			require.Equal(t, tc.expectedError, err)
+			if err == nil {
+				assert.Equal(t, tc.expectedKind, cfg.Kind)
+				assert.Equal(t, tc.expectedAPIVersion, cfg.APIVersion)
+				assert.Equal(t, tc.expectedSpec, cfg.spec)
+			}
+		})
+	}
+}

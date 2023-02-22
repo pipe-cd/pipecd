@@ -1,0 +1,17 @@
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaApp
+spec:
+  pipeline:
+    stages:
+      - name: CUSTOM_STAGE
+        desc: "build by sam"
+        with:
+          runs: 
+            - "sam build"
+      - name: CUSTOM_STAGE
+        desc: "deploy by sam"
+        with:
+          env: 
+            AWS_PROFILE: default
+          runs: 
+            - "sam deploy -g {{ .AWS_PROFILE }}"
