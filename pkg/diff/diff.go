@@ -132,7 +132,6 @@ func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
 	}
 
 	switch vx.Kind() {
-	// diffSliceは中でaddNodeしてるから中でもしすり抜けてるならここで省きたい
 	case reflect.Map:
 		return d.diffMap(path, vx, vy)
 
@@ -176,7 +175,7 @@ func (d *differ) diffSlice(path []PathStep, vx, vy reflect.Value) error {
 	for i := minLen; i < vx.Len(); i++ {
 		nextPath := newSlicePath(path, i)
 		if d.isContainIgnorePathPrefixs(nextPath) {
-			return nil
+			continue
 		}
 		nextValueX := vx.Index(i)
 		d.result.addNode(nextPath, nextValueX.Type(), nextValueX.Type(), nextValueX, reflect.Value{})
@@ -185,7 +184,7 @@ func (d *differ) diffSlice(path []PathStep, vx, vy reflect.Value) error {
 	for i := minLen; i < vy.Len(); i++ {
 		nextPath := newSlicePath(path, i)
 		if d.isContainIgnorePathPrefixs(nextPath) {
-			return nil
+			continue
 		}
 		nextValueY := vy.Index(i)
 		d.result.addNode(nextPath, nextValueY.Type(), nextValueY.Type(), reflect.Value{}, nextValueY)
