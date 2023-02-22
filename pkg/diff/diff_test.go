@@ -53,6 +53,49 @@ func TestDiff(t *testing.T) {
 			diffNum: 0,
 		},
 		{
+			name:     "no diff by ignoring specified field",
+			yamlFile: "testdata/ignore_specified_field.yaml",
+			options: []Option{
+				// WithIgnorePathPrefixs([]string{"spec.replicas", "spec.template.spec.containers.0.args.1", "spec.template.spec.containers.3"}),
+				WithIgnorePathPrefixs([]string{"spec.replicas", "spec.template.spec.containers.3"}),
+			},
+			diffNum: 6,
+			diffString: `  spec:
+    template:
+      metadata:
+        labels:
+          #spec.template.metadata.labels.app
+-         app: simple
++         app: simple2
+
+          #spec.template.metadata.labels.component
+-         component: foo
+
+      spec:
+        containers:
+          - args:
+              #spec.template.spec.containers.0.args.1
+-             - hello
+
+          -
+            #spec.template.spec.containers.1.image
+-           image: gcr.io/pipecd/helloworld:v2.0.0
++           image: gcr.io/pipecd/helloworld:v2.1.0
+
+          -
+            #spec.template.spec.containers.2.image
+-           image: 
+
+        #spec.template.spec.strategy
++       strategy:
++         rollingUpdate:
++           maxSurge: 25%
++           maxUnavailable: 25%
++         type: RollingUpdate
+
+`,
+		},
+		{
 			name:     "has diff",
 			yamlFile: "testdata/has_diff.yaml",
 			diffNum:  8,
