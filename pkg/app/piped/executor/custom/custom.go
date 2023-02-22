@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	defaultDuration = time.Minute
+	defaultDuration = 1 * time.Minute
 )
 
 type Executor struct {
@@ -44,7 +44,7 @@ func Register(r registerer) {
 			Input: in,
 		}
 	}
-	r.Register(model.StageWait, f)
+	r.Register(model.StageCustomStage, f)
 }
 
 // Execute starts waiting for the specified duration.
@@ -83,21 +83,33 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 }
 
 func (e *Executor) executeCommand(opts *config.CustomStageOptions) model.StageStatus {
+	workingDir, err := os.MkdirTemp("", "custom-stage")
+	if err != nil {
+		e.LogPersister.Errorf("failed to make working directory, %v", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+	defer os.RemoveAll(workingDir)
+
 	binDir := toolregistry.DefaultRegistry().GetBinDir()
 	pathFromOS := os.Getenv("PATH")
+
 	path := binDir + ":" + pathFromOS
+	var envs []string
+	for key, value := range opts.Env {
+		envs = append(envs, key+"="+value)
+	}
 	for _, v := range opts.Runs {
-		cmd := exec.Command(v)
-		cmd.Env = append(os.Environ(), "PATH="+path)
-		for key, value := range opts.Env {
-			cmd.Env = append(os.Environ(), key+"="+value)
-		}
+		cmd := exec.Command("/bin/sh", "-c", v)
+		e.LogPersister.Infof("RUN %s (env: %v)", v, envs)
+		cmd.Dir = workingDir
+		cmd.Env = append(os.Environ(), append(envs, "PATH="+path)...)
 		out, err := cmd.CombinedOutput()
+		e.LogPersister.Infof("%s", out)
 		if err != nil {
-			e.LogPersister.Errorf("command (%s) failed, %v", v, err)
+			e.LogPersister.Errorf("ERROR %v", err)
 			return model.StageStatus_STAGE_FAILURE
 		}
-		e.LogPersister.Infof("command (%s) successfully executed (output: %s)", v, out)
+
 	}
 	return model.StageStatus_STAGE_SUCCESS
 }
