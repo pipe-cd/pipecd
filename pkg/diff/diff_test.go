@@ -56,10 +56,9 @@ func TestDiff(t *testing.T) {
 			name:     "no diff by ignoring specified field",
 			yamlFile: "testdata/ignore_specified_field.yaml",
 			options: []Option{
-				// WithIgnorePathPrefixs([]string{"spec.replicas", "spec.template.spec.containers.0.args.1", "spec.template.spec.containers.3"}),
-				WithIgnorePathPrefixs([]string{"spec.replicas", "spec.template.spec.containers.3"}),
+				WithIgnorePathPrefixs([]string{"spec.replicas", "spec.template.spec.containers.0.args.1", "spec.template.spec.containers.3"}),
 			},
-			diffNum: 6,
+			diffNum: 5,
 			diffString: `  spec:
     template:
       metadata:
@@ -73,10 +72,6 @@ func TestDiff(t *testing.T) {
 
       spec:
         containers:
-          - args:
-              #spec.template.spec.containers.0.args.1
--             - hello
-
           -
             #spec.template.spec.containers.1.image
 -           image: gcr.io/pipecd/helloworld:v2.0.0

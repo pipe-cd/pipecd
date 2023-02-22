@@ -86,11 +86,8 @@ func DiffUnstructureds(x, y unstructured.Unstructured, opts ...Option) (*Result,
 }
 
 func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
-	for _, ignorePathPrefix := range d.ignorePathPrefixs {
-		pathString := makePathString(path)
-		if strings.HasPrefix(pathString, ignorePathPrefix) {
-			return nil
-		}
+	if d.isContainIgnorePathPrefixs(path) {
+		return nil
 	}
 
 	if !vx.IsValid() {
@@ -135,6 +132,7 @@ func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
 	}
 
 	switch vx.Kind() {
+	// diffSliceは中でaddNodeしてるから中でもしすり抜けてるならここで省きたい
 	case reflect.Map:
 		return d.diffMap(path, vx, vy)
 
@@ -177,12 +175,18 @@ func (d *differ) diffSlice(path []PathStep, vx, vy reflect.Value) error {
 
 	for i := minLen; i < vx.Len(); i++ {
 		nextPath := newSlicePath(path, i)
+		if d.isContainIgnorePathPrefixs(nextPath) {
+			return nil
+		}
 		nextValueX := vx.Index(i)
 		d.result.addNode(nextPath, nextValueX.Type(), nextValueX.Type(), nextValueX, reflect.Value{})
 	}
 
 	for i := minLen; i < vy.Len(); i++ {
 		nextPath := newSlicePath(path, i)
+		if d.isContainIgnorePathPrefixs(nextPath) {
+			return nil
+		}
 		nextValueY := vy.Index(i)
 		d.result.addNode(nextPath, nextValueY.Type(), nextValueY.Type(), reflect.Value{}, nextValueY)
 	}
@@ -337,4 +341,14 @@ func newMapPath(path []PathStep, index string) []PathStep {
 		MapIndex: index,
 	})
 	return next
+}
+
+func (d *differ) isContainIgnorePathPrefixs(path []PathStep) bool {
+	pathString := makePathString(path)
+	for _, ignorePathPrefix := range d.ignorePathPrefixs {
+		if strings.HasPrefix(pathString, ignorePathPrefix) {
+			return true
+		}
+	}
+	return false
 }
