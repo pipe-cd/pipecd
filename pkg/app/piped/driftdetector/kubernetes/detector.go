@@ -84,7 +84,7 @@ func NewDetector(
 ) Detector {
 
 	logger = logger.Named("kubernetes-detector").With(
-		zap.String("cloud-provider", cp.Name),
+		zap.String("platform-provider", cp.Name),
 	)
 	return &detector{
 		provider:          cp,
