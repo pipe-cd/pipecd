@@ -30,7 +30,8 @@ spec:
     team: product
   pipeline:
     stages:
-      - name: SAM_DEPLOY
+      - name: CUSTOM_STAGE
+        desc: "sum deploy"
         runs:
          - "sam build"
          - "sam deploy -g"
@@ -67,16 +68,19 @@ Users can use [encrypted-secret]([https://pipecd.dev/docs/user-guide/managing-ap
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
-kind: CustomApp
+kind: LambdaApp
 spec:
   encryptedSecrets:
     password: encrypted-secrets
-  variables:
-    AWS_PROFILE: default
-  runs:
-    - "echo {{ .encryptedSecrets.password }} | sudo -S su"
-    - "sam build"
-    - "sam deploy -g --profile {{ .AWS_PROFILE }}"
+  pipeline:
+    stages:
+      - name: CUSTOM_STAGE
+        env:
+          AWS_PROFILE: default
+        runs:
+          - "echo {{ .encryptedSecrets.password }} | sudo -S su"
+          - "sam build"
+          - "sam deploy -g --profile $AWS_PROFILE"
 ```
 
 ## Binary Management
@@ -98,6 +102,8 @@ spec:
         echo {{ .encryptedSecrets.password }} | sudo -S installer -pkg aws-sam-cli-macos-arm64.pkg -target {{ .BinDir }}
         mv sam sam-{{ .Version }}
 ```
+
+Note: If you install a binary in the above way, the name of the command includes the version like `sam-1.7.3 build`
 
 # Alternatives
 ## How to define custom stages?
