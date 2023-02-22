@@ -28,6 +28,7 @@ export function createAPIKeyFromObject(o: APIKey.AsObject): APIKey {
   key.setDisabled(o.disabled);
   key.setCreatedAt(o.createdAt);
   key.setUpdatedAt(o.updatedAt);
+  key.setLastUsedAt(o.lastUsedAt);
 
   return key;
 }

@@ -54,7 +54,7 @@ func TestAddApplication(t *testing.T) {
 					Repo: &model.ApplicationGitRepository{Id: "id"},
 					Path: "path",
 				},
-				CloudProvider: "cloud-provider",
+				PlatformProvider: "platform-provider",
 
 				CreatedAt: 1,
 				UpdatedAt: 1,
