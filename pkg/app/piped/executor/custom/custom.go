@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	defaultDuration = 1 * time.Minute
+	defaultTimeout = 1 * time.Minute
 )
 
 type Executor struct {
@@ -51,15 +51,17 @@ func Register(r registerer) {
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	var (
 		originalStatus = e.Stage.Status
-		duration       = defaultDuration
+		timeout        = defaultTimeout
 	)
+	timeout = e.StageConfig.CustomStageOptions.Timeout.Duration()
+
 	c := make(chan model.StageStatus, 1)
 	go func() {
 		result := e.executeCommand(e.StageConfig.CustomStageOptions)
 		c <- result
 	}()
 
-	timer := time.NewTimer(duration)
+	timer := time.NewTimer(timeout)
 	defer timer.Stop()
 
 	for {
@@ -67,7 +69,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		case result := <-c:
 			return result
 		case <-timer.C:
-			return model.StageStatus_STAGE_SUCCESS
+			e.LogPersister.Errorf("Canceled because of timeout")
+			return model.StageStatus_STAGE_CANCELLED
 
 		case s := <-sig.Ch():
 			switch s {
