@@ -243,24 +243,24 @@ func applyManifests(ctx context.Context, ag applierGetter, manifests []provider.
 		annotation := m.GetAnnotations()[provider.LabelSyncReplace]
 		if annotation != provider.UseReplaceEnabled {
 			if err := applier.ApplyManifest(ctx, m); err != nil {
-				lp.Errorf("Failed to apply manifest: %s (%w)", m.Key.ReadableLogString(), err)
+				lp.Errorf("Failed to apply manifest: %s (%w)", m.Key.ReadableString(), err)
 				return err
 			}
-			lp.Successf("- applied manifest: %s", m.Key.ReadableLogString())
+			lp.Successf("- applied manifest: %s", m.Key.ReadableString())
 			continue
 		}
 		// Always try to replace first and create if it fails due to resource not found error.
 		// This is because we cannot know whether resource already exists before executing command.
 		err = applier.ReplaceManifest(ctx, m)
 		if errors.Is(err, provider.ErrNotFound) {
-			lp.Infof("Specified resource does not exist, so create the resource: %s (%w)", m.Key.ReadableLogString(), err)
+			lp.Infof("Specified resource does not exist, so create the resource: %s (%w)", m.Key.ReadableString(), err)
 			err = applier.CreateManifest(ctx, m)
 		}
 		if err != nil {
-			lp.Errorf("Failed to replace or create manifest: %s (%w)", m.Key.ReadableLogString(), err)
+			lp.Errorf("Failed to replace or create manifest: %s (%w)", m.Key.ReadableString(), err)
 			return err
 		}
-		lp.Successf("- replaced or created manifest: %s", m.Key.ReadableLogString())
+		lp.Successf("- replaced or created manifest: %s", m.Key.ReadableString())
 
 	}
 	lp.Successf("Successfully applied %d manifests", len(manifests))
@@ -286,16 +286,16 @@ func deleteResources(ctx context.Context, ag applierGetter, resources []provider
 
 		err = applier.Delete(ctx, k)
 		if err == nil {
-			lp.Successf("- deleted resource: %s", k.ReadableLogString())
+			lp.Successf("- deleted resource: %s", k.ReadableString())
 			deletedCount++
 			continue
 		}
 		if errors.Is(err, provider.ErrNotFound) {
-			lp.Infof("- no resource %s to delete", k.ReadableLogString())
+			lp.Infof("- no resource %s to delete", k.ReadableString())
 			deletedCount++
 			continue
 		}
-		lp.Errorf("- unable to delete resource: %s (%v)", k.ReadableLogString(), err)
+		lp.Errorf("- unable to delete resource: %s (%v)", k.ReadableString(), err)
 	}
 
 	if deletedCount < resourcesLen {

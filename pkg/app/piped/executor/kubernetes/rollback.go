@@ -113,7 +113,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		workloads := findWorkloadManifests(manifests, appCfg.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, variantLabel, primaryVariant); err != nil {
-				e.LogPersister.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableLogString(), err)
+				e.LogPersister.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
 				return model.StageStatus_STAGE_FAILURE
 			}
 		}
