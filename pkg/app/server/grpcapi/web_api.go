@@ -1528,14 +1528,16 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 	}
 
 	for i := range apiKeys {
-		// Get LastUsedTIme from Redis
-		var lastUsedAtFromCache int64 = 0
-		if lastUsedAtFromCacheByte, error := a.apiKeyLastUsedStore.Get(apiKeys[i].Id); error == nil {
-			lastUsedAtFromCache = bytes2int64(lastUsedAtFromCacheByte.([]byte))
+		var lastUsedAt int64
+		if cachedLastUse, err := a.apiKeyLastUsedStore.Get(apiKeys[i].Id); err == nil {
+			lastUsedAt, err = strconv.ParseInt(string(cachedLastUse.([]byte)), 10, 64)
+			if err != nil {
+				a.logger.Error("failed to get last used time from cache", zap.Error(err))
+			}
 		}
 
-		if lastUsedAtFromCache > apiKeys[i].LastUsedAt {
-			apiKeys[i].LastUsedAt = lastUsedAtFromCache
+		if lastUsedAt > apiKeys[i].LastUsedAt {
+			apiKeys[i].LastUsedAt = lastUsedAt
 		}
 		// Redact all sensitive data inside API key before sending to the client.
 		apiKeys[i].RedactSensitiveData()
@@ -1544,15 +1546,6 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 	return &webservice.ListAPIKeysResponse{
 		Keys: apiKeys,
 	}, nil
-}
-
-func bytes2int64(bytes []byte) int64 {
-	var numString string
-	for i := range bytes {
-		numString += string(bytes[i])
-	}
-	num, _ := strconv.ParseInt(numString, 10, 64)
-	return num
 }
 
 // GetInsightData returns the accumulated insight data.
