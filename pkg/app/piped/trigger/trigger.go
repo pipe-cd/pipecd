@@ -231,20 +231,20 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 				zap.Error(err),
 			)
 
+			// Set ApplicationSyncState to INVALID_CONFIG when LoadApplication fails.
 			req := &pipedservice.ReportApplicationSyncStateRequest{
 				ApplicationId: app.Id,
 				State: &model.ApplicationSyncState{
 					Status: model.ApplicationSyncStatus_INVALID_CONFIG,
-					Reason: "Failed loading application config.",
+					Reason: err.Error(),
 				},
 			}
-			t.apiClient.ReportApplicationSyncState(ctx, req)
-			// Do not notify this event to external services because it may cause annoying
-			// when one application is missing or having an invalid configuration file.
-			// So instead of notifying this as a notification,
-			// we should show this problem on the web with a status like INVALID_CONFIG.
-			//
-			// t.notifyDeploymentTriggerFailed(app, msg, headCommit)
+			_, err := t.apiClient.ReportApplicationSyncState(ctx, req)
+			if err != nil {
+				msg := fmt.Sprintf("failed to report application sync state %s: %v", app.Id, err)
+				t.logger.Error(msg, zap.Error(err))
+			}
+
 			continue
 		}
 
