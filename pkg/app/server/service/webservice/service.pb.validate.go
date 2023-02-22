@@ -11889,6 +11889,8 @@ func (m *ListApplicationsRequest_Options) validate(all bool) error {
 
 	// no validation rules for Labels
 
+	// no validation rules for PipedId
+
 	if len(errors) > 0 {
 		return ListApplicationsRequest_OptionsMultiError(errors)
 	}
