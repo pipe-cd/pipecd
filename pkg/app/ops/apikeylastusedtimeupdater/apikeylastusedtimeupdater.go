@@ -132,9 +132,5 @@ func (c *APIKeyLastUsedTimeUpdater) updateAPIKeyLastUsedTime(ctx context.Context
 
 func bytes2int64(bytes []byte) (int64, error) {
 	numString := string(bytes)
-	num, err := strconv.ParseInt(numString, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	return num, nil
+	return strconv.ParseInt(numString, 10, 64)
 }
