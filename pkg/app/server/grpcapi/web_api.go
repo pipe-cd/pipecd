@@ -1529,10 +1529,13 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 
 	for i := range apiKeys {
 		// Get LastUsedTIme from Redis
-		if lastUsedAt, error := a.apiKeyLastUsedStore.Get(apiKeys[i].Id); error == nil {
-			apiKeys[i].LastUsedAt = bytes2int64(lastUsedAt.([]byte))
-		} else {
-			apiKeys[i].LastUsedAt = 0
+		var lastUsedAtFromCache int64 = 0
+		if lastUsedAtFromCacheByte, error := a.apiKeyLastUsedStore.Get(apiKeys[i].Id); error == nil {
+			lastUsedAtFromCache = bytes2int64(lastUsedAtFromCacheByte.([]byte))
+		}
+
+		if lastUsedAtFromCache > apiKeys[i].LastUsedAt {
+			apiKeys[i].LastUsedAt = lastUsedAtFromCache
 		}
 		// Redact all sensitive data inside API key before sending to the client.
 		apiKeys[i].RedactSensitiveData()

@@ -26,6 +26,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipecd/pkg/admin"
+	"github.com/pipe-cd/pipecd/pkg/app/ops/apikeylastusedtimeupdater"
 	"github.com/pipe-cd/pipecd/pkg/app/ops/deploymentchaincontroller"
 	"github.com/pipe-cd/pipecd/pkg/app/ops/firestoreindexensurer"
 	"github.com/pipe-cd/pipecd/pkg/app/ops/handler"
@@ -178,6 +179,14 @@ func (s *ops) run(ctx context.Context, input cli.Input) error {
 		cleaner := planpreviewoutputcleaner.NewCleaner(fs, input.Logger)
 		group.Go(func() error {
 			return cleaner.Run(ctx)
+		})
+	}
+
+	// Start runnning apiKeyLastUsedTime updater.
+	{
+		updater := apikeylastusedtimeupdater.NewAPIKeyLastUsedTimeUpdater(ds, rd, input.Logger)
+		group.Go(func() error {
+			return updater.Run(ctx)
 		})
 	}
 
