@@ -27,7 +27,7 @@ type differ struct {
 	ignoreAddingMapKeys           bool
 	equateEmpty                   bool
 	compareNumberAndNumericString bool
-	ignorePathPrefixs             []string
+	ignoredPaths             []string
 
 	result *Result
 }
