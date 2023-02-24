@@ -1,6 +1,6 @@
 module github.com/pipe-cd/actions-gh-release
 
-go 1.16
+go 1.19
 
 require (
 	github.com/creasty/defaults v1.5.2
@@ -8,4 +8,16 @@ require (
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/oauth2 v0.0.0-20211005180243-6b3c2da341f1
 	sigs.k8s.io/yaml v1.3.0
+)
+
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/golang/protobuf v1.4.2 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
+	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
+	google.golang.org/protobuf v1.25.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
