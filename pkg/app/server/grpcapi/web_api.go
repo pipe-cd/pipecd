@@ -1532,7 +1532,8 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 		if err != nil {
 			a.logger.Error("failed to get last used time from cache",
 				zap.String("id", apiKeys[i].Id),
-				zap.Error(err))
+				zap.Error(err),
+			)
 			continue
 		}
 
@@ -1540,7 +1541,10 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 		s := string(cachedLastUse.([]byte))
 		lastUsedAt, err = strconv.ParseInt(s, 10, 64)
 		if err != nil {
-			a.logger.Error("failed to parse last used time from cache", zap.Error(err))
+			a.logger.Error("failed to parse last used time from cache",
+				zap.String("id", apiKeys[i].Id),
+				zap.Error(err),
+			)
 			continue
 		}
 		if lastUsedAt > apiKeys[i].LastUsedAt {
