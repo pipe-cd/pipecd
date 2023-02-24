@@ -1528,17 +1528,25 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 	}
 
 	for i := range apiKeys {
-		var lastUsedAt int64
-		if cachedLastUse, err := a.apiKeyLastUsedStore.Get(apiKeys[i].Id); err == nil {
-			lastUsedAt, err = strconv.ParseInt(string(cachedLastUse.([]byte)), 10, 64)
-			if err != nil {
-				a.logger.Error("failed to get last used time from cache", zap.Error(err))
-			}
+		cachedLastUse, err := a.apiKeyLastUsedStore.Get(apiKeys[i].Id)
+		if err != nil {
+			a.logger.Error("failed to get last used time from cache",
+				zap.String("id", apiKeys[i].Id),
+				zap.Error(err))
+			continue
 		}
 
+		var lastUsedAt int64
+		s := string(cachedLastUse.([]byte))
+		lastUsedAt, err = strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			a.logger.Error("failed to parse last used time from cache", zap.Error(err))
+			continue
+		}
 		if lastUsedAt > apiKeys[i].LastUsedAt {
 			apiKeys[i].LastUsedAt = lastUsedAt
 		}
+
 		// Redact all sensitive data inside API key before sending to the client.
 		apiKeys[i].RedactSensitiveData()
 	}
