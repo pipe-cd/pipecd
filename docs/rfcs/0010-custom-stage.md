@@ -114,7 +114,7 @@ Note: If you install a binary in the above way, the name of the command includes
 2. Add QUICK_SYNC stage
 - It's a stage with a lot of freedom, but it's inconsistent with the use cases being narrowed down.
 
-1. Add OtherApp to manage custom stages
+3. Add OtherApp to manage custom stages
 Users can define quick sync jobs by themselves. After PipeCD detect a new commit, PipeCD runs scripts users defined. This application is not related with platform providers, so the kind of application is “CustomApp”
 
 ```yaml
