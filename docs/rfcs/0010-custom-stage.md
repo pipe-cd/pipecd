@@ -111,7 +111,7 @@ Note: If you install a binary in the above way, the name of the command includes
 - Must implement for every app kind.
 - What app kind is SAM app?
 
-1. Add QUICK_SYNC stage
+2. Add QUICK_SYNC stage
 - It's a stage with a lot of freedom, but it's inconsistent with the use cases being narrowed down.
 
 1. Add OtherApp to manage custom stages
