@@ -21,7 +21,7 @@ import {
     ApplicationSyncStatusKey,
     selectAll as selectAllApplications,
 } from "~/modules/applications";
-import {ApplicationAutocomplete} from "./application-autocomplete";
+import {ApplicationAutocomplete, PipedAutocomplete} from "./application-autocomplete";
 
 const useStyles = makeStyles((theme) => ({
     toolbarSpacer: {
@@ -87,7 +87,7 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
                 </div>
 
                 <div className={classes.formItem}>
-                    <ApplicationAutocomplete
+                    <PipedAutocomplete
                         value={options.pipedId ?? null}
                         onChange={(value) => handleUpdateFilterValue({name: value})}
                     />
