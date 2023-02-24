@@ -273,6 +273,13 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			Value:    model.ApplicationKind(kind),
 		})
 	}
+	if req.PipedId != "" {
+		filters = append(filters, datastore.ListFilter{
+			Field:    "PipedId",
+			Operator: datastore.OperatorEqual,
+			Value:    req.PipedId,
+		})
+	}
 
 	limit := int(req.Limit)
 	options := datastore.ListOptions{
