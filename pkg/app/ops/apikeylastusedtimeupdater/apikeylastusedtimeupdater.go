@@ -98,23 +98,26 @@ func (c *APIKeyLastUsedTimeUpdater) updateAPIKeyLastUsedTime(ctx context.Context
 	}
 
 	for _, apiKey := range apiKeys {
-		lastUsedTimeByte, err := c.apiKeyLastUsedTimeCache.Get(apiKey.Id)
+		cachedLastUse, err := c.apiKeyLastUsedTimeCache.Get(apiKey.Id)
 		if err != nil {
-			c.logger.Error("failed to update last used time",
+			c.logger.Error("failed to fetch last used time from cache",
 				zap.String("id", apiKey.Id),
 				zap.Error(err),
 			)
 			continue
 		}
 
-		lastUsedTime, err := bytes2int64(lastUsedTimeByte.([]byte))
+		s := string(cachedLastUse.([]byte))
+		lastUsedTime, err := strconv.ParseInt(s, 10, 64)
 		if err != nil {
-			c.logger.Error("failed to update last used time",
+			c.logger.Error("failed to parse last used time from cache",
 				zap.String("id", apiKey.Id),
 				zap.Error(err),
 			)
 			continue
 		}
+
+		// Skip update last_used_at in database if no changed.
 		if lastUsedTime == apiKey.LastUsedAt {
 			continue
 		}
@@ -128,9 +131,4 @@ func (c *APIKeyLastUsedTimeUpdater) updateAPIKeyLastUsedTime(ctx context.Context
 	}
 
 	return nil
-}
-
-func bytes2int64(bytes []byte) (int64, error) {
-	numString := string(bytes)
-	return strconv.ParseInt(numString, 10, 64)
 }
