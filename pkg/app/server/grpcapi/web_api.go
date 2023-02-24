@@ -1537,9 +1537,8 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 			continue
 		}
 
-		var lastUsedAt int64
 		s := string(cachedLastUse.([]byte))
-		lastUsedAt, err = strconv.ParseInt(s, 10, 64)
+		lastUsedAt, err := strconv.ParseInt(s, 10, 64)
 		if err != nil {
 			a.logger.Error("failed to parse last used time from cache",
 				zap.String("id", apiKeys[i].Id),
