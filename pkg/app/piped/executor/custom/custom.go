@@ -29,8 +29,11 @@ const (
 	defaultTimeout = 1 * time.Minute
 )
 
-type Executor struct {
+type deployExecutor struct {
 	executor.Input
+
+	repoDir string
+	appDir  string
 }
 
 type registerer interface {
@@ -40,7 +43,7 @@ type registerer interface {
 // Register registers this executor factory into a given registerer.
 func Register(r registerer) {
 	f := func(in executor.Input) executor.Executor {
-		return &Executor{
+		return &deployExecutor{
 			Input: in,
 		}
 	}
@@ -48,11 +51,20 @@ func Register(r registerer) {
 }
 
 // Execute starts waiting for the specified duration.
-func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
+func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	var (
 		originalStatus = e.Stage.Status
 		timeout        = defaultTimeout
 	)
+	ctx := sig.Context()
+	ds, err := e.TargetDSP.Get(ctx, e.LogPersister)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to prepare target deploy source data (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+	e.repoDir = ds.RepoDir
+	e.appDir = ds.AppDir
+
 	timeout = e.StageConfig.CustomStageOptions.Timeout.Duration()
 
 	c := make(chan model.StageStatus, 1)
@@ -85,13 +97,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 }
 
-func (e *Executor) executeCommand(opts *config.CustomStageOptions) model.StageStatus {
-	workingDir, err := os.MkdirTemp("", "custom-stage")
-	if err != nil {
-		e.LogPersister.Errorf("failed to make working directory, %v", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	defer os.RemoveAll(workingDir)
+func (e *deployExecutor) executeCommand(opts *config.CustomStageOptions) model.StageStatus {
 
 	binDir := toolregistry.DefaultRegistry().GetBinDir()
 	pathFromOS := os.Getenv("PATH")
@@ -104,10 +110,12 @@ func (e *Executor) executeCommand(opts *config.CustomStageOptions) model.StageSt
 	for _, v := range opts.Runs {
 		cmd := exec.Command("/bin/sh", "-c", v)
 		e.LogPersister.Infof("RUN %s (env: %v)", v, envs)
-		cmd.Dir = workingDir
+		cmd.Dir = e.appDir
 		cmd.Env = append(os.Environ(), append(envs, "PATH="+path)...)
 		out, err := cmd.CombinedOutput()
-		e.LogPersister.Infof("%s", out)
+		if len(out) != 0 {
+			e.LogPersister.Infof("%s", out)
+		}
 		if err != nil {
 			e.LogPersister.Errorf("ERROR %v", err)
 			return model.StageStatus_STAGE_FAILURE
