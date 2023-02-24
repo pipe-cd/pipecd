@@ -56,9 +56,9 @@ func TestDiff(t *testing.T) {
 			name:     "no diff by ignoring specified field",
 			yamlFile: "testdata/ignore_specified_field.yaml",
 			options: []Option{
-				WithIgnorePathPrefixs([]string{"spec.replicas", "spec.template.spec.containers.0.args.1", "spec.template.spec.containers.3"}),
+				WithIgnoredPaths([]string{"spec.replicas", "spec.template.spec.containers.0.args.1", "spec.template.spec.containers.3", "spec.template.spec.strategy.rollingUpdate.maxSurge"}),
 			},
-			diffNum: 5,
+			diffNum: 4,
 			diffString: `  spec:
     template:
       metadata:
@@ -84,7 +84,6 @@ func TestDiff(t *testing.T) {
         #spec.template.spec.strategy
 +       strategy:
 +         rollingUpdate:
-+           maxSurge: 25%
 +           maxUnavailable: 25%
 +         type: RollingUpdate
 

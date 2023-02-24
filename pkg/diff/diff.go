@@ -27,7 +27,7 @@ type differ struct {
 	ignoreAddingMapKeys           bool
 	equateEmpty                   bool
 	compareNumberAndNumericString bool
-	ignoredPaths             []string
+	ignoredPaths                  []string
 
 	result *Result
 }
@@ -86,7 +86,7 @@ func DiffUnstructureds(x, y unstructured.Unstructured, opts ...Option) (*Result,
 }
 
 func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
-	if d.isContainIgnorePathPrefixs(path) {
+	if d.isIgnoredPaths(path) {
 		return nil
 	}
 
@@ -174,7 +174,7 @@ func (d *differ) diffSlice(path []PathStep, vx, vy reflect.Value) error {
 
 	for i := minLen; i < vx.Len(); i++ {
 		nextPath := newSlicePath(path, i)
-		if d.isContainIgnorePathPrefixs(nextPath) {
+		if d.isIgnoredPaths(nextPath) {
 			continue
 		}
 		nextValueX := vx.Index(i)
@@ -183,7 +183,7 @@ func (d *differ) diffSlice(path []PathStep, vx, vy reflect.Value) error {
 
 	for i := minLen; i < vy.Len(); i++ {
 		nextPath := newSlicePath(path, i)
-		if d.isContainIgnorePathPrefixs(nextPath) {
+		if d.isIgnoredPaths(nextPath) {
 			continue
 		}
 		nextValueY := vy.Index(i)
@@ -344,8 +344,8 @@ func newMapPath(path []PathStep, index string) []PathStep {
 
 func (d *differ) isIgnoredPaths(path []PathStep) bool {
 	pathString := makePathString(path)
-	for _, ignorePathPrefix := range d.ignorePathPrefixs {
-		if strings.HasPrefix(pathString, ignorePathPrefix) {
+	for _, ignoredPath := range d.ignoredPaths {
+		if strings.HasPrefix(pathString, ignoredPath) {
 			return true
 		}
 	}
