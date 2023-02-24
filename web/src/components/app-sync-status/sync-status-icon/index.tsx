@@ -4,7 +4,7 @@ import {
   CheckCircle,
   Error,
   Info,
-  AssignmentLate,
+  Warning,
 } from "@material-ui/icons";
 import { FC } from "react";
 import { ApplicationSyncStatus } from "~/modules/applications";
@@ -24,7 +24,7 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.error.main,
   },
   [ApplicationSyncStatus.INVALID_CONFIG]: {
-    color: theme.palette.error.light,
+    color: theme.palette.warning.light,
   },
   "@keyframes running": {
     "0%": {
@@ -53,6 +53,6 @@ export const SyncStatusIcon: FC<SyncStatusIconProps> = ({ status }) => {
     case ApplicationSyncStatus.OUT_OF_SYNC:
       return <Error className={classes[status]} />;
     case ApplicationSyncStatus.INVALID_CONFIG:
-      return <AssignmentLate className={classes[status]} />;
+      return <Warning className={classes[status]} />;
   }
 };
