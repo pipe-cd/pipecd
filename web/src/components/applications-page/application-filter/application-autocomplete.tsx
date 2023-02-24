@@ -66,19 +66,16 @@ export const PipedAutocomplete: FC<Props> = ({ value, onChange }) => {
         label="Piped"
         value={selectedPipedId}
         // className={classes.select}
-        onChange={(e) => {
-          setSelectedPipedId(e.target.value as string);
-          // handleUpdateFilterValue({
-          //   pipedId: e.target.value as string,
-          // });
-        }}
+            onChange={(e) => {
+              setSelectedPipedId(e.target.value as string);
+              onChange(e.target.value as string || "")
+            }}
       >
         {pipeds.map((e) => (
           <MenuItem value={e.id} key={`piped-${e.id}`}>
             {e.name} ({e.id})
           </MenuItem>
-
-            ))}
+          ))}
       </Select>
     </FormControl>
   );
