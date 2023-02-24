@@ -342,7 +342,7 @@ func newMapPath(path []PathStep, index string) []PathStep {
 	return next
 }
 
-func (d *differ) isContainIgnorePathPrefixs(path []PathStep) bool {
+func (d *differ) isIgnoredPaths(path []PathStep) bool {
 	pathString := makePathString(path)
 	for _, ignorePathPrefix := range d.ignorePathPrefixs {
 		if strings.HasPrefix(pathString, ignorePathPrefix) {
