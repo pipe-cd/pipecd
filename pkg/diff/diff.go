@@ -58,10 +58,10 @@ func WithCompareNumberAndNumericString() Option {
 	}
 }
 
-// WithIgnorePathPrefixs configures fields to ignore specified in application config.
-func WithIgnorePathPrefixs(ignorePathPrefixs []string) Option {
+// WithIgnoredPaths configures ignored fields.
+func WithIgnoredPaths(paths []string) Option {
 	return func(d *differ) {
-		d.ignorePathPrefixs = ignorePathPrefixs
+		d.ignoredPaths = paths
 	}
 }
 
