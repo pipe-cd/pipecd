@@ -53,12 +53,12 @@ func TestDiff(t *testing.T) {
 			diffNum: 0,
 		},
 		{
-			name:     "no diff by ignoring specified field",
+			name:     "diff by ignoring specified field",
 			yamlFile: "testdata/ignore_specified_field.yaml",
 			options: []Option{
-				WithIgnoredPaths([]string{"spec.replicas", "spec.template.spec.containers.0.args.1", "spec.template.spec.containers.3", "spec.template.spec.strategy.rollingUpdate.maxSurge"}),
+				WithIgnoredPaths([]string{"spec.replicas", "spec.template.spec.containers.0.args.1", "spec.template.spec.strategy.rollingUpdate.maxSurge", "spec.template.spec.containers.3.livenessProbe.initialDelaySeconds"}),
 			},
-			diffNum: 4,
+			diffNum: 6,
 			diffString: `  spec:
     template:
       metadata:
@@ -80,6 +80,15 @@ func TestDiff(t *testing.T) {
           -
             #spec.template.spec.containers.2.image
 -           image: 
+
+          #spec.template.spec.containers.3
++         - image: new-image
++           livenessProbe:
++             exec:
++               command:
++                 - cat
++                 - /tmp/healthy
++           name: foo
 
         #spec.template.spec.strategy
 +       strategy:
