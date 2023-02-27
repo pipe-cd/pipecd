@@ -398,8 +398,7 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 	case reflect.Interface:
 		nprefix := prefix + "." + v.String()
 		if d.isIgnoredPathsForString(nprefix) {
-			nv := reflect.New(v.Type())
-			return nv
+			return reflect.New(v.Type())
 		}
 		return d.ignoredValue(v.Elem(), prefix)
 
@@ -416,8 +415,7 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 	default:
 		nprefix := prefix + "." + v.String()
 		if d.isIgnoredPathsForString(nprefix) {
-			nv := reflect.New(v.Type())
-			return nv
+			return reflect.New(v.Type())
 		}
 		return v
 	}
