@@ -95,7 +95,7 @@ func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
 			return nil
 		}
 
-		d.result.addNode(path, nil, vy.Type(), vx, vy)
+		d.addNode(path, nil, vy.Type(), vx, vy)
 		return nil
 	}
 
@@ -104,7 +104,7 @@ func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
 			return nil
 		}
 
-		d.result.addNode(path, vx.Type(), nil, vx, vy)
+		d.addNode(path, vx.Type(), nil, vx, vy)
 		return nil
 	}
 
@@ -127,7 +127,7 @@ func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
 	}
 
 	if vx.Type() != vy.Type() {
-		d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
+		d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 		return nil
 	}
 
@@ -154,7 +154,7 @@ func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
 
 func (d *differ) diffSlice(path []PathStep, vx, vy reflect.Value) error {
 	if vx.IsNil() || vy.IsNil() {
-		d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
+		d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 		return nil
 	}
 
@@ -178,7 +178,7 @@ func (d *differ) diffSlice(path []PathStep, vx, vy reflect.Value) error {
 			continue
 		}
 		nextValueX := vx.Index(i)
-		d.result.addNode(nextPath, nextValueX.Type(), nextValueX.Type(), nextValueX, reflect.Value{})
+		d.addNode(nextPath, nextValueX.Type(), nextValueX.Type(), nextValueX, reflect.Value{})
 	}
 
 	for i := minLen; i < vy.Len(); i++ {
@@ -187,7 +187,7 @@ func (d *differ) diffSlice(path []PathStep, vx, vy reflect.Value) error {
 			continue
 		}
 		nextValueY := vy.Index(i)
-		d.result.addNode(nextPath, nextValueY.Type(), nextValueY.Type(), reflect.Value{}, nextValueY)
+		d.addNode(nextPath, nextValueY.Type(), nextValueY.Type(), reflect.Value{}, nextValueY)
 	}
 
 	return nil
@@ -195,7 +195,7 @@ func (d *differ) diffSlice(path []PathStep, vx, vy reflect.Value) error {
 
 func (d *differ) diffMap(path []PathStep, vx, vy reflect.Value) error {
 	if vx.IsNil() || vy.IsNil() {
-		d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
+		d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 		return nil
 	}
 
@@ -233,7 +233,7 @@ func (d *differ) diffInterface(path []PathStep, vx, vy reflect.Value) error {
 	}
 
 	if vx.IsNil() || vy.IsNil() {
-		d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
+		d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 		return nil
 	}
 
@@ -245,7 +245,7 @@ func (d *differ) diffString(path []PathStep, vx, vy reflect.Value) error {
 	if vx.String() == vy.String() {
 		return nil
 	}
-	d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
+	d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 	return nil
 }
 
@@ -253,7 +253,7 @@ func (d *differ) diffBool(path []PathStep, vx, vy reflect.Value) error {
 	if vx.Bool() == vy.Bool() {
 		return nil
 	}
-	d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
+	d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 	return nil
 }
 
@@ -262,7 +262,7 @@ func (d *differ) diffNumber(path []PathStep, vx, vy reflect.Value) error {
 		return nil
 	}
 
-	d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
+	d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 	return nil
 }
 
@@ -342,8 +342,97 @@ func newMapPath(path []PathStep, index string) []PathStep {
 	return next
 }
 
+func (d *differ) addNode(path []PathStep, tx, ty reflect.Type, vx, vy reflect.Value) {
+	if len(d.ignoredPaths) > 0 {
+		if d.isIgnoredPaths(path) {
+			return
+		}
+
+		pathString := makePathString(path)
+		nvx := d.ignoredValue(vx, pathString)
+		nvy := d.ignoredValue(vy, pathString)
+
+		d.result.addNode(path, tx, ty, nvx, nvy)
+	}
+
+	d.result.addNode(path, tx, ty, vx, vy)
+}
+
+func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
+	switch v.Kind() {
+	case reflect.Map:
+		nv := reflect.MakeMap(v.Type())
+		keys := v.MapKeys()
+		for _, k := range keys {
+			nprefix := prefix + "." + k.String()
+			if d.isIgnoredPathsForString(nprefix) {
+				continue
+			}
+
+			sub := v.MapIndex(k)
+			filterd := d.ignoredValue(sub, nprefix)
+			if !filterd.IsValid() {
+				continue
+			}
+			nv.SetMapIndex(k, filterd)
+		}
+		return nv
+
+	case reflect.Slice, reflect.Array:
+		nv := reflect.MakeSlice(v.Type(), 0, 0)
+		for i := 0; i < v.Len(); i++ {
+			nprefix := prefix + "." + strconv.Itoa(i)
+			if d.isIgnoredPathsForString(nprefix) {
+				continue
+			}
+
+			filterd := d.ignoredValue(v.Index(i), nprefix)
+			if !filterd.IsValid() {
+				continue
+			}
+			nv = reflect.Append(nv, filterd)
+		}
+		return nv
+
+	case reflect.Interface:
+		nprefix := prefix + "." + v.String()
+		if d.isIgnoredPathsForString(nprefix) {
+			nv := reflect.New(v.Type())
+			return nv
+		}
+		return d.ignoredValue(v.Elem(), prefix)
+
+	case reflect.String:
+		return v
+
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return v
+
+	case reflect.Float32, reflect.Float64:
+		return v
+
+	default:
+		nprefix := prefix + "." + v.String()
+		if d.isIgnoredPathsForString(nprefix) {
+			nv := reflect.New(v.Type())
+			return nv
+		}
+		return v
+	}
+}
+
 func (d *differ) isIgnoredPaths(path []PathStep) bool {
 	pathString := makePathString(path)
+	for _, ignoredPath := range d.ignoredPaths {
+		if strings.HasPrefix(pathString, ignoredPath) {
+			return true
+		}
+	}
+	return false
+}
+
+func (d *differ) isIgnoredPathsForString(pathString string) bool {
 	for _, ignoredPath := range d.ignoredPaths {
 		if strings.HasPrefix(pathString, ignoredPath) {
 			return true
