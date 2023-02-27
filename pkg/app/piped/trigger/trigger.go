@@ -235,8 +235,9 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			req := &pipedservice.ReportApplicationSyncStateRequest{
 				ApplicationId: app.Id,
 				State: &model.ApplicationSyncState{
-					Status: model.ApplicationSyncStatus_INVALID_CONFIG,
-					Reason: err.Error(),
+					Status:    model.ApplicationSyncStatus_INVALID_CONFIG,
+					Reason:    err.Error(),
+					Timestamp: time.Now().Unix(),
 				},
 			}
 			_, err := t.apiClient.ReportApplicationSyncState(ctx, req)
