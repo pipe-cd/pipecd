@@ -370,11 +370,11 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 			}
 
 			sub := v.MapIndex(k)
-			filterd := d.ignoredValue(sub, nprefix)
-			if !filterd.IsValid() {
+			filtered := d.ignoredValue(sub, nprefix)
+			if !filtered.IsValid() {
 				continue
 			}
-			nv.SetMapIndex(k, filterd)
+			nv.SetMapIndex(k, filtered)
 		}
 		return nv
 
@@ -386,11 +386,11 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 				continue
 			}
 
-			filterd := d.ignoredValue(v.Index(i), nprefix)
-			if !filterd.IsValid() {
+			filtered := d.ignoredValue(v.Index(i), nprefix)
+			if !filtered.IsValid() {
 				continue
 			}
-			nv = reflect.Append(nv, filterd)
+			nv = reflect.Append(nv, filtered)
 		}
 		return nv
 
