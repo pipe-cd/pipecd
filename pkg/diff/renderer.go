@@ -23,9 +23,8 @@ import (
 )
 
 type Renderer struct {
-	leftPadding       int
-	maskPathPrefix    string
-	ignorePathPrefixs []string
+	leftPadding    int
+	maskPathPrefix string
 }
 
 type RenderOption func(*Renderer)
