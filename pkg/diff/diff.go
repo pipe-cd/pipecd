@@ -353,6 +353,7 @@ func (d *differ) addNode(path []PathStep, tx, ty reflect.Type, vx, vy reflect.Va
 		nvy := d.ignoredValue(vy, pathString)
 
 		d.result.addNode(path, tx, ty, nvx, nvy)
+		return
 	}
 
 	d.result.addNode(path, tx, ty, vx, vy)
