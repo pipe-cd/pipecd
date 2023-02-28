@@ -529,7 +529,7 @@ func (p *ProjectRBACRole) Resources(typ ProjectRBACResource_ResourceType) []*Pro
 	ret := make([]*ProjectRBACResource, 0)
 	for _, policy := range p.Policies {
 		for _, r := range policy.Resources {
-			if r.Type == typ {
+			if r.Type == typ || r.Type == ProjectRBACResource_ALL {
 				ret = append(ret, r)
 			}
 		}

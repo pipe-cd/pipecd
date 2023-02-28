@@ -851,3 +851,95 @@ func TestProject_DeleteRBACRole(t *testing.T) {
 		})
 	}
 }
+
+func TestProjectRBACRoles_Authorize(t *testing.T) {
+	type args struct {
+		rsc    ProjectRBACResource_ResourceType
+		labels map[string]string
+	}
+	testcases := []struct {
+		name  string
+		args  args
+		roles ProjectRBACRoles
+		want  bool
+	}{
+		{
+			name: "no user roles",
+			args: args{
+				rsc:    ProjectRBACResource_APPLICATION,
+				labels: map[string]string{"env": "test"},
+			},
+			roles: ProjectRBACRoles{},
+			want:  false,
+		},
+		{
+			name: "ok",
+			args: args{
+				rsc:    ProjectRBACResource_APPLICATION,
+				labels: map[string]string{},
+			},
+			roles: ProjectRBACRoles{
+				builtinAdminRBACRole,
+			},
+			want: true,
+		},
+		{
+			name: "necessary labels do not exist",
+			args: args{
+				rsc:    ProjectRBACResource_APPLICATION,
+				labels: map[string]string{},
+			},
+			roles: ProjectRBACRoles{
+				{
+					Name: "Tester",
+					Policies: []*ProjectRBACPolicy{
+						{
+							Resources: []*ProjectRBACResource{
+								{
+									Type:   ProjectRBACResource_ALL,
+									Labels: map[string]string{"env": "test"},
+								},
+							},
+							Actions: []ProjectRBACPolicy_Action{
+								ProjectRBACPolicy_ALL,
+							},
+						},
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "necessary labels exist",
+			args: args{
+				rsc:    ProjectRBACResource_APPLICATION,
+				labels: map[string]string{"env": "test", "piped": "test"},
+			},
+			roles: ProjectRBACRoles{
+				{
+					Name: "Tester",
+					Policies: []*ProjectRBACPolicy{
+						{
+							Resources: []*ProjectRBACResource{
+								{
+									Type:   ProjectRBACResource_APPLICATION,
+									Labels: map[string]string{"env": "test", "piped": "test"},
+								},
+							},
+							Actions: []ProjectRBACPolicy_Action{
+								ProjectRBACPolicy_ALL,
+							},
+						},
+					},
+				},
+			},
+			want: true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.roles.Authorize(tc.args.rsc, tc.args.labels)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}

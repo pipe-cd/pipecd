@@ -1282,20 +1282,15 @@ func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Proje
 	return project, nil
 }
 
-func (a *WebAPI) getProjectRBACRoles(ctx context.Context) (map[string]*model.ProjectRBACRole, error) {
-	claims, err := rpcauth.ExtractClaims(ctx)
-	if err != nil {
-		a.logger.Error("failed to authenticate the current user", zap.Error(err))
-		return nil, err
-	}
-	roles, err := a.projectRBACRolesCache.Get(claims.Role.ProjectId)
+func (a *WebAPI) getProjectRBACRoles(ctx context.Context, projectID string) (map[string]*model.ProjectRBACRole, error) {
+	roles, err := a.projectRBACRolesCache.Get(projectID)
 	if err != nil && !errors.Is(err, cache.ErrNotFound) {
 		return nil, err
 	}
 	if err == nil {
 		return roles.(map[string]*model.ProjectRBACRole), nil
 	}
-	project, err := a.getProject(ctx, claims.Role.ProjectId)
+	project, err := a.getProject(ctx, projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -1316,7 +1311,7 @@ func (a *WebAPI) getUserProjectRBACRoles(ctx context.Context) (model.ProjectRBAC
 	}
 	roles := claims.Role.ProjectRbacRoles
 
-	projectRoles, err := a.getProjectRBACRoles(ctx)
+	projectRoles, err := a.getProjectRBACRoles(ctx, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
 	}
