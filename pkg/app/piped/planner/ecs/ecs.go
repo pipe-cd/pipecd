@@ -55,15 +55,14 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	// Determine application version from the task definition
-	if version, err := determineVersion(ds.AppDir, cfg.Input.TaskDefinitionFile); err == nil {
+	if version, e := determineVersion(ds.AppDir, cfg.Input.TaskDefinitionFile); e == nil {
 		out.Version = version
 	} else {
 		out.Version = "unknown"
 		in.Logger.Warn("unable to determine target version", zap.Error(err))
 	}
 
-	out.Versions, err = determineVersions(ds.AppDir, cfg.Input.TaskDefinitionFile)
-	if err != nil {
+	if versions, e := determineVersions(ds.AppDir, cfg.Input.TaskDefinitionFile); e != nil || len(versions) == 0 {
 		in.Logger.Warn("unable to determine target versions", zap.Error(err))
 		out.Versions = []*model.ArtifactVersion{
 			{
@@ -71,6 +70,8 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 				Version: "unknown",
 			},
 		}
+	} else {
+		out.Versions = versions
 	}
 
 	autoRollback := *cfg.Input.AutoRollback
