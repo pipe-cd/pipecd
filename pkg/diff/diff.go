@@ -174,18 +174,12 @@ func (d *differ) diffSlice(path []PathStep, vx, vy reflect.Value) error {
 
 	for i := minLen; i < vx.Len(); i++ {
 		nextPath := newSlicePath(path, i)
-		if d.isIgnoredPaths(nextPath) {
-			continue
-		}
 		nextValueX := vx.Index(i)
 		d.addNode(nextPath, nextValueX.Type(), nextValueX.Type(), nextValueX, reflect.Value{})
 	}
 
 	for i := minLen; i < vy.Len(); i++ {
 		nextPath := newSlicePath(path, i)
-		if d.isIgnoredPaths(nextPath) {
-			continue
-		}
 		nextValueY := vy.Index(i)
 		d.addNode(nextPath, nextValueY.Type(), nextValueY.Type(), reflect.Value{}, nextValueY)
 	}
