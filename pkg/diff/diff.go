@@ -338,11 +338,10 @@ func newMapPath(path []PathStep, index string) []PathStep {
 
 func (d *differ) addNode(path []PathStep, tx, ty reflect.Type, vx, vy reflect.Value) {
 	if len(d.ignoredPaths) > 0 {
-		if d.isIgnoredPaths(path) {
+		pathString := makePathString(path)
+		if d.isIgnoredPaths(pathString) {
 			return
 		}
-
-		pathString := makePathString(path)
 		nvx := d.ignoredValue(vx, pathString)
 		nvy := d.ignoredValue(vy, pathString)
 
@@ -360,7 +359,7 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 		keys := v.MapKeys()
 		for _, k := range keys {
 			nprefix := prefix + "." + k.String()
-			if d.isIgnoredPathsForString(nprefix) {
+			if d.isIgnoredPaths(nprefix) {
 				continue
 			}
 
@@ -377,7 +376,7 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 		nv := reflect.MakeSlice(v.Type(), 0, 0)
 		for i := 0; i < v.Len(); i++ {
 			nprefix := prefix + "." + strconv.Itoa(i)
-			if d.isIgnoredPathsForString(nprefix) {
+			if d.isIgnoredPaths(nprefix) {
 				continue
 			}
 
@@ -391,7 +390,7 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 
 	case reflect.Interface:
 		nprefix := prefix + "." + v.String()
-		if d.isIgnoredPathsForString(nprefix) {
+		if d.isIgnoredPaths(nprefix) {
 			return reflect.New(v.Type())
 		}
 		return d.ignoredValue(v.Elem(), prefix)
@@ -408,24 +407,14 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 
 	default:
 		nprefix := prefix + "." + v.String()
-		if d.isIgnoredPathsForString(nprefix) {
+		if d.isIgnoredPaths(nprefix) {
 			return reflect.New(v.Type())
 		}
 		return v
 	}
 }
 
-func (d *differ) isIgnoredPaths(path []PathStep) bool {
-	pathString := makePathString(path)
-	for _, ignoredPath := range d.ignoredPaths {
-		if strings.HasPrefix(pathString, ignoredPath) {
-			return true
-		}
-	}
-	return false
-}
-
-func (d *differ) isIgnoredPathsForString(pathString string) bool {
+func (d *differ) isIgnoredPaths(pathString string) bool {
 	for _, ignoredPath := range d.ignoredPaths {
 		if strings.HasPrefix(pathString, ignoredPath) {
 			return true
