@@ -83,7 +83,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 			return result
 		case <-timer.C:
 			e.LogPersister.Errorf("Canceled because of timeout")
-			return model.StageStatus_STAGE_CANCELLED
+			return model.StageStatus_STAGE_FAILURE
 
 		case s := <-sig.Ch():
 			switch s {
