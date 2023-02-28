@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	defaultTimeout = 1 * time.Minute
+	defaultTimeout = 20 * time.Minute
 )
 
 type deployExecutor struct {
@@ -64,8 +64,9 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	e.repoDir = ds.RepoDir
 	e.appDir = ds.AppDir
-
-	timeout = e.StageConfig.CustomStageOptions.Timeout.Duration()
+	if e.StageConfig.CustomStageOptions.Timeout.Duration() != 0*time.Second {
+		timeout = e.StageConfig.CustomStageOptions.Timeout.Duration()
+	}
 
 	c := make(chan model.StageStatus, 1)
 	go func() {
@@ -103,7 +104,7 @@ func (e *deployExecutor) executeCommand(opts *config.CustomStageOptions) model.S
 	pathFromOS := os.Getenv("PATH")
 
 	path := binDir + ":" + pathFromOS
-	var envs []string
+	envs := make([]string, len(opts.Env))
 	for key, value := range opts.Env {
 		envs = append(envs, key+"="+value)
 	}
