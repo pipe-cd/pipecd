@@ -302,7 +302,7 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
 
               {app.syncState && (
                 <SyncStateReason
-                  summary={app.syncState.shortReason}
+                  summary={app.syncState.shortReason ? app.syncState.shortReason : app.syncState.reason.slice(100)}
                   detail={app.syncState.reason}
                 />
               )}
