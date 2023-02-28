@@ -350,7 +350,7 @@ func (c *command) uninstallAll(ctx context.Context, helm string, input cli.Input
 	}
 
 	input.Logger.Info(stdout.String())
-	input.Logger.Info("Unintalled the PipeCD components successfully!")
+	input.Logger.Info("Uninstalled the PipeCD components successfully!")
 
 	return nil
 }
@@ -380,9 +380,9 @@ func (c *command) getKubectl() (string, error) {
 }
 
 // getHelm finds and returns helm executable binary in the following priority:
-//   1. pre-installed in command specified toolsDir (default is $HOME/.pipectl/tools)
-//   2. $PATH
-//   3. install new helm to command specified toolsDir
+//  1. pre-installed in command specified toolsDir (default is $HOME/.pipectl/tools)
+//  2. $PATH
+//  3. install new helm to command specified toolsDir
 func (c *command) getHelm(ctx context.Context) (string, error) {
 	binName := "helm"
 
