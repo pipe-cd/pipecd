@@ -525,6 +525,42 @@ func (p *ProjectRBACRole) HasPermission(typ ProjectRBACResource_ResourceType, ac
 	return false
 }
 
+func (p *ProjectRBACRole) Resources(typ ProjectRBACResource_ResourceType) []*ProjectRBACResource {
+	ret := make([]*ProjectRBACResource, 0)
+	for _, policy := range p.Policies {
+		for _, r := range policy.Resources {
+			if r.Type == typ {
+				ret = append(ret, r)
+			}
+		}
+	}
+	return ret
+}
+
+type ProjectRBACRoles []*ProjectRBACRole
+
+func (p ProjectRBACRoles) Authorize(rsc ProjectRBACResource_ResourceType, labels map[string]string) bool {
+	if len(p) == 0 {
+		return false
+	}
+
+	rscs := make([]*ProjectRBACResource, 0)
+	for _, r := range p {
+		v := r.Resources(rsc)
+		rscs = append(rscs, v...)
+	}
+
+	for _, r := range rscs {
+		if len(labels) == 0 && len(r.Labels) != 0 {
+			continue
+		}
+		if len(r.Labels) == 0 || r.ContainLabels(labels) {
+			return true
+		}
+	}
+	return false
+}
+
 func (p *ProjectRBACPolicy) HasPermission(typ ProjectRBACResource_ResourceType, action ProjectRBACPolicy_Action) bool {
 	var hasResource bool
 	for _, r := range p.Resources {
@@ -544,4 +580,21 @@ func (p *ProjectRBACPolicy) HasPermission(typ ProjectRBACResource_ResourceType, 
 		}
 	}
 	return false
+}
+
+func (p *ProjectRBACResource) ContainLabels(labels map[string]string) bool {
+	if len(p.Labels) < len(labels) {
+		return false
+	}
+
+	for k, v := range labels {
+		value, ok := p.Labels[k]
+		if !ok {
+			return false
+		}
+		if value != v {
+			return false
+		}
+	}
+	return true
 }

@@ -133,6 +133,7 @@ type WebAPI struct {
 	deploymentProjectCache cache.Cache
 	pipedProjectCache      cache.Cache
 	pipedStatCache         cache.Cache
+	projectRBACRolesCache  cache.Cache
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -175,7 +176,10 @@ func NewWebAPI(
 		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedStatCache:            psc,
-		logger:                    logger.Named("web-api"),
+		// Please make the terms the same or shorter than the next.
+		// https://github.com/pipe-cd/pipecd/blob/master/pkg/app/server/service/webservice/service.pb.auth.go#L56
+		projectRBACRolesCache: memorycache.NewTTLCache(ctx, 10*time.Minute, 5*time.Minute),
+		logger:                logger.Named("web-api"),
 	}
 	return a
 }
@@ -470,12 +474,25 @@ func (a *WebAPI) ListUnregisteredApplications(ctx context.Context, _ *webservice
 		return &webservice.ListUnregisteredApplicationsResponse{}, nil
 	}
 
-	sort.Slice(allApps, func(i, j int) bool {
-		return allApps[i].Path < allApps[j].Path
+	rs, err := a.getUserProjectRBACRoles(ctx)
+	if err != nil {
+		a.logger.Error("failed to get user rbac roles", zap.Error(err))
+		return nil, err
+	}
+
+	filtered := make([]*model.ApplicationInfo, 0, len(allApps))
+	for _, a := range allApps {
+		if rs.Authorize(model.ProjectRBACResource_APPLICATION, a.Labels) {
+			filtered = append(filtered, a)
+		}
+	}
+
+	sort.Slice(filtered, func(i, j int) bool {
+		return filtered[i].Path < filtered[j].Path
 	})
 
 	return &webservice.ListUnregisteredApplicationsResponse{
-		Applications: allApps,
+		Applications: filtered,
 	}, nil
 }
 
@@ -493,6 +510,15 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 
 	if piped.ProjectId != claims.Role.ProjectId {
 		return nil, status.Error(codes.PermissionDenied, "Requested piped does not belong to your project")
+	}
+
+	rs, err := a.getUserProjectRBACRoles(ctx)
+	if err != nil {
+		a.logger.Error("failed to get user rbac roles", zap.Error(err))
+		return nil, err
+	}
+	if !rs.Authorize(model.ProjectRBACResource_APPLICATION, req.Labels) {
+		return nil, status.Error(codes.PermissionDenied, "No Permissions to handle requested labels")
 	}
 
 	gitpath, err := makeGitPath(
@@ -534,13 +560,8 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 		return nil, err
 	}
 
-	piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
-	if err != nil {
-		return nil, gRPCStoreError(err, fmt.Sprintf("failed to get piped %s", req.PipedId))
-	}
-
-	if piped.ProjectId != claims.Role.ProjectId {
-		return nil, status.Error(codes.PermissionDenied, "Requested piped does not belong to your project")
+	if err := a.validateAppBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+		return nil, err
 	}
 
 	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.PlatformProvider, req.ConfigFilename); err != nil {
@@ -667,21 +688,34 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		return nil, gRPCStoreError(err, "list applications")
 	}
 
+	rs, err := a.getUserProjectRBACRoles(ctx)
+	if err != nil {
+		a.logger.Error("failed to get user rbac roles", zap.Error(err))
+		return nil, err
+	}
+
+	filtered := make([]*model.Application, 0, len(apps))
+	for _, a := range apps {
+		if rs.Authorize(model.ProjectRBACResource_APPLICATION, a.Labels) {
+			filtered = append(filtered, a)
+		}
+	}
+
 	if len(req.Options.Labels) == 0 {
 		return &webservice.ListApplicationsResponse{
-			Applications: apps,
+			Applications: filtered,
 		}, nil
 	}
 
 	// NOTE: Filtering by labels is done by the application-side because we need to create composite indexes for every combination in the filter.
-	filtered := make([]*model.Application, 0, len(apps))
-	for _, a := range apps {
+	ret := make([]*model.Application, 0, len(apps))
+	for _, a := range filtered {
 		if a.ContainLabels(req.Options.Labels) {
-			filtered = append(filtered, a)
+			ret = append(ret, a)
 		}
 	}
 	return &webservice.ListApplicationsResponse{
-		Applications: filtered,
+		Applications: ret,
 	}, nil
 }
 
@@ -699,6 +733,15 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 
 	if claims.Role.ProjectId != app.ProjectId {
 		return nil, status.Error(codes.PermissionDenied, "Requested application does not belong to your project")
+	}
+
+	rs, err := a.getUserProjectRBACRoles(ctx)
+	if err != nil {
+		a.logger.Error("failed to get user rbac roles", zap.Error(err))
+		return nil, err
+	}
+	if !rs.Authorize(model.ProjectRBACResource_APPLICATION, app.Labels) {
+		return nil, status.Error(codes.PermissionDenied, "Requested application does not belong to your permissions")
 	}
 
 	cmd := model.Command{
@@ -733,9 +776,17 @@ func (a *WebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicat
 	if err != nil {
 		return nil, err
 	}
-
 	if app.ProjectId != claims.Role.ProjectId {
 		return nil, status.Error(codes.PermissionDenied, "Requested application does not belong to your project")
+	}
+
+	rs, err := a.getUserProjectRBACRoles(ctx)
+	if err != nil {
+		a.logger.Error("failed to get user rbac roles", zap.Error(err))
+		return nil, err
+	}
+	if !rs.Authorize(model.ProjectRBACResource_APPLICATION, app.Labels) {
+		return nil, status.Error(codes.PermissionDenied, "Requested application does not belong to your permissions")
 	}
 
 	return &webservice.GetApplicationResponse{
@@ -792,6 +843,15 @@ func (a *WebAPI) validateAppBelongsToProject(ctx context.Context, appID, project
 
 	if app.ProjectId != projectID {
 		return status.Error(codes.PermissionDenied, "Requested application doesn't belong to the project you logged in")
+	}
+
+	rs, err := a.getUserProjectRBACRoles(ctx)
+	if err != nil {
+		a.logger.Error("failed to get user rbac roles", zap.Error(err))
+		return err
+	}
+	if !rs.Authorize(model.ProjectRBACResource_APPLICATION, app.Labels) {
+		return status.Error(codes.PermissionDenied, "No Permissions to handle requested labels")
 	}
 	return nil
 }
@@ -1220,6 +1280,54 @@ func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Proje
 	}
 
 	return project, nil
+}
+
+func (a *WebAPI) getProjectRBACRoles(ctx context.Context) (map[string]*model.ProjectRBACRole, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+	roles, err := a.projectRBACRolesCache.Get(claims.Role.ProjectId)
+	if err != nil && !errors.Is(err, cache.ErrNotFound) {
+		return nil, err
+	}
+	if err == nil {
+		return roles.(map[string]*model.ProjectRBACRole), nil
+	}
+	project, err := a.getProject(ctx, claims.Role.ProjectId)
+	if err != nil {
+		return nil, err
+	}
+	ret := make(map[string]*model.ProjectRBACRole, len(project.RbacRoles))
+	for _, r := range project.RbacRoles {
+		ret[r.Name] = r
+	}
+	a.projectRBACRolesCache.Put(project.Id, ret)
+
+	return ret, nil
+}
+
+func (a *WebAPI) getUserProjectRBACRoles(ctx context.Context) (model.ProjectRBACRoles, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+	roles := claims.Role.ProjectRbacRoles
+
+	projectRoles, err := a.getProjectRBACRoles(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make(model.ProjectRBACRoles, 0, len(roles))
+	for _, r := range roles {
+		if v, ok := projectRoles[r]; ok {
+			ret = append(ret, v)
+		}
+	}
+	return ret, nil
 }
 
 // UpdateProjectStaticAdmin updates the static admin user settings.
