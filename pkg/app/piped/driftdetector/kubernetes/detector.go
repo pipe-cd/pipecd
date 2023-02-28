@@ -188,6 +188,10 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	liveManifests = filterIgnoringManifests(liveManifests)
 	d.logger.Debug(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
 
+	ddCfg, err := d.getDriftDetectionConfig(repo.GetPath(), app)
+	if err != nil {
+		return err
+	}
 	result, err := provider.DiffList(
 		liveManifests,
 		headManifests,
@@ -195,6 +199,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
+		diff.WithIgnoredPaths(ddCfg.IgnoreFields),
 	)
 	if err != nil {
 		return err
@@ -369,4 +374,17 @@ func makeSyncState(r *provider.DiffListResult, commit string) model.ApplicationS
 		Reason:      b.String(),
 		Timestamp:   time.Now().Unix(),
 	}
+}
+
+func (d *detector) getDriftDetectionConfig(repoDir string, app *model.Application) (*config.DriftDetection, error) {
+	cfg, err := d.loadApplicationConfiguration(repoDir, app)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load application configuration: %w", err)
+	}
+	gds, ok := cfg.GetGenericApplication()
+	if !ok {
+		return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
+	}
+
+	return gds.DriftDetection, nil
 }
