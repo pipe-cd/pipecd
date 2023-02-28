@@ -55,11 +55,11 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	// Determine application version from the manifest
-	if version, e := determineVersion(ds.AppDir, cfg.Input.FunctionManifestFile); e == nil {
-		out.Version = version
-	} else {
+	if version, e := determineVersion(ds.AppDir, cfg.Input.FunctionManifestFile); e != nil {
 		out.Version = "unknown"
 		in.Logger.Warn("unable to determine target version", zap.Error(err))
+	} else {
+		out.Version = version
 	}
 
 	if versions, e := determineVersions(ds.AppDir, cfg.Input.FunctionManifestFile); e != nil || len(versions) == 0 {
