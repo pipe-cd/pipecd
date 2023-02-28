@@ -232,12 +232,17 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			)
 
 			// Set ApplicationSyncState to INVALID_CONFIG when LoadApplication fails.
+			shortReasonLimit := 100
+			if len(err.Error()) < shortReasonLimit {
+				shortReasonLimit = len(err.Error())
+			}
 			req := &pipedservice.ReportApplicationSyncStateRequest{
 				ApplicationId: app.Id,
 				State: &model.ApplicationSyncState{
-					Status:    model.ApplicationSyncStatus_INVALID_CONFIG,
-					Reason:    err.Error(),
-					Timestamp: time.Now().Unix(),
+					Status:      model.ApplicationSyncStatus_INVALID_CONFIG,
+					ShortReason: err.Error()[:shortReasonLimit],
+					Reason:      err.Error(),
+					Timestamp:   time.Now().Unix(),
 				},
 			}
 			_, err := t.apiClient.ReportApplicationSyncState(ctx, req)
