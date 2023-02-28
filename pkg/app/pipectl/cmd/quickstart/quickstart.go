@@ -350,7 +350,7 @@ func (c *command) uninstallAll(ctx context.Context, helm string, input cli.Input
 	}
 
 	input.Logger.Info(stdout.String())
-	input.Logger.Info("Unintalled the PipeCD components successfully!")
+	input.Logger.Info("Uninstalled the PipeCD components successfully!")
 
 	return nil
 }
