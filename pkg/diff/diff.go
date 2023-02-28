@@ -86,10 +86,6 @@ func DiffUnstructureds(x, y unstructured.Unstructured, opts ...Option) (*Result,
 }
 
 func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
-	if d.isIgnoredPaths(path) {
-		return nil
-	}
-
 	if !vx.IsValid() {
 		if d.equateEmpty && isEmptyInterface(vy) {
 			return nil
