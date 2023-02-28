@@ -72,6 +72,8 @@ type PipedSpec struct {
 	PlatformProviders []PipedPlatformProvider `json:"platformProviders,omitempty"`
 	// List of analysis providers can be used by this piped.
 	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders,omitempty"`
+	// List of external binaies can be used in custom stages.
+	ExternalBinaries []PipedExternalBinary `json:"externalBinaries,omitempty"`
 	// Sending notification to Slack, Webhook…
 	Notifications Notifications `json:"notifications"`
 	// What secret management method should be used.
@@ -873,6 +875,13 @@ func (a *AnalysisProviderStackdriverConfig) Mask() {
 
 func (a *AnalysisProviderStackdriverConfig) Validate() error {
 	return nil
+}
+
+type PipedExternalBinary struct {
+	Command               string   `json:"command"`
+	Version               string   `json:"version"`
+	Args                  []string `json:"args"`
+	InstallScriptTemplate string   `json:"installScriptTemplate"`
 }
 
 type Notifications struct {

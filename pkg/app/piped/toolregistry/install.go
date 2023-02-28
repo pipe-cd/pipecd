@@ -21,7 +21,9 @@ import (
 	"os"
 	"os/exec"
 	"text/template"
+	"time"
 
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -224,5 +226,70 @@ func (r *registry) installTerraform(ctx context.Context, version string) error {
 	}
 
 	r.logger.Info("just installed terraform", zap.String("version", version))
+	return nil
+}
+
+func (r *registry) installExternalBinary(ctx context.Context, command, version string) error {
+	workingDirName := fmt.Sprintf("%s-install", command)
+	workingDir, err := os.MkdirTemp("", workingDirName)
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(workingDir)
+
+	var (
+		buf  bytes.Buffer
+		data = map[string]interface{}{
+			"WorkingDir": workingDir,
+			"Version":    version,
+			"BinDir":     r.binDir,
+		}
+	)
+	var installScriptTemplate string
+	for _, v := range r.config {
+		if v.Command == command && v.Version == version {
+			installScriptTemplate = v.InstallScriptTemplate
+		}
+	}
+	if installScriptTemplate == "" {
+		r.logger.Error("failed to find install script",
+			zap.String("command", command),
+			zap.String("version", version),
+			zap.Error(err),
+		)
+		return fmt.Errorf("failed to install %s %s (%w)", command, version, err)
+	}
+
+	externalBinaryInstallScriptTmpl := template.Must(template.New(command).Parse(installScriptTemplate))
+	if err := externalBinaryInstallScriptTmpl.Execute(&buf, data); err != nil {
+		r.logger.Error("failed to render external binary install script",
+			zap.String("command", command),
+			zap.String("version", version),
+			zap.Error(err),
+		)
+		return errors.Errorf("failed to install %s %s (%v)", command, version, err)
+	}
+	script := fmt.Sprintf("cd %s\n", workingDir) + buf.String()
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctxWithTimeout, "/bin/sh", "-c", script)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		r.logger.Error("failed to install custom template",
+			zap.String("command", command),
+			zap.String("version", version),
+			zap.String("script", script),
+			zap.String("out", string(out)),
+			zap.Error(err),
+		)
+		if errors.Is(ctxWithTimeout.Err(), context.DeadlineExceeded) {
+			return errors.Errorf("failed to install %s %s (%v) because of timeout", command, version, err)
+		}
+		return errors.Errorf("failed to install %s %s (%v)", command, version, err)
+	}
+
+	r.logger.Info("just installed external binary",
+		zap.String("command", command),
+		zap.String("version", version),
+	)
 	return nil
 }

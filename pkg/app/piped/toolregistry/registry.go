@@ -25,6 +25,8 @@ import (
 
 	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
+
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 // Registry provides functions to get path to the needed tools.
@@ -34,6 +36,7 @@ type Registry interface {
 	Helm(ctx context.Context, version string) (string, bool, error)
 	Terraform(ctx context.Context, version string) (string, bool, error)
 	GetBinDir() string
+	ExternalBinary(ctx context.Context, command, version string) (bool, error)
 }
 
 var defaultRegistry *registry
@@ -45,7 +48,7 @@ func DefaultRegistry() Registry {
 
 // InitDefaultRegistry initializes the default registry.
 // This also preloads the pre-installed tools in the binDir.
-func InitDefaultRegistry(binDir string, logger *zap.Logger) error {
+func InitDefaultRegistry(binDir string, config []config.PipedExternalBinary, logger *zap.Logger) error {
 	logger = logger.Named("tool-registry")
 	if err := os.MkdirAll(binDir, os.ModePerm); err != nil {
 		return err
@@ -61,6 +64,7 @@ func InitDefaultRegistry(binDir string, logger *zap.Logger) error {
 		binDir:       binDir,
 		versions:     tools,
 		installGroup: &singleflight.Group{},
+		config:       config,
 		logger:       logger,
 	}
 
@@ -104,6 +108,7 @@ type registry struct {
 	versions     map[string]struct{}
 	mu           sync.RWMutex
 	installGroup *singleflight.Group
+	config       []config.PipedExternalBinary
 	logger       *zap.Logger
 }
 
@@ -221,4 +226,31 @@ func (r *registry) Terraform(ctx context.Context, version string) (string, bool,
 
 func (r *registry) GetBinDir() string {
 	return r.binDir
+}
+
+func (r *registry) ExternalBinary(ctx context.Context, command, version string) (bool, error) {
+	name := command
+	if version != "" {
+		name = fmt.Sprintf("%s-%s", command, version)
+	}
+
+	r.mu.RLock()
+	_, ok := r.versions[name]
+	r.mu.RUnlock()
+	if ok {
+		return false, nil
+	}
+
+	_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
+		return nil, r.installExternalBinary(ctx, command, version)
+	})
+	if err != nil {
+		return true, err
+	}
+
+	r.mu.Lock()
+	r.versions[name] = struct{}{}
+	r.mu.Unlock()
+
+	return true, nil
 }

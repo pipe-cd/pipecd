@@ -404,8 +404,14 @@ type WaitApprovalStageOptions struct {
 
 type CustomStageOptions struct {
 	Timeout Duration          `json:"timeout"`
+	Uses    []CustomUse       `json:"uses"`
 	Env     map[string]string `json:"env"`
 	Runs    []string          `json:"runs"`
+}
+
+type CustomUse struct {
+	Command string `json:"command"`
+	Version string `json:"version"`
 }
 
 func (w *WaitApprovalStageOptions) Validate() error {

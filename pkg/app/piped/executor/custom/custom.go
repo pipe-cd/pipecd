@@ -15,6 +15,7 @@
 package custom
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"time"
@@ -64,6 +65,13 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	e.repoDir = ds.RepoDir
 	e.appDir = ds.AppDir
+
+	for _, v := range e.StageConfig.CustomStageOptions.Uses {
+		ok := findExternalBinary(ctx, v.Command, v.Version, e.LogPersister)
+		if !ok {
+			return model.StageStatus_STAGE_FAILURE
+		}
+	}
 	if e.StageConfig.CustomStageOptions.Timeout.Duration() != 0*time.Second {
 		timeout = e.StageConfig.CustomStageOptions.Timeout.Duration()
 	}
@@ -100,9 +108,9 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 
 func (e *deployExecutor) executeCommand(opts *config.CustomStageOptions) model.StageStatus {
 
-	binDir := toolregistry.DefaultRegistry().GetBinDir()
 	pathFromOS := os.Getenv("PATH")
 
+	binDir := toolregistry.DefaultRegistry().GetBinDir()
 	path := binDir + ":" + pathFromOS
 	envs := make([]string, len(opts.Env))
 	for key, value := range opts.Env {
@@ -124,4 +132,16 @@ func (e *deployExecutor) executeCommand(opts *config.CustomStageOptions) model.S
 
 	}
 	return model.StageStatus_STAGE_SUCCESS
+}
+
+func findExternalBinary(ctx context.Context, command, version string, lp executor.LogPersister) bool {
+	installed, err := toolregistry.DefaultRegistry().ExternalBinary(ctx, command, version)
+	if err != nil {
+		lp.Errorf("Unable to find required %q %q (%v)", command, version, err)
+		return false
+	}
+	if installed {
+		lp.Infof("%q %q has just been installed because of no pre-installed binary for that version", command, version)
+	}
+	return true
 }

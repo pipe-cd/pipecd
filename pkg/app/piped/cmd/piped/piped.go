@@ -162,7 +162,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	}
 
 	// Initialize default tool registry.
-	if err := toolregistry.InitDefaultRegistry(p.toolsDir, input.Logger); err != nil {
+	if err := toolregistry.InitDefaultRegistry(p.toolsDir, cfg.ExternalBinaries, input.Logger); err != nil {
 		input.Logger.Error("failed to initialize default tool registry", zap.Error(err))
 		return err
 	}
