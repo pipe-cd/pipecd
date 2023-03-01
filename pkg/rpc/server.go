@@ -229,7 +229,7 @@ func (s *Server) init() error {
 		opts = append(opts, grpc.StreamInterceptor(s.pipedKeyAuthStreamInterceptor))
 	}
 	if s.maxRecvMsgSize != 0 {
-		opts = append(opts, grpc.WithMaxMsgSize())
+		opts = append(opts, grpc.MaxRecvMsgSize(s.maxRecvMsgSize))
 	}
 	s.grpcServer = grpc.NewServer(opts...)
 
