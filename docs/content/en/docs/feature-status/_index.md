@@ -42,7 +42,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Quick sync deployment | Beta |
 | Deployment with a defined pipeline (e.g. manual-approval) | Beta |
 | [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
-| [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Incubating |
+| [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Alpha |
 | [Application live state](../user-guide/managing-application/application-live-state/) | Incubating |
 | [Plan preview](../user-guide/plan-preview) | Beta |
 
@@ -53,9 +53,9 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Quick sync deployment | Beta |
 | Deployment with a defined pipeline (e.g. canary, analysis) | Beta |
 | [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
-| [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Alpha |
-| [Application live state](../user-guide/managing-application/application-live-state/) | Alpha |
-| [Plan preview](../user-guide/plan-preview) | Alpha |
+| [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Beta |
+| [Application live state](../user-guide/managing-application/application-live-state/) | Beta |
+| [Plan preview](../user-guide/plan-preview) | Beta |
 
 ### Lambda
 
@@ -87,9 +87,9 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Deployment wait stage](../user-guide/managing-application/customizing-deployment/adding-a-wait-stage/) | Beta |
 | [Deployment manual approval stage](../user-guide/managing-application/customizing-deployment/adding-a-manual-approval/) | Beta |
 | [Notification](../user-guide/managing-piped/configuring-notifications/) to Slack | Beta |
-| [Notification](../user-guide/managing-piped/configuring-notifications/) to external service via webhook | Alpha |
+| [Notification](../user-guide/managing-piped/configuring-notifications/) to external service via webhook | Beta |
 | [Secrets management](../user-guide/managing-application/secret-management/) - Storing secrets safely in the Git repository | Beta |
-| [Event watcher](../user-guide/event-watcher/) - Updating files in Git automatically for given events | Alpha |
+| [Event watcher](../user-guide/event-watcher/) - Updating files in Git automatically for given events | Beta |
 | [Pipectl](../user-guide/command-line-tool/) - Command-line tool for interacting with Control Plane | Beta |
 | Deployment plugin - Allow executing user-created deployment plugin | Incubating |
 | [ADA](../user-guide/managing-application/customizing-deployment/automated-deployment-analysis/) (Automated Deployment Analysis) by Prometheus metrics | Alpha |
@@ -110,7 +110,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Rendering deployment pipeline in realtime | Beta |
 | Canceling a deployment from console | Beta |
 | Triggering a deployment manually from console | Beta |
-| RBAC on PipeCD resources such as Application, Piped... | Incubating |
+| RBAC on PipeCD resources such as Application, Piped... | Alpha |
 | Authentication by username/password for static admin | Beta |
 | GitHub & GitHub Enterprise SSO | Beta |
 | Google SSO | Incubating |
