@@ -174,6 +174,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 				installed, err := toolregistry.DefaultRegistry().ExternalBinary(ctx, config)
 				if err != nil {
 					input.Logger.Error(fmt.Sprintf("Unable to find required %q %q (%v)", config.Command, config.Version, err), zap.Error(err))
+					return err
 				}
 				if installed {
 					input.Logger.Info(fmt.Sprintf("%q %q has just been installed to %q because of no pre-installed binary for that version", config.Command, config.Version, p.toolsDir))

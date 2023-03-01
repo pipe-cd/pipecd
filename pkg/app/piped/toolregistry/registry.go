@@ -53,7 +53,6 @@ func InitDefaultRegistry(binDir string, logger *zap.Logger) error {
 	if err := os.MkdirAll(binDir, os.ModePerm); err != nil {
 		return err
 	}
-
 	tools, err := loadPreinstalledTool(binDir)
 	if err != nil {
 		return err
