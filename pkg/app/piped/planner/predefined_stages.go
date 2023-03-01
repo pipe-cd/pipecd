@@ -20,12 +20,13 @@ import (
 )
 
 const (
-	PredefinedStageK8sSync       = "K8sSync"
-	PredefinedStageTerraformSync = "TerraformSync"
-	PredefinedStageCloudRunSync  = "CloudRunSync"
-	PredefinedStageLambdaSync    = "LambdaSync"
-	PredefinedStageECSSync       = "ECSSync"
-	PredefinedStageRollback      = "Rollback"
+	PredefinedStageK8sSync              = "K8sSync"
+	PredefinedStageTerraformSync        = "TerraformSync"
+	PredefinedStageCloudRunSync         = "CloudRunSync"
+	PredefinedStageLambdaSync           = "LambdaSync"
+	PredefinedStageECSSync              = "ECSSync"
+	PredefinedStageRollback             = "Rollback"
+	PredefinedStageCustomStagesRollback = "CustomStagesRollback"
 )
 
 var predefinedStages = map[string]config.PipelineStage{
@@ -58,6 +59,11 @@ var predefinedStages = map[string]config.PipelineStage{
 		Id:   PredefinedStageRollback,
 		Name: model.StageRollback,
 		Desc: "Rollback the deployment",
+	},
+	PredefinedStageCustomStagesRollback: {
+		Id:   PredefinedStageRollback,
+		Name: model.StageCustomStagesRollback,
+		Desc: "Rollback the custom stages",
 	},
 }
 

@@ -77,6 +77,8 @@ type scheduler struct {
 	nowFunc func() time.Time
 }
 
+var rollbackCustomStageConfigsStack []config.PipelineStage
+
 func newScheduler(
 	d *model.Deployment,
 	workingDir string,
@@ -274,6 +276,9 @@ func (s *scheduler) Run(ctx context.Context) error {
 		if !ps.Visible || ps.Name == model.StageRollback.String() {
 			continue
 		}
+		if stageConfig, ok := s.genericApplicationConfig.GetStage(ps.Index); ok && stageConfig.CustomStageOptions.Rollback {
+			rollbackCustomStageConfigsStack = append(rollbackCustomStageConfigsStack, stageConfig)
+		}
 
 		// This stage is already completed by a previous scheduler.
 		if ps.Status == model.StageStatus_STAGE_CANCELLED {
@@ -380,9 +385,16 @@ func (s *scheduler) Run(ctx context.Context) error {
 			go func() {
 				rbs := *stage
 				rbs.Requires = []string{lastStage.Id}
-				s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
-					return s.executorRegistry.RollbackExecutor(s.deployment.Kind, in)
-				})
+				if stage.Name == model.StageRollback.String() {
+					s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
+						return s.executorRegistry.RollbackExecutor(s.deployment.Kind, in)
+					})
+				}
+				if stage.Name == model.StageCustomStagesRollback.String() {
+					s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
+						return s.executorRegistry.CustomStagesRollbackExecutor(in)
+					})
+				}
 				close(doneCh)
 			}()
 
@@ -486,22 +498,23 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		applicationID: app.Id,
 	}
 	input := executor.Input{
-		Stage:                 &ps,
-		StageConfig:           stageConfig,
-		Deployment:            s.deployment,
-		Application:           app,
-		PipedConfig:           s.pipedConfig,
-		TargetDSP:             s.targetDSP,
-		RunningDSP:            s.runningDSP,
-		GitClient:             s.gitClient,
-		CommandLister:         cmdLister,
-		LogPersister:          lp,
-		MetadataStore:         s.metadataStore,
-		AppManifestsCache:     s.appManifestsCache,
-		AppLiveResourceLister: alrLister,
-		AnalysisResultStore:   aStore,
-		Logger:                s.logger,
-		Notifier:              s.notifier,
+		Stage:                           &ps,
+		StageConfig:                     stageConfig,
+		Deployment:                      s.deployment,
+		Application:                     app,
+		PipedConfig:                     s.pipedConfig,
+		TargetDSP:                       s.targetDSP,
+		RunningDSP:                      s.runningDSP,
+		GitClient:                       s.gitClient,
+		CommandLister:                   cmdLister,
+		LogPersister:                    lp,
+		MetadataStore:                   s.metadataStore,
+		AppManifestsCache:               s.appManifestsCache,
+		AppLiveResourceLister:           alrLister,
+		AnalysisResultStore:             aStore,
+		RollbackCustomStageConfigsStack: rollbackCustomStageConfigsStack,
+		Logger:                          s.logger,
+		Notifier:                        s.notifier,
 	}
 
 	// Find the executor for this stage.

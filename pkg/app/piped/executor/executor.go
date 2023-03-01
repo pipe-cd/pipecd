@@ -77,16 +77,17 @@ type Input struct {
 	// Deploy source at target commit
 	TargetDSP deploysource.Provider
 	// Deploy source at running commit
-	RunningDSP            deploysource.Provider
-	GitClient             GitClient
-	CommandLister         CommandLister
-	LogPersister          LogPersister
-	MetadataStore         metadatastore.MetadataStore
-	AppManifestsCache     cache.Cache
-	AppLiveResourceLister AppLiveResourceLister
-	AnalysisResultStore   AnalysisResultStore
-	Logger                *zap.Logger
-	Notifier              Notifier
+	RunningDSP                      deploysource.Provider
+	GitClient                       GitClient
+	CommandLister                   CommandLister
+	LogPersister                    LogPersister
+	MetadataStore                   metadatastore.MetadataStore
+	AppManifestsCache               cache.Cache
+	AppLiveResourceLister           AppLiveResourceLister
+	AnalysisResultStore             AnalysisResultStore
+	RollbackCustomStageConfigsStack []config.PipelineStage
+	Logger                          *zap.Logger
+	Notifier                        Notifier
 }
 
 func DetermineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.StageStatus {

@@ -403,9 +403,10 @@ type WaitApprovalStageOptions struct {
 }
 
 type CustomStageOptions struct {
-	Timeout Duration          `json:"timeout"`
-	Env     map[string]string `json:"env"`
-	Runs    []string          `json:"runs"`
+	Rollback bool              `json:"rollback" default:"false"`
+	Timeout  Duration          `json:"timeout"`
+	Env      map[string]string `json:"env"`
+	Runs     []string          `json:"runs"`
 }
 
 func (w *WaitApprovalStageOptions) Validate() error {

@@ -100,6 +100,8 @@ const (
 	// This stage is AUTOMATICALLY GENERATED and can not be used
 	// to specify in configuration file.
 	StageRollback Stage = "ROLLBACK"
+
+	StageCustomStagesRollback Stage = "CUSTOM_STAGES_ROLLBACK"
 )
 
 func (s Stage) String() string {

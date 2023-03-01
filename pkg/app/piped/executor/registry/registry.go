@@ -34,12 +34,14 @@ import (
 type Registry interface {
 	Executor(stage model.Stage, in executor.Input) (executor.Executor, bool)
 	RollbackExecutor(kind model.ApplicationKind, in executor.Input) (executor.Executor, bool)
+	CustomStagesRollbackExecutor(in executor.Input) (executor.Executor, bool)
 }
 
 type registry struct {
-	factories         map[model.Stage]executor.Factory
-	rollbackFactories map[model.ApplicationKind]executor.Factory
-	mu                sync.RWMutex
+	factories                   map[model.Stage]executor.Factory
+	rollbackFactories           map[model.ApplicationKind]executor.Factory
+	customStagesRollbackFactory executor.Factory
+	mu                          sync.RWMutex
 }
 
 func (r *registry) Register(stage model.Stage, f executor.Factory) error {
@@ -64,6 +66,17 @@ func (r *registry) RegisterRollback(kind model.ApplicationKind, f executor.Facto
 	return nil
 }
 
+func (r *registry) RegisterCustomStagesRollback(f executor.Factory) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if r.customStagesRollbackFactory != nil {
+		return fmt.Errorf("rollback executor for custom stages application kind has already been registered")
+	}
+	r.customStagesRollbackFactory = f
+	return nil
+}
+
 func (r *registry) Executor(stage model.Stage, in executor.Input) (executor.Executor, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -83,6 +96,16 @@ func (r *registry) RollbackExecutor(kind model.ApplicationKind, in executor.Inpu
 	if !ok {
 		return nil, false
 	}
+	return f(in), true
+}
+
+func (r *registry) CustomStagesRollbackExecutor(in executor.Input) (executor.Executor, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	if r.customStagesRollbackFactory == nil {
+		return nil, false
+	}
+	f := r.customStagesRollbackFactory
 	return f(in), true
 }
 
