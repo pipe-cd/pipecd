@@ -162,9 +162,25 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	}
 
 	// Initialize default tool registry.
-	if err := toolregistry.InitDefaultRegistry(p.toolsDir, cfg.ExternalBinaries, input.Logger); err != nil {
+	if err := toolregistry.InitDefaultRegistry(p.toolsDir, input.Logger); err != nil {
 		input.Logger.Error("failed to initialize default tool registry", zap.Error(err))
 		return err
+	}
+
+	// Install External binaries
+	{
+		group.Go(func() error {
+			for _, config := range cfg.ExternalBinaries {
+				installed, err := toolregistry.DefaultRegistry().ExternalBinary(ctx, config)
+				if err != nil {
+					input.Logger.Error(fmt.Sprintf("Unable to find required %q %q (%v)", config.Command, config.Version, err), zap.Error(err))
+				}
+				if installed {
+					input.Logger.Info(fmt.Sprintf("%q %q has just been installed to %q because of no pre-installed binary for that version", config.Command, config.Version, p.toolsDir))
+				}
+			}
+			return nil
+		})
 	}
 
 	// Add configured Helm chart repositories.

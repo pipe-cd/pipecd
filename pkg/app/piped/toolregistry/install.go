@@ -23,6 +23,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -229,8 +230,8 @@ func (r *registry) installTerraform(ctx context.Context, version string) error {
 	return nil
 }
 
-func (r *registry) installExternalBinary(ctx context.Context, command, version string) error {
-	workingDirName := fmt.Sprintf("%s-install", command)
+func (r *registry) installExternalBinary(ctx context.Context, config config.PipedExternalBinary) error {
+	workingDirName := fmt.Sprintf("%s-install", config.Command)
 	workingDir, err := os.MkdirTemp("", workingDirName)
 	if err != nil {
 		return err
@@ -241,55 +242,41 @@ func (r *registry) installExternalBinary(ctx context.Context, command, version s
 		buf  bytes.Buffer
 		data = map[string]interface{}{
 			"WorkingDir": workingDir,
-			"Version":    version,
+			"Version":    config.Version,
 			"BinDir":     r.binDir,
 		}
 	)
-	var installScriptTemplate string
-	for _, v := range r.config {
-		if v.Command == command && v.Version == version {
-			installScriptTemplate = v.InstallScriptTemplate
-		}
-	}
-	if installScriptTemplate == "" {
-		r.logger.Error("failed to find install script",
-			zap.String("command", command),
-			zap.String("version", version),
-			zap.Error(err),
-		)
-		return fmt.Errorf("failed to install %s %s (%w)", command, version, err)
-	}
 
-	externalBinaryInstallScriptTmpl := template.Must(template.New(command).Parse(installScriptTemplate))
+	externalBinaryInstallScriptTmpl := template.Must(template.New(config.Command).Parse(config.InstallScriptTemplate))
 	if err := externalBinaryInstallScriptTmpl.Execute(&buf, data); err != nil {
 		r.logger.Error("failed to render external binary install script",
-			zap.String("command", command),
-			zap.String("version", version),
+			zap.String("command", config.Command),
+			zap.String("version", config.Version),
 			zap.Error(err),
 		)
-		return errors.Errorf("failed to install %s %s (%v)", command, version, err)
+		return errors.Errorf("failed to install %s %s (%v)", config.Command, config.Version, err)
 	}
 	script := fmt.Sprintf("cd %s\n", workingDir) + buf.String()
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	cmd := exec.CommandContext(ctxWithTimeout, "/bin/sh", "-c", script)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		r.logger.Error("failed to install custom template",
-			zap.String("command", command),
-			zap.String("version", version),
+		r.logger.Error("failed to install %s %s template",
+			zap.String("command", config.Command),
+			zap.String("version", config.Version),
 			zap.String("script", script),
 			zap.String("out", string(out)),
 			zap.Error(err),
 		)
 		if errors.Is(ctxWithTimeout.Err(), context.DeadlineExceeded) {
-			return errors.Errorf("failed to install %s %s (%v) because of timeout", command, version, err)
+			return errors.Errorf("failed to install %s %s (%v) because of timeout", config.Command, config.Version, err)
 		}
-		return errors.Errorf("failed to install %s %s (%v)", command, version, err)
+		return errors.Errorf("failed to install %s %s (%v)", config.Command, config.Version, err)
 	}
 
 	r.logger.Info("just installed external binary",
-		zap.String("command", command),
-		zap.String("version", version),
+		zap.String("command", config.Command),
+		zap.String("version", config.Version),
 	)
 	return nil
 }
