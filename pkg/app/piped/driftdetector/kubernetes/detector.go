@@ -193,8 +193,8 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return err
 	}
 	result, err := provider.DiffList(
-		liveManifests,
 		headManifests,
+		liveManifests,
 		d.logger,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
@@ -355,7 +355,7 @@ func makeSyncState(r *provider.DiffListResult, commit string) model.ApplicationS
 
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit))
-	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Git)\n\n")
+	b.WriteString("--- Expected\n+++ Actual\n\n")
 
 	details := r.Render(provider.DiffRenderOptions{
 		MaskSecret:          true,
