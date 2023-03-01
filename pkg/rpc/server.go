@@ -46,6 +46,7 @@ type Server struct {
 	gracePeriod          time.Duration
 	enabelGRPCReflection bool
 	logger               *zap.Logger
+	maxRecvMsgSize       int
 
 	pipedKeyAuthUnaryInterceptor      grpc.UnaryServerInterceptor
 	pipedKeyAuthStreamInterceptor     grpc.StreamServerInterceptor
@@ -226,6 +227,9 @@ func (s *Server) init() error {
 	}
 	if s.pipedKeyAuthStreamInterceptor != nil {
 		opts = append(opts, grpc.StreamInterceptor(s.pipedKeyAuthStreamInterceptor))
+	}
+	if s.maxRecvMsgSize != 0 {
+		opts = append(opts, grpc.WithMaxMsgSize())
 	}
 	s.grpcServer = grpc.NewServer(opts...)
 
