@@ -554,8 +554,14 @@ func (p ProjectRBACRoles) Authorize(rsc ProjectRBACResource_ResourceType, labels
 		if len(labels) == 0 && len(r.Labels) != 0 {
 			continue
 		}
-		if len(r.Labels) == 0 || r.ContainLabels(labels) {
+		if len(r.Labels) == 0 {
 			return true
+		}
+		for k, v := range r.Labels {
+			value, ok := labels[k]
+			if ok && value == v {
+				return true
+			}
 		}
 	}
 	return false
@@ -580,21 +586,4 @@ func (p *ProjectRBACPolicy) HasPermission(typ ProjectRBACResource_ResourceType, 
 		}
 	}
 	return false
-}
-
-func (p *ProjectRBACResource) ContainLabels(labels map[string]string) bool {
-	if len(p.Labels) < len(labels) {
-		return false
-	}
-
-	for k, v := range labels {
-		value, ok := p.Labels[k]
-		if !ok {
-			return false
-		}
-		if value != v {
-			return false
-		}
-	}
-	return true
 }

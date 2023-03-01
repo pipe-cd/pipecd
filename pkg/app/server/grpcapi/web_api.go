@@ -1282,6 +1282,7 @@ func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Proje
 	return project, nil
 }
 
+// nolint: errcheck
 func (a *WebAPI) getProjectRBACRoles(ctx context.Context, projectID string) (map[string]*model.ProjectRBACRole, error) {
 	roles, err := a.projectRBACRolesCache.Get(projectID)
 	if err != nil && !errors.Is(err, cache.ErrNotFound) {

@@ -923,7 +923,7 @@ func TestProjectRBACRoles_Authorize(t *testing.T) {
 							Resources: []*ProjectRBACResource{
 								{
 									Type:   ProjectRBACResource_APPLICATION,
-									Labels: map[string]string{"env": "test", "piped": "test"},
+									Labels: map[string]string{"env": "test"},
 								},
 							},
 							Actions: []ProjectRBACPolicy_Action{
@@ -934,6 +934,31 @@ func TestProjectRBACRoles_Authorize(t *testing.T) {
 				},
 			},
 			want: true,
+		},
+		{
+			name: "app does not have any labels",
+			args: args{
+				rsc: ProjectRBACResource_APPLICATION,
+			},
+			roles: ProjectRBACRoles{
+				{
+					Name: "Tester",
+					Policies: []*ProjectRBACPolicy{
+						{
+							Resources: []*ProjectRBACResource{
+								{
+									Type:   ProjectRBACResource_APPLICATION,
+									Labels: map[string]string{"env": "test"},
+								},
+							},
+							Actions: []ProjectRBACPolicy_Action{
+								ProjectRBACPolicy_ALL,
+							},
+						},
+					},
+				},
+			},
+			want: false,
 		},
 	}
 	for _, tc := range testcases {
