@@ -16,6 +16,7 @@ package custom
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -23,6 +24,9 @@ import (
 
 type customStagesRollbackExecutor struct {
 	executor.Input
+
+	repoDir string
+	appDir  string
 }
 
 func (e *customStagesRollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
@@ -44,9 +48,35 @@ func (e *customStagesRollbackExecutor) Execute(sig executor.StopSignal) model.St
 }
 
 func (e *customStagesRollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus {
-	for _, v := range e.RollbackCustomStageConfigsStack {
-		for _, w := range v.CustomStageOptions.Runs {
-			e.LogPersister.Info(w)
+	// Not rollback in case this is the first deployment.
+	if e.Deployment.RunningCommitHash == "" {
+		e.LogPersister.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	runningDS, err := e.RunningDSP.Get(ctx, e.LogPersister)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+	e.repoDir = runningDS.RepoDir
+	e.appDir = runningDS.AppDir
+	e.LogPersister.Infof("Start rollback for custom stages")
+
+	for i := range e.RollbackCustomStageStack {
+		stage := e.RollbackCustomStageStack[len(e.RollbackCustomStageStack)-i-1]
+		e.LogPersister.Infof("Start rollback for custom stage (Name: %s Id: %s Desc: %s)", stage.Name, stage.Id, stage.Desc)
+		fmt.Println(stage.Index)
+		fmt.Println(runningDS.GenericApplicationConfig.Pipeline.Stages)
+		stageConfig, ok := runningDS.GenericApplicationConfig.GetStage(stage.Index)
+		if !ok {
+			e.LogPersister.Errorf("Failed to get custom stage config")
+			return model.StageStatus_STAGE_FAILURE
+		}
+		result := executeCommand(e.appDir, stageConfig.CustomStageOptions, e.LogPersister)
+		if !result {
+			e.LogPersister.Errorf("Failed to execute command")
+			return model.StageStatus_STAGE_FAILURE
 		}
 	}
 	return model.StageStatus_STAGE_SUCCESS

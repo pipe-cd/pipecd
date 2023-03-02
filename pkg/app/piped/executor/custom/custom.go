@@ -74,9 +74,9 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		timeout = e.StageConfig.CustomStageOptions.Timeout.Duration()
 	}
 
-	c := make(chan model.StageStatus, 1)
+	c := make(chan bool, 1)
 	go func() {
-		result := e.executeCommand(e.StageConfig.CustomStageOptions)
+		result := executeCommand(e.appDir, e.StageConfig.CustomStageOptions, e.LogPersister)
 		c <- result
 	}()
 
@@ -86,7 +86,11 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	for {
 		select {
 		case result := <-c:
-			return result
+			if result {
+				return model.StageStatus_STAGE_SUCCESS
+			} else {
+				return model.StageStatus_STAGE_FAILURE
+			}
 		case <-timer.C:
 			e.LogPersister.Errorf("Canceled because of timeout")
 			return model.StageStatus_STAGE_FAILURE
@@ -104,7 +108,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 }
 
-func (e *deployExecutor) executeCommand(opts *config.CustomStageOptions) model.StageStatus {
+func executeCommand(appDir string, opts *config.CustomStageOptions, lp executor.LogPersister) bool {
 
 	binDir := toolregistry.DefaultRegistry().GetBinDir()
 	pathFromOS := os.Getenv("PATH")
@@ -116,18 +120,18 @@ func (e *deployExecutor) executeCommand(opts *config.CustomStageOptions) model.S
 	}
 	for _, v := range opts.Runs {
 		cmd := exec.Command("/bin/sh", "-c", v)
-		e.LogPersister.Infof("RUN %s (env: %v)", v, envs)
-		cmd.Dir = e.appDir
+		lp.Infof("RUN %s (env: %v)", v, envs)
+		cmd.Dir = appDir
 		cmd.Env = append(os.Environ(), append(envs, "PATH="+path)...)
 		out, err := cmd.CombinedOutput()
 		if len(out) != 0 {
-			e.LogPersister.Infof("%s", out)
+			lp.Infof("%s", out)
 		}
 		if err != nil {
-			e.LogPersister.Errorf("ERROR %v", err)
-			return model.StageStatus_STAGE_FAILURE
+			lp.Errorf("ERROR %v", err)
+			return false
 		}
 
 	}
-	return model.StageStatus_STAGE_SUCCESS
+	return true
 }

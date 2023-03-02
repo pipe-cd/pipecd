@@ -40,22 +40,23 @@ import (
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
 	// Readonly deployment model.
-	deployment          *model.Deployment
-	workingDir          string
-	executorRegistry    registry.Registry
-	apiClient           apiClient
-	gitClient           gitClient
-	commandLister       commandLister
-	applicationLister   applicationLister
-	liveResourceLister  liveResourceLister
-	analysisResultStore analysisResultStore
-	logPersister        logpersister.Persister
-	metadataStore       metadatastore.MetadataStore
-	notifier            notifier
-	secretDecrypter     secretDecrypter
-	pipedConfig         *config.PipedSpec
-	appManifestsCache   cache.Cache
-	logger              *zap.Logger
+	deployment               *model.Deployment
+	workingDir               string
+	executorRegistry         registry.Registry
+	apiClient                apiClient
+	gitClient                gitClient
+	commandLister            commandLister
+	applicationLister        applicationLister
+	liveResourceLister       liveResourceLister
+	analysisResultStore      analysisResultStore
+	rollbackCustomStageStack []*model.PipelineStage
+	logPersister             logpersister.Persister
+	metadataStore            metadatastore.MetadataStore
+	notifier                 notifier
+	secretDecrypter          secretDecrypter
+	pipedConfig              *config.PipedSpec
+	appManifestsCache        cache.Cache
+	logger                   *zap.Logger
 
 	targetDSP  deploysource.Provider
 	runningDSP deploysource.Provider
@@ -76,8 +77,6 @@ type scheduler struct {
 
 	nowFunc func() time.Time
 }
-
-var rollbackCustomStageConfigsStack []config.PipelineStage
 
 func newScheduler(
 	d *model.Deployment,
@@ -104,25 +103,26 @@ func newScheduler(
 	)
 
 	s := &scheduler{
-		deployment:           d,
-		workingDir:           workingDir,
-		executorRegistry:     registry.DefaultRegistry(),
-		apiClient:            apiClient,
-		gitClient:            gitClient,
-		commandLister:        commandLister,
-		applicationLister:    applicationLister,
-		liveResourceLister:   liveResourceLister,
-		analysisResultStore:  analysisResultStore,
-		logPersister:         lp,
-		metadataStore:        metadatastore.NewMetadataStore(apiClient, d),
-		notifier:             notifier,
-		secretDecrypter:      sd,
-		pipedConfig:          pipedConfig,
-		appManifestsCache:    appManifestsCache,
-		doneDeploymentStatus: d.Status,
-		cancelledCh:          make(chan *model.ReportableCommand, 1),
-		logger:               logger,
-		nowFunc:              time.Now,
+		deployment:               d,
+		workingDir:               workingDir,
+		executorRegistry:         registry.DefaultRegistry(),
+		apiClient:                apiClient,
+		gitClient:                gitClient,
+		commandLister:            commandLister,
+		applicationLister:        applicationLister,
+		liveResourceLister:       liveResourceLister,
+		analysisResultStore:      analysisResultStore,
+		rollbackCustomStageStack: make([]*model.PipelineStage, 0),
+		logPersister:             lp,
+		metadataStore:            metadatastore.NewMetadataStore(apiClient, d),
+		notifier:                 notifier,
+		secretDecrypter:          sd,
+		pipedConfig:              pipedConfig,
+		appManifestsCache:        appManifestsCache,
+		doneDeploymentStatus:     d.Status,
+		cancelledCh:              make(chan *model.ReportableCommand, 1),
+		logger:                   logger,
+		nowFunc:                  time.Now,
 	}
 
 	// Initialize the map of current status of all stages.
@@ -277,7 +277,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 			continue
 		}
 		if stageConfig, ok := s.genericApplicationConfig.GetStage(ps.Index); ok && stageConfig.CustomStageOptions.Rollback {
-			rollbackCustomStageConfigsStack = append(rollbackCustomStageConfigsStack, stageConfig)
+			s.rollbackCustomStageStack = append(s.rollbackCustomStageStack, ps)
 		}
 
 		// This stage is already completed by a previous scheduler.
@@ -498,24 +498,25 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		applicationID: app.Id,
 	}
 	input := executor.Input{
-		Stage:                           &ps,
-		StageConfig:                     stageConfig,
-		Deployment:                      s.deployment,
-		Application:                     app,
-		PipedConfig:                     s.pipedConfig,
-		TargetDSP:                       s.targetDSP,
-		RunningDSP:                      s.runningDSP,
-		GitClient:                       s.gitClient,
-		CommandLister:                   cmdLister,
-		LogPersister:                    lp,
-		MetadataStore:                   s.metadataStore,
-		AppManifestsCache:               s.appManifestsCache,
-		AppLiveResourceLister:           alrLister,
-		AnalysisResultStore:             aStore,
-		RollbackCustomStageConfigsStack: rollbackCustomStageConfigsStack,
-		Logger:                          s.logger,
-		Notifier:                        s.notifier,
+		Stage:                    &ps,
+		StageConfig:              stageConfig,
+		Deployment:               s.deployment,
+		Application:              app,
+		PipedConfig:              s.pipedConfig,
+		TargetDSP:                s.targetDSP,
+		RunningDSP:               s.runningDSP,
+		GitClient:                s.gitClient,
+		CommandLister:            cmdLister,
+		LogPersister:             lp,
+		MetadataStore:            s.metadataStore,
+		AppManifestsCache:        s.appManifestsCache,
+		AppLiveResourceLister:    alrLister,
+		AnalysisResultStore:      aStore,
+		RollbackCustomStageStack: s.rollbackCustomStageStack,
+		Logger:                   s.logger,
+		Notifier:                 s.notifier,
 	}
+	s.rollbackCustomStageStack = nil
 
 	// Find the executor for this stage.
 	ex, ok := executorFactory(input)
