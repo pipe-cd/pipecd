@@ -1499,7 +1499,8 @@ proto.model.ApplicationSyncStatus = {
   UNKNOWN: 0,
   SYNCED: 1,
   DEPLOYING: 2,
-  OUT_OF_SYNC: 3
+  OUT_OF_SYNC: 3,
+  INVALID_CONFIG: 4
 };
 
 goog.object.extend(exports, proto.model);

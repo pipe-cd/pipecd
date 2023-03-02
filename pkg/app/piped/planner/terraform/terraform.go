@@ -81,15 +81,16 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
-	out.Versions, err = provider.FindArtifactVersions(files)
-	if err != nil {
-		in.Logger.Warn("unable to determine target versions", zap.Error(err))
+	if versions, e := provider.FindArtifactVersions(files); e != nil || len(versions) == 0 {
+		in.Logger.Warn("unable to determine target versions", zap.Error(e))
 		out.Versions = []*model.ArtifactVersion{
 			{
 				Kind:    model.ArtifactVersion_UNKNOWN,
 				Version: "unknown",
 			},
 		}
+	} else {
+		out.Versions = versions
 	}
 
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {

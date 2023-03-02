@@ -77,6 +77,7 @@ enum ApplicationSyncStatus {
     SYNCED = 1;
     DEPLOYING = 2;
     OUT_OF_SYNC = 3;
+    INVALID_CONFIG = 4;
 }
 
 // Current sync state of a specific application.
