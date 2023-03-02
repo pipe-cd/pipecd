@@ -15,6 +15,7 @@
 package custom
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"time"
@@ -64,14 +65,14 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	e.repoDir = ds.RepoDir
 	e.appDir = ds.AppDir
-	if e.StageConfig.CustomStageOptions.Timeout.Duration() != 0*time.Second {
+	if e.StageConfig.CustomStageOptions.Timeout != 0 {
 		timeout = e.StageConfig.CustomStageOptions.Timeout.Duration()
 	}
+	fmt.Println(timeout)
 
 	c := make(chan model.StageStatus, 1)
 	go func() {
-		result := e.executeCommand(e.StageConfig.CustomStageOptions)
-		c <- result
+		c <- e.executeCommand(e.StageConfig.CustomStageOptions)
 	}()
 
 	timer := time.NewTimer(timeout)
