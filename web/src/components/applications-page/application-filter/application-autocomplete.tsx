@@ -1,4 +1,10 @@
-import { TextField, Select, InputLabel, FormControl, MenuItem } from "@material-ui/core";
+import {
+  TextField,
+  Select,
+  InputLabel,
+  FormControl,
+  MenuItem,
+} from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import { FC, useState } from "react";
 import { useAppSelector } from "~/hooks/redux";
@@ -34,21 +40,20 @@ export const ApplicationAutocomplete: FC<Props> = ({ value, onChange }) => {
   );
 };
 
-
 export const PipedAutocomplete: FC<Props> = ({ value, onChange }) => {
   const ps = useAppSelector((state) => selectAllPipeds(state));
   const pipeds = ps
     .filter((piped) => !piped.disabled)
     .sort((a, b) => sortComp(a.name, b.name));
-    const [selectedPipedId, setSelectedPipedId] = useState(
-      pipeds.length === 1 ? pipeds[0].id : ""
-    );
-    // const selectedPiped = useAppSelector(selectPipedById(selectedPipedId));
-    // const handleUpdateFilterValue = (
-    //   optionPart: Partial<PlatformProviderFilterOptions>
-    // ): void => {
-    //   onChange({ ...options, ...optionPart });
-    // };
+  const [selectedPipedId, setSelectedPipedId] = useState(
+    pipeds.length === 1 ? pipeds[0].id : ""
+  );
+  // const selectedPiped = useAppSelector(selectPipedById(selectedPipedId));
+  // const handleUpdateFilterValue = (
+  //   optionPart: Partial<PlatformProviderFilterOptions>
+  // ): void => {
+  //   onChange({ ...options, ...optionPart });
+  // };
   // const selectedPiped = useAppSelector(selectPipedById(values.pipedId));
   // const piped = useAppSelector<string[]>(
   //   (state) =>
@@ -66,20 +71,20 @@ export const PipedAutocomplete: FC<Props> = ({ value, onChange }) => {
         label="Piped"
         value={selectedPipedId}
         // className={classes.select}
-            onChange={(e) => {
-              setSelectedPipedId(e.target.value as string);
-              onChange(e.target.value as string || "")
-            }}
+        onChange={(e) => {
+          setSelectedPipedId(e.target.value as string);
+          onChange((e.target.value as string) || "");
+        }}
       >
         {pipeds.map((e) => (
           <MenuItem value={e.id} key={`piped-${e.id}`}>
             {e.name} ({e.id})
           </MenuItem>
-          ))}
+        ))}
       </Select>
     </FormControl>
   );
-}
+};
 
 // function FormSelectInput<T extends { name: string; value: string }>({
 //   id,
