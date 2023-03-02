@@ -73,7 +73,7 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({
   const classes = useStyles();
   const [showReason, setShowReason] = useState(false);
 
-  const MAX_DISPLAY_LENGTH = 100
+  const MAX_DISPLAY_LENGTH = 100;
   if (detail.length < MAX_DISPLAY_LENGTH) {
     return (
       <>
@@ -83,7 +83,7 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({
           </Typography>
         </div>
       </>
-    )
+    );
   }
 
   return (
