@@ -58,8 +58,6 @@ type GenericApplicationSpec struct {
 	DeploymentNotification *DeploymentNotification `json:"notification"`
 	// List of the configuration for event watcher.
 	EventWatcher []EventWatcherConfig `json:"eventWatcher"`
-	// Configuration for drift detection
-	DriftDetection *DriftDetection `json:"driftDetection"`
 }
 
 type DeploymentPlanner struct {
@@ -631,10 +629,6 @@ func (c *DeploymentChainTriggerCondition) Validate() error {
 		return fmt.Errorf("missing commitPrefix configration as deployment chain trigger condition")
 	}
 	return nil
-}
-
-type DriftDetection struct {
-	IgnoreFields []string `json:"ignoreFields"`
 }
 
 func LoadApplication(repoPath, configRelPath string, appKind model.ApplicationKind) (*GenericApplicationSpec, error) {
