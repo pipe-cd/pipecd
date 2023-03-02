@@ -23,9 +23,10 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
+
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 const (
