@@ -28,7 +28,7 @@ export interface SyncStateReasonProps {
   detail: string;
 }
 
-export const SyncStateReason: FC<SyncStateReasonProps> = ({
+export const OutOfSyncReason: FC<SyncStateReasonProps> = ({
   summary,
   detail,
 }) => {
@@ -62,6 +62,47 @@ export const SyncStateReason: FC<SyncStateReasonProps> = ({
           <DiffView content={detail} />
         </Paper>
       )}
+    </>
+  );
+};
+
+export const InvalidConfigReason: FC<SyncStateReasonProps> = ({
+  summary,
+  detail,
+}) => {
+  const classes = useStyles();
+  const [showReason, setShowReason] = useState(false);
+  return (
+    <>
+      <div className={classes.summary}>
+        {showReason && (
+          <Typography variant="body2" color="textSecondary">
+            {detail}
+          </Typography>
+        )}
+        {!showReason && (
+          // TODO: ellipsis
+          <Typography variant="body2" color="textSecondary">
+            {detail.slice(0, 10)}
+          </Typography>
+        )}
+
+        {detail && (
+          <>
+            <Button
+              variant="text"
+              size="small"
+              className={classes.showButton}
+              onClick={() => setShowReason(!showReason)}
+            >
+              {showReason ? "HIDE" : "MORE"}
+            </Button>
+            {showReason && (
+              <CopyIconButton name="Diff" value={detail} size="small" />
+            )}
+          </>
+        )}
+      </div>
     </>
   );
 };
