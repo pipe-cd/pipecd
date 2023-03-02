@@ -72,6 +72,20 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({
 }) => {
   const classes = useStyles();
   const [showReason, setShowReason] = useState(false);
+
+  const MAX_DISPLAY_LENGTH = 100
+  if (detail.length < MAX_DISPLAY_LENGTH) {
+    return (
+      <>
+        <div className={classes.summary}>
+          <Typography variant="body2" color="textSecondary">
+            {detail}
+          </Typography>
+        </div>
+      </>
+    )
+  }
+
   return (
     <>
       <div className={classes.summary}>
@@ -81,9 +95,8 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({
           </Typography>
         )}
         {!showReason && (
-          // TODO: ellipsis
           <Typography variant="body2" color="textSecondary">
-            {detail.slice(0, 10)}
+            {detail.slice(0, MAX_DISPLAY_LENGTH) + "..."}
           </Typography>
         )}
 
@@ -97,9 +110,6 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({
             >
               {showReason ? "HIDE" : "MORE"}
             </Button>
-            {showReason && (
-              <CopyIconButton name="Diff" value={detail} size="small" />
-            )}
           </>
         )}
       </div>
