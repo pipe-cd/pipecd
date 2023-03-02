@@ -67,7 +67,6 @@ export const OutOfSyncReason: FC<SyncStateReasonProps> = ({
 };
 
 export const InvalidConfigReason: FC<SyncStateReasonProps> = ({
-  summary,
   detail,
 }) => {
   const classes = useStyles();
