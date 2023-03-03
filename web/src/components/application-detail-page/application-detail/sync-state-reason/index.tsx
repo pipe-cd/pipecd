@@ -95,7 +95,7 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
             {detail.slice(0, MAX_DISPLAY_LENGTH) + "..."}
           </Typography>
         )}
-        <>
+        {detail && (
           <Button
             variant="text"
             size="small"
@@ -104,7 +104,7 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
           >
             {showReason ? "HIDE" : "MORE"}
           </Button>
-        </>
+        )}
       </div>
     </>
   );
