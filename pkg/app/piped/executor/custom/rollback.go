@@ -16,20 +16,19 @@ package custom
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-type customStagesRollbackExecutor struct {
+type customStageRollbackExecutor struct {
 	executor.Input
 
 	repoDir string
 	appDir  string
 }
 
-func (e *customStagesRollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
+func (e *customStageRollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	var (
 		ctx            = sig.Context()
 		originalStatus = e.Stage.Status
@@ -37,7 +36,7 @@ func (e *customStagesRollbackExecutor) Execute(sig executor.StopSignal) model.St
 	)
 
 	switch model.Stage(e.Stage.Name) {
-	case model.StageCustomStagesRollback:
+	case model.StageCustomStageRollback:
 		status = e.ensureRollback(ctx)
 	default:
 		e.LogPersister.Errorf("Unsupported stage %s", e.Stage.Name)
@@ -47,7 +46,7 @@ func (e *customStagesRollbackExecutor) Execute(sig executor.StopSignal) model.St
 	return executor.DetermineStageStatus(sig.Signal(), originalStatus, status)
 }
 
-func (e *customStagesRollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus {
+func (e *customStageRollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus {
 	// Not rollback in case this is the first deployment.
 	if e.Deployment.RunningCommitHash == "" {
 		e.LogPersister.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")
@@ -63,17 +62,21 @@ func (e *customStagesRollbackExecutor) ensureRollback(ctx context.Context) model
 	e.appDir = runningDS.AppDir
 	e.LogPersister.Infof("Start rollback for custom stages")
 
-	for i := range e.RollbackCustomStageStack {
-		stage := e.RollbackCustomStageStack[len(e.RollbackCustomStageStack)-i-1]
-		e.LogPersister.Infof("Start rollback for custom stage (Name: %s Id: %s Desc: %s)", stage.Name, stage.Id, stage.Desc)
-		fmt.Println(stage.Index)
-		fmt.Println(runningDS.GenericApplicationConfig.Pipeline.Stages)
-		stageConfig, ok := runningDS.GenericApplicationConfig.GetStage(stage.Index)
+	customStageConfigs, ok := runningDS.GenericApplicationConfig.GetStagesFromName(model.StageCustomStage)
+	if !ok || customStageConfigs == nil {
+		e.LogPersister.Errorf("There are no custom stages in running commit")
+	}
+	if len(customStageConfigs) > 1 {
+		e.LogPersister.Errorf("There are custom stages more than one stage.")
+	}
+	for _, customStageConfig := range customStageConfigs {
+		e.LogPersister.Infof("Start rollback for custom stage (Name: %s Id: %s Desc: %s)", customStageConfig.Name, customStageConfig.Id, customStageConfig.Desc)
+
 		if !ok {
 			e.LogPersister.Errorf("Failed to get custom stage config")
 			return model.StageStatus_STAGE_FAILURE
 		}
-		result := executeCommand(e.appDir, stageConfig.CustomStageOptions, e.LogPersister)
+		result := executeCommand(e.appDir, customStageConfig.CustomStageOptions, e.LogPersister)
 		if !result {
 			e.LogPersister.Errorf("Failed to execute command")
 			return model.StageStatus_STAGE_FAILURE

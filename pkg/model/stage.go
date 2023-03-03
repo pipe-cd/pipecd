@@ -101,7 +101,7 @@ const (
 	// to specify in configuration file.
 	StageRollback Stage = "ROLLBACK"
 
-	StageCustomStagesRollback Stage = "CUSTOM_STAGES_ROLLBACK"
+	StageCustomStageRollback Stage = "CUSTOM_STAGE_ROLLBACK"
 )
 
 func (s Stage) String() string {

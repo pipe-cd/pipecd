@@ -147,17 +147,7 @@ func (d *Deployment) TriggerBefore(other *Deployment) bool {
 // FindRollbackStage finds the rollback stage in stage list.
 func (d *Deployment) FindRollbackStage() (*PipelineStage, bool) {
 	for i := len(d.Stages) - 1; i >= 0; i-- {
-		if d.Stages[i].Name == StageRollback.String() || d.Stages[i].Name == StageCustomStagesRollback.String() {
-			return d.Stages[i], true
-		}
-	}
-	return nil, false
-}
-
-// FindCustomStagesRollbackStage finds the rollback stage in stage list.
-func (d *Deployment) FindCustomStagesRollbackStage() (*PipelineStage, bool) {
-	for i := len(d.Stages) - 1; i >= 0; i-- {
-		if d.Stages[i].Name == StageCustomStagesRollback.String() {
+		if d.Stages[i].Name == StageRollback.String() || d.Stages[i].Name == StageCustomStageRollback.String() {
 			return d.Stages[i], true
 		}
 	}
