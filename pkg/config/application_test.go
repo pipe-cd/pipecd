@@ -517,7 +517,7 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 	}
 }
 
-func TestCustomStageConfig(t *testing.T) {
+func TestCustomSyncConfig(t *testing.T) {
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind
@@ -535,18 +535,9 @@ func TestCustomStageConfig(t *testing.T) {
 					Pipeline: &DeploymentPipeline{
 						Stages: []PipelineStage{
 							{
-								Name: model.StageCustomStage,
-								Desc: "build by sam",
-								CustomStageOptions: &CustomStageOptions{
-									Runs: []string{
-										"sam build",
-									},
-								},
-							},
-							{
-								Name: model.StageCustomStage,
+								Name: model.StageCustomSync,
 								Desc: "deploy by sam",
-								CustomStageOptions: &CustomStageOptions{
+								CustomSyncOptions: &CustomSyncOptions{
 									Env: map[string]string{
 										"AWS_PROFILE": "default",
 									},

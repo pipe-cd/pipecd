@@ -3,12 +3,7 @@ kind: LambdaApp
 spec:
   pipeline:
     stages:
-      - name: CUSTOM_STAGE
-        desc: "build by sam"
-        with:
-          runs: 
-            - "sam build"
-      - name: CUSTOM_STAGE
+      - name: CUSTOM_SYNC
         desc: "deploy by sam"
         with:
           env: 
