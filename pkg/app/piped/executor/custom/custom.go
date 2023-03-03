@@ -48,7 +48,7 @@ func Register(r registerer) {
 			Input: in,
 		}
 	}
-	r.Register(model.StageCustomStage, f)
+	r.Register(model.StageCustomSync, f)
 }
 
 // Execute starts waiting for the specified duration.
@@ -65,14 +65,14 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	e.repoDir = ds.RepoDir
 	e.appDir = ds.AppDir
-	if e.StageConfig.CustomStageOptions.Timeout != 0 {
-		timeout = e.StageConfig.CustomStageOptions.Timeout.Duration()
+	if e.StageConfig.CustomSyncOptions.Timeout != 0 {
+		timeout = e.StageConfig.CustomSyncOptions.Timeout.Duration()
 	}
 	fmt.Println(timeout)
 
 	c := make(chan model.StageStatus, 1)
 	go func() {
-		c <- e.executeCommand(e.StageConfig.CustomStageOptions)
+		c <- e.executeCommand(e.StageConfig.CustomSyncOptions)
 	}()
 
 	timer := time.NewTimer(timeout)
@@ -99,7 +99,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 }
 
-func (e *deployExecutor) executeCommand(opts *config.CustomStageOptions) model.StageStatus {
+func (e *deployExecutor) executeCommand(opts *config.CustomSyncOptions) model.StageStatus {
 
 	binDir := toolregistry.DefaultRegistry().GetBinDir()
 	pathFromOS := os.Getenv("PATH")
