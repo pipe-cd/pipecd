@@ -15,6 +15,7 @@
 package custom
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"time"
@@ -48,7 +49,7 @@ func Register(r registerer) {
 			Input: in,
 		}
 	}
-	r.Register(model.StageCustomStage, f)
+	r.Register(model.StageCustomSync, f)
 	r.RegisterCustomStageRollback(func(in executor.Input) executor.Executor {
 		return &customStageRollbackExecutor{
 			Input: in,
@@ -70,13 +71,14 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	e.repoDir = ds.RepoDir
 	e.appDir = ds.AppDir
-	if e.StageConfig.CustomStageOptions.Timeout.Duration() != 0*time.Second {
-		timeout = e.StageConfig.CustomStageOptions.Timeout.Duration()
+	if e.StageConfig.CustomSyncOptions.Timeout != 0 {
+		timeout = e.StageConfig.CustomSyncOptions.Timeout.Duration()
 	}
+	fmt.Println(timeout)
 
 	c := make(chan bool, 1)
 	go func() {
-		result := executeCommand(e.appDir, e.StageConfig.CustomStageOptions, e.LogPersister)
+		result := executeCommand(e.appDir, e.StageConfig.CustomSyncOptions, e.LogPersister)
 		c <- result
 	}()
 
@@ -108,7 +110,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 }
 
-func executeCommand(appDir string, opts *config.CustomStageOptions, lp executor.LogPersister) bool {
+func executeCommand(appDir string, opts *config.CustomSyncOptions, lp executor.LogPersister) bool {
 
 	binDir := toolregistry.DefaultRegistry().GetBinDir()
 	pathFromOS := os.Getenv("PATH")

@@ -62,7 +62,7 @@ func (e *customStageRollbackExecutor) ensureRollback(ctx context.Context) model.
 	e.appDir = runningDS.AppDir
 	e.LogPersister.Infof("Start rollback for custom stages")
 
-	customStageConfigs, ok := runningDS.GenericApplicationConfig.GetStagesFromName(model.StageCustomStage)
+	customStageConfigs, ok := runningDS.GenericApplicationConfig.GetStagesFromName(model.StageCustomSync)
 	if !ok || customStageConfigs == nil {
 		e.LogPersister.Errorf("There are no custom stages in running commit")
 	}
@@ -76,7 +76,7 @@ func (e *customStageRollbackExecutor) ensureRollback(ctx context.Context) model.
 			e.LogPersister.Errorf("Failed to get custom stage config")
 			return model.StageStatus_STAGE_FAILURE
 		}
-		result := executeCommand(e.appDir, customStageConfig.CustomStageOptions, e.LogPersister)
+		result := executeCommand(e.appDir, customStageConfig.CustomSyncOptions, e.LogPersister)
 		if !result {
 			e.LogPersister.Errorf("Failed to execute command")
 			return model.StageStatus_STAGE_FAILURE

@@ -218,7 +218,7 @@ type PipelineStage struct {
 	Desc    string
 	Timeout Duration
 
-	CustomStageOptions       *CustomStageOptions
+	CustomSyncOptions        *CustomSyncOptions
 	WaitStageOptions         *WaitStageOptions
 	WaitApprovalStageOptions *WaitApprovalStageOptions
 	AnalysisStageOptions     *AnalysisStageOptions
@@ -268,10 +268,10 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	s.Timeout = gs.Timeout
 
 	switch s.Name {
-	case model.StageCustomStage:
-		s.CustomStageOptions = &CustomStageOptions{}
+	case model.StageCustomSync:
+		s.CustomSyncOptions = &CustomSyncOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.CustomStageOptions)
+			err = json.Unmarshal(gs.With, s.CustomSyncOptions)
 		}
 	case model.StageWait:
 		s.WaitStageOptions = &WaitStageOptions{}
@@ -416,11 +416,10 @@ type WaitApprovalStageOptions struct {
 	MinApproverNum int      `json:"minApproverNum" default:"1"`
 }
 
-type CustomStageOptions struct {
-	Rollback bool              `json:"rollback" default:"false"`
-	Timeout  Duration          `json:"timeout"`
-	Env      map[string]string `json:"env"`
-	Runs     []string          `json:"runs"`
+type CustomSyncOptions struct {
+	Timeout Duration          `json:"timeout"`
+	Env     map[string]string `json:"env"`
+	Runs    []string          `json:"runs"`
 }
 
 func (w *WaitApprovalStageOptions) Validate() error {

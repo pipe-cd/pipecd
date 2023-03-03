@@ -91,8 +91,9 @@ const (
 	// StageECSCanaryClean represents the stage where
 	// the CANARY variant resources has been cleaned.
 	StageECSCanaryClean Stage = "ECS_CANARY_CLEAN"
-
-	StageCustomStage Stage = "CUSTOM_STAGE"
+	// StageCustomSync represents the stage where users can
+	// run their defined scripts as part of the deployment.
+	StageCustomSync Stage = "CUSTOM_SYNC"
 
 	// StageRollback represents a state where
 	// the all temporarily created stages will be reverted to
