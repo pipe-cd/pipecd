@@ -536,15 +536,6 @@ func TestCustomSyncConfig(t *testing.T) {
 						Stages: []PipelineStage{
 							{
 								Name: model.StageCustomSync,
-								Desc: "build by sam",
-								CustomSyncOptions: &CustomSyncOptions{
-									Runs: []string{
-										"sam build",
-									},
-								},
-							},
-							{
-								Name: model.StageCustomSync,
 								Desc: "deploy by sam",
 								CustomSyncOptions: &CustomSyncOptions{
 									Env: map[string]string{
