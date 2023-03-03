@@ -1,9 +1,4 @@
-import {
-  Select,
-  InputLabel,
-  FormControl,
-  MenuItem,
-} from "@material-ui/core";
+import { Select, InputLabel, FormControl, MenuItem } from "@material-ui/core";
 import { FC, useState } from "react";
 import { useAppSelector } from "~/hooks/redux";
 import { selectAllPipeds } from "~/modules/pipeds";
@@ -13,7 +8,7 @@ interface Props {
   onChange: (value: string) => void;
   className: string | undefined;
 }
-const ALL_VALUE = "ALL"
+const ALL_VALUE = "ALL";
 
 export const PipedSelect: FC<Props> = ({ value, onChange, className }) => {
   const ps = useAppSelector((state) => selectAllPipeds(state));
@@ -34,11 +29,9 @@ export const PipedSelect: FC<Props> = ({ value, onChange, className }) => {
         className={className}
         onChange={(e) => {
           setSelectedPipedId(e.target.value as string);
-          onChange((
-            e.target.value === ALL_VALUE
-              ? ""
-              : e.target.value as string
-          ));
+          onChange(
+            e.target.value === ALL_VALUE ? "" : (e.target.value as string)
+          );
         }}
       >
         <MenuItem value={ALL_VALUE}>

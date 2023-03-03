@@ -73,7 +73,6 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
       setAllLabels(Array.from(labels));
     }, [applications]);
 
-
     return (
       <FilterView
         onClear={() => {
