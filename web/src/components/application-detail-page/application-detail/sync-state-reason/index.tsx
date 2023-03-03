@@ -66,9 +66,7 @@ export const OutOfSyncReason: FC<SyncStateReasonProps> = ({
   );
 };
 
-export const InvalidConfigReason: FC<SyncStateReasonProps> = ({
-  detail,
-}) => {
+export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
   const classes = useStyles();
   const [showReason, setShowReason] = useState(false);
 
