@@ -39,7 +39,7 @@ type deployExecutor struct {
 
 type registerer interface {
 	Register(stage model.Stage, f executor.Factory) error
-	RegisterCustomStageRollback(f executor.Factory) error
+	RegisterCustomSyncRollback(f executor.Factory) error
 }
 
 // Register registers this executor factory into a given registerer.
@@ -50,8 +50,8 @@ func Register(r registerer) {
 		}
 	}
 	r.Register(model.StageCustomSync, f)
-	r.RegisterCustomStageRollback(func(in executor.Input) executor.Executor {
-		return &customStageRollbackExecutor{
+	r.RegisterCustomSyncRollback(func(in executor.Input) executor.Executor {
+		return &customSyncRollbackExecutor{
 			Input: in,
 		}
 	})

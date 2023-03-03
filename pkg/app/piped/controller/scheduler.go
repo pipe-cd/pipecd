@@ -385,9 +385,9 @@ func (s *scheduler) Run(ctx context.Context) error {
 						return s.executorRegistry.RollbackExecutor(s.deployment.Kind, in)
 					})
 				}
-				if stage.Name == model.StageCustomStageRollback.String() {
+				if stage.Name == model.StageCustomSyncRollback.String() {
 					s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
-						return s.executorRegistry.CustomStageRollbackExecutor(in)
+						return s.executorRegistry.CustomSyncRollbackExecutor(in)
 					})
 				}
 				close(doneCh)

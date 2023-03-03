@@ -102,7 +102,7 @@ const (
 	// to specify in configuration file.
 	StageRollback Stage = "ROLLBACK"
 
-	StageCustomStageRollback Stage = "CUSTOM_STAGE_ROLLBACK"
+	StageCustomSyncRollback Stage = "CUSTOM_SYNC_ROLLBACK"
 )
 
 func (s Stage) String() string {

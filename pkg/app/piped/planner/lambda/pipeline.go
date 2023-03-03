@@ -78,7 +78,7 @@ func buildProgressivePipeline(pp *config.DeploymentPipeline, autoRollback bool, 
 		out        = make([]*model.PipelineStage, 0, len(pp.Stages))
 	)
 
-	shouldRollbackCustomStage := false
+	shouldRollbackCustomSync := false
 	for i, s := range pp.Stages {
 		id := s.Id
 		if id == "" {
@@ -100,15 +100,15 @@ func buildProgressivePipeline(pp *config.DeploymentPipeline, autoRollback bool, 
 			stage.Requires = []string{preStageID}
 		}
 		preStageID = id
-		if s.CustomStageOptions.Rollback {
-			shouldRollbackCustomStage = true
+		if s.Name == model.StageCustomSync {
+			shouldRollbackCustomSync = true
 		}
 		out = append(out, stage)
 	}
 
 	if autoRollback {
-		if shouldRollbackCustomStage {
-			s, _ := planner.GetPredefinedStage(planner.PredefinedStageCustomStageRollback)
+		if shouldRollbackCustomSync {
+			s, _ := planner.GetPredefinedStage(planner.PredefinedStageCustomSyncRollback)
 			out = append(out, &model.PipelineStage{
 				Id:         s.Id,
 				Name:       s.Name.String(),

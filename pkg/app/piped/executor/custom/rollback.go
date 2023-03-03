@@ -21,14 +21,14 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-type customStageRollbackExecutor struct {
+type customSyncRollbackExecutor struct {
 	executor.Input
 
 	repoDir string
 	appDir  string
 }
 
-func (e *customStageRollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
+func (e *customSyncRollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	var (
 		ctx            = sig.Context()
 		originalStatus = e.Stage.Status
@@ -36,7 +36,7 @@ func (e *customStageRollbackExecutor) Execute(sig executor.StopSignal) model.Sta
 	)
 
 	switch model.Stage(e.Stage.Name) {
-	case model.StageCustomStageRollback:
+	case model.StageCustomSyncRollback:
 		status = e.ensureRollback(ctx)
 	default:
 		e.LogPersister.Errorf("Unsupported stage %s", e.Stage.Name)
@@ -46,7 +46,7 @@ func (e *customStageRollbackExecutor) Execute(sig executor.StopSignal) model.Sta
 	return executor.DetermineStageStatus(sig.Signal(), originalStatus, status)
 }
 
-func (e *customStageRollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus {
+func (e *customSyncRollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus {
 	// Not rollback in case this is the first deployment.
 	if e.Deployment.RunningCommitHash == "" {
 		e.LogPersister.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")
@@ -60,23 +60,22 @@ func (e *customStageRollbackExecutor) ensureRollback(ctx context.Context) model.
 	}
 	e.repoDir = runningDS.RepoDir
 	e.appDir = runningDS.AppDir
-	e.LogPersister.Infof("Start rollback for custom stages")
 
-	customStageConfigs, ok := runningDS.GenericApplicationConfig.GetStagesFromName(model.StageCustomSync)
-	if !ok || customStageConfigs == nil {
-		e.LogPersister.Errorf("There are no custom stages in running commit")
+	customSyncConfigs, ok := runningDS.GenericApplicationConfig.GetStagesFromName(model.StageCustomSync)
+	if !ok || customSyncConfigs == nil {
+		e.LogPersister.Errorf("There are no custom sync in the running commit")
 	}
-	if len(customStageConfigs) > 1 {
-		e.LogPersister.Errorf("There are custom stages more than one stage.")
+	if len(customSyncConfigs) > 1 {
+		e.LogPersister.Errorf("There are custom sync stages more than one stage.")
 	}
-	for _, customStageConfig := range customStageConfigs {
-		e.LogPersister.Infof("Start rollback for custom stage (Name: %s Id: %s Desc: %s)", customStageConfig.Name, customStageConfig.Id, customStageConfig.Desc)
+	for _, customSyncConfig := range customSyncConfigs {
+		e.LogPersister.Infof("Start rollback for custom sync (Name: %s Id: %s Desc: %s)", customSyncConfig.Name, customSyncConfig.Id, customSyncConfig.Desc)
 
 		if !ok {
-			e.LogPersister.Errorf("Failed to get custom stage config")
+			e.LogPersister.Errorf("Failed to get custom sync config")
 			return model.StageStatus_STAGE_FAILURE
 		}
-		result := executeCommand(e.appDir, customStageConfig.CustomSyncOptions, e.LogPersister)
+		result := executeCommand(e.appDir, customSyncConfig.CustomSyncOptions, e.LogPersister)
 		if !result {
 			e.LogPersister.Errorf("Failed to execute command")
 			return model.StageStatus_STAGE_FAILURE
