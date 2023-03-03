@@ -87,13 +87,12 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
           />
         </div>
 
-        <div className={classes.formItem}>
-          <PipedSelect
-            value={options.pipedId ?? null}
-            onChange={(value) => handleUpdateFilterValue({ pipedId: value })}
-            className={classes.select}
-          />
-        </div>
+        <FormControl className={classes.formItem} variant="outlined">
+          <InputLabel id="filter-piped">Piped</InputLabel>
+            <PipedSelect
+              onChange={(value) => handleUpdateFilterValue({ pipedId: value })}
+            />
+        </FormControl>
 
         <FormControl className={classes.formItem} variant="outlined">
           <InputLabel id="filter-kind">Kind</InputLabel>
