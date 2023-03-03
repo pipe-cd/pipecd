@@ -17,27 +17,27 @@ export const PipedSelect: FC<Props> = ({ onChange }) => {
     pipeds.length === 1 ? pipeds[0].id : ""
   );
   return (
-      <Select
-        labelId="filter-piped"
-        id="filter-piped"
-        label="Piped"
-        value={selectedPipedId ?? ALL_VALUE}
-        onChange={(e) => {
-          setSelectedPipedId(e.target.value as string);
-          onChange(
-            e.target.value === ALL_VALUE ? "" : (e.target.value as string)
-          );
-        }}
-      >
-        <MenuItem value={ALL_VALUE}>
-          <em>All</em>
+    <Select
+      labelId="filter-piped"
+      id="filter-piped"
+      label="Piped"
+      value={selectedPipedId ?? ALL_VALUE}
+      onChange={(e) => {
+        setSelectedPipedId(e.target.value as string);
+        onChange(
+          e.target.value === ALL_VALUE ? "" : (e.target.value as string)
+        );
+      }}
+    >
+      <MenuItem value={ALL_VALUE}>
+        <em>All</em>
+      </MenuItem>
+      {pipeds.map((e) => (
+        <MenuItem value={e.id} key={`piped-${e.id}`}>
+          {e.name} ({e.id})
         </MenuItem>
-        {pipeds.map((e) => (
-          <MenuItem value={e.id} key={`piped-${e.id}`}>
-            {e.name} ({e.id})
-          </MenuItem>
-        ))}
-      </Select>
+      ))}
+    </Select>
   );
 };
 

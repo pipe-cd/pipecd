@@ -89,9 +89,9 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
 
         <FormControl className={classes.formItem} variant="outlined">
           <InputLabel id="filter-piped">Piped</InputLabel>
-            <PipedSelect
-              onChange={(value) => handleUpdateFilterValue({ pipedId: value })}
-            />
+          <PipedSelect
+            onChange={(value) => handleUpdateFilterValue({ pipedId: value })}
+          />
         </FormControl>
 
         <FormControl className={classes.formItem} variant="outlined">
