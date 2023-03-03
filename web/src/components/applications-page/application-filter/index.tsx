@@ -21,10 +21,8 @@ import {
   ApplicationSyncStatusKey,
   selectAll as selectAllApplications,
 } from "~/modules/applications";
-import {
-  ApplicationAutocomplete,
-  PipedAutocomplete,
-} from "./application-autocomplete";
+import { ApplicationAutocomplete } from "./application-autocomplete";
+import { PipedSelect } from "./piped-select";
 
 const useStyles = makeStyles((theme) => ({
   toolbarSpacer: {
@@ -75,6 +73,7 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
       setAllLabels(Array.from(labels));
     }, [applications]);
 
+
     return (
       <FilterView
         onClear={() => {
@@ -90,9 +89,10 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
         </div>
 
         <div className={classes.formItem}>
-          <PipedAutocomplete
+          <PipedSelect
             value={options.pipedId ?? null}
             onChange={(value) => handleUpdateFilterValue({ pipedId: value })}
+            className={classes.select}
           />
         </div>
 
