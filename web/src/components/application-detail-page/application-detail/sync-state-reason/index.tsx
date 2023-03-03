@@ -86,29 +86,25 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
   return (
     <>
       <div className={classes.summary}>
-        {showReason && (
+        {showReason ? (
           <Typography variant="body2" color="textSecondary">
             {detail}
           </Typography>
-        )}
-        {!showReason && (
+        ) : (
           <Typography variant="body2" color="textSecondary">
             {detail.slice(0, MAX_DISPLAY_LENGTH) + "..."}
           </Typography>
         )}
-
-        {detail && (
-          <>
-            <Button
-              variant="text"
-              size="small"
-              className={classes.showButton}
-              onClick={() => setShowReason(!showReason)}
-            >
-              {showReason ? "HIDE" : "MORE"}
-            </Button>
-          </>
-        )}
+        <>
+          <Button
+            variant="text"
+            size="small"
+            className={classes.showButton}
+            onClick={() => setShowReason(!showReason)}
+          >
+            {showReason ? "HIDE" : "MORE"}
+          </Button>
+        </>
       </div>
     </>
   );
