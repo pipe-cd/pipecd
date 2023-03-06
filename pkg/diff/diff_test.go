@@ -46,7 +46,15 @@ func TestDiff(t *testing.T) {
 		},
 		{
 			name:     "no diff by ignoring all adding map keys",
-			yamlFile: "testdata/ignore_adding_map_keys.yaml",
+			yamlFile: "testdata/ignore_adding_map_keys_1.yaml",
+			options: []Option{
+				WithIgnoreAddingMapKeys(),
+			},
+			diffNum: 0,
+		},
+		{
+			name:     "no diff by ignoring all adding map keys",
+			yamlFile: "testdata/ignore_adding_map_keys_2.yaml",
 			options: []Option{
 				WithIgnoreAddingMapKeys(),
 			},
