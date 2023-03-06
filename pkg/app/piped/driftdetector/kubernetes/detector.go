@@ -193,7 +193,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return err
 	}
 
-	ignoreFields := []string{}
+	ignoreFields := make([]string, 0)
 	if ddCfg != nil {
 		ignoreFields = ddCfg.IgnoreFields
 	}
