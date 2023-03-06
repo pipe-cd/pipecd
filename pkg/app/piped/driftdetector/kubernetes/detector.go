@@ -192,6 +192,12 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	if err != nil {
 		return err
 	}
+
+	ignoreFields := []string{}
+	if ddCfg != nil {
+		ignoreFields = ddCfg.IgnoreFields
+	}
+
 	result, err := provider.DiffList(
 		headManifests,
 		liveManifests,
@@ -199,7 +205,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
-		diff.WithIgnoredPaths(ddCfg.IgnoreFields),
+		diff.WithIgnoredPaths(ignoreFields),
 	)
 	if err != nil {
 		return err
