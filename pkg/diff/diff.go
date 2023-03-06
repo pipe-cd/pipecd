@@ -191,15 +191,15 @@ func (d *differ) diffMap(path []PathStep, vx, vy reflect.Value) error {
 			continue
 		}
 
-		nextValueX := vx.MapIndex(k)
 		nextValueY := vy.MapIndex(k)
 		// Don't need to check the key existing in the second one but missing in the first one
 		// when IgnoreAddingMapKeys is configured.
-		if d.ignoreAddingMapKeys && (!nextValueX.IsValid() || !nextValueY.IsValid()) {
+		if d.ignoreAddingMapKeys && !nextValueY.IsValid() {
 			continue
 		}
 
 		nextPath := newMapPath(path, k.String())
+		nextValueX := vx.MapIndex(k)
 		checks[k.String()] = struct{}{}
 		if err := d.diff(nextPath, nextValueX, nextValueY); err != nil {
 			return err
