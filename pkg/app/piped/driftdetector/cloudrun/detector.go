@@ -207,8 +207,8 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	d.logger.Info(fmt.Sprintf("application %s has a live service manifest", app.Id))
 
 	result, err := provider.Diff(
-		headManifest,
 		liveManifest,
+		headManifest,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
