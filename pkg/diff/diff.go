@@ -192,7 +192,7 @@ func (d *differ) diffMap(path []PathStep, vx, vy reflect.Value) error {
 		}
 
 		nextValueY := vy.MapIndex(k)
-		// Don't need to check the key existing in the second one but missing in the first one
+		// Don't need to check the key existing in the first(LiveManifest) one but missing in the seccond(GitManifest) one
 		// when IgnoreAddingMapKeys is configured.
 		if d.ignoreAddingMapKeys && !nextValueY.IsValid() {
 			continue

@@ -99,7 +99,7 @@ func normalizeNewSecret(old, new *unstructured.Unstructured) (*unstructured.Unst
 	runtime.DefaultUnstructuredConverter.FromUnstructured(old.Object, &o)
 	runtime.DefaultUnstructuredConverter.FromUnstructured(new.Object, &n)
 
-	// Move as much as possible fields from `n.Data` to `n.StringData` to make `n` close to `o` to minimize the diff.
+	// Move as much as possible fields from `o.Data` to `o.StringData` to make `o` close to `n` to minimize the diff.
 	for k, v := range o.Data {
 		// Skip if the field also exists in StringData.
 		if _, ok := o.StringData[k]; ok {
@@ -114,7 +114,7 @@ func normalizeNewSecret(old, new *unstructured.Unstructured) (*unstructured.Unst
 			o.StringData = make(map[string]string)
 		}
 
-		// If the field is existing in `o.StringData`, we should move that field from `n.Data` to `n.StringData`
+		// If the field is existing in `n.StringData`, we should move that field from `o.Data` to `o.StringData`
 		o.StringData[k] = string(v)
 		delete(o.Data, k)
 	}
