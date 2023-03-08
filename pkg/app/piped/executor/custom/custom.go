@@ -46,7 +46,7 @@ func Register(r registerer) {
 	r.Register(model.StageCustomSync, f)
 }
 
-// Execute starts waiting for the specified duration.
+// Execute exec the user-defined scripts in timeout duration.
 func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	var (
 		originalStatus = e.Stage.Status
