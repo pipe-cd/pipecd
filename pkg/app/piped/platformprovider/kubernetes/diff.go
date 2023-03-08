@@ -51,6 +51,7 @@ type DiffListChange struct {
 }
 
 func Diff(old, new Manifest, logger *zap.Logger, opts ...diff.Option) (*diff.Result, error) {
+	tmp := new.u
 	if old.Key.IsSecret() && new.Key.IsSecret() {
 		var err error
 		new.u, err = normalizeNewSecret(old.u, new.u)
@@ -62,8 +63,43 @@ func Diff(old, new Manifest, logger *zap.Logger, opts ...diff.Option) (*diff.Res
 	normalized, err := remarshal(old.u)
 	if err != nil {
 		logger.Info("compare manifests directly since it was unable to remarshal Kubernetes manifest to normalize special fields", zap.Error(err))
+
+		fmt.Println("============================")
+		oldb, _ := old.u.MarshalJSON()
+		newb, _ := new.u.MarshalJSON()
+		tmpb, _ := tmp.MarshalJSON()
+
+		fmt.Printf("old.u: ")
+		fmt.Println(string(oldb))
+		fmt.Println()
+
+		fmt.Printf("tmp.u: ")
+		fmt.Println(string(tmpb))
+		fmt.Println()
+
+		fmt.Printf("new.u: ")
+		fmt.Println(string(newb))
+		fmt.Println("============================")
+
 		return diff.DiffUnstructureds(*old.u, *new.u, opts...)
 	}
+
+	// fmt.Println("============================")
+	// oldb, _ := old.u.MarshalJSON()
+	// newb, _ := new.u.MarshalJSON()
+	// normb, _ := normalized.MarshalJSON()
+	//
+	// fmt.Printf("old.u: ")
+	// fmt.Println(string(oldb))
+	// fmt.Println()
+	//
+	// fmt.Printf("new.u: ")
+	// fmt.Println(string(newb))
+	// fmt.Println()
+	//
+	// fmt.Printf("normalized: ")
+	// fmt.Println(string(normb))
+	// fmt.Println("============================")
 
 	return diff.DiffUnstructureds(*normalized, *new.u, opts...)
 }
