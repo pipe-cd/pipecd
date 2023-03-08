@@ -7,8 +7,6 @@ spec:
     team: abc
   planner:
     alwaysUsePipeline: true
-  input:
-    autoRollback: true
   pipeline:
     stages:
       - name: CUSTOM_SYNC
