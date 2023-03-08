@@ -15,7 +15,6 @@
 package custom
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"time"
@@ -24,10 +23,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
-)
-
-const (
-	defaultTimeout = 20 * time.Minute
 )
 
 type deployExecutor struct {
@@ -55,7 +50,6 @@ func Register(r registerer) {
 func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	var (
 		originalStatus = e.Stage.Status
-		timeout        = defaultTimeout
 	)
 	ctx := sig.Context()
 	ds, err := e.TargetDSP.Get(ctx, e.LogPersister)
@@ -65,10 +59,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	e.repoDir = ds.RepoDir
 	e.appDir = ds.AppDir
-	if e.StageConfig.CustomSyncOptions.Timeout != 0 {
-		timeout = e.StageConfig.CustomSyncOptions.Timeout.Duration()
-	}
-	fmt.Println(timeout)
+	timeout := e.StageConfig.CustomSyncOptions.Timeout.Duration()
 
 	c := make(chan model.StageStatus, 1)
 	go func() {

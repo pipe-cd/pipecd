@@ -27,6 +27,7 @@ import (
 const (
 	defaultWaitApprovalTimeout  = Duration(6 * time.Hour)
 	defaultAnalysisQueryTimeout = Duration(30 * time.Second)
+	defaultCustomSyncTimeout    = Duration(6 * time.Hour)
 	allEventsSymbol             = "*"
 )
 
@@ -259,6 +260,9 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.CustomSyncOptions)
 		}
+		if s.CustomSyncOptions.Timeout <= 0 {
+			s.CustomSyncOptions.Timeout = defaultCustomSyncTimeout
+		}
 	case model.StageWait:
 		s.WaitStageOptions = &WaitStageOptions{}
 		if len(gs.With) > 0 {
@@ -403,7 +407,7 @@ type WaitApprovalStageOptions struct {
 }
 
 type CustomSyncOptions struct {
-	Timeout Duration          `json:"timeout"`
+	Timeout Duration          `json:"timeout" default:"6h"`
 	Env     map[string]string `json:"env"`
 	Runs    []string          `json:"runs"`
 }
