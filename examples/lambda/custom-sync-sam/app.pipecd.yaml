@@ -1,0 +1,21 @@
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaApp
+spec:
+  name: sam-simple
+  labels:
+    env: example
+    team: abc
+  planner:
+    alwaysUsePipeline: true
+  input:
+    autoRollback: true
+  pipeline:
+    stages:
+      - name: CUSTOM_SYNC
+        with:
+          env:
+            AWS_PROFILE: "sample"
+          runs: 
+            - "cd sam-app"
+            - "sam build"
+            - "echo y | sam deploy --profile $AWS_PROFILE"
