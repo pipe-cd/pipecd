@@ -538,6 +538,7 @@ func TestCustomSyncConfig(t *testing.T) {
 								Name: model.StageCustomSync,
 								Desc: "deploy by sam",
 								CustomSyncOptions: &CustomSyncOptions{
+									Timeout: 600000000000,
 									Env: map[string]string{
 										"AWS_PROFILE": "default",
 									},
