@@ -111,6 +111,43 @@ A kustomize base can be loaded from:
 
 See [Examples](../../../examples/#kubernetes-applications) for more specific.
 
+## Custom Templating
+Custom Templating enables developers to use any templating tools other than tools PipeCD supports (Helm and kustomize).
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  name: cue-test
+  labels:
+    env: example
+    team: product
+  input:
+    customTemplating:
+      command: "cue"
+      args:
+        - "dump"
+        - "./..."
+```
+
+To use templating tools, the binary you use should be placed in the directroy `~/.piped/tools`. The name of binary file must be the same as the command or `<command>-<version>`. Adding to `installScriptTemplate` field, PipeCD can manage binaries to install in the directory. If command binaries are not in the directory or command version is different from specified version, PipeCD downloads commands by installScript. The install script is run in a temporary directory that PipeCD creates.
+
+Enumerate external binaries that users want to use in a piped configuration file. They can use {{ .BinDir }} that is replacement of the directory (~/.piped/tools) where binary script should be installed and {{ .Version }} that is replacement of the value of the field version.
+```yaml
+spec:
+...
+  input:
+    customTemplating:
+      command: "cue"
+      args:
+        - "dump"
+        - "./..."
+      version: 0.4.3
+      installScriptTemplate: |
+        curl -L https://github.com/cue-lang/cue/releases/download/v{{ .Version }}/cue_v{{ .Version }}_darwin_arm64.tar.gz | tar xvz
+        mv cue {{ .BinDir }}/cue-{{ .Version }}
+        chmod +x {{ .BinDir }}/cue-{{ .Version }}
+```
+
 ## Reference
 
 See [Configuration Reference](../../../configuration-reference/#kubernetes-application) for the full configuration.

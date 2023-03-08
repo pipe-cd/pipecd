@@ -287,6 +287,7 @@ One of `yamlField` or `regex` is required.
 | helmVersion | string | Version of helm will be used. Empty means the [default version](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/install-helm.sh#L24) will be used. | No |
 | helmChart | [HelmChart](#helmchart) | Where to fetch helm chart. | No |
 | helmOptions | [HelmOptions](#helmoptions) | Configurable parameters for helm commands. | No |
+| customTemplating | [CustomTemplating](#customtemplating) | Configurable parameters for templating tools. | No |
 | namespace | string | The namespace where manifests will be applied. | No |
 | autoRollback | bool | Automatically reverts all deployment changes on failure. Default is `true`. | No |
 
@@ -319,6 +320,15 @@ One of `yamlField` or `regex` is required.
 | setFiles | map[string]string | List of file path for values. | No |
 | apiVersions | []string | Kubernetes api versions used for Capabilities.APIVersions. | No |
 | kubeVersion | string | Kubernetes version used for Capabilities.KubeVersion. | No |
+
+## CustomTemplating
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| command | string | The command to template manifests. | No |
+| args | []string | The args to template manifests. | No |
+| version | string | The version of the templating tool to be installed. | No |
+| installScriptTemplate | string | The script to install the binary when command does not exist.| No |
 
 ## KubernetesQuickSync
 
