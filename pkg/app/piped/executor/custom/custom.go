@@ -17,6 +17,7 @@ package custom
 import (
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
@@ -94,24 +95,29 @@ func (e *deployExecutor) executeCommand(opts *config.CustomSyncOptions) model.St
 	pathFromOS := os.Getenv("PATH")
 
 	path := binDir + ":" + pathFromOS
-	envs := make([]string, len(opts.Env))
-	for key, value := range opts.Env {
+	envs := make([]string, len(opts.Envs))
+	for key, value := range opts.Envs {
 		envs = append(envs, key+"="+value)
 	}
-	for _, v := range opts.Runs {
-		cmd := exec.Command("/bin/sh", "-c", v)
-		e.LogPersister.Infof("RUN %s (env: %v)", v, envs)
-		cmd.Dir = e.appDir
-		cmd.Env = append(os.Environ(), append(envs, "PATH="+path)...)
-		out, err := cmd.CombinedOutput()
-		if len(out) != 0 {
-			e.LogPersister.Infof("%s", out)
+	cmd := exec.Command("/bin/sh", "-c", opts.Run)
+	e.LogPersister.Infof("Runnnig commands...")
+	for _, v := range strings.Split(opts.Run, "\n") {
+		if v != "" {
+			e.LogPersister.Infof("   %s (env: %v)", v, envs)
 		}
-		if err != nil {
-			e.LogPersister.Errorf("ERROR %v", err)
-			return model.StageStatus_STAGE_FAILURE
-		}
-
 	}
+	cmd.Dir = e.appDir
+	cmd.Env = append(os.Environ(), append(envs, "PATH="+path)...)
+	out, err := cmd.CombinedOutput()
+	for _, v := range strings.Split(string(out), "\n") {
+		if v != "" {
+			e.LogPersister.Info(v)
+		}
+	}
+	if err != nil {
+		e.LogPersister.Errorf("ERROR %v", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	return model.StageStatus_STAGE_SUCCESS
 }

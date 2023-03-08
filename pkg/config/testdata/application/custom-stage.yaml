@@ -6,8 +6,9 @@ spec:
       - name: CUSTOM_SYNC
         desc: "deploy by sam"
         with:
-          timeout: 10m
-          env: 
+          timeout: 6h
+          envs: 
             AWS_PROFILE: default
-          runs: 
-            - "sam deploy -g {{ .AWS_PROFILE }}"
+          run: |
+            sam build
+            sam deploy -g --profile $AWS_PROFILE

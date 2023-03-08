@@ -275,6 +275,7 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		}
 		if s.WaitApprovalStageOptions.Timeout <= 0 {
 			s.WaitApprovalStageOptions.Timeout = defaultWaitApprovalTimeout
+			fmt.Println(s.WaitApprovalStageOptions.Timeout)
 		}
 	case model.StageAnalysis:
 		s.AnalysisStageOptions = &AnalysisStageOptions{}
@@ -407,9 +408,9 @@ type WaitApprovalStageOptions struct {
 }
 
 type CustomSyncOptions struct {
-	Timeout Duration          `json:"timeout" default:"6h"`
-	Env     map[string]string `json:"env"`
-	Runs    []string          `json:"runs"`
+	Timeout Duration          `json:"timeout"`
+	Envs    map[string]string `json:"envs"`
+	Run     string            `json:"run"`
 }
 
 func (w *WaitApprovalStageOptions) Validate() error {
