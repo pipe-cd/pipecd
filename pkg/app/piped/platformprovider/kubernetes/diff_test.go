@@ -15,7 +15,6 @@
 package kubernetes
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -399,11 +398,6 @@ spec:
 			if tc.falsePositive {
 				assert.NotEqual(t, tc.diffNum, result.NumNodes())
 				assert.NotEqual(t, tc.expected, ds)
-				fmt.Println("=====================")
-				fmt.Println(tc.name)
-				fmt.Printf("result.NumNodes(): %d\n", result.NumNodes())
-				fmt.Println("ds: " + ds)
-				fmt.Println("=====================")
 			} else {
 				assert.Equal(t, tc.diffNum, result.NumNodes())
 				assert.Equal(t, tc.expected, ds)
