@@ -95,7 +95,7 @@ func (e *deployExecutor) executeCommand(opts *config.CustomSyncOptions) model.St
 	pathFromOS := os.Getenv("PATH")
 
 	path := binDir + ":" + pathFromOS
-	envs := make([]string, len(opts.Envs))
+	envs := make([]string, 0, len(opts.Envs))
 	for key, value := range opts.Envs {
 		envs = append(envs, key+"="+value)
 	}
