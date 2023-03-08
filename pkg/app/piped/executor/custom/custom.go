@@ -48,9 +48,7 @@ func Register(r registerer) {
 
 // Execute exec the user-defined scripts in timeout duration.
 func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
-	var (
-		originalStatus = e.Stage.Status
-	)
+	var originalStatus = e.Stage.Status
 	ctx := sig.Context()
 	ds, err := e.TargetDSP.Get(ctx, e.LogPersister)
 	if err != nil {
