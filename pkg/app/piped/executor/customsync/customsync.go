@@ -22,7 +22,6 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -62,7 +61,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 
 	c := make(chan model.StageStatus, 1)
 	go func() {
-		c <- e.executeCommand(e.StageConfig.CustomSyncOptions)
+		c <- e.executeCommand()
 	}()
 
 	timer := time.NewTimer(timeout)
@@ -89,35 +88,31 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 }
 
-func (e *deployExecutor) executeCommand(opts *config.CustomSyncOptions) model.StageStatus {
-
+func (e *deployExecutor) executeCommand() model.StageStatus {
+	opts := e.StageConfig.CustomSyncOptions
 	binDir := toolregistry.DefaultRegistry().GetBinDir()
 	pathFromOS := os.Getenv("PATH")
 
-	path := binDir + ":" + pathFromOS
-	envs := make([]string, 0, len(opts.Envs))
-	for key, value := range opts.Envs {
-		envs = append(envs, key+"="+value)
-	}
-	cmd := exec.Command("/bin/sh", "-c", opts.Run)
 	e.LogPersister.Infof("Runnnig commands...")
 	for _, v := range strings.Split(opts.Run, "\n") {
 		if v != "" {
 			e.LogPersister.Infof("   %s", v)
 		}
 	}
-	cmd.Dir = e.appDir
-	cmd.Env = append(os.Environ(), append(envs, "PATH="+path)...)
-	out, err := cmd.CombinedOutput()
-	for _, v := range strings.Split(string(out), "\n") {
-		if v != "" {
-			e.LogPersister.Info(v)
-		}
-	}
-	if err != nil {
-		e.LogPersister.Errorf("ERROR %v", err)
-		return model.StageStatus_STAGE_FAILURE
+
+	path := binDir + ":" + pathFromOS
+	envs := make([]string, 0, len(opts.Envs))
+	for key, value := range opts.Envs {
+		envs = append(envs, key+"="+value)
 	}
 
+	cmd := exec.Command("/bin/sh", "-c", opts.Run)
+	cmd.Dir = e.appDir
+	cmd.Env = append(os.Environ(), append(envs, "PATH="+path)...)
+	cmd.Stdout = e.LogPersister
+	cmd.Stderr = e.LogPersister
+	if err := cmd.Run(); err != nil {
+		return model.StageStatus_STAGE_FAILURE
+	}
 	return model.StageStatus_STAGE_SUCCESS
 }
