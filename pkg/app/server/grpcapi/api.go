@@ -761,6 +761,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 
 	var (
 		handledCommands = make([]string, 0, len(req.Commands))
+		pipedNameMap    = make(map[string]string, 0)
 		results         = make([]*model.PlanPreviewCommandResult, 0, len(req.Commands))
 	)
 
@@ -787,6 +788,14 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 			return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("Command %s is not a plan preview command", commandID))
 		}
 
+		if _, isThere := pipedNameMap[cmd.PipedId]; !isThere {
+			piped, err := getPiped(ctx, a.pipedStore, cmd.PipedId, a.logger)
+			if err != nil {
+				return nil, err
+			}
+			pipedNameMap[piped.Id] = piped.Name
+		}
+
 		if !cmd.IsHandled() {
 			pipedStatus, err := getPipedStatus(a.pipedStatCache, cmd.PipedId)
 			if err != nil {
@@ -808,7 +817,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 				results = append(results, &model.PlanPreviewCommandResult{
 					CommandId: cmd.Id,
 					PipedId:   cmd.PipedId,
-					PipedName: piped.Name,
+					PipedName: pipedNameMap[cmd.PipedId],
 					Error:     "Maybe Piped is offline currently.",
 				})
 				continue
@@ -826,7 +835,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 			results = append(results, &model.PlanPreviewCommandResult{
 				CommandId: cmd.Id,
 				PipedId:   cmd.PipedId,
-				PipedName: piped.Name,
+				PipedName: pipedNameMap[cmd.PipedId],
 				Error:     "Timed out, maybe the Piped is offline currently.",
 			})
 			continue
@@ -856,6 +865,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 			)
 			return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to decode output data of command %s", commandID))
 		}
+		result.PipedName = pipedNameMap[result.PipedId]
 
 		results = append(results, &result)
 	}
