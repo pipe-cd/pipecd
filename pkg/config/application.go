@@ -276,7 +276,6 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		}
 		if s.WaitApprovalStageOptions.Timeout <= 0 {
 			s.WaitApprovalStageOptions.Timeout = defaultWaitApprovalTimeout
-			fmt.Println(s.WaitApprovalStageOptions.Timeout)
 		}
 	case model.StageAnalysis:
 		s.AnalysisStageOptions = &AnalysisStageOptions{}

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package custom
+package customsync
 
 import (
 	"os"
@@ -103,7 +103,7 @@ func (e *deployExecutor) executeCommand(opts *config.CustomSyncOptions) model.St
 	e.LogPersister.Infof("Runnnig commands...")
 	for _, v := range strings.Split(opts.Run, "\n") {
 		if v != "" {
-			e.LogPersister.Infof("   %s (env: %v)", v, envs)
+			e.LogPersister.Infof("   %s", v)
 		}
 	}
 	cmd.Dir = e.appDir
