@@ -15,6 +15,7 @@
 package config
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -526,7 +527,7 @@ func TestCustomSyncConfig(t *testing.T) {
 		expectedError      error
 	}{
 		{
-			fileName:           "testdata/application/custom-stage.yaml",
+			fileName:           "testdata/application/custom-sync.yaml",
 			expectedKind:       KindLambdaApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &LambdaApplicationSpec{
@@ -563,6 +564,10 @@ func TestCustomSyncConfig(t *testing.T) {
 				},
 			},
 			expectedError: nil,
+		},
+		{
+			fileName:      "testdata/application/custom-sync-without-run.yaml",
+			expectedError: fmt.Errorf("the CUSTOM_SYNC stage requires run field"),
 		},
 	}
 	for _, tc := range testcases {

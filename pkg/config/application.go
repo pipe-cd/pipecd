@@ -132,6 +132,11 @@ func (s *GenericApplicationSpec) Validate() error {
 					return err
 				}
 			}
+			if stage.CustomSyncOptions != nil {
+				if err := stage.CustomSyncOptions.Validate(); err != nil {
+					return err
+				}
+			}
 		}
 	}
 
@@ -259,9 +264,6 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		s.CustomSyncOptions = &CustomSyncOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.CustomSyncOptions)
-		}
-		if s.CustomSyncOptions.Timeout <= 0 {
-			s.CustomSyncOptions.Timeout = defaultCustomSyncTimeout
 		}
 	case model.StageWait:
 		s.WaitStageOptions = &WaitStageOptions{}
@@ -407,15 +409,22 @@ type WaitApprovalStageOptions struct {
 	MinApproverNum int      `json:"minApproverNum" default:"1"`
 }
 
+func (w *WaitApprovalStageOptions) Validate() error {
+	if w.MinApproverNum < 1 {
+		return fmt.Errorf("minApproverNum %d should be greater than 0", w.MinApproverNum)
+	}
+	return nil
+}
+
 type CustomSyncOptions struct {
-	Timeout Duration          `json:"timeout"`
+	Timeout Duration          `json:"timeout" default:"6h"`
 	Envs    map[string]string `json:"envs"`
 	Run     string            `json:"run"`
 }
 
-func (w *WaitApprovalStageOptions) Validate() error {
-	if w.MinApproverNum < 1 {
-		return fmt.Errorf("minApproverNum %d should be greater than 0", w.MinApproverNum)
+func (c *CustomSyncOptions) Validate() error {
+	if c.Run == "" {
+		return fmt.Errorf("the CUSTOM_SYNC stage requires run field")
 	}
 	return nil
 }
