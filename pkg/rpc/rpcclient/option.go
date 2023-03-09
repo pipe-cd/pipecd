@@ -67,6 +67,12 @@ func WithPerRPCCredentials(creds credentials.PerRPCCredentials) DialOption {
 	}
 }
 
+func WithMaxRecvMsgSize(m int) DialOption {
+	return func(o *option) {
+		o.options = append(o.options, grpc.WithMaxMsgSize(m))
+	}
+}
+
 func DialOptions(opts ...DialOption) ([]grpc.DialOption, error) {
 	o := &option{
 		options: []grpc.DialOption{},

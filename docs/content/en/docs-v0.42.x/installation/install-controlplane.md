@@ -65,7 +65,7 @@ See [ConfigurationReference](../../user-guide/managing-controlplane/configuratio
 After all, install the Control Plane as bellow:
 
 ``` console
-helm install pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/latest_version >}} --namespace={NAMESPACE} \
+helm upgrade -i pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/latest_version >}} --namespace={NAMESPACE} \
   --set-file config.data=path-to-control-plane-configuration-file \
   --set-file secret.encryptionKey.data=path-to-encryption-key-file \
   --set-file secret.firestoreServiceAccount.data=path-to-service-account-file \
@@ -128,6 +128,18 @@ On that page, you will see the list of registered projects and a link to registe
 Once a new project has been registered, a static admin (username, password) will be automatically generated for the project admin, you can use that to login via the login form in the above section.
 
 For more about adding a new project in detail, please read the following [docs](../../user-guide/managing-controlplane/adding-a-project/).
+
+### 4'. Upgrade Control Plane version
+
+To upgrade the PipeCD Control Plane, preparations and commands remain as you do when installing PipeCD Control Plane. Only need to change the version flag in command to the specified version you want to upgrade your PipeCD Control Plane to.
+
+``` console
+helm upgrade -i pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {NEW_VERSION} --namespace={NAMESPACE} \
+  --set-file config.data=path-to-control-plane-configuration-file \
+  --set-file secret.encryptionKey.data=path-to-encryption-key-file \
+  --set-file secret.firestoreServiceAccount.data=path-to-service-account-file \
+  --set-file secret.gcsServiceAccount.data=path-to-service-account-file
+```
 
 ## Production Hardening
 

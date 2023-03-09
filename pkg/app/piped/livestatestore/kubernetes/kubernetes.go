@@ -66,7 +66,7 @@ func (it EventIterator) Next(maxNum int) []model.KubernetesResourceStateEvent {
 
 func NewStore(cfg *config.PlatformProviderKubernetesConfig, pipedConfig *config.PipedSpec, platformProvider string, logger *zap.Logger) *Store {
 	logger = logger.Named("kubernetes").
-		With(zap.String("cloud-provider", platformProvider))
+		With(zap.String("platform-provider", platformProvider))
 
 	return &Store{
 		config:      cfg,

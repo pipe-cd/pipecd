@@ -82,57 +82,7 @@ spec:
 
 ## CloudProvider
 
-| Field | Type | Description | Required |
-|-|-|-|-|
-| name | string | The name of the cloud provider. | Yes |
-| type | string | The cloud provider type. Must be one of the following values:<br>`KUBERNETES`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`. | Yes |
-| config | [CloudProviderConfig](#cloudproviderconfig) | Specific configuration for the specified type of cloud provider. | No |
-
-## CloudProviderConfig
-
-Must be one of the following structs:
-
-### CloudProviderKubernetesConfig
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| masterURL | string | The master URL of the kubernetes cluster. Empty means in-cluster. | No |
-| kubeConfigPath | string | The path to the kubeconfig file. Empty means in-cluster. | No |
-| appStateInformer | [KubernetesAppStateInformer](#kubernetesappstateinformer) | Configuration for application resource informer. | No |
-
-### CloudProviderTerraformConfig
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| vars | []string | List of variables that will be set directly on terraform commands with `-var` flag. The variable must be formatted by `key=value`. | No |
-
-### CloudProviderCloudRunConfig
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| project | string | The GCP project hosting the Cloud Run service. | Yes |
-| region | string | The region of running Cloud Run service. | Yes |
-| credentialsFile | string | The path to the service account file for accessing Cloud Run service. | No |
-
-### CloudProviderLambdaConfig
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| region | string | The region of running Lambda service. | Yes |
-| credentialsFile | string | The path to the credential file for logging into AWS cluster. If this value is not provided, piped will read credential info from environment variables. It expects the format [~/.aws/credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html). | No |
-| roleARN | string | The IAM role arn to use when assuming an role. Required if you want to use the AWS SecurityTokenService. | No |
-| tokenFile | string | The path to the WebIdentity token the SDK should use to assume a role with. Required if you want to use the AWS SecurityTokenService. | No |
-| profile | string | The profile to use for logging into AWS cluster. The default value is `default`. | No |
-
-### CloudProviderECSConfig
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| region | string | The region of running ECS cluster. | Yes |
-| credentialsFile | string | The path to the credential file for logging into AWS cluster. If this value is not provided, piped will read credential info from environment variables. It expects the format [~/.aws/credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) | No |
-| roleARN | string | The IAM role arn to use when assuming an role. Required if you want to use the AWS SecurityTokenService. | No |
-| tokenFile | string | The path to the WebIdentity token the SDK should use to assume a role with. Required if you want to use the AWS SecurityTokenService. | No |
-| profile | string | The profile to use for logging into AWS cluster. The default value is `default`. | No |
+This field is deprecated, please use [PlatformProvider](#platformprovider) instead.
 
 ## PlatformProvider
 
@@ -151,6 +101,7 @@ Must be one of the following structs:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | masterURL | string | The master URL of the kubernetes cluster. Empty means in-cluster. | No |
+| kubectlVersion | string | Version of kubectl which will be used to connect to your cluster. Empty means the version set on [piped config](../user-guide/managing-piped/configuration-reference/#platformproviderkubernetesconfig) or [default version](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/install-kubectl.sh#L24) will be used. | No |
 | kubeConfigPath | string | The path to the kubeconfig file. Empty means in-cluster. | No |
 | appStateInformer | [KubernetesAppStateInformer](#kubernetesappstateinformer) | Configuration for application resource informer. | No |
 

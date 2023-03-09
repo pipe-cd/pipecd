@@ -41,6 +41,29 @@ You can use pipectl to add and sync applications, wait for a deployment status.
     pipectl version
     ```
 
+### [Asdf](https://asdf-vm.com/)
+
+1. Add pipectl plugin to asdf. (If you have not yet `asdf add plugin add pipectl`.)
+    ```console
+    asdf add plugin pipectl
+    ```
+
+2. Install pipectl. Available versions are [here](https://github.com/pipe-cd/pipecd/releases).
+    ```console
+    asdf install pipectl {VERSION}
+    ```
+
+3. Set a version.
+    ```console
+    asdf global pipectl {VERSION}
+    ```
+
+4. Test to ensure the version you installed is up-to-date.
+
+    ``` console
+    pipectl version
+    ```
+
 ### Docker
 We are storing every version of docker image for pipectl on Google Cloud Container Registry.
 Available versions are [here](https://github.com/pipe-cd/pipecd/releases).
@@ -83,6 +106,7 @@ Available Commands:
   help         Help about any command
   piped        Manage piped resources.
   plan-preview Show plan preview against the specified commit.
+  quickstart   Quick prepare PipeCD control plane in quickstart mode.
   version      Print the information of current binary.
 
 Flags:
@@ -192,6 +216,28 @@ pipectl application list \
     --app-kind=KUBERNETES \
 ```
 
+### Disable an application
+
+Disable an application with given id:
+
+``` console
+pipectl application disable \
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
+    --app-id={APPLICATION_ID}
+```
+
+### Deleting an application
+
+Delete an application with given id:
+
+``` console
+pipectl application delete \
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
+    --app-id={APPLICATION_ID}
+```
+
 ### Waiting a deployment status
 
 Wait until a given deployment reaches one of the specified statuses:
@@ -243,4 +289,4 @@ You can encrypt it the same way you do [from the web](../managing-application/se
 
 ### You want more?
 
-We always want to add more needed commands into pipectl. Please let us know what command you want to add by creating issues in the [pipe-cd/pipe](https://github.com/pipe-cd/pipecd/issues) repository. We also welcome your pull request to add the command.
+We always want to add more needed commands into pipectl. Please let us know what command you want to add by creating issues in the [pipe-cd/pipecd](https://github.com/pipe-cd/pipecd/issues) repository. We also welcome your pull request to add the command.

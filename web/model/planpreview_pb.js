@@ -113,7 +113,8 @@ proto.model.PlanPreviewCommandResult.toObject = function(includeInstance, msg) {
     pipedUrl: jspb.Message.getFieldWithDefault(msg, 3, ""),
     resultsList: jspb.Message.toObjectList(msg.getResultsList(),
     proto.model.ApplicationPlanPreviewResult.toObject, includeInstance),
-    error: jspb.Message.getFieldWithDefault(msg, 5, "")
+    error: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    pipedName: jspb.Message.getFieldWithDefault(msg, 6, "")
   };
 
   if (includeInstance) {
@@ -170,6 +171,10 @@ proto.model.PlanPreviewCommandResult.deserializeBinaryFromReader = function(msg,
     case 5:
       var value = /** @type {string} */ (reader.readString());
       msg.setError(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPipedName(value);
       break;
     default:
       reader.skipField();
@@ -233,6 +238,13 @@ proto.model.PlanPreviewCommandResult.serializeBinaryToWriter = function(message,
   if (f.length > 0) {
     writer.writeString(
       5,
+      f
+    );
+  }
+  f = message.getPipedName();
+  if (f.length > 0) {
+    writer.writeString(
+      6,
       f
     );
   }
@@ -346,6 +358,24 @@ proto.model.PlanPreviewCommandResult.prototype.getError = function() {
  */
 proto.model.PlanPreviewCommandResult.prototype.setError = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional string piped_name = 6;
+ * @return {string}
+ */
+proto.model.PlanPreviewCommandResult.prototype.getPipedName = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.model.PlanPreviewCommandResult} returns this
+ */
+proto.model.PlanPreviewCommandResult.prototype.setPipedName = function(value) {
+  return jspb.Message.setProto3StringField(this, 6, value);
 };
 
 

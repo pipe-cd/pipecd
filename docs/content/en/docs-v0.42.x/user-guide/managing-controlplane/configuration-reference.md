@@ -23,6 +23,7 @@ spec:
 | filestore | [FileStore](#filestore) | File storage for storing deployment logs and application states. | Yes |
 | cache | [Cache](#cache) | Internal cache configuration. | No |
 | address | string | The address to the control plane. This is required if SSO is enabled. | No |
+| insightCollector | [InsightCollector](#insightcollector) | Option to run collector of Insights feature. | No |
 | sharedSSOConfigs | [][SharedSSOConfig](#sharedssoconfig) | List of shared SSO configurations that can be used by any projects. | No |
 | projects | [][Project](#project) | List of debugging/quickstart projects. Please note that do not use this to configure the projects running in the production. | No |
 
@@ -53,7 +54,7 @@ Must be one of the following objects:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | url | string | The address to MySQL server. Should attach with the database port info as `127.0.0.1:3307` in case you want to use another port than the default value. | Yes |
-| database | string | The name of database. | Yes |
+| database | string | The name of database. | No (If you set it via URL) |
 | usernameFile | string | Path to the file containing the username. | No |
 | passwordFile | string | Path to the file containing the password. | No |
 
@@ -118,12 +119,35 @@ Must be one of the following objects:
 | username | string | The username string. | Yes |
 | passwordHash | string | The bcrypt hashed value of the password string. | Yes |
 
+## InsightCollector
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| application | [InsightCollectorApplication](#insightcollectorapplication) | Application metrics collector. | No |
+| deployment | [InsightCollectorDeployment](#insightcollectordeployment) | Deployment metrics collector. | No |
+
+## InsightCollectorApplication
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| enabled | bool | Whether to enable. Default is `true` | No |
+| schedule | string | When collector will be executed. Default is `0 * * * *` | No |
+
+## InsightCollectorDeployment
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| enabled | bool | Whether to enable. Default is `true` | No |
+| schedule | string | When collector will be executed. Default is `30 * * * *` | No |
+| chunkMaxCount | int | The maximum number of deployment items could be stored in a chunk. Default is `1000` | No |
+
 ## SharedSSOConfig
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The unique name of the configuration. | Yes |
 | provider | string | The SSO service provider. Can be one of the following values<br>`GITHUB`, `GOOGLE`... | Yes |
+| sessionTtl | int | The time to live of session for SSO login. Unit is `hour`. Default is 7 * 24 hours. | No |
 | github | [SSOConfigGitHub](#ssoconfiggithub) | GitHub sso configuration. | No |
 | google | [SSOConfigGoogle](#ssoconfiggoogle) | Google sso configuration. | No |
 

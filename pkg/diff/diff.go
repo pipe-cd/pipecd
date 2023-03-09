@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
@@ -26,6 +27,7 @@ type differ struct {
 	ignoreAddingMapKeys           bool
 	equateEmpty                   bool
 	compareNumberAndNumericString bool
+	ignoredPaths                  []string
 
 	result *Result
 }
@@ -56,6 +58,13 @@ func WithCompareNumberAndNumericString() Option {
 	}
 }
 
+// WithIgnoredPaths configures ignored fields.
+func WithIgnoredPaths(paths []string) Option {
+	return func(d *differ) {
+		d.ignoredPaths = paths
+	}
+}
+
 // DiffUnstructureds calculates the diff between two unstructured objects.
 func DiffUnstructureds(x, y unstructured.Unstructured, opts ...Option) (*Result, error) {
 	var (
@@ -82,7 +91,7 @@ func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
 			return nil
 		}
 
-		d.result.addNode(path, nil, vy.Type(), vx, vy)
+		d.addNode(path, nil, vy.Type(), vx, vy)
 		return nil
 	}
 
@@ -91,7 +100,7 @@ func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
 			return nil
 		}
 
-		d.result.addNode(path, vx.Type(), nil, vx, vy)
+		d.addNode(path, vx.Type(), nil, vx, vy)
 		return nil
 	}
 
@@ -114,7 +123,7 @@ func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
 	}
 
 	if vx.Type() != vy.Type() {
-		d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
+		d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 		return nil
 	}
 
@@ -141,7 +150,7 @@ func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
 
 func (d *differ) diffSlice(path []PathStep, vx, vy reflect.Value) error {
 	if vx.IsNil() || vy.IsNil() {
-		d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
+		d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 		return nil
 	}
 
@@ -162,13 +171,13 @@ func (d *differ) diffSlice(path []PathStep, vx, vy reflect.Value) error {
 	for i := minLen; i < vx.Len(); i++ {
 		nextPath := newSlicePath(path, i)
 		nextValueX := vx.Index(i)
-		d.result.addNode(nextPath, nextValueX.Type(), nextValueX.Type(), nextValueX, reflect.Value{})
+		d.addNode(nextPath, nextValueX.Type(), nextValueX.Type(), nextValueX, reflect.Value{})
 	}
 
 	for i := minLen; i < vy.Len(); i++ {
 		nextPath := newSlicePath(path, i)
 		nextValueY := vy.Index(i)
-		d.result.addNode(nextPath, nextValueY.Type(), nextValueY.Type(), reflect.Value{}, nextValueY)
+		d.addNode(nextPath, nextValueY.Type(), nextValueY.Type(), reflect.Value{}, nextValueY)
 	}
 
 	return nil
@@ -176,7 +185,7 @@ func (d *differ) diffSlice(path []PathStep, vx, vy reflect.Value) error {
 
 func (d *differ) diffMap(path []PathStep, vx, vy reflect.Value) error {
 	if vx.IsNil() || vy.IsNil() {
-		d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
+		d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 		return nil
 	}
 
@@ -191,15 +200,15 @@ func (d *differ) diffMap(path []PathStep, vx, vy reflect.Value) error {
 			continue
 		}
 
-		nextValueX := vx.MapIndex(k)
-		// Don't need to check the key existing in the second one but missing in the first one
+		nextValueY := vy.MapIndex(k)
+		// Don't need to check the key existing in the first(LiveManifest) one but missing in the seccond(GitManifest) one
 		// when IgnoreAddingMapKeys is configured.
-		if d.ignoreAddingMapKeys && !nextValueX.IsValid() {
+		if d.ignoreAddingMapKeys && !nextValueY.IsValid() {
 			continue
 		}
 
 		nextPath := newMapPath(path, k.String())
-		nextValueY := vy.MapIndex(k)
+		nextValueX := vx.MapIndex(k)
 		checks[k.String()] = struct{}{}
 		if err := d.diff(nextPath, nextValueX, nextValueY); err != nil {
 			return err
@@ -214,7 +223,7 @@ func (d *differ) diffInterface(path []PathStep, vx, vy reflect.Value) error {
 	}
 
 	if vx.IsNil() || vy.IsNil() {
-		d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
+		d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 		return nil
 	}
 
@@ -226,7 +235,7 @@ func (d *differ) diffString(path []PathStep, vx, vy reflect.Value) error {
 	if vx.String() == vy.String() {
 		return nil
 	}
-	d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
+	d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 	return nil
 }
 
@@ -234,7 +243,7 @@ func (d *differ) diffBool(path []PathStep, vx, vy reflect.Value) error {
 	if vx.Bool() == vy.Bool() {
 		return nil
 	}
-	d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
+	d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 	return nil
 }
 
@@ -243,7 +252,7 @@ func (d *differ) diffNumber(path []PathStep, vx, vy reflect.Value) error {
 		return nil
 	}
 
-	d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
+	d.addNode(path, vx.Type(), vy.Type(), vx, vy)
 	return nil
 }
 
@@ -321,4 +330,91 @@ func newMapPath(path []PathStep, index string) []PathStep {
 		MapIndex: index,
 	})
 	return next
+}
+
+func (d *differ) addNode(path []PathStep, tx, ty reflect.Type, vx, vy reflect.Value) {
+	if len(d.ignoredPaths) > 0 {
+		pathString := makePathString(path)
+		if d.isIgnoredPaths(pathString) {
+			return
+		}
+		nvx := d.ignoredValue(vx, pathString)
+		nvy := d.ignoredValue(vy, pathString)
+
+		d.result.addNode(path, tx, ty, nvx, nvy)
+		return
+	}
+
+	d.result.addNode(path, tx, ty, vx, vy)
+}
+
+func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
+	switch v.Kind() {
+	case reflect.Map:
+		nv := reflect.MakeMap(v.Type())
+		keys := v.MapKeys()
+		for _, k := range keys {
+			nprefix := prefix + "." + k.String()
+			if d.isIgnoredPaths(nprefix) {
+				continue
+			}
+
+			sub := v.MapIndex(k)
+			filtered := d.ignoredValue(sub, nprefix)
+			if !filtered.IsValid() {
+				continue
+			}
+			nv.SetMapIndex(k, filtered)
+		}
+		return nv
+
+	case reflect.Slice, reflect.Array:
+		nv := reflect.MakeSlice(v.Type(), 0, 0)
+		for i := 0; i < v.Len(); i++ {
+			nprefix := prefix + "." + strconv.Itoa(i)
+			if d.isIgnoredPaths(nprefix) {
+				continue
+			}
+
+			filtered := d.ignoredValue(v.Index(i), nprefix)
+			if !filtered.IsValid() {
+				continue
+			}
+			nv = reflect.Append(nv, filtered)
+		}
+		return nv
+
+	case reflect.Interface:
+		nprefix := prefix + "." + v.String()
+		if d.isIgnoredPaths(nprefix) {
+			return reflect.New(v.Type())
+		}
+		return d.ignoredValue(v.Elem(), prefix)
+
+	case reflect.String:
+		return v
+
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return v
+
+	case reflect.Float32, reflect.Float64:
+		return v
+
+	default:
+		nprefix := prefix + "." + v.String()
+		if d.isIgnoredPaths(nprefix) {
+			return reflect.New(v.Type())
+		}
+		return v
+	}
+}
+
+func (d *differ) isIgnoredPaths(pathString string) bool {
+	for _, ignoredPath := range d.ignoredPaths {
+		if strings.HasPrefix(pathString, ignoredPath) {
+			return true
+		}
+	}
+	return false
 }
