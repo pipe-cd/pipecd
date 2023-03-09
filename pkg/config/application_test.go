@@ -15,6 +15,7 @@
 package config
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -622,6 +623,71 @@ func TestGenericAnalysisConfiguration(t *testing.T) {
 				},
 			},
 			expectedError: nil,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.fileName, func(t *testing.T) {
+			cfg, err := LoadFromYAML(tc.fileName)
+			require.Equal(t, tc.expectedError, err)
+			if err == nil {
+				assert.Equal(t, tc.expectedKind, cfg.Kind)
+				assert.Equal(t, tc.expectedAPIVersion, cfg.APIVersion)
+				assert.Equal(t, tc.expectedSpec, cfg.spec)
+			}
+		})
+	}
+}
+
+func TestCustomSyncConfig(t *testing.T) {
+	testcases := []struct {
+		fileName           string
+		expectedKind       Kind
+		expectedAPIVersion string
+		expectedSpec       interface{}
+		expectedError      error
+	}{
+		{
+			fileName:           "testdata/application/custom-sync.yaml",
+			expectedKind:       KindLambdaApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedSpec: &LambdaApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
+					Timeout: Duration(6 * time.Hour),
+					Pipeline: &DeploymentPipeline{
+						Stages: []PipelineStage{
+							{
+								Name: model.StageCustomSync,
+								Desc: "deploy by sam",
+								CustomSyncOptions: &CustomSyncOptions{
+									Timeout: Duration(6 * time.Hour),
+									Envs: map[string]string{
+										"AWS_PROFILE": "default",
+									},
+									Run: "sam build\nsam deploy -g --profile $AWS_PROFILE\n",
+								},
+							},
+						},
+					},
+					Trigger: Trigger{
+						OnOutOfSync: OnOutOfSync{
+							Disabled:  newBoolPointer(true),
+							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
+						},
+					},
+				},
+				Input: LambdaDeploymentInput{
+					FunctionManifestFile: "function.yaml",
+					AutoRollback:         newBoolPointer(true),
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			fileName:      "testdata/application/custom-sync-without-run.yaml",
+			expectedError: fmt.Errorf("the CUSTOM_SYNC stage requires run field"),
 		},
 	}
 	for _, tc := range testcases {
