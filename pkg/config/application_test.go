@@ -516,3 +516,123 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 		})
 	}
 }
+
+func TestGenericAnalysisConfiguration(t *testing.T) {
+	testcases := []struct {
+		fileName           string
+		expectedKind       Kind
+		expectedAPIVersion string
+		expectedSpec       interface{}
+		expectedError      error
+	}{
+		{
+			fileName:           "testdata/application/generic-analysis.yaml",
+			expectedKind:       KindKubernetesApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedSpec: &KubernetesApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
+					Timeout: Duration(6 * time.Hour),
+					Trigger: Trigger{
+						OnOutOfSync: OnOutOfSync{
+							Disabled:  newBoolPointer(true),
+							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
+						},
+					},
+					Pipeline: &DeploymentPipeline{
+						Stages: []PipelineStage{
+							{
+								Name: model.StageAnalysis,
+								AnalysisStageOptions: &AnalysisStageOptions{
+									Duration: Duration(10 * time.Minute),
+									Metrics: []TemplatableAnalysisMetrics{
+										{
+											AnalysisMetrics: AnalysisMetrics{
+												Strategy:     AnalysisStrategyThreshold,
+												Provider:     "prometheus-dev",
+												Query:        "grpc_error_percentage",
+												Expected:     AnalysisExpected{Max: floatPointer(0.1)},
+												Interval:     Duration(1 * time.Minute),
+												Timeout:      Duration(30 * time.Second),
+												FailureLimit: 1,
+												Deviation:    AnalysisDeviationEither,
+											},
+										},
+										{
+											AnalysisMetrics: AnalysisMetrics{
+												Strategy:     AnalysisStrategyThreshold,
+												Provider:     "prometheus-dev",
+												Query:        "grpc_succeed_percentage",
+												Expected:     AnalysisExpected{Min: floatPointer(0.9)},
+												Interval:     Duration(1 * time.Minute),
+												Timeout:      Duration(30 * time.Second),
+												FailureLimit: 1,
+												Deviation:    AnalysisDeviationEither,
+											},
+										},
+									},
+								},
+							},
+							{
+								Name: model.StageAnalysis,
+								AnalysisStageOptions: &AnalysisStageOptions{
+									Duration: Duration(10 * time.Minute),
+									Logs: []TemplatableAnalysisLog{
+										{
+											AnalysisLog: AnalysisLog{
+												Provider:     "stackdriver-dev",
+												Query:        "resource.labels.pod_id=\"pod1\"\n",
+												Interval:     Duration(1 * time.Minute),
+												FailureLimit: 3,
+											},
+										},
+									},
+								},
+							},
+							{
+								Name: model.StageAnalysis,
+								AnalysisStageOptions: &AnalysisStageOptions{
+									Duration: Duration(10 * time.Minute),
+									Https: []TemplatableAnalysisHTTP{
+										{
+											AnalysisHTTP: AnalysisHTTP{
+												URL:          "https://canary-endpoint.dev",
+												Method:       "GET",
+												ExpectedCode: 200,
+												FailureLimit: 1,
+												Interval:     Duration(1 * time.Minute),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				Input: KubernetesDeploymentInput{
+					AutoRollback: newBoolPointer(true),
+				},
+				VariantLabel: KubernetesVariantLabel{
+					Key:           "pipecd.dev/variant",
+					PrimaryValue:  "primary",
+					BaselineValue: "baseline",
+					CanaryValue:   "canary",
+				},
+			},
+			expectedError: nil,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.fileName, func(t *testing.T) {
+			cfg, err := LoadFromYAML(tc.fileName)
+			require.Equal(t, tc.expectedError, err)
+			if err == nil {
+				assert.Equal(t, tc.expectedKind, cfg.Kind)
+				assert.Equal(t, tc.expectedAPIVersion, cfg.APIVersion)
+				assert.Equal(t, tc.expectedSpec, cfg.spec)
+			}
+		})
+	}
+}
