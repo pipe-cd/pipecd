@@ -803,17 +803,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 				pipedStatus = model.Piped_UNKNOWN
 			}
 
-			piped, err := getPiped(ctx, a.pipedStore, cmd.PipedId, a.logger)
-			if err != nil {
-				return nil, err
-			}
-
 			if pipedStatus != model.Piped_ONLINE {
-				piped, err := getPiped(ctx, a.pipedStore, cmd.PipedId, a.logger)
-				if err != nil {
-					return nil, err
-				}
-
 				results = append(results, &model.PlanPreviewCommandResult{
 					CommandId: cmd.Id,
 					PipedId:   cmd.PipedId,
@@ -825,11 +815,6 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 
 			if time.Since(time.Unix(cmd.CreatedAt, 0)) <= commandHandleTimeout {
 				return nil, status.Error(codes.NotFound, fmt.Sprintf("Waiting for result of command %s from piped %s", commandID, cmd.PipedId))
-			}
-
-			piped, err := getPiped(ctx, a.pipedStore, cmd.PipedId, a.logger)
-			if err != nil {
-				return nil, err
 			}
 
 			results = append(results, &model.PlanPreviewCommandResult{
