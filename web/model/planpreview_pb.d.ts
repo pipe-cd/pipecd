@@ -22,6 +22,9 @@ export class PlanPreviewCommandResult extends jspb.Message {
   getError(): string;
   setError(value: string): PlanPreviewCommandResult;
 
+  getPipedName(): string;
+  setPipedName(value: string): PlanPreviewCommandResult;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PlanPreviewCommandResult.AsObject;
   static toObject(includeInstance: boolean, msg: PlanPreviewCommandResult): PlanPreviewCommandResult.AsObject;
@@ -37,6 +40,7 @@ export namespace PlanPreviewCommandResult {
     pipedUrl: string,
     resultsList: Array<ApplicationPlanPreviewResult.AsObject>,
     error: string,
+    pipedName: string,
   }
 }
 
