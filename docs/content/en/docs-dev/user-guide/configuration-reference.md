@@ -592,6 +592,13 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | duration | duration | Maximum time to perform the analysis. | Yes |
 | metrics | [][AnalysisMetrics](#analysismetrics) | Configuration for analysis by metrics. | No |
 
+### CustomSyncStageOptions
+| Field | Type | Description | Required |
+|-|-|-|-|
+| timeout | duration | The maximum time the stage can be taken to run. Default is `6h`| No |
+| envs | map[string]string | Environment variables used with scripts. | No |
+| run | string | Script run on this stage. | Yes |
+
 ## PostSync
 
 | Field | Type | Description | Required |
