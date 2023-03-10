@@ -32,6 +32,8 @@ message PlanPreviewCommandResult {
     repeated ApplicationPlanPreviewResult results = 4;
     // Error while handling command.
     string error = 5;
+
+    string piped_name = 6;
 }
 
 message ApplicationPlanPreviewResult {

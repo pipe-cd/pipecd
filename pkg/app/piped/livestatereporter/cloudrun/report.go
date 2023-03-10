@@ -55,7 +55,7 @@ type reporter struct {
 
 func NewReporter(cp config.PipedPlatformProvider, appLister applicationLister, stateGetter cloudrun.Getter, apiClient apiClient, logger *zap.Logger) Reporter {
 	logger = logger.Named("cloudrun-reporter").With(
-		zap.String("cloud-provider", cp.Name),
+		zap.String("platform-provider", cp.Name),
 	)
 	return &reporter{
 		provider:              cp,

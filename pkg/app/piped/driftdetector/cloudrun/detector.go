@@ -83,7 +83,7 @@ func NewDetector(
 ) Detector {
 
 	logger = logger.Named("cloudrun-detector").With(
-		zap.String("cloud-provider", cp.Name),
+		zap.String("platform-provider", cp.Name),
 	)
 	return &detector{
 		provider:          cp,

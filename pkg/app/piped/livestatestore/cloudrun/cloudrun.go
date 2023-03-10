@@ -46,7 +46,7 @@ type State struct {
 
 func NewStore(ctx context.Context, cfg *config.PlatformProviderCloudRunConfig, platformProvider string, logger *zap.Logger) (*Store, error) {
 	logger = logger.Named("cloudrun").
-		With(zap.String("cloud-provider", platformProvider))
+		With(zap.String("platform-provider", platformProvider))
 
 	client, err := provider.DefaultRegistry().Client(ctx, platformProvider, cfg, logger)
 	if err != nil {

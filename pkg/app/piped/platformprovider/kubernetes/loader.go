@@ -173,8 +173,8 @@ func setNamespace(manifests []Manifest, namespace string) {
 	if namespace == "" {
 		return
 	}
-	for _, m := range manifests {
-		m.Key.Namespace = namespace
+	for i := range manifests {
+		manifests[i].Key.Namespace = namespace
 	}
 }
 

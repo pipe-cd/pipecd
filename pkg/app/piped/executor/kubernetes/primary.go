@@ -99,7 +99,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 		for _, m := range workloads {
 			if err := checkVariantSelectorInWorkload(m, variantLabel, primaryVariant); err != nil {
 				invalid = true
-				e.LogPersister.Errorf("Missing %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableLogString(), err)
+				e.LogPersister.Errorf("Missing %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
 			}
 		}
 		if invalid {
@@ -163,7 +163,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 	}
 	e.LogPersister.Successf("Successfully loaded %d live resources", len(runningManifests))
 	for _, m := range runningManifests {
-		e.LogPersister.Successf("- loaded live resource: %s", m.Key.ReadableLogString())
+		e.LogPersister.Successf("- loaded live resource: %s", m.Key.ReadableString())
 	}
 
 	removeKeys := findRemoveManifests(runningManifests, manifests, e.appCfg.Input.Namespace)
@@ -219,7 +219,7 @@ func (e *deployExecutor) generatePrimaryManifests(manifests []provider.Manifest,
 		workloads := findWorkloadManifests(manifests, e.appCfg.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, variantLabel, variant); err != nil {
-				return nil, fmt.Errorf("unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+variant, m.Key.ReadableLogString(), err)
+				return nil, fmt.Errorf("unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+variant, m.Key.ReadableString(), err)
 			}
 		}
 	}

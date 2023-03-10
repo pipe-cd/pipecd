@@ -19,16 +19,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-const (
-	defaultWaitApprovalTimeout  = Duration(6 * time.Hour)
-	defaultAnalysisQueryTimeout = Duration(30 * time.Second)
-	allEventsSymbol             = "*"
-)
+const allEventsSymbol = "*"
 
 type GenericApplicationSpec struct {
 	// The application name.
@@ -58,6 +53,8 @@ type GenericApplicationSpec struct {
 	DeploymentNotification *DeploymentNotification `json:"notification"`
 	// List of the configuration for event watcher.
 	EventWatcher []EventWatcherConfig `json:"eventWatcher"`
+	// Configuration for drift detection
+	DriftDetection *DriftDetection `json:"driftDetection"`
 }
 
 type DeploymentPlanner struct {
@@ -128,6 +125,11 @@ func (s *GenericApplicationSpec) Validate() error {
 			}
 			if stage.WaitApprovalStageOptions != nil {
 				if err := stage.WaitApprovalStageOptions.Validate(); err != nil {
+					return err
+				}
+			}
+			if stage.CustomSyncOptions != nil {
+				if err := stage.CustomSyncOptions.Validate(); err != nil {
 					return err
 				}
 			}
@@ -269,18 +271,10 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.WaitApprovalStageOptions)
 		}
-		if s.WaitApprovalStageOptions.Timeout <= 0 {
-			s.WaitApprovalStageOptions.Timeout = defaultWaitApprovalTimeout
-		}
 	case model.StageAnalysis:
 		s.AnalysisStageOptions = &AnalysisStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.AnalysisStageOptions)
-		}
-		for i := 0; i < len(s.AnalysisStageOptions.Metrics); i++ {
-			if s.AnalysisStageOptions.Metrics[i].Timeout <= 0 {
-				s.AnalysisStageOptions.Metrics[i].Timeout = defaultAnalysisQueryTimeout
-			}
 		}
 	case model.StageK8sPrimaryRollout:
 		s.K8sPrimaryRolloutStageOptions = &K8sPrimaryRolloutStageOptions{}
@@ -397,16 +391,9 @@ type WaitStageOptions struct {
 type WaitApprovalStageOptions struct {
 	// The maximum length of time to wait before giving up.
 	// Defaults to 6h.
-	Timeout        Duration `json:"timeout"`
+	Timeout        Duration `json:"timeout" default:"6h"`
 	Approvers      []string `json:"approvers"`
 	MinApproverNum int      `json:"minApproverNum" default:"1"`
-}
-
-type CustomSyncOptions struct {
-	Timeout Duration          `json:"timeout"`
-	Uses    []CustomUse       `json:"uses"`
-	Env     map[string]string `json:"env"`
-	Runs    []string          `json:"runs"`
 }
 
 type CustomUse struct {
@@ -417,6 +404,19 @@ type CustomUse struct {
 func (w *WaitApprovalStageOptions) Validate() error {
 	if w.MinApproverNum < 1 {
 		return fmt.Errorf("minApproverNum %d should be greater than 0", w.MinApproverNum)
+	}
+	return nil
+}
+
+type CustomSyncOptions struct {
+	Timeout Duration          `json:"timeout" default:"6h"`
+	Envs    map[string]string `json:"envs"`
+	Run     string            `json:"run"`
+}
+
+func (c *CustomSyncOptions) Validate() error {
+	if c.Run == "" {
+		return fmt.Errorf("the CUSTOM_SYNC stage requires run field")
 	}
 	return nil
 }
@@ -647,6 +647,10 @@ func (c *DeploymentChainTriggerCondition) Validate() error {
 		return fmt.Errorf("missing commitPrefix configration as deployment chain trigger condition")
 	}
 	return nil
+}
+
+type DriftDetection struct {
+	IgnoreFields []string `json:"ignoreFields"`
 }
 
 func LoadApplication(repoPath, configRelPath string, appKind model.ApplicationKind) (*GenericApplicationSpec, error) {
