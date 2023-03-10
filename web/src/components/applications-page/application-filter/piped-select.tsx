@@ -10,7 +10,7 @@ interface Props {
   onChange: (value: string) => void;
 }
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   root: {
     "&:hover $clearIndicatorDirty, & .Mui-focused $clearIndicatorDirty": {
       visibility: "visible",
