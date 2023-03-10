@@ -171,8 +171,27 @@ func (s *store) onAddResource(obj *unstructured.Unstructured) {
 }
 
 func (s *store) onUpdateResource(oldObj, obj *unstructured.Unstructured) {
-	uid := string(obj.GetUID())
-	appID := obj.GetAnnotations()[provider.LabelApplication]
+	var (
+		uid            = string(obj.GetUID())
+		oldUID         = string(oldObj.GetUID())
+		oldResourcekey = provider.MakeResourceKey(oldObj)
+		now            = time.Now()
+		oldAppID       = oldObj.GetAnnotations()[provider.LabelApplication]
+		appID          = obj.GetAnnotations()[provider.LabelApplication]
+	)
+	// when annotations managed by pipecd was deleted,
+	// delete that resource from managingNodes.
+	if appID == "" && oldAppID != "" {
+		s.mu.RLock()
+		app, ok := s.apps[oldAppID]
+		s.mu.RUnlock()
+		if ok {
+			if event, ok := app.deleteManagingResource(oldUID, oldResourcekey, now); ok {
+				s.addEvent(event)
+			}
+		}
+	}
+
 	// Depended nodes may not contain the app id in its annotations.
 	// In that case, preventing them from overwriting with an empty id
 	if appID == "" {
