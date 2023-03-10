@@ -364,7 +364,6 @@ func (s *scheduler) Run(ctx context.Context) error {
 
 	// When the deployment has completed but not successful,
 	// we start rollback stage if the auto-rollback option is true.
-	// if the failed stage is the custom stage, rollback does
 	if deploymentStatus == model.DeploymentStatus_DEPLOYMENT_CANCELLED ||
 		deploymentStatus == model.DeploymentStatus_DEPLOYMENT_FAILURE {
 		if stage, ok := s.deployment.FindRollbackStage(); ok {
