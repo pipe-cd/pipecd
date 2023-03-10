@@ -53,7 +53,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		workloads := findWorkloadManifests(manifests, e.appCfg.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, variantLabel, primaryVariant); err != nil {
-				e.LogPersister.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableLogString(), err)
+				e.LogPersister.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
 				return model.StageStatus_STAGE_FAILURE
 			}
 		}
@@ -105,7 +105,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 	e.LogPersister.Successf("Successfully loaded %d live resources", len(liveResources))
 	for _, m := range liveResources {
-		e.LogPersister.Successf("- loaded live resource: %s", m.Key.ReadableLogString())
+		e.LogPersister.Successf("- loaded live resource: %s", m.Key.ReadableString())
 	}
 
 	removeKeys := findRemoveResources(manifests, liveResources)

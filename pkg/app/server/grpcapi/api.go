@@ -794,10 +794,16 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 				pipedStatus = model.Piped_UNKNOWN
 			}
 
+			piped, err := getPiped(ctx, a.pipedStore, cmd.PipedId, a.logger)
+			if err != nil {
+				return nil, err
+			}
+
 			if pipedStatus != model.Piped_ONLINE {
 				results = append(results, &model.PlanPreviewCommandResult{
 					CommandId: cmd.Id,
 					PipedId:   cmd.PipedId,
+					PipedName: piped.Name,
 					Error:     "Maybe Piped is offline currently.",
 				})
 				continue
@@ -810,6 +816,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 			results = append(results, &model.PlanPreviewCommandResult{
 				CommandId: cmd.Id,
 				PipedId:   cmd.PipedId,
+				PipedName: piped.Name,
 				Error:     "Timed out, maybe the Piped is offline currently.",
 			})
 			continue
