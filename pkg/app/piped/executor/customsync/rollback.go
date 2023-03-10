@@ -22,6 +22,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -65,25 +66,20 @@ func (e *customSyncRollbackExecutor) ensureRollback(ctx context.Context) model.S
 	e.repoDir = runningDS.RepoDir
 	e.appDir = runningDS.AppDir
 
-	customSyncConfigs, ok := runningDS.GenericApplicationConfig.GetStagesFromName(model.StageCustomSync)
-	if !ok || customSyncConfigs == nil {
+	runningCustomSyncConfigs, ok := runningDS.GenericApplicationConfig.GetStagesFromName(model.StageCustomSync)
+	if !ok || runningCustomSyncConfigs == nil {
 		e.LogPersister.Errorf("There are no custom sync in the running commit")
 	}
-	if len(customSyncConfigs) > 1 {
+	if len(runningCustomSyncConfigs) > 1 {
 		e.LogPersister.Errorf("There are custom sync stages more than one stage.")
 	}
-	customSyncConfig := customSyncConfigs[0]
-	e.LogPersister.Infof("Start rollback for custom sync (Name: %s Id: %s Desc: %s)", customSyncConfig.Name, customSyncConfig.Id, customSyncConfig.Desc)
+	e.LogPersister.Infof("Start rollback for custom sync")
 
-	if !ok {
-		e.LogPersister.Errorf("Failed to get custom sync config")
-		return model.StageStatus_STAGE_FAILURE
-	}
-	return e.executeCommand()
+	return e.executeCommand(runningCustomSyncConfigs[0])
 }
 
-func (e *customSyncRollbackExecutor) executeCommand() model.StageStatus {
-	opts := e.StageConfig.CustomSyncOptions
+func (e *customSyncRollbackExecutor) executeCommand(config config.PipelineStage) model.StageStatus {
+	opts := config.CustomSyncOptions
 	binDir := toolregistry.DefaultRegistry().GetBinDir()
 	pathFromOS := os.Getenv("PATH")
 
