@@ -44,8 +44,19 @@ func TestLoadAnalysisTemplate(t *testing.T) {
 						Deviation: AnalysisDeviationEither,
 					},
 					"container_cpu_usage_seconds_total": {
-						Strategy:     AnalysisStrategyThreshold,
-						Query:        "sum(\n  max(kube_pod_labels{label_app=~\"{{ .App.Name }}\", label_pipecd_dev_variant=~\"canary\"}) by (label_app, label_pipecd_dev_variant, pod)\n  *\n  on(pod)\n  group_right(label_app, label_pipecd_dev_variant)\n  label_replace(\n    sum by(pod_name) (\n      rate(container_cpu_usage_seconds_total{namespace=\"default\"}[5m])\n    ), \"pod\", \"$1\", \"pod_name\", \"(.+)\"\n  )\n) by (label_app, label_pipecd_dev_variant)\n",
+						Strategy: AnalysisStrategyThreshold,
+						Query: `sum(
+  max(kube_pod_labels{label_app=~"{{ .App.Name }}", label_pipecd_dev_variant=~"canary"}) by (label_app, label_pipecd_dev_variant, pod)
+  *
+  on(pod)
+  group_right(label_app, label_pipecd_dev_variant)
+  label_replace(
+    sum by(pod_name) (
+      rate(container_cpu_usage_seconds_total{namespace="default"}[5m])
+    ), "pod", "$1", "pod_name", "(.+)"
+  )
+) by (label_app, label_pipecd_dev_variant)
+`,
 						Expected:     AnalysisExpected{Max: floatPointer(0.0001)},
 						FailureLimit: 2,
 						Interval:     Duration(10 * time.Second),
@@ -54,8 +65,26 @@ func TestLoadAnalysisTemplate(t *testing.T) {
 						Deviation:    AnalysisDeviationEither,
 					},
 					"grpc_error_rate-percentage": {
-						Strategy:     AnalysisStrategyThreshold,
-						Query:        "100 - sum(\n    rate(\n        grpc_server_handled_total{\n          grpc_code!=\"OK\",\n          kubernetes_namespace=\"{{ .Args.namespace }}\",\n          kubernetes_pod_name=~\"{{ .App.Name }}-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)\"\n        }[{{ .Args.interval }}]\n    )\n)\n/\nsum(\n    rate(\n        grpc_server_started_total{\n          kubernetes_namespace=\"{{ .Args.namespace }}\",\n          kubernetes_pod_name=~\"{{ .App.Name }}-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)\"\n        }[{{ .Args.interval }}]\n    )\n) * 100\n",
+						Strategy: AnalysisStrategyThreshold,
+						Query: `100 - sum(
+    rate(
+        grpc_server_handled_total{
+          grpc_code!="OK",
+          kubernetes_namespace="{{ .Args.namespace }}",
+          kubernetes_pod_name=~"{{ .App.Name }}-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)"
+        }[{{ .Args.interval }}]
+    )
+)
+/
+sum(
+    rate(
+        grpc_server_started_total{
+          kubernetes_namespace="{{ .Args.namespace }}",
+          kubernetes_pod_name=~"{{ .App.Name }}-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)"
+        }[{{ .Args.interval }}]
+    )
+) * 100
+`,
 						Expected:     AnalysisExpected{Max: floatPointer(10)},
 						FailureLimit: 1,
 						Interval:     Duration(time.Minute),
