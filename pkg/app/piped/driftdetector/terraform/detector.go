@@ -85,7 +85,7 @@ func NewDetector(
 ) Detector {
 
 	logger = logger.Named("terraform-detector").With(
-		zap.String("cloud-provider", cp.Name),
+		zap.String("platform-provider", cp.Name),
 	)
 	return &detector{
 		provider:          cp,

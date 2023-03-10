@@ -36,7 +36,7 @@ type Getter interface {
 
 func NewStore(cfg *config.PlatformProviderTerraformConfig, platformProvider string, appLister applicationLister, logger *zap.Logger) *Store {
 	logger = logger.Named("terraform").
-		With(zap.String("cloud-provider", platformProvider))
+		With(zap.String("platform-provider", platformProvider))
 
 	return &Store{
 		logger: logger,

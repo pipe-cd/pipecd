@@ -13,10 +13,12 @@ import {
   TableHead,
   TableRow,
   Toolbar,
+  Tooltip,
   Typography,
 } from "@material-ui/core";
 import { Add as AddIcon, MoreVert as MenuIcon } from "@material-ui/icons";
 import Skeleton from "@material-ui/lab/Skeleton";
+import dayjs from "dayjs";
 import * as React from "react";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import { API_KEY_ROLE_TEXT } from "~/constants/api-key-role-text";
@@ -162,11 +164,25 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
                 <TableRow key={key.id}>
                   <TableCell colSpan={2}>{key.name}</TableCell>
                   <TableCell>{API_KEY_ROLE_TEXT[key.role]}</TableCell>
-                  <TableCell>{unixTimeToString(key.createdAt)}</TableCell>
                   <TableCell>
-                    {key.lastUsedAt == 0
-                      ? "never used"
-                      : unixTimeToString(key.lastUsedAt)}
+                    <Tooltip
+                      placement="top-start"
+                      title={unixTimeToString(key.createdAt)}
+                    >
+                      <span>{dayjs(key.createdAt * 1000).fromNow()}</span>
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell>
+                    {key.lastUsedAt === 0 ? (
+                      "never used"
+                    ) : (
+                      <Tooltip
+                        placement="top-start"
+                        title={unixTimeToString(key.lastUsedAt)}
+                      >
+                        <span>{dayjs(key.lastUsedAt * 1000).fromNow()}</span>
+                      </Tooltip>
+                    )}
                   </TableCell>
                   <TableCell align="right">
                     <IconButton data-id={key.id} onClick={handleOpenMenu}>

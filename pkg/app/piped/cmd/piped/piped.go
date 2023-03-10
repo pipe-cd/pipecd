@@ -94,6 +94,7 @@ type piped struct {
 	gracePeriod                          time.Duration
 	addLoginUserToPasswd                 bool
 	launcherVersion                      string
+	maxRecvMsgSize                       int
 }
 
 func NewCommand() *cobra.Command {
@@ -102,9 +103,10 @@ func NewCommand() *cobra.Command {
 		panic(fmt.Sprintf("failed to detect the current user's home directory: %v", err))
 	}
 	p := &piped{
-		adminPort:   9085,
-		toolsDir:    path.Join(home, ".piped", "tools"),
-		gracePeriod: 30 * time.Second,
+		adminPort:      9085,
+		toolsDir:       path.Join(home, ".piped", "tools"),
+		gracePeriod:    30 * time.Second,
+		maxRecvMsgSize: 1024 * 1024 * 10, // 10MB
 	}
 	cmd := &cobra.Command{
 		Use:   "piped",
@@ -546,6 +548,7 @@ func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID
 		options = []rpcclient.DialOption{
 			rpcclient.WithBlock(),
 			rpcclient.WithPerRPCCredentials(creds),
+			rpcclient.WithMaxRecvMsgSize(p.maxRecvMsgSize),
 		}
 	)
 
