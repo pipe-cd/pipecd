@@ -396,11 +396,6 @@ type WaitApprovalStageOptions struct {
 	MinApproverNum int      `json:"minApproverNum" default:"1"`
 }
 
-type CustomUse struct {
-	Command string `json:"command"`
-	Version string `json:"version"`
-}
-
 func (w *WaitApprovalStageOptions) Validate() error {
 	if w.MinApproverNum < 1 {
 		return fmt.Errorf("minApproverNum %d should be greater than 0", w.MinApproverNum)
