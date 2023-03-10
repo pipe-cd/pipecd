@@ -27,12 +27,12 @@ spec:
     stages:
       - name: CUSTOM_SYNC
         with:
-          env:
+          envs:
             AWS_PROFILE: "sample"
-          runs: 
-            - "cd sam-app"
-            - "sam build"
-            - "echo y | sam deploy --profile $AWS_PROFILE"
+          run: |
+            cd sam-app
+            sam build
+            echo y | sam deploy --profile $AWS_PROFILE
 ```
 
 ![](/images/custom-sync.png)
