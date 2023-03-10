@@ -1,6 +1,6 @@
 import { makeStyles } from "@material-ui/styles";
 import { Select, MenuItem, IconButton } from "@material-ui/core";
-import  ClearIcon  from "@material-ui/icons/Clear";
+import ClearIcon from "@material-ui/icons/Clear";
 import { FC, useState } from "react";
 import { useAppSelector } from "~/hooks/redux";
 import { selectAllPipeds } from "~/modules/pipeds";
@@ -10,21 +10,21 @@ interface Props {
   onChange: (value: string) => void;
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     "&:hover $clearIndicatorDirty, & .Mui-focused $clearIndicatorDirty": {
-      visibility: "visible"
-    }
+      visibility: "visible",
+    },
   },
   clearIndicatorDirty: {},
   clearIndicator: {
     visibility: "hidden",
-    right: 20
-  }
+    right: 20,
+  },
 }));
 
 export const PipedSelect: FC<Props> = ({ onChange }) => {
-  const classes = useStyles()
+  const classes = useStyles();
 
   const ps = useAppSelector((state) => selectAllPipeds(state));
   const pipeds = ps
@@ -43,23 +43,21 @@ export const PipedSelect: FC<Props> = ({ onChange }) => {
       value={selectedPipedId}
       onChange={(e) => {
         setSelectedPipedId(e.target.value as string);
-        onChange(
-          e.target.value as string
-        );
+        onChange(e.target.value as string);
       }}
       endAdornment={
-          <IconButton
-            className={clsx(classes.clearIndicator, {
-              [classes.clearIndicatorDirty]: setSelectedPipedId.length > 0
-            })}
-            size="small"
-            onClick={() => {
-                setSelectedPipedId("");
-                onChange("")
-            }}
-          >
-            <ClearIcon fontSize="small" />
-          </IconButton>
+        <IconButton
+          className={clsx(classes.clearIndicator, {
+            [classes.clearIndicatorDirty]: setSelectedPipedId.length > 0,
+          })}
+          size="small"
+          onClick={() => {
+            setSelectedPipedId("");
+            onChange("");
+          }}
+        >
+          <ClearIcon fontSize="small" />
+        </IconButton>
       }
     >
       {pipeds.map((e) => (
