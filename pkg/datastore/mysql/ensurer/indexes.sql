@@ -25,8 +25,11 @@ CREATE INDEX application_sync_state_updated_at_desc ON Application (SyncState_St
 -- index on `ProjectId` ASC and `UpdatedAt` DESC
 CREATE INDEX application_project_id_updated_at_desc ON Application (ProjectId, UpdatedAt DESC);
 
--- index on `PipedId` ASC and `UpdatedAt` DESC
+-- index on `PipedId` ASC
 ALTER TABLE Application ADD COLUMN PipedId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.piped_id") VIRTUAL NOT NULL;
+CREATE INDEX application_piped_id ON Application (PipedId);
+
+-- index on `PipedId` ASC and `UpdatedAt` DESC
 CREATE INDEX application_piped_id_updated_at_desc ON Application (PipedId, UpdatedAt DESC);
 
 --
