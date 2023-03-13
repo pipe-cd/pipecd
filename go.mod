@@ -16,7 +16,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.3.1
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.1.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
-	github.com/creasty/defaults v1.5.2
+	github.com/creasty/defaults v1.6.0
 	github.com/envoyproxy/protoc-gen-validate v0.6.6
 	github.com/fsouza/fake-gcs-server v1.21.0
 	github.com/go-sql-driver/mysql v1.6.0
