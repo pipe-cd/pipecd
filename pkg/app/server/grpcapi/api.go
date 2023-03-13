@@ -788,7 +788,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 			return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("Command %s is not a plan preview command", commandID))
 		}
 
-		if _, isThere := pipedNameMap[cmd.PipedId]; !isThere {
+		if _, ok := pipedNameMap[cmd.PipedId]; !ok {
 			piped, err := getPiped(ctx, a.pipedStore, cmd.PipedId, a.logger)
 			if err != nil {
 				return nil, err
