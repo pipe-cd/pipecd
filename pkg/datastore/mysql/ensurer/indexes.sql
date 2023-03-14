@@ -27,7 +27,8 @@ CREATE INDEX application_project_id_updated_at_desc ON Application (ProjectId, U
 
 -- index on `PipedId` ASC
 ALTER TABLE Application ADD COLUMN PipedId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.piped_id") VIRTUAL NOT NULL;
-CREATE INDEX application_piped_id ON Application (PipedId);
+-- TODO: Should remove that statement after few releases.
+DROP INDEX application_piped_id ON Application;
 
 -- index on `PipedId` ASC and `UpdatedAt` DESC
 CREATE INDEX application_piped_id_updated_at_desc ON Application (PipedId, UpdatedAt DESC);
