@@ -696,6 +696,9 @@ export namespace ListApplicationsRequest {
     getLabelsMap(): jspb.Map<string, string>;
     clearLabelsMap(): Options;
 
+    getPipedId(): string;
+    setPipedId(value: string): Options;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Options.AsObject;
     static toObject(includeInstance: boolean, msg: Options): Options.AsObject;
@@ -711,6 +714,7 @@ export namespace ListApplicationsRequest {
       syncStatusesList: Array<pkg_model_application_pb.ApplicationSyncStatus>,
       name: string,
       labelsMap: Array<[string, string]>,
+      pipedId: string,
     }
   }
 

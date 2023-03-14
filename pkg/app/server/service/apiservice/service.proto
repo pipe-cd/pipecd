@@ -93,6 +93,7 @@ message ListApplicationsRequest {
     bool disabled = 4;
     map<string, string> labels = 6;
     int32 limit = 7;
+    string piped_id = 8;
     string cursor = 10;
 }
 
