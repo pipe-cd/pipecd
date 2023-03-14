@@ -126,6 +126,27 @@
     ]
   },
   {
+    "collectionGroup": "Application",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "PipedId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "UpdatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
     "collectionGroup": "Command",
     "queryScope": "COLLECTION",
     "fields": [

@@ -46,6 +46,7 @@ export const getApplications = ({
     o.setKindsList(options.kindsList);
     o.setSyncStatusesList(options.syncStatusesList);
     o.setName(options.name);
+    o.setPipedId(options.pipedId);
     if (options.enabled !== undefined) {
       const enabled = new google_protobuf_wrappers_pb.BoolValue();
       enabled.setValue((options.enabled.value as unknown) as boolean);
