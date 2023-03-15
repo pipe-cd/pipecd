@@ -253,9 +253,6 @@ func MakeResourceKey(obj *unstructured.Unstructured) ResourceKey {
 		Namespace:  obj.GetNamespace(),
 		Name:       obj.GetName(),
 	}
-	if k.Namespace == "" {
-		k.Namespace = DefaultNamespace
-	}
 	return k
 }
 
