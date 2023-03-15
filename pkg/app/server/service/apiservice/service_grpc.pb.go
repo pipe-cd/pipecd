@@ -27,6 +27,7 @@ type APIServiceClient interface {
 	GetApplication(ctx context.Context, in *GetApplicationRequest, opts ...grpc.CallOption) (*GetApplicationResponse, error)
 	ListApplications(ctx context.Context, in *ListApplicationsRequest, opts ...grpc.CallOption) (*ListApplicationsResponse, error)
 	DeleteApplication(ctx context.Context, in *DeleteApplicationRequest, opts ...grpc.CallOption) (*DeleteApplicationResponse, error)
+	EnableApplication(ctx context.Context, in *EnableApplicationRequest, opts ...grpc.CallOption) (*EnableApplicationResponse, error)
 	DisableApplication(ctx context.Context, in *DisableApplicationRequest, opts ...grpc.CallOption) (*DisableApplicationResponse, error)
 	RenameApplicationConfigFile(ctx context.Context, in *RenameApplicationConfigFileRequest, opts ...grpc.CallOption) (*RenameApplicationConfigFileResponse, error)
 	GetDeployment(ctx context.Context, in *GetDeploymentRequest, opts ...grpc.CallOption) (*GetDeploymentResponse, error)
@@ -88,6 +89,15 @@ func (c *aPIServiceClient) ListApplications(ctx context.Context, in *ListApplica
 func (c *aPIServiceClient) DeleteApplication(ctx context.Context, in *DeleteApplicationRequest, opts ...grpc.CallOption) (*DeleteApplicationResponse, error) {
 	out := new(DeleteApplicationResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/DeleteApplication", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aPIServiceClient) EnableApplication(ctx context.Context, in *EnableApplicationRequest, opts ...grpc.CallOption) (*EnableApplicationResponse, error) {
+	out := new(EnableApplicationResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/EnableApplication", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -211,6 +221,7 @@ type APIServiceServer interface {
 	GetApplication(context.Context, *GetApplicationRequest) (*GetApplicationResponse, error)
 	ListApplications(context.Context, *ListApplicationsRequest) (*ListApplicationsResponse, error)
 	DeleteApplication(context.Context, *DeleteApplicationRequest) (*DeleteApplicationResponse, error)
+	EnableApplication(context.Context, *EnableApplicationRequest) (*EnableApplicationResponse, error)
 	DisableApplication(context.Context, *DisableApplicationRequest) (*DisableApplicationResponse, error)
 	RenameApplicationConfigFile(context.Context, *RenameApplicationConfigFileRequest) (*RenameApplicationConfigFileResponse, error)
 	GetDeployment(context.Context, *GetDeploymentRequest) (*GetDeploymentResponse, error)
@@ -244,6 +255,9 @@ func (UnimplementedAPIServiceServer) ListApplications(context.Context, *ListAppl
 }
 func (UnimplementedAPIServiceServer) DeleteApplication(context.Context, *DeleteApplicationRequest) (*DeleteApplicationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteApplication not implemented")
+}
+func (UnimplementedAPIServiceServer) EnableApplication(context.Context, *EnableApplicationRequest) (*EnableApplicationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EnableApplication not implemented")
 }
 func (UnimplementedAPIServiceServer) DisableApplication(context.Context, *DisableApplicationRequest) (*DisableApplicationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DisableApplication not implemented")
@@ -380,6 +394,24 @@ func _APIService_DeleteApplication_Handler(srv interface{}, ctx context.Context,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(APIServiceServer).DeleteApplication(ctx, req.(*DeleteApplicationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _APIService_EnableApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EnableApplicationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(APIServiceServer).EnableApplication(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.apiservice.APIService/EnableApplication",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(APIServiceServer).EnableApplication(ctx, req.(*EnableApplicationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -626,6 +658,10 @@ var APIService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteApplication",
 			Handler:    _APIService_DeleteApplication_Handler,
+		},
+		{
+			MethodName: "EnableApplication",
+			Handler:    _APIService_EnableApplication_Handler,
 		},
 		{
 			MethodName: "DisableApplication",
