@@ -38,9 +38,6 @@ func TestDecideRole(t *testing.T) {
 			name:     "nothing",
 			username: "foo",
 			oc: &OAuthClient{
-				adminTeam:  "org/team-admin",
-				editorTeam: "org/team-editor",
-				viewerTeam: "org/team-viewer",
 				project: &model.Project{
 					Id:                 "id",
 					AllowStrayAsViewer: false,
@@ -72,9 +69,6 @@ func TestDecideRole(t *testing.T) {
 			name:     "viewer as default",
 			username: "foo",
 			oc: &OAuthClient{
-				adminTeam:  "org/team-admin",
-				editorTeam: "org/team-editor",
-				viewerTeam: "org/team-viewer",
 				project: &model.Project{
 					Id:                 "id",
 					AllowStrayAsViewer: true,
@@ -112,9 +106,6 @@ func TestDecideRole(t *testing.T) {
 			name:     "admin",
 			username: "foo",
 			oc: &OAuthClient{
-				adminTeam:  "org/team-admin",
-				editorTeam: "org/team-editor",
-				viewerTeam: "org/team-viewer",
 				project: &model.Project{
 					Id:                 "id",
 					AllowStrayAsViewer: false,
@@ -162,9 +153,6 @@ func TestDecideRole(t *testing.T) {
 			name:     "editor",
 			username: "foo",
 			oc: &OAuthClient{
-				adminTeam:  "org/team-admin",
-				editorTeam: "org/team-editor",
-				viewerTeam: "org/team-viewer",
 				project: &model.Project{
 					Id:                 "id",
 					AllowStrayAsViewer: false,
@@ -211,9 +199,6 @@ func TestDecideRole(t *testing.T) {
 			name:     "viewer",
 			username: "foo",
 			oc: &OAuthClient{
-				adminTeam:  "org/team-admin",
-				editorTeam: "org/team-editor",
-				viewerTeam: "org/team-viewer",
 				project: &model.Project{
 					Id:                 "id",
 					AllowStrayAsViewer: false,
