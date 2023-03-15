@@ -666,16 +666,7 @@ func (m *ProjectRBACConfig) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetAdmin()) < 1 {
-		err := ProjectRBACConfigValidationError{
-			field:  "Admin",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Admin
 
 	// no validation rules for Editor
 
