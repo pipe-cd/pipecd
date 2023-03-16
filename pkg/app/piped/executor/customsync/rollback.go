@@ -63,7 +63,6 @@ func (e *customSyncRollbackExecutor) ensureRollback(ctx context.Context) model.S
 		e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.repoDir = runningDS.RepoDir
 	e.appDir = runningDS.AppDir
 
 	runningCustomSyncConfigs, ok := runningDS.GenericApplicationConfig.GetStagesFromName(model.StageCustomSync)
