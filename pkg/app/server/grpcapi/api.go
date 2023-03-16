@@ -350,7 +350,7 @@ func (a *API) Update(ctx context.Context, req *apiservice.UpdateApplicationReque
 		return nil, err
 	}
 
-	app, err := getApplication(ctx, a.applicationStore, req.Application.Id, a.logger)
+	app, err := getApplication(ctx, a.applicationStore, req.ApplicationId, a.logger)
 	if err != nil {
 		return nil, err
 	}
@@ -359,16 +359,23 @@ func (a *API) Update(ctx context.Context, req *apiservice.UpdateApplicationReque
 		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
 	}
 
-	if app.Id != req.Application.Id {
-		return nil, status.Error(codes.InvalidArgument, "Application id does not match")
+	updatedApp := &model.Application{
+		Id:               req.ApplicationId,
+		Name:             req.Name,
+		Description:      req.Description,
+		Labels:           req.Labels,
+		PipedId:          req.PipedId,
+		PlatformProvider: req.PlatformProvider,
+		GitPath:          req.GitPath,
+		SyncState:        req.Application,
 	}
 
-	if err := a.applicationStore.Update(ctx, req.Application); err != nil {
-		return nil, gRPCStoreError(err, fmt.Sprintf("enable application %s", req.Application.Id))
+	if err := a.applicationStore.Update(ctx, updatedApp); err != nil {
+		return nil, gRPCStoreError(err, fmt.Sprintf("enable application %s", req.ApplicationId))
 	}
 
 	return &apiservice.UpdateApplicationResponse{
-		ApplicationId: req.Application.Id,
+		ApplicationId: req.ApplicationId,
 	}, nil
 }
 

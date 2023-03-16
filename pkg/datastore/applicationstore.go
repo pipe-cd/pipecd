@@ -271,9 +271,9 @@ func (s *applicationStore) List(ctx context.Context, opts ListOptions) ([]*model
 
 func (s *applicationStore) Update(ctx context.Context, app *model.Application) error {
 	// UpdateXXX does not fail, so Update will not result in an error.
-	s.UpdateSyncState(ctx, app.Id, app.SyncState)
 	s.UpdateBasicInfo(ctx, app.Id, app.Name, app.Description, app.Labels)
 	s.UpdateConfiguration(ctx, app.Id, app.PipedId, app.PlatformProvider, app.GitPath.ConfigFilename)
+	s.UpdateSyncState(ctx, app.Id, app.SyncState)
 	return nil
 }
 
