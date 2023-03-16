@@ -42,6 +42,7 @@ type apiApplicationStore interface {
 	Add(ctx context.Context, app *model.Application) error
 	Get(ctx context.Context, id string) (*model.Application, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Application, string, error)
+	Update(ctx context.Context, app *model.Application) error
 	Delete(ctx context.Context, id string) error
 	Enable(ctx context.Context, id string) error
 	Disable(ctx context.Context, id string) error
@@ -340,6 +341,34 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 	return &apiservice.ListApplicationsResponse{
 		Applications: filtered,
 		Cursor:       cursor,
+	}, nil
+}
+
+func (a *API) Update(ctx context.Context, req *apiservice.UpdateApplicationRequest) (*apiservice.UpdateApplicationResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	app, err := getApplication(ctx, a.applicationStore, req.Application.Id, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	if app.ProjectId != key.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
+	}
+
+	if app.Id != req.Application.Id {
+		return nil, status.Error(codes.InvalidArgument, "Application id does not match")
+	}
+
+	if err := a.applicationStore.Update(ctx, req.Application); err != nil {
+		return nil, gRPCStoreError(err, fmt.Sprintf("enable application %s", req.Application.Id))
+	}
+
+	return &apiservice.UpdateApplicationResponse{
+		ApplicationId: req.Application.Id,
 	}, nil
 }
 
