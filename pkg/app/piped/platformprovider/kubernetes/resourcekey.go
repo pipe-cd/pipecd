@@ -253,6 +253,19 @@ func MakeResourceKey(obj *unstructured.Unstructured) ResourceKey {
 		Namespace:  obj.GetNamespace(),
 		Name:       obj.GetName(),
 	}
+	if k.Namespace == "" {
+		k.Namespace = DefaultNamespace
+	}
+	return k
+}
+
+func MakeResourceKeyWIthoutNamespace(obj *unstructured.Unstructured) ResourceKey {
+	k := ResourceKey{
+		APIVersion: obj.GetAPIVersion(),
+		Kind:       obj.GetKind(),
+		Namespace:  "",
+		Name:       obj.GetName(),
+	}
 	return k
 }
 
