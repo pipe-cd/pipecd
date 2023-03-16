@@ -33,6 +33,7 @@ service APIService {
     rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {}
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
     rpc DeleteApplication(DeleteApplicationRequest) returns (DeleteApplicationResponse) {}
+    rpc EnableApplication(EnableApplicationRequest) returns (EnableApplicationResponse) {}
     rpc DisableApplication(DisableApplicationRequest) returns (DisableApplicationResponse) {}
     rpc RenameApplicationConfigFile(RenameApplicationConfigFileRequest) returns (RenameApplicationConfigFileResponse) {}
 
@@ -100,6 +101,14 @@ message ListApplicationsRequest {
 message ListApplicationsResponse {
     repeated model.Application applications = 1;
     string cursor = 2;
+}
+
+message EnableApplicationRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message EnableApplicationResponse {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message DisableApplicationRequest {
