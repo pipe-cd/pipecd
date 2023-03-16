@@ -160,7 +160,7 @@ func ParseFromStructuredObject(s interface{}) (Manifest, error) {
 	}
 
 	return Manifest{
-		Key: MakeResourceKey(obj),
+		Key: MakeResourceKeyFromManifest(obj),
 		u:   obj,
 	}, nil
 }
@@ -241,7 +241,7 @@ func ParseManifests(data string) ([]Manifest, error) {
 			continue
 		}
 		manifests = append(manifests, Manifest{
-			Key: MakeResourceKey(&obj),
+			Key: MakeResourceKeyFromManifest(&obj),
 			u:   &obj,
 		})
 	}
