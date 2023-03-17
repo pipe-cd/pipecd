@@ -7,6 +7,7 @@ import { selectAllPipeds } from "~/modules/pipeds";
 import clsx from "clsx";
 
 interface Props {
+  pipedId: string;
   onChange: (value: string) => void;
 }
 
@@ -23,7 +24,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export const PipedSelect: FC<Props> = ({ onChange }) => {
+export const PipedSelect: FC<Props> = ({ pipedId, onChange }) => {
   const classes = useStyles();
 
   const ps = useAppSelector((state) => selectAllPipeds(state));
@@ -40,7 +41,7 @@ export const PipedSelect: FC<Props> = ({ onChange }) => {
       id="filter-piped"
       className={classes.root}
       label="Piped"
-      value={selectedPipedId}
+      value={selectedPipedId ? selectedPipedId : pipedId}
       onChange={(e) => {
         setSelectedPipedId(e.target.value as string);
         onChange(e.target.value as string);
