@@ -39,6 +39,8 @@ This way requires installing cluster-level resources. Piped installed with this 
     syncInterval: 1m
   ```
 
+See [ConfigurationReference](../../../user-guide/managing-piped/configuration-reference/) for the full configuration.
+
 - Installing by using [Helm](https://helm.sh/docs/intro/install/) (3.8.0 or later)
 
   {{< tabpane >}}
