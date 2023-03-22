@@ -45,7 +45,7 @@ func Register(r registerer) {
 		}
 	}
 	r.Register(model.StageCustomSync, f)
-	r.RegisterRollback(model.RollbackKind_CUSTOM_SYNC, func(in executor.Input) executor.Executor {
+	r.RegisterRollback(model.RollbackKind_Rollback_CUSTOM_SYNC, func(in executor.Input) executor.Executor {
 		return &rollbackExecutor{
 			Input: in,
 		}

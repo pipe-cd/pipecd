@@ -41,7 +41,7 @@ func Register(r registerer) {
 	r.Register(model.StageCloudRunSync, f)
 	r.Register(model.StageCloudRunPromote, f)
 
-	r.RegisterRollback(model.RollbackKind_CLOUDRUN, func(in executor.Input) executor.Executor {
+	r.RegisterRollback(model.RollbackKind_Rollback_CLOUDRUN, func(in executor.Input) executor.Executor {
 		return &rollbackExecutor{
 			Input: in,
 		}

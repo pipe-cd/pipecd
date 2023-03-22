@@ -39,7 +39,7 @@ func Register(r registerer) {
 	r.Register(model.StageTerraformPlan, f)
 	r.Register(model.StageTerraformApply, f)
 
-	r.RegisterRollback(model.RollbackKind_TERRAFORM, func(in executor.Input) executor.Executor {
+	r.RegisterRollback(model.RollbackKind_Rollback_TERRAFORM, func(in executor.Input) executor.Executor {
 		return &rollbackExecutor{
 			Input: in,
 		}

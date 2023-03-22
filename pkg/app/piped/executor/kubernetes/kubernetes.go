@@ -64,7 +64,7 @@ func Register(r registerer) {
 	r.Register(model.StageK8sBaselineClean, f)
 	r.Register(model.StageK8sTrafficRouting, f)
 
-	r.RegisterRollback(model.RollbackKind_KUBERNETES, func(in executor.Input) executor.Executor {
+	r.RegisterRollback(model.RollbackKind_Rollback_KUBERNETES, func(in executor.Input) executor.Executor {
 		return &rollbackExecutor{
 			Input: in,
 		}

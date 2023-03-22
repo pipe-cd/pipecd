@@ -58,7 +58,7 @@ func Register(r registerer) {
 	r.Register(model.StageECSCanaryClean, f)
 	r.Register(model.StageECSTrafficRouting, f)
 
-	r.RegisterRollback(model.RollbackKind_ECS, func(in executor.Input) executor.Executor {
+	r.RegisterRollback(model.RollbackKind_Rollback_ECS, func(in executor.Input) executor.Executor {
 		return &rollbackExecutor{
 			Input: in,
 		}

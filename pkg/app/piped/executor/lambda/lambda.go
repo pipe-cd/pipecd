@@ -48,7 +48,7 @@ func Register(r registerer) {
 	r.Register(model.StageLambdaPromote, f)
 	r.Register(model.StageLambdaCanaryRollout, f)
 
-	r.RegisterRollback(model.RollbackKind_LAMBDA, func(in executor.Input) executor.Executor {
+	r.RegisterRollback(model.RollbackKind_Rollback_LAMBDA, func(in executor.Input) executor.Executor {
 		return &rollbackExecutor{
 			Input: in,
 		}

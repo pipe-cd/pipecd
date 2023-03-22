@@ -380,16 +380,9 @@ func (s *scheduler) Run(ctx context.Context) error {
 			go func() {
 				rbs := *stage
 				rbs.Requires = []string{lastStage.Id}
-				if stage.Name == model.StageRollback.String() {
-					s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
-						return s.executorRegistry.RollbackExecutor(s.deployment.Kind, false, in)
-					})
-				}
-				if stage.Name == model.StageCustomSyncRollback.String() {
-					s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
-						return s.executorRegistry.RollbackExecutor(s.deployment.Kind, true, in)
-					})
-				}
+				s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
+					return s.executorRegistry.RollbackExecutor(s.deployment.Kind, in)
+				})
 				close(doneCh)
 			}()
 

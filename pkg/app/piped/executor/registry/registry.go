@@ -33,7 +33,7 @@ import (
 
 type Registry interface {
 	Executor(stage model.Stage, in executor.Input) (executor.Executor, bool)
-	RollbackExecutor(kind model.ApplicationKind, shouldCustomSync bool, in executor.Input) (executor.Executor, bool)
+	RollbackExecutor(kind model.ApplicationKind, in executor.Input) (executor.Executor, bool)
 }
 
 type registry struct {
@@ -75,12 +75,12 @@ func (r *registry) Executor(stage model.Stage, in executor.Input) (executor.Exec
 	return f(in), true
 }
 
-func (r *registry) RollbackExecutor(kind model.ApplicationKind, shouldCustomSync bool, in executor.Input) (executor.Executor, bool) {
+func (r *registry) RollbackExecutor(kind model.ApplicationKind, in executor.Input) (executor.Executor, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	var rollbackKind model.RollbackKind
-	if shouldCustomSync {
-		rollbackKind = model.RollbackKind_CUSTOM_SYNC
+	if in.Stage.Name == model.StageCustomSyncRollback.String() {
+		rollbackKind = model.RollbackKind_Rollback_CUSTOM_SYNC
 	} else {
 		rollbackKind = kind.ToRollbackKind()
 	}

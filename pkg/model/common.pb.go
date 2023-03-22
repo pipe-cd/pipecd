@@ -45,19 +45,6 @@ const (
 	ApplicationKind_ECS        ApplicationKind = 5
 )
 
-type RollbackKind int64
-
-const (
-	RollbackKind_KUBERNETES  RollbackKind = 0
-	RollbackKind_TERRAFORM   RollbackKind = 1
-	RollbackKind_LAMBDA      RollbackKind = 3
-	RollbackKind_CLOUDRUN    RollbackKind = 4
-	RollbackKind_ECS         RollbackKind = 5
-	RollbackKind_CUSTOM_SYNC RollbackKind = 6
-)
-
-
-
 // Enum value maps for ApplicationKind.
 var (
 	ApplicationKind_name = map[int32]string{
@@ -103,22 +90,36 @@ func (ApplicationKind) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_common_proto_rawDescGZIP(), []int{0}
 }
 
-func (x ApplicationKind) ToRollbackKind() RollbackKind {
-	switch x{
-	case ApplicationKind_KUBERNETES:
-		return RollbackKind_KUBERNETES
-	case ApplicationKind_TERRAFORM:
-		return RollbackKind_TERRAFORM
-	case ApplicationKind_LAMBDA:
-		return RollbackKind_LAMBDA
-	case ApplicationKind_CLOUDRUN:
-		return RollbackKind_CLOUDRUN
-	case ApplicationKind_ECS:
-		return RollbackKind_ECS
-	default:
-		return RollbackKind_KUBERNETES
+type RollbackKind int32
+
+const (
+	RollbackKind_Rollback_KUBERNETES  RollbackKind = 0
+	RollbackKind_Rollback_TERRAFORM   RollbackKind = 1
+	RollbackKind_Rollback_LAMBDA      RollbackKind = 3
+	RollbackKind_Rollback_CLOUDRUN    RollbackKind = 4
+	RollbackKind_Rollback_ECS         RollbackKind = 5
+	RollbackKind_Rollback_CUSTOM_SYNC RollbackKind = 15
+)
+
+// Enum value maps for RollbackKind.
+var (
+	RollbackKind_name = map[int32]string{
+		0:  "Rollback_KUBERNETES",
+		1:  "Rollback_TERRAFORM",
+		3:  "Rollback_LAMBDA",
+		4:  "Rollback_CLOUDRUN",
+		5:  "Rollback_ECS",
+		15: "Rollback_CUSTOM_SYNC",
 	}
-}
+	RollbackKind_value = map[string]int32{
+		"Rollback_KUBERNETES":  0,
+		"Rollback_TERRAFORM":   1,
+		"Rollback_LAMBDA":      3,
+		"Rollback_CLOUDRUN":    4,
+		"Rollback_ECS":         5,
+		"Rollback_CUSTOM_SYNC": 15,
+	}
+)
 
 func (x RollbackKind) Enum() *RollbackKind {
 	p := new(RollbackKind)
@@ -131,20 +132,20 @@ func (x RollbackKind) String() string {
 }
 
 func (RollbackKind) Descriptor() protoreflect.EnumDescriptor {
-	return file_pkg_model_common_proto_enumTypes[0].Descriptor()
+	return file_pkg_model_common_proto_enumTypes[1].Descriptor()
 }
 
 func (RollbackKind) Type() protoreflect.EnumType {
-	return &file_pkg_model_common_proto_enumTypes[0]
+	return &file_pkg_model_common_proto_enumTypes[1]
 }
 
 func (x RollbackKind) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use ApplicationKind.Descriptor instead.
+// Deprecated: Use RollbackKind.Descriptor instead.
 func (RollbackKind) EnumDescriptor() ([]byte, []int) {
-	return file_pkg_model_common_proto_rawDescGZIP(), []int{0}
+	return file_pkg_model_common_proto_rawDescGZIP(), []int{1}
 }
 
 type ApplicationActiveStatus int32
@@ -180,11 +181,11 @@ func (x ApplicationActiveStatus) String() string {
 }
 
 func (ApplicationActiveStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_pkg_model_common_proto_enumTypes[1].Descriptor()
+	return file_pkg_model_common_proto_enumTypes[2].Descriptor()
 }
 
 func (ApplicationActiveStatus) Type() protoreflect.EnumType {
-	return &file_pkg_model_common_proto_enumTypes[1]
+	return &file_pkg_model_common_proto_enumTypes[2]
 }
 
 func (x ApplicationActiveStatus) Number() protoreflect.EnumNumber {
@@ -193,7 +194,7 @@ func (x ApplicationActiveStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ApplicationActiveStatus.Descriptor instead.
 func (ApplicationActiveStatus) EnumDescriptor() ([]byte, []int) {
-	return file_pkg_model_common_proto_rawDescGZIP(), []int{1}
+	return file_pkg_model_common_proto_rawDescGZIP(), []int{2}
 }
 
 type SyncStrategy int32
@@ -229,11 +230,11 @@ func (x SyncStrategy) String() string {
 }
 
 func (SyncStrategy) Descriptor() protoreflect.EnumDescriptor {
-	return file_pkg_model_common_proto_enumTypes[2].Descriptor()
+	return file_pkg_model_common_proto_enumTypes[3].Descriptor()
 }
 
 func (SyncStrategy) Type() protoreflect.EnumType {
-	return &file_pkg_model_common_proto_enumTypes[2]
+	return &file_pkg_model_common_proto_enumTypes[3]
 }
 
 func (x SyncStrategy) Number() protoreflect.EnumNumber {
@@ -242,7 +243,7 @@ func (x SyncStrategy) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SyncStrategy.Descriptor instead.
 func (SyncStrategy) EnumDescriptor() ([]byte, []int) {
-	return file_pkg_model_common_proto_rawDescGZIP(), []int{2}
+	return file_pkg_model_common_proto_rawDescGZIP(), []int{3}
 }
 
 type ArtifactVersion_Kind int32
@@ -284,11 +285,11 @@ func (x ArtifactVersion_Kind) String() string {
 }
 
 func (ArtifactVersion_Kind) Descriptor() protoreflect.EnumDescriptor {
-	return file_pkg_model_common_proto_enumTypes[3].Descriptor()
+	return file_pkg_model_common_proto_enumTypes[4].Descriptor()
 }
 
 func (ArtifactVersion_Kind) Type() protoreflect.EnumType {
-	return &file_pkg_model_common_proto_enumTypes[3]
+	return &file_pkg_model_common_proto_enumTypes[4]
 }
 
 func (x ArtifactVersion_Kind) Number() protoreflect.EnumNumber {
@@ -693,17 +694,27 @@ var file_pkg_model_common_proto_rawDesc = []byte{
 	0x45, 0x53, 0x10, 0x00, 0x12, 0x0d, 0x0a, 0x09, 0x54, 0x45, 0x52, 0x52, 0x41, 0x46, 0x4f, 0x52,
 	0x4d, 0x10, 0x01, 0x12, 0x0a, 0x0a, 0x06, 0x4c, 0x41, 0x4d, 0x42, 0x44, 0x41, 0x10, 0x03, 0x12,
 	0x0c, 0x0a, 0x08, 0x43, 0x4c, 0x4f, 0x55, 0x44, 0x52, 0x55, 0x4e, 0x10, 0x04, 0x12, 0x07, 0x0a,
-	0x03, 0x45, 0x43, 0x53, 0x10, 0x05, 0x2a, 0x41, 0x0a, 0x17, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x41, 0x63, 0x74, 0x69, 0x76, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75,
-	0x73, 0x12, 0x0b, 0x0a, 0x07, 0x45, 0x4e, 0x41, 0x42, 0x4c, 0x45, 0x44, 0x10, 0x00, 0x12, 0x0c,
-	0x0a, 0x08, 0x44, 0x49, 0x53, 0x41, 0x42, 0x4c, 0x45, 0x44, 0x10, 0x01, 0x12, 0x0b, 0x0a, 0x07,
-	0x44, 0x45, 0x4c, 0x45, 0x54, 0x45, 0x44, 0x10, 0x02, 0x2a, 0x36, 0x0a, 0x0c, 0x53, 0x79, 0x6e,
-	0x63, 0x53, 0x74, 0x72, 0x61, 0x74, 0x65, 0x67, 0x79, 0x12, 0x08, 0x0a, 0x04, 0x41, 0x55, 0x54,
-	0x4f, 0x10, 0x00, 0x12, 0x0e, 0x0a, 0x0a, 0x51, 0x55, 0x49, 0x43, 0x4b, 0x5f, 0x53, 0x59, 0x4e,
-	0x43, 0x10, 0x01, 0x12, 0x0c, 0x0a, 0x08, 0x50, 0x49, 0x50, 0x45, 0x4c, 0x49, 0x4e, 0x45, 0x10,
-	0x02, 0x42, 0x25, 0x5a, 0x23, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x70, 0x69, 0x70, 0x65, 0x2d, 0x63, 0x64, 0x2f, 0x70, 0x69, 0x70, 0x65, 0x63, 0x64, 0x2f, 0x70,
-	0x6b, 0x67, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x03, 0x45, 0x43, 0x53, 0x10, 0x05, 0x2a, 0x97, 0x01, 0x0a, 0x0c, 0x52, 0x6f, 0x6c, 0x6c, 0x62,
+	0x61, 0x63, 0x6b, 0x4b, 0x69, 0x6e, 0x64, 0x12, 0x17, 0x0a, 0x13, 0x52, 0x6f, 0x6c, 0x6c, 0x62,
+	0x61, 0x63, 0x6b, 0x5f, 0x4b, 0x55, 0x42, 0x45, 0x52, 0x4e, 0x45, 0x54, 0x45, 0x53, 0x10, 0x00,
+	0x12, 0x16, 0x0a, 0x12, 0x52, 0x6f, 0x6c, 0x6c, 0x62, 0x61, 0x63, 0x6b, 0x5f, 0x54, 0x45, 0x52,
+	0x52, 0x41, 0x46, 0x4f, 0x52, 0x4d, 0x10, 0x01, 0x12, 0x13, 0x0a, 0x0f, 0x52, 0x6f, 0x6c, 0x6c,
+	0x62, 0x61, 0x63, 0x6b, 0x5f, 0x4c, 0x41, 0x4d, 0x42, 0x44, 0x41, 0x10, 0x03, 0x12, 0x15, 0x0a,
+	0x11, 0x52, 0x6f, 0x6c, 0x6c, 0x62, 0x61, 0x63, 0x6b, 0x5f, 0x43, 0x4c, 0x4f, 0x55, 0x44, 0x52,
+	0x55, 0x4e, 0x10, 0x04, 0x12, 0x10, 0x0a, 0x0c, 0x52, 0x6f, 0x6c, 0x6c, 0x62, 0x61, 0x63, 0x6b,
+	0x5f, 0x45, 0x43, 0x53, 0x10, 0x05, 0x12, 0x18, 0x0a, 0x14, 0x52, 0x6f, 0x6c, 0x6c, 0x62, 0x61,
+	0x63, 0x6b, 0x5f, 0x43, 0x55, 0x53, 0x54, 0x4f, 0x4d, 0x5f, 0x53, 0x59, 0x4e, 0x43, 0x10, 0x0f,
+	0x2a, 0x41, 0x0a, 0x17, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x41,
+	0x63, 0x74, 0x69, 0x76, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x0b, 0x0a, 0x07, 0x45,
+	0x4e, 0x41, 0x42, 0x4c, 0x45, 0x44, 0x10, 0x00, 0x12, 0x0c, 0x0a, 0x08, 0x44, 0x49, 0x53, 0x41,
+	0x42, 0x4c, 0x45, 0x44, 0x10, 0x01, 0x12, 0x0b, 0x0a, 0x07, 0x44, 0x45, 0x4c, 0x45, 0x54, 0x45,
+	0x44, 0x10, 0x02, 0x2a, 0x36, 0x0a, 0x0c, 0x53, 0x79, 0x6e, 0x63, 0x53, 0x74, 0x72, 0x61, 0x74,
+	0x65, 0x67, 0x79, 0x12, 0x08, 0x0a, 0x04, 0x41, 0x55, 0x54, 0x4f, 0x10, 0x00, 0x12, 0x0e, 0x0a,
+	0x0a, 0x51, 0x55, 0x49, 0x43, 0x4b, 0x5f, 0x53, 0x59, 0x4e, 0x43, 0x10, 0x01, 0x12, 0x0c, 0x0a,
+	0x08, 0x50, 0x49, 0x50, 0x45, 0x4c, 0x49, 0x4e, 0x45, 0x10, 0x02, 0x42, 0x25, 0x5a, 0x23, 0x67,
+	0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x69, 0x70, 0x65, 0x2d, 0x63,
+	0x64, 0x2f, 0x70, 0x69, 0x70, 0x65, 0x63, 0x64, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x6d, 0x6f, 0x64,
+	0x65, 0x6c, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -718,24 +729,25 @@ func file_pkg_model_common_proto_rawDescGZIP() []byte {
 	return file_pkg_model_common_proto_rawDescData
 }
 
-var file_pkg_model_common_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_pkg_model_common_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
 var file_pkg_model_common_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_pkg_model_common_proto_goTypes = []interface{}{
 	(ApplicationKind)(0),             // 0: model.ApplicationKind
-	(ApplicationActiveStatus)(0),     // 1: model.ApplicationActiveStatus
-	(SyncStrategy)(0),                // 2: model.SyncStrategy
-	(ArtifactVersion_Kind)(0),        // 3: model.ArtifactVersion.Kind
-	(*ApplicationGitPath)(nil),       // 4: model.ApplicationGitPath
-	(*ApplicationGitRepository)(nil), // 5: model.ApplicationGitRepository
-	(*ApplicationInfo)(nil),          // 6: model.ApplicationInfo
-	(*ArtifactVersion)(nil),          // 7: model.ArtifactVersion
-	nil,                              // 8: model.ApplicationInfo.LabelsEntry
+	(RollbackKind)(0),                // 1: model.RollbackKind
+	(ApplicationActiveStatus)(0),     // 2: model.ApplicationActiveStatus
+	(SyncStrategy)(0),                // 3: model.SyncStrategy
+	(ArtifactVersion_Kind)(0),        // 4: model.ArtifactVersion.Kind
+	(*ApplicationGitPath)(nil),       // 5: model.ApplicationGitPath
+	(*ApplicationGitRepository)(nil), // 6: model.ApplicationGitRepository
+	(*ApplicationInfo)(nil),          // 7: model.ApplicationInfo
+	(*ArtifactVersion)(nil),          // 8: model.ArtifactVersion
+	nil,                              // 9: model.ApplicationInfo.LabelsEntry
 }
 var file_pkg_model_common_proto_depIdxs = []int32{
-	5, // 0: model.ApplicationGitPath.repo:type_name -> model.ApplicationGitRepository
+	6, // 0: model.ApplicationGitPath.repo:type_name -> model.ApplicationGitRepository
 	0, // 1: model.ApplicationInfo.kind:type_name -> model.ApplicationKind
-	8, // 2: model.ApplicationInfo.labels:type_name -> model.ApplicationInfo.LabelsEntry
-	3, // 3: model.ArtifactVersion.kind:type_name -> model.ArtifactVersion.Kind
+	9, // 2: model.ApplicationInfo.labels:type_name -> model.ApplicationInfo.LabelsEntry
+	4, // 3: model.ArtifactVersion.kind:type_name -> model.ArtifactVersion.Kind
 	4, // [4:4] is the sub-list for method output_type
 	4, // [4:4] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name
@@ -803,7 +815,7 @@ func file_pkg_model_common_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pkg_model_common_proto_rawDesc,
-			NumEnums:      4,
+			NumEnums:      5,
 			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
