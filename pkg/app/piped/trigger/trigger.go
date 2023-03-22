@@ -236,7 +236,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 				ApplicationId: app.Id,
 				State: &model.ApplicationSyncState{
 					Status:    model.ApplicationSyncStatus_INVALID_CONFIG,
-					Reason:    err.Error(),
+					Reason:    "Failed to load application config: " + err.Error(),
 					Timestamp: time.Now().Unix(),
 				},
 			}
