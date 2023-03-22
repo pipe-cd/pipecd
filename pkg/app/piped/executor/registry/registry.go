@@ -33,15 +33,13 @@ import (
 
 type Registry interface {
 	Executor(stage model.Stage, in executor.Input) (executor.Executor, bool)
-	RollbackExecutor(kind model.ApplicationKind, in executor.Input) (executor.Executor, bool)
-	CustomSyncRollbackExecutor(in executor.Input) (executor.Executor, bool)
+	RollbackExecutor(kind model.ApplicationKind, shouldCustomSync bool, in executor.Input) (executor.Executor, bool)
 }
 
 type registry struct {
-	factories                 map[model.Stage]executor.Factory
-	rollbackFactories         map[model.ApplicationKind]executor.Factory
-	customSyncRollbackFactory executor.Factory
-	mu                        sync.RWMutex
+	factories         map[model.Stage]executor.Factory
+	rollbackFactories map[model.RollbackKind]executor.Factory
+	mu                sync.RWMutex
 }
 
 func (r *registry) Register(stage model.Stage, f executor.Factory) error {
@@ -55,7 +53,7 @@ func (r *registry) Register(stage model.Stage, f executor.Factory) error {
 	return nil
 }
 
-func (r *registry) RegisterRollback(kind model.ApplicationKind, f executor.Factory) error {
+func (r *registry) RegisterRollback(kind model.RollbackKind, f executor.Factory) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -63,17 +61,6 @@ func (r *registry) RegisterRollback(kind model.ApplicationKind, f executor.Facto
 		return fmt.Errorf("rollback executor for %s application kind has already been registered", kind.String())
 	}
 	r.rollbackFactories[kind] = f
-	return nil
-}
-
-func (r *registry) RegisterCustomSyncRollback(f executor.Factory) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if r.customSyncRollbackFactory != nil {
-		return fmt.Errorf("rollback executor for custom stages application kind has already been registered")
-	}
-	r.customSyncRollbackFactory = f
 	return nil
 }
 
@@ -88,30 +75,26 @@ func (r *registry) Executor(stage model.Stage, in executor.Input) (executor.Exec
 	return f(in), true
 }
 
-func (r *registry) RollbackExecutor(kind model.ApplicationKind, in executor.Input) (executor.Executor, bool) {
+func (r *registry) RollbackExecutor(kind model.ApplicationKind, shouldCustomSync bool, in executor.Input) (executor.Executor, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
+	var rollbackKind model.RollbackKind
+	if shouldCustomSync {
+		rollbackKind = model.RollbackKind_CUSTOM_SYNC
+	} else {
+		rollbackKind = kind.ToRollbackKind()
+	}
 
-	f, ok := r.rollbackFactories[kind]
+	f, ok := r.rollbackFactories[rollbackKind]
 	if !ok {
 		return nil, false
 	}
 	return f(in), true
 }
 
-func (r *registry) CustomSyncRollbackExecutor(in executor.Input) (executor.Executor, bool) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	if r.customSyncRollbackFactory == nil {
-		return nil, false
-	}
-	f := r.customSyncRollbackFactory
-	return f(in), true
-}
-
 var defaultRegistry = &registry{
 	factories:         make(map[model.Stage]executor.Factory),
-	rollbackFactories: make(map[model.ApplicationKind]executor.Factory),
+	rollbackFactories: make(map[model.RollbackKind]executor.Factory),
 }
 
 func DefaultRegistry() Registry {

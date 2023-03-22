@@ -35,7 +35,7 @@ import (
 
 type registerer interface {
 	Register(stage model.Stage, f executor.Factory) error
-	RegisterRollback(kind model.ApplicationKind, f executor.Factory) error
+	RegisterRollback(kind model.RollbackKind, f executor.Factory) error
 }
 
 func Register(r registerer) {
@@ -48,7 +48,7 @@ func Register(r registerer) {
 	r.Register(model.StageLambdaPromote, f)
 	r.Register(model.StageLambdaCanaryRollout, f)
 
-	r.RegisterRollback(model.ApplicationKind_LAMBDA, func(in executor.Input) executor.Executor {
+	r.RegisterRollback(model.RollbackKind_LAMBDA, func(in executor.Input) executor.Executor {
 		return &rollbackExecutor{
 			Input: in,
 		}

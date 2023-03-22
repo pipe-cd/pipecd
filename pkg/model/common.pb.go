@@ -45,6 +45,19 @@ const (
 	ApplicationKind_ECS        ApplicationKind = 5
 )
 
+type RollbackKind int64
+
+const (
+	RollbackKind_KUBERNETES  RollbackKind = 0
+	RollbackKind_TERRAFORM   RollbackKind = 1
+	RollbackKind_LAMBDA      RollbackKind = 3
+	RollbackKind_CLOUDRUN    RollbackKind = 4
+	RollbackKind_ECS         RollbackKind = 5
+	RollbackKind_CUSTOM_SYNC RollbackKind = 6
+)
+
+
+
 // Enum value maps for ApplicationKind.
 var (
 	ApplicationKind_name = map[int32]string{
@@ -87,6 +100,50 @@ func (x ApplicationKind) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ApplicationKind.Descriptor instead.
 func (ApplicationKind) EnumDescriptor() ([]byte, []int) {
+	return file_pkg_model_common_proto_rawDescGZIP(), []int{0}
+}
+
+func (x ApplicationKind) ToRollbackKind() RollbackKind {
+	switch x{
+	case ApplicationKind_KUBERNETES:
+		return RollbackKind_KUBERNETES
+	case ApplicationKind_TERRAFORM:
+		return RollbackKind_TERRAFORM
+	case ApplicationKind_LAMBDA:
+		return RollbackKind_LAMBDA
+	case ApplicationKind_CLOUDRUN:
+		return RollbackKind_CLOUDRUN
+	case ApplicationKind_ECS:
+		return RollbackKind_ECS
+	default:
+		return RollbackKind_KUBERNETES
+	}
+}
+
+func (x RollbackKind) Enum() *RollbackKind {
+	p := new(RollbackKind)
+	*p = x
+	return p
+}
+
+func (x RollbackKind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (RollbackKind) Descriptor() protoreflect.EnumDescriptor {
+	return file_pkg_model_common_proto_enumTypes[0].Descriptor()
+}
+
+func (RollbackKind) Type() protoreflect.EnumType {
+	return &file_pkg_model_common_proto_enumTypes[0]
+}
+
+func (x RollbackKind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ApplicationKind.Descriptor instead.
+func (RollbackKind) EnumDescriptor() ([]byte, []int) {
 	return file_pkg_model_common_proto_rawDescGZIP(), []int{0}
 }
 

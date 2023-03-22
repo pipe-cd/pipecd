@@ -26,14 +26,14 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-type customSyncRollbackExecutor struct {
+type rollbackExecutor struct {
 	executor.Input
 
 	repoDir string
 	appDir  string
 }
 
-func (e *customSyncRollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
+func (e *rollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	var (
 		ctx            = sig.Context()
 		originalStatus = e.Stage.Status
@@ -51,7 +51,7 @@ func (e *customSyncRollbackExecutor) Execute(sig executor.StopSignal) model.Stag
 	return executor.DetermineStageStatus(sig.Signal(), originalStatus, status)
 }
 
-func (e *customSyncRollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus {
+func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus {
 	// Not rollback in case this is the first deployment.
 	if e.Deployment.RunningCommitHash == "" {
 		e.LogPersister.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")
@@ -77,7 +77,7 @@ func (e *customSyncRollbackExecutor) ensureRollback(ctx context.Context) model.S
 	return e.executeCommand(runningCustomSyncConfigs[0])
 }
 
-func (e *customSyncRollbackExecutor) executeCommand(config config.PipelineStage) model.StageStatus {
+func (e *rollbackExecutor) executeCommand(config config.PipelineStage) model.StageStatus {
 	opts := config.CustomSyncOptions
 	binDir := toolregistry.DefaultRegistry().GetBinDir()
 	pathFromOS := os.Getenv("PATH")
