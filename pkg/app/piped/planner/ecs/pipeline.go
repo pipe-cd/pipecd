@@ -31,6 +31,7 @@ func buildQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineS
 		out        = make([]*model.PipelineStage, 0, len(stages))
 	)
 
+	shouldRollbackCustomSync := false
 	for i, s := range stages {
 		id := s.Id
 		if id == "" {
@@ -52,21 +53,38 @@ func buildQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineS
 			stage.Requires = []string{preStageID}
 		}
 		preStageID = id
+		if s.Name == model.StageCustomSync {
+			shouldRollbackCustomSync = true
+		}
 		out = append(out, stage)
 	}
 
 	if autoRollback {
-		s, _ := planner.GetPredefinedStage(planner.PredefinedStageRollback)
-		out = append(out, &model.PipelineStage{
-			Id:         s.Id,
-			Name:       s.Name.String(),
-			Desc:       s.Desc,
-			Predefined: true,
-			Visible:    false,
-			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
-			CreatedAt:  now.Unix(),
-			UpdatedAt:  now.Unix(),
-		})
+		if shouldRollbackCustomSync {
+			s, _ := planner.GetPredefinedStage(planner.PredefinedStageCustomSyncRollback)
+			out = append(out, &model.PipelineStage{
+				Id:         s.Id,
+				Name:       s.Name.String(),
+				Desc:       s.Desc,
+				Predefined: true,
+				Visible:    false,
+				Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
+				CreatedAt:  now.Unix(),
+				UpdatedAt:  now.Unix(),
+			})
+		} else {
+			s, _ := planner.GetPredefinedStage(planner.PredefinedStageRollback)
+			out = append(out, &model.PipelineStage{
+				Id:         s.Id,
+				Name:       s.Name.String(),
+				Desc:       s.Desc,
+				Predefined: true,
+				Visible:    false,
+				Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
+				CreatedAt:  now.Unix(),
+				UpdatedAt:  now.Unix(),
+			})
+		}
 	}
 
 	return out
