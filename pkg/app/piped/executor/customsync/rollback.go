@@ -66,7 +66,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	e.appDir = runningDS.AppDir
 
 	if len(runningDS.GenericApplicationConfig.Pipeline.Stages) > 1 {
-		e.LogPersister.Errorf("There are more than one custom sync stages.")
+		e.LogPersister.Errorf("There are more than one custom sync stages in the running commit.")
 	}
 
 	if runningDS.GenericApplicationConfig.Pipeline.Stages[0].Name.String() != string(model.StageCustomSync) {
