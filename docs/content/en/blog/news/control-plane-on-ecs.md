@@ -50,7 +50,7 @@ It is possible to use Redis as a cache. Note the endpoint of Redis for the task 
 
 
 ### S3(filestore)
-It is possible to use S3 as a filestore. The filestore contains state files that describe your secure infrastructure, so make sure to make the bucket private. Only allow pipecd-server(ECS) to access this bucket..
+It is possible to use S3 as a filestore. The filestore contains state files that describe your secure infrastructure, so make sure to make the bucket private. Only allow pipecd-server(ECS) to access this bucket.
 
 ### ECS
 You need to create two different services for pipecd-server and a pipecd-ops because they have the same ports and different permissions. The pipecd-server can be accessed by external clients such as piped or web clients, so this service includes the pipe-cd gateway and this service must be connected to the application loadbalancer. The pipecd-ops can only be accessed by admin users, so this service must only be accessed via SSM session manager.
