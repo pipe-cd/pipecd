@@ -404,9 +404,10 @@ func (w *WaitApprovalStageOptions) Validate() error {
 }
 
 type CustomSyncOptions struct {
-	Timeout Duration          `json:"timeout" default:"6h"`
-	Envs    map[string]string `json:"envs"`
-	Run     string            `json:"run"`
+	Timeout       Duration          `json:"timeout" default:"6h"`
+	Envs          map[string]string `json:"envs"`
+	Run           string            `json:"run"`
+	ExternalTools []ExternalTool    `json:"externalTools"`
 }
 
 func (c *CustomSyncOptions) Validate() error {
@@ -414,6 +415,11 @@ func (c *CustomSyncOptions) Validate() error {
 		return fmt.Errorf("the CUSTOM_SYNC stage requires run field")
 	}
 	return nil
+}
+
+type ExternalTool struct {
+	Command string `json:"command"`
+	Version string `json:"version"`
 }
 
 // AnalysisStageOptions contains all configurable values for a K8S_ANALYSIS stage.

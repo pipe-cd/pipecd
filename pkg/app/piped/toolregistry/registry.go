@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sync"
 
@@ -27,6 +28,7 @@ import (
 	"golang.org/x/sync/singleflight"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pkg/errors"
 )
 
 // Registry provides functions to get path to the needed tools.
@@ -35,8 +37,7 @@ type Registry interface {
 	Kustomize(ctx context.Context, version string) (string, bool, error)
 	Helm(ctx context.Context, version string) (string, bool, error)
 	Terraform(ctx context.Context, version string) (string, bool, error)
-	GetBinDir() string
-	ExternalBinary(ctx context.Context, config config.PipedExternalBinary) (bool, error)
+	ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (bool, error)
 }
 
 var defaultRegistry *registry
@@ -222,33 +223,68 @@ func (r *registry) Terraform(ctx context.Context, version string) (string, bool,
 	return path, true, nil
 }
 
-func (r *registry) GetBinDir() string {
-	return r.binDir
+func (r *registry) ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (bool, error) {
+	name := config.Command + config.Version
+
+	if err := findAsdf(ctx); err != nil {
+		return false, err
+	}
+
+	installed, err := findTool(ctx, config)
+	if err != nil {
+		return false, err
+	}
+	if !installed {
+		_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
+			return nil, r.installExternalTool(ctx, config)
+		})
+		if err != nil {
+			return true, err
+		}
+	}
+
+	var script string
+	if appDir == "" {
+		script = fmt.Sprintf("asdf global %s %s", config.Command, config.Version)
+	} else {
+		script = fmt.Sprintf("cd %s\nasdf local %s %s", appDir, config.Command, config.Version)
+	}
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		r.logger.Error("failed to set %s version %s",
+			zap.String("command", config.Command),
+			zap.String("version", config.Version),
+			zap.String("out", string(out)),
+			zap.Error(err),
+		)
+	}
+	if installed {
+		return false, nil
+	} else {
+		return true, nil
+	}
 }
 
-func (r *registry) ExternalBinary(ctx context.Context, config config.PipedExternalBinary) (bool, error) {
-	name := config.Command
-	if config.Version != "" {
-		name = fmt.Sprintf("%s-%s", config.Command, config.Version)
-	}
-
-	r.mu.RLock()
-	_, ok := r.versions[name]
-	r.mu.RUnlock()
-	if ok {
-		return false, nil
-	}
-
-	_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
-		return nil, r.installExternalBinary(ctx, config)
-	})
+func findAsdf(ctx context.Context) error {
+	script := "which asdf"
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
+	out, err := cmd.Output()
 	if err != nil {
-		return true, err
+		return err
 	}
+	if out == nil {
+		return errors.Errorf("failed to find asdf")
+	}
+	return nil
+}
 
-	r.mu.Lock()
-	r.versions[name] = struct{}{}
-	r.mu.Unlock()
-
+func findTool(ctx context.Context, config config.ExternalTool) (bool, error) {
+	script := fmt.Sprintf("asdf list %s %s", config.Command, config.Version)
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
+	out, err := cmd.Output()
+	if err != nil {
+		return false, err
+	}
+	fmt.Println(out)
 	return true, nil
 }

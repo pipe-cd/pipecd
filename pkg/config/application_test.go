@@ -664,6 +664,12 @@ func TestCustomSyncConfig(t *testing.T) {
 										"AWS_PROFILE": "default",
 									},
 									Run: "sam build\nsam deploy -g --profile $AWS_PROFILE\n",
+									ExternalTools: []ExternalTool{
+										{
+											Command: "sam",
+											Version: "1.77.0",
+										},
+									},
 								},
 							},
 						},

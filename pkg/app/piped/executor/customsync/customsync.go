@@ -15,6 +15,7 @@
 package customsync
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -57,6 +58,19 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	e.repoDir = ds.RepoDir
 	e.appDir = ds.AppDir
+
+	e.LogPersister.Infof("Prepare external tools...")
+	for _, config := range e.StageConfig.CustomSyncOptions.ExternalTools {
+		e.LogPersister.Infof(fmt.Sprintf("Check %s %s", config.Command, config.Version))
+		installed, err := toolregistry.DefaultRegistry().ExternalTool(ctx, e.appDir, config)
+		if installed {
+			e.LogPersister.Infof(fmt.Sprintf("just installed %s %s", config.Command, config.Version))
+		}
+		if err != nil {
+			e.LogPersister.Errorf(fmt.Sprintf("failed to check %s %s (%v)", config.Command, config.Version, err))
+		}
+	}
+
 	timeout := e.StageConfig.CustomSyncOptions.Timeout.Duration()
 
 	c := make(chan model.StageStatus, 1)
@@ -90,8 +104,6 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 
 func (e *deployExecutor) executeCommand() model.StageStatus {
 	opts := e.StageConfig.CustomSyncOptions
-	binDir := toolregistry.DefaultRegistry().GetBinDir()
-	pathFromOS := os.Getenv("PATH")
 
 	e.LogPersister.Infof("Runnnig commands...")
 	for _, v := range strings.Split(opts.Run, "\n") {
@@ -100,7 +112,6 @@ func (e *deployExecutor) executeCommand() model.StageStatus {
 		}
 	}
 
-	path := binDir + ":" + pathFromOS
 	envs := make([]string, 0, len(opts.Envs))
 	for key, value := range opts.Envs {
 		envs = append(envs, key+"="+value)
@@ -108,7 +119,7 @@ func (e *deployExecutor) executeCommand() model.StageStatus {
 
 	cmd := exec.Command("/bin/sh", "-c", opts.Run)
 	cmd.Dir = e.appDir
-	cmd.Env = append(os.Environ(), append(envs, "PATH="+path)...)
+	cmd.Env = append(os.Environ(), envs...)
 	cmd.Stdout = e.LogPersister
 	cmd.Stderr = e.LogPersister
 	if err := cmd.Run(); err != nil {

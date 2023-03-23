@@ -231,41 +231,15 @@ func (r *registry) installTerraform(ctx context.Context, version string) error {
 	return nil
 }
 
-func (r *registry) installExternalBinary(ctx context.Context, config config.PipedExternalBinary) error {
-	workingDirName := fmt.Sprintf("%s-install", config.Command)
-	workingDir, err := os.MkdirTemp("", workingDirName)
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(workingDir)
-
-	var (
-		buf  bytes.Buffer
-		data = map[string]interface{}{
-			"WorkingDir": workingDir,
-			"Version":    config.Version,
-			"BinDir":     r.binDir,
-		}
-	)
-
-	externalBinaryInstallScriptTmpl := template.Must(template.New(config.Command).Parse(config.InstallScriptTemplate))
-	if err := externalBinaryInstallScriptTmpl.Execute(&buf, data); err != nil {
-		r.logger.Error("failed to render external binary install script",
-			zap.String("command", config.Command),
-			zap.String("version", config.Version),
-			zap.Error(err),
-		)
-		return errors.Errorf("failed to install %s %s (%v)", config.Command, config.Version, err)
-	}
-	script := fmt.Sprintf("cd %s\n", workingDir) + buf.String()
+func (r *registry) installExternalTool(ctx context.Context, config config.ExternalTool) error {
+	script := fmt.Sprintf("asdf install %s %s", config.Command, config.Version)
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	cmd := exec.CommandContext(ctxWithTimeout, "/bin/sh", "-c", script)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		r.logger.Error("failed to install %s %s template",
+		r.logger.Error("failed to install %s %s",
 			zap.String("command", config.Command),
 			zap.String("version", config.Version),
-			zap.String("script", script),
 			zap.String("out", string(out)),
 			zap.Error(err),
 		)
@@ -275,7 +249,7 @@ func (r *registry) installExternalBinary(ctx context.Context, config config.Pipe
 		return errors.Errorf("failed to install %s %s (%v)", config.Command, config.Version, err)
 	}
 
-	r.logger.Info("just installed external binary",
+	r.logger.Info("just installed external tool",
 		zap.String("command", config.Command),
 		zap.String("version", config.Version),
 	)

@@ -172,8 +172,8 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Install External binaries
 	{
 		group.Go(func() error {
-			for _, config := range cfg.ExternalBinaries {
-				installed, err := toolregistry.DefaultRegistry().ExternalBinary(ctx, config)
+			for _, config := range cfg.ExternalTools {
+				installed, err := toolregistry.DefaultRegistry().ExternalTool(ctx, "", config)
 				if err != nil {
 					input.Logger.Error(fmt.Sprintf("Unable to find required %q %q (%v)", config.Command, config.Version, err), zap.Error(err))
 					return err

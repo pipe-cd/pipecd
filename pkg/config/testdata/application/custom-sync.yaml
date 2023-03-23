@@ -12,3 +12,6 @@ spec:
           run: |
             sam build
             sam deploy -g --profile $AWS_PROFILE
+          externalTools: 
+            - command: sam
+              version: 1.77.0
