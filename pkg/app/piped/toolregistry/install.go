@@ -232,25 +232,25 @@ func (r *registry) installTerraform(ctx context.Context, version string) error {
 }
 
 func (r *registry) installExternalTool(ctx context.Context, config config.ExternalTool) error {
-	script := fmt.Sprintf("asdf install %s %s", config.Command, config.Version)
+	script := fmt.Sprintf("asdf install %s %s", config.Package, config.Version)
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	cmd := exec.CommandContext(ctxWithTimeout, "/bin/sh", "-c", script)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		r.logger.Error("failed to install %s %s",
-			zap.String("command", config.Command),
+			zap.String("package", config.Package),
 			zap.String("version", config.Version),
 			zap.String("out", string(out)),
 			zap.Error(err),
 		)
 		if errors.Is(ctxWithTimeout.Err(), context.DeadlineExceeded) {
-			return errors.Errorf("failed to install %s %s (%v) because of timeout", config.Command, config.Version, err)
+			return errors.Errorf("failed to install %s %s (%v) because of timeout", config.Package, config.Version, err)
 		}
-		return errors.Errorf("failed to install %s %s (%v)", config.Command, config.Version, err)
+		return errors.Errorf("failed to install %s %s (%v)", config.Package, config.Version, err)
 	}
 
 	r.logger.Info("just installed external tool",
-		zap.String("command", config.Command),
+		zap.String("package", config.Package),
 		zap.String("version", config.Version),
 	)
 	return nil

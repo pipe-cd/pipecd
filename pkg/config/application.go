@@ -418,7 +418,7 @@ func (c *CustomSyncOptions) Validate() error {
 }
 
 type ExternalTool struct {
-	Command string `json:"command"`
+	Package string `json:"package"`
 	Version string `json:"version"`
 }
 

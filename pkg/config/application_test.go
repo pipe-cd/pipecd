@@ -666,7 +666,7 @@ func TestCustomSyncConfig(t *testing.T) {
 									Run: "sam build\nsam deploy -g --profile $AWS_PROFILE\n",
 									ExternalTools: []ExternalTool{
 										{
-											Command: "sam",
+											Package: "aws-sam-cli",
 											Version: "1.77.0",
 										},
 									},

@@ -224,7 +224,7 @@ func (r *registry) Terraform(ctx context.Context, version string) (string, bool,
 }
 
 func (r *registry) ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (bool, error) {
-	name := config.Command + config.Version
+	name := config.Package + config.Version
 
 	if err := findAsdf(ctx); err != nil {
 		return false, err
@@ -245,14 +245,14 @@ func (r *registry) ExternalTool(ctx context.Context, appDir string, config confi
 
 	var script string
 	if appDir == "" {
-		script = fmt.Sprintf("asdf global %s %s", config.Command, config.Version)
+		script = fmt.Sprintf("asdf global %s %s", config.Package, config.Version)
 	} else {
-		script = fmt.Sprintf("cd %s\nasdf local %s %s", appDir, config.Command, config.Version)
+		script = fmt.Sprintf("cd %s\nasdf local %s %s", appDir, config.Package, config.Version)
 	}
 	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		r.logger.Error("failed to set %s version %s",
-			zap.String("command", config.Command),
+			zap.String("package", config.Package),
 			zap.String("version", config.Version),
 			zap.String("out", string(out)),
 			zap.Error(err),
@@ -279,7 +279,7 @@ func findAsdf(ctx context.Context) error {
 }
 
 func findTool(ctx context.Context, config config.ExternalTool) (bool, error) {
-	script := fmt.Sprintf("asdf list %s %s", config.Command, config.Version)
+	script := fmt.Sprintf("asdf list %s %s", config.Package, config.Version)
 	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
 	out, err := cmd.Output()
 	if err != nil {
