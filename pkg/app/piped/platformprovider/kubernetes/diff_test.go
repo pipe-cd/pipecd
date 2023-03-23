@@ -248,8 +248,7 @@ metadata:
   name: secret-management
 data:
   password: hoge
-stringData:
-  foo: bar
+  foo: YmFy
 ---
 apiVersion: apps/v1
 kind: Secret
@@ -257,7 +256,8 @@ metadata:
   name: secret-management
 data:
   password: hoge
-  foo: YmFy
+stringData:
+  foo: bar
 `,
 			expected: "",
 			diffNum:  0,
@@ -270,9 +270,7 @@ metadata:
   name: secret-management
 data:
   password: hoge
-  foo: Zm9v
-stringData:
-  foo: bar
+  foo: YmFy
 ---
 apiVersion: apps/v1
 kind: Secret
@@ -280,7 +278,9 @@ metadata:
   name: secret-management
 data:
   password: hoge
-  foo: YmFy
+  foo: Zm9v
+stringData:
+  foo: bar
 `,
 			expected:      "",
 			diffNum:       0,
@@ -293,20 +293,20 @@ kind: Secret
 metadata:
   name: secret-management
 data:
-  password: hoge
-stringData:
-  foo: bar
+  foo: YmFy
 ---
 apiVersion: apps/v1
 kind: Secret
 metadata:
   name: secret-management
 data:
-  foo: YmFy
+  password: hoge
+stringData:
+  foo: bar
 `,
 			expected: `  #data
-- data:
--   password: hoge
++ data:
++   password: hoge
 
 `,
 			diffNum: 1,
@@ -323,7 +323,6 @@ spec:
   containers:
     - name: web
       image: nginx
-      ports:
       resources:
         limits:
           memory: "2Gi"
@@ -338,6 +337,7 @@ spec:
   containers:
     - name: web
       image: nginx
+      ports:
       resources:
         limits:
           memory: "2Gi"
@@ -358,10 +358,9 @@ spec:
   containers:
     - name: web
       image: nginx
-      ports:
       resources:
         limits:
-          memory: "1.5Gi"
+          memory: "1536Mi"
 ---
 apiVersion: v1
 kind: Pod
@@ -373,9 +372,10 @@ spec:
   containers:
     - name: web
       image: nginx
+      ports:
       resources:
         limits:
-          memory: "1536Mi"
+          memory: "1.5Gi"
 `,
 			expected:      "",
 			diffNum:       0,

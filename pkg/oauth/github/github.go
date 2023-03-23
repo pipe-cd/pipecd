@@ -36,24 +36,16 @@ type OAuthClient struct {
 	*github.Client
 
 	project *model.Project
-
-	adminTeam  string
-	editorTeam string
-	viewerTeam string
 }
 
 // NewOAuthClient creates a new oauth client for GitHub.
 func NewOAuthClient(ctx context.Context,
 	sso *model.ProjectSSOConfig_GitHub,
-	rbac *model.ProjectRBACConfig,
 	project *model.Project,
 	code string,
 ) (*OAuthClient, error) {
 	c := &OAuthClient{
-		project:    project,
-		adminTeam:  rbac.Admin,
-		editorTeam: rbac.Editor,
-		viewerTeam: rbac.Viewer,
+		project: project,
 	}
 	cfg := oauth2.Config{
 		ClientID:     sso.ClientId,

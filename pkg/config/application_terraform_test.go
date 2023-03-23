@@ -142,9 +142,8 @@ func TestTerraformApplicationtConfig(t *testing.T) {
 							{
 								Name: model.StageWaitApproval,
 								WaitApprovalStageOptions: &WaitApprovalStageOptions{
-									Approvers: []string{"foo", "bar"},
-									// Use defaultWaitApprovalTimeout on unset timeout value for WaitApprovalStage.
-									Timeout:        defaultWaitApprovalTimeout,
+									Approvers:      []string{"foo", "bar"},
+									Timeout:        Duration(6 * time.Hour),
 									MinApproverNum: 1,
 								},
 							},
@@ -196,7 +195,7 @@ func TestTerraformApplicationtConfig(t *testing.T) {
 								Name: model.StageWaitApproval,
 								WaitApprovalStageOptions: &WaitApprovalStageOptions{
 									Approvers:      []string{"foo", "bar"},
-									Timeout:        defaultWaitApprovalTimeout,
+									Timeout:        Duration(6 * time.Hour),
 									MinApproverNum: 1,
 								},
 							},

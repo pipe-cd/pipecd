@@ -26,6 +26,7 @@ import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
   Application,
   ApplicationDeploymentReference,
+  ApplicationSyncStatus,
   fetchApplication,
   selectById as selectApplicationById,
   syncApplication,
@@ -33,7 +34,7 @@ import {
 import { SyncStrategy } from "~/modules/deployments";
 import { selectPipedById } from "~/modules/pipeds";
 import { AppLiveState } from "./app-live-state";
-import { SyncStateReason } from "./sync-state-reason";
+import { OutOfSyncReason, InvalidConfigReason } from "./sync-state-reason";
 import { ArtifactVersion } from "~~/model/common_pb";
 
 const useStyles = makeStyles((theme) => ({
@@ -300,12 +301,22 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
                 <AppLiveState applicationId={applicationId} />
               </Box>
 
-              {app.syncState && (
-                <SyncStateReason
-                  summary={app.syncState.shortReason}
-                  detail={app.syncState.reason}
-                />
-              )}
+              {app.syncState &&
+                app.syncState.status == ApplicationSyncStatus.OUT_OF_SYNC && (
+                  <OutOfSyncReason
+                    summary={app.syncState.shortReason}
+                    detail={app.syncState.reason}
+                  />
+                )}
+
+              {app.syncState &&
+                app.syncState.status ==
+                  ApplicationSyncStatus.INVALID_CONFIG && (
+                  <InvalidConfigReason
+                    summary={app.syncState.shortReason}
+                    detail={app.syncState.reason}
+                  />
+                )}
             </>
           ) : (
             <Skeleton height={32} width={200} />

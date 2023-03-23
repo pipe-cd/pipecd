@@ -34,6 +34,7 @@ type list struct {
 
 	appName  string
 	appKind  string
+	pipedID  string
 	disabled bool
 	cursor   string
 	labels   []string
@@ -54,6 +55,7 @@ func newListCommand(root *command) *cobra.Command {
 
 	cmd.Flags().StringVar(&c.appName, "app-name", c.appName, "The application name.")
 	cmd.Flags().StringVar(&c.appKind, "app-kind", c.appKind, fmt.Sprintf("The kind of application. (%s)", strings.Join(model.ApplicationKindStrings(), "|")))
+	cmd.Flags().StringVar(&c.pipedID, "piped-id", c.pipedID, "The piped id.")
 	cmd.Flags().BoolVar(&c.disabled, "disabled", c.disabled, "True to show only disabled applications.")
 	cmd.Flags().StringVar(&c.cursor, "cursor", c.cursor, "The cursor which returned by the previous request applications list.")
 	cmd.Flags().Int32Var(&c.limit, "limit", 10, "Upper limit on the number of return values. Default value is 10.")
@@ -86,6 +88,7 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 	req := &apiservice.ListApplicationsRequest{
 		Name:     c.appName,
 		Kind:     c.appKind,
+		PipedId:  c.pipedID,
 		Disabled: c.disabled,
 		Cursor:   c.cursor,
 		Limit:    c.limit,

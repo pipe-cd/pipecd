@@ -28,7 +28,7 @@ export interface SyncStateReasonProps {
   detail: string;
 }
 
-export const SyncStateReason: FC<SyncStateReasonProps> = ({
+export const OutOfSyncReason: FC<SyncStateReasonProps> = ({
   summary,
   detail,
 }) => {
@@ -62,6 +62,50 @@ export const SyncStateReason: FC<SyncStateReasonProps> = ({
           <DiffView content={detail} />
         </Paper>
       )}
+    </>
+  );
+};
+
+export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
+  const classes = useStyles();
+  const [showReason, setShowReason] = useState(false);
+
+  const MAX_DISPLAY_LENGTH = 100;
+  if (detail.length < MAX_DISPLAY_LENGTH) {
+    return (
+      <>
+        <div className={classes.summary}>
+          <Typography variant="body2" color="textSecondary">
+            {detail}
+          </Typography>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className={classes.summary}>
+        {showReason ? (
+          <Typography variant="body2" color="textSecondary">
+            {detail}
+          </Typography>
+        ) : (
+          <Typography variant="body2" color="textSecondary">
+            {detail.slice(0, MAX_DISPLAY_LENGTH) + "..."}
+          </Typography>
+        )}
+        {detail && (
+          <Button
+            variant="text"
+            size="small"
+            className={classes.showButton}
+            onClick={() => setShowReason(!showReason)}
+          >
+            {showReason ? "HIDE" : "MORE"}
+          </Button>
+        )}
+      </div>
     </>
   );
 };

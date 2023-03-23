@@ -53,19 +53,19 @@ type DiffListChange struct {
 func Diff(old, new Manifest, logger *zap.Logger, opts ...diff.Option) (*diff.Result, error) {
 	if old.Key.IsSecret() && new.Key.IsSecret() {
 		var err error
-		new.u, err = normalizeNewSecret(old.u, new.u)
+		old.u, err = normalizeNewSecret(old.u, new.u)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	normalized, err := remarshal(old.u)
+	normalized, err := remarshal(new.u)
 	if err != nil {
 		logger.Info("compare manifests directly since it was unable to remarshal Kubernetes manifest to normalize special fields", zap.Error(err))
 		return diff.DiffUnstructureds(*old.u, *new.u, opts...)
 	}
 
-	return diff.DiffUnstructureds(*normalized, *new.u, opts...)
+	return diff.DiffUnstructureds(*old.u, *normalized, opts...)
 }
 
 func DiffList(olds, news []Manifest, logger *zap.Logger, opts ...diff.Option) (*DiffListResult, error) {
@@ -99,32 +99,32 @@ func normalizeNewSecret(old, new *unstructured.Unstructured) (*unstructured.Unst
 	runtime.DefaultUnstructuredConverter.FromUnstructured(old.Object, &o)
 	runtime.DefaultUnstructuredConverter.FromUnstructured(new.Object, &n)
 
-	// Move as much as possible fields from `n.Data` to `n.StringData` to make `n` close to `o` to minimize the diff.
-	for k, v := range n.Data {
+	// Move as much as possible fields from `o.Data` to `o.StringData` to make `o` close to `n` to minimize the diff.
+	for k, v := range o.Data {
 		// Skip if the field also exists in StringData.
-		if _, ok := n.StringData[k]; ok {
+		if _, ok := o.StringData[k]; ok {
 			continue
 		}
 
-		if _, ok := o.StringData[k]; !ok {
+		if _, ok := n.StringData[k]; !ok {
 			continue
 		}
 
-		if n.StringData == nil {
-			n.StringData = make(map[string]string)
+		if o.StringData == nil {
+			o.StringData = make(map[string]string)
 		}
 
-		// If the field is existing in `o.StringData`, we should move that field from `n.Data` to `n.StringData`
-		n.StringData[k] = string(v)
-		delete(n.Data, k)
+		// If the field is existing in `n.StringData`, we should move that field from `o.Data` to `o.StringData`
+		o.StringData[k] = string(v)
+		delete(o.Data, k)
 	}
 
-	newObj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&n)
+	newO, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&o)
 	if err != nil {
 		return nil, err
 	}
 
-	return &unstructured.Unstructured{Object: newObj}, nil
+	return &unstructured.Unstructured{Object: newO}, nil
 }
 
 type DiffRenderOptions struct {

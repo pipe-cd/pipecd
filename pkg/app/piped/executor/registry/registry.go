@@ -21,6 +21,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/analysis"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/cloudrun"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/customsync"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/ecs"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/lambda"
@@ -104,4 +105,5 @@ func init() {
 	ecs.Register(defaultRegistry)
 	wait.Register(defaultRegistry)
 	waitapproval.Register(defaultRegistry)
+	customsync.Register(defaultRegistry)
 }

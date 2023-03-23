@@ -33,6 +33,7 @@ type Registry interface {
 	Kustomize(ctx context.Context, version string) (string, bool, error)
 	Helm(ctx context.Context, version string) (string, bool, error)
 	Terraform(ctx context.Context, version string) (string, bool, error)
+	GetBinDir() string
 }
 
 var defaultRegistry *registry
@@ -216,4 +217,8 @@ func (r *registry) Terraform(ctx context.Context, version string) (string, bool,
 	r.mu.Unlock()
 
 	return path, true, nil
+}
+
+func (r *registry) GetBinDir() string {
+	return r.binDir
 }
