@@ -55,9 +55,10 @@ It is possible to use S3 as a filestore. The filestore contains state files that
 ### ECS
 You need to create two different services for pipecd-server and a pipecd-ops because they have the same ports and different permissions. The pipecd-server can be accessed by external clients such as piped or web clients, so this service includes the pipe-cd gateway and this service must be connected to the application loadbalancer. The pipecd-ops can only be accessed by admin users, so this service must only be accessed via SSM session manager.
 ECS agent sets config files as environment variables in container from secrets manager. Create configuration files from environment variables in the container as below.
+
 ```bash
 echo $ENVOY_CONFIG; echo $ENVOY_CONFIG | base64 -d >> envoy-config.yaml
-```.
+```
 
 > Note: Attach IAM policy to get secrets from Secrets Manager to task execution role.
 
@@ -165,7 +166,7 @@ You must prepare two target groups for both HTTP and gRPC. Make two hosts and li
 ![](/images/control-plane-alb.png)
 
 ### Terraform example
-PipeCD gives [control-plane-aws-ecs-terraform-demo](https://github.com/pipe-cd/control-plane-aws-ecs-terraform-demo)
+PipeCD gives [control-plane-aws-ecs-terraform-demo](https://github.com/pipe-cd/control-plane-aws-ecs-terraform-demo), which we use Terraform to prepare PipeCD controlplane components and install it on air.
 
 #### Prepare
 1. Prepare SSL certificate
