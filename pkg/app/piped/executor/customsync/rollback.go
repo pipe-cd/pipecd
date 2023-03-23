@@ -65,16 +65,17 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	}
 	e.appDir = runningDS.AppDir
 
-	runningCustomSyncConfigs, ok := runningDS.GenericApplicationConfig.GetStagesFromName(model.StageCustomSync)
-	if !ok || runningCustomSyncConfigs == nil {
-		e.LogPersister.Errorf("There are no custom sync in the running commit")
+	if len(runningDS.GenericApplicationConfig.Pipeline.Stages) > 1 {
+		e.LogPersister.Errorf("There are more than one custom sync stages.")
 	}
-	if len(runningCustomSyncConfigs) > 1 {
-		e.LogPersister.Errorf("There are custom sync stages more than one stage.")
+
+	if runningDS.GenericApplicationConfig.Pipeline.Stages[0].Name.String() != string(model.StageCustomSync) {
+		e.LogPersister.Errorf("There are no custom sync in the running commit")
+		return model.StageStatus_STAGE_FAILURE
 	}
 	e.LogPersister.Infof("Start rollback for custom sync")
 
-	return e.executeCommand(runningCustomSyncConfigs[0])
+	return e.executeCommand(runningDS.GenericApplicationConfig.Pipeline.Stages[0])
 }
 
 func (e *rollbackExecutor) executeCommand(config config.PipelineStage) model.StageStatus {
