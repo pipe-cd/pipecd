@@ -57,6 +57,7 @@ You need to create two different services for pipecd-server and a pipecd-ops bec
 ECS agent sets config files as environment variables in container from secrets manager. Create configuration files from environment variables in the container as below.
 ```bash
 echo $ENVOY_CONFIG; echo $ENVOY_CONFIG | base64 -d >> envoy-config.yaml
+```.
 
 > Note: Attach IAM policy to get secrets from Secrets Manager to task execution role.
 
