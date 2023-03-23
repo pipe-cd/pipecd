@@ -1,0 +1,39 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: ANALYSIS
+        with:
+          duration: 10m
+          metrics:
+            - query: grpc_error_percentage
+              expected:
+                max: 0.1
+              interval: 1m
+              failureLimit: 1
+              provider: prometheus-dev
+            - query: grpc_succeed_percentage
+              expected:
+                min: 0.9
+              interval: 1m
+              failureLimit: 1
+              provider: prometheus-dev
+      - name: ANALYSIS
+        with:
+          duration: 10m
+          logs:
+            - query: |
+                resource.labels.pod_id="pod1"
+              interval: 1m
+              failureLimit: 3
+              provider: stackdriver-dev
+      - name: ANALYSIS
+        with:
+          duration: 10m
+          https:
+            - url: https://canary-endpoint.dev
+              method: GET
+              expectedCode: 200
+              failureLimit: 1
+              interval: 1m

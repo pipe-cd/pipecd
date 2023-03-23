@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ type Registry interface {
 	Helm(ctx context.Context, version string) (string, bool, error)
 	CustomTemplating(ctx context.Context, input *config.InputCustomTemplating) (string, bool, error)
 	Terraform(ctx context.Context, version string) (string, bool, error)
+	GetBinDir() string
 }
 
 var defaultRegistry *registry
@@ -257,4 +258,8 @@ func (r *registry) Terraform(ctx context.Context, version string) (string, bool,
 	r.mu.Unlock()
 
 	return path, true, nil
+}
+
+func (r *registry) GetBinDir() string {
+	return r.binDir
 }

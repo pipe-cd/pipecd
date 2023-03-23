@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ func TestAddApplication(t *testing.T) {
 					Repo: &model.ApplicationGitRepository{Id: "id"},
 					Path: "path",
 				},
-				CloudProvider: "cloud-provider",
+				PlatformProvider: "platform-provider",
 
 				CreatedAt: 1,
 				UpdatedAt: 1,

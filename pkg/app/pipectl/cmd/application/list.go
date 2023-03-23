@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,8 +34,11 @@ type list struct {
 
 	appName  string
 	appKind  string
+	pipedID  string
 	disabled bool
 	cursor   string
+	labels   []string
+	limit    int32
 	stdout   io.Writer
 }
 
@@ -46,15 +49,17 @@ func newListCommand(root *command) *cobra.Command {
 	}
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "Show the list of applications. Currently, the maximum number of returned applications is 10.",
+		Short: "Show the list of applications.",
 		RunE:  cli.WithContext(c.run),
 	}
 
-	// TODO: Support pipectl to list application by Label.
 	cmd.Flags().StringVar(&c.appName, "app-name", c.appName, "The application name.")
 	cmd.Flags().StringVar(&c.appKind, "app-kind", c.appKind, fmt.Sprintf("The kind of application. (%s)", strings.Join(model.ApplicationKindStrings(), "|")))
+	cmd.Flags().StringVar(&c.pipedID, "piped-id", c.pipedID, "The piped id.")
 	cmd.Flags().BoolVar(&c.disabled, "disabled", c.disabled, "True to show only disabled applications.")
 	cmd.Flags().StringVar(&c.cursor, "cursor", c.cursor, "The cursor which returned by the previous request applications list.")
+	cmd.Flags().Int32Var(&c.limit, "limit", 10, "Upper limit on the number of return values. Default value is 10.")
+	cmd.Flags().StringSliceVar(&c.labels, "label", c.labels, "The application label. Expect input in the form KEY:VALUE.")
 
 	return cmd
 }
@@ -63,6 +68,14 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 	if c.appKind != "" {
 		if _, ok := model.ApplicationKind_value[c.appKind]; !ok {
 			return fmt.Errorf("invalid application kind")
+		}
+	}
+
+	labels := map[string]string{}
+	for _, label := range c.labels {
+		sp := strings.SplitN(label, ":", 2)
+		if len(sp) == 2 {
+			labels[sp[0]] = sp[1]
 		}
 	}
 
@@ -75,8 +88,11 @@ func (c *list) run(ctx context.Context, _ cli.Input) error {
 	req := &apiservice.ListApplicationsRequest{
 		Name:     c.appName,
 		Kind:     c.appKind,
+		PipedId:  c.pipedID,
 		Disabled: c.disabled,
 		Cursor:   c.cursor,
+		Limit:    c.limit,
+		Labels:   labels,
 	}
 
 	resp, err := cli.ListApplications(ctx, req)

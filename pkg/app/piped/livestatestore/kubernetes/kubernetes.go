@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ func (it EventIterator) Next(maxNum int) []model.KubernetesResourceStateEvent {
 
 func NewStore(cfg *config.PlatformProviderKubernetesConfig, pipedConfig *config.PipedSpec, platformProvider string, logger *zap.Logger) *Store {
 	logger = logger.Named("kubernetes").
-		With(zap.String("cloud-provider", platformProvider))
+		With(zap.String("platform-provider", platformProvider))
 
 	return &Store{
 		config:      cfg,

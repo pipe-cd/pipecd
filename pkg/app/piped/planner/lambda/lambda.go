@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -55,22 +55,23 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	// Determine application version from the manifest
-	if version, err := determineVersion(ds.AppDir, cfg.Input.FunctionManifestFile); err == nil {
-		out.Version = version
-	} else {
+	if version, e := determineVersion(ds.AppDir, cfg.Input.FunctionManifestFile); e != nil {
 		out.Version = "unknown"
-		in.Logger.Warn("unable to determine target version", zap.Error(err))
+		in.Logger.Warn("unable to determine target version", zap.Error(e))
+	} else {
+		out.Version = version
 	}
 
-	out.Versions, err = determineVersions(ds.AppDir, cfg.Input.FunctionManifestFile)
-	if err != nil {
-		in.Logger.Warn("unable to determine target versions", zap.Error(err))
+	if versions, e := determineVersions(ds.AppDir, cfg.Input.FunctionManifestFile); e != nil || len(versions) == 0 {
+		in.Logger.Warn("unable to determine target versions", zap.Error(e))
 		out.Versions = []*model.ArtifactVersion{
 			{
 				Kind:    model.ArtifactVersion_UNKNOWN,
 				Version: "unknown",
 			},
 		}
+	} else {
+		out.Versions = versions
 	}
 
 	autoRollback := *cfg.Input.AutoRollback

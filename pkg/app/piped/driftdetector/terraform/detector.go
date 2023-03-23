@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ func NewDetector(
 ) Detector {
 
 	logger = logger.Named("terraform-detector").With(
-		zap.String("cloud-provider", cp.Name),
+		zap.String("platform-provider", cp.Name),
 	)
 	return &detector{
 		provider:          cp,
@@ -94,7 +94,7 @@ func NewDetector(
 		stateGetter:       stateGetter,
 		reporter:          reporter,
 		appManifestsCache: appManifestsCache,
-		interval:          time.Minute,
+		interval:          10 * time.Minute,
 		config:            cfg,
 		secretDecrypter:   sd,
 		gitRepos:          make(map[string]git.Repo),
@@ -280,9 +280,11 @@ func makeSyncState(r provider.PlanResult, commit string) model.ApplicationSyncSt
 	}
 
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit))
-	b.WriteString("--- Expected\n+++ Actual\n\n")
-	// TODO: Should output diff details, but terraform provider hasn't implemented PlanResult.Render().
+	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual live state:\n\n", commit))
+	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Git)\n\n")
+
+	details := r.Render()
+	b.WriteString(details)
 
 	return model.ApplicationSyncState{
 		Status:      model.ApplicationSyncStatus_OUT_OF_SYNC,

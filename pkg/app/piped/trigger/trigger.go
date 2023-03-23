@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ type apiClient interface {
 	GetDeployment(ctx context.Context, in *pipedservice.GetDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetDeploymentResponse, error)
 	ReportApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.ReportApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationMostRecentDeploymentResponse, error)
 	CreateDeploymentChain(ctx context.Context, in *pipedservice.CreateDeploymentChainRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentChainResponse, error)
+	ReportApplicationSyncState(ctx context.Context, in *pipedservice.ReportApplicationSyncStateRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationSyncStateResponse, error)
 }
 
 type gitClient interface {
@@ -229,12 +230,22 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 				zap.String("commit", headCommit.Hash),
 				zap.Error(err),
 			)
-			// Do not notify this event to external services because it may cause annoying
-			// when one application is missing or having an invalid configuration file.
-			// So instead of notifying this as a notification,
-			// we should show this problem on the web with a status like INVALID_CONFIG.
-			//
-			// t.notifyDeploymentTriggerFailed(app, msg, headCommit)
+
+			// Set ApplicationSyncState to INVALID_CONFIG when LoadApplication fails.
+			req := &pipedservice.ReportApplicationSyncStateRequest{
+				ApplicationId: app.Id,
+				State: &model.ApplicationSyncState{
+					Status:    model.ApplicationSyncStatus_INVALID_CONFIG,
+					Reason:    err.Error(),
+					Timestamp: time.Now().Unix(),
+				},
+			}
+			_, err := t.apiClient.ReportApplicationSyncState(ctx, req)
+			if err != nil {
+				msg := fmt.Sprintf("failed to report application sync state %s: %v", app.Id, err)
+				t.logger.Error(msg, zap.Error(err))
+			}
+
 			continue
 		}
 

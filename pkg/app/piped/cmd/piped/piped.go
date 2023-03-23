@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"os/exec"
 	"path"
@@ -93,6 +94,7 @@ type piped struct {
 	gracePeriod                          time.Duration
 	addLoginUserToPasswd                 bool
 	launcherVersion                      string
+	maxRecvMsgSize                       int
 }
 
 func NewCommand() *cobra.Command {
@@ -101,9 +103,10 @@ func NewCommand() *cobra.Command {
 		panic(fmt.Sprintf("failed to detect the current user's home directory: %v", err))
 	}
 	p := &piped{
-		adminPort:   9085,
-		toolsDir:    path.Join(home, ".piped", "tools"),
-		gracePeriod: 30 * time.Second,
+		adminPort:      9085,
+		toolsDir:       path.Join(home, ".piped", "tools"),
+		gracePeriod:    30 * time.Second,
+		maxRecvMsgSize: 1024 * 1024 * 10, // 10MB
 	}
 	cmd := &cobra.Command{
 		Use:   "piped",
@@ -249,6 +252,9 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			w.Write([]byte("ok"))
 		})
 		admin.Handle("/metrics", input.PrometheusMetricsHandlerFor(registry))
+		admin.HandleFunc("/debug/pprof/", pprof.Index)
+		admin.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		admin.HandleFunc("/debug/pprof/trace", pprof.Trace)
 
 		group.Go(func() error {
 			return admin.Run(ctx)
@@ -542,6 +548,7 @@ func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID
 		options = []rpcclient.DialOption{
 			rpcclient.WithBlock(),
 			rpcclient.WithPerRPCCredentials(creds),
+			rpcclient.WithMaxRecvMsgSize(p.maxRecvMsgSize),
 		}
 	)
 

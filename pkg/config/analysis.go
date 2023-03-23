@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ type AnalysisMetrics struct {
 	SkipOnNoData bool `json:"skipOnNoData"`
 	// How long after which the query times out.
 	// Default is 30s.
-	Timeout Duration `json:"timeout"`
+	Timeout Duration `json:"timeout" default:"30s"`
 
 	// The stage fails on deviation in the specified direction. One of LOW or HIGH or EITHER is available.
 	// This can be used only for PREVIOUS, CANARY_BASELINE or CANARY_PRIMARY. Defaults to EITHER.

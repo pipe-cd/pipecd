@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -103,6 +104,11 @@ type webApiAPIKeyStore interface {
 	Disable(ctx context.Context, id, projectID string) error
 }
 
+// TODO: all structs webApi should be webAPI
+type webApiAPIKeyLastUsedStore interface { //nolint:stylecheck
+	Get(k string) (interface{}, error)
+}
+
 // WebAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
 	webservice.UnimplementedWebServiceServer
@@ -113,6 +119,7 @@ type WebAPI struct {
 	pipedStore                webApiPipedStore
 	projectStore              webApiProjectStore
 	apiKeyStore               webApiAPIKeyStore
+	apiKeyLastUsedStore       webApiAPIKeyLastUsedStore
 	eventStore                webApiEventStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
@@ -139,6 +146,7 @@ func NewWebAPI(
 	sls stagelogstore.Store,
 	alss applicationlivestatestore.Store,
 	uas unregisteredappstore.Store,
+	akluc cache.Cache,
 	ip insight.Provider,
 	psc cache.Cache,
 	projs map[string]config.ControlPlaneProject,
@@ -153,6 +161,7 @@ func NewWebAPI(
 		pipedStore:                datastore.NewPipedStore(ds, w),
 		projectStore:              datastore.NewProjectStore(ds, w),
 		apiKeyStore:               datastore.NewAPIKeyStore(ds, w),
+		apiKeyLastUsedStore:       akluc,
 		eventStore:                datastore.NewEventStore(ds, w),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
@@ -646,6 +655,13 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 				Field:    "Name",
 				Operator: datastore.OperatorEqual,
 				Value:    o.Name,
+			})
+		}
+		if o.PipedId != "" {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "PipedId",
+				Operator: datastore.OperatorEqual,
+				Value:    o.PipedId,
 			})
 		}
 	}
@@ -1454,12 +1470,13 @@ func (a *WebAPI) GenerateAPIKey(ctx context.Context, req *webservice.GenerateAPI
 	}
 
 	apiKey := model.APIKey{
-		Id:        id,
-		Name:      req.Name,
-		KeyHash:   hash,
-		ProjectId: claims.Role.ProjectId,
-		Role:      req.Role,
-		Creator:   claims.Subject,
+		Id:         id,
+		Name:       req.Name,
+		KeyHash:    hash,
+		ProjectId:  claims.Role.ProjectId,
+		Role:       req.Role,
+		Creator:    claims.Subject,
+		LastUsedAt: 0,
 	}
 
 	if err = a.apiKeyStore.Add(ctx, &apiKey); err != nil {
@@ -1517,8 +1534,30 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 		return nil, gRPCStoreError(err, "list API keys")
 	}
 
-	// Redact all sensitive data inside API key before sending to the client.
 	for i := range apiKeys {
+		cachedLastUse, err := a.apiKeyLastUsedStore.Get(apiKeys[i].Id)
+		if err != nil {
+			a.logger.Error("failed to get last used time from cache",
+				zap.String("id", apiKeys[i].Id),
+				zap.Error(err),
+			)
+			continue
+		}
+
+		s := string(cachedLastUse.([]byte))
+		lastUsedAt, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			a.logger.Error("failed to parse last used time from cache",
+				zap.String("id", apiKeys[i].Id),
+				zap.Error(err),
+			)
+			continue
+		}
+		if lastUsedAt > apiKeys[i].LastUsedAt {
+			apiKeys[i].LastUsedAt = lastUsedAt
+		}
+
+		// Redact all sensitive data inside API key before sending to the client.
 		apiKeys[i].RedactSensitiveData()
 	}
 

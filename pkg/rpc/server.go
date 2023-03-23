@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ type Server struct {
 	gracePeriod          time.Duration
 	enabelGRPCReflection bool
 	logger               *zap.Logger
+	maxRecvMsgSize       int
 
 	pipedKeyAuthUnaryInterceptor      grpc.UnaryServerInterceptor
 	pipedKeyAuthStreamInterceptor     grpc.StreamServerInterceptor
@@ -226,6 +227,9 @@ func (s *Server) init() error {
 	}
 	if s.pipedKeyAuthStreamInterceptor != nil {
 		opts = append(opts, grpc.StreamInterceptor(s.pipedKeyAuthStreamInterceptor))
+	}
+	if s.maxRecvMsgSize != 0 {
+		opts = append(opts, grpc.MaxRecvMsgSize(s.maxRecvMsgSize))
 	}
 	s.grpcServer = grpc.NewServer(opts...)
 

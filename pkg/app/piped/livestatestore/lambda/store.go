@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ type Getter interface {
 
 func NewStore(cfg *config.PlatformProviderLambdaConfig, platformProvider string, appLister applicationLister, logger *zap.Logger) *Store {
 	logger = logger.Named("lambda").
-		With(zap.String("cloud-provider", platformProvider))
+		With(zap.String("platform-provider", platformProvider))
 
 	return &Store{
 		logger: logger,

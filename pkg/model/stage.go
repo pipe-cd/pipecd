@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -91,6 +91,9 @@ const (
 	// StageECSCanaryClean represents the stage where
 	// the CANARY variant resources has been cleaned.
 	StageECSCanaryClean Stage = "ECS_CANARY_CLEAN"
+	// StageCustomSync represents the stage where users can use their
+	// defined scripts to sync the application's state instead of the KIND_SYNC stage.
+	StageCustomSync Stage = "CUSTOM_SYNC"
 
 	// StageRollback represents a state where
 	// the all temporarily created stages will be reverted to

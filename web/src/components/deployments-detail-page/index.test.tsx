@@ -5,6 +5,8 @@ import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import { createReduxStore, render, waitFor } from "~~/test-utils";
 import { DeploymentDetailPage } from ".";
 
+Element.prototype.scrollIntoView = jest.fn();
+
 beforeAll(() => {
   server.listen();
 });

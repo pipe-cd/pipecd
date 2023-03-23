@@ -1,5 +1,5 @@
 import { makeStyles } from "@material-ui/core";
-import { Cached, CheckCircle, Error, Info } from "@material-ui/icons";
+import { Cached, CheckCircle, Error, Info, Warning } from "@material-ui/icons";
 import { FC } from "react";
 import { ApplicationSyncStatus } from "~/modules/applications";
 
@@ -17,12 +17,15 @@ const useStyles = makeStyles((theme) => ({
   [ApplicationSyncStatus.OUT_OF_SYNC]: {
     color: theme.palette.error.main,
   },
+  [ApplicationSyncStatus.INVALID_CONFIG]: {
+    color: theme.palette.warning.light,
+  },
   "@keyframes running": {
     "0%": {
-      transform: "rotate(0deg)",
+      transform: "rotate(360deg)",
     },
     "100%": {
-      transform: "rotate(360deg)",
+      transform: "rotate(0deg)",
     },
   },
 }));
@@ -43,5 +46,7 @@ export const SyncStatusIcon: FC<SyncStatusIconProps> = ({ status }) => {
       return <Cached className={classes[status]} />;
     case ApplicationSyncStatus.OUT_OF_SYNC:
       return <Error className={classes[status]} />;
+    case ApplicationSyncStatus.INVALID_CONFIG:
+      return <Warning className={classes[status]} />;
   }
 };

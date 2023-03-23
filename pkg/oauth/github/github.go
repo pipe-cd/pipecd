@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,24 +36,16 @@ type OAuthClient struct {
 	*github.Client
 
 	project *model.Project
-
-	adminTeam  string
-	editorTeam string
-	viewerTeam string
 }
 
 // NewOAuthClient creates a new oauth client for GitHub.
 func NewOAuthClient(ctx context.Context,
 	sso *model.ProjectSSOConfig_GitHub,
-	rbac *model.ProjectRBACConfig,
 	project *model.Project,
 	code string,
 ) (*OAuthClient, error) {
 	c := &OAuthClient{
-		project:    project,
-		adminTeam:  rbac.Admin,
-		editorTeam: rbac.Editor,
-		viewerTeam: rbac.Viewer,
+		project: project,
 	}
 	cfg := oauth2.Config{
 		ClientID:     sso.ClientId,

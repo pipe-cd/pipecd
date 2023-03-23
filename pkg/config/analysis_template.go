@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/creasty/defaults"
 )
 
 type AnalysisTemplateSpec struct {
@@ -44,33 +42,16 @@ func LoadAnalysisTemplate(repoRoot string) (*AnalysisTemplateSpec, error) {
 		if f.IsDir() {
 			continue
 		}
+		ext := filepath.Ext(f.Name())
+		if ext != ".yaml" && ext != ".yml" && ext != ".json" {
+			continue
+		}
 		path := filepath.Join(dir, f.Name())
 		cfg, err := LoadFromYAML(path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load config file %s: %w", path, err)
 		}
 		if cfg.Kind == KindAnalysisTemplate {
-			// "creasty/defaults.Set" doesn't set the default value to the entry that key already exists in a map.
-			// Therefore, we need to set them one by one.
-			// See: https://github.com/creasty/defaults/issues/28
-			for k, v := range cfg.AnalysisTemplateSpec.Metrics {
-				if err := defaults.Set(&v); err != nil {
-					return nil, fmt.Errorf("failed to set the default value to metrics configurations: %w", err)
-				}
-				cfg.AnalysisTemplateSpec.Metrics[k] = v
-			}
-			for k, v := range cfg.AnalysisTemplateSpec.Logs {
-				if err := defaults.Set(&v); err != nil {
-					return nil, fmt.Errorf("failed to set the default value to log configurations: %w", err)
-				}
-				cfg.AnalysisTemplateSpec.Logs[k] = v
-			}
-			for k, v := range cfg.AnalysisTemplateSpec.HTTPs {
-				if err := defaults.Set(&v); err != nil {
-					return nil, fmt.Errorf("failed to set the default value to http configurations: %w", err)
-				}
-				cfg.AnalysisTemplateSpec.HTTPs[k] = v
-			}
 			return cfg.AnalysisTemplateSpec, nil
 		}
 	}

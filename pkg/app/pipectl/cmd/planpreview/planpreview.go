@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -177,8 +177,9 @@ func convert(results []*model.PlanPreviewCommandResult) ReadableResult {
 		if r.Error != "" {
 			out.FailurePipeds = append(out.FailurePipeds, FailurePiped{
 				PipedInfo: PipedInfo{
-					PipedID:  r.PipedId,
-					PipedURL: r.PipedUrl,
+					PipedID:   r.PipedId,
+					PipedName: r.PipedName,
+					PipedURL:  r.PipedUrl,
 				},
 				Reason: r.Error,
 			})
@@ -241,8 +242,9 @@ type FailureApplication struct {
 }
 
 type PipedInfo struct {
-	PipedID  string
-	PipedURL string
+	PipedID   string
+	PipedName string
+	PipedURL  string
 }
 
 type ApplicationInfo struct {
@@ -307,7 +309,7 @@ func (r ReadableResult) String() string {
 			fmt.Fprintf(&b, "\nNOTE: An error occurred while building plan-preview for applications of the following Piped:\n")
 		}
 		for i, piped := range r.FailurePipeds {
-			fmt.Fprintf(&b, "\n%d. piped: %s\n", i+1, piped.PipedID)
+			fmt.Fprintf(&b, "\n%d. piped: %s (%s)\n", i+1, piped.PipedName, piped.PipedID)
 			fmt.Fprintf(&b, "  reason: %s\n", piped.Reason)
 		}
 	}

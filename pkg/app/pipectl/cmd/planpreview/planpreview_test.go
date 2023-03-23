@@ -1,4 +1,4 @@
-// Copyright 2022 The PipeCD Authors.
+// Copyright 2023 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -102,6 +102,7 @@ NOTE: An error occurred while building plan-preview for the following applicatio
 				{
 					CommandId: "command-1",
 					PipedId:   "piped-1",
+					PipedName: "piped-name-1",
 					PipedUrl:  "https://pipecd.dev/piped-1",
 					Error:     "failed to clone",
 				},
@@ -109,7 +110,7 @@ NOTE: An error occurred while building plan-preview for the following applicatio
 			expected: `
 NOTE: An error occurred while building plan-preview for applications of the following Piped:
 
-1. piped: piped-1
+1. piped: piped-name-1 (piped-1)
   reason: failed to clone
 `,
 		},
@@ -119,12 +120,14 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 				{
 					CommandId: "command-1",
 					PipedId:   "piped-1",
+					PipedName: "piped-name-1",
 					PipedUrl:  "https://pipecd.dev/piped-1",
 					Error:     "failed to clone",
 				},
 				{
 					CommandId: "command-2",
 					PipedId:   "piped-2",
+					PipedName: "piped-name-2",
 					PipedUrl:  "https://pipecd.dev/piped-2",
 					Results: []*model.ApplicationPlanPreviewResult{
 						{
@@ -167,6 +170,7 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 				{
 					CommandId: "command-3",
 					PipedId:   "piped-3",
+					PipedName: "piped-name-3",
 					PipedUrl:  "https://pipecd.dev/piped-3",
 					Error:     "failed to checkout branch",
 				},
@@ -202,10 +206,10 @@ NOTE: An error occurred while building plan-preview for the following 2 applicat
 
 NOTE: An error occurred while building plan-preview for applications of the following 2 Pipeds:
 
-1. piped: piped-1
+1. piped: piped-name-1 (piped-1)
   reason: failed to clone
 
-2. piped: piped-3
+2. piped: piped-name-3 (piped-3)
   reason: failed to checkout branch
 `,
 		},

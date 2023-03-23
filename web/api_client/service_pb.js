@@ -7177,7 +7177,8 @@ proto.grpc.service.webservice.ListApplicationsRequest.Options.toObject = functio
     kindsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
     syncStatusesList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
     name: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : []
+    labelsMap: (f = msg.getLabelsMap()) ? f.toObject(includeInstance, undefined) : [],
+    pipedId: jspb.Message.getFieldWithDefault(msg, 7, "")
   };
 
   if (includeInstance) {
@@ -7241,6 +7242,10 @@ proto.grpc.service.webservice.ListApplicationsRequest.Options.deserializeBinaryF
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
          });
       break;
+    case 7:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPipedId(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -7302,6 +7307,13 @@ proto.grpc.service.webservice.ListApplicationsRequest.Options.serializeBinaryToW
   f = message.getLabelsMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(6, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+  }
+  f = message.getPipedId();
+  if (f.length > 0) {
+    writer.writeString(
+      7,
+      f
+    );
   }
 };
 
@@ -7455,6 +7467,24 @@ proto.grpc.service.webservice.ListApplicationsRequest.Options.prototype.getLabel
 proto.grpc.service.webservice.ListApplicationsRequest.Options.prototype.clearLabelsMap = function() {
   this.getLabelsMap().clear();
   return this;};
+
+
+/**
+ * optional string piped_id = 7;
+ * @return {string}
+ */
+proto.grpc.service.webservice.ListApplicationsRequest.Options.prototype.getPipedId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.grpc.service.webservice.ListApplicationsRequest.Options} returns this
+ */
+proto.grpc.service.webservice.ListApplicationsRequest.Options.prototype.setPipedId = function(value) {
+  return jspb.Message.setProto3StringField(this, 7, value);
+};
 
 
 /**
