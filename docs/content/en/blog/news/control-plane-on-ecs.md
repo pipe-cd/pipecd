@@ -286,3 +286,5 @@ You can login pipecd-ops via ECS exec.
 ```
 aws ssm start-session --target ecs:${CLUSTER}_${TASK_ID}_${CONTAINER_ID} --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["9082"],"localPortNumber":["19082"]}'
 ```
+
+That's all! Now you have your own PipeCD controlplane and it's ready to go!!
