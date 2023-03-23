@@ -76,9 +76,9 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	now := time.Now()
 	out.Version = "N/A"
 
-	files, err := provider.LoadTerraformFiles(ds.AppDir)
-	if err != nil {
-		return
+	files, e := provider.LoadTerraformFiles(ds.AppDir)
+	if e != nil {
+		in.Logger.Warn("unable to load terraform files", zap.Error(e))
 	}
 
 	if versions, e := provider.FindArtifactVersions(files); e != nil || len(versions) == 0 {

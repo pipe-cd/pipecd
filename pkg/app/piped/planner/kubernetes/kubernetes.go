@@ -82,11 +82,12 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	if !ok {
 		// When the manifests were not in the cache we have to load them.
 		loader := provider.NewLoader(in.ApplicationName, ds.AppDir, ds.RepoDir, in.GitPath.ConfigFilename, cfg.Input, in.GitClient, in.Logger)
-		newManifests, err = loader.LoadManifests(ctx)
-		if err != nil {
-			return
+		newManifests, e := loader.LoadManifests(ctx)
+		if e != nil {
+			in.Logger.Error("unable to load manifests", zap.Error(e))
+		} else {
+			manifestCache.Put(in.Trigger.Commit.Hash, newManifests)
 		}
-		manifestCache.Put(in.Trigger.Commit.Hash, newManifests)
 	}
 
 	// Determine application version from the manifests.
