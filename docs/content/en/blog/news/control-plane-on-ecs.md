@@ -46,7 +46,7 @@ It is possible to use RDS as a datastore. Edit your configuration file for the c
 ```
 
 ### Redis(cache)
-It is possible to use redis as a cache. Note the endpoint of redis for the task definition.
+It is possible to use Redis as a cache. Note the endpoint of Redis for the task definition.
 
 
 ### S3(filestore)
