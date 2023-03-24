@@ -70,7 +70,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		e.LogPersister.Infof(fmt.Sprintf("Check %s %s", config.Package, config.Version))
 		addedPlugin, installed, err := toolregistry.DefaultRegistry().ExternalTool(ctx, e.appDir, config)
 		if addedPlugin {
-			e.LogPersister.Infof(fmt.Sprintf(" plugin %s has just added", config.Package))
+			e.LogPersister.Infof(fmt.Sprintf(" plugin %s has just been added", config.Package))
 		}
 		if installed {
 			e.LogPersister.Infof(fmt.Sprintf(" %s %s has just been installed", config.Package, config.Version))

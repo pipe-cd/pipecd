@@ -175,13 +175,13 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			for _, config := range cfg.ExternalTools {
 				addedPlugin, installed, err := toolregistry.DefaultRegistry().ExternalTool(ctx, "", config)
 				if addedPlugin {
-					input.Logger.Info(fmt.Sprintf("plugin %q has just been installed", config.Package))
+					input.Logger.Info(fmt.Sprintf("plugin %q has just been added", config.Package))
 				}
 				if installed {
 					input.Logger.Info(fmt.Sprintf("%q %q has just been installed", config.Package, config.Version))
 				}
 				if err != nil {
-					input.Logger.Error(fmt.Sprintf("Unable to set %q %q (%v)", config.Package, config.Version, err), zap.Error(err))
+					input.Logger.Error(fmt.Sprintf("unable to set %q %q (%v)", config.Package, config.Version, err), zap.Error(err))
 					continue
 				}
 				input.Logger.Info(fmt.Sprintf("%q %q has just been globally set", config.Package, config.Version))
