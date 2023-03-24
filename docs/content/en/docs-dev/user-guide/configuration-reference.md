@@ -672,4 +672,4 @@ A wrapper of type `int` to represent percentage data. Basically, you can pass `1
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| ignoreFields | []string |  Application configuration fields to ignore drift detection. | No |
+| ignoreFields | []string |  List of fields path in manifests, which its diff should be ignored. | No |
