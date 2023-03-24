@@ -270,7 +270,6 @@ func (r *registry) ExternalTool(ctx context.Context, appDir string, config confi
 		}
 		installed = true
 	}
-
 	var script string
 	if appDir == "" {
 		script = fmt.Sprintf("asdf global %s %s", config.Package, config.Version)
@@ -296,10 +295,10 @@ func findAsdf(ctx context.Context) (bool, error) {
 	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		if out == nil {
+		if string(out) == "" {
 			return false, nil
 		}
-		return true, err
+		return false, err
 	}
 	return true, nil
 }

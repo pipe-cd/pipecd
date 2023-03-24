@@ -243,9 +243,9 @@ func (r *registry) addExternalToolPlugin(ctx context.Context, config config.Exte
 			zap.Error(err),
 		)
 		if errors.Is(ctxWithTimeout.Err(), context.DeadlineExceeded) {
-			return errors.Errorf("failed to install %s %s (%v) because of timeout", config.Package, config.Version, err)
+			return errors.Errorf("failed to add plugin %s (%v) because of timeout", config.Package, err)
 		}
-		return errors.Errorf("failed to install %s %s (%v)", config.Package, config.Version, err)
+		return errors.Errorf("failed to add plugin %s (%v)", config.Package, err)
 	}
 
 	r.logger.Info("just add plugin",
