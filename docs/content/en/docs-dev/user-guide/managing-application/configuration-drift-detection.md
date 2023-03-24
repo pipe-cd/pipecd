@@ -83,7 +83,7 @@ If you want to ignore the drift detection for the two sceans
 - pod's replicas
 - `helloworld` container's args
 
-Add the following statements to `app.pipe.yaml` to ignore diff on those fields.
+Add the following statements to `app.pipecd.yaml` to ignore diff on those fields.
 ```yaml
 spec:
   ...
