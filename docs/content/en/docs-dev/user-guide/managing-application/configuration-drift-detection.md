@@ -92,4 +92,5 @@ spec:
       - spec.replicas
       - spec.template.spec.containers.0.args
 ```
+For more information, see the [configuration reference](../../configuration-reference/#driftdetection).
 
