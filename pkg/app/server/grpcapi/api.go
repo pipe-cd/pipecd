@@ -43,6 +43,7 @@ type apiApplicationStore interface {
 	Get(ctx context.Context, id string) (*model.Application, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Application, string, error)
 	Delete(ctx context.Context, id string) error
+	Enable(ctx context.Context, id string) error
 	Disable(ctx context.Context, id string) error
 	UpdateConfigFilename(ctx context.Context, id, filename string) error
 }
@@ -273,6 +274,13 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			Value:    model.ApplicationKind(kind),
 		})
 	}
+	if req.PipedId != "" {
+		filters = append(filters, datastore.ListFilter{
+			Field:    "PipedId",
+			Operator: datastore.OperatorEqual,
+			Value:    req.PipedId,
+		})
+	}
 
 	limit := int(req.Limit)
 	options := datastore.ListOptions{
@@ -353,6 +361,30 @@ func (a *API) DeleteApplication(ctx context.Context, req *apiservice.DeleteAppli
 	}
 
 	return &apiservice.DeleteApplicationResponse{
+		ApplicationId: app.Id,
+	}, nil
+}
+
+func (a *API) EnableApplication(ctx context.Context, req *apiservice.EnableApplicationRequest) (*apiservice.EnableApplicationResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	app, err := getApplication(ctx, a.applicationStore, req.ApplicationId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	if app.ProjectId != key.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
+	}
+
+	if err := a.applicationStore.Enable(ctx, req.ApplicationId); err != nil {
+		return nil, gRPCStoreError(err, fmt.Sprintf("enable application %s", req.ApplicationId))
+	}
+
+	return &apiservice.EnableApplicationResponse{
 		ApplicationId: app.Id,
 	}, nil
 }
@@ -761,6 +793,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 
 	var (
 		handledCommands = make([]string, 0, len(req.Commands))
+		pipedNameMap    = make(map[string]string, 0)
 		results         = make([]*model.PlanPreviewCommandResult, 0, len(req.Commands))
 	)
 
@@ -787,6 +820,14 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 			return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("Command %s is not a plan preview command", commandID))
 		}
 
+		if _, ok := pipedNameMap[cmd.PipedId]; !ok {
+			piped, err := getPiped(ctx, a.pipedStore, cmd.PipedId, a.logger)
+			if err != nil {
+				return nil, err
+			}
+			pipedNameMap[piped.Id] = piped.Name
+		}
+
 		if !cmd.IsHandled() {
 			pipedStatus, err := getPipedStatus(a.pipedStatCache, cmd.PipedId)
 			if err != nil {
@@ -794,16 +835,11 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 				pipedStatus = model.Piped_UNKNOWN
 			}
 
-			piped, err := getPiped(ctx, a.pipedStore, cmd.PipedId, a.logger)
-			if err != nil {
-				return nil, err
-			}
-
 			if pipedStatus != model.Piped_ONLINE {
 				results = append(results, &model.PlanPreviewCommandResult{
 					CommandId: cmd.Id,
 					PipedId:   cmd.PipedId,
-					PipedName: piped.Name,
+					PipedName: pipedNameMap[cmd.PipedId],
 					Error:     "Maybe Piped is offline currently.",
 				})
 				continue
@@ -816,7 +852,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 			results = append(results, &model.PlanPreviewCommandResult{
 				CommandId: cmd.Id,
 				PipedId:   cmd.PipedId,
-				PipedName: piped.Name,
+				PipedName: pipedNameMap[cmd.PipedId],
 				Error:     "Timed out, maybe the Piped is offline currently.",
 			})
 			continue
@@ -846,6 +882,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 			)
 			return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to decode output data of command %s", commandID))
 		}
+		result.PipedName = pipedNameMap[result.PipedId]
 
 		results = append(results, &result)
 	}

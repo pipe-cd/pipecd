@@ -34,6 +34,7 @@ export interface ApplicationsFilterOptions {
   kind?: string;
   syncStatus?: string;
   name?: string;
+  pipedId?: string;
   // Suppose to be like ["key-1:value-1"]
   // sindresorhus/query-string doesn't support multidimensional arrays, that's why the format is a bit tricky.
   labels?: Array<string>;
@@ -58,6 +59,7 @@ export const fetchApplications = createAsyncThunk<
         ? [parseInt(options.kind, 10) as ApplicationKind]
         : [],
       name: options.name ?? "",
+      pipedId: options.pipedId ?? "",
       syncStatusesList: options.syncStatus
         ? [parseInt(options.syncStatus, 10) as ApplicationSyncStatus]
         : [],

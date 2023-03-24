@@ -27,6 +27,16 @@ enum ApplicationKind {
     ECS = 5;
 }
 
+enum RollbackKind {
+    Rollback_KUBERNETES = 0;
+    Rollback_TERRAFORM = 1;
+    Rollback_LAMBDA = 3;
+    Rollback_CLOUDRUN = 4;
+    Rollback_ECS = 5;
+
+    Rollback_CUSTOM_SYNC = 15;
+}
+
 enum ApplicationActiveStatus {
     ENABLED = 0;
     DISABLED = 1;

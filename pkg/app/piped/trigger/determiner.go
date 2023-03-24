@@ -180,7 +180,7 @@ func (d *OnCommitDeterminer) ShouldTrigger(ctx context.Context, app *model.Appli
 	// Check whether the most recently applied one is the target commit or not.
 	// If so, nothing to do for this time.
 	if preCommit == d.targetCommit {
-		logger.Info(fmt.Sprintf("no update to sync for application, hash: %s", d.targetCommit))
+		logger.Debug(fmt.Sprintf("no update to sync for application, hash: %s", d.targetCommit))
 		return false, nil
 	}
 

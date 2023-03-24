@@ -22,6 +22,7 @@ import {
   selectAll as selectAllApplications,
 } from "~/modules/applications";
 import { ApplicationAutocomplete } from "./application-autocomplete";
+import { PipedSelect } from "./piped-select";
 
 const useStyles = makeStyles((theme) => ({
   toolbarSpacer: {
@@ -85,6 +86,14 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
             onChange={(value) => handleUpdateFilterValue({ name: value })}
           />
         </div>
+
+        <FormControl className={classes.formItem} variant="outlined">
+          <InputLabel id="filter-piped">Piped</InputLabel>
+          <PipedSelect
+            value={options.pipedId ?? null}
+            onChange={(value) => handleUpdateFilterValue({ pipedId: value })}
+          />
+        </FormControl>
 
         <FormControl className={classes.formItem} variant="outlined">
           <InputLabel id="filter-kind">Kind</InputLabel>

@@ -833,6 +833,8 @@ func (m *ListApplicationsRequest) validate(all bool) error {
 
 	// no validation rules for Limit
 
+	// no validation rules for PipedId
+
 	// no validation rules for Cursor
 
 	if len(errors) > 0 {
@@ -1052,6 +1054,232 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ListApplicationsResponseValidationError{}
+
+// Validate checks the field values on EnableApplicationRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *EnableApplicationRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on EnableApplicationRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// EnableApplicationRequestMultiError, or nil if none found.
+func (m *EnableApplicationRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *EnableApplicationRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetApplicationId()) < 1 {
+		err := EnableApplicationRequestValidationError{
+			field:  "ApplicationId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return EnableApplicationRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// EnableApplicationRequestMultiError is an error wrapping multiple validation
+// errors returned by EnableApplicationRequest.ValidateAll() if the designated
+// constraints aren't met.
+type EnableApplicationRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m EnableApplicationRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m EnableApplicationRequestMultiError) AllErrors() []error { return m }
+
+// EnableApplicationRequestValidationError is the validation error returned by
+// EnableApplicationRequest.Validate if the designated constraints aren't met.
+type EnableApplicationRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e EnableApplicationRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e EnableApplicationRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e EnableApplicationRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e EnableApplicationRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e EnableApplicationRequestValidationError) ErrorName() string {
+	return "EnableApplicationRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e EnableApplicationRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sEnableApplicationRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = EnableApplicationRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = EnableApplicationRequestValidationError{}
+
+// Validate checks the field values on EnableApplicationResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *EnableApplicationResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on EnableApplicationResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// EnableApplicationResponseMultiError, or nil if none found.
+func (m *EnableApplicationResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *EnableApplicationResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetApplicationId()) < 1 {
+		err := EnableApplicationResponseValidationError{
+			field:  "ApplicationId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return EnableApplicationResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// EnableApplicationResponseMultiError is an error wrapping multiple validation
+// errors returned by EnableApplicationResponse.ValidateAll() if the
+// designated constraints aren't met.
+type EnableApplicationResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m EnableApplicationResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m EnableApplicationResponseMultiError) AllErrors() []error { return m }
+
+// EnableApplicationResponseValidationError is the validation error returned by
+// EnableApplicationResponse.Validate if the designated constraints aren't met.
+type EnableApplicationResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e EnableApplicationResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e EnableApplicationResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e EnableApplicationResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e EnableApplicationResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e EnableApplicationResponseValidationError) ErrorName() string {
+	return "EnableApplicationResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e EnableApplicationResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sEnableApplicationResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = EnableApplicationResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = EnableApplicationResponseValidationError{}
 
 // Validate checks the field values on DisableApplicationRequest with the rules
 // defined in the proto definition for this message. If any rules are

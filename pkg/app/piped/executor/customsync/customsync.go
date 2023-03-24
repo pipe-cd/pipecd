@@ -35,6 +35,7 @@ type deployExecutor struct {
 
 type registerer interface {
 	Register(stage model.Stage, f executor.Factory) error
+	RegisterRollback(kind model.RollbackKind, f executor.Factory) error
 }
 
 // Register registers this executor factory into a given registerer.
@@ -45,6 +46,11 @@ func Register(r registerer) {
 		}
 	}
 	r.Register(model.StageCustomSync, f)
+	r.RegisterRollback(model.RollbackKind_Rollback_CUSTOM_SYNC, func(in executor.Input) executor.Executor {
+		return &rollbackExecutor{
+			Input: in,
+		}
+	})
 }
 
 // Execute exec the user-defined scripts in timeout duration.

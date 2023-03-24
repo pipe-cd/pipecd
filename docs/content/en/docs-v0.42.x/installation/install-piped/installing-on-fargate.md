@@ -61,6 +61,8 @@ description: >
     #     publicKeyData: {BASE64_ENCODED_PUBLIC_KEY}
   ```
 
+See [ConfigurationReference](../../../user-guide/managing-piped/configuration-reference/) for the full configuration.
+
 - Store the above configuration data to AWS to enable using it while creating piped task. Both [AWS SecretManager](https://aws.amazon.com/secrets-manager/) and [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) are available to address this task.
 
   {{< tabpane >}}
