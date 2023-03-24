@@ -115,6 +115,8 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 
 func (e *deployExecutor) executeCommand() model.StageStatus {
 	opts := e.StageConfig.CustomSyncOptions
+	binDir := toolregistry.DefaultRegistry().GetBinDir()
+	pathFromOS := os.Getenv("PATH")
 
 	e.LogPersister.Infof("Runnnig commands...")
 	for _, v := range strings.Split(opts.Run, "\n") {
@@ -123,6 +125,7 @@ func (e *deployExecutor) executeCommand() model.StageStatus {
 		}
 	}
 
+	path := binDir + ":" + pathFromOS
 	envs := make([]string, 0, len(opts.Envs))
 	for key, value := range opts.Envs {
 		envs = append(envs, key+"="+value)
@@ -130,7 +133,7 @@ func (e *deployExecutor) executeCommand() model.StageStatus {
 
 	cmd := exec.Command("/bin/sh", "-c", opts.Run)
 	cmd.Dir = e.appDir
-	cmd.Env = append(os.Environ(), envs...)
+	cmd.Env = append(os.Environ(), append(envs, "PATH="+path)...)
 	cmd.Stdout = e.LogPersister
 	cmd.Stderr = e.LogPersister
 	if err := cmd.Run(); err != nil {
