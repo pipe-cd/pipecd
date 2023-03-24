@@ -19,7 +19,7 @@ Through the web console, you can register a new application in one of the follow
 - Picking from a list of unused apps suggested by Pipeds while scanning Git repositories (Recommended)
 - Manually configuring application information
 
-(If you prefer to use [`pipectl`](../../command-line-tool/#adding-a-new-application) command-line tool, see its usage for the details.)
+(If you prefer to use [`pipectl`](../../command-line-tool/#driftdetection) command-line tool, see its usage for the details.)
 
 ## Picking from a list of unused apps suggested by Pipeds
 

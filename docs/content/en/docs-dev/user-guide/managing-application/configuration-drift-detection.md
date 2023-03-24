@@ -53,3 +53,54 @@ This status means the application is deploying and the configuration drift detec
 This feature is automatically enabled for all applications.
 
 You can change the checking interval as well as [configure the notification](../../managing-piped/configuring-notifications/) for these events in `piped` configuration.
+
+### Enable to ignore drift detection for specific fields
+
+>  Note: This feature is currently supported for only kubernetes application.  
+
+This feature ignores drift detection for the specified fields. In other words, even if the specified fields are different between live state and Git, the application status will not be `Out of Sync`.
+
+To use this feature, set parameters in the application configuration. For more information, see the [configuration reference](../../configuration-reference/#driftdetection) and the following `Syntax` section.
+
+#### Syntax
+There are two kinds of block collection in yaml.
+
+Sequence: This block collection is indicated each entry with a dash and space ("`- `").  
+Mapping: This block collection is indicated each entry with a colon and space("`: `").
+
+Mapping indexes are specified, for example `.foo`.  
+Sequence indexes are specified, for example `.2`.  
+However, the first index doesn't need the `.`.
+
+##### Example
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+        - args:
+            - hi
+            - hello
+          image: gcr.io/pipecd/helloworld:v1.0.0
+          name: helloworld
+```
+
+If you want to ignore the drift detection for the two sceans
+- pod's replicas
+- `helloworld` container's args
+
+you may add the follow statements to `app.pipe.yaml`.
+```yaml
+spec:
+  ...
+  driftDetection:
+    ignoreFields:
+      - spec.replicas
+      - spec.template.spec.containers.0.args
+```
+
