@@ -156,6 +156,14 @@ export enum ApplicationKind {
   CLOUDRUN = 4,
   ECS = 5,
 }
+export enum RollbackKind { 
+  ROLLBACK_KUBERNETES = 0,
+  ROLLBACK_TERRAFORM = 1,
+  ROLLBACK_LAMBDA = 3,
+  ROLLBACK_CLOUDRUN = 4,
+  ROLLBACK_ECS = 5,
+  ROLLBACK_CUSTOM_SYNC = 15,
+}
 export enum ApplicationActiveStatus { 
   ENABLED = 0,
   DISABLED = 1,
