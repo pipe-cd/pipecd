@@ -59,8 +59,8 @@ func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if proj.Rbac == nil {
-		h.handleError(w, r, "Missing RBAC configuration", nil)
+	if proj.UserGroups == nil {
+		h.handleError(w, r, "Missing User Group configuration", nil)
 		return
 	}
 
@@ -83,7 +83,7 @@ func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	user, err := getUser(ctx, sso, proj.Rbac, proj, authCode)
+	user, err := getUser(ctx, sso, proj, authCode)
 	if err != nil {
 		h.handleError(w, r, "Unable to find user", err)
 		return
@@ -137,13 +137,13 @@ func checkState(r *http.Request, key string) error {
 	return nil
 }
 
-func getUser(ctx context.Context, sso *model.ProjectSSOConfig, rbac *model.ProjectRBACConfig, project *model.Project, code string) (*model.User, error) {
+func getUser(ctx context.Context, sso *model.ProjectSSOConfig, project *model.Project, code string) (*model.User, error) {
 	switch sso.Provider {
 	case model.ProjectSSOConfig_GITHUB:
 		if sso.Github == nil {
 			return nil, fmt.Errorf("missing GitHub oauth in the SSO configuration")
 		}
-		cli, err := github.NewOAuthClient(ctx, sso.Github, rbac, project, code)
+		cli, err := github.NewOAuthClient(ctx, sso.Github, project, code)
 		if err != nil {
 			return nil, err
 		}

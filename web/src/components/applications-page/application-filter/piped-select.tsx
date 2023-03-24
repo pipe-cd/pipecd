@@ -1,12 +1,13 @@
 import { makeStyles } from "@material-ui/styles";
 import { Select, MenuItem, IconButton } from "@material-ui/core";
 import ClearIcon from "@material-ui/icons/Clear";
-import { FC, useState } from "react";
+import { FC } from "react";
 import { useAppSelector } from "~/hooks/redux";
 import { selectAllPipeds } from "~/modules/pipeds";
 import clsx from "clsx";
 
 interface Props {
+  value: string | null;
   onChange: (value: string) => void;
 }
 
@@ -23,16 +24,13 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export const PipedSelect: FC<Props> = ({ onChange }) => {
+export const PipedSelect: FC<Props> = ({ value, onChange }) => {
   const classes = useStyles();
 
   const ps = useAppSelector((state) => selectAllPipeds(state));
   const pipeds = ps
     .filter((piped) => !piped.disabled)
     .sort((a, b) => sortComp(a.name, b.name));
-  const [selectedPipedId, setSelectedPipedId] = useState(
-    pipeds.length === 1 ? pipeds[0].id : ""
-  );
 
   return (
     <Select
@@ -40,19 +38,17 @@ export const PipedSelect: FC<Props> = ({ onChange }) => {
       id="filter-piped"
       className={classes.root}
       label="Piped"
-      value={selectedPipedId}
+      value={value}
       onChange={(e) => {
-        setSelectedPipedId(e.target.value as string);
         onChange(e.target.value as string);
       }}
       endAdornment={
         <IconButton
           className={clsx(classes.clearIndicator, {
-            [classes.clearIndicatorDirty]: setSelectedPipedId.length > 0,
+            [classes.clearIndicatorDirty]: value && value.length > 0,
           })}
           size="small"
           onClick={() => {
-            setSelectedPipedId("");
             onChange("");
           }}
         >

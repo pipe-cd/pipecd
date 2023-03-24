@@ -42,6 +42,8 @@ description: >
     syncInterval: 1m
   ```
 
+See [ConfigurationReference](../../../user-guide/managing-piped/configuration-reference/) for the full configuration.
+
 - Start running the `piped`
 
   ``` console

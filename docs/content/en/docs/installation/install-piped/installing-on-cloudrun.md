@@ -62,6 +62,8 @@ description: >
     #     publicKeyData: {BASE64_ENCODED_PUBLIC_KEY}
   ```
 
+See [ConfigurationReference](../../../user-guide/managing-piped/configuration-reference/) for the full configuration.
+
 - Creating a new secret in [SecretManager](https://cloud.google.com/secret-manager/docs/creating-and-accessing-secrets) to store above configuration data securely
 
   ``` console
