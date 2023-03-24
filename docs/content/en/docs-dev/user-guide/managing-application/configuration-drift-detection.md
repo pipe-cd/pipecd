@@ -60,19 +60,9 @@ You can change the checking interval as well as [configure the notification](../
 
 This feature ignores drift detection for the specified fields. In other words, even if the specified fields are different between live state and Git, the application status will not be `Out of Sync`.
 
-To use this feature, set parameters in the application configuration. For more information, see the [configuration reference](../../configuration-reference/#driftdetection) and the following `Syntax` section.
+To use this feature, set parameters in the application configuration. For more information, see the [configuration reference](../../configuration-reference/#driftdetection) and the following `Example` section.
 
-#### Syntax
-There are two kinds of block collection in yaml.
-
-Sequence: This block collection is indicated each entry with a dash and space ("`- `").  
-Mapping: This block collection is indicated each entry with a colon and space("`: `").
-
-Mapping indexes are specified, for example `.foo`.  
-Sequence indexes are specified, for example `.2`.  
-However, the first index doesn't need the `.`.
-
-##### Example
+#### Example
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
