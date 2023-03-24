@@ -37,7 +37,7 @@ spec:
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
 | variantLabel | [KubernetesVariantLabel](#kubernetesvariantlabel) | The label will be configured to variant manifests used to distinguish them. | No |
 | eventWatcher | [][EventWatcher](#eventwatcher) | List of configurations for event watcher. | No |
-| driftDetection | [DriftDetection](#driftdetection) | Additional configuration for drift detection between application’s configuration of live state and application’s configuration on git. | No |
+| driftDetection | [DriftDetection](#driftdetection) | Configuration for drift detection. | No |
 
 ## Terraform application
 
@@ -672,4 +672,4 @@ A wrapper of type `int` to represent percentage data. Basically, you can pass `1
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| ignoreFields | []string |  Application configuration fields to ignore drift detection. | No |
+| ignoreFields | []string | List of fields path in manifests, which its diff should be ignored. | No |

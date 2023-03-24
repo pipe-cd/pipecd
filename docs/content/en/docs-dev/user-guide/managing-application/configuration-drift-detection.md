@@ -54,11 +54,11 @@ This feature is automatically enabled for all applications.
 
 You can change the checking interval as well as [configure the notification](../../managing-piped/configuring-notifications/) for these events in `piped` configuration.
 
-### Enable to ignore drift detection for specific fields
+### Ignore drift detection for specific fields
 
->  Note: This feature is currently supported for only kubernetes application.  
+>  Note: This feature is currently supported for only Kubernetes application.  
 
-This feature ignores drift detection for the specified fields. In other words, even if the specified fields are different between live state and Git, the application status will not be `Out of Sync`.
+You can also ignore drift detection for specified fields in your application manifests. In other words, even if the selected fields have different values between live state and Git, the application status will not be set to `Out of Sync`.
 
 To use this feature, set parameters in the application configuration. For more information, see the [configuration reference](../../configuration-reference/#driftdetection) and the following `Example` section.
 
