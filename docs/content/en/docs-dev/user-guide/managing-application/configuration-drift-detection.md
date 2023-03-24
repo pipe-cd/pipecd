@@ -60,7 +60,6 @@ You can change the checking interval as well as [configure the notification](../
 
 You can also ignore drift detection for specified fields in your application manifests. In other words, even if the selected fields have different values between live state and Git, the application status will not be set to `Out of Sync`.
 
-To use this feature, set parameters in the application configuration. For more information, see the [configuration reference](../../configuration-reference/#driftdetection) and the following `Example` section.
 
 For example, suppose you have the application's manifest as below 
 ```yaml
