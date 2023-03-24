@@ -169,20 +169,6 @@ func (s GenericApplicationSpec) GetStage(index int32) (PipelineStage, bool) {
 	return s.Pipeline.Stages[index], true
 }
 
-func (s GenericApplicationSpec) GetStagesFromName(name model.Stage) ([]PipelineStage, bool) {
-	if s.Pipeline == nil {
-		return nil, false
-	}
-	stages := make([]PipelineStage, 0)
-	for _, stage := range s.Pipeline.Stages {
-		if stage.Name == name {
-			stages = append(stages, stage)
-		}
-	}
-
-	return stages, true
-}
-
 // HasStage checks if the given stage is included in the pipeline.
 func (s GenericApplicationSpec) HasStage(stage model.Stage) bool {
 	if s.Pipeline == nil {
