@@ -56,7 +56,7 @@ You can change the checking interval as well as [configure the notification](../
 
 ### Ignore drift detection for specific fields
 
->  Note: This feature is currently supported for only kubernetes application.  
+>  Note: This feature is currently supported for only Kubernetes application.  
 
 This feature ignores drift detection for the specified fields. In other words, even if the specified fields are different between live state and Git, the application status will not be `Out of Sync`.
 
