@@ -27,8 +27,9 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pkg/errors"
+
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 // Registry provides functions to get path to the needed tools.
