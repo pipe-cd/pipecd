@@ -61,14 +61,19 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 
 	e.LogPersister.Infof("Prepare external tools...")
 	for _, config := range e.StageConfig.CustomSyncOptions.ExternalTools {
-		e.LogPersister.Infof(fmt.Sprintf("Check %s %s", config.Command, config.Version))
-		installed, err := toolregistry.DefaultRegistry().ExternalTool(ctx, e.appDir, config)
+		e.LogPersister.Infof(fmt.Sprintf("Check %s %s", config.Package, config.Version))
+		addedPlugin, installed, err := toolregistry.DefaultRegistry().ExternalTool(ctx, e.appDir, config)
+		if addedPlugin {
+			e.LogPersister.Infof(fmt.Sprintf("plugin %s has just added", config.Package))
+		}
 		if installed {
-			e.LogPersister.Infof(fmt.Sprintf("just installed %s %s", config.Command, config.Version))
+			e.LogPersister.Infof(fmt.Sprintf(" %s %s has just been installed", config.Package, config.Version))
 		}
 		if err != nil {
-			e.LogPersister.Errorf(fmt.Sprintf("failed to check %s %s (%v)", config.Command, config.Version, err))
+			e.LogPersister.Errorf(fmt.Sprintf("unable to set %s %s (%v)", config.Package, config.Version, err))
+			continue
 		}
+		e.LogPersister.Infof(fmt.Sprintf(" %s %s has just been locally set to application directory", config.Package, config.Version))
 	}
 
 	timeout := e.StageConfig.CustomSyncOptions.Timeout.Duration()

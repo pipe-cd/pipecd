@@ -169,18 +169,22 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		return err
 	}
 
-	// Install External binaries
+	// Install External tools
 	{
 		group.Go(func() error {
 			for _, config := range cfg.ExternalTools {
-				installed, err := toolregistry.DefaultRegistry().ExternalTool(ctx, "", config)
-				if err != nil {
-					input.Logger.Error(fmt.Sprintf("Unable to find required %q %q (%v)", config.Command, config.Version, err), zap.Error(err))
-					return err
+				addedPlugin, installed, err := toolregistry.DefaultRegistry().ExternalTool(ctx, "", config)
+				if addedPlugin {
+					input.Logger.Info(fmt.Sprintf("plugin %q has just been installed", config.Package))
 				}
 				if installed {
-					input.Logger.Info(fmt.Sprintf("%q %q has just been installed to %q because of no pre-installed binary for that version", config.Command, config.Version, p.toolsDir))
+					input.Logger.Info(fmt.Sprintf("%q %q has just been installed", config.Package, config.Version))
 				}
+				if err != nil {
+					input.Logger.Error(fmt.Sprintf("Unable to set %q %q (%v)", config.Package, config.Version, err), zap.Error(err))
+					continue
+				}
+				input.Logger.Info(fmt.Sprintf("%q %q has just been globally set", config.Package, config.Version))
 			}
 			return nil
 		})

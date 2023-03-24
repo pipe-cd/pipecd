@@ -37,7 +37,7 @@ type Registry interface {
 	Kustomize(ctx context.Context, version string) (string, bool, error)
 	Helm(ctx context.Context, version string) (string, bool, error)
 	Terraform(ctx context.Context, version string) (string, bool, error)
-	ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (bool, error)
+	ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (bool, bool, error)
 }
 
 var defaultRegistry *registry
@@ -223,24 +223,46 @@ func (r *registry) Terraform(ctx context.Context, version string) (string, bool,
 	return path, true, nil
 }
 
-func (r *registry) ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (bool, error) {
+func (r *registry) ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (addedPlugin bool, installed bool, err error) {
 	name := config.Package + config.Version
+	installed = false
+	addedPlugin = false
 
-	if err := findAsdf(ctx); err != nil {
-		return false, err
-	}
-
-	installed, err := findTool(ctx, config)
+	asdfFound, err := findAsdf(ctx)
 	if err != nil {
-		return false, err
+		return
 	}
-	if !installed {
-		_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
-			return nil, r.installExternalTool(ctx, config)
+	if !asdfFound {
+		err = errors.Errorf("unable to find asdf")
+		return
+	}
+
+	pluginFound, err := findPlugin(ctx, config)
+	if err != nil {
+		return
+	}
+	if !pluginFound {
+		_, err, _ = r.installGroup.Do(name, func() (interface{}, error) {
+			return nil, r.addExternalToolPlugin(ctx, config)
 		})
 		if err != nil {
-			return true, err
+			return
 		}
+		addedPlugin = true
+	}
+
+	versionFound, err := findVersion(ctx, config)
+	if err != nil {
+		return
+	}
+	if !versionFound {
+		_, err, _ = r.installGroup.Do(name, func() (interface{}, error) {
+			return nil, r.installExternalToolVersion(ctx, config)
+		})
+		if err != nil {
+			return
+		}
+		installed = true
 	}
 
 	var script string
@@ -250,41 +272,54 @@ func (r *registry) ExternalTool(ctx context.Context, appDir string, config confi
 		script = fmt.Sprintf("cd %s\nasdf local %s %s", appDir, config.Package, config.Version)
 	}
 	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
-	if out, err := cmd.CombinedOutput(); err != nil {
+	out, err := cmd.CombinedOutput()
+	if err != nil {
 		r.logger.Error("failed to set %s version %s",
 			zap.String("package", config.Package),
 			zap.String("version", config.Version),
 			zap.String("out", string(out)),
 			zap.Error(err),
 		)
+		return
 	}
-	if installed {
-		return false, nil
-	} else {
-		return true, nil
-	}
+	return
 }
 
-func findAsdf(ctx context.Context) error {
+func findAsdf(ctx context.Context) (bool, error) {
 	script := "which asdf"
 	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return err
+		if out == nil {
+			return false, nil
+		}
+		return true, err
 	}
-	if out == nil {
-		return errors.Errorf("failed to find asdf")
-	}
-	return nil
+	return true, nil
 }
 
-func findTool(ctx context.Context, config config.ExternalTool) (bool, error) {
-	script := fmt.Sprintf("asdf list %s %s", config.Package, config.Version)
+func findPlugin(ctx context.Context, config config.ExternalTool) (bool, error) {
+	script := fmt.Sprintf("asdf list %s", config.Package)
 	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
 	if err != nil {
+		if string(out) == fmt.Sprintf("No such plugin: %s\n", config.Package) {
+			return false, nil
+		}
 		return false, err
 	}
-	fmt.Println(out)
+	return true, nil
+}
+
+func findVersion(ctx context.Context, config config.ExternalTool) (bool, error) {
+	script := fmt.Sprintf("asdf list %s %s", config.Package, config.Version)
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		if string(out) == fmt.Sprintf("No compatible versions installed (%s %s)\n", config.Package, config.Version) {
+			return false, nil
+		}
+		return false, err
+	}
 	return true, nil
 }

@@ -231,9 +231,32 @@ func (r *registry) installTerraform(ctx context.Context, version string) error {
 	return nil
 }
 
-func (r *registry) installExternalTool(ctx context.Context, config config.ExternalTool) error {
+func (r *registry) addExternalToolPlugin(ctx context.Context, config config.ExternalTool) error {
+	script := fmt.Sprintf("asdf plugin add %s", config.Package)
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	defer cancel()
+	cmd := exec.CommandContext(ctxWithTimeout, "/bin/sh", "-c", script)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		r.logger.Error("failed to add plugin",
+			zap.String("package", config.Package),
+			zap.String("out", string(out)),
+			zap.Error(err),
+		)
+		if errors.Is(ctxWithTimeout.Err(), context.DeadlineExceeded) {
+			return errors.Errorf("failed to install %s %s (%v) because of timeout", config.Package, config.Version, err)
+		}
+		return errors.Errorf("failed to install %s %s (%v)", config.Package, config.Version, err)
+	}
+
+	r.logger.Info("just add plugin",
+		zap.String("package", config.Package),
+	)
+	return nil
+}
+
+func (r *registry) installExternalToolVersion(ctx context.Context, config config.ExternalTool) error {
 	script := fmt.Sprintf("asdf install %s %s", config.Package, config.Version)
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, 30*time.Second)
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
 	cmd := exec.CommandContext(ctxWithTimeout, "/bin/sh", "-c", script)
 	if out, err := cmd.CombinedOutput(); err != nil {
