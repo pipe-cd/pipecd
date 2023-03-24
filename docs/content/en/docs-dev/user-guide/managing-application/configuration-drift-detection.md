@@ -62,7 +62,7 @@ You can also ignore drift detection for specified fields in your application man
 
 To use this feature, set parameters in the application configuration. For more information, see the [configuration reference](../../configuration-reference/#driftdetection) and the following `Example` section.
 
-#### Example
+For example, suppose you have the application's manifest as below 
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
