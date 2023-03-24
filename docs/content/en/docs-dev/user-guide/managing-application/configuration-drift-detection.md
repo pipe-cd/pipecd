@@ -54,7 +54,7 @@ This feature is automatically enabled for all applications.
 
 You can change the checking interval as well as [configure the notification](../../managing-piped/configuring-notifications/) for these events in `piped` configuration.
 
-### Enable to ignore drift detection for specific fields
+### Ignore drift detection for specific fields
 
 >  Note: This feature is currently supported for only kubernetes application.  
 
