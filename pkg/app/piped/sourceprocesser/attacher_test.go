@@ -21,9 +21,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 func TestAttachData(t *testing.T) {
