@@ -246,10 +246,10 @@ func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Repo
 			return provider.ServiceManifest{}, fmt.Errorf("unsupport application kind %s", cfg.Kind)
 		}
 
-		if d.secretDecrypter != nil && gds.Encryption != nil {
-			// We have to copy repository into another directory because
-			// decrypting the sealed secrets might change the git repository.
-			dir, err := os.MkdirTemp("", "detector-git-decrypt")
+		// We have to copy repository into another directory because
+		// decrypting the sealed secrets or attaching files might change the git repository.
+		if gds.Attachment != nil || (d.secretDecrypter != nil && gds.Encryption != nil) {
+			dir, err := os.MkdirTemp("", "detector-git-processing")
 			if err != nil {
 				return provider.ServiceManifest{}, fmt.Errorf("failed to prepare a temporary directory for git repository (%w)", err)
 			}
@@ -261,9 +261,18 @@ func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Repo
 			}
 			repoDir := repo.GetPath()
 			appDir = filepath.Join(repoDir, app.GitPath.Path)
+		}
 
+		// Decrypting secrets to manifests.
+		if d.secretDecrypter != nil && gds.Encryption != nil {
 			if err := sourceprocesser.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
 				return provider.ServiceManifest{}, fmt.Errorf("failed to decrypt secrets (%w)", err)
+			}
+		}
+		// Then attaching configurated files to manifests.
+		if gds.Attachment != nil {
+			if err := sourceprocesser.AttachData(appDir, *gds.Attachment); err != nil {
+				return provider.ServiceManifest{}, fmt.Errorf("failed to attach files (%w)", err)
 			}
 		}
 
