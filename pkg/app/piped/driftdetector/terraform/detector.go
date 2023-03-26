@@ -27,7 +27,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/terraform"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/terraform"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/sourcedecrypter"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/sourceprocesser"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -206,7 +206,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		repoDir = repo.GetPath()
 		appDir = filepath.Join(repoDir, app.GitPath.Path)
 
-		if err := sourcedecrypter.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
+		if err := sourceprocesser.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
 			return fmt.Errorf("failed to decrypt secrets (%w)", err)
 		}
 	}

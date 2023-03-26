@@ -26,7 +26,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/cloudrun"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/cloudrun"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/sourcedecrypter"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/sourceprocesser"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/diff"
@@ -262,7 +262,7 @@ func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Repo
 			repoDir := repo.GetPath()
 			appDir = filepath.Join(repoDir, app.GitPath.Path)
 
-			if err := sourcedecrypter.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
+			if err := sourceprocesser.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
 				return provider.ServiceManifest{}, fmt.Errorf("failed to decrypt secrets (%w)", err)
 			}
 		}
