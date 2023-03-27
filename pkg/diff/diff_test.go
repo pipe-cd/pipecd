@@ -56,7 +56,11 @@ func TestDiff(t *testing.T) {
 			name:     "diff by ignoring specified field",
 			yamlFile: "testdata/ignore_specified_field.yaml",
 			options: []Option{
-				WithIgnoredPaths([]string{"spec.replicas", "spec.template.spec.containers.0.args.1", "spec.template.spec.strategy.rollingUpdate.maxSurge", "spec.template.spec.containers.3.livenessProbe.initialDelaySeconds"}),
+				WithIgnoreConfig(
+					map[string][]string{
+						"key": []string{"spec.replicas", "spec.template.spec.containers.0.args.1", "spec.template.spec.strategy.rollingUpdate.maxSurge", "spec.template.spec.containers.3.livenessProbe.initialDelaySeconds"},
+					},
+				),
 			},
 			diffNum: 6,
 			diffString: `  spec:
@@ -158,7 +162,7 @@ func TestDiff(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, 2, len(objs))
 
-			result, err := DiffUnstructureds(objs[0], objs[1], tc.options...)
+			result, err := DiffUnstructureds(objs[0], objs[1], "key", tc.options...)
 			require.NoError(t, err)
 			assert.Equal(t, tc.diffNum, result.NumNodes())
 

@@ -64,7 +64,6 @@ func (b *builder) kubernetesDiff(
 		oldManifests,
 		newManifests,
 		b.logger,
-		map[string][]string{},
 		diff.WithEquateEmpty(),
 		diff.WithCompareNumberAndNumericString(),
 	)

@@ -39,7 +39,8 @@ func (d *DiffResult) NoChange() bool {
 }
 
 func Diff(old, new ServiceManifest, opts ...diff.Option) (*DiffResult, error) {
-	d, err := diff.DiffUnstructureds(*old.u, *new.u, opts...)
+	key := old.Name
+	d, err := diff.DiffUnstructureds(*old.u, *new.u, key, opts...)
 	if err != nil {
 		return nil, err
 	}

@@ -210,10 +210,10 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		liveManifests,
 		headManifests,
 		d.logger,
-		ignoredPathsOf,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
+		diff.WithIgnoreConfig(ignoredPathsOf),
 	)
 	if err != nil {
 		return err
