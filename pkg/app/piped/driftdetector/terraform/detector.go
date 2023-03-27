@@ -190,9 +190,14 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return fmt.Errorf("unsupport application kind %s", cfg.Kind)
 	}
 
+	var (
+		encryptionUsed = d.secretDecrypter != nil && gds.Encryption != nil
+		attachmentUsed = gds.Attachment != nil
+	)
+
 	// We have to copy repository into another directory because
 	// decrypting the sealed secrets or attaching files might change the git repository.
-	if gds.Attachment != nil || (d.secretDecrypter != nil && gds.Encryption != nil) {
+	if attachmentUsed || encryptionUsed {
 		dir, err := os.MkdirTemp("", "detector-git-processing")
 		if err != nil {
 			return fmt.Errorf("failed to prepare a temporary directory for git repository (%w)", err)
@@ -208,13 +213,13 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	}
 
 	// Decrypting secrets to manifests.
-	if d.secretDecrypter != nil && gds.Encryption != nil {
+	if encryptionUsed {
 		if err := sourceprocesser.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
 			return fmt.Errorf("failed to decrypt secrets (%w)", err)
 		}
 	}
 	// Then attaching configurated files to manifests.
-	if gds.Attachment != nil {
+	if attachmentUsed {
 		if err := sourceprocesser.AttachData(appDir, *gds.Attachment); err != nil {
 			return fmt.Errorf("failed to attach files (%w)", err)
 		}

@@ -535,7 +535,7 @@ func (e *SecretEncryption) Validate() error {
 }
 
 type Attachment struct {
-	// List of files which contain embedding source data.
+	// Map of name to refer with the file path which contain embedding source data.
 	Sources map[string]string `json:"sources"`
 	// List of files to be embedded before using.
 	Targets []string `json:"targets"`
