@@ -193,19 +193,27 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return err
 	}
 
-	ignoreFields := make([]string, 0)
+	ignoredPathsOf := make(map[string][]string, 0)
 	if ddCfg != nil {
-		ignoreFields = ddCfg.IgnoreFields
+		// ResourceKey#ignroePath
+		for _, ignoreField := range ddCfg.IgnoreFields {
+			splited := strings.Split(ignoreField, "#")
+			if len(splited) != 2 {
+				return fmt.Errorf("It should input in the form of 'apiVersion:kind:namespace:name#fieldPath'")
+			}
+			key, ignoredPath := splited[0], splited[1]
+			ignoredPathsOf[key] = append(ignoredPathsOf[key], ignoredPath)
+		}
 	}
 
 	result, err := provider.DiffList(
 		liveManifests,
 		headManifests,
 		d.logger,
+		ignoredPathsOf,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
-		diff.WithIgnoredPaths(ignoreFields),
 	)
 	if err != nil {
 		return err

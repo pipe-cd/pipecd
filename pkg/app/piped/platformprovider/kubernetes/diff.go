@@ -68,7 +68,7 @@ func Diff(old, new Manifest, logger *zap.Logger, opts ...diff.Option) (*diff.Res
 	return diff.DiffUnstructureds(*old.u, *normalized, opts...)
 }
 
-func DiffList(olds, news []Manifest, logger *zap.Logger, opts ...diff.Option) (*DiffListResult, error) {
+func DiffList(olds, news []Manifest, logger *zap.Logger, ignoredPathsOf map[string][]string, opts ...diff.Option) (*DiffListResult, error) {
 	adds, deletes, newChanges, oldChanges := groupManifests(olds, news)
 	cr := &DiffListResult{
 		Adds:    adds,
@@ -77,6 +77,9 @@ func DiffList(olds, news []Manifest, logger *zap.Logger, opts ...diff.Option) (*
 	}
 
 	for i := 0; i < len(newChanges); i++ {
+		key := oldChanges[i].Key
+		opts = append(opts, diff.WithIgnoredPaths(ignoredPathsOf[key.String()]))
+
 		result, err := Diff(oldChanges[i], newChanges[i], logger, opts...)
 		if err != nil {
 			return nil, err
