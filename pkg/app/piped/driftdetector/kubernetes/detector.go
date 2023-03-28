@@ -199,7 +199,8 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 			// ignoreField is 'apiVersion:kind:namespace:name#fieldPath'
 			splited := strings.Split(ignoreField, "#")
 			if len(splited) != 2 {
-				return fmt.Errorf("It should be entered in the form of 'apiVersion:kind:namespace:name#fieldPath'")
+				d.logger.Error("It should be entered in the form of 'apiVersion:kind:namespace:name#fieldPath'")
+				continue
 			}
 			key, ignoredPath := splited[0], splited[1]
 			ignoreConfig[key] = append(ignoreConfig[key], ignoredPath)
