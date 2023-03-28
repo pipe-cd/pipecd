@@ -39,7 +39,9 @@ func (d *DiffResult) NoChange() bool {
 }
 
 func Diff(old, new ServiceManifest, opts ...diff.Option) (*DiffResult, error) {
-	d, err := diff.DiffUnstructureds(*old.u, *new.u, opts...)
+	// NOTE: This key may change when we support to ignore Cloud Run's drift detection.
+	key := old.Name
+	d, err := diff.DiffUnstructureds(*old.u, *new.u, key, opts...)
 	if err != nil {
 		return nil, err
 	}

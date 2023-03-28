@@ -645,6 +645,7 @@ func (c *DeploymentChainTriggerCondition) Validate() error {
 }
 
 type DriftDetection struct {
+	// IgnoreFields are a list of 'apiVersion:kind:namespace:name#fieldPath'
 	IgnoreFields []string `json:"ignoreFields"`
 }
 
