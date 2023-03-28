@@ -157,6 +157,12 @@ func (s *GenericApplicationSpec) Validate() error {
 		}
 	}
 
+	if dd := s.DriftDetection; dd != nil {
+		if err := dd.Validate(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -650,8 +656,8 @@ type DriftDetection struct {
 	IgnoreFields []string `json:"ignoreFields"`
 }
 
-func (d *DriftDetection) Validate() error {
-	for _, ignoreField := range d.IgnoreFields {
+func (dd *DriftDetection) Validate() error {
+	for _, ignoreField := range dd.IgnoreFields {
 		splited := strings.Split(ignoreField, "#")
 		if len(splited) != 2 {
 			return fmt.Errorf("It should be entered in the form of 'apiVersion:kind:namespace:name#fieldPath'")
