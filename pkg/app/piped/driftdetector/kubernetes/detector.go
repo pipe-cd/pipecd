@@ -193,7 +193,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return err
 	}
 
-	ignoredPathsOf := make(map[string][]string, 0)
+	ignoreConfig := make(map[string][]string, 0)
 	if ddCfg != nil {
 		for _, ignoreField := range ddCfg.IgnoreFields {
 			// ignoreField is 'apiVersion:kind:namespace:name#fieldPath'
@@ -202,7 +202,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 				return fmt.Errorf("It should be entered in the form of 'apiVersion:kind:namespace:name#fieldPath'")
 			}
 			key, ignoredPath := splited[0], splited[1]
-			ignoredPathsOf[key] = append(ignoredPathsOf[key], ignoredPath)
+			ignoreConfig[key] = append(ignoreConfig[key], ignoredPath)
 		}
 	}
 
@@ -213,7 +213,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
-		diff.WithIgnoreConfig(ignoredPathsOf),
+		diff.WithIgnoreConfig(ignoreConfig),
 	)
 	if err != nil {
 		return err
