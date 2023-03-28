@@ -59,7 +59,7 @@ func WithCompareNumberAndNumericString() Option {
 	}
 }
 
-// WithIgnoredPaths configures ignored fields.
+// WithIgnoreConfig configures ignored fields.
 func WithIgnoreConfig(config map[string][]string) Option {
 	return func(d *differ) {
 		d.ignoreConfig = config
