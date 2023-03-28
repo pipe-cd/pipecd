@@ -60,8 +60,8 @@ You can change the checking interval as well as [configure the notification](../
 
 You can also ignore drift detection for specified fields in your application manifests. In other words, even if the selected fields have different values between live state and Git, the application status will not be set to `Out of Sync`.
 
-
 For example, suppose you have the application's manifest as below 
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -84,13 +84,17 @@ If you want to ignore the drift detection for the two sceans
 - `helloworld` container's args
 
 Add the following statements to `app.pipecd.yaml` to ignore diff on those fields.
+
 ```yaml
 spec:
+  name: simple
   ...
   driftDetection:
     ignoreFields:
-      - spec.replicas
-      - spec.template.spec.containers.0.args
+      - apps/v1:Deployment:default:simple#spec.replicas
+      - apps/v1:Deployment:default:simple#spec.template.spec.containers.0.args
 ```
-For more information, see the [configuration reference](../../configuration-reference/#driftdetection).
 
+Note: The `ignoreFields` is in format `apiVersion:kind:namespace:name#yamlFieldPath`
+
+For more information, see the [configuration reference](../../configuration-reference/#driftdetection).
