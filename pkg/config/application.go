@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -647,6 +648,16 @@ func (c *DeploymentChainTriggerCondition) Validate() error {
 type DriftDetection struct {
 	// IgnoreFields are a list of 'apiVersion:kind:namespace:name#fieldPath'
 	IgnoreFields []string `json:"ignoreFields"`
+}
+
+func (d *DriftDetection) Validate() error {
+	for _, ignoreField := range d.IgnoreFields {
+		splited := strings.Split(ignoreField, "#")
+		if len(splited) != 2 {
+			return fmt.Errorf("It should be entered in the form of 'apiVersion:kind:namespace:name#fieldPath'")
+		}
+	}
+	return nil
 }
 
 func LoadApplication(repoPath, configRelPath string, appKind model.ApplicationKind) (*GenericApplicationSpec, error) {
