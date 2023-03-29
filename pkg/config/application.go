@@ -407,7 +407,7 @@ type CustomSyncOptions struct {
 	Timeout       Duration          `json:"timeout" default:"6h"`
 	Envs          map[string]string `json:"envs"`
 	Run           string            `json:"run"`
-	ExternalTools []ExternalTool    `json:"externalTools"`
+	ExternalTools []ExternalTool    `json:"externalTools,omitempty"`
 }
 
 func (c *CustomSyncOptions) Validate() error {
