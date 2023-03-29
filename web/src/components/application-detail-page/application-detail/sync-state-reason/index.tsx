@@ -70,7 +70,7 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
   const classes = useStyles();
   const [showReason, setShowReason] = useState(false);
 
-  const msgHeader = "Failed to load aplication config: "
+  const msgHeader = "Failed to load aplication config: ";
   const MAX_DISPLAY_LENGTH = 70;
   if (detail.length < MAX_DISPLAY_LENGTH) {
     return (
