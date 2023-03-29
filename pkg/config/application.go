@@ -411,14 +411,32 @@ func (w *WaitApprovalStageOptions) Validate() error {
 }
 
 type CustomSyncOptions struct {
-	Timeout Duration          `json:"timeout" default:"6h"`
-	Envs    map[string]string `json:"envs"`
-	Run     string            `json:"run"`
+	Timeout       Duration          `json:"timeout" default:"6h"`
+	Envs          map[string]string `json:"envs"`
+	Run           string            `json:"run"`
+	ExternalTools []ExternalTool    `json:"externalTools,omitempty"`
 }
 
 func (c *CustomSyncOptions) Validate() error {
 	if c.Run == "" {
 		return fmt.Errorf("the CUSTOM_SYNC stage requires run field")
+	}
+	for _, externalTool := range c.ExternalTools {
+		if err := externalTool.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+type ExternalTool struct {
+	Package string `json:"package"`
+	Version string `json:"version" default:"latest"`
+}
+
+func (c *ExternalTool) Validate() error {
+	if c.Package == "" {
+		return fmt.Errorf("the externalTool requires package field")
 	}
 	return nil
 }
