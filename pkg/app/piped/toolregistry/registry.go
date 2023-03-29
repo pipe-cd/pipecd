@@ -27,8 +27,6 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
 
-	"github.com/pkg/errors"
-
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
@@ -38,7 +36,7 @@ type Registry interface {
 	Kustomize(ctx context.Context, version string) (string, bool, error)
 	Helm(ctx context.Context, version string) (string, bool, error)
 	Terraform(ctx context.Context, version string) (string, bool, error)
-	ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (bool, bool, error)
+	ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (bool, bool, bool, error)
 }
 
 var defaultRegistry *registry
@@ -224,18 +222,25 @@ func (r *registry) Terraform(ctx context.Context, version string) (string, bool,
 	return path, true, nil
 }
 
-func (r *registry) ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (addedPlugin bool, installed bool, err error) {
+func (r *registry) ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (installedAsdf, addedPlugin, installedVersion bool, err error) {
 	name := config.Package + config.Version
-	installed = false
+
+	installedAsdf = false
 	addedPlugin = false
+	installedVersion = false
 
 	asdfFound, err := findAsdf(ctx)
 	if err != nil {
 		return
 	}
 	if !asdfFound {
-		err = errors.Errorf("unable to find asdf")
-		return
+		_, err, _ = r.installGroup.Do(name, func() (interface{}, error) {
+			return nil, r.installAsdf(ctx)
+		})
+		if err != nil {
+			return
+		}
+		installedAsdf = true
 	}
 
 	pluginFound, err := findPlugin(ctx, config)
@@ -263,7 +268,7 @@ func (r *registry) ExternalTool(ctx context.Context, appDir string, config confi
 		if err != nil {
 			return
 		}
-		installed = true
+		installedVersion = true
 	}
 	var script string
 	if appDir == "" {

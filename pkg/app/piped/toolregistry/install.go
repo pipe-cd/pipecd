@@ -34,6 +34,7 @@ const (
 	defaultKustomizeVersion = "3.8.1"
 	defaultHelmVersion      = "3.8.2"
 	defaultTerraformVersion = "0.13.0"
+	defaultAsdfVersion      = "0.11.3"
 )
 
 var (
@@ -41,6 +42,12 @@ var (
 	kustomizeInstallScriptTmpl = template.Must(template.New("kustomize").Parse(kustomizeInstallScript))
 	helmInstallScriptTmpl      = template.Must(template.New("helm").Parse(helmInstallScript))
 	terraformInstallScriptTmpl = template.Must(template.New("terraform").Parse(terraformInstallScript))
+	// asdfInstallScriptBashTmpl    = template.Must(template.New("asdf-bash").Parse(asdfInstallScriptBash))
+	// asdfInstallScriptFishTmpl    = template.Must(template.New("asdf-fish").Parse(asdfInstallScriptFish))
+	// asdfInstallScriptElvishTmpl  = template.Must(template.New("asdf-elvish").Parse(asdfInstallScriptElvish))
+	// asdfInstallScriptZshTmpl     = template.Must(template.New("asdf-zsh").Parse(asdfInstallScriptZsh))
+	// asdfInstallScriptNushellTmpl = template.Must(template.New("asdf-nushell").Parse(asdfInstallScriptNushell))
+	asdfInstallScriptPosixTmpl = template.Must(template.New("asdf-posix").Parse(asdfInstallScriptPosix))
 )
 
 func (r *registry) installKubectl(ctx context.Context, version string) error {
@@ -276,5 +283,54 @@ func (r *registry) installExternalToolVersion(ctx context.Context, config config
 		zap.String("package", config.Package),
 		zap.String("version", config.Version),
 	)
+	return nil
+}
+
+func (r *registry) installAsdf(ctx context.Context) error {
+	workingDir, err := os.MkdirTemp("", "asdf-install")
+	if err != nil {
+		return err
+	}
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("failed to detect the current user's home directory: %w", err)
+	}
+	version := defaultAsdfVersion
+	// shell := os.Getenv("SHELL")
+	// if shell == "" {
+	// 	return fmt.Errorf("failed to detect the current shell")
+	// }
+	defer os.RemoveAll(workingDir)
+
+	var (
+		buf  bytes.Buffer
+		data = map[string]interface{}{
+			"HomeDir": homeDir,
+			"Version": version,
+		}
+	)
+	if err := asdfInstallScriptPosixTmpl.Execute(&buf, data); err != nil {
+		r.logger.Error("failed to render asdf install script",
+			zap.String("version", version),
+			zap.Error(err),
+		)
+		return fmt.Errorf("failed to install asdf %s (%w)", version, err)
+	}
+
+	var (
+		script = buf.String()
+		cmd    = exec.CommandContext(ctx, "/bin/sh", "-c", script)
+	)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		r.logger.Error("failed to install asdf",
+			zap.String("version", version),
+			zap.String("script", script),
+			zap.String("out", string(out)),
+			zap.Error(err),
+		)
+		return fmt.Errorf("failed to install asdf %s, %s (%w)", version, string(out), err)
+	}
+
+	r.logger.Info("just installed asdf", zap.String("version", version))
 	return nil
 }
