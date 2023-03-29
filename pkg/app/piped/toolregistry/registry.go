@@ -38,7 +38,6 @@ type Registry interface {
 	Kustomize(ctx context.Context, version string) (string, bool, error)
 	Helm(ctx context.Context, version string) (string, bool, error)
 	Terraform(ctx context.Context, version string) (string, bool, error)
-	GetBinDir() string
 	ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (bool, bool, error)
 }
 
@@ -223,10 +222,6 @@ func (r *registry) Terraform(ctx context.Context, version string) (string, bool,
 	r.mu.Unlock()
 
 	return path, true, nil
-}
-
-func (r *registry) GetBinDir() string {
-	return r.binDir
 }
 
 func (r *registry) ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (addedPlugin bool, installed bool, err error) {
