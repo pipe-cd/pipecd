@@ -75,7 +75,7 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
     return (
       <>
         <div className={classes.summary}>
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" color="error">
             {detail}
           </Typography>
         </div>
@@ -88,11 +88,11 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
       <div className={classes.summary}>
         <br>"Failed to load application config:"</br>
         {showReason ? (
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body1" color="error">
             {detail}
           </Typography>
         ) : (
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" color="error">
             {detail.slice(0, MAX_DISPLAY_LENGTH) + "..."}
           </Typography>
         )}
