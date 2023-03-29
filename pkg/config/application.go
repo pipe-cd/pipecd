@@ -132,6 +132,11 @@ func (s *GenericApplicationSpec) Validate() error {
 				if err := stage.CustomSyncOptions.Validate(); err != nil {
 					return err
 				}
+				for _, externalTool := range stage.CustomSyncOptions.ExternalTools {
+					if err := externalTool.Validate(); err != nil {
+						return err
+					}
+				}
 			}
 		}
 	}
@@ -419,7 +424,14 @@ func (c *CustomSyncOptions) Validate() error {
 
 type ExternalTool struct {
 	Package string `json:"package"`
-	Version string `json:"version"`
+	Version string `json:"version" default:"latest"`
+}
+
+func (c *ExternalTool) Validate() error {
+	if c.Package == "" {
+		return fmt.Errorf("the externalTool requires package field")
+	}
+	return nil
 }
 
 // AnalysisStageOptions contains all configurable values for a K8S_ANALYSIS stage.

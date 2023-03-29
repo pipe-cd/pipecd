@@ -1,0 +1,16 @@
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaApp
+spec:
+  pipeline:
+    stages:
+      - name: CUSTOM_SYNC
+        desc: "deploy by sam"
+        with:
+          timeout: 6h
+          envs: 
+            AWS_PROFILE: default
+          run: |
+            sam build
+            sam deploy -g --profile $AWS_PROFILE
+          externalTools: 
+            - package: aws-sam-cli

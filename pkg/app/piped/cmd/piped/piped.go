@@ -172,8 +172,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Install External tools
 	{
 		group.Go(func() error {
-			fmt.Println("hoge")
-			fmt.Println(cfg.ExternalTools)
 			for _, config := range cfg.ExternalTools {
 				addedPlugin, installed, err := toolregistry.DefaultRegistry().ExternalTool(ctx, "", config)
 				if addedPlugin {
