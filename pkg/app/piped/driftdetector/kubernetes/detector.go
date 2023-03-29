@@ -188,13 +188,29 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	liveManifests = filterIgnoringManifests(liveManifests)
 	d.logger.Debug(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
 
+	ddCfg, err := d.getDriftDetectionConfig(repo.GetPath(), app)
+	if err != nil {
+		return err
+	}
+
+	ignoreConfig := make(map[string][]string, 0)
+	if ddCfg != nil {
+		for _, ignoreField := range ddCfg.IgnoreFields {
+			// ignoreField is 'apiVersion:kind:namespace:name#fieldPath'
+			splited := strings.Split(ignoreField, "#")
+			key, ignoredPath := splited[0], splited[1]
+			ignoreConfig[key] = append(ignoreConfig[key], ignoredPath)
+		}
+	}
+
 	result, err := provider.DiffList(
-		headManifests,
 		liveManifests,
+		headManifests,
 		d.logger,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
+		diff.WithIgnoreConfig(ignoreConfig),
 	)
 	if err != nil {
 		return err
@@ -350,7 +366,7 @@ func makeSyncState(r *provider.DiffListResult, commit string) model.ApplicationS
 
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit))
-	b.WriteString("--- Expected\n+++ Actual\n\n")
+	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Git)\n\n")
 
 	details := r.Render(provider.DiffRenderOptions{
 		MaskSecret:          true,
@@ -369,4 +385,17 @@ func makeSyncState(r *provider.DiffListResult, commit string) model.ApplicationS
 		Reason:      b.String(),
 		Timestamp:   time.Now().Unix(),
 	}
+}
+
+func (d *detector) getDriftDetectionConfig(repoDir string, app *model.Application) (*config.DriftDetection, error) {
+	cfg, err := d.loadApplicationConfiguration(repoDir, app)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load application configuration: %w", err)
+	}
+	gds, ok := cfg.GetGenericApplication()
+	if !ok {
+		return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
+	}
+
+	return gds.DriftDetection, nil
 }

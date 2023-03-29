@@ -19,16 +19,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
+	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-const (
-	defaultWaitApprovalTimeout  = Duration(6 * time.Hour)
-	defaultAnalysisQueryTimeout = Duration(30 * time.Second)
-	allEventsSymbol             = "*"
-)
+const allEventsSymbol = "*"
 
 type GenericApplicationSpec struct {
 	// The application name.
@@ -58,6 +54,8 @@ type GenericApplicationSpec struct {
 	DeploymentNotification *DeploymentNotification `json:"notification"`
 	// List of the configuration for event watcher.
 	EventWatcher []EventWatcherConfig `json:"eventWatcher"`
+	// Configuration for drift detection
+	DriftDetection *DriftDetection `json:"driftDetection"`
 }
 
 type DeploymentPlanner struct {
@@ -131,6 +129,11 @@ func (s *GenericApplicationSpec) Validate() error {
 					return err
 				}
 			}
+			if stage.CustomSyncOptions != nil {
+				if err := stage.CustomSyncOptions.Validate(); err != nil {
+					return err
+				}
+			}
 		}
 	}
 
@@ -151,6 +154,12 @@ func (s *GenericApplicationSpec) Validate() error {
 			if err := m.Validate(); err != nil {
 				return err
 			}
+		}
+	}
+
+	if dd := s.DriftDetection; dd != nil {
+		if err := dd.Validate(); err != nil {
+			return err
 		}
 	}
 
@@ -204,6 +213,7 @@ type PipelineStage struct {
 	Desc    string
 	Timeout Duration
 
+	CustomSyncOptions        *CustomSyncOptions
 	WaitStageOptions         *WaitStageOptions
 	WaitApprovalStageOptions *WaitApprovalStageOptions
 	AnalysisStageOptions     *AnalysisStageOptions
@@ -253,6 +263,11 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	s.Timeout = gs.Timeout
 
 	switch s.Name {
+	case model.StageCustomSync:
+		s.CustomSyncOptions = &CustomSyncOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.CustomSyncOptions)
+		}
 	case model.StageWait:
 		s.WaitStageOptions = &WaitStageOptions{}
 		if len(gs.With) > 0 {
@@ -263,18 +278,10 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.WaitApprovalStageOptions)
 		}
-		if s.WaitApprovalStageOptions.Timeout <= 0 {
-			s.WaitApprovalStageOptions.Timeout = defaultWaitApprovalTimeout
-		}
 	case model.StageAnalysis:
 		s.AnalysisStageOptions = &AnalysisStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.AnalysisStageOptions)
-		}
-		for i := 0; i < len(s.AnalysisStageOptions.Metrics); i++ {
-			if s.AnalysisStageOptions.Metrics[i].Timeout <= 0 {
-				s.AnalysisStageOptions.Metrics[i].Timeout = defaultAnalysisQueryTimeout
-			}
 		}
 	case model.StageK8sPrimaryRollout:
 		s.K8sPrimaryRolloutStageOptions = &K8sPrimaryRolloutStageOptions{}
@@ -391,7 +398,7 @@ type WaitStageOptions struct {
 type WaitApprovalStageOptions struct {
 	// The maximum length of time to wait before giving up.
 	// Defaults to 6h.
-	Timeout        Duration `json:"timeout"`
+	Timeout        Duration `json:"timeout" default:"6h"`
 	Approvers      []string `json:"approvers"`
 	MinApproverNum int      `json:"minApproverNum" default:"1"`
 }
@@ -399,6 +406,37 @@ type WaitApprovalStageOptions struct {
 func (w *WaitApprovalStageOptions) Validate() error {
 	if w.MinApproverNum < 1 {
 		return fmt.Errorf("minApproverNum %d should be greater than 0", w.MinApproverNum)
+	}
+	return nil
+}
+
+type CustomSyncOptions struct {
+	Timeout       Duration          `json:"timeout" default:"6h"`
+	Envs          map[string]string `json:"envs"`
+	Run           string            `json:"run"`
+	ExternalTools []ExternalTool    `json:"externalTools,omitempty"`
+}
+
+func (c *CustomSyncOptions) Validate() error {
+	if c.Run == "" {
+		return fmt.Errorf("the CUSTOM_SYNC stage requires run field")
+	}
+	for _, externalTool := range c.ExternalTools {
+		if err := externalTool.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+type ExternalTool struct {
+	Package string `json:"package"`
+	Version string `json:"version" default:"latest"`
+}
+
+func (c *ExternalTool) Validate() error {
+	if c.Package == "" {
+		return fmt.Errorf("the externalTool requires package field")
 	}
 	return nil
 }
@@ -627,6 +665,21 @@ func (c *DeploymentChainTriggerCondition) Validate() error {
 	hasCond := c.CommitPrefix != ""
 	if !hasCond {
 		return fmt.Errorf("missing commitPrefix configration as deployment chain trigger condition")
+	}
+	return nil
+}
+
+type DriftDetection struct {
+	// IgnoreFields are a list of 'apiVersion:kind:namespace:name#fieldPath'
+	IgnoreFields []string `json:"ignoreFields"`
+}
+
+func (dd *DriftDetection) Validate() error {
+	for _, ignoreField := range dd.IgnoreFields {
+		splited := strings.Split(ignoreField, "#")
+		if len(splited) != 2 {
+			return fmt.Errorf("It should be entered in the form of 'apiVersion:kind:namespace:name#fieldPath'")
+		}
 	}
 	return nil
 }

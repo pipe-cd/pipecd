@@ -21,6 +21,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/analysis"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/cloudrun"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/customsync"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/ecs"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/lambda"
@@ -37,7 +38,7 @@ type Registry interface {
 
 type registry struct {
 	factories         map[model.Stage]executor.Factory
-	rollbackFactories map[model.ApplicationKind]executor.Factory
+	rollbackFactories map[model.RollbackKind]executor.Factory
 	mu                sync.RWMutex
 }
 
@@ -52,7 +53,7 @@ func (r *registry) Register(stage model.Stage, f executor.Factory) error {
 	return nil
 }
 
-func (r *registry) RegisterRollback(kind model.ApplicationKind, f executor.Factory) error {
+func (r *registry) RegisterRollback(kind model.RollbackKind, f executor.Factory) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -77,8 +78,14 @@ func (r *registry) Executor(stage model.Stage, in executor.Input) (executor.Exec
 func (r *registry) RollbackExecutor(kind model.ApplicationKind, in executor.Input) (executor.Executor, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
+	var rollbackKind model.RollbackKind
+	if in.Stage.Name == model.StageCustomSyncRollback.String() {
+		rollbackKind = model.RollbackKind_Rollback_CUSTOM_SYNC
+	} else {
+		rollbackKind = kind.ToRollbackKind()
+	}
 
-	f, ok := r.rollbackFactories[kind]
+	f, ok := r.rollbackFactories[rollbackKind]
 	if !ok {
 		return nil, false
 	}
@@ -87,7 +94,7 @@ func (r *registry) RollbackExecutor(kind model.ApplicationKind, in executor.Inpu
 
 var defaultRegistry = &registry{
 	factories:         make(map[model.Stage]executor.Factory),
-	rollbackFactories: make(map[model.ApplicationKind]executor.Factory),
+	rollbackFactories: make(map[model.RollbackKind]executor.Factory),
 }
 
 func DefaultRegistry() Registry {
@@ -104,4 +111,5 @@ func init() {
 	ecs.Register(defaultRegistry)
 	wait.Register(defaultRegistry)
 	waitapproval.Register(defaultRegistry)
+	customsync.Register(defaultRegistry)
 }

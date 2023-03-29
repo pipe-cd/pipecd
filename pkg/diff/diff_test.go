@@ -28,11 +28,12 @@ import (
 
 func TestDiff(t *testing.T) {
 	testcases := []struct {
-		name       string
-		yamlFile   string
-		options    []Option
-		diffNum    int
-		diffString string
+		name        string
+		yamlFile    string
+		resourceKey string
+		options     []Option
+		diffNum     int
+		diffString  string
 	}{
 		{
 			name:     "no diff",
@@ -51,6 +52,128 @@ func TestDiff(t *testing.T) {
 				WithIgnoreAddingMapKeys(),
 			},
 			diffNum: 0,
+		},
+		{
+			name:        "diff by ignoring specified field with correct key",
+			yamlFile:    "testdata/has_diff.yaml",
+			resourceKey: "deployment-key",
+			options: []Option{
+				WithIgnoreConfig(
+					map[string][]string{
+						"deployment-key": {
+							"spec.replicas",
+							"spec.template.spec.containers.0.args.1",
+							"spec.template.spec.strategy.rollingUpdate.maxSurge",
+							"spec.template.spec.containers.3.livenessProbe.initialDelaySeconds",
+						},
+					},
+				),
+			},
+			diffNum: 6,
+			diffString: `  spec:
+    template:
+      metadata:
+        labels:
+          #spec.template.metadata.labels.app
+-         app: simple
++         app: simple2
+
+          #spec.template.metadata.labels.component
+-         component: foo
+
+      spec:
+        containers:
+          -
+            #spec.template.spec.containers.1.image
+-           image: gcr.io/pipecd/helloworld:v2.0.0
++           image: gcr.io/pipecd/helloworld:v2.1.0
+
+          -
+            #spec.template.spec.containers.2.image
+-           image: 
+
+          #spec.template.spec.containers.3
++         - image: new-image
++           livenessProbe:
++             exec:
++               command:
++                 - cat
++                 - /tmp/healthy
++           name: foo
+
+        #spec.template.spec.strategy
++       strategy:
++         rollingUpdate:
++           maxUnavailable: 25%
++         type: RollingUpdate
+
+`,
+		},
+		{
+			name:        "diff by ignoring specified field with wrong resource key",
+			yamlFile:    "testdata/has_diff.yaml",
+			resourceKey: "deployment-key",
+			options: []Option{
+				WithIgnoreConfig(
+					map[string][]string{
+						"crd-key": {
+							"spec.replicas",
+							"spec.template.spec.containers.0.args.1",
+							"spec.template.spec.strategy.rollingUpdate.maxSurge",
+							"spec.template.spec.containers.3.livenessProbe.initialDelaySeconds",
+						},
+					},
+				),
+			},
+			diffNum: 8,
+			diffString: `  spec:
+    #spec.replicas
+-   replicas: 2
++   replicas: 3
+
+    template:
+      metadata:
+        labels:
+          #spec.template.metadata.labels.app
+-         app: simple
++         app: simple2
+
+          #spec.template.metadata.labels.component
+-         component: foo
+
+      spec:
+        containers:
+          - args:
+              #spec.template.spec.containers.0.args.1
+-             - hello
+
+          -
+            #spec.template.spec.containers.1.image
+-           image: gcr.io/pipecd/helloworld:v2.0.0
++           image: gcr.io/pipecd/helloworld:v2.1.0
+
+          -
+            #spec.template.spec.containers.2.image
+-           image: 
+
+          #spec.template.spec.containers.3
++         - image: new-image
++           livenessProbe:
++             exec:
++               command:
++                 - cat
++                 - /tmp/healthy
++             initialDelaySeconds: 5
++           name: foo
+
+        #spec.template.spec.strategy
++       strategy:
++         rollingUpdate:
++           maxSurge: 25%
++           maxUnavailable: 25%
++         type: RollingUpdate
+
+`,
 		},
 		{
 			name:     "has diff",
@@ -112,7 +235,7 @@ func TestDiff(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, 2, len(objs))
 
-			result, err := DiffUnstructureds(objs[0], objs[1], tc.options...)
+			result, err := DiffUnstructureds(objs[0], objs[1], tc.resourceKey, tc.options...)
 			require.NoError(t, err)
 			assert.Equal(t, tc.diffNum, result.NumNodes())
 

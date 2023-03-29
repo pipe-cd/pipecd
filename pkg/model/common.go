@@ -23,6 +23,23 @@ func ApplicationKindStrings() []string {
 	return out
 }
 
+func (x ApplicationKind) ToRollbackKind() RollbackKind {
+	switch x {
+	case ApplicationKind_KUBERNETES:
+		return RollbackKind_Rollback_KUBERNETES
+	case ApplicationKind_TERRAFORM:
+		return RollbackKind_Rollback_TERRAFORM
+	case ApplicationKind_LAMBDA:
+		return RollbackKind_Rollback_LAMBDA
+	case ApplicationKind_CLOUDRUN:
+		return RollbackKind_Rollback_CLOUDRUN
+	case ApplicationKind_ECS:
+		return RollbackKind_Rollback_ECS
+	default:
+		return RollbackKind_Rollback_KUBERNETES
+	}
+}
+
 // ContainLabels checks if it has all the given labels.
 func (a *ApplicationInfo) ContainLabels(labels map[string]string) bool {
 	if len(a.Labels) < len(labels) {

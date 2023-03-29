@@ -91,6 +91,9 @@ const (
 	// StageECSCanaryClean represents the stage where
 	// the CANARY variant resources has been cleaned.
 	StageECSCanaryClean Stage = "ECS_CANARY_CLEAN"
+	// StageCustomSync represents the stage where users can use their
+	// defined scripts to sync the application's state instead of the KIND_SYNC stage.
+	StageCustomSync Stage = "CUSTOM_SYNC"
 
 	// StageRollback represents a state where
 	// the all temporarily created stages will be reverted to
@@ -98,6 +101,10 @@ const (
 	// This stage is AUTOMATICALLY GENERATED and can not be used
 	// to specify in configuration file.
 	StageRollback Stage = "ROLLBACK"
+	// StageCustomSyncRollback represents a state where
+	// all changes made by the CUSTOM_SYNC stage will be reverted to
+	// bring back the pre-deploy stage.
+	StageCustomSyncRollback Stage = "CUSTOM_SYNC_ROLLBACK"
 )
 
 func (s Stage) String() string {

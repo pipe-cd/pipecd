@@ -9,14 +9,14 @@ require (
 	github.com/DataDog/datadog-api-client-go v1.0.0-beta.16
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
-	github.com/aws/aws-sdk-go-v2 v1.6.0
-	github.com/aws/aws-sdk-go-v2/config v1.1.1
-	github.com/aws/aws-sdk-go-v2/credentials v1.1.1
-	github.com/aws/aws-sdk-go-v2/service/ecs v1.1.1
-	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.3.1
-	github.com/aws/aws-sdk-go-v2/service/lambda v1.1.1
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
-	github.com/creasty/defaults v1.5.2
+	github.com/aws/aws-sdk-go-v2 v1.17.7
+	github.com/aws/aws-sdk-go-v2/config v1.18.19
+	github.com/aws/aws-sdk-go-v2/credentials v1.13.18
+	github.com/aws/aws-sdk-go-v2/service/ecs v1.24.2
+	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.19.7
+	github.com/aws/aws-sdk-go-v2/service/lambda v1.30.2
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.31.0
+	github.com/creasty/defaults v1.6.0
 	github.com/envoyproxy/protoc-gen-validate v0.6.6
 	github.com/fsouza/fake-gcs-server v1.21.0
 	github.com/go-sql-driver/mysql v1.6.0
@@ -43,7 +43,7 @@ require (
 	go.uber.org/atomic v1.7.0
 	go.uber.org/zap v1.10.1-0.20190709142728-9a9fa7d4b5f0
 	golang.org/x/crypto v0.0.0-20220314234659-1baeb1ce4c0b
-	golang.org/x/net v0.1.1-0.20221104162952-702349b0e862
+	golang.org/x/net v0.7.0
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
 	google.golang.org/api v0.43.0
@@ -73,14 +73,20 @@ require (
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/apparentlymart/go-textseg v1.0.0 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.0.2 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/ini v1.0.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.0.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.0.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.1.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.1.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.1.1 // indirect
-	github.com/aws/smithy-go v1.4.0 // indirect
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.10 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.13.1 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.31 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.25 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.32 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.0.23 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.9.11 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.1.26 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.25 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.14.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.12.6 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.14.6 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.18.7 // indirect
+	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
@@ -102,7 +108,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
-	github.com/google/go-cmp v0.5.6 // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/pprof v0.0.0-20210226084205-cbba55b83ad5 // indirect
@@ -154,9 +160,9 @@ require (
 	go.uber.org/multierr v1.2.0 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
-	golang.org/x/sys v0.1.0 // indirect
-	golang.org/x/term v0.1.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/term v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	golang.org/x/tools v0.1.12 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect

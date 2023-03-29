@@ -403,6 +403,7 @@ message ListApplicationsRequest {
         repeated model.ApplicationSyncStatus sync_statuses = 3;
         string name = 5;
         map<string, string> labels = 6;
+        string piped_id = 7;
     }
     Options options = 1;
 }

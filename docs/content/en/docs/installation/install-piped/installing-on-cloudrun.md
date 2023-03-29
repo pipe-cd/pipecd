@@ -62,6 +62,8 @@ description: >
     #     publicKeyData: {BASE64_ENCODED_PUBLIC_KEY}
   ```
 
+See [ConfigurationReference](../../../user-guide/managing-piped/configuration-reference/) for the full configuration.
+
 - Creating a new secret in [SecretManager](https://cloud.google.com/secret-manager/docs/creating-and-accessing-secrets) to store above configuration data securely
 
   ``` console
@@ -84,14 +86,15 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: piped
+  annotaions:
+    run.googleapis.com/ingress: internal
+    run.googleapis.com/ingress-status: internal
 spec:
   template:
     metadata:
       annotations:
         autoscaling.knative.dev/maxScale: '1'           # This must be 1.
         autoscaling.knative.dev/minScale: '1'           # This must be 1.
-        run.googleapis.com/ingress: internal
-        run.googleapis.com/ingress-status: internal
         run.googleapis.com/cpu-throttling: "false"      # This is required.
     spec:
       containerConcurrency: 1                           # This must be 1 to ensure Piped work correctly.
@@ -126,14 +129,15 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: piped
+  annotaions:
+    run.googleapis.com/ingress: internal
+    run.googleapis.com/ingress-status: internal
 spec:
   template:
     metadata:
       annotations:
         autoscaling.knative.dev/maxScale: '1'           # This must be 1.
         autoscaling.knative.dev/minScale: '1'           # This must be 1.
-        run.googleapis.com/ingress: internal
-        run.googleapis.com/ingress-status: internal
         run.googleapis.com/cpu-throttling: "false"      # This is required.
     spec:
       containerConcurrency: 1                           # This must be 1.
