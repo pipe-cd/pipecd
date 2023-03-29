@@ -28,6 +28,7 @@ type differ struct {
 	equateEmpty                   bool
 	compareNumberAndNumericString bool
 	ignoredPaths                  []string
+	ignoreConfig                  map[string][]string
 
 	result *Result
 }
@@ -58,15 +59,15 @@ func WithCompareNumberAndNumericString() Option {
 	}
 }
 
-// WithIgnoredPaths configures ignored fields.
-func WithIgnoredPaths(paths []string) Option {
+// WithIgnoreConfig configures ignored fields.
+func WithIgnoreConfig(config map[string][]string) Option {
 	return func(d *differ) {
-		d.ignoredPaths = paths
+		d.ignoreConfig = config
 	}
 }
 
 // DiffUnstructureds calculates the diff between two unstructured objects.
-func DiffUnstructureds(x, y unstructured.Unstructured, opts ...Option) (*Result, error) {
+func DiffUnstructureds(x, y unstructured.Unstructured, key string, opts ...Option) (*Result, error) {
 	var (
 		path = []PathStep{}
 		vx   = reflect.ValueOf(x.Object)
@@ -76,6 +77,7 @@ func DiffUnstructureds(x, y unstructured.Unstructured, opts ...Option) (*Result,
 	for _, opt := range opts {
 		opt(d)
 	}
+	d.ignoredPaths = d.ignoreConfig[key]
 
 	if err := d.diff(path, vx, vy); err != nil {
 		return nil, err

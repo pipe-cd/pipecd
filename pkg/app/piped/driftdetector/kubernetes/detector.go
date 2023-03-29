@@ -193,9 +193,14 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return err
 	}
 
-	ignoreFields := make([]string, 0)
+	ignoreConfig := make(map[string][]string, 0)
 	if ddCfg != nil {
-		ignoreFields = ddCfg.IgnoreFields
+		for _, ignoreField := range ddCfg.IgnoreFields {
+			// ignoreField is 'apiVersion:kind:namespace:name#fieldPath'
+			splited := strings.Split(ignoreField, "#")
+			key, ignoredPath := splited[0], splited[1]
+			ignoreConfig[key] = append(ignoreConfig[key], ignoredPath)
+		}
 	}
 
 	result, err := provider.DiffList(
@@ -205,7 +210,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
-		diff.WithIgnoredPaths(ignoreFields),
+		diff.WithIgnoreConfig(ignoreConfig),
 	)
 	if err != nil {
 		return err

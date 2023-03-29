@@ -101,6 +101,10 @@ const (
 	// This stage is AUTOMATICALLY GENERATED and can not be used
 	// to specify in configuration file.
 	StageRollback Stage = "ROLLBACK"
+	// StageCustomSyncRollback represents a state where
+	// all changes made by the CUSTOM_SYNC stage will be reverted to
+	// bring back the pre-deploy stage.
+	StageCustomSyncRollback Stage = "CUSTOM_SYNC_ROLLBACK"
 )
 
 func (s Stage) String() string {
