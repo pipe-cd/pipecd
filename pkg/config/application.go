@@ -132,11 +132,6 @@ func (s *GenericApplicationSpec) Validate() error {
 				if err := stage.CustomSyncOptions.Validate(); err != nil {
 					return err
 				}
-				for _, externalTool := range stage.CustomSyncOptions.ExternalTools {
-					if err := externalTool.Validate(); err != nil {
-						return err
-					}
-				}
 			}
 		}
 	}
@@ -418,6 +413,11 @@ type CustomSyncOptions struct {
 func (c *CustomSyncOptions) Validate() error {
 	if c.Run == "" {
 		return fmt.Errorf("the CUSTOM_SYNC stage requires run field")
+	}
+	for _, externalTool := range c.ExternalTools {
+		if err := externalTool.Validate(); err != nil {
+			return err
+		}
 	}
 	return nil
 }
