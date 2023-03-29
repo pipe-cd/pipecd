@@ -88,7 +88,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 			e.LogPersister.Infof(fmt.Sprintf(" %s %s has just been installed", config.Package, config.Version))
 		}
 		if err != nil {
-			e.LogPersister.Errorf(fmt.Sprintf(" unable to set %s %s (%v)", config.Package, config.Version, err))
+			e.LogPersister.Errorf(fmt.Sprintf(" unable to prepare %s %s (%v)", config.Package, config.Version, err))
 			continue
 		}
 		e.LogPersister.Infof(fmt.Sprintf(" %s %s has just been locally set to application directory", config.Package, config.Version))

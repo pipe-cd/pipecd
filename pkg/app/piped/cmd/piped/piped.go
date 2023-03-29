@@ -183,7 +183,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 					input.Logger.Info(fmt.Sprintf("%q %q has just been installed", config.Package, config.Version))
 				}
 				if err != nil {
-					input.Logger.Error(fmt.Sprintf("unable to set %q %q (%v)", config.Package, config.Version, err), zap.Error(err))
+					input.Logger.Error(fmt.Sprintf("unable to prepare %q %q (%v)", config.Package, config.Version, err), zap.Error(err))
 					continue
 				}
 				input.Logger.Info(fmt.Sprintf("%q %q has just been globally set", config.Package, config.Version))
