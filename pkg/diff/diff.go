@@ -27,7 +27,7 @@ type differ struct {
 	ignoreAddingMapKeys           bool
 	equateEmpty                   bool
 	compareNumberAndNumericString bool
-	existIgnoredPaths             map[string]bool
+	ignoredPaths                  map[string]struct{}
 	ignoreConfig                  map[string][]string
 
 	result *Result
@@ -66,12 +66,12 @@ func WithIgnoreConfig(config map[string][]string) Option {
 	}
 }
 
-func (d *differ) initExistIgnoredPaths(key string) {
-	d.existIgnoredPaths = make(map[string]bool)
-
+func (d *differ) initIgnoredPaths(key string) {
 	paths := d.ignoreConfig[key]
+	d.ignoredPaths = make(map[string]struct{}, len(paths))
+
 	for _, path := range paths {
-		d.existIgnoredPaths[path] = true
+		d.ignoredPaths[path] = struct{}{}
 	}
 }
 
@@ -87,7 +87,7 @@ func DiffUnstructureds(x, y unstructured.Unstructured, key string, opts ...Optio
 		opt(d)
 	}
 
-	d.initExistIgnoredPaths(key)
+	d.initIgnoredPaths(key)
 
 	if err := d.diff(path, vx, vy); err != nil {
 		return nil, err
@@ -345,7 +345,7 @@ func newMapPath(path []PathStep, index string) []PathStep {
 }
 
 func (d *differ) addNode(path []PathStep, tx, ty reflect.Type, vx, vy reflect.Value) {
-	if len(d.existIgnoredPaths) > 0 {
+	if len(d.ignoredPaths) > 0 {
 		pathString := makePathString(path)
 		if d.isIgnoredPath(pathString) {
 			return
@@ -431,7 +431,7 @@ func (d *differ) isIgnoredPath(pathString string) bool {
 			pathSubStr += "."
 		}
 		pathSubStr += path
-		if d.existIgnoredPaths[pathSubStr] {
+		if _, found := d.ignoredPaths[pathSubStr]; found {
 			return true
 		}
 	}
