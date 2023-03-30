@@ -131,7 +131,7 @@ func (e *deployExecutor) executeCommand() model.StageStatus {
 		envs = append(envs, key+"="+value)
 	}
 
-	cmd := exec.Command("/bin/sh", "-c", opts.Run)
+	cmd := exec.Command("/bin/sh", "-l", "-c", opts.Run)
 	cmd.Dir = e.appDir
 	cmd.Env = append(os.Environ(), envs...)
 	cmd.Stdout = e.LogPersister

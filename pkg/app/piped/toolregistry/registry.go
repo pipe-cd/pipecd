@@ -276,7 +276,7 @@ func (r *registry) ExternalTool(ctx context.Context, appDir string, config confi
 	} else {
 		script = fmt.Sprintf("cd %s\nasdf local %s %s", appDir, config.Package, config.Version)
 	}
-	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-l", "-c", script)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		r.logger.Error("failed to set %s version %s",
@@ -292,7 +292,7 @@ func (r *registry) ExternalTool(ctx context.Context, appDir string, config confi
 
 func findAsdf(ctx context.Context) (bool, error) {
 	script := "which asdf"
-	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-l", "-c", script)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		if string(out) == "" {
@@ -305,7 +305,7 @@ func findAsdf(ctx context.Context) (bool, error) {
 
 func findPlugin(ctx context.Context, config config.ExternalTool) (bool, error) {
 	script := fmt.Sprintf("asdf list %s", config.Package)
-	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-l", "-c", script)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		if string(out) == fmt.Sprintf("No such plugin: %s\n", config.Package) {
@@ -318,7 +318,7 @@ func findPlugin(ctx context.Context, config config.ExternalTool) (bool, error) {
 
 func findVersion(ctx context.Context, config config.ExternalTool) (bool, error) {
 	script := fmt.Sprintf("asdf list %s %s", config.Package, config.Version)
-	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-l", "-c", script)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		if string(out) == fmt.Sprintf("No compatible versions installed (%s %s)\n", config.Package, config.Version) {

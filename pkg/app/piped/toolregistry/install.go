@@ -242,7 +242,7 @@ func (r *registry) addExternalToolPlugin(ctx context.Context, config config.Exte
 	script := fmt.Sprintf("asdf plugin add %s", config.Package)
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
-	cmd := exec.CommandContext(ctxWithTimeout, "/bin/sh", "-c", script)
+	cmd := exec.CommandContext(ctxWithTimeout, "/bin/sh", "-l", "-c", script)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		r.logger.Error("failed to add plugin",
 			zap.String("package", config.Package),
@@ -265,7 +265,7 @@ func (r *registry) installExternalToolVersion(ctx context.Context, config config
 	script := fmt.Sprintf("asdf install %s %s", config.Package, config.Version)
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
-	cmd := exec.CommandContext(ctxWithTimeout, "/bin/sh", "-c", script)
+	cmd := exec.CommandContext(ctxWithTimeout, "/bin/sh", "-l", "-c", script)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		r.logger.Error("failed to install %s %s",
 			zap.String("package", config.Package),
@@ -319,7 +319,7 @@ func (r *registry) installAsdf(ctx context.Context) error {
 
 	var (
 		script = buf.String()
-		cmd    = exec.CommandContext(ctx, "/bin/sh", "-c", script)
+		cmd    = exec.CommandContext(ctx, "/bin/sh", "-l", "-c", script)
 	)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		r.logger.Error("failed to install asdf",
