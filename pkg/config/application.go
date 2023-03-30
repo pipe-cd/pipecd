@@ -678,7 +678,7 @@ func (dd *DriftDetection) Validate() error {
 	for _, ignoreField := range dd.IgnoreFields {
 		splited := strings.Split(ignoreField, "#")
 		if len(splited) != 2 {
-			return fmt.Errorf("It should be entered in the form of 'apiVersion:kind:namespace:name#fieldPath'")
+			return fmt.Errorf("ignoreFields must be in the form of 'apiVersion:kind:namespace:name#fieldPath'")
 		}
 	}
 	return nil

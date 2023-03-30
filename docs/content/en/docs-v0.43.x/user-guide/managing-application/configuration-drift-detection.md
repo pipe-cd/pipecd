@@ -87,7 +87,6 @@ Add the following statements to `app.pipecd.yaml` to ignore diff on those fields
 
 ```yaml
 spec:
-  name: simple
   ...
   driftDetection:
     ignoreFields:
