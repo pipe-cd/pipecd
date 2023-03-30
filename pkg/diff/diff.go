@@ -428,9 +428,9 @@ func (d *differ) isIgnoredPath(pathString string) bool {
 
 	for i, path := range pathElms {
 		if i != 0 {
-			pathSubStr = pathSubStr + "."
+			pathSubStr += "."
 		}
-		pathSubStr = pathSubStr + path
+		pathSubStr += path
 		if d.existIgnoredPaths[pathSubStr] {
 			return true
 		}
