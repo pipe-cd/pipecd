@@ -37,6 +37,7 @@ spec:
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
 | variantLabel | [KubernetesVariantLabel](#kubernetesvariantlabel) | The label will be configured to variant manifests used to distinguish them. | No |
 | eventWatcher | [][EventWatcher](#eventwatcher) | List of configurations for event watcher. | No |
+| driftDetection | [DriftDetection](#driftdetection) | Configuration for drift detection. | No |
 
 ## Terraform application
 
@@ -666,3 +667,9 @@ A wrapper of type `int` to represent percentage data. Basically, you can pass `1
 |-|-|-|-|
 | commitMessage | string | The commit message used to push after replacing values. Default message is used if not given. | No |
 | replacements | [][EventWatcherReplacement](#eventwatcherreplacement) | List of places where will be replaced when the new event matches. | Yes |
+
+### DriftDetection
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| ignoreFields | []string | List of fields path in manifests, which its diff should be ignored. | No |
