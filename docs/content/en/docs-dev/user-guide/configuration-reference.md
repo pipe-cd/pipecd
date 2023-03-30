@@ -108,6 +108,7 @@ spec:
 | name | string | The application name. | Yes if you set the application through the application configuration file |
 | labels | map[string]string | Additional attributes to identify applications. | No |
 | description | string | Notes on the Application. | No |
+| input | [LambdaDeploymentInput](#lambdadeploymentinput) | Input for Lambda deployment such as path to function manifest file... | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [LambdaQuickSync](#lambdaquicksync) | Configuration for quick sync. | No |
@@ -134,8 +135,8 @@ spec:
 | name | string | The application name. | Yes if you set the application through the application configuration file |
 | labels | map[string]string | Additional attributes to identify applications. | No |
 | description | string | Notes on the Application. | No |
+| input | [ECSDeploymentInput](#ecsdeploymentinput) | Input for ECS deployment such as path to TaskDefinition, Service... | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
-| input | [ECSDeploymentInput](#ecsdeploymentinput) | Input for ECS deployment such as TaskDefinition, Service... | Yes |
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [ECSQuickSync](#ecsquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](#pipeline) | Pipeline for deploying progressively. | No |
@@ -183,7 +184,7 @@ spec:
 | labels | map[string]string | Additional attributes of event. This can make an event definition unique even if the one with the same name exists. | No |
 | replacements | [][EventWatcherReplacement](#eventwatcherreplacement) | List of places where will be replaced when the new event matches. | Yes |
 
-## EventWatcherReplacement
+### EventWatcherReplacement
 One of `yamlField` or `regex` is required.
 
 | Field | Type | Description | Required |
@@ -221,7 +222,7 @@ One of `yamlField` or `regex` is required.
 | onOutOfSync | [OnOutOfSync](#onoutofsync) | Controls triggering new deployment when application is at `OUT_OF_SYNC` state. | No |
 | onChain | [OnChain](#onchain) | Controls triggering new deployment when the application is counted as a node of some chains. | No |
 
-## OnCommit
+### OnCommit
 
 | Field | Type | Description | Required |
 |-|-|-|-|
@@ -229,20 +230,20 @@ One of `yamlField` or `regex` is required.
 | paths | []string | List of directories or files where any changes of them will be considered as touching the application. Regular expression can be used. Empty means watching all changes under the application directory. | No |
 | ignores | []string | List of directories or files where any changes of them will NOT be considered as touching the application. Regular expression can be used. This config has a higher priority compare to `paths`. | No |
 
-## OnCommand
+### OnCommand
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 | disabled | bool | Whether to exclude application from triggering target when received a new `SYNC` command. Default is `false`. | No |
 
-## OnOutOfSync
+### OnOutOfSync
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 | disabled | bool | Whether to exclude application from triggering target when application is at `OUT_OF_SYNC` state. Default is `true`. | No |
 | minWindow | duration | Minimum amount of time must be elapsed since the last deployment. This can be used to avoid triggering unnecessary continuous deployments based on `OUT_OF_SYNC` status. Default is `5m`. | No |
 
-## OnChain
+### OnChain
 
 | Field | Type | Description | Required |
 |-|-|-|-|
@@ -254,7 +255,7 @@ One of `yamlField` or `regex` is required.
 |-|-|-|-|
 | stages | [][PipelineStage](#pipelinestage) | List of deployment pipeline stages. | No |
 
-## PipelineStage
+### PipelineStage
 
 | Field | Type | Description | Required |
 |-|-|-|-|
@@ -270,7 +271,7 @@ One of `yamlField` or `regex` is required.
 |-|-|-|-|
 | mentions | [][NotificationMention](#notificationmention) | List of users to be notified for each event. | No |
 
-## NotificationMention
+### NotificationMention
 
 | Field | Type | Description | Required |
 |-|-|-|-|
@@ -291,16 +292,7 @@ One of `yamlField` or `regex` is required.
 | namespace | string | The namespace where manifests will be applied. | No |
 | autoRollback | bool | Automatically reverts all deployment changes on failure. Default is `true`. | No |
 
-## KubernetesVariantLabel
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| key | string | The key of the label. Default is `pipecd.dev/variant`. | No |
-| primaryValue | string | The label value for PRIMARY variant. Default is `primary`. | No |
-| canaryValue | string | The label value for CANARY variant. Default is `canary`. | No |
-| baselineValue | string | The label value for BASELINE variant. Default is `baseline`. | No |
-
-## HelmChart
+### HelmChart
 
 | Field | Type | Description | Required |
 |-|-|-|-|
@@ -311,7 +303,7 @@ One of `yamlField` or `regex` is required.
 | name | string | The chart name. | No |
 | version | string | The chart version. | No |
 
-## HelmOptions
+### HelmOptions
 
 | Field | Type | Description | Required |
 |-|-|-|-|
@@ -320,6 +312,15 @@ One of `yamlField` or `regex` is required.
 | setFiles | map[string]string | List of file path for values. | No |
 | apiVersions | []string | Kubernetes api versions used for Capabilities.APIVersions. | No |
 | kubeVersion | string | Kubernetes version used for Capabilities.KubeVersion. | No |
+
+## KubernetesVariantLabel
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| key | string | The key of the label. Default is `pipecd.dev/variant`. | No |
+| primaryValue | string | The label value for PRIMARY variant. Default is `primary`. | No |
+| canaryValue | string | The label value for CANARY variant. Default is `canary`. | No |
+| baselineValue | string | The label value for BASELINE variant. Default is `baseline`. | No |
 
 ## KubernetesQuickSync
 
@@ -348,7 +349,7 @@ One of `yamlField` or `regex` is required.
 | method | string | Which traffic routing method will be used. Available values are `istio`, `smi`, `podselector`. Default is `podselector`. | No |
 | istio | [IstioTrafficRouting](#istiotrafficrouting)| Istio configuration when the method is `istio`. | No |
 
-## IstioTrafficRouting
+### IstioTrafficRouting
 
 | Field | Type | Description | Required |
 |-|-|-|-|
@@ -356,7 +357,7 @@ One of `yamlField` or `regex` is required.
 | host | string | The service host. | No |
 | virtualService | [IstioVirtualService](#istiovirtualservice) | The reference to VirtualService manifest. Empty means the first VirtualService resource will be used. | No |
 
-## IstioVirtualService
+#### IstioVirtualService
 
 | Field | Type | Description | Required |
 |-|-|-|-|
@@ -374,13 +375,7 @@ One of `yamlField` or `regex` is required.
 | commandEnvs | [TerraformCommandEnvs](#terraformcommandenvs) | List of additional environment variables will be used while executing terraform commands. | No |
 | autoRollback | bool | Automatically reverts all changes from all stages when one of them failed. | No |
 
-## TerraformQuickSync
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| retries | int | How many times to retry applying terraform changes. Default is `0`. | No |
-
-## TerraformCommandFlags
+### TerraformCommandFlags
 
 | Field | Type | Description | Required |
 |-|-|-|-|
@@ -389,7 +384,7 @@ One of `yamlField` or `regex` is required.
 | plan | []string | List of additional flags used for Terraform `plan` command. | No |
 | apply | []string | List of additional flags used for Terraform `apply` command. | No |
 
-## TerraformCommandEnvs
+### TerraformCommandEnvs
 
 | Field | Type | Description | Required |
 |-|-|-|-|
@@ -397,6 +392,12 @@ One of `yamlField` or `regex` is required.
 | init | []string | List of additional environment variables used for Terraform `init` command. | No |
 | plan | []string | List of additional environment variables used for Terraform `plan` command. | No |
 | apply | []string | List of additional environment variables used for Terraform `apply` command. | No |
+
+## TerraformQuickSync
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| retries | int | How many times to retry applying terraform changes. Default is `0`. | No |
 
 ## CloudRunDeploymentInput
 
@@ -414,6 +415,8 @@ One of `yamlField` or `regex` is required.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| functionManifestFile | string | The name of function manifest file placing in application directory. Default is `function.yaml`. | No |
+| autoRollback | bool | Automatically reverts to the previous state when the deployment is failed. Default is `true`. | No |
 
 ## LambdaQuickSync
 
@@ -461,6 +464,20 @@ Note: You can get examples for those object from [here](../../examples/#ecs-appl
 | template | [AnalysisTemplateRef](#analysistemplateref) | Reference to the template to be used. | No |
 
 
+### AnalysisExpected
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| min | float64 | Failure, if the query result is less than this value. | No |
+| max | float64 | Failure, if the query result is larger than this value. | No |
+
+### AnalysisTemplateRef
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| name | string | The template name to refer. | Yes |
+| appArgs | map[string]string | The arguments for custom-args. | No |
+
 ## AnalysisLog
 
 | Field | Type | Description | Required |
@@ -470,20 +487,6 @@ Note: You can get examples for those object from [here](../../examples/#ecs-appl
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-
-## AnalysisExpected
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| min | float64 | Failure, if the query result is less than this value. | No |
-| max | float64 | Failure, if the query result is larger than this value. | No |
-
-## AnalysisTemplateRef
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| name | string | The template name to refer. | Yes |
-| appArgs | map[string]string | The arguments for custom-args. | No |
 
 ## StageOptions
 
@@ -593,6 +596,20 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | duration | duration | Maximum time to perform the analysis. | Yes |
 | metrics | [][AnalysisMetrics](#analysismetrics) | Configuration for analysis by metrics. | No |
 
+### WaitStageOptions
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| duration | duration | Time to wait. | Yes |
+
+### WaitApprovalStageOptions
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| timeout | duration | The maximum length of time to wait before giving up. Default is 6h. | No |
+| approvers | []string | List of username who has permission to approve. | Yes |
+| minApproverNum | int | Number of minimum needed approvals to make this stage complete. Default is 1. | No |
+
 ### CustomSyncStageOptions
 | Field | Type | Description | Required |
 |-|-|-|-|
@@ -612,40 +629,12 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 |-|-|-|-|
 | applications | [][DeploymentChainApplication](#deploymentchainapplication) | The list of applications which should be triggered once deployment of this application rolled out successfully. | Yes |
 
-### DeploymentChainApplication
+#### DeploymentChainApplication
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The name of PipeCD application, note that application name is not unique in PipeCD datastore | No |
 | kind | string | The kind of the PipeCD application, which should be triggered as a node in deployment chain. The value will be one of: KUBERNETES, TERRAFORM, CLOUDRUN, LAMBDA, ECS. | No |
-
-## PipeCD rich defined types
-
-### Percentage
-A wrapper of type `int` to represent percentage data. Basically, you can pass `10` or `"10"` or `10%` and they will be treated as `10%` in PipeCD.
-
-### KubernetesResourcePatch
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| target | [KubernetesResourcePatchTarget](#kubernetesresourcepatchtarget) | Which manifest, which field will be the target of patch operations. | Yes |
-| ops | [][KubernetesResourcePatchOp](#kubernetesresourcepatchop) | List of operations should be applied to the above target. | No |
-
-### KubernetesResourcePatchTarget
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| kind | string | The resource kind. e.g. `ConfigMap` | Yes |
-| name | string | The resource name. e.g. `config-map-name` | Yes |
-| documentRoot | string | In case you want to manipulate the YAML or JSON data specified in a field of the manfiest, specify that field's path. The string value of that field will be used as input for the patch operations. Otherwise, the whole manifest will be the target of patch operations. e.g. `$.data.envoy-config` | No |
-
-### KubernetesResourcePatchOp
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| op | string | The operation type. This must be one of `yaml-replace`, `yaml-add`, `yaml-remove`, `json-replace`, `text-regex`. Default is `yaml-replace`. | No |
-| path | string | The path string pointing to the manipulated field. For yaml operations it looks like `$.foo.array[0].bar`. | No |
-| value | string | The value string whose content will be used as new value for the field. | No |
 
 ## EventWatcher
 
@@ -675,8 +664,36 @@ A wrapper of type `int` to represent percentage data. Basically, you can pass `1
 | commitMessage | string | The commit message used to push after replacing values. Default message is used if not given. | No |
 | replacements | [][EventWatcherReplacement](#eventwatcherreplacement) | List of places where will be replaced when the new event matches. | Yes |
 
-### DriftDetection
+## DriftDetection
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 | ignoreFields | []string | List of fields path in manifests, which its diff should be ignored. | No |
+
+## PipeCD rich defined types
+
+### Percentage
+A wrapper of type `int` to represent percentage data. Basically, you can pass `10` or `"10"` or `10%` and they will be treated as `10%` in PipeCD.
+
+### KubernetesResourcePatch
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| target | [KubernetesResourcePatchTarget](#kubernetesresourcepatchtarget) | Which manifest, which field will be the target of patch operations. | Yes |
+| ops | [][KubernetesResourcePatchOp](#kubernetesresourcepatchop) | List of operations should be applied to the above target. | No |
+
+### KubernetesResourcePatchTarget
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| kind | string | The resource kind. e.g. `ConfigMap` | Yes |
+| name | string | The resource name. e.g. `config-map-name` | Yes |
+| documentRoot | string | In case you want to manipulate the YAML or JSON data specified in a field of the manfiest, specify that field's path. The string value of that field will be used as input for the patch operations. Otherwise, the whole manifest will be the target of patch operations. e.g. `$.data.envoy-config` | No |
+
+### KubernetesResourcePatchOp
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| op | string | The operation type. This must be one of `yaml-replace`, `yaml-add`, `yaml-remove`, `json-replace`, `text-regex`. Default is `yaml-replace`. | No |
+| path | string | The path string pointing to the manipulated field. For yaml operations it looks like `$.foo.array[0].bar`. | No |
+| value | string | The value string whose content will be used as new value for the field. | No |

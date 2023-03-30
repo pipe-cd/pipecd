@@ -27,7 +27,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/terraform"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/terraform"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/sourcedecrypter"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/sourceprocesser"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -190,10 +190,15 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return fmt.Errorf("unsupport application kind %s", cfg.Kind)
 	}
 
-	if d.secretDecrypter != nil && gds.Encryption != nil {
-		// We have to copy repository into another directory because
-		// decrypting the sealed secrets might change the git repository.
-		dir, err := os.MkdirTemp("", "detector-git-decrypt")
+	var (
+		encryptionUsed = d.secretDecrypter != nil && gds.Encryption != nil
+		attachmentUsed = gds.Attachment != nil
+	)
+
+	// We have to copy repository into another directory because
+	// decrypting the sealed secrets or attaching files might change the git repository.
+	if attachmentUsed || encryptionUsed {
+		dir, err := os.MkdirTemp("", "detector-git-processing")
 		if err != nil {
 			return fmt.Errorf("failed to prepare a temporary directory for git repository (%w)", err)
 		}
@@ -205,9 +210,18 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		}
 		repoDir = repo.GetPath()
 		appDir = filepath.Join(repoDir, app.GitPath.Path)
+	}
 
-		if err := sourcedecrypter.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
+	// Decrypting secrets to manifests.
+	if encryptionUsed {
+		if err := sourceprocesser.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
 			return fmt.Errorf("failed to decrypt secrets (%w)", err)
+		}
+	}
+	// Then attaching configurated files to manifests.
+	if attachmentUsed {
+		if err := sourceprocesser.AttachData(appDir, *gds.Attachment); err != nil {
+			return fmt.Errorf("failed to attach files (%w)", err)
 		}
 	}
 

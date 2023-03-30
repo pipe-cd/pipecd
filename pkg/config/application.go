@@ -50,6 +50,8 @@ type GenericApplicationSpec struct {
 	Timeout Duration `json:"timeout,omitempty" default:"6h"`
 	// List of encrypted secrets and targets that should be decoded before using.
 	Encryption *SecretEncryption `json:"encryption"`
+	// List of files that should be attached to application manifests before using.
+	Attachment *Attachment `json:"attachment"`
 	// Additional configuration used while sending notification to external services.
 	DeploymentNotification *DeploymentNotification `json:"notification"`
 	// List of the configuration for event watcher.
@@ -145,6 +147,12 @@ func (s *GenericApplicationSpec) Validate() error {
 
 	if e := s.Encryption; e != nil {
 		if err := e.Validate(); err != nil {
+			return err
+		}
+	}
+
+	if am := s.Attachment; am != nil {
+		if err := am.Validate(); err != nil {
 			return err
 		}
 	}
@@ -544,6 +552,25 @@ func (e *SecretEncryption) Validate() error {
 	return nil
 }
 
+type Attachment struct {
+	// Map of name to refer with the file path which contain embedding source data.
+	Sources map[string]string `json:"sources"`
+	// List of files to be embedded before using.
+	Targets []string `json:"targets"`
+}
+
+func (e *Attachment) Validate() error {
+	for k, v := range e.Sources {
+		if k == "" {
+			return fmt.Errorf("key field in sources must not be empty")
+		}
+		if v == "" {
+			return fmt.Errorf("value field in sources must not be empty")
+		}
+	}
+	return nil
+}
+
 // DeploymentNotification represents the way to send to users.
 type DeploymentNotification struct {
 	// List of users to be notified for each event.
@@ -678,7 +705,7 @@ func (dd *DriftDetection) Validate() error {
 	for _, ignoreField := range dd.IgnoreFields {
 		splited := strings.Split(ignoreField, "#")
 		if len(splited) != 2 {
-			return fmt.Errorf("It should be entered in the form of 'apiVersion:kind:namespace:name#fieldPath'")
+			return fmt.Errorf("ignoreFields must be in the form of 'apiVersion:kind:namespace:name#fieldPath'")
 		}
 	}
 	return nil
