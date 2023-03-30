@@ -42,12 +42,7 @@ var (
 	kustomizeInstallScriptTmpl = template.Must(template.New("kustomize").Parse(kustomizeInstallScript))
 	helmInstallScriptTmpl      = template.Must(template.New("helm").Parse(helmInstallScript))
 	terraformInstallScriptTmpl = template.Must(template.New("terraform").Parse(terraformInstallScript))
-	// asdfInstallScriptBashTmpl    = template.Must(template.New("asdf-bash").Parse(asdfInstallScriptBash))
-	// asdfInstallScriptFishTmpl    = template.Must(template.New("asdf-fish").Parse(asdfInstallScriptFish))
-	// asdfInstallScriptElvishTmpl  = template.Must(template.New("asdf-elvish").Parse(asdfInstallScriptElvish))
-	// asdfInstallScriptZshTmpl     = template.Must(template.New("asdf-zsh").Parse(asdfInstallScriptZsh))
-	// asdfInstallScriptNushellTmpl = template.Must(template.New("asdf-nushell").Parse(asdfInstallScriptNushell))
-	asdfInstallScriptPosixTmpl = template.Must(template.New("asdf-posix").Parse(asdfInstallScriptPosix))
+	asdfInstallScriptTmpl      = template.Must(template.New("asdf-posix").Parse(asdfInstallScript))
 )
 
 func (r *registry) installKubectl(ctx context.Context, version string) error {
@@ -309,7 +304,7 @@ func (r *registry) installAsdf(ctx context.Context) error {
 			"Version": version,
 		}
 	)
-	if err := asdfInstallScriptPosixTmpl.Execute(&buf, data); err != nil {
+	if err := asdfInstallScriptTmpl.Execute(&buf, data); err != nil {
 		r.logger.Error("failed to render asdf install script",
 			zap.String("version", version),
 			zap.Error(err),

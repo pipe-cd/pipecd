@@ -14,36 +14,7 @@
 
 package toolregistry
 
-// var asdfInstallScriptBash = `
-// git clone https://github.com/asdf-vm/asdf.git {{ .HomeDir }}/.asdf --branch v{{ .Version }}
-// echo -e "\n. {{ .HomeDir }}/.asdf/asdf.sh" >> {{ .HomeDir }}/.bashrc
-// echo -e "\n. {{ .HomeDir }}/.asdf/completions/asdf.bash" >> {{ .HomeDir }}/.bashrc
-// `
-
-// var asdfInstallScriptFish = `
-// git clone https://github.com/asdf-vm/asdf.git {{ .HomeDir }}/.asdf --branch v{{ .Version }}
-// echo -e "\nsource {{ .HomeDir }}/.asdf/asdf.fish" >> {{ .HomeDir }}/.config/fish/config.fish
-// mkdir -p {{ .HomeDir }}/.config/fish/completions; and ln -s {{ .HomeDir }}/.asdf/completions/asdf.fish {{ .HomeDir }}/.config/fish/completions
-// `
-
-// var asdfInstallScriptElvish = `
-// git clone https://github.com/asdf-vm/asdf.git {{ .HomeDir }}/.asdf --branch v{{ .Version }}
-// mkdir -p {{ .HomeDir }}/.config/elvish/lib; ln -s {{ .HomeDir }}/.asdf/asdf.elv {{ .HomeDir }}/.config/elvish/lib/asdf.elv
-// echo "\n"'use asdf _asdf; var asdf~ = $_asdf:asdf~' >> {{ .HomeDir }}/.config/elvish/rc.elv
-// echo "\n"'set edit:completion:arg-completer[asdf] = $_asdf:arg-completer~' >> {{ .HomeDir }}/.config/elvish/rc.elv
-// `
-
-// var asdfInstallScriptZsh = `
-// git clone https://github.com/asdf-vm/asdf.git {{ .HomeDir }}/.asdf --branch v{{ .Version }}
-// echo -e "\n. {{ .HomeDir }}/.asdf/asdf.sh\nfpath=(${ASDF_DIR}/completions $fpath)\nautoload -Uz compinit && compinit" >> {{ .HomeDir }}/.config/fish/config.fish
-// `
-
-// var asdfInstallScriptNushell = `
-// git clone https://github.com/asdf-vm/asdf.git {{ .HomeDir }}/.asdf --branch v{{ .Version }}
-// "\nlet-env ASDF_NU_DIR = ($env.HOME | path join '.asdf')\n source " + ($env.HOME | path join '.asdf/asdf.nu') | save --append $nu.config-path
-// `
-
-var asdfInstallScriptPosix = `
+var asdfInstallScript = `
 git clone https://github.com/asdf-vm/asdf.git {{ .HomeDir }}/.asdf --branch v{{ .Version }}
 echo "\nexport ASDF_DIR="$HOME/.asdf" \n. "{{ .HomeDir }}/.asdf/asdf.sh"" >> {{ .HomeDir }}/.profile
 `
