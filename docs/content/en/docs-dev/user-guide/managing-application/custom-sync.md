@@ -49,3 +49,33 @@ When the rolling back process is triggered in the pipeline including `CUSTOM_SYN
 `CUSTOM_SYNC_ROLLBACK` is different from `ROLLBACK` that applications set defaultly, it runs the same commands as `CUSTOM_SYNC` in the runnning commit to reverts all the applied changes.
 
 ![](/images/custom-sync-rollback.png)
+
+## External Tool Management
+You can manage external tools `CUSTOM_SYNC` stages use other than PipeCD supports. You have to install `asdf` because this feature manage tools by `asdf` internally. If you want to know more about asdf, please see [official documents](https://asdf-vm.com/).
+You can use specified version of external tools globally according to your piped configuration file. With following setting, piped runs `asdf global aws-sam-cli 1.7.3` when piped starts running.
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  ...
+  externalTools:
+    - command: "aws-sam-cli"
+      version: 1.7.3
+```
+
+You can also set specified version locally to your application folder where your application configuration file exists. With following setting, piped runs `asdf local aws-sam-cli 1.77.3` in the folder when piped starts running.
+```
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaApp
+spec:
+...
+  pipeline:
+    stages:
+      - name: CUSTOM_SYNC
+        with:
+          run: |
+            sam --version
+          externalTools:
+            - package: "aws-sam-cli"
+              version: "1.77.0"
+```
