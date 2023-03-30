@@ -27,14 +27,14 @@ import (
 )
 
 type CustomTemplating struct {
-	execPath string
-	logger   *zap.Logger
+	execCommand string
+	logger      *zap.Logger
 }
 
-func NewCustomTemplating(path string, logger *zap.Logger) *CustomTemplating {
+func NewCustomTemplating(command string, logger *zap.Logger) *CustomTemplating {
 	return &CustomTemplating{
-		execPath: path,
-		logger:   logger,
+		execCommand: command,
+		logger:      logger,
 	}
 }
 
@@ -51,12 +51,12 @@ func (c *CustomTemplating) Template(ctx context.Context, appName, appDir string,
 		}
 	}
 	var stdout, stderr bytes.Buffer
-	cmd := exec.CommandContext(ctx, c.execPath, args...)
+	cmd := exec.CommandContext(ctx, c.execCommand, args...)
 	cmd.Dir = appDir
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	c.logger.Info(fmt.Sprintf("start custom templating %s application %s", c.execPath, appName),
+	c.logger.Info(fmt.Sprintf("start custom templating %s application %s", c.execCommand, appName),
 		zap.Any("args", args),
 	)
 

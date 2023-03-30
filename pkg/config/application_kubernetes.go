@@ -132,10 +132,9 @@ type InputHelmOptions struct {
 }
 
 type InputCustomTemplating struct {
-	Command               string   `json:"command"`
-	Version               string   `json:"version"`
-	Args                  []string `json:"args"`
-	InstallScriptTemplate string   `json:"installScriptTemplate"`
+	ExternalTool ExternalTool `json:"externalTool"`
+	Command      string       `json:"command"`
+	Args         []string     `json:"args"`
 }
 
 type KubernetesTrafficRoutingMethod string

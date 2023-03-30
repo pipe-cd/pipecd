@@ -233,14 +233,17 @@ func (l *loader) findHelm(ctx context.Context, version string) (*Helm, error) {
 }
 
 func (l *loader) findCustomTemplatimg(ctx context.Context, input *config.InputCustomTemplating) (*CustomTemplating, error) {
-	path, installed, err := toolregistry.DefaultRegistry().CustomTemplating(ctx, input)
-	if err != nil {
-		return nil, fmt.Errorf("no custom templating %s %s (%v)", path, input.Version, err)
+	addedPlugin, installed, err := toolregistry.DefaultRegistry().ExternalTool(ctx, l.appDir, input.ExternalTool)
+	if addedPlugin {
+		l.logger.Info(fmt.Sprintf(" plugin %s has just been added", input.ExternalTool.Package))
 	}
 	if installed {
-		l.logger.Info(fmt.Sprintf("custom templating %s has just been installed because of no pre-installed binary", path))
+		l.logger.Info(fmt.Sprintf(" %s %s has just been installed", input.ExternalTool.Package, input.ExternalTool.Version))
 	}
-	return NewCustomTemplating(path, l.logger), nil
+	if err != nil {
+		return nil, fmt.Errorf(" unable to prepare %s %s (%v)", input.ExternalTool.Package, input.ExternalTool.Version, err)
+	}
+	return NewCustomTemplating(input.Command, l.logger), nil
 }
 
 func determineTemplatingMethod(input config.KubernetesDeploymentInput, appDirPath string) TemplatingMethod {

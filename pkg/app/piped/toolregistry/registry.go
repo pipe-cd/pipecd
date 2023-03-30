@@ -37,7 +37,6 @@ type Registry interface {
 	Kubectl(ctx context.Context, version string) (string, bool, error)
 	Kustomize(ctx context.Context, version string) (string, bool, error)
 	Helm(ctx context.Context, version string) (string, bool, error)
-	CustomTemplating(ctx context.Context, input *config.InputCustomTemplating) (string, bool, error)
 	Terraform(ctx context.Context, version string) (string, bool, error)
 	ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (bool, bool, error)
 }
@@ -201,39 +200,6 @@ func (r *registry) Helm(ctx context.Context, version string) (string, bool, erro
 var retryCountCustomInstall = 0
 
 const maxRetryCountCustomInstall = 2
-
-func (r *registry) CustomTemplating(ctx context.Context, input *config.InputCustomTemplating) (string, bool, error) {
-	name := input.Command
-	if input.Version != "" {
-		name = fmt.Sprintf("%s-%s", name, input.Version)
-	}
-	path := filepath.Join(r.binDir, name)
-
-	r.mu.RLock()
-	_, ok := r.versions[name]
-	r.mu.RUnlock()
-	if ok {
-		return path, false, nil
-	}
-
-	_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
-		if retryCountCustomInstall < maxRetryCountCustomInstall {
-			retryCountCustomInstall += 1
-			return nil, r.installCustomTemplating(ctx, input)
-		} else {
-			return nil, fmt.Errorf("failed to install %s %s because of exceed max retry", name, input.Version)
-		}
-	})
-	if err != nil {
-		return "", true, err
-	}
-
-	r.mu.Lock()
-	r.versions[name] = struct{}{}
-	r.mu.Unlock()
-
-	return path, true, nil
-}
 
 func (r *registry) Terraform(ctx context.Context, version string) (string, bool, error) {
 	name := terraformPrefix
