@@ -147,7 +147,7 @@ Must be one of the following structs:
 | includeResources | [][KubernetesResourcematcher](#kubernetesresourcematcher) | List of resources that should be added to the watching targets. | No |
 | excludeResources | [][KubernetesResourcematcher](#kubernetesresourcematcher) | List of resources that should be ignored from the watching targets. | No |
 
-## KubernetesResourceMatcher
+### KubernetesResourceMatcher
 
 | Field | Type | Description | Required |
 |-|-|-|-|
@@ -227,7 +227,7 @@ Must be one of the following structs:
 | routes | [][NotificationRoute](#notificationroute) | List of notification routes. | No |
 | receivers | [][NotificationReceiver](#notificationreceiver) | List of notification receivers. | No |
 
-## NotificationRoute
+### NotificationRoute
 
 | Field | Type | Description | Required |
 |-|-|-|-|
@@ -243,7 +243,7 @@ Must be one of the following structs:
 | ignoreLabels | map[string]string | List of labels where their events should be ignored. | No |
 
 
-## NotificationReceiver
+### NotificationReceiver
 
 | Field | Type | Description | Required |
 |-|-|-|-|
@@ -251,13 +251,13 @@ Must be one of the following structs:
 | slack | [NotificationReciverSlack](#notificationreceiverslack) | Configuration for slack receiver. | No |
 | webhook | [NotificationReceiverWebhook](#notificationreceiverwebhook) | Configuration for webhook receiver. | No |
 
-## NotificationReceiverSlack
+#### NotificationReceiverSlack
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 | hookURL | string | The hookURL of a slack channel. | Yes |
 
-## NotificationReceiverWebhook
+#### NotificationReceiverWebhook
 
 | Field | Type | Description | Required |
 |-|-|-|-|
