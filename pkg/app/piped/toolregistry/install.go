@@ -212,6 +212,7 @@ func (r *registry) installTerraform(ctx context.Context, version string) error {
 		)
 		return fmt.Errorf("failed to install terraform %s (%w)", version, err)
 	}
+
 	var (
 		script = buf.String()
 		cmd    = exec.CommandContext(ctx, "/bin/sh", "-c", script)

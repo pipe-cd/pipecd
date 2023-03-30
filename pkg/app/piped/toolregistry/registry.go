@@ -197,10 +197,6 @@ func (r *registry) Helm(ctx context.Context, version string) (string, bool, erro
 	return path, true, nil
 }
 
-var retryCountCustomInstall = 0
-
-const maxRetryCountCustomInstall = 2
-
 func (r *registry) Terraform(ctx context.Context, version string) (string, bool, error) {
 	name := terraformPrefix
 	if version != "" {
