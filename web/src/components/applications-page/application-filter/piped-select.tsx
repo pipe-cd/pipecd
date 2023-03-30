@@ -7,7 +7,7 @@ import { selectAllPipeds } from "~/modules/pipeds";
 import clsx from "clsx";
 
 interface Props {
-  value: string | null;
+  value: string;
   onChange: (value: string) => void;
 }
 

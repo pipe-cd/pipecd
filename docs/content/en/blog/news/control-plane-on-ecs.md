@@ -2,7 +2,7 @@
 date: 2022-02-07
 title: "PipeCD best practice 02 - control plane on ECS"
 linkTitle: "PipeCD best practice 02"
-weight: 996
+weight: 992
 description: "This blog is a guideline for you to operate your own PipeCD on Amazon ECS."
 author: Yohei Namba ([@kevin_namba](https://twitter.com/kevin_namba))
 ---

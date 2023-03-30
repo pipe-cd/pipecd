@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -153,6 +154,12 @@ func (s *GenericApplicationSpec) Validate() error {
 			if err := m.Validate(); err != nil {
 				return err
 			}
+		}
+	}
+
+	if dd := s.DriftDetection; dd != nil {
+		if err := dd.Validate(); err != nil {
+			return err
 		}
 	}
 
@@ -404,14 +411,32 @@ func (w *WaitApprovalStageOptions) Validate() error {
 }
 
 type CustomSyncOptions struct {
-	Timeout Duration          `json:"timeout" default:"6h"`
-	Envs    map[string]string `json:"envs"`
-	Run     string            `json:"run"`
+	Timeout       Duration          `json:"timeout" default:"6h"`
+	Envs          map[string]string `json:"envs"`
+	Run           string            `json:"run"`
+	ExternalTools []ExternalTool    `json:"externalTools,omitempty"`
 }
 
 func (c *CustomSyncOptions) Validate() error {
 	if c.Run == "" {
 		return fmt.Errorf("the CUSTOM_SYNC stage requires run field")
+	}
+	for _, externalTool := range c.ExternalTools {
+		if err := externalTool.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+type ExternalTool struct {
+	Package string `json:"package"`
+	Version string `json:"version" default:"latest"`
+}
+
+func (c *ExternalTool) Validate() error {
+	if c.Package == "" {
+		return fmt.Errorf("the externalTool requires package field")
 	}
 	return nil
 }
@@ -645,7 +670,18 @@ func (c *DeploymentChainTriggerCondition) Validate() error {
 }
 
 type DriftDetection struct {
+	// IgnoreFields are a list of 'apiVersion:kind:namespace:name#fieldPath'
 	IgnoreFields []string `json:"ignoreFields"`
+}
+
+func (dd *DriftDetection) Validate() error {
+	for _, ignoreField := range dd.IgnoreFields {
+		splited := strings.Split(ignoreField, "#")
+		if len(splited) != 2 {
+			return fmt.Errorf("ignoreFields must be in the form of 'apiVersion:kind:namespace:name#fieldPath'")
+		}
+	}
+	return nil
 }
 
 func LoadApplication(repoPath, configRelPath string, appKind model.ApplicationKind) (*GenericApplicationSpec, error) {

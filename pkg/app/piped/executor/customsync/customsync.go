@@ -15,6 +15,7 @@
 package customsync
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -34,6 +35,7 @@ type deployExecutor struct {
 
 type registerer interface {
 	Register(stage model.Stage, f executor.Factory) error
+	RegisterRollback(kind model.RollbackKind, f executor.Factory) error
 }
 
 // Register registers this executor factory into a given registerer.
@@ -44,6 +46,11 @@ func Register(r registerer) {
 		}
 	}
 	r.Register(model.StageCustomSync, f)
+	r.RegisterRollback(model.RollbackKind_Rollback_CUSTOM_SYNC, func(in executor.Input) executor.Executor {
+		return &rollbackExecutor{
+			Input: in,
+		}
+	})
 }
 
 // Execute exec the user-defined scripts in timeout duration.
@@ -57,6 +64,24 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	e.repoDir = ds.RepoDir
 	e.appDir = ds.AppDir
+
+	e.LogPersister.Infof("Prepare external tools...")
+	for _, config := range e.StageConfig.CustomSyncOptions.ExternalTools {
+		e.LogPersister.Infof(fmt.Sprintf("Check %s %s", config.Package, config.Version))
+		addedPlugin, installed, err := toolregistry.DefaultRegistry().ExternalTool(ctx, e.appDir, config)
+		if addedPlugin {
+			e.LogPersister.Infof(fmt.Sprintf(" plugin %s has just been added", config.Package))
+		}
+		if installed {
+			e.LogPersister.Infof(fmt.Sprintf(" %s %s has just been installed", config.Package, config.Version))
+		}
+		if err != nil {
+			e.LogPersister.Errorf(fmt.Sprintf(" unable to prepare %s %s (%v)", config.Package, config.Version, err))
+			continue
+		}
+		e.LogPersister.Infof(fmt.Sprintf(" %s %s has just been locally set to application directory", config.Package, config.Version))
+	}
+
 	timeout := e.StageConfig.CustomSyncOptions.Timeout.Duration()
 
 	c := make(chan model.StageStatus, 1)
@@ -90,8 +115,6 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 
 func (e *deployExecutor) executeCommand() model.StageStatus {
 	opts := e.StageConfig.CustomSyncOptions
-	binDir := toolregistry.DefaultRegistry().GetBinDir()
-	pathFromOS := os.Getenv("PATH")
 
 	e.LogPersister.Infof("Runnnig commands...")
 	for _, v := range strings.Split(opts.Run, "\n") {
@@ -100,7 +123,6 @@ func (e *deployExecutor) executeCommand() model.StageStatus {
 		}
 	}
 
-	path := binDir + ":" + pathFromOS
 	envs := make([]string, 0, len(opts.Envs))
 	for key, value := range opts.Envs {
 		envs = append(envs, key+"="+value)
@@ -108,7 +130,7 @@ func (e *deployExecutor) executeCommand() model.StageStatus {
 
 	cmd := exec.Command("/bin/sh", "-c", opts.Run)
 	cmd.Dir = e.appDir
-	cmd.Env = append(os.Environ(), append(envs, "PATH="+path)...)
+	cmd.Env = append(os.Environ(), envs...)
 	cmd.Stdout = e.LogPersister
 	cmd.Stderr = e.LogPersister
 	if err := cmd.Run(); err != nil {
