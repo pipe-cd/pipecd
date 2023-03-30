@@ -22,11 +22,6 @@ import (
 	"os/exec"
 	"text/template"
 	"time"
-<<<<<<< HEAD
-
-	"github.com/pkg/errors"
-=======
->>>>>>> master
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
