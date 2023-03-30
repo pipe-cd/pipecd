@@ -63,36 +63,38 @@ func AddSSHConfig(cfg config.PipedGit) error {
 		return fmt.Errorf("failed to create a directory %s: %v", sshDir, err)
 	}
 
-	sshKey, err := cfg.LoadSSHKey()
+	sshKeys, err := cfg.LoadSSHKeys()
 	if err != nil {
 		return err
 	}
 
-	sshKeyFile, err := os.CreateTemp(sshDir, "piped-ssh-key-*")
-	if err != nil {
-		return err
-	}
+	for _, sshKey := range sshKeys {
+		// TODO: Ensure that names do not conflict
+		sshKeyFile, err := os.CreateTemp(sshDir, "piped-ssh-key-*")
+		if err != nil {
+			return err
+		}
 
-	// TODO: Remove this key file when Piped terminating.
-	if _, err := sshKeyFile.Write(sshKey); err != nil {
-		return err
-	}
+		// TODO: Remove this key file when Piped terminating.
+		if _, err := sshKeyFile.Write(sshKey); err != nil {
+			return err
+		}
 
-	configData, err := generateSSHConfig(cfg, sshKeyFile.Name())
-	if err != nil {
-		return err
-	}
+		configData, err := generateSSHConfig(cfg, sshKeyFile.Name())
+		if err != nil {
+			return err
+		}
 
-	f, err := os.OpenFile(cfgPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return fmt.Errorf("could not create/append to %s: %v", cfgPath, err)
-	}
-	defer f.Close()
+		f, err := os.OpenFile(cfgPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return fmt.Errorf("could not create/append to %s: %v", cfgPath, err)
+		}
+		defer f.Close()
 
-	if _, err := f.Write([]byte(configData)); err != nil {
-		return fmt.Errorf("failed to write sshConfig to %s: %v", cfgPath, err)
+		if _, err := f.Write([]byte(configData)); err != nil {
+			return fmt.Errorf("failed to write sshConfig to %s: %v", cfgPath, err)
+		}
 	}
-
 	return nil
 }
 

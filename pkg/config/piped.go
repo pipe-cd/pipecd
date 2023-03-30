@@ -318,13 +318,14 @@ type PipedGit struct {
 	HostName string `json:"hostName,omitempty"`
 	// The path to the private ssh key file.
 	// This will be used to clone the source code of the specified git repositories.
-	SSHKeyFile string `json:"sshKeyFile,omitempty"`
+	SSHKeyFile  string   `json:"sshKeyFile,omitempty"`
+	SSHKeyFiles []string `json:"sshKeyFiles,omitempty"`
 	// Base64 encoded string of ssh-key.
 	SSHKeyData string `json:"sshKeyData,omitempty"`
 }
 
 func (g PipedGit) ShouldConfigureSSHConfig() bool {
-	return g.SSHKeyData != "" || g.SSHKeyFile != ""
+	return g.SSHKeyData != "" || g.SSHKeyFile != "" || len(g.SSHKeyFiles) > 0
 }
 
 func (g PipedGit) LoadSSHKey() ([]byte, error) {
@@ -338,6 +339,35 @@ func (g PipedGit) LoadSSHKey() ([]byte, error) {
 		return os.ReadFile(g.SSHKeyFile)
 	}
 	return nil, errors.New("either sshKeyFile or sshKeyData must be set")
+}
+
+func (g PipedGit) LoadSSHKeys() ([][]byte, error) {
+	var sshKeys [][]byte
+	if g.SSHKeyData == "" && g.SSHKeyFile == "" && len(g.SSHKeyFiles) == 0 {
+		return nil, errors.New("either sshKeyFile or sshKeyData must be set")
+	}
+	for _, sshKeyFile := range g.SSHKeyFiles {
+		sshKey, err := os.ReadFile(sshKeyFile)
+		if err != nil {
+			return nil, err
+		}
+		sshKeys = append(sshKeys, sshKey)
+	}
+	if g.SSHKeyData != "" {
+		sshKey, err := base64.StdEncoding.DecodeString(g.SSHKeyData)
+		if err != nil {
+			return nil, err
+		}
+		sshKeys = append(sshKeys, sshKey)
+	}
+	if g.SSHKeyFile != "" {
+		sshKey, err := os.ReadFile(g.SSHKeyFile)
+		if err != nil {
+			return nil, err
+		}
+		sshKeys = append(sshKeys, sshKey)
+	}
+	return sshKeys, nil
 }
 
 func (g *PipedGit) Mask() {
