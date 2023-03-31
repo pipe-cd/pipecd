@@ -148,6 +148,36 @@ spec:
         chmod +x {{ .BinDir }}/cue-{{ .Version }}
 ```
 
+## External Tool Management
+You can manage external tools `CUSTOM_SYNC` stages use other than PipeCD supports. You have to install `asdf` because this feature manage tools by `asdf` internally. If you want to know more about asdf, please see [official documents](https://asdf-vm.com/).
+You can use specified version of external tools globally according to your piped configuration file. With following setting, piped runs `asdf global cue 0.4.3` when piped starts running.
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  ...
+externalTools:
+  package: cue
+  version: 0.4.3
+```
+
+You can also set specified version locally to your application folder where your application configuration file exists. With following setting, piped runs `asdf local cue 0.4.3` in the folder when piped starts running.
+```
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaApp
+spec:
+...
+  input:
+    customTemplating:
+      externalTool:
+        package: cue
+        version: 0.4.3
+      command: "cue"
+      args:
+        - "dump"
+        - "./..."
+```
+
 ## Reference
 
 See [Configuration Reference](../../../configuration-reference/#kubernetes-application) for the full configuration.
