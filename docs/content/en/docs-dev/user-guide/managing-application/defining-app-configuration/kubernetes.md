@@ -164,7 +164,7 @@ externalTools:
 You can also set specified version locally to your application folder where your application configuration file exists. With following setting, piped runs `asdf local cue 0.4.3` in the folder when piped starts running.
 ```
 apiVersion: pipecd.dev/v1beta1
-kind: LambdaApp
+kind: KubernetesApp
 spec:
 ...
   input:
