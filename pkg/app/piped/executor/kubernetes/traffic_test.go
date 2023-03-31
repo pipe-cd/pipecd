@@ -135,7 +135,7 @@ spec:
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			manifests, err := provider.ParseManifests(tc.manifest)
+			manifests, err := provider.ParseManifestsFromGit(tc.manifest)
 			require.NoError(t, err)
 			require.Equal(t, 1, len(manifests))
 
