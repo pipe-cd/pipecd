@@ -27,7 +27,8 @@ type differ struct {
 	ignoreAddingMapKeys           bool
 	equateEmpty                   bool
 	compareNumberAndNumericString bool
-	ignoredPaths                  []string
+	ignoredPaths                  map[string]struct{}
+	ignoreConfig                  map[string][]string
 
 	result *Result
 }
@@ -58,15 +59,24 @@ func WithCompareNumberAndNumericString() Option {
 	}
 }
 
-// WithIgnoredPaths configures ignored fields.
-func WithIgnoredPaths(paths []string) Option {
+// WithIgnoreConfig configures ignored fields.
+func WithIgnoreConfig(config map[string][]string) Option {
 	return func(d *differ) {
-		d.ignoredPaths = paths
+		d.ignoreConfig = config
+	}
+}
+
+func (d *differ) initIgnoredPaths(key string) {
+	paths := d.ignoreConfig[key]
+	d.ignoredPaths = make(map[string]struct{}, len(paths))
+
+	for _, path := range paths {
+		d.ignoredPaths[path] = struct{}{}
 	}
 }
 
 // DiffUnstructureds calculates the diff between two unstructured objects.
-func DiffUnstructureds(x, y unstructured.Unstructured, opts ...Option) (*Result, error) {
+func DiffUnstructureds(x, y unstructured.Unstructured, key string, opts ...Option) (*Result, error) {
 	var (
 		path = []PathStep{}
 		vx   = reflect.ValueOf(x.Object)
@@ -76,6 +86,8 @@ func DiffUnstructureds(x, y unstructured.Unstructured, opts ...Option) (*Result,
 	for _, opt := range opts {
 		opt(d)
 	}
+
+	d.initIgnoredPaths(key)
 
 	if err := d.diff(path, vx, vy); err != nil {
 		return nil, err
@@ -335,7 +347,7 @@ func newMapPath(path []PathStep, index string) []PathStep {
 func (d *differ) addNode(path []PathStep, tx, ty reflect.Type, vx, vy reflect.Value) {
 	if len(d.ignoredPaths) > 0 {
 		pathString := makePathString(path)
-		if d.isIgnoredPaths(pathString) {
+		if d.isIgnoredPath(pathString) {
 			return
 		}
 		nvx := d.ignoredValue(vx, pathString)
@@ -355,7 +367,7 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 		keys := v.MapKeys()
 		for _, k := range keys {
 			nprefix := prefix + "." + k.String()
-			if d.isIgnoredPaths(nprefix) {
+			if d.isIgnoredPath(nprefix) {
 				continue
 			}
 
@@ -372,7 +384,7 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 		nv := reflect.MakeSlice(v.Type(), 0, 0)
 		for i := 0; i < v.Len(); i++ {
 			nprefix := prefix + "." + strconv.Itoa(i)
-			if d.isIgnoredPaths(nprefix) {
+			if d.isIgnoredPath(nprefix) {
 				continue
 			}
 
@@ -386,7 +398,7 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 
 	case reflect.Interface:
 		nprefix := prefix + "." + v.String()
-		if d.isIgnoredPaths(nprefix) {
+		if d.isIgnoredPath(nprefix) {
 			return reflect.New(v.Type())
 		}
 		return d.ignoredValue(v.Elem(), prefix)
@@ -403,16 +415,23 @@ func (d *differ) ignoredValue(v reflect.Value, prefix string) reflect.Value {
 
 	default:
 		nprefix := prefix + "." + v.String()
-		if d.isIgnoredPaths(nprefix) {
+		if d.isIgnoredPath(nprefix) {
 			return reflect.New(v.Type())
 		}
 		return v
 	}
 }
 
-func (d *differ) isIgnoredPaths(pathString string) bool {
-	for _, ignoredPath := range d.ignoredPaths {
-		if strings.HasPrefix(pathString, ignoredPath) {
+func (d *differ) isIgnoredPath(pathString string) bool {
+	var pathSubStr string
+	pathElms := strings.Split(pathString, ".")
+
+	for i, path := range pathElms {
+		if i != 0 {
+			pathSubStr += "."
+		}
+		pathSubStr += path
+		if _, found := d.ignoredPaths[pathSubStr]; found {
 			return true
 		}
 	}

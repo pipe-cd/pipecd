@@ -70,13 +70,15 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
   const classes = useStyles();
   const [showReason, setShowReason] = useState(false);
 
-  const MAX_DISPLAY_LENGTH = 100;
+  const msgHeader = "Failed to load aplication config: ";
+  const MAX_DISPLAY_LENGTH = 70;
   if (detail.length < MAX_DISPLAY_LENGTH) {
     return (
       <>
         <div className={classes.summary}>
-          <Typography variant="body2" color="textSecondary">
-            {detail}
+          <Typography variant="body2" color="error">
+            {msgHeader}
+            <strong>{detail}</strong>
           </Typography>
         </div>
       </>
@@ -87,12 +89,14 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
     <>
       <div className={classes.summary}>
         {showReason ? (
-          <Typography variant="body2" color="textSecondary">
-            {detail}
+          <Typography variant="body2" color="error">
+            {msgHeader}
+            <strong>{detail}</strong>
           </Typography>
         ) : (
-          <Typography variant="body2" color="textSecondary">
-            {detail.slice(0, MAX_DISPLAY_LENGTH) + "..."}
+          <Typography variant="body2" color="error">
+            {msgHeader}
+            <strong>{detail.slice(0, MAX_DISPLAY_LENGTH) + "..."}</strong>
           </Typography>
         )}
         {detail && (

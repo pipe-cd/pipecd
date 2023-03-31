@@ -53,3 +53,47 @@ This status means the application is deploying and the configuration drift detec
 This feature is automatically enabled for all applications.
 
 You can change the checking interval as well as [configure the notification](../../managing-piped/configuring-notifications/) for these events in `piped` configuration.
+
+### Ignore drift detection for specific fields
+
+>  Note: This feature is currently supported for only Kubernetes application.  
+
+You can also ignore drift detection for specified fields in your application manifests. In other words, even if the selected fields have different values between live state and Git, the application status will not be set to `Out of Sync`.
+
+For example, suppose you have the application's manifest as below 
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+        - args:
+            - hi
+            - hello
+          image: gcr.io/pipecd/helloworld:v1.0.0
+          name: helloworld
+```
+
+If you want to ignore the drift detection for the two sceans
+- pod's replicas
+- `helloworld` container's args
+
+Add the following statements to `app.pipecd.yaml` to ignore diff on those fields.
+
+```yaml
+spec:
+  ...
+  driftDetection:
+    ignoreFields:
+      - apps/v1:Deployment:default:simple#spec.replicas
+      - apps/v1:Deployment:default:simple#spec.template.spec.containers.0.args
+```
+
+Note: The `ignoreFields` is in format `apiVersion:kind:namespace:name#yamlFieldPath`
+
+For more information, see the [configuration reference](../../configuration-reference/#driftdetection).

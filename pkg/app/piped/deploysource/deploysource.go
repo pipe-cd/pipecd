@@ -23,7 +23,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/sourcedecrypter"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/sourceprocesser"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -173,11 +173,19 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 
 	// Decrypt the sealed secrets if needed.
 	if gac.Encryption != nil && p.secretDecrypter != nil && len(gac.Encryption.DecryptionTargets) > 0 {
-		if err := sourcedecrypter.DecryptSecrets(appDir, *gac.Encryption, p.secretDecrypter); err != nil {
+		if err := sourceprocesser.DecryptSecrets(appDir, *gac.Encryption, p.secretDecrypter); err != nil {
 			fmt.Fprintf(lw, "Unable to decrypt the secrets (%v)\n", err)
 			return nil, err
 		}
 		fmt.Fprintf(lw, "Successfully decrypted secrets: %v\n", gac.Encryption.DecryptionTargets)
+	}
+
+	if gac.Attachment != nil && len(gac.Attachment.Targets) > 0 {
+		if err := sourceprocesser.AttachData(appDir, *gac.Attachment); err != nil {
+			fmt.Fprintf(lw, "Unable to attach the data (%v)\n", err)
+			return nil, err
+		}
+		fmt.Fprintf(lw, "Successfully attached data: %v\n", gac.Attachment.Targets)
 	}
 
 	return &DeploySource{

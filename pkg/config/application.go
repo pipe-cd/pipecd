@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -49,6 +50,8 @@ type GenericApplicationSpec struct {
 	Timeout Duration `json:"timeout,omitempty" default:"6h"`
 	// List of encrypted secrets and targets that should be decoded before using.
 	Encryption *SecretEncryption `json:"encryption"`
+	// List of files that should be attached to application manifests before using.
+	Attachment *Attachment `json:"attachment"`
 	// Additional configuration used while sending notification to external services.
 	DeploymentNotification *DeploymentNotification `json:"notification"`
 	// List of the configuration for event watcher.
@@ -148,11 +151,23 @@ func (s *GenericApplicationSpec) Validate() error {
 		}
 	}
 
+	if am := s.Attachment; am != nil {
+		if err := am.Validate(); err != nil {
+			return err
+		}
+	}
+
 	if s.DeploymentNotification != nil {
 		for _, m := range s.DeploymentNotification.Mentions {
 			if err := m.Validate(); err != nil {
 				return err
 			}
+		}
+	}
+
+	if dd := s.DriftDetection; dd != nil {
+		if err := dd.Validate(); err != nil {
+			return err
 		}
 	}
 
@@ -414,6 +429,23 @@ func (c *CustomSyncOptions) Validate() error {
 	if c.Run == "" {
 		return fmt.Errorf("the CUSTOM_SYNC stage requires run field")
 	}
+	for _, externalTool := range c.ExternalTools {
+		if err := externalTool.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+type ExternalTool struct {
+	Package string `json:"package"`
+	Version string `json:"version" default:"latest"`
+}
+
+func (c *ExternalTool) Validate() error {
+	if c.Package == "" {
+		return fmt.Errorf("the externalTool requires package field")
+	}
 	return nil
 }
 
@@ -520,6 +552,25 @@ func (e *SecretEncryption) Validate() error {
 		}
 		if v == "" {
 			return fmt.Errorf("value field of %s in encryptedSecrets must not be empty", k)
+		}
+	}
+	return nil
+}
+
+type Attachment struct {
+	// Map of name to refer with the file path which contain embedding source data.
+	Sources map[string]string `json:"sources"`
+	// List of files to be embedded before using.
+	Targets []string `json:"targets"`
+}
+
+func (e *Attachment) Validate() error {
+	for k, v := range e.Sources {
+		if k == "" {
+			return fmt.Errorf("key field in sources must not be empty")
+		}
+		if v == "" {
+			return fmt.Errorf("value field in sources must not be empty")
 		}
 	}
 	return nil
@@ -651,7 +702,18 @@ func (c *DeploymentChainTriggerCondition) Validate() error {
 }
 
 type DriftDetection struct {
+	// IgnoreFields are a list of 'apiVersion:kind:namespace:name#fieldPath'
 	IgnoreFields []string `json:"ignoreFields"`
+}
+
+func (dd *DriftDetection) Validate() error {
+	for _, ignoreField := range dd.IgnoreFields {
+		splited := strings.Split(ignoreField, "#")
+		if len(splited) != 2 {
+			return fmt.Errorf("ignoreFields must be in the form of 'apiVersion:kind:namespace:name#fieldPath'")
+		}
+	}
+	return nil
 }
 
 func LoadApplication(repoPath, configRelPath string, appKind model.ApplicationKind) (*GenericApplicationSpec, error) {

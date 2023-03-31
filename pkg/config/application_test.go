@@ -695,6 +695,55 @@ func TestCustomSyncConfig(t *testing.T) {
 			fileName:      "testdata/application/custom-sync-without-run.yaml",
 			expectedError: fmt.Errorf("the CUSTOM_SYNC stage requires run field"),
 		},
+		{
+			fileName:           "testdata/application/custom-sync-without-version.yaml",
+			expectedKind:       KindLambdaApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedSpec: &LambdaApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
+					Timeout: Duration(6 * time.Hour),
+					Pipeline: &DeploymentPipeline{
+						Stages: []PipelineStage{
+							{
+								Name: model.StageCustomSync,
+								Desc: "deploy by sam",
+								CustomSyncOptions: &CustomSyncOptions{
+									Timeout: Duration(6 * time.Hour),
+									Envs: map[string]string{
+										"AWS_PROFILE": "default",
+									},
+									Run: "sam build\nsam deploy -g --profile $AWS_PROFILE\n",
+									ExternalTools: []ExternalTool{
+										{
+											Package: "aws-sam-cli",
+											Version: "latest",
+										},
+									},
+								},
+							},
+						},
+					},
+					Trigger: Trigger{
+						OnOutOfSync: OnOutOfSync{
+							Disabled:  newBoolPointer(true),
+							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
+						},
+					},
+				},
+				Input: LambdaDeploymentInput{
+					FunctionManifestFile: "function.yaml",
+					AutoRollback:         newBoolPointer(true),
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			fileName:      "testdata/application/custom-sync-without-package.yaml",
+			expectedError: fmt.Errorf("the externalTool requires package field"),
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.fileName, func(t *testing.T) {

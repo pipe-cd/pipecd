@@ -27,6 +27,8 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
 
+	"github.com/pkg/errors"
+
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
@@ -276,6 +278,7 @@ func (r *registry) ExternalTool(ctx context.Context, appDir string, config confi
 	} else {
 		script = fmt.Sprintf("cd %s\nasdf local %s %s", appDir, config.Package, config.Version)
 	}
+
 	cmd := exec.CommandContext(ctx, "/bin/sh", "-l", "-c", script)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
