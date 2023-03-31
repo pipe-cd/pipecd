@@ -129,25 +129,6 @@ spec:
         - "./..."
 ```
 
-To use templating tools, the binary you use should be placed in the directroy `~/.piped/tools`. The name of binary file must be the same as the command or `<command>-<version>`. Adding to `installScriptTemplate` field, PipeCD can manage binaries to install in the directory. If command binaries are not in the directory or command version is different from specified version, PipeCD downloads commands by installScript. The install script is run in a temporary directory that PipeCD creates.
-
-Enumerate external binaries that users want to use in a piped configuration file. They can use {{ .BinDir }} that is replacement of the directory (~/.piped/tools) where binary script should be installed and {{ .Version }} that is replacement of the value of the field version.
-```yaml
-spec:
-...
-  input:
-    customTemplating:
-      command: "cue"
-      args:
-        - "dump"
-        - "./..."
-      version: 0.4.3
-      installScriptTemplate: |
-        curl -L https://github.com/cue-lang/cue/releases/download/v{{ .Version }}/cue_v{{ .Version }}_darwin_arm64.tar.gz | tar xvz
-        mv cue {{ .BinDir }}/cue-{{ .Version }}
-        chmod +x {{ .BinDir }}/cue-{{ .Version }}
-```
-
 ## External Tool Management
 You can manage external tools `CUSTOM_SYNC` stages use other than PipeCD supports. You have to install `asdf` because this feature manage tools by `asdf` internally. If you want to know more about asdf, please see [official documents](https://asdf-vm.com/).
 You can use specified version of external tools globally according to your piped configuration file. With following setting, piped runs `asdf global cue 0.4.3` when piped starts running.
