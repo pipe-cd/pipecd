@@ -275,13 +275,13 @@ spec:
         app: simple
         pipecd.dev/variant: primary
 `
-	generatedManifests, err := provider.ParseManifests(expected)
+	generatedManifests, err := provider.ParseManifestsFromGit(expected)
 	require.NoError(t, err)
 	require.Equal(t, 1, len(generatedManifests))
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			manifests, err := provider.ParseManifests(tc.manifest)
+			manifests, err := provider.ParseManifestsFromGit(tc.manifest)
 			require.NoError(t, err)
 			require.Equal(t, 1, len(manifests))
 
@@ -468,7 +468,7 @@ spec:
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
-			manifests, err := provider.ParseManifests(tc.manifest)
+			manifests, err := provider.ParseManifestsFromGit(tc.manifest)
 			require.NoError(t, err)
 			ag := &applierGroup{defaultApplier: tc.applier}
 			err = applyManifests(ctx, ag, manifests, tc.namespace, &fakeLogPersister{})
@@ -768,10 +768,10 @@ data:
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			manifests, err := provider.ParseManifests(tc.manifests)
+			manifests, err := provider.ParseManifestsFromGit(tc.manifests)
 			require.NoError(t, err)
 
-			expected, err := provider.ParseManifests(tc.expected)
+			expected, err := provider.ParseManifestsFromGit(tc.expected)
 			require.NoError(t, err)
 
 			err = annotateConfigHash(manifests)

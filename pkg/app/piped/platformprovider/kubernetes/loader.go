@@ -148,7 +148,7 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 			err = fmt.Errorf("unable to run helm template: %w", err)
 			return
 		}
-		manifests, err = ParseManifests(data)
+		manifests, err = ParseManifestsFromGit(data)
 
 	case TemplatingMethodKustomize:
 		var data string
@@ -157,7 +157,7 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 			err = fmt.Errorf("unable to run kustomize template: %w", err)
 			return
 		}
-		manifests, err = ParseManifests(data)
+		manifests, err = ParseManifestsFromGit(data)
 
 	case TemplatingMethodNone:
 		manifests, err = LoadPlainYAMLManifests(l.appDir, l.input.Manifests, l.configFileName)

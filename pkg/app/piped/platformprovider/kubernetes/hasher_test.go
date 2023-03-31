@@ -158,7 +158,7 @@ spec:
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			manifests, err := ParseManifests(tc.manifests)
+			manifests, err := ParseManifestsFromGit(tc.manifests)
 			require.NoError(t, err)
 
 			out, err := HashManifests(manifests)

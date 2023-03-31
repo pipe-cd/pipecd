@@ -160,7 +160,7 @@ func ParseFromStructuredObject(s interface{}) (Manifest, error) {
 	}
 
 	return Manifest{
-		Key: MakeResourceKeyFromManifest(obj),
+		Key: MakeResourceKeyFromClusterManifest(obj),
 		u:   obj,
 	}, nil
 }
@@ -214,10 +214,10 @@ func LoadManifestsFromYAMLFile(path string) ([]Manifest, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ParseManifests(string(data))
+	return ParseManifestsFromGit(string(data))
 }
 
-func ParseManifests(data string) ([]Manifest, error) {
+func ParseManifestsFromGit(data string) ([]Manifest, error) {
 	const separator = "\n---"
 	var (
 		parts     = strings.Split(data, separator)
@@ -241,7 +241,38 @@ func ParseManifests(data string) ([]Manifest, error) {
 			continue
 		}
 		manifests = append(manifests, Manifest{
-			Key: MakeResourceKeyFromManifest(&obj),
+			Key: MakeResourceKeyFromGitManifest(&obj),
+			u:   &obj,
+		})
+	}
+	return manifests, nil
+}
+
+func ParseManifestsFromCluster(data string) ([]Manifest, error) {
+	const separator = "\n---"
+	var (
+		parts     = strings.Split(data, separator)
+		manifests = make([]Manifest, 0, len(parts))
+	)
+
+	for i, part := range parts {
+		// Ignore all the cases where no content between separator.
+		if len(strings.TrimSpace(part)) == 0 {
+			continue
+		}
+		// Append new line which trim by document separator.
+		if i != len(parts)-1 {
+			part += "\n"
+		}
+		var obj unstructured.Unstructured
+		if err := yaml.Unmarshal([]byte(part), &obj); err != nil {
+			return nil, err
+		}
+		if len(obj.Object) == 0 {
+			continue
+		}
+		manifests = append(manifests, Manifest{
+			Key: MakeResourceKeyFromClusterManifest(&obj),
 			u:   &obj,
 		})
 	}

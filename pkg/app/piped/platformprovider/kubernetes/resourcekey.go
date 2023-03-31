@@ -246,7 +246,7 @@ func (k ResourceKey) IsEqualWithIgnoringNamespace(a ResourceKey) bool {
 	return true
 }
 
-func MakeResourceKeyFromManifest(obj *unstructured.Unstructured) ResourceKey {
+func MakeResourceKeyFromGitManifest(obj *unstructured.Unstructured) ResourceKey {
 	k := ResourceKey{
 		APIVersion: obj.GetAPIVersion(),
 		Kind:       obj.GetKind(),
@@ -260,7 +260,7 @@ func MakeResourceKeyFromManifest(obj *unstructured.Unstructured) ResourceKey {
 }
 
 // when Namespace is empty, pipecd assume the resource scoped cluster
-func MakeResourceKeyFromCluster(obj *unstructured.Unstructured) ResourceKey {
+func MakeResourceKeyFromClusterManifest(obj *unstructured.Unstructured) ResourceKey {
 	k := ResourceKey{
 		APIVersion: obj.GetAPIVersion(),
 		Kind:       obj.GetKind(),

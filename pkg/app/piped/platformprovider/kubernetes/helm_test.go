@@ -70,7 +70,7 @@ func TestTemplateLocalChart_WithNamespace(t *testing.T) {
 
 	out = strings.TrimPrefix(out, "---")
 
-	manifests, _ := ParseManifests(out)
+	manifests, _ := ParseManifestsFromGit(out)
 	for _, manifest := range manifests {
 		metadata, err := manifest.GetNestedMap("metadata")
 		require.NoError(t, err)

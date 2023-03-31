@@ -209,7 +209,7 @@ func (c *Kubectl) Get(ctx context.Context, kubeconfig, namespace string, r Resou
 	if err != nil {
 		return Manifest{}, fmt.Errorf("failed to get: %s, %v", string(out), err)
 	}
-	ms, err := ParseManifests(string(out))
+	ms, err := ParseManifestsFromCluster(string(out))
 	if err != nil {
 		return Manifest{}, fmt.Errorf("failed to parse manifests %v: %v", r, err)
 	}

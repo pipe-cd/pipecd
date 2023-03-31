@@ -136,7 +136,7 @@ func (a *applier) Delete(ctx context.Context, k ResourceKey) (err error) {
 		return err
 	}
 
-	if k.String() != m.GetAnnotations()[LabelResourceKey] && k.Namespace != "" {
+	if k.String() != m.GetAnnotations()[LabelResourceKey] && m.Key.Namespace != "" {
 		return ErrNotFound
 	}
 

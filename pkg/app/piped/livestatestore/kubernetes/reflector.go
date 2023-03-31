@@ -248,7 +248,7 @@ func (r *reflector) start(ctx context.Context) error {
 
 func (r *reflector) onObjectAdd(obj interface{}) {
 	u := obj.(*unstructured.Unstructured)
-	key := provider.MakeResourceKeyFromCluster(u)
+	key := provider.MakeResourceKeyFromClusterManifest(u)
 
 	// Ignore all predefined ones.
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
@@ -282,7 +282,7 @@ func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 	oldU := oldObj.(*unstructured.Unstructured)
 
 	// Ignore all predefined ones.
-	key := provider.MakeResourceKeyFromCluster(u)
+	key := provider.MakeResourceKeyFromClusterManifest(u)
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
 		kubernetesmetrics.IncResourceEventsCounter(
 			kubernetesmetrics.LabelEventUpdate,
@@ -311,7 +311,7 @@ func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 
 func (r *reflector) onObjectDelete(obj interface{}) {
 	u := obj.(*unstructured.Unstructured)
-	key := provider.MakeResourceKeyFromCluster(u)
+	key := provider.MakeResourceKeyFromClusterManifest(u)
 
 	// Ignore all predefined ones.
 	if _, ok := ignoreResourceKeys[key.String()]; ok {

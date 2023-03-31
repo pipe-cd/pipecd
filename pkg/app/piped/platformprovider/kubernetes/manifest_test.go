@@ -185,7 +185,7 @@ metadata:
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			m, err := ParseManifests(tc.manifests)
+			m, err := ParseManifestsFromGit(tc.manifests)
 			require.NoError(t, err)
 			assert.ElementsMatch(t, m, tc.want)
 		})

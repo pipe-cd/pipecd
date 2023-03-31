@@ -721,7 +721,7 @@ func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provide
 	}
 
 	buildManifest := func(bytes []byte) (*provider.Manifest, error) {
-		manifests, err := provider.ParseManifests(string(bytes))
+		manifests, err := provider.ParseManifestsFromGit(string(bytes))
 		if err != nil {
 			return nil, err
 		}
