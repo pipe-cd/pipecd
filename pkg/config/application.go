@@ -449,11 +449,6 @@ func (c *ExternalTool) Validate() error {
 	return nil
 }
 
-type ExternalTool struct {
-	Package string `json:"package"`
-	Version string `json:"version"`
-}
-
 // AnalysisStageOptions contains all configurable values for a K8S_ANALYSIS stage.
 type AnalysisStageOptions struct {
 	// How long the analysis process should be executed.

@@ -27,8 +27,6 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
 
-	"github.com/pkg/errors"
-
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
