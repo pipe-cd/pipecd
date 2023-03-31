@@ -82,7 +82,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		e.LogPersister.Infof(fmt.Sprintf("Check %s %s", config.Package, config.Version))
 		installedAsdf, addedPlugin, installedVersion, err := toolregistry.DefaultRegistry().ExternalTool(ctx, e.appDir, config)
 		if installedAsdf {
-			e.LogPersister.Infof(fmt.Sprintf(" asdf has just been installed"))
+			e.LogPersister.Infof(" asdf has just been installed")
 		}
 		if addedPlugin {
 			e.LogPersister.Infof(fmt.Sprintf(" plugin %s has just been added", config.Package))
