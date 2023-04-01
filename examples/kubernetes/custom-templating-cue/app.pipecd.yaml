@@ -11,8 +11,6 @@ spec:
       args:
         - "dump"
         - "./..."
-      version: 0.4.3
-      installScriptTemplate: |
-        curl -L https://github.com/cue-lang/cue/releases/download/v{{ .Version }}/cue_v{{ .Version }}_darwin_arm64.tar.gz | tar xvz
-        mv cue {{ .BinDir }}/cue-{{ .Version }}
-        chmod +x {{ .BinDir }}/cue-{{ .Version }}
+      externalTool: |
+        package: cue
+        version: 0.4.3
