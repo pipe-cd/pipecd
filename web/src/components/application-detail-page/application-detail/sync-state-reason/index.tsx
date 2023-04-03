@@ -21,6 +21,11 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(1),
     marginRight: theme.spacing(1),
   },
+  showText: {
+    color: theme.palette.grey[500],
+    marginLeft: theme.spacing(0.5),
+    cursor: "pointer",
+  },
 }));
 
 export interface SyncStateReasonProps {
@@ -71,7 +76,7 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
   const [showReason, setShowReason] = useState(false);
 
   const msgHeader = "Failed to load aplication config: ";
-  const MAX_DISPLAY_LENGTH = 70;
+  const MAX_DISPLAY_LENGTH = 200;
   if (detail.length < MAX_DISPLAY_LENGTH) {
     return (
       <>
@@ -100,14 +105,12 @@ export const InvalidConfigReason: FC<SyncStateReasonProps> = ({ detail }) => {
           </Typography>
         )}
         {detail && (
-          <Button
-            variant="text"
-            size="small"
-            className={classes.showButton}
+          <span
+            className={classes.showText}
             onClick={() => setShowReason(!showReason)}
           >
-            {showReason ? "HIDE" : "MORE"}
-          </Button>
+            {showReason ? "show less" : "show more"}
+          </span>
         )}
       </div>
     </>
