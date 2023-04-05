@@ -42,6 +42,7 @@ service APIService {
 
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
 
+    rpc RegisterPiped(RegisterPipedRequest) returns (RegisterPipedResponse) {}
     rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {}
     rpc DisablePiped(DisablePipedRequest) returns (DisablePipedResponse) {}
 
@@ -101,6 +102,16 @@ message ListApplicationsRequest {
 message ListApplicationsResponse {
     repeated model.Application applications = 1;
     string cursor = 2;
+}
+
+message RegisterPipedRequest {
+    string name = 1 [(validate.rules).string.min_len = 1];
+    string desc = 2;
+}
+
+message RegisterPipedResponse {
+    string id  = 1;
+    string key = 2;
 }
 
 message EnableApplicationRequest {
