@@ -56,6 +56,7 @@ type apiDeploymentStore interface {
 type apiPipedStore interface {
 	Get(ctx context.Context, id string) (*model.Piped, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Piped, error)
+	Add(ctx context.Context, piped *model.Piped) error
 	EnablePiped(ctx context.Context, id string) error
 	DisablePiped(ctx context.Context, id string) error
 }
@@ -650,6 +651,38 @@ func (a *API) GetCommand(ctx context.Context, req *apiservice.GetCommandRequest)
 
 	return &apiservice.GetCommandResponse{
 		Command: cmd,
+	}, nil
+}
+
+func (a *API) RegisterPiped(ctx context.Context, req *apiservice.RegisterPipedRequest) (*apiservice.RegisterPipedResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	pipedKey, pipedKeyHash, err := model.GeneratePipedKey()
+	if err != nil {
+		a.logger.Error("failed to generate piped key", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to generate the piped key")
+	}
+
+	piped := model.Piped{
+		Id:        uuid.New().String(),
+		Name:      req.Name,
+		Desc:      req.Desc,
+		ProjectId: key.ProjectId,
+	}
+	if err := piped.AddKey(pipedKeyHash, key.Name, time.Now()); err != nil {
+		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("Failed to create key: %v", err))
+	}
+
+	if err = a.pipedStore.Add(ctx, &piped); err != nil {
+		return nil, gRPCStoreError(err, fmt.Sprintf("add piped %s", piped.Id))
+	}
+
+	return &apiservice.RegisterPipedResponse{
+		Id:  piped.Id,
+		Key: pipedKey,
 	}, nil
 }
 

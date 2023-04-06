@@ -33,6 +33,7 @@ type APIServiceClient interface {
 	GetDeployment(ctx context.Context, in *GetDeploymentRequest, opts ...grpc.CallOption) (*GetDeploymentResponse, error)
 	ListDeployments(ctx context.Context, in *ListDeploymentsRequest, opts ...grpc.CallOption) (*ListDeploymentsResponse, error)
 	GetCommand(ctx context.Context, in *GetCommandRequest, opts ...grpc.CallOption) (*GetCommandResponse, error)
+	RegisterPiped(ctx context.Context, in *RegisterPipedRequest, opts ...grpc.CallOption) (*RegisterPipedResponse, error)
 	EnablePiped(ctx context.Context, in *EnablePipedRequest, opts ...grpc.CallOption) (*EnablePipedResponse, error)
 	DisablePiped(ctx context.Context, in *DisablePipedRequest, opts ...grpc.CallOption) (*DisablePipedResponse, error)
 	RegisterEvent(ctx context.Context, in *RegisterEventRequest, opts ...grpc.CallOption) (*RegisterEventResponse, error)
@@ -149,6 +150,15 @@ func (c *aPIServiceClient) GetCommand(ctx context.Context, in *GetCommandRequest
 	return out, nil
 }
 
+func (c *aPIServiceClient) RegisterPiped(ctx context.Context, in *RegisterPipedRequest, opts ...grpc.CallOption) (*RegisterPipedResponse, error) {
+	out := new(RegisterPipedResponse)
+	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/RegisterPiped", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *aPIServiceClient) EnablePiped(ctx context.Context, in *EnablePipedRequest, opts ...grpc.CallOption) (*EnablePipedResponse, error) {
 	out := new(EnablePipedResponse)
 	err := c.cc.Invoke(ctx, "/grpc.service.apiservice.APIService/EnablePiped", in, out, opts...)
@@ -227,6 +237,7 @@ type APIServiceServer interface {
 	GetDeployment(context.Context, *GetDeploymentRequest) (*GetDeploymentResponse, error)
 	ListDeployments(context.Context, *ListDeploymentsRequest) (*ListDeploymentsResponse, error)
 	GetCommand(context.Context, *GetCommandRequest) (*GetCommandResponse, error)
+	RegisterPiped(context.Context, *RegisterPipedRequest) (*RegisterPipedResponse, error)
 	EnablePiped(context.Context, *EnablePipedRequest) (*EnablePipedResponse, error)
 	DisablePiped(context.Context, *DisablePipedRequest) (*DisablePipedResponse, error)
 	RegisterEvent(context.Context, *RegisterEventRequest) (*RegisterEventResponse, error)
@@ -273,6 +284,9 @@ func (UnimplementedAPIServiceServer) ListDeployments(context.Context, *ListDeplo
 }
 func (UnimplementedAPIServiceServer) GetCommand(context.Context, *GetCommandRequest) (*GetCommandResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCommand not implemented")
+}
+func (UnimplementedAPIServiceServer) RegisterPiped(context.Context, *RegisterPipedRequest) (*RegisterPipedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterPiped not implemented")
 }
 func (UnimplementedAPIServiceServer) EnablePiped(context.Context, *EnablePipedRequest) (*EnablePipedResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EnablePiped not implemented")
@@ -506,6 +520,24 @@ func _APIService_GetCommand_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _APIService_RegisterPiped_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterPipedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(APIServiceServer).RegisterPiped(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.service.apiservice.APIService/RegisterPiped",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(APIServiceServer).RegisterPiped(ctx, req.(*RegisterPipedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _APIService_EnablePiped_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(EnablePipedRequest)
 	if err := dec(in); err != nil {
@@ -682,6 +714,10 @@ var APIService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCommand",
 			Handler:    _APIService_GetCommand_Handler,
+		},
+		{
+			MethodName: "RegisterPiped",
+			Handler:    _APIService_RegisterPiped_Handler,
 		},
 		{
 			MethodName: "EnablePiped",
