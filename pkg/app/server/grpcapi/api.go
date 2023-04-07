@@ -654,6 +654,28 @@ func (a *API) GetCommand(ctx context.Context, req *apiservice.GetCommandRequest)
 	}, nil
 }
 
+func (a *API) GetPiped(ctx context.Context, req *apiservice.GetPipedRequest) (*apiservice.GetPipedResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+	if piped.ProjectId != key.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested piped does not belong to your project")
+	}
+
+	// Redact all sensitive data inside piped message before sending to the client.
+	piped.RedactSensitiveData()
+
+	return &apiservice.GetPipedResponse{
+		Piped: piped,
+	}, nil
+}
+
 func (a *API) RegisterPiped(ctx context.Context, req *apiservice.RegisterPipedRequest) (*apiservice.RegisterPipedResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
 	if err != nil {
