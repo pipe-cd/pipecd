@@ -24,6 +24,7 @@ import "pkg/model/deployment.proto";
 import "pkg/model/logblock.proto";
 import "pkg/model/command.proto";
 import "pkg/model/planpreview.proto";
+import "pkg/model/piped.proto";
 
 // APIService contains all RPC definitions for external service, pipectl.
 // All of these RPCs are authenticated by using API key.
@@ -42,6 +43,7 @@ service APIService {
 
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
 
+    rpc GetPiped(GetPipedRequest) returns (GetPipedResponse) {}
     rpc RegisterPiped(RegisterPipedRequest) returns (RegisterPipedResponse) {}
     rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {}
     rpc DisablePiped(DisablePipedRequest) returns (DisablePipedResponse) {}
@@ -102,6 +104,14 @@ message ListApplicationsRequest {
 message ListApplicationsResponse {
     repeated model.Application applications = 1;
     string cursor = 2;
+}
+
+message GetPipedRequest {
+    string piped_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetPipedResponse {
+    model.Piped piped = 1;
 }
 
 message RegisterPipedRequest {
