@@ -282,20 +282,11 @@ func (r *registry) installExternalToolVersion(ctx context.Context, config config
 }
 
 func (r *registry) installAsdf(ctx context.Context) error {
-	workingDir, err := os.MkdirTemp("", "asdf-install")
-	if err != nil {
-		return err
-	}
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return fmt.Errorf("failed to detect the current user's home directory: %w", err)
 	}
 	version := defaultAsdfVersion
-	// shell := os.Getenv("SHELL")
-	// if shell == "" {
-	// 	return fmt.Errorf("failed to detect the current shell")
-	// }
-	defer os.RemoveAll(workingDir)
 
 	var (
 		buf  bytes.Buffer
