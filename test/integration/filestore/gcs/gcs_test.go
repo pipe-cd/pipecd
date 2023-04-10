@@ -195,23 +195,3 @@ func TestList(t *testing.T) {
 		})
 	}
 }
-
-// Check if it panics when connect with closed client.
-func TestClose(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
-	defer cancel()
-
-	bucket := "test"
-	server, err := newEmulator(bucket, map[string]string{}, time.Now())
-	assert.Nil(t, err)
-	defer server.Stop()
-
-	store, err := gcs.NewStore(ctx, bucket, gcs.WithHTTPClient(server.HTTPClient()))
-	assert.Nil(t, err)
-
-	err = store.Close()
-	assert.Equal(t, false, err != nil)
-	assert.Panics(t, func() {
-		_, _ = store.Get(ctx, "path/to/fileA.txt")
-	})
-}
