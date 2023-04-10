@@ -57,6 +57,7 @@ type apiPipedStore interface {
 	Get(ctx context.Context, id string) (*model.Piped, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Piped, error)
 	Add(ctx context.Context, piped *model.Piped) error
+	UpdateInfo(ctx context.Context, id, name, desc string) error
 	EnablePiped(ctx context.Context, id string) error
 	DisablePiped(ctx context.Context, id string) error
 }
@@ -706,6 +707,17 @@ func (a *API) RegisterPiped(ctx context.Context, req *apiservice.RegisterPipedRe
 		Id:  piped.Id,
 		Key: pipedKey,
 	}, nil
+}
+
+func (a *API) UpdatePiped(ctx context.Context, req *apiservice.UpdatePipedRequest) (*apiservice.UpdatePipedResponse, error) {
+	updater := func(ctx context.Context, pipedID string) error {
+		return a.pipedStore.UpdateInfo(ctx, req.PipedId, req.Name, req.Desc)
+	}
+	if err := a.updatePiped(ctx, req.PipedId, updater); err != nil {
+		return nil, err
+	}
+
+	return &apiservice.UpdatePipedResponse{}, nil
 }
 
 func (a *API) EnablePiped(ctx context.Context, req *apiservice.EnablePipedRequest) (*apiservice.EnablePipedResponse, error) {
