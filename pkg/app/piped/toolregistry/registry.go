@@ -27,8 +27,6 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
 
-	"github.com/pkg/errors"
-
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
@@ -38,7 +36,7 @@ type Registry interface {
 	Kustomize(ctx context.Context, version string) (string, bool, error)
 	Helm(ctx context.Context, version string) (string, bool, error)
 	Terraform(ctx context.Context, version string) (string, bool, error)
-	ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (bool, bool, error)
+	ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (bool, bool, bool, error)
 }
 
 var defaultRegistry *registry
@@ -224,18 +222,25 @@ func (r *registry) Terraform(ctx context.Context, version string) (string, bool,
 	return path, true, nil
 }
 
-func (r *registry) ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (addedPlugin bool, installed bool, err error) {
+func (r *registry) ExternalTool(ctx context.Context, appDir string, config config.ExternalTool) (installedAsdf, addedPlugin, installedVersion bool, err error) {
 	name := config.Package + config.Version
-	installed = false
+
+	installedAsdf = false
 	addedPlugin = false
+	installedVersion = false
 
 	asdfFound, err := findAsdf(ctx)
 	if err != nil {
 		return
 	}
 	if !asdfFound {
-		err = errors.Errorf("unable to find asdf")
-		return
+		_, err, _ = r.installGroup.Do(name, func() (interface{}, error) {
+			return nil, r.installAsdf(ctx)
+		})
+		if err != nil {
+			return
+		}
+		installedAsdf = true
 	}
 
 	pluginFound, err := findPlugin(ctx, config)
@@ -263,7 +268,7 @@ func (r *registry) ExternalTool(ctx context.Context, appDir string, config confi
 		if err != nil {
 			return
 		}
-		installed = true
+		installedVersion = true
 	}
 	var script string
 	if appDir == "" {
@@ -271,7 +276,8 @@ func (r *registry) ExternalTool(ctx context.Context, appDir string, config confi
 	} else {
 		script = fmt.Sprintf("cd %s\nasdf local %s %s", appDir, config.Package, config.Version)
 	}
-	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
+
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-l", "-c", script)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		r.logger.Error("failed to set %s version %s",
@@ -287,7 +293,7 @@ func (r *registry) ExternalTool(ctx context.Context, appDir string, config confi
 
 func findAsdf(ctx context.Context) (bool, error) {
 	script := "which asdf"
-	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-l", "-c", script)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		if string(out) == "" {
@@ -300,7 +306,7 @@ func findAsdf(ctx context.Context) (bool, error) {
 
 func findPlugin(ctx context.Context, config config.ExternalTool) (bool, error) {
 	script := fmt.Sprintf("asdf list %s", config.Package)
-	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-l", "-c", script)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		if string(out) == fmt.Sprintf("No such plugin: %s\n", config.Package) {
@@ -313,7 +319,7 @@ func findPlugin(ctx context.Context, config config.ExternalTool) (bool, error) {
 
 func findVersion(ctx context.Context, config config.ExternalTool) (bool, error) {
 	script := fmt.Sprintf("asdf list %s %s", config.Package, config.Version)
-	cmd := exec.CommandContext(ctx, "/bin/sh", "-c", script)
+	cmd := exec.CommandContext(ctx, "/bin/sh", "-l", "-c", script)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		if string(out) == fmt.Sprintf("No compatible versions installed (%s %s)\n", config.Package, config.Version) {
