@@ -37,6 +37,7 @@ spec:
 | secretManagement | [SecretManagement](#secretmanagement) | The using secret management method. | No |
 | notifications | [Notifications](#notifications) | Sending notifications to Slack, Webhook... | No |
 | appSelector | map[string]string | List of labels to filter all applications this piped will handle. Currently, it is only be used to filter the applications suggested for adding from the control plane. | No |
+| externalTools | [][ExternalTool](#externaltool) | Configuration for tools to be used by the `CUSTOM_SYNC` stage. | No |
 
 ## Git
 
@@ -265,3 +266,10 @@ Must be one of the following structs:
 | signatureKey | string | The HTTP header key used to store the configured signature in each event. Default is "PipeCD-Signature". | No |
 | signatureValue | string | The value of signature included in header of each event request. It can be used to verify the received events. | No |
 | signatureValueFile | string | The path to the signature value file. | No |
+
+### ExternalTool
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| package | string | Name of the asdf plugin, which contains the executable command. The list is available [here](https://github.com/asdf-vm/asdf-plugins). | Yes |
+| version | string | Plugin version to use. Default is `latest`. | No |
