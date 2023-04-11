@@ -1055,6 +1055,695 @@ var _ interface {
 	ErrorName() string
 } = ListApplicationsResponseValidationError{}
 
+// Validate checks the field values on GetPipedRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *GetPipedRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetPipedRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetPipedRequestMultiError, or nil if none found.
+func (m *GetPipedRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetPipedRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetPipedId()) < 1 {
+		err := GetPipedRequestValidationError{
+			field:  "PipedId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return GetPipedRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetPipedRequestMultiError is an error wrapping multiple validation errors
+// returned by GetPipedRequest.ValidateAll() if the designated constraints
+// aren't met.
+type GetPipedRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetPipedRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetPipedRequestMultiError) AllErrors() []error { return m }
+
+// GetPipedRequestValidationError is the validation error returned by
+// GetPipedRequest.Validate if the designated constraints aren't met.
+type GetPipedRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetPipedRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetPipedRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetPipedRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetPipedRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetPipedRequestValidationError) ErrorName() string { return "GetPipedRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GetPipedRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetPipedRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetPipedRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetPipedRequestValidationError{}
+
+// Validate checks the field values on GetPipedResponse with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *GetPipedResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetPipedResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetPipedResponseMultiError, or nil if none found.
+func (m *GetPipedResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetPipedResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetPiped()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, GetPipedResponseValidationError{
+					field:  "Piped",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, GetPipedResponseValidationError{
+					field:  "Piped",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetPiped()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GetPipedResponseValidationError{
+				field:  "Piped",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return GetPipedResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetPipedResponseMultiError is an error wrapping multiple validation errors
+// returned by GetPipedResponse.ValidateAll() if the designated constraints
+// aren't met.
+type GetPipedResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetPipedResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetPipedResponseMultiError) AllErrors() []error { return m }
+
+// GetPipedResponseValidationError is the validation error returned by
+// GetPipedResponse.Validate if the designated constraints aren't met.
+type GetPipedResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetPipedResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetPipedResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetPipedResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetPipedResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetPipedResponseValidationError) ErrorName() string { return "GetPipedResponseValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GetPipedResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetPipedResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetPipedResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetPipedResponseValidationError{}
+
+// Validate checks the field values on RegisterPipedRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *RegisterPipedRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on RegisterPipedRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// RegisterPipedRequestMultiError, or nil if none found.
+func (m *RegisterPipedRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *RegisterPipedRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := RegisterPipedRequestValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Desc
+
+	if len(errors) > 0 {
+		return RegisterPipedRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// RegisterPipedRequestMultiError is an error wrapping multiple validation
+// errors returned by RegisterPipedRequest.ValidateAll() if the designated
+// constraints aren't met.
+type RegisterPipedRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m RegisterPipedRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m RegisterPipedRequestMultiError) AllErrors() []error { return m }
+
+// RegisterPipedRequestValidationError is the validation error returned by
+// RegisterPipedRequest.Validate if the designated constraints aren't met.
+type RegisterPipedRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e RegisterPipedRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e RegisterPipedRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e RegisterPipedRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e RegisterPipedRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e RegisterPipedRequestValidationError) ErrorName() string {
+	return "RegisterPipedRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e RegisterPipedRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sRegisterPipedRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = RegisterPipedRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = RegisterPipedRequestValidationError{}
+
+// Validate checks the field values on RegisterPipedResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *RegisterPipedResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on RegisterPipedResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// RegisterPipedResponseMultiError, or nil if none found.
+func (m *RegisterPipedResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *RegisterPipedResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Key
+
+	if len(errors) > 0 {
+		return RegisterPipedResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// RegisterPipedResponseMultiError is an error wrapping multiple validation
+// errors returned by RegisterPipedResponse.ValidateAll() if the designated
+// constraints aren't met.
+type RegisterPipedResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m RegisterPipedResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m RegisterPipedResponseMultiError) AllErrors() []error { return m }
+
+// RegisterPipedResponseValidationError is the validation error returned by
+// RegisterPipedResponse.Validate if the designated constraints aren't met.
+type RegisterPipedResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e RegisterPipedResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e RegisterPipedResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e RegisterPipedResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e RegisterPipedResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e RegisterPipedResponseValidationError) ErrorName() string {
+	return "RegisterPipedResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e RegisterPipedResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sRegisterPipedResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = RegisterPipedResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = RegisterPipedResponseValidationError{}
+
+// Validate checks the field values on UpdatePipedRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpdatePipedRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdatePipedRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UpdatePipedRequestMultiError, or nil if none found.
+func (m *UpdatePipedRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdatePipedRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetPipedId()) < 1 {
+		err := UpdatePipedRequestValidationError{
+			field:  "PipedId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := UpdatePipedRequestValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Desc
+
+	if len(errors) > 0 {
+		return UpdatePipedRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdatePipedRequestMultiError is an error wrapping multiple validation errors
+// returned by UpdatePipedRequest.ValidateAll() if the designated constraints
+// aren't met.
+type UpdatePipedRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdatePipedRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdatePipedRequestMultiError) AllErrors() []error { return m }
+
+// UpdatePipedRequestValidationError is the validation error returned by
+// UpdatePipedRequest.Validate if the designated constraints aren't met.
+type UpdatePipedRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdatePipedRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdatePipedRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdatePipedRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdatePipedRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdatePipedRequestValidationError) ErrorName() string {
+	return "UpdatePipedRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdatePipedRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdatePipedRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdatePipedRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdatePipedRequestValidationError{}
+
+// Validate checks the field values on UpdatePipedResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpdatePipedResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdatePipedResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UpdatePipedResponseMultiError, or nil if none found.
+func (m *UpdatePipedResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdatePipedResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return UpdatePipedResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdatePipedResponseMultiError is an error wrapping multiple validation
+// errors returned by UpdatePipedResponse.ValidateAll() if the designated
+// constraints aren't met.
+type UpdatePipedResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdatePipedResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdatePipedResponseMultiError) AllErrors() []error { return m }
+
+// UpdatePipedResponseValidationError is the validation error returned by
+// UpdatePipedResponse.Validate if the designated constraints aren't met.
+type UpdatePipedResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdatePipedResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdatePipedResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdatePipedResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdatePipedResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdatePipedResponseValidationError) ErrorName() string {
+	return "UpdatePipedResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdatePipedResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdatePipedResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdatePipedResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdatePipedResponseValidationError{}
+
 // Validate checks the field values on EnableApplicationRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
