@@ -173,11 +173,14 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	{
 		group.Go(func() error {
 			for _, config := range cfg.ExternalTools {
-				addedPlugin, installed, err := toolregistry.DefaultRegistry().ExternalTool(ctx, "", config)
+				installedAsdf, addedPlugin, installedVersion, err := toolregistry.DefaultRegistry().ExternalTool(ctx, "", config)
+				if installedAsdf {
+					input.Logger.Info("asdf has just been installed")
+				}
 				if addedPlugin {
 					input.Logger.Info(fmt.Sprintf("plugin %q has just been added", config.Package))
 				}
-				if installed {
+				if installedVersion {
 					input.Logger.Info(fmt.Sprintf("%q %q has just been installed", config.Package, config.Version))
 				}
 				if err != nil {

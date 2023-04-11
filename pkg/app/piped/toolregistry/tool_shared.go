@@ -12,15 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rpc
+package toolregistry
 
-import (
-	"testing"
-
-	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc"
-)
-
-func TestVersion(t *testing.T) {
-	require.Equal(t, "1.54.0", grpc.Version)
-}
+var asdfInstallScript = `
+git clone https://github.com/asdf-vm/asdf.git {{ .HomeDir }}/.asdf --branch v{{ .Version }}
+echo "\nexport ASDF_DIR="$HOME/.asdf" \n. "{{ .HomeDir }}/.asdf/asdf.sh"" >> {{ .HomeDir }}/.profile
+`

@@ -56,6 +56,8 @@ type apiDeploymentStore interface {
 type apiPipedStore interface {
 	Get(ctx context.Context, id string) (*model.Piped, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Piped, error)
+	Add(ctx context.Context, piped *model.Piped) error
+	UpdateInfo(ctx context.Context, id, name, desc string) error
 	EnablePiped(ctx context.Context, id string) error
 	DisablePiped(ctx context.Context, id string) error
 }
@@ -651,6 +653,71 @@ func (a *API) GetCommand(ctx context.Context, req *apiservice.GetCommandRequest)
 	return &apiservice.GetCommandResponse{
 		Command: cmd,
 	}, nil
+}
+
+func (a *API) GetPiped(ctx context.Context, req *apiservice.GetPipedRequest) (*apiservice.GetPipedResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+	if piped.ProjectId != key.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested piped does not belong to your project")
+	}
+
+	// Redact all sensitive data inside piped message before sending to the client.
+	piped.RedactSensitiveData()
+
+	return &apiservice.GetPipedResponse{
+		Piped: piped,
+	}, nil
+}
+
+func (a *API) RegisterPiped(ctx context.Context, req *apiservice.RegisterPipedRequest) (*apiservice.RegisterPipedResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	pipedKey, pipedKeyHash, err := model.GeneratePipedKey()
+	if err != nil {
+		a.logger.Error("failed to generate piped key", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to generate the piped key")
+	}
+
+	piped := model.Piped{
+		Id:        uuid.New().String(),
+		Name:      req.Name,
+		Desc:      req.Desc,
+		ProjectId: key.ProjectId,
+	}
+	if err := piped.AddKey(pipedKeyHash, key.Name, time.Now()); err != nil {
+		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("Failed to create key: %v", err))
+	}
+
+	if err = a.pipedStore.Add(ctx, &piped); err != nil {
+		return nil, gRPCStoreError(err, fmt.Sprintf("add piped %s", piped.Id))
+	}
+
+	return &apiservice.RegisterPipedResponse{
+		Id:  piped.Id,
+		Key: pipedKey,
+	}, nil
+}
+
+func (a *API) UpdatePiped(ctx context.Context, req *apiservice.UpdatePipedRequest) (*apiservice.UpdatePipedResponse, error) {
+	updater := func(ctx context.Context, pipedID string) error {
+		return a.pipedStore.UpdateInfo(ctx, req.PipedId, req.Name, req.Desc)
+	}
+	if err := a.updatePiped(ctx, req.PipedId, updater); err != nil {
+		return nil, err
+	}
+
+	return &apiservice.UpdatePipedResponse{}, nil
 }
 
 func (a *API) EnablePiped(ctx context.Context, req *apiservice.EnablePipedRequest) (*apiservice.EnablePipedResponse, error) {

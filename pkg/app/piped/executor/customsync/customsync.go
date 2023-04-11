@@ -68,11 +68,14 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	e.LogPersister.Infof("Prepare external tools...")
 	for _, config := range e.StageConfig.CustomSyncOptions.ExternalTools {
 		e.LogPersister.Infof(fmt.Sprintf("Check %s %s", config.Package, config.Version))
-		addedPlugin, installed, err := toolregistry.DefaultRegistry().ExternalTool(ctx, e.appDir, config)
+		installedAsdf, addedPlugin, installedVersion, err := toolregistry.DefaultRegistry().ExternalTool(ctx, e.appDir, config)
+		if installedAsdf {
+			e.LogPersister.Infof(" asdf has just been installed")
+		}
 		if addedPlugin {
 			e.LogPersister.Infof(fmt.Sprintf(" plugin %s has just been added", config.Package))
 		}
-		if installed {
+		if installedVersion {
 			e.LogPersister.Infof(fmt.Sprintf(" %s %s has just been installed", config.Package, config.Version))
 		}
 		if err != nil {
@@ -128,7 +131,7 @@ func (e *deployExecutor) executeCommand() model.StageStatus {
 		envs = append(envs, key+"="+value)
 	}
 
-	cmd := exec.Command("/bin/sh", "-c", opts.Run)
+	cmd := exec.Command("/bin/sh", "-l", "-c", opts.Run)
 	cmd.Dir = e.appDir
 	cmd.Env = append(os.Environ(), envs...)
 	cmd.Stdout = e.LogPersister

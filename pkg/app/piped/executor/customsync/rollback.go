@@ -80,11 +80,14 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	e.LogPersister.Infof("Prepare external tools...")
 	for _, config := range runningDS.GenericApplicationConfig.Pipeline.Stages[0].CustomSyncOptions.ExternalTools {
 		e.LogPersister.Infof(fmt.Sprintf("Check %s %s", config.Package, config.Version))
-		addedPlugin, installed, err := toolregistry.DefaultRegistry().ExternalTool(ctx, e.appDir, config)
-		if addedPlugin {
-			e.LogPersister.Infof(fmt.Sprintf(" plugin %s has been just been added", config.Package))
+		installedAsdf, addedPlugin, installedVersion, err := toolregistry.DefaultRegistry().ExternalTool(ctx, e.appDir, config)
+		if installedAsdf {
+			e.LogPersister.Infof(" asdf has just been installed")
 		}
-		if installed {
+		if addedPlugin {
+			e.LogPersister.Infof(fmt.Sprintf(" plugin %s has just been added", config.Package))
+		}
+		if installedVersion {
 			e.LogPersister.Infof(fmt.Sprintf(" %s %s has just been installed", config.Package, config.Version))
 		}
 		if err != nil {
@@ -112,7 +115,7 @@ func (e *rollbackExecutor) executeCommand(config config.PipelineStage) model.Sta
 		envs = append(envs, key+"="+value)
 	}
 
-	cmd := exec.Command("/bin/sh", "-c", opts.Run)
+	cmd := exec.Command("/bin/sh", "-l", "-c", opts.Run)
 	cmd.Dir = e.appDir
 	cmd.Env = append(os.Environ(), envs...)
 	cmd.Stdout = e.LogPersister
