@@ -616,6 +616,7 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | timeout | duration | The maximum time the stage can be taken to run. Default is `6h`| No |
 | envs | map[string]string | Environment variables used with scripts. | No |
 | run | string | Script run on this stage. | Yes |
+| externalTools | [][ExternalTool](#externaltool) | Configuration for tools to be used by this stage. | No |
 
 ## PostSync
 
@@ -697,3 +698,10 @@ A wrapper of type `int` to represent percentage data. Basically, you can pass `1
 | op | string | The operation type. This must be one of `yaml-replace`, `yaml-add`, `yaml-remove`, `json-replace`, `text-regex`. Default is `yaml-replace`. | No |
 | path | string | The path string pointing to the manipulated field. For yaml operations it looks like `$.foo.array[0].bar`. | No |
 | value | string | The value string whose content will be used as new value for the field. | No |
+
+### ExternalTool
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| package | string | Name of the asdf plugin, which contains the executable command. The list is available [here](https://github.com/asdf-vm/asdf-plugins). | Yes |
+| version | string | Plugin version to use. Default is `latest`. | No |
