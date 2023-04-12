@@ -154,12 +154,9 @@ message DisableApplicationResponse {
 message UpdateApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     string piped_id = 2 [(validate.rules).string.min_len = 1];
-    string name = 3 [(validate.rules).string.min_len = 1];
-    string description = 4;
-    map<string, string> labels = 5;
-    string platform_provider = 6 [(validate.rules).string.min_len = 1];
-    model.ApplicationGitPath git_path = 7 [(validate.rules).message.required = true];
-    model.ApplicationSyncState application = 8;
+    string platform_provider = 3 [(validate.rules).string.min_len = 1];
+    model.ApplicationGitPath git_path = 4 [(validate.rules).message.required = true];
+    bool disabled = 5;
 }
 
 message UpdateApplicationResponse {

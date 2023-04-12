@@ -2240,21 +2240,6 @@ func (m *UpdateApplicationRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetName()) < 1 {
-		err := UpdateApplicationRequestValidationError{
-			field:  "Name",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	// no validation rules for Description
-
-	// no validation rules for Labels
-
 	if utf8.RuneCountInString(m.GetPlatformProvider()) < 1 {
 		err := UpdateApplicationRequestValidationError{
 			field:  "PlatformProvider",
@@ -2306,34 +2291,7 @@ func (m *UpdateApplicationRequest) validate(all bool) error {
 		}
 	}
 
-	if all {
-		switch v := interface{}(m.GetApplication()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, UpdateApplicationRequestValidationError{
-					field:  "Application",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, UpdateApplicationRequestValidationError{
-					field:  "Application",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetApplication()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return UpdateApplicationRequestValidationError{
-				field:  "Application",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
+	// no validation rules for Disabled
 
 	if len(errors) > 0 {
 		return UpdateApplicationRequestMultiError(errors)
