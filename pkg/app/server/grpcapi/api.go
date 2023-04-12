@@ -42,11 +42,11 @@ type apiApplicationStore interface {
 	Add(ctx context.Context, app *model.Application) error
 	Get(ctx context.Context, id string) (*model.Application, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Application, string, error)
-	Update(ctx context.Context, app *model.Application) error
 	Delete(ctx context.Context, id string) error
 	Enable(ctx context.Context, id string) error
 	Disable(ctx context.Context, id string) error
 	UpdateConfigFilename(ctx context.Context, id, filename string) error
+	UpdatePlatformProvider(ctx context.Context, id string, platFormProvider string) error
 }
 
 type apiDeploymentStore interface {
@@ -344,7 +344,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 	}, nil
 }
 
-func (a *API) Update(ctx context.Context, req *apiservice.UpdateApplicationRequest) (*apiservice.UpdateApplicationResponse, error) {
+func (a *API) UpdateApplication(ctx context.Context, req *apiservice.UpdateApplicationRequest) (*apiservice.UpdateApplicationResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
 	if err != nil {
 		return nil, err
@@ -359,19 +359,24 @@ func (a *API) Update(ctx context.Context, req *apiservice.UpdateApplicationReque
 		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
 	}
 
-	updatedApp := &model.Application{
-		Id:               req.ApplicationId,
-		Name:             req.Name,
-		Description:      req.Description,
-		Labels:           req.Labels,
-		PipedId:          req.PipedId,
-		PlatformProvider: req.PlatformProvider,
-		GitPath:          req.GitPath,
-		SyncState:        req.Application,
+	if req.Disabled {
+		if err := a.applicationStore.Disable(ctx, req.ApplicationId); err != nil {
+			return nil, gRPCStoreError(err, fmt.Sprintf("disable application %s", req.ApplicationId))
+		}
+	} else {
+		if err := a.applicationStore.Enable(ctx, req.ApplicationId); err != nil {
+			return nil, gRPCStoreError(err, fmt.Sprintf("enable application %s", req.ApplicationId))
+		}
 	}
 
-	if err := a.applicationStore.Update(ctx, updatedApp); err != nil {
-		return nil, gRPCStoreError(err, fmt.Sprintf("enable application %s", req.ApplicationId))
+	if req.GitPath != nil {
+		if err := a.applicationStore.UpdateConfigFilename(ctx, req.ApplicationId, req.GitPath.ConfigFilename); err != nil {
+			return nil, gRPCStoreError(err, fmt.Sprintf("update application %s config file name", req.ApplicationId))
+		}
+	}
+
+	if err := a.applicationStore.UpdatePlatformProvider(ctx, req.ApplicationId, req.PlatformProvider); err != nil {
+		return nil, gRPCStoreError(err, fmt.Sprintf("update application %s platform provider %s", req.ApplicationId, req.PlatformProvider))
 	}
 
 	return &apiservice.UpdateApplicationResponse{

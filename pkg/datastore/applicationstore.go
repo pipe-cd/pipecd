@@ -189,7 +189,6 @@ type ApplicationStore interface {
 	Get(ctx context.Context, id string) (*model.Application, error)
 	List(ctx context.Context, opts ListOptions) ([]*model.Application, string, error)
 	Delete(ctx context.Context, id string) error
-	Update(ctx context.Context, app *model.Application) error
 	Enable(ctx context.Context, id string) error
 	Disable(ctx context.Context, id string) error
 	UpdateSyncState(ctx context.Context, id string, syncState *model.ApplicationSyncState) error
@@ -267,14 +266,6 @@ func (s *applicationStore) List(ctx context.Context, opts ListOptions) ([]*model
 		return nil, "", err
 	}
 	return apps, cursor, nil
-}
-
-func (s *applicationStore) Update(ctx context.Context, app *model.Application) error {
-	// UpdateXXX does not fail, so Update will not result in an error.
-	s.UpdateBasicInfo(ctx, app.Id, app.Name, app.Description, app.Labels)
-	s.UpdateConfiguration(ctx, app.Id, app.PipedId, app.PlatformProvider, app.GitPath.ConfigFilename)
-	s.UpdateSyncState(ctx, app.Id, app.SyncState)
-	return nil
 }
 
 func (s *applicationStore) Delete(ctx context.Context, id string) error {
