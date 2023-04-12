@@ -33,6 +33,7 @@ service APIService {
     rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
     rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {}
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
+    rpc UpdateApplication(UpdateApplicationRequest) returns (UpdateApplicationResponse) {}
     rpc DeleteApplication(DeleteApplicationRequest) returns (DeleteApplicationResponse) {}
     rpc EnableApplication(EnableApplicationRequest) returns (EnableApplicationResponse) {}
     rpc DisableApplication(DisableApplicationRequest) returns (DisableApplicationResponse) {}
@@ -147,6 +148,14 @@ message DisableApplicationRequest {
 }
 
 message DisableApplicationResponse {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message UpdateApplicationRequest {
+    model.Application application = 1;
+}
+
+message UpdateApplicationResponse {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
