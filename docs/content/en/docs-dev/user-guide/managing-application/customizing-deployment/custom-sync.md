@@ -80,6 +80,7 @@ spec:
       - name: CUSTOM_SYNC
         with:
           run: |
+            cd sam-app
             sam --version
           externalTools:
             - package: "aws-sam-cli"
