@@ -720,8 +720,7 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 
 	// Configure secret management.
 	if sm := cfg.SecretManagement; sm != nil {
-		switch sm.Type {
-		case model.SecretManagementTypeKeyPair:
+		if sm.Type == model.SecretManagementTypeKeyPair {
 			publicKey, err := sm.KeyPair.LoadPublicKey()
 			if err != nil {
 				return fmt.Errorf("failed to read public key for secret management (%w)", err)
@@ -792,7 +791,7 @@ func (p *piped) insertLoginUserToPasswd(ctx context.Context) error {
 	// echo "default:x:${USER_ID}:${GROUP_ID}:Dynamically created user:${HOME}:/sbin/nologin" >> "$HOME/passwd"
 	entry := fmt.Sprintf("\ndefault:x:%s:%s:Dynamically created user:%s:/sbin/nologin", uid, gid, home)
 	nssPasswdPath := filepath.Join(home, "passwd")
-	f, err := os.OpenFile(nssPasswdPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0664)
+	f, err := os.OpenFile(nssPasswdPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o664)
 	if err != nil {
 		return fmt.Errorf("failed to open file %q: %w", nssPasswdPath, err)
 	}

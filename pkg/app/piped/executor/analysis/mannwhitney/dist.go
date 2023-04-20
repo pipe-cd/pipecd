@@ -136,9 +136,10 @@ func InvCDF(dist DistCommon) func(y float64) (x float64) {
 		const almostInf = 1e100
 		const xtol = 1e-16
 
-		if y < 0 || y > 1 {
+		switch {
+		case y < 0 || y > 1:
 			return nan
-		} else if y == 0 {
+		case y == 0:
 			l, _ := dist.Bounds()
 			if dist.CDF(l) == 0 {
 				// Finite support
@@ -147,7 +148,7 @@ func InvCDF(dist DistCommon) func(y float64) (x float64) {
 				// Infinite support
 				return -inf
 			}
-		} else if y == 1 {
+		case y == 1:
 			_, h := dist.Bounds()
 			if dist.CDF(h) == 1 {
 				// Finite support

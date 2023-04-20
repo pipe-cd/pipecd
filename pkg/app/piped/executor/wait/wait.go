@@ -88,10 +88,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		case <-timer.C:
 			e.LogPersister.Infof("Waited for %v", totalDuration)
 			return model.StageStatus_STAGE_SUCCESS
-
 		case <-ticker.C:
 			e.LogPersister.Infof("%v elapsed...", time.Since(startTime))
-
 		case s := <-sig.Ch():
 			switch s {
 			case executor.StopSignalCancel:

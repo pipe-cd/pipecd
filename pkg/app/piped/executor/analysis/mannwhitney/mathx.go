@@ -23,11 +23,12 @@ import "math"
 // mathSign returns the sign of x: -1 if x < 0, 0 if x == 0, 1 if x > 0.
 // If x is NaN, it returns NaN.
 func mathSign(x float64) float64 {
-	if x == 0 {
+	switch {
+	case x == 0:
 		return 0
-	} else if x < 0 {
+	case x < 0:
 		return -1
-	} else if x > 0 {
+	case x > 0:
 		return 1
 	}
 	return nan

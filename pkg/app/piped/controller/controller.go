@@ -159,7 +159,6 @@ func NewController(
 	gracePeriod time.Duration,
 	logger *zap.Logger,
 ) DeploymentController {
-
 	var (
 		lp = logpersister.NewPersister(apiClient, logger)
 		lg = logger.Named("controller")
@@ -551,17 +550,17 @@ func (c *controller) syncSchedulers(ctx context.Context) error {
 	// Add missing schedulers.
 	planneds := c.deploymentLister.ListPlanneds()
 	runnings := c.deploymentLister.ListRunnings()
-	targets := append(runnings, planneds...)
+	runnings = append(runnings, planneds...)
 
-	if len(targets) == 0 {
+	if len(runnings) == 0 {
 		return nil
 	}
 
-	c.logger.Info(fmt.Sprintf("there are %d planned/running deployments for scheduling", len(targets)),
+	c.logger.Info(fmt.Sprintf("there are %d planned/running deployments for scheduling", len(runnings)),
 		zap.Int("count", len(c.schedulers)),
 	)
 
-	for _, d := range targets {
+	for _, d := range runnings {
 		// Ignore already processed one.
 		if _, ok := c.doneSchedulers[d.Id]; ok {
 			continue

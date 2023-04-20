@@ -184,7 +184,8 @@ func (p *Pattern) regexpString() string {
 	for scan.Peek() != scanner.EOF {
 		ch := scan.Next()
 
-		if ch == '*' {
+		switch {
+		case ch == '*':
 			if scan.Peek() == '*' {
 				// Is some flavor of "**".
 				scan.Next()
@@ -207,14 +208,14 @@ func (p *Pattern) regexpString() string {
 				// Is "*" so map it to anything but "/".
 				regStr += "[^" + escSL + "]*"
 			}
-		} else if ch == '?' {
+		case ch == '?':
 			// "?" is any char except "/".
 			regStr += "[^" + escSL + "]"
-		} else if ch == '.' || ch == '$' {
+		case ch == '.' || ch == '$':
 			// Escape some regexp special chars that have no meaning
 			// in golang's filepath.Match.
 			regStr += `\` + string(ch)
-		} else if ch == '\\' {
+		case ch == '\\':
 			// Escape next char. Note that a trailing \ in the pattern
 			// will be left alone (but need to escape it).
 			if sl == `\` {
@@ -229,9 +230,8 @@ func (p *Pattern) regexpString() string {
 			} else {
 				regStr += `\`
 			}
-		} else {
+		default:
 			regStr += string(ch)
-		}
 	}
 	regStr += "$"
 	return regStr

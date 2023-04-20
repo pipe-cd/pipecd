@@ -100,7 +100,7 @@ func groupApplicationCounts(counts []model.InsightApplicationCount) map[string]i
 	groups := make(map[string]int, len(counts))
 	for _, c := range counts {
 		kind := c.Labels[model.InsightApplicationCountLabelKey_KIND.String()]
-		groups[kind] = groups[kind] + int(c.Count)
+		groups[kind] += int(c.Count)
 	}
 	return groups
 }

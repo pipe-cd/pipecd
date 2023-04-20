@@ -63,6 +63,8 @@ func (d UDist) hasTies() bool {
 //
 // This algorithm runs in Θ(N1*N2*U) = O(N1²N2²) time and is quite
 // fast for small values of N1 and N2. However, it does not handle ties.
+//
+//nolint:gocritic
 func (d UDist) p(U int) []float64 {
 	// This is a dynamic programming implementation of the
 	// recursive recurrence definition given by Mann and Whitney:
@@ -228,7 +230,7 @@ func makeUmemo(twoU, n1 int, t []int) []map[ukey]float64 {
 	// bounds. It might be worth turning these into directly
 	// indexible slices.
 	A := make([]map[ukey]float64, K+1)
-	A[K] = map[ukey]float64{ukey{n1: n1, twoU: twoU}: 0}
+	A[K] = map[ukey]float64{{n1: n1, twoU: twoU}: 0}
 
 	// Compute memo table (k, n1, twoU) triples from high K values
 	// to low K values. This drives the recurrence relation
@@ -334,6 +336,7 @@ func twoUmax(n1 int, t, a []int) int {
 	return twoU
 }
 
+//nolint:gocritic
 func (d UDist) PMF(U float64) float64 {
 	if U < 0 || U >= 0.5+float64(d.N1*d.N2) {
 		return 0
@@ -356,6 +359,7 @@ func (d UDist) PMF(U float64) float64 {
 	return d.p(Ui)[Ui]
 }
 
+//nolint:gocrictic
 func (d UDist) CDF(U float64) float64 {
 	if U < 0 {
 		return 0

@@ -293,7 +293,6 @@ spec:
 			assert.Equal(t, generatedManifests[0], manifests[0])
 		})
 	}
-
 }
 
 func TestApplyManifests(t *testing.T) {
@@ -308,7 +307,6 @@ func TestApplyManifests(t *testing.T) {
 		namespace string
 		wantErr   bool
 	}{
-
 		{
 			name: "unable to apply manifest",
 			applier: func() provider.Applier {
@@ -1018,7 +1016,7 @@ func TestPatchManifests(t *testing.T) {
 
 	patcher := func(m provider.Manifest, cfg config.K8sResourcePatch) (*provider.Manifest, error) {
 		out := m
-		out.Key.Namespace = out.Key.Namespace + "+"
+		out.Key.Namespace += "+"
 		return &out, nil
 	}
 
