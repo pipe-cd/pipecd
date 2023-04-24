@@ -336,9 +336,6 @@ metadata:
     {{- include "pipecd.labels" . | nindent 4 }}
     app.kubernetes.io/component: mysql
 spec:
-  {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
-  serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
-  {{- end }}
   replicas: 1
   selector:
     matchLabels:
@@ -350,6 +347,9 @@ spec:
         {{- include "pipecd.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: mysql
     spec:
+      {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
+      serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
+      {{- end }}
       containers:
         - name: mysql
           image: mysql:{{ .Values.mysql.imageTag }}
@@ -377,9 +377,6 @@ metadata:
     {{- include "pipecd.labels" . | nindent 4 }}
     app.kubernetes.io/component: minio
 spec:
-  {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
-  serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
-  {{- end }}
   replicas: 1
   selector:
     matchLabels:
@@ -391,6 +388,9 @@ spec:
         {{- include "pipecd.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: minio
     spec:
+      {{- if or .Values.serviceAccount.create .Values.serviceAccount.name }}
+      serviceAccountName: {{ include "pipecd.serviceAccountName" . }}
+      {{- end }}
       containers:
         - name: minio
           image: minio/minio:{{ .Values.minio.imageTag }}
