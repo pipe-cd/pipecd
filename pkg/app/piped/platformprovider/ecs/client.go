@@ -82,6 +82,7 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		DeploymentController:          service.DeploymentController,
 		DeploymentConfiguration:       service.DeploymentConfiguration,
 		EnableECSManagedTags:          service.EnableECSManagedTags,
+		EnableExecuteCommand:          service.EnableExecuteCommand,
 		HealthCheckGracePeriodSeconds: service.HealthCheckGracePeriodSeconds,
 		PlacementConstraints:          service.PlacementConstraints,
 		PlacementStrategy:             service.PlacementStrategy,
