@@ -109,10 +109,11 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 
 func (c *client) UpdateService(ctx context.Context, service types.Service) (*types.Service, error) {
 	input := &ecs.UpdateServiceInput{
-		Cluster:           service.ClusterArn,
-		Service:           service.ServiceName,
-		DesiredCount:      aws.Int32(service.DesiredCount),
-		PlacementStrategy: service.PlacementStrategy,
+		Cluster:              service.ClusterArn,
+		Service:              service.ServiceName,
+		DesiredCount:         aws.Int32(service.DesiredCount),
+		EnableExecuteCommand: aws.Bool(service.EnableExecuteCommand),
+		PlacementStrategy:    service.PlacementStrategy,
 		// TODO: Support update other properties of service.
 		// PlacementConstraints:    service.PlacementConstraints,
 	}
