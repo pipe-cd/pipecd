@@ -156,7 +156,6 @@ message UpdateApplicationRequest {
     string piped_id = 2 [(validate.rules).string.min_len = 1];
     string platform_provider = 3 [(validate.rules).string.min_len = 1];
     model.ApplicationGitPath git_path = 4 [(validate.rules).message.required = true];
-    bool disabled = 5;
 }
 
 message UpdateApplicationResponse {

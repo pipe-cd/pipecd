@@ -359,16 +359,6 @@ func (a *API) UpdateApplication(ctx context.Context, req *apiservice.UpdateAppli
 		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
 	}
 
-	if req.Disabled {
-		if err := a.applicationStore.Disable(ctx, req.ApplicationId); err != nil {
-			return nil, gRPCStoreError(err, fmt.Sprintf("disable application %s", req.ApplicationId))
-		}
-	} else {
-		if err := a.applicationStore.Enable(ctx, req.ApplicationId); err != nil {
-			return nil, gRPCStoreError(err, fmt.Sprintf("enable application %s", req.ApplicationId))
-		}
-	}
-
 	if req.GitPath != nil {
 		if err := a.applicationStore.UpdateConfigFilename(ctx, req.ApplicationId, req.GitPath.ConfigFilename); err != nil {
 			return nil, gRPCStoreError(err, fmt.Sprintf("update application %s config file name", req.ApplicationId))

@@ -2291,8 +2291,6 @@ func (m *UpdateApplicationRequest) validate(all bool) error {
 		}
 	}
 
-	// no validation rules for Disabled
-
 	if len(errors) > 0 {
 		return UpdateApplicationRequestMultiError(errors)
 	}
