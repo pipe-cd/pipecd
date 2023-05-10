@@ -46,6 +46,7 @@ type apiApplicationStore interface {
 	Enable(ctx context.Context, id string) error
 	Disable(ctx context.Context, id string) error
 	UpdateConfigFilename(ctx context.Context, id, filename string) error
+	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error
 	UpdatePlatformProvider(ctx context.Context, id string, platFormProvider string) error
 }
 
@@ -359,14 +360,8 @@ func (a *API) UpdateApplication(ctx context.Context, req *apiservice.UpdateAppli
 		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
 	}
 
-	if req.GitPath != nil {
-		if err := a.applicationStore.UpdateConfigFilename(ctx, req.ApplicationId, req.GitPath.ConfigFilename); err != nil {
-			return nil, gRPCStoreError(err, fmt.Sprintf("update application %s config file name", req.ApplicationId))
-		}
-	}
-
-	if err := a.applicationStore.UpdatePlatformProvider(ctx, req.ApplicationId, req.PlatformProvider); err != nil {
-		return nil, gRPCStoreError(err, fmt.Sprintf("update application %s platform provider %s", req.ApplicationId, req.PlatformProvider))
+	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, app.PipedId, req.PlatformProvider, req.GitPath.ConfigFilename); err != nil {
+		return nil, gRPCStoreError(err, fmt.Sprintf("failed to update application %s", req.ApplicationId))
 	}
 
 	return &apiservice.UpdateApplicationResponse{
