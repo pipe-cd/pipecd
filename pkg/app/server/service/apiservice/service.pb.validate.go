@@ -2229,6 +2229,17 @@ func (m *UpdateApplicationRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if utf8.RuneCountInString(m.GetPipedId()) < 1 {
+		err := UpdateApplicationRequestValidationError{
+			field:  "PipedId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if utf8.RuneCountInString(m.GetPlatformProvider()) < 1 {
 		err := UpdateApplicationRequestValidationError{
 			field:  "PlatformProvider",

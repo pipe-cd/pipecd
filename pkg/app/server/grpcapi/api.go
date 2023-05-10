@@ -47,7 +47,6 @@ type apiApplicationStore interface {
 	Disable(ctx context.Context, id string) error
 	UpdateConfigFilename(ctx context.Context, id, filename string) error
 	UpdateConfiguration(ctx context.Context, id, pipedID, platformProvider, configFilename string) error
-	UpdatePlatformProvider(ctx context.Context, id string, platFormProvider string) error
 }
 
 type apiDeploymentStore interface {
@@ -351,16 +350,16 @@ func (a *API) UpdateApplication(ctx context.Context, req *apiservice.UpdateAppli
 		return nil, err
 	}
 
-	app, err := getApplication(ctx, a.applicationStore, req.ApplicationId, a.logger)
+	piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
 	if err != nil {
-		return nil, err
+		return nil, gRPCStoreError(err, fmt.Sprintf("failed to get piped %s", req.PipedId))
 	}
 
-	if app.ProjectId != key.ProjectId {
+	if piped.ProjectId != key.ProjectId {
 		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
 	}
 
-	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, app.PipedId, req.PlatformProvider, req.GitPath.ConfigFilename); err != nil {
+	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.PlatformProvider, req.GitPath.ConfigFilename); err != nil {
 		return nil, gRPCStoreError(err, fmt.Sprintf("failed to update application %s", req.ApplicationId))
 	}
 
