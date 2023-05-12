@@ -356,7 +356,7 @@ func (a *API) UpdateApplication(ctx context.Context, req *apiservice.UpdateAppli
 	}
 
 	if piped.ProjectId != key.ProjectId {
-		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
+		return nil, status.Error(codes.InvalidArgument, "Requested piped does not belong to your project")
 	}
 
 	if err := a.applicationStore.UpdateConfiguration(ctx, req.ApplicationId, req.PipedId, req.PlatformProvider, req.GitPath.ConfigFilename); err != nil {
