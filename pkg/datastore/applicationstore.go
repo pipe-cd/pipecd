@@ -135,7 +135,7 @@ func (a *applicationCollection) Encode(e interface{}) (map[Shard][]byte, error) 
 		Kind: me.Kind,
 		Name: me.Name,
 		// Fields which exist in both AgentShard and ClientShard but ClientShard has
-		// a higher priority since those fields can only be updated by WebCommander.
+		// a higher priority since those fields can only be updated by WebCommander/PipectlCommander.
 		PipedId:          me.PipedId,
 		PlatformProvider: me.PlatformProvider,
 		// Note: Only GitPath.ConfigFilename is changeable.
@@ -161,7 +161,7 @@ func (a *applicationCollection) Encode(e interface{}) (map[Shard][]byte, error) 
 		Kind: me.Kind,
 		Name: me.Name,
 		// Fields which exist in both AgentShard and ClientShard but ClientShard has
-		// a higher priority since those fields can only be updated by WebCommander.
+		// a higher priority since those fields can only be updated by WebCommander/PipectlCommander.
 		PipedId:          me.PipedId,
 		GitPath:          me.GitPath,
 		PlatformProvider: me.PlatformProvider,
