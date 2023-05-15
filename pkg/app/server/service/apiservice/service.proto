@@ -154,6 +154,17 @@ message DeleteApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
+message UpdateApplicationRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    string piped_id = 2 [(validate.rules).string.min_len = 1];
+    string platform_provider = 3 [(validate.rules).string.min_len = 1];
+    model.ApplicationGitPath git_path = 4 [(validate.rules).message.required = true];
+}
+
+message UpdateApplicationResponse {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+}
+
 message DeleteApplicationResponse {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
