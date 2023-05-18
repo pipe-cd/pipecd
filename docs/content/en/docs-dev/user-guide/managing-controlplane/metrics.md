@@ -16,7 +16,7 @@ This page walks you through how to set up and use them.
 Monitoring Architecture
 </p>
 
-The piped agent collects its own monitoring information and periodically sends metrics to the Control plane, which publishes all of the resource usage and cluster information it collects and the metrics sent by the piped agent on its http server. When the PipeCD monitoring feature is turned on, Prometheus, Alertmanager and Grafana are deployed with the Control plane, and Prometheus retrieves metrics information from the Control plane's http server.
+The piped agent collects its metrics and periodically sends them to the Control plane. The Control plane then compacts its resource usage and cluster information with the metrics sent by the piped agent and re-publishes them via its admin server. When the PipeCD monitoring feature is turned on, Prometheus, Alertmanager, and Grafana are deployed with the Control plane, and Prometheus retrieves metrics information from the Control plane's admin server.
 
 The piped agent not only sends the collected monitoring metrics to the Control plane, but also provides them through its internal http server, so that the developer managing the piped agent can also get metrics directly from the piped agent and monitor them with their custom monitoring service.
 
