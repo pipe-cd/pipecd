@@ -13,6 +13,6 @@ This is a great achievement for the whole team and is the beginning of our journ
 
 The CNCF Sandbox admission is going to be the cherry on the top of the project milestone, and hope this accelerates further development of the PipeCD project and community.
 
-We are in the middle of the onboarding process, and everyone is so excited about that.
+We are in the middle of the [onboarding process](https://github.com/cncf/toc/issues/1053), and everyone is so excited about that.
 
 Stay tuned for more news and happy PipeCD-ing!!!
