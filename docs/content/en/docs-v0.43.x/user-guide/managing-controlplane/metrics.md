@@ -16,7 +16,7 @@ This page walks you through how to set up and use them.
 Monitoring Architecture
 </p>
 
-Both the Control plane and piped agent have their own "admin servers", which are simple HTTP servers providing operational information such as health status, running version, go profile, and monitoring metrics.
+Both the Control plane and piped agent have their own "admin servers" (the default port number is 9085), which are simple HTTP servers providing operational information such as health status, running version, go profile, and monitoring metrics.
 
 The piped agent collects its metrics and periodically sends them to the Control plane. The Control plane then compacts its resource usage and cluster information with the metrics sent by the piped agent and re-publishes them via its admin server. When the PipeCD monitoring feature is turned on, Prometheus, Alertmanager, and Grafana are deployed with the Control plane, and Prometheus retrieves metrics information from the Control plane's admin server.
 
