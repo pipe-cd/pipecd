@@ -9,6 +9,19 @@ description: >
 PipeCD comes with a monitoring system including Prometheus, Alertmanager, and Grafana.
 This page walks you through how to set up and use them.
 
+## Monitoring overview
+
+![](/images/metrics-architecture.png)
+<p style="text-align: center;">
+Monitoring Architecture
+</p>
+
+Both the Control plane and piped agent have their own "admin servers" (the default port number is 9085), which are simple HTTP servers providing operational information such as health status, running version, go profile, and monitoring metrics.
+
+The piped agent collects its metrics and periodically sends them to the Control plane. The Control plane then compacts its resource usage and cluster information with the metrics sent by the piped agent and re-publishes them via its admin server. When the PipeCD monitoring feature is turned on, Prometheus, Alertmanager, and Grafana are deployed with the Control plane, and Prometheus retrieves metrics information from the Control plane's admin server.
+
+Developers managing the piped agent can also get metrics directly from the piped agent and monitor them with their custom monitoring service.
+
 ## Enable monitoring system
 To enable monitoring system for PipeCD, you first need to set the following value to `helm install` when [installing](../../../installation/install-controlplane/#2-preparing-control-plane-configuration-file-and-installing).
 
@@ -30,7 +43,10 @@ There are three dashboards related to Control Plane:
 - Go - processes stats of PipeCD components
 
 #### Piped dashboards
-> TODO
+Visualize the metrics of Piped registered in the Control plane.
+- Overview - usage stats of piped agents
+- Process - resource usage of piped agent
+- Go - processes stats of piped agents.
 
 #### Cluster dashboards
 Because cluster dashboards tracks cluster-wide metrics, defaults to disable. You can enable it with:
