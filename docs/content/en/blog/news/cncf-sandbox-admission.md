@@ -5,7 +5,10 @@ linkTitle: "CNCF Sandbox admission"
 weight: 991
 description: "Official announcement of CNCF Sandbox admission"
 author: Khanh Tran ([@khanhtc1202](https://twitter.com/khanhtc1202))
+images: ["/static/images/pipecd-cncf-sandbox.png"]
 ---
+
+![](/images/pipecd-cncf-sandbox.png)
 
 Today the whole PipeCD team is overjoyed because __the PipeCD project has just been accepted into the [CNCF Sandbox](https://www.cncf.io/sandbox-projects/) program!!!__ 🥳
 
