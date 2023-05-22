@@ -1,5 +1,5 @@
 ---
-date: 2022-02-07
+date: 2023-02-07
 title: "PipeCD best practice 02 - control plane on ECS"
 linkTitle: "PipeCD best practice 02"
 weight: 992
