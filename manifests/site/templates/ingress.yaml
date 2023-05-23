@@ -15,7 +15,9 @@ metadata:
     networking.gke.io/managed-certificates: {{ include "site.fullname" . }}
   {{- end }}
 spec:
-  backend:
-    serviceName: {{ $fullName }}
-    servicePort: {{ $svcPort }}
+  defaultBackend:
+    service:
+      name: {{ $fullName }}
+      port:
+        number: {{ $svcPort }}
 {{- end }}
