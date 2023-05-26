@@ -112,7 +112,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Triggering a deployment manually from console | Beta |
 | RBAC on PipeCD resources such as Application, Piped... | Alpha |
 | Authentication by username/password for static admin | Beta |
-| GitHub & GitHub Enterprise SSO | Beta |
+| GitHub & GitHub Enterprise Server SSO | Beta |
 | Google SSO | Incubating |
 | Support GCP [Firestore](https://cloud.google.com/firestore) as data store | Beta |
 | Support [MySQL v8.0](https://www.mysql.com/) as data store | Beta |
