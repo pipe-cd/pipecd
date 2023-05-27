@@ -119,6 +119,13 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 			Variables: fm.Spec.Environments,
 		},
 	}
+	if len(fm.Spec.Architectures) != 0 {
+		var architectures []types.Architecture
+		for _, arch := range fm.Spec.Architectures {
+			architectures = append(architectures, types.Architecture(arch.Name))
+		}
+		input.Architectures = architectures
+	}
 	// Container image packing.
 	if fm.Spec.ImageURI != "" {
 		input.PackageType = types.PackageTypeImage
@@ -189,6 +196,13 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 		codeInput.S3Key = aws.String(fm.Spec.S3Key)
 		codeInput.S3ObjectVersion = aws.String(fm.Spec.S3ObjectVersion)
 	}
+	if len(fm.Spec.Architectures) != 0 {
+		var architectures []types.Architecture
+		for _, arch := range fm.Spec.Architectures {
+			architectures = append(architectures, types.Architecture(arch.Name))
+		}
+		codeInput.Architectures = architectures
+	}
 	_, err := c.client.UpdateFunctionCode(ctx, codeInput)
 	if err != nil {
 		return fmt.Errorf("failed to update function code for Lambda function %s: %w", fm.Spec.Name, err)
@@ -213,6 +227,13 @@ func (c *client) UpdateFunctionFromSource(ctx context.Context, fm FunctionManife
 	codeInput := &lambda.UpdateFunctionCodeInput{
 		FunctionName: aws.String(fm.Spec.Name),
 		ZipFile:      data,
+	}
+	if len(fm.Spec.Architectures) != 0 {
+		var architectures []types.Architecture
+		for _, arch := range fm.Spec.Architectures {
+			architectures = append(architectures, types.Architecture(arch.Name))
+		}
+		codeInput.Architectures = architectures
 	}
 	_, err = c.client.UpdateFunctionCode(ctx, codeInput)
 	if err != nil {
