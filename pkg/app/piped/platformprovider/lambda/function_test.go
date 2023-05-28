@@ -22,7 +22,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-func TestparseFunctionManifest(t *testing.T) {
+func TestParseFunctionManifest(t *testing.T) {
 	t.Parallel()
 
 	testcases := []struct {
@@ -53,6 +53,48 @@ func TestparseFunctionManifest(t *testing.T) {
 					Memory:   128,
 					Timeout:  5,
 					ImageURI: "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "correct config for LambdaFunction with specifying architecture",
+			data: `{
+  "apiVersion": "pipecd.dev/v1beta1",
+  "kind": "LambdaFunction",
+  "spec": {
+	  "name": "SimpleFunction",
+	  "role": "arn:aws:iam::xxxxx:role/lambda-role",
+	  "memory": 128,
+	  "timeout": 5,
+	  "image": "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
+      "architectures": [
+        {
+          "name": "x86_64",
+        },
+        {
+          "name": "arm64",
+        }
+      ]
+  }
+}`,
+			wantSpec: FunctionManifest{
+				Kind:       "LambdaFunction",
+				APIVersion: "pipecd.dev/v1beta1",
+				Spec: FunctionManifestSpec{
+					Name:     "SimpleFunction",
+					Role:     "arn:aws:iam::xxxxx:role/lambda-role",
+					Memory:   128,
+					Timeout:  5,
+					ImageURI: "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
+					Architectures: []Architecture{
+						{
+							Name: "x86_64",
+						},
+						{
+							Name: "arm64",
+						},
+					},
 				},
 			},
 			wantErr: false,
@@ -169,7 +211,9 @@ func TestparseFunctionManifest(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			fm, err := parseFunctionManifest([]byte(tc.data))
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.wantSpec, fm)

@@ -64,6 +64,7 @@ type FunctionManifestSpec struct {
 	S3ObjectVersion string            `json:"s3ObjectVersion"`
 	SourceCode      SourceCode        `json:"source"`
 	Handler         string            `json:"handler"`
+	Architectures   []Architecture    `json:"architectures,omitempty"`
 	Runtime         string            `json:"runtime"`
 	Memory          int32             `json:"memory"`
 	Timeout         int32             `json:"timeout"`
@@ -86,6 +87,11 @@ func (fmp FunctionManifestSpec) validate() error {
 		}
 		if fmp.Runtime == "" {
 			return fmt.Errorf("runtime is missing")
+		}
+	}
+	for _, arch := range fmp.Architectures {
+		if err := arch.validate(); err != nil {
+			return fmt.Errorf("architecture is invalid: %w", err)
 		}
 	}
 	if fmp.Role == "" {
@@ -112,6 +118,17 @@ func (sc SourceCode) validate() error {
 	}
 	if sc.Ref == "" {
 		return fmt.Errorf("source ref is missing")
+	}
+	return nil
+}
+
+type Architecture struct {
+	Name string `json:"name"`
+}
+
+func (a Architecture) validate() error {
+	if a.Name != "x86_64" && a.Name != "arm64" {
+		return fmt.Errorf("architecture is invalid")
 	}
 	return nil
 }
