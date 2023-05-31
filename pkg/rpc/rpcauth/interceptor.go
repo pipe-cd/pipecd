@@ -97,7 +97,7 @@ func PipedTokenUnaryServerInterceptor(verifier PipedTokenVerifier, logger *zap.L
 
 // PipedTokenStreamServerInterceptor extracts credentials from gRPC metadata
 // and set the extracted credentials to the context with a fixed key.
-// This interceptor will returns a gPRC error when the credentials
+// This interceptor will returns a gRPC error when the credentials
 // was not set or was malformed.
 func PipedTokenStreamServerInterceptor(verifier PipedTokenVerifier, logger *zap.Logger) grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {

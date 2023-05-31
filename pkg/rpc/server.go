@@ -125,7 +125,7 @@ func WithTLS(certFile, keyFile string) Option {
 	}
 }
 
-// WithService appends gPRC service to server.
+// WithService appends gRPC service to server.
 func WithService(service Service) Option {
 	return func(s *Server) {
 		s.services = append(s.services, service)
@@ -153,7 +153,7 @@ func WithGRPCReflection() Option {
 	}
 }
 
-// NewServer creates a new server for handling gPRC services.
+// NewServer creates a new server for handling gRPC services.
 func NewServer(service Service, opts ...Option) *Server {
 	s := &Server{
 		gracePeriod: 15 * time.Second,

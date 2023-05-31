@@ -19,7 +19,7 @@ This component is designed to be stateless, so it can also be run in a single VM
 
 ### Control Plane
 
-A centralized component managing deployment data and provides gPRC API for connecting `piped`s as well as all web-functionalities of PipeCD such as
+A centralized component managing deployment data and provides gRPC API for connecting `piped`s as well as all web-functionalities of PipeCD such as
 authentication, showing deployment list/details, application list/details, delivery insights...
 
 ### Project
