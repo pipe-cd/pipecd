@@ -2,7 +2,7 @@
 This document explains the process to release new versions.
 
 ## Versioning
-Versions are expressed as `vX.Y.Z` as well as Semantic Versioning;
+Versions are expressed as `vX.Y.Z`;
 
 - `X` is the major version
 - `Y` is the minor version
