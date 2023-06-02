@@ -10,15 +10,15 @@ PipeCD is an open source project that anyone in the community can use, improve, 
 
 ## Contributor License Agreement
 
-Contributions to this project must be accompanied by a Contributor License Agreement ("CLA") described at [pipe-cd/pipecd/master/CLA.md](https://github.com/pipe-cd/pipecd/blob/master/CLA.md). You (or your employer) retain the copyright to your contribution; this simply gives us permission to use and redistribute your contributions as part of the project.
+For any code contribution, please read the documents below carefully:
+- [License](https://github.com/pipe-cd/pipecd/blob/master/LICENSE)
+- [Developer Certificate of Origin (DCO)](https://developercertificate.org/)
 
-You generally only need to sign a CLA once, so if you've already signed one, you probably don't need to do it again.
-
-In case you have not signed yet, [pipecd-bot](https://github.com/pipecd-bot) will guide you to sign the CLA _when you send the first pull request to [pipe-cd/pipecd](https://github.com/pipe-cd/pipecd) repository_.
+And signing off your commit with `git commit -s` (About commit sign-off please read [Github docs](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/managing-the-commit-signoff-policy-for-your-repository#about-commit-signoffs))
 
 ## Creating an issue
 
-If you've found a problem, please create an issue in the [pipe-cd/pipecd](https://github.com/pipe-cd/pipecd/issues) repository.
+If you've found a problem, please check the existing [issues tracker](https://github.com/pipe-cd/pipecd/issues) first, and create an issue in the [pipe-cd/pipecd](https://github.com/pipe-cd/pipecd/issues) repository if needed.
 
 ## Creating a pull request
 
