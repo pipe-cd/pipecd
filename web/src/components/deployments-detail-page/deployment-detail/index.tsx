@@ -210,6 +210,12 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
                       ""
                     }
                   />
+                  <DetailTableRow
+                    label="Platform Provider"
+                    value={
+                      deployment.platformProvider
+                    }
+                  />
                 </tbody>
               </table>
             </div>
