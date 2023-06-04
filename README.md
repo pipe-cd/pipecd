@@ -19,8 +19,6 @@
 
 ![](https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/deployment-details.png)
 
-#
-
 ### Overview
 
 PipeCD provides __a unified continuous delivery solution for multiple application kinds on multi-cloud__ that empowers engineers to deploy faster with more confidence, a GitOps tool that enables doing deployment operations by pull request on Git.
@@ -73,7 +71,7 @@ We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/
 
 As a CNCF Sandbox project, PipeCD follows [CNCF Code of Conduct](https://github.com/pipe-cd/pipecd/blob/master/CODE_OF_CONDUCT.md).
 
-## Thanks to the contributors of PipeCD!
+### Thanks to the contributors of PipeCD!
 
 <a href="https://github.com/nghialv"><img src="https://avatars.githubusercontent.com/u/1751755?v=4" title="nghialv" width="80" height="80"></a>
 <a href="https://github.com/khanhtc1202"><img src="https://avatars.githubusercontent.com/u/32532742?v=4" title="khanhtc1202" width="80" height="80"></a>
