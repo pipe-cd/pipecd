@@ -19,51 +19,51 @@
 
 ![](https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/deployment-details.png)
 
-### Overview
+## Overview
 
-PipeCD provides a unified continuous delivery solution for multiple application kinds on multi-cloud that empowers engineers to deploy faster with more confidence, a GitOps tool that enables doing deployment operations by pull request on Git.
+PipeCD provides __a unified continuous delivery solution for multiple application kinds on multi-cloud__ that empowers engineers to deploy faster with more confidence, a GitOps tool that enables doing deployment operations by pull request on Git.
 
 ![](https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/pipecd-explanation.png)
 
-**Visibility**
+## Highlights
+
+### Multi-provider & Multi-Tenancy
+- Support multiple application kinds on multi-cloud including Kubernetes, Terraform, Cloud Run, AWS Lambda
+- Support multiple analysis providers including Prometheus, Datadog, Stackdriver, and more
+- Easy to operate multi-cluster, multi-tenancy by separating control-plane and piped
+
+### Automation
+- Automated deployment analysis to measure deployment impact based on metrics, logs, emitted requests
+- Automatically roll back to the previous state as soon as analysis or a pipeline stage fails
+- Automatically detect configuration drift to notify and render the changes
+- Automatically trigger a new deployment when a defined event has occurred (e.g. container image pushed, helm chart published, etc)
+
+### Safety and Security
+- Support single sign-on and role-based access control
+- Credentials are not exposed outside the cluster and not saved in the control-plane
+- Piped makes only outbound requests and can run inside a restricted network
+- Built-in secrets management
+
+### Visibility
 - Deployment pipeline UI shows clarify what is happening
 - Separate logs viewer for each individual deployment
 - Realtime visualization of application state
 - Deployment notifications to slack, webhook endpoints
 - Insights show metrics like lead time, deployment frequency, MTTR and change failure rate to measure delivery performance
 
-**Automation**
-- Automated deployment analysis to measure deployment impact based on metrics, logs, emitted requests
-- Automatically roll back to the previous state as soon as analysis or a pipeline stage fails
-- Automatically detect configuration drift to notify and render the changes
-- Automatically trigger a new deployment when a defined event has occurred (e.g. container image pushed, helm chart published, etc)
-
-**Safety and Security**
-- Support single sign-on and role-based access control
-- Credentials are not exposed outside the cluster and not saved in the control-plane
-- Piped makes only outbound requests and can run inside a restricted network
-- Built-in secrets management
-
-**Multi-provider & Multi-Tenancy**
-- Support multiple application kinds on multi-cloud including Kubernetes, Terraform, Cloud Run, AWS Lambda
-- Support multiple analysis providers including Prometheus, Datadog, Stackdriver, and more
-- Easy to operate multi-cluster, multi-tenancy by separating control-plane and piped
-
-#
-
-### License
+## License
 
 Apache License 2.0, see [LICENSE](https://github.com/pipe-cd/pipecd/blob/master/LICENSE).
 
-#
-
-### Contributing
+## Contributing
 
 We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/docs/contribution-guidelines/).
 
-#
+## Community
 
-### Thanks to the contributors of PipeCD!
+As a CNCF Sandbox project, PipeCD follows [CNCF Code of Conduct](https://github.com/pipe-cd/pipecd/blob/master/CODE_OF_CONDUCT.md).
+
+## Thanks to the contributors of PipeCD!
 
 <a href="https://github.com/nghialv"><img src="https://avatars.githubusercontent.com/u/1751755?v=4" title="nghialv" width="80" height="80"></a>
 <a href="https://github.com/khanhtc1202"><img src="https://avatars.githubusercontent.com/u/32532742?v=4" title="khanhtc1202" width="80" height="80"></a>
@@ -117,3 +117,11 @@ We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/
 <a href="https://github.com/yoiki"><img src="https://avatars.githubusercontent.com/u/39365493?v=4" title="yoiki" width="80" height="80"></a>
 <a href="https://github.com/JohnTitor"><img src="https://avatars.githubusercontent.com/u/25030997?v=4" title="JohnTitor" width="80" height="80"></a>
 <a href="https://github.com/mugioka"><img src="https://avatars.githubusercontent.com/u/62197019?v=4" title="mugioka" width="80" height="80"></a>
+
+#
+
+**We are a [Cloud Native Computing Foundation](https://cncf.io/) sandbox project.**
+
+<img src="https://www.cncf.io/wp-content/uploads/2022/07/cncf-color-bg.svg" width=300 />
+
+The Linux Foundation® (TLF) has registered trademarks and uses trademarks. For a list of TLF trademarks, see [Trademark Usage](https://www.linuxfoundation.org/trademark-usage/).
