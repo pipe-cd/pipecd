@@ -19,47 +19,57 @@
 
 ![](https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/deployment-details.png)
 
-## Overview
+#
+
+### Overview
 
 PipeCD provides __a unified continuous delivery solution for multiple application kinds on multi-cloud__ that empowers engineers to deploy faster with more confidence, a GitOps tool that enables doing deployment operations by pull request on Git.
 
 ![](https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/pipecd-explanation.png)
 
-## Highlights
+#
 
-### Multi-provider & Multi-Tenancy
+### Highlights
+
+#### Multi-provider & Multi-Tenancy
 - Support multiple application kinds on multi-cloud including Kubernetes, Terraform, Cloud Run, AWS Lambda
 - Support multiple analysis providers including Prometheus, Datadog, Stackdriver, and more
 - Easy to operate multi-cluster, multi-tenancy by separating control-plane and piped
 
-### Automation
+#### Automation
 - Automated deployment analysis to measure deployment impact based on metrics, logs, emitted requests
 - Automatically roll back to the previous state as soon as analysis or a pipeline stage fails
 - Automatically detect configuration drift to notify and render the changes
 - Automatically trigger a new deployment when a defined event has occurred (e.g. container image pushed, helm chart published, etc)
 
-### Safety and Security
+#### Safety and Security
 - Support single sign-on and role-based access control
 - Credentials are not exposed outside the cluster and not saved in the control-plane
 - Piped makes only outbound requests and can run inside a restricted network
 - Built-in secrets management
 
-### Visibility
+#### Visibility
 - Deployment pipeline UI shows clarify what is happening
 - Separate logs viewer for each individual deployment
 - Realtime visualization of application state
 - Deployment notifications to slack, webhook endpoints
 - Insights show metrics like lead time, deployment frequency, MTTR and change failure rate to measure delivery performance
 
-## License
+#
+
+### License
 
 Apache License 2.0, see [LICENSE](https://github.com/pipe-cd/pipecd/blob/master/LICENSE).
 
-## Contributing
+#
+
+### Contributing
 
 We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/docs/contribution-guidelines/).
 
-## Community
+#
+
+### Community
 
 As a CNCF Sandbox project, PipeCD follows [CNCF Code of Conduct](https://github.com/pipe-cd/pipecd/blob/master/CODE_OF_CONDUCT.md).
 
