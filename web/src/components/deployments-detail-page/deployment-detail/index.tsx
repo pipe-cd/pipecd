@@ -166,7 +166,7 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
                       </Link>
                     }
                   />
-                  <DetailTableRow label="Piped" value={piped.name} />
+                  <DetailTableRow label="Piped" value={piped.name + " (provider:" + " " + deployment.platformProvider + ")" } />
                   <DetailTableRow label="Summary" value={deployment.summary} />
                 </tbody>
               </table>
@@ -208,12 +208,6 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
                       deployment.trigger?.commander ||
                       deployment.trigger?.commit?.author ||
                       ""
-                    }
-                  />
-                  <DetailTableRow
-                    label="Platform Provider"
-                    value={
-                      deployment.platformProvider
                     }
                   />
                 </tbody>
