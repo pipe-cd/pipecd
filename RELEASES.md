@@ -1,8 +1,22 @@
-# Release Process
-This document explains the process to release new version and to address patch release.
+# Releases
+This document explains the process to release new versions.
+
+## Versioning
+Versions are expressed as `vX.Y.Z`;
+
+- `X` is the major version
+- `Y` is the minor version
+- `Z` is the patch version
+
+## Release Cycle
+- Major releases: arbitrary timing
+- Minor releases: roughly every 2 months
+- Patch releases: roughly every 2-3 weeks
+
+Release candidates(vX.Y.Z-alpha) for minor versions are available for 2-4 weeks before the release.
 
 ## Major release
-This refers to the release of new features.
+This refers to the release of new features or breaking changes.
 
 ### Confirm the changelog and Create Release Note
 - Run the release script
@@ -37,6 +51,11 @@ This refers to the release of new features.
 - Before cutting a new release, wait for all jobs in GitHub Actions to pass on the master branch.
 
 - Create a tagged release from the master branch. The release should start with "v" and be followed by the version number.
+
+## Minor release
+This refers to the release of new features.
+
+Please refer to [Major release](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md#major-release) for the processes.
 
 ## Patch release
 This refers to the release of critical bug fixes. \
