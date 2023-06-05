@@ -16,5 +16,8 @@ package toolregistry
 
 var asdfInstallScript = `
 git clone https://github.com/asdf-vm/asdf.git {{ .HomeDir }}/.asdf --branch v{{ .Version }}
-echo "\nexport ASDF_DIR="$HOME/.asdf" \n. "{{ .HomeDir }}/.asdf/asdf.sh"" >> {{ .HomeDir }}/.profile
+cat <<EOT > {{ .HomeDir }}/.profile
+export ASDF_DIR="$HOME/.asdf"
+. {{ .HomeDir }}/.asdf/asdf.sh
+EOT
 `
