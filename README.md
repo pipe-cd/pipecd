@@ -67,6 +67,12 @@ We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/
 
 #
 
+### Release
+
+Please check [the release page](https://github.com/pipe-cd/pipecd/releases) to see what is included in the latest release. Also, [Releases documentation](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md/) explain our versioning and release cycle.
+
+#
+
 ### Community
 
 As a CNCF Sandbox project, PipeCD follows [CNCF Code of Conduct](https://github.com/pipe-cd/pipecd/blob/master/CODE_OF_CONDUCT.md).
