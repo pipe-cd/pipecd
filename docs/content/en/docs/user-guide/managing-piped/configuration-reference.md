@@ -255,7 +255,9 @@ Must be one of the following structs:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| hookURL | string | The hookURL of a slack channel. | Yes |
+| hookURL | string | The hookURL of a slack channel. | No |
+| oauthToken | string | The token of a slack api. | No |
+| channelID | string | The channel id which slack api send to. | No |
 
 #### NotificationReceiverWebhook
 
