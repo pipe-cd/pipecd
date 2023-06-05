@@ -192,6 +192,10 @@ func TestPipedConfig(t *testing.T) {
 							Receiver: "prod-slack-channel",
 						},
 						{
+							Name:     "integration-slack",
+							Receiver: "integration-slack-api",
+						},
+						{
 							Name:     "all-events-to-ci",
 							Receiver: "ci-webhook",
 						},
@@ -207,6 +211,13 @@ func TestPipedConfig(t *testing.T) {
 							Name: "prod-slack-channel",
 							Slack: &NotificationReceiverSlack{
 								HookURL: "https://slack.com/prod",
+							},
+						},
+						{
+							Name: "integration-slack-api",
+							Slack: &NotificationReceiverSlack{
+								OAuthToken: "token",
+								ChannelID:  "testid",
 							},
 						},
 						{
@@ -332,6 +343,38 @@ func TestPipedEventWatcherValidate(t *testing.T) {
 			err := tc.eventWatcher.Validate()
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.wantPipedEventWatcher, tc.eventWatcher)
+		})
+	}
+}
+
+func TestPipedSlackNotificationValidate(t *testing.T) {
+	testcases := []struct {
+		name                 string
+		notificationReceiver *NotificationReceiverSlack
+		wantErr              bool
+	}{
+		{
+			name: "both hook url and oauth token is set",
+			notificationReceiver: &NotificationReceiverSlack{
+				HookURL:    "https://slack.com/dev",
+				OAuthToken: "token",
+				ChannelID:  "testid",
+			},
+			wantErr: true,
+		},
+		{
+			name: "oauth token is set, but channel id is empty",
+			notificationReceiver: &NotificationReceiverSlack{
+				OAuthToken: "token",
+				ChannelID:  "",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.notificationReceiver.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
 }

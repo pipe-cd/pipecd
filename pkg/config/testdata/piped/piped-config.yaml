@@ -107,6 +107,8 @@ spec:
         labels:
           env: dev
         receiver: prod-slack-channel
+      - name: integration-slack
+        receiver: integration-slack-api
       - name: all-events-to-ci
         receiver: ci-webhook
     receivers:
@@ -116,6 +118,10 @@ spec:
       - name: prod-slack-channel
         slack:
           hookURL: https://slack.com/prod
+      - name: integration-slack-api
+        slack:
+          oauthToken: token
+          channelID: testid
       - name: ci-webhook
         webhook:
           url: https://pipecd.dev/dev-hook

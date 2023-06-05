@@ -139,6 +139,13 @@ func (s *PipedSpec) Validate() error {
 	if err := s.EventWatcher.Validate(); err != nil {
 		return err
 	}
+	for _, n := range s.Notifications.Receivers {
+		if n.Slack != nil {
+			if err := n.Slack.Validate(); err != nil {
+				return err
+			}
+		}
+	}
 	for _, p := range s.AnalysisProviders {
 		if err := p.Validate(); err != nil {
 			return err
@@ -919,13 +926,31 @@ func (n *NotificationReceiver) Mask() {
 }
 
 type NotificationReceiverSlack struct {
-	HookURL string `json:"hookURL"`
+	HookURL    string `json:"hookURL"`
+	OAuthToken string `json:"oauthToken"`
+	ChannelID  string `json:"channelID"`
 }
 
 func (n *NotificationReceiverSlack) Mask() {
 	if len(n.HookURL) != 0 {
 		n.HookURL = maskString
 	}
+	if len(n.OAuthToken) != 0 {
+		n.OAuthToken = maskString
+	}
+}
+
+func (n *NotificationReceiverSlack) Validate() error {
+	if n.HookURL != "" && (n.OAuthToken != "" || n.ChannelID != "") {
+		return errors.New("only one of hookURL or oauthToken and channelID should be used")
+	}
+	if n.HookURL != "" {
+		return nil
+	}
+	if n.OAuthToken == "" || n.ChannelID == "" {
+		return errors.New("missing oauthToken or channelID configuration")
+	}
+	return nil
 }
 
 type NotificationReceiverWebhook struct {
