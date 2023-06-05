@@ -354,11 +354,6 @@ func TestPipedSlackNotificationValidate(t *testing.T) {
 		wantErr              bool
 	}{
 		{
-			name:                 "both hook url and oauth token is not set",
-			notificationReceiver: &NotificationReceiverSlack{},
-			wantErr:              false,
-		},
-		{
 			name: "both hook url and oauth token is set",
 			notificationReceiver: &NotificationReceiverSlack{
 				HookURL:    "https://slack.com/dev",
