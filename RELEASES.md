@@ -55,14 +55,7 @@ This refers to the release of new features or breaking changes.
 ## Minor release
 This refers to the release of new features.
 
-### Confirm the changelog and Create Release Note
-Please refer to [Major release](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md#confirm-the-changelog-and-create-release-note).
-
-### Generate document for new version
-Please refer to [Major release](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md#generate-document-for-new-version).
-
-### Cut a new release
-Please refer to [Major release](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md#cut-a-new-release).
+Please refer to [Major release](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md#major-release) for the processes.
 
 ## Patch release
 This refers to the release of critical bug fixes. \
