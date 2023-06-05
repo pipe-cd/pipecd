@@ -16,7 +16,7 @@ Versions are expressed as `vX.Y.Z`;
 Release candidates(vX.Y.Z-alpha) for minor versions are available for 2-4 weeks before the release.
 
 ## Major release
-This refers to the release of breaking changes.
+This refers to the release of new features or breaking changes.
 
 ### Confirm the changelog and Create Release Note
 - Run the release script
