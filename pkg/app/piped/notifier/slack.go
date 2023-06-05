@@ -24,6 +24,7 @@ import (
 	"strings"
 	"time"
 
+	slackgo "github.com/slack-go/slack"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -40,12 +41,13 @@ const (
 )
 
 type slack struct {
-	name       string
-	config     config.NotificationReceiverSlack
-	webURL     string
-	httpClient *http.Client
-	eventCh    chan model.NotificationEvent
-	logger     *zap.Logger
+	name        string
+	config      config.NotificationReceiverSlack
+	webURL      string
+	httpClient  *http.Client
+	slackClient *slackgo.Client
+	eventCh     chan model.NotificationEvent
+	logger      *zap.Logger
 }
 
 func newSlackSender(name string, cfg config.NotificationReceiverSlack, webURL string, logger *zap.Logger) *slack {
@@ -56,8 +58,9 @@ func newSlackSender(name string, cfg config.NotificationReceiverSlack, webURL st
 		httpClient: &http.Client{
 			Timeout: 5 * time.Second,
 		},
-		eventCh: make(chan model.NotificationEvent, 100),
-		logger:  logger.Named("slack"),
+		slackClient: slackgo.New(cfg.OAuthToken),
+		eventCh:     make(chan model.NotificationEvent, 100),
+		logger:      logger.Named("slack"),
 	}
 }
 
@@ -101,12 +104,21 @@ func (s *slack) sendEvent(ctx context.Context, event model.NotificationEvent) {
 		s.logger.Info(fmt.Sprintf("ignore event %s", event.Type.String()))
 		return
 	}
-	if err := s.sendMessage(ctx, msg); err != nil {
-		s.logger.Error(fmt.Sprintf("unable to send notification to slack: %v", err))
+	if len(s.config.HookURL) != 0 {
+		if err := s.sendMessageViaHookURL(ctx, msg); err != nil {
+			s.logger.Error(fmt.Sprintf("unable to send notification to slack: %v", err))
+		}
+		return
+	}
+	if len(s.config.OAuthToken) != 0 {
+		if err := s.sendMessageViaAPI(ctx, msg); err != nil {
+			s.logger.Error(fmt.Sprintf("unable to send notification to slack: %v", err))
+		}
+		return
 	}
 }
 
-func (s *slack) sendMessage(ctx context.Context, msg slackMessage) error {
+func (s *slack) sendMessageViaHookURL(ctx context.Context, msg slackMessage) error {
 	buf := &bytes.Buffer{}
 	if err := json.NewEncoder(buf).Encode(msg); err != nil {
 		return err
@@ -126,6 +138,40 @@ func (s *slack) sendMessage(ctx context.Context, msg slackMessage) error {
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
 		return fmt.Errorf("%s from Slack: %s", resp.Status, strings.TrimSpace(string(body)))
+	}
+
+	return nil
+}
+
+func (s *slack) sendMessageViaAPI(ctx context.Context, msg slackMessage) error {
+	buf := &bytes.Buffer{}
+	if err := json.NewEncoder(buf).Encode(msg); err != nil {
+		return err
+	}
+
+	attachments := make([]slackgo.Attachment, 0, len(msg.Attachments))
+	for _, a := range msg.Attachments {
+		attchmentFiled := make([]slackgo.AttachmentField, 0, len(a.Fields))
+		for _, f := range a.Fields {
+			attchmentFiled = append(attchmentFiled, slackgo.AttachmentField{
+				Title: f.Title,
+				Value: f.Value,
+				Short: f.Short,
+			})
+		}
+		attachments = append(attachments, slackgo.Attachment{
+			Title:      a.Title,
+			TitleLink:  a.TitleLink,
+			Text:       a.Text,
+			Fields:     attchmentFiled,
+			Color:      a.Color,
+			MarkdownIn: a.Markdown,
+			Ts:         json.Number(fmt.Sprint(a.Timestamp)),
+		})
+	}
+
+	if _, _, err := s.slackClient.PostMessageContext(ctx, s.config.ChannelID, slackgo.MsgOptionUsername(msg.Username), slackgo.MsgOptionAttachments(attachments...)); err != nil {
+		return err
 	}
 
 	return nil
@@ -165,7 +211,6 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		if commitURL != "" {
 			fields = append(fields, slackField{"Commit", makeSlackLink(truncateText(msg, 8), commitURL), true})
 		}
-
 	}
 	generatePipedEventData := func(id, name, version, project string) {
 		link = fmt.Sprintf("%s/settings/piped?project=%s", webURL, project)
