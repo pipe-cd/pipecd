@@ -71,6 +71,8 @@ We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/
 
 As a CNCF Sandbox project, PipeCD follows [CNCF Code of Conduct](https://github.com/pipe-cd/pipecd/blob/master/CODE_OF_CONDUCT.md).
 
+#
+
 ### Thanks to the contributors of PipeCD!
 
 <a href="https://github.com/nghialv"><img src="https://avatars.githubusercontent.com/u/1751755?v=4" title="nghialv" width="80" height="80"></a>
