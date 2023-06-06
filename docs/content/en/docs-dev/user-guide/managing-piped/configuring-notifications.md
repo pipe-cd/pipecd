@@ -57,6 +57,8 @@ spec:
           env: prod
           team: pipecd
         receiver: prod-slack-channel
+      - name: integration-slack
+        receiver: integration-slack-api
     receivers:
       - name: dev-slack-channel
         slack:
@@ -64,6 +66,10 @@ spec:
       - name: prod-slack-channel
         slack:
           hookURL: https://slack.com/prod
+      - name: integration-slack-api
+        slack:
+          oauthToken: "token"
+          channelID: "testid"
 ```
 
 
