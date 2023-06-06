@@ -255,7 +255,7 @@ Must be one of the following structs:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| hookURL | string | The hookURL of a slack channel. | No |
+| hookURL | string | The hookURL of a slack channel. | Yes |
 
 #### NotificationReceiverWebhook
 
