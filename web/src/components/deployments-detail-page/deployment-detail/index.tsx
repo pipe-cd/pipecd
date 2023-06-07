@@ -166,7 +166,11 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
                       </Link>
                     }
                   />
-                  <DetailTableRow label="Piped" value={piped.name + " (provider:" + " " + deployment.platformProvider + ")" } />
+                  <DetailTableRow label="Piped" value={piped.name} />
+                  <DetailTableRow
+                    label="Platform Provider"
+                    value={deployment.platformProvider}
+                  />
                   <DetailTableRow label="Summary" value={deployment.summary} />
                 </tbody>
               </table>
