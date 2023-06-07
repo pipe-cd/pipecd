@@ -1,5 +1,5 @@
 # Builder image to build go program.
-FROM golang:1.19.3-alpine3.15 as BUILDER
+FROM golang:1.20.5-alpine3.18 as BUILDER
 
 COPY protoc-gen-auth /protoc-gen-auth
 RUN cd /protoc-gen-auth \
@@ -7,7 +7,7 @@ RUN cd /protoc-gen-auth \
   && chmod +x /usr/local/bin/protoc-gen-auth
 
 # Codegen image which is actually being used.
-FROM golang:1.19.3-alpine3.15
+FROM golang:1.20.5-alpine3.18
 
 ENV PROTOC_VER=3.19.4
 ENV PROTOC_GEN_GO_VER=1.27.1
