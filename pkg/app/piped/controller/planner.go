@@ -24,6 +24,7 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/metadatastore"
 	pln "github.com/pipe-cd/pipecd/pkg/app/piped/planner"
@@ -187,9 +188,16 @@ func (p *planner) Run(ctx context.Context) error {
 		)
 	}
 
+	deploymentStatus := p.doneDeploymentStatus
+
+	defer func() {
+		p.doneDeploymentStatus = deploymentStatus
+		controllermetrics.UpdateDeploymentStatus(p.deployment.Id, deploymentStatus, p.deployment.Kind, p.deployment.PlatformProvider)
+	}()
+
 	planner, ok := p.plannerRegistry.Planner(p.deployment.Kind)
 	if !ok {
-		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
+		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
 		p.reportDeploymentFailed(ctx, "Unable to find the planner for this application kind")
 		return fmt.Errorf("unable to find the planner for application %v", p.deployment.Kind)
 	}
@@ -200,7 +208,7 @@ func (p *planner) Run(ctx context.Context) error {
 	select {
 	case cmd := <-p.cancelledCh:
 		if cmd != nil {
-			p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
+			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
 			desc := fmt.Sprintf("Deployment was cancelled by %s while planning", cmd.Commander)
 			p.reportDeploymentCancelled(ctx, cmd.Commander, desc)
 			return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil)
@@ -209,11 +217,11 @@ func (p *planner) Run(ctx context.Context) error {
 	}
 
 	if err != nil {
-		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
+		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
 		return p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to plan the deployment (%v)", err))
 	}
 
-	p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_PLANNED
+	deploymentStatus = model.DeploymentStatus_DEPLOYMENT_PLANNED
 	return p.reportDeploymentPlanned(ctx, out)
 }
 

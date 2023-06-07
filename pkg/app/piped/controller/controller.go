@@ -32,6 +32,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/logpersister"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
@@ -341,6 +342,9 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 			)
 			continue
 		}
+
+		controllermetrics.UpdateDeploymentStatus(d.Id, d.Status, d.Kind, d.PlatformProvider)
+
 		// For each application, only one deployment can be planned at the same time.
 		if p, ok := c.planners[appID]; ok {
 			c.logger.Info("temporarily skip planning because another deployment is planning",
