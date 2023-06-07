@@ -11,7 +11,7 @@ env:
   GHCR: ghcr.io
   GCR: gcr.io
   HELM_VERSION: 3.8.2
-  GO_VERSION: 1.20.3
+  GO_VERSION: 1.20.5
   NODE_VERSION: 16.13.0
 
 jobs:
