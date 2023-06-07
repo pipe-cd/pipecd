@@ -15,7 +15,7 @@ ENV PROTOC_GEN_GRPC_WEB_VER=1.3.1
 ENV PROTOC_GEN_GO_GRPC_VER=1.2.0
 ENV PROTOC_GEN_VALIDATE_VER=0.6.6
 ENV GOMOCK_VER=1.6.0
-ENV GLIBC_VERSION=2.33-r0
+ENV GLIBC_VERSION=2.35-r1
 
 RUN apk --no-cache add wget bash \
     && wget -q https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub -O /etc/apk/keys/sgerrand.rsa.pub \
