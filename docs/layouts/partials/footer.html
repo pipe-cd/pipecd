@@ -1,32 +1,32 @@
-{{/* TODO: Remove this file after Docsy allows configuring years in copyright. https://github.com/google/docsy/issues/436 */}}
 {{ $links := .Site.Params.links }}
-<footer class="bg-dark py-5 row d-print-none">
-  <div class="container-fluid mx-sm-5">
+<div class="bg-dark row d-print-none">
+  <div class="container-fluid py-3 mx-sm-5">
     <div class="row">
-      <div class="col-6 col-sm-4 text-xs-center order-sm-2">
+      <div class="col-8 text-white py-3 order-sm-2">
+        <a href="https://www.cncf.io/projects/pipecd/" target="_blank">
+          <img src="https://www.cncf.io/wp-content/uploads/2022/05/CNCF_logo_white.svg" alt="cncf logo" width="250">
+          <div class="text-white py-2">PipeCD is a Cloud Native Computing Foundation sandbox project.</div>
+        </a>
+      </div>
+      <div class="col-4 order-sm-3 d-flex align-items-center justify-content-center">
         {{ with $links }}
+        {{ with index . "developer"}}
+        {{ template "footer-links-block"  . }}
+        {{ end }}
         {{ with index . "user"}}
         {{ template "footer-links-block"  . }}
         {{ end }}
         {{ end }}
       </div>
-      <div class="col-6 col-sm-4 text-right text-xs-center order-sm-3">
-        {{ with $links }}
-        {{ with index . "developer"}}
-        {{ template "footer-links-block"  . }}
-        {{ end }}
-        {{ end }}
-      </div>
-      <div class="col-12 col-sm-4 text-center py-2 order-sm-2">
-        <small class="text-white">&copy; {{ .Site.Params.copyright_since }}-{{ now.Year }} {{ .Site.Params.copyright }} {{ T "footer_all_rights_reserved" }}</small>
-        {{ with .Site.Params.privacy_policy }}<small class="ml-1"><a href="{{ . }}" target="_blank" rel="noreferrer">{{ T "footer_privacy_policy" }}</a></small>{{ end }}
-	{{ if not .Site.Params.ui.footer_about_disable }}
-		{{ with .Site.GetPage "about" }}<p class="mt-2"><a href="{{ .RelPermalink }}">{{ .Title }}</a></p>{{ end }}
-	{{ end }}
-      </div>
+    </div>
+    <div class="border-top text-center text-white py-3">
+      <small>Copyright {{ .Site.Params.copyright }}.</small>
+      <br>
+      <small>The Linux Foundation® (TLF) has registered trademarks and uses trademarks.For a list of TLF trademarks,
+        see <a href="https://www.linuxfoundation.org/trademark-usage/">Trademark Usage</a>.</small>
     </div>
   </div>
-</footer>
+</div>
 {{ define "footer-links-block" }}
 <ul class="list-inline mb-0">
   {{ range . }}
