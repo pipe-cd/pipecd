@@ -78,8 +78,6 @@ style = "tango"
 
 [params]
 copyright = "The PipeCD Authors"
-copyright_since = "2020"
-privacy_policy = "https://github.com/pipe-cd/pipecd/blob/master/LICENSE"
 
 # Menu title if your navbar has a versions selector to access old versions of your site.
 # This menu appears only if you have at least one [params.versions] set.
@@ -126,11 +124,6 @@ no = 'Sorry to hear that. Please <a href="https://github.com/pipe-cd/pipecd/issu
 [params.links]
 # End user relevant links. These will show up on left side of footer and in the community page if you have one.
 [[params.links.user]]
-	name = "User mailing list"
-	url = "mailto:pipecd.dev@gmail.com"
-	icon = "fa fa-envelope"
-        desc = "Discussion and help from your fellow users"
-[[params.links.user]]
 	name ="Twitter"
 	url = "https://twitter.com/pipecd_dev"
 	icon = "fab fa-twitter"
@@ -140,6 +133,11 @@ no = 'Sorry to hear that. Please <a href="https://github.com/pipe-cd/pipecd/issu
 	url = "https://stackoverflow.com/questions/tagged/pipecd"
 	icon = "fab fa-stack-overflow"
         desc = "Practical questions and curated answers"
+[[params.links.user]]
+	name = "User mailing list"
+	url = "mailto:pipecd.dev@gmail.com"
+	icon = "fa fa-envelope"
+        desc = "Discussion and help from your fellow users"
 # Developer relevant links. These will show up on right side of footer and in the community page if you have one.
 [[params.links.developer]]
 	name = "GitHub"
