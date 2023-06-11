@@ -21,12 +21,8 @@ import (
 	"os"
 	"os/exec"
 	"text/template"
-	"time"
 
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
-
-	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 const (
@@ -34,7 +30,6 @@ const (
 	defaultKustomizeVersion = "3.8.1"
 	defaultHelmVersion      = "3.8.2"
 	defaultTerraformVersion = "0.13.0"
-	defaultAsdfVersion      = "0.11.3"
 )
 
 var (
@@ -42,7 +37,6 @@ var (
 	kustomizeInstallScriptTmpl = template.Must(template.New("kustomize").Parse(kustomizeInstallScript))
 	helmInstallScriptTmpl      = template.Must(template.New("helm").Parse(helmInstallScript))
 	terraformInstallScriptTmpl = template.Must(template.New("terraform").Parse(terraformInstallScript))
-	asdfInstallScriptTmpl      = template.Must(template.New("asdf-posix").Parse(asdfInstallScript))
 )
 
 func (r *registry) installKubectl(ctx context.Context, version string) error {
@@ -230,93 +224,5 @@ func (r *registry) installTerraform(ctx context.Context, version string) error {
 	}
 
 	r.logger.Info("just installed terraform", zap.String("version", version))
-	return nil
-}
-
-func (r *registry) addExternalToolPlugin(ctx context.Context, config config.ExternalTool) error {
-	script := fmt.Sprintf("asdf plugin add %s", config.Package)
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, 10*time.Minute)
-	defer cancel()
-	cmd := exec.CommandContext(ctxWithTimeout, "/bin/sh", "-l", "-c", script)
-	if out, err := cmd.CombinedOutput(); err != nil {
-		r.logger.Error("failed to add plugin",
-			zap.String("package", config.Package),
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		if errors.Is(ctxWithTimeout.Err(), context.DeadlineExceeded) {
-			return errors.Errorf("failed to add plugin %s (%v) because of timeout", config.Package, err)
-		}
-		return errors.Errorf("failed to add plugin %s (%v)", config.Package, err)
-	}
-
-	r.logger.Info("just add plugin",
-		zap.String("package", config.Package),
-	)
-	return nil
-}
-
-func (r *registry) installExternalToolVersion(ctx context.Context, config config.ExternalTool) error {
-	script := fmt.Sprintf("asdf install %s %s", config.Package, config.Version)
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, 10*time.Minute)
-	defer cancel()
-	cmd := exec.CommandContext(ctxWithTimeout, "/bin/sh", "-l", "-c", script)
-	if out, err := cmd.CombinedOutput(); err != nil {
-		r.logger.Error("failed to install %s %s",
-			zap.String("package", config.Package),
-			zap.String("version", config.Version),
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		if errors.Is(ctxWithTimeout.Err(), context.DeadlineExceeded) {
-			return errors.Errorf("failed to install %s %s (%v) because of timeout", config.Package, config.Version, err)
-		}
-		return errors.Errorf("failed to install %s %s (%v)", config.Package, config.Version, err)
-	}
-
-	r.logger.Info("just installed external tool",
-		zap.String("package", config.Package),
-		zap.String("version", config.Version),
-	)
-	return nil
-}
-
-func (r *registry) installAsdf(ctx context.Context) error {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("failed to detect the current user's home directory: %w", err)
-	}
-	version := defaultAsdfVersion
-
-	var (
-		buf  bytes.Buffer
-		data = map[string]interface{}{
-			"HomeDir": homeDir,
-			"Version": version,
-		}
-	)
-	if err := asdfInstallScriptTmpl.Execute(&buf, data); err != nil {
-		r.logger.Error("failed to render asdf install script",
-			zap.String("version", version),
-			zap.Error(err),
-		)
-		return fmt.Errorf("failed to install asdf %s (%w)", version, err)
-	}
-
-	var (
-		script = buf.String()
-		cmd    = exec.CommandContext(ctx, "/bin/sh", "-l", "-c", script)
-	)
-	if out, err := cmd.CombinedOutput(); err != nil {
-		r.logger.Error("failed to install asdf",
-			zap.String("version", version),
-			zap.String("script", script),
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return fmt.Errorf("failed to install asdf %s, %s (%w)", version, string(out), err)
-	}
-
-	r.logger.Info("just installed asdf", zap.String("version", version))
 	return nil
 }

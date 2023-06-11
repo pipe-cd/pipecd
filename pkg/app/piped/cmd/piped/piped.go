@@ -169,30 +169,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		return err
 	}
 
-	// Install External tools
-	{
-		group.Go(func() error {
-			for _, config := range cfg.ExternalTools {
-				installedAsdf, addedPlugin, installedVersion, err := toolregistry.DefaultRegistry().ExternalTool(ctx, "", config)
-				if installedAsdf {
-					input.Logger.Info("asdf has just been installed")
-				}
-				if addedPlugin {
-					input.Logger.Info(fmt.Sprintf("plugin %q has just been added", config.Package))
-				}
-				if installedVersion {
-					input.Logger.Info(fmt.Sprintf("%q %q has just been installed", config.Package, config.Version))
-				}
-				if err != nil {
-					input.Logger.Error(fmt.Sprintf("unable to prepare %q %q (%v)", config.Package, config.Version, err), zap.Error(err))
-					continue
-				}
-				input.Logger.Info(fmt.Sprintf("%q %q has just been globally set", config.Package, config.Version))
-			}
-			return nil
-		})
-	}
-
 	// Add configured Helm chart repositories.
 	if repos := cfg.HTTPHelmChartRepositories(); len(repos) > 0 {
 		reg := toolregistry.DefaultRegistry()

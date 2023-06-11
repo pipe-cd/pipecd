@@ -15,14 +15,12 @@
 package customsync
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -64,26 +62,6 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	e.repoDir = ds.RepoDir
 	e.appDir = ds.AppDir
-
-	e.LogPersister.Infof("Prepare external tools...")
-	for _, config := range e.StageConfig.CustomSyncOptions.ExternalTools {
-		e.LogPersister.Infof(fmt.Sprintf("Check %s %s", config.Package, config.Version))
-		installedAsdf, addedPlugin, installedVersion, err := toolregistry.DefaultRegistry().ExternalTool(ctx, e.appDir, config)
-		if installedAsdf {
-			e.LogPersister.Infof(" asdf has just been installed")
-		}
-		if addedPlugin {
-			e.LogPersister.Infof(fmt.Sprintf(" plugin %s has just been added", config.Package))
-		}
-		if installedVersion {
-			e.LogPersister.Infof(fmt.Sprintf(" %s %s has just been installed", config.Package, config.Version))
-		}
-		if err != nil {
-			e.LogPersister.Errorf(fmt.Sprintf(" unable to prepare %s %s (%v)", config.Package, config.Version, err))
-			continue
-		}
-		e.LogPersister.Infof(fmt.Sprintf(" %s %s has just been locally set to application directory", config.Package, config.Version))
-	}
 
 	timeout := e.StageConfig.CustomSyncOptions.Timeout.Duration()
 
