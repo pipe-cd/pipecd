@@ -72,8 +72,6 @@ type PipedSpec struct {
 	PlatformProviders []PipedPlatformProvider `json:"platformProviders,omitempty"`
 	// List of analysis providers can be used by this piped.
 	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders,omitempty"`
-	// List of external binaies can be used in custom stages.
-	ExternalTools []ExternalTool `json:"externalTools,omitempty"`
 	// Sending notification to Slack, Webhook…
 	Notifications Notifications `json:"notifications"`
 	// What secret management method should be used.

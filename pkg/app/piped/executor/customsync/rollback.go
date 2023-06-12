@@ -16,13 +16,11 @@ package customsync
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -76,26 +74,6 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 	e.LogPersister.Infof("Start rollback for custom sync")
-
-	e.LogPersister.Infof("Prepare external tools...")
-	for _, config := range runningDS.GenericApplicationConfig.Pipeline.Stages[0].CustomSyncOptions.ExternalTools {
-		e.LogPersister.Infof(fmt.Sprintf("Check %s %s", config.Package, config.Version))
-		installedAsdf, addedPlugin, installedVersion, err := toolregistry.DefaultRegistry().ExternalTool(ctx, e.appDir, config)
-		if installedAsdf {
-			e.LogPersister.Infof(" asdf has just been installed")
-		}
-		if addedPlugin {
-			e.LogPersister.Infof(fmt.Sprintf(" plugin %s has just been added", config.Package))
-		}
-		if installedVersion {
-			e.LogPersister.Infof(fmt.Sprintf(" %s %s has just been installed", config.Package, config.Version))
-		}
-		if err != nil {
-			e.LogPersister.Errorf(fmt.Sprintf(" unable to prepare %s %s (%v)", config.Package, config.Version, err))
-			continue
-		}
-		e.LogPersister.Infof(fmt.Sprintf(" %s %s has just been locally set to application directory", config.Package, config.Version))
-	}
 
 	return e.executeCommand(runningDS.GenericApplicationConfig.Pipeline.Stages[0])
 }

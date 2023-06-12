@@ -17,6 +17,3 @@ spec:
             cd sam-app
             sam build
             echo y | sam deploy --profile $AWS_PROFILE
-          externalTools:
-            - package: "aws-sam-cli"
-              version: latest
