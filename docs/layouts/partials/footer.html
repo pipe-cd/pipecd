@@ -1,40 +1,51 @@
 {{ $links := .Site.Params.links }}
-<div class="bg-dark row d-print-none">
+{{ $bg_color := "bg-dark" }}
+{{ if .IsHome }} {{ $bg_color = "bg-white" }} {{ end }}
+{{ $text_color := "text-white" }}
+{{ if .IsHome }} {{ $text_color = "text-dark" }} {{ end }}
+{{ $cncf_logo := "https://www.cncf.io/wp-content/uploads/2022/05/CNCF_logo_white.svg" }}
+{{ if .IsHome }} {{ $cncf_logo = "https://www.cncf.io/wp-content/uploads/2022/07/cncf-color-bg.svg" }} {{ end }}
+<div class="{{ $bg_color }} row d-print-none">
   <div class="container-fluid py-3 mx-sm-5">
     <div class="row">
-      <div class="col-8 text-white py-3 order-sm-2">
+      <div class="col-8 py-3 order-sm-2 {{ $text_color }}">
         <a href="https://www.cncf.io/projects/pipecd/" target="_blank">
-          <img src="https://www.cncf.io/wp-content/uploads/2022/05/CNCF_logo_white.svg" alt="cncf logo" width="250">
-          <div class="text-white py-2">PipeCD is a Cloud Native Computing Foundation sandbox project.</div>
+          <img src="{{ $cncf_logo }}" alt="cncf logo" width="250">
+          <div class="py-2 {{ $text_color }}">PipeCD is a Cloud Native Computing Foundation sandbox project.</div>
         </a>
       </div>
       <div class="col-4 order-sm-3 d-flex align-items-center justify-content-center">
         {{ with $links }}
         {{ with index . "developer"}}
-        {{ template "footer-links-block"  . }}
+        <ul class="list-inline mb-0">
+          {{ range . }}
+          <li class="list-inline-item mx-2 h3" data-toggle="tooltip" data-placement="top" title="{{ .name }}" aria-label="{{ .name }}">
+            <a class="text-white" target="_blank" rel="noopener noreferrer" href="{{ .url }}">
+              <i class="{{ .icon }} {{ $text_color }}"></i>
+            </a>
+          </li>
+          {{ end }}
+        </ul>
         {{ end }}
         {{ with index . "user"}}
-        {{ template "footer-links-block"  . }}
+        <ul class="list-inline mb-0">
+          {{ range . }}
+          <li class="list-inline-item mx-2 h3" data-toggle="tooltip" data-placement="top" title="{{ .name }}" aria-label="{{ .name }}">
+            <a class="text-white" target="_blank" rel="noopener noreferrer" href="{{ .url }}">
+              <i class="{{ .icon }} {{ $text_color }}"></i>
+            </a>
+          </li>
+          {{ end }}
+        </ul>
         {{ end }}
         {{ end }}
       </div>
     </div>
-    <div class="border-top text-center text-white py-3">
+    <div class="border-top text-center py-3 {{ $text_color }}">
       <small>Copyright {{ .Site.Params.copyright }}.</small>
       <br>
-      <small>The Linux Foundation® (TLF) has registered trademarks and uses trademarks.For a list of TLF trademarks,
+      <small>The Linux Foundation® (TLF) has registered trademarks and uses trademarks. For a list of TLF trademarks,
         see <a href="https://www.linuxfoundation.org/trademark-usage/">Trademark Usage</a>.</small>
     </div>
   </div>
 </div>
-{{ define "footer-links-block" }}
-<ul class="list-inline mb-0">
-  {{ range . }}
-  <li class="list-inline-item mx-2 h3" data-toggle="tooltip" data-placement="top" title="{{ .name }}" aria-label="{{ .name }}">
-    <a class="text-white" target="_blank" rel="noopener noreferrer" href="{{ .url }}">
-      <i class="{{ .icon }}"></i>
-    </a>
-  </li>
-  {{ end }}
-</ul>
-{{ end }}
