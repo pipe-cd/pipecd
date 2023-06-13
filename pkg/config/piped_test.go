@@ -45,9 +45,10 @@ func TestPipedConfig(t *testing.T) {
 				SyncInterval:          Duration(time.Minute),
 				AppConfigSyncInterval: Duration(time.Minute),
 				Git: PipedGit{
-					Username:   "username",
-					Email:      "username@email.com",
-					SSHKeyFile: "/etc/piped-secret/ssh-key",
+					Username:        "username",
+					Email:           "username@email.com",
+					SSHKeyFile:      "/etc/piped-secret/ssh-key",
+					EnableNewBranch: true,
 				},
 				Repositories: []PipedRepository{
 					{
@@ -451,6 +452,7 @@ func TestPipedConfigMask(t *testing.T) {
 					HostName:          "foo",
 					SSHKeyFile:        "foo",
 					SSHKeyData:        "foo",
+					EnableNewBranch:   true,
 				},
 				Repositories: []PipedRepository{
 					{
@@ -609,6 +611,7 @@ func TestPipedConfigMask(t *testing.T) {
 					HostName:          "foo",
 					SSHKeyFile:        maskString,
 					SSHKeyData:        maskString,
+					EnableNewBranch:   true,
 				},
 				Repositories: []PipedRepository{
 					{
