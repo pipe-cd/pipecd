@@ -32,6 +32,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/logpersister"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
@@ -363,6 +364,7 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 		if pre, ok := pendingByApp[appID]; ok && !d.TriggerBefore(pre) {
 			continue
 		}
+		controllermetrics.UpdateDeploymentStatus(d.Id, d.Status, d.Kind, d.PlatformProvider)
 		pendingByApp[appID] = d
 	}
 
