@@ -342,9 +342,6 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 			)
 			continue
 		}
-
-		controllermetrics.UpdateDeploymentStatus(d.Id, d.Status, d.Kind, d.PlatformProvider)
-
 		// For each application, only one deployment can be planned at the same time.
 		if p, ok := c.planners[appID]; ok {
 			c.logger.Info("temporarily skip planning because another deployment is planning",
@@ -367,6 +364,7 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 		if pre, ok := pendingByApp[appID]; ok && !d.TriggerBefore(pre) {
 			continue
 		}
+		controllermetrics.UpdateDeploymentStatus(d.Id, d.Status, d.Kind, d.PlatformProvider)
 		pendingByApp[appID] = d
 	}
 
