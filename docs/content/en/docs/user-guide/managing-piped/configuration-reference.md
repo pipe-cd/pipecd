@@ -49,7 +49,7 @@ spec:
 | hostName | string | The hostname or IP address of the remote git server. Default is the same value with Host. | No |
 | sshKeyFile | string | The path to the private ssh key file. This will be used to clone the source code of the specified git repositories. | No |
 | sshKeyData | string | Base64 encoded string of SSH key. | No |
-| enableNewBranch | bool | Whether to create a new branch or not when commit changes in eventwatcher. | No |
+| enableNewBranch | bool | Whether to create a new branch or not when commit changes in event watcher. | No |
 
 ## GitRepository
 
