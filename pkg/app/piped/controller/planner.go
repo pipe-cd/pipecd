@@ -24,6 +24,7 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/metadatastore"
 	pln "github.com/pipe-cd/pipecd/pkg/app/piped/planner"
@@ -186,6 +187,10 @@ func (p *planner) Run(ctx context.Context) error {
 			p.secretDecrypter,
 		)
 	}
+
+	defer func() {
+		controllermetrics.UpdateDeploymentStatus(p.deployment.Id, p.doneDeploymentStatus, p.deployment.Kind, p.deployment.PlatformProvider)
+	}()
 
 	planner, ok := p.plannerRegistry.Planner(p.deployment.Kind)
 	if !ok {
