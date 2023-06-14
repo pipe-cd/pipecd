@@ -33,6 +33,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
+	"github.com/google/uuid"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/backoff"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -639,7 +640,8 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 		EventName: eventName,
 	}
 	commitMsg = parseCommitMsg(commitMsg, args)
-	if err := repo.CommitChanges(ctx, repo.GetClonedBranch(), commitMsg, false, changes); err != nil {
+	branch := getBranchName(w.config.Git.EnableNewBranch, eventName, repo.GetClonedBranch())
+	if err := repo.CommitChanges(ctx, branch, commitMsg, w.config.Git.EnableNewBranch, changes); err != nil {
 		return fmt.Errorf("failed to perform git commit: %w", err)
 	}
 	w.logger.Info(fmt.Sprintf("event watcher will update values of Event %q", eventName))
@@ -776,4 +778,13 @@ func parseCommitMsg(msg string, args argsTemplate) string {
 		return msg
 	}
 	return buf.String()
+}
+
+// getBranchName generates a new branch name in the format {eventName}-{uuid} if newBranch is true.
+// If newBranch is false, the function returns the existing branch name.
+func getBranchName(newBranch bool, eventName, branch string) string {
+	if !newBranch {
+		return branch
+	}
+	return fmt.Sprintf("%s-%s", eventName, uuid.New().String())
 }
