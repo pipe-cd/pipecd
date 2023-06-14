@@ -199,7 +199,7 @@ func (e *deployExecutor) generateTrafficRoutingManifest(manifest provider.Manife
 
 	variantLabel := e.appCfg.VariantLabel.Key
 	if err := manifest.AddStringMapValues(map[string]string{variantLabel: variant}, "spec", "selector"); err != nil {
-		return manifest, fmt.Errorf("unable to update selector for service %q because of: %v", manifest.Key.Name, err)
+		return manifest, fmt.Errorf("unable to update selector for service %q because of: %w", manifest.Key.Name, err)
 	}
 
 	return manifest, nil

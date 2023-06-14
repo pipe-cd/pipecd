@@ -219,7 +219,7 @@ func (e *deployExecutor) generatePrimaryManifests(manifests []provider.Manifest,
 		workloads := findWorkloadManifests(manifests, e.appCfg.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, variantLabel, variant); err != nil {
-				return nil, fmt.Errorf("unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+variant, m.Key.ReadableString(), err)
+				return nil, fmt.Errorf("unable to check/set %q in selector of workload %s (%w)", variantLabel+": "+variant, m.Key.ReadableString(), err)
 			}
 		}
 	}
