@@ -37,6 +37,8 @@ server:
     secureCookie: false
     # One of "humanize", "json", or "console" is available.
     logEncoding: humanize
+    # One of "debug", "info", "warn", "error", "dpanic", "panic" or "fatal" is available.
+    logLevel: info
     metrics: true
   resources: {}
   env: []
@@ -53,6 +55,8 @@ ops:
     cacheAddress: ""
     # One of "humanize", "json", or "console" is available.
     logEncoding: humanize
+    # One of "debug", "info", "warn", "error", "dpanic", "panic" or "fatal" is available.
+    logLevel: info
     metrics: true
   resources: {}
 

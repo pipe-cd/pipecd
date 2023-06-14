@@ -143,6 +143,7 @@ A set of args for Launcher.
 - --metrics={{ .Values.args.metrics }}
 - --enable-default-kubernetes-cloud-provider={{ .Values.args.enableDefaultKubernetesCloudProvider }}
 - --log-encoding={{ .Values.args.logEncoding }}
+- --log-level={{ .Values.args.logLevel }}
 - --add-login-user-to-passwd={{ .Values.args.addLoginUserToPasswd }}
 {{- if .Values.quickstart.enabled }}
 - --insecure=true
@@ -160,6 +161,7 @@ A set of args for Piped.
 - --metrics={{ .Values.args.metrics }}
 - --enable-default-kubernetes-cloud-provider={{ .Values.args.enableDefaultKubernetesCloudProvider }}
 - --log-encoding={{ .Values.args.logEncoding }}
+- --log-level={{ .Values.args.logLevel }}
 - --add-login-user-to-passwd={{ .Values.args.addLoginUserToPasswd }}
 {{- if .Values.quickstart.enabled }}
 - --insecure=true
