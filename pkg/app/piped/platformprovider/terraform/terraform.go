@@ -313,7 +313,9 @@ func (t *Terraform) makeCommonCommandArgs() (args []string) {
 }
 
 var (
-	planHasChangeRegex = regexp.MustCompile(`(?m)^Plan: (\d+) to add, (\d+) to change, (\d+) to destroy.$`)
+	// Import block was introduced from Terraform v1.5.0.
+	// TODO: Show import in output and add it to diff calculation.
+	planHasChangeRegex = regexp.MustCompile(`(?m)^Plan:(?: \d+ to import,)?? (\d+) to add, (\d+) to change, (\d+) to destroy.$`)
 	planNoChangesRegex = regexp.MustCompile(`(?m)^No changes. Infrastructure is up-to-date.$`)
 )
 
