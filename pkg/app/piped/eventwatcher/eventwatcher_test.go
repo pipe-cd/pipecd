@@ -242,3 +242,38 @@ spec:
 		})
 	}
 }
+
+func TestGetBranchName(t *testing.T) {
+	t.Parallel()
+	testcases := []struct {
+		name      string
+		newBranch bool
+		eventName string
+		branch    string
+		want      string
+	}{
+		{
+			name:      "create new branch",
+			newBranch: true,
+			eventName: "event",
+			branch:    "main",
+		},
+		{
+			name:      "return existing branch",
+			newBranch: false,
+			eventName: "event",
+			branch:    "main",
+			want:      "main",
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := getBranchName(tc.newBranch, tc.eventName, tc.branch)
+			if tc.newBranch {
+				assert.NotEqual(t, tc.branch, got)
+			} else {
+				assert.Equal(t, tc.want, got)
+			}
+		})
+	}
+}

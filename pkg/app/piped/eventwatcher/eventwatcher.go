@@ -640,10 +640,7 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 		EventName: eventName,
 	}
 	commitMsg = parseCommitMsg(commitMsg, args)
-	branch := repo.GetClonedBranch()
-	if w.config.Git.EnableNewBranch {
-		branch = fmt.Sprintf("%s-%s", eventName, uuid.New().String())
-	}
+	branch := getBranchName(w.config.Git.EnableNewBranch, eventName, repo.GetClonedBranch())
 	if err := repo.CommitChanges(ctx, branch, commitMsg, w.config.Git.EnableNewBranch, changes); err != nil {
 		return fmt.Errorf("failed to perform git commit: %w", err)
 	}
@@ -781,4 +778,13 @@ func parseCommitMsg(msg string, args argsTemplate) string {
 		return msg
 	}
 	return buf.String()
+}
+
+// getBranchName generates a new branch name in the format {eventName}-{uuid} if newBranch is true.
+// If newBranch is false, the function returns the existing branch name.
+func getBranchName(newBranch bool, eventName, branch string) string {
+	if !newBranch {
+		return branch
+	}
+	return fmt.Sprintf("%s-%s", eventName, uuid.New().String())
 }
