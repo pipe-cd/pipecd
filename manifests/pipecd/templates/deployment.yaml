@@ -134,6 +134,7 @@ spec:
           - --enable-grpc-reflection={{ .Values.server.args.enableGRPCReflection }}
           - --encryption-key-file={{ .Values.secret.mountPath }}/{{ .Values.secret.encryptionKey.fileName }}
           - --log-encoding={{ .Values.server.args.logEncoding }}
+          - --log-level={{ .Values.server.args.logLevel }}
           - --metrics={{ .Values.server.args.metrics }}
           ports:
             - name: piped-api
@@ -290,6 +291,7 @@ spec:
           - --cache-address={{ .Values.ops.args.cacheAddress | default (printf "%s-cache:6379" (include "pipecd.fullname" .)) }}
           - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
           - --log-encoding={{ .Values.ops.args.logEncoding }}
+          - --log-level={{ .Values.ops.args.logLevel }}
           - --metrics={{ .Values.ops.args.metrics }}
           ports:
             - name: http
