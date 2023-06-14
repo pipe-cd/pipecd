@@ -59,14 +59,19 @@ func (c *Kubectl) Apply(ctx context.Context, kubeconfig, namespace string, manif
 		return err
 	}
 
-	args := make([]string, 0, 7)
+	args := make([]string, 0, 8)
 	if kubeconfig != "" {
 		args = append(args, "--kubeconfig", kubeconfig)
 	}
 	if namespace != "" {
 		args = append(args, "--namespace", namespace)
 	}
-	args = append(args, "apply", "-f", "-")
+
+	args = append(args, "apply")
+	if annotation := manifest.GetAnnotations()[LabelServerSideApply]; annotation == UseServerSideApply {
+		args = append(args, "--server-side")
+	}
+	args = append(args, "-f", "-")
 
 	cmd := exec.CommandContext(ctx, c.execPath, args...)
 	r := bytes.NewReader(data)

@@ -31,11 +31,14 @@ const (
 	LabelOriginalAPIVersion   = "pipecd.dev/original-api-version"   // The api version defined in git configuration. e.g. apps/v1
 	LabelIgnoreDriftDirection = "pipecd.dev/ignore-drift-detection" // Whether the drift detection should ignore this resource.
 	LabelSyncReplace          = "pipecd.dev/sync-by-replace"        // Use replace instead of apply.
+	LabelServerSideApply      = "pipecd.dev/server-side-apply"      // Use server side apply instead of client side apply.
 	AnnotationConfigHash      = "pipecd.dev/config-hash"            // The hash value of all mouting config resources.
 	AnnotationOrder           = "pipecd.dev/order"                  // The order number of resource used to sort them before using.
-	ManagedByPiped            = "piped"
-	IgnoreDriftDetectionTrue  = "true"
-	UseReplaceEnabled         = "enabled"
+
+	ManagedByPiped           = "piped"
+	IgnoreDriftDetectionTrue = "true"
+	UseReplaceEnabled        = "enabled"
+	UseServerSideApply       = "true"
 
 	kustomizationFileName = "kustomization.yaml"
 )
