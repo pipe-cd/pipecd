@@ -48,6 +48,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/appconfigreporter"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/chartrepo"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/controller"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/eventwatcher"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatereporter"
@@ -817,6 +818,7 @@ func registerMetrics(pipedID, projectID, launcherVersion string) *prometheus.Reg
 	k8scloudprovidermetrics.Register(wrapped)
 	k8slivestatestoremetrics.Register(wrapped)
 	planpreviewmetrics.Register(wrapped)
+	controllermetrics.Register(wrapped)
 
 	return r
 }

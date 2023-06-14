@@ -25,6 +25,7 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/registry"
@@ -192,6 +193,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 	defer func() {
 		s.doneTimestamp = s.nowFunc()
 		s.doneDeploymentStatus = deploymentStatus
+		controllermetrics.UpdateDeploymentStatus(s.deployment.Id, deploymentStatus, s.deployment.Kind, s.deployment.PlatformProvider)
 		s.done.Store(true)
 	}()
 
@@ -207,6 +209,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
+		controllermetrics.UpdateDeploymentStatus(s.deployment.Id, model.DeploymentStatus_DEPLOYMENT_RUNNING, s.deployment.Kind, s.deployment.PlatformProvider)
 	}
 
 	var (
