@@ -140,7 +140,7 @@ func loadTargetGroups(in *executor.Input, appCfg *config.ECSApplicationSpec, ds 
 func applyTaskDefinition(ctx context.Context, cli provider.Client, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
 	td, err := cli.RegisterTaskDefinition(ctx, taskDefinition)
 	if err != nil {
-		return nil, fmt.Errorf("unable to register ECS task definition of family %s: %v", *taskDefinition.Family, err)
+		return nil, fmt.Errorf("unable to register ECS task definition of family %s: %w", *taskDefinition.Family, err)
 	}
 	return td, nil
 }
@@ -148,23 +148,23 @@ func applyTaskDefinition(ctx context.Context, cli provider.Client, taskDefinitio
 func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDefinition types.Service) (*types.Service, error) {
 	found, err := cli.ServiceExists(ctx, *serviceDefinition.ClusterArn, *serviceDefinition.ServiceName)
 	if err != nil {
-		return nil, fmt.Errorf("unable to validate service name %s: %v", *serviceDefinition.ServiceName, err)
+		return nil, fmt.Errorf("unable to validate service name %s: %w", *serviceDefinition.ServiceName, err)
 	}
 
 	var service *types.Service
 	if found {
 		service, err = cli.UpdateService(ctx, serviceDefinition)
 		if err != nil {
-			return nil, fmt.Errorf("failed to update ECS service %s: %v", *serviceDefinition.ServiceName, err)
+			return nil, fmt.Errorf("failed to update ECS service %s: %w", *serviceDefinition.ServiceName, err)
 		}
 		if err := cli.TagResource(ctx, *service.ServiceArn, serviceDefinition.Tags); err != nil {
-			return nil, fmt.Errorf("failed to update tags of ECS service %s: %v", *serviceDefinition.ServiceName, err)
+			return nil, fmt.Errorf("failed to update tags of ECS service %s: %w", *serviceDefinition.ServiceName, err)
 		}
 
 	} else {
 		service, err = cli.CreateService(ctx, serviceDefinition)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create ECS service %s: %v", *serviceDefinition.ServiceName, err)
+			return nil, fmt.Errorf("failed to create ECS service %s: %w", *serviceDefinition.ServiceName, err)
 		}
 	}
 
