@@ -10,6 +10,7 @@ COPY install-nss-wrapper.sh /installer/install-nss-wrapper.sh
 
 RUN \
     apk add --no-cache \
+        bash \
         gcc \
         libc-dev \
         musl-nscd-dev \
