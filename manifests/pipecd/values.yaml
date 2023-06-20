@@ -200,7 +200,7 @@ prometheus:
 # https://github.com/grafana/helm-charts/tree/main/charts/grafana
 grafana:
   rbac:
-    pspEnabled: true
+    pspEnabled: false
   adminPassword: admin
   ingress:
     enabled: false
