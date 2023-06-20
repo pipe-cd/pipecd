@@ -1,4 +1,5 @@
-FROM gcr.io/pipecd/piped-base:0.2.2
+# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base/102624914?tag=v0.44.0-alpha-45-gd462c58
+FROM ghcr.io/pipe-cd/piped-base@sha256:c908e897ca7c2a27fd30cfbc76fcb1ffa2c8eaf60cd20ba82d1e8f48e5afd518
 
 ARG PIPED_UID=1000
 ARG ROOT_GID=0
@@ -10,6 +11,7 @@ COPY install-nss-wrapper.sh /installer/install-nss-wrapper.sh
 
 RUN \
     apk add --no-cache \
+        bash \
         gcc \
         libc-dev \
         musl-nscd-dev \
