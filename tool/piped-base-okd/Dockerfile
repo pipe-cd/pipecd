@@ -11,12 +11,12 @@ COPY install-nss-wrapper.sh /installer/install-nss-wrapper.sh
 
 RUN \
     apk add --no-cache \
-    bash \
-    gcc \
-    libc-dev \
-    musl-nscd-dev \
-    make \
-    cmake && \
+        bash \
+        gcc \
+        libc-dev \
+        musl-nscd-dev \
+        make \
+        cmake && \
 
     # Install glibc to be used for building nss_wrapper.
     wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
