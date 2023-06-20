@@ -26,6 +26,18 @@ $line
 EOT
 done < <(gh api -XGET /repos/pipe-cd/pipecd/contributors -F per_page=100 | jq -r '.[] | "<a href=\"\(.html_url)\"><img src=\"\(.avatar_url)\" title=\"\(.login)\" width=\"80\" height=\"80\"></a>"')
 
+# Write the footer CNCF logo.
+cat << EOF >> README.md.tmp
+
+#
+
+**We are a [Cloud Native Computing Foundation](https://cncf.io/) sandbox project.**
+
+<img src="https://www.cncf.io/wp-content/uploads/2022/07/cncf-color-bg.svg" width=300 />
+
+The Linux Foundation® (TLF) has registered trademarks and uses trademarks. For a list of TLF trademarks, see [Trademark Usage](https://www.linuxfoundation.org/trademark-usage/).
+EOF
+
 mv README.md.tmp README.md
 
 echo "Successfully update the contributions list on README.md"
