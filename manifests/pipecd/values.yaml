@@ -199,6 +199,8 @@ prometheus:
 # Head to the below link to see all available values.
 # https://github.com/grafana/helm-charts/tree/main/charts/grafana
 grafana:
+  rbac:
+    pspEnabled: false
   adminPassword: admin
   ingress:
     enabled: false
