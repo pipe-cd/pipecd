@@ -409,7 +409,7 @@
           "refId": "A"
         }
       ],
-      "title": "Total Deployments in the Last 24h",
+      "title": "Total completed Deployments in the Last 24h",
       "type": "stat"
     },
     {
