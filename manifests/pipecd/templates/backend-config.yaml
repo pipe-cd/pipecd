@@ -10,7 +10,7 @@ spec:
       secretName: {{ .Values.backendConfig.iap.secretName }}
 {{- end }}
 
-{{- if .Values.monitoring.backendConfig.enabled -}}
+{{ if .Values.monitoring.backendConfig.enabled -}}
 ---
 apiVersion: cloud.google.com/v1beta1
 kind: BackendConfig
