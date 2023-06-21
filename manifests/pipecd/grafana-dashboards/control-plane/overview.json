@@ -403,7 +403,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(floor(increase(deployment_status{pipecd_component=\"piped\",project=\"$project\",status=~\"DEPLOYMENT_CANCELLED|DEPLOYMENT_SUCCESS|DEPLOYMENT_CANCELLED|DEPLOYMENT_FAILURE\"}[24h])))",
+          "expr": "sum(floor(increase(deployment_status{pipecd_component=\"piped\",project=\"$project\",status=~\"DEPLOYMENT_CANCELLED|DEPLOYMENT_SUCCESS|DEPLOYMENT_FAILURE\"}[24h])))",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
