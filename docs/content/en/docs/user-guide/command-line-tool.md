@@ -238,6 +238,17 @@ pipectl application delete \
     --app-id={APPLICATION_ID}
 ```
 
+### List deployments
+
+Show the list of deployments based on filters.
+
+```console
+pipectl deployment list \
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
+    --app-id={APPLICATION_ID}
+```
+
 ### Waiting a deployment status
 
 Wait until a given deployment reaches one of the specified statuses:
@@ -248,6 +259,17 @@ pipectl deployment wait-status \
     --api-key={API_KEY} \
     --deployment-id={DEPLOYMENT_ID} \
     --status=DEPLOYMENT_SUCCESS
+```
+
+### Get deployment stages log
+
+Get deployment stages log.
+
+```console
+pipectl deployment logs \
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
+    --deployment-id={DEPLOYMENT_ID}
 ```
 
 ### Registering an event for EventWatcher
@@ -286,6 +308,8 @@ You can encrypt it the same way you do [from the web](../managing-application/se
       --piped-id={PIPED_ID} \
       --input-file={PATH_TO_SECRET_FILE}
   ```
+
+Note: The docs for pipectl available command is maybe outdated, we suggest users use the `help` command for the updated usage while using pipectl.
 
 ### You want more?
 
