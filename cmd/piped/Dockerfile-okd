@@ -1,5 +1,5 @@
-# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base-okd/22991579?tag=v0.31.0-30-g13f4bf9
-FROM ghcr.io/pipe-cd/piped-base-okd@sha256:83fb7657c558414b2abc34a2309e507b250ac2ae8bc66277b885eb9f57d7892a
+# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base-okd/103434940?tag=v0.44.0-alpha-53-g5d1d2a0
+FROM ghcr.io/pipe-cd/piped-base-okd@sha256:74d1d18c05923c8c4703ae79a05b7e3232bf6e8c1da4ae26d35a1248bb8a62f5
 
 ADD .artifacts/piped /usr/local/bin/piped
 
