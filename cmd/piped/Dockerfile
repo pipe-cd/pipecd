@@ -1,5 +1,5 @@
-# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base/102624914?tag=v0.44.0-alpha-45-gd462c58
-FROM ghcr.io/pipe-cd/piped-base@sha256:c908e897ca7c2a27fd30cfbc76fcb1ffa2c8eaf60cd20ba82d1e8f48e5afd518
+# https://github.com/pipe-cd/pipecd/pkgs/container/piped-base/103341355?tag=v0.44.0-alpha-52-ge881cac
+FROM ghcr.io/pipe-cd/piped-base@sha256:18a5a6af6507c8c70c5442d19651a2000672c78fc5dd91cfd3c0af26c899c1d3
 
 ADD .artifacts/piped /usr/local/bin/piped
 
