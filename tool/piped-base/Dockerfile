@@ -1,4 +1,4 @@
-FROM alpine:3.12.1
+FROM alpine:3.13
 
 ARG PIPED_USER=piped
 ARG PIPED_USER_GROUP=piped
