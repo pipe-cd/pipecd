@@ -12,7 +12,6 @@ spec:
     username: username
     email: username@email.com
     sshKeyFile: /etc/piped-secret/ssh-key
-    enableNewBranch: true
 
   repositories:
     - repoId: repo1

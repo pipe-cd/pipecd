@@ -1,7 +1,7 @@
 ---
 title: "Configuration reference"
 linkTitle: "Configuration reference"
-weight: 11
+weight: 9
 description: >
   This page describes all configurable fields in the application configuration and analysis template.
 ---
@@ -39,15 +39,6 @@ spec:
 | variantLabel | [KubernetesVariantLabel](#kubernetesvariantlabel) | The label will be configured to variant manifests used to distinguish them. | No |
 | eventWatcher | [][EventWatcher](#eventwatcher) | List of configurations for event watcher. | No |
 | driftDetection | [DriftDetection](#driftdetection) | Configuration for drift detection. | No |
-
-### Annotations
-
-Kubernetes resources can be managed by some annotations provided by PipeCD.
-
-| Annotation key | Target resource(s) | Possible values | Description |
-|-|-|-|-|
-| `pipecd.dev/ignore-drift-detection` | any | "true" | Whether the drift detection should ignore this resource. |
-| `pipecd.dev/server-side-apply` | any | "true" | Use server side apply instead of client side apply. |
 
 ## Terraform application
 
@@ -121,7 +112,6 @@ spec:
 | labels | map[string]string | Additional attributes to identify applications. | No |
 | description | string | Notes on the Application. | No |
 | input | [LambdaDeploymentInput](#lambdadeploymentinput) | Input for Lambda deployment such as path to function manifest file... | No |
-| architectures | []string| Specific architecture for which a function supports (Default x86_64). | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [LambdaQuickSync](#lambdaquicksync) | Configuration for quick sync. | No |
@@ -315,7 +305,6 @@ One of `yamlField` or `regex` is required.
 | helmOptions | [HelmOptions](#helmoptions) | Configurable parameters for helm commands. | No |
 | namespace | string | The namespace where manifests will be applied. | No |
 | autoRollback | bool | Automatically reverts all deployment changes on failure. Default is `true`. | No |
-| autoCreateNamespace | bool | Automatically create a new namespace if it does not exist. Default is `false`. | No |
 
 ### HelmChart
 
@@ -333,7 +322,6 @@ One of `yamlField` or `regex` is required.
 | Field | Type | Description | Required |
 |-|-|-|-|
 | releaseName | string | The release name of helm deployment. By default, the release name is equal to the application name. | No |
-| setValues | map[string]string | List of values. | No |
 | valueFiles | []string | List of value files should be loaded. Only local files stored under the application directory or remote files served at the http(s) endpoint are allowed. | No |
 | setFiles | map[string]string | List of file path for values. | No |
 | apiVersions | []string | Kubernetes api versions used for Capabilities.APIVersions. | No |
@@ -456,32 +444,20 @@ One of `yamlField` or `regex` is required.
 | serviceDefinitionFile | string | The path ECS Service configuration file. Allow file in both `yaml` and `json` format. The default value is `service.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_definition_parameters.html) for parameters.| No |
 | taskDefinitionFile | string | The path to ECS TaskDefinition configuration file. Allow file in both `yaml` and `json` format. The default value is `taskdef.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html) for parameters. | No |
 | targetGroups | [ECSTargetGroupInput](#ecstargetgroupinput) | The target groups configuration, will be used to routing traffic to created task sets. | Yes (if you want to perform progressive delivery) |
-| runStandaloneTask | bool | Run standalone tasks during deployments. About standalone task, see [here](https://docs.aws.amazon.com/AmazonECS/latest/userguide/ecs_run_task-v2.html). The default value is `true`. |
-| accessType | string | How the ECS service is accessed. One of `ELB` or `SERVICE_DISCOVERY`. See examples [here](https://github.com/pipe-cd/examples/tree/master/ecs/servicediscovery/simple). The default value is `ELB`. |
 
 ### ECSTargetGroupInput
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| primary | [ECSTargetGroupObject](#ecstargetgroupobject) | The PRIMARY target group, will be used to register the PRIMARY ECS task set. | Yes |
-| canary | [ECSTargetGroupObject](#ecstargetgroupobject) | The CANARY target group, will be used to register the CANARY ECS task set if exist. It's required to enable PipeCD to perform the multi-stage deployment. | No |
+| primary | ECSTargetGroupObject | The PRIMARY target group, will be used to register the PRIMARY ECS task set. | Yes |
+| canary | ECSTargetGroupObject | The CANARY target group, will be used to register the CANARY ECS task set if exist. It's required to enable PipeCD to perform the multi-stage deployment. | No |
 
-#### ECSTargetGroupObject
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| targetGroupArn | string | The name of the container (as it appears in a container definition) to　associate with the load balancer | Yes |
-| containerName | string | The full Amazon Resource Name (ARN) of the Elastic Load Balancing target group or groups associated with a service or task set. | Yes |
-| containerPort | int | The port on the container to associate with the load balancer. | Yes |
-| LoadBalancerName | string | The name of the load balancer to associate with the Amazon ECS service or task set. | No |
-
-Note: The available values are identical to those found in the aws-sdk-go-v2 Types.LoadBalancer. For more details, please refer to [this link](https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/service/ecs/types#LoadBalancer) .
+Note: You can get examples for those object from [here](../../examples/#ecs-applications).
 
 ## ECSQuickSync
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| recreate | bool | Whether to delete old tasksets before creating new ones or not. Default to false. | No |
 
 ## AnalysisMetrics
 

@@ -387,7 +387,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 
 			switch handler.Type {
 			case config.EventWatcherHandlerTypeGitUpdate:
-				if err := w.commitFiles(ctx, latestEvent.Data, matcher.Name, handler.Config.CommitMessage, e.GitPath, handler.Config.Replacements, tmpRepo); err != nil {
+				if err := w.commitFiles(ctx, latestEvent.Data, matcher.Name, handler.Config.CommitMessage, e.GitPath, handler.Config.Replacements, tmpRepo, handler.Config.CreatePullRequest); err != nil {
 					w.logger.Error("failed to commit outdated files", zap.Error(err))
 					handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
 						Id:                latestEvent.Id,
@@ -531,7 +531,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 			})
 			continue
 		}
-		if err := w.commitFiles(ctx, latestEvent.Data, e.Name, commitMsg, "", e.Replacements, tmpRepo); err != nil {
+		if err := w.commitFiles(ctx, latestEvent.Data, e.Name, commitMsg, "", e.Replacements, tmpRepo, e.CreatePullRequest); err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
 			handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
 				Id:                latestEvent.Id,
@@ -594,7 +594,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 }
 
 // commitFiles commits changes if the data in Git is different from the latest event.
-func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commitMsg, gitPath string, replacements []config.EventWatcherReplacement, repo git.Repo) error {
+func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commitMsg, gitPath string, replacements []config.EventWatcherReplacement, repo git.Repo, newBranch bool) error {
 	// Determine files to be changed by comparing with the latest event.
 	changes := make(map[string][]byte, len(replacements))
 	for _, r := range replacements {
@@ -640,8 +640,8 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 		EventName: eventName,
 	}
 	commitMsg = parseCommitMsg(commitMsg, args)
-	branch := getBranchName(w.config.Git.EnableNewBranch, eventName, repo.GetClonedBranch())
-	if err := repo.CommitChanges(ctx, branch, commitMsg, w.config.Git.EnableNewBranch, changes); err != nil {
+	branch := getBranchName(newBranch, eventName, repo.GetClonedBranch())
+	if err := repo.CommitChanges(ctx, branch, commitMsg, newBranch, changes); err != nil {
 		return fmt.Errorf("failed to perform git commit: %w", err)
 	}
 	w.logger.Info(fmt.Sprintf("event watcher will update values of Event %q", eventName))

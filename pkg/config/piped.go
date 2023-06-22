@@ -326,8 +326,6 @@ type PipedGit struct {
 	SSHKeyFile string `json:"sshKeyFile,omitempty"`
 	// Base64 encoded string of ssh-key.
 	SSHKeyData string `json:"sshKeyData,omitempty"`
-	// Whether to create a new branch or not when commit changes in event watcher.
-	EnableNewBranch bool `json:"enableNewBranch,omitempty"`
 }
 
 func (g PipedGit) ShouldConfigureSSHConfig() bool {

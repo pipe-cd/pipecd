@@ -31,6 +31,8 @@ type EventWatcherSpec struct {
 type EventWatcherEvent struct {
 	// The event name.
 	Name string `json:"name"`
+	// Whether to create a new branch or not when event watcher commits changes.
+	CreatePullRequest bool `json:"createPullRequest,omitempty"`
 	// Additional attributes of event. This can make an event definition
 	// unique even if the one with the same name exists.
 	Labels map[string]string `json:"labels"`
@@ -64,6 +66,8 @@ type EventWatcherHandlerConfig struct {
 	// The commit message used to push after replacing values.
 	// Default message is used if not given.
 	CommitMessage string `json:"commitMessage,omitempty"`
+	// Whether to create a new branch or not when event watcher commits changes.
+	CreatePullRequest bool `json:"createPullRequest,omitempty"`
 	// List of places where will be replaced when the new event matches.
 	Replacements []EventWatcherReplacement `json:"replacements"`
 }
