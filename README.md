@@ -43,6 +43,18 @@ And many more, please explore in [docs](https://pipecd.dev/docs).
 
 #
 
+### Quickstart
+
+The [quickstart guide](https://pipecd.dev/docs/quickstart/) shows how to set up PipeCD components and deploy a hello-world application with PipeCD.
+
+#
+
+### Installation
+
+The [installation guide](https://pipecd.dev/docs/installation/) explains and helps set up PipeCD for your real-life production environment.
+
+#
+
 ### Release and development
 
 Please check [the release page](https://github.com/pipe-cd/pipecd/releases) to see what is included in the latest release. Also, [Releases documentation](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md/) explains our versioning and release cycle.
