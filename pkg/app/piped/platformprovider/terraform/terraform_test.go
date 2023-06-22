@@ -31,12 +31,12 @@ func TestPlanHasChangeRegex(t *testing.T) {
 		{
 			name:     "older than v1.5.0",
 			input:    "Plan: 1 to add, 2 to change, 3 to destroy.",
-			expected: []string{"Plan: 1 to add, 2 to change, 3 to destroy.", "1", "2", "3"},
+			expected: []string{"Plan: 1 to add, 2 to change, 3 to destroy.", "", "1", "2", "3"},
 		},
 		{
 			name:     "later than v1.5.0",
 			input:    "Plan: 0 to import, 1 to add, 2 to change, 3 to destroy.",
-			expected: []string{"Plan: 0 to import, 1 to add, 2 to change, 3 to destroy.", "1", "2", "3"},
+			expected: []string{"Plan: 0 to import, 1 to add, 2 to change, 3 to destroy.", "0", "1", "2", "3"},
 		},
 	}
 
@@ -93,9 +93,7 @@ func TestParsePlanResult(t *testing.T) {
 			t.Parallel()
 			result, err := parsePlanResult(tc.input, false)
 			assert.Equal(t, tc.expectedErr, err != nil)
-			if err != nil {
-				assert.Equal(t, tc.expected, result)
-			}
+			assert.Equal(t, tc.expected, result)
 		})
 	}
 }

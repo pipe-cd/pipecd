@@ -316,7 +316,7 @@ func (t *Terraform) makeCommonCommandArgs() (args []string) {
 var (
 	// Import block was introduced from Terraform v1.5.0.
 	// Keep this regex for backward compatibility.
-	planHasChangeRegex = regexp.MustCompile(`(?m)^Plan:(?: \d+ to import,)?? (\d+) to add, (\d+) to change, (\d+) to destroy.$`)
+	planHasChangeRegex = regexp.MustCompile(`(?m)^Plan:(?: (\d+) to import,)?? (\d+) to add, (\d+) to change, (\d+) to destroy.$`)
 	planNoChangesRegex = regexp.MustCompile(`(?m)^No changes. Infrastructure is up-to-date.$`)
 )
 
@@ -331,24 +331,10 @@ func stripAnsiCodes(str string) string {
 
 func parsePlanResult(out string, ansiIncluded bool) (PlanResult, error) {
 	parseNums := func(vals ...string) (imports, adds, changes, destroys int, err error) {
-		if len(vals) < 3 || len(vals) > 4 {
-			err = fmt.Errorf("invalid plan result: %v", vals)
-			return
-		}
-
-		var impt, add, change, destroy string
-		if len(vals) == 3 {
-			add = vals[0]
-			change = vals[1]
-			destroy = vals[2]
-		}
-
-		if len(vals) == 4 {
-			impt = vals[0]
-			add = vals[1]
-			change = vals[2]
-			destroy = vals[3]
-		}
+		impt := vals[0]
+		add := vals[1]
+		change := vals[2]
+		destroy := vals[3]
 
 		if impt != "" {
 			imports, err = strconv.Atoi(impt)
@@ -376,7 +362,7 @@ func parsePlanResult(out string, ansiIncluded bool) (PlanResult, error) {
 		out = stripAnsiCodes(out)
 	}
 
-	if s := planHasChangeRegex.FindStringSubmatch(out); len(s) > 0 {
+	if s := planHasChangeRegex.FindStringSubmatch(out); len(s) == 5 {
 		imports, adds, changes, destroys, err := parseNums(s[1:]...)
 		if err == nil {
 			return PlanResult{
