@@ -644,6 +644,11 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 	if err := repo.CommitChanges(ctx, branch, commitMsg, newBranch, changes); err != nil {
 		return fmt.Errorf("failed to perform git commit: %w", err)
 	}
+	if newBranch {
+		if err := repo.Push(ctx, branch); err != nil {
+			return fmt.Errorf("failed to perform git push: %w", err)
+		}
+	}
 	w.logger.Info(fmt.Sprintf("event watcher will update values of Event %q", eventName))
 	return nil
 }
