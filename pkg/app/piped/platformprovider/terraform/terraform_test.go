@@ -31,12 +31,12 @@ func TestPlanHasChangeRegex(t *testing.T) {
 		{
 			name:     "older than v1.5.0",
 			input:    "Plan: 1 to add, 2 to change, 3 to destroy.",
-			expected: []string{"Plan: 1 to add, 2 to change, 3 to destroy.", "1", "2", "3"},
+			expected: []string{"Plan: 1 to add, 2 to change, 3 to destroy.", "", "1", "2", "3"},
 		},
 		{
 			name:     "later than v1.5.0",
 			input:    "Plan: 0 to import, 1 to add, 2 to change, 3 to destroy.",
-			expected: []string{"Plan: 0 to import, 1 to add, 2 to change, 3 to destroy.", "1", "2", "3"},
+			expected: []string{"Plan: 0 to import, 1 to add, 2 to change, 3 to destroy.", "0", "1", "2", "3"},
 		},
 	}
 
@@ -45,6 +45,55 @@ func TestPlanHasChangeRegex(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			assert.Equal(t, tc.expected, planHasChangeRegex.FindStringSubmatch(tc.input))
+		})
+	}
+}
+
+func TestParsePlanResult(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name        string
+		input       string
+		expected    PlanResult
+		expectedErr bool
+	}{
+		{
+			name:        "older than v1.5.0",
+			input:       `Plan: 1 to add, 2 to change, 3 to destroy.`,
+			expected:    PlanResult{Adds: 1, Changes: 2, Destroys: 3, PlanOutput: "Plan: 1 to add, 2 to change, 3 to destroy."},
+			expectedErr: false,
+		},
+		{
+			name:        "later than v1.5.0",
+			input:       `Plan: 1 to import, 1 to add, 2 to change, 3 to destroy.`,
+			expected:    PlanResult{Imports: 1, Adds: 1, Changes: 2, Destroys: 3, PlanOutput: "Plan: 1 to import, 1 to add, 2 to change, 3 to destroy."},
+			expectedErr: false,
+		},
+		{
+			name:        "Invalid number of changes",
+			input:       `Plan: a to add, 2 to change, 3 to destroy.`,
+			expectedErr: true,
+		},
+		{
+			name:        "Invalid plan result output",
+			input:       `Plan: 1 to add, 2 to change.`,
+			expectedErr: true,
+		},
+		{
+			name:        "No changes",
+			input:       `No changes. Infrastructure is up-to-date.`,
+			expectedErr: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			result, err := parsePlanResult(tc.input, false)
+			assert.Equal(t, tc.expectedErr, err != nil)
+			assert.Equal(t, tc.expected, result)
 		})
 	}
 }

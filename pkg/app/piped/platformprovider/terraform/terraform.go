@@ -159,17 +159,18 @@ type PlanResult struct {
 	Adds     int
 	Changes  int
 	Destroys int
+	Imports  int
 
 	PlanOutput string
 }
 
 func (r PlanResult) NoChanges() bool {
-	return r.Adds == 0 && r.Changes == 0 && r.Destroys == 0
+	return r.Adds == 0 && r.Changes == 0 && r.Destroys == 0 && r.Imports == 0
 }
 
 func (r PlanResult) Render() string {
 	terraformDiffStart := "Terraform will perform the following actions:"
-	terraformDiffEnd := fmt.Sprintf("Plan: %d to add, %d to change, %d to destroy.", r.Adds, r.Changes, r.Destroys)
+	terraformDiffEnd := fmt.Sprintf("Plan: %d to import, %d to add, %d to change, %d to destroy.", r.Imports, r.Adds, r.Changes, r.Destroys)
 
 	startIndex := strings.Index(r.PlanOutput, terraformDiffStart) + len(terraformDiffStart)
 	endIndex := strings.Index(r.PlanOutput, terraformDiffEnd) + len(terraformDiffEnd)
@@ -314,8 +315,8 @@ func (t *Terraform) makeCommonCommandArgs() (args []string) {
 
 var (
 	// Import block was introduced from Terraform v1.5.0.
-	// TODO: Show import in output and add it to diff calculation.
-	planHasChangeRegex = regexp.MustCompile(`(?m)^Plan:(?: \d+ to import,)?? (\d+) to add, (\d+) to change, (\d+) to destroy.$`)
+	// Keep this regex for backward compatibility.
+	planHasChangeRegex = regexp.MustCompile(`(?m)^Plan:(?: (\d+) to import,)?? (\d+) to add, (\d+) to change, (\d+) to destroy.$`)
 	planNoChangesRegex = regexp.MustCompile(`(?m)^No changes. Infrastructure is up-to-date.$`)
 )
 
@@ -329,7 +330,19 @@ func stripAnsiCodes(str string) string {
 }
 
 func parsePlanResult(out string, ansiIncluded bool) (PlanResult, error) {
-	parseNums := func(add, change, destroy string) (adds int, changes int, destroys int, err error) {
+	parseNums := func(vals ...string) (imports, adds, changes, destroys int, err error) {
+		impt := vals[0]
+		add := vals[1]
+		change := vals[2]
+		destroy := vals[3]
+
+		if impt != "" {
+			imports, err = strconv.Atoi(impt)
+			if err != nil {
+				return
+			}
+		}
+
 		adds, err = strconv.Atoi(add)
 		if err != nil {
 			return
@@ -349,13 +362,14 @@ func parsePlanResult(out string, ansiIncluded bool) (PlanResult, error) {
 		out = stripAnsiCodes(out)
 	}
 
-	if s := planHasChangeRegex.FindStringSubmatch(out); len(s) == 4 {
-		adds, changes, destroys, err := parseNums(s[1], s[2], s[3])
+	if s := planHasChangeRegex.FindStringSubmatch(out); len(s) == 5 {
+		imports, adds, changes, destroys, err := parseNums(s[1:]...)
 		if err == nil {
 			return PlanResult{
 				Adds:       adds,
 				Changes:    changes,
 				Destroys:   destroys,
+				Imports:    imports,
 				PlanOutput: out,
 			}, nil
 		}

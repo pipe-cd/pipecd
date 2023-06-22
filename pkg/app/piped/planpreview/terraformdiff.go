@@ -111,7 +111,7 @@ func (b *builder) terraformDiff(
 		}, nil
 	}
 
-	summary := fmt.Sprintf("%d to add, %d to change, %d to destroy", result.Adds, result.Changes, result.Destroys)
+	summary := fmt.Sprintf("%d to import, %d to add, %d to change, %d to destroy", result.Imports, result.Adds, result.Changes, result.Destroys)
 	fmt.Fprintln(buf, summary)
 	return &diffResult{
 		summary: summary,

@@ -126,7 +126,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_SUCCESS
 	}
 
-	e.LogPersister.Infof("Detected %d add, %d change, %d destroy. Those changes will be applied automatically.", planResult.Adds, planResult.Changes, planResult.Destroys)
+	e.LogPersister.Infof("Detected %d import, %d add, %d change, %d destroy. Those changes will be applied automatically.", planResult.Imports, planResult.Adds, planResult.Changes, planResult.Destroys)
 
 	if err := cmd.Apply(ctx, e.LogPersister); err != nil {
 		e.LogPersister.Errorf("Failed to apply changes (%v)", err)
@@ -178,7 +178,7 @@ func (e *deployExecutor) ensurePlan(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_SUCCESS
 	}
 
-	e.LogPersister.Successf("Detected %d add, %d change, %d destroy.", planResult.Adds, planResult.Changes, planResult.Destroys)
+	e.LogPersister.Successf("Detected %d import, %d add, %d change, %d destroy.", planResult.Imports, planResult.Adds, planResult.Changes, planResult.Destroys)
 	return model.StageStatus_STAGE_SUCCESS
 }
 

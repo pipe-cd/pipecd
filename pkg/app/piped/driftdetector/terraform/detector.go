@@ -287,8 +287,8 @@ func makeSyncState(r provider.PlanResult, commit string) model.ApplicationSyncSt
 		}
 	}
 
-	total := r.Adds + r.Destroys + r.Changes
-	shortReason := fmt.Sprintf("There are %d manifests not synced (%d adds, %d deletes, %d changes)", total, r.Adds, r.Destroys, r.Changes)
+	total := r.Imports + r.Adds + r.Destroys + r.Changes
+	shortReason := fmt.Sprintf("There are %d manifests not synced (%d imports, %d adds, %d deletes, %d changes)", total, r.Imports, r.Adds, r.Destroys, r.Changes)
 	if len(commit) >= 7 {
 		commit = commit[:7]
 	}
