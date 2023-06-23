@@ -1,5 +1,6 @@
 [![Build](https://github.com/pipe-cd/pipecd/actions/workflows/build.yaml/badge.svg)](https://github.com/pipe-cd/pipecd/actions/workflows/build.yaml)
 [![Test](https://github.com/pipe-cd/pipecd/actions/workflows/test.yaml/badge.svg)](https://github.com/pipe-cd/pipecd/actions/workflows/test.yaml)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](/LICENSE)
 [![Release](https://img.shields.io/github/v/release/pipe-cd/pipecd?label=Release)](https://github.com/pipe-cd/pipecd/releases/latest)
 [![Documentation](https://img.shields.io/badge/Documentation-pipecd-informational.svg)](https://pipecd.dev/docs/)
 [![Slack](https://img.shields.io/badge/Slack-%23pipecd-informational.svg)](https://app.slack.com/client/T08PSQ7BQ/C01B27F9T0X)
@@ -17,7 +18,7 @@
 
 #
 
-![](https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/deployment-details.png)
+![](https://github.com/pipe-cd/pipecd/blob/master/docs/static/images/rolled-back-deployment.png)
 
 ### Overview
 
@@ -27,43 +28,30 @@ PipeCD provides __a unified continuous delivery solution for multiple applicatio
 
 #
 
-### Highlights
+### Why PipeCD?
 
-#### Multi-provider & Multi-Tenancy
-- Support multiple application kinds on multi-cloud including Kubernetes, Terraform, Cloud Run, AWS Lambda
-- Support multiple analysis providers including Prometheus, Datadog, Stackdriver, and more
-- Easy to operate multi-cluster, multi-tenancy by separating control-plane and piped
-
-#### Automation
-- Automated deployment analysis to measure deployment impact based on metrics, logs, emitted requests
-- Automatically roll back to the previous state as soon as analysis or a pipeline stage fails
-- Automatically detect configuration drift to notify and render the changes
-- Automatically trigger a new deployment when a defined event has occurred (e.g. container image pushed, helm chart published, etc)
-
-#### Safety and Security
-- Support single sign-on and role-based access control
-- Credentials are not exposed outside the cluster and not saved in the control-plane
-- Piped makes only outbound requests and can run inside a restricted network
-- Built-in secrets management
-
-#### Visibility
-- Deployment pipeline UI shows clarify what is happening
-- Separate logs viewer for each individual deployment
-- Realtime visualization of application state
-- Deployment notifications to slack, webhook endpoints
+- Simple, unified and easy to use but powerful pipeline definition to construct your deployment
+- Same deployment interface to deploy applications of any platform, including Kubernetes, Terraform, GCP Cloud Run, AWS Lambda, AWS ECS
+- No CRD or applications' manifest changes are required; Only need a pipeline definition along with your application manifests
+- No deployment credentials are exposed or required outside the application cluster
+- Built-in deployment analysis as part of the deployment pipeline to measure impact based on metrics, logs, emitted requests
+- Easy to interact with any CI; The CI tests and builds artifacts, PipeCD takes the rest
 - Insights show metrics like lead time, deployment frequency, MTTR and change failure rate to measure delivery performance
+- Designed to manage thousands of cross-platform applications in multi-cloud for company scale but also work well for small projects
+
+And many more, please explore in [docs](https://pipecd.dev/docs).
 
 #
 
-### License
+### Quickstart
 
-Apache License 2.0, see [LICENSE](https://github.com/pipe-cd/pipecd/blob/master/LICENSE).
+The [quickstart guide](https://pipecd.dev/docs/quickstart/) shows how to set up PipeCD components and deploy a hello-world application with PipeCD.
 
 #
 
-### Contributing
+### Installation
 
-We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/docs/contribution-guidelines/).
+The [installation guide](https://pipecd.dev/docs/installation/) explains and helps set up PipeCD for your real-life production environment.
 
 #
 
@@ -72,6 +60,12 @@ We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/
 Please check [the release page](https://github.com/pipe-cd/pipecd/releases) to see what is included in the latest release. Also, [Releases documentation](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md/) explains our versioning and release cycle.
 
 Go to the [Discussion](https://github.com/pipe-cd/pipecd/discussions) to know what we are working on and which will be added to the next release.
+
+#
+
+### Contributing
+
+We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/docs/contribution-guidelines/).
 
 #
 
