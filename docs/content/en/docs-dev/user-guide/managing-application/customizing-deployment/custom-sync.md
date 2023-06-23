@@ -43,6 +43,12 @@ Note:
 2. Only one `CUSTOM_SYNC` stage should be used in an application pipeline.
 3. The commands run with the enviroment variable `PATH` that refers `~/.piped/tools` at first.
 
+The public piped image available in PipeCD main repo (ref: [Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/cmd/piped/Dockerfile)) is based on [alpine](https://hub.docker.com/_/alpine/) and only has a few UNIX command available (ref: [piped-base Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/Dockerfile)). If you want to use your commands (`sam` in the above example), you can:
+
+- Prepare your own environment container image then add [piped binary](https://github.com/pipe-cd/pipecd/releases) to it.
+- Build your own container image based on `ghcr.io/pipe-cd/piped` image.
+- Manually update your running piped container (not recommended).
+
 ## Auto Rollback
 
 When `autoRollback` is enabled, the deployment will be rolled back in the same way as [Rolling Back](../../rolling-back-a-deployment).
