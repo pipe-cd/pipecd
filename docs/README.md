@@ -31,7 +31,7 @@ If you find any issues related to the docs, we're happy to accept your help.
 # How to run website locally
 
 ## Prerequisite
-- [Hugo 0.92.1](https://gohugo.io/)
+- [Hugo 0.92.1+extended](https://gohugo.io/)
 
 ## Commands
 Run `make run/site` at the root directory of the repository and then access http://localhost:1313
