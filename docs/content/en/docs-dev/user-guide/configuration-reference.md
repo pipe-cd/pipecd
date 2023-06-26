@@ -197,7 +197,6 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The event name. | Yes |
-| createPullRequest | bool | Whether to create a new branch or not when commit changes in event watcher. | No |
 | labels | map[string]string | Additional attributes of event. This can make an event definition unique even if the one with the same name exists. | No |
 | replacements | [][EventWatcherReplacement](#eventwatcherreplacement) | List of places where will be replaced when the new event matches. | Yes |
 
@@ -700,7 +699,7 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | Field | Type | Description | Required |
 |-|-|-|-|
 | commitMessage | string | The commit message used to push after replacing values. Default message is used if not given. | No |
-| createPullRequest | bool | Whether to create a new branch or not when commit changes in event watcher. | No |
+| makePullRequest | bool | Whether to create a new branch or not when commit changes in event watcher. Default is `false`. | No |
 | replacements | [][EventWatcherReplacement](#eventwatcherreplacement) | List of places where will be replaced when the new event matches. | Yes |
 
 ## DriftDetection
