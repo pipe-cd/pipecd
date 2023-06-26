@@ -396,6 +396,23 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 					})
 					continue
 				}
+				if handler.Config.MakePullRequest {
+					retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
+					_, err = retry.Do(ctx, func() (interface{}, error) {
+						err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch())
+						return nil, err
+					})
+					if err != nil {
+						w.logger.Error("failed to push commits", zap.Error(err))
+						handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
+							Id:                latestEvent.Id,
+							Status:            model.EventStatus_EVENT_FAILURE,
+							StatusDescription: fmt.Sprintf("Failed to push commits: %v", err),
+						})
+						continue
+					}
+
+				}
 				handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
 					Id:                latestEvent.Id,
 					Status:            model.EventStatus_EVENT_SUCCESS,
@@ -643,11 +660,6 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 	branch := makeBranchName(newBranch, eventName, repo.GetClonedBranch())
 	if err := repo.CommitChanges(ctx, branch, commitMsg, newBranch, changes); err != nil {
 		return fmt.Errorf("failed to perform git commit: %w", err)
-	}
-	if newBranch {
-		if err := repo.Push(ctx, branch); err != nil {
-			return fmt.Errorf("failed to perform git push: %w", err)
-		}
 	}
 	w.logger.Info(fmt.Sprintf("event watcher will update values of Event %q", eventName))
 	return nil
