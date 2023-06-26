@@ -109,7 +109,7 @@ Commit messages should be simple and use easy words that indicate the focus of t
 Example
 
 ```
-Add imports to terraform plan result
+Add imports to Terraform plan result
 ```
 
 Don't stress too much about PR titles. The maintainers will help you get the title right.
