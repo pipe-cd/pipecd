@@ -272,19 +272,23 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return err
 	}
 
-	state := makeSyncState(result, headCommit.Hash)
+	state, err := makeSyncState(result, headCommit.Hash)
+	if err != nil {
+		fmt.Fprintf(buf, "failed while calculate terraform sync state (%v)\n", err)
+		return err
+	}
 
-	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
+	return d.reporter.ReportApplicationSyncState(ctx, app.Id, *state)
 }
 
-func makeSyncState(r provider.PlanResult, commit string) model.ApplicationSyncState {
+func makeSyncState(r provider.PlanResult, commit string) (*model.ApplicationSyncState, error) {
 	if r.NoChanges() {
-		return model.ApplicationSyncState{
+		return &model.ApplicationSyncState{
 			Status:      model.ApplicationSyncStatus_SYNCED,
 			ShortReason: "",
 			Reason:      "",
 			Timestamp:   time.Now().Unix(),
-		}
+		}, nil
 	}
 
 	total := r.Imports + r.Adds + r.Destroys + r.Changes
@@ -297,15 +301,18 @@ func makeSyncState(r provider.PlanResult, commit string) model.ApplicationSyncSt
 	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual live state:\n\n", commit))
 	b.WriteString("--- Actual   (LiveState)\n+++ Expected (Git)\n\n")
 
-	details := r.Render()
+	details, err := r.Render()
+	if err != nil {
+		return nil, err
+	}
 	b.WriteString(details)
 
-	return model.ApplicationSyncState{
+	return &model.ApplicationSyncState{
 		Status:      model.ApplicationSyncStatus_OUT_OF_SYNC,
 		ShortReason: shortReason,
 		Reason:      b.String(),
 		Timestamp:   time.Now().Unix(),
-	}
+	}, nil
 }
 
 func (d *detector) cloneGitRepository(ctx context.Context, repoID string) (git.Repo, error) {
