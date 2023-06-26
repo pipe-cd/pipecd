@@ -31,8 +31,6 @@ type EventWatcherSpec struct {
 type EventWatcherEvent struct {
 	// The event name.
 	Name string `json:"name"`
-	// Whether to create a new branch or not when event watcher commits changes.
-	MakePullRequest bool `json:"makePullRequest,omitempty"`
 	// Additional attributes of event. This can make an event definition
 	// unique even if the one with the same name exists.
 	Labels map[string]string `json:"labels"`
