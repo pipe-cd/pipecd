@@ -66,7 +66,7 @@ Go to the [Discussion](https://github.com/pipe-cd/pipecd/discussions) to know wh
 
 ### Contributing
 
-We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/docs/contribution-guidelines/).
+We'd love you to join us! Please see the [Contributing docs](CONTRIBUTING.md).
 
 #
 
