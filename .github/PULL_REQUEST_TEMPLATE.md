@@ -5,9 +5,11 @@
 Fixes #
 
 **Does this PR introduce a user-facing change?**:
-- **Who does this affect**:
-- **How to migrate**:
-- **Why make this breaking change**:
+
+- **Is this breaking change**:
+- **How to migrate (if breaking change)**:
+- **How are users affected by this change**:
+
 
 ```release-note
 NONE
