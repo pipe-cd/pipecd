@@ -6,28 +6,4 @@ description: >
   This page describes how to contribute to PipeCD.
 ---
 
-PipeCD is an open source project that anyone in the community can use, improve, and enjoy. We'd love you to join us! 
-
-## Contributor License Agreement
-
-For any code contribution, please read the documents below carefully:
-- [License](https://github.com/pipe-cd/pipecd/blob/master/LICENSE)
-- [Developer Certificate of Origin (DCO)](https://developercertificate.org/)
-
-And signing off your commit with `git commit -s` (About commit sign-off please read [Github docs](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/managing-the-commit-signoff-policy-for-your-repository#about-commit-signoffs))
-
-## Creating an issue
-
-If you've found a problem, please check the existing [issues tracker](https://github.com/pipe-cd/pipecd/issues) first, and create an issue in the [pipe-cd/pipecd](https://github.com/pipe-cd/pipecd/issues) repository if needed.
-
-## Creating a pull request
-
-Look at our [help wanted issues](https://github.com/pipe-cd/pipecd/issues?q=is%3Aissue+is%3Aopen+label%3A"help+wanted") or our [good first issues](https://github.com/pipe-cd/pipecd/issues?q=is%3Aissue+is%3Aopen+label%3A"good+first+issue") for finding some good issues for your first pull request.
-
-### Small tips
-
-The pull request title is used to generate our release changelog. Therefore, it would be great if you write the title that is easier to understand from the user's point of view.
-
-## Code reviews
-
-All submissions, including submissions by project members, require review. We use GitHub pull requests for this purpose. Consult [GitHub Help](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests) for more information on using pull requests.
+PipeCD is an open source project that anyone in the community can use, improve, and enjoy. We'd love you to join us! [Contributing to PipeCD](https://github.com/pipe-cd/pipecd/tree/master/CONTRIBUTING.md) is the best place to start with.
