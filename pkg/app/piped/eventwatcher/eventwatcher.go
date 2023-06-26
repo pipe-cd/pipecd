@@ -387,7 +387,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 
 			switch handler.Type {
 			case config.EventWatcherHandlerTypeGitUpdate:
-				if err := w.commitFiles(ctx, latestEvent.Data, matcher.Name, handler.Config.CommitMessage, e.GitPath, handler.Config.Replacements, tmpRepo, handler.Config.CreatePullRequest); err != nil {
+				if err := w.commitFiles(ctx, latestEvent.Data, matcher.Name, handler.Config.CommitMessage, e.GitPath, handler.Config.Replacements, tmpRepo, handler.Config.MakePullRequest); err != nil {
 					w.logger.Error("failed to commit outdated files", zap.Error(err))
 					handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
 						Id:                latestEvent.Id,
@@ -531,7 +531,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 			})
 			continue
 		}
-		if err := w.commitFiles(ctx, latestEvent.Data, e.Name, commitMsg, "", e.Replacements, tmpRepo, e.CreatePullRequest); err != nil {
+		if err := w.commitFiles(ctx, latestEvent.Data, e.Name, commitMsg, "", e.Replacements, tmpRepo, e.MakePullRequest); err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
 			handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
 				Id:                latestEvent.Id,
