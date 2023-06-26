@@ -75,7 +75,7 @@ PipeCD consists of several components and docs:
 - **cmd/pipecd**: A centralized component that manages deployment data and provides a gRPC API for connecting pipeds, as well as web functionalities such as authentication.
 - **cmd/piped**: piped is an agent component that runs in your cluster.
 - **cmd/pipectl**: The command-line tool for PipeCD.
-- **cmd/launcher**: The command that enables remote upgrade of the piped agent.
+- **cmd/launcher**: The command executor that enables the remote upgrade feature of the piped agent.
 - **web**: The web application provided by the control plane.
 - **docs**: Documentation and references.
 
