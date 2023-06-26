@@ -69,4 +69,6 @@ A repository contains some examples for PipeCD.
 | -- | [simple](https://github.com/pipe-cd/examples/tree/master/ecs/simple) | Quick sync by rolling out the new version and switching all traffic to it. |
 | -- | [canary](https://github.com/pipe-cd/examples/tree/master/ecs/canary) | Deployment pipeline with canary strategy. |
 | -- | [bluegreen](https://github.com/pipe-cd/examples/tree/master/ecs/bluegreen) | Deployment pipeline with blue-green strategy. |
-| -- | [secret-management](https://github.com/pipe-cd/examples/tree/master/ecs/secret-management) | Demonstrate how to manage sensitive data by using [Secret Management](https://pipecd.dev/docs/user-guide/secret-management/) feature. |
+| -- | [standalone-task](https://github.com/pipe-cd/examples/tree/master/ecs/standalone-task) | Deployment pipeline for an ECS standalone task (no service required). |
+| -- | [secret-management](https://github.com/pipe-cd/examples/tree/master/ecs/secret-management) | Demonstrate how to manage sensitive data by using [Secret Management](https://pipecd.dev/docs/user-guide/managing-application/secret-management/) feature. |
+| -- | [attachment](https://github.com/pipe-cd/examples/tree/master/ecs/attachment) | Demonstrate how to manage insensitive data and import it into application manifests while deployment using [Attachment](https://pipecd.dev/docs/user-guide/managing-application/attachment/) feature. |
