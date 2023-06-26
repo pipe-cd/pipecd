@@ -99,18 +99,6 @@ pull_title="Cherry-pick ${PULL_SUBJ}"
 pull_body=$(cat <<EOF
 **What this PR does / why we need it**:
 Cherry pick of ${PULL_SUBJ}.
-
-**Which issue(s) this PR fixes**:
-
-Fixes #
-
-**Does this PR introduce a user-facing change?**:
-<!--
-If no, just write "NONE" in the release-note block below.
--->
-\`\`\`release-note
-
-\`\`\`
 EOF
 )
 gh pr create --title="${pull_title}" --body="${pull_body}" --head "${NEWBRANCH}" --base "${BRANCH}"
