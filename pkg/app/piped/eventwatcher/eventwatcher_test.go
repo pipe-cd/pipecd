@@ -270,7 +270,7 @@ func TestGetBranchName(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			got := getBranchName(tc.newBranch, tc.eventName, tc.branch)
+			got := makeBranchName(tc.newBranch, tc.eventName, tc.branch)
 			if tc.newBranch {
 				assert.NotEqual(t, tc.branch, got)
 			} else {
