@@ -168,12 +168,21 @@ func (r PlanResult) NoChanges() bool {
 	return r.Adds == 0 && r.Changes == 0 && r.Destroys == 0 && r.Imports == 0
 }
 
-func (r PlanResult) Render() string {
+func (r PlanResult) Render() (string, error) {
 	terraformDiffStart := "Terraform will perform the following actions:"
-	terraformDiffEnd := fmt.Sprintf("Plan: %d to import, %d to add, %d to change, %d to destroy.", r.Imports, r.Adds, r.Changes, r.Destroys)
-
 	startIndex := strings.Index(r.PlanOutput, terraformDiffStart) + len(terraformDiffStart)
+
+	terraformDiffEnd := fmt.Sprintf("Plan: %d to import, %d to add, %d to change, %d to destroy.", r.Imports, r.Adds, r.Changes, r.Destroys)
 	endIndex := strings.Index(r.PlanOutput, terraformDiffEnd) + len(terraformDiffEnd)
+	if endIndex < startIndex {
+		terraformDiffEnd = fmt.Sprintf("Plan: %d to add, %d to change, %d to destroy.", r.Adds, r.Changes, r.Destroys)
+		endIndex = strings.Index(r.PlanOutput, terraformDiffEnd) + len(terraformDiffEnd)
+	}
+
+	if endIndex < startIndex {
+		return "", fmt.Errorf("unable to parse Terraform plan result")
+	}
+
 	out := r.PlanOutput[startIndex:endIndex]
 
 	rendered := ""
@@ -228,7 +237,7 @@ func (r PlanResult) Render() string {
 		rendered += "\n"
 	}
 
-	return rendered
+	return rendered, nil
 }
 
 // Return rune at the top of the stack, or r in case of error.
