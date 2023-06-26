@@ -1,4 +1,4 @@
-# Pipd Agent
+# Piped Agent
 ## Development
 
 ## Prerequisites
