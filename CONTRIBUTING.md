@@ -134,15 +134,6 @@ By contributing to PipeCD, you agree that your contributions will be licensed un
 // limitations under the License.
 ```
 
-## Contributor License Agreement
-
-For any code contribution, please carefully read the following documents:
-
-- [License](https://github.com/pipe-cd/pipecd/blob/master/LICENSE)
-- [Developer Certificate of Origin (DCO)](https://developercertificate.org/)
-
-And signing off your commit with `git commit -s` (About commit sign-off please read [Github docs](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/managing-the-commit-signoff-policy-for-your-repository#about-commit-signoffs))
-
 ### Breaking Changes
 
 When introducing a new breaking change, follow the pull request template and make sure to complete the following sections:
@@ -154,6 +145,15 @@ When introducing a new breaking change, follow the pull request template and mak
 - **How are users affected by this change**:
 ```
 
-### What Happens Next?
+## Contributor License Agreement
+
+For any code contribution, please carefully read the following documents:
+
+- [License](https://github.com/pipe-cd/pipecd/blob/master/LICENSE)
+- [Developer Certificate of Origin (DCO)](https://developercertificate.org/)
+
+And signing off your commit with `git commit -s` (About commit sign-off please read [Github docs](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/managing-the-commit-signoff-policy-for-your-repository#about-commit-signoffs))
+
+## What Happens Next?
 
 The core PipeCD team will monitor the pull requests. Help us by keeping your pull requests consistent with the guidelines mentioned above.
