@@ -1,7 +1,12 @@
 module.exports = {
   roots: ["<rootDir>/src"],
   transform: {
-    "^.+\\.tsx?$": "ts-jest",
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        isolatedModules: true,
+      },
+    ],
     "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|ico)$":
       "<rootDir>/file-transformer.js",
   },
@@ -23,9 +28,4 @@ module.exports = {
   setupFilesAfterEnv: ["./jest.after-env.ts"],
   coverageReporters: ["lcovonly", "text-summary"],
   maxWorkers: 1,
-  globals: {
-    "ts-jest": {
-      isolatedModules: true,
-    },
-  },
 };
