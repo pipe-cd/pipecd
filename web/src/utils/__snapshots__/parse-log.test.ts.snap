@@ -1,29 +1,29 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`multi lines contained in a single log block 1`] = `
-Array [
-  Object {
+[
+  {
     "bg": 0,
     "bold": false,
-    "content": "\\\\n",
+    "content": "\\n",
     "fg": 7,
     "underline": false,
   },
-  Object {
+  {
     "bg": 0,
     "bold": true,
     "content": " BOLD ",
     "fg": 7,
     "underline": false,
   },
-  Object {
+  {
     "bg": 0,
     "bold": false,
-    "content": " Underline \\\\n",
+    "content": " Underline \\n",
     "fg": 7,
     "underline": true,
   },
-  Object {
+  {
     "bg": 7,
     "bold": false,
     "content": " Reversed ",
@@ -34,29 +34,29 @@ Array [
 `;
 
 exports[`parse bright colors 1`] = `
-Array [
-  Object {
+[
+  {
     "bg": 0,
     "bold": false,
     "content": " A ",
     "fg": 8,
     "underline": false,
   },
-  Object {
+  {
     "bg": 0,
     "bold": false,
     "content": " B ",
     "fg": 9,
     "underline": false,
   },
-  Object {
+  {
     "bg": 0,
     "bold": false,
     "content": " C ",
     "fg": 10,
     "underline": false,
   },
-  Object {
+  {
     "bg": 0,
     "bold": false,
     "content": " D ",
@@ -67,29 +67,29 @@ Array [
 `;
 
 exports[`parse string that includes bg colors 1`] = `
-Array [
-  Object {
+[
+  {
     "bg": 0,
     "bold": false,
     "content": " A ",
     "fg": 7,
     "underline": false,
   },
-  Object {
+  {
     "bg": 1,
     "bold": false,
     "content": " B ",
     "fg": 7,
     "underline": false,
   },
-  Object {
+  {
     "bg": 2,
     "bold": false,
     "content": " C ",
     "fg": 7,
     "underline": false,
   },
-  Object {
+  {
     "bg": 3,
     "bold": false,
     "content": " D ",
@@ -100,29 +100,29 @@ Array [
 `;
 
 exports[`parse string that includes bg colors 2`] = `
-Array [
-  Object {
+[
+  {
     "bg": 4,
     "bold": false,
     "content": " A ",
     "fg": 7,
     "underline": false,
   },
-  Object {
+  {
     "bg": 5,
     "bold": false,
     "content": " B ",
     "fg": 7,
     "underline": false,
   },
-  Object {
+  {
     "bg": 6,
     "bold": false,
     "content": " C ",
     "fg": 7,
     "underline": false,
   },
-  Object {
+  {
     "bg": 7,
     "bold": false,
     "content": " D ",
@@ -133,29 +133,29 @@ Array [
 `;
 
 exports[`parse string that includes fg colors 1`] = `
-Array [
-  Object {
+[
+  {
     "bg": 0,
     "bold": false,
     "content": " A ",
     "fg": 0,
     "underline": false,
   },
-  Object {
+  {
     "bg": 0,
     "bold": false,
     "content": " B ",
     "fg": 1,
     "underline": false,
   },
-  Object {
+  {
     "bg": 0,
     "bold": false,
     "content": " C ",
     "fg": 2,
     "underline": false,
   },
-  Object {
+  {
     "bg": 0,
     "bold": false,
     "content": " D ",
@@ -166,29 +166,29 @@ Array [
 `;
 
 exports[`parse string that includes fg colors 2`] = `
-Array [
-  Object {
+[
+  {
     "bg": 0,
     "bold": false,
     "content": " E ",
     "fg": 4,
     "underline": false,
   },
-  Object {
+  {
     "bg": 0,
     "bold": false,
     "content": " F ",
     "fg": 5,
     "underline": false,
   },
-  Object {
+  {
     "bg": 0,
     "bold": false,
     "content": " G ",
     "fg": 6,
     "underline": false,
   },
-  Object {
+  {
     "bg": 0,
     "bold": false,
     "content": " H ",
@@ -199,22 +199,22 @@ Array [
 `;
 
 exports[`parse string that includes modifier 1`] = `
-Array [
-  Object {
+[
+  {
     "bg": 0,
     "bold": true,
     "content": " BOLD ",
     "fg": 7,
     "underline": false,
   },
-  Object {
+  {
     "bg": 0,
     "bold": false,
     "content": " Underline ",
     "fg": 7,
     "underline": true,
   },
-  Object {
+  {
     "bg": 7,
     "bold": false,
     "content": " Reversed ",
@@ -225,8 +225,8 @@ Array [
 `;
 
 exports[`parse string that includes modifier 2`] = `
-Array [
-  Object {
+[
+  {
     "bg": 7,
     "bold": true,
     "content": " BOLD Underline Reversed ",
@@ -237,8 +237,8 @@ Array [
 `;
 
 exports[`parse string that includes modifier 3`] = `
-Array [
-  Object {
+[
+  {
     "bg": 0,
     "bold": true,
     "content": " Red Bold ",
@@ -249,8 +249,8 @@ Array [
 `;
 
 exports[`parse string that includes modifier 4`] = `
-Array [
-  Object {
+[
+  {
     "bg": 4,
     "bold": false,
     "content": " Blue Background Underline ",

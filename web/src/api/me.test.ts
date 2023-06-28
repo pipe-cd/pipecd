@@ -15,7 +15,7 @@ afterAll(() => {
 
 test("getMe() call", async () => {
   await expect(getMe()).resolves.toMatchInlineSnapshot(`
-          Object {
+          {
             "avatarUrl": "avatar-url",
             "projectId": "pipecd",
             "subject": "userName",
