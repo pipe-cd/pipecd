@@ -33,6 +33,9 @@
             return false;
         });
 
+        // Get selected version from dropdown.
+        var siteDocsVersion = document.getElementById('navbarDropdown');
+
         //
         // Lunr
         //
@@ -50,6 +53,12 @@
                     this.field('body');
 
                     data.forEach((doc) => {
+                        // Skip pages that are not the selected version.
+                        if(
+                            doc.ref.startsWith('/docs-') &&
+                            !doc.ref.startsWith(`/docs-${siteDocsVersion?.textContent?.trim()}`)) {
+                                return;
+                        }
                         this.add(doc);
 
                         resultDetails.set(doc.ref, {
