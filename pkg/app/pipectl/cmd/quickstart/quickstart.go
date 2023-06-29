@@ -150,7 +150,7 @@ func (c *command) installControlPlane(ctx context.Context, helm string, input cl
 		"--values",
 		fmt.Sprintf(helmQuickstartValueRemotePath, c.version),
 		"--set",
-		fmt.Sprintf("mysql.image=%s", selectImage()),
+		fmt.Sprintf("mysql.image=%s", selectMySqlImage()),
 	}
 
 	var stderr, stdout bytes.Buffer
@@ -200,8 +200,6 @@ func (c *command) installPiped(ctx context.Context, helm string, input cli.Input
 		fmt.Sprintf("secret.data.piped-key=%s", pipedKey),
 		"--set",
 		fmt.Sprintf("quickstart.gitRepoRemote=%s", sourceRepo),
-		"--set",
-		fmt.Sprintf("mysql.image=%s", selectImage()),
 	}
 
 	var stderr, stdout bytes.Buffer
