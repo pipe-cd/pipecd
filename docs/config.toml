@@ -157,9 +157,8 @@ no = 'Sorry to hear that. Please <a href="https://github.com/pipe-cd/pipecd/issu
 
 # Append the release versions here.
 [[params.versions]]
-  version = "dev"
-  githubbranch = "master"
-  url = "/docs-dev/"
+  version = "master"
+  url = "/docs/"
 
 [[params.versions]]
   version = "v0.44.x"
