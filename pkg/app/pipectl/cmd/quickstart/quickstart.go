@@ -316,7 +316,7 @@ func openbrowser(url string) error {
 	return err
 }
 
-func selectImage() string {
+func selectMySqlImage() string {
 	var mysqlImage string
 	switch runtime.GOARCH {
 	case "amd64":
