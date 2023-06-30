@@ -150,7 +150,7 @@ func (c *command) installControlPlane(ctx context.Context, helm string, input cl
 		"--values",
 		fmt.Sprintf(helmQuickstartValueRemotePath, c.version),
 		"--set",
-		fmt.Sprintf("mysql.image=%s", selectMySqlImage()),
+		fmt.Sprintf("mysql.image=%s", selectMySQLImage()),
 	}
 
 	var stderr, stdout bytes.Buffer
@@ -314,7 +314,7 @@ func openbrowser(url string) error {
 	return err
 }
 
-func selectMySqlImage() string {
+func selectMySQLImage() string {
 	var mysqlImage string
 	switch runtime.GOARCH {
 	case "amd64":
