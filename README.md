@@ -76,6 +76,12 @@ As a CNCF Sandbox project, PipeCD follows [CNCF Code of Conduct](https://github.
 
 #
 
+### Adopters
+
+You can find a list of publicly recognized users of the PipeCD in the (ADOPTERS.md)[ADOPTERS.md] file. We strongly encourage all PipeCD users to add their names to this list, as we love to see the community's growing success!
+
+#
+
 ### Thanks to the contributors of PipeCD!
 
 <a href="https://github.com/nghialv"><img src="https://avatars.githubusercontent.com/u/1751755?v=4" title="nghialv" width="80" height="80"></a>
