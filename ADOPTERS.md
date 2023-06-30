@@ -1,8 +1,6 @@
 # Adopters
 
-This list represents the collection of organizations that are using PipeCD within their environments. If
-you are currently utilizing PipeCD and not yet on this list, we strongly encourage you to add your organization
-here as well!
+This list represents the collection of organizations that are using PipeCD within their environments. If you are currently utilizing PipeCD and not yet on this list, we strongly encourage you to add your organization here as well!
 
 The objective of this list is to serve as a comprehensive and authoritative resource for the entire PipeCD adopter community, while also inspiring those who are embarking on their PipeCD journey.
 
