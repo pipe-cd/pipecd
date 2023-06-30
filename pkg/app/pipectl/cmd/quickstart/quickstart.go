@@ -149,6 +149,8 @@ func (c *command) installControlPlane(ctx context.Context, helm string, input cl
 		"--create-namespace",
 		"--values",
 		fmt.Sprintf(helmQuickstartValueRemotePath, c.version),
+		"--set",
+		fmt.Sprintf("mysql.image=%s", selectMySQLImage()),
 	}
 
 	var stderr, stdout bytes.Buffer
@@ -312,6 +314,19 @@ func openbrowser(url string) error {
 	return err
 }
 
+func selectMySQLImage() string {
+	var mysqlImage string
+	switch runtime.GOARCH {
+	case "amd64":
+		mysqlImage = "mysql"
+	case "arm64":
+		mysqlImage = "arm64v8/mysql"
+	default:
+		mysqlImage = "mysql"
+	}
+	return mysqlImage
+}
+
 func (c *command) uninstallAll(ctx context.Context, helm string, input cli.Input) error {
 	input.Logger.Info("Uninstalling PipeCD components...")
 
@@ -380,9 +395,9 @@ func (c *command) getKubectl() (string, error) {
 }
 
 // getHelm finds and returns helm executable binary in the following priority:
-//   1. pre-installed in command specified toolsDir (default is $HOME/.pipectl/tools)
-//   2. $PATH
-//   3. install new helm to command specified toolsDir
+//  1. pre-installed in command specified toolsDir (default is $HOME/.pipectl/tools)
+//  2. $PATH
+//  3. install new helm to command specified toolsDir
 func (c *command) getHelm(ctx context.Context) (string, error) {
 	binName := "helm"
 

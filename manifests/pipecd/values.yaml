@@ -69,7 +69,8 @@ cloudSQLProxy:
   resources: {}
 
 mysql:
-  imageTag: "8.0.23"
+  image: mysql
+  imageTag: 8.0.33
   resources: {}
   port: 3306
 

@@ -354,7 +354,7 @@ spec:
       {{- end }}
       containers:
         - name: mysql
-          image: mysql:{{ .Values.mysql.imageTag }}
+          image: {{ .Values.mysql.image }}:{{ .Values.mysql.imageTag }}
           imagePullPolicy: IfNotPresent
           env:
             - name: MYSQL_ROOT_PASSWORD
