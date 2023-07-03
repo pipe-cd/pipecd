@@ -91,11 +91,8 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 	}()
 	l.initOnce.Do(func() {
 		l.templatingMethod = determineTemplatingMethod(l.input, l.appDir)
-		switch l.templatingMethod {
-		case TemplatingMethodHelm:
+		if l.templatingMethod != TemplatingMethodNone {
 			l.helm, l.initErr = l.findHelm(ctx, l.input.HelmVersion)
-
-		case TemplatingMethodKustomize:
 			l.kustomize, l.initErr = l.findKustomize(ctx, l.input.KustomizeVersion)
 		}
 	})
