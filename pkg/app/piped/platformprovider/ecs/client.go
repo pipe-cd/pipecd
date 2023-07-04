@@ -294,7 +294,7 @@ func (c *client) GetListenersArn(ctx context.Context, targetGroup types.LoadBala
 		return nil, platformprovider.ErrNotFound
 	}
 
-	arns := make([]string, 0, len(output.Listeners))
+	arns := make([]string, len(output.Listeners))
 	for i := range output.Listeners {
 		arns[i] = *output.Listeners[i].ListenerArn
 	}
