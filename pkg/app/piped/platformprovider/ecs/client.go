@@ -277,7 +277,7 @@ func (c *client) ServiceExists(ctx context.Context, clusterName string, serviceN
 	return false, nil
 }
 
-func (c *client) GetListenersArn(ctx context.Context, targetGroup types.LoadBalancer) ([]string, error) {
+func (c *client) GetListenerArns(ctx context.Context, targetGroup types.LoadBalancer) ([]string, error) {
 	loadBalancerArn, err := c.getLoadBalancerArn(ctx, *targetGroup.TargetGroupArn)
 	if err != nil {
 		return nil, err
@@ -317,7 +317,7 @@ func (c *client) getLoadBalancerArn(ctx context.Context, targetGroupArn string) 
 	return output.TargetGroups[0].LoadBalancerArns[0], nil
 }
 
-func (c *client) ModifyListeners(ctx context.Context, listenersArn []string, routingTrafficCfg RoutingTrafficConfig) error {
+func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, routingTrafficCfg RoutingTrafficConfig) error {
 	if len(routingTrafficCfg) != 2 {
 		return fmt.Errorf("invalid listener configuration: requires 2 target groups")
 	}
@@ -347,7 +347,7 @@ func (c *client) ModifyListeners(ctx context.Context, listenersArn []string, rou
 		return err
 	}
 
-	for _, listener := range listenersArn {
+	for _, listener := range listenerArns {
 		if err := modifyListener(ctx, listener); err != nil {
 			return err
 		}

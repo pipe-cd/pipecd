@@ -55,8 +55,8 @@ type ECS interface {
 }
 
 type ELB interface {
-	GetListenersArn(ctx context.Context, targetGroup types.LoadBalancer) ([]string, error)
-	ModifyListeners(ctx context.Context, listenersArn []string, routingTrafficCfg RoutingTrafficConfig) error
+	GetListenerArns(ctx context.Context, targetGroup types.LoadBalancer) ([]string, error)
+	ModifyListeners(ctx context.Context, listenerArns []string, routingTrafficCfg RoutingTrafficConfig) error
 }
 
 // Registry holds a pool of aws client wrappers.
