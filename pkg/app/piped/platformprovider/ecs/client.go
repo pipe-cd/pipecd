@@ -277,10 +277,10 @@ func (c *client) ServiceExists(ctx context.Context, clusterName string, serviceN
 	return false, nil
 }
 
-func (c *client) GetListener(ctx context.Context, targetGroup types.LoadBalancer) (string, error) {
+func (c *client) GetListenerArns(ctx context.Context, targetGroup types.LoadBalancer) ([]string, error) {
 	loadBalancerArn, err := c.getLoadBalancerArn(ctx, *targetGroup.TargetGroupArn)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	input := &elasticloadbalancingv2.DescribeListenersInput{
@@ -288,18 +288,18 @@ func (c *client) GetListener(ctx context.Context, targetGroup types.LoadBalancer
 	}
 	output, err := c.elbClient.DescribeListeners(ctx, input)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if len(output.Listeners) == 0 {
-		return "", platformprovider.ErrNotFound
-	}
-	// Note: Suppose the load balancer only have one listener.
-	// TODO: Support multi listeners pattern.
-	if len(output.Listeners) > 1 {
-		return "", fmt.Errorf("invalid listener configuration pointed to %s target group", *targetGroup.TargetGroupArn)
+		return nil, platformprovider.ErrNotFound
 	}
 
-	return *output.Listeners[0].ListenerArn, nil
+	arns := make([]string, len(output.Listeners))
+	for i := range output.Listeners {
+		arns[i] = *output.Listeners[i].ListenerArn
+	}
+
+	return arns, nil
 }
 
 func (c *client) getLoadBalancerArn(ctx context.Context, targetGroupArn string) (string, error) {
@@ -317,32 +317,42 @@ func (c *client) getLoadBalancerArn(ctx context.Context, targetGroupArn string) 
 	return output.TargetGroups[0].LoadBalancerArns[0], nil
 }
 
-func (c *client) ModifyListener(ctx context.Context, listenerArn string, routingTrafficCfg RoutingTrafficConfig) error {
+func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, routingTrafficCfg RoutingTrafficConfig) error {
 	if len(routingTrafficCfg) != 2 {
 		return fmt.Errorf("invalid listener configuration: requires 2 target groups")
 	}
-	input := &elasticloadbalancingv2.ModifyListenerInput{
-		ListenerArn: aws.String(listenerArn),
-		DefaultActions: []elbtypes.Action{
-			{
-				Type: elbtypes.ActionTypeEnumForward,
-				ForwardConfig: &elbtypes.ForwardActionConfig{
-					TargetGroups: []elbtypes.TargetGroupTuple{
-						{
-							TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
-							Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
-						},
-						{
-							TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
-							Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
+
+	modifyListener := func(ctx context.Context, listenerArn string) error {
+		input := &elasticloadbalancingv2.ModifyListenerInput{
+			ListenerArn: aws.String(listenerArn),
+			DefaultActions: []elbtypes.Action{
+				{
+					Type: elbtypes.ActionTypeEnumForward,
+					ForwardConfig: &elbtypes.ForwardActionConfig{
+						TargetGroups: []elbtypes.TargetGroupTuple{
+							{
+								TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
+								Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
+							},
+							{
+								TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
+								Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
+							},
 						},
 					},
 				},
 			},
-		},
+		}
+		_, err := c.elbClient.ModifyListener(ctx, input)
+		return err
 	}
-	_, err := c.elbClient.ModifyListener(ctx, input)
-	return err
+
+	for _, listener := range listenerArns {
+		if err := modifyListener(ctx, listener); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *client) TagResource(ctx context.Context, resourceArn string, tags []types.Tag) error {
