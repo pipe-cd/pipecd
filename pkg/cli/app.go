@@ -15,6 +15,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -29,15 +30,23 @@ type App struct {
 	telemetryFlags TelemetryFlags
 }
 
+var FlagParseErr = errors.New("FlagParseErr")
+
 func NewApp(name, desc string) *App {
 	a := &App{
 		rootCmd: &cobra.Command{
 			Use:           name,
 			Short:         desc,
 			SilenceErrors: true,
+			SilenceUsage:  true,
 		},
 		telemetryFlags: defaultTelemetryFlags,
 	}
+	a.rootCmd.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
+		cmd.Println(err)
+		cmd.Println(cmd.UsageString())
+		return FlagParseErr
+	})
 	versionCmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print the information of current binary.",
