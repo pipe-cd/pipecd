@@ -16,6 +16,7 @@ package kubernetes
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -90,10 +91,12 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 		sortManifests(manifests)
 	}()
 	l.initOnce.Do(func() {
+		var initErrorHelm, initErrorKustomize error
 		l.templatingMethod = determineTemplatingMethod(l.input, l.appDir)
 		if l.templatingMethod != TemplatingMethodNone {
-			l.helm, l.initErr = l.findHelm(ctx, l.input.HelmVersion)
-			l.kustomize, l.initErr = l.findKustomize(ctx, l.input.KustomizeVersion)
+			l.helm, initErrorHelm = l.findHelm(ctx, l.input.HelmVersion)
+			l.kustomize, initErrorKustomize = l.findKustomize(ctx, l.input.KustomizeVersion)
+			l.initErr = errors.Join(initErrorHelm, initErrorKustomize)
 		}
 	})
 	if l.initErr != nil {
