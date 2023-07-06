@@ -133,6 +133,20 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 		return false
 	}
 
+	// Make new taskSet as PRIMARY task set, so that it will handle production service.
+	if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
+		in.LogPersister.Errorf("Failed to update PRIMARY ECS taskSet for service %s: %v", *serviceDefinition.ServiceName, err)
+		return false
+	}
+
+	// Remove old taskSet if existed.
+	if prevPrimaryTaskSet != nil {
+		if err = client.DeleteTaskSet(ctx, *service, *prevPrimaryTaskSet.TaskSetArn); err != nil {
+			in.LogPersister.Errorf("Failed to remove unused previous PRIMARY taskSet %s: %v", *prevPrimaryTaskSet.TaskSetArn, err)
+			return false
+		}
+	}
+
 	// Reset routing
 	routingTrafficCfg := provider.RoutingTrafficConfig{
 		{
@@ -157,28 +171,9 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 	}
 
 	// Delete Canary taskSet
-	canaryTaskSet, ok := in.MetadataStore.Shared().Get(canaryTaskSetARNKeyName)
-	if !ok {
-		in.LogPersister.Errorf("Unable to restore CANARY task set to clean: Not found")
+	if !clean(ctx, in, platformProviderName, platformProviderCfg) {
+		in.LogPersister.Error("Failed to delete CANARY TaskSet")
 		return false
-	}
-	if err = client.DeleteTaskSet(ctx, *service, canaryTaskSet); err != nil {
-		in.LogPersister.Errorf("Failed to remove unused previous PRIMARY taskSet %s: %v", canaryTaskSet, err)
-		return false
-	}
-
-	// Make new taskSet as PRIMARY task set, so that it will handle production service.
-	if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
-		in.LogPersister.Errorf("Failed to update PRIMARY ECS taskSet for service %s: %v", *serviceDefinition.ServiceName, err)
-		return false
-	}
-
-	// Remove old taskSet if existed.
-	if prevPrimaryTaskSet != nil {
-		if err = client.DeleteTaskSet(ctx, *service, *prevPrimaryTaskSet.TaskSetArn); err != nil {
-			in.LogPersister.Errorf("Failed to remove unused previous PRIMARY taskSet %s: %v", *prevPrimaryTaskSet.TaskSetArn, err)
-			return false
-		}
 	}
 
 	in.LogPersister.Infof("Rolled back the ECS service %s and task definition %s configuration to original stage", *serviceDefinition.ServiceName, *taskDefinition.Family)
