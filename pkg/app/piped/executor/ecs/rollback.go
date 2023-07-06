@@ -161,12 +161,12 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 
 	currListenerArns, err := client.GetListenerArns(ctx, *primaryTargetGroup)
 	if err != nil {
-		in.LogPersister.Errorf("Failed to get current active listener: %v", err)
+		in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
 		return false
 	}
 
 	if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
-		in.LogPersister.Errorf("Failed to routing traffic to CANARY variant: %v", err)
+		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY variant: %v", err)
 		return false
 	}
 
