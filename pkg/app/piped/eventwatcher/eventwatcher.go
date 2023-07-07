@@ -330,11 +330,13 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		firstRead = false
 	}
 	var (
-		handledEvents    = make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventCfgs))
-		outDatedEvents   = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
-		maxTimestamp     int64
-		outDatedDuration = time.Hour
-		gitUpdateEvent   = false
+		handledEvents        = make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventCfgs))
+		outDatedEvents       = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
+		maxTimestamp         int64
+		outDatedDuration     = time.Hour
+		gitUpdateEvent       = false
+		newBranchs           = make([]string, 0, len(eventCfgs))
+		isExistDefaultBranch bool
 	)
 	for _, e := range eventCfgs {
 		for _, cfg := range e.Configs {
@@ -342,6 +344,9 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 				matcher = cfg.Matcher
 				handler = cfg.Handler
 			)
+			if handler.Config.MakePullRequest {
+				isExistDefaultBranch = true
+			}
 			notHandledEvents := w.eventLister.ListNotHandled(matcher.Name, matcher.Labels, milestone+1, numToMakeOutdated)
 			if len(notHandledEvents) == 0 {
 				continue
@@ -384,10 +389,10 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 				})
 				continue
 			}
-
 			switch handler.Type {
 			case config.EventWatcherHandlerTypeGitUpdate:
-				if err := w.commitFiles(ctx, latestEvent.Data, matcher.Name, handler.Config.CommitMessage, e.GitPath, handler.Config.Replacements, tmpRepo, handler.Config.MakePullRequest); err != nil {
+				branchName, err := w.commitFiles(ctx, latestEvent.Data, matcher.Name, handler.Config.CommitMessage, e.GitPath, handler.Config.Replacements, tmpRepo, handler.Config.MakePullRequest)
+				if err != nil {
 					w.logger.Error("failed to commit outdated files", zap.Error(err))
 					handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
 						Id:                latestEvent.Id,
@@ -397,21 +402,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 					continue
 				}
 				if handler.Config.MakePullRequest {
-					retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
-					_, err = retry.Do(ctx, func() (interface{}, error) {
-						err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch())
-						return nil, err
-					})
-					if err != nil {
-						w.logger.Error("failed to push commits", zap.Error(err))
-						handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
-							Id:                latestEvent.Id,
-							Status:            model.EventStatus_EVENT_FAILURE,
-							StatusDescription: fmt.Sprintf("Failed to push commits: %v", err),
-						})
-						continue
-					}
-
+					newBranchs = append(newBranchs, branchName)
 				}
 				handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
 					Id:                latestEvent.Id,
@@ -446,10 +437,19 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 	}
 
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
-	_, err = retry.Do(ctx, func() (interface{}, error) {
-		err := tmpRepo.Push(ctx, tmpRepo.GetClonedBranch())
-		return nil, err
-	})
+	for _, branch := range newBranchs {
+		_, err = retry.Do(ctx, func() (interface{}, error) {
+			err := tmpRepo.Push(ctx, branch)
+			return nil, err
+		})
+	}
+	if isExistDefaultBranch {
+		_, err = retry.Do(ctx, func() (interface{}, error) {
+			err := tmpRepo.Push(ctx, repo.GetClonedBranch())
+			return nil, err
+		})
+	}
+
 	if err == nil {
 		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
 			return fmt.Errorf("failed to report event statuses: %w", err)
@@ -548,7 +548,8 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 			})
 			continue
 		}
-		if err := w.commitFiles(ctx, latestEvent.Data, e.Name, commitMsg, "", e.Replacements, tmpRepo, false); err != nil {
+		_, err := w.commitFiles(ctx, latestEvent.Data, e.Name, commitMsg, "", e.Replacements, tmpRepo, false)
+		if err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
 			handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
 				Id:                latestEvent.Id,
@@ -611,7 +612,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, repoID string
 }
 
 // commitFiles commits changes if the data in Git is different from the latest event.
-func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commitMsg, gitPath string, replacements []config.EventWatcherReplacement, repo git.Repo, newBranch bool) error {
+func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commitMsg, gitPath string, replacements []config.EventWatcherReplacement, repo git.Repo, newBranch bool) (string, error) {
 	// Determine files to be changed by comparing with the latest event.
 	changes := make(map[string][]byte, len(replacements))
 	for _, r := range replacements {
@@ -637,19 +638,19 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 			newContent, upToDate, err = modifyText(path, r.Regex, latestData)
 		}
 		if err != nil {
-			return err
+			return "", err
 		}
 		if upToDate {
 			continue
 		}
 
 		if err := os.WriteFile(path, newContent, os.ModePerm); err != nil {
-			return fmt.Errorf("failed to write file: %w", err)
+			return "", fmt.Errorf("failed to write file: %w", err)
 		}
 		changes[filePath] = newContent
 	}
 	if len(changes) == 0 {
-		return nil
+		return "", nil
 	}
 
 	args := argsTemplate{
@@ -659,10 +660,10 @@ func (w *watcher) commitFiles(ctx context.Context, latestData, eventName, commit
 	commitMsg = parseCommitMsg(commitMsg, args)
 	branch := makeBranchName(newBranch, eventName, repo.GetClonedBranch())
 	if err := repo.CommitChanges(ctx, branch, commitMsg, newBranch, changes); err != nil {
-		return fmt.Errorf("failed to perform git commit: %w", err)
+		return "", fmt.Errorf("failed to perform git commit: %w", err)
 	}
 	w.logger.Info(fmt.Sprintf("event watcher will update values of Event %q", eventName))
-	return nil
+	return branch, nil
 }
 
 // modifyYAML returns a new YAML content as a first returned value if the value of given
