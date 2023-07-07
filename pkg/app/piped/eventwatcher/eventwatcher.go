@@ -330,13 +330,12 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		firstRead = false
 	}
 	var (
-		handledEvents        = make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventCfgs))
-		outDatedEvents       = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
-		maxTimestamp         int64
-		outDatedDuration     = time.Hour
-		gitUpdateEvent       = false
-		newBranchs           = make([]string, 0, len(eventCfgs))
-		isExistDefaultBranch bool
+		handledEvents    = make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventCfgs))
+		outDatedEvents   = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
+		maxTimestamp     int64
+		outDatedDuration = time.Hour
+		gitUpdateEvent   = false
+		branchNames      = make(map[string]bool, len(eventCfgs))
 	)
 	for _, e := range eventCfgs {
 		for _, cfg := range e.Configs {
@@ -344,9 +343,6 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 				matcher = cfg.Matcher
 				handler = cfg.Handler
 			)
-			if handler.Config.MakePullRequest {
-				isExistDefaultBranch = true
-			}
 			notHandledEvents := w.eventLister.ListNotHandled(matcher.Name, matcher.Labels, milestone+1, numToMakeOutdated)
 			if len(notHandledEvents) == 0 {
 				continue
@@ -401,9 +397,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 					})
 					continue
 				}
-				if handler.Config.MakePullRequest {
-					newBranchs = append(newBranchs, branchName)
-				}
+				branchNames[branchName] = true
 				handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
 					Id:                latestEvent.Id,
 					Status:            model.EventStatus_EVENT_SUCCESS,
@@ -437,15 +431,9 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 	}
 
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
-	for _, branch := range newBranchs {
+	for branch := range branchNames {
 		_, err = retry.Do(ctx, func() (interface{}, error) {
 			err := tmpRepo.Push(ctx, branch)
-			return nil, err
-		})
-	}
-	if isExistDefaultBranch {
-		_, err = retry.Do(ctx, func() (interface{}, error) {
-			err := tmpRepo.Push(ctx, repo.GetClonedBranch())
 			return nil, err
 		})
 	}
