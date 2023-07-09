@@ -330,12 +330,12 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		firstRead = false
 	}
 	var (
-		handledEvents    = make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventCfgs))
-		outDatedEvents   = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
-		maxTimestamp     int64
-		outDatedDuration = time.Hour
-		gitUpdateEvent   = false
-		branchNames      = make(map[string]bool, len(eventCfgs))
+		handledEvents       = make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventCfgs))
+		outDatedEvents      = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
+		maxTimestamp        int64
+		outDatedDuration    = time.Hour
+		gitUpdateEvent      = false
+		branchHandledEvents = make(map[string][]*pipedservice.ReportEventStatusesRequest_Event, len(eventCfgs))
 	)
 	for _, e := range eventCfgs {
 		for _, cfg := range e.Configs {
@@ -390,19 +390,20 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 				branchName, err := w.commitFiles(ctx, latestEvent.Data, matcher.Name, handler.Config.CommitMessage, e.GitPath, handler.Config.Replacements, tmpRepo, handler.Config.MakePullRequest)
 				if err != nil {
 					w.logger.Error("failed to commit outdated files", zap.Error(err))
-					handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
+					handledEvent := &pipedservice.ReportEventStatusesRequest_Event{
 						Id:                latestEvent.Id,
 						Status:            model.EventStatus_EVENT_FAILURE,
 						StatusDescription: fmt.Sprintf("Failed to change files: %v", err),
-					})
+					}
+					branchHandledEvents[branchName] = append(branchHandledEvents[branchName], handledEvent)
 					continue
 				}
-				branchNames[branchName] = true
-				handledEvents = append(handledEvents, &pipedservice.ReportEventStatusesRequest_Event{
+				handledEvent := &pipedservice.ReportEventStatusesRequest_Event{
 					Id:                latestEvent.Id,
 					Status:            model.EventStatus_EVENT_SUCCESS,
 					StatusDescription: fmt.Sprintf("Successfully updated %d files in the %q repository", len(handler.Config.Replacements), repoID),
-				})
+				}
+				branchHandledEvents[branchName] = append(branchHandledEvents[branchName], handledEvent)
 				if latestEvent.CreatedAt > maxTimestamp {
 					maxTimestamp = latestEvent.CreatedAt
 				}
@@ -430,41 +431,58 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		return nil
 	}
 
+	var errors []error
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
-	for branch := range branchNames {
+	for branch, events := range branchHandledEvents {
 		_, err = retry.Do(ctx, func() (interface{}, error) {
 			err := tmpRepo.Push(ctx, branch)
 			return nil, err
 		})
-	}
 
-	if err == nil {
-		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
-			return fmt.Errorf("failed to report event statuses: %w", err)
-		}
-		w.executionMilestoneMap.Store(repoID, maxTimestamp)
-		return nil
-	}
-
-	// If push fails because the local branch was not fresh, exit to retry again in the next interval.
-	if err == git.ErrBranchNotFresh {
-		w.logger.Warn("failed to push commits", zap.Error(err))
-		return nil
-	}
-
-	// If push fails because of the other reason, re-set all statuses to FAILURE.
-	for i := range handledEvents {
-		if handledEvents[i].Status == model.EventStatus_EVENT_FAILURE {
+		if err == nil {
+			if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: events}); err != nil {
+				w.logger.Error("failed to report event statuses", zap.Error(err))
+			}
+			w.executionMilestoneMap.Store(repoID, maxTimestamp)
 			continue
 		}
-		handledEvents[i].Status = model.EventStatus_EVENT_FAILURE
-		handledEvents[i].StatusDescription = fmt.Sprintf("Failed to push changed files: %v", err)
+
+		// If push fails because the local branch was not fresh, exit to retry again in the next interval.
+		if err == git.ErrBranchNotFresh {
+			w.logger.Warn("failed to push commits", zap.Error(err))
+			continue
+		}
+
+		// If push fails because of the other reason, re-set all statuses to FAILURE.
+		for i := range handledEvents {
+			if events[i].Status == model.EventStatus_EVENT_FAILURE {
+				continue
+			}
+			events[i].Status = model.EventStatus_EVENT_FAILURE
+			events[i].StatusDescription = fmt.Sprintf("Failed to push changed files: %v", err)
+		}
+		if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: events}); err != nil {
+			w.logger.Error("failed to report event statuses", zap.Error(err))
+		}
+		w.executionMilestoneMap.Store(repoID, maxTimestamp)
+		errors = append(errors, fmt.Errorf("failed to push commits: %w", err))
 	}
-	if _, err := w.apiClient.ReportEventStatuses(ctx, &pipedservice.ReportEventStatusesRequest{Events: handledEvents}); err != nil {
-		return fmt.Errorf("failed to report event statuses: %w", err)
+	if len(errors) > 0 {
+		return responseError(errors)
 	}
-	w.executionMilestoneMap.Store(repoID, maxTimestamp)
-	return fmt.Errorf("failed to push commits: %w", err)
+	return nil
+}
+
+// responseError is an error wrapping errors.
+type responseError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (r responseError) Error() string {
+	var msgs []string
+	for _, err := range r {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
 }
 
 // updateValues inspects all Event-definition and pushes the changes to git repo if there is.
