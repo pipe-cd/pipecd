@@ -106,7 +106,11 @@ export const stageLogsSlice = createSlice({
       })
       .addCase(fetchStageLog.fulfilled, (state, action) => {
         const id = createActiveStageKey(action.meta.arg);
-        state[id] = action.payload;
+        // Skip update state when no log updates
+        // to avoid unnecessary state update and trigger re-render.
+        if (JSON.stringify(state[id]) !== JSON.stringify(action.payload)) {
+          state[id] = action.payload;
+        }
       });
   },
 });
