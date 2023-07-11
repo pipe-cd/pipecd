@@ -79,7 +79,7 @@ PipeCD consists of several components and docs:
 - **web**: The web application provided by the control plane.
 - **docs**: Documentation and references.
 
-You can find detailed development information in the README file of each directory.
+**You can find detailed development information in the README file of each directory.**
 
 ### Online one-click setup for contributing
 
@@ -134,16 +134,18 @@ By contributing to PipeCD, you agree that your contributions will be licensed un
 // limitations under the License.
 ```
 
-### Breaking Changes
+### Release Note and Breaking Changes
 
-When introducing a new breaking change, follow the pull request template and make sure to complete the following sections:
+If your change introcudes a user-facing change, please update the following section in your PR description.
 
 ```md
 **Does this PR introduce a user-facing change?**:
+- **How are users affected by this change**:
 - **Is this breaking change**:
 - **How to migrate (if breaking change)**:
-- **How are users affected by this change**:
 ```
+
+Note that if it's a new breaking change, make sure to complete the two latter questions.
 
 ## Contributor License Agreement
 
