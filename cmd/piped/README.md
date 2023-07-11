@@ -25,25 +25,12 @@ For the full list of available commands, please see the Makefile at the root of 
 
 ## How to run Piped agent locally
 
-1. Prepare the piped configuration file `piped-config.yaml`. You can find an example config [here](https://github.com/pipe-cd/pipecd/tree/master/cmd/piped/example/piped-config.yaml).
+1. Prepare the piped configuration file `piped-config.yaml`. You can find an example config [here](https://github.com/pipe-cd/pipecd/tree/master/cmd/piped/piped-config.yaml).
 
 2. Ensure that your `kube-context` is connecting to the right kubernetes cluster
 
 3. Run the following command to start running `piped` (if you want to connect Piped to a locally running Control Plane, add `INSECURE=true` option)
 
     ``` console
-    make run/piped CONFIG_FILE=cmd/piped/example/piped-config.yaml
-    ```
-
-## How to add an application to PipeCD
-
-1. Access the console, go Application page and click `ADD` button, select a platform provider and application(e.g. `name: simple, repo example` if you use the example repository). Then, click `SAVE`. PipeCD automatically will run its deployment.
-
-2. You can see the deployment running on the Deployment list page on the console. When the deployment is done, you can check the application running in your cluster;
-
-    ``` console
-    > kubectl get pods
-    NAME                      READY   STATUS    RESTARTS   AGE
-    simple-6b47c4c69b-9fmgg   1/1     Running   0          3m6s
-    simple-6b47c4c69b-qzpj8   1/1     Running   0          3m6s
+    make run/piped CONFIG_FILE=cmd/piped/piped-config.yaml
     ```
