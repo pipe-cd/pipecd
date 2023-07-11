@@ -25,8 +25,8 @@ For the full list of available commands, please see the Makefile at the root of 
 
 ## How to run Piped agent locally
 
-1. Prepare the piped configuration file. This is an example configuration;
-    ```yaml:piped-config.yaml
+1. Prepare the piped configuration file `piped-config.yaml`. This is an example configuration;
+    ```yaml
     apiVersion: pipecd.dev/v1beta1
     kind: Piped
     spec:
