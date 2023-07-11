@@ -40,8 +40,6 @@ For the full list of available commands, please see the Makefile at the root of 
     # Write in a format like "host:443" because the communication is done via gRPC.
     # FIXME: Replace here with your piped address if you connect Piped to a control plane that does not run locally.
     apiAddress: localhost:8080
-    # git:
-    #   sshKeyFile: /etc/piped-secret/ssh-key
     repositories:
         - repoId: example
         remote: git@github.com:pipe-cd/examples.git
