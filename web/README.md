@@ -38,7 +38,7 @@ make run/web
 The app will be available at http://localhost:9090.
 
 ### Connect Real API server
-If you want to connect the real API server, additional settings on the `.env` file are needed.
+If you want to connect to a real API server, additional settings on the `.env` file are needed.
 
 First, create your own `.env` file based on the `.env.example` file.
 
@@ -58,9 +58,15 @@ Set `ENABLE_MOCK` to false explicitly.
 ENABLE_MOCK=false
 ```
 
-If API server has authorization by cookie, set `API_COOKIE` to the cookie you have already obtained through other clients
+If the API server has authorization by cookie, set `API_COOKIE` to the cookie you have already obtained through other clients
 (typically you need to send some kind of request from an authenticated client and peek at the request header in some way).
 
 ```
 API_COOKIE={COOKIE}
 ```
+
+Take Chrome for example;
+1. Access to the existing UI.
+2. Open the developer tools and go to the network panel.
+3. Find the `GetMe` request and select it.
+4. Copy the whole value of the `Cookie` in "Request Headers" and paste it to `API_COOKIE={COOKIE}` in the `.env` file.
