@@ -15,16 +15,35 @@
 - `make run/piped`: runs Piped locally (for more information, see [here](#how-to-run-piped-agent-locally)).
 - `make gen/code`: generate Go and Typescript code from protos and mock configs. You need to run it if you modified any proto or mock definition files.
 
-For the full list of available commands, please see the Makefile at the root of repository.
+For the full list of available commands, please see the Makefile at the root of the repository.
+
+## Setup Control Plane
+
+1. Prepare Control Plane that piped connects. If you want to run a control plane locally, see [How to run Control Plane locally](https://github.com/pipe-cd/pipecd/tree/master/cmd/pipecd#how-to-run-control-plane-locally).
+
+2. Access to Control Plane console, go to Piped list page and add a new piped. Then, copy generated Piped ID and key for `piped-config.yaml`
 
 ## How to run Piped agent locally
 
-1. Prepare the piped configuration file `piped-config.yaml`
+1. Prepare the piped configuration file `piped-config.yaml`. You can find an example config [here](https://github.com/pipe-cd/pipecd/tree/master/cmd/piped/example/piped-config.yaml).
 
 2. Ensure that your `kube-context` is connecting to the right kubernetes cluster
 
 3. Run the following command to start running `piped` (if you want to connect Piped to a locally running Control Plane, add `INSECURE=true` option)
 
     ``` console
-    make run/piped CONFIG_FILE=piped-config.yaml
+    make run/piped CONFIG_FILE=cmd/piped/example/piped-config.yaml
+    ```
+
+## How to add an application to PipeCD
+
+1. Access the console, go Application page and click `ADD` button, select a platform provider and application(e.g. `name: simple, repo example` if you use the example repository). Then, click `SAVE`. PipeCD automatically will run its deployment.
+
+2. You can see the deployment running on the Deployment list page on the console. When the deployment is done, you can check the application running in your cluster;
+
+    ``` console
+    > kubectl get pods
+    NAME                      READY   STATUS    RESTARTS   AGE
+    simple-6b47c4c69b-9fmgg   1/1     Running   0          3m6s
+    simple-6b47c4c69b-qzpj8   1/1     Running   0          3m6s
     ```

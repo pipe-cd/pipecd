@@ -45,3 +45,6 @@ For the full list of available commands, please see the Makefile at the root of 
 3. Access to the local Control Plane web console
 
     Point your web browser to [http://localhost:8080](http://localhost:8080) to login with the configured static admin account: project = `quickstart`, username = `hello-pipecd`, password = `hello-pipecd`.
+
+## How to run Piped locally and add an application to your cluster
+See [How to run Piped agent locally](https://github.com/pipe-cd/pipecd/tree/master/cmd/piped#how-to-run-piped-agent-locally).
