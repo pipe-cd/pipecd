@@ -409,14 +409,14 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 		in.Logger.Error("Failed to store traffic routing config to metadata store", zap.Error(err))
 	}
 
-	currListenerArn, err := client.GetListener(ctx, primaryTargetGroup)
+	currListenerArns, err := client.GetListenerArns(ctx, primaryTargetGroup)
 	if err != nil {
-		in.LogPersister.Errorf("Failed to get current active listener: %v", err)
+		in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
 		return false
 	}
 
-	if err := client.ModifyListener(ctx, currListenerArn, routingTrafficCfg); err != nil {
-		in.LogPersister.Errorf("Failed to routing traffic to CANARY variant: %v", err)
+	if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
+		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
 		return false
 	}
 
