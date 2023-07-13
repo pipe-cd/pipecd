@@ -229,52 +229,40 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 	switch event.Type {
 	case model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED:
 		md := event.Metadata.(*model.NotificationEventDeploymentTriggered)
-		if len(s.config.MentionedAccounts) != 0 {
-			md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
-		}
+		md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
 		title = fmt.Sprintf("Triggered a new deployment for %q", md.Deployment.ApplicationName)
 		generateDeploymentEventData(md.Deployment, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED:
 		md := event.Metadata.(*model.NotificationEventDeploymentPlanned)
-		if len(s.config.MentionedAccounts) != 0 {
-			md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
-		}
+		md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
 		title = fmt.Sprintf("Deployment for %q was planned", md.Deployment.ApplicationName)
 		text = md.Summary
 		generateDeploymentEventData(md.Deployment, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL:
 		md := event.Metadata.(*model.NotificationEventDeploymentWaitApproval)
-		if len(s.config.MentionedAccounts) != 0 {
-			md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
-		}
+		md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
 		title = fmt.Sprintf("Deployment for %q is waiting for an approval", md.Deployment.ApplicationName)
 		generateDeploymentEventData(md.Deployment, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED:
 		md := event.Metadata.(*model.NotificationEventDeploymentApproved)
-		if len(s.config.MentionedAccounts) != 0 {
-			md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
-		}
+		md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
 		title = fmt.Sprintf("Deployment for %q was approved", md.Deployment.ApplicationName)
 		text = fmt.Sprintf("Approved by %s", md.Approver)
 		generateDeploymentEventData(md.Deployment, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED:
 		md := event.Metadata.(*model.NotificationEventDeploymentSucceeded)
-		if len(s.config.MentionedAccounts) != 0 {
-			md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
-		}
+		md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
 		title = fmt.Sprintf("Deployment for %q was completed successfully", md.Deployment.ApplicationName)
 		color = slackSuccessColor
 		generateDeploymentEventData(md.Deployment, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_FAILED:
 		md := event.Metadata.(*model.NotificationEventDeploymentFailed)
-		if len(s.config.MentionedAccounts) != 0 {
-			md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
-		}
+		md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
 		title = fmt.Sprintf("Deployment for %q was failed", md.Deployment.ApplicationName)
 		text = md.Reason
 		color = slackErrorColor
@@ -282,9 +270,7 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED:
 		md := event.Metadata.(*model.NotificationEventDeploymentCancelled)
-		if len(s.config.MentionedAccounts) != 0 {
-			md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
-		}
+		md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
 		title = fmt.Sprintf("Deployment for %q was cancelled", md.Deployment.ApplicationName)
 		text = fmt.Sprintf("Cancelled by %s", md.Commander)
 		color = slackWarnColor
@@ -292,26 +278,20 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED:
 		md := event.Metadata.(*model.NotificationEventDeploymentTriggerFailed)
-		if len(s.config.MentionedAccounts) != 0 {
-			md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
-		}
+		md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
 		title = fmt.Sprintf("Failed to trigger a new deployment for %s", md.Application.Name)
 		text = md.Reason
 		generateDeploymentEventDataForTriggerFailed(md.Application, md.CommitHash, md.CommitMessage, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_PIPED_STARTED:
 		md := event.Metadata.(*model.NotificationEventPipedStarted)
-		mentionedAccounts := make([]string, 0)
-		mentionedAccounts = append(mentionedAccounts, s.config.MentionedAccounts...)
 		title = "A piped has been started"
-		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId, getAccountsAsString(mentionedAccounts))
+		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId, getAccountsAsString(s.config.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_PIPED_STOPPED:
 		md := event.Metadata.(*model.NotificationEventPipedStopped)
-		mentionedAccounts := make([]string, 0)
-		mentionedAccounts = append(mentionedAccounts, s.config.MentionedAccounts...)
 		title = "A piped has been stopped"
-		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId, getAccountsAsString(mentionedAccounts))
+		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId, getAccountsAsString(s.config.MentionedAccounts))
 
 	// TODO: Support application type of notification event.
 	default:
