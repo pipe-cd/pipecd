@@ -197,7 +197,8 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 			{"Started At", makeSlackDate(d.CreatedAt), true},
 		}
 	}
-	generateDeploymentEventDataForTriggerFailed := func(app *model.Application, hash, msg string) {
+
+	generateDeploymentEventDataForTriggerFailed := func(app *model.Application, hash, msg, accounts string) {
 		link = fmt.Sprintf("%s/applications/%s?project=%s", webURL, app.Id, app.ProjectId)
 		commitURL, err := git.MakeCommitURL(app.GitPath.Repo.Remote, hash)
 		if err != nil {
@@ -207,18 +208,21 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 			{"Project", truncateText(app.ProjectId, 8), true},
 			{"Application", makeSlackLink(app.Name, link), true},
 			{"Kind", strings.ToLower(app.Kind.String()), true},
+			{"Mention To", accounts, true},
 		}
 		if commitURL != "" {
 			fields = append(fields, slackField{"Commit", makeSlackLink(truncateText(msg, 8), commitURL), true})
 		}
 	}
-	generatePipedEventData := func(id, name, version, project string) {
+
+	generatePipedEventData := func(id, name, version, project, accounts string) {
 		link = fmt.Sprintf("%s/settings/piped?project=%s", webURL, project)
 		fields = []slackField{
 			{"Name", name, true},
 			{"Version", version, true},
 			{"Project", truncateText(project, 8), true},
 			{"Id", id, true},
+			{"Mention To", accounts, true},
 		}
 	}
 
@@ -288,19 +292,26 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED:
 		md := event.Metadata.(*model.NotificationEventDeploymentTriggerFailed)
+		if len(s.config.MentionedAccounts) != 0 {
+			md.MentionedAccounts = append(md.MentionedAccounts, s.config.MentionedAccounts...)
+		}
 		title = fmt.Sprintf("Failed to trigger a new deployment for %s", md.Application.Name)
 		text = md.Reason
-		generateDeploymentEventDataForTriggerFailed(md.Application, md.CommitHash, md.CommitMessage)
+		generateDeploymentEventDataForTriggerFailed(md.Application, md.CommitHash, md.CommitMessage, getAccountsAsString(md.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_PIPED_STARTED:
 		md := event.Metadata.(*model.NotificationEventPipedStarted)
+		mentionedAccounts := make([]string, 0)
+		mentionedAccounts = append(mentionedAccounts, s.config.MentionedAccounts...)
 		title = "A piped has been started"
-		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId)
+		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId, getAccountsAsString(mentionedAccounts))
 
 	case model.NotificationEventType_EVENT_PIPED_STOPPED:
 		md := event.Metadata.(*model.NotificationEventPipedStopped)
+		mentionedAccounts := make([]string, 0)
+		mentionedAccounts = append(mentionedAccounts, s.config.MentionedAccounts...)
 		title = "A piped has been stopped"
-		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId)
+		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId, getAccountsAsString(mentionedAccounts))
 
 	// TODO: Support application type of notification event.
 	default:
