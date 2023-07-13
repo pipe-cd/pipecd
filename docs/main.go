@@ -20,11 +20,15 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 )
 
-const dir = "/public"
+const dir = "/Users/s01952/ghq/github.com/kentakozuka/pipecd/docs/public"
+
+// Don't update here manually. /hack/gen-release-docs.sh does.
+const latestPath = "/docs-v0.44.x/"
 
 func main() {
 	var (
@@ -37,6 +41,12 @@ func main() {
 		fs = http.FileServer(http.Dir(dir))
 	)
 	mux.Handle("/", fs)
+
+	// Redirect /docs/ to /docs-{latest-version}/
+	mux.HandleFunc("/docs/", func(w http.ResponseWriter, r *http.Request) {
+		latestPattern := strings.Replace(r.URL.Path, "/docs/", latestPath, 1)
+		http.Redirect(w, r, latestPattern, 307)
+	})
 
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
