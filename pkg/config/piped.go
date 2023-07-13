@@ -940,6 +940,14 @@ func (n *NotificationReceiverSlack) Mask() {
 }
 
 func (n *NotificationReceiverSlack) Validate() error {
+	mentionedAccounts := make([]string, 0, len(n.MentionedAccounts))
+	for _, mentionedAccount := range n.MentionedAccounts {
+		formatMentionedAccount := strings.TrimPrefix(mentionedAccount, "@")
+		mentionedAccounts = append(mentionedAccounts, formatMentionedAccount)
+	}
+	if len(mentionedAccounts) > 0 {
+		n.MentionedAccounts = mentionedAccounts
+	}
 	if n.HookURL != "" && (n.OAuthToken != "" || n.ChannelID != "") {
 		return errors.New("only one of hookURL or oauthToken and channelID should be used")
 	}
@@ -948,14 +956,6 @@ func (n *NotificationReceiverSlack) Validate() error {
 	}
 	if n.OAuthToken == "" || n.ChannelID == "" {
 		return errors.New("missing oauthToken or channelID configuration")
-	}
-	mentionedAccounts := make([]string, 0, len(n.MentionedAccounts))
-	for _, mentionedAccount := range n.MentionedAccounts {
-		formatMentionedAccount := strings.TrimPrefix(mentionedAccount, "@")
-		mentionedAccounts = append(mentionedAccounts, formatMentionedAccount)
-	}
-	if len(mentionedAccounts) > 0 {
-		n.MentionedAccounts = mentionedAccounts
 	}
 	return nil
 }
