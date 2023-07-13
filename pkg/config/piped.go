@@ -949,12 +949,14 @@ func (n *NotificationReceiverSlack) Validate() error {
 	if n.OAuthToken == "" || n.ChannelID == "" {
 		return errors.New("missing oauthToken or channelID configuration")
 	}
-	mentionedAccounts := make([]string, len(n.MentionedAccounts))
+	mentionedAccounts := make([]string, 0, len(n.MentionedAccounts))
 	for _, mentionedAccount := range n.MentionedAccounts {
 		formatMentionedAccount := strings.TrimPrefix(mentionedAccount, "@")
 		mentionedAccounts = append(mentionedAccounts, formatMentionedAccount)
 	}
-	n.MentionedAccounts = mentionedAccounts
+	if len(mentionedAccounts) > 0 {
+		n.MentionedAccounts = mentionedAccounts
+	}
 	return nil
 }
 

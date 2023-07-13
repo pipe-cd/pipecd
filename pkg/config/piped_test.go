@@ -224,7 +224,7 @@ func TestPipedConfig(t *testing.T) {
 							Name: "hookurl-with-mentioned-accounts",
 							Slack: &NotificationReceiverSlack{
 								HookURL:           "https://slack.com/dev",
-								MentionedAccounts: []string{"@user1", "user2"},
+								MentionedAccounts: []string{"user1", "user2"},
 							},
 						},
 						{
@@ -232,7 +232,7 @@ func TestPipedConfig(t *testing.T) {
 							Slack: &NotificationReceiverSlack{
 								OAuthToken:        "token",
 								ChannelID:         "testid",
-								MentionedAccounts: []string{"@user1", "user2"},
+								MentionedAccounts: []string{"user1", "user2"},
 							},
 						},
 						{
