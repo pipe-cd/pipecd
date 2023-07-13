@@ -924,9 +924,10 @@ func (n *NotificationReceiver) Mask() {
 }
 
 type NotificationReceiverSlack struct {
-	HookURL    string `json:"hookURL"`
-	OAuthToken string `json:"oauthToken"`
-	ChannelID  string `json:"channelID"`
+	HookURL           string   `json:"hookURL"`
+	OAuthToken        string   `json:"oauthToken"`
+	ChannelID         string   `json:"channelID"`
+	MentionedAccounts []string `json:"mentionedAccounts,omitempty"`
 }
 
 func (n *NotificationReceiverSlack) Mask() {
@@ -948,6 +949,12 @@ func (n *NotificationReceiverSlack) Validate() error {
 	if n.OAuthToken == "" || n.ChannelID == "" {
 		return errors.New("missing oauthToken or channelID configuration")
 	}
+	mentionedAccounts := make([]string, len(n.MentionedAccounts))
+	for _, mentionedAccount := range n.MentionedAccounts {
+		formatMentionedAccount := strings.TrimPrefix(mentionedAccount, "@")
+		mentionedAccounts = append(mentionedAccounts, formatMentionedAccount)
+	}
+	n.MentionedAccounts = mentionedAccounts
 	return nil
 }
 
