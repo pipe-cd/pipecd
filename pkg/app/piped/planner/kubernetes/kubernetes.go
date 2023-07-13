@@ -91,14 +91,14 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 
 	// Determine application version from the manifests.
 	if version, e := determineVersion(newManifests); e != nil {
-		in.Logger.Error("unable to determine version", zap.Error(e))
+		in.Logger.Warn("unable to determine version", zap.Error(e))
 		out.Version = versionUnknown
 	} else {
 		out.Version = version
 	}
 
 	if versions, e := determineVersions(newManifests); e != nil || len(versions) == 0 {
-		in.Logger.Error("unable to determine versions", zap.Error(e))
+		in.Logger.Warn("unable to determine versions", zap.Error(e))
 		out.Versions = []*model.ArtifactVersion{
 			{
 				Kind:    model.ArtifactVersion_UNKNOWN,
