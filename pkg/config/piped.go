@@ -924,9 +924,10 @@ func (n *NotificationReceiver) Mask() {
 }
 
 type NotificationReceiverSlack struct {
-	HookURL    string `json:"hookURL"`
-	OAuthToken string `json:"oauthToken"`
-	ChannelID  string `json:"channelID"`
+	HookURL           string   `json:"hookURL"`
+	OAuthToken        string   `json:"oauthToken"`
+	ChannelID         string   `json:"channelID"`
+	MentionedAccounts []string `json:"mentionedAccounts,omitempty"`
 }
 
 func (n *NotificationReceiverSlack) Mask() {
@@ -939,6 +940,14 @@ func (n *NotificationReceiverSlack) Mask() {
 }
 
 func (n *NotificationReceiverSlack) Validate() error {
+	mentionedAccounts := make([]string, 0, len(n.MentionedAccounts))
+	for _, mentionedAccount := range n.MentionedAccounts {
+		formatMentionedAccount := strings.TrimPrefix(mentionedAccount, "@")
+		mentionedAccounts = append(mentionedAccounts, formatMentionedAccount)
+	}
+	if len(mentionedAccounts) > 0 {
+		n.MentionedAccounts = mentionedAccounts
+	}
 	if n.HookURL != "" && (n.OAuthToken != "" || n.ChannelID != "") {
 		return errors.New("only one of hookURL or oauthToken and channelID should be used")
 	}

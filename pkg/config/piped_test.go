@@ -221,6 +221,21 @@ func TestPipedConfig(t *testing.T) {
 							},
 						},
 						{
+							Name: "hookurl-with-mentioned-accounts",
+							Slack: &NotificationReceiverSlack{
+								HookURL:           "https://slack.com/dev",
+								MentionedAccounts: []string{"user1", "user2"},
+							},
+						},
+						{
+							Name: "integration-slack-api-with-mentioned-accounts",
+							Slack: &NotificationReceiverSlack{
+								OAuthToken:        "token",
+								ChannelID:         "testid",
+								MentionedAccounts: []string{"user1", "user2"},
+							},
+						},
+						{
 							Name: "ci-webhook",
 							Webhook: &NotificationReceiverWebhook{
 								URL:            "https://pipecd.dev/dev-hook",

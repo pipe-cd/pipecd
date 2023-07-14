@@ -258,6 +258,7 @@ Must be one of the following structs:
 | hookURL | string | The hookURL of a slack channel. | Yes |
 | oauthToken | string | [The token for slack api use.](https://api.slack.com/authentication/basics) | No |
 | channelID | string | The channel id which slack api send to. | No |
+| mentionedAccounts | []string | The accounts to which slack api referes. This field supports both `@username` and `username` writing styles.| No |
 
 #### NotificationReceiverWebhook
 
