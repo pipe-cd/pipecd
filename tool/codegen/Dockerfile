@@ -19,10 +19,8 @@ ENV PROTOC_GEN_GO_GRPC_VER=1.2.0
 ENV PROTOC_GEN_VALIDATE_VER=0.6.6
 ENV GOMOCK_VER=1.6.0
 
-# protoc
-RUN wget -q https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VER}/protoc-${PROTOC_VER}-linux-x86_64.zip -O protoc.zip \
-    && unzip protoc.zip -d /usr/local \
-    && rm protoc.zip
+# dependecies and protoc
+RUN apk --no-cache add wget bash protobuf-dev protobuf
 
 # protoc-gen-go
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v${PROTOC_GEN_GO_VER}
