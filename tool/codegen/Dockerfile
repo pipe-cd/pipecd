@@ -1,5 +1,5 @@
 # Builder image to build go program.
-FROM golang:1.20.5-alpine3.18 as BUILDER
+FROM golang:1.20.4-alpine3.16 as BUILDER
 
 COPY protoc-gen-auth /protoc-gen-auth
 RUN cd /protoc-gen-auth \
@@ -7,21 +7,17 @@ RUN cd /protoc-gen-auth \
   && chmod +x /usr/local/bin/protoc-gen-auth
 
 # Codegen image which is actually being used.
-FROM golang:1.20.5-alpine3.18
+FROM golang:1.20.4-alpine3.16
 
-ENV PROTOC_VER=3.19.4
+# This is version of protobuf installed in the image.
+# See https://pkgs.alpinelinux.org/packages?name=protobuf&branch=v3.16
+# NOTE: Start from protobuf v3.20.1, the protoc-gen-js is not included in protobuf package.
+ENV PROTOC_VER=3.18.1
 ENV PROTOC_GEN_GO_VER=1.27.1
 ENV PROTOC_GEN_GRPC_WEB_VER=1.3.1
 ENV PROTOC_GEN_GO_GRPC_VER=1.2.0
 ENV PROTOC_GEN_VALIDATE_VER=0.6.6
 ENV GOMOCK_VER=1.6.0
-ENV GLIBC_VERSION=2.35-r1
-
-RUN apk --no-cache add wget bash \
-    && wget -q https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub -O /etc/apk/keys/sgerrand.rsa.pub \
-    && wget -q https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-${GLIBC_VERSION}.apk -O glibc.apk \
-    && apk add glibc.apk \
-    && rm /etc/apk/keys/sgerrand.rsa.pub glibc.apk
 
 # protoc
 RUN wget -q https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VER}/protoc-${PROTOC_VER}-linux-x86_64.zip -O protoc.zip \
