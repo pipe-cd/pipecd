@@ -26,16 +26,11 @@ This refers to the release of new features or breaking changes.
   make release/init version=vX.Y.Z
   ````
 
-  `RELEASE` file will be updated and `docs/content/en/blog/releases/vX.Y.Z.md` file will be created.
+  `RELEASE` file will be updated.
 
 - Push the above changes and Create a pull request to confirm the changelog.
   You can confirm the changelog through the reviewing comment in pull request by GitHub Actions.
   For more information, Please see [actions-gh-release](https://github.com/pipe-cd/actions-gh-release).
-
-- Update the content in `docs/content/en/blog/releases/vX.Y.Z.md` file based on changelog results.
-  Please refer to [this example](https://github.com/pipe-cd/pipecd/pull/3792/commits/2b59f7f2a492405bf6df905b3823b417e4a10c3e).
-
-  It is recommended to commit the above changes once here.
 
 ### Generate document for new version
 - Run the release document script

@@ -26,11 +26,3 @@ echo "Prepare release for version $1"
 # Update release file
 RELEASE_FILE=RELEASE
 sed -i '' "s/tag:.*/tag: $1/" $RELEASE_FILE
-
-CONTENT_DIR=docs/content/en
-# Render release note template
-TEMP="---\ntitle: \"Release $1\"\nlinkTitle: \"Release $1\"\ndate: $(date +"%Y-%m-%d")\ndescription: >\n Release $1\n---\n\n"
-OUTPUT_FILE=$CONTENT_DIR/blog/releases/$1.md
-echo -e $TEMP > $OUTPUT_FILE
-
-echo "Your new release note is located at $OUTPUT_FILE"
