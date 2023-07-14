@@ -179,8 +179,7 @@ update/docsy:
 .PHONY: gen/code
 gen/code:
 	# NOTE: Specify a specific version temporally until the next release.
-	# Current codegen version is v0.44.0-38-g7229285
-	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:fc3db505ef8dbf287b90aafed8c28246d2cca06bda2b43893a3059719fe9fff4 /repo
+	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:fc3db505ef8dbf287b90aafed8c28246d2cca06bda2b43893a3059719fe9fff4 /repo #v0.44.0-38-g7229285
 
 .PHONY: gen/stable-docs
 gen/stable-docs:
