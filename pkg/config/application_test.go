@@ -315,7 +315,8 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback: newBoolPointer(true),
+					AutoRollback:        newBoolPointer(true),
+					AutoCreateNamespace: newBoolPointer(false),
 				},
 				VariantLabel: KubernetesVariantLabel{
 					Key:           "pipecd.dev/variant",
@@ -366,7 +367,8 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback: newBoolPointer(true),
+					AutoRollback:        newBoolPointer(true),
+					AutoCreateNamespace: newBoolPointer(false),
 				},
 				VariantLabel: KubernetesVariantLabel{
 					Key:           "pipecd.dev/variant",
@@ -395,7 +397,8 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback: newBoolPointer(false),
+					AutoRollback:        newBoolPointer(false),
+					AutoCreateNamespace: newBoolPointer(false),
 				},
 				VariantLabel: KubernetesVariantLabel{
 					Key:           "pipecd.dev/variant",
@@ -424,7 +427,8 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback: newBoolPointer(true),
+					AutoRollback:        newBoolPointer(true),
+					AutoCreateNamespace: newBoolPointer(true),
 				},
 				VariantLabel: KubernetesVariantLabel{
 					Key:           "pipecd.dev/variant",
@@ -493,7 +497,8 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback: newBoolPointer(true),
+					AutoRollback:        newBoolPointer(true),
+					AutoCreateNamespace: newBoolPointer(false),
 				},
 				VariantLabel: KubernetesVariantLabel{
 					Key:           "pipecd.dev/variant",
@@ -613,7 +618,8 @@ func TestGenericAnalysisConfiguration(t *testing.T) {
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback: newBoolPointer(true),
+					AutoRollback:        newBoolPointer(true),
+					AutoCreateNamespace: newBoolPointer(false),
 				},
 				VariantLabel: KubernetesVariantLabel{
 					Key:           "pipecd.dev/variant",
