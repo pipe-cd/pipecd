@@ -94,6 +94,10 @@ type KubernetesDeploymentInput struct {
 	// Automatically reverts all deployment changes on failure.
 	// Default is true.
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
+
+	// Automatically create a new namespace if it does not exist.
+	// Default is false.
+	AutoCreateNamespace *bool `json:"autoCreateNamespace" default:"false"`
 }
 
 type InputHelmChart struct {
