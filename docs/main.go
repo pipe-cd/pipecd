@@ -25,7 +25,7 @@ import (
 	"time"
 )
 
-const dir = "/Users/s01952/ghq/github.com/kentakozuka/pipecd/docs/public"
+const dir = "/public"
 
 // Don't update here manually. /hack/gen-release-docs.sh does.
 const latestPath = "/docs-v0.44.x/"
