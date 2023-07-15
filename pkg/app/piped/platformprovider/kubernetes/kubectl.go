@@ -235,7 +235,7 @@ func (c *Kubectl) CreateNamespace(ctx context.Context, kubeconfig, namespace str
 	out, err := cmd.CombinedOutput()
 
 	if strings.Contains(string(out), "(AlreadyExists)") {
-		_, err := fmt.Printf("Namespace already exists: %s, %v", string(out), err)
+		_, err := fmt.Printf("Namespace already exists: %s", string(out))
 		if err != nil {
 			return err
 		}
