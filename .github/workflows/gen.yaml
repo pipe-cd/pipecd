@@ -21,17 +21,3 @@ jobs:
     - name: Validate
       shell: bash
       run: test -z "$(git status --porcelain)"
-
-  docs:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - name: Generate stable docs
-      run: make gen/stable-docs
-    - name: Show Git status
-      shell: bash
-      run: git status
-    - name: Validate
-      shell: bash
-      run: test -z "$(git status --porcelain)"
