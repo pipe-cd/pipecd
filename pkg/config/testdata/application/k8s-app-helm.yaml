@@ -22,7 +22,7 @@ spec:
     helmValueFiles:
     - values.yaml
     helmVersion: 3.1.1
-    AutoCreateNamespace: true
+    autoCreateNamespace: true
 
 ---
 apiVersion: pipecd.dev/v1beta1
@@ -37,4 +37,4 @@ spec:
     helmValueFiles:
     - values.yaml
     helmVersion: 3.1.1
-    AutoCreateNamespace: false
+    autoCreateNamespace: false
