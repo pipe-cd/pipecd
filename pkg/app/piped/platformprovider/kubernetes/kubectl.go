@@ -223,3 +223,22 @@ func (c *Kubectl) Get(ctx context.Context, kubeconfig, namespace string, r Resou
 	}
 	return ms[0], nil
 }
+
+func (c *Kubectl) CreateNamespace(ctx context.Context, kubeconfig, namespace string) (err error) {
+	args := make([]string, 0, 7)
+	if kubeconfig != "" {
+		args = append(args, "--kubeconfig", kubeconfig)
+	}
+	args = append(args, "create", "namespace", namespace)
+
+	cmd := exec.CommandContext(ctx, c.execPath, args...)
+	out, err := cmd.CombinedOutput()
+
+	if strings.Contains(string(out), "(AlreadyExists)") {
+		return fmt.Errorf("failed to create namespace: %s, %v", string(out), err)
+	}
+	if err != nil {
+		return fmt.Errorf("failed to create namespace: %s, %v", string(out), err)
+	}
+	return nil
+}
