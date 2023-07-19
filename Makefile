@@ -74,7 +74,7 @@ test: test/go test/web
 
 .PHONY: test/go
 test/go:
-	go test ./pkg/... ./cmd/...
+	go test -failfast -race -covermode=atomic -coverprofile=coverage.txt ./pkg/... ./cmd/...
 
 .PHONY: test/web
 test/web:
