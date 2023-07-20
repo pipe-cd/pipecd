@@ -69,8 +69,8 @@ resources=*;actions=*
 
 User Group represents a relation with a specific team (GitHub)/group (Google) and an arbitrary role. All users belong to a team/group will have all permissions of that team/group.
 
-You cannot assign multiple roles to a team/group.
+In case of using the GitHub team as a PipeCD user group, the PipeCD user group must be set in lowercase. For example, if your GitHub team is named `ORG/ABC-TEAM`, the PipeCD user group would be set as `ORG/abc-team`. (It's follow the GitHub team URL as github.com/orgs/{organization-name}/teams/{TEAM-NAME})
 
-Caution is required when setting up GitHub Teams for User Groups. Even if the team is set in uppercase, it must be set in lowercase here. The team in the URL is the correct notation to set here. (github.com/orgs/{organization-name}/teams/{TEAM-NAME})
+Note: You CANNOT assign multiple roles to a team/group, should create a new role with suitable permissions instead.
 
 ![](/images/settings-add-user-group.png)
