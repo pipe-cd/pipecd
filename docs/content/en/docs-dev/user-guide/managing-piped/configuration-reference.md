@@ -179,6 +179,8 @@ Must be one of the following structs:
 | address | string | The address of Datadog API server. Only "datadoghq.com", "us3.datadoghq.com", "datadoghq.eu", "ddog-gov.com" are available. Defaults to "datadoghq.com" | No |
 | apiKeyFile | string | The path to the api key file. | Yes |
 | applicationKeyFile | string | The path to the application key file. | Yes |
+| apiKey | string | Optional: API Key for Datadog API server. | No |
+| applicationKey | string | Optional: Application Key for Datadog API server | No |
 
 ## EventWatcher
 

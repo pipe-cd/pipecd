@@ -846,6 +846,10 @@ type AnalysisProviderDatadogConfig struct {
 	APIKeyFile string `json:"apiKeyFile"`
 	// Required: The path to the application key file.
 	ApplicationKeyFile string `json:"applicationKeyFile"`
+	// Optional: API Key for Datadog API server.
+	APIKey string `json:"apiKey,omitempty"`
+	// Optional: Application Key for Datadog API server.
+	ApplicationKey string `json:"applicationKey,omitempty"`
 }
 
 func (a *AnalysisProviderDatadogConfig) Validate() error {
@@ -864,6 +868,12 @@ func (a *AnalysisProviderDatadogConfig) Mask() {
 	}
 	if len(a.ApplicationKeyFile) != 0 {
 		a.ApplicationKeyFile = maskString
+	}
+	if len(a.APIKey) != 0 {
+		a.APIKey = maskString
+	}
+	if len(a.ApplicationKey) != 0 {
+		a.ApplicationKey = maskString
 	}
 }
 

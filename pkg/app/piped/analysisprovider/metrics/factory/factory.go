@@ -66,6 +66,12 @@ func NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg
 			}
 			applicationKey = strings.TrimSpace(string(a))
 		}
+		if cfg.APIKey != "" {
+			apiKey = strings.TrimSpace(cfg.APIKey)
+		}
+		if cfg.ApplicationKey != "" {
+			applicationKey = strings.TrimSpace(cfg.ApplicationKey)
+		}
 		options := []datadog.Option{
 			datadog.WithLogger(logger),
 			datadog.WithTimeout(analysisTempCfg.Timeout.Duration()),

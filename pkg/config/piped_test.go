@@ -163,6 +163,8 @@ func TestPipedConfig(t *testing.T) {
 							Address:            "https://your-datadog.dev",
 							APIKeyFile:         "/etc/piped-secret/datadog-api-key",
 							ApplicationKeyFile: "/etc/piped-secret/datadog-application-key",
+							APIKey:             "datadog-api-key",
+							ApplicationKey:     "datadog-application-key",
 						},
 					},
 					{
@@ -541,6 +543,8 @@ func TestPipedConfigMask(t *testing.T) {
 							Address:            "foo",
 							APIKeyFile:         "foo",
 							ApplicationKeyFile: "foo",
+							APIKey:             "foo",
+							ApplicationKey:     "foo",
 						},
 						StackdriverConfig: &AnalysisProviderStackdriverConfig{
 							ServiceAccountFile: "foo",
@@ -699,6 +703,8 @@ func TestPipedConfigMask(t *testing.T) {
 							Address:            "foo",
 							APIKeyFile:         maskString,
 							ApplicationKeyFile: maskString,
+							APIKey:             maskString,
+							ApplicationKey:     maskString,
 						},
 						StackdriverConfig: &AnalysisProviderStackdriverConfig{
 							ServiceAccountFile: maskString,
@@ -906,6 +912,8 @@ func TestPipedSpecClone(t *testing.T) {
 							Address:            "https://your-datadog.dev",
 							APIKeyFile:         "/etc/piped-secret/datadog-api-key",
 							ApplicationKeyFile: "/etc/piped-secret/datadog-application-key",
+							APIKey:             "datadog-api-key",
+							ApplicationKey:     "datadog-application-key",
 						},
 					},
 					{
@@ -1101,6 +1109,8 @@ func TestPipedSpecClone(t *testing.T) {
 							Address:            "https://your-datadog.dev",
 							APIKeyFile:         "/etc/piped-secret/datadog-api-key",
 							ApplicationKeyFile: "/etc/piped-secret/datadog-application-key",
+							APIKey:             "datadog-api-key",
+							ApplicationKey:     "datadog-application-key",
 						},
 					},
 					{
