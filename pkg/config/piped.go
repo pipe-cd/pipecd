@@ -853,11 +853,11 @@ type AnalysisProviderDatadogConfig struct {
 }
 
 func (a *AnalysisProviderDatadogConfig) Validate() error {
-	if a.APIKeyFile == "" {
-		return fmt.Errorf("datadog analysis provider requires the api key file")
+	if a.APIKeyFile == "" && a.APIKey == "" {
+		return fmt.Errorf("datadog analysis provider requires the api key or file")
 	}
-	if a.ApplicationKeyFile == "" {
-		return fmt.Errorf("datadog analysis provider requires the application key file")
+	if a.ApplicationKeyFile == "" && a.ApplicationKey == "" {
+		return fmt.Errorf("datadog analysis provider requires the application key or file")
 	}
 	return nil
 }
