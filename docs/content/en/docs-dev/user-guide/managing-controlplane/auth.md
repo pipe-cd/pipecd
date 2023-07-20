@@ -71,4 +71,6 @@ User Group represents a relation with a specific team (GitHub)/group (Google) an
 
 You cannot assign multiple roles to a team/group.
 
+Caution is required when setting up GitHub Teams for User Groups. Even if the team is set in uppercase, it must be set in lowercase here. The team in the URL is the correct notation to set here. (github.com/orgs/{organization-name}/teams/{TEAM-NAME})
+
 ![](/images/settings-add-user-group.png)
