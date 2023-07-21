@@ -97,7 +97,7 @@ type KubernetesDeploymentInput struct {
 
 	// Automatically create a new namespace if it does not exist.
 	// Default is false.
-	AutoCreateNamespace *bool `json:"autoCreateNamespace,omitempty" default:"false"`
+	AutoCreateNamespace bool `json:"autoCreateNamespace,omitempty"`
 }
 
 type InputHelmChart struct {
