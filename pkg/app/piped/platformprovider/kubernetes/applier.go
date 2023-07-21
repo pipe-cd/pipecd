@@ -63,7 +63,7 @@ func (a *applier) ApplyManifest(ctx context.Context, manifest Manifest) error {
 	if a.initErr != nil {
 		return a.initErr
 	}
-	if *a.input.AutoCreateNamespace == true {
+	if a.input.AutoCreateNamespace == true {
 		if err := a.kubectl.CreateNamespace(
 			ctx,
 			a.platformProvider.KubeConfigPath,
@@ -89,7 +89,7 @@ func (a *applier) CreateManifest(ctx context.Context, manifest Manifest) error {
 	if a.initErr != nil {
 		return a.initErr
 	}
-	if *a.input.AutoCreateNamespace == true {
+	if a.input.AutoCreateNamespace == true {
 		if err := a.kubectl.CreateNamespace(
 			ctx,
 			a.platformProvider.KubeConfigPath,
