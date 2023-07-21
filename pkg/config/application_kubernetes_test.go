@@ -98,7 +98,7 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 				},
 				Input: KubernetesDeploymentInput{
 					AutoRollback:        newBoolPointer(true),
-					AutoCreateNamespace: newBoolPointer(false),
+					AutoCreateNamespace: false,
 				},
 				TrafficRouting: &KubernetesTrafficRouting{
 					Method: KubernetesTrafficRoutingMethodPodSelector,
