@@ -642,6 +642,7 @@ type PlatformProviderTerraformConfig struct {
 	// 'image_id_list=["ami-abc123","ami-def456"]'
 	// 'image_id_map={"us-east-1":"ami-abc123","us-east-2":"ami-def456"}'
 	Vars []string `json:"vars,omitempty"`
+	DriftDetectionEnabled *bool `json:"driftDetectionEnabled" default:"true"`
 }
 
 type PlatformProviderCloudRunConfig struct {
