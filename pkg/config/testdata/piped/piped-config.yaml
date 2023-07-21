@@ -88,6 +88,8 @@ spec:
         address: https://your-datadog.dev
         apiKeyFile: /etc/piped-secret/datadog-api-key
         applicationKeyFile: /etc/piped-secret/datadog-application-key
+        apiKey: datadog-api-key
+        applicationKey: datadog-application-key
     - name: stackdriver-dev
       type: STACKDRIVER
       config:
