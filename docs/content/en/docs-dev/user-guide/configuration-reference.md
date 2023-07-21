@@ -304,7 +304,7 @@ One of `yamlField` or `regex` is required.
 | helmOptions | [HelmOptions](#helmoptions) | Configurable parameters for helm commands. | No |
 | namespace | string | The namespace where manifests will be applied. | No |
 | autoRollback | bool | Automatically reverts all deployment changes on failure. Default is `true`. | No |
-| AutoCreateNamespace | bool | Automatically create a new namespace if it does not exist. Default is `false`. | No |
+| autoCreateNamespace | bool | Automatically create a new namespace if it does not exist. Default is `false`. | No |
 
 ### HelmChart
 
