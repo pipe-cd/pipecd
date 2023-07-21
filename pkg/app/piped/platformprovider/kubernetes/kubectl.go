@@ -28,8 +28,10 @@ import (
 )
 
 var (
-	errorReplaceNotFound = errors.New("specified resource is not found")
-	errorNotFoundLiteral = "Error from server (NotFound)"
+	errorReplaceNotFound    = errors.New("specified resource is not found")
+	errorNotFoundLiteral    = "Error from server (NotFound)"
+	errReplaceAlreadyExists = errors.New("resource already exists")
+	errAlreadyExistsLiteral = "Error from server (AlreadyExists)"
 )
 
 type Kubectl struct {
@@ -234,11 +236,8 @@ func (c *Kubectl) CreateNamespace(ctx context.Context, kubeconfig, namespace str
 	cmd := exec.CommandContext(ctx, c.execPath, args...)
 	out, err := cmd.CombinedOutput()
 
-	if strings.Contains(string(out), "(AlreadyExists)") {
-		_, err := fmt.Printf("Namespace already exists: %s", string(out))
-		if err != nil {
-			return err
-		}
+	if strings.Contains(string(out), errAlreadyExistsLiteral) {
+		return errReplaceAlreadyExists
 	}
 	if err != nil {
 		return fmt.Errorf("failed to create namespace: %s, %v", string(out), err)
