@@ -364,7 +364,7 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 		if pre, ok := pendingByApp[appID]; ok && !d.TriggerBefore(pre) {
 			continue
 		}
-		controllermetrics.UpdateDeploymentStatus(d.Id, d.Status, d.Kind, d.PlatformProvider)
+		controllermetrics.UpdateDeploymentStatus(d, d.Status)
 		pendingByApp[appID] = d
 	}
 
