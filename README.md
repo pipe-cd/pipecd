@@ -1,5 +1,7 @@
 [![Build](https://github.com/pipe-cd/pipecd/actions/workflows/build.yaml/badge.svg)](https://github.com/pipe-cd/pipecd/actions/workflows/build.yaml)
 [![Test](https://github.com/pipe-cd/pipecd/actions/workflows/test.yaml/badge.svg)](https://github.com/pipe-cd/pipecd/actions/workflows/test.yaml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/pipe-cd/pipecd)](https://goreportcard.com/report/github.com/pipe-cd/pipecd)
+[![codecov](https://codecov.io/gh/pipe-cd/pipecd/branch/master/graph/badge.svg)](https://codecov.io/gh/pipe-cd/pipecd)
 [![Release](https://img.shields.io/github/v/release/pipe-cd/pipecd?label=Release)](https://github.com/pipe-cd/pipecd/releases/latest)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](/LICENSE)
 [![Documentation](https://img.shields.io/badge/Documentation-pipecd-informational.svg)](https://pipecd.dev/docs/)
