@@ -22,7 +22,6 @@ spec:
     helmValueFiles:
     - values.yaml
     helmVersion: 3.1.1
-    autoCreateNamespace: true
 
 ---
 apiVersion: pipecd.dev/v1beta1
