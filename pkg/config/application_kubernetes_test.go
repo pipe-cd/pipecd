@@ -97,8 +97,7 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback:        newBoolPointer(true),
-					AutoCreateNamespace: false,
+					AutoRollback: newBoolPointer(true),
 				},
 				TrafficRouting: &KubernetesTrafficRouting{
 					Method: KubernetesTrafficRoutingMethodPodSelector,
@@ -136,8 +135,7 @@ func TestKubernetesApplicationConfig(t *testing.T) {
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback:        newBoolPointer(true),
-					AutoCreateNamespace: false,
+					AutoRollback: newBoolPointer(true),
 				},
 				VariantLabel: KubernetesVariantLabel{
 					Key:           "pipecd.dev/variant",

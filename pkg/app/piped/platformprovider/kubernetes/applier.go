@@ -70,7 +70,7 @@ func (a *applier) ApplyManifest(ctx context.Context, manifest Manifest) error {
 			a.platformProvider.KubeConfigPath,
 			a.getNamespaceToRun(manifest.Key),
 		)
-		if err != nil && !errors.Is(err, errReplaceAlreadyExists) {
+		if err != nil && !errors.Is(err, errResourceAlreadyExists) {
 			return err
 		}
 	}
@@ -98,7 +98,7 @@ func (a *applier) CreateManifest(ctx context.Context, manifest Manifest) error {
 			a.platformProvider.KubeConfigPath,
 			a.getNamespaceToRun(manifest.Key),
 		)
-		if err != nil && !errors.Is(err, errReplaceAlreadyExists) {
+		if err != nil && !errors.Is(err, errResourceAlreadyExists) {
 			return err
 		}
 	}

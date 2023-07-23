@@ -315,8 +315,7 @@ func TestGenericTriggerConfiguration(t *testing.T) {
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback:        newBoolPointer(true),
-					AutoCreateNamespace: false,
+					AutoRollback: newBoolPointer(true),
 				},
 				VariantLabel: KubernetesVariantLabel{
 					Key:           "pipecd.dev/variant",
@@ -367,8 +366,7 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback:        newBoolPointer(true),
-					AutoCreateNamespace: false,
+					AutoRollback: newBoolPointer(true),
 				},
 				VariantLabel: KubernetesVariantLabel{
 					Key:           "pipecd.dev/variant",
@@ -397,8 +395,7 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback:        newBoolPointer(false),
-					AutoCreateNamespace: false,
+					AutoRollback: newBoolPointer(false),
 				},
 				VariantLabel: KubernetesVariantLabel{
 					Key:           "pipecd.dev/variant",
@@ -497,8 +494,7 @@ func TestGenericPostSyncConfiguration(t *testing.T) {
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback:        newBoolPointer(true),
-					AutoCreateNamespace: false,
+					AutoRollback: newBoolPointer(true),
 				},
 				VariantLabel: KubernetesVariantLabel{
 					Key:           "pipecd.dev/variant",
@@ -618,8 +614,7 @@ func TestGenericAnalysisConfiguration(t *testing.T) {
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback:        newBoolPointer(true),
-					AutoCreateNamespace: false,
+					AutoRollback: newBoolPointer(true),
 				},
 				VariantLabel: KubernetesVariantLabel{
 					Key:           "pipecd.dev/variant",
