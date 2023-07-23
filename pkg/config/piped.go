@@ -642,7 +642,7 @@ type PlatformProviderTerraformConfig struct {
 	// 'image_id_list=["ami-abc123","ami-def456"]'
 	// 'image_id_map={"us-east-1":"ami-abc123","us-east-2":"ami-def456"}'
 	Vars []string `json:"vars,omitempty"`
-	// Enable drift detection. 
+	// Enable drift detection.
 	// TODO: This is a temporary option because Terraform drift detection is buggy and has performace issues. This will be possibly removed in the future release.
 	DriftDetectionEnabled *bool `json:"driftDetectionEnabled" default:"true"`
 }
@@ -849,18 +849,24 @@ type AnalysisProviderDatadogConfig struct {
 	APIKeyFile string `json:"apiKeyFile"`
 	// Required: The path to the application key file.
 	ApplicationKeyFile string `json:"applicationKeyFile"`
-	// Optional: API Key for Datadog API server.
-	APIKey string `json:"apiKey,omitempty"`
-	// Optional: Application Key for Datadog API server.
-	ApplicationKey string `json:"applicationKey,omitempty"`
+	// Base64 API Key for Datadog API server.
+	APIKeyData string `json:"apiKeyData,omitempty"`
+	// Base64 Application Key for Datadog API server.
+	ApplicationKeyData string `json:"applicationKeyData,omitempty"`
 }
 
 func (a *AnalysisProviderDatadogConfig) Validate() error {
-	if a.APIKeyFile == "" && a.APIKey == "" {
-		return fmt.Errorf("datadog analysis provider requires the api key or file")
+	if a.APIKeyFile == "" && a.APIKeyData == "" {
+		return fmt.Errorf("either datadog APIKeyFile or APIKeyData must be set")
 	}
-	if a.ApplicationKeyFile == "" && a.ApplicationKey == "" {
-		return fmt.Errorf("datadog analysis provider requires the application key or file")
+	if a.ApplicationKeyFile == "" && a.ApplicationKeyData == "" {
+		return fmt.Errorf("either datadog ApplicationKeyFile or ApplicationKeyData must be set")
+	}
+	if a.APIKeyData != "" && a.APIKeyFile != "" {
+		return fmt.Errorf("only datadog APIKeyFile or APIKeyData can be set")
+	}
+	if a.ApplicationKeyData != "" && a.ApplicationKeyFile != "" {
+		return fmt.Errorf("only datadog ApplicationKeyFile or ApplicationKeyData can be set")
 	}
 	return nil
 }
@@ -872,13 +878,15 @@ func (a *AnalysisProviderDatadogConfig) Mask() {
 	if len(a.ApplicationKeyFile) != 0 {
 		a.ApplicationKeyFile = maskString
 	}
-	if len(a.APIKey) != 0 {
-		a.APIKey = maskString
+	if len(a.APIKeyData) != 0 {
+		a.APIKeyData = maskString
 	}
-	if len(a.ApplicationKey) != 0 {
-		a.ApplicationKey = maskString
+	if len(a.ApplicationKeyData) != 0 {
+		a.ApplicationKeyData = maskString
 	}
 }
+
+// func(a *AnalysisProviderDatadogConfig)
 
 type AnalysisProviderStackdriverConfig struct {
 	// The path to the service account file.
