@@ -424,8 +424,7 @@ func TestTrueByDefaultBoolConfiguration(t *testing.T) {
 					},
 				},
 				Input: KubernetesDeploymentInput{
-					AutoRollback:        newBoolPointer(true),
-					AutoCreateNamespace: true,
+					AutoRollback: newBoolPointer(true),
 				},
 				VariantLabel: KubernetesVariantLabel{
 					Key:           "pipecd.dev/variant",
