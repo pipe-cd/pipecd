@@ -6,4 +6,3 @@ spec:
       disabled: false
   input:
     autoRollback: false
-    autoCreateNamespace: false

@@ -37,4 +37,3 @@ spec:
     helmValueFiles:
     - values.yaml
     helmVersion: 3.1.1
-    autoCreateNamespace: false
