@@ -217,8 +217,8 @@ func TestPipedConfig(t *testing.T) {
 						{
 							Name: "integration-slack-api",
 							Slack: &NotificationReceiverSlack{
-								OAuthToken: "token",
-								ChannelID:  "testid",
+								OAuthTokenData: "token",
+								ChannelID:      "testid",
 							},
 						},
 						{
@@ -231,7 +231,7 @@ func TestPipedConfig(t *testing.T) {
 						{
 							Name: "integration-slack-api-with-mentioned-accounts",
 							Slack: &NotificationReceiverSlack{
-								OAuthToken:        "token",
+								OAuthTokenData:    "token",
 								ChannelID:         "testid",
 								MentionedAccounts: []string{"user1", "user2"},
 							},
@@ -370,19 +370,45 @@ func TestPipedSlackNotificationValidate(t *testing.T) {
 		wantErr              bool
 	}{
 		{
-			name: "both hook url and oauth token is set",
+			name: "both hook url and oauth token data is set",
 			notificationReceiver: &NotificationReceiverSlack{
-				HookURL:    "https://slack.com/dev",
-				OAuthToken: "token",
-				ChannelID:  "testid",
+				HookURL:        "https://slack.com/dev",
+				OAuthTokenData: "token",
+				ChannelID:      "testid",
 			},
 			wantErr: true,
 		},
 		{
-			name: "oauth token is set, but channel id is empty",
+			name: "both hook url and oauth token file is set",
 			notificationReceiver: &NotificationReceiverSlack{
-				OAuthToken: "token",
-				ChannelID:  "",
+				HookURL:        "https://slack.com/dev",
+				OAuthTokenFile: "foo/bar",
+				ChannelID:      "testid",
+			},
+			wantErr: true,
+		},
+		{
+			name: "oauth token data is set, but channel id is empty",
+			notificationReceiver: &NotificationReceiverSlack{
+				OAuthTokenData: "token",
+				ChannelID:      "",
+			},
+			wantErr: true,
+		},
+		{
+			name: "oauth token file is set, but channel id is empty",
+			notificationReceiver: &NotificationReceiverSlack{
+				OAuthTokenFile: "foo/bar",
+				ChannelID:      "",
+			},
+			wantErr: true,
+		},
+		{
+			name: "both oauth token data and file are set",
+			notificationReceiver: &NotificationReceiverSlack{
+				OAuthTokenData: "token",
+				OAuthTokenFile: "foo/bar",
+				ChannelID:      "testid",
 			},
 			wantErr: true,
 		},
@@ -567,7 +593,10 @@ func TestPipedConfigMask(t *testing.T) {
 						{
 							Name: "foo",
 							Slack: &NotificationReceiverSlack{
-								HookURL: "foo",
+								HookURL:        "foo",
+								OAuthTokenData: "foo",
+								OAuthTokenFile: "foo/bar",
+								ChannelID:      "testid",
 							},
 							Webhook: &NotificationReceiverWebhook{
 								URL:                "foo",
@@ -725,7 +754,10 @@ func TestPipedConfigMask(t *testing.T) {
 						{
 							Name: "foo",
 							Slack: &NotificationReceiverSlack{
-								HookURL: maskString,
+								HookURL:        maskString,
+								ChannelID:      "testid",
+								OAuthTokenData: maskString,
+								OAuthTokenFile: "foo/bar",
 							},
 							Webhook: &NotificationReceiverWebhook{
 								URL:                maskString,

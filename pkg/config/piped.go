@@ -642,7 +642,7 @@ type PlatformProviderTerraformConfig struct {
 	// 'image_id_list=["ami-abc123","ami-def456"]'
 	// 'image_id_map={"us-east-1":"ami-abc123","us-east-2":"ami-def456"}'
 	Vars []string `json:"vars,omitempty"`
-	// Enable drift detection. 
+	// Enable drift detection.
 	// TODO: This is a temporary option because Terraform drift detection is buggy and has performace issues. This will be possibly removed in the future release.
 	DriftDetectionEnabled *bool `json:"driftDetectionEnabled" default:"true"`
 }
@@ -928,7 +928,8 @@ func (n *NotificationReceiver) Mask() {
 
 type NotificationReceiverSlack struct {
 	HookURL           string   `json:"hookURL"`
-	OAuthToken        string   `json:"oauthToken"`
+	OAuthTokenData    string   `json:"oauthTokenData"`
+	OAuthTokenFile    string   `json:"oauthTokenFile"`
 	ChannelID         string   `json:"channelID"`
 	MentionedAccounts []string `json:"mentionedAccounts,omitempty"`
 }
@@ -937,8 +938,8 @@ func (n *NotificationReceiverSlack) Mask() {
 	if len(n.HookURL) != 0 {
 		n.HookURL = maskString
 	}
-	if len(n.OAuthToken) != 0 {
-		n.OAuthToken = maskString
+	if len(n.OAuthTokenData) != 0 {
+		n.OAuthTokenData = maskString
 	}
 }
 
@@ -951,14 +952,17 @@ func (n *NotificationReceiverSlack) Validate() error {
 	if len(mentionedAccounts) > 0 {
 		n.MentionedAccounts = mentionedAccounts
 	}
-	if n.HookURL != "" && (n.OAuthToken != "" || n.ChannelID != "") {
-		return errors.New("only one of hookURL or oauthToken and channelID should be used")
+	if n.HookURL != "" && (n.OAuthTokenFile != "" || n.OAuthTokenData != "" || n.ChannelID != "") {
+		return errors.New("only one of hookURL or oauthTokenData and oauthTokenFile and channelID should be used")
 	}
 	if n.HookURL != "" {
 		return nil
 	}
-	if n.OAuthToken == "" || n.ChannelID == "" {
-		return errors.New("missing oauthToken or channelID configuration")
+	if n.ChannelID == "" || (n.OAuthTokenFile == "" && n.OAuthTokenData == "") {
+		return errors.New("missing channelID or oauthTokenData and oauthTokenFile configuration")
+	}
+	if n.OAuthTokenFile != "" && n.OAuthTokenData != "" {
+		return errors.New("only either oauthTokenData or oauthTokenFile can be set")
 	}
 	return nil
 }

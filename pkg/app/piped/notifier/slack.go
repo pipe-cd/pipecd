@@ -17,10 +17,12 @@ package notifier
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -51,6 +53,22 @@ type slack struct {
 }
 
 func newSlackSender(name string, cfg config.NotificationReceiverSlack, webURL string, logger *zap.Logger) *slack {
+	var oauthtoken string
+	if cfg.OAuthTokenData != "" {
+		a, err := base64.StdEncoding.DecodeString(cfg.OAuthTokenData)
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to decode the oauth token data: %v", err))
+			return nil
+		}
+		oauthtoken = string(a)
+	}
+	if cfg.OAuthTokenFile != "" {
+		a, err := os.ReadFile(cfg.OAuthTokenFile)
+		if err != nil {
+			logger.Error(fmt.Sprintf("failed to read the oauth token file: %v", err))
+		}
+		oauthtoken = string(a)
+	}
 	return &slack{
 		name:   name,
 		config: cfg,
@@ -58,7 +76,7 @@ func newSlackSender(name string, cfg config.NotificationReceiverSlack, webURL st
 		httpClient: &http.Client{
 			Timeout: 5 * time.Second,
 		},
-		slackClient: slackgo.New(cfg.OAuthToken),
+		slackClient: slackgo.New(oauthtoken),
 		eventCh:     make(chan model.NotificationEvent, 100),
 		logger:      logger.Named("slack"),
 	}
@@ -110,11 +128,15 @@ func (s *slack) sendEvent(ctx context.Context, event model.NotificationEvent) {
 		}
 		return
 	}
-	if len(s.config.OAuthToken) != 0 {
+	if len(s.config.OAuthTokenData) != 0 {
 		if err := s.sendMessageViaAPI(ctx, msg); err != nil {
-			s.logger.Error(fmt.Sprintf("unable to send notification to slack: %v", err))
+			s.logger.Error(fmt.Sprintf("unable to send notification to slack by oauthTokenData: %v", err))
 		}
 		return
+	}
+	if len(s.config.OAuthTokenFile) != 0 {
+		if err := s.sendMessageViaAPI(ctx, msg); err != nil {
+			s.logger.Error(fmt.Sprint("unable to send notification to slack by oauthTokenFile: %v", err))
 	}
 }
 
