@@ -28,20 +28,6 @@ echo "Prepare version docs ${VERSION}"
 
 CONTENT_DIR=docs/content/en
 
-# Update $CONTENT_DIR/docs
-rm -rf $CONTENT_DIR/docs
-cp -rf $CONTENT_DIR/docs-dev $CONTENT_DIR/docs
-cat <<EOT > $CONTENT_DIR/docs/_index.md
----
-title: "Welcome to PipeCD"
-linkTitle: "Documentation"
-weight: 1
-menu:
-  main:
-    weight: 20
----
-EOT
-
 # Create new $CONTENT_DIR/docs-$VERSION
 rm -rf $CONTENT_DIR/docs-$VERSION
 cp -rf $CONTENT_DIR/docs-dev $CONTENT_DIR/docs-$VERSION

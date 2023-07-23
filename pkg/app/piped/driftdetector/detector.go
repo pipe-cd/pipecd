@@ -132,6 +132,9 @@ func NewDetector(
 			))
 
 		case model.PlatformProviderTerraform:
+			if !*cp.TerraformConfig.DriftDetectionEnabled {
+				continue
+			}
 			sg, ok := stateGetter.TerraformGetter(cp.Name)
 			if !ok {
 				return nil, fmt.Errorf(format, cp.Name)

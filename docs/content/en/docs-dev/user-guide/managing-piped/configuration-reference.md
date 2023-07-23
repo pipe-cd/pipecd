@@ -110,6 +110,7 @@ Must be one of the following structs:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | vars | []string | List of variables that will be set directly on terraform commands with `-var` flag. The variable must be formatted by `key=value`. | No |
+| driftDetectionEnabled | bool | Enable drift detection. This is a temporary option and will be possibly removed in the future release. Default is `true` | No |
 
 ### PlatformProviderCloudRunConfig
 

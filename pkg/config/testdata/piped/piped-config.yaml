@@ -64,6 +64,7 @@ spec:
         vars:
           - "project=gcp-project"
           - "region=us-centra1"
+        driftDetectionEnabled: false
 
     - name: cloudrun
       type: CLOUDRUN

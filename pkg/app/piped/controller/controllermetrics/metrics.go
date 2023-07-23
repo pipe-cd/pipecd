@@ -21,6 +21,8 @@ import (
 
 const (
 	deploymentIDKey     = "deployment"
+	applicationIDKey    = "application_id"
+	applicationNameKey  = "application_name"
 	applicationKindKey  = "application_kind"
 	platformProviderKey = "platform_provider"
 	deploymentStatusKey = "status"
@@ -32,16 +34,16 @@ var (
 			Name: "deployment_status",
 			Help: "The current status of deployment. 1 for current status, 0 for others.",
 		},
-		[]string{deploymentIDKey, applicationKindKey, platformProviderKey, deploymentStatusKey},
+		[]string{deploymentIDKey, applicationIDKey, applicationNameKey, applicationKindKey, platformProviderKey, deploymentStatusKey},
 	)
 )
 
-func UpdateDeploymentStatus(id string, status model.DeploymentStatus, applicationKind model.ApplicationKind, platformProvider string) {
+func UpdateDeploymentStatus(d *model.Deployment, status model.DeploymentStatus) {
 	for name, value := range model.DeploymentStatus_value {
 		if model.DeploymentStatus(value) == status {
-			deploymentStatus.WithLabelValues(id, applicationKind.String(), platformProvider, name).Set(1)
+			deploymentStatus.WithLabelValues(d.Id, d.ApplicationId, d.ApplicationName, d.Kind.String(), d.PlatformProvider, name).Set(1)
 		} else {
-			deploymentStatus.WithLabelValues(id, applicationKind.String(), platformProvider, name).Set(0)
+			deploymentStatus.WithLabelValues(d.Id, d.ApplicationId, d.ApplicationName, d.Kind.String(), d.PlatformProvider, name).Set(0)
 		}
 	}
 }

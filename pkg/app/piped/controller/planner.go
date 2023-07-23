@@ -189,7 +189,7 @@ func (p *planner) Run(ctx context.Context) error {
 	}
 
 	defer func() {
-		controllermetrics.UpdateDeploymentStatus(p.deployment.Id, p.doneDeploymentStatus, p.deployment.Kind, p.deployment.PlatformProvider)
+		controllermetrics.UpdateDeploymentStatus(p.deployment, p.doneDeploymentStatus)
 	}()
 
 	planner, ok := p.plannerRegistry.Planner(p.deployment.Kind)
