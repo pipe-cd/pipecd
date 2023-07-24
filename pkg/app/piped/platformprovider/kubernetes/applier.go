@@ -64,6 +64,17 @@ func (a *applier) ApplyManifest(ctx context.Context, manifest Manifest) error {
 		return a.initErr
 	}
 
+	if a.input.AutoCreateNamespace {
+		err := a.kubectl.CreateNamespace(
+			ctx,
+			a.platformProvider.KubeConfigPath,
+			a.getNamespaceToRun(manifest.Key),
+		)
+		if err != nil && !errors.Is(err, errResourceAlreadyExists) {
+			return err
+		}
+	}
+
 	return a.kubectl.Apply(
 		ctx,
 		a.platformProvider.KubeConfigPath,
@@ -79,6 +90,17 @@ func (a *applier) CreateManifest(ctx context.Context, manifest Manifest) error {
 	})
 	if a.initErr != nil {
 		return a.initErr
+	}
+
+	if a.input.AutoCreateNamespace {
+		err := a.kubectl.CreateNamespace(
+			ctx,
+			a.platformProvider.KubeConfigPath,
+			a.getNamespaceToRun(manifest.Key),
+		)
+		if err != nil && !errors.Is(err, errResourceAlreadyExists) {
+			return err
+		}
 	}
 
 	return a.kubectl.Create(
