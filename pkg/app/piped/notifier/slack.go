@@ -52,22 +52,24 @@ type slack struct {
 	logger      *zap.Logger
 }
 
-func newSlackSender(name string, cfg config.NotificationReceiverSlack, webURL string, logger *zap.Logger) *slack {
+func newSlackSender(name string, cfg config.NotificationReceiverSlack, webURL string, logger *zap.Logger) (*slack, error) {
 	var oauthtoken string
 	if cfg.OAuthTokenData != "" {
-		a, err := base64.StdEncoding.DecodeString(cfg.OAuthTokenData)
+		OAuthTokenData, err := base64.StdEncoding.DecodeString(cfg.OAuthTokenData)
 		if err != nil {
-			logger.Error(fmt.Sprintf("failed to decode the oauth token data: %v", err))
-			return nil
+			return nil, fmt.Errorf("failed to decode the oauth token data: %w", err)
 		}
-		oauthtoken = string(a)
+		oauthtoken = string(OAuthTokenData)
+	}
+	if cfg.OauthToken != "" {
+		oauthtoken = cfg.OauthToken
 	}
 	if cfg.OAuthTokenFile != "" {
-		a, err := os.ReadFile(cfg.OAuthTokenFile)
+		OAuthTokenFileData, err := os.ReadFile(cfg.OAuthTokenFile)
 		if err != nil {
-			logger.Error(fmt.Sprintf("failed to read the oauth token file: %v", err))
+			return nil, fmt.Errorf("failed to read the oauth token file: %w", err)
 		}
-		oauthtoken = string(a)
+		oauthtoken = string(OAuthTokenFileData)
 	}
 	return &slack{
 		name:   name,
@@ -79,7 +81,7 @@ func newSlackSender(name string, cfg config.NotificationReceiverSlack, webURL st
 		slackClient: slackgo.New(oauthtoken),
 		eventCh:     make(chan model.NotificationEvent, 100),
 		logger:      logger.Named("slack"),
-	}
+	}, nil
 }
 
 func (s *slack) Run(ctx context.Context) error {
@@ -130,13 +132,15 @@ func (s *slack) sendEvent(ctx context.Context, event model.NotificationEvent) {
 	}
 	if len(s.config.OAuthTokenData) != 0 {
 		if err := s.sendMessageViaAPI(ctx, msg); err != nil {
-			s.logger.Error(fmt.Sprintf("unable to send notification to slack by oauthTokenData: %v", err))
+			s.logger.Error(fmt.Sprintf("unable to send notification to slack using oauthTokenData: %v", err))
 		}
 		return
 	}
 	if len(s.config.OAuthTokenFile) != 0 {
 		if err := s.sendMessageViaAPI(ctx, msg); err != nil {
-			s.logger.Error(fmt.Sprint("unable to send notification to slack by oauthTokenFile: %v", err))
+			s.logger.Error(fmt.Sprintf("unable to send notification to slack using oauthTokenFile: %v", err))
+		}
+		return
 	}
 }
 
