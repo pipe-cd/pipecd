@@ -15,6 +15,7 @@
 package factory
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
 	"strings"
@@ -65,6 +66,20 @@ func NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg
 				return nil, fmt.Errorf("failed to read the application-key file: %w", err)
 			}
 			applicationKey = strings.TrimSpace(string(a))
+		}
+		if cfg.APIKeyData != "" {
+			a, err := base64.StdEncoding.DecodeString(cfg.APIKeyData)
+			if err != nil {
+				return nil, fmt.Errorf("failed to decode the api-key data: %w", err)
+			}
+			apiKey = string(a)
+		}
+		if cfg.ApplicationKeyData != "" {
+			a, err := base64.StdEncoding.DecodeString(cfg.ApplicationKeyData)
+			if err != nil {
+				return nil, fmt.Errorf("failed to decode the application-key data: %w", err)
+			}
+			applicationKey = string(a)
 		}
 		options := []datadog.Option{
 			datadog.WithLogger(logger),
