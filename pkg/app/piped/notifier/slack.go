@@ -305,7 +305,7 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId, getAccountsAsString(s.config.MentionedAccounts))
 
 	case model.NotificationEventType_EVENT_APPLICATION_SYNCED:
-		md := event.Metadata.(*model.NotificationEventApplicationOutOfSync)
+		md := event.Metadata.(*model.NotificationEventApplicationSynced)
 		title = fmt.Sprintf("Application %s has been synced", md.Application.Name)
 		text = md.State.Reason
 		generateSyncEventData(md.Application, md.State)

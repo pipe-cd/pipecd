@@ -54,6 +54,10 @@ type apiClient interface {
 	ReportApplicationSyncState(ctx context.Context, req *pipedservice.ReportApplicationSyncStateRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationSyncStateResponse, error)
 }
 
+type notifier interface {
+	Notify(event model.NotificationEvent)
+}
+
 type secretDecrypter interface {
 	Decrypt(string) (string, error)
 }
@@ -64,6 +68,7 @@ type Detector interface {
 
 type detector struct {
 	apiClient  apiClient
+	notifier   notifier
 	detectors  []providerDetector
 	syncStates map[string]model.ApplicationSyncState
 	mu         sync.RWMutex
@@ -80,6 +85,7 @@ func NewDetector(
 	gitClient gitClient,
 	stateGetter livestatestore.Getter,
 	apiClient apiClient,
+	notifier notifier,
 	appManifestsCache cache.Cache,
 	cfg *config.PipedSpec,
 	sd secretDecrypter,
@@ -88,6 +94,7 @@ func NewDetector(
 
 	d := &detector{
 		apiClient:  apiClient,
+		notifier:   notifier,
 		detectors:  make([]providerDetector, 0, len(cfg.PlatformProviders)),
 		syncStates: make(map[string]model.ApplicationSyncState),
 		logger:     logger.Named("drift-detector"),
@@ -204,6 +211,8 @@ func (d *detector) ReportApplicationSyncState(ctx context.Context, appID string,
 		)
 		return err
 	}
+	// TODO notify a event of NotificationEventType_EVENT_APPLICATION_OUT_OF_SYNC
+	// TODO notify a event of NotificationEventType_EVENT_APPLICATION_SYNCED
 
 	d.mu.Lock()
 	d.syncStates[appID] = state

@@ -373,6 +373,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			gitClient,
 			liveStateGetter,
 			apiClient,
+			notifier,
 			appManifestsCache,
 			cfg,
 			decrypter,
