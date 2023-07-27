@@ -63,7 +63,7 @@ With this simple code, you can define the configuration information for an appli
 
 For more details, check out the [documentation](/docs/user-guide/terraform-module-pipecd/) and the [example](https://github.com/pipe-cd/terraform-provider-pipecd/tree/main/example) in the repository.
 
-Please watch our Community Meeting #2. [@arabian9ts](https://github.com/arabian9ts), a maintainer of terraform-module-pipecd is explaining how to add an application step by step.
+Please watch our Community Meeting #2. [@arabian9ts](https://github.com/arabian9ts), a maintainer of terraform-module-pipecd explaned how to add an application step by step.
 
 {{< youtube B8NWgzLNe_o>}}
 
