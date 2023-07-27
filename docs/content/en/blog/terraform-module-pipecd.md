@@ -1,5 +1,5 @@
 ---
-date: 2023-07-20
+date: 2023-07-27
 title: "Terraform Module for PipeCD is Out!"
 linkTitle: "Terraform Module for PipeCD"
 weight: 991
