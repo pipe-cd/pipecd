@@ -1,7 +1,7 @@
 ---
 title: "Examples"
 linkTitle: "Examples"
-weight: 10
+weight: 11
 description: >
   Some examples of PipeCD in action!
 ---
