@@ -217,8 +217,8 @@ func TestPipedConfig(t *testing.T) {
 						{
 							Name: "integration-slack-api",
 							Slack: &NotificationReceiverSlack{
-								OAuthTokenData: "token",
-								ChannelID:      "testid",
+								OAuthToken: "token",
+								ChannelID:  "testid",
 							},
 						},
 						{
@@ -230,6 +230,21 @@ func TestPipedConfig(t *testing.T) {
 						},
 						{
 							Name: "integration-slack-api-with-mentioned-accounts",
+							Slack: &NotificationReceiverSlack{
+								OAuthToken:        "token",
+								ChannelID:         "testid",
+								MentionedAccounts: []string{"user1", "user2"},
+							},
+						},
+						{
+							Name: "integration-slack-api-with-oauthTokenData",
+							Slack: &NotificationReceiverSlack{
+								OAuthTokenData: "token",
+								ChannelID:      "testid",
+							},
+						},
+						{
+							Name: "integration-slack-api-with-oauthTokenData-and-mentioned-accounts",
 							Slack: &NotificationReceiverSlack{
 								OAuthTokenData:    "token",
 								ChannelID:         "testid",

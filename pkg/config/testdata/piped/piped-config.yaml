@@ -121,7 +121,7 @@ spec:
           hookURL: https://slack.com/prod
       - name: integration-slack-api
         slack:
-          oauthTokenData: token
+          oauthToken: token
           channelID: testid
       - name: hookurl-with-mentioned-accounts
         slack:
@@ -130,6 +130,17 @@ spec:
             - 'user1'
             - '@user2'
       - name: integration-slack-api-with-mentioned-accounts
+        slack:
+          oauthToken: token
+          channelID: testid
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
+      - name: integration-slack-api-with-oauthTokenData
+        slack:
+          oauthTokenData: token
+          channelID: testid
+      - name: integration-slack-api-with-oauthTokenData-and-mentioned-accounts
         slack:
           oauthTokenData: token
           channelID: testid

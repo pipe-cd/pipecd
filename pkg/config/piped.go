@@ -984,10 +984,10 @@ func (n *NotificationReceiverSlack) Validate() error {
 		return errors.New("either HookURL or OAuthToken and OAuthTokenData, OAuthTokenFile and channelID must be set")
 	}
 	if n.HookURL == "" && n.OAuthToken == "" && n.OAuthTokenFile == "" && n.OAuthTokenData == "" {
-		return errors.New("either hookURL or OAuthToken and OAuthTokenData and oauthTokenFile must be set")
+		return errors.New("either hookURL or OAuthToken and OAuthTokenData and OAuthTokenFile must be set")
 	}
 	if n.HookURL == "" && ((n.OAuthTokenData != "" || n.OAuthToken != "") && n.OAuthTokenFile != "") {
-		return errors.New("only one of OAuthToken or OAuthTokenData or oauthTokenFile should be used")
+		return errors.New("only one of OAuthToken or OAuthTokenData or OAuthTokenFile should be used")
 	}
 	if n.OAuthToken != "" && n.OAuthTokenData != "" {
 		return errors.New("only one of OAuthToken or OAuthTokenData should be used")
