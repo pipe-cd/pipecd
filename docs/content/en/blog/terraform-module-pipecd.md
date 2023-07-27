@@ -68,6 +68,6 @@ Please watch our Community Meeting #2. [@arabian9ts](https://github.com/arabian9
 {{< youtube B8NWgzLNe_o>}}
 
 ## Born in the Community
-This project was originally developed by [@arabian9ts](https://github.com/arabian9ts), [@kurochan](https://github.com/kurochan), and [@sivchari](https://github.com/sivchari) to make the PipeCD's management better, and later donated to the pipe-cd organization. Many thanks for their contribution! (And They stay to be the maintainer of the projects to improve it more. How amazing is it?)
+This project was originally developed by [@arabian9ts](https://github.com/arabian9ts), [@kurochan](https://github.com/kurochan), and [@sivchari](https://github.com/sivchari) to make the PipeCD's management better, and later donated to the pipe-cd organization. Many thanks for their contribution! (And they stay to be the maintainer of the projects to improve it more. How amazing is it?)
 
 PipeCD is supported by the power of such community efforts. We encourage everyone to join the PipeCD community and participate.
