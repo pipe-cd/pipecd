@@ -2,7 +2,7 @@
 date: 2023-07-27
 title: "Terraform Module for PipeCD is Out!"
 linkTitle: "Terraform Module for PipeCD"
-weight: 991
+weight: 990
 description: "In this post, we announce the release of Terraform module for PipeCD."
 author: Kenta Kozuka ([@kentakozuka](https://twitter.com/kenta_kozuka))
 ---
