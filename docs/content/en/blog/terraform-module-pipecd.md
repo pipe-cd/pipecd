@@ -1,9 +1,9 @@
 ---
 date: 2023-07-20
 title: "Terraform Module for PipeCD is Out!"
-linkTitle: "Terraform Module for PipeCD is Out"
+linkTitle: "Terraform Module for PipeCD"
 weight: 991
-description: "Terraform Module for PipeCD is Out"
+description: "In this post, we announce the release of Terraform module for PipeCD."
 author: Kenta Kozuka ([@kentakozuka](https://twitter.com/kenta_kozuka))
 ---
 
@@ -61,7 +61,7 @@ resource "pipecd_application" "main" {
 
 With this simple code, you can define the configuration information for an application. Then, just use the `terraform` command to perform an `apply`.
 
-For more details, check out the [documentation]() and the [example](https://github.com/pipe-cd/terraform-provider-pipecd/tree/main/example) in the repository.
+For more details, check out the [documentation](/docs/user-guide/terraform-module-pipecd/) and the [example](https://github.com/pipe-cd/terraform-provider-pipecd/tree/main/example) in the repository.
 
 Please watch our Community Meeting #2. [@arabian9ts](https://github.com/arabian9ts), a maintainer of terraform-module-pipecd is explaining how to add an application step by step.
 
