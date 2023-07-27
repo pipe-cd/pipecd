@@ -190,9 +190,9 @@ func (d *detector) Run(ctx context.Context) error {
 	return nil
 }
 
-func (d *detector) ReportApplicationSyncState(ctx context.Context, appID string, state model.ApplicationSyncState) error {
+func (d *detector) ReportApplicationSyncState(ctx context.Context, app model.Application, state model.ApplicationSyncState) error {
 	d.mu.RLock()
-	curState, ok := d.syncStates[appID]
+	curState, ok := d.syncStates[app.Id]
 	d.mu.RUnlock()
 
 	if ok && !curState.HasChanged(state) {
@@ -200,22 +200,41 @@ func (d *detector) ReportApplicationSyncState(ctx context.Context, appID string,
 	}
 
 	_, err := d.apiClient.ReportApplicationSyncState(ctx, &pipedservice.ReportApplicationSyncStateRequest{
-		ApplicationId: appID,
+		ApplicationId: app.Id,
 		State:         &state,
 	})
 	if err != nil {
 		d.logger.Error("failed to report application sync state",
-			zap.String("application-id", appID),
+			zap.String("application-id", app.Id),
 			zap.Any("state", state),
 			zap.Error(err),
 		)
 		return err
 	}
-	// TODO notify a event of NotificationEventType_EVENT_APPLICATION_OUT_OF_SYNC
-	// TODO notify a event of NotificationEventType_EVENT_APPLICATION_SYNCED
+
+	defer func() {
+		switch state.Status {
+		case model.ApplicationSyncStatus_SYNCED:
+			d.notifier.Notify(model.NotificationEvent{
+				Type: model.NotificationEventType_EVENT_APPLICATION_SYNCED,
+				Metadata: &model.NotificationEventApplicationSynced{
+					Application: &app,
+					State:       &state,
+				},
+			})
+		case model.ApplicationSyncStatus_OUT_OF_SYNC:
+			d.notifier.Notify(model.NotificationEvent{
+				Type: model.NotificationEventType_EVENT_APPLICATION_OUT_OF_SYNC,
+				Metadata: &model.NotificationEventApplicationOutOfSync{
+					Application: &app,
+					State:       &state,
+				},
+			})
+		}
+	}()
 
 	d.mu.Lock()
-	d.syncStates[appID] = state
+	d.syncStates[app.Id] = state
 	d.mu.Unlock()
 
 	return nil

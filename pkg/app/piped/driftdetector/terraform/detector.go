@@ -48,7 +48,7 @@ type secretDecrypter interface {
 }
 
 type reporter interface {
-	ReportApplicationSyncState(ctx context.Context, appID string, state model.ApplicationSyncState) error
+	ReportApplicationSyncState(ctx context.Context, app model.Application, state model.ApplicationSyncState) error
 }
 
 type Detector interface {
@@ -278,7 +278,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return err
 	}
 
-	return d.reporter.ReportApplicationSyncState(ctx, app.Id, *state)
+	return d.reporter.ReportApplicationSyncState(ctx, *app, *state)
 }
 
 func makeSyncState(r provider.PlanResult, commit string) (*model.ApplicationSyncState, error) {

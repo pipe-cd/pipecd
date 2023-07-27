@@ -47,7 +47,7 @@ type secretDecrypter interface {
 }
 
 type reporter interface {
-	ReportApplicationSyncState(ctx context.Context, appID string, state model.ApplicationSyncState) error
+	ReportApplicationSyncState(ctx context.Context, app model.Application, state model.ApplicationSyncState) error
 }
 
 type Detector interface {
@@ -219,7 +219,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 
 	state := makeSyncState(result, headCommit.Hash)
 
-	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
+	return d.reporter.ReportApplicationSyncState(ctx, *app, state)
 }
 
 func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Repo, headCommit git.Commit) (provider.ServiceManifest, error) {
