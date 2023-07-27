@@ -215,6 +215,17 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		}
 	}
 
+	generateSyncEventData := func(app *model.Application, state *model.ApplicationSyncState) {
+		state.Status.Number()
+		link = fmt.Sprintf("%s/applications/%s?project=%s", webURL, app.Id, app.ProjectId)
+		fields = []slackField{
+			{"Project", truncateText(app.ProjectId, 8), true},
+			{"Application", makeSlackLink(app.Name, link), true},
+			{"Kind", strings.ToLower(app.Kind.String()), true},
+			{"Status", strings.ToLower(state.Status.String()), true},
+		}
+	}
+
 	generatePipedEventData := func(id, name, version, project, accounts string) {
 		link = fmt.Sprintf("%s/settings/piped?project=%s", webURL, project)
 		fields = []slackField{
@@ -292,6 +303,19 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		md := event.Metadata.(*model.NotificationEventPipedStopped)
 		title = "A piped has been stopped"
 		generatePipedEventData(md.Id, md.Name, md.Version, md.ProjectId, getAccountsAsString(s.config.MentionedAccounts))
+
+	case model.NotificationEventType_EVENT_APPLICATION_SYNCED:
+		md := event.Metadata.(*model.NotificationEventApplicationOutOfSync)
+		title = fmt.Sprintf("Application %s has been synced", md.Application.Name)
+		text = md.State.Reason
+		generateSyncEventData(md.Application, md.State)
+
+	case model.NotificationEventType_EVENT_APPLICATION_OUT_OF_SYNC:
+		md := event.Metadata.(*model.NotificationEventApplicationOutOfSync)
+		title = fmt.Sprintf("Application %s is out of sync", md.Application.Name)
+		text = md.State.Reason
+		color = slackErrorColor
+		generateSyncEventData(md.Application, md.State)
 
 	// TODO: Support application type of notification event.
 	default:
