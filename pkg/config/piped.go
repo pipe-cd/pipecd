@@ -946,7 +946,7 @@ func (n *NotificationReceiver) Mask() {
 
 type NotificationReceiverSlack struct {
 	HookURL           string   `json:"hookURL"`
-	OauthToken        string   `json:"oauthToken"` // Deprecated: use oauthTokenData instead.
+	OAuthToken        string   `json:"oauthToken"` // Deprecated: We should define OAuthToken as raw string.
 	OAuthTokenData    string   `json:"oauthTokenData"`
 	OAuthTokenFile    string   `json:"oauthTokenFile"`
 	ChannelID         string   `json:"channelID"`
@@ -957,8 +957,8 @@ func (n *NotificationReceiverSlack) Mask() {
 	if len(n.HookURL) != 0 {
 		n.HookURL = maskString
 	}
-	if len(n.OauthToken) != 0 {
-		n.OauthToken = maskString
+	if len(n.OAuthToken) != 0 {
+		n.OAuthToken = maskString
 	}
 	if len(n.OAuthTokenData) != 0 {
 		n.OAuthTokenData = maskString
@@ -974,20 +974,23 @@ func (n *NotificationReceiverSlack) Validate() error {
 	if len(mentionedAccounts) > 0 {
 		n.MentionedAccounts = mentionedAccounts
 	}
-	if n.HookURL != "" && (n.OauthToken != "" || n.OAuthTokenFile != "" || n.OAuthTokenData != "" || n.ChannelID != "") {
-		return errors.New("only one of hookURL or oauthTokenData and oauthTokenFile and channelID should be used")
+	if n.HookURL != "" && (n.OAuthToken != "" || n.OAuthTokenFile != "" || n.OAuthTokenData != "" || n.ChannelID != "") {
+		return errors.New("only one of hookURL or OAuthToken, OAuthTokenData, OAuthTokenFile and channelID should be used")
 	}
 	if n.HookURL != "" {
 		return nil
 	}
-	if (n.HookURL == "" && n.ChannelID == "") || (n.OauthToken == "" && n.OAuthTokenFile == "" && n.OAuthTokenData == "") {
-		return errors.New("either hookURL or oauthTokenData and oauthTokenFile and channelID must be set")
+	if (n.HookURL == "" && n.ChannelID == "") || (n.OAuthToken == "" && n.OAuthTokenFile == "" && n.OAuthTokenData == "") {
+		return errors.New("either HookURL or OAuthToken and OAuthTokenData, OAuthTokenFile and channelID must be set")
 	}
-	if n.HookURL == "" && n.OauthToken == "" && n.OAuthTokenFile == "" && n.OAuthTokenData == "" {
-		return errors.New("either hookURL or oauthTokenData and oauthTokenFile must be set")
+	if n.HookURL == "" && n.OAuthToken == "" && n.OAuthTokenFile == "" && n.OAuthTokenData == "" {
+		return errors.New("either hookURL or OAuthToken and OAuthTokenData and oauthTokenFile must be set")
 	}
-	if n.HookURL == "" && ((n.OAuthTokenData != "" || n.OauthToken != "") && n.OAuthTokenFile != "") {
-		return errors.New("only one of oauthTokenData or oauthTokenFile should be used")
+	if n.HookURL == "" && ((n.OAuthTokenData != "" || n.OAuthToken != "") && n.OAuthTokenFile != "") {
+		return errors.New("only one of OAuthToken or OAuthTokenData or oauthTokenFile should be used")
+	}
+	if n.OAuthToken != "" && n.OAuthTokenData != "" {
+		return errors.New("only one of OAuthToken or OAuthTokenData should be used")
 	}
 	return nil
 }

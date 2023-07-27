@@ -412,6 +412,24 @@ func TestPipedSlackNotificationValidate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "both oauth token and file are set",
+			notificationReceiver: &NotificationReceiverSlack{
+				OAuthToken:     "token",
+				OAuthTokenFile: "foo/bar",
+				ChannelID:      "testid",
+			},
+			wantErr: true,
+		},
+		{
+			name: "both oauth token raw and base64 are set",
+			notificationReceiver: &NotificationReceiverSlack{
+				OAuthToken:     "token",
+				OAuthTokenData: "foo/bar",
+				ChannelID:      "testid",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
