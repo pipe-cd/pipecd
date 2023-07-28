@@ -3,10 +3,10 @@ title: "PipeCD Terraform provider"
 linkTitle: "PipeCD Terraform provider"
 weight: 9
 description: >
-  This page describes how to manage PipeCD resources with Terraform using terraform-module-pipecd.
+  This page describes how to manage PipeCD resources with Terraform using terraform-provider-pipecd.
 ---
 
-Besides using web UI and command line tool, PipeCD community also provides Terraform module, [terraform-module-pipecd](https://registry.terraform.io/providers/pipe-cd/pipecd/latest), which allows you to manage PipeCD resources.
+Besides using web UI and command line tool, PipeCD community also provides Terraform module, [terraform-provider-pipecd](https://registry.terraform.io/providers/pipe-cd/pipecd/latest), which allows you to manage PipeCD resources.
 This provider enables us to add, update, and delete PipeCD resources as  Infrastructure as Code (IaC). Storing resources as code in a version control system like Git repository ensures more reliability, security, and makes it more friendly for engineers to manage PipeCD resources with the power of Git leverage.
 
 ## Usage
@@ -65,4 +65,4 @@ resource "pipecd_application" "main" {
 
 ### You want more?
 
-We always want to add more needed resources into the Terraform module. Please let the maintainers know what resources you want to add by creating issues in the [pipe-cd/terraform-provider-pipecd](https://github.com/pipe-cd/terraform-provider-pipecd/) repository. We also welcome your pull request to contribute!
+We always want to add more needed resources into the Terraform provider. Please let the maintainers know what resources you want to add by creating issues in the [pipe-cd/terraform-provider-pipecd](https://github.com/pipe-cd/terraform-provider-pipecd/) repository. We also welcome your pull request to contribute!
