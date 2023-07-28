@@ -86,3 +86,17 @@ And give it to the `helm install` command when [installing](../../../installatio
 ```
 
 See [here](https://prometheus.io/docs/alerting/latest/configuration/) for more details on AlertManager's configuration.
+
+## Piped agent metrics
+
+| Metric | Type | Description |
+| --- | --- | --- |
+| `deployment_status` | gauge | The current status of deployment. 1 for current status, 0 for others. |
+
+## Control plane metrics
+
+All Piped's metrics are sent to the control plane so that they are also available on the control plane's metrics server.
+
+| Metric | Type | Description |
+| --- | --- | --- |
+| `insight_application_total` | gauge | Number of applications currently controlled by control plane. |
