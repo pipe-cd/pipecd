@@ -17,6 +17,7 @@ package git
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -91,6 +92,15 @@ func WithEmail(e string) Option {
 	}
 }
 
+func WithPAT(userName, userToken string) Option {
+	return func(c *client) {
+		if userName != "" && userToken != "" {
+			c.pat.userName = userName
+			c.pat.userToken = userToken
+		}
+	}
+}
+
 // NewClient creates a new CLient instance for cloning git repositories.
 // After using Clean should be called to delete cache data.
 func NewClient(opts ...Option) (Client, error) {
@@ -133,10 +143,15 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		)
 	)
 
+	remote, err := includePatRemote(ctx, remote, c.pat.userName, c.pat.userToken)
+	if err != nil {
+		return nil, err
+	}
+
 	c.lockRepo(repoID)
 	defer c.unlockRepo(repoID)
 
-	_, err := os.Stat(repoCachePath)
+	_, err = os.Stat(repoCachePath)
 	if err != nil && !os.IsNotExist(err) {
 		return nil, err
 	}
@@ -270,6 +285,18 @@ func (c *client) unlockRepo(repoID string) {
 func (c *client) envsForRepo(remote string) []string {
 	envs := c.gitEnvsByRepo[remote]
 	return append(envs, c.gitEnvs...)
+}
+
+func includePatRemote(ctx context.Context, remote, userName, userToken string) (string, error) {
+	if userName == "" || userToken == "" {
+		return remote, nil
+	}
+	u, err := parseGitURL(remote)
+	if err != nil {
+		return "", fmt.Errorf("failed to include pat: %v", err)
+	}
+	u.User = url.UserPassword(userName, userToken)
+	return u.String(), nil
 }
 
 func runGitCommand(ctx context.Context, execPath, dir string, envs []string, args ...string) ([]byte, error) {
