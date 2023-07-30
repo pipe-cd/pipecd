@@ -179,6 +179,7 @@ func (s *PipedSpec) Mask() {
 		s.PipedKeyData = maskString
 	}
 	s.Git.Mask()
+	s.Git.PersonalAccessToken.Mask()
 	for i := 0; i < len(s.ChartRepositories); i++ {
 		s.ChartRepositories[i].Mask()
 	}
@@ -394,6 +395,24 @@ func (p PipedGitPasswordAuth) Validate() error {
 		return errors.New("both userName and password must be set")
 	}
 	return nil
+}
+
+type PipedGitPersonalAccessToken struct {
+	UserName  string `json:"userName,omitempty"`
+	UserToken string `json:"userToken,omitempty"`
+}
+
+func (p PipedGitPersonalAccessToken) ShouldConfigureSSHConfig() bool {
+	return p.UserName != "" || p.UserToken != ""
+}
+
+func (p *PipedGitPersonalAccessToken) Mask() {
+	if len(p.UserName) != 0 {
+		p.UserName = maskString
+	}
+	if len(p.UserToken) != 0 {
+		p.UserToken = maskString
+	}
 }
 
 type PipedRepository struct {

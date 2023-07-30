@@ -49,6 +49,10 @@ func TestPipedConfig(t *testing.T) {
 					Username:   "username",
 					Email:      "username@email.com",
 					SSHKeyFile: "/etc/piped-secret/ssh-key",
+					PersonalAccessToken: PipedGitPersonalAccessToken{
+						UserName:  "userName",
+						UserToken: "userToken",
+					},
 				},
 				Repositories: []PipedRepository{
 					{
