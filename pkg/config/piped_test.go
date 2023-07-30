@@ -48,6 +48,10 @@ func TestPipedConfig(t *testing.T) {
 					Username:   "username",
 					Email:      "username@email.com",
 					SSHKeyFile: "/etc/piped-secret/ssh-key",
+					PersonalAccessToken: PipedGitPersonalAccessToken{
+						UserName:  "userName",
+						UserToken: "userToken",
+					},
 				},
 				Repositories: []PipedRepository{
 					{
@@ -607,6 +611,10 @@ func TestPipedConfigMask(t *testing.T) {
 					HostName:          "foo",
 					SSHKeyFile:        "foo",
 					SSHKeyData:        "foo",
+					PersonalAccessToken: PipedGitPersonalAccessToken{
+						UserName:  "foo",
+						UserToken: "foo",
+					},
 				},
 				Repositories: []PipedRepository{
 					{
@@ -770,6 +778,10 @@ func TestPipedConfigMask(t *testing.T) {
 					HostName:          "foo",
 					SSHKeyFile:        maskString,
 					SSHKeyData:        maskString,
+					PersonalAccessToken: PipedGitPersonalAccessToken{
+						UserName:  maskString,
+						UserToken: maskString,
+					},
 				},
 				Repositories: []PipedRepository{
 					{
@@ -948,6 +960,10 @@ func TestPipedSpecClone(t *testing.T) {
 					Username:   "username",
 					Email:      "username@email.com",
 					SSHKeyFile: "/etc/piped-secret/ssh-key",
+					PersonalAccessToken: PipedGitPersonalAccessToken{
+						UserName:  "userName",
+						UserToken: "userToken",
+					},
 				},
 				Repositories: []PipedRepository{
 					{
@@ -1145,6 +1161,10 @@ func TestPipedSpecClone(t *testing.T) {
 					Username:   "username",
 					Email:      "username@email.com",
 					SSHKeyFile: "/etc/piped-secret/ssh-key",
+					PersonalAccessToken: PipedGitPersonalAccessToken{
+						UserName:  "userName",
+						UserToken: "userToken",
+					},
 				},
 				Repositories: []PipedRepository{
 					{
