@@ -119,6 +119,9 @@ func (s *PipedSpec) Validate() error {
 	if s.SyncInterval < 0 {
 		return errors.New("syncInterval must be greater than or equal to 0")
 	}
+	if err := s.Git.Validate(); err != nil {
+		return err
+	}
 	for _, r := range s.ChartRepositories {
 		if err := r.Validate(); err != nil {
 			return err
@@ -176,6 +179,7 @@ func (s *PipedSpec) Mask() {
 		s.PipedKeyData = maskString
 	}
 	s.Git.Mask()
+	s.Git.PersonalAccessToken.Mask()
 	for i := 0; i < len(s.ChartRepositories); i++ {
 		s.ChartRepositories[i].Mask()
 	}
@@ -326,6 +330,9 @@ type PipedGit struct {
 	SSHKeyFile string `json:"sshKeyFile,omitempty"`
 	// Base64 encoded string of ssh-key.
 	SSHKeyData string `json:"sshKeyData,omitempty"`
+	// The personal access token.
+	// This will be used to clone the source code of the specified git repositories.
+	PersonalAccessToken PipedGitPersonalAccessToken `json:"personalAccessToken,omitempty"`
 }
 
 func (g PipedGit) ShouldConfigureSSHConfig() bool {
@@ -345,6 +352,13 @@ func (g PipedGit) LoadSSHKey() ([]byte, error) {
 	return nil, errors.New("either sshKeyFile or sshKeyData must be set")
 }
 
+func (g *PipedGit) Validate() error {
+	if g.ShouldConfigureSSHConfig() && g.PersonalAccessToken.ShouldConfigureSSHConfig() {
+		return errors.New("cannot configure both sshKeyFile and personalAccessToken")
+	}
+	return nil
+}
+
 func (g *PipedGit) Mask() {
 	if len(g.SSHConfigFilePath) != 0 {
 		g.SSHConfigFilePath = maskString
@@ -354,6 +368,24 @@ func (g *PipedGit) Mask() {
 	}
 	if len(g.SSHKeyData) != 0 {
 		g.SSHKeyData = maskString
+	}
+}
+
+type PipedGitPersonalAccessToken struct {
+	UserName  string `json:"userName,omitempty"`
+	UserToken string `json:"userToken,omitempty"`
+}
+
+func (p PipedGitPersonalAccessToken) ShouldConfigureSSHConfig() bool {
+	return p.UserName != "" || p.UserToken != ""
+}
+
+func (p *PipedGitPersonalAccessToken) Mask() {
+	if len(p.UserName) != 0 {
+		p.UserName = maskString
+	}
+	if len(p.UserToken) != 0 {
+		p.UserToken = maskString
 	}
 }
 
