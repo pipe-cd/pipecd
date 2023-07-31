@@ -259,8 +259,8 @@ Must be one of the following structs:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | hookURL | string | The hookURL of a slack channel. | Yes |
-| oauthToken | string | Deprecated [The token for slack api use.](https://api.slack.com/authentication/basics) | No |
-| oauthTokenData | string | Base64 [The token for slack api use.](https://api.slack.com/authentication/basics) | No |
+| oauthToken | string | [The token for Slack API use.](https://api.slack.com/authentication/basics) (deprecated)| No |
+| oauthTokenData | string | Base64 encoded string of [The token for Slack API use.](https://api.slack.com/authentication/basics) | No |
 | oauthTokenFile | string | The path to the oautoken file | No |
 | channelID | string | The channel id which slack api send to. | No |
 | mentionedAccounts | []string | The accounts to which slack api referes. This field supports both `@username` and `username` writing styles.| No |
