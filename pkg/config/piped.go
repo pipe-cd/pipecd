@@ -354,7 +354,7 @@ func (g PipedGit) LoadSSHKey() ([]byte, error) {
 
 func (g *PipedGit) Validate() error {
 	if g.ShouldConfigureSSHConfig() && g.PersonalAccessToken.ShouldConfigureSSHConfig() {
-		return errors.New("cannot configure both sshKeyFile and personalAccessToken")
+		return errors.New("cannot configure both sshKeyData or sshKeyFile and personalAccessToken")
 	}
 	return nil
 }
