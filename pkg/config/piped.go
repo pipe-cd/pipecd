@@ -377,7 +377,7 @@ type PipedGitPersonalAccessToken struct {
 }
 
 func (p PipedGitPersonalAccessToken) ShouldConfigureSSHConfig() bool {
-	return p.UserName != "" || p.UserToken != ""
+	return p.UserName != "" && p.UserToken != ""
 }
 
 func (p *PipedGitPersonalAccessToken) Mask() {
