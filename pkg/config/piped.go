@@ -179,7 +179,6 @@ func (s *PipedSpec) Mask() {
 		s.PipedKeyData = maskString
 	}
 	s.Git.Mask()
-	s.Git.PersonalAccessToken.Mask()
 	for i := 0; i < len(s.ChartRepositories); i++ {
 		s.ChartRepositories[i].Mask()
 	}
@@ -353,7 +352,7 @@ func (g PipedGit) LoadSSHKey() ([]byte, error) {
 }
 
 func (g *PipedGit) Validate() error {
-	if g.ShouldConfigureSSHConfig() && g.PersonalAccessToken.ShouldConfigureSSHConfig() {
+	if g.ShouldConfigureSSHConfig() && g.PersonalAccessToken.ShouldConfigurePATConfig() {
 		return errors.New("cannot configure both sshKeyData or sshKeyFile and personalAccessToken")
 	}
 	return nil
@@ -369,6 +368,12 @@ func (g *PipedGit) Mask() {
 	if len(g.SSHKeyData) != 0 {
 		g.SSHKeyData = maskString
 	}
+	if len(g.PersonalAccessToken.UserName) != 0 {
+		g.PersonalAccessToken.UserName = maskString
+	}
+	if len(g.PersonalAccessToken.UserToken) != 0 {
+		g.PersonalAccessToken.UserToken = maskString
+	}
 }
 
 type PipedGitPersonalAccessToken struct {
@@ -378,15 +383,6 @@ type PipedGitPersonalAccessToken struct {
 
 func (p PipedGitPersonalAccessToken) ShouldConfigureSSHConfig() bool {
 	return p.UserName != "" && p.UserToken != ""
-}
-
-func (p *PipedGitPersonalAccessToken) Mask() {
-	if len(p.UserName) != 0 {
-		p.UserName = maskString
-	}
-	if len(p.UserToken) != 0 {
-		p.UserToken = maskString
-	}
 }
 
 type PipedRepository struct {
