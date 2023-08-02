@@ -401,8 +401,8 @@ type PipedGitPersonalAccessToken struct {
 	UserToken string `json:"userToken,omitempty"`
 }
 
-func (p PipedGitPersonalAccessToken) ShouldConfigureSSHConfig() bool {
-	return p.UserName != "" || p.UserToken != ""
+func (p PipedGitPersonalAccessToken) ShouldConfigurePATConfig() bool {
+	return p.UserName != "" && p.UserToken != ""
 }
 
 type PipedRepository struct {
