@@ -15,6 +15,7 @@
 package config
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -48,10 +49,6 @@ func TestPipedConfig(t *testing.T) {
 					Username:   "username",
 					Email:      "username@email.com",
 					SSHKeyFile: "/etc/piped-secret/ssh-key",
-					PersonalAccessToken: PipedGitPersonalAccessToken{
-						UserName:  "userName",
-						UserToken: "userToken",
-					},
 				},
 				Repositories: []PipedRepository{
 					{
@@ -1452,6 +1449,49 @@ func TestFindPlatformProvidersByLabel(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got := pipedSpec.FindPlatformProvidersByLabels(tc.labels, model.ApplicationKind_KUBERNETES)
 			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestPipeGitValidate(t *testing.T) {
+	testcases := []struct {
+		git           PipedGit
+		expectedError error
+	}{
+		{
+			git: PipedGit{
+				SSHKeyData: "sshkey1",
+				PersonalAccessToken: PipedGitPersonalAccessToken{
+					UserName:  "UserName",
+					UserToken: "UserToken",
+				},
+			},
+			expectedError: errors.New("cannot configure both sshKeyData or sshKeyFile and personalAccessToken"),
+		},
+		{
+			git: PipedGit{
+				SSHKeyData: "sshkey2",
+			},
+			expectedError: nil,
+		},
+		{
+			git: PipedGit{
+				PersonalAccessToken: PipedGitPersonalAccessToken{
+					UserName:  "UserName",
+					UserToken: "UserToken",
+				},
+			},
+			expectedError: nil,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.git.SSHKeyData, func(t *testing.T) {
+			err := tc.git.Validate()
+			if tc.expectedError != nil {
+				assert.Equal(t, tc.expectedError, err)
+			} else {
+				require.NoError(t, err)
+			}
 		})
 	}
 }
