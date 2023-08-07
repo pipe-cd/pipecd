@@ -51,6 +51,8 @@ type ECSDeploymentInput struct {
 	TaskDefinitionFile string `json:"taskDefinitionFile" default:"taskdef.json"`
 	// ECSTargetGroups
 	TargetGroups ECSTargetGroups `json:"targetGroups"`
+	// ECSListenerRules
+	ListenerRules ECSListenerRules `json:"listenerRules"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
@@ -95,6 +97,10 @@ type ECSTrafficRoutingStageOptions struct {
 	Canary Percentage `json:"canary"`
 	// Primary represents the amount of traffic that the rolled out CANARY variant will serve.
 	Primary Percentage `json:"primary"`
+}
+
+type ECSListenerRules struct {
+	Rules []string
 }
 
 func (opts ECSTrafficRoutingStageOptions) Percentage() (primary, canary int) {
