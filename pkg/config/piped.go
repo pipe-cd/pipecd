@@ -946,7 +946,7 @@ func (n *NotificationReceiver) Mask() {
 
 type NotificationReceiverSlack struct {
 	HookURL           string   `json:"hookURL"`
-	OAuthToken        string   `json:"oauthToken"` // Deprecated: We should define OAuthToken as raw string.
+	OAuthToken        string   `json:"oauthToken"` // Deprecated: use OAuthTokenData instead.
 	OAuthTokenData    string   `json:"oauthTokenData"`
 	OAuthTokenFile    string   `json:"oauthTokenFile"`
 	ChannelID         string   `json:"channelID"`
