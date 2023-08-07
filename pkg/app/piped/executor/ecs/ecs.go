@@ -137,6 +137,24 @@ func loadTargetGroups(in *executor.Input, appCfg *config.ECSApplicationSpec, ds 
 	return primary, canary, true
 }
 
+func loadListenerRules(in *executor.Input, appCfg *config.ECSApplicationSpec, ds *deploysource.DeploySource) ([]string, bool) {
+	in.LogPersister.Infof("Loading listener rules config at the commit %s", ds.Revision)
+
+	rules, err := provider.LoadListenerRules(appCfg.Input.ListenerRules)
+	if err != nil && !errors.Is(err, provider.ErrNoListenerRule) {
+		in.LogPersister.Errorf("Failed to load ListenerRules (%v)", err)
+		return nil, false
+	}
+
+	if errors.Is(err, provider.ErrNoTargetGroup) {
+		in.LogPersister.Infof("No listener rules were set at commit %s", ds.Revision)
+		return nil, true
+	}
+
+	in.LogPersister.Infof("Successfully loaded the ECS listener rules at commit %s", ds.Revision)
+	return rules, true
+}
+
 func applyTaskDefinition(ctx context.Context, cli provider.Client, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
 	td, err := cli.RegisterTaskDefinition(ctx, taskDefinition)
 	if err != nil {
