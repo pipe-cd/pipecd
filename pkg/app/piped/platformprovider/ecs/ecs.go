@@ -81,6 +81,11 @@ func LoadTargetGroups(targetGroups config.ECSTargetGroups) (*types.LoadBalancer,
 	return loadTargetGroups(targetGroups)
 }
 
+// LoadListenerRules returns listener rules according to the defined in pipe definition file.
+func LoadListenerRules(listenerRules config.ECSListenerRules) ([]string, error) {
+	return loadListenerRules(listenerRules)
+}
+
 type registry struct {
 	clients  map[string]Client
 	mu       sync.RWMutex
