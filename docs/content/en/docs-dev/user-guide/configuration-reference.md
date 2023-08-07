@@ -1,7 +1,7 @@
 ---
 title: "Configuration reference"
 linkTitle: "Configuration reference"
-weight: 10
+weight: 11
 description: >
   This page describes all configurable fields in the application configuration and analysis template.
 ---
