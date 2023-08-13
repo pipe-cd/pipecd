@@ -401,7 +401,7 @@ type PipedGitPersonalAccessToken struct {
 	UserToken string `json:"userToken,omitempty"`
 }
 
-func (p PipedGitPersonalAccessToken) ShouldConfigurePATConfig() bool {
+func (p PipedGitPersonalAccessToken) Validate() bool {
 	return p.UserName != "" && p.UserToken != ""
 }
 
