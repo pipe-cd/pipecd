@@ -1,4 +1,5 @@
 # PipeCD Controle Plane
+
 ## Development
 
 ## Prerequisites
@@ -9,6 +10,7 @@
 - [helm 3.8](https://helm.sh/docs/intro/install/) (If you want to run Control Plane locally)
 
 ## Repositories
+
 - [pipecd](https://github.com/pipe-cd/pipecd): contains all source code and documentation of PipeCD project.
 
 ## Commands
@@ -24,27 +26,28 @@ For the full list of available commands, please see the Makefile at the root of 
 
 1. Start running a Kubernetes cluster
 
-    ``` console
-    make kind-up
-    ```
+   ```console
+   make kind-up
+   ```
 
-    Once it is no longer used, run `make kind-down` to delete it.
+   Once it is no longer used, run `make kind-down` to delete it.
 
 2. Install Control Plane into the local cluster
 
-    ``` console
-    make run/pipecd
-    ```
+   ```console
+   make run/pipecd
+   ```
 
-    Once all components are running up, use `kubectl port-forward` to expose the installed Control Plane on your localhost:
+   Once all components are running up, use `kubectl port-forward` to expose the installed Control Plane on your localhost:
 
-    ``` console
-    kubectl -n pipecd port-forward svc/pipecd 8080
-    ```
+   ```console
+   kubectl -n pipecd port-forward svc/pipecd 8080
+   ```
 
 3. Access to the local Control Plane web console
 
-    Point your web browser to [http://localhost:8080](http://localhost:8080) to login with the configured static admin account: project = `quickstart`, username = `hello-pipecd`, password = `hello-pipecd`.
+   Point your web browser to [http://localhost:8080](http://localhost:8080) to login with the configured static admin account: project = `quickstart`, username = `hello-pipecd`, password = `hello-pipecd`.
 
 ## How to run Piped locally and add an application to your cluster
+
 See [How to run Piped agent locally](https://github.com/pipe-cd/pipecd/tree/master/cmd/piped#how-to-run-piped-agent-locally).
