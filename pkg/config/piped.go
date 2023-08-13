@@ -352,7 +352,7 @@ func (g PipedGit) LoadSSHKey() ([]byte, error) {
 }
 
 func (g *PipedGit) Validate() error {
-	if g.ShouldConfigureSSHConfig() && g.PersonalAccessToken.ShouldConfigurePATConfig() {
+	if g.ShouldConfigureSSHConfig() && g.PersonalAccessToken.Validate() {
 		return errors.New("cannot configure both sshKeyData or sshKeyFile and personalAccessToken")
 	}
 	return nil
@@ -381,7 +381,7 @@ type PipedGitPersonalAccessToken struct {
 	UserToken string `json:"userToken,omitempty"`
 }
 
-func (p PipedGitPersonalAccessToken) ShouldConfigurePATConfig() bool {
+func (p PipedGitPersonalAccessToken) Validate() bool {
 	return p.UserName != "" && p.UserToken != ""
 }
 
