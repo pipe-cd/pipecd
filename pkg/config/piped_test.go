@@ -1388,9 +1388,10 @@ func TestFindPlatformProvidersByLabel(t *testing.T) {
 }
 
 func TestPipeGitValidate(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		git           PipedGit
-		expectedError error
+		err error
 	}{
 		{
 			git: PipedGit{
@@ -1400,13 +1401,13 @@ func TestPipeGitValidate(t *testing.T) {
 					UserToken: "UserToken",
 				},
 			},
-			expectedError: errors.New("cannot configure both sshKeyData or sshKeyFile and personalAccessToken"),
+			err: errors.New("cannot configure both sshKeyData or sshKeyFile and personalAccessToken"),
 		},
 		{
 			git: PipedGit{
 				SSHKeyData: "sshkey2",
 			},
-			expectedError: nil,
+			err: nil,
 		},
 		{
 			git: PipedGit{
@@ -1415,17 +1416,15 @@ func TestPipeGitValidate(t *testing.T) {
 					UserToken: "UserToken",
 				},
 			},
-			expectedError: nil,
+			err: nil,
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.git.SSHKeyData, func(t *testing.T) {
+			t.Parallel()
 			err := tc.git.Validate()
-			if tc.expectedError != nil {
-				assert.Equal(t, tc.expectedError, err)
-			} else {
-				require.NoError(t, err)
-			}
+			assert.Equal(t, tc.err, err)
 		})
 	}
 }
