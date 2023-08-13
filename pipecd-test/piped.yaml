@@ -1,0 +1,46 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  projectID: quickstart
+  # FIXME: Replace here with your piped ID.
+  pipedID: b592db84-51c5-4eff-a1ac-8a79548952ee
+  # Base64 encoded string of the piped private key. You can generate it by the following command.
+  # echo "your-piped-key" | base64
+  # FIXME: Replace here with your piped key file path.
+  pipedKeyData: ZWtqMHF4eTM5OWE0MG04cWJyanZjbmtuNDF6ZDUweDh2MWg2ajJ6Y2VuOThmaTUyNzEK # ekj0qxy399a40m8qbrjvcnkn41zd50x8v1h6j2zcen98fi5271
+  # Write in a format like "host:443" because the communication is done via gRPC.
+  # FIXME: Replace here with your piped address if you connect Piped to a control plane that does not run locally.
+  # git:
+  #   sshKeyFile: /etc/piped-secret/ssh-key
+  repositories:
+    - repoId: pipecd-k8s-manifest-playground
+      remote: https://github.com/GotoRen/pipecd-k8s-manifest-playground
+      branch: main
+  syncInterval: 1m
+  apiAddress: localhost:8080
+  # webAddress: https://pipecd.jp
+  platformProviders:
+    - name: kubernetes-default
+      type: KUBERNETES
+      config:
+        # FIXME: Replace here with your kubeconfig absolute file path.
+        kubeConfigPath: /Users/s20592/.kube/config
+  notifications:
+    routes:
+      # webhook
+      - name: pipecd-k8s-manifest-playground-webhook-service
+        events:
+          - DEPLOYMENT_TRIGGERED
+          - DEPLOYMENT_ROLLING_BACK
+          - DEPLOYMENT_SUCCEEDED
+          - DEPLOYMENT_FAILED
+          - DEPLOYMENT_CANCELLED
+        labels:
+          env: pipecd-local
+        receiver: pipecd-local-webhook-service
+    receivers:
+      - name: pipecd-local-webhook-service
+        webhook:
+          url: http://localhost:8081/api/hooks/services
+          signatureKey: X-Pipecd-Signature
+          signatureValue: pipecd-playground-signature

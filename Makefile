@@ -18,7 +18,8 @@
 build: build/go build/web
 
 .PHONY: build/go
-build/go: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+# build/go: BUILD_VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+push/chart: VERSION = v0.44.0-65-gce26e5b-dirty
 build/go: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
 build/go: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
 build/go: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
@@ -43,7 +44,8 @@ build/web:
 	yarn --cwd web build
 
 .PHONY: build/chart
-build/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+# build/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+push/chart: VERSION = v0.44.0-65-gce26e5b-dirty
 build/chart:
 	mkdir -p .artifacts
 ifndef MOD
@@ -57,7 +59,8 @@ endif
 
 .PHONY: push
 push/chart: BUCKET ?= charts.pipecd.dev
-push/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+# push/chart: VERSION ?= $(shell git describe --tags --always --dirty --abbrev=7)
+push/chart: VERSION = v0.44.0-65-gce26e5b-dirty
 push/chart: CREDENTIALS_FILE ?= ~/.config/gcloud/application_default_credentials.json
 push/chart:
 	@yq -i '.version = "${VERSION}" | .appVersion = "${VERSION}"' manifests/pipecd/Chart.yaml
@@ -97,7 +100,8 @@ test/integration:
 
 .PHONY: run/pipecd
 run/pipecd: $(eval TIMESTAMP = $(shell date +%s))
-run/pipecd: BUILD_VERSION ?= "$(shell git describe --tags --always --abbrev=7)-$(TIMESTAMP)"
+# run/pipecd: BUILD_VERSION ?= "$(shell git describe --tags --always --abbrev=7)-$(TIMESTAMP)"
+run/pipecd: BUILD_VERSION ?= "v0.44.0-65-gce26e5b-$(TIMESTAMP)"
 run/pipecd: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
 run/pipecd: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
 run/pipecd: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
@@ -108,6 +112,7 @@ run/pipecd:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(BUILD_ENV) go build $(BUILD_OPTS) -o ./.artifacts/pipecd ./cmd/pipecd
 
 	@echo "Building web static files..."
+	cd web && yarn install && cd ../
 	yarn --cwd web build
 
 	@echo "Building docker image and pushing it to local registry..."
