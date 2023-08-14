@@ -17,7 +17,6 @@ package ecs
 import (
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,33 +25,27 @@ func TestLoadListenerRules(t *testing.T) {
 
 	testcases := []struct {
 		name          string
-		listenerRules config.ECSListenerRules
+		listenerRules []string
 		wantRules     []string
 		wantErr       error
 	}{
 		{
-			name: "empty listener rules",
-			listenerRules: config.ECSListenerRules{
-				Rules: []string{},
-			},
-			wantRules: nil,
-			wantErr:   ErrNoListenerRule,
+			name:          "empty listener rules",
+			listenerRules: []string{},
+			wantRules:     nil,
+			wantErr:       ErrNoListenerRule,
 		},
 		{
-			name: "single listener rule",
-			listenerRules: config.ECSListenerRules{
-				Rules: []string{"rule1"},
-			},
-			wantRules: []string{"rule1"},
-			wantErr:   nil,
+			name:          "single listener rule",
+			listenerRules: []string{"rule1"},
+			wantRules:     []string{"rule1"},
+			wantErr:       nil,
 		},
 		{
-			name: "multiple listener rules",
-			listenerRules: config.ECSListenerRules{
-				Rules: []string{"rule1", "rule2", "rule3"},
-			},
-			wantRules: []string{"rule1", "rule2", "rule3"},
-			wantErr:   nil,
+			name:          "multiple listener rules",
+			listenerRules: []string{"rule1", "rule2", "rule3"},
+			wantRules:     []string{"rule1", "rule2", "rule3"},
+			wantErr:       nil,
 		},
 	}
 
