@@ -16,16 +16,14 @@ package ecs
 
 import (
 	"errors"
-
-	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 var ErrNoListenerRule = errors.New("no target group")
 
-func loadListenerRules(listenerRules config.ECSListenerRules) ([]string, error) {
-	if len(listenerRules.Rules) == 0 {
+func loadListenerRules(listenerRules []string) ([]string, error) {
+	if len(listenerRules) == 0 {
 		return nil, ErrNoListenerRule
 	}
 
-	return listenerRules.Rules, nil
+	return listenerRules, nil
 }

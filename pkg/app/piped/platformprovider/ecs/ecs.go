@@ -83,7 +83,7 @@ func LoadTargetGroups(targetGroups config.ECSTargetGroups) (*types.LoadBalancer,
 }
 
 // LoadListenerRules returns listener rules according to the defined in pipe definition file.
-func LoadListenerRules(listenerRules config.ECSListenerRules) ([]string, error) {
+func LoadListenerRules(listenerRules []string) ([]string, error) {
 	return loadListenerRules(listenerRules)
 }
 
