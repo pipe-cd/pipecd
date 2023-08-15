@@ -975,22 +975,16 @@ func (n *NotificationReceiverSlack) Validate() error {
 		n.MentionedAccounts = mentionedAccounts
 	}
 	if n.HookURL != "" && (n.OAuthToken != "" || n.OAuthTokenFile != "" || n.OAuthTokenData != "" || n.ChannelID != "") {
-		return errors.New("only one of hookURL or OAuthToken, OAuthTokenData, OAuthTokenFile and channelID should be used")
+		return errors.New("only one of sending via hook URL or API should be used")
 	}
 	if n.HookURL != "" {
 		return nil
 	}
-	if (n.HookURL == "" && n.ChannelID == "") || (n.OAuthToken == "" && n.OAuthTokenFile == "" && n.OAuthTokenData == "") {
-		return errors.New("either HookURL or OAuthToken and OAuthTokenData, OAuthTokenFile and channelID must be set")
+	if n.ChannelID == "" || (n.OAuthToken == "" && n.OAuthTokenFile == "" && n.OAuthTokenData == "") {
+		return errors.New("missing channelID or OAuth token configuration")
 	}
-	if n.HookURL == "" && n.OAuthToken == "" && n.OAuthTokenFile == "" && n.OAuthTokenData == "" {
-		return errors.New("either hookURL or OAuthToken and OAuthTokenData and OAuthTokenFile must be set")
-	}
-	if n.HookURL == "" && ((n.OAuthTokenData != "" || n.OAuthToken != "") && n.OAuthTokenFile != "") {
-		return errors.New("only one of OAuthToken or OAuthTokenData or OAuthTokenFile should be used")
-	}
-	if n.OAuthToken != "" && n.OAuthTokenData != "" {
-		return errors.New("only one of OAuthToken or OAuthTokenData should be used")
+	if n.OAuthToken != "" && n.OAuthTokenFile != "" && n.OAuthTokenData != "" {
+		return errors.New("only one of OAuthToken, OAuthTokenData and OAuthTokenFile should be set")
 	}
 	return nil
 }

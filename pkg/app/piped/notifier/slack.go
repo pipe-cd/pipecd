@@ -132,19 +132,19 @@ func (s *slack) sendEvent(ctx context.Context, event model.NotificationEvent) {
 	}
 	if len(s.config.OAuthToken) != 0 {
 		if err := s.sendMessageViaAPI(ctx, msg); err != nil {
-			s.logger.Error(fmt.Sprintf("unable to send notification to slack using oauthToken: %v", err))
+			s.logger.Error(fmt.Sprintf("unable to send notification to slack %v", err))
 		}
 		return
 	}
 	if len(s.config.OAuthTokenData) != 0 {
 		if err := s.sendMessageViaAPI(ctx, msg); err != nil {
-			s.logger.Error(fmt.Sprintf("unable to send notification to slack using oauthTokenData: %v", err))
+			s.logger.Error(fmt.Sprintf("unable to send notification to slack: %v", err))
 		}
 		return
 	}
 	if len(s.config.OAuthTokenFile) != 0 {
 		if err := s.sendMessageViaAPI(ctx, msg); err != nil {
-			s.logger.Error(fmt.Sprintf("unable to send notification to slack using oauthTokenFile: %v", err))
+			s.logger.Error(fmt.Sprintf("unable to send notification to slack: %v", err))
 		}
 		return
 	}
