@@ -983,7 +983,7 @@ func (n *NotificationReceiverSlack) Validate() error {
 	if n.ChannelID == "" || (n.OAuthToken == "" && n.OAuthTokenFile == "" && n.OAuthTokenData == "") {
 		return errors.New("missing channelID or OAuth token configuration")
 	}
-	if n.OAuthToken != "" && n.OAuthTokenFile != "" && n.OAuthTokenData != "" {
+	if (n.OAuthToken != "" && n.OAuthTokenFile != "") || (n.OAuthToken != "" && n.OAuthTokenData != "") || (n.OAuthTokenFile != "" && n.OAuthTokenData != "") {
 		return errors.New("only one of OAuthToken, OAuthTokenData and OAuthTokenFile should be set")
 	}
 	return nil
