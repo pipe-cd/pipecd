@@ -946,7 +946,9 @@ func (n *NotificationReceiver) Mask() {
 
 type NotificationReceiverSlack struct {
 	HookURL           string   `json:"hookURL"`
-	OAuthToken        string   `json:"oauthToken"`
+	OAuthToken        string   `json:"oauthToken"` // Deprecated: use OAuthTokenData instead.
+	OAuthTokenData    string   `json:"oauthTokenData"`
+	OAuthTokenFile    string   `json:"oauthTokenFile"`
 	ChannelID         string   `json:"channelID"`
 	MentionedAccounts []string `json:"mentionedAccounts,omitempty"`
 }
@@ -957,6 +959,9 @@ func (n *NotificationReceiverSlack) Mask() {
 	}
 	if len(n.OAuthToken) != 0 {
 		n.OAuthToken = maskString
+	}
+	if len(n.OAuthTokenData) != 0 {
+		n.OAuthTokenData = maskString
 	}
 }
 
@@ -969,14 +974,17 @@ func (n *NotificationReceiverSlack) Validate() error {
 	if len(mentionedAccounts) > 0 {
 		n.MentionedAccounts = mentionedAccounts
 	}
-	if n.HookURL != "" && (n.OAuthToken != "" || n.ChannelID != "") {
-		return errors.New("only one of hookURL or oauthToken and channelID should be used")
+	if n.HookURL != "" && (n.OAuthToken != "" || n.OAuthTokenFile != "" || n.OAuthTokenData != "" || n.ChannelID != "") {
+		return errors.New("only one of sending via hook URL or API should be used")
 	}
 	if n.HookURL != "" {
 		return nil
 	}
-	if n.OAuthToken == "" || n.ChannelID == "" {
-		return errors.New("missing oauthToken or channelID configuration")
+	if n.ChannelID == "" || (n.OAuthToken == "" && n.OAuthTokenFile == "" && n.OAuthTokenData == "") {
+		return errors.New("missing channelID or OAuth token configuration")
+	}
+	if (n.OAuthToken != "" && n.OAuthTokenFile != "") || (n.OAuthToken != "" && n.OAuthTokenData != "") || (n.OAuthTokenFile != "" && n.OAuthTokenData != "") {
+		return errors.New("only one of OAuthToken, OAuthTokenData and OAuthTokenFile should be set")
 	}
 	return nil
 }
