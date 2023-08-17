@@ -136,6 +136,28 @@ spec:
           mentionedAccounts:
             - 'user1'
             - '@user2'
+      - name: integration-slack-api-with-oauthTokenData
+        slack:
+          oauthTokenData: token
+          channelID: testid
+      - name: integration-slack-api-with-oauthTokenFile
+        slack:
+          oauthTokenFile: 'foo/bar'
+          channelID: testid
+      - name: integration-slack-api-with-oauthTokenFile-and-mentioned-accounts
+        slack:
+          oauthTokenFile: 'foo/bar'
+          channelID: testid
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
+      - name: integration-slack-api-with-oauthTokenData-and-mentioned-accounts
+        slack:
+          oauthTokenData: token
+          channelID: testid
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
       - name: ci-webhook
         webhook:
           url: https://pipecd.dev/dev-hook
