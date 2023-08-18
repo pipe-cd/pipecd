@@ -133,6 +133,12 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 			ImageUri: aws.String(fm.Spec.ImageURI),
 		}
 	}
+	if fm.Spec.VPCConfig != nil {
+		input.VpcConfig = &types.VpcConfig{
+			SecurityGroupIds: fm.Spec.VPCConfig.SecurityGroupIDs,
+			SubnetIds:        fm.Spec.VPCConfig.SubnetIDs,
+		}
+	}
 	// Zip packing which stored in s3.
 	if fm.Spec.S3Bucket != "" {
 		input.PackageType = types.PackageTypeZip
@@ -206,6 +212,23 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 	_, err := c.client.UpdateFunctionCode(ctx, codeInput)
 	if err != nil {
 		return fmt.Errorf("failed to update function code for Lambda function %s: %w", fm.Spec.Name, err)
+	}
+
+	// Update lambda function configuration
+	// TODO: @sivchari
+	// I focused on the vpc configuration, now. But, I think we should update all the configuration.
+	// So, I will update this part later.
+	if fm.Spec.VPCConfig != nil {
+		cfgInput := &lambda.UpdateFunctionConfigurationInput{
+			VpcConfig: &types.VpcConfig{
+				SecurityGroupIds: fm.Spec.VPCConfig.SecurityGroupIDs,
+				SubnetIds:        fm.Spec.VPCConfig.SubnetIDs,
+			},
+		}
+		_, err = c.client.UpdateFunctionConfiguration(ctx, cfgInput)
+		if err != nil {
+			return fmt.Errorf("failed to update function configuration for Lambda function %s: %w", fm.Spec.Name, err)
+		}
 	}
 
 	// Update function configuration.
