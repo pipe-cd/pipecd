@@ -229,6 +229,33 @@ func (c *client) GetPrimaryTaskSet(ctx context.Context, service types.Service) (
 	return nil, platformprovider.ErrNotFound
 }
 
+// IsServiceStable check whether the given service is stable or not.
+// It returns nil if the service is stable, otherwise it returns an error.
+func (c *client) IsServiceStable(ctx context.Context, service types.Service) error {
+	input := &ecs.DescribeServicesInput{
+		Cluster:  service.ClusterArn,
+		Services: []string{*service.ServiceArn},
+	}
+
+	output, err := c.ecsClient.DescribeServices(ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to get service %s: %w", *service.ServiceName, err)
+	}
+
+	if len(output.Services) == 0 {
+		return platformprovider.ErrNotFound
+	}
+
+	svc := output.Services[0]
+	// Logic follow implementation of the AWS CLI.
+	// ref: https://docs.aws.amazon.com/cli/latest/reference/ecs/wait/services-stable.html#description
+	if len(svc.Deployments) == 1 && svc.RunningCount == svc.DesiredCount {
+		return nil
+	}
+
+	return fmt.Errorf("service %s is not stable", *service.ServiceName)
+}
+
 func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskSetArn string) error {
 	input := &ecs.DeleteTaskSetInput{
 		Cluster: service.ClusterArn,

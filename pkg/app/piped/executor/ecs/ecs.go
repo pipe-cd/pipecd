@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"go.uber.org/zap"
@@ -28,6 +29,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
+	"github.com/pipe-cd/pipecd/pkg/backoff"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -39,6 +41,13 @@ const (
 	trafficRoutePrimaryMetadataKey = "primary-percentage"
 	trafficRouteCanaryMetadataKey  = "canary-percentage"
 	canaryScaleMetadataKey         = "canary-scale"
+
+	// Follow the implementation of the AWS cli for service-stable command.
+	// ref: https://docs.aws.amazon.com/cli/latest/reference/ecs/wait/services-stable.html
+	// Retry wait service stable check. This value is set to 40.
+	retryServiceStable = 40
+	// Interval wait service stable check. This value is set to 15 seconds.
+	retryServiceStableInterval = 15 * time.Second
 )
 
 type registerer interface {
@@ -344,6 +353,38 @@ func rollout(ctx context.Context, in *executor.Input, platformProviderName strin
 
 	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition of family %s", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	return true
+}
+
+func serviceStable(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, serviceDefinition types.Service) error {
+	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
+	if err != nil {
+		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
+		return err
+	}
+
+	in.LogPersister.Infof("Wait for service to reach stable state")
+	// Follow the implementation of the AWS cli for service-stable command.
+	// ref: https://docs.aws.amazon.com/cli/latest/reference/ecs/wait/services-stable.html
+	retry := backoff.NewRetry(retryServiceStable, backoff.NewConstant(retryServiceStableInterval))
+	check, err := retry.Do(ctx, func() (interface{}, error) {
+		err := client.IsServiceStable(ctx, serviceDefinition)
+		// Ignore error in case it's not found error, there is no service to check.
+		if errors.Is(err, platformprovider.ErrNotFound) {
+			return false, nil
+		}
+		return err == nil, err
+	})
+
+	if check.(bool) {
+		in.LogPersister.Infof("Successfully waited for service to reach stable state")
+		return nil
+	}
+
+	if err == nil {
+		return fmt.Errorf("service %s is not stable", *serviceDefinition.ServiceName)
+	}
+
+	return err
 }
 
 func clean(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig) bool {
