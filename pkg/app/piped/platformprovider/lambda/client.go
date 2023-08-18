@@ -126,17 +126,17 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 		}
 		input.Architectures = architectures
 	}
+	if fm.Spec.VPCConfig != nil {
+		input.VpcConfig = &types.VpcConfig{
+			SecurityGroupIds: fm.Spec.VPCConfig.SecurityGroupIDs,
+			SubnetIds:        fm.Spec.VPCConfig.SubnetIDs,
+		}
+	}
 	// Container image packing.
 	if fm.Spec.ImageURI != "" {
 		input.PackageType = types.PackageTypeImage
 		input.Code = &types.FunctionCode{
 			ImageUri: aws.String(fm.Spec.ImageURI),
-		}
-	}
-	if fm.Spec.VPCConfig != nil {
-		input.VpcConfig = &types.VpcConfig{
-			SecurityGroupIds: fm.Spec.VPCConfig.SecurityGroupIDs,
-			SubnetIds:        fm.Spec.VPCConfig.SubnetIDs,
 		}
 	}
 	// Zip packing which stored in s3.
