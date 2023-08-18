@@ -110,10 +110,10 @@ func TestParseFunctionManifest(t *testing.T) {
 	  "memory": 128,
 	  "timeout": 5,
 	  "image": "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
-      "vpcConfig": {
-          securityGroupIds: ["sg-1234567890", "sg-0987654321"],
-          subnetIds: ["subnet-1234567890", "subnet-0987654321"]
-      }
+	  "vpcConfig": {
+	    securityGroupIds: ["sg-1234567890", "sg-0987654321"],
+	    sbnetIds: ["subnet-1234567890", "subnet-0987654321"]
+	  }
   }
 }`,
 			wantSpec: FunctionManifest{

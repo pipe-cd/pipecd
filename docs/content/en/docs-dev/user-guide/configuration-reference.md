@@ -9,7 +9,7 @@ description: >
 ## Kubernetes Application
 
 ``` yaml
-apiVersion: pipecd.devI mean instead of adding it here, only make the vpc configuration available via Function manifest file. I think we should keep this configuration file contains generic configurations only./v1beta1
+apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   input:
