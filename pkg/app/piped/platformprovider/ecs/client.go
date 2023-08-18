@@ -302,6 +302,30 @@ func (c *client) GetListenerArns(ctx context.Context, targetGroup types.LoadBala
 	return arns, nil
 }
 
+func (c *client) GetListenerRules(ctx context.Context, listenerArns []string) ([]string, error) {
+	var ruleArns []string
+
+	// 各リスナーのルールを取得
+	for _, listenerArn := range listenerArns {
+		input := &elasticloadbalancingv2.DescribeRulesInput{
+			ListenerArn: aws.String(listenerArn),
+		}
+		output, err := c.elbClient.DescribeRules(ctx, input)
+		if err != nil {
+			return nil, err
+		}
+		for _, rule := range output.Rules {
+			ruleArns = append(ruleArns, *rule.RuleArn)
+		}
+	}
+
+	if len(ruleArns) == 0 {
+		return nil, platformprovider.ErrNotFound
+	}
+
+	return ruleArns, nil
+}
+
 func (c *client) getLoadBalancerArn(ctx context.Context, targetGroupArn string) (string, error) {
 	input := &elasticloadbalancingv2.DescribeTargetGroupsInput{
 		TargetGroupArns: []string{targetGroupArn},
