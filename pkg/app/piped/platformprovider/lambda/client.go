@@ -126,6 +126,12 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 		}
 		input.Architectures = architectures
 	}
+	if fm.Spec.VPCConfig != nil {
+		input.VpcConfig = &types.VpcConfig{
+			SecurityGroupIds: fm.Spec.VPCConfig.SecurityGroupIDs,
+			SubnetIds:        fm.Spec.VPCConfig.SubnetIDs,
+		}
+	}
 	// Container image packing.
 	if fm.Spec.ImageURI != "" {
 		input.PackageType = types.PackageTypeImage
@@ -206,6 +212,23 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 	_, err := c.client.UpdateFunctionCode(ctx, codeInput)
 	if err != nil {
 		return fmt.Errorf("failed to update function code for Lambda function %s: %w", fm.Spec.Name, err)
+	}
+
+	// Update lambda function configuration
+	// TODO: @sivchari
+	// I focused on the vpc configuration, now. But, I think we should update all the configuration.
+	// So, I will update this part later.
+	if fm.Spec.VPCConfig != nil {
+		cfgInput := &lambda.UpdateFunctionConfigurationInput{
+			VpcConfig: &types.VpcConfig{
+				SecurityGroupIds: fm.Spec.VPCConfig.SecurityGroupIDs,
+				SubnetIds:        fm.Spec.VPCConfig.SubnetIDs,
+			},
+		}
+		_, err = c.client.UpdateFunctionConfiguration(ctx, cfgInput)
+		if err != nil {
+			return fmt.Errorf("failed to update function configuration for Lambda function %s: %w", fm.Spec.Name, err)
+		}
 	}
 
 	// Update function configuration.
