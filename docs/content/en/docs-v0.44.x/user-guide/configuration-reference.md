@@ -112,6 +112,7 @@ spec:
 | labels | map[string]string | Additional attributes to identify applications. | No |
 | description | string | Notes on the Application. | No |
 | input | [LambdaDeploymentInput](#lambdadeploymentinput) | Input for Lambda deployment such as path to function manifest file... | No |
+| architectures | []string| Specific architecture for which a function supports (Default x86_64). | No |
 | trigger | [DeploymentTrigger](#deploymenttrigger) | Configuration for trigger used to determine should we trigger a new deployment or not. | No |
 | planner | [DeploymentPlanner](#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [LambdaQuickSync](#lambdaquicksync) | Configuration for quick sync. | No |
