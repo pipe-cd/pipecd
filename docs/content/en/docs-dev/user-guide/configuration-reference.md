@@ -121,6 +121,7 @@ spec:
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 | notification | [DeploymentNotification](#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 | postSync | [PostSync](#postsync) | Additional configuration used as extra actions once the deployment is triggered. | No |
+| vpcConfig | [VPCConfig](#vpcconfig) | Additional configuration used to link to specific vpc. | No |
 | eventWatcher | [][EventWatcher](#eventwatcher) | List of configurations for event watcher. | No |
 
 ## ECS application
@@ -436,6 +437,13 @@ One of `yamlField` or `regex` is required.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+
+## VPCConfig
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| securityGroupIds | []string | List of security group ids. | Yes |
+| subnetIds | []string | List of subnet ids. | Yes |
 
 ## ECSDeploymentInput
 
