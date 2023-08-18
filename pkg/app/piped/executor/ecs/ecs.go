@@ -427,24 +427,45 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 		in.Logger.Error("Failed to store traffic routing config to metadata store", zap.Error(err))
 	}
 
-	if len(listenerRules) != 0 {
-		if err := client.ModifyListenerRules(ctx, listenerRules, routingTrafficCfg); err != nil {
-			in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
-			return false
-		}
-		return true
-	}
-
 	currListenerArns, err := client.GetListenerArns(ctx, primaryTargetGroup)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
 		return false
 	}
 
-	if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
-		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
+	if len(listenerRules) == 0 {
+		if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
+			in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
+			return false
+		}
+
+		return true
+	}
+
+	rules, err := client.GetListenerRules(ctx, currListenerArns)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to retrieve listener rules: %v", err)
 		return false
 	}
 
+	// Validate if the provided listenerRules exist in the retrieved rules
+	for _, providedRule := range listenerRules {
+		ruleExists := false
+		for _, existingRule := range rules {
+			if providedRule == existingRule {
+				ruleExists = true
+				break
+			}
+		}
+		if !ruleExists {
+			in.LogPersister.Errorf("Provided listener rule %s does not exist", providedRule)
+			return false
+		}
+	}
+
+	if err := client.ModifyListenerRules(ctx, listenerRules, routingTrafficCfg); err != nil {
+		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
+		return false
+	}
 	return true
 }
