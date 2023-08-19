@@ -109,6 +109,7 @@ jobs:
           push: true
           context: .
           file: cmd/launcher/Dockerfile
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.GHCR }}/pipe-cd/launcher:${{ env.PIPECD_VERSION }}
             ${{ env.GCR }}/pipecd/launcher:${{ env.PIPECD_VERSION }}
