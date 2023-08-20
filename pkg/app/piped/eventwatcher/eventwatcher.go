@@ -431,7 +431,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		return nil
 	}
 
-	var errors []error
+	var responseError error
 	retry := backoff.NewRetry(retryPushNum, backoff.NewConstant(retryPushInterval))
 	for branch, events := range branchHandledEvents {
 		_, err = retry.Do(ctx, func() (interface{}, error) {
@@ -465,24 +465,12 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 			w.logger.Error("failed to report event statuses", zap.Error(err))
 		}
 		w.executionMilestoneMap.Store(repoID, maxTimestamp)
-		errors = append(errors, fmt.Errorf("failed to push commits: %w", err))
+		responseError = errors.Join(responseError, err)
 	}
-	if len(errors) > 0 {
-		return responseError(errors)
+	if responseError != nil {
+		return responseError
 	}
 	return nil
-}
-
-// responseError is an error wrapping errors.
-type responseError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (r responseError) Error() string {
-	var msgs []string
-	for _, err := range r {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
 }
 
 // updateValues inspects all Event-definition and pushes the changes to git repo if there is.
