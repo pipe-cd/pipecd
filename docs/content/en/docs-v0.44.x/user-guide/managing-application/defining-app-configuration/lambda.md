@@ -34,6 +34,15 @@ spec:
     app: simple
   environments:
     FOO: bar
+  # vpcConfig is optional value. If you define a vpc configuration to lambda, you can
+  # use this field.
+  vpcConfig:
+    securityGroupIds:
+      - sg-01234
+      - sg-56789
+    subnetIds:
+      - subnet-01234
+      - subnet-56789
 ```
 
 Except the `tags` and the `environments` field, all others are required fields for the deployment to run.
