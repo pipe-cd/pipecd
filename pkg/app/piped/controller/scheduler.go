@@ -612,6 +612,20 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 
 	defer func() {
 		switch status {
+
+		case model.DeploymentStatus_DEPLOYMENT_ROLLING_BACK:
+			accounts, err := s.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_ROLLING_BACK)
+			if err != nil {
+				s.logger.Error("failed to get the list of accounts", zap.Error(err))
+			}
+			s.notifier.Notify(model.NotificationEvent{
+				Type: model.NotificationEventType_EVENT_DEPLOYMENT_ROLLING_BACK,
+				Metadata: &model.NotificationEventDeploymentRollingBack{
+					Deployment:        s.deployment,
+					MentionedAccounts: accounts,
+				},
+			})
+
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
 			accounts, err := s.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED)
 			if err != nil {
