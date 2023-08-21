@@ -106,11 +106,6 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if err := serviceStable(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, servicedefinition); err != nil {
-		e.LogPersister.Errorf("Failed while waiting for service stable: %v", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
 	return model.StageStatus_STAGE_SUCCESS
 }
 
@@ -137,11 +132,6 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if err := serviceStable(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, servicedefinition); err != nil {
-		e.LogPersister.Errorf("Failed while waiting for service stable: %v", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
 	return model.StageStatus_STAGE_SUCCESS
 }
 
@@ -165,11 +155,6 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 	}
 
 	if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, canary) {
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	if err := serviceStable(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, servicedefinition); err != nil {
-		e.LogPersister.Errorf("Failed while waiting for service stable: %v", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
