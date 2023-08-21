@@ -110,7 +110,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.model.NotificationEventDeploymentRollingBack = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.model.NotificationEventDeploymentRollingBack.repeatedFields_, null);
 };
 goog.inherits(proto.model.NotificationEventDeploymentRollingBack, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -991,6 +991,13 @@ proto.model.NotificationEventDeploymentApproved.prototype.clearMentionedAccounts
 
 
 
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.model.NotificationEventDeploymentRollingBack.repeatedFields_ = [4];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -1022,7 +1029,8 @@ proto.model.NotificationEventDeploymentRollingBack.prototype.toObject = function
  */
 proto.model.NotificationEventDeploymentRollingBack.toObject = function(includeInstance, msg) {
   var f, obj = {
-    deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f)
+    deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -1064,6 +1072,10 @@ proto.model.NotificationEventDeploymentRollingBack.deserializeBinaryFromReader =
       reader.readMessage(value,pkg_model_deployment_pb.Deployment.deserializeBinaryFromReader);
       msg.setDeployment(value);
       break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedAccounts(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1099,6 +1111,13 @@ proto.model.NotificationEventDeploymentRollingBack.serializeBinaryToWriter = fun
       1,
       f,
       pkg_model_deployment_pb.Deployment.serializeBinaryToWriter
+    );
+  }
+  f = message.getMentionedAccountsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      4,
+      f
     );
   }
 };
@@ -1138,6 +1157,43 @@ proto.model.NotificationEventDeploymentRollingBack.prototype.clearDeployment = f
  */
 proto.model.NotificationEventDeploymentRollingBack.prototype.hasDeployment = function() {
   return jspb.Message.getField(this, 1) != null;
+};
+
+
+/**
+ * repeated string mentioned_accounts = 4;
+ * @return {!Array<string>}
+ */
+proto.model.NotificationEventDeploymentRollingBack.prototype.getMentionedAccountsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.model.NotificationEventDeploymentRollingBack} returns this
+ */
+proto.model.NotificationEventDeploymentRollingBack.prototype.setMentionedAccountsList = function(value) {
+  return jspb.Message.setField(this, 4, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.model.NotificationEventDeploymentRollingBack} returns this
+ */
+proto.model.NotificationEventDeploymentRollingBack.prototype.addMentionedAccounts = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.model.NotificationEventDeploymentRollingBack} returns this
+ */
+proto.model.NotificationEventDeploymentRollingBack.prototype.clearMentionedAccountsList = function() {
+  return this.setMentionedAccountsList([]);
 };
 
 

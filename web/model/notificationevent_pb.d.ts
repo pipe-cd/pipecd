@@ -97,6 +97,11 @@ export class NotificationEventDeploymentRollingBack extends jspb.Message {
   hasDeployment(): boolean;
   clearDeployment(): NotificationEventDeploymentRollingBack;
 
+  getMentionedAccountsList(): Array<string>;
+  setMentionedAccountsList(value: Array<string>): NotificationEventDeploymentRollingBack;
+  clearMentionedAccountsList(): NotificationEventDeploymentRollingBack;
+  addMentionedAccounts(value: string, index?: number): NotificationEventDeploymentRollingBack;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): NotificationEventDeploymentRollingBack.AsObject;
   static toObject(includeInstance: boolean, msg: NotificationEventDeploymentRollingBack): NotificationEventDeploymentRollingBack.AsObject;
@@ -108,6 +113,7 @@ export class NotificationEventDeploymentRollingBack extends jspb.Message {
 export namespace NotificationEventDeploymentRollingBack {
   export type AsObject = {
     deployment?: pkg_model_deployment_pb.Deployment.AsObject,
+    mentionedAccountsList: Array<string>,
   }
 }
 

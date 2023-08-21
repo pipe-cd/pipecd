@@ -69,6 +69,7 @@ message NotificationEventDeploymentApproved {
 
 message NotificationEventDeploymentRollingBack {
     Deployment deployment = 1 [(validate.rules).message.required = true];
+    repeated string mentioned_accounts = 4;
 }
 
 message NotificationEventDeploymentSucceeded {
