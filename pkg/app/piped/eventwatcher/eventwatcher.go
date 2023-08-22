@@ -330,7 +330,6 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		firstRead = false
 	}
 	var (
-		handledEvents       = make([]*pipedservice.ReportEventStatusesRequest_Event, 0, len(eventCfgs))
 		outDatedEvents      = make([]*pipedservice.ReportEventStatusesRequest_Event, 0)
 		maxTimestamp        int64
 		outDatedDuration    = time.Hour
@@ -423,9 +422,6 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		}
 		w.logger.Info(fmt.Sprintf("successfully made %d events OUTDATED", len(outDatedEvents)))
 	}
-	if len(handledEvents) == 0 {
-		return nil
-	}
 
 	if !gitUpdateEvent {
 		return nil
@@ -454,7 +450,7 @@ func (w *watcher) execute(ctx context.Context, repo git.Repo, repoID string, eve
 		}
 
 		// If push fails because of the other reason, re-set all statuses to FAILURE.
-		for i := range handledEvents {
+		for i := range events {
 			if events[i].Status == model.EventStatus_EVENT_FAILURE {
 				continue
 			}
