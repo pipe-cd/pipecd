@@ -220,6 +220,7 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 	// So, I will update this part later.
 	if fm.Spec.VPCConfig != nil {
 		cfgInput := &lambda.UpdateFunctionConfigurationInput{
+			FunctionName: aws.String(fm.Spec.Name),
 			VpcConfig: &types.VpcConfig{
 				SecurityGroupIds: fm.Spec.VPCConfig.SecurityGroupIDs,
 				SubnetIds:        fm.Spec.VPCConfig.SubnetIDs,
