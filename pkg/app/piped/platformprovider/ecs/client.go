@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -29,7 +30,15 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
+	"github.com/pipe-cd/pipecd/pkg/backoff"
 	appconfig "github.com/pipe-cd/pipecd/pkg/config"
+)
+
+const (
+	// Retry wait service stable check.
+	retryServiceStable = 40
+	// Interval wait service stable check.
+	retryServiceStableInterval = 15 * time.Second
 )
 
 type client struct {
@@ -227,6 +236,39 @@ func (c *client) GetPrimaryTaskSet(ctx context.Context, service types.Service) (
 		}
 	}
 	return nil, platformprovider.ErrNotFound
+}
+
+// WaitServiceStable blocks until the ECS service is stable.
+// It returns nil if the service is stable, otherwise it returns an error.
+// Note: This function follow the implementation of the AWS CLI.
+// AWS does not public API for waiting service stable, thus we use describe-service and workaround instead.
+// ref: https://docs.aws.amazon.com/cli/latest/reference/ecs/wait/services-stable.html
+func (c *client) WaitServiceStable(ctx context.Context, service types.Service) error {
+	input := &ecs.DescribeServicesInput{
+		Cluster:  service.ClusterArn,
+		Services: []string{*service.ServiceArn},
+	}
+
+	retry := backoff.NewRetry(retryServiceStable, backoff.NewConstant(retryServiceStableInterval))
+	_, err := retry.Do(ctx, func() (interface{}, error) {
+		output, err := c.ecsClient.DescribeServices(ctx, input)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get service %s: %w", *service.ServiceName, err)
+		}
+
+		if len(output.Services) == 0 {
+			return nil, platformprovider.ErrNotFound
+		}
+
+		svc := output.Services[0]
+		if svc.PendingCount == 0 && svc.RunningCount >= svc.DesiredCount {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("service %s is not stable", *service.ServiceName)
+	})
+
+	return err
 }
 
 func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskSetArn string) error {

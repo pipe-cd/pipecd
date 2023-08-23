@@ -271,6 +271,12 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 		return false
 	}
 
+	in.LogPersister.Infof("Wait service to reach stable state")
+	if err := client.WaitServiceStable(ctx, *service); err != nil {
+		in.LogPersister.Errorf("Failed to wait service %s to reach stable state: %v", *serviceDefinition.ServiceName, err)
+		return false
+	}
+
 	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition of family %s", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	return true
 }
@@ -340,6 +346,12 @@ func rollout(ctx context.Context, in *executor.Input, platformProviderName strin
 			in.LogPersister.Errorf("Unable to store applied service to metadata store: %v", err)
 			return false
 		}
+	}
+
+	in.LogPersister.Infof("Wait service to reach stable state")
+	if err := client.WaitServiceStable(ctx, *service); err != nil {
+		in.LogPersister.Errorf("Failed to wait service %s to reach stable state: %v", *serviceDefinition.ServiceName, err)
+		return false
 	}
 
 	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition of family %s", *serviceDefinition.ServiceName, *taskDefinition.Family)
