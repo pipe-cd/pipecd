@@ -51,6 +51,8 @@ type ECSDeploymentInput struct {
 	TaskDefinitionFile string `json:"taskDefinitionFile" default:"taskdef.json"`
 	// ECSTargetGroups
 	TargetGroups ECSTargetGroups `json:"targetGroups"`
+	// ECSListenerRules
+	ListenerRules []string `json:"listenerRules"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
