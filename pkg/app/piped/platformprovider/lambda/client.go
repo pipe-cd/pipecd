@@ -272,15 +272,17 @@ func (c *client) updateFunctionConfiguration(ctx context.Context, fm FunctionMan
 			Environment: &types.Environment{
 				Variables: fm.Spec.Environments,
 			},
-			VpcConfig: &types.VpcConfig{
-				SecurityGroupIds: fm.Spec.VPCConfig.SecurityGroupIDs,
-				SubnetIds:        fm.Spec.VPCConfig.SubnetIDs,
-			},
 		}
 		// For zip packing Lambda function code, allow update the function handler
 		// on update the function's manifest.
 		if fm.Spec.Handler != "" {
 			configInput.Handler = aws.String(fm.Spec.Handler)
+		}
+		if fm.Spec.VPCConfig != nil {
+			configInput.VpcConfig = &types.VpcConfig{
+				SecurityGroupIds: fm.Spec.VPCConfig.SecurityGroupIDs,
+				SubnetIds:        fm.Spec.VPCConfig.SubnetIDs,
+			}
 		}
 		_, err = c.client.UpdateFunctionConfiguration(ctx, configInput)
 		if err != nil {
