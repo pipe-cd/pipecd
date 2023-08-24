@@ -188,6 +188,14 @@ func (c *client) CreateFunctionFromSource(ctx context.Context, fm FunctionManife
 }
 
 func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error {
+	// UpdateFunctionConfiguration must be called before UpdateFunctionCode.
+	// Lambda has named by state.
+	// If Lambda's state is pending, UpdateFunctionConfiguration is failed. This error is explained as a ResourceConflictException.
+	// ref: https://docs.aws.amazon.com/lambda/latest/dg/troubleshooting-invocation.html
+	// Update function configuration.
+	if err := c.updateFunctionConfiguration(ctx, fm); err != nil {
+		return err
+	}
 	// Update function code.
 	codeInput := &lambda.UpdateFunctionCodeInput{
 		FunctionName: aws.String(fm.Spec.Name),
@@ -212,29 +220,6 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 	_, err := c.client.UpdateFunctionCode(ctx, codeInput)
 	if err != nil {
 		return fmt.Errorf("failed to update function code for Lambda function %s: %w", fm.Spec.Name, err)
-	}
-
-	// Update lambda function configuration
-	// TODO: @sivchari
-	// I focused on the vpc configuration, now. But, I think we should update all the configuration.
-	// So, I will update this part later.
-	if fm.Spec.VPCConfig != nil {
-		cfgInput := &lambda.UpdateFunctionConfigurationInput{
-			FunctionName: aws.String(fm.Spec.Name),
-			VpcConfig: &types.VpcConfig{
-				SecurityGroupIds: fm.Spec.VPCConfig.SecurityGroupIDs,
-				SubnetIds:        fm.Spec.VPCConfig.SubnetIDs,
-			},
-		}
-		_, err = c.client.UpdateFunctionConfiguration(ctx, cfgInput)
-		if err != nil {
-			return fmt.Errorf("failed to update function configuration for Lambda function %s: %w", fm.Spec.Name, err)
-		}
-	}
-
-	// Update function configuration.
-	if err = c.updateFunctionConfiguration(ctx, fm); err != nil {
-		return err
 	}
 
 	// Tag/Untag function if necessary.
@@ -286,6 +271,10 @@ func (c *client) updateFunctionConfiguration(ctx context.Context, fm FunctionMan
 			Runtime:      types.Runtime(fm.Spec.Runtime),
 			Environment: &types.Environment{
 				Variables: fm.Spec.Environments,
+			},
+			VpcConfig: &types.VpcConfig{
+				SecurityGroupIds: fm.Spec.VPCConfig.SecurityGroupIDs,
+				SubnetIds:        fm.Spec.VPCConfig.SubnetIDs,
 			},
 		}
 		// For zip packing Lambda function code, allow update the function handler
