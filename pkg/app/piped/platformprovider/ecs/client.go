@@ -99,7 +99,6 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		PropagateTags:                 types.PropagateTagsService,
 		Role:                          service.RoleArn,
 		SchedulingStrategy:            service.SchedulingStrategy,
-		ServiceRegistries:             service.ServiceRegistries,
 		Tags:                          service.Tags,
 	}
 	output, err := c.ecsClient.CreateService(ctx, input)
@@ -110,8 +109,10 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 	// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
 	// in CreateService step, but it required in further step (CreateTaskSet step). We reassign those values
 	// as part of service definition for that purpose.
+	// ref: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html
 	output.Service.LaunchType = service.LaunchType
 	output.Service.NetworkConfiguration = service.NetworkConfiguration
+	output.Service.ServiceRegistries = service.ServiceRegistries
 
 	return output.Service, nil
 }
@@ -204,6 +205,7 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 		// and you must specify a NetworkConfiguration when run a task with the task definition.
 		NetworkConfiguration: service.NetworkConfiguration,
 		LaunchType:           service.LaunchType,
+		ServiceRegistries:    service.ServiceRegistries,
 	}
 	if targetGroup != nil {
 		input.LoadBalancers = []types.LoadBalancer{*targetGroup}
