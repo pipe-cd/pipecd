@@ -252,6 +252,9 @@ func (c *client) WaitServiceStable(ctx context.Context, service types.Service) e
 		Cluster:  service.ClusterArn,
 		Services: []string{*service.ServiceArn},
 	}
+	// Wait before first checking the service state due to the logic checking service
+	// stable currently is based on `pendingCount`, which could always be `0` when
+	// the service deployment has started running.
 	// TODO: Wait until a new task is started instead of sleeping.
 	time.Sleep(30 * time.Second)
 	retry := backoff.NewRetry(retryServiceStable, backoff.NewConstant(retryServiceStableInterval))
