@@ -227,6 +227,11 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 }
 
 func (c *client) UpdateFunctionFromSource(ctx context.Context, fm FunctionManifest, zip io.Reader) error {
+	// Update function configuration.
+	if err := c.updateFunctionConfiguration(ctx, fm); err != nil {
+		return err
+	}
+
 	data, err := io.ReadAll(zip)
 	if err != nil {
 		return err
@@ -247,11 +252,6 @@ func (c *client) UpdateFunctionFromSource(ctx context.Context, fm FunctionManife
 	_, err = c.client.UpdateFunctionCode(ctx, codeInput)
 	if err != nil {
 		return fmt.Errorf("failed to update function code for Lambda function %s: %w", fm.Spec.Name, err)
-	}
-
-	// Update function configuration.
-	if err = c.updateFunctionConfiguration(ctx, fm); err != nil {
-		return err
 	}
 
 	// Tag/Untag function if necessary.
@@ -295,32 +295,24 @@ func (c *client) updateFunctionConfiguration(ctx context.Context, fm FunctionMan
 	if !updateFunctionConfigurationSucceed {
 		return fmt.Errorf("failed to update configuration for Lambda function %s: %w", fm.Spec.Name, err)
 	}
-	if err := c.waitFunctionUpdated(ctx, fm.Spec.Name); err != nil {
-		return fmt.Errorf("failed to wait for Lambda function %s updated: %w", fm.Spec.Name, err)
-	}
-	return nil
-}
 
-func (c *client) waitFunctionUpdated(ctx context.Context, functionName string) error {
-	retry := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
+	// Wait until function updated successfully.
+	retry = backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
 	input := &lambda.GetFunctionInput{
-		FunctionName: aws.String(functionName),
+		FunctionName: aws.String(fm.Spec.Name),
 	}
-	_, err := retry.Do(ctx, func() (any, error) {
+	_, err = retry.Do(ctx, func() (any, error) {
 		output, err := c.client.GetFunction(ctx, input)
 		if err != nil {
 			return nil, err
 		}
 		if output.Configuration.LastUpdateStatus != types.LastUpdateStatusSuccessful {
 			return nil, fmt.Errorf("failed to update Lambda function %s, status code %v, error reason %s",
-				functionName, output.Configuration.LastUpdateStatus, *output.Configuration.LastUpdateStatusReason)
+				fm.Spec.Name, output.Configuration.LastUpdateStatus, *output.Configuration.LastUpdateStatusReason)
 		}
 		return nil, nil
 	})
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (c *client) PublishFunction(ctx context.Context, fm FunctionManifest) (string, error) {
