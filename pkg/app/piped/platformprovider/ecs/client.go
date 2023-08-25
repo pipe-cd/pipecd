@@ -135,8 +135,10 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 	// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
 	// in UpdateService step, but it required in further step (CreateTaskSet step). We reassign those values
 	// as part of service definition for that purpose.
+	// ref: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html
 	output.Service.LaunchType = service.LaunchType
 	output.Service.NetworkConfiguration = service.NetworkConfiguration
+	output.Service.ServiceRegistries = service.ServiceRegistries
 
 	return output.Service, nil
 }
