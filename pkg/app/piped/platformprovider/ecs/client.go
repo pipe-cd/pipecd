@@ -252,7 +252,8 @@ func (c *client) WaitServiceStable(ctx context.Context, service types.Service) e
 		Cluster:  service.ClusterArn,
 		Services: []string{*service.ServiceArn},
 	}
-
+	// TODO: Wait until a new task is started instead of sleeping.
+	time.Sleep(30 * time.Second)
 	retry := backoff.NewRetry(retryServiceStable, backoff.NewConstant(retryServiceStableInterval))
 	_, err := retry.Do(ctx, func() (interface{}, error) {
 		output, err := c.ecsClient.DescribeServices(ctx, input)
