@@ -295,6 +295,31 @@ func (c *client) updateFunctionConfiguration(ctx context.Context, fm FunctionMan
 	if !updateFunctionConfigurationSucceed {
 		return fmt.Errorf("failed to update configuration for Lambda function %s: %w", fm.Spec.Name, err)
 	}
+	if err := c.waitFunctionUpdated(ctx, fm.Spec.Name); err != nil {
+		return fmt.Errorf("failed to wait for Lambda function %s updated: %w", fm.Spec.Name, err)
+	}
+	return nil
+}
+
+func (c *client) waitFunctionUpdated(ctx context.Context, functionName string) error {
+	retry := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
+	input := &lambda.GetFunctionInput{
+		FunctionName: aws.String(functionName),
+	}
+	_, err := retry.Do(ctx, func() (any, error) {
+		output, err := c.client.GetFunction(ctx, input)
+		if err != nil {
+			return nil, err
+		}
+		if output.Configuration.LastUpdateStatus != types.LastUpdateStatusSuccessful {
+			return nil, fmt.Errorf("failed to update Lambda function %s, status code %v, error reason %s",
+				functionName, output.Configuration.LastUpdateStatus, *output.Configuration.LastUpdateStatusReason)
+		}
+		return nil, nil
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
