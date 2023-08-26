@@ -359,14 +359,16 @@ func (l *launcher) launchNewPiped(version string, config []byte, workingDir stri
 	}
 
 	// Download Piped binary into working directory.
-	var (
-		binaryDir   = filepath.Join(workingDir, "bin")
-		downloadURL = makeDownloadURL(version)
-	)
-	pipedPath, err := downloadBinary(downloadURL, binaryDir, pipedBinaryFileName, logger)
-	if err != nil {
-		return nil, fmt.Errorf("failed to download Piped from %s to %s (%w)", downloadURL, binaryDir, err)
-	}
+	// var (
+	// binaryDir   = filepath.Join(workingDir, "bin")
+	// downloadURL = makeDownloadURL(version)
+	// )
+	// pipedPath, err := downloadBinary(downloadURL, binaryDir, pipedBinaryFileName, logger)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to download Piped from %s to %s (%w)", downloadURL, binaryDir, err)
+	// }
+	pipedPath := "/home/piped/.cache/piped-launcher/piped/bin/piped"
+	downloadURL := "no download"
 	logger.Info(fmt.Sprintf("LAUNCHER: downloaded Piped binary from %s to %s", downloadURL, pipedPath))
 
 	// Write Piped configuration into working directory.

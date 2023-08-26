@@ -269,6 +269,8 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 		return false
 	}
 
+	in.LogPersister.Infof("moko-poimoko-poimoko-poimoko-poimoko-poimoko-poimoko-poimoko-poi")
+
 	in.LogPersister.Infof("Start applying the ECS task definition")
 	td, err := applyTaskDefinition(ctx, client, taskDefinition)
 	if err != nil {

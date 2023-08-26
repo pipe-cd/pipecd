@@ -23,8 +23,8 @@ build/go: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
 build/go: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
 build/go: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
 build/go: BUILD_OPTS ?= -ldflags "$(BUILD_LDFLAGS_PREFIX).version=$(BUILD_VERSION) $(BUILD_LDFLAGS_PREFIX).gitCommit=$(BUILD_COMMIT) $(BUILD_LDFLAGS_PREFIX).buildDate=$(BUILD_DATE) -w"
-build/go: BUILD_OS ?= $(shell go version | cut -d ' ' -f4 | cut -d/ -f1)
-build/go: BUILD_ARCH ?= $(shell go version | cut -d ' ' -f4 | cut -d/ -f2)
+build/go: BUILD_OS ?= linux
+build/go: BUILD_ARCH ?= amd64
 build/go: BUILD_ENV ?= GOOS=$(BUILD_OS) GOARCH=$(BUILD_ARCH) CGO_ENABLED=0
 build/go: BIN_SUFFIX ?=
 build/go:
