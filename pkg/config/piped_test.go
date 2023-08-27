@@ -1418,6 +1418,10 @@ func TestPipeGitValidate(t *testing.T) {
 			},
 			err: nil,
 		},
+		{
+			git: PipedGit{ },
+			err: nil,
+		},
 	}
 	for _, tc := range testcases {
 		tc := tc
