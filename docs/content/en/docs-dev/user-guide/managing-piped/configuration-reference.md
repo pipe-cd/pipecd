@@ -54,8 +54,8 @@ spec:
 ## GitPersonalAccessToken
 | Field | Type | Description | Required |
 |-|-|-|-|
-| userName | string | The user name for git  used while cloning above Git repository. | No |
-| userToken | string | The generated personal access token used while cloning above Git repository. | No |
+| userName | string | The user name for git  used while cloning above Git repository. | Yes |
+| userToken | string | The generated personal access token used while cloning above Git repository. | Yes |
 
 ## GitRepository
 
