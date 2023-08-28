@@ -40,7 +40,7 @@ const (
 	retryServiceStableInterval = 15 * time.Second
 
 	// TaskSetStable's constants.
-	retryTaskSetStable         = 100
+	retryTaskSetStable         = 40
 	retryTaskSetStableInterval = 15 * time.Second
 )
 
