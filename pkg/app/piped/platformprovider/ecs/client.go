@@ -35,10 +35,13 @@ import (
 )
 
 const (
-	// Retry wait service stable check.
-	retryServiceStable = 40
-	// Interval wait service stable check.
+	// ServiceStable's constants.
+	retryServiceStable         = 40
 	retryServiceStableInterval = 15 * time.Second
+
+	// TaskSetStable's constants.
+	retryTaskSetStable         = 40
+	retryTaskSetStableInterval = 15 * time.Second
 )
 
 type client struct {
@@ -216,6 +219,34 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ECS task set %s: %w", *taskDefinition.TaskDefinitionArn, err)
 	}
+
+	// Wait created TaskSet to be stable.
+	waitInput := &ecs.DescribeTaskSetsInput{
+		Cluster:  service.ClusterArn,
+		Service:  service.ServiceArn,
+		TaskSets: []string{*output.TaskSet.TaskSetArn},
+	}
+
+	retry := backoff.NewRetry(retryTaskSetStable, backoff.NewConstant(retryTaskSetStableInterval))
+	_, err = retry.Do(ctx, func() (interface{}, error) {
+		output, err := c.ecsClient.DescribeTaskSets(ctx, waitInput)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get ECS task set %s: %w", *taskDefinition.TaskDefinitionArn, err)
+		}
+		if len(output.TaskSets) == 0 {
+			return nil, fmt.Errorf("failed to get ECS task set %s: task sets empty", *taskDefinition.TaskDefinitionArn)
+		}
+		taskSet := output.TaskSets[0]
+		if taskSet.StabilityStatus == types.StabilityStatusSteadyState {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("task set %s is not stable", *taskDefinition.TaskDefinitionArn)
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to wait ECS task set %s stable: %w", *taskDefinition.TaskDefinitionArn, err)
+	}
+
 	return output.TaskSet, nil
 }
 
@@ -252,11 +283,7 @@ func (c *client) WaitServiceStable(ctx context.Context, service types.Service) e
 		Cluster:  service.ClusterArn,
 		Services: []string{*service.ServiceArn},
 	}
-	// Wait before first checking the service state due to the logic checking service
-	// stable currently is based on `pendingCount`, which could always be `0` when
-	// the service deployment has started running.
-	// TODO: Wait until a new task is started instead of sleeping.
-	time.Sleep(30 * time.Second)
+
 	retry := backoff.NewRetry(retryServiceStable, backoff.NewConstant(retryServiceStableInterval))
 	_, err := retry.Do(ctx, func() (interface{}, error) {
 		output, err := c.ecsClient.DescribeServices(ctx, input)
