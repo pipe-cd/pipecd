@@ -64,6 +64,8 @@ type EventWatcherHandlerConfig struct {
 	// The commit message used to push after replacing values.
 	// Default message is used if not given.
 	CommitMessage string `json:"commitMessage,omitempty"`
+	// Whether to create a new branch or not when event watcher commits changes.
+	MakePullRequest bool `json:"makePullRequest,omitempty"`
 	// List of places where will be replaced when the new event matches.
 	Replacements []EventWatcherReplacement `json:"replacements"`
 }
