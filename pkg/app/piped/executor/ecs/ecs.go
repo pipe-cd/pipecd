@@ -33,8 +33,11 @@ import (
 )
 
 const (
+	// Canary task set metadata keys.
 	canaryTaskSetARNKeyName = "canary-taskset-arn"
 	canaryServiceKeyName    = "canary-service-object"
+	// Previous primary task set metadata keys.
+	previousPrimaryTaskSetARNKeyName = "previous-primary-taskset-arn"
 	// Stage metadata keys.
 	trafficRoutePrimaryMetadataKey = "primary-percentage"
 	trafficRouteCanaryMetadataKey  = "canary-percentage"
@@ -213,12 +216,19 @@ func runStandaloneTask(
 	return true
 }
 
-func createPrimaryTaskSet(ctx context.Context, client provider.Client, service types.Service, taskDef types.TaskDefinition, targetGroup *types.LoadBalancer) error {
+func createPrimaryTaskSet(ctx context.Context, in *executor.Input, client provider.Client, service types.Service, taskDef types.TaskDefinition, targetGroup *types.LoadBalancer) error {
 	// Get current PRIMARY task set.
 	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, service)
 	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
 	if err != nil && !errors.Is(err, platformprovider.ErrNotFound) {
 		return err
+	}
+
+	// Store previous PRIMARY task set Arn to delete later by clean stage.
+	if prevPrimaryTaskSet != nil {
+		if err := in.MetadataStore.Shared().Put(ctx, previousPrimaryTaskSetARNKeyName, *prevPrimaryTaskSet.TaskSetArn); err != nil {
+			return err
+		}
 	}
 
 	// Create a task set in the specified cluster and service.
@@ -266,7 +276,7 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 	}
 
 	in.LogPersister.Infof("Start rolling out ECS task set")
-	if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
+	if err := createPrimaryTaskSet(ctx, in, client, *service, *td, targetGroup); err != nil {
 		in.LogPersister.Errorf("Failed to rolling out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
@@ -306,7 +316,7 @@ func rollout(ctx context.Context, in *executor.Input, platformProviderName strin
 	in.LogPersister.Infof("Start rolling out ECS task set")
 	if in.StageConfig.Name == model.StageECSPrimaryRollout {
 		// Create PRIMARY task set in case of Primary rollout.
-		if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
+		if err := createPrimaryTaskSet(ctx, in, client, *service, *td, targetGroup); err != nil {
 			in.LogPersister.Errorf("Failed to rolling out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
 			return false
 		}
@@ -365,11 +375,7 @@ func clean(ctx context.Context, in *executor.Input, platformProviderName string,
 		return false
 	}
 
-	taskSetArn, ok := in.MetadataStore.Shared().Get(canaryTaskSetARNKeyName)
-	if !ok {
-		in.LogPersister.Errorf("Unable to restore CANARY task set to clean: Not found")
-		return false
-	}
+	// Get service object from metadata store.
 	serviceObjData, ok := in.MetadataStore.Shared().Get(canaryServiceKeyName)
 	if !ok {
 		in.LogPersister.Errorf("Unable to restore CANARY service to clean: Not found")
@@ -381,11 +387,25 @@ func clean(ctx context.Context, in *executor.Input, platformProviderName string,
 		return false
 	}
 
-	if err := client.DeleteTaskSet(ctx, *service, taskSetArn); err != nil {
-		in.LogPersister.Errorf("Failed to clean CANARY task set %s: %v", taskSetArn, err)
-		return false
+	// Delete previous PRIMARY task set if present.
+	previousPrimaryTaskSetArn, ok := in.MetadataStore.Shared().Get(previousPrimaryTaskSetARNKeyName)
+	if ok {
+		if err := client.DeleteTaskSet(ctx, *service, previousPrimaryTaskSetArn); err != nil {
+			in.LogPersister.Errorf("Failed to clean previous PRIMARY task set %s: %v", previousPrimaryTaskSetArn, err)
+			return false
+		}
 	}
 
+	// Delete canary task set if present.
+	taskSetArn, ok := in.MetadataStore.Shared().Get(canaryTaskSetARNKeyName)
+	if ok {
+		if err := client.DeleteTaskSet(ctx, *service, taskSetArn); err != nil {
+			in.LogPersister.Errorf("Failed to clean CANARY task set %s: %v", taskSetArn, err)
+			return false
+		}
+	}
+
+	in.LogPersister.Info("No task set found in metadata store to clean")
 	return true
 }
 

@@ -41,10 +41,11 @@ func loadTargetGroups(targetGroups config.ECSTargetGroups) (*types.LoadBalancer,
 		return nil, nil, fmt.Errorf("invalid primary target group definition given: %v", err)
 	}
 
-	canary := &types.LoadBalancer{}
+	var canary *types.LoadBalancer
 	if len(targetGroups.Canary) > 0 {
 		canaryDecoder := json.NewDecoder(bytes.NewReader(targetGroups.Canary))
 		canaryDecoder.DisallowUnknownFields()
+		canary = &types.LoadBalancer{}
 		err := canaryDecoder.Decode(canary)
 		if err != nil {
 			return nil, nil, fmt.Errorf("invalid canary target group definition given: %v", err)

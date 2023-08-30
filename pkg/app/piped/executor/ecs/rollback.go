@@ -147,27 +147,29 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 		}
 	}
 
-	// Reset routing
-	routingTrafficCfg := provider.RoutingTrafficConfig{
-		{
-			TargetGroupArn: *primaryTargetGroup.TargetGroupArn,
-			Weight:         100,
-		},
-		{
-			TargetGroupArn: *canaryTargetGroup.TargetGroupArn,
-			Weight:         0,
-		},
-	}
+	// Reset routing in case of rolling back progressive pipeline.
+	if primaryTargetGroup != nil && canaryTargetGroup != nil {
+		routingTrafficCfg := provider.RoutingTrafficConfig{
+			{
+				TargetGroupArn: *primaryTargetGroup.TargetGroupArn,
+				Weight:         100,
+			},
+			{
+				TargetGroupArn: *canaryTargetGroup.TargetGroupArn,
+				Weight:         0,
+			},
+		}
 
-	currListenerArns, err := client.GetListenerArns(ctx, *primaryTargetGroup)
-	if err != nil {
-		in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
-		return false
-	}
+		currListenerArns, err := client.GetListenerArns(ctx, *primaryTargetGroup)
+		if err != nil {
+			in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
+			return false
+		}
 
-	if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
-		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY variant: %v", err)
-		return false
+		if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
+			in.LogPersister.Errorf("Failed to routing traffic to PRIMARY variant: %v", err)
+			return false
+		}
 	}
 
 	// Delete Canary taskSet
