@@ -118,11 +118,11 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 		return false
 	}
 
-	// Get current PRIMARY task set.
-	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, *service)
-	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
+	// Get current PRIMARY/ACTIVE task set.
+	prevTaskSets, err := client.GetServiceTaskSets(ctx, *service)
+	// Ignore error in case it's not found error, the prevTaskSets doesn't exist for newly created Service.
 	if err != nil && !errors.Is(err, platformprovider.ErrNotFound) {
-		in.LogPersister.Errorf("Failed to determine current ECS PRIMARY taskSet of service %s for rollback: %v", *serviceDefinition.ServiceName, err)
+		in.LogPersister.Errorf("Failed to determine current ECS PRIMARY/ACTIVE taskSet of service %s for rollback: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
 
@@ -137,14 +137,6 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 	if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
 		in.LogPersister.Errorf("Failed to update PRIMARY ECS taskSet for service %s: %v", *serviceDefinition.ServiceName, err)
 		return false
-	}
-
-	// Remove old taskSet if existed.
-	if prevPrimaryTaskSet != nil {
-		if err = client.DeleteTaskSet(ctx, *service, *prevPrimaryTaskSet.TaskSetArn); err != nil {
-			in.LogPersister.Errorf("Failed to remove unused previous PRIMARY taskSet %s: %v", *prevPrimaryTaskSet.TaskSetArn, err)
-			return false
-		}
 	}
 
 	// Reset routing in case of rolling back progressive pipeline.
@@ -172,10 +164,14 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 		}
 	}
 
-	// Delete Canary taskSet
-	if !clean(ctx, in, platformProviderName, platformProviderCfg) {
-		in.LogPersister.Error("Failed to delete CANARY TaskSet")
-		return false
+	// Delete previous ACTIVE taskSets
+	in.LogPersister.Infof("Start deleting previous ACTIVE taskSets")
+	for _, ts := range prevTaskSets {
+		in.LogPersister.Infof("Deleting previous ACTIVE taskSet %s", *ts.TaskSetArn)
+		if err := client.DeleteTaskSet(ctx, *service, *ts.TaskSetArn); err != nil {
+			in.LogPersister.Errorf("Failed to remove previous ACTIVE taskSet %s: %v", *ts.TaskSetArn, err)
+			return false
+		}
 	}
 
 	in.LogPersister.Infof("Rolled back the ECS service %s and task definition %s configuration to original stage", *serviceDefinition.ServiceName, *taskDefinition.Family)
