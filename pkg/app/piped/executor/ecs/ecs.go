@@ -36,8 +36,6 @@ const (
 	activeServiceKeyName = "active-service-object"
 	// Canary task set metadata keys.
 	canaryTaskSetARNKeyName = "canary-taskset-arn"
-	// Previous primary task set metadata keys.
-	previousPrimaryTaskSetARNKeyName = "previous-primary-taskset-arn"
 	// Stage metadata keys.
 	trafficRoutePrimaryMetadataKey = "primary-percentage"
 	trafficRouteCanaryMetadataKey  = "canary-percentage"
