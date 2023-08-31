@@ -395,11 +395,12 @@ func clean(ctx context.Context, in *executor.Input, platformProviderName string,
 	// Delete canary task set if present.
 	taskSetArn, ok := in.MetadataStore.Shared().Get(canaryTaskSetARNKeyName)
 	if ok {
-		in.LogPersister.Errorf("Cleaning CANARY task set %s from service %s", taskSetArn, *service.ServiceName)
+		in.LogPersister.Infof("Cleaning CANARY task set %s from service %s", taskSetArn, *service.ServiceName)
 		if err := client.DeleteTaskSet(ctx, *service, taskSetArn); err != nil {
 			in.LogPersister.Errorf("Failed to clean CANARY task set %s: %v", taskSetArn, err)
 			return false
 		}
+		return true
 	}
 
 	in.LogPersister.Info("No task set found in metadata store to clean")
