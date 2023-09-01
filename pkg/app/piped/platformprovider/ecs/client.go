@@ -273,6 +273,31 @@ func (c *client) GetPrimaryTaskSet(ctx context.Context, service types.Service) (
 	return nil, platformprovider.ErrNotFound
 }
 
+func (c *client) GetServiceTaskSets(ctx context.Context, service types.Service) ([]*types.TaskSet, error) {
+	input := &ecs.DescribeServicesInput{
+		Cluster: service.ClusterArn,
+		Services: []string{
+			*service.ServiceArn,
+		},
+	}
+	output, err := c.ecsClient.DescribeServices(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get task sets of service %s: %w", *service.ServiceName, err)
+	}
+	if len(output.Services) == 0 {
+		return nil, fmt.Errorf("failed to get task sets of service %s: services empty", *service.ServiceName)
+	}
+	svc := output.Services[0]
+	taskSets := make([]*types.TaskSet, 0, len(svc.TaskSets))
+	for i := range svc.TaskSets {
+		if aws.ToString(svc.TaskSets[i].Status) == "DRAINING" {
+			continue
+		}
+		taskSets = append(taskSets, &svc.TaskSets[i])
+	}
+	return taskSets, nil
+}
+
 // WaitServiceStable blocks until the ECS service is stable.
 // It returns nil if the service is stable, otherwise it returns an error.
 // Note: This function follow the implementation of the AWS CLI.
