@@ -49,6 +49,7 @@ type ECS interface {
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
 	RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *config.ECSVpcConfiguration, tags []types.Tag) error
 	GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error)
+	GetServiceTaskSets(ctx context.Context, service types.Service) ([]*types.TaskSet, error)
 	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale int) (*types.TaskSet, error)
 	DeleteTaskSet(ctx context.Context, service types.Service, taskSetArn string) error
 	UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
