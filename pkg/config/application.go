@@ -577,6 +577,20 @@ func (n *DeploymentNotification) FindSlackAccounts(event model.NotificationEvent
 	return approvers
 }
 
+func (n *DeploymentNotification) FindSlackAccountByTrigger(trigger string, event model.NotificationEventType) string {
+	for _, m := range n.Mentions {
+		if m.Event != allEventsSymbol && "EVENT_"+m.Event != event.String() {
+			continue
+		}
+		for _, d := range m.Dynamics {
+			if d.Git == trigger {
+				return d.Slack
+			}
+		}
+	}
+	return ""
+}
+
 type NotificationMention struct {
 	// The event to be notified to users.
 	Event string `json:"event"`
@@ -587,6 +601,8 @@ type NotificationMention struct {
 	// TODO: Support for email notification
 	// The email for notification.
 	Email []string `json:"email"`
+	// Dynamic Mention.
+	Dynamics []*DynamicMention `json:"dynamics"`
 }
 
 func (n *NotificationMention) Validate() error {
@@ -601,6 +617,25 @@ func (n *NotificationMention) Validate() error {
 		}
 	}
 	return fmt.Errorf("event %q is incorrect as NotificationEventType", n.Event)
+}
+
+type DynamicMention struct {
+	// Git ID.
+	Git string `json:"git"`
+	// User ID for mentioning in Slack.
+	// See https://api.slack.com/reference/surfaces/formatting#mentioning-users
+	// for more information on how to check them.
+	Slack string `json:"slack"`
+}
+
+func (dm *DynamicMention) Validate() error {
+	if dm.Git == "" {
+		return fmt.Errorf("git field in dynamics must not be empty")
+	}
+	if dm.Slack == "" {
+		return fmt.Errorf("slack field in dynamics must not be empty")
+	}
+	return nil
 }
 
 // PostSync provides all configurations to be used once the current deployment

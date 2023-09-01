@@ -178,6 +178,62 @@ func TestFindSlackAccounts(t *testing.T) {
 	}
 }
 
+func TestFindSlackAccountByTrigger(t *testing.T) {
+	testcases := []struct {
+		name     string
+		mentions []NotificationMention
+		event    model.NotificationEventType
+		trigger  string
+		want     string
+	}{
+		{
+			name: "match an event name",
+			mentions: []NotificationMention{
+				{
+					Event:    "DEPLOYMENT_TRIGGERED",
+					Slack:    []string{"user-1", "user-2"},
+					Dynamics: []*DynamicMention{{Git: "git-user-1", Slack: "slack-user-1"}, {Git: "git-user-2", Slack: "slack-user-2"}},
+				},
+				{
+					Event:    "DEPLOYMENT_PLANNED",
+					Slack:    []string{"user-3", "user-4"},
+					Dynamics: []*DynamicMention{{Git: "git-user-3", Slack: "slack-user-3"}, {Git: "git-user-4", Slack: "slack-user-4"}},
+				},
+			},
+			event:   model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+			trigger: "git-user-4",
+			want:    "slack-user-4",
+		},
+		{
+			name: "does not match anything",
+			mentions: []NotificationMention{
+				{
+					Event:    "DEPLOYMENT_TRIGGERED",
+					Slack:    []string{"user-1", "user-2"},
+					Dynamics: []*DynamicMention{{Git: "git-user-1", Slack: "slack-user-1"}, {Git: "git-user-2", Slack: "slack-user-2"}},
+				},
+				{
+					Event:    "DEPLOYMENT_PLANNED",
+					Slack:    []string{"user-3", "user-4"},
+					Dynamics: []*DynamicMention{{Git: "git-user-1", Slack: "slack-user-1"}, {Git: "git-user-2", Slack: "slack-user-2"}},
+				},
+			},
+			event:   model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+			trigger: "*",
+			want:    "",
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			n := &DeploymentNotification{
+				tc.mentions,
+			}
+			a := n.FindSlackAccountByTrigger(tc.trigger, tc.event)
+			assert.Equal(t, tc.want, a)
+		})
+	}
+}
+
 func TestValidateAnalysisTemplateRef(t *testing.T) {
 	testcases := []struct {
 		name    string
@@ -241,10 +297,11 @@ func TestValidateEncryption(t *testing.T) {
 
 func TestValidateMentions(t *testing.T) {
 	testcases := []struct {
-		name    string
-		event   string
-		slack   []string
-		wantErr bool
+		name     string
+		event    string
+		slack    []string
+		dynamics []*DynamicMention
+		wantErr  bool
 	}{
 		{
 			name:    "valid",
@@ -259,6 +316,21 @@ func TestValidateMentions(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:  "valid",
+			event: "*",
+			dynamics: []*DynamicMention{
+				{
+					Git:   "git-user-1",
+					Slack: "slack-user-1",
+				},
+				{
+					Git:   "git-user-2",
+					Slack: "slack-user-2",
+				},
+			},
+			wantErr: false,
+		},
+		{
 			name:    "invalid because of non-existent event",
 			event:   "event-1",
 			slack:   []string{"user-1", "user-2"},
@@ -268,6 +340,17 @@ func TestValidateMentions(t *testing.T) {
 			name:    "invalid because of missing event",
 			event:   "",
 			slack:   []string{"user-1", "user-2"},
+			wantErr: true,
+		},
+		{
+			name:  "invalid because of missing dynamic mention",
+			event: "",
+			slack: []string{"user-1", "user-2"},
+			dynamics: []*DynamicMention{
+				{
+					Slack: "slack-user-1",
+				},
+			},
 			wantErr: true,
 		},
 	}

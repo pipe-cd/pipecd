@@ -151,6 +151,10 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 		return nil, fmt.Errorf("could not extract mentions config: %w", err)
 	}
 
+	if approver := notification.FindSlackAccountByTrigger(e.Deployment.TriggeredBy(), event); approver != "" {
+		return []string{approver}, nil
+	}
+
 	return notification.FindSlackAccounts(event), nil
 }
 
