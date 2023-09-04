@@ -122,7 +122,7 @@ spec:
 {{- end }}
 {{- end }}
         - name: server
-          image: "{{ .Values.server.image.repository }}:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           args:
           - server
@@ -284,7 +284,7 @@ spec:
               readOnly: true
 {{- end }}
         - name: ops
-          image: "{{ .Values.ops.image.repository }}:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.ops.image.repository }}:{{ .Values.ops.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           args:
           - ops
@@ -371,6 +371,7 @@ spec:
 {{- end }}
 
 ---
+# MinIO File Store
 apiVersion: apps/v1
 kind: Deployment
 metadata:
