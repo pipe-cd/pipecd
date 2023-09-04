@@ -444,7 +444,6 @@ One of `yamlField` or `regex` is required.
 | serviceDefinitionFile | string | The path ECS Service configuration file. Allow file in both `yaml` and `json` format. The default value is `service.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_definition_parameters.html) for parameters.| No |
 | taskDefinitionFile | string | The path to ECS TaskDefinition configuration file. Allow file in both `yaml` and `json` format. The default value is `taskdef.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html) for parameters. | No |
 | targetGroups | [ECSTargetGroupInput](#ecstargetgroupinput) | The target groups configuration, will be used to routing traffic to created task sets. | Yes (if you want to perform progressive delivery) |
-| listenerRules | []string | Specifies the listener rules used for registering the ECS task set if exists. If rules are not specified, traffic will be routed to the default listener. | No |
 
 ### ECSTargetGroupInput
 
@@ -454,6 +453,7 @@ One of `yamlField` or `regex` is required.
 | canary | ECSTargetGroupObject | The CANARY target group, will be used to register the CANARY ECS task set if exist. It's required to enable PipeCD to perform the multi-stage deployment. | No |
 
 Note: You can get examples for those object from [here](../../examples/#ecs-applications).
+
 ## ECSQuickSync
 
 | Field | Type | Description | Required |
