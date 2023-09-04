@@ -105,7 +105,7 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
             addToast({ message: GENERATE_API_KEY_SUCCESS, severity: "success" })
           );
         })
-        .catch(() => {});
+        .catch(() => undefined);
     },
     [dispatch]
   );
