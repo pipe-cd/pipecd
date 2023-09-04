@@ -99,6 +99,7 @@ func buildDeployment(
 		Status:                    model.DeploymentStatus_DEPLOYMENT_PENDING,
 		StatusReason:              "The deployment is waiting to be planned",
 		Metadata:                  metadata,
+		CompletedAt:               app.MostRecentlySuccessfulDeployment.CompletedAt,
 		CreatedAt:                 now.Unix(),
 		UpdatedAt:                 now.Unix(),
 		DeploymentChainId:         deploymentChainID,
