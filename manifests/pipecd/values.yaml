@@ -30,6 +30,8 @@ gateway:
 server:
   image:
     repository: ghcr.io/pipe-cd/pipecd
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
   replicasCount: 1
   args:
     cacheAddress: ""
@@ -51,6 +53,8 @@ cache:
 ops:
   image:
     repository: ghcr.io/pipe-cd/pipecd
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
   args:
     cacheAddress: ""
     # One of "humanize", "json", or "console" is available.
