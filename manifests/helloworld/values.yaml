@@ -23,6 +23,8 @@ service:
 
 image:
   repository: ghcr.io/pipe-cd/helloworld
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
