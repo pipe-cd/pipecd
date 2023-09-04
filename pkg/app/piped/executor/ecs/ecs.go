@@ -35,7 +35,7 @@ import (
 const (
 	activeServiceKeyName = "active-service-object"
 	// Canary task set metadata keys.
-	canaryTaskSetARNKeyName = "canary-taskset-arn"
+	canaryTaskSetKeyName = "canary-taskset-object"
 	// Stage metadata keys.
 	trafficRoutePrimaryMetadataKey = "primary-percentage"
 	trafficRouteCanaryMetadataKey  = "canary-percentage"
@@ -237,7 +237,7 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 
 	// Remove old taskSet if existed.
 	if prevPrimaryTaskSet != nil {
-		if err = client.DeleteTaskSet(ctx, service, *prevPrimaryTaskSet.TaskSetArn); err != nil {
+		if err = client.DeleteTaskSet(ctx, *prevPrimaryTaskSet); err != nil {
 			return err
 		}
 	}
@@ -355,7 +355,12 @@ func rollout(ctx context.Context, in *executor.Input, platformProviderName strin
 			return false
 		}
 		// Store created ACTIVE TaskSet (CANARY variant) to delete later.
-		if err := in.MetadataStore.Shared().Put(ctx, canaryTaskSetARNKeyName, *taskSet.TaskSetArn); err != nil {
+		taskSetObjData, err := json.Marshal(taskSet)
+		if err != nil {
+			in.LogPersister.Errorf("Unable to store created active taskSet to metadata store: %v", err)
+			return false
+		}
+		if err := in.MetadataStore.Shared().Put(ctx, canaryTaskSetKeyName, string(taskSetObjData)); err != nil {
 			in.LogPersister.Errorf("Unable to store created active taskSet to metadata store: %v", err)
 			return false
 		}
@@ -378,30 +383,26 @@ func clean(ctx context.Context, in *executor.Input, platformProviderName string,
 		return false
 	}
 
-	// Get service object from metadata store.
-	serviceObjData, ok := in.MetadataStore.Shared().Get(activeServiceKeyName)
+	// Get task set object from metadata store.
+	taskSetObjData, ok := in.MetadataStore.Shared().Get(canaryTaskSetKeyName)
 	if !ok {
-		in.LogPersister.Errorf("Unable to restore service to clean: Not found")
+		in.LogPersister.Error("Unable to restore taskset to clean: Not found")
 		return false
 	}
-	service := &types.Service{}
-	if err := json.Unmarshal([]byte(serviceObjData), service); err != nil {
-		in.LogPersister.Errorf("Unable to restore service to clean: %v", err)
+	taskSet := &types.TaskSet{}
+	if err := json.Unmarshal([]byte(taskSetObjData), taskSet); err != nil {
+		in.LogPersister.Errorf("Unable to restore taskset to clean: %v", err)
 		return false
 	}
 
 	// Delete canary task set if present.
-	taskSetArn, ok := in.MetadataStore.Shared().Get(canaryTaskSetARNKeyName)
-	if ok {
-		in.LogPersister.Infof("Cleaning CANARY task set %s from service %s", taskSetArn, *service.ServiceName)
-		if err := client.DeleteTaskSet(ctx, *service, taskSetArn); err != nil {
-			in.LogPersister.Errorf("Failed to clean CANARY task set %s: %v", taskSetArn, err)
-			return false
-		}
-		return true
+	in.LogPersister.Infof("Cleaning CANARY task set %s from service %s", *taskSet.TaskSetArn, *taskSet.ServiceArn)
+	if err := client.DeleteTaskSet(ctx, *taskSet); err != nil {
+		in.LogPersister.Errorf("Failed to clean CANARY task set %s: %v", *taskSet.TaskSetArn, err)
+		return false
 	}
 
-	in.LogPersister.Info("No task set found in metadata store to clean")
+	in.LogPersister.Infof("Successfully clean CANARY task set %s from service %s", *taskSet.TaskSetArn, *taskSet.ServiceArn)
 	return true
 }
 
