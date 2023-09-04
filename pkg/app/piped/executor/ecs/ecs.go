@@ -33,7 +33,6 @@ import (
 )
 
 const (
-	activeServiceKeyName = "active-service-object"
 	// Canary task set metadata keys.
 	canaryTaskSetKeyName = "canary-taskset-object"
 	// Stage metadata keys.
@@ -266,17 +265,6 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 		return false
 	}
 
-	// Store ACTIVE service to delete its unused TaskSet later.
-	serviceObjData, err := json.Marshal(service)
-	if err != nil {
-		in.LogPersister.Errorf("Unable to store applied service to metadata store: %v", err)
-		return false
-	}
-	if err := in.MetadataStore.Shared().Put(ctx, activeServiceKeyName, string(serviceObjData)); err != nil {
-		in.LogPersister.Errorf("Unable to store applied service to metadata store: %v", err)
-		return false
-	}
-
 	in.LogPersister.Infof("Start rolling out ECS task set")
 	if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
 		in.LogPersister.Errorf("Failed to rolling out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
@@ -311,17 +299,6 @@ func rollout(ctx context.Context, in *executor.Input, platformProviderName strin
 	service, err := applyServiceDefinition(ctx, client, serviceDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply service %s: %v", *serviceDefinition.ServiceName, err)
-		return false
-	}
-
-	// Store ACTIVE service to delete its unused TaskSet later.
-	serviceObjData, err := json.Marshal(service)
-	if err != nil {
-		in.LogPersister.Errorf("Unable to store applied service to metadata store: %v", err)
-		return false
-	}
-	if err := in.MetadataStore.Shared().Put(ctx, activeServiceKeyName, string(serviceObjData)); err != nil {
-		in.LogPersister.Errorf("Unable to store applied service to metadata store: %v", err)
 		return false
 	}
 
