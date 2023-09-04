@@ -340,6 +340,14 @@ func (c *client) DeleteTaskSet(ctx context.Context, taskSet types.TaskSet) error
 	if _, err := c.ecsClient.DeleteTaskSet(ctx, input); err != nil {
 		return fmt.Errorf("failed to delete ECS task set %s: %w", *taskSet.TaskSetArn, err)
 	}
+
+	// Inactive deleted taskset's task definition.
+	taskDefInput := &ecs.DeregisterTaskDefinitionInput{
+		TaskDefinition: taskSet.TaskDefinition,
+	}
+	if _, err := c.ecsClient.DeregisterTaskDefinition(ctx, taskDefInput); err != nil {
+		return fmt.Errorf("failed to inactive ECS task definition %s: %w", *taskSet.TaskDefinition, err)
+	}
 	return nil
 }
 
