@@ -168,7 +168,7 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 	in.LogPersister.Infof("Start deleting previous ACTIVE taskSets")
 	for _, ts := range prevTaskSets {
 		in.LogPersister.Infof("Deleting previous ACTIVE taskSet %s", *ts.TaskSetArn)
-		if err := client.DeleteTaskSet(ctx, *service, *ts.TaskSetArn); err != nil {
+		if err := client.DeleteTaskSet(ctx, *ts); err != nil {
 			in.LogPersister.Errorf("Failed to remove previous ACTIVE taskSet %s: %v", *ts.TaskSetArn, err)
 			return false
 		}

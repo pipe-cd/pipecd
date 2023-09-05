@@ -51,7 +51,7 @@ type ECS interface {
 	GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error)
 	GetServiceTaskSets(ctx context.Context, service types.Service) ([]*types.TaskSet, error)
 	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale int) (*types.TaskSet, error)
-	DeleteTaskSet(ctx context.Context, service types.Service, taskSetArn string) error
+	DeleteTaskSet(ctx context.Context, taskSet types.TaskSet) error
 	UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
 	TagResource(ctx context.Context, resourceArn string, tags []types.Tag) error
 }
