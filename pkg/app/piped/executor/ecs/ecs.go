@@ -379,7 +379,7 @@ func clean(ctx context.Context, in *executor.Input, platformProviderName string,
 		return false
 	}
 
-	in.LogPersister.Infof("Successfully clean CANARY task set %s from service %s", *taskSet.TaskSetArn, *taskSet.ServiceArn)
+	in.LogPersister.Infof("Successfully cleaned CANARY task set %s from service %s", *taskSet.TaskSetArn, *taskSet.ServiceArn)
 	return true
 }
 
