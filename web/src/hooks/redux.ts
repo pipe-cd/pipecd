@@ -1,4 +1,5 @@
 // @see https://redux-toolkit.js.org/tutorials/typescript#define-typed-hooks
+import { unwrapResult } from "@reduxjs/toolkit";
 import {
   shallowEqual,
   TypedUseSelectorHook,
@@ -15,3 +16,4 @@ export const useShallowEqualSelector: TypedUseSelectorHook<AppState> = (
 ) => {
   return useSelector(selector, shallowEqual);
 };
+export { unwrapResult };
