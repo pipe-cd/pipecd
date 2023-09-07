@@ -166,18 +166,22 @@ func getEncriptionKey(se *model.Piped_SecretEncryption) ([]byte, error) {
 }
 
 func gRPCStoreError(err error, msg string) error {
-	switch err {
-	case nil:
+	if err == nil {
 		return nil
-	case datastore.ErrNotFound, filestore.ErrNotFound, stagelogstore.ErrNotFound:
-		return status.Error(codes.NotFound, fmt.Sprintf("Entity was not found to %s", msg))
-	case datastore.ErrInvalidArgument:
-		return status.Error(codes.InvalidArgument, fmt.Sprintf("Invalid argument to %s", msg))
-	case datastore.ErrAlreadyExists:
-		return status.Error(codes.AlreadyExists, fmt.Sprintf("Entity already exists to %s", msg))
-	default:
-		return status.Error(codes.Internal, fmt.Sprintf("Failed to %s", msg))
 	}
+	if errors.Is(err, datastore.ErrNotFound) || errors.Is(err, filestore.ErrNotFound) || errors.Is(err, stagelogstore.ErrNotFound) {
+		return status.Error(codes.NotFound, fmt.Sprintf("Entity was not found to %s", msg))
+	}
+	if errors.Is(err, datastore.ErrInvalidArgument) {
+		return status.Error(codes.InvalidArgument, fmt.Sprintf("Invalid argument to %s", msg))
+	}
+	if errors.Is(err, datastore.ErrAlreadyExists) {
+		return status.Error(codes.AlreadyExists, fmt.Sprintf("Entity already exists to %s", msg))
+	}
+	if errors.Is(err, datastore.ErrUserDefined) {
+		return status.Error(codes.FailedPrecondition, err.Error())
+	}
+	return status.Error(codes.Internal, fmt.Sprintf("Failed to %s", msg))
 }
 
 func makeUnregisteredAppsCacheKey(projectID string) string {
