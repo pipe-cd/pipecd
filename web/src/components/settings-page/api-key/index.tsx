@@ -99,7 +99,6 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
       dispatch(generateAPIKey(values))
         .then(unwrapResult)
         .then(() => {
-          console.log("handleSubmit.then");
           dispatch(fetchAPIKeys({ enabled: true }));
           dispatch(
             addToast({ message: GENERATE_API_KEY_SUCCESS, severity: "success" })

@@ -101,7 +101,7 @@ func getCommand(ctx context.Context, store commandstore.Store, id string, logger
 func addCommand(ctx context.Context, store commandstore.Store, cmd *model.Command, logger *zap.Logger) error {
 	if err := store.AddCommand(ctx, cmd); err != nil {
 		logger.Error("failed to create command", zap.Error(err))
-		return status.Error(codes.Internal, "Failed to create command")
+		return gRPCStoreError(err, "create command")
 	}
 	return nil
 }
