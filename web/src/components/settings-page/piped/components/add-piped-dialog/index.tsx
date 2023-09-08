@@ -2,7 +2,7 @@ import { Dialog } from "@material-ui/core";
 import { useFormik } from "formik";
 import { FC, memo, useCallback } from "react";
 import { ADD_PIPED_SUCCESS } from "~/constants/toast-text";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+import { unwrapResult, useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { selectProjectName } from "~/modules/me";
 import { addPiped } from "~/modules/pipeds";
 import { addToast } from "~/modules/toasts";
@@ -23,12 +23,15 @@ export const AddPipedDialog: FC<AddPipedDrawerProps> = memo(
       validationSchema,
       validateOnMount: true,
       async onSubmit(values) {
-        await dispatch(addPiped(values)).then(() => {
-          dispatch(
-            addToast({ message: ADD_PIPED_SUCCESS, severity: "success" })
-          );
-          onClose();
-        });
+        await dispatch(addPiped(values))
+          .then(unwrapResult)
+          .then(() => {
+            dispatch(
+              addToast({ message: ADD_PIPED_SUCCESS, severity: "success" })
+            );
+            onClose();
+          })
+          .catch(() => undefined);
       },
     });
 
