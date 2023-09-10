@@ -302,7 +302,7 @@ func (c *client) GetListenerArns(ctx context.Context, targetGroup types.LoadBala
 	return arns, nil
 }
 
-func (c *client) GetListenerRules(ctx context.Context, listenerArns []string) ([]string, error) {
+func (c *client) GetListenerRuleArns(ctx context.Context, listenerArns []string) ([]string, error) {
 	var ruleArns []string
 
 	// 各リスナーのルールを取得

@@ -56,7 +56,7 @@ type ECS interface {
 
 type ELB interface {
 	GetListenerArns(ctx context.Context, targetGroup types.LoadBalancer) ([]string, error)
-	GetListenerRules(ctx context.Context, listenerArns []string) ([]string, error)
+	GetListenerRuleArns(ctx context.Context, listenerArns []string) ([]string, error)
 	ModifyListeners(ctx context.Context, listenerArns []string, routingTrafficCfg RoutingTrafficConfig) error
 }
 
