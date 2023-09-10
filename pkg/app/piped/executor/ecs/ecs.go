@@ -396,7 +396,7 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 			Weight:         primary,
 		},
 		{
-			TargetGroupArn: *canaryTargetGroup.TargetGroupArn,k
+			TargetGroupArn: *canaryTargetGroup.TargetGroupArn,
 			Weight:         canary,
 		},
 	}
