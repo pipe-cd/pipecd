@@ -38,6 +38,7 @@ const (
 	trafficRoutePrimaryMetadataKey = "primary-percentage"
 	trafficRouteCanaryMetadataKey  = "canary-percentage"
 	canaryScaleMetadataKey         = "canary-scale"
+	currentListenersKey            = "current-listeners"
 )
 
 type registerer interface {
@@ -437,17 +438,27 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 		},
 	}
 
-	metadata := map[string]string{
+	metadataPercentage := map[string]string{
 		trafficRoutePrimaryMetadataKey: strconv.FormatInt(int64(primary), 10),
 		trafficRouteCanaryMetadataKey:  strconv.FormatInt(int64(canary), 10),
 	}
-	if err := in.MetadataStore.Stage(in.Stage.Id).PutMulti(ctx, metadata); err != nil {
+	if err := in.MetadataStore.Stage(in.Stage.Id).PutMulti(ctx, metadataPercentage); err != nil {
 		in.Logger.Error("Failed to store traffic routing config to metadata store", zap.Error(err))
 	}
 
 	currListenerArns, err := client.GetListenerArns(ctx, primaryTargetGroup)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
+		return false
+	}
+
+	// Store created listeners to use later.
+	metadataListeners := make(map[string]string, len(currListenerArns))
+	for i, v := range currListenerArns {
+		metadataListeners[fmt.Sprintf(currentListenersKey+"-%d", i)] = v
+	}
+	if err := in.MetadataStore.Shared().PutMulti(ctx, metadataListeners); err != nil {
+		in.LogPersister.Errorf("Unable to store created listeners to metadata store: %v", err)
 		return false
 	}
 
