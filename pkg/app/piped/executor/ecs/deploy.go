@@ -171,12 +171,7 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	rules, ok := loadListenerRules(&e.Input, e.appCfg, e.deploySource)
-	if !ok {
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	if !routing(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, *primary, *canary, rules) {
+	if !routing(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, *primary, *canary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 	return model.StageStatus_STAGE_SUCCESS

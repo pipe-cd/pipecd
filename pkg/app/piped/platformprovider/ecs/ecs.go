@@ -56,9 +56,7 @@ type ECS interface {
 
 type ELB interface {
 	GetListenerArns(ctx context.Context, targetGroup types.LoadBalancer) ([]string, error)
-	GetListenerRules(ctx context.Context, listenerArns []string) ([]string, error)
 	ModifyListeners(ctx context.Context, listenerArns []string, routingTrafficCfg RoutingTrafficConfig) error
-	ModifyListenerRules(ctx context.Context, listenerRuleArns []string, routingTrafficCfg RoutingTrafficConfig) error
 }
 
 // Registry holds a pool of aws client wrappers.
@@ -81,11 +79,6 @@ func LoadTaskDefinition(appDir, taskDefinition string) (types.TaskDefinition, er
 // LoadTargetGroups returns primary & canary target groups according to the defined in pipe definition file.
 func LoadTargetGroups(targetGroups config.ECSTargetGroups) (*types.LoadBalancer, *types.LoadBalancer, error) {
 	return loadTargetGroups(targetGroups)
-}
-
-// LoadListenerRules returns listener rules according to the defined in pipe definition file.
-func LoadListenerRules(listenerRules []string) ([]string, error) {
-	return loadListenerRules(listenerRules)
 }
 
 type registry struct {
