@@ -206,6 +206,7 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 		Service:        service.ServiceArn,
 		TaskDefinition: taskDefinition.TaskDefinitionArn,
 		Scale:          &types.Scale{Unit: types.ScaleUnitPercent, Value: float64(scale)},
+		Tags:           service.Tags,
 		// If you specify the awsvpc network mode, the task is allocated an elastic network interface,
 		// and you must specify a NetworkConfiguration when run a task with the task definition.
 		NetworkConfiguration: service.NetworkConfiguration,
