@@ -421,7 +421,7 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 		return false
 	}
 
-	if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
+	if err := client.ModifyListenerOrRule(ctx, currListenerArns, currListenerRuleArns, routingTrafficCfg); err != nil {
 		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
 		return false
 	}
