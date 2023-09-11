@@ -415,6 +415,12 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 		return false
 	}
 
+	currListenerRuleArns, err := client.GetListenerRuleArns(ctx, currListenerArns)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
+		return false
+	}
+
 	if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
 		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
 		return false
