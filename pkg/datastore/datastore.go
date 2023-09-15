@@ -67,6 +67,7 @@ var (
 	ErrInternal        = errors.New("internal")
 	ErrUnimplemented   = errors.New("unimplemented")
 	ErrUnsupported     = errors.New("unsupported")
+	ErrUserDefined     = errors.New("user defined error")
 )
 
 type Commander string

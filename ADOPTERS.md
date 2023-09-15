@@ -16,4 +16,5 @@ This list is arranged in the order of organizations being added to it.
 
 | Organization | Contact | Description of Use |
 | --- | --- | --- |
+| [PITS Global Data Recovery Services](https://www.pitsdatarecovery.net/) | @benjx1990 | PipeCD provides an easy-to-use interface and reliable solutions for CI. |
 | [CyberAgent, Inc.](https://www.cyberagent.co.jp/) | @kentakozuka | PipeCD is used as an internal CD infrastructure, supporting over 20 projects. About 80 active piped agents are deploying about 2,900 applications in all dev, staging, and production environments. |

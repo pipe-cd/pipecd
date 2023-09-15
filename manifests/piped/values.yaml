@@ -1,5 +1,7 @@
 image:
   repository: ghcr.io/pipe-cd/piped
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
 
 args:
   metrics: true
@@ -19,6 +21,8 @@ launcher:
   enabled: false
   image:
     repository: ghcr.io/pipe-cd/launcher
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
   configFromGitRepo:
     # Whether to load Piped config that is being stored in a git repository.
     enabled: false

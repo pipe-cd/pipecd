@@ -206,6 +206,7 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 		Service:        service.ServiceArn,
 		TaskDefinition: taskDefinition.TaskDefinitionArn,
 		Scale:          &types.Scale{Unit: types.ScaleUnitPercent, Value: float64(scale)},
+		Tags:           service.Tags,
 		// If you specify the awsvpc network mode, the task is allocated an elastic network interface,
 		// and you must specify a NetworkConfiguration when run a task with the task definition.
 		NetworkConfiguration: service.NetworkConfiguration,
@@ -273,6 +274,31 @@ func (c *client) GetPrimaryTaskSet(ctx context.Context, service types.Service) (
 	return nil, platformprovider.ErrNotFound
 }
 
+func (c *client) GetServiceTaskSets(ctx context.Context, service types.Service) ([]*types.TaskSet, error) {
+	input := &ecs.DescribeServicesInput{
+		Cluster: service.ClusterArn,
+		Services: []string{
+			*service.ServiceArn,
+		},
+	}
+	output, err := c.ecsClient.DescribeServices(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get task sets of service %s: %w", *service.ServiceName, err)
+	}
+	if len(output.Services) == 0 {
+		return nil, fmt.Errorf("failed to get task sets of service %s: services empty", *service.ServiceName)
+	}
+	svc := output.Services[0]
+	taskSets := make([]*types.TaskSet, 0, len(svc.TaskSets))
+	for i := range svc.TaskSets {
+		if aws.ToString(svc.TaskSets[i].Status) == "DRAINING" {
+			continue
+		}
+		taskSets = append(taskSets, &svc.TaskSets[i])
+	}
+	return taskSets, nil
+}
+
 // WaitServiceStable blocks until the ECS service is stable.
 // It returns nil if the service is stable, otherwise it returns an error.
 // Note: This function follow the implementation of the AWS CLI.
@@ -306,14 +332,22 @@ func (c *client) WaitServiceStable(ctx context.Context, service types.Service) e
 	return err
 }
 
-func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskSetArn string) error {
+func (c *client) DeleteTaskSet(ctx context.Context, taskSet types.TaskSet) error {
 	input := &ecs.DeleteTaskSetInput{
-		Cluster: service.ClusterArn,
-		Service: service.ServiceArn,
-		TaskSet: aws.String(taskSetArn),
+		Cluster: taskSet.ClusterArn,
+		Service: taskSet.ServiceArn,
+		TaskSet: taskSet.TaskSetArn,
 	}
 	if _, err := c.ecsClient.DeleteTaskSet(ctx, input); err != nil {
-		return fmt.Errorf("failed to delete ECS task set %s: %w", taskSetArn, err)
+		return fmt.Errorf("failed to delete ECS task set %s: %w", *taskSet.TaskSetArn, err)
+	}
+
+	// Inactive deleted taskset's task definition.
+	taskDefInput := &ecs.DeregisterTaskDefinitionInput{
+		TaskDefinition: taskSet.TaskDefinition,
+	}
+	if _, err := c.ecsClient.DeregisterTaskDefinition(ctx, taskDefInput); err != nil {
+		return fmt.Errorf("failed to inactive ECS task definition %s: %w", *taskSet.TaskDefinition, err)
 	}
 	return nil
 }

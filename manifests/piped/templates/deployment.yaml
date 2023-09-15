@@ -29,11 +29,11 @@ spec:
         - name: piped
           imagePullPolicy: IfNotPresent
           {{- if .Values.launcher.enabled }}
-          image: "{{ .Values.launcher.image.repository }}:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.launcher.image.repository }}:{{ .Values.launcher.image.tag | default .Chart.AppVersion }}"
           args:
             {{- include "piped.launcherArgs" . | nindent 12 }}
           {{- else }}
-          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           args:
             {{- include "piped.pipedArgs" . | nindent 12 }}
           {{- end }}
