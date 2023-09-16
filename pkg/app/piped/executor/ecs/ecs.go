@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"go.uber.org/zap"
@@ -446,18 +447,23 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 		in.Logger.Error("Failed to store traffic routing config to metadata store", zap.Error(err))
 	}
 
-	currListenerArns, err := client.GetListenerArns(ctx, primaryTargetGroup)
-	if err != nil {
-		in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
-		return false
+	var currListenerArns []string
+	value, ok := in.MetadataStore.Shared().Get(currentListenersKey)
+	if ok {
+		currListenerArns = strings.Split(value, ",")
+	} else {
+		currListenerArns, err = client.GetListenerArns(ctx, primaryTargetGroup)
+		if err != nil {
+			in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
+			return false
+		}
 	}
 
 	// Store created listeners to use later.
-	metadataListeners := make(map[string]string, len(currListenerArns))
-	for i, v := range currListenerArns {
-		metadataListeners[fmt.Sprintf(currentListenersKey+"-%d", i)] = v
-	}
-	if err := in.MetadataStore.Shared().PutMulti(ctx, metadataListeners); err != nil {
+	addedListeners := make([]string, 0, len(currListenerArns))
+	addedListeners = append(addedListeners, currListenerArns...)
+	metadata := strings.Join(addedListeners, ",")
+	if err := in.MetadataStore.Shared().Put(ctx, currentListenersKey, metadata); err != nil {
 		in.LogPersister.Errorf("Unable to store created listeners to metadata store: %v", err)
 		return false
 	}
