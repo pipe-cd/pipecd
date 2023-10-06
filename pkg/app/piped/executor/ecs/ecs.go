@@ -244,7 +244,7 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	return nil
 }
 
-func sync(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, singleton bool, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
+func sync(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, recreate bool, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
@@ -265,7 +265,7 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 		return false
 	}
 
-	if singleton {
+	if recreate {
 		cnt := service.DesiredCount
 		// Scale down the service tasks by set it to 0
 		in.LogPersister.Infof("Scale down ECS desired tasks count to 0")
