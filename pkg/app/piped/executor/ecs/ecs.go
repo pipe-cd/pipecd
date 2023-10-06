@@ -159,6 +159,8 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 		if err := cli.TagResource(ctx, *service.ServiceArn, serviceDefinition.Tags); err != nil {
 			return nil, fmt.Errorf("failed to update tags of ECS service %s: %w", *serviceDefinition.ServiceName, err)
 		}
+		// Re-assign tags to service object because UpdateService API doesn't return tags.
+		service.Tags = serviceDefinition.Tags
 
 	} else {
 		service, err = cli.CreateService(ctx, serviceDefinition)
@@ -242,7 +244,7 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	return nil
 }
 
-func sync(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
+func sync(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, singleton bool, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
@@ -263,10 +265,35 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 		return false
 	}
 
-	in.LogPersister.Infof("Start rolling out ECS task set")
-	if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
-		in.LogPersister.Errorf("Failed to rolling out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
-		return false
+	if singleton {
+		cnt := service.DesiredCount
+		// Scale down the service tasks by set it to 0
+		in.LogPersister.Infof("Scale down ECS desired tasks count to 0")
+		service.DesiredCount = 0
+		if _, err = client.UpdateService(ctx, *service); err != nil {
+			in.LogPersister.Errorf("Failed to stop service tasks: %v", err)
+			return false
+		}
+
+		in.LogPersister.Infof("Start rolling out ECS task set")
+		if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
+			in.LogPersister.Errorf("Failed to rolling out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
+			return false
+		}
+
+		// Scale up the service tasks count back to its desired.
+		in.LogPersister.Infof("Scale up ECS desired tasks count back to %d", cnt)
+		service.DesiredCount = cnt
+		if _, err = client.UpdateService(ctx, *service); err != nil {
+			in.LogPersister.Errorf("Failed to turning back service tasks: %v", err)
+			return false
+		}
+	} else {
+		in.LogPersister.Infof("Start rolling out ECS task set")
+		if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
+			in.LogPersister.Errorf("Failed to rolling out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
+			return false
+		}
 	}
 
 	in.LogPersister.Infof("Wait service to reach stable state")

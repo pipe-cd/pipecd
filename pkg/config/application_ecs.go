@@ -73,6 +73,10 @@ type ECSTargetGroups struct {
 
 // ECSSyncStageOptions contains all configurable values for a ECS_SYNC stage.
 type ECSSyncStageOptions struct {
+	// Whether to delete old tasksets before creating new ones or not.
+	// If this is set, the application may be unavailable for a short of time during the deployment.
+	// Default is false.
+	Singleton bool `json:"singleton"`
 }
 
 // ECSCanaryRolloutStageOptions contains all configurable values for a ECS_CANARY_ROLLOUT stage.
