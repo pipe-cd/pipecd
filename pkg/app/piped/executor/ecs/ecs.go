@@ -26,7 +26,6 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -214,10 +213,9 @@ func runStandaloneTask(
 }
 
 func createPrimaryTaskSet(ctx context.Context, client provider.Client, service types.Service, taskDef types.TaskDefinition, targetGroup *types.LoadBalancer) error {
-	// Get current PRIMARY task set.
-	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, service)
-	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
-	if err != nil && !errors.Is(err, platformprovider.ErrNotFound) {
+	// Get current PRIMARY/ACTIVE task sets.
+	prevTaskSets, err := client.GetServiceTaskSets(ctx, service)
+	if err != nil {
 		return err
 	}
 
@@ -234,9 +232,9 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 		return err
 	}
 
-	// Remove old taskSet if existed.
-	if prevPrimaryTaskSet != nil {
-		if err = client.DeleteTaskSet(ctx, *prevPrimaryTaskSet); err != nil {
+	// Remove old taskSets if existed.
+	for _, prevTaskSet := range prevTaskSets {
+		if err = client.DeleteTaskSet(ctx, *prevTaskSet); err != nil {
 			return err
 		}
 	}
