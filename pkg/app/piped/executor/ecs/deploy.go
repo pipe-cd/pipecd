@@ -102,7 +102,8 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !sync(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary) {
+	recreate := e.appCfg.QuickSync.Recreate
+	if !sync(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, recreate, taskDefinition, servicedefinition, primary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

@@ -26,7 +26,7 @@ import {
   DISABLE_API_KEY_SUCCESS,
   GENERATE_API_KEY_SUCCESS,
 } from "~/constants/toast-text";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+import { unwrapResult, useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
   APIKey,
   disableAPIKey,
@@ -96,10 +96,15 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
 
   const handleSubmit = useCallback(
     (values: { name: string; role: APIKey.Role }) => {
-      dispatch(generateAPIKey(values)).then(() => {
-        dispatch(fetchAPIKeys({ enabled: true }));
-        dispatch(addToast({ message: GENERATE_API_KEY_SUCCESS }));
-      });
+      dispatch(generateAPIKey(values))
+        .then(unwrapResult)
+        .then(() => {
+          dispatch(fetchAPIKeys({ enabled: true }));
+          dispatch(
+            addToast({ message: GENERATE_API_KEY_SUCCESS, severity: "success" })
+          );
+        })
+        .catch(() => undefined);
     },
     [dispatch]
   );
