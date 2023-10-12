@@ -275,9 +275,9 @@ func (c *client) GetServiceTaskSets(ctx context.Context, service types.Service) 
 		activeTaskSetArns = append(activeTaskSetArns, *svc.TaskSets[i].TaskSetArn)
 	}
 
-	var taskSets []*types.TaskSet
+	// No primary or active task set found.
 	if len(activeTaskSetArns) == 0 {
-		return taskSets, nil
+		return []*types.TaskSet{}, nil
 	}
 
 	tsInput := &ecs.DescribeTaskSetsInput{
@@ -292,7 +292,7 @@ func (c *client) GetServiceTaskSets(ctx context.Context, service types.Service) 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get task sets of service %s: %w", *service.ServiceName, err)
 	}
-	taskSets = make([]*types.TaskSet, 0, len(tsOutput.TaskSets))
+	taskSets := make([]*types.TaskSet, 0, len(tsOutput.TaskSets))
 	for i := range tsOutput.TaskSets {
 		if !IsPipeCDManagedTaskSet(&tsOutput.TaskSets[i]) {
 			continue
