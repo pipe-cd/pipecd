@@ -275,8 +275,9 @@ func (c *client) GetServiceTaskSets(ctx context.Context, service types.Service) 
 		activeTaskSetArns = append(activeTaskSetArns, *svc.TaskSets[i].TaskSetArn)
 	}
 
+	// No primary or active task set found.
 	if len(activeTaskSetArns) == 0 {
-		return nil, fmt.Errorf("failed to get task sets of service %s: services empty", *service.ServiceName)
+		return []*types.TaskSet{}, nil
 	}
 
 	tsInput := &ecs.DescribeTaskSetsInput{
