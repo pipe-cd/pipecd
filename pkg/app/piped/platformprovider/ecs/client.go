@@ -201,6 +201,7 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 	if taskDefinition.TaskDefinitionArn == nil {
 		return nil, fmt.Errorf("failed to create task set of task family %s: no task definition provided", *taskDefinition.Family)
 	}
+
 	input := &ecs.CreateTaskSetInput{
 		Cluster:        service.ClusterArn,
 		Service:        service.ServiceArn,
@@ -251,29 +252,6 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 	return output.TaskSet, nil
 }
 
-func (c *client) GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error) {
-	input := &ecs.DescribeServicesInput{
-		Cluster: service.ClusterArn,
-		Services: []string{
-			*service.ServiceArn,
-		},
-	}
-	output, err := c.ecsClient.DescribeServices(ctx, input)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get primary task set of service %s: %w", *service.ServiceName, err)
-	}
-	if len(output.Services) == 0 {
-		return nil, fmt.Errorf("failed to get primary task set of service %s: services empty", *service.ServiceName)
-	}
-	taskSets := output.Services[0].TaskSets
-	for _, taskSet := range taskSets {
-		if aws.ToString(taskSet.Status) == "PRIMARY" {
-			return &taskSet, nil
-		}
-	}
-	return nil, platformprovider.ErrNotFound
-}
-
 func (c *client) GetServiceTaskSets(ctx context.Context, service types.Service) ([]*types.TaskSet, error) {
 	input := &ecs.DescribeServicesInput{
 		Cluster: service.ClusterArn,
@@ -289,13 +267,39 @@ func (c *client) GetServiceTaskSets(ctx context.Context, service types.Service) 
 		return nil, fmt.Errorf("failed to get task sets of service %s: services empty", *service.ServiceName)
 	}
 	svc := output.Services[0]
-	taskSets := make([]*types.TaskSet, 0, len(svc.TaskSets))
+	activeTaskSetArns := make([]string, 0, len(svc.TaskSets))
 	for i := range svc.TaskSets {
 		if aws.ToString(svc.TaskSets[i].Status) == "DRAINING" {
 			continue
 		}
-		taskSets = append(taskSets, &svc.TaskSets[i])
+		activeTaskSetArns = append(activeTaskSetArns, *svc.TaskSets[i].TaskSetArn)
 	}
+
+	// No primary or active task set found.
+	if len(activeTaskSetArns) == 0 {
+		return []*types.TaskSet{}, nil
+	}
+
+	tsInput := &ecs.DescribeTaskSetsInput{
+		Cluster:  service.ClusterArn,
+		Service:  service.ServiceArn,
+		TaskSets: activeTaskSetArns,
+		Include: []types.TaskSetField{
+			types.TaskSetFieldTags,
+		},
+	}
+	tsOutput, err := c.ecsClient.DescribeTaskSets(ctx, tsInput)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get task sets of service %s: %w", *service.ServiceName, err)
+	}
+	taskSets := make([]*types.TaskSet, 0, len(tsOutput.TaskSets))
+	for i := range tsOutput.TaskSets {
+		if !IsPipeCDManagedTaskSet(&tsOutput.TaskSets[i]) {
+			continue
+		}
+		taskSets = append(taskSets, &tsOutput.TaskSets[i])
+	}
+
 	return taskSets, nil
 }
 

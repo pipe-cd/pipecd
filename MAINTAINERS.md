@@ -1,11 +1,12 @@
 # PipeCD maintainers
 
-| Name            | GitHub ID (not Twitter ID)                       | Email                                        |
-|-----------------|--------------------------------------------------|----------------------------------------------|
-| Tran Cong Khanh | [@khanhtc1202](https://github.com/khanhtc1202)   | khanhtc1202@gmail.com                        |
-| Kenta Kozuka    | [@kentakozuka](https://github.com/kentakozuka)   | kenta.kozuka@gmail.com                       |
-| Akinori Yamada  | [@stormcat24](https://github.com/stormcat24)     | stormcat24@stormcat.io                       |
-| Le Van Nghia    | [@nghialv](https://github.com/nghialv)           | nghialv2607@gmail.com                        |
+| Name             | GitHub ID (not Twitter ID)                       | Email                                        |
+|------------------|--------------------------------------------------|----------------------------------------------|
+| Tran Cong Khanh  | [@khanhtc1202](https://github.com/khanhtc1202)   | khanhtc1202@gmail.com                        |
+| Kenta Kozuka     | [@kentakozuka](https://github.com/kentakozuka)   | kenta.kozuka@gmail.com                       |
+| Akinori Yamada   | [@stormcat24](https://github.com/stormcat24)     | stormcat24@stormcat.io                       |
+| Le Van Nghia     | [@nghialv](https://github.com/nghialv)           | nghialv2607@gmail.com                        |
+| Yoshiki Fujikane | [@ffjlabo](https://github.com/ffjlabo)           | ffjlabo@gmail.com                            |
 
 
 E-mail addresses are expected to be used for reporting security issues. \
