@@ -26,15 +26,14 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 const (
-	canaryTaskSetARNKeyName = "canary-taskset-arn"
-	canaryServiceKeyName    = "canary-service-object"
+	// Canary task set metadata keys.
+	canaryTaskSetKeyName = "canary-taskset-object"
 	// Stage metadata keys.
 	trafficRoutePrimaryMetadataKey = "primary-percentage"
 	trafficRouteCanaryMetadataKey  = "canary-percentage"
@@ -137,6 +136,24 @@ func loadTargetGroups(in *executor.Input, appCfg *config.ECSApplicationSpec, ds 
 	return primary, canary, true
 }
 
+func loadListenerRules(in *executor.Input, appCfg *config.ECSApplicationSpec, ds *deploysource.DeploySource) ([]string, bool) {
+	in.LogPersister.Infof("Loading listener rules config at the commit %s", ds.Revision)
+
+	rules, err := provider.LoadListenerRules(appCfg.Input.ListenerRules)
+	if err != nil && !errors.Is(err, provider.ErrNoListenerRule) {
+		in.LogPersister.Errorf("Failed to load ListenerRules (%v)", err)
+		return nil, false
+	}
+
+	if errors.Is(err, provider.ErrNoTargetGroup) {
+		in.LogPersister.Infof("No listener rules were set at commit %s", ds.Revision)
+		return nil, true
+	}
+
+	in.LogPersister.Infof("Successfully loaded the ECS listener rules at commit %s", ds.Revision)
+	return rules, true
+}
+
 func applyTaskDefinition(ctx context.Context, cli provider.Client, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
 	td, err := cli.RegisterTaskDefinition(ctx, taskDefinition)
 	if err != nil {
@@ -160,6 +177,8 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 		if err := cli.TagResource(ctx, *service.ServiceArn, serviceDefinition.Tags); err != nil {
 			return nil, fmt.Errorf("failed to update tags of ECS service %s: %w", *serviceDefinition.ServiceName, err)
 		}
+		// Re-assign tags to service object because UpdateService API doesn't return tags.
+		service.Tags = serviceDefinition.Tags
 
 	} else {
 		service, err = cli.CreateService(ctx, serviceDefinition)
@@ -214,10 +233,9 @@ func runStandaloneTask(
 }
 
 func createPrimaryTaskSet(ctx context.Context, client provider.Client, service types.Service, taskDef types.TaskDefinition, targetGroup *types.LoadBalancer) error {
-	// Get current PRIMARY task set.
-	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, service)
-	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
-	if err != nil && !errors.Is(err, platformprovider.ErrNotFound) {
+	// Get current PRIMARY/ACTIVE task sets.
+	prevTaskSets, err := client.GetServiceTaskSets(ctx, service)
+	if err != nil {
 		return err
 	}
 
@@ -234,9 +252,9 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 		return err
 	}
 
-	// Remove old taskSet if existed.
-	if prevPrimaryTaskSet != nil {
-		if err = client.DeleteTaskSet(ctx, service, *prevPrimaryTaskSet.TaskSetArn); err != nil {
+	// Remove old taskSets if existed.
+	for _, prevTaskSet := range prevTaskSets {
+		if err = client.DeleteTaskSet(ctx, *prevTaskSet); err != nil {
 			return err
 		}
 	}
@@ -244,7 +262,7 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	return nil
 }
 
-func sync(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
+func sync(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, recreate bool, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
@@ -265,9 +283,40 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 		return false
 	}
 
-	in.LogPersister.Infof("Start rolling out ECS task set")
-	if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
-		in.LogPersister.Errorf("Failed to rolling out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
+	if recreate {
+		cnt := service.DesiredCount
+		// Scale down the service tasks by set it to 0
+		in.LogPersister.Infof("Scale down ECS desired tasks count to 0")
+		service.DesiredCount = 0
+		if _, err = client.UpdateService(ctx, *service); err != nil {
+			in.LogPersister.Errorf("Failed to stop service tasks: %v", err)
+			return false
+		}
+
+		in.LogPersister.Infof("Start rolling out ECS task set")
+		if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
+			in.LogPersister.Errorf("Failed to rolling out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
+			return false
+		}
+
+		// Scale up the service tasks count back to its desired.
+		in.LogPersister.Infof("Scale up ECS desired tasks count back to %d", cnt)
+		service.DesiredCount = cnt
+		if _, err = client.UpdateService(ctx, *service); err != nil {
+			in.LogPersister.Errorf("Failed to turning back service tasks: %v", err)
+			return false
+		}
+	} else {
+		in.LogPersister.Infof("Start rolling out ECS task set")
+		if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
+			in.LogPersister.Errorf("Failed to rolling out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
+			return false
+		}
+	}
+
+	in.LogPersister.Infof("Wait service to reach stable state")
+	if err := client.WaitServiceStable(ctx, *service); err != nil {
+		in.LogPersister.Errorf("Failed to wait service %s to reach stable state: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
 
@@ -326,20 +375,21 @@ func rollout(ctx context.Context, in *executor.Input, platformProviderName strin
 			return false
 		}
 		// Store created ACTIVE TaskSet (CANARY variant) to delete later.
-		if err := in.MetadataStore.Shared().Put(ctx, canaryTaskSetARNKeyName, *taskSet.TaskSetArn); err != nil {
+		taskSetObjData, err := json.Marshal(taskSet)
+		if err != nil {
 			in.LogPersister.Errorf("Unable to store created active taskSet to metadata store: %v", err)
 			return false
 		}
-		// Store applied Service (CANARY variant) to delete its TaskSet later.
-		serviceObjData, err := json.Marshal(service)
-		if err != nil {
-			in.LogPersister.Errorf("Unable to store applied service to metadata store: %v", err)
+		if err := in.MetadataStore.Shared().Put(ctx, canaryTaskSetKeyName, string(taskSetObjData)); err != nil {
+			in.LogPersister.Errorf("Unable to store created active taskSet to metadata store: %v", err)
 			return false
 		}
-		if err := in.MetadataStore.Shared().Put(ctx, canaryServiceKeyName, string(serviceObjData)); err != nil {
-			in.LogPersister.Errorf("Unable to store applied service to metadata store: %v", err)
-			return false
-		}
+	}
+
+	in.LogPersister.Infof("Wait service to reach stable state")
+	if err := client.WaitServiceStable(ctx, *service); err != nil {
+		in.LogPersister.Errorf("Failed to wait service %s to reach stable state: %v", *serviceDefinition.ServiceName, err)
+		return false
 	}
 
 	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition of family %s", *serviceDefinition.ServiceName, *taskDefinition.Family)
@@ -353,31 +403,30 @@ func clean(ctx context.Context, in *executor.Input, platformProviderName string,
 		return false
 	}
 
-	taskSetArn, ok := in.MetadataStore.Shared().Get(canaryTaskSetARNKeyName)
+	// Get task set object from metadata store.
+	taskSetObjData, ok := in.MetadataStore.Shared().Get(canaryTaskSetKeyName)
 	if !ok {
-		in.LogPersister.Errorf("Unable to restore CANARY task set to clean: Not found")
+		in.LogPersister.Error("Unable to restore taskset to clean: Not found")
 		return false
 	}
-	serviceObjData, ok := in.MetadataStore.Shared().Get(canaryServiceKeyName)
-	if !ok {
-		in.LogPersister.Errorf("Unable to restore CANARY service to clean: Not found")
-		return false
-	}
-	service := &types.Service{}
-	if err := json.Unmarshal([]byte(serviceObjData), service); err != nil {
-		in.LogPersister.Errorf("Unable to restore CANARY service to clean: %v", err)
+	taskSet := &types.TaskSet{}
+	if err := json.Unmarshal([]byte(taskSetObjData), taskSet); err != nil {
+		in.LogPersister.Errorf("Unable to restore taskset to clean: %v", err)
 		return false
 	}
 
-	if err := client.DeleteTaskSet(ctx, *service, taskSetArn); err != nil {
-		in.LogPersister.Errorf("Failed to clean CANARY task set %s: %v", taskSetArn, err)
+	// Delete canary task set if present.
+	in.LogPersister.Infof("Cleaning CANARY task set %s from service %s", *taskSet.TaskSetArn, *taskSet.ServiceArn)
+	if err := client.DeleteTaskSet(ctx, *taskSet); err != nil {
+		in.LogPersister.Errorf("Failed to clean CANARY task set %s: %v", *taskSet.TaskSetArn, err)
 		return false
 	}
 
+	in.LogPersister.Infof("Successfully cleaned CANARY task set %s from service %s", *taskSet.TaskSetArn, *taskSet.ServiceArn)
 	return true
 }
 
-func routing(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, primaryTargetGroup types.LoadBalancer, canaryTargetGroup types.LoadBalancer) bool {
+func routing(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, primaryTargetGroup types.LoadBalancer, canaryTargetGroup types.LoadBalancer, listenerRules []string) bool {
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
@@ -415,10 +464,39 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 		return false
 	}
 
-	if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
-		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
+	if len(listenerRules) == 0 {
+		if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
+			in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
+			return false
+		}
+
+		return true
+	}
+
+	rules, err := client.GetListenerRules(ctx, currListenerArns)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to retrieve listener rules: %v", err)
 		return false
 	}
 
+	// Validate if the provided listenerRules exist in the retrieved rules
+	for _, providedRule := range listenerRules {
+		ruleExists := false
+		for _, existingRule := range rules {
+			if providedRule == existingRule {
+				ruleExists = true
+				break
+			}
+		}
+		if !ruleExists {
+			in.LogPersister.Errorf("Provided listener rule %s does not exist", providedRule)
+			return false
+		}
+	}
+
+	if err := client.ModifyListenerRules(ctx, listenerRules, routingTrafficCfg); err != nil {
+		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
+		return false
+	}
 	return true
 }

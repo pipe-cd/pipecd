@@ -45,18 +45,21 @@ type ECS interface {
 	ServiceExists(ctx context.Context, clusterName string, servicesName string) (bool, error)
 	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
+	WaitServiceStable(ctx context.Context, service types.Service) error
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
 	RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *config.ECSVpcConfiguration, tags []types.Tag) error
-	GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error)
+	GetServiceTaskSets(ctx context.Context, service types.Service) ([]*types.TaskSet, error)
 	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup *types.LoadBalancer, scale int) (*types.TaskSet, error)
-	DeleteTaskSet(ctx context.Context, service types.Service, taskSetArn string) error
+	DeleteTaskSet(ctx context.Context, taskSet types.TaskSet) error
 	UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
 	TagResource(ctx context.Context, resourceArn string, tags []types.Tag) error
 }
 
 type ELB interface {
 	GetListenerArns(ctx context.Context, targetGroup types.LoadBalancer) ([]string, error)
+	GetListenerRules(ctx context.Context, listenerArns []string) ([]string, error)
 	ModifyListeners(ctx context.Context, listenerArns []string, routingTrafficCfg RoutingTrafficConfig) error
+	ModifyListenerRules(ctx context.Context, listenerRuleArns []string, routingTrafficCfg RoutingTrafficConfig) error
 }
 
 // Registry holds a pool of aws client wrappers.
@@ -79,6 +82,11 @@ func LoadTaskDefinition(appDir, taskDefinition string) (types.TaskDefinition, er
 // LoadTargetGroups returns primary & canary target groups according to the defined in pipe definition file.
 func LoadTargetGroups(targetGroups config.ECSTargetGroups) (*types.LoadBalancer, *types.LoadBalancer, error) {
 	return loadTargetGroups(targetGroups)
+}
+
+// LoadListenerRules returns listener rules according to the defined in pipe definition file.
+func LoadListenerRules(listenerRules []string) ([]string, error) {
+	return loadListenerRules(listenerRules)
 }
 
 type registry struct {

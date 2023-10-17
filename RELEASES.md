@@ -13,7 +13,7 @@ Versions are expressed as `vX.Y.Z`;
 - Minor releases: roughly every 2 months
 - Patch releases: roughly every 2-3 weeks
 
-Release candidates(vX.Y.Z-alpha) for minor versions are available for 2-4 weeks before the release.
+Note: The team can release Release candidates(vX.Y.Z-rcXYZ) for versions at any time for early access/testing.
 
 ## Major release
 This refers to the release of new features or breaking changes.

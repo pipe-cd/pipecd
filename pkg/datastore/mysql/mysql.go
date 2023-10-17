@@ -30,6 +30,7 @@ import (
 )
 
 const mysqlErrorCodeDuplicateEntry = 1062
+const mysqlErrorCodeUserDefined = 1644
 
 // MySQL client wrapper
 type MySQL struct {
@@ -164,8 +165,13 @@ func (m *MySQL) Create(ctx context.Context, col datastore.Collection, id string,
 	}
 
 	_, err = stmt.ExecContext(ctx, makeRowID(id), data)
-	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == mysqlErrorCodeDuplicateEntry {
-		return datastore.ErrAlreadyExists
+	if mysqlErr, ok := err.(*mysql.MySQLError); ok {
+		if mysqlErr.Number == mysqlErrorCodeDuplicateEntry {
+			return datastore.ErrAlreadyExists
+		}
+		if mysqlErr.Number == mysqlErrorCodeUserDefined {
+			return fmt.Errorf("%w: %s", datastore.ErrUserDefined, mysqlErr.Message)
+		}
 	}
 	if err != nil {
 		m.logger.Error("failed to create entity",

@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -29,7 +30,18 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
+	"github.com/pipe-cd/pipecd/pkg/backoff"
 	appconfig "github.com/pipe-cd/pipecd/pkg/config"
+)
+
+const (
+	// ServiceStable's constants.
+	retryServiceStable         = 40
+	retryServiceStableInterval = 15 * time.Second
+
+	// TaskSetStable's constants.
+	retryTaskSetStable         = 40
+	retryTaskSetStableInterval = 15 * time.Second
 )
 
 type client struct {
@@ -90,7 +102,6 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		PropagateTags:                 types.PropagateTagsService,
 		Role:                          service.RoleArn,
 		SchedulingStrategy:            service.SchedulingStrategy,
-		ServiceRegistries:             service.ServiceRegistries,
 		Tags:                          service.Tags,
 	}
 	output, err := c.ecsClient.CreateService(ctx, input)
@@ -101,8 +112,10 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 	// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
 	// in CreateService step, but it required in further step (CreateTaskSet step). We reassign those values
 	// as part of service definition for that purpose.
+	// ref: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html
 	output.Service.LaunchType = service.LaunchType
 	output.Service.NetworkConfiguration = service.NetworkConfiguration
+	output.Service.ServiceRegistries = service.ServiceRegistries
 
 	return output.Service, nil
 }
@@ -125,8 +138,10 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 	// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
 	// in UpdateService step, but it required in further step (CreateTaskSet step). We reassign those values
 	// as part of service definition for that purpose.
+	// ref: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html
 	output.Service.LaunchType = service.LaunchType
 	output.Service.NetworkConfiguration = service.NetworkConfiguration
+	output.Service.ServiceRegistries = service.ServiceRegistries
 
 	return output.Service, nil
 }
@@ -186,15 +201,18 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 	if taskDefinition.TaskDefinitionArn == nil {
 		return nil, fmt.Errorf("failed to create task set of task family %s: no task definition provided", *taskDefinition.Family)
 	}
+
 	input := &ecs.CreateTaskSetInput{
 		Cluster:        service.ClusterArn,
 		Service:        service.ServiceArn,
 		TaskDefinition: taskDefinition.TaskDefinitionArn,
 		Scale:          &types.Scale{Unit: types.ScaleUnitPercent, Value: float64(scale)},
+		Tags:           service.Tags,
 		// If you specify the awsvpc network mode, the task is allocated an elastic network interface,
 		// and you must specify a NetworkConfiguration when run a task with the task definition.
 		NetworkConfiguration: service.NetworkConfiguration,
 		LaunchType:           service.LaunchType,
+		ServiceRegistries:    service.ServiceRegistries,
 	}
 	if targetGroup != nil {
 		input.LoadBalancers = []types.LoadBalancer{*targetGroup}
@@ -203,10 +221,38 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ECS task set %s: %w", *taskDefinition.TaskDefinitionArn, err)
 	}
+
+	// Wait created TaskSet to be stable.
+	waitInput := &ecs.DescribeTaskSetsInput{
+		Cluster:  service.ClusterArn,
+		Service:  service.ServiceArn,
+		TaskSets: []string{*output.TaskSet.TaskSetArn},
+	}
+
+	retry := backoff.NewRetry(retryTaskSetStable, backoff.NewConstant(retryTaskSetStableInterval))
+	_, err = retry.Do(ctx, func() (interface{}, error) {
+		output, err := c.ecsClient.DescribeTaskSets(ctx, waitInput)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get ECS task set %s: %w", *taskDefinition.TaskDefinitionArn, err)
+		}
+		if len(output.TaskSets) == 0 {
+			return nil, fmt.Errorf("failed to get ECS task set %s: task sets empty", *taskDefinition.TaskDefinitionArn)
+		}
+		taskSet := output.TaskSets[0]
+		if taskSet.StabilityStatus == types.StabilityStatusSteadyState {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("task set %s is not stable", *taskDefinition.TaskDefinitionArn)
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to wait ECS task set %s stable: %w", *taskDefinition.TaskDefinitionArn, err)
+	}
+
 	return output.TaskSet, nil
 }
 
-func (c *client) GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error) {
+func (c *client) GetServiceTaskSets(ctx context.Context, service types.Service) ([]*types.TaskSet, error) {
 	input := &ecs.DescribeServicesInput{
 		Cluster: service.ClusterArn,
 		Services: []string{
@@ -215,28 +261,97 @@ func (c *client) GetPrimaryTaskSet(ctx context.Context, service types.Service) (
 	}
 	output, err := c.ecsClient.DescribeServices(ctx, input)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get primary task set of service %s: %w", *service.ServiceName, err)
+		return nil, fmt.Errorf("failed to get task sets of service %s: %w", *service.ServiceName, err)
 	}
 	if len(output.Services) == 0 {
-		return nil, fmt.Errorf("failed to get primary task set of service %s: services empty", *service.ServiceName)
+		return nil, fmt.Errorf("failed to get task sets of service %s: services empty", *service.ServiceName)
 	}
-	taskSets := output.Services[0].TaskSets
-	for _, taskSet := range taskSets {
-		if aws.ToString(taskSet.Status) == "PRIMARY" {
-			return &taskSet, nil
+	svc := output.Services[0]
+	activeTaskSetArns := make([]string, 0, len(svc.TaskSets))
+	for i := range svc.TaskSets {
+		if aws.ToString(svc.TaskSets[i].Status) == "DRAINING" {
+			continue
 		}
+		activeTaskSetArns = append(activeTaskSetArns, *svc.TaskSets[i].TaskSetArn)
 	}
-	return nil, platformprovider.ErrNotFound
+
+	// No primary or active task set found.
+	if len(activeTaskSetArns) == 0 {
+		return []*types.TaskSet{}, nil
+	}
+
+	tsInput := &ecs.DescribeTaskSetsInput{
+		Cluster:  service.ClusterArn,
+		Service:  service.ServiceArn,
+		TaskSets: activeTaskSetArns,
+		Include: []types.TaskSetField{
+			types.TaskSetFieldTags,
+		},
+	}
+	tsOutput, err := c.ecsClient.DescribeTaskSets(ctx, tsInput)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get task sets of service %s: %w", *service.ServiceName, err)
+	}
+	taskSets := make([]*types.TaskSet, 0, len(tsOutput.TaskSets))
+	for i := range tsOutput.TaskSets {
+		if !IsPipeCDManagedTaskSet(&tsOutput.TaskSets[i]) {
+			continue
+		}
+		taskSets = append(taskSets, &tsOutput.TaskSets[i])
+	}
+
+	return taskSets, nil
 }
 
-func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskSetArn string) error {
+// WaitServiceStable blocks until the ECS service is stable.
+// It returns nil if the service is stable, otherwise it returns an error.
+// Note: This function follow the implementation of the AWS CLI.
+// AWS does not public API for waiting service stable, thus we use describe-service and workaround instead.
+// ref: https://docs.aws.amazon.com/cli/latest/reference/ecs/wait/services-stable.html
+func (c *client) WaitServiceStable(ctx context.Context, service types.Service) error {
+	input := &ecs.DescribeServicesInput{
+		Cluster:  service.ClusterArn,
+		Services: []string{*service.ServiceArn},
+	}
+
+	retry := backoff.NewRetry(retryServiceStable, backoff.NewConstant(retryServiceStableInterval))
+	_, err := retry.Do(ctx, func() (interface{}, error) {
+		output, err := c.ecsClient.DescribeServices(ctx, input)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get service %s: %w", *service.ServiceName, err)
+		}
+
+		if len(output.Services) == 0 {
+			return nil, platformprovider.ErrNotFound
+		}
+
+		svc := output.Services[0]
+		if svc.PendingCount == 0 && svc.RunningCount >= svc.DesiredCount {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("service %s is not stable", *service.ServiceName)
+	})
+
+	return err
+}
+
+func (c *client) DeleteTaskSet(ctx context.Context, taskSet types.TaskSet) error {
 	input := &ecs.DeleteTaskSetInput{
-		Cluster: service.ClusterArn,
-		Service: service.ServiceArn,
-		TaskSet: aws.String(taskSetArn),
+		Cluster: taskSet.ClusterArn,
+		Service: taskSet.ServiceArn,
+		TaskSet: taskSet.TaskSetArn,
 	}
 	if _, err := c.ecsClient.DeleteTaskSet(ctx, input); err != nil {
-		return fmt.Errorf("failed to delete ECS task set %s: %w", taskSetArn, err)
+		return fmt.Errorf("failed to delete ECS task set %s: %w", *taskSet.TaskSetArn, err)
+	}
+
+	// Inactive deleted taskset's task definition.
+	taskDefInput := &ecs.DeregisterTaskDefinitionInput{
+		TaskDefinition: taskSet.TaskDefinition,
+	}
+	if _, err := c.ecsClient.DeregisterTaskDefinition(ctx, taskDefInput); err != nil {
+		return fmt.Errorf("failed to inactive ECS task definition %s: %w", *taskSet.TaskDefinition, err)
 	}
 	return nil
 }
@@ -302,6 +417,30 @@ func (c *client) GetListenerArns(ctx context.Context, targetGroup types.LoadBala
 	return arns, nil
 }
 
+func (c *client) GetListenerRules(ctx context.Context, listenerArns []string) ([]string, error) {
+	var ruleArns []string
+
+	// 各リスナーのルールを取得
+	for _, listenerArn := range listenerArns {
+		input := &elasticloadbalancingv2.DescribeRulesInput{
+			ListenerArn: aws.String(listenerArn),
+		}
+		output, err := c.elbClient.DescribeRules(ctx, input)
+		if err != nil {
+			return nil, err
+		}
+		for _, rule := range output.Rules {
+			ruleArns = append(ruleArns, *rule.RuleArn)
+		}
+	}
+
+	if len(ruleArns) == 0 {
+		return nil, platformprovider.ErrNotFound
+	}
+
+	return ruleArns, nil
+}
+
 func (c *client) getLoadBalancerArn(ctx context.Context, targetGroupArn string) (string, error) {
 	input := &elasticloadbalancingv2.DescribeTargetGroupsInput{
 		TargetGroupArns: []string{targetGroupArn},
@@ -349,6 +488,44 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 
 	for _, listener := range listenerArns {
 		if err := modifyListener(ctx, listener); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *client) ModifyListenerRules(ctx context.Context, listenerRuleArns []string, routingTrafficCfg RoutingTrafficConfig) error {
+	if len(routingTrafficCfg) != 2 {
+		return fmt.Errorf("invalid listener configuration: requires 2 target groups")
+	}
+
+	modifyListenerRule := func(ctx context.Context, listenerRuleArn string) error {
+		input := &elasticloadbalancingv2.ModifyRuleInput{
+			RuleArn: aws.String(listenerRuleArn),
+			Actions: []elbtypes.Action{
+				{
+					Type: elbtypes.ActionTypeEnumForward,
+					ForwardConfig: &elbtypes.ForwardActionConfig{
+						TargetGroups: []elbtypes.TargetGroupTuple{
+							{
+								TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
+								Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
+							},
+							{
+								TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
+								Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
+							},
+						},
+					},
+				},
+			},
+		}
+		_, err := c.elbClient.ModifyRule(ctx, input)
+		return err
+	}
+
+	for _, listener := range listenerRuleArns {
+		if err := modifyListenerRule(ctx, listener); err != nil {
 			return err
 		}
 	}

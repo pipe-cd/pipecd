@@ -102,7 +102,8 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !sync(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary) {
+	recreate := e.appCfg.QuickSync.Recreate
+	if !sync(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, recreate, taskDefinition, servicedefinition, primary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -171,7 +172,12 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !routing(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, *primary, *canary) {
+	rules, ok := loadListenerRules(&e.Input, e.appCfg, e.deploySource)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	if !routing(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, *primary, *canary, rules) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 	return model.StageStatus_STAGE_SUCCESS

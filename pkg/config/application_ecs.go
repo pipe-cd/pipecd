@@ -51,6 +51,8 @@ type ECSDeploymentInput struct {
 	TaskDefinitionFile string `json:"taskDefinitionFile" default:"taskdef.json"`
 	// ECSTargetGroups
 	TargetGroups ECSTargetGroups `json:"targetGroups"`
+	// ECSListenerRules
+	ListenerRules []string `json:"listenerRules"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
@@ -73,6 +75,10 @@ type ECSTargetGroups struct {
 
 // ECSSyncStageOptions contains all configurable values for a ECS_SYNC stage.
 type ECSSyncStageOptions struct {
+	// Whether to delete old tasksets before creating new ones or not.
+	// If this is set, the application may be unavailable for a short of time during the deployment.
+	// Default is false.
+	Recreate bool `json:"recreate"`
 }
 
 // ECSCanaryRolloutStageOptions contains all configurable values for a ECS_CANARY_ROLLOUT stage.

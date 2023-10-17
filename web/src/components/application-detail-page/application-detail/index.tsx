@@ -22,7 +22,7 @@ import { SplitButton } from "~/components/split-button";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { PAGE_PATH_DEPLOYMENTS } from "~/constants/path";
 import { UI_TEXT_REFRESH } from "~/constants/ui-text";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+import { unwrapResult, useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
   Application,
   ApplicationDeploymentReference,
@@ -238,7 +238,9 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
             applicationId: app.id,
             syncStrategy: syncStrategyByIndex[index],
           })
-        );
+        )
+          .then(unwrapResult)
+          .catch(() => undefined);
       }
     };
 

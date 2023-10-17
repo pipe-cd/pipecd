@@ -70,6 +70,12 @@ type FunctionManifestSpec struct {
 	Timeout         int32             `json:"timeout"`
 	Tags            map[string]string `json:"tags,omitempty"`
 	Environments    map[string]string `json:"environments,omitempty"`
+	VPCConfig       *VPCConfig        `json:"vpcConfig,omitempty"`
+}
+
+type VPCConfig struct {
+	SecurityGroupIDs []string `json:"securityGroupIds,omitempty"`
+	SubnetIDs        []string `json:"subnetIds,omitempty"`
 }
 
 func (fmp FunctionManifestSpec) validate() error {
