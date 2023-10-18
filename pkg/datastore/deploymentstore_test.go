@@ -484,7 +484,7 @@ func TestMergeMetadata(t *testing.T) {
 			expected: map[string]string{},
 		},
 		{
-			name: "ori map is emtpy",
+			name: "ori map is empty",
 			new: map[string]string{
 				"key-1": "value-1",
 			},
@@ -493,7 +493,7 @@ func TestMergeMetadata(t *testing.T) {
 			},
 		},
 		{
-			name: "new map is emtpy",
+			name: "new map is empty",
 			ori: map[string]string{
 				"key-1": "value-1",
 			},

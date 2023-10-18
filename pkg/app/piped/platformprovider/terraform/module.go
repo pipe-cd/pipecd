@@ -16,7 +16,7 @@ package terraform
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/hashicorp/hcl/v2"
@@ -56,7 +56,7 @@ const tfFileExtension = ".tf"
 
 // LoadTerraformFiles loads terraform files from a given dir.
 func LoadTerraformFiles(dir string) ([]File, error) {
-	fileInfos, err := ioutil.ReadDir(dir)
+	fileInfos, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
