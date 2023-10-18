@@ -70,7 +70,7 @@ func filter(col datastore.Collection, e interface{}, filters []datastore.ListFil
 		}
 
 		val, ok := omap[field]
-		// If the object does not contain given field name in filter, return false immidiately.
+		// If the object does not contain given field name in filter, return false immediately.
 		if !ok {
 			return false, nil
 		}

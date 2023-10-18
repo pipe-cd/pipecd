@@ -16,9 +16,9 @@ package applicationstore
 
 import (
 	"context"
-	"sync/atomic"
 	"time"
 
+	"go.uber.org/atomic"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 

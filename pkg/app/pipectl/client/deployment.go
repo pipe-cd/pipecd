@@ -89,7 +89,7 @@ func WaitDeploymentStatuses(
 func makeDeploymentStatusesMap(statuses []model.DeploymentStatus) map[model.DeploymentStatus]struct{} {
 	out := make(map[model.DeploymentStatus]struct{}, len(statuses))
 	for _, s := range statuses {
-		out[model.DeploymentStatus(s)] = struct{}{}
+		out[(s)] = struct{}{}
 	}
 	return out
 }
