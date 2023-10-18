@@ -66,7 +66,7 @@ func TestRenderNodeValue(t *testing.T) {
 			expected: "hello",
 		},
 		{
-			name: "slice of primative elements",
+			name: "slice of primitive elements",
 			value: func() reflect.Value {
 				v := []int{1, 2, 3}
 				return reflect.ValueOf(v)
@@ -110,7 +110,7 @@ two: two-value`,
 				v := map[string]interface{}{
 					"1-number":           1,
 					"2-string":           "hello",
-					"3-map-of-primative": mapOfPrimative,
+					"3-map-of-primitive": mapOfPrimative,
 					"4-map-of-map":       mapOfMap,
 					"5-map-of-slice":     mapOfSlice,
 					"6-slice":            []string{"a", "b"},
@@ -120,7 +120,7 @@ two: two-value`,
 			}(),
 			expected: `1-number: 1
 2-string: hello
-3-map-of-primative:
+3-map-of-primitive:
   one: 1
   two: 2
 4-map-of-map:

@@ -643,7 +643,7 @@ type PlatformProviderTerraformConfig struct {
 	// 'image_id_map={"us-east-1":"ami-abc123","us-east-2":"ami-def456"}'
 	Vars []string `json:"vars,omitempty"`
 	// Enable drift detection.
-	// TODO: This is a temporary option because Terraform drift detection is buggy and has performace issues. This will be possibly removed in the future release.
+	// TODO: This is a temporary option because Terraform drift detection is buggy and has performance issues. This will be possibly removed in the future release.
 	DriftDetectionEnabled *bool `json:"driftDetectionEnabled" default:"true"`
 }
 
