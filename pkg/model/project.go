@@ -218,17 +218,14 @@ func (p *ProjectSSOConfig) RedactSensitiveData() {
 // Update updates ProjectSSOConfig with given data.
 func (p *ProjectSSOConfig) Update(sso *ProjectSSOConfig) error {
 	p.Provider = sso.Provider
-	if sso.Github != nil {
-		if p.Github == nil {
-			p.Github = &ProjectSSOConfig_GitHub{}
-		}
-		if err := p.Github.Update(sso.Github); err != nil {
-			return err
-		}
+	if sso.Github == nil {
+		return nil
 	}
-	if sso.Google != nil {
+
+	if p.Github == nil {
+		p.Github = &ProjectSSOConfig_GitHub{}
 	}
-	return nil
+	return p.Github.Update(sso.Github)
 }
 
 // Encrypt encrypts sensitive data in ProjectSSOConfig.
