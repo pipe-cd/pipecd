@@ -68,7 +68,6 @@ func (s *ApplicationLiveStateSnapshot) DetermineAppHealthStatus() {
 	case ApplicationKind_CLOUDRUN:
 		s.determineCloudRunAppHealthStatus()
 	}
-	return
 }
 
 func (s *ApplicationLiveStateSnapshot) determineKubernetesAppHealthStatus() {

@@ -315,7 +315,7 @@ func makeSyncState(r *provider.DiffResult, commit string) model.ApplicationSyncS
 		}
 	}
 
-	shortReason := fmt.Sprintf("The service manifest doesn't be synced")
+	shortReason := "The service manifest doesn't be synced"
 	if len(commit) >= 7 {
 		commit = commit[:7]
 	}
