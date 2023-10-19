@@ -15,8 +15,9 @@
 package controllermetrics
 
 import (
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 const (

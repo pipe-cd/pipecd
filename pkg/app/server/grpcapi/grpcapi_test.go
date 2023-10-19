@@ -19,11 +19,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/datastore"
-	"github.com/pipe-cd/pipecd/pkg/filestore"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/pipe-cd/pipecd/pkg/datastore"
+	"github.com/pipe-cd/pipecd/pkg/filestore"
 )
 
 func TestGRPCStoreError(t *testing.T) {
