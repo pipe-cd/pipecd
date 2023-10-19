@@ -209,51 +209,39 @@ func (p *ProjectStaticUser) Auth(username, password string) error {
 
 // RedactSensitiveData redacts sensitive data.
 func (p *ProjectSSOConfig) RedactSensitiveData() {
-	if p.Github != nil {
-		p.Github.RedactSensitiveData()
+	if p.Github == nil {
+		return
 	}
-	if p.Google != nil {
-	}
+	p.Github.RedactSensitiveData()
 }
 
 // Update updates ProjectSSOConfig with given data.
 func (p *ProjectSSOConfig) Update(sso *ProjectSSOConfig) error {
 	p.Provider = sso.Provider
-	if sso.Github != nil {
-		if p.Github == nil {
-			p.Github = &ProjectSSOConfig_GitHub{}
-		}
-		if err := p.Github.Update(sso.Github); err != nil {
-			return err
-		}
+	if sso.Github == nil {
+		return nil
 	}
-	if sso.Google != nil {
+
+	if p.Github == nil {
+		p.Github = &ProjectSSOConfig_GitHub{}
 	}
-	return nil
+	return p.Github.Update(sso.Github)
 }
 
 // Encrypt encrypts sensitive data in ProjectSSOConfig.
 func (p *ProjectSSOConfig) Encrypt(encrypter encrypter) error {
-	if p.Github != nil {
-		if err := p.Github.Encrypt(encrypter); err != nil {
-			return err
-		}
+	if p.Github == nil {
+		return nil
 	}
-	if p.Google != nil {
-	}
-	return nil
+	return p.Github.Encrypt(encrypter)
 }
 
 // Decrypt decrypts encrypted data in ProjectSSOConfig.
 func (p *ProjectSSOConfig) Decrypt(decrypter decrypter) error {
-	if p.Github != nil {
-		if err := p.Github.Decrypt(decrypter); err != nil {
-			return err
-		}
+	if p.Github == nil {
+		return nil
 	}
-	if p.Google != nil {
-	}
-	return nil
+	return p.Github.Decrypt(decrypter)
 }
 
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
