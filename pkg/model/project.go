@@ -233,10 +233,7 @@ func (p *ProjectSSOConfig) Encrypt(encrypter encrypter) error {
 	if p.Github == nil {
 		return nil
 	}
-	if err := p.Github.Encrypt(encrypter); err != nil {
-		return err
-	}
-	return nil
+	return p.Github.Encrypt(encrypter)
 }
 
 // Decrypt decrypts encrypted data in ProjectSSOConfig.
@@ -244,10 +241,7 @@ func (p *ProjectSSOConfig) Decrypt(decrypter decrypter) error {
 	if p.Github == nil {
 		return nil
 	}
-	if err := p.Github.Decrypt(decrypter); err != nil {
-		return err
-	}
-	return nil
+	return p.Github.Decrypt(decrypter)
 }
 
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
