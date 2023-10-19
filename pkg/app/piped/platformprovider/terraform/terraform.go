@@ -120,9 +120,7 @@ func (t *Terraform) Init(ctx context.Context, w io.Writer) error {
 		"init",
 	}
 	args = append(args, t.makeCommonCommandArgs()...)
-	for _, f := range t.options.initFlags {
-		args = append(args, f)
-	}
+	args = append(args, t.options.initFlags...)
 
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir
@@ -278,9 +276,7 @@ func (t *Terraform) Plan(ctx context.Context, w io.Writer) (PlanResult, error) {
 		"-detailed-exitcode",
 	}
 	args = append(args, t.makeCommonCommandArgs()...)
-	for _, f := range t.options.planFlags {
-		args = append(args, f)
-	}
+	args = append(args, t.options.planFlags...)
 
 	var buf bytes.Buffer
 	stdout := io.MultiWriter(w, &buf)
@@ -316,9 +312,7 @@ func (t *Terraform) makeCommonCommandArgs() (args []string) {
 	for _, f := range t.options.varFiles {
 		args = append(args, fmt.Sprintf("-var-file=%s", f))
 	}
-	for _, f := range t.options.sharedFlags {
-		args = append(args, f)
-	}
+	args = append(args, t.options.sharedFlags...)
 	return
 }
 
@@ -398,9 +392,7 @@ func (t *Terraform) Apply(ctx context.Context, w io.Writer) error {
 		"-input=false",
 	}
 	args = append(args, t.makeCommonCommandArgs()...)
-	for _, f := range t.options.applyFlags {
-		args = append(args, f)
-	}
+	args = append(args, t.options.applyFlags...)
 
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir
