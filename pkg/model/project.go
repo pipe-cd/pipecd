@@ -209,11 +209,10 @@ func (p *ProjectStaticUser) Auth(username, password string) error {
 
 // RedactSensitiveData redacts sensitive data.
 func (p *ProjectSSOConfig) RedactSensitiveData() {
-	if p.Github != nil {
-		p.Github.RedactSensitiveData()
+	if p.Github == nil {
+		return
 	}
-	if p.Google != nil {
-	}
+	p.Github.RedactSensitiveData()
 }
 
 // Update updates ProjectSSOConfig with given data.
@@ -234,24 +233,22 @@ func (p *ProjectSSOConfig) Update(sso *ProjectSSOConfig) error {
 
 // Encrypt encrypts sensitive data in ProjectSSOConfig.
 func (p *ProjectSSOConfig) Encrypt(encrypter encrypter) error {
-	if p.Github != nil {
-		if err := p.Github.Encrypt(encrypter); err != nil {
-			return err
-		}
+	if p.Github == nil {
+		return nil
 	}
-	if p.Google != nil {
+	if err := p.Github.Encrypt(encrypter); err != nil {
+		return err
 	}
 	return nil
 }
 
 // Decrypt decrypts encrypted data in ProjectSSOConfig.
 func (p *ProjectSSOConfig) Decrypt(decrypter decrypter) error {
-	if p.Github != nil {
-		if err := p.Github.Decrypt(decrypter); err != nil {
-			return err
-		}
+	if p.Github == nil {
+		return nil
 	}
-	if p.Google != nil {
+	if err := p.Github.Decrypt(decrypter); err != nil {
+		return err
 	}
 	return nil
 }
