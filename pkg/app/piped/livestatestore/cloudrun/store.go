@@ -17,9 +17,9 @@ package cloudrun
 import (
 	"context"
 	"fmt"
-	"sync/atomic"
 	"time"
 
+	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/cloudrun"
