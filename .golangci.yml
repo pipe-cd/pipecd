@@ -4,6 +4,7 @@ run:
     - ^.*\.(pb|y)\.go$
   skip-dirs:
     - "vendor$"
+    - "pkg/app/piped/executor/analysis/mannwhitney"
 
 linters:
   disable-all: true
