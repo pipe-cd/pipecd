@@ -28,7 +28,6 @@ import (
 const (
 	outputTTL    = 48 * time.Hour
 	cronSchedule = "0 9 * * *" // Run at 09:00 every day.
-	interval     = 24 * time.Hour
 	prefix       = "command-output/"
 )
 
