@@ -1,5 +1,5 @@
 run:
-  deadline: 5m
+  timeout: 15m
   skip-files:
     - ^.*\.(pb|y)\.go$
   skip-dirs:
