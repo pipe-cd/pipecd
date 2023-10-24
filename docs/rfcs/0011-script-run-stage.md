@@ -123,6 +123,12 @@ spec:
 
 Commands are executed on the container of piped or on the host OS(standalone).
 
+## CUSTOM_SYNC in the future
+
+"CUSTOM_SYNC" stage will be deprecated because the "SCRIPT_RUN" has also similar features.
+I expect users to use "SCRIPT_RUN" for executing any command before or after other stages.
+
+
 # Alternatives
 
 ## What's the difference between "CUSTOM_SYNC" and "SCRIPT_SYNC"?
