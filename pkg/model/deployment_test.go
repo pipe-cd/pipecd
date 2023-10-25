@@ -16,6 +16,7 @@ package model
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -246,6 +247,353 @@ func TestDeployment_Stage(t *testing.T) {
 			got, ok := tc.deployment.Stage(tc.id)
 			assert.Equal(t, tc.want, got)
 			assert.Equal(t, tc.exists, ok)
+		})
+	}
+}
+
+func TestCanUpdateDeploymentStatus(t *testing.T) {
+	tests := []struct {
+		name string
+		cur  DeploymentStatus
+		next DeploymentStatus
+		want bool
+	}{
+		{
+			name: "can update from PENDING to PLANNED",
+			cur:  DeploymentStatus_DEPLOYMENT_PENDING,
+			next: DeploymentStatus_DEPLOYMENT_PLANNED,
+			want: true,
+		},
+		{
+			name: "cannot update from PLANNED to PENDING",
+			cur:  DeploymentStatus_DEPLOYMENT_PLANNED,
+			next: DeploymentStatus_DEPLOYMENT_PENDING,
+			want: false,
+		},
+		{
+			name: "can update from RUNNING to ROLLING_BACK",
+			cur:  DeploymentStatus_DEPLOYMENT_RUNNING,
+			next: DeploymentStatus_DEPLOYMENT_ROLLING_BACK,
+			want: true,
+		},
+		{
+			name: "cannot update from ROLLING_BACK to RUNNING",
+			cur:  DeploymentStatus_DEPLOYMENT_ROLLING_BACK,
+			next: DeploymentStatus_DEPLOYMENT_RUNNING,
+			want: false,
+		},
+		{
+			name: "can update from ROLLING_BACK to SUCCESS",
+			cur:  DeploymentStatus_DEPLOYMENT_ROLLING_BACK,
+			next: DeploymentStatus_DEPLOYMENT_SUCCESS,
+			want: true,
+		},
+		{
+			name: "cannot update from SUCCESS to ROLLING_BACK",
+			cur:  DeploymentStatus_DEPLOYMENT_SUCCESS,
+			next: DeploymentStatus_DEPLOYMENT_ROLLING_BACK,
+			want: false,
+		},
+		{
+			name: "can update from ROLLING_BACK to FAILURE",
+			cur:  DeploymentStatus_DEPLOYMENT_ROLLING_BACK,
+			next: DeploymentStatus_DEPLOYMENT_FAILURE,
+			want: true,
+		},
+		{
+			name: "cannot update from FAILURE to ROLLING_BACK",
+			cur:  DeploymentStatus_DEPLOYMENT_FAILURE,
+			next: DeploymentStatus_DEPLOYMENT_ROLLING_BACK,
+			want: false,
+		},
+		{
+			name: "can update from ROLLING_BACK to CANCELLED",
+			cur:  DeploymentStatus_DEPLOYMENT_ROLLING_BACK,
+			next: DeploymentStatus_DEPLOYMENT_CANCELLED,
+			want: true,
+		},
+		{
+			name: "cannot update from CANCELLED to ROLLING_BACK",
+			cur:  DeploymentStatus_DEPLOYMENT_CANCELLED,
+			next: DeploymentStatus_DEPLOYMENT_ROLLING_BACK,
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := CanUpdateDeploymentStatus(tt.cur, tt.next)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestCanUpdateStageStatus(t *testing.T) {
+	tests := []struct {
+		name string
+		cur  StageStatus
+		next StageStatus
+		want bool
+	}{
+		{
+			name: "can update from NOT_STARTED_YET to RUNNING",
+			cur:  StageStatus_STAGE_NOT_STARTED_YET,
+			next: StageStatus_STAGE_RUNNING,
+			want: true,
+		},
+		{
+			name: "can update from RUNNING to SUCCESS",
+			cur:  StageStatus_STAGE_RUNNING,
+			next: StageStatus_STAGE_SUCCESS,
+			want: true,
+		},
+		{
+			name: "can update from RUNNING to FAILURE",
+			cur:  StageStatus_STAGE_RUNNING,
+			next: StageStatus_STAGE_FAILURE,
+			want: true,
+		},
+		{
+			name: "can update from RUNNING to CANCELLED",
+			cur:  StageStatus_STAGE_RUNNING,
+			next: StageStatus_STAGE_CANCELLED,
+			want: true,
+		},
+		{
+			name: "cannot update from SUCCESS to RUNNING",
+			cur:  StageStatus_STAGE_SUCCESS,
+			next: StageStatus_STAGE_RUNNING,
+			want: false,
+		},
+		{
+			name: "cannot update from FAILURE to RUNNING",
+			cur:  StageStatus_STAGE_FAILURE,
+			next: StageStatus_STAGE_RUNNING,
+			want: false,
+		},
+		{
+			name: "cannot update from CANCELLED to RUNNING",
+			cur:  StageStatus_STAGE_CANCELLED,
+			next: StageStatus_STAGE_RUNNING,
+			want: false,
+		},
+		{
+			name: "cannot update from SUCCESS to FAILURE",
+			cur:  StageStatus_STAGE_SUCCESS,
+			next: StageStatus_STAGE_FAILURE,
+			want: false,
+		},
+		{
+			name: "cannot update from SUCCESS to CANCELLED",
+			cur:  StageStatus_STAGE_SUCCESS,
+			next: StageStatus_STAGE_CANCELLED,
+			want: false,
+		},
+		{
+			name: "cannot update from FAILURE to SUCCESS",
+			cur:  StageStatus_STAGE_FAILURE,
+			next: StageStatus_STAGE_SUCCESS,
+			want: false,
+		},
+		{
+			name: "cannot update from FAILURE to CANCELLED",
+			cur:  StageStatus_STAGE_FAILURE,
+			next: StageStatus_STAGE_CANCELLED,
+			want: false,
+		},
+		{
+			name: "cannot update from CANCELLED to SUCCESS",
+			cur:  StageStatus_STAGE_CANCELLED,
+			next: StageStatus_STAGE_SUCCESS,
+			want: false,
+		},
+		{
+			name: "cannot update from CANCELLED to FAILURE",
+			cur:  StageStatus_STAGE_CANCELLED,
+			next: StageStatus_STAGE_FAILURE,
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := CanUpdateStageStatus(tt.cur, tt.next)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestTriggeredBy(t *testing.T) {
+	tests := []struct {
+		name    string
+		trigger DeploymentTrigger
+		want    string
+	}{
+		{
+			name: "returns commander name if set",
+			trigger: DeploymentTrigger{
+				Commander: "Alice",
+				Commit: &Commit{
+					Author: "Bob",
+				},
+			},
+			want: "Alice",
+		},
+		{
+			name: "returns commit author name if commander not set",
+			trigger: DeploymentTrigger{
+				Commander: "",
+				Commit: &Commit{
+					Author: "Bob",
+				},
+			},
+			want: "Bob",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &Deployment{
+				Trigger: &tt.trigger,
+			}
+			got := d.TriggeredBy()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestTriggerBefore(t *testing.T) {
+	now := time.Now()
+	tests := []struct {
+		name  string
+		d     Deployment
+		other Deployment
+		want  bool
+	}{
+		{
+			name: "returns true if d trigger is before other trigger",
+			d: Deployment{
+				Trigger: &DeploymentTrigger{
+					Commit: &Commit{
+						CreatedAt: now.Add(-time.Hour).Unix(),
+					},
+					Timestamp: now.Add(-time.Minute).Unix(),
+				},
+			},
+			other: Deployment{
+				Trigger: &DeploymentTrigger{
+					Commit: &Commit{
+						CreatedAt: now.Unix(),
+					},
+					Timestamp: now.Unix(),
+				},
+			},
+			want: true,
+		},
+		{
+			name: "returns false if d trigger is after other trigger",
+			d: Deployment{
+				Trigger: &DeploymentTrigger{
+					Commit: &Commit{
+						CreatedAt: now.Unix(),
+					},
+					Timestamp: now.Unix(),
+				},
+			},
+			other: Deployment{
+				Trigger: &DeploymentTrigger{
+					Commit: &Commit{
+						CreatedAt: now.Add(-time.Hour).Unix(),
+					},
+					Timestamp: now.Add(-time.Minute).Unix(),
+				},
+			},
+			want: false,
+		},
+		{
+			name: "returns true if d trigger is same as other trigger",
+			d: Deployment{
+				Trigger: &DeploymentTrigger{
+					Commit: &Commit{
+						CreatedAt: now.Unix(),
+					},
+					Timestamp: now.Unix(),
+				},
+			},
+			other: Deployment{
+				Trigger: &DeploymentTrigger{
+					Commit: &Commit{
+						CreatedAt: now.Unix(),
+					},
+					Timestamp: now.Unix(),
+				},
+			},
+			want: true,
+		},
+		{
+			name: "returns false if d trigger is same as other trigger",
+			d: Deployment{
+				Trigger: &DeploymentTrigger{
+					Commit: &Commit{
+						CreatedAt: now.Unix(),
+					},
+					Timestamp: now.Add(time.Minute).Unix(),
+				},
+			},
+			other: Deployment{
+				Trigger: &DeploymentTrigger{
+					Commit: &Commit{
+						CreatedAt: now.Unix(),
+					},
+					Timestamp: now.Unix(),
+				},
+			},
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.d.TriggerBefore(&tt.other)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestFindRollbackStage(t *testing.T) {
+	tests := []struct {
+		name           string
+		stages         []*PipelineStage
+		wantStage      *PipelineStage
+		wantStageFound bool
+	}{
+		{
+			name: "found",
+			stages: []*PipelineStage{
+				{Name: StageK8sSync.String()},
+				{Name: StageRollback.String()},
+			},
+			wantStage:      &PipelineStage{Name: StageRollback.String()},
+			wantStageFound: true,
+		},
+		{
+			name: "not found",
+			stages: []*PipelineStage{
+				{Name: StageK8sSync.String()},
+			},
+			wantStage:      nil,
+			wantStageFound: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &Deployment{
+				Stages: tt.stages,
+			}
+			stage, found := d.FindRollbackStage()
+			assert.Equal(t, tt.wantStage, stage)
+			assert.Equal(t, tt.wantStageFound, found)
 		})
 	}
 }
