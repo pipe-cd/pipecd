@@ -110,3 +110,239 @@ func TestDeploymentChainDesireStatus(t *testing.T) {
 		})
 	}
 }
+func TestListAllInChainApplicationDeploymentsMap(t *testing.T) {
+	dc := &DeploymentChain{
+		Blocks: []*ChainBlock{
+			{
+				Nodes: []*ChainNode{
+					{
+						ApplicationRef: &ChainApplicationRef{ApplicationId: "app1"},
+						DeploymentRef:  &ChainDeploymentRef{DeploymentId: "dep1"},
+					},
+					{
+						ApplicationRef: &ChainApplicationRef{ApplicationId: "app2"},
+						DeploymentRef:  nil,
+					},
+				},
+			},
+			{
+				Nodes: []*ChainNode{
+					{
+						ApplicationRef: &ChainApplicationRef{ApplicationId: "app2"},
+						DeploymentRef:  &ChainDeploymentRef{DeploymentId: "dep2"},
+					},
+					{
+						ApplicationRef: &ChainApplicationRef{ApplicationId: "app3"},
+						DeploymentRef:  &ChainDeploymentRef{DeploymentId: "dep3"},
+					},
+				},
+			},
+		},
+	}
+
+	want := map[string]*ChainDeploymentRef{
+		"app1": {DeploymentId: "dep1"},
+		"app2": {DeploymentId: "dep2"},
+		"app3": {DeploymentId: "dep3"},
+	}
+
+	got := dc.ListAllInChainApplicationDeploymentsMap()
+
+	assert.Equal(t, want, got)
+}
+func TestListAllInChainApplications(t *testing.T) {
+	dc := &DeploymentChain{
+		Blocks: []*ChainBlock{
+			{
+				Nodes: []*ChainNode{
+					{
+						ApplicationRef: &ChainApplicationRef{ApplicationId: "app1"},
+						DeploymentRef:  &ChainDeploymentRef{DeploymentId: "dep1"},
+					},
+					{
+						ApplicationRef: &ChainApplicationRef{ApplicationId: "app2"},
+						DeploymentRef:  nil,
+					},
+				},
+			},
+			{
+				Nodes: []*ChainNode{
+					{
+						ApplicationRef: &ChainApplicationRef{ApplicationId: "app2"},
+						DeploymentRef:  &ChainDeploymentRef{DeploymentId: "dep2"},
+					},
+					{
+						ApplicationRef: &ChainApplicationRef{ApplicationId: "app3"},
+						DeploymentRef:  &ChainDeploymentRef{DeploymentId: "dep3"},
+					},
+				},
+			},
+		},
+	}
+
+	want := []*ChainApplicationRef{
+		{ApplicationId: "app1"},
+		{ApplicationId: "app2"},
+		{ApplicationId: "app2"},
+		{ApplicationId: "app3"},
+	}
+
+	got := dc.ListAllInChainApplications()
+
+	assert.Equal(t, want, got)
+}
+
+func TestIsCompleted(t *testing.T) {
+	tests := []struct {
+		name   string
+		status ChainBlockStatus
+		want   bool
+	}{
+		{
+			name:   "returns true for DEPLOYMENT_BLOCK_SUCCESS",
+			status: ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS,
+			want:   true,
+		},
+		{
+			name:   "returns true for DEPLOYMENT_BLOCK_FAILURE",
+			status: ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE,
+			want:   true,
+		},
+		{
+			name:   "returns true for DEPLOYMENT_BLOCK_CANCELLED",
+			status: ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED,
+			want:   true,
+		},
+		{
+			name:   "returns false for DEPLOYMENT_BLOCK_PENDING",
+			status: ChainBlockStatus_DEPLOYMENT_BLOCK_PENDING,
+			want:   false,
+		},
+		{
+			name:   "returns false for DEPLOYMENT_BLOCK_RUNNING",
+			status: ChainBlockStatus_DEPLOYMENT_BLOCK_RUNNING,
+			want:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := &ChainBlock{Status: tt.status}
+			got := b.IsCompleted()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+func TestDesiredStatus(t *testing.T) {
+	tests := []struct {
+		name           string
+		block          *ChainBlock
+		wantDesired    ChainBlockStatus
+		wantIsComplete bool
+	}{
+		{
+			name: "returns DEPLOYMENT_BLOCK_SUCCESS for all successful deployments",
+			block: &ChainBlock{
+				Nodes: []*ChainNode{
+					{DeploymentRef: &ChainDeploymentRef{Status: DeploymentStatus_DEPLOYMENT_SUCCESS}},
+					{DeploymentRef: &ChainDeploymentRef{Status: DeploymentStatus_DEPLOYMENT_SUCCESS}},
+				},
+			},
+			wantDesired: ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS,
+		},
+		{
+			name: "returns DEPLOYMENT_BLOCK_FAILURE for at least one failed deployment",
+			block: &ChainBlock{
+				Nodes: []*ChainNode{
+					{DeploymentRef: &ChainDeploymentRef{Status: DeploymentStatus_DEPLOYMENT_SUCCESS}},
+					{DeploymentRef: &ChainDeploymentRef{Status: DeploymentStatus_DEPLOYMENT_FAILURE}},
+				},
+			},
+			wantDesired: ChainBlockStatus_DEPLOYMENT_BLOCK_FAILURE,
+		},
+		{
+			name: "returns DEPLOYMENT_BLOCK_CANCELLED for at least one cancelled deployment",
+			block: &ChainBlock{
+				Nodes: []*ChainNode{
+					{DeploymentRef: &ChainDeploymentRef{Status: DeploymentStatus_DEPLOYMENT_SUCCESS}},
+					{DeploymentRef: &ChainDeploymentRef{Status: DeploymentStatus_DEPLOYMENT_CANCELLED}},
+				},
+			},
+			wantDesired: ChainBlockStatus_DEPLOYMENT_BLOCK_CANCELLED,
+		},
+		{
+			name: "returns DEPLOYMENT_BLOCK_RUNNING for at least one running deployment",
+			block: &ChainBlock{
+				Nodes: []*ChainNode{
+					{DeploymentRef: &ChainDeploymentRef{Status: DeploymentStatus_DEPLOYMENT_SUCCESS}},
+					{DeploymentRef: &ChainDeploymentRef{Status: DeploymentStatus_DEPLOYMENT_RUNNING}},
+				},
+			},
+			wantDesired: ChainBlockStatus_DEPLOYMENT_BLOCK_RUNNING,
+		},
+		{
+			name: "returns original status if no deployments",
+			block: &ChainBlock{
+				Status: ChainBlockStatus_DEPLOYMENT_BLOCK_PENDING,
+			},
+			wantDesired: ChainBlockStatus_DEPLOYMENT_BLOCK_SUCCESS,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotDesired := tt.block.DesiredStatus()
+			assert.Equal(t, tt.wantDesired, gotDesired)
+		})
+	}
+}
+
+func TestGetNodeByDeploymentID(t *testing.T) {
+	block := &ChainBlock{
+		Nodes: []*ChainNode{
+			{
+				DeploymentRef: &ChainDeploymentRef{DeploymentId: "dep1"},
+			},
+			{
+				DeploymentRef: &ChainDeploymentRef{DeploymentId: "dep2"},
+			},
+			{
+				DeploymentRef: nil,
+			},
+		},
+	}
+
+	tests := []struct {
+		name         string
+		deploymentID string
+		wantNode     *ChainNode
+		wantErr      bool
+	}{
+		{
+			name:         "returns node with matching deployment ID",
+			deploymentID: "dep1",
+			wantNode:     block.Nodes[0],
+			wantErr:      false,
+		},
+		{
+			name:         "returns error for non-existent deployment ID",
+			deploymentID: "dep3",
+			wantNode:     nil,
+			wantErr:      true,
+		},
+		{
+			name:         "returns error for nil deployment ref",
+			deploymentID: "",
+			wantNode:     nil,
+			wantErr:      true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotNode, err := block.GetNodeByDeploymentID(tt.deploymentID)
+			assert.Equal(t, tt.wantErr, err != nil)
+			assert.Equal(t, tt.wantNode, gotNode)
+		})
+	}
+}
