@@ -104,7 +104,7 @@ type webAPIAPIKeyStore interface {
 	Disable(ctx context.Context, id, projectID string) error
 }
 
-type webAPIAPIKeyLastUsedStore interface { //nolint:stylecheck
+type webAPIAPIKeyLastUsedStore interface {
 	Get(k string) (interface{}, error)
 }
 
