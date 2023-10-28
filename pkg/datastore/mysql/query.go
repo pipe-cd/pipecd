@@ -92,7 +92,7 @@ func buildWhereClause(filters []datastore.ListFilter) (string, error) {
 			conds[i] = fmt.Sprintf("%s %s ?", filter.Field, op)
 		}
 	}
-	return fmt.Sprintf("WHERE %s", strings.Join(conds[:], " AND ")), nil
+	return fmt.Sprintf("WHERE %s", strings.Join(conds, " AND ")), nil
 }
 
 func buildPaginationCondition(opts datastore.ListOptions) string {
@@ -165,7 +165,7 @@ func buildOrderByClause(orders []datastore.Order) (string, error) {
 		return "", fmt.Errorf("id field is required as ordering field")
 	}
 
-	return fmt.Sprintf("ORDER BY %s", strings.Join(conds[:], ", ")), nil
+	return fmt.Sprintf("ORDER BY %s", strings.Join(conds, ", ")), nil
 }
 
 func buildLimitClause(limit int) string {
