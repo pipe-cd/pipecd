@@ -31,37 +31,37 @@ const (
 
 var predefinedStages = map[string]config.PipelineStage{
 	PredefinedStageK8sSync: {
-		Id:   PredefinedStageK8sSync,
+		ID:   PredefinedStageK8sSync,
 		Name: model.StageK8sSync,
 		Desc: "Sync by applying all manifests",
 	},
 	PredefinedStageTerraformSync: {
-		Id:   PredefinedStageTerraformSync,
+		ID:   PredefinedStageTerraformSync,
 		Name: model.StageTerraformSync,
 		Desc: "Sync by automatically applying any detected changes",
 	},
 	PredefinedStageCloudRunSync: {
-		Id:   PredefinedStageCloudRunSync,
+		ID:   PredefinedStageCloudRunSync,
 		Name: model.StageCloudRunSync,
 		Desc: "Deploy the new version and configure all traffic to it",
 	},
 	PredefinedStageLambdaSync: {
-		Id:   PredefinedStageLambdaSync,
+		ID:   PredefinedStageLambdaSync,
 		Name: model.StageLambdaSync,
 		Desc: "Deploy the new version and configure all traffic to it",
 	},
 	PredefinedStageECSSync: {
-		Id:   PredefinedStageECSSync,
+		ID:   PredefinedStageECSSync,
 		Name: model.StageECSSync,
 		Desc: "Deploy the new version and configure all traffic to it",
 	},
 	PredefinedStageRollback: {
-		Id:   PredefinedStageRollback,
+		ID:   PredefinedStageRollback,
 		Name: model.StageRollback,
 		Desc: "Rollback the deployment",
 	},
 	PredefinedStageCustomSyncRollback: {
-		Id:   PredefinedStageCustomSyncRollback,
+		ID:   PredefinedStageCustomSyncRollback,
 		Name: model.StageCustomSyncRollback,
 		Desc: "Rollback the custom stages",
 	},

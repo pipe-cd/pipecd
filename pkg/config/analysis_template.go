@@ -23,7 +23,7 @@ import (
 type AnalysisTemplateSpec struct {
 	Metrics map[string]AnalysisMetrics `json:"metrics"`
 	Logs    map[string]AnalysisLog     `json:"logs"`
-	HTTPs   map[string]AnalysisHTTP    `json:"https"`
+	HTTPS   map[string]AnalysisHTTP    `json:"https"`
 }
 
 // LoadAnalysisTemplate finds the config file for the analysis template in the .pipe

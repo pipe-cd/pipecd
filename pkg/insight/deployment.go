@@ -19,7 +19,7 @@ import (
 )
 
 type DeploymentData struct {
-	Id                string            `json:"id"`
+	ID                string            `json:"id"`
 	AppID             string            `json:"app_id"`
 	Labels            map[string]string `json:"labels"`
 	StartedAt         int64             `json:"started_at"`
@@ -35,7 +35,7 @@ func BuildDeploymentData(d *model.Deployment) DeploymentData {
 	}
 
 	return DeploymentData{
-		Id:                d.Id,
+		ID:                d.Id,
 		AppID:             d.ApplicationId,
 		Labels:            d.Labels,
 		StartedAt:         d.CreatedAt,

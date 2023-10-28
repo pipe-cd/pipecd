@@ -272,11 +272,11 @@ func (s *store) putCompletedDeploymentsToChunk(ctx context.Context, projectID, b
 		duplicates = 0
 	)
 	for _, d := range chunk.Deployments {
-		dsMap[d.Id] = struct{}{}
+		dsMap[d.ID] = struct{}{}
 		mergedList = append(mergedList, d)
 	}
 	for _, d := range ds {
-		if _, ok := dsMap[d.Id]; ok {
+		if _, ok := dsMap[d.ID]; ok {
 			duplicates++
 			continue
 		}
