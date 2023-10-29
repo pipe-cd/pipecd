@@ -40,7 +40,7 @@ func TestControlPlaneConfig(t *testing.T) {
 			expectedSpec: &ControlPlaneSpec{
 				Projects: []ControlPlaneProject{
 					{
-						Id: "abc",
+						ID: "abc",
 						StaticAdmin: ProjectStaticUser{
 							Username:     "test-user",
 							PasswordHash: "test-password",

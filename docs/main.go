@@ -45,7 +45,7 @@ func main() {
 	// Redirect /docs/ to /docs-{latest-version}/
 	mux.HandleFunc("/docs/", func(w http.ResponseWriter, r *http.Request) {
 		latestPattern := strings.Replace(r.URL.Path, "/docs/", latestPath, 1)
-		http.Redirect(w, r, latestPattern, 307)
+		http.Redirect(w, r, latestPattern, http.StatusTemporaryRedirect)
 	})
 
 	defer func() {

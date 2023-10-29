@@ -596,7 +596,7 @@ func TestGenericAnalysisConfiguration(t *testing.T) {
 								Name: model.StageAnalysis,
 								AnalysisStageOptions: &AnalysisStageOptions{
 									Duration: Duration(10 * time.Minute),
-									Https: []TemplatableAnalysisHTTP{
+									HTTPS: []TemplatableAnalysisHTTP{
 										{
 											AnalysisHTTP: AnalysisHTTP{
 												URL:          "https://canary-endpoint.dev",

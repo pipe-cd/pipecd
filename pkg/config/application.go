@@ -216,7 +216,7 @@ type DeploymentPipeline struct {
 // PipelineStage represents a single stage of a pipeline.
 // This is used as a generic struct for all stage type.
 type PipelineStage struct {
-	Id      string
+	ID      string
 	Name    model.Stage
 	Desc    string
 	Timeout Duration
@@ -252,7 +252,7 @@ type PipelineStage struct {
 }
 
 type genericPipelineStage struct {
-	Id      string          `json:"id"`
+	ID      string          `json:"id"`
 	Name    model.Stage     `json:"name"`
 	Desc    string          `json:"desc,omitempty"`
 	Timeout Duration        `json:"timeout"`
@@ -265,7 +265,7 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	if err = json.Unmarshal(data, &gs); err != nil {
 		return err
 	}
-	s.Id = gs.Id
+	s.ID = gs.ID
 	s.Name = gs.Name
 	s.Desc = gs.Desc
 	s.Timeout = gs.Timeout
@@ -440,7 +440,7 @@ type AnalysisStageOptions struct {
 	RestartThreshold int                          `json:"restartThreshold"`
 	Metrics          []TemplatableAnalysisMetrics `json:"metrics"`
 	Logs             []TemplatableAnalysisLog     `json:"logs"`
-	Https            []TemplatableAnalysisHTTP    `json:"https"`
+	HTTPS            []TemplatableAnalysisHTTP    `json:"https"`
 }
 
 func (a *AnalysisStageOptions) Validate() error {
@@ -471,7 +471,7 @@ func (a *AnalysisStageOptions) Validate() error {
 			return fmt.Errorf("one of log configurations of ANALYSIS stage is invalid: %w", err)
 		}
 	}
-	for _, h := range a.Https {
+	for _, h := range a.HTTPS {
 		if h.Template.Name != "" {
 			if err := h.Template.Validate(); err != nil {
 				return fmt.Errorf("one of http configurations of ANALYSIS stage is invalid: %w", err)
