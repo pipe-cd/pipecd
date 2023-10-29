@@ -23,8 +23,8 @@ func ApplicationKindStrings() []string {
 	return out
 }
 
-func (k ApplicationKind) ToRollbackKind() RollbackKind {
-	switch k {
+func (ak ApplicationKind) ToRollbackKind() RollbackKind {
+	switch ak {
 	case ApplicationKind_KUBERNETES:
 		return RollbackKind_Rollback_KUBERNETES
 	case ApplicationKind_TERRAFORM:
