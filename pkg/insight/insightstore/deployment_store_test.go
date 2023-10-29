@@ -97,10 +97,10 @@ func TestChunkStoring(t *testing.T) {
 			ChunkID: chunkID,
 			Deployments: []*insight.DeploymentData{
 				&insight.DeploymentData{
-					Id: "deployment-1",
+					ID: "deployment-1",
 				},
 				&insight.DeploymentData{
-					Id: "deployment-2",
+					ID: "deployment-2",
 				},
 			},
 		}
@@ -137,10 +137,10 @@ func TestPutCompletedDeploymentsToChunk(t *testing.T) {
 
 	ds := []*insight.DeploymentData{
 		&insight.DeploymentData{
-			Id: "deployment-1",
+			ID: "deployment-1",
 		},
 		&insight.DeploymentData{
-			Id: "deployment-2",
+			ID: "deployment-2",
 		},
 	}
 	err = s.putCompletedDeploymentsToChunk(ctx, projectID, blockID, chunkID, ds)
@@ -150,10 +150,10 @@ func TestPutCompletedDeploymentsToChunk(t *testing.T) {
 		ChunkID: chunkID,
 		Deployments: []*insight.DeploymentData{
 			&insight.DeploymentData{
-				Id: "deployment-1",
+				ID: "deployment-1",
 			},
 			&insight.DeploymentData{
-				Id: "deployment-2",
+				ID: "deployment-2",
 			},
 		},
 	}
@@ -164,13 +164,13 @@ func TestPutCompletedDeploymentsToChunk(t *testing.T) {
 	// Add to an existing chunk.
 	ds = []*insight.DeploymentData{
 		&insight.DeploymentData{
-			Id: "deployment-2",
+			ID: "deployment-2",
 		},
 		&insight.DeploymentData{
-			Id: "deployment-4",
+			ID: "deployment-4",
 		},
 		&insight.DeploymentData{
-			Id: "deployment-5",
+			ID: "deployment-5",
 		},
 	}
 	err = s.putCompletedDeploymentsToChunk(ctx, projectID, blockID, chunkID, ds)
@@ -180,16 +180,16 @@ func TestPutCompletedDeploymentsToChunk(t *testing.T) {
 		ChunkID: chunkID,
 		Deployments: []*insight.DeploymentData{
 			&insight.DeploymentData{
-				Id: "deployment-1",
+				ID: "deployment-1",
 			},
 			&insight.DeploymentData{
-				Id: "deployment-2",
+				ID: "deployment-2",
 			},
 			&insight.DeploymentData{
-				Id: "deployment-4",
+				ID: "deployment-4",
 			},
 			&insight.DeploymentData{
-				Id: "deployment-5",
+				ID: "deployment-5",
 			},
 		},
 	}
@@ -217,7 +217,7 @@ func TestPutCompletedDeploymentsBlock(t *testing.T) {
 
 	ds := []*insight.DeploymentData{
 		&insight.DeploymentData{
-			Id:          "deployment-1",
+			ID:          "deployment-1",
 			CompletedAt: 100,
 		},
 	}
@@ -245,7 +245,7 @@ func TestPutCompletedDeploymentsBlock(t *testing.T) {
 			ChunkID: "chunk_0",
 			Deployments: []*insight.DeploymentData{
 				&insight.DeploymentData{
-					Id:          "deployment-1",
+					ID:          "deployment-1",
 					CompletedAt: 100,
 				},
 			},
@@ -260,15 +260,15 @@ func TestPutCompletedDeploymentsBlock(t *testing.T) {
 	// Add to require a new chunk because of size limit.
 	ds = []*insight.DeploymentData{
 		&insight.DeploymentData{
-			Id:          "deployment-2",
+			ID:          "deployment-2",
 			CompletedAt: 200,
 		},
 		&insight.DeploymentData{
-			Id:          "deployment-3",
+			ID:          "deployment-3",
 			CompletedAt: 300,
 		},
 		&insight.DeploymentData{
-			Id:          "deployment-4",
+			ID:          "deployment-4",
 			CompletedAt: 400,
 		},
 	}
@@ -305,15 +305,15 @@ func TestPutCompletedDeploymentsBlock(t *testing.T) {
 			ChunkID: "chunk_0",
 			Deployments: []*insight.DeploymentData{
 				&insight.DeploymentData{
-					Id:          "deployment-1",
+					ID:          "deployment-1",
 					CompletedAt: 100,
 				},
 				&insight.DeploymentData{
-					Id:          "deployment-2",
+					ID:          "deployment-2",
 					CompletedAt: 200,
 				},
 				&insight.DeploymentData{
-					Id:          "deployment-3",
+					ID:          "deployment-3",
 					CompletedAt: 300,
 				},
 			},
@@ -322,7 +322,7 @@ func TestPutCompletedDeploymentsBlock(t *testing.T) {
 			ChunkID: "chunk_1",
 			Deployments: []*insight.DeploymentData{
 				&insight.DeploymentData{
-					Id:          "deployment-4",
+					ID:          "deployment-4",
 					CompletedAt: 400,
 				},
 			},
@@ -337,11 +337,11 @@ func TestPutCompletedDeploymentsBlock(t *testing.T) {
 	// Add to the limit of chunk to test the edge case.
 	ds = []*insight.DeploymentData{
 		&insight.DeploymentData{
-			Id:          "deployment-5",
+			ID:          "deployment-5",
 			CompletedAt: 500,
 		},
 		&insight.DeploymentData{
-			Id:          "deployment-6",
+			ID:          "deployment-6",
 			CompletedAt: 600,
 		},
 	}
@@ -378,15 +378,15 @@ func TestPutCompletedDeploymentsBlock(t *testing.T) {
 			ChunkID: "chunk_0",
 			Deployments: []*insight.DeploymentData{
 				&insight.DeploymentData{
-					Id:          "deployment-1",
+					ID:          "deployment-1",
 					CompletedAt: 100,
 				},
 				&insight.DeploymentData{
-					Id:          "deployment-2",
+					ID:          "deployment-2",
 					CompletedAt: 200,
 				},
 				&insight.DeploymentData{
-					Id:          "deployment-3",
+					ID:          "deployment-3",
 					CompletedAt: 300,
 				},
 			},
@@ -395,15 +395,15 @@ func TestPutCompletedDeploymentsBlock(t *testing.T) {
 			ChunkID: "chunk_1",
 			Deployments: []*insight.DeploymentData{
 				&insight.DeploymentData{
-					Id:          "deployment-4",
+					ID:          "deployment-4",
 					CompletedAt: 400,
 				},
 				&insight.DeploymentData{
-					Id:          "deployment-5",
+					ID:          "deployment-5",
 					CompletedAt: 500,
 				},
 				&insight.DeploymentData{
-					Id:          "deployment-6",
+					ID:          "deployment-6",
 					CompletedAt: 600,
 				},
 			},
@@ -439,15 +439,15 @@ func TestGroupCompletedDeploymentsByBlock(t *testing.T) {
 			name: "one block",
 			ds: []*insight.DeploymentData{
 				&insight.DeploymentData{
-					Id:          "deployment-1",
+					ID:          "deployment-1",
 					CompletedAt: date2022.Unix(),
 				},
 				&insight.DeploymentData{
-					Id:          "deployment-3",
+					ID:          "deployment-3",
 					CompletedAt: date2022.Unix() + 200,
 				},
 				&insight.DeploymentData{
-					Id:          "deployment-2",
+					ID:          "deployment-2",
 					CompletedAt: date2022.Unix() + 100,
 				},
 			},
@@ -456,15 +456,15 @@ func TestGroupCompletedDeploymentsByBlock(t *testing.T) {
 					BlockID: "block_2022",
 					Deployments: []*insight.DeploymentData{
 						&insight.DeploymentData{
-							Id:          "deployment-1",
+							ID:          "deployment-1",
 							CompletedAt: date2022.Unix(),
 						},
 						&insight.DeploymentData{
-							Id:          "deployment-2",
+							ID:          "deployment-2",
 							CompletedAt: date2022.Unix() + 100,
 						},
 						&insight.DeploymentData{
-							Id:          "deployment-3",
+							ID:          "deployment-3",
 							CompletedAt: date2022.Unix() + 200,
 						},
 					},
@@ -475,19 +475,19 @@ func TestGroupCompletedDeploymentsByBlock(t *testing.T) {
 			name: "multiple blocks",
 			ds: []*insight.DeploymentData{
 				&insight.DeploymentData{
-					Id:          "deployment-1",
+					ID:          "deployment-1",
 					CompletedAt: date2022.Unix(),
 				},
 				&insight.DeploymentData{
-					Id:          "deployment-4",
+					ID:          "deployment-4",
 					CompletedAt: date2023.Unix(),
 				},
 				&insight.DeploymentData{
-					Id:          "deployment-3",
+					ID:          "deployment-3",
 					CompletedAt: date2022.Unix() + 200,
 				},
 				&insight.DeploymentData{
-					Id:          "deployment-2",
+					ID:          "deployment-2",
 					CompletedAt: date2022.Unix() + 100,
 				},
 			},
@@ -496,15 +496,15 @@ func TestGroupCompletedDeploymentsByBlock(t *testing.T) {
 					BlockID: "block_2022",
 					Deployments: []*insight.DeploymentData{
 						&insight.DeploymentData{
-							Id:          "deployment-1",
+							ID:          "deployment-1",
 							CompletedAt: date2022.Unix(),
 						},
 						&insight.DeploymentData{
-							Id:          "deployment-2",
+							ID:          "deployment-2",
 							CompletedAt: date2022.Unix() + 100,
 						},
 						&insight.DeploymentData{
-							Id:          "deployment-3",
+							ID:          "deployment-3",
 							CompletedAt: date2022.Unix() + 200,
 						},
 					},
@@ -513,7 +513,7 @@ func TestGroupCompletedDeploymentsByBlock(t *testing.T) {
 					BlockID: "block_2023",
 					Deployments: []*insight.DeploymentData{
 						&insight.DeploymentData{
-							Id:          "deployment-4",
+							ID:          "deployment-4",
 							CompletedAt: date2023.Unix(),
 						},
 					},

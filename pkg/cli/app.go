@@ -30,7 +30,7 @@ type App struct {
 	telemetryFlags TelemetryFlags
 }
 
-var FlagParseErr = errors.New("FlagParseErr")
+var ErrFlagParse = errors.New("FlagParseErr")
 
 func NewApp(name, desc string) *App {
 	a := &App{
@@ -45,7 +45,7 @@ func NewApp(name, desc string) *App {
 	a.rootCmd.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
 		cmd.Println(err)
 		cmd.Println(cmd.UsageString())
-		return FlagParseErr
+		return ErrFlagParse
 	})
 	versionCmd := &cobra.Command{
 		Use:   "version",

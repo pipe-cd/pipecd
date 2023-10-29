@@ -121,7 +121,7 @@ func TestVerify(t *testing.T) {
 		&config.ControlPlaneSpec{
 			Projects: []config.ControlPlaneProject{
 				{
-					Id: "project-0",
+					ID: "project-0",
 				},
 			},
 		},

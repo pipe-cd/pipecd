@@ -19,7 +19,7 @@ import (
 )
 
 type ApplicationData struct {
-	Id     string            `json:"id"`
+	ID     string            `json:"id"`
 	Labels map[string]string `json:"labels"`
 	Kind   string            `json:"kind"`
 	Status string            `json:"status"`
@@ -34,7 +34,7 @@ func BuildApplicationData(a *model.Application) ApplicationData {
 	status := determineApplicationStatus(a)
 
 	return ApplicationData{
-		Id:     a.Id,
+		ID:     a.Id,
 		Labels: a.Labels,
 		Kind:   a.Kind.String(),
 		Status: status.String(),

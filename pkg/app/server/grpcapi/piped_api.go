@@ -42,7 +42,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 )
 
-type pipedApiApplicationStore interface {
+type pipedAPIApplicationStore interface {
 	Get(ctx context.Context, id string) (*model.Application, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Application, string, error)
 	UpdateSyncState(ctx context.Context, id string, state *model.ApplicationSyncState) error
@@ -51,7 +51,7 @@ type pipedApiApplicationStore interface {
 	UpdateMostRecentDeployment(ctx context.Context, id string, status model.DeploymentStatus, d *model.ApplicationDeploymentReference) error
 }
 
-type pipedApiDeploymentStore interface {
+type pipedAPIDeploymentStore interface {
 	Add(ctx context.Context, app *model.Deployment) error
 	Get(ctx context.Context, id string) (*model.Deployment, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Deployment, string, error)
@@ -63,17 +63,17 @@ type pipedApiDeploymentStore interface {
 	UpdateStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error
 }
 
-type pipedApiDeploymentChainStore interface {
+type pipedAPIDeploymentChainStore interface {
 	Add(ctx context.Context, d *model.DeploymentChain) error
 	Get(ctx context.Context, id string) (*model.DeploymentChain, error)
 }
 
-type pipedApiPipedStore interface {
+type pipedAPIPipedStore interface {
 	Get(ctx context.Context, id string) (*model.Piped, error)
 	UpdateMetadata(ctx context.Context, id, version, config string, pps []*model.Piped_PlatformProvider, repos []*model.ApplicationGitRepository, se *model.Piped_SecretEncryption, startedAt int64) error
 }
 
-type pipedApiEventStore interface {
+type pipedAPIEventStore interface {
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Event, string, error)
 	UpdateStatus(ctx context.Context, eventID string, status model.EventStatus, statusDescription string) error
 }
@@ -86,11 +86,11 @@ type commandOutputPutter interface {
 type PipedAPI struct {
 	pipedservice.UnimplementedPipedServiceServer
 
-	applicationStore          pipedApiApplicationStore
-	deploymentStore           pipedApiDeploymentStore
-	deploymentChainStore      pipedApiDeploymentChainStore
-	pipedStore                pipedApiPipedStore
-	eventStore                pipedApiEventStore
+	applicationStore          pipedAPIApplicationStore
+	deploymentStore           pipedAPIDeploymentStore
+	deploymentChainStore      pipedAPIDeploymentChainStore
+	pipedStore                pipedAPIPipedStore
+	eventStore                pipedAPIEventStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	analysisResultStore       analysisresultstore.Store

@@ -48,7 +48,7 @@ type encrypter interface {
 	Encrypt(text string) (string, error)
 }
 
-type webApiApplicationStore interface {
+type webAPIApplicationStore interface {
 	Add(ctx context.Context, app *model.Application) error
 	Get(ctx context.Context, id string) (*model.Application, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Application, string, error)
@@ -58,17 +58,17 @@ type webApiApplicationStore interface {
 	Disable(ctx context.Context, id string) error
 }
 
-type webApiDeploymentChainStore interface {
+type webAPIDeploymentChainStore interface {
 	Get(ctx context.Context, id string) (*model.DeploymentChain, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.DeploymentChain, string, error)
 }
 
-type webApiDeploymentStore interface {
+type webAPIDeploymentStore interface {
 	Get(ctx context.Context, id string) (*model.Deployment, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Deployment, string, error)
 }
 
-type webApiPipedStore interface {
+type webAPIPipedStore interface {
 	Add(ctx context.Context, piped *model.Piped) error
 	Get(ctx context.Context, id string) (*model.Piped, error)
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Piped, error)
@@ -80,7 +80,7 @@ type webApiPipedStore interface {
 	UpdateDesiredVersion(ctx context.Context, id, version string) error
 }
 
-type webApiProjectStore interface {
+type webAPIProjectStore interface {
 	Get(ctx context.Context, id string) (*model.Project, error)
 	UpdateProjectStaticAdmin(ctx context.Context, id, username, password string) error
 	EnableStaticAdmin(ctx context.Context, id string) error
@@ -94,18 +94,17 @@ type webApiProjectStore interface {
 	DeleteProjectUserGroup(ctx context.Context, id, sso string) error
 }
 
-type webApiEventStore interface {
+type webAPIEventStore interface {
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.Event, string, error)
 }
 
-type webApiAPIKeyStore interface {
+type webAPIAPIKeyStore interface {
 	Add(ctx context.Context, k *model.APIKey) error
 	List(ctx context.Context, opts datastore.ListOptions) ([]*model.APIKey, error)
 	Disable(ctx context.Context, id, projectID string) error
 }
 
-// TODO: all structs webApi should be webAPI
-type webApiAPIKeyLastUsedStore interface { //nolint:stylecheck
+type webAPIAPIKeyLastUsedStore interface {
 	Get(k string) (interface{}, error)
 }
 
@@ -113,14 +112,14 @@ type webApiAPIKeyLastUsedStore interface { //nolint:stylecheck
 type WebAPI struct {
 	webservice.UnimplementedWebServiceServer
 
-	applicationStore          webApiApplicationStore
-	deploymentChainStore      webApiDeploymentChainStore
-	deploymentStore           webApiDeploymentStore
-	pipedStore                webApiPipedStore
-	projectStore              webApiProjectStore
-	apiKeyStore               webApiAPIKeyStore
-	apiKeyLastUsedStore       webApiAPIKeyLastUsedStore
-	eventStore                webApiEventStore
+	applicationStore          webAPIApplicationStore
+	deploymentChainStore      webAPIDeploymentChainStore
+	deploymentStore           webAPIDeploymentStore
+	pipedStore                webAPIPipedStore
+	projectStore              webAPIProjectStore
+	apiKeyStore               webAPIAPIKeyStore
+	apiKeyLastUsedStore       webAPIAPIKeyLastUsedStore
+	eventStore                webAPIEventStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
@@ -1210,7 +1209,7 @@ func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectReque
 func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Project, error) {
 	if p, ok := a.projectsInConfig[projectID]; ok {
 		p := &model.Project{
-			Id:   p.Id,
+			Id:   p.ID,
 			Desc: p.Desc,
 			StaticAdmin: &model.ProjectStaticUser{
 				Username:     p.StaticAdmin.Username,
