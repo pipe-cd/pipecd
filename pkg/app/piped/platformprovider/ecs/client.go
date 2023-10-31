@@ -305,7 +305,7 @@ func (c *client) GetListenerArns(ctx context.Context, targetGroup types.LoadBala
 func (c *client) GetListenerRuleArns(ctx context.Context, listenerArns []string) ([]string, error) {
 	var ruleArns []string
 
-	// 各リスナーのルールを取得
+	// Get rules for each listener.
 	for _, listenerArn := range listenerArns {
 		input := &elasticloadbalancingv2.DescribeRulesInput{
 			ListenerArn: aws.String(listenerArn),
