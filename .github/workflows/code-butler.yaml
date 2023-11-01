@@ -1,0 +1,30 @@
+name: Code Butler
+
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  review:
+    if: startsWith(github.event.comment.body, '/review')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ca-dp/code-butler@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          cmd: review
+  chat:
+    if: startsWith(github.event.comment.body, '/chat')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ca-dp/code-butler@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          cmd: chat
+          comment_body: ${{ github.event.comment.body }}
