@@ -21,6 +21,7 @@ import (
 )
 
 func TestGroup(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name string
 		typ  NotificationEventType
@@ -54,7 +55,9 @@ func TestGroup(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			e := NotificationEvent{Type: tt.typ}
 			got := e.Group()
 			assert.Equal(t, tt.want, got)
