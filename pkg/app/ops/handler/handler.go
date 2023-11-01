@@ -238,7 +238,7 @@ func groupApplicationCounts(counts []model.InsightApplicationCount) (total int, 
 	for _, c := range counts {
 		total += int(c.Count)
 		kind := c.Labels[model.InsightApplicationCountLabelKey_KIND.String()]
-		groups[kind] = groups[kind] + int(c.Count)
+		groups[kind] += int(c.Count)
 	}
 	return
 }

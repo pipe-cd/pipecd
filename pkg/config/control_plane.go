@@ -281,7 +281,7 @@ func (f *ControlPlaneFileStore) UnmarshalJSON(data []byte) error {
 		}
 	default:
 		// Left comment out for mock response.
-		//err = fmt.Errorf("unsupported filestore type: %s", f.Type)
+		// err = fmt.Errorf("unsupported filestore type: %s", f.Type)
 		err = nil
 	}
 	return err
