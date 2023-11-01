@@ -21,6 +21,7 @@ import (
 )
 
 func TestDeploymentChainDesireStatus(t *testing.T) {
+	t.Parallel()
 	testcases := []struct {
 		name                 string
 		deploymentChain      DeploymentChain
@@ -104,13 +105,16 @@ func TestDeploymentChainDesireStatus(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			desireStatus := tc.deploymentChain.DesiredStatus()
 			assert.Equal(t, tc.expectedDesireStatus, desireStatus)
 		})
 	}
 }
 func TestListAllInChainApplicationDeploymentsMap(t *testing.T) {
+	t.Parallel()
 	dc := &DeploymentChain{
 		Blocks: []*ChainBlock{
 			{
@@ -151,6 +155,7 @@ func TestListAllInChainApplicationDeploymentsMap(t *testing.T) {
 	assert.Equal(t, want, got)
 }
 func TestListAllInChainApplications(t *testing.T) {
+	t.Parallel()
 	dc := &DeploymentChain{
 		Blocks: []*ChainBlock{
 			{
@@ -193,6 +198,7 @@ func TestListAllInChainApplications(t *testing.T) {
 }
 
 func TestIsCompleted(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name   string
 		status ChainBlockStatus
@@ -226,7 +232,9 @@ func TestIsCompleted(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			b := &ChainBlock{Status: tt.status}
 			got := b.IsCompleted()
 			assert.Equal(t, tt.want, got)
@@ -234,6 +242,7 @@ func TestIsCompleted(t *testing.T) {
 	}
 }
 func TestDesiredStatus(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name           string
 		block          *ChainBlock
@@ -290,7 +299,9 @@ func TestDesiredStatus(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			gotDesired := tt.block.DesiredStatus()
 			assert.Equal(t, tt.wantDesired, gotDesired)
 		})
@@ -298,6 +309,7 @@ func TestDesiredStatus(t *testing.T) {
 }
 
 func TestGetNodeByDeploymentID(t *testing.T) {
+	t.Parallel()
 	block := &ChainBlock{
 		Nodes: []*ChainNode{
 			{
@@ -339,7 +351,9 @@ func TestGetNodeByDeploymentID(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			gotNode, err := block.GetNodeByDeploymentID(tt.deploymentID)
 			assert.Equal(t, tt.wantErr, err != nil)
 			assert.Equal(t, tt.wantNode, gotNode)
