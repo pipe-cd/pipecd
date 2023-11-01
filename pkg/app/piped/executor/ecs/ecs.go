@@ -448,7 +448,7 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 
 	currListenerRuleArns, err := client.GetListenerRuleArns(ctx, currListenerArns)
 	if err != nil {
-		in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
+		in.LogPersister.Errorf("Failed to get current active listener rule: %v", err)
 		return false
 	}
 
