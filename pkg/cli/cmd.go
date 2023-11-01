@@ -192,5 +192,5 @@ func (t Input) CustomMetricsHandlerFor(reg prometheus.Gatherer, mb MetricsBuilde
 }
 
 func extractServiceName(cmd *cobra.Command) string {
-	return strings.Replace(cmd.CommandPath(), " ", ".", -1)
+	return strings.ReplaceAll(cmd.CommandPath(), " ", ".")
 }
