@@ -495,74 +495,38 @@ func (c *client) ModifyListenerOrRule(ctx context.Context, listenerArns []string
 		return nil
 	}
 
-	modifyListener := func(ctx context.Context, listenerArn string) error {
-		input := &elasticloadbalancingv2.ModifyListenerInput{
-			ListenerArn: aws.String(listenerArn),
-			DefaultActions: []elbtypes.Action{
-				{
-					Type: elbtypes.ActionTypeEnumForward,
-					ForwardConfig: &elbtypes.ForwardActionConfig{
-						TargetGroups: []elbtypes.TargetGroupTuple{
-							{
-								TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
-								Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
-							},
-							{
-								TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
-								Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
-							},
-						},
-					},
-				},
-			},
-		}
-		_, err := c.elbClient.ModifyListener(ctx, input)
-		return err
-	}
-
-	for _, listener := range listenerArns {
-		if err := modifyListener(ctx, listener); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (c *client) ModifyListenerRules(ctx context.Context, listenerRuleArns []string, routingTrafficCfg RoutingTrafficConfig) error {
-	if len(routingTrafficCfg) != 2 {
-		return fmt.Errorf("invalid listener configuration: requires 2 target groups")
-	}
-
-	modifyListenerRule := func(ctx context.Context, listenerRuleArn string) error {
-		input := &elasticloadbalancingv2.ModifyRuleInput{
-			RuleArn: aws.String(listenerRuleArn),
-			Actions: []elbtypes.Action{
-				{
-					Type: elbtypes.ActionTypeEnumForward,
-					ForwardConfig: &elbtypes.ForwardActionConfig{
-						TargetGroups: []elbtypes.TargetGroupTuple{
-							{
-								TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
-								Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
-							},
-							{
-								TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
-								Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
+	if len(listenerRuleArns) == 0 {
+		modifyListener := func(ctx context.Context, listenerArn string) error {
+			input := &elasticloadbalancingv2.ModifyListenerInput{
+				ListenerArn: aws.String(listenerArn),
+				DefaultActions: []elbtypes.Action{
+					{
+						Type: elbtypes.ActionTypeEnumForward,
+						ForwardConfig: &elbtypes.ForwardActionConfig{
+							TargetGroups: []elbtypes.TargetGroupTuple{
+								{
+									TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
+									Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
+								},
+								{
+									TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
+									Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
+								},
 							},
 						},
 					},
 				},
-			},
-		}
-		_, err := c.elbClient.ModifyRule(ctx, input)
-		return err
-	}
-
-	for _, listener := range listenerRuleArns {
-		if err := modifyListenerRule(ctx, listener); err != nil {
+			}
+			_, err := c.elbClient.ModifyListener(ctx, input)
 			return err
 		}
+		for _, listener := range listenerArns {
+			if err := modifyListener(ctx, listener); err != nil {
+				return err
+			}
+		}
 	}
+
 	return nil
 }
 
