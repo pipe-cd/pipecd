@@ -101,6 +101,7 @@ func retrievePlanPreview(
 		"--address", address,
 		"--api-key", apiKey,
 		"--timeout", timeout.String(),
+		"--piped-handle-timeout", timeout.String(),
 		"--out", outPath,
 	}
 	cmd := exec.CommandContext(ctx, "pipectl", args...)
