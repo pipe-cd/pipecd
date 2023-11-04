@@ -831,6 +831,8 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 			Value:    req.PageMinUpdatedAt,
 		},
 	}
+
+	var labels map[string]string
 	if o := req.Options; o != nil {
 		// Allowing multiple so that it can do In Query later.
 		// Currently only the first value is used.
@@ -862,6 +864,9 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 				Value:    o.ApplicationName,
 			})
 		}
+		if o.Labels != nil {
+			labels = o.Labels
+		}
 	}
 
 	pageSize := int(req.PageSize)
@@ -876,7 +881,6 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		a.logger.Error("failed to get deployments", zap.Error(err))
 		return nil, gRPCStoreError(err, "get deployments")
 	}
-	labels := req.Options.Labels
 	if len(labels) == 0 || len(deployments) == 0 {
 		return &webservice.ListDeploymentsResponse{
 			Deployments: deployments,
