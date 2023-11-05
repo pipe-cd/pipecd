@@ -363,6 +363,12 @@ func (g *PipedGit) Validate() error {
 	if g.SSHKeyData != "" && g.SSHKeyFile != "" {
 		return errors.New("only either sshKeyFile or sshKeyData can be set")
 	}
+	if patFlag && patErr != nil {
+		return patErr
+	}
+	if g.SSHKeyData != "" && g.SSHKeyFile != "" {
+		return errors.New("only either sshKeyFile or sshKeyData can be set")
+	}
 	return nil
 }
 
@@ -401,8 +407,11 @@ type PipedGitPersonalAccessToken struct {
 	UserToken string `json:"userToken,omitempty"`
 }
 
-func (p PipedGitPersonalAccessToken) Validate() bool {
-	return p.UserName != "" && p.UserToken != ""
+func (p PipedGitPersonalAccessToken) Validate() error {
+	if p.UserName == "" || p.UserToken == "" {
+		return errors.New("both userName and userToken must be set")
+	}
+	return nil
 }
 
 type PipedRepository struct {
