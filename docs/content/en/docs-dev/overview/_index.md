@@ -8,7 +8,7 @@ description: >
 
 ![](/images/pipecd-explanation.png)
 <p style="text-align: center;">
-PipeCD - a Gitops style continuous delivery solution
+PipeCD - a GitOps style continuous delivery solution
 </p>
 
 ## What Is PipeCD?
