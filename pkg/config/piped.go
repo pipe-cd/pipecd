@@ -352,8 +352,16 @@ func (g PipedGit) LoadSSHKey() ([]byte, error) {
 }
 
 func (g *PipedGit) Validate() error {
-	if g.ShouldConfigureSSHConfig() && (g.PersonalAccessToken.Validate() != nil) {
+	patErr := g.PersonalAccessToken.Validate()
+	patFlag := g.PersonalAccessToken.UserName != "" || g.PersonalAccessToken.UserToken != ""
+	if g.ShouldConfigureSSHConfig() && patFlag {
 		return errors.New("cannot configure both sshKeyData or sshKeyFile and personalAccessToken")
+	}
+	if patFlag && patErr != nil {
+		return patErr
+	}
+	if g.SSHKeyData != "" && g.SSHKeyFile != "" {
+		return errors.New("only either sshKeyFile or sshKeyData can be set")
 	}
 	return nil
 }
@@ -382,7 +390,7 @@ type PipedGitPersonalAccessToken struct {
 }
 
 func (p PipedGitPersonalAccessToken) Validate() error {
-	if p.UserName != "" && p.UserToken != "" {
+	if p.UserName == "" || p.UserToken == "" {
 		return errors.New("both userName and userToken must be set")
 	}
 	return nil
