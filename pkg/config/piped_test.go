@@ -1456,10 +1456,12 @@ func TestFindPlatformProvidersByLabel(t *testing.T) {
 func TestPipeGitValidate(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
-		git           PipedGit
-		err error
+		name string
+		git  PipedGit
+		err  error
 	}{
 		{
+			name: "Both SSH and PAT are not valid",
 			git: PipedGit{
 				SSHKeyData: "sshkey1",
 				PersonalAccessToken: PipedGitPersonalAccessToken{
@@ -1470,12 +1472,41 @@ func TestPipeGitValidate(t *testing.T) {
 			err: errors.New("cannot configure both sshKeyData or sshKeyFile and personalAccessToken"),
 		},
 		{
+			name: "Both SSH and PAT is not valid",
+			git: PipedGit{
+				SSHKeyFile: "sshkeyfile",
+				SSHKeyData: "sshkeydata",
+				PersonalAccessToken: PipedGitPersonalAccessToken{
+					UserName:  "",
+					UserToken: "UserToken",
+				},
+			},
+			err: errors.New("cannot configure both sshKeyData or sshKeyFile and personalAccessToken"),
+		},
+		{
+			name: "SSH key data is not empty",
 			git: PipedGit{
 				SSHKeyData: "sshkey2",
 			},
 			err: nil,
 		},
 		{
+			name: "SSH key file is not empty",
+			git: PipedGit{
+				SSHKeyFile: "sshkey2",
+			},
+			err: nil,
+		},
+		{
+			name: "Both SSH file and data is not empty",
+			git: PipedGit{
+				SSHKeyData: "sshkeydata",
+				SSHKeyFile: "sshkeyfile",
+			},
+			err: errors.New("only either sshKeyFile or sshKeyData can be set"),
+		},
+		{
+			name: "PAT is valid",
 			git: PipedGit{
 				PersonalAccessToken: PipedGitPersonalAccessToken{
 					UserName:  "UserName",
@@ -1485,8 +1516,29 @@ func TestPipeGitValidate(t *testing.T) {
 			err: nil,
 		},
 		{
-			git: PipedGit{ },
-			err: nil,
+			name: "PAT username is empty",
+			git: PipedGit{
+				PersonalAccessToken: PipedGitPersonalAccessToken{
+					UserName:  "UserName",
+					UserToken: "",
+				},
+			},
+			err: errors.New("both userName and userToken must be set"),
+		},
+		{
+			name: "PAT token is empty",
+			git: PipedGit{
+				PersonalAccessToken: PipedGitPersonalAccessToken{
+					UserName:  "",
+					UserToken: "UserToken",
+				},
+			},
+			err: errors.New("both userName and userToken must be set"),
+		},
+		{
+			name: "Git config is empty",
+			git:  PipedGit{},
+			err:  nil,
 		},
 	}
 	for _, tc := range testcases {
