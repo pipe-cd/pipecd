@@ -49,3 +49,12 @@ Yes, you can use PipeCD for both mesh (Istio, SMI) applications and non-mesh app
 ### 6. What should I do if I lost my Piped key?
 
 You can create a new Piped key. Go to the `Piped` tab at `Settings` page, and click the vertical ellipsis of the Piped that you would like to create the new Piped key. Don't forget deleting the old Key, too.
+
+### 7. What is the strong point if PipeCD is used only for k8s?
+
+- easy to install and upgrade the tools, you just choose desired version on WebUI
+- 
+
+### 8. Is it open source?
+
+Yes, PipeCD is fully open source project with APACHE LICENSE, VERSION 2.0!!

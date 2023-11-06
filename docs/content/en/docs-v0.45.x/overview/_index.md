@@ -19,6 +19,17 @@ PipeCD provides a unified continuous delivery solution for multiple application 
 
 ## Why PipeCD?
 
+- Simple, unified and easy to use but powerful pipeline definition to construct your deployment
+- Same deployment interface to deploy applications of any platform, including Kubernetes, Terraform, GCP Cloud Run, AWS Lambda, AWS ECS
+- No CRD or applications' manifest changes are required; Only need a pipeline definition along with your application manifests
+- No deployment credentials are exposed or required outside the application cluster
+- Built-in deployment analysis as part of the deployment pipeline to measure impact based on metrics, logs, emitted requests
+- Easy to interact with any CI; The CI tests and builds artifacts, PipeCD takes the rest
+- Insights show metrics like lead time, deployment frequency, MTTR and change failure rate to measure delivery performance
+- Designed to manage thousands of cross-platform applications in multi-cloud for company scale but also work well for small projects
+
+## Characteristics in detail
+
 **Visibility**
 - Deployment pipeline UI shows clarify what is happening
 - Separate logs viewer for each individual deployment
@@ -50,7 +61,9 @@ PipeCD provides a unified continuous delivery solution for multiple application 
 
 ## Where should I go next?
 
-For a good understanding of the PipeCD's components, see the [Concepts](../concepts) page.
+For a good understanding of the PipeCD's components.
+- [Concepts](../concepts): describes each components.
+- [FAQ](../faq): describes the difference between PipeCD and other tools.
 
 If you are an **operator** wanting to install and configure PipeCD for other developers.
 - [Quickstart](../quickstart/)
