@@ -28,7 +28,7 @@ PipeCD provides a unified continuous delivery solution for multiple application 
 - Insights show metrics like lead time, deployment frequency, MTTR and change failure rate to measure delivery performance
 - Designed to manage thousands of cross-platform applications in multi-cloud for company scale but also work well for small projects
 
-## Characteristics in detail
+## PipeCD's Characteristics in detail
 
 **Visibility**
 - Deployment pipeline UI shows clarify what is happening
