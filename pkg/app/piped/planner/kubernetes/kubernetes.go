@@ -341,7 +341,7 @@ func findWorkloadManifests(manifests []provider.Manifest, refs []config.K8sResou
 }
 
 func findManifests(kind, name string, manifests []provider.Manifest) []provider.Manifest {
-	var out []provider.Manifest
+	out := make([]provider.Manifest, 0, len(manifests))
 	for _, m := range manifests {
 		if m.Key.Kind != kind {
 			continue

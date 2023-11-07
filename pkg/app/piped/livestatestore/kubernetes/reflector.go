@@ -150,7 +150,7 @@ type reflector struct {
 	logger                *zap.Logger
 }
 
-func (r *reflector) start(ctx context.Context) error {
+func (r *reflector) start(_ context.Context) error {
 	matcher := newResourceMatcher(r.config.AppStateInformer)
 
 	// Use discovery to discover APIs supported by the Kubernetes API server.

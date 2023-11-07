@@ -151,10 +151,7 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 	}
 
 	// Find all applications that should be triggered.
-	triggerApps, failedResults, err := b.findTriggerApps(ctx, repo, apps, mergedCommit.Hash)
-	if err != nil {
-		return nil, err
-	}
+	triggerApps, failedResults := b.findTriggerApps(ctx, repo, apps, mergedCommit.Hash)
 	results := failedResults
 
 	if len(triggerApps) == 0 {
@@ -301,7 +298,7 @@ func (b *builder) cloneHeadCommit(ctx context.Context, headBranch, headCommit st
 	return repo, nil
 }
 
-func (b *builder) findTriggerApps(ctx context.Context, repo git.Repo, apps []*model.Application, headCommit string) (triggerApps []*model.Application, failedResults []*model.ApplicationPlanPreviewResult, err error) {
+func (b *builder) findTriggerApps(ctx context.Context, repo git.Repo, apps []*model.Application, headCommit string) (triggerApps []*model.Application, failedResults []*model.ApplicationPlanPreviewResult) {
 	d := trigger.NewOnCommitDeterminer(repo, headCommit, b.commitGetter, b.logger)
 	determine := func(app *model.Application) (bool, error) {
 		appCfg, err := config.LoadApplication(repo.GetPath(), app.GitPath.GetApplicationConfigFilePath(), app.Kind)

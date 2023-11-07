@@ -88,9 +88,7 @@ func (d *DeploymentChainController) Run(ctx context.Context) error {
 				d.logger.Error("failed while sync controller updaters", zap.Error(err))
 			}
 		case <-syncDeploymentChainsTicker.C:
-			if err := d.syncDeploymentChains(ctx); err != nil {
-				d.logger.Error("failed while sync deployment chains", zap.Error(err))
-			}
+			d.syncDeploymentChains(ctx)
 		}
 	}
 }
@@ -130,7 +128,7 @@ func (d *DeploymentChainController) syncUpdaters(ctx context.Context) error {
 	return nil
 }
 
-func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) error {
+func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) {
 	var (
 		updatersNum = len(d.updaters)
 		updaterCh   = make(chan *updater, updatersNum)
@@ -162,8 +160,6 @@ func (d *DeploymentChainController) syncDeploymentChains(ctx context.Context) er
 
 	d.logger.Info("waiting for all updaters to finish")
 	wg.Wait()
-
-	return nil
 }
 
 func listNotCompletedDeploymentChain(ctx context.Context, dcs deploymentChainStore) ([]*model.DeploymentChain, error) {
