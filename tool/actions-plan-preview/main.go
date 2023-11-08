@@ -139,6 +139,9 @@ func main() {
 			doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request.")
 			return
 		}
+		body := makeCommentBody(event, result)
+		doComment(failureBadgeURL + body)
+		log.Fatal("plan-preview result has error")
 	}
 
 	// Find comments we sent before
