@@ -154,7 +154,7 @@ func main() {
 		return
 	}
 
-	if comment.IsMinimized {
+	if bool(comment.IsMinimized) {
 		log.Printf("Previous plan-preview comment has already minimized. So don't minimize anything\n")
 		return
 	}
