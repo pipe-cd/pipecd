@@ -101,14 +101,14 @@ func main() {
 	}
 
 	if event.PRClosed {
-		doComment(failureBadgeURL + "Unable to run plan-preview for a closed pull request.")
+		doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request.")
 		return
 	}
 
 	// TODO: When PR opened, `Mergeable` is nil for calculation.
 	// Here it is not considered for now, but needs to be handled.
 	if event.PRMergeable != nil && *event.PRMergeable == false {
-		doComment(failureBadgeURL + "Unable to run plan-preview for an un-mergeable pull request. Please resolve the conficts and try again.")
+		doComment(failureBadgeURL + "\nUnable to run plan-preview for an un-mergeable pull request. Please resolve the conficts and try again.")
 		return
 	}
 
@@ -123,6 +123,7 @@ func main() {
 		args.Timeout,
 	)
 	if err != nil {
+		doComment(failureBadgeURL + "\nUnable to run plan-preview. \ncause: " + err.Error())
 		log.Fatal(err)
 	}
 	log.Println("Successfully retrieved plan-preview result")
@@ -131,10 +132,11 @@ func main() {
 	if result.HasError() {
 		pr, err := getPullRequest(ctx, ghClient.PullRequests, event.Owner, event.Repo, event.PRNumber)
 		if err != nil {
+			doComment(failureBadgeURL + "\nUnable to run plan-preview. \ncause: " + err.Error())
 			log.Fatal(err)
 		}
 		if !pr.GetClosedAt().IsZero() {
-			doComment(failureBadgeURL + "Unable to run plan-preview for a closed pull request.")
+			doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request.")
 			return
 		}
 	}
