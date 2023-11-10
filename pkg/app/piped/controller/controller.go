@@ -288,7 +288,7 @@ func (c *controller) checkCommands() {
 }
 
 // syncPlanners adds new planner for newly PENDING deployments.
-func (c *controller) syncPlanners(ctx context.Context) error {
+func (c *controller) syncPlanners(ctx context.Context) {
 	// Remove stale planners from the recently completed list.
 	for id, t := range c.donePlanners {
 		if time.Since(t) >= plannerStaleDuration {
@@ -324,7 +324,7 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 	// Add missing planners.
 	pendings := c.deploymentLister.ListPendings()
 	if len(pendings) == 0 {
-		return nil
+		return
 	}
 
 	c.logger.Info(fmt.Sprintf("there are %d pending deployments for planning", len(pendings)),
@@ -426,8 +426,6 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 			)
 		}
 	}
-
-	return nil
 }
 
 func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (*planner, error) {
@@ -506,7 +504,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 
 // syncSchedulers adds new scheduler for newly PLANNED/RUNNING deployments
 // as well as removes the schedulers for the completed deployments.
-func (c *controller) syncSchedulers(ctx context.Context) error {
+func (c *controller) syncSchedulers(ctx context.Context) {
 	// Update the most recent successful commit hashes.
 	for id, s := range c.schedulers {
 		if !s.IsDone() {
@@ -556,7 +554,7 @@ func (c *controller) syncSchedulers(ctx context.Context) error {
 	targets := append(runnings, planneds...)
 
 	if len(targets) == 0 {
-		return nil
+		return
 	}
 
 	c.logger.Info(fmt.Sprintf("there are %d planned/running deployments for scheduling", len(targets)),
@@ -589,8 +587,6 @@ func (c *controller) syncSchedulers(ctx context.Context) error {
 			zap.Int("count", len(c.schedulers)),
 		)
 	}
-
-	return nil
 }
 
 // startNewScheduler creates and starts running a new scheduler

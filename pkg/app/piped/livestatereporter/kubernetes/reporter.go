@@ -109,7 +109,7 @@ func (r *reporter) Run(ctx context.Context) error {
 	}
 }
 
-func (r *reporter) flushSnapshots(ctx context.Context) error {
+func (r *reporter) flushSnapshots(ctx context.Context) {
 	// TODO: In the future, maybe we should apply worker model for this or
 	// send multiple application states in one request.
 	apps := r.appLister.ListByPlatformProvider(r.provider.Name)
@@ -145,7 +145,6 @@ func (r *reporter) flushSnapshots(ctx context.Context) error {
 		r.snapshotVersions[app.Id] = state.Version
 		r.logger.Info(fmt.Sprintf("successfully reported application live state for application: %s", app.Id))
 	}
-	return nil
 }
 
 func (r *reporter) flushEvents(ctx context.Context) error {

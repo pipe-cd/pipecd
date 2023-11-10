@@ -96,7 +96,7 @@ func (r *reporter) ProviderName() string {
 	return r.provider.Name
 }
 
-func (r *reporter) flushSnapshots(ctx context.Context) error {
+func (r *reporter) flushSnapshots(ctx context.Context) {
 	apps := r.appLister.ListByPlatformProvider(r.provider.Name)
 	for _, app := range apps {
 		state, ok := r.stateGetter.GetState(app.Id)
@@ -130,5 +130,4 @@ func (r *reporter) flushSnapshots(ctx context.Context) error {
 		r.snapshotVersions[app.Id] = state.Version
 		r.logger.Info(fmt.Sprintf("successfully reported application live state for application: %s", app.Id))
 	}
-	return nil
 }

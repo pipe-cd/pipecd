@@ -474,7 +474,7 @@ func (t *Trigger) GetLastTriggeredCommitGetter() LastTriggeredCommitGetter {
 	return t.commitStore
 }
 
-func (t *Trigger) notifyDeploymentTriggered(ctx context.Context, appCfg *config.GenericApplicationSpec, d *model.Deployment) {
+func (t *Trigger) notifyDeploymentTriggered(_ context.Context, appCfg *config.GenericApplicationSpec, d *model.Deployment) {
 	var mentions []string
 	if n := appCfg.DeploymentNotification; n != nil {
 		mentions = n.FindSlackAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED)

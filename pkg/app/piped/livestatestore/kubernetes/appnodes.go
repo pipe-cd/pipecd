@@ -84,7 +84,7 @@ func (a *appNodes) addManagingResource(uid string, key provider.ResourceKey, obj
 	}, true
 }
 
-func (a *appNodes) deleteManagingResource(uid string, key provider.ResourceKey, now time.Time) (model.KubernetesResourceStateEvent, bool) {
+func (a *appNodes) deleteManagingResource(uid string, _ provider.ResourceKey, now time.Time) (model.KubernetesResourceStateEvent, bool) {
 	a.mu.Lock()
 	n, ok := a.managingNodes[uid]
 	if !ok {
@@ -138,7 +138,7 @@ func (a *appNodes) addDependedResource(uid string, key provider.ResourceKey, obj
 	}, true
 }
 
-func (a *appNodes) deleteDependedResource(uid string, key provider.ResourceKey, now time.Time) (model.KubernetesResourceStateEvent, bool) {
+func (a *appNodes) deleteDependedResource(uid string, _ provider.ResourceKey, now time.Time) (model.KubernetesResourceStateEvent, bool) {
 	a.mu.Lock()
 	n, ok := a.dependedNodes[uid]
 	if !ok {

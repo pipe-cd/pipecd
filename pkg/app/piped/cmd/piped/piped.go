@@ -696,17 +696,14 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	}
 
 	// Configure secret management.
-	if sm := cfg.SecretManagement; sm != nil {
-		switch sm.Type {
-		case model.SecretManagementTypeKeyPair:
-			publicKey, err := sm.KeyPair.LoadPublicKey()
-			if err != nil {
-				return fmt.Errorf("failed to read public key for secret management (%w)", err)
-			}
-			req.SecretEncryption = &model.Piped_SecretEncryption{
-				Type:      sm.Type.String(),
-				PublicKey: string(publicKey),
-			}
+	if sm := cfg.SecretManagement; sm != nil && sm.Type == model.SecretManagementTypeKeyPair {
+		publicKey, err := sm.KeyPair.LoadPublicKey()
+		if err != nil {
+			return fmt.Errorf("failed to read public key for secret management (%w)", err)
+		}
+		req.SecretEncryption = &model.Piped_SecretEncryption{
+			Type:      sm.Type.String(),
+			PublicKey: string(publicKey),
 		}
 	}
 	if req.SecretEncryption == nil {
