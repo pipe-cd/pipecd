@@ -61,8 +61,9 @@ func TestECSApplicationConfig(t *testing.T) {
 					TargetGroups: ECSTargetGroups{
 						Primary: json.RawMessage(`{"containerName":"web","containerPort":80,"targetGroupArn":"arn:aws:elasticloadbalancing:xyz"}`),
 					},
-					LaunchType:   "FARGATE",
-					AutoRollback: newBoolPointer(true),
+					LaunchType:        "FARGATE",
+					AutoRollback:      newBoolPointer(true),
+					RunStandaloneTask: newBoolPointer(true),
 				},
 			},
 			expectedError: nil,

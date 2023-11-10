@@ -199,6 +199,11 @@ func runStandaloneTask(
 		return false
 	}
 
+	if !*ecsInput.RunStandaloneTask {
+		in.LogPersister.Infof("Skipped running task")
+		return true
+	}
+
 	err = client.RunTask(
 		ctx,
 		*td,
