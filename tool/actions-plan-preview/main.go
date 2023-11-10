@@ -140,7 +140,7 @@ func main() {
 			return
 		}
 		body := makeCommentBody(event, result)
-		doComment(failureBadgeURL + body)
+		doComment(failureBadgeURL + "\n" + body)
 		log.Fatal("plan-preview result has error")
 	}
 
