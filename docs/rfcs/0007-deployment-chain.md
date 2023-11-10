@@ -23,7 +23,7 @@ Use-case <3>: chain of deployments contains application deployed across multiple
 All the above requirements share the same thing in the context, that is: it can be done by users' deployment for their applications as PipeCD applications one by one and make trigger those deployments manually via console or make trigger via pull requests to those application configurations separately, but this all manual stub are tedious and difficult to manage smoothly. With this new __PipeCD deployment chain__ feature, all of those manual steps will be replaced, to keep the good point of using a CD system.
 
 # Detailed design
-The idea is to keep the PipeCD application deployment as a unit of deployment as is, but add __a way to enable users to manipulate a deployment chain based on the state of the last sucessfully run deployment__.
+The idea is to keep the PipeCD application deployment as a unit of deployment as is, but add __a way to enable users to manipulate a deployment chain based on the state of the last successfully run deployment__.
 
 A canonical flow would look as below:
 1. Users trigger to run their first application (the first application in their deployment chain) via the web console or pull requests as usual
