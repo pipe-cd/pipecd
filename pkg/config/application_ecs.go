@@ -54,6 +54,9 @@ type ECSDeploymentInput struct {
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
+	// Run standalone task during deployment.
+	// Default is true.
+	RunStandaloneTask *bool `json:"runStandaloneTask" default:"true"`
 }
 
 func (in *ECSDeploymentInput) IsStandaloneTask() bool {
