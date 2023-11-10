@@ -141,7 +141,8 @@ func main() {
 		}
 		body := makeCommentBody(event, result)
 		doComment(failureBadgeURL + "\n" + body)
-		log.Fatal("plan-preview result has error")
+		log.Println("plan-preview result has error")
+		os.Exit(1)
 	}
 
 	// Find comments we sent before
