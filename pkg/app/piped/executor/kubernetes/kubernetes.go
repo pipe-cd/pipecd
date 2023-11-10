@@ -308,7 +308,7 @@ func deleteResources(ctx context.Context, ag applierGetter, resources []provider
 }
 
 func findManifests(kind, name string, manifests []provider.Manifest) []provider.Manifest {
-	var out []provider.Manifest
+	out := make([]provider.Manifest, 0, len(manifests))
 	for _, m := range manifests {
 		if m.Key.Kind != kind {
 			continue
@@ -322,7 +322,7 @@ func findManifests(kind, name string, manifests []provider.Manifest) []provider.
 }
 
 func findConfigMapManifests(manifests []provider.Manifest) []provider.Manifest {
-	var out []provider.Manifest
+	out := make([]provider.Manifest, 0, len(manifests))
 	for _, m := range manifests {
 		if !m.Key.IsConfigMap() {
 			continue
@@ -333,7 +333,7 @@ func findConfigMapManifests(manifests []provider.Manifest) []provider.Manifest {
 }
 
 func findSecretManifests(manifests []provider.Manifest) []provider.Manifest {
-	var out []provider.Manifest
+	out := make([]provider.Manifest, 0, len(manifests))
 	for _, m := range manifests {
 		if !m.Key.IsSecret() {
 			continue

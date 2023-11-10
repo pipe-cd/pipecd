@@ -350,6 +350,7 @@ func makeSlackDate(unix int64) string {
 	return fmt.Sprintf("<!date^%d^{date_num} {time_secs}|date>", unix)
 }
 
+// nolint:unparam
 func truncateText(text string, max int) string {
 	if len(text) <= max {
 		return text

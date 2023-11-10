@@ -121,7 +121,7 @@ func (d *detector) Run(ctx context.Context) error {
 	}
 }
 
-func (d *detector) check(ctx context.Context) error {
+func (d *detector) check(ctx context.Context) {
 	appsByRepo := d.listGroupedApplication()
 
 	for repoID, apps := range appsByRepo {
@@ -167,8 +167,6 @@ func (d *detector) check(ctx context.Context) error {
 			}
 		}
 	}
-
-	return nil
 }
 
 func (d *detector) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit) error {

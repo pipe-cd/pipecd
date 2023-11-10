@@ -116,7 +116,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 					continue
 				}
 				status = model.StageStatus_STAGE_SKIPPED
-				// Stop the context to cancel all running analysises.
+				// Stop the context to cancel all running analyses.
 				cancel()
 				return
 			case <-doneCh:

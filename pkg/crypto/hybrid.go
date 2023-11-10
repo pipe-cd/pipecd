@@ -45,7 +45,8 @@ func NewHybridEncrypter(key []byte) (*HybridEncrypter, error) {
 
 // Encrypt performs a regular AES-GCM + RSA-OAEP encryption.
 // The output string is:
-//   RSA ciphertext length || RSA ciphertext || AES ciphertext
+//
+//	RSA ciphertext length || RSA ciphertext || AES ciphertext
 //
 // The implementation of this function was brought from well known Bitnami's SealedSecret library.
 // https://github.com/bitnami-labs/sealed-secrets/blob/master/pkg/crypto/crypto.go#L35
