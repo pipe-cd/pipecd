@@ -14,7 +14,7 @@ jobs:
           close-issue-message: 'This issue was closed because it has been stalled for 7 days with no activity. Feel free to reopen if still applicable.'
           days-before-issue-stale: 180
           days-before-issue-close: 7
-          exempt-issue-labels: 'kind/bug,good first issue'
+          exempt-issue-labels: 'not-auto-close,kind/bug,good first issue'
           # PRs
           stale-pr-message: 'This PR is stale because it has been open 30 days with no activity. Remove stale label or comment or this will be closed in 7 days.'
           close-pr-message: 'This PR was closed because it has been stalled for 7 days with no activity. Feel free to reopen if still applicable.'
