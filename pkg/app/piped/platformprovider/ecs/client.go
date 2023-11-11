@@ -417,6 +417,30 @@ func (c *client) GetListenerArns(ctx context.Context, targetGroup types.LoadBala
 	return arns, nil
 }
 
+func (c *client) GetListenerRuleArns(ctx context.Context, listenerArns []string) ([]string, error) {
+	var ruleArns []string
+
+	// 各リスナーのルールを取得
+	for _, listenerArn := range listenerArns {
+		input := &elasticloadbalancingv2.DescribeRulesInput{
+			ListenerArn: aws.String(listenerArn),
+		}
+		output, err := c.elbClient.DescribeRules(ctx, input)
+		if err != nil {
+			return nil, err
+		}
+		for _, rule := range output.Rules {
+			ruleArns = append(ruleArns, *rule.RuleArn)
+		}
+	}
+
+	if len(ruleArns) == 0 {
+		return nil, platformprovider.ErrNotFound
+	}
+
+	return ruleArns, nil
+}
+
 func (c *client) getLoadBalancerArn(ctx context.Context, targetGroupArn string) (string, error) {
 	input := &elasticloadbalancingv2.DescribeTargetGroupsInput{
 		TargetGroupArns: []string{targetGroupArn},
@@ -432,41 +456,127 @@ func (c *client) getLoadBalancerArn(ctx context.Context, targetGroupArn string) 
 	return output.TargetGroups[0].LoadBalancerArns[0], nil
 }
 
-func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, routingTrafficCfg RoutingTrafficConfig) error {
+func (c *client) ModifyListenerOrRule(ctx context.Context, listenerArns []string, listenerRuleArns []string, routingTrafficCfg RoutingTrafficConfig) error {
 	if len(routingTrafficCfg) != 2 {
 		return fmt.Errorf("invalid listener configuration: requires 2 target groups")
 	}
 
-	modifyListener := func(ctx context.Context, listenerArn string) error {
-		input := &elasticloadbalancingv2.ModifyListenerInput{
-			ListenerArn: aws.String(listenerArn),
-			DefaultActions: []elbtypes.Action{
-				{
-					Type: elbtypes.ActionTypeEnumForward,
-					ForwardConfig: &elbtypes.ForwardActionConfig{
-						TargetGroups: []elbtypes.TargetGroupTuple{
-							{
-								TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
-								Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
-							},
-							{
-								TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
-								Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
+	if len(listenerRuleArns) > 0 {
+		modifyListenerRule := func(ctx context.Context, listenerRuleArn string) error {
+			input := &elasticloadbalancingv2.ModifyRuleInput{
+				RuleArn: aws.String(listenerRuleArn),
+				Actions: []elbtypes.Action{
+					{
+						Type: elbtypes.ActionTypeEnumForward,
+						ForwardConfig: &elbtypes.ForwardActionConfig{
+							TargetGroups: []elbtypes.TargetGroupTuple{
+								{
+									TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
+									Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
+								},
+								{
+									TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
+									Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
+								},
 							},
 						},
 					},
 				},
-			},
-		}
-		_, err := c.elbClient.ModifyListener(ctx, input)
-		return err
-	}
-
-	for _, listener := range listenerArns {
-		if err := modifyListener(ctx, listener); err != nil {
+			}
+			_, err := c.elbClient.ModifyRule(ctx, input)
 			return err
 		}
+
+		for _, ruleArn := range listenerRuleArns {
+			// Describe the rule to get current actions
+			describeRulesOutput, err := c.elbClient.DescribeRules(ctx, &elasticloadbalancingv2.DescribeRulesInput{
+				RuleArns: []string{ruleArn},
+			})
+			if err != nil {
+				return fmt.Errorf("error describing listener rule %v: %w", ruleArn, err)
+			}
+
+			// No rules found, nothing to modify
+			if len(describeRulesOutput.Rules) == 0 {
+				return fmt.Errorf("no rules found for ARN: %s", ruleArn)
+			}
+
+			// Check if the current action type is forward
+			for _, rule := range describeRulesOutput.Rules {
+				for _, action := range rule.Actions {
+					if action.Type == elbtypes.ActionTypeEnumForward {
+						// Call modifyListenerRule only if action type is forward
+						if err := modifyListenerRule(ctx, ruleArn); err != nil {
+							return err
+						}
+						// Break the loop once the modify function is called for the rule
+						break
+					}
+				}
+			}
+		}
+
+		return nil
 	}
+
+	if len(listenerRuleArns) == 0 {
+		modifyListener := func(ctx context.Context, listenerArn string) error {
+			input := &elasticloadbalancingv2.ModifyListenerInput{
+				ListenerArn: aws.String(listenerArn),
+				DefaultActions: []elbtypes.Action{
+					{
+						Type: elbtypes.ActionTypeEnumForward,
+						ForwardConfig: &elbtypes.ForwardActionConfig{
+							TargetGroups: []elbtypes.TargetGroupTuple{
+								{
+									TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
+									Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
+								},
+								{
+									TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
+									Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
+								},
+							},
+						},
+					},
+				},
+			}
+			_, err := c.elbClient.ModifyListener(ctx, input)
+			return err
+		}
+
+		for _, listenerArn := range listenerArns {
+			// Describe the listener to get current default actions
+			describeListenerOutput, err := c.elbClient.DescribeListeners(ctx, &elasticloadbalancingv2.DescribeListenersInput{
+				ListenerArns: []string{listenerArn},
+			})
+			if err != nil {
+				return fmt.Errorf("error describing listener %v: %w", listenerArn, err)
+			}
+
+			// No listeners found, nothing to modify
+			if len(describeListenerOutput.Listeners) == 0 {
+				return fmt.Errorf("no listeners found for ARN: %s", listenerArn)
+			}
+
+			// Check if the current default action type is forward
+			for _, listener := range describeListenerOutput.Listeners {
+				for _, action := range listener.DefaultActions {
+					if action.Type == elbtypes.ActionTypeEnumForward {
+						// Call modifyListener only if default action type is forward
+						if err := modifyListener(ctx, listenerArn); err != nil {
+							return err
+						}
+						// Break the loop once the modify function is called for the listener
+						break
+					}
+				}
+			}
+		}
+
+		return nil
+	}
+
 	return nil
 }
 
