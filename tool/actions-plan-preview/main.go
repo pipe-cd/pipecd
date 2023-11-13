@@ -36,11 +36,12 @@ const (
 	commentEventName     = "issue_comment"
 	pushEventName        = "push"
 
-	argAddress = "address"
-	argAPIKey  = "api-key"
-	argToken   = "token"
-	argTimeout = "timeout"
-	argPRNum   = "pull-request-number"
+	argAddress            = "address"
+	argAPIKey             = "api-key"
+	argToken              = "token"
+	argTimeout            = "timeout"
+	argPipedHandleTimeout = "piped-handle-timeout"
+	argPRNum              = "pull-request-number"
 )
 
 func main() {
@@ -121,6 +122,7 @@ func main() {
 		args.Address,
 		args.APIKey,
 		args.Timeout,
+		args.PipedHandleTimeout,
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -166,11 +168,12 @@ func main() {
 }
 
 type arguments struct {
-	Address string
-	APIKey  string
-	Token   string
-	Timeout time.Duration
-	PRNum   int
+	Address            string
+	APIKey             string
+	Token              string
+	Timeout            time.Duration
+	PipedHandleTimeout time.Duration
+	PRNum              int
 }
 
 func parseArgs(args []string) (arguments, error) {
@@ -194,6 +197,12 @@ func parseArgs(args []string) (arguments, error) {
 				return arguments{}, err
 			}
 			out.Timeout = d
+		case argPipedHandleTimeout:
+			d, err := time.ParseDuration(ps[1])
+			if err != nil {
+				return arguments{}, err
+			}
+			out.PipedHandleTimeout = d
 		case argPRNum:
 			if ps[1] == "" {
 				continue
@@ -220,6 +229,9 @@ func parseArgs(args []string) (arguments, error) {
 	}
 	if out.Timeout == 0 {
 		out.Timeout = defaultTimeout
+	}
+	if out.PipedHandleTimeout == 0 {
+		out.PipedHandleTimeout = defaultTimeout
 	}
 
 	return out, nil
