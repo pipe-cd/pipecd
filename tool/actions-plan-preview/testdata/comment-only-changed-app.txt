@@ -3,7 +3,9 @@
 
 Ran plan-preview against head commit abc of this pull request. PipeCD detected `1` updated applications and here are their plan results. Once this pull request got merged their deployments will be triggered to run as these estimations.
 
-## app: [app-name-1](app-url-1), env: env-1, kind: app-kind-1
+## Plans
+
+### app: [app-name-1](app-url-1), env: env-1, kind: app-kind-1
 Sync strategy: PIPELINE
 Summary: plan-summary-1
 
@@ -16,3 +18,4 @@ plan-details-1
 ```
 </p>
 </details>
+
