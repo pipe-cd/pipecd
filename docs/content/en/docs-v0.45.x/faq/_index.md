@@ -49,3 +49,15 @@ Yes, you can use PipeCD for both mesh (Istio, SMI) applications and non-mesh app
 ### 6. What should I do if I lost my Piped key?
 
 You can create a new Piped key. Go to the `Piped` tab at `Settings` page, and click the vertical ellipsis of the Piped that you would like to create the new Piped key. Don't forget deleting the old Key, too.
+
+### 7. What is the strong point if PipeCD is used only for Kubernetes?
+
+- Simple interface, easy to understand no extra CRD required
+- Easy to install, upgrade, and manage (both the ControlPlane and the agent Piped)
+- Not strict depend on any Kubernetes API, not being part of issues for your Kubernetes cluster versioning upgrade
+- Easy to interact with any CI; Plan preview feature gives you an early look at what will be changed in your cluster even before manifests update
+- Insights show metrics like lead time, deployment frequency, MTTR, and change failure rate to measure delivery performance
+
+### 8. Is it open source?
+
+Yes, PipeCD is fully open source project with APACHE LICENSE, VERSION 2.0!!

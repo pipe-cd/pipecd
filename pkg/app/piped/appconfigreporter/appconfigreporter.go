@@ -167,10 +167,7 @@ func (r *Reporter) updateRegisteredApps(ctx context.Context, headCommits map[str
 	outOfSyncRegisteredApps := make([]*model.ApplicationInfo, 0)
 	for repoID, repo := range r.gitRepos {
 		headCommit := headCommits[repoID]
-		rs, err := r.findOutOfSyncRegisteredApps(repo.GetPath(), repoID, headCommit)
-		if err != nil {
-			return err
-		}
+		rs := r.findOutOfSyncRegisteredApps(repo.GetPath(), repoID, headCommit)
 		r.logger.Info(fmt.Sprintf("found out %d valid registered applications that config has been changed in repository %q", len(rs), repoID))
 		outOfSyncRegisteredApps = append(outOfSyncRegisteredApps, rs...)
 	}
@@ -233,7 +230,7 @@ func (r *Reporter) updateUnregisteredApps(ctx context.Context) error {
 }
 
 // findOutOfSyncRegisteredApps finds out registered application info that should be updated in the given git repository.
-func (r *Reporter) findOutOfSyncRegisteredApps(repoPath, repoID, headCommit string) ([]*model.ApplicationInfo, error) {
+func (r *Reporter) findOutOfSyncRegisteredApps(repoPath, repoID, headCommit string) []*model.ApplicationInfo {
 	// Compare the apps registered on Control-plane with the latest config file
 	// and return only the ones that have been changed.
 	apps := make([]*model.ApplicationInfo, 0)
@@ -275,7 +272,7 @@ func (r *Reporter) findOutOfSyncRegisteredApps(repoPath, repoID, headCommit stri
 		appCfg.Id = app.Id
 		apps = append(apps, appCfg)
 	}
-	return apps, nil
+	return apps
 }
 
 func (r *Reporter) isSynced(appInfo *model.ApplicationInfo, app *model.Application) bool {

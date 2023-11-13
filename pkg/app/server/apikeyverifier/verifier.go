@@ -86,7 +86,7 @@ func (v *Verifier) Verify(ctx context.Context, key string) (*model.APIKey, error
 	return apiKey, nil
 }
 
-func (v *Verifier) checkAPIKey(ctx context.Context, apiKey *model.APIKey, id, key string) error {
+func (v *Verifier) checkAPIKey(_ context.Context, apiKey *model.APIKey, id, key string) error {
 	if apiKey.Disabled {
 		return fmt.Errorf("the api key %s was already disabled", id)
 	}

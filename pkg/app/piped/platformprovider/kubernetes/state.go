@@ -424,7 +424,6 @@ func determineIngressHealth(obj *unstructured.Unstructured) (status model.Kubern
 			return
 		}
 		status = model.KubernetesResourceState_HEALTHY
-		return
 	}
 
 	v1Ingress := &networkingv1.Ingress{}

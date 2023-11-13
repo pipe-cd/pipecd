@@ -21,7 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
-var builtInApiVersions = map[string]struct{}{
+var builtInAPIVersions = map[string]struct{}{
 	"admissionregistration.k8s.io/v1":      {},
 	"admissionregistration.k8s.io/v1beta1": {},
 	"apiextensions.k8s.io/v1":              {},
@@ -273,7 +273,7 @@ func DecodeResourceKey(key string) (ResourceKey, error) {
 }
 
 func IsKubernetesBuiltInResource(apiVersion string) bool {
-	_, ok := builtInApiVersions[apiVersion]
+	_, ok := builtInAPIVersions[apiVersion]
 	// TODO: Change the way to detect whether an APIVersion is built-in or not
 	// rather than depending on this fixed list.
 	return ok

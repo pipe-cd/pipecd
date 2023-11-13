@@ -445,15 +445,25 @@ One of `yamlField` or `regex` is required.
 | serviceDefinitionFile | string | The path ECS Service configuration file. Allow file in both `yaml` and `json` format. The default value is `service.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_definition_parameters.html) for parameters.| No |
 | taskDefinitionFile | string | The path to ECS TaskDefinition configuration file. Allow file in both `yaml` and `json` format. The default value is `taskdef.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html) for parameters. | No |
 | targetGroups | [ECSTargetGroupInput](#ecstargetgroupinput) | The target groups configuration, will be used to routing traffic to created task sets. | Yes (if you want to perform progressive delivery) |
+| runStandaloneTask | bool | Run standalone tasks during deployments. About standalone task, see [here](https://docs.aws.amazon.com/AmazonECS/latest/userguide/ecs_run_task-v2.html). The default value is `true`. |
 
 ### ECSTargetGroupInput
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| primary | ECSTargetGroupObject | The PRIMARY target group, will be used to register the PRIMARY ECS task set. | Yes |
-| canary | ECSTargetGroupObject | The CANARY target group, will be used to register the CANARY ECS task set if exist. It's required to enable PipeCD to perform the multi-stage deployment. | No |
+| primary | [ECSTargetGroupObject](#ecstargetgroupobject) | The PRIMARY target group, will be used to register the PRIMARY ECS task set. | Yes |
+| canary | [ECSTargetGroupObject](#ecstargetgroupobject) | The CANARY target group, will be used to register the CANARY ECS task set if exist. It's required to enable PipeCD to perform the multi-stage deployment. | No |
 
-Note: You can get examples for those object from [here](../../examples/#ecs-applications).
+#### ECSTargetGroupObject
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| targetGroupArn | string | The name of the container (as it appears in a container definition) to　associate with the load balancer | Yes |
+| containerName | string | The full Amazon Resource Name (ARN) of the Elastic Load Balancing target group or groups associated with a service or task set. | Yes |
+| containerPort | int | The port on the container to associate with the load balancer. | Yes |
+| LoadBalancerName | string | The name of the load balancer to associate with the Amazon ECS service or task set. | No |
+
+Note: The available values are identical to those found in the aws-sdk-go-v2 Types.LoadBalancer. For more details, please refer to [this link](https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/service/ecs/types#LoadBalancer) .
 
 ## ECSQuickSync
 

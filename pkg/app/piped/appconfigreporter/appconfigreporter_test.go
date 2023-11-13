@@ -157,8 +157,7 @@ spec:
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := tc.reporter.findOutOfSyncRegisteredApps(tc.args.repoPath, tc.args.repoID, "not-existed-head-commit")
-			assert.Equal(t, tc.wantErr, err != nil)
+			got := tc.reporter.findOutOfSyncRegisteredApps(tc.args.repoPath, tc.args.repoID, "not-existed-head-commit")
 			assert.Equal(t, tc.want, got)
 		})
 	}
