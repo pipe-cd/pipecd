@@ -97,3 +97,147 @@ func TestApplication_ContainLabels(t *testing.T) {
 		})
 	}
 }
+
+func TestCompatiblePlatformProviderType(t *testing.T) {
+	tests := []struct {
+		name     string
+		kind     ApplicationKind
+		expected PlatformProviderType
+	}{
+		{
+			name:     "Kubernetes Application",
+			kind:     ApplicationKind_KUBERNETES,
+			expected: PlatformProviderKubernetes,
+		},
+		{
+			name:     "Terraform Application",
+			kind:     ApplicationKind_TERRAFORM,
+			expected: PlatformProviderTerraform,
+		},
+		{
+			name:     "Lambda Application",
+			kind:     ApplicationKind_LAMBDA,
+			expected: PlatformProviderLambda,
+		},
+		{
+			name:     "CloudRun Application",
+			kind:     ApplicationKind_CLOUDRUN,
+			expected: PlatformProviderCloudRun,
+		},
+		{
+			name:     "ECS Application",
+			kind:     ApplicationKind_ECS,
+			expected: PlatformProviderECS,
+		},
+		{
+			name:     "Default Case (assumed non-defined ApplicationKind)",
+			kind:     ApplicationKind(9999), // assuming this isn't a defined kind
+			expected: PlatformProviderKubernetes,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual := tt.kind.CompatiblePlatformProviderType()
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
+func TestIsOutOfSync(t *testing.T) {
+	tests := []struct {
+		name     string
+		app      *Application
+		expected bool
+	}{
+		{
+			name:     "Nil SyncState",
+			app:      &Application{},
+			expected: false,
+		},
+		{
+			name:     "SyncState IN_SYNC",
+			app:      &Application{SyncState: &ApplicationSyncState{Status: ApplicationSyncStatus_SYNCED}},
+			expected: false,
+		},
+		{
+			name:     "SyncState OUT_OF_SYNC",
+			app:      &Application{SyncState: &ApplicationSyncState{Status: ApplicationSyncStatus_OUT_OF_SYNC}},
+			expected: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual := tt.app.IsOutOfSync()
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
+func TestHasChanged(t *testing.T) {
+	tests := []struct {
+		name     string
+		current  ApplicationSyncState
+		next     ApplicationSyncState
+		expected bool
+	}{
+		{
+			name:     "No Change",
+			current:  ApplicationSyncState{Status: ApplicationSyncStatus_SYNCED, ShortReason: "B", Reason: "C"},
+			next:     ApplicationSyncState{Status: ApplicationSyncStatus_SYNCED, ShortReason: "B", Reason: "C"},
+			expected: false,
+		},
+		{
+			name:     "Status Changed",
+			current:  ApplicationSyncState{Status: ApplicationSyncStatus_SYNCED, ShortReason: "B", Reason: "C"},
+			next:     ApplicationSyncState{Status: ApplicationSyncStatus_DEPLOYING, ShortReason: "B", Reason: "C"},
+			expected: true,
+		},
+		{
+			name:     "ShortReason Changed",
+			current:  ApplicationSyncState{Status: ApplicationSyncStatus_SYNCED, ShortReason: "B", Reason: "C"},
+			next:     ApplicationSyncState{Status: ApplicationSyncStatus_SYNCED, ShortReason: "Y", Reason: "C"},
+			expected: true,
+		},
+		{
+			name:     "Reason Changed",
+			current:  ApplicationSyncState{Status: ApplicationSyncStatus_SYNCED, ShortReason: "B", Reason: "C"},
+			next:     ApplicationSyncState{Status: ApplicationSyncStatus_SYNCED, ShortReason: "B", Reason: "Z"},
+			expected: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actual := tt.current.HasChanged(tt.next)
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
+func TestGetApplicationConfigFilename(t *testing.T) {
+	tests := []struct {
+		name         string
+		gitPath      ApplicationGitPath
+		expectedName string
+	}{
+		{
+			name:         "Default Filename",
+			gitPath:      ApplicationGitPath{ConfigFilename: ""},
+			expectedName: oldDefaultApplicationConfigFilename,
+		},
+		{
+			name:         "Custom Filename",
+			gitPath:      ApplicationGitPath{ConfigFilename: "customConfig.yaml"},
+			expectedName: "customConfig.yaml",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			actualName := tt.gitPath.GetApplicationConfigFilename()
+			assert.Equal(t, tt.expectedName, actualName)
+		})
+	}
+}

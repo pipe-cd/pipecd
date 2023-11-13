@@ -1018,7 +1018,7 @@ func TestPatchManifests(t *testing.T) {
 
 	patcher := func(m provider.Manifest, cfg config.K8sResourcePatch) (*provider.Manifest, error) {
 		out := m
-		out.Key.Namespace = out.Key.Namespace + "+"
+		out.Key.Namespace = fmt.Sprintf("%s+", out.Key.Namespace)
 		return &out, nil
 	}
 

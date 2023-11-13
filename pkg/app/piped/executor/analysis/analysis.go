@@ -116,7 +116,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 					continue
 				}
 				status = model.StageStatus_STAGE_SKIPPED
-				// Stop the context to cancel all running analysises.
+				// Stop the context to cancel all running analyses.
 				cancel()
 				return
 			case <-doneCh:
@@ -160,8 +160,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		})
 	}
 	// Run analyses with http providers.
-	for i := range options.Https {
-		analyzer, err := e.newAnalyzerForHTTP(i, &options.Https[i], templateCfg)
+	for i := range options.HTTPS {
+		analyzer, err := e.newAnalyzerForHTTP(i, &options.HTTPS[i], templateCfg)
 		if err != nil {
 			e.LogPersister.Errorf("Failed to spawn analyzer for HTTP: %v", err)
 			return model.StageStatus_STAGE_FAILURE
@@ -312,7 +312,7 @@ func (e *Executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP,
 		return &templatableCfg.AnalysisHTTP, nil
 	}
 
-	cfg, ok := templateCfg.HTTPs[name]
+	cfg, ok := templateCfg.HTTPS[name]
 	if !ok {
 		return nil, fmt.Errorf("analysis template %s not found despite template specified", name)
 	}

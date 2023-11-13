@@ -30,7 +30,7 @@ func buildQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineS
 	)
 
 	// Append SYNC stage.
-	id := s.Id
+	id := s.ID
 	if id == "" {
 		id = "stage-0"
 	}
@@ -52,7 +52,7 @@ func buildQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineS
 	if autoRollback {
 		s, _ := planner.GetPredefinedStage(planner.PredefinedStageRollback)
 		out = append(out, &model.PipelineStage{
-			Id:         s.Id,
+			Id:         s.ID,
 			Name:       s.Name.String(),
 			Desc:       s.Desc,
 			Predefined: true,
@@ -73,7 +73,7 @@ func buildProgressivePipeline(pp *config.DeploymentPipeline, autoRollback bool, 
 	)
 
 	for i, s := range pp.Stages {
-		id := s.Id
+		id := s.ID
 		if id == "" {
 			id = fmt.Sprintf("stage-%d", i)
 		}
@@ -99,7 +99,7 @@ func buildProgressivePipeline(pp *config.DeploymentPipeline, autoRollback bool, 
 	if autoRollback {
 		s, _ := planner.GetPredefinedStage(planner.PredefinedStageRollback)
 		out = append(out, &model.PipelineStage{
-			Id:         s.Id,
+			Id:         s.ID,
 			Name:       s.Name.String(),
 			Desc:       s.Desc,
 			Predefined: true,

@@ -122,7 +122,7 @@ func (d *detector) ProviderName() string {
 	return d.provider.Name
 }
 
-func (d *detector) check(ctx context.Context) error {
+func (d *detector) check(ctx context.Context) {
 	appsByRepo := d.listGroupedApplication()
 
 	for repoID, apps := range appsByRepo {
@@ -168,7 +168,6 @@ func (d *detector) check(ctx context.Context) error {
 			}
 		}
 	}
-	return nil
 }
 
 func (d *detector) cloneGitRepository(ctx context.Context, repoID string) (git.Repo, error) {
@@ -315,7 +314,7 @@ func makeSyncState(r *provider.DiffResult, commit string) model.ApplicationSyncS
 		}
 	}
 
-	shortReason := fmt.Sprintf("The service manifest doesn't be synced")
+	shortReason := "The service manifest doesn't be synced"
 	if len(commit) >= 7 {
 		commit = commit[:7]
 	}

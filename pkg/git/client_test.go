@@ -116,6 +116,7 @@ func (f *faker) clean() {
 	os.RemoveAll(f.dir)
 }
 
+//nolint:unparam
 func (f *faker) repoDir(org, repo string) string {
 	return filepath.Join(f.dir, org, repo)
 }

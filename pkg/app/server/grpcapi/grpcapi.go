@@ -184,10 +184,6 @@ func gRPCStoreError(err error, msg string) error {
 	return status.Error(codes.Internal, fmt.Sprintf("Failed to %s", msg))
 }
 
-func makeUnregisteredAppsCacheKey(projectID string) string {
-	return fmt.Sprintf("HASHKEY:UNREGISTERED_APPS:%s", projectID)
-}
-
 func getPipedStatus(cs cache.Cache, id string) (model.Piped_ConnectionStatus, error) {
 	pipedStatus, err := cs.Get(id)
 	if errors.Is(err, cache.ErrNotFound) {

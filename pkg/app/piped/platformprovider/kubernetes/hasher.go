@@ -47,19 +47,20 @@ func HashManifests(manifests []Manifest) (string, error) {
 		var encoded string
 		var err error
 
-		if m.Key.IsConfigMap() {
+		switch {
+		case m.Key.IsConfigMap():
 			obj := &v1.ConfigMap{}
 			if err := m.ConvertToStructuredObject(obj); err != nil {
 				return "", err
 			}
 			encoded, err = encodeConfigMap(obj)
-		} else if m.Key.IsSecret() {
+		case m.Key.IsSecret():
 			obj := &v1.Secret{}
 			if err := m.ConvertToStructuredObject(obj); err != nil {
 				return "", err
 			}
 			encoded, err = encodeSecret(obj)
-		} else {
+		default:
 			var encodedBytes []byte
 			encodedBytes, err = m.MarshalJSON()
 			encoded = string(encodedBytes)

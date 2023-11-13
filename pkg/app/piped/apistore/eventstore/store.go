@@ -17,9 +17,9 @@ package eventstore
 import (
 	"context"
 	"fmt"
-	"sync/atomic"
 	"time"
 
+	"go.uber.org/atomic"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 

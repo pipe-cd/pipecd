@@ -268,6 +268,8 @@ func runGitCommand(ctx context.Context, execPath, dir string, envs []string, arg
 }
 
 // retryCommand retries a command a few times with a constant backoff.
+//
+//nolint:unparam
 func retryCommand(retries int, interval time.Duration, logger *zap.Logger, commander func() ([]byte, error)) (out []byte, err error) {
 	for i := 0; i < retries; i++ {
 		out, err = commander()

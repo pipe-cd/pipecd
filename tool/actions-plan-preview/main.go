@@ -36,11 +36,12 @@ const (
 	commentEventName     = "issue_comment"
 	pushEventName        = "push"
 
-	argAddress = "address"
-	argAPIKey  = "api-key"
-	argToken   = "token"
-	argTimeout = "timeout"
-	argPRNum   = "pull-request-number"
+	argAddress            = "address"
+	argAPIKey             = "api-key"
+	argToken              = "token"
+	argTimeout            = "timeout"
+	argPipedHandleTimeout = "piped-handle-timeout"
+	argPRNum              = "pull-request-number"
 )
 
 func main() {
@@ -101,14 +102,14 @@ func main() {
 	}
 
 	if event.PRClosed {
-		doComment(failureBadgeURL + "Unable to run plan-preview for a closed pull request.")
+		doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request.")
 		return
 	}
 
 	// TODO: When PR opened, `Mergeable` is nil for calculation.
 	// Here it is not considered for now, but needs to be handled.
 	if event.PRMergeable != nil && *event.PRMergeable == false {
-		doComment(failureBadgeURL + "Unable to run plan-preview for an un-mergeable pull request. Please resolve the conficts and try again.")
+		doComment(failureBadgeURL + "\nUnable to run plan-preview for an un-mergeable pull request. Please resolve the conficts and try again.")
 		return
 	}
 
@@ -121,8 +122,10 @@ func main() {
 		args.Address,
 		args.APIKey,
 		args.Timeout,
+		args.PipedHandleTimeout,
 	)
 	if err != nil {
+		doComment(failureBadgeURL + "\nUnable to run plan-preview. \ncause: " + err.Error())
 		log.Fatal(err)
 	}
 	log.Println("Successfully retrieved plan-preview result")
@@ -131,12 +134,17 @@ func main() {
 	if result.HasError() {
 		pr, err := getPullRequest(ctx, ghClient.PullRequests, event.Owner, event.Repo, event.PRNumber)
 		if err != nil {
+			doComment(failureBadgeURL + "\nUnable to run plan-preview. \ncause: " + err.Error())
 			log.Fatal(err)
 		}
 		if !pr.GetClosedAt().IsZero() {
-			doComment(failureBadgeURL + "Unable to run plan-preview for a closed pull request.")
+			doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request.")
 			return
 		}
+		body := makeCommentBody(event, result)
+		doComment(failureBadgeURL + "\n" + body)
+		log.Println("plan-preview result has error")
+		os.Exit(1)
 	}
 
 	// Find comments we sent before
@@ -166,11 +174,12 @@ func main() {
 }
 
 type arguments struct {
-	Address string
-	APIKey  string
-	Token   string
-	Timeout time.Duration
-	PRNum   int
+	Address            string
+	APIKey             string
+	Token              string
+	Timeout            time.Duration
+	PipedHandleTimeout time.Duration
+	PRNum              int
 }
 
 func parseArgs(args []string) (arguments, error) {
@@ -194,6 +203,12 @@ func parseArgs(args []string) (arguments, error) {
 				return arguments{}, err
 			}
 			out.Timeout = d
+		case argPipedHandleTimeout:
+			d, err := time.ParseDuration(ps[1])
+			if err != nil {
+				return arguments{}, err
+			}
+			out.PipedHandleTimeout = d
 		case argPRNum:
 			if ps[1] == "" {
 				continue
@@ -220,6 +235,9 @@ func parseArgs(args []string) (arguments, error) {
 	}
 	if out.Timeout == 0 {
 		out.Timeout = defaultTimeout
+	}
+	if out.PipedHandleTimeout == 0 {
+		out.PipedHandleTimeout = defaultTimeout
 	}
 
 	return out, nil

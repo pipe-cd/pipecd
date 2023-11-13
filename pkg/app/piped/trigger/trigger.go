@@ -177,12 +177,12 @@ func (t *Trigger) checkCandidates(ctx context.Context, cs []candidate) (err erro
 	// Group candidates by repository to reduce the number of Git operations on each repo.
 	csm := make(map[string][]candidate)
 	for _, c := range cs {
-		repoId := c.application.GitPath.Repo.Id
-		if _, ok := csm[repoId]; !ok {
-			csm[repoId] = []candidate{c}
+		repoID := c.application.GitPath.Repo.Id
+		if _, ok := csm[repoID]; !ok {
+			csm[repoID] = []candidate{c}
 			continue
 		}
-		csm[repoId] = append(csm[repoId], c)
+		csm[repoID] = append(csm[repoID], c)
 	}
 
 	// Iterate each repository and check its candidates.
@@ -474,7 +474,7 @@ func (t *Trigger) GetLastTriggeredCommitGetter() LastTriggeredCommitGetter {
 	return t.commitStore
 }
 
-func (t *Trigger) notifyDeploymentTriggered(ctx context.Context, appCfg *config.GenericApplicationSpec, d *model.Deployment) {
+func (t *Trigger) notifyDeploymentTriggered(_ context.Context, appCfg *config.GenericApplicationSpec, d *model.Deployment) {
 	var mentions []string
 	if n := appCfg.DeploymentNotification; n != nil {
 		mentions = n.FindSlackAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED)

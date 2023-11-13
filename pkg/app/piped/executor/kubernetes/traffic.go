@@ -226,7 +226,7 @@ func findIstioVirtualServiceManifests(manifests []provider.Manifest, ref config.
 		return nil, fmt.Errorf("support only %q kind for VirtualService reference", istioVirtualServiceKind)
 	}
 
-	var out []provider.Manifest
+	out := make([]provider.Manifest, 0, len(manifests))
 	for _, m := range manifests {
 		if !strings.HasPrefix(m.Key.APIVersion, istioNetworkingAPIVersionPrefix) {
 			continue

@@ -52,7 +52,7 @@ func (s *ControlPlaneSpec) Validate() error {
 
 type ControlPlaneProject struct {
 	// The unique identifier of the project.
-	Id string `json:"id"`
+	ID string `json:"id"`
 	// The description about the project.
 	Desc string `json:"desc"`
 	// Static admin account of the project.
@@ -108,7 +108,7 @@ func (s *SharedSSOConfig) UnmarshalJSON(data []byte) error {
 // FindProject finds and returns a specific project in the configured list.
 func (s *ControlPlaneSpec) FindProject(id string) (ControlPlaneProject, bool) {
 	for i := range s.Projects {
-		if s.Projects[i].Id != id {
+		if s.Projects[i].ID != id {
 			continue
 		}
 		return s.Projects[i], true
@@ -119,7 +119,7 @@ func (s *ControlPlaneSpec) FindProject(id string) (ControlPlaneProject, bool) {
 func (s *ControlPlaneSpec) ProjectMap() map[string]ControlPlaneProject {
 	m := make(map[string]ControlPlaneProject, len(s.Projects))
 	for i := range s.Projects {
-		m[s.Projects[i].Id] = s.Projects[i]
+		m[s.Projects[i].ID] = s.Projects[i]
 	}
 	return m
 }
@@ -281,7 +281,7 @@ func (f *ControlPlaneFileStore) UnmarshalJSON(data []byte) error {
 		}
 	default:
 		// Left comment out for mock response.
-		//err = fmt.Errorf("unsupported filestore type: %s", f.Type)
+		// err = fmt.Errorf("unsupported filestore type: %s", f.Type)
 		err = nil
 	}
 	return err

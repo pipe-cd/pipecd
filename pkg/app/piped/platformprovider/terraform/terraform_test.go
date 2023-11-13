@@ -97,3 +97,57 @@ func TestParsePlanResult(t *testing.T) {
 		})
 	}
 }
+
+func TestRender(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name        string
+		expected    string
+		planResult  *PlanResult
+		expectedErr bool
+	}{
+		{
+			name: "success",
+			planResult: &PlanResult{
+				Imports:  1,
+				Adds:     2,
+				Changes:  3,
+				Destroys: 4,
+				PlanOutput: `
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+  + resource "test-add" "test" {
+      + id    = (known after apply)
+    }
+  - resource "test-del" "test" {
+      + id    = "foo"
+    }
+
+Plan: 1 to import, 2 to add, 3 to change, 4 to destroy.
+`,
+			},
+			expected: `    resource "test-add" "test" {
++       id    = (known after apply)
+    }
+    resource "test-del" "test" {
++       id    = "foo"
+    }
+Plan: 1 to import, 2 to add, 3 to change, 4 to destroy.
+`,
+			expectedErr: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			actual, err := tc.planResult.Render()
+			assert.Equal(t, tc.expected, actual)
+			assert.Equal(t, tc.expectedErr, err != nil)
+		})
+	}
+}
