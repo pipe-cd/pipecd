@@ -55,10 +55,10 @@ type GraphQLClient interface {
 // parsePullRequestEvent uses the given environment variables
 // to parse and build githubEvent struct.
 // Currently, we support 2 kinds of event as below:
-//   - PullRequestEvent
-//     https://pkg.go.dev/github.com/google/go-github/v36/github#PullRequestEvent
-//   - IssueCommentEvent
-//     https://pkg.go.dev/github.com/google/go-github/v36/github#IssueCommentEvent
+// - PullRequestEvent
+//   https://pkg.go.dev/github.com/google/go-github/v36/github#PullRequestEvent
+// - IssueCommentEvent
+//   https://pkg.go.dev/github.com/google/go-github/v36/github#IssueCommentEvent
 func parseGitHubEvent(
 	ctx context.Context,
 	pullSvc PullRequestsService,

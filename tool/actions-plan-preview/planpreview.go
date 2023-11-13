@@ -84,6 +84,7 @@ func retrievePlanPreview(
 	address,
 	apiKey string,
 	timeout time.Duration,
+	pipedHandleTimeout time.Duration,
 ) (*PlanPreviewResult, error) {
 
 	dir, err := os.MkdirTemp("", "")
@@ -101,7 +102,7 @@ func retrievePlanPreview(
 		"--address", address,
 		"--api-key", apiKey,
 		"--timeout", timeout.String(),
-		"--piped-handle-timeout", timeout.String(),
+		"--piped-handle-timeout", pipedHandleTimeout.String(),
 		"--out", outPath,
 	}
 	cmd := exec.CommandContext(ctx, "pipectl", args...)
