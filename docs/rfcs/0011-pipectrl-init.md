@@ -1,9 +1,9 @@
-- Start Date: 2023-11-24
+- Start Date: 2023-11-14
 - Target Version: 1.45.1
 
 # Summary
 
-To simplify the creation of a configuration file using the pipectrl init command.
+To simplify the creation of a configuration file using the pipectl init command.
 
 # Motivation
 
@@ -12,8 +12,8 @@ Also, build in the ability to easily migrate from the configuration files of use
 
 # Detailed design
 
-pipectrl init command will be added to the pipecdctl command.
-The pipectrl init command will have 3 features.
+pipectl init command will be added to the pipectl command.
+The pipectl init command will have 3 features.
 
 1. Create a configuration file from scratch
 2. Create a configuration file from an existing configuration file
@@ -324,7 +324,7 @@ gpt3 is more open to unpaid users.
 command
 
 ```bash
-$ pipectrl init
+$ pipectl init
 ```
 
 ### option
