@@ -40,6 +40,14 @@ spec:
 | eventWatcher | [][EventWatcher](#eventwatcher) | List of configurations for event watcher. | No |
 | driftDetection | [DriftDetection](#driftdetection) | Configuration for drift detection. | No |
 
+### Annotations
+
+Kubernetes resources can be managed by some annotations provided by PipeCD.
+
+| Annotation key | Target resource(es) | Possible values | Description |
+| `pipecd.dev/ignore-drift-detection` | any | "true" | Whether the drift detection should ignore this resource. |
+| `pipecd.dev/server-side-apply` | any | "true" | Use server side apply instead of client side apply. |
+
 ## Terraform application
 
 ``` yaml
