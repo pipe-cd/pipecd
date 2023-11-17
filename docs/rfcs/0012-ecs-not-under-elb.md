@@ -48,8 +48,8 @@ There are 4 types of ECS deployment targets. We focus on (3) here.
 
 - We'll support 3 types of deployments as current.
   - (A) QuickSync
-  - (B) Canary
-  - (C) Blue/Green
+  - (B) Canary [(flowchart)](#canary)
+  - (C) Blue/Green [(flowchart)](#bluegreen)
 - NOTE: In Canary and Blue/Green, tasks will start to receive traffic while rollout right after deployments, unlike current ECS deployments.
   - That's because ECS Service Discovery automatically register new tasks to the namespace right after deployments.
       <!-- - We would not deregister new tasks from Service Discovery right after the registration, because that would lead to bugs. -->
@@ -120,3 +120,314 @@ We add one config as below:
 
 - App Mesh would be supported by PipeCD in the similar way. ref:
   [Create a pipeline with canary deployments for Amazon ECS using AWS App Mesh](https://aws.amazon.com/jp/blogs/containers/create-a-pipeline-with-canary-deployments-for-amazon-ecs-using-aws-app-mesh/)
+
+# Appendix: Flowcharts
+
+## Canary
+
+### (0) Before deployment
+
+```mermaid
+
+flowchart 
+
+    subgraph ECS
+        other[Other ECS Service]--[serviceName=abc]--> sd
+
+        sd[Service Discovery]
+        sd -- 50% --> 1a
+        sd -- 50% --> 1b
+
+        subgraph s1[service-abc-primary]
+            1a[Task v1]
+            1b[Task v1]
+        end
+    end
+```
+
+### (1) Canary Rollout (scale:50)
+
+```mermaid
+
+flowchart 
+
+    subgraph ECS
+        other[Other ECS Service]--[serviceName=abc]--> sd
+
+        sd[Service Discovery]
+        sd -- 50% --> 1a
+        sd -- 50% --> 1b
+
+        subgraph s1[service-abc-primary]
+            1a[Task v1]
+            1b[Task v1]
+        end
+
+        subgraph s2[service-abc-canary]
+            2a[Task v2]
+        end
+
+    end
+```
+
+### (2) Traffic Routing (canary:33)
+
+```mermaid
+
+flowchart 
+
+    subgraph ECS
+        other[Other ECS Service]--[serviceName=abc]--> sd
+
+        sd[Service Discovery]
+        sd -- 33% --> 1a
+        sd -- 33% --> 1b
+        sd -- 33% --> 2a
+
+        subgraph s1[service-abc-primary]
+            1a[Task v1]
+            1b[Task v1]
+        end
+
+        subgraph s2[service-abc-canary]
+            2a[Task v2]
+        end
+
+    end
+```
+
+### (3) Primary Rollout
+
+```mermaid
+
+flowchart 
+
+    subgraph ECS
+        other[Other ECS Service]--[serviceName=abc]--> sd
+
+        sd[Service Discovery]
+        sd -- 33% --> 1a
+        sd -- 33% --> 1b
+        sd -- 33% --> 2a
+
+        subgraph s1[service-abc-primary]
+            1a[Task v2]
+            1b[Task v2]
+        end
+
+        subgraph s2[service-abc-canary]
+            2a[Task v2]
+        end
+
+    end
+```
+
+### (4) Traffic Routing (primary:100)
+
+```mermaid
+
+flowchart 
+
+    subgraph ECS
+        other[Other ECS Service]--[serviceName=abc]--> sd
+
+        sd[Service Discovery]
+        sd -- 50% --> 1a
+        sd -- 50% --> 1b
+
+        subgraph s1[service-abc-primary]
+            1a[Task v2]
+            1b[Task v2]
+        end
+
+        subgraph s2[service-abc-canary]
+            2a[Task v2]
+        end
+
+    end
+```
+
+### (5) Canary Clean
+
+```mermaid
+
+flowchart 
+
+    subgraph ECS
+        other[Other ECS Service]--[serviceName=abc]--> sd
+
+        sd[Service Discovery]
+        sd -- 50% --> 1a
+        sd -- 50% --> 1b
+
+        subgraph s1[service-abc-primary]
+            1a[Task v2]
+            1b[Task v2]
+        end
+
+    end
+```
+
+## Blue/Green
+
+### (0) Before deployment
+
+```mermaid
+
+flowchart 
+
+    subgraph ECS
+        other[Other ECS Service]--[serviceName=abc]--> sd
+
+        sd[Service Discovery]
+        sd -- 50% --> 1a
+        sd -- 50% --> 1b
+
+        subgraph s1[service-abc-primary]
+            1a[Task v1]
+            1b[Task v1]
+        end
+    end
+```
+
+### (1) Canary Rollout (scale:100)
+
+```mermaid
+
+flowchart 
+
+    subgraph ECS
+        other[Other ECS Service]--[serviceName=abc]--> sd
+
+        sd[Service Discovery]
+        sd -- 50% --> 1a
+        sd -- 50% --> 1b
+
+        subgraph s1[service-abc-primary]
+            1a[Task v1]
+            1b[Task v1]
+        end
+
+        subgraph s2[service-abc-canary]
+            direction LR
+            2a[Task v2]
+            2b[Task v2]
+        end
+
+    end
+```
+
+### (2) Traffic Routing (canary:100)
+
+```mermaid
+
+flowchart 
+
+    subgraph ECS
+
+        other[Other ECS Service]--[serviceName=abc]--> sd
+
+        sd[Service Discovery]
+        %% transparent line
+        sd --- 1a
+        linkStyle 1 stroke-width:0px
+        
+        sd -- 50% --> 2a
+        sd -- 50% --> 2b
+
+        subgraph s1[service-abc-primary]
+            direction LR
+            1a[Task v1]
+            1b[Task v1]
+        end
+
+        subgraph s2[service-abc-canary]
+            2a[Task v2]
+            2b[Task v2]
+        end
+
+    end
+
+```
+
+### (3) Primary Rollout
+
+```mermaid
+
+flowchart 
+
+    subgraph ECS
+
+        other[Other ECS Service]--[serviceName=abc]--> sd
+
+        sd[Service Discovery]
+        %% transparent line
+        sd --- 1a
+        linkStyle 1 stroke-width:0px
+        
+        sd -- 50% --> 2a
+        sd -- 50% --> 2b
+
+        subgraph s1[service-abc-primary]
+            direction LR
+            1a[Task v2]
+            1b[Task v2]
+        end
+
+        subgraph s2[service-abc-canary]
+            2a[Task v2]
+            2b[Task v2]
+        end
+
+    end
+```
+
+### (4) Traffic Routing (primary:100)
+
+```mermaid
+
+flowchart 
+
+    subgraph ECS
+
+        other[Other ECS Service]--[serviceName=abc]--> sd
+
+        sd[Service Discovery]
+        
+        sd -- 50% --> 1a
+        sd -- 50% --> 1b
+
+        subgraph s1[service-abc-primary]
+            1a[Task v2]
+            1b[Task v2]
+        end
+
+        subgraph s2[service-abc-canary]
+            direction LR
+            2a[Task v2]
+            2b[Task v2]
+        end
+
+    end
+```
+
+### (5) Canary Clean
+
+```mermaid
+
+flowchart 
+
+    subgraph ECS
+        other[Other ECS Service]--[serviceName=abc]--> sd
+
+        sd[Service Discovery]
+        sd -- 50% --> 1a
+        sd -- 50% --> 1b
+
+        subgraph s1[service-abc-primary]
+            1a[Task v2]
+            1b[Task v2]
+        end
+
+    end
+```
