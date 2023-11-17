@@ -1,5 +1,5 @@
 - Start Date: 2023-11-16
-- Target Version: (s1.x / 2.x)
+- Target Version: 0.46.0
 
 # Summary
 
