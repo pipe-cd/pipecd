@@ -32,7 +32,7 @@ provider "pipecd" {
 ```
 
 ### Manage Piped agent
-Add `pipecd_piped` resource to manage a Piped aegnt.
+Add `pipecd_piped` resource to manage a Piped agent.
 
 ```hcl
 resource "pipecd_piped" "mypiped" {
