@@ -460,9 +460,7 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 	}
 
 	// Store created listeners to use later.
-	addedListeners := make([]string, 0, len(currListenerArns))
-	addedListeners = append(addedListeners, currListenerArns...)
-	metadata := strings.Join(addedListeners, ",")
+	metadata := strings.Join(currListenerArns, ",")
 	if err := in.MetadataStore.Shared().Put(ctx, currentListenersKey, metadata); err != nil {
 		in.LogPersister.Errorf("Unable to store created listeners to metadata store: %v", err)
 		return false
