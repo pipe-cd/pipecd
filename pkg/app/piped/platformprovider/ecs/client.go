@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -27,6 +28,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
+	"github.com/aws/aws-sdk-go-v2/service/servicediscovery"
+
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
@@ -47,6 +50,7 @@ const (
 type client struct {
 	ecsClient *ecs.Client
 	elbClient *elasticloadbalancingv2.Client
+	sdClient  *servicediscovery.Client
 	logger    *zap.Logger
 }
 
@@ -79,6 +83,7 @@ func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logg
 	}
 	c.ecsClient = ecs.NewFromConfig(cfg)
 	c.elbClient = elasticloadbalancingv2.NewFromConfig(cfg)
+	c.sdClient = servicediscovery.NewFromConfig(cfg)
 
 	return c, nil
 }
@@ -480,4 +485,79 @@ func (c *client) TagResource(ctx context.Context, resourceArn string, tags []typ
 		return fmt.Errorf("failed to update tag of resource %s: %w", resourceArn, err)
 	}
 	return nil
+}
+
+func (c *client) deregisterInstanceFromServiceDiscovery(ctx context.Context, serviceId string, instanceId string) error {
+	input := &servicediscovery.DeregisterInstanceInput{
+		ServiceId:  aws.String(serviceId),
+		InstanceId: aws.String(instanceId),
+	}
+	_, err := c.sdClient.DeregisterInstance(ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to deregister ECS instance(%s) of service(%s) from Service Discovery: %w", instanceId, serviceId, err)
+	}
+	return nil
+}
+
+func (c *client) registerInstanceToServiceDiscovery(ctx context.Context, serviceId string, serviceName string, taskArn string) error {
+	clusterName := clusterArn(taskArn)
+	input1 := &ecs.DescribeTasksInput{
+		Cluster: aws.String(clusterName),
+		Tasks:   []string{taskArn},
+	}
+	output, err := c.ecsClient.DescribeTasks(ctx, input1)
+	if err != nil || len(output.Tasks) == 0 {
+		return fmt.Errorf("failed to describe ECS task(%s): %w", taskArn, err)
+	}
+
+	task := output.Tasks[0]
+	taskId := afterLastSlash(*task.TaskArn)
+
+	ipv4, err := ipv4OfTask(task)
+	if err != nil {
+		return fmt.Errorf("failed to get privateIPv4Address of task(%s): %w", taskId, err)
+	}
+
+	input := &servicediscovery.RegisterInstanceInput{
+		ServiceId:  aws.String(serviceId),
+		InstanceId: aws.String(taskId),
+		Attributes: map[string]string{
+			"AVAILABILITY_ZONE":          *task.AvailabilityZone,
+			"AWS_INIT_HEALTH_STATUS":     "HEALTHY", // the default status in SDK
+			"AWS_INSTANCE_IPV4":          ipv4,
+			"ECS_CLUSTER_NAME":           clusterName,
+			"ECS_SERVICE_NAME":           serviceName,
+			"ECS_TASK_DEFINITION_FAMILY": afterLastSlash(*task.TaskDefinitionArn),
+			"REGION":                     strings.Split(taskArn, "/")[3],
+		},
+	}
+
+	_, err = c.sdClient.RegisterInstance(ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to register ECS instance(%s) of service(%s) to Service Discovery: %w", taskId, serviceId, err)
+	}
+	return nil
+}
+
+func afterLastSlash(str string) string {
+	strSplit := strings.Split(str, "/")
+	return strSplit[len(strSplit)-1]
+}
+
+func clusterArn(taskArn string) string {
+	strSplit := strings.Split(taskArn, "/")
+	return strSplit[len(strSplit)-2]
+}
+
+func ipv4OfTask(t types.Task) (string, error) {
+	if len(t.Attachments) == 0 {
+		return "", fmt.Errorf("failed to get privateIPv4Address of task(%s): the task has no attatchments", *t.TaskArn)
+	}
+
+	for _, detail := range t.Attachments[0].Details {
+		if *detail.Name == "privateIPv4Address" {
+			return *detail.Value, nil
+		}
+	}
+	return "", fmt.Errorf("failed to get privateIPv4Address of task(%s): the task has no details of 'privateIPv4Address'", *t.TaskArn)
 }
