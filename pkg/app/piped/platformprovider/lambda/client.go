@@ -182,7 +182,9 @@ func (c *client) CreateFunctionFromSource(ctx context.Context, fm FunctionManife
 			Variables: fm.Spec.Environments,
 		},
 	}
-
+	if fm.Spec.EphemeralStorage != nil && fm.Spec.EphemeralStorage.Size != 0 {
+		input.EphemeralStorage.Size = aws.Int32(fm.Spec.EphemeralStorage.Size)
+	}
 	_, err = c.client.CreateFunction(ctx, input)
 	if err != nil {
 		return fmt.Errorf("failed to create Lambda function %s: %w", fm.Spec.Name, err)
