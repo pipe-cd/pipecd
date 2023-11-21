@@ -500,7 +500,7 @@ func (c *client) deregisterInstanceFromServiceDiscovery(ctx context.Context, ser
 }
 
 func (c *client) registerInstanceToServiceDiscovery(ctx context.Context, serviceId string, serviceName string, taskArn string) error {
-	clusterName := clusterArn(taskArn)
+	clusterName := clusterName(taskArn)
 	input1 := &ecs.DescribeTasksInput{
 		Cluster: aws.String(clusterName),
 		Tasks:   []string{taskArn},
@@ -528,7 +528,7 @@ func (c *client) registerInstanceToServiceDiscovery(ctx context.Context, service
 			"ECS_CLUSTER_NAME":           clusterName,
 			"ECS_SERVICE_NAME":           serviceName,
 			"ECS_TASK_DEFINITION_FAMILY": afterLastSlash(*task.TaskDefinitionArn),
-			"REGION":                     strings.Split(taskArn, "/")[3],
+			"REGION":                     regionName(taskArn),
 		},
 	}
 
@@ -539,16 +539,24 @@ func (c *client) registerInstanceToServiceDiscovery(ctx context.Context, service
 	return nil
 }
 
+// HACK: it depends on the ARN structure. It may be changed in the future.
 func afterLastSlash(str string) string {
 	strSplit := strings.Split(str, "/")
 	return strSplit[len(strSplit)-1]
 }
 
-func clusterArn(taskArn string) string {
+// HACK: it depends on the ARN structure. It may be changed in the future.
+func clusterName(taskArn string) string {
 	strSplit := strings.Split(taskArn, "/")
 	return strSplit[len(strSplit)-2]
 }
 
+// HACK: it depends on the ARN structure. It may be changed in the future.
+func regionName(taskArn string) string {
+	return strings.Split(taskArn, "/")[3]
+}
+
+// HACK: it depends on the Task's Attatchments and Details structures. It may be changed in the future.
 func ipv4OfTask(t types.Task) (*string, error) {
 	if len(t.Attachments) == 0 {
 		return nil, fmt.Errorf("failed to get privateIPv4Address of task(%s): the task has no attatchments", *t.TaskArn)
