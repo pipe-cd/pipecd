@@ -126,7 +126,7 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 		}
 		input.Architectures = architectures
 	}
-	if fm.Spec.EphemeralStorage.Size != 0 {
+	if fm.Spec.EphemeralStorage != nil && fm.Spec.EphemeralStorage.Size != 0 {
 		input.EphemeralStorage.Size = aws.Int32(fm.Spec.EphemeralStorage.Size)
 	}
 	if fm.Spec.VPCConfig != nil {
@@ -281,7 +281,7 @@ func (c *client) updateFunctionConfiguration(ctx context.Context, fm FunctionMan
 		if fm.Spec.Handler != "" {
 			configInput.Handler = aws.String(fm.Spec.Handler)
 		}
-		if fm.Spec.EphemeralStorage.Size != 0 {
+		if fm.Spec.EphemeralStorage != nil && fm.Spec.EphemeralStorage.Size != 0 {
 			configInput.EphemeralStorage.Size = aws.Int32(fm.Spec.EphemeralStorage.Size)
 		}
 		if fm.Spec.VPCConfig != nil {
