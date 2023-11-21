@@ -120,7 +120,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
-	servicedefinition, ok := loadServiceDefinition(&e.Input, e.appCfg.Input.ServiceDefinitionFile, e.deploySource)
+	serviceDefinition, ok := loadServiceDefinition(&e.Input, e.appCfg.Input.ServiceDefinitionFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -134,7 +134,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary) {
+	if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, serviceDefinition, primary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
