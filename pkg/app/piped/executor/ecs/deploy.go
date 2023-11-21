@@ -17,6 +17,7 @@ package ecs
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -97,9 +98,13 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	primary, _, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
-	if !ok {
-		return model.StageStatus_STAGE_FAILURE
+	// When the service is not under ELB, target groups are not used.
+	var primary *types.LoadBalancer = nil
+	if e.appCfg.Input.IsAccessedViaELB() {
+		primary, _, ok = loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
+		if !ok {
+			return model.StageStatus_STAGE_FAILURE
+		}
 	}
 
 	recreate := e.appCfg.QuickSync.Recreate
@@ -141,7 +146,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
-	servicedefinition, ok := loadServiceDefinition(&e.Input, e.appCfg.Input.ServiceDefinitionFile, e.deploySource)
+	serviceDefinition, ok := loadServiceDefinition(&e.Input, e.appCfg.Input.ServiceDefinitionFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -155,7 +160,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, canary) {
+	if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, serviceDefinition, canary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
