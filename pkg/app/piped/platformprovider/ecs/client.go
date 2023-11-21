@@ -524,7 +524,7 @@ func (c *client) registerInstanceToServiceDiscovery(ctx context.Context, service
 		Attributes: map[string]string{
 			"AVAILABILITY_ZONE":          *task.AvailabilityZone,
 			"AWS_INIT_HEALTH_STATUS":     "HEALTHY", // the default status in SDK
-			"AWS_INSTANCE_IPV4":          ipv4,
+			"AWS_INSTANCE_IPV4":          *ipv4,
 			"ECS_CLUSTER_NAME":           clusterName,
 			"ECS_SERVICE_NAME":           serviceName,
 			"ECS_TASK_DEFINITION_FAMILY": afterLastSlash(*task.TaskDefinitionArn),
@@ -549,15 +549,15 @@ func clusterArn(taskArn string) string {
 	return strSplit[len(strSplit)-2]
 }
 
-func ipv4OfTask(t types.Task) (string, error) {
+func ipv4OfTask(t types.Task) (*string, error) {
 	if len(t.Attachments) == 0 {
-		return "", fmt.Errorf("failed to get privateIPv4Address of task(%s): the task has no attatchments", *t.TaskArn)
+		return nil, fmt.Errorf("failed to get privateIPv4Address of task(%s): the task has no attatchments", *t.TaskArn)
 	}
 
 	for _, detail := range t.Attachments[0].Details {
 		if *detail.Name == "privateIPv4Address" {
-			return *detail.Value, nil
+			return detail.Value, nil
 		}
 	}
-	return "", fmt.Errorf("failed to get privateIPv4Address of task(%s): the task has no details of 'privateIPv4Address'", *t.TaskArn)
+	return nil, fmt.Errorf("failed to get privateIPv4Address of task(%s): the task has no details of 'privateIPv4Address'", *t.TaskArn)
 }
