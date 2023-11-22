@@ -57,10 +57,17 @@ type ECSDeploymentInput struct {
 	// Run standalone task during deployment.
 	// Default is true.
 	RunStandaloneTask *bool `json:"runStandaloneTask" default:"true"`
+	// How the ECS service is accessed.
+	// Default is ELB.
+	AccessType string `json:"accessType" default:"ELB"`
 }
 
 func (in *ECSDeploymentInput) IsStandaloneTask() bool {
 	return in.ServiceDefinitionFile == ""
+}
+
+func (in *ECSDeploymentInput) IsAccessedViaELB() bool {
+	return in.AccessType == "ELB"
 }
 
 type ECSVpcConfiguration struct {

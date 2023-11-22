@@ -17,6 +17,7 @@ package ecs
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -97,9 +98,13 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	primary, _, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
-	if !ok {
-		return model.StageStatus_STAGE_FAILURE
+	var primary *types.LoadBalancer
+	// When the service is accessed via ELB, the target group is not used.
+	if ecsInput.IsAccessedViaELB() {
+		primary, _, ok = loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
+		if !ok {
+			return model.StageStatus_STAGE_FAILURE
+		}
 	}
 
 	recreate := e.appCfg.QuickSync.Recreate
