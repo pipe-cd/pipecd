@@ -141,8 +141,33 @@ func main() {
 			doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request.")
 			return
 		}
+
+		// Find comments we sent before
+		comment, err := findLatestPlanPreviewComment(ctx, ghGraphQLClient, event.Owner, event.Repo, event.PRNumber)
+		if err != nil {
+			log.Printf("Unable to find the previous comment to minimize (%v)\n", err)
+		}
+
 		body := makeCommentBody(event, result)
-		doComment(failureBadgeURL + "\n" + body)
+		doComment(body)
+
+		if comment == nil {
+			log.Println("plan-preview result has error")
+			os.Exit(1)
+			return
+		}
+
+		if bool(comment.IsMinimized) {
+			log.Printf("Previous plan-preview comment has already minimized. So don't minimize anything\n")
+			return
+		}
+
+		if err := minimizeComment(ctx, ghGraphQLClient, comment.ID, "OUTDATED"); err != nil {
+			log.Printf("warning: cannot minimize comment: %s\n", err.Error())
+			return
+		}
+
+		log.Printf("Successfully minimized last plan-preview result on pull request\n")
 		log.Println("plan-preview result has error")
 		os.Exit(1)
 	}
