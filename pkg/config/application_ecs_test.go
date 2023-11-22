@@ -64,6 +64,7 @@ func TestECSApplicationConfig(t *testing.T) {
 					LaunchType:        "FARGATE",
 					AutoRollback:      newBoolPointer(true),
 					RunStandaloneTask: newBoolPointer(true),
+					AccessType:        "ELB",
 				},
 			},
 			expectedError: nil,
