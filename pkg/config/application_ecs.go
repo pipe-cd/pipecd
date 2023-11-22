@@ -58,6 +58,9 @@ type ECSDeploymentInput struct {
 	// Default is true.
 	RunStandaloneTask *bool `json:"runStandaloneTask" default:"true"`
 	// How the ECS service is accessed.
+	// Possible values are:
+	//  - ELB -  The service is accessed via ELB and target groups.
+	//  - SERVICE_DISCOVERY -  The service is accessed via ECS Service Discovery.
 	// Default is ELB.
 	AccessType string `json:"accessType" default:"ELB"`
 }
