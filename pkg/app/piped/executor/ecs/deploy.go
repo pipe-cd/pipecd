@@ -99,7 +99,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 
 	var primary *types.LoadBalancer
-	// When the service is accessed via ELB, the target group is not used.
+	// When the service is not accessed via ELB, the target group is not used.
 	if ecsInput.IsAccessedViaELB() {
 		primary, _, ok = loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
 		if !ok {
