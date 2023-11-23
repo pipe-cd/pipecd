@@ -16,6 +16,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -102,6 +103,40 @@ func TestECSApplicationConfig(t *testing.T) {
 				},
 			},
 			expectedError: nil,
+		},
+		{
+			fileName:           "testdata/application/ecs-app-invalid-access-type.yaml",
+			expectedKind:       KindECSApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedSpec: &ECSApplicationSpec{
+				GenericApplicationSpec: GenericApplicationSpec{
+					Timeout: Duration(6 * time.Hour),
+					Trigger: Trigger{
+						OnCommit: OnCommit{
+							Disabled: false,
+						},
+						OnCommand: OnCommand{
+							Disabled: false,
+						},
+						OnOutOfSync: OnOutOfSync{
+							Disabled:  newBoolPointer(true),
+							MinWindow: Duration(5 * time.Minute),
+						},
+						OnChain: OnChain{
+							Disabled: newBoolPointer(true),
+						},
+					},
+				},
+				Input: ECSDeploymentInput{
+					ServiceDefinitionFile: "/path/to/servicedef.yaml",
+					TaskDefinitionFile:    "/path/to/taskdef.yaml",
+					LaunchType:            "FARGATE",
+					AutoRollback:          newBoolPointer(true),
+					RunStandaloneTask:     newBoolPointer(true),
+					AccessType:            "XXX",
+				},
+			},
+			expectedError: fmt.Errorf("invalid accessType: XXX"),
 		},
 	}
 	for _, tc := range testcases {

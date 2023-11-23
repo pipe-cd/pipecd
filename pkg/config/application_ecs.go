@@ -16,6 +16,12 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
+)
+
+const (
+	accessTypeELB              string = "ELB"
+	accessTypeServiveDiscovery string = "SERVICE_DISCOVERY"
 )
 
 // ECSApplicationSpec represents an application configuration for ECS application.
@@ -32,6 +38,11 @@ func (s *ECSApplicationSpec) Validate() error {
 	if err := s.GenericApplicationSpec.Validate(); err != nil {
 		return err
 	}
+
+	if err := s.Input.validateAccessType(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -70,7 +81,7 @@ func (in *ECSDeploymentInput) IsStandaloneTask() bool {
 }
 
 func (in *ECSDeploymentInput) IsAccessedViaELB() bool {
-	return in.AccessType == "ELB"
+	return in.AccessType == accessTypeELB
 }
 
 type ECSVpcConfiguration struct {
@@ -130,4 +141,13 @@ func (opts ECSTrafficRoutingStageOptions) Percentage() (primary, canary int) {
 	primary = 100
 	canary = 0
 	return
+}
+
+func (in *ECSDeploymentInput) validateAccessType() error {
+	switch in.AccessType {
+	case accessTypeELB, accessTypeServiveDiscovery:
+		return nil
+	default:
+		return fmt.Errorf("invalid accessType: %s", in.AccessType)
+	}
 }
