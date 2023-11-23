@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	accessTypeELB              string = "ELB"
-	accessTypeServiveDiscovery string = "SERVICE_DISCOVERY"
+	AccessTypeELB              string = "ELB"
+	AccessTypeServiveDiscovery string = "SERVICE_DISCOVERY"
 )
 
 // ECSApplicationSpec represents an application configuration for ECS application.
@@ -81,7 +81,7 @@ func (in *ECSDeploymentInput) IsStandaloneTask() bool {
 }
 
 func (in *ECSDeploymentInput) IsAccessedViaELB() bool {
-	return in.AccessType == accessTypeELB
+	return in.AccessType == AccessTypeELB
 }
 
 type ECSVpcConfiguration struct {
@@ -145,7 +145,7 @@ func (opts ECSTrafficRoutingStageOptions) Percentage() (primary, canary int) {
 
 func (in *ECSDeploymentInput) validateAccessType() error {
 	switch in.AccessType {
-	case accessTypeELB, accessTypeServiveDiscovery:
+	case AccessTypeELB, AccessTypeServiveDiscovery:
 		return nil
 	default:
 		return fmt.Errorf("invalid accessType: %s", in.AccessType)
