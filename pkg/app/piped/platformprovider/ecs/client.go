@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -461,6 +462,19 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 		return fmt.Errorf("invalid listener configuration: requires 2 target groups")
 	}
 
+	// Describe the rule to get current actions
+	describelistenerOutput, err := c.elbClient.DescribeRules(ctx, &elasticloadbalancingv2.DescribeRulesInput{
+		RuleArns: listenerArns,
+	})
+	if err != nil {
+		return fmt.Errorf("error describing listener %v: %w", strings.Join(listenerArns, ", "), err)
+	}
+
+	// No rules found, nothing to modify
+	if len(describelistenerOutput.Rules) == 0 {
+		return fmt.Errorf("no listener found for ARN: %s", strings.Join(listenerArns, ", "))
+	}
+
 	modifyListener := func(ctx context.Context, listenerArn string) error {
 		input := &elasticloadbalancingv2.ModifyListenerInput{
 			ListenerArn: aws.String(listenerArn),
@@ -487,8 +501,16 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 	}
 
 	for _, listener := range listenerArns {
-		if err := modifyListener(ctx, listener); err != nil {
-			return err
+		// Check if the current action type is forward
+		for _, rule := range describelistenerOutput.Rules {
+			for _, action := range rule.Actions {
+				if action.Type == elbtypes.ActionTypeEnumForward {
+					// Call modifyListenerRule only if action type is forward
+					if err := modifyListener(ctx, listener); err != nil {
+						return err
+					}
+				}
+			}
 		}
 	}
 	return nil
@@ -497,6 +519,19 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 func (c *client) ModifyRules(ctx context.Context, listenerRuleArns []string, routingTrafficCfg RoutingTrafficConfig) error {
 	if len(routingTrafficCfg) != 2 {
 		return fmt.Errorf("invalid listener configuration: requires 2 target groups")
+	}
+
+	// Describe the rule to get current actions
+	describeRulesOutput, err := c.elbClient.DescribeRules(ctx, &elasticloadbalancingv2.DescribeRulesInput{
+		RuleArns: listenerRuleArns,
+	})
+	if err != nil {
+		return fmt.Errorf("error describing listener rule %v: %w", strings.Join(listenerRuleArns, ", "), err)
+	}
+
+	// No rules found, nothing to modify
+	if len(describeRulesOutput.Rules) == 0 {
+		return fmt.Errorf("no rules found for ARN: %s", strings.Join(listenerRuleArns, ", "))
 	}
 
 	modifyListenerRule := func(ctx context.Context, listenerRuleArn string) error {
@@ -525,19 +560,6 @@ func (c *client) ModifyRules(ctx context.Context, listenerRuleArns []string, rou
 	}
 
 	for _, ruleArn := range listenerRuleArns {
-		// Describe the rule to get current actions
-		describeRulesOutput, err := c.elbClient.DescribeRules(ctx, &elasticloadbalancingv2.DescribeRulesInput{
-			RuleArns: []string{ruleArn},
-		})
-		if err != nil {
-			return fmt.Errorf("error describing listener rule %v: %w", ruleArn, err)
-		}
-
-		// No rules found, nothing to modify
-		if len(describeRulesOutput.Rules) == 0 {
-			return fmt.Errorf("no rules found for ARN: %s", ruleArn)
-		}
-
 		// Check if the current action type is forward
 		for _, rule := range describeRulesOutput.Rules {
 			for _, action := range rule.Actions {
@@ -546,8 +568,6 @@ func (c *client) ModifyRules(ctx context.Context, listenerRuleArns []string, rou
 					if err := modifyListenerRule(ctx, ruleArn); err != nil {
 						return err
 					}
-					// Break the loop once the modify function is called for the rule
-					break
 				}
 			}
 		}
