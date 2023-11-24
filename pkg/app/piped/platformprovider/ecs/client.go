@@ -494,7 +494,7 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 	return nil
 }
 
-func (c *client) ModifyListenerOrRule(ctx context.Context, listenerRuleArns []string, routingTrafficCfg RoutingTrafficConfig) error {
+func (c *client) ModifyRules(ctx context.Context, listenerRuleArns []string, routingTrafficCfg RoutingTrafficConfig) error {
 	if len(routingTrafficCfg) != 2 {
 		return fmt.Errorf("invalid listener configuration: requires 2 target groups")
 	}
