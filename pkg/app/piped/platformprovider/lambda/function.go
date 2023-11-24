@@ -103,7 +103,7 @@ func (fmp FunctionManifestSpec) validate() error {
 			return fmt.Errorf("architecture is invalid: %w", err)
 		}
 	}
-	if fmp.EphemeralStorage != nil && fmp.EphemeralStorage.Size != 0 {
+	if fmp.EphemeralStorage != nil {
 		if err := fmp.EphemeralStorage.validate(); err != nil {
 			return fmt.Errorf("ephemeral storage is invalid: %w", err)
 		}
