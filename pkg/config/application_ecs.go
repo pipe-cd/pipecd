@@ -21,7 +21,7 @@ import (
 
 const (
 	AccessTypeELB              string = "ELB"
-	AccessTypeServiveDiscovery string = "SERVICE_DISCOVERY"
+	AccessTypeServiceDiscovery string = "SERVICE_DISCOVERY"
 )
 
 // ECSApplicationSpec represents an application configuration for ECS application.
@@ -145,7 +145,7 @@ func (opts ECSTrafficRoutingStageOptions) Percentage() (primary, canary int) {
 
 func (in *ECSDeploymentInput) validateAccessType() error {
 	switch in.AccessType {
-	case AccessTypeELB, AccessTypeServiveDiscovery:
+	case AccessTypeELB, AccessTypeServiceDiscovery:
 		return nil
 	default:
 		return fmt.Errorf("invalid accessType: %s", in.AccessType)
