@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/config"
