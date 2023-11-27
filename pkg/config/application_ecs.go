@@ -39,7 +39,7 @@ func (s *ECSApplicationSpec) Validate() error {
 		return err
 	}
 
-	if err := s.Input.validateAccessType(); err != nil {
+	if err := s.Input.validate(); err != nil {
 		return err
 	}
 
@@ -143,11 +143,12 @@ func (opts ECSTrafficRoutingStageOptions) Percentage() (primary, canary int) {
 	return
 }
 
-func (in *ECSDeploymentInput) validateAccessType() error {
+func (in *ECSDeploymentInput) validate() error {
 	switch in.AccessType {
 	case AccessTypeELB, AccessTypeServiceDiscovery:
-		return nil
+		break
 	default:
 		return fmt.Errorf("invalid accessType: %s", in.AccessType)
 	}
+	return nil
 }
