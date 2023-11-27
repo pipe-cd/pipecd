@@ -16,6 +16,12 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
+)
+
+const (
+	AccessTypeELB              string = "ELB"
+	AccessTypeServiceDiscovery string = "SERVICE_DISCOVERY"
 )
 
 // ECSApplicationSpec represents an application configuration for ECS application.
@@ -32,6 +38,11 @@ func (s *ECSApplicationSpec) Validate() error {
 	if err := s.GenericApplicationSpec.Validate(); err != nil {
 		return err
 	}
+
+	if err := s.Input.validate(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -57,10 +68,20 @@ type ECSDeploymentInput struct {
 	// Run standalone task during deployment.
 	// Default is true.
 	RunStandaloneTask *bool `json:"runStandaloneTask" default:"true"`
+	// How the ECS service is accessed.
+	// Possible values are:
+	//  - ELB -  The service is accessed via ELB and target groups.
+	//  - SERVICE_DISCOVERY -  The service is accessed via ECS Service Discovery.
+	// Default is ELB.
+	AccessType string `json:"accessType" default:"ELB"`
 }
 
 func (in *ECSDeploymentInput) IsStandaloneTask() bool {
 	return in.ServiceDefinitionFile == ""
+}
+
+func (in *ECSDeploymentInput) IsAccessedViaELB() bool {
+	return in.AccessType == AccessTypeELB
 }
 
 type ECSVpcConfiguration struct {
@@ -120,4 +141,14 @@ func (opts ECSTrafficRoutingStageOptions) Percentage() (primary, canary int) {
 	primary = 100
 	canary = 0
 	return
+}
+
+func (in *ECSDeploymentInput) validate() error {
+	switch in.AccessType {
+	case AccessTypeELB, AccessTypeServiceDiscovery:
+		break
+	default:
+		return fmt.Errorf("invalid accessType: %s", in.AccessType)
+	}
+	return nil
 }
