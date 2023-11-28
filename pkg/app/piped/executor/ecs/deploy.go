@@ -126,16 +126,27 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	primary, _, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
-	if !ok {
-		return model.StageStatus_STAGE_FAILURE
-	}
-	if primary == nil {
-		e.LogPersister.Error("Primary target group is required to enable rolling out PRIMARY variant")
-		return model.StageStatus_STAGE_FAILURE
-	}
+	switch e.appCfg.Input.AccessType {
+	case config.AccessTypeELB:
+		primary, _, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
+		if !ok {
+			return model.StageStatus_STAGE_FAILURE
+		}
+		if primary == nil {
+			e.LogPersister.Error("Primary target group is required to enable rolling out PRIMARY variant")
+			return model.StageStatus_STAGE_FAILURE
+		}
 
-	if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary) {
+		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary) {
+			return model.StageStatus_STAGE_FAILURE
+		}
+	case config.AccessTypeServiceDiscovery:
+		// Target groups are not used.
+		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, nil) {
+			return model.StageStatus_STAGE_FAILURE
+		}
+	default:
+		e.LogPersister.Errorf("Unsupported access type %s in stage %s for ECS application", e.appCfg.Input.AccessType, e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
