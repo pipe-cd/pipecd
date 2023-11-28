@@ -86,6 +86,8 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
+	// Even if target groups are not found, we can continue to rollback.
+	// So the accessType does not matter here.
 
 	if !rollback(ctx, &e.Input, platformProviderName, platformProviderCfg, taskDefinition, serviceDefinition, primary, canary) {
 		return model.StageStatus_STAGE_FAILURE
