@@ -161,7 +161,7 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 		}
 
 		if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
-			in.LogPersister.Errorf("Failed to routing traffic to PRIMARY variant: %v", err)
+			in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
 			return false
 		}
 	}

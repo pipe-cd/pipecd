@@ -437,11 +437,21 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 		return fmt.Errorf("invalid listener configuration: requires 2 target groups")
 	}
 
-	modifyListener := func(ctx context.Context, listenerArn string) error {
-		input := &elasticloadbalancingv2.ModifyListenerInput{
-			ListenerArn: aws.String(listenerArn),
-			DefaultActions: []elbtypes.Action{
-				{
+	for _, listenerArn := range listenerArns {
+		// Describe the listener to get the current actions
+		describeListenersOutput, err := c.elbClient.DescribeListeners(ctx, &elasticloadbalancingv2.DescribeListenersInput{
+			ListenerArns: []string{listenerArn},
+		})
+		if err != nil {
+			return fmt.Errorf("error describing listener %s: %w", listenerArn, err)
+		}
+
+		// Prepare the actions to be modified
+		var modifiedActions []elbtypes.Action
+		for _, action := range describeListenersOutput.Listeners[0].DefaultActions {
+			if action.Type == elbtypes.ActionTypeEnumForward {
+				// Modify only the forward action
+				modifiedAction := elbtypes.Action{
 					Type: elbtypes.ActionTypeEnumForward,
 					ForwardConfig: &elbtypes.ForwardActionConfig{
 						TargetGroups: []elbtypes.TargetGroupTuple{
@@ -455,16 +465,21 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 							},
 						},
 					},
-				},
-			},
+				}
+				modifiedActions = append(modifiedActions, modifiedAction)
+			} else {
+				// Keep other actions unchanged
+				modifiedActions = append(modifiedActions, action)
+			}
 		}
-		_, err := c.elbClient.ModifyListener(ctx, input)
-		return err
-	}
 
-	for _, listener := range listenerArns {
-		if err := modifyListener(ctx, listener); err != nil {
-			return err
+		// Modify the listener
+		_, err = c.elbClient.ModifyListener(ctx, &elasticloadbalancingv2.ModifyListenerInput{
+			ListenerArn:    aws.String(listenerArn),
+			DefaultActions: modifiedActions,
+		})
+		if err != nil {
+			return fmt.Errorf("error modifying listener %s: %w", listenerArn, err)
 		}
 	}
 	return nil
