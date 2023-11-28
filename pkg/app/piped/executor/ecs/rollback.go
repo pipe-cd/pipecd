@@ -158,21 +158,6 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 			return false
 		}
 
-		currListenerRuleArns, err := client.GetListenerRuleArns(ctx, currListenerArns)
-		if err != nil {
-			in.LogPersister.Errorf("Failed to get current active listener rule: %v", err)
-			return false
-		}
-
-		if len(currListenerRuleArns) > 0 {
-			if err := client.ModifyRules(ctx, currListenerRuleArns, routingTrafficCfg); err != nil {
-				in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
-				return false
-			}
-
-			return true
-		}
-
 		if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
 			in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
 			return false
