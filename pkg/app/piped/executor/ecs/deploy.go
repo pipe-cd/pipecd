@@ -152,16 +152,27 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	_, canary, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
-	if !ok {
-		return model.StageStatus_STAGE_FAILURE
-	}
-	if canary == nil {
-		e.LogPersister.Error("Canary target group is required to enable rolling out CANARY variant")
-		return model.StageStatus_STAGE_FAILURE
-	}
+	switch e.appCfg.Input.AccessType {
+	case config.AccessTypeELB:
+		_, canary, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
+		if !ok {
+			return model.StageStatus_STAGE_FAILURE
+		}
+		if canary == nil {
+			e.LogPersister.Error("Canary target group is required to enable rolling out CANARY variant")
+			return model.StageStatus_STAGE_FAILURE
+		}
 
-	if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, canary) {
+		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, canary) {
+			return model.StageStatus_STAGE_FAILURE
+		}
+	case config.AccessTypeServiceDiscovery:
+		// Target groups are not used.
+		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, nil) {
+			return model.StageStatus_STAGE_FAILURE
+		}
+	default:
+		e.LogPersister.Errorf("Unsupported access type %s in stage %s for ECS application", e.appCfg.Input.AccessType, e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
