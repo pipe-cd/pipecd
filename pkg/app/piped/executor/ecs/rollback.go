@@ -118,6 +118,9 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 		return false
 	}
 
+	// ECS UpdateService() does not put or return tags, but new taskSet needs to be tagged as managed by pipecd.
+	service.Tags = serviceDefinition.Tags
+
 	// Get current PRIMARY/ACTIVE task set.
 	prevTaskSets, err := client.GetServiceTaskSets(ctx, *service)
 	// Ignore error in case it's not found error, the prevTaskSets doesn't exist for newly created Service.
