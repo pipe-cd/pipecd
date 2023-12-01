@@ -111,15 +111,12 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 		return false
 	}
 
-	// Rollback ECS service configuration to previous state.
-	service, err := client.UpdateService(ctx, serviceDefinition)
+	// Rollback ECS service configuration to previous state including commit-hash of the tag.
+	service, err := applyServiceDefinition(ctx, client, serviceDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to rollback ECS service %s configuration to previous stage: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
-
-	// ECS UpdateService() does not put or return tags, but new taskSet needs to be tagged as managed by pipecd.
-	service.Tags = serviceDefinition.Tags
 
 	// Get current PRIMARY/ACTIVE task set.
 	prevTaskSets, err := client.GetServiceTaskSets(ctx, *service)
