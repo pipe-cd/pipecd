@@ -34,6 +34,10 @@ spec:
     app: simple
   environments:
     FOO: bar
+  # ephemeralStorage is optional value. If you define a ephemeral storage to lambda, you can
+  # use this field. The value must be in between 512 to 10240 MB.
+  ephemeralStorage:
+    size: 512
   # vpcConfig is optional value. If you define a vpc configuration to lambda, you can
   # use this field.
   vpcConfig:
