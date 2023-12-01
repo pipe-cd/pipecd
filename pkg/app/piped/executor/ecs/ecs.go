@@ -258,7 +258,7 @@ func deleteOldTaskSets(ctx context.Context, client provider.Client, service type
 
 	// Remove old taskSets except PRIMARY if exist.
 	for _, prevTaskSet := range prevTaskSets {
-		if *prevTaskSet.Status != "PRIMARY" {
+		if *prevTaskSet.Status != "PRIMARY" && provider.IsPipeCDManagedTaskSet(prevTaskSet) {
 			if err = client.DeleteTaskSet(ctx, *prevTaskSet); err != nil {
 				return err
 			}
