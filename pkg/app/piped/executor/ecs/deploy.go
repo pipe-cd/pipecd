@@ -191,7 +191,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 }
 
 func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
-	// Traffic Routing is not supported for ECS Service Discovery.
+	// Traffic Routing is not supported for other kinds than ELB.
 	if !e.appCfg.Input.IsAccessedViaELB() {
 		e.LogPersister.Errorf("Unsupported access type %s in stage %s for ECS application", e.appCfg.Input.AccessType, e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
