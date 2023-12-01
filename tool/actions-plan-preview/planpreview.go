@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/shurcooL/githubv4"
 	"log"
 	"os"
 	"os/exec"
@@ -330,4 +331,28 @@ func generateTerraformShortPlanDetails(details string) (string, error) {
 		return "", err
 	}
 	return details[start:], nil
+}
+
+func minimizePreviousComment(ctx context.Context, ghGraphQLClient *githubv4.Client, event *githubEvent) {
+	// Find comments we sent before
+	comment, err := findLatestPlanPreviewComment(ctx, ghGraphQLClient, event.Owner, event.Repo, event.PRNumber)
+	if err != nil {
+		log.Printf("Unable to find the previous comment to minimize (%v)\n", err)
+	}
+
+	if comment == nil {
+		return
+	}
+
+	if bool(comment.IsMinimized) {
+		log.Printf("Previous plan-preview comment has already minimized. So don't minimize anything\n")
+		return
+	}
+
+	if err := minimizeComment(ctx, ghGraphQLClient, comment.ID, "OUTDATED"); err != nil {
+		log.Printf("warning: cannot minimize comment: %s\n", err.Error())
+		return
+	}
+
+	log.Printf("Successfully minimized last plan-preview result on pull request\n")
 }
