@@ -249,6 +249,24 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	return nil
 }
 
+func deleteOldTaskSets(ctx context.Context, client provider.Client, service types.Service) error {
+	// Get current PRIMARY/ACTIVE task sets.
+	prevTaskSets, err := client.GetServiceTaskSets(ctx, service)
+	if err != nil {
+		return err
+	}
+
+	// Remove old taskSets except PRIMARY if exist.
+	for _, prevTaskSet := range prevTaskSets {
+		if *prevTaskSet.Status != "PRIMARY" {
+			if err = client.DeleteTaskSet(ctx, *prevTaskSet); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func sync(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, recreate bool, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
@@ -267,6 +285,13 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 	service, err := applyServiceDefinition(ctx, client, serviceDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply service %s: %v", *serviceDefinition.ServiceName, err)
+		return false
+	}
+
+	in.LogPersister.Infof("Start deleting old taskSets except PRIMARY if exist")
+	err = deleteOldTaskSets(ctx, client, serviceDefinition)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to delete old taskSets %s: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
 
