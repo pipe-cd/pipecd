@@ -111,8 +111,8 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 		return false
 	}
 
-	// Rollback ECS service configuration to previous state.
-	service, err := client.UpdateService(ctx, serviceDefinition)
+	// Rollback ECS service configuration to previous state including commit-hash of the tag.
+	service, err := applyServiceDefinition(ctx, client, serviceDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to rollback ECS service %s configuration to previous stage: %v", *serviceDefinition.ServiceName, err)
 		return false
