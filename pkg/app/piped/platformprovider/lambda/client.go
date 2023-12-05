@@ -127,7 +127,9 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 		input.Architectures = architectures
 	}
 	if fm.Spec.EphemeralStorage != nil {
-		input.EphemeralStorage.Size = aws.Int32(fm.Spec.EphemeralStorage.Size)
+		input.EphemeralStorage = &types.EphemeralStorage{
+			Size: aws.Int32(fm.Spec.EphemeralStorage.Size),
+		}
 	}
 	if fm.Spec.VPCConfig != nil {
 		input.VpcConfig = &types.VpcConfig{
@@ -183,7 +185,9 @@ func (c *client) CreateFunctionFromSource(ctx context.Context, fm FunctionManife
 		},
 	}
 	if fm.Spec.EphemeralStorage != nil {
-		input.EphemeralStorage.Size = aws.Int32(fm.Spec.EphemeralStorage.Size)
+		input.EphemeralStorage = &types.EphemeralStorage{
+			Size: aws.Int32(fm.Spec.EphemeralStorage.Size),
+		}
 	}
 	_, err = c.client.CreateFunction(ctx, input)
 	if err != nil {
@@ -284,7 +288,9 @@ func (c *client) updateFunctionConfiguration(ctx context.Context, fm FunctionMan
 			configInput.Handler = aws.String(fm.Spec.Handler)
 		}
 		if fm.Spec.EphemeralStorage != nil {
-			configInput.EphemeralStorage.Size = aws.Int32(fm.Spec.EphemeralStorage.Size)
+			configInput.EphemeralStorage = &types.EphemeralStorage{
+				Size: aws.Int32(fm.Spec.EphemeralStorage.Size),
+			}
 		}
 		if fm.Spec.VPCConfig != nil {
 			configInput.VpcConfig = &types.VpcConfig{
