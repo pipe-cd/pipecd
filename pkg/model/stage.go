@@ -27,6 +27,9 @@ const (
 	// StageAnalysis represents the waiting state for analysing
 	// the application status based on metrics, log, http request...
 	StageAnalysis Stage = "ANALYSIS"
+	// StageScriptRun represents a state where
+	// the specified script will be executed.
+	StageScriptRun Stage = "SCRIPT_RUN"
 
 	// StageK8sSync represents the state where
 	// all resources should be synced with the Git state.

@@ -225,6 +225,7 @@ type PipelineStage struct {
 	WaitStageOptions         *WaitStageOptions
 	WaitApprovalStageOptions *WaitApprovalStageOptions
 	AnalysisStageOptions     *AnalysisStageOptions
+	ScriptRunStageOptions    *ScriptRunStageOptions
 
 	K8sPrimaryRolloutStageOptions  *K8sPrimaryRolloutStageOptions
 	K8sCanaryRolloutStageOptions   *K8sCanaryRolloutStageOptions
@@ -291,6 +292,12 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.AnalysisStageOptions)
 		}
+	case model.StageScriptRun:
+		s.ScriptRunStageOptions = &ScriptRunStageOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.ScriptRunStageOptions)
+		}
+
 	case model.StageK8sPrimaryRollout:
 		s.K8sPrimaryRolloutStageOptions = &K8sPrimaryRolloutStageOptions{}
 		if len(gs.With) > 0 {
@@ -481,6 +488,21 @@ func (a *AnalysisStageOptions) Validate() error {
 		if err := h.AnalysisHTTP.Validate(); err != nil {
 			return fmt.Errorf("one of http configurations of ANALYSIS stage is invalid: %w", err)
 		}
+	}
+	return nil
+}
+
+// ScriptRunStageOptions contains all configurable values for a SCRIPT_RUN stage.
+type ScriptRunStageOptions struct {
+	Env        map[string]string `json:"env"`
+	Run        string            `json:"run"`
+	OnRollback string            `json:"onRollback"`
+}
+
+// Validate checks the required fields of ScriptRunStageOptions.
+func (s *ScriptRunStageOptions) Validate() error {
+	if s.Run == "" {
+		return fmt.Errorf("SCRIPT_RUN stage requires run field")
 	}
 	return nil
 }
