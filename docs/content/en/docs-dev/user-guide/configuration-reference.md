@@ -44,7 +44,8 @@ spec:
 
 Kubernetes resources can be managed by some annotations provided by PipeCD.
 
-| Annotation key | Target resource(es) | Possible values | Description |
+| Annotation key | Target resource(s) | Possible values | Description |
+|-|-|-|-|
 | `pipecd.dev/ignore-drift-detection` | any | "true" | Whether the drift detection should ignore this resource. |
 | `pipecd.dev/server-side-apply` | any | "true" | Use server side apply instead of client side apply. |
 
