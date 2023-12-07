@@ -68,6 +68,9 @@ func (h *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespac
 	}
 
 	if opts != nil {
+		for k, v := range opts.SetValues {
+			args = append(args, "--set", fmt.Sprintf("%s=%s", k, v))
+		}
 		for _, v := range opts.ValueFiles {
 			if err := verifyHelmValueFilePath(appDir, v); err != nil {
 				h.logger.Error("failed to verify values file path", zap.Error(err))
@@ -163,6 +166,9 @@ func (h *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 	}
 
 	if opts != nil {
+		for k, v := range opts.SetValues {
+			args = append(args, "--set", fmt.Sprintf("%s=%s", k, v))
+		}
 		for _, v := range opts.ValueFiles {
 			if err := verifyHelmValueFilePath(appDir, v); err != nil {
 				h.logger.Error("failed to verify values file path", zap.Error(err))
@@ -292,6 +298,9 @@ func (h *Helm) UpgradeLocalChart(ctx context.Context, appName, appDir, namespace
 	}
 
 	if opts != nil {
+		for k, v := range opts.SetValues {
+			args = append(args, "--set", fmt.Sprintf("%s=%s", k, v))
+		}
 		for _, v := range opts.ValueFiles {
 			if err := verifyHelmValueFilePath(appDir, v); err != nil {
 				h.logger.Error("failed to verify values file path", zap.Error(err))
@@ -365,6 +374,9 @@ func (h *Helm) UpgradeRemoteChart(ctx context.Context, appName, appDir, namespac
 	}
 
 	if opts != nil {
+		for k, v := range opts.SetValues {
+			args = append(args, "--set", fmt.Sprintf("%s=%s", k, v))
+		}
 		for _, v := range opts.ValueFiles {
 			if err := verifyHelmValueFilePath(appDir, v); err != nil {
 				h.logger.Error("failed to verify values file path", zap.Error(err))
