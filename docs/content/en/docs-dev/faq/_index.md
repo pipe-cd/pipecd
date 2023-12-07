@@ -61,3 +61,8 @@ You can create a new Piped key. Go to the `Piped` tab at `Settings` page, and cl
 ### 8. Is it open source?
 
 Yes, PipeCD is fully open source project with APACHE LICENSE, VERSION 2.0!!
+
+### 9. How should I investigate high CPU usage or memory usage in piped, or when OOM occurs?
+
+If you're noticing high CPU usage, memory usage, or facing OOM issues in Piped, you can use the built-in support for `pprof`, a tool for visualization and analysis of profiling data.  
+`pprof` can help you identify the parts of your application that are consuming the most resources. For more detailed information and examples of how to use `pprof` in Piped, please refer to our [Using Pprof in Piped guide](../managing-piped/using-pprof-in-piped).
