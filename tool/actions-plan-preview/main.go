@@ -147,7 +147,7 @@ func main() {
 		body := makeCommentBody(event, result)
 		doComment(body)
 
-		log.Printf("Successfully minimized last plan-preview result on pull request\n")
+		log.Println("Successfully minimized last plan-preview result on pull request")
 		log.Println("plan-preview result has error")
 		os.Exit(1)
 	}

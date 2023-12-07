@@ -345,7 +345,7 @@ func minimizePreviousComment(ctx context.Context, ghGraphQLClient *githubv4.Clie
 	}
 
 	if bool(comment.IsMinimized) {
-		log.Printf("Previous plan-preview comment has already minimized. So don't minimize anything\n")
+		log.Println("Previous plan-preview comment has already minimized. So don't minimize anything")
 		return
 	}
 
@@ -354,5 +354,5 @@ func minimizePreviousComment(ctx context.Context, ghGraphQLClient *githubv4.Clie
 		return
 	}
 
-	log.Printf("Successfully minimized last plan-preview result on pull request\n")
+	log.Println("Successfully minimized last plan-preview result on pull request")
 }
