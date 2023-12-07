@@ -1,0 +1,31 @@
+apiVersion: pipecd.dev/v1beta1
+kind: ECSApp
+spec:
+  name: servicediscovery-canary
+  labels:
+    env: example
+    team: xyz
+  input:
+    serviceDefinitionFile: servicedef.yaml
+    taskDefinitionFile: taskdef.yaml
+    # When you use ECS Service Discovery for interservice networking, you must specify 'SERVICE_DISCOVERY' for 'accessType'.
+    accessType: SERVICE_DISCOVERY 
+    # 'targetGroups' is not used in Service Discovery type.
+  pipeline:
+    stages:
+      # Rollout CANARY variant's workload.
+      # scale represents the percentage of workload will be rolled out,
+      # in this case 30% of the current PRIMARY variant's workload is set.
+      # Note: Rolled out variant DOES serve traffic at this time unlike the ELB type.
+      - name: ECS_CANARY_ROLLOUT
+        with:
+          scale: 100
+      # Hold the deployment process for 150 seconds.
+      - name: WAIT
+        with:
+          duration: 150s
+      # Update the workload of PRIMARY variant to the new version.
+      # NOTE: The new PRIMARY variant will serve 100% of the traffic at this time.
+      - name: ECS_PRIMARY_ROLLOUT
+      # Destroy all workloads of CANARY variant.
+      - name: ECS_CANARY_CLEAN

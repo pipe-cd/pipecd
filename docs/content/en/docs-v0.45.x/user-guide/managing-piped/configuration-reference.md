@@ -89,7 +89,7 @@ This field is deprecated, please use [PlatformProvider](#platformprovider) inste
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The name of the platform provider. | Yes |
-| type | string | The platform provider type. Must be one of the following values:<br>`KUBERNETES`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`. | Yes |
+| type | string | The platform provider type. Must be one of the following values:<br>`KUBERNETES`, `TERRAFORM`, `ECS`, `CLOUDRUN`, `LAMBDA`. | Yes |
 | config | [PlatformProviderConfig](#platformproviderconfig) | Specific configuration for the specified type of platform provider. | No |
 
 ## PlatformProviderConfig

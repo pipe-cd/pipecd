@@ -477,6 +477,7 @@ Note: The available values are identical to those found in the aws-sdk-go-v2 Typ
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| recreate | bool | Whether to delete old tasksets before creating new ones or not. Default to false. | No |
 
 ## AnalysisMetrics
 

@@ -240,6 +240,8 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	}
 
 	// Remove old taskSets if existed.
+	// HACK: All old task sets including canary are deleted here.
+	//       However, we need to discuss whether we should delete the canary here or in later stage(CanaryClean).
 	for _, prevTaskSet := range prevTaskSets {
 		if err = client.DeleteTaskSet(ctx, *prevTaskSet); err != nil {
 			return err

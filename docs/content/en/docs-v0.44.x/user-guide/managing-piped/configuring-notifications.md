@@ -52,7 +52,7 @@ spec:
       - name: prod-slack
         events:
           - DEPLOYMENT_TRIGGERED
-          - DEPLOYMENT_COMPLETED
+          - DEPLOYMENT_SUCCEEDED
         labels:
           env: prod
           team: pipecd

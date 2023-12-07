@@ -189,7 +189,7 @@ func TestPipedConfig(t *testing.T) {
 							Labels: map[string]string{
 								"env": "dev",
 							},
-							Events:   []string{"DEPLOYMENT_TRIGGERED", "DEPLOYMENT_COMPLETED"},
+							Events:   []string{"DEPLOYMENT_TRIGGERED", "DEPLOYMENT_SUCCEEDED"},
 							Receiver: "prod-slack-channel",
 						},
 						{
@@ -1018,7 +1018,7 @@ func TestPipedSpecClone(t *testing.T) {
 							Labels: map[string]string{
 								"env": "dev",
 							},
-							Events:   []string{"DEPLOYMENT_TRIGGERED", "DEPLOYMENT_COMPLETED"},
+							Events:   []string{"DEPLOYMENT_TRIGGERED", "DEPLOYMENT_SUCCEEDED"},
 							Receiver: "prod-slack-channel",
 						},
 						{
@@ -1215,7 +1215,7 @@ func TestPipedSpecClone(t *testing.T) {
 							Labels: map[string]string{
 								"env": "dev",
 							},
-							Events:   []string{"DEPLOYMENT_TRIGGERED", "DEPLOYMENT_COMPLETED"},
+							Events:   []string{"DEPLOYMENT_TRIGGERED", "DEPLOYMENT_SUCCEEDED"},
 							Receiver: "prod-slack-channel",
 						},
 						{
