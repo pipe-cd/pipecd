@@ -1,4 +1,4 @@
-name: publish
+name: publish_image_chart
 
 on:
   push:
@@ -103,7 +103,7 @@ jobs:
 
       # Building and pushing container images.
       - name: Build and push ${{ matrix.image }} image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 #v5.0.0
         with:
           push: true
           context: .
