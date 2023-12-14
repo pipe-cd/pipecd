@@ -37,11 +37,11 @@ jobs:
           - image: helloworld
           - image: launcher
           - image: launcher-okd
-            okd: okd
+            okd: -okd
           - image: pipecd
           - image: piped
           - image: piped-okd
-            okd: okd
+            okd: -okd
           - image: pipectl
         exclude:
           - image: launcher-okd
@@ -114,7 +114,7 @@ jobs:
         with:
           push: true
           context: .
-          file: cmd/${{ matrix.image }}/Dockerfile-${{ matrix.okd }}
+          file: cmd/${{ matrix.image }}/Dockerfile${{ matrix.okd }}
           platforms: linux/amd64,linux/arm64
           tags: ${{ matrix.container_registry }}/${{ matrix.image }}:${{ env.PIPECD_VERSION }}
       
