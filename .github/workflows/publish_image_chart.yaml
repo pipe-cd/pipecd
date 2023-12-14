@@ -23,8 +23,8 @@ jobs:
     strategy:
       matrix:
         container_registry:
-          - ghcr.io
-          - gcr.io
+          - ghcr.io/pipe-cd
+          - gcr.io/pipecd
         image:
           - helloworld
           - launcher
@@ -35,28 +35,23 @@ jobs:
           - pipectl
         include:
           - image: helloworld
-            dockerfile: cmd/helloworld/Dockerfile
           - image: launcher
-            dockerfile: cmd/launcher/Dockerfile
           - image: launcher-okd
-            dockerfile: cmd/launcher/Dockerfile-okd
+            okd: -okd
           - image: pipecd
-            dockerfile: cmd/pipecd/Dockerfile
           - image: piped
-            dockerfile: cmd/piped/Dockerfile
           - image: piped-okd
-            dockerfile: cmd/piped/Dockerfile-okd
+            okd: -okd
           - image: pipectl
-            dockerfile: cmd/pipectl/Dockerfile
         exclude:
           - image: launcher-okd
-            container_registry: gcr.io
+            container_registry: gcr.io/pipecd
           - image: piped
-            container_registry: gcr.io
+            container_registry: gcr.io/pipecd
           - image: piped-okd
-            container_registry: gcr.io
+            container_registry: gcr.io/pipecd
           - image: pipectl
-            container_registry: gcr.io
+            container_registry: gcr.io/pipecd
 
     steps:
       - uses: actions/checkout@v3
@@ -119,9 +114,9 @@ jobs:
         with:
           push: true
           context: .
-          file: ${{ matrix.dockerfile }}
+          file: cmd/${{ matrix.image }}/Dockerfile${{ matrix.okd }}
           platforms: linux/amd64,linux/arm64
-          tags: ${{ matrix.container_registry }}/pipe-cd/${{ matrix.image }}:${{ env.PIPECD_VERSION }}
+          tags: ${{ matrix.container_registry }}/${{ matrix.image }}:${{ env.PIPECD_VERSION }}
       
       # Building and pushing Helm charts.
       - name: Install helm
