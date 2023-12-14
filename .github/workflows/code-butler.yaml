@@ -1,4 +1,4 @@
-name: Code Butler
+name: code_butler
 
 permissions:
   contents: read
