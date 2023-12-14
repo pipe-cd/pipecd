@@ -22,18 +22,6 @@ jobs:
           - piped-base
           - piped-base-okd
           - firestore-emulator
-        include:
-          - image: actions-gh-release
-            context: tool/actions-gh-release
-          - image: actions-plan-preview
-            context: tool/actions-plan-preview
-          - image: codegen
-            context: tool/codegen
-          - image: piped-base
-            context: tool/piped-base
-          - image: piped-base-okd
-            context: tool/piped-base-okd
-          - image: firestore-emulator
     steps:
       - uses: actions/checkout@v3
         with:
@@ -44,5 +32,5 @@ jobs:
       - name: Build ${{ matrix.image }} image
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 #v5.0.0
         with:
-          context: ${{ matrix.context }}
+          context: tool/${{ matrix.image }}
           tags: ${{ env.REGISTRY }}/pipe-cd/${{ matrix.image }}:${{ env.PIPECD_VERSION }}

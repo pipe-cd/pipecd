@@ -22,6 +22,9 @@ jobs:
       packages: write
     strategy:
       matrix:
+        container_registry:
+          - ghcr.io
+          - gcr.io
         image:
           - helloworld
           - launcher
@@ -30,26 +33,30 @@ jobs:
           - piped
           - piped-okd
           - pipectl
-        container_registry:
-          - ghcr.io
         include:
           - image: helloworld
             dockerfile: cmd/helloworld/Dockerfile
-            container_registry: gcr.io
           - image: launcher
             dockerfile: cmd/launcher/Dockerfile
-            container_registry: gcr.io
           - image: launcher-okd
             dockerfile: cmd/launcher/Dockerfile-okd
           - image: pipecd
             dockerfile: cmd/pipecd/Dockerfile
-            container_registry: gcr.io
           - image: piped
             dockerfile: cmd/piped/Dockerfile
           - image: piped-okd
             dockerfile: cmd/piped/Dockerfile-okd
           - image: pipectl
             dockerfile: cmd/pipectl/Dockerfile
+        exclude:
+          - image: launcher-okd
+            container_registry: gcr.io
+          - image: piped
+            container_registry: gcr.io
+          - image: piped-okd
+            container_registry: gcr.io
+          - image: pipectl
+            container_registry: gcr.io
 
     steps:
       - uses: actions/checkout@v3
