@@ -35,14 +35,19 @@ jobs:
           - pipectl
         include:
           - image: helloworld
+            dockerfile: cmd/helloworld/Dockerfile
           - image: launcher
+            dockerfile: cmd/launcher/Dockerfile
           - image: launcher-okd
-            okd: -okd
+            dockerfile: cmd/launcher/Dockerfile-okd
           - image: pipecd
+            dockerfile: cmd/pipecd/Dockerfile
           - image: piped
+            dockerfile: cmd/piped/Dockerfile
           - image: piped-okd
-            okd: -okd
+            dockerfile: cmd/piped/Dockerfile-okd
           - image: pipectl
+            dockerfile: cmd/pipectl/Dockerfile
         exclude:
           - image: launcher-okd
             container_registry: gcr.io/pipecd
@@ -114,7 +119,7 @@ jobs:
         with:
           push: true
           context: .
-          file: cmd/${{ matrix.image }}/Dockerfile${{ matrix.okd }}
+          file: ${{ matrix.dockerfile }}
           platforms: linux/amd64,linux/arm64
           tags: ${{ matrix.container_registry }}/${{ matrix.image }}:${{ env.PIPECD_VERSION }}
       
