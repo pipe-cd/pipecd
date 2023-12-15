@@ -51,7 +51,7 @@ jobs:
         exclude:
           - image: launcher-okd
             container_registry: gcr.io/pipecd
-          - image: piped
+          - image: pipecd
             container_registry: gcr.io/pipecd
           - image: piped-okd
             container_registry: gcr.io/pipecd
