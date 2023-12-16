@@ -87,7 +87,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !rollback(ctx, &e.Input, platformProviderName, platformProviderCfg, taskDefinition, serviceDefinition, primary, canary, appCfg.Input.ListenerRuleArn) {
+	if !rollback(ctx, &e.Input, platformProviderName, platformProviderCfg, taskDefinition, serviceDefinition, primary, canary, appCfg.Input.ListenerRuleSelector) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -103,7 +103,7 @@ func rollback(
 	serviceDefinition types.Service,
 	primaryTargetGroup *types.LoadBalancer,
 	canaryTargetGroup *types.LoadBalancer,
-	lisetenerRuleArn string,
+	listenerRuleSelector *config.ELBListenerRuleSelector,
 ) bool {
 	in.LogPersister.Infof("Start rollback the ECS service and task family: %s and %s to original stage", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
@@ -162,8 +162,9 @@ func rollback(
 			},
 		}
 
-		if lisetenerRuleArn != "" {
-			if err := client.ModifyRule(ctx, lisetenerRuleArn, routingTrafficCfg); err != nil {
+		in.LogPersister.Infof("Start rollback the ELB")
+		if listenerRuleSelector.IsSpecified() {
+			if err := client.ModifyRule(ctx, listenerRuleSelector.ListenerRuleArn, routingTrafficCfg); err != nil {
 				in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
 				return false
 			}

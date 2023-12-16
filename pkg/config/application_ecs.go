@@ -62,9 +62,9 @@ type ECSDeploymentInput struct {
 	TaskDefinitionFile string `json:"taskDefinitionFile" default:"taskdef.json"`
 	// ECSTargetGroups
 	TargetGroups ECSTargetGroups `json:"targetGroups"`
-	// The Arn of the listener rule that the service uses to route traffic to.
-	// If specified, only this rule will be modified during the deployment.
-	ListenerRuleArn string `json:"listenerRuleArn"`
+	// The way to specify the listener rule to modify during the deployment.
+	// If not specified,
+	ListenerRuleSelector *ELBListenerRuleSelector `json:"listenerRuleSelector"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
@@ -96,6 +96,17 @@ type ECSVpcConfiguration struct {
 type ECSTargetGroups struct {
 	Primary json.RawMessage `json:"primary"`
 	Canary  json.RawMessage `json:"canary"`
+}
+
+type ELBListenerRuleSelector struct {
+	// The Arn of the listener rule that the service uses to route traffic to.
+	// If specified, only this rule will be modified during the deployment.
+	ListenerRuleArn string `json:"listenerRuleArn"`
+}
+
+func (s *ELBListenerRuleSelector) IsSpecified() bool {
+	// This logic will be changed when we support other selecting methods such as by path.
+	return s.ListenerRuleArn != ""
 }
 
 // ECSSyncStageOptions contains all configurable values for a ECS_SYNC stage.

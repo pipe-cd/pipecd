@@ -417,7 +417,15 @@ func clean(ctx context.Context, in *executor.Input, platformProviderName string,
 	return true
 }
 
-func routing(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, primaryTargetGroup types.LoadBalancer, canaryTargetGroup types.LoadBalancer, listenerRuleArn string) bool {
+func routing(
+	ctx context.Context,
+	in *executor.Input,
+	platformProviderName string,
+	platformProviderCfg *config.PlatformProviderECSConfig,
+	primaryTargetGroup types.LoadBalancer,
+	canaryTargetGroup types.LoadBalancer,
+	listenerRuleSelector *config.ELBListenerRuleSelector,
+) bool {
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
@@ -450,8 +458,8 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 	}
 
 	// When the listenerRule is specified, we only need to modify that rule.
-	if listenerRuleArn != "" {
-		if err := client.ModifyRule(ctx, listenerRuleArn, routingTrafficCfg); err != nil {
+	if listenerRuleSelector.IsSpecified() {
+		if err := client.ModifyRule(ctx, listenerRuleSelector.ListenerRuleArn, routingTrafficCfg); err != nil {
 			in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
 			return false
 		}
