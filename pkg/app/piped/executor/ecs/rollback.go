@@ -103,7 +103,7 @@ func rollback(
 	serviceDefinition types.Service,
 	primaryTargetGroup *types.LoadBalancer,
 	canaryTargetGroup *types.LoadBalancer,
-	listenerRuleSelector *config.ELBListenerRuleSelector,
+	listenerRuleSelector config.ELBListenerRuleSelector,
 ) bool {
 	in.LogPersister.Infof("Start rollback the ECS service and task family: %s and %s to original stage", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)

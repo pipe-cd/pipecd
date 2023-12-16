@@ -63,8 +63,8 @@ type ECSDeploymentInput struct {
 	// ECSTargetGroups
 	TargetGroups ECSTargetGroups `json:"targetGroups"`
 	// The way to specify the listener rule to modify during the deployment.
-	// If not specified,
-	ListenerRuleSelector *ELBListenerRuleSelector `json:"listenerRuleSelector"`
+	// If not specified, the default action will be changed.
+	ListenerRuleSelector ELBListenerRuleSelector `json:"listenerRuleSelector"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`

@@ -424,7 +424,7 @@ func routing(
 	platformProviderCfg *config.PlatformProviderECSConfig,
 	primaryTargetGroup types.LoadBalancer,
 	canaryTargetGroup types.LoadBalancer,
-	listenerRuleSelector *config.ELBListenerRuleSelector,
+	listenerRuleSelector config.ELBListenerRuleSelector,
 ) bool {
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
