@@ -1,0 +1,13 @@
+apiVersion: pipecd.dev/v1beta1
+kind: ECSApp
+spec:
+  input:
+    serviceDefinitionFile: /path/to/servicedef.yaml
+    taskDefinitionFile: /path/to/taskdef.yaml
+    targetGroups:
+      primary:
+        targetGroupArn: arn:aws:elasticloadbalancing:xyz
+        containerName: web
+        containerPort: 80
+    listenerRuleSelector:
+      listenerRuleArn: arn:aws:elasticloadbalancing:ap-northeast-1:<account-id>:listener-rule/app/<elb-name>/xxx/yyy/zzz
