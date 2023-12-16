@@ -417,7 +417,7 @@ func clean(ctx context.Context, in *executor.Input, platformProviderName string,
 	return true
 }
 
-func routing(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, primaryTargetGroup types.LoadBalancer, canaryTargetGroup types.LoadBalancer) bool {
+func routing(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, primaryTargetGroup types.LoadBalancer, canaryTargetGroup types.LoadBalancer, listenerRuleArn string) bool {
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
@@ -449,28 +449,36 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 		in.Logger.Error("Failed to store traffic routing config to metadata store", zap.Error(err))
 	}
 
-	var currListenerArns []string
-	value, ok := in.MetadataStore.Shared().Get(currentListenersKey)
-	if ok {
-		currListenerArns = strings.Split(value, ",")
-	} else {
-		currListenerArns, err = client.GetListenerArns(ctx, primaryTargetGroup)
-		if err != nil {
-			in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
+	// When the listenerRule is specified, we only need to modify that rule.
+	if listenerRuleArn != "" {
+		if err := client.ModifyRule(ctx, listenerRuleArn, routingTrafficCfg); err != nil {
+			in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
 			return false
 		}
-	}
+	} else {
+		var currListenerArns []string
+		value, ok := in.MetadataStore.Shared().Get(currentListenersKey)
+		if ok {
+			currListenerArns = strings.Split(value, ",")
+		} else {
+			currListenerArns, err = client.GetListenerArns(ctx, primaryTargetGroup)
+			if err != nil {
+				in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
+				return false
+			}
+		}
 
-	// Store created listeners to use later.
-	metadata := strings.Join(currListenerArns, ",")
-	if err := in.MetadataStore.Shared().Put(ctx, currentListenersKey, metadata); err != nil {
-		in.LogPersister.Errorf("Unable to store created listeners to metadata store: %v", err)
-		return false
-	}
+		// Store created listeners to use later.
+		metadata := strings.Join(currListenerArns, ",")
+		if err := in.MetadataStore.Shared().Put(ctx, currentListenersKey, metadata); err != nil {
+			in.LogPersister.Errorf("Unable to store created listeners to metadata store: %v", err)
+			return false
+		}
 
-	if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
-		in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
-		return false
+		if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
+			in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
+			return false
+		}
 	}
 
 	return true

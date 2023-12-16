@@ -62,6 +62,9 @@ type ECSDeploymentInput struct {
 	TaskDefinitionFile string `json:"taskDefinitionFile" default:"taskdef.json"`
 	// ECSTargetGroups
 	TargetGroups ECSTargetGroups `json:"targetGroups"`
+	// The Arn of the listener rule that the service uses to route traffic to.
+	// If specified, only this rule will be modified during the deployment.
+	ListenerRuleArn string `json:"listenerRuleArn"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
