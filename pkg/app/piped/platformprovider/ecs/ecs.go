@@ -60,6 +60,8 @@ type ELB interface {
 	// ModifyListeners modifies the actions of type ActionTypeEnumForward to perform routing traffic
 	// to the given target groups. Other actions won't be modified.
 	ModifyListeners(ctx context.Context, listenerArns []string, routingTrafficCfg RoutingTrafficConfig) error
+	// ModifyRule modifies the specified lisetner rule, not default rule.
+	ModifyRule(ctx context.Context, listenerRuleArn string, routingTrafficCfg RoutingTrafficConfig) error
 }
 
 // Registry holds a pool of aws client wrappers.
