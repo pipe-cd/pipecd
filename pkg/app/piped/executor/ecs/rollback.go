@@ -87,14 +87,24 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !rollback(ctx, &e.Input, platformProviderName, platformProviderCfg, taskDefinition, serviceDefinition, primary, canary) {
+	if !rollback(ctx, &e.Input, platformProviderName, platformProviderCfg, taskDefinition, serviceDefinition, primary, canary, appCfg.Input.ListenerRuleArn) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func rollback(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, primaryTargetGroup *types.LoadBalancer, canaryTargetGroup *types.LoadBalancer) bool {
+func rollback(
+	ctx context.Context,
+	in *executor.Input,
+	platformProviderName string,
+	platformProviderCfg *config.PlatformProviderECSConfig,
+	taskDefinition types.TaskDefinition,
+	serviceDefinition types.Service,
+	primaryTargetGroup *types.LoadBalancer,
+	canaryTargetGroup *types.LoadBalancer,
+	lisetenerRuleArn string,
+) bool {
 	in.LogPersister.Infof("Start rollback the ECS service and task family: %s and %s to original stage", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
@@ -152,15 +162,22 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 			},
 		}
 
-		currListenerArns, err := client.GetListenerArns(ctx, *primaryTargetGroup)
-		if err != nil {
-			in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
-			return false
-		}
+		if lisetenerRuleArn != "" {
+			if err := client.ModifyRule(ctx, lisetenerRuleArn, routingTrafficCfg); err != nil {
+				in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
+				return false
+			}
+		} else {
+			currListenerArns, err := client.GetListenerArns(ctx, *primaryTargetGroup)
+			if err != nil {
+				in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
+				return false
+			}
 
-		if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
-			in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
-			return false
+			if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
+				in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
+				return false
+			}
 		}
 	}
 
