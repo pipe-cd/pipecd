@@ -63,7 +63,7 @@ type ECSDeploymentInput struct {
 	// ECSTargetGroups
 	TargetGroups ECSTargetGroups `json:"targetGroups"`
 	// The way to specify the listener rule to modify during the deployment.
-	// If not specified, the default action will be changed.
+	// If not specified, the default rule will be changed.
 	ListenerRuleSelector ELBListenerRuleSelector `json:"listenerRuleSelector"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
@@ -99,13 +99,13 @@ type ECSTargetGroups struct {
 }
 
 type ELBListenerRuleSelector struct {
-	// The Arn of the listener rule that the service uses to route traffic to.
-	// If specified, only this rule will be modified during the deployment.
+	// The Arns of the listener rules that the service uses to route traffic to.
+	// If specified, these rules will be modified during the deployment.
 	ListenerRuleArns []string `json:"listenerRuleArns"`
 }
 
 func (s *ELBListenerRuleSelector) IsSpecified() bool {
-	// This logic will be changed when we support other selecting methods such as by path.
+	// This logic will be changed when we support other selecting methods such as by path condition.
 	return len(s.ListenerRuleArns) > 0 && s.ListenerRuleArns[0] != ""
 }
 
