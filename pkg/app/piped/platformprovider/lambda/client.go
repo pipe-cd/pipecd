@@ -184,9 +184,22 @@ func (c *client) CreateFunctionFromSource(ctx context.Context, fm FunctionManife
 			Variables: fm.Spec.Environments,
 		},
 	}
+	if len(fm.Spec.Architectures) != 0 {
+		var architectures []types.Architecture
+		for _, arch := range fm.Spec.Architectures {
+			architectures = append(architectures, types.Architecture(arch.Name))
+		}
+		input.Architectures = architectures
+	}
 	if fm.Spec.EphemeralStorage != nil {
 		input.EphemeralStorage = &types.EphemeralStorage{
 			Size: aws.Int32(fm.Spec.EphemeralStorage.Size),
+		}
+	}
+	if fm.Spec.VPCConfig != nil {
+		input.VpcConfig = &types.VpcConfig{
+			SecurityGroupIds: fm.Spec.VPCConfig.SecurityGroupIDs,
+			SubnetIds:        fm.Spec.VPCConfig.SubnetIDs,
 		}
 	}
 	_, err = c.client.CreateFunction(ctx, input)
