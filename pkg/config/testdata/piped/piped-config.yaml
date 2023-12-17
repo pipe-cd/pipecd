@@ -12,9 +12,6 @@ spec:
     username: username
     email: username@email.com
     sshKeyFile: /etc/piped-secret/ssh-key
-    PersonalAccessToken:
-      UserName:  "userName"
-      UserToken: "userToken"
 
   repositories:
     - repoId: repo1
