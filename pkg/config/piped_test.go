@@ -608,9 +608,9 @@ func TestPipedConfigMask(t *testing.T) {
 					HostName:          "foo",
 					SSHKeyFile:        "foo",
 					SSHKeyData:        "foo",
-					PersonalAccessToken: PipedGitPersonalAccessToken{
-						UserName:  "foo",
-						UserToken: "foo",
+					PasswordAuth: PipedGitPasswordAuth{
+						UserName: "foo",
+						Password: "foo",
 					},
 				},
 				Repositories: []PipedRepository{
@@ -775,9 +775,9 @@ func TestPipedConfigMask(t *testing.T) {
 					HostName:          "foo",
 					SSHKeyFile:        maskString,
 					SSHKeyData:        maskString,
-					PersonalAccessToken: PipedGitPersonalAccessToken{
-						UserName:  maskString,
-						UserToken: maskString,
+					PasswordAuth: PipedGitPasswordAuth{
+						UserName: maskString,
+						Password: maskString,
 					},
 				},
 				Repositories: []PipedRepository{
@@ -957,9 +957,9 @@ func TestPipedSpecClone(t *testing.T) {
 					Username:   "username",
 					Email:      "username@email.com",
 					SSHKeyFile: "/etc/piped-secret/ssh-key",
-					PersonalAccessToken: PipedGitPersonalAccessToken{
-						UserName:  "userName",
-						UserToken: "userToken",
+					PasswordAuth: PipedGitPasswordAuth{
+						UserName: "userName",
+						Password: "userToken",
 					},
 				},
 				Repositories: []PipedRepository{
@@ -1158,9 +1158,9 @@ func TestPipedSpecClone(t *testing.T) {
 					Username:   "username",
 					Email:      "username@email.com",
 					SSHKeyFile: "/etc/piped-secret/ssh-key",
-					PersonalAccessToken: PipedGitPersonalAccessToken{
-						UserName:  "userName",
-						UserToken: "userToken",
+					PasswordAuth: PipedGitPasswordAuth{
+						UserName: "userName",
+						Password: "userToken",
 					},
 				},
 				Repositories: []PipedRepository{
@@ -1464,9 +1464,9 @@ func TestPipeGitValidate(t *testing.T) {
 			name: "Both SSH and PAT are not valid",
 			git: PipedGit{
 				SSHKeyData: "sshkey1",
-				PersonalAccessToken: PipedGitPersonalAccessToken{
-					UserName:  "UserName",
-					UserToken: "UserToken",
+				PasswordAuth: PipedGitPasswordAuth{
+					UserName: "UserName",
+					Password: "Password",
 				},
 			},
 			err: errors.New("cannot configure both sshKeyData or sshKeyFile and personalAccessToken"),
@@ -1476,9 +1476,9 @@ func TestPipeGitValidate(t *testing.T) {
 			git: PipedGit{
 				SSHKeyFile: "sshkeyfile",
 				SSHKeyData: "sshkeydata",
-				PersonalAccessToken: PipedGitPersonalAccessToken{
-					UserName:  "",
-					UserToken: "UserToken",
+				PasswordAuth: PipedGitPasswordAuth{
+					UserName: "",
+					Password: "Password",
 				},
 			},
 			err: errors.New("cannot configure both sshKeyData or sshKeyFile and personalAccessToken"),
@@ -1508,9 +1508,9 @@ func TestPipeGitValidate(t *testing.T) {
 		{
 			name: "PAT is valid",
 			git: PipedGit{
-				PersonalAccessToken: PipedGitPersonalAccessToken{
-					UserName:  "UserName",
-					UserToken: "UserToken",
+				PasswordAuth: PipedGitPasswordAuth{
+					UserName: "UserName",
+					Password: "Password",
 				},
 			},
 			err: nil,
@@ -1518,9 +1518,9 @@ func TestPipeGitValidate(t *testing.T) {
 		{
 			name: "PAT username is empty",
 			git: PipedGit{
-				PersonalAccessToken: PipedGitPersonalAccessToken{
-					UserName:  "UserName",
-					UserToken: "",
+				PasswordAuth: PipedGitPasswordAuth{
+					UserName: "UserName",
+					Password: "",
 				},
 			},
 			err: errors.New("both userName and userToken must be set"),
@@ -1528,9 +1528,9 @@ func TestPipeGitValidate(t *testing.T) {
 		{
 			name: "PAT token is empty",
 			git: PipedGit{
-				PersonalAccessToken: PipedGitPersonalAccessToken{
-					UserName:  "",
-					UserToken: "UserToken",
+				PasswordAuth: PipedGitPasswordAuth{
+					UserName: "",
+					Password: "Password",
 				},
 			},
 			err: errors.New("both userName and userToken must be set"),

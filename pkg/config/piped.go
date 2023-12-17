@@ -329,9 +329,9 @@ type PipedGit struct {
 	SSHKeyFile string `json:"sshKeyFile,omitempty"`
 	// Base64 encoded string of ssh-key.
 	SSHKeyData string `json:"sshKeyData,omitempty"`
-	// The personal access token.
+	// The password authentication.
 	// This will be used to clone the source code of the specified git repositories.
-	PersonalAccessToken PipedGitPersonalAccessToken `json:"personalAccessToken,omitempty"`
+	PasswordAuth PipedGitPasswordAuth `json:"passwordAuth,omitempty"`
 }
 
 func (g PipedGit) ShouldConfigureSSHConfig() bool {
@@ -352,10 +352,10 @@ func (g PipedGit) LoadSSHKey() ([]byte, error) {
 }
 
 func (g *PipedGit) Validate() error {
-	patErr := g.PersonalAccessToken.Validate()
-	patFlag := g.PersonalAccessToken.UserName != "" || g.PersonalAccessToken.UserToken != ""
+	patErr := g.PasswordAuth.Validate()
+	patFlag := g.PasswordAuth.UserName != "" || g.PasswordAuth.Password != ""
 	if g.ShouldConfigureSSHConfig() && patFlag {
-		return errors.New("cannot configure both sshKeyData or sshKeyFile and personalAccessToken")
+		return errors.New("cannot configure both sshKeyData or sshKeyFile and password authentication")
 	}
 	if patFlag && patErr != nil {
 		return patErr
@@ -376,22 +376,22 @@ func (g *PipedGit) Mask() {
 	if len(g.SSHKeyData) != 0 {
 		g.SSHKeyData = maskString
 	}
-	if len(g.PersonalAccessToken.UserName) != 0 {
-		g.PersonalAccessToken.UserName = maskString
+	if len(g.PasswordAuth.UserName) != 0 {
+		g.PasswordAuth.UserName = maskString
 	}
-	if len(g.PersonalAccessToken.UserToken) != 0 {
-		g.PersonalAccessToken.UserToken = maskString
+	if len(g.PasswordAuth.Password) != 0 {
+		g.PasswordAuth.Password = maskString
 	}
 }
 
-type PipedGitPersonalAccessToken struct {
-	UserName  string `json:"userName,omitempty"`
-	UserToken string `json:"userToken,omitempty"`
+type PipedGitPasswordAuth struct {
+	UserName string `json:"userName,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
-func (p PipedGitPersonalAccessToken) Validate() error {
-	if p.UserName == "" || p.UserToken == "" {
-		return errors.New("both userName and userToken must be set")
+func (p PipedGitPasswordAuth) Validate() error {
+	if p.UserName == "" || p.Password == "" {
+		return errors.New("both userName and password must be set")
 	}
 	return nil
 }
