@@ -101,12 +101,12 @@ type ECSTargetGroups struct {
 type ELBListenerRuleSelector struct {
 	// The Arn of the listener rule that the service uses to route traffic to.
 	// If specified, only this rule will be modified during the deployment.
-	ListenerRuleArn string `json:"listenerRuleArn"`
+	ListenerRuleArns []string `json:"listenerRuleArns"`
 }
 
 func (s *ELBListenerRuleSelector) IsSpecified() bool {
 	// This logic will be changed when we support other selecting methods such as by path.
-	return s.ListenerRuleArn != ""
+	return len(s.ListenerRuleArns) > 0 && s.ListenerRuleArns[0] != ""
 }
 
 // ECSSyncStageOptions contains all configurable values for a ECS_SYNC stage.

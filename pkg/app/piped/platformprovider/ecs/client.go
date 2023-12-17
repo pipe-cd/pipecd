@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -485,31 +486,58 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 	return nil
 }
 
-func (c *client) ModifyRule(ctx context.Context, listenerRuleArn string, routingTrafficCfg RoutingTrafficConfig) error {
-	input := &elasticloadbalancingv2.ModifyRuleInput{
-		RuleArn: aws.String(listenerRuleArn),
-		Actions: []elbtypes.Action{
-			{
-				Type: elbtypes.ActionTypeEnumForward,
-				ForwardConfig: &elbtypes.ForwardActionConfig{
-					TargetGroups: []elbtypes.TargetGroupTuple{
-						{
-							TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
-							Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
-						},
-						{
-							TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
-							Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
-						},
-					},
-				},
-			},
-		},
+// ModifyRules modifies the forward action of specified listener rules.
+func (c *client) ModifyRules(ctx context.Context, listenerRuleArns []string, routingTrafficCfg RoutingTrafficConfig) error {
+	if len(routingTrafficCfg) != 2 {
+		return fmt.Errorf("invalid listener configuration: requires 2 target groups")
 	}
 
-	if _, err := c.elbClient.ModifyRule(ctx, input); err != nil {
-		return fmt.Errorf("failed to modify the listener rule %s: %w", listenerRuleArn, err)
+	for _, ruleArn := range listenerRuleArns {
+		// Describe the rule to get current actions
+		describeRulesOutput, err := c.elbClient.DescribeRules(ctx, &elasticloadbalancingv2.DescribeRulesInput{
+			RuleArns: []string{ruleArn},
+		})
+		if err != nil {
+			return fmt.Errorf("error describing listener rule %v: %w", strings.Join(listenerRuleArns, ", "), err)
+		}
+
+		// Prepare the actions to be modified
+		var modifiedActions []elbtypes.Action
+		for _, action := range describeRulesOutput.Rules[0].Actions {
+			if action.Type == elbtypes.ActionTypeEnumForward {
+				// Modify only the forward action
+				modifiedAction := elbtypes.Action{
+					Type: elbtypes.ActionTypeEnumForward,
+					ForwardConfig: &elbtypes.ForwardActionConfig{
+						TargetGroups: []elbtypes.TargetGroupTuple{
+							{
+								TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
+								Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
+							},
+							{
+								TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
+								Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
+							},
+						},
+					},
+				}
+				modifiedActions = append(modifiedActions, modifiedAction)
+			} else {
+				// Keep other actions unchanged (new logic)
+				modifiedActions = append(modifiedActions, action)
+			}
+		}
+
+		// Modify the rule with the new actions
+		_, err = c.elbClient.ModifyRule(ctx, &elasticloadbalancingv2.ModifyRuleInput{
+			RuleArn: aws.String(ruleArn),
+			Actions: modifiedActions,
+		})
+		if err != nil {
+			return fmt.Errorf("error modifying listener rule %s: %w", ruleArn, err)
+		}
 	}
+
 	return nil
 }
 

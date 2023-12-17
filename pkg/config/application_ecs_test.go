@@ -177,7 +177,10 @@ func TestECSApplicationConfig(t *testing.T) {
 					RunStandaloneTask: newBoolPointer(true),
 					AccessType:        "ELB",
 					ListenerRuleSelector: ELBListenerRuleSelector{
-						ListenerRuleArn: "arn:aws:elasticloadbalancing:ap-northeast-1:<account-id>:listener-rule/app/<elb-name>/xxx/yyy/zzz",
+						ListenerRuleArns: []string{
+							"arn:aws:elasticloadbalancing:ap-northeast-1:<account-id>:listener-rule/app/<elb-name>/xxx/yyy/zzz",
+							"arn:aws:elasticloadbalancing:ap-northeast-1:<account-id>:listener-rule/app/<elb-name>/xxx/yyy/zzz2",
+						},
 					},
 				},
 			},

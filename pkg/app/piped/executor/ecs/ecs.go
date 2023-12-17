@@ -459,7 +459,7 @@ func routing(
 
 	// When the listenerRule is specified, we only need to modify that rule.
 	if listenerRuleSelector.IsSpecified() {
-		if err := client.ModifyRule(ctx, listenerRuleSelector.ListenerRuleArn, routingTrafficCfg); err != nil {
+		if err := client.ModifyRules(ctx, listenerRuleSelector.ListenerRuleArns, routingTrafficCfg); err != nil {
 			in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
 			return false
 		}
