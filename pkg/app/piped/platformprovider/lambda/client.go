@@ -185,7 +185,7 @@ func (c *client) CreateFunctionFromSource(ctx context.Context, fm FunctionManife
 		},
 	}
 	if len(fm.Spec.Architectures) != 0 {
-		var architectures []types.Architecture
+		architectures := make([]types.Architecture, 0, len(fm.Spec.Architectures))
 		for _, arch := range fm.Spec.Architectures {
 			architectures = append(architectures, types.Architecture(arch.Name))
 		}
