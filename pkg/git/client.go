@@ -146,7 +146,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		)
 	)
 
-	remote, err := includePasswordAuthRemote(ctx, remote, c.passwordAuth.userName, c.passwordAuth.password)
+	remote, err := includePasswordAuthRemote(remote, c.passwordAuth.userName, c.passwordAuth.password)
 	if err != nil {
 		return nil, err
 	}
@@ -271,7 +271,7 @@ func (c *client) envsForRepo(remote string) []string {
 	return append(envs, c.gitEnvs...)
 }
 
-func includePasswordAuthRemote(ctx context.Context, remote, userName, password string) (string, error) {
+func includePasswordAuthRemote(remote, userName, password string) (string, error) {
 	if userName == "" || password == "" {
 		return remote, nil
 	}
