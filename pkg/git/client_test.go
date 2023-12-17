@@ -178,9 +178,9 @@ func (g gitCommander) addCommit(filename string, content string) error {
 }
 
 func TestCloneUsingPasswordAuth(t *testing.T) {
-	url, err := includePasswordAuthRemote("https://example.com/org/repo", "test-user", "test-token")
+	url, err := includePasswordAuthRemote("https://example.com/org/repo", "test-user", "test-password")
 	require.NoError(t, err)
-	assert.Equal(t, "https://test-user:test-token@example.com/org/repo", url)
+	assert.Equal(t, "https://test-user:test-password@example.com/org/repo", url)
 }
 
 func TestRetryCommand(t *testing.T) {
