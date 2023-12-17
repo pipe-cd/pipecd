@@ -49,6 +49,10 @@ type client struct {
 	cacheDir     string
 	mu           sync.Mutex
 	repoLocks    map[string]*sync.Mutex
+	passwordAuth struct {
+		userName string
+		password string
+	}
 
 	gitEnvs       []string
 	gitEnvsByRepo map[string][]string
@@ -91,11 +95,11 @@ func WithEmail(e string) Option {
 	}
 }
 
-func WithPAT(userName, userToken string) Option {
+func WithPasswordAuth(userName, password string) Option {
 	return func(c *client) {
-		if userName != "" && userToken != "" {
-			c.pat.userName = userName
-			c.pat.userToken = userToken
+		if userName != "" && password != "" {
+			c.passwordAuth.userName = userName
+			c.passwordAuth.password = password
 		}
 	}
 }
@@ -142,7 +146,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		)
 	)
 
-	remote, err := includePatRemote(ctx, remote, c.pat.userName, c.pat.userToken)
+	remote, err := includePatRemote(ctx, remote, c.passwordAuth.userName, c.passwordAuth.password)
 	if err != nil {
 		return nil, err
 	}
@@ -267,15 +271,15 @@ func (c *client) envsForRepo(remote string) []string {
 	return append(envs, c.gitEnvs...)
 }
 
-func includePatRemote(ctx context.Context, remote, userName, userToken string) (string, error) {
-	if userName == "" || userToken == "" {
+func includePatRemote(ctx context.Context, remote, userName, password string) (string, error) {
+	if userName == "" || password == "" {
 		return remote, nil
 	}
 	u, err := parseGitURL(remote)
 	if err != nil {
 		return "", fmt.Errorf("failed to include pat: %v", err)
 	}
-	u.User = url.UserPassword(userName, userToken)
+	u.User = url.UserPassword(userName, password)
 	return u.String(), nil
 }
 
