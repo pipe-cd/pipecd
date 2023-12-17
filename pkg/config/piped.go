@@ -407,9 +407,9 @@ type PipedGitPersonalAccessToken struct {
 	UserToken string `json:"userToken,omitempty"`
 }
 
-func (p PipedGitPersonalAccessToken) Validate() error {
-	if p.UserName == "" || p.UserToken == "" {
-		return errors.New("both userName and userToken must be set")
+func (p PipedGitPasswordAuth) Validate() error {
+	if p.UserName == "" || p.Password == "" {
+		return errors.New("both userName and password must be set")
 	}
 	return nil
 }
