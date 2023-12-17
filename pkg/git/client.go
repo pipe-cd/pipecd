@@ -147,7 +147,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		)
 	)
 
-	remote, err := includePatRemote(ctx, remote, c.passwordAuth.userName, c.passwordAuth.password)
+	remote, err := includePasswordAuthRemote(ctx, remote, c.passwordAuth.userName, c.passwordAuth.password)
 	if err != nil {
 		return nil, err
 	}
@@ -291,13 +291,13 @@ func (c *client) envsForRepo(remote string) []string {
 	return append(envs, c.gitEnvs...)
 }
 
-func includePatRemote(ctx context.Context, remote, userName, password string) (string, error) {
+func includePasswordAuthRemote(ctx context.Context, remote, userName, password string) (string, error) {
 	if userName == "" || password == "" {
 		return remote, nil
 	}
 	u, err := parseGitURL(remote)
 	if err != nil {
-		return "", fmt.Errorf("failed to include pat: %v", err)
+		return "", fmt.Errorf("failed to include passwordAuth: %v", err)
 	}
 	u.User = url.UserPassword(userName, password)
 	return u.String(), nil

@@ -1480,11 +1480,7 @@ func TestPipeGitValidate(t *testing.T) {
 		t.Run(tc.git.SSHKeyData, func(t *testing.T) {
 			t.Parallel()
 			err := tc.git.Validate()
-			if tc.err != nil {
-				assert.Equal(t, tc.err, err)
-			} else {
-				require.NoError(t, err)
-			}
+			assert.Equal(t, tc.err, err)
 		})
 	}
 }
