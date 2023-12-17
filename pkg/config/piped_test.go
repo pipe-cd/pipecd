@@ -893,7 +893,7 @@ func TestPipedSpecClone(t *testing.T) {
 					SSHKeyFile: "/etc/piped-secret/ssh-key",
 					PasswordAuth: PipedGitPasswordAuth{
 						UserName: "userName",
-						Password: "userToken",
+						Password: "Password",
 					},
 				},
 				Repositories: []PipedRepository{
@@ -1094,7 +1094,7 @@ func TestPipedSpecClone(t *testing.T) {
 					SSHKeyFile: "/etc/piped-secret/ssh-key",
 					PasswordAuth: PipedGitPasswordAuth{
 						UserName: "userName",
-						Password: "userToken",
+						Password: "Password",
 					},
 				},
 				Repositories: []PipedRepository{
@@ -1403,7 +1403,7 @@ func TestPipeGitValidate(t *testing.T) {
 					Password: "Password",
 				},
 			},
-			err: errors.New("cannot configure both sshKeyData or sshKeyFile and personalAccessToken"),
+			err: errors.New("cannot configure both sshKeyData or sshKeyFile and password authentication"),
 		},
 		{
 			name: "Both SSH and PAT is not valid",
@@ -1415,7 +1415,7 @@ func TestPipeGitValidate(t *testing.T) {
 					Password: "Password",
 				},
 			},
-			err: errors.New("cannot configure both sshKeyData or sshKeyFile and personalAccessToken"),
+			err: errors.New("cannot configure both sshKeyData or sshKeyFile and password authentication"),
 		},
 		{
 			name: "SSH key data is not empty",
@@ -1457,7 +1457,7 @@ func TestPipeGitValidate(t *testing.T) {
 					Password: "",
 				},
 			},
-			err: errors.New("both userName and userToken must be set"),
+			err: errors.New("both userName and password must be set"),
 		},
 		{
 			name: "PAT token is empty",
@@ -1467,7 +1467,7 @@ func TestPipeGitValidate(t *testing.T) {
 					Password: "Password",
 				},
 			},
-			err: errors.New("both userName and userToken must be set"),
+			err: errors.New("both userName and password must be set"),
 		},
 		{
 			name: "Git config is empty",
