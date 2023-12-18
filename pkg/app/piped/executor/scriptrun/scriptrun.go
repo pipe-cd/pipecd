@@ -54,7 +54,8 @@ type RollbackExecutor struct {
 }
 
 func (e *RollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
-	return model.StageStatus_STAGE_NOT_STARTED_YET
+	e.LogPersister.Infof("Unimplement: rollbacking the script run stage")
+	return model.StageStatus_STAGE_FAILURE
 }
 
 // Register registers this executor factory into a given registerer.
