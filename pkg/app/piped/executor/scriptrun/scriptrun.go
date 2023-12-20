@@ -44,6 +44,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	e.LogPersister.Infof(opts.Run)
 
 	if err := cmd.Run(); err != nil {
+		e.LogPersister.Errorf("failed to execute script: %w", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 	return model.StageStatus_STAGE_SUCCESS
