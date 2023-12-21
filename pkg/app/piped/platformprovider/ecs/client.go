@@ -472,12 +472,23 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 				}
 			}
 
-			_, err := c.elbClient.ModifyRule(ctx, &elasticloadbalancingv2.ModifyRuleInput{
-				RuleArn: rule.RuleArn,
-				Actions: modifiedActions,
-			})
-			if err != nil {
-				return fmt.Errorf("failed to modify rule %s: %w", *rule.RuleArn, err)
+			// The default rule needs to be modified by ModifyListener API.
+			if rule.IsDefault {
+				_, err := c.elbClient.ModifyListener(ctx, &elasticloadbalancingv2.ModifyListenerInput{
+					ListenerArn:    &listenerArn,
+					DefaultActions: modifiedActions,
+				})
+				if err != nil {
+					return fmt.Errorf("failed to modify default rule %s: %w", *rule.RuleArn, err)
+				}
+			} else {
+				_, err := c.elbClient.ModifyRule(ctx, &elasticloadbalancingv2.ModifyRuleInput{
+					RuleArn: rule.RuleArn,
+					Actions: modifiedActions,
+				})
+				if err != nil {
+					return fmt.Errorf("failed to modify rule %s: %w", *rule.RuleArn, err)
+				}
 			}
 		}
 	}
