@@ -25,6 +25,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/ecs"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/lambda"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/scriptrun"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/terraform"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/wait"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/waitapproval"
@@ -112,4 +113,5 @@ func init() {
 	wait.Register(defaultRegistry)
 	waitapproval.Register(defaultRegistry)
 	customsync.Register(defaultRegistry)
+	scriptrun.Register(defaultRegistry)
 }

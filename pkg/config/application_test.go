@@ -702,3 +702,32 @@ func TestCustomSyncConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestScriptSycConfiguration(t *testing.T) {
+	testcases := []struct {
+		name    string
+		opts    ScriptRunStageOptions
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			opts: ScriptRunStageOptions{
+				Run: "echo 'hello world'",
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid",
+			opts: ScriptRunStageOptions{
+				Run: "",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.opts.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
+		})
+	}
+}
