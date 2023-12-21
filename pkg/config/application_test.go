@@ -703,7 +703,6 @@ func TestCustomSyncConfig(t *testing.T) {
 	}
 }
 
-// TODO: Add testcases for other kinds of applications.
 func TestScriptSycConfiguration(t *testing.T) {
 	testcases := []struct {
 		name    string
