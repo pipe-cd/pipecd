@@ -1,4 +1,4 @@
-name: publish
+name: publish_tool
 
 on:
   push:
@@ -15,6 +15,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
+    strategy:
+      matrix:
+        image:
+          - actions-gh-release
+          - actions-plan-preview
+          - codegen
+          - piped-base
+          - piped-base-okd
+          - firestore-emulator
     steps:
       - uses: actions/checkout@v3
         with:
@@ -31,44 +40,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # Building and pushing container images.
-      - name: Build and push actions-gh-release image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+      - name: Build and push ${{ matrix.image }} image
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 #v5.0.0
         with:
-          context: tool/actions-gh-release
-          tags: ${{ env.GHCR }}/pipe-cd/actions-gh-release:${{ env.PIPECD_VERSION }}
-          push: true
-
-      - name: Build and push actions-plan-preview image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          context: tool/actions-plan-preview
-          tags: ${{ env.GHCR }}/pipe-cd/actions-plan-preview:${{ env.PIPECD_VERSION }}
-          push: true
-
-      - name: Build and push codegen image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          context: tool/codegen
-          tags: ${{ env.GHCR }}/pipe-cd/codegen:${{ env.PIPECD_VERSION }}
-          push: true
-
-      - name: Build and push piped-base image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          context: tool/piped-base
-          tags: ${{ env.GHCR }}/pipe-cd/piped-base:${{ env.PIPECD_VERSION }}
-          push: true
-
-      - name: Build and push piped-base-okd image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          context: tool/piped-base-okd
-          tags: ${{ env.GHCR }}/pipe-cd/piped-base-okd:${{ env.PIPECD_VERSION }}
-          push: true
-
-      - name: Build and push firestore-emulator image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          context: tool/firestore-emulator
-          tags: ${{ env.GHCR }}/pipe-cd/firestore-emulator:${{ env.PIPECD_VERSION }}
+          context: tool/${{ matrix.image }}
+          tags: ${{ env.GHCR }}/pipe-cd/${{ matrix.image }}:${{ env.PIPECD_VERSION }}
           push: true

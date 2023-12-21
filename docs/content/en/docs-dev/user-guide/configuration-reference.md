@@ -44,7 +44,8 @@ spec:
 
 Kubernetes resources can be managed by some annotations provided by PipeCD.
 
-| Annotation key | Target resource(es) | Possible values | Description |
+| Annotation key | Target resource(s) | Possible values | Description |
+|-|-|-|-|
 | `pipecd.dev/ignore-drift-detection` | any | "true" | Whether the drift detection should ignore this resource. |
 | `pipecd.dev/server-side-apply` | any | "true" | Use server side apply instead of client side apply. |
 
@@ -331,6 +332,7 @@ One of `yamlField` or `regex` is required.
 | Field | Type | Description | Required |
 |-|-|-|-|
 | releaseName | string | The release name of helm deployment. By default, the release name is equal to the application name. | No |
+| setValues | map[string]string | List of values. | No |
 | valueFiles | []string | List of value files should be loaded. Only local files stored under the application directory or remote files served at the http(s) endpoint are allowed. | No |
 | setFiles | map[string]string | List of file path for values. | No |
 | apiVersions | []string | Kubernetes api versions used for Capabilities.APIVersions. | No |
@@ -454,6 +456,7 @@ One of `yamlField` or `regex` is required.
 | taskDefinitionFile | string | The path to ECS TaskDefinition configuration file. Allow file in both `yaml` and `json` format. The default value is `taskdef.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html) for parameters. | No |
 | targetGroups | [ECSTargetGroupInput](#ecstargetgroupinput) | The target groups configuration, will be used to routing traffic to created task sets. | Yes (if you want to perform progressive delivery) |
 | runStandaloneTask | bool | Run standalone tasks during deployments. About standalone task, see [here](https://docs.aws.amazon.com/AmazonECS/latest/userguide/ecs_run_task-v2.html). The default value is `true`. |
+| accessType | string | How the ECS service is accessed. One of `ELB` or `SERVICE_DISCOVERY`. See examples [here](https://github.com/pipe-cd/examples/tree/master/ecs/servicediscovery/simple). The default value is `ELB`. |
 
 ### ECSTargetGroupInput
 

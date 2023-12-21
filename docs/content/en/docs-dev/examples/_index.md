@@ -77,7 +77,9 @@ https://github.com/pipe-cd/examples
 | Name                                                                        | Description |
 |-----------------------------------------------------------------------------|-------------|
 | [simple](https://github.com/pipe-cd/examples/tree/master/ecs/simple) | Quick sync by rolling out the new version and switching all traffic to it. |
+| [simple-via-servicediscovery](https://github.com/pipe-cd/examples/tree/master/ecs/servicediscovery/simple) | Quick sync by rolling out the new version and switching all traffic to it for ECS Service Discovery. |
 | [canary](https://github.com/pipe-cd/examples/tree/master/ecs/canary) | Deployment pipeline with canary strategy. |
+| [canary-via-servicediscovery](https://github.com/pipe-cd/examples/tree/master/ecs/servicediscovery/canary) | Deployment pipeline with canary strategy for ECS Service Discovery. |
 | [bluegreen](https://github.com/pipe-cd/examples/tree/master/ecs/bluegreen) | Deployment pipeline with blue-green strategy. |
 | [secret-management](https://github.com/pipe-cd/examples/tree/master/ecs/secret-management) | Demonstrate how to manage sensitive data by using [Secret Management](../user-guide/managing-application/secret-management/) feature. |
 | [wait-approval](https://github.com/pipe-cd/examples/tree/master/ecs/wait-approval) | Deployment pipeline that contains a manual approval stage. |

@@ -122,10 +122,12 @@ type InputHelmOptions struct {
 	// The release name of helm deployment.
 	// By default the release name is equal to the application name.
 	ReleaseName string `json:"releaseName"`
+	// List of values.
+	SetValues map[string]string `json:"setValues"`
 	// List of value files should be loaded.
 	ValueFiles []string `json:"valueFiles"`
 	// List of file path for values.
-	SetFiles map[string]string
+	SetFiles map[string]string `json:"setFiles"`
 	// Set of supported Kubernetes API versions.
 	APIVersions []string `json:"apiVersions"`
 	// Kubernetes version used for Capabilities.KubeVersion
