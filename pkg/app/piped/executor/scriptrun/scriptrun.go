@@ -16,6 +16,8 @@ package scriptrun
 import (
 	"os"
 	"os/exec"
+	"strings"
+	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -28,6 +30,8 @@ type registerer interface {
 
 type Executor struct {
 	executor.Input
+
+	appDir string
 }
 
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
@@ -35,12 +39,64 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 
 	opts := e.Input.StageConfig.ScriptRunStageOptions
 	if opts == nil {
-		e.LogPersister.Infof("option for script run stage not found")
+		e.LogPersister.Error("option for script run stage not found")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	if opts.Run == "" {
 		return model.StageStatus_STAGE_SUCCESS
+	}
+
+	var originalStatus = e.Stage.Status
+	ds, err := e.TargetDSP.Get(sig.Context(), e.LogPersister)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to prepare target deploy source data (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+	e.appDir = ds.AppDir
+
+	timeout := e.StageConfig.ScriptRunStageOptions.Timeout.Duration()
+
+	c := make(chan model.StageStatus, 1)
+	go func() {
+		c <- e.executeCommand()
+	}()
+
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+
+	for {
+		select {
+		case result := <-c:
+			return result
+		case <-timer.C:
+			e.LogPersister.Errorf("Canceled because of timeout")
+			return model.StageStatus_STAGE_FAILURE
+
+		case s := <-sig.Ch():
+			switch s {
+			case executor.StopSignalCancel:
+				e.LogPersister.Info("Canceled by user")
+				return model.StageStatus_STAGE_CANCELLED
+			case executor.StopSignalTerminate:
+				e.LogPersister.Info("Terminated by system")
+				return originalStatus
+			default:
+				e.LogPersister.Error("Unexpected")
+				return model.StageStatus_STAGE_FAILURE
+			}
+		}
+	}
+}
+
+func (e *Executor) executeCommand() model.StageStatus {
+	opts := e.StageConfig.ScriptRunStageOptions
+
+	e.LogPersister.Infof("Runnnig commands...")
+	for _, v := range strings.Split(opts.Run, "\n") {
+		if v != "" {
+			e.LogPersister.Infof("   %s", v)
+		}
 	}
 
 	envs := make([]string, 0, len(opts.Env))
@@ -49,15 +105,12 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 
 	cmd := exec.Command("/bin/sh", "-l", "-c", opts.Run)
+	cmd.Dir = e.appDir
 	cmd.Env = append(os.Environ(), envs...)
 	cmd.Stdout = e.LogPersister
 	cmd.Stderr = e.LogPersister
-
-	e.LogPersister.Infof("executing script:")
-	e.LogPersister.Infof(opts.Run)
-
 	if err := cmd.Run(); err != nil {
-		e.LogPersister.Errorf("failed to execute script: %w", err)
+		e.LogPersister.Errorf("failed to exec command: %w", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 	return model.StageStatus_STAGE_SUCCESS

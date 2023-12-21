@@ -496,6 +496,7 @@ func (a *AnalysisStageOptions) Validate() error {
 type ScriptRunStageOptions struct {
 	Env        map[string]string `json:"env"`
 	Run        string            `json:"run"`
+	Timeout    Duration          `json:"timeout" default:"6h"`
 	OnRollback string            `json:"onRollback"`
 }
 
