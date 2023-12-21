@@ -14,9 +14,37 @@
 
 package ecs
 
+import (
+	"sort"
+
+	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
+)
+
 type RoutingTrafficConfig []targetGroupWeight
 
 type targetGroupWeight struct {
 	TargetGroupArn string
 	Weight         int
+}
+
+func (c RoutingTrafficConfig) hasSameTargets(forwardActionTargets []types.TargetGroupTuple) bool {
+	if len(c) != len(forwardActionTargets) {
+		return false
+	}
+
+	// Sort to the both slices have the same target groups.
+	sort.Slice(c, func(i, j int) bool {
+		return c[i].TargetGroupArn < c[j].TargetGroupArn
+	})
+	sort.Slice(forwardActionTargets, func(i, j int) bool {
+		return *forwardActionTargets[i].TargetGroupArn < *forwardActionTargets[j].TargetGroupArn
+	})
+
+	for i := range c {
+		if c[i].TargetGroupArn != *forwardActionTargets[i].TargetGroupArn {
+			return false
+		}
+	}
+
+	return true
 }
