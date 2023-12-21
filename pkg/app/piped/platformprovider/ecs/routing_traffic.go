@@ -32,7 +32,7 @@ func (c RoutingTrafficConfig) hasSameTargets(forwardActionTargets []types.Target
 		return false
 	}
 
-	// Sort to the both slices have the same target groups.
+	// Sort so that the both slices have the same target groups.
 	sort.Slice(c, func(i, j int) bool {
 		return c[i].TargetGroupArn < c[j].TargetGroupArn
 	})

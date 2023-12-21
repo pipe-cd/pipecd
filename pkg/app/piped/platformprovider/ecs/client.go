@@ -438,48 +438,47 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 	}
 
 	for _, listenerArn := range listenerArns {
-		// Describe the listener to get the current actions
-		describeListenersOutput, err := c.elbClient.DescribeListeners(ctx, &elasticloadbalancingv2.DescribeListenersInput{
-			ListenerArns: []string{listenerArn},
+		describeRulesOutput, err := c.elbClient.DescribeRules(ctx, &elasticloadbalancingv2.DescribeRulesInput{
+			ListenerArn: aws.String(listenerArn),
 		})
 		if err != nil {
-			return fmt.Errorf("error describing listener %s: %w", listenerArn, err)
+			return fmt.Errorf("error describing rules %s: %w", listenerArn, err)
 		}
 
-		// Prepare the actions to be modified
-		var modifiedActions []elbtypes.Action
-		for _, action := range describeListenersOutput.Listeners[0].DefaultActions {
-			if action.Type == elbtypes.ActionTypeEnumForward {
-				// Modify only the forward action
-				modifiedAction := elbtypes.Action{
-					Type: elbtypes.ActionTypeEnumForward,
-					ForwardConfig: &elbtypes.ForwardActionConfig{
-						TargetGroups: []elbtypes.TargetGroupTuple{
-							{
-								TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
-								Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
-							},
-							{
-								TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
-								Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
+		for _, rule := range describeRulesOutput.Rules {
+			var modifiedActions []elbtypes.Action
+			for _, action := range rule.Actions {
+				if action.Type == elbtypes.ActionTypeEnumForward && routingTrafficCfg.hasSameTargets(action.ForwardConfig.TargetGroups) {
+					// Modify only the forward action which has the same target groups.
+					modifiedAction := elbtypes.Action{
+						Type:  elbtypes.ActionTypeEnumForward,
+						Order: action.Order,
+						ForwardConfig: &elbtypes.ForwardActionConfig{
+							TargetGroups: []elbtypes.TargetGroupTuple{
+								{
+									TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
+									Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
+								},
+								{
+									TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
+									Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
+								},
 							},
 						},
-					},
+					}
+					modifiedActions = append(modifiedActions, modifiedAction)
+				} else {
+					modifiedActions = append(modifiedActions, action)
 				}
-				modifiedActions = append(modifiedActions, modifiedAction)
-			} else {
-				// Keep other actions unchanged
-				modifiedActions = append(modifiedActions, action)
 			}
-		}
 
-		// Modify the listener
-		_, err = c.elbClient.ModifyListener(ctx, &elasticloadbalancingv2.ModifyListenerInput{
-			ListenerArn:    aws.String(listenerArn),
-			DefaultActions: modifiedActions,
-		})
-		if err != nil {
-			return fmt.Errorf("error modifying listener %s: %w", listenerArn, err)
+			_, err := c.elbClient.ModifyRule(ctx, &elasticloadbalancingv2.ModifyRuleInput{
+				RuleArn: rule.RuleArn,
+				Actions: modifiedActions,
+			})
+			if err != nil {
+				return fmt.Errorf("error modifying rule %s: %w", *rule.RuleArn, err)
+			}
 		}
 	}
 	return nil
