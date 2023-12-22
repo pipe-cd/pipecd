@@ -15,7 +15,7 @@ spec:
     stages:
       # Rollout CANARY variant's workload.
       # scale represents the percentage of workload will be rolled out,
-      # in this case 30% of the current PRIMARY variant's workload is set.
+      # in this case 100% of the current PRIMARY variant's workload is set.
       # Note: Rolled out variant DOES serve traffic at this time unlike the ELB type.
       - name: ECS_CANARY_ROLLOUT
         with:
