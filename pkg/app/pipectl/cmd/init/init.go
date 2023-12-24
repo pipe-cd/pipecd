@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package encrypt
+package init
 
 import (
 	"context"
@@ -44,6 +44,6 @@ func NewCommand() *cobra.Command {
 }
 
 func (c *command) run(ctx context.Context, input cli.Input) error {
-	input.Logger.Info("not implemented yet")
+	input.Logger.Warn("not implemented yet")
 	return nil
 }
