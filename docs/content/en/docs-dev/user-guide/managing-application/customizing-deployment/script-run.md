@@ -8,7 +8,7 @@ description: >
 
 `SCRIPT_RUN` stage is one stage in the pipeline and you can execute any commands.
 
-> Note: This feature is at the alpha status and only available for application of kind AWS Lambda.
+> Note: This feature is at the alpha status.
 
 ## How to configure SCRIPT_RUN stage
 
@@ -49,7 +49,7 @@ spec:
             sleep 10
 ```
 
-![](/images/custom-sync.png)
+![](/images/script-run.png)
 
 Note:
 1. You can use `SCRIPT_RUN` stage with any current supporting application kind.
@@ -61,4 +61,7 @@ Note:
 - Build your own container image based on `ghcr.io/pipe-cd/piped` image.
 - Manually update your running piped container (not recommended).
 
+# When to rollback
 
+Even if a rollback occurs, the command will not be executed again.
+In the near future, we are considering the ability to run this command also on rollback.
