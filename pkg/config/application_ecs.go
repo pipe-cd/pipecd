@@ -85,9 +85,9 @@ func (in *ECSDeploymentInput) IsAccessedViaELB() bool {
 }
 
 type ECSVpcConfiguration struct {
-	Subnets        []string
-	AssignPublicIP string
-	SecurityGroups []string
+	Subnets        []string `json:"subnets"`
+	AssignPublicIP string   `json:"assignPublicIp"`
+	SecurityGroups []string `json:"securityGroups"`
 }
 
 type ECSTargetGroups struct {
