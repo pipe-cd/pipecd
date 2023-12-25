@@ -16,6 +16,7 @@ package initialize
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
@@ -44,8 +45,8 @@ type genericECSTargetGroup struct {
 	ContainerPort  int    `yaml:"containerPort"`
 }
 
-func generateECSConfig() (*genericConfig, error) {
-	spec, e := generateECSSpec()
+func generateECSConfig(in io.Reader) (*genericConfig, error) {
+	spec, e := generateECSSpec(in)
 	if e != nil {
 		return nil, e
 	}
@@ -56,16 +57,15 @@ func generateECSConfig() (*genericConfig, error) {
 	}, nil
 }
 
-func generateECSSpec() (*genericECSApplicationSpec, error) {
+func generateECSSpec(in io.Reader) (*genericECSApplicationSpec, error) {
+	appName := promptStringRequired("Name of the application: ", in)
+	serviceDefFile := promptStringRequired("Name of the service definition file (e.g. serviceDef.yaml): ", in)
+	taskDefFile := promptStringRequired("Name of the task definition file (e.g. taskDef.yaml): ", in)
 
-	appName := promptStringRequired("Name of the application: ")
-	serviceDefFile := promptStringRequired("Name of the service definition file (e.g. serviceDef.yaml): ")
-	taskDefFile := promptStringRequired("Name of the task definition file (e.g. taskDef.yaml): ")
-
-	// target gruops
-	targetGroupArn := promptString("ARN of the target group to the service: ")
-	containerName := promptString("Name of the container of the target group: ")
-	containerPort, e := promptInt("Port of the container of the target group (int): ")
+	// target groups
+	targetGroupArn := promptString("ARN of the target group to the service: ", in)
+	containerName := promptString("Name of the container of the target group: ", in)
+	containerPort, e := promptInt("Port of the container of the target group [int]: ", in)
 	if e != nil {
 		fmt.Printf("Invalid input for containerPort(int): %v\n", e)
 		return nil, e
@@ -89,8 +89,3 @@ func generateECSSpec() (*genericECSApplicationSpec, error) {
 
 	return cfg, nil
 }
-
-// Other than QuickSync
-// func createPipeline() config.DeploymentPipeline {
-// 	panic("not implemented")
-// }

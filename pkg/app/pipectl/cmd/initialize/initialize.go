@@ -17,12 +17,13 @@ package initialize
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 
 	// "github.com/go-yaml/yaml"
-	"gopkg.in/yaml.v3"
 	// "sigs.k8s.io/yaml"
 
 	"github.com/pipe-cd/pipecd/pkg/cli"
@@ -61,7 +62,11 @@ func NewCommand() *cobra.Command {
 }
 
 func (c *command) run(ctx context.Context, input cli.Input) error {
-	platform := promptString("Which platform? Enter the number [0]Kubernetes [1]ECS : ")
+	return generateConfig(ctx, input, os.Stdin)
+}
+
+func generateConfig(ctx context.Context, input cli.Input, in io.Reader) error {
+	platform := promptString("Which platform? Enter the number [0]Kubernetes [1]ECS : ", in)
 
 	var cfg *genericConfig
 	var e error
@@ -70,7 +75,7 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 		panic("not implemented")
 		// cfg := createKubernetesConfig()
 	case "1": // ECS
-		cfg, e = generateECSConfig()
+		cfg, e = generateECSConfig(in)
 	default:
 		return fmt.Errorf("invalid platform number: %s", platform)
 	}
@@ -86,14 +91,14 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 
 	fmt.Println("### The config model was successfully generated.")
 
-	targetPath := promptString("Path to save the generated config (if not specified, it goes to stdout) : ")
+	targetPath := promptString("Path to save the generated config (if not specified, it goes to stdout) : ", in)
 	if len(targetPath) == 0 {
 		// If the target path is not specified, print the config to stdout.
 		printConfig(cfgBytes)
 	} else {
 		if _, err := os.Stat(targetPath); err == nil {
 			// If the file exists, ask if overwrite it.
-			overwrite := promptStringRequired(fmt.Sprintf("The file %s already exists. Overwrite it? [y/n] : ", targetPath))
+			overwrite := promptStringRequired(fmt.Sprintf("The file %s already exists. Overwrite it? [y/n] : ", targetPath), in)
 			if overwrite == "y" || overwrite == "Y" {
 				exportConfig(cfgBytes, targetPath)
 			} else {
@@ -128,31 +133,33 @@ func printConfig(configBytes []byte) {
 }
 
 // Read a string value from stdin.
-func promptString(message string) string {
-	var in string
+func promptString(message string, in io.Reader) string {
+	var s string
 	fmt.Printf("%s ", message)
-	fmt.Scanln(&in)
-	return in
+	fmt.Fscanln(in, &s)
+	return s
 }
 
 // Read a string value from stdin, and validate int.
-func promptInt(message string) (int, error) {
-	var in int
+func promptInt(message string, in io.Reader) (int, error) {
+	var s int
 	fmt.Printf("%s ", message)
-	_, e := fmt.Scanln(&in)
+	_, e := fmt.Fscanln(in, &s)
 	if e != nil {
 		return 0, e
 	}
-	return in, nil
+	return s, nil
 }
 
 // Read a string value from stdin, and validate it is not empty.
-func promptStringRequired(message string) string {
-	for {
-		in := promptString(message)
+func promptStringRequired(message string, in io.Reader) string {
+	// Limit for avoiding infinite loops in tests.
+	for i := 0; i < 30; i++ {
+		in := promptString(message, in)
 		if in != "" {
 			return in
 		}
 		fmt.Printf("[WARN] This field is required. \n")
 	}
+	return "[not specified]"
 }
