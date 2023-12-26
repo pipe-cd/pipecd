@@ -15,11 +15,9 @@
 package ecs
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
-	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -28,27 +26,22 @@ import (
 var ErrNoTargetGroup = errors.New("no target group")
 
 func loadTargetGroups(targetGroups config.ECSTargetGroups) (*types.LoadBalancer, *types.LoadBalancer, error) {
-	if len(targetGroups.Primary) == 0 {
+	if targetGroups.Primary == nil {
 		return nil, nil, ErrNoTargetGroup
 	}
 
-	// Decode Primary target group config.
-	primary := &types.LoadBalancer{}
-	primaryDecoder := json.NewDecoder(bytes.NewReader(targetGroups.Primary))
-	primaryDecoder.DisallowUnknownFields()
-	err := primaryDecoder.Decode(primary)
-	if err != nil {
-		return nil, nil, fmt.Errorf("invalid primary target group definition given: %v", err)
+	primary := &types.LoadBalancer{
+		TargetGroupArn: aws.String(targetGroups.Primary.TargetGroupArn),
+		ContainerName:  aws.String(targetGroups.Primary.ContainerName),
+		ContainerPort:  aws.Int32(int32(targetGroups.Primary.ContainerPort)),
 	}
 
 	var canary *types.LoadBalancer
-	if len(targetGroups.Canary) > 0 {
-		canaryDecoder := json.NewDecoder(bytes.NewReader(targetGroups.Canary))
-		canaryDecoder.DisallowUnknownFields()
-		canary = &types.LoadBalancer{}
-		err := canaryDecoder.Decode(canary)
-		if err != nil {
-			return nil, nil, fmt.Errorf("invalid canary target group definition given: %v", err)
+	if targetGroups.Canary != nil {
+		canary = &types.LoadBalancer{
+			TargetGroupArn: aws.String(targetGroups.Canary.TargetGroupArn),
+			ContainerName:  aws.String(targetGroups.Canary.ContainerName),
+			ContainerPort:  aws.Int32(int32(targetGroups.Canary.ContainerPort)),
 		}
 	}
 

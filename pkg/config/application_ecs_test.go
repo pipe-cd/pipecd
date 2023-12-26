@@ -15,7 +15,6 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -60,7 +59,11 @@ func TestECSApplicationConfig(t *testing.T) {
 					ServiceDefinitionFile: "/path/to/servicedef.yaml",
 					TaskDefinitionFile:    "/path/to/taskdef.yaml",
 					TargetGroups: ECSTargetGroups{
-						Primary: json.RawMessage(`{"containerName":"web","containerPort":80,"targetGroupArn":"arn:aws:elasticloadbalancing:xyz"}`),
+						Primary: &ECSTargetGroup{
+							TargetGroupArn: "arn:aws:elasticloadbalancing:xyz",
+							ContainerName:  "web",
+							ContainerPort:  80,
+						},
 					},
 					LaunchType:        "FARGATE",
 					AutoRollback:      newBoolPointer(true),
