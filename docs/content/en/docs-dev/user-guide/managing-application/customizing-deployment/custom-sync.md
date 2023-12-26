@@ -8,7 +8,7 @@ description: >
 
 `CUSTOM_SYNC` is one stage in the pipeline and you can define scripts to deploy run in this stage.
 
-> Note: This feature is at the alpha status and only available for application of kind AWS Lambda.
+> Note: This feature is marked as a deprecated feature and will be removed later.
 
 ## How to configure Custom Sync
 

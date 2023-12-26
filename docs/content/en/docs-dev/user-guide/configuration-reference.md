@@ -647,7 +647,7 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | approvers | []string | List of username who has permission to approve. | Yes |
 | minApproverNum | int | Number of minimum needed approvals to make this stage complete. Default is 1. | No |
 
-### CustomSyncStageOptions
+### CustomSyncStageOptions (deprecated)
 | Field | Type | Description | Required |
 |-|-|-|-|
 | timeout | duration | The maximum time the stage can be taken to run. Default is `6h`| No |
