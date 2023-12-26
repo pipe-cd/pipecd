@@ -442,11 +442,11 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 			ListenerArn: aws.String(listenerArn),
 		})
 		if err != nil {
-			return fmt.Errorf("failed to describe rules %s: %w", listenerArn, err)
+			return fmt.Errorf("failed to describe rules of listener %s: %w", listenerArn, err)
 		}
 
 		for _, rule := range describeRulesOutput.Rules {
-			var modifiedActions []elbtypes.Action
+			modifiedActions := make([]elbtypes.Action, 0, len(rule.Actions))
 			for _, action := range rule.Actions {
 				if action.Type == elbtypes.ActionTypeEnumForward && routingTrafficCfg.hasSameTargets(action.ForwardConfig.TargetGroups) {
 					// Modify only the forward action which has the same target groups.
