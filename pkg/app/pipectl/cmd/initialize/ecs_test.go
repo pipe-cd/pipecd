@@ -18,9 +18,9 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/goccy/go-yaml"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v3"
 )
 
 func TestGenerateECSConfig(t *testing.T) {
@@ -31,7 +31,7 @@ func TestGenerateECSConfig(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			name: "correct config for ECSApp",
+			name: "valid config for ECSApp",
 			inputs: []string{
 				"myApp",
 				"service-definition.json",
@@ -45,11 +45,11 @@ func TestGenerateECSConfig(t *testing.T) {
 				APIVersion: config.VersionV1Beta1,
 				ApplicationSpec: &genericECSApplicationSpec{
 					Name: "myApp",
-					Input: genericECSDeploymentInput{
+					Input: config.ECSDeploymentInput{
 						ServiceDefinitionFile: "service-definition.json",
 						TaskDefinitionFile:    "task-definition.json",
-						TargetGroups: genericECSTargetGroups{
-							Primary: genericECSTargetGroup{
+						TargetGroups: config.ECSTargetGroups{
+							Primary: &config.ECSTargetGroup{
 								TargetGroupArn: "arn:aws:elasticloadbalancing:ap-northeast-1:123456789012:targetgroup/xxx/xxx",
 								ContainerName:  "test-container",
 								ContainerPort:  80,
@@ -65,6 +65,7 @@ func TestGenerateECSConfig(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			// Mock user's input.
 			in := bytes.NewBufferString("")
 			for _, word := range tc.inputs {
 				in.WriteString(word + "\n")

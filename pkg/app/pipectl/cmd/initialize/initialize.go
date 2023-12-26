@@ -20,11 +20,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/goccy/go-yaml"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
-
-	// "github.com/go-yaml/yaml"
-	// "sigs.k8s.io/yaml"
 
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -34,14 +31,11 @@ type command struct {
 	someTextOption string
 }
 
-// Use genericConfigs in order to
-//   - keep the order as we want
-//   - use only simple fields, without attatching `omitempty` to all fields
-//   - enable modifying the original configs isolately from init command
+// Use genericConfigs in order to simplify using the spec.
 type genericConfig struct {
-	APIVersion      string      `yaml:"apiVersion"`
-	Kind            config.Kind `yaml:"kind"`
-	ApplicationSpec interface{} `yaml:"spec"`
+	APIVersion      string      `json:"apiVersion"`
+	Kind            config.Kind `json:"kind"`
+	ApplicationSpec interface{} `json:"spec"`
 }
 
 func NewCommand() *cobra.Command {
@@ -50,9 +44,9 @@ func NewCommand() *cobra.Command {
 	}
 	cmd := &cobra.Command{
 		Use:     "init",
-		Short:   "Create a app.pipecd.yaml easily (interactively)",
+		Short:   "Generate a app.pipecd.yaml easily and interactively",
 		Example: `  pipectl init`,
-		Long:    "Create a app.pipecd.yaml easily, interactively selecting options.",
+		Long:    "Generate a app.pipecd.yaml easily, interactively selecting options.",
 		RunE:    cli.WithContext(c.run),
 	}
 
@@ -89,38 +83,43 @@ func generateConfig(ctx context.Context, input cli.Input, in io.Reader) error {
 		return err
 	}
 
-	fmt.Println("### The config model was successfully generated.")
+	fmt.Println("### The config model was successfully generated. Move on to exporting. ###")
 
 	targetPath := promptString("Path to save the generated config (if not specified, it goes to stdout) : ", in)
 	if len(targetPath) == 0 {
-		// If the target path is not specified, print the config to stdout.
+		// If the target path is not specified, print to stdout.
 		printConfig(cfgBytes)
 	} else {
-		if _, err := os.Stat(targetPath); err == nil {
-			// If the file exists, ask if overwrite it.
-			overwrite := promptStringRequired(fmt.Sprintf("The file %s already exists. Overwrite it? [y/n] : ", targetPath), in)
-			if overwrite == "y" || overwrite == "Y" {
-				exportConfig(cfgBytes, targetPath)
-			} else {
-				fmt.Println("Cancelled exporting the config.")
-				printConfig(cfgBytes)
-			}
-		} else {
-			// If the file does not exist, simply write to the new file, including validating the path.
-			exportConfig(cfgBytes, targetPath)
-		}
+		exportConfig(cfgBytes, targetPath, in)
 	}
 
 	return nil
 }
 
-// Write the config to the specified path file.
-func exportConfig(configBytes []byte, path string) {
+// Write the config to the specified path.
+func exportConfig(configBytes []byte, path string, in io.Reader) {
+	if fInfo, err := os.Stat(path); err == nil {
+		if fInfo.IsDir() {
+			fmt.Printf("The path %s is a directory. Please specify a file path.\n", path)
+			printConfig(configBytes)
+			return
+		}
+
+		// If the file exists, ask if overwrite it.
+		overwrite := promptStringRequired(fmt.Sprintf("The file %s already exists. Overwrite it? [y/n] : ", path), in)
+		if overwrite != "y" && overwrite != "Y" {
+			fmt.Println("Cancelled exporting the config.")
+			printConfig(configBytes)
+			return
+		}
+	}
+
+	// If the file does not exist or overwrite, write to the path, including validating.
 	fmt.Printf("Start exporting the config to %s\n", path)
 	err := os.WriteFile(path, configBytes, 0644)
 	if err != nil {
 		fmt.Printf("Failed to export the config to %s: %v\n", path, err)
-		// If failed, print the config to prevent losing it.
+		// If failed, print the config to avoid losing it.
 		printConfig(configBytes)
 	} else {
 		fmt.Printf("Successfully exported the config to %s\n", path)
@@ -153,13 +152,11 @@ func promptInt(message string, in io.Reader) (int, error) {
 
 // Read a string value from stdin, and validate it is not empty.
 func promptStringRequired(message string, in io.Reader) string {
-	// Limit for avoiding infinite loops in tests.
-	for i := 0; i < 30; i++ {
+	for {
 		in := promptString(message, in)
 		if in != "" {
 			return in
 		}
 		fmt.Printf("[WARN] This field is required. \n")
 	}
-	return "[not specified]"
 }

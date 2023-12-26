@@ -22,27 +22,9 @@ import (
 )
 
 type genericECSApplicationSpec struct {
-	Name        string                    `yaml:"name"`
-	Input       genericECSDeploymentInput `yaml:"input"`
-	Description string                    `yaml:"description,omitempty"`
-}
-
-// genericECSDeploymentInput represents an generic input for config.ECSDeploymentInput.
-type genericECSDeploymentInput struct {
-	ServiceDefinitionFile string                 `yaml:"serviceDefinitionFile"`
-	TaskDefinitionFile    string                 `yaml:"taskDefinitionFile"`
-	TargetGroups          genericECSTargetGroups `yaml:"targetGroups,omitempty"`
-}
-
-type genericECSTargetGroups struct {
-	Primary genericECSTargetGroup `yaml:"primary,omitempty"`
-	Canary  genericECSTargetGroup `yaml:"canary,omitempty"`
-}
-
-type genericECSTargetGroup struct {
-	TargetGroupArn string `yaml:"targetGroupArn"`
-	ContainerName  string `yaml:"containerName"`
-	ContainerPort  int    `yaml:"containerPort"`
+	Name        string                    `json:"name"`
+	Input       config.ECSDeploymentInput `json:"input"`
+	Description string                    `json:"description,omitempty"`
 }
 
 func generateECSConfig(in io.Reader) (*genericConfig, error) {
@@ -50,6 +32,7 @@ func generateECSConfig(in io.Reader) (*genericConfig, error) {
 	if e != nil {
 		return nil, e
 	}
+
 	return &genericConfig{
 		Kind:            config.KindECSApp,
 		APIVersion:      config.VersionV1Beta1,
@@ -73,11 +56,11 @@ func generateECSSpec(in io.Reader) (*genericECSApplicationSpec, error) {
 
 	cfg := &genericECSApplicationSpec{
 		Name: appName,
-		Input: genericECSDeploymentInput{
+		Input: config.ECSDeploymentInput{
 			ServiceDefinitionFile: serviceDefFile,
 			TaskDefinitionFile:    taskDefFile,
-			TargetGroups: genericECSTargetGroups{
-				Primary: genericECSTargetGroup{
+			TargetGroups: config.ECSTargetGroups{
+				Primary: &config.ECSTargetGroup{
 					TargetGroupArn: targetGroupArn,
 					ContainerName:  containerName,
 					ContainerPort:  containerPort,
