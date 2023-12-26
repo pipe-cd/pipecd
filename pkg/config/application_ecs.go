@@ -15,7 +15,6 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 )
 
@@ -91,8 +90,14 @@ type ECSVpcConfiguration struct {
 }
 
 type ECSTargetGroups struct {
-	Primary json.RawMessage `json:"primary"`
-	Canary  json.RawMessage `json:"canary"`
+	Primary *ECSTargetGroup `json:"primary"`
+	Canary  *ECSTargetGroup `json:"canary"`
+}
+
+type ECSTargetGroup struct {
+	TargetGroupArn string `json:"targetGroupArn"`
+	ContainerName  string `json:"containerName"`
+	ContainerPort  int    `json:"containerPort"`
 }
 
 // ECSSyncStageOptions contains all configurable values for a ECS_SYNC stage.
