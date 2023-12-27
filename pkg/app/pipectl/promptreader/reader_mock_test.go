@@ -46,7 +46,7 @@ func TestMockReadString(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := mockPromptReader{inputs: tc.inputs}
+			r := MockPromptReader{inputs: tc.inputs}
 			actual, e := r.readString("anyPrompt")
 			assert.Equal(t, tc.expected, actual)
 			assert.Equal(t, tc.expectedArray, r.inputs)
@@ -89,7 +89,7 @@ func TestMockReadStrings(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := mockPromptReader{inputs: tc.inputs}
+			r := MockPromptReader{inputs: tc.inputs}
 			actual, e := r.readStrings("anyPrompt")
 			assert.Equal(t, tc.expected, actual)
 			assert.Equal(t, tc.expectedArray, r.inputs)
@@ -138,7 +138,7 @@ func TestMockReadInt(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := mockPromptReader{inputs: tc.inputs}
+			r := MockPromptReader{inputs: tc.inputs}
 			actual, e := r.readInt("anyPrompt")
 			assert.Equal(t, tc.expected, actual)
 			assert.Equal(t, tc.expectedArray, r.inputs)
@@ -187,7 +187,7 @@ func TestMockReadStringRequired(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := mockPromptReader{inputs: tc.inputs}
+			r := MockPromptReader{inputs: tc.inputs}
 			actual, e := r.readStringRequired("anyPrompt")
 			assert.Equal(t, tc.expected, actual)
 			assert.Equal(t, tc.expectedArray, r.inputs)

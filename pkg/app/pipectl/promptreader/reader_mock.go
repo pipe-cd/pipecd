@@ -6,13 +6,13 @@ import (
 	"strings"
 )
 
-// mockPromptReader is a mock implementation of promptReader for unit tests.
+// MockPromptReader is a mock implementation of promptReader for unit tests.
 // It reads input from the given slice of strings.
-type mockPromptReader struct {
+type MockPromptReader struct {
 	inputs []string
 }
 
-func (r *mockPromptReader) readString(message string) (string, error) {
+func (r *MockPromptReader) readString(message string) (string, error) {
 	if len(r.inputs) == 0 {
 		return "", fmt.Errorf("no more input")
 	}
@@ -29,7 +29,7 @@ func (r *mockPromptReader) readString(message string) (string, error) {
 	return f[0], nil
 }
 
-func (r *mockPromptReader) readStrings(message string) ([]string, error) {
+func (r *MockPromptReader) readStrings(message string) ([]string, error) {
 	if len(r.inputs) == 0 {
 		return nil, fmt.Errorf("no more input")
 	}
@@ -38,7 +38,7 @@ func (r *mockPromptReader) readStrings(message string) ([]string, error) {
 	return strings.Fields(input), nil
 }
 
-func (r *mockPromptReader) readInt(message string) (int, error) {
+func (r *MockPromptReader) readInt(message string) (int, error) {
 	if len(r.inputs) == 0 {
 		return 0, fmt.Errorf("no more input")
 	}
@@ -50,7 +50,7 @@ func (r *mockPromptReader) readInt(message string) (int, error) {
 	return strconv.Atoi(input)
 }
 
-func (r *mockPromptReader) readStringRequired(message string) (string, error) {
+func (r *MockPromptReader) readStringRequired(message string) (string, error) {
 	s, e := r.readString(message)
 	if e != nil {
 		return "", e
