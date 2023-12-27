@@ -15,12 +15,13 @@
 package initialize
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/goccy/go-yaml"
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/prompt"
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 func TestGenerateECSConfig(t *testing.T) {
@@ -66,12 +67,9 @@ func TestGenerateECSConfig(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Mock user's input.
-			in := bytes.NewBufferString("")
-			for _, word := range tc.inputs {
-				in.WriteString(word + "\n")
-			}
+			reader := prompt.NewMockReader(tc.inputs)
 
-			cfg, err := generateECSConfig(in)
+			cfg, err := generateECSConfig(reader)
 
 			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expectedCfg, *cfg)

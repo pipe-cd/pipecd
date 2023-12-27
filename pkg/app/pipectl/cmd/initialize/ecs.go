@@ -16,8 +16,8 @@ package initialize
 
 import (
 	"fmt"
-	"io"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/prompt"
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
@@ -27,8 +27,8 @@ type genericECSApplicationSpec struct {
 	Description string                    `json:"description,omitempty"`
 }
 
-func generateECSConfig(in io.Reader) (*genericConfig, error) {
-	spec, e := generateECSSpec(in)
+func generateECSConfig(reader prompt.Reader) (*genericConfig, error) {
+	spec, e := generateECSSpec(reader)
 	if e != nil {
 		return nil, e
 	}
@@ -40,36 +40,36 @@ func generateECSConfig(in io.Reader) (*genericConfig, error) {
 	}, nil
 }
 
-func generateECSSpec(in io.Reader) (*genericECSApplicationSpec, error) {
-	appName, e := promptStringRequired("Name of the application: ", in)
+func generateECSSpec(reader prompt.Reader) (*genericECSApplicationSpec, error) {
+	appName, e := reader.ReadStringRequired("Name of the application: ")
 	if e != nil {
 		fmt.Printf("Invalid input for application name(string): %v\n", e)
 		return nil, e
 	}
-	serviceDefFile, e := promptStringRequired("Name of the service definition file (e.g. serviceDef.yaml): ", in)
+	serviceDefFile, e := reader.ReadStringRequired("Name of the service definition file (e.g. serviceDef.yaml): ")
 	if e != nil {
 		fmt.Printf("Invalid input for service definition file(string): %v\n", e)
 		return nil, e
 	}
 
-	taskDefFile, e := promptStringRequired("Name of the task definition file (e.g. taskDef.yaml): ", in)
+	taskDefFile, e := reader.ReadStringRequired("Name of the task definition file (e.g. taskDef.yaml): ")
 	if e != nil {
 		fmt.Printf("Invalid input for task definition file(string): %v\n", e)
 		return nil, e
 	}
 
 	// target groups
-	targetGroupArn, e := promptString("ARN of the target group to the service: ", in)
+	targetGroupArn, e := reader.ReadString("ARN of the target group to the service: ")
 	if e != nil {
 		fmt.Printf("Invalid input for targetGroupArn(string): %v\n", e)
 		return nil, e
 	}
-	containerName, e := promptString("Name of the container of the target group: ", in)
+	containerName, e := reader.ReadString("Name of the container of the target group: ")
 	if e != nil {
 		fmt.Printf("Invalid input for containerName(string): %v\n", e)
 		return nil, e
 	}
-	containerPort, e := promptInt("Port of the container of the target group [int]: ", in)
+	containerPort, e := reader.ReadInt("Port of the container of the target group [int]: ")
 	if e != nil {
 		fmt.Printf("Invalid input for containerPort(int): %v\n", e)
 		return nil, e
