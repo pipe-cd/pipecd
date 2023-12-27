@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package initialize
+package promptreader
 
 import (
 	"bufio"
@@ -25,6 +25,73 @@ import (
 const (
 	maximum_retry = 5
 )
+
+type promptReader interface {
+	readString(message string) (string, error)
+	readStrings(message string) ([]string, error)
+	readInt(message string) (int, error)
+	readStringRequired(message string) (string, error)
+}
+
+// stdPromptReader is a promptReader implementation that reads input from stdin.
+type DefaultPromptReader struct {
+	in io.Reader
+}
+
+func (r *DefaultPromptReader) readString(message string) (string, error) {
+	s, e := r.readStrings(message)
+	if e != nil {
+		return "", e
+	}
+
+	if len(s) == 0 {
+		return "", nil
+	}
+	if len(s) > 1 {
+		return "", fmt.Errorf("too many arguments")
+	}
+
+	return s[0], nil
+}
+
+func (r *DefaultPromptReader) readStrings(message string) ([]string, error) {
+	fmt.Printf("%s ", message)
+	reader := bufio.NewReader(r.in)
+	line, e := reader.ReadString('\n')
+	if e != nil {
+		return nil, e
+	}
+	return strings.Fields(line), nil
+}
+
+func (r *DefaultPromptReader) readInt(message string) (int, error) {
+	s, e := r.readString(message)
+	if e != nil {
+		return 0, e
+	}
+	if len(s) == 0 {
+		return 0, nil
+	}
+	n, e := strconv.Atoi(s)
+	if e != nil {
+		return 0, e
+	}
+	return n, nil
+}
+
+func (r *DefaultPromptReader) readStringRequired(message string) (string, error) {
+	for i := 0; i < maximum_retry; i++ {
+		s, e := r.readString(message)
+		if e != nil {
+			return "", e
+		}
+		if len(s) > 0 {
+			return s, nil
+		}
+		fmt.Printf("[WARN] This field is required. \n")
+	}
+	return "", fmt.Errorf("this field is required. Maximum retry exceeded")
+}
 
 // Read a string value.
 // func promptString(message string, in io.Reader) (string, error) {
