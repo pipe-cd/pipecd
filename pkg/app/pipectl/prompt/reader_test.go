@@ -51,6 +51,7 @@ func TestReadString(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			in := bytes.NewBufferString(tc.input)
 			r := stdinReader{in: in}
@@ -91,6 +92,7 @@ func TestReadStrings(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			in := bytes.NewBufferString(tc.input)
 			r := stdinReader{in: in}
@@ -131,6 +133,7 @@ func TestReadInt(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			in := bytes.NewBufferString(tc.input)
 			r := stdinReader{in: in}
@@ -171,6 +174,7 @@ func TestReadStringRequired(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			in := bytes.NewBufferString(tc.input)
 			r := stdinReader{in: in}
