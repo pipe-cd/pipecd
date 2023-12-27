@@ -654,6 +654,13 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | envs | map[string]string | Environment variables used with scripts. | No |
 | run | string | Script run on this stage. | Yes |
 
+### ScriptRunStageOptions
+| Field | Type | Description | Required |
+|-|-|-|-|
+| run | string | Script run on this stage. | Yes |
+| env | map[string]string | Environment variables used with scripts. | No |
+| timeout | duration | The maximum time the stage can be taken to run. Default is `6h`| No |
+
 ## PostSync
 
 | Field | Type | Description | Required |
