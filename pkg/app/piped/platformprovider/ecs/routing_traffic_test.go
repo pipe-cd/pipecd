@@ -125,7 +125,8 @@ func TestHasSameTargets(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testcases {
+	for _, testcase := range testcases {
+		tc := testcase
 		t.Run(tc.name, func(t *testing.T) {
 			hasSame := tc.cfg.hasSameTargets(tc.actionTargets)
 			assert.Equal(t, tc.expected, hasSame)
