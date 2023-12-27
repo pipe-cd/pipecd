@@ -18,6 +18,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/goccy/go-yaml"
 	"github.com/spf13/cobra"
@@ -52,6 +54,26 @@ func NewCommand() *cobra.Command {
 }
 
 func (c *command) run(ctx context.Context, input cli.Input) error {
+	// Enable interrupt signal.
+	ctx, cancel := context.WithCancel(ctx)
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt, syscall.SIGHUP, syscall.SIGTERM)
+
+	defer func() {
+		signal.Stop(signals)
+		cancel()
+	}()
+
+	go func() {
+		select {
+		case s := <-signals:
+			fmt.Printf(" Interrupted by signal: %v\n", s)
+			cancel()
+			os.Exit(1)
+		case <-ctx.Done():
+		}
+	}()
+
 	reader := prompt.NewStdinReader()
 	return generateConfig(ctx, input, reader)
 }
