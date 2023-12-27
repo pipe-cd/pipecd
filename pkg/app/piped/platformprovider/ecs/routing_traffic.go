@@ -30,13 +30,13 @@ func (c RoutingTrafficConfig) hasSameTargets(forwardActionTargets []types.Target
 		return false
 	}
 
-	cMap := make(map[string]bool)
+	cMap := make(map[string]struct{})
 	for _, item := range c {
-		cMap[item.TargetGroupArn] = true
+		cMap[item.TargetGroupArn] = struct{}{}
 	}
 
 	for _, target := range forwardActionTargets {
-		if !cMap[*target.TargetGroupArn] {
+		if _, ok := cMap[*target.TargetGroupArn]; !ok {
 			return false
 		}
 	}
