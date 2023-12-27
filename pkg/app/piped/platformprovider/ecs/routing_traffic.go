@@ -14,9 +14,32 @@
 
 package ecs
 
+import (
+	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
+)
+
 type RoutingTrafficConfig []targetGroupWeight
 
 type targetGroupWeight struct {
 	TargetGroupArn string
 	Weight         int
+}
+
+func (c RoutingTrafficConfig) hasSameTargets(forwardActionTargets []types.TargetGroupTuple) bool {
+	if len(c) != len(forwardActionTargets) {
+		return false
+	}
+
+	cMap := make(map[string]struct{})
+	for _, item := range c {
+		cMap[item.TargetGroupArn] = struct{}{}
+	}
+
+	for _, target := range forwardActionTargets {
+		if _, ok := cMap[*target.TargetGroupArn]; !ok {
+			return false
+		}
+	}
+
+	return true
 }
