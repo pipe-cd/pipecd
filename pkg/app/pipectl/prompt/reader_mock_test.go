@@ -21,6 +21,8 @@ import (
 )
 
 func TestMockReadString(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		inputs        []string
@@ -71,6 +73,8 @@ func TestMockReadString(t *testing.T) {
 }
 
 func TestMockReadStrings(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		inputs        []string
@@ -113,6 +117,8 @@ func TestMockReadStrings(t *testing.T) {
 }
 
 func TestMockReadInt(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		inputs        []string
@@ -162,6 +168,8 @@ func TestMockReadInt(t *testing.T) {
 }
 
 func TestMockReadStringRequired(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name          string
 		inputs        []string

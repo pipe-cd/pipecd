@@ -22,6 +22,8 @@ import (
 )
 
 func TestReadString(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		input       string
@@ -60,6 +62,8 @@ func TestReadString(t *testing.T) {
 }
 
 func TestReadStrings(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		input       string
@@ -98,6 +102,8 @@ func TestReadStrings(t *testing.T) {
 }
 
 func TestReadInt(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		input       string
@@ -136,6 +142,8 @@ func TestReadInt(t *testing.T) {
 }
 
 func TestReadStringRequired(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name        string
 		input       string
