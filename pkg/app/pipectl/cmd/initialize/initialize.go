@@ -28,7 +28,7 @@ import (
 )
 
 type command struct {
-	someTextOption string
+	// Add flags if needed.
 }
 
 // Use genericConfigs in order to simplify using the spec.
@@ -39,9 +39,7 @@ type genericConfig struct {
 }
 
 func NewCommand() *cobra.Command {
-	c := &command{
-		someTextOption: "default-value",
-	}
+	c := &command{}
 	cmd := &cobra.Command{
 		Use:     "init",
 		Short:   "Generate a app.pipecd.yaml easily and interactively",
@@ -49,8 +47,6 @@ func NewCommand() *cobra.Command {
 		Long:    "Generate a app.pipecd.yaml easily, interactively selecting options.",
 		RunE:    cli.WithContext(c.run),
 	}
-
-	cmd.Flags().StringVar(&c.someTextOption, "some-text-option", c.someTextOption, "Some text option")
 
 	return cmd
 }
@@ -63,8 +59,7 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 func generateConfig(ctx context.Context, input cli.Input, reader prompt.Reader) error {
 	platform, err := reader.ReadString("Which platform? Enter the number [0]Kubernetes [1]ECS : ")
 	if err != nil {
-		fmt.Printf("Invalid input for platform number: %v\n", err)
-		return err
+		return fmt.Errorf("invalid input: %v`", err)
 	}
 
 	var cfg *genericConfig
@@ -88,23 +83,25 @@ func generateConfig(ctx context.Context, input cli.Input, reader prompt.Reader) 
 	}
 
 	fmt.Println("### The config model was successfully prepared. Move on to exporting. ###")
-
-	targetPath, err := reader.ReadString("Path to save the config (if not specified, it goes to stdout) : ")
-	if err != nil {
-		return err
-	}
-	if len(targetPath) == 0 {
-		// If the target path is not specified, print to stdout.
-		printConfig(cfgBytes)
-	} else {
-		exportConfig(cfgBytes, targetPath, reader)
-	}
+	exportConfig(cfgBytes, reader)
 
 	return nil
 }
 
-// Write the config to the specified path.
-func exportConfig(configBytes []byte, path string, reader prompt.Reader) {
+func exportConfig(configBytes []byte, reader prompt.Reader) {
+	path, err := reader.ReadString("Path to save the config (if not specified, it goes to stdout) : ")
+	if err != nil {
+		fmt.Printf("Failed to read path %s \n", path)
+		printConfig(configBytes)
+		return
+	}
+	if len(path) == 0 {
+		// If the target path is not specified, print to stdout.
+		printConfig(configBytes)
+		return
+	}
+
+	// Check if the file/directory already exists and ask if overwrite it.
 	if fInfo, err := os.Stat(path); err == nil {
 		if fInfo.IsDir() {
 			fmt.Printf("The path %s is a directory. Please specify a file path.\n", path)
@@ -113,9 +110,9 @@ func exportConfig(configBytes []byte, path string, reader prompt.Reader) {
 		}
 
 		// If the file exists, ask if overwrite it.
-		overwrite, e := reader.ReadStringRequired(fmt.Sprintf("The file %s already exists. Overwrite it? [y/n] : ", path))
-		if e != nil {
-			fmt.Printf("Invalid input for overwrite(string): %v\n", e)
+		overwrite, err := reader.ReadStringRequired(fmt.Sprintf("The file %s already exists. Overwrite it? [y/n] : ", path))
+		if err != nil {
+			fmt.Printf("Invalid input for overwrite(string): %v\n", err)
 			printConfig(configBytes)
 			return
 		}
@@ -128,7 +125,7 @@ func exportConfig(configBytes []byte, path string, reader prompt.Reader) {
 
 	// If the file does not exist or overwrite, write to the path, including validating.
 	fmt.Printf("Start exporting the config to %s\n", path)
-	err := os.WriteFile(path, configBytes, 0644)
+	err = os.WriteFile(path, configBytes, 0644)
 	if err != nil {
 		fmt.Printf("Failed to export the config to %s: %v\n", path, err)
 		// If failed, print the config to avoid losing it.

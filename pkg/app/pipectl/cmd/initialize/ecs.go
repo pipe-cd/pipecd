@@ -21,6 +21,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
+// Use genericConfigs in order to simplify using the GenericApplicationSpec and keep the order as we want.
 type genericECSApplicationSpec struct {
 	Name        string                    `json:"name"`
 	Input       config.ECSDeploymentInput `json:"input"`
@@ -43,36 +44,30 @@ func generateECSConfig(reader prompt.Reader) (*genericConfig, error) {
 func generateECSSpec(reader prompt.Reader) (*genericECSApplicationSpec, error) {
 	appName, e := reader.ReadStringRequired("Name of the application: ")
 	if e != nil {
-		fmt.Printf("Invalid input for application name(string): %v\n", e)
-		return nil, e
+		return nil, fmt.Errorf("invalid input for application name(string): %v", e)
 	}
 	serviceDefFile, e := reader.ReadStringRequired("Name of the service definition file (e.g. serviceDef.yaml): ")
 	if e != nil {
-		fmt.Printf("Invalid input for service definition file(string): %v\n", e)
-		return nil, e
+		return nil, fmt.Errorf("invalid input for service definition file(string): %v", e)
 	}
 
 	taskDefFile, e := reader.ReadStringRequired("Name of the task definition file (e.g. taskDef.yaml): ")
 	if e != nil {
-		fmt.Printf("Invalid input for task definition file(string): %v\n", e)
-		return nil, e
+		return nil, fmt.Errorf("invalid input for task definition file(string): %v", e)
 	}
 
 	// target groups
 	targetGroupArn, e := reader.ReadString("ARN of the target group to the service: ")
 	if e != nil {
-		fmt.Printf("Invalid input for targetGroupArn(string): %v\n", e)
-		return nil, e
+		return nil, fmt.Errorf("invalid input for targetGroupArn(string): %v", e)
 	}
 	containerName, e := reader.ReadString("Name of the container of the target group: ")
 	if e != nil {
-		fmt.Printf("Invalid input for containerName(string): %v\n", e)
-		return nil, e
+		return nil, fmt.Errorf("invalid input for containerName(string): %v", e)
 	}
 	containerPort, e := reader.ReadInt("Port of the container of the target group [int]: ")
 	if e != nil {
-		fmt.Printf("Invalid input for containerPort(int): %v\n", e)
-		return nil, e
+		return nil, fmt.Errorf("invalid input for containerPort(int): %v", e)
 	}
 
 	cfg := &genericECSApplicationSpec{

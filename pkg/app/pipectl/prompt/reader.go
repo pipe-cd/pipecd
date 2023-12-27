@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	maximum_retry = 5
+	maximum_retry = 5 // maximum number of retry for required fields
 )
 
 // Reader is an interface that reads input from user or mock.
@@ -37,7 +37,8 @@ type Reader interface {
 	// ReadInt reads an integer with showing message. If the input is empty, it returns 0.
 	// If the input is not an integer, it returns an error.
 	ReadInt(message string) (int, error)
-	// ReadStringRequired reads a string with showing message. If the input is empty, it returns an error.
+	// ReadStringRequired reads a string with showing message. If the input is empty, it asks again.
+	// If number of retry exceeds maximum_retry, it returns an error.
 	// If the input is more than one word, it returns an error.
 	ReadStringRequired(message string) (string, error)
 }
@@ -104,5 +105,5 @@ func (r *stdinReader) ReadStringRequired(message string) (string, error) {
 		}
 		fmt.Printf("[WARN] This field is required. \n")
 	}
-	return "", fmt.Errorf("this field is required. Maximum retry exceeded")
+	return "", fmt.Errorf("this field is required. Maximum retry(%d) exceeded", maximum_retry)
 }
