@@ -60,22 +60,25 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 }
 
 func generateConfig(ctx context.Context, input cli.Input, in io.Reader) error {
-	platform := promptString("Which platform? Enter the number [0]Kubernetes [1]ECS : ", in)
+	platform, err := promptString("Which platform? Enter the number [0]Kubernetes [1]ECS : ", in)
+	if err != nil {
+		fmt.Printf("Invalid input for platform number: %v\n", err)
+		return err
+	}
 
 	var cfg *genericConfig
-	var e error
 	switch platform {
 	case "0": // Kubernetes
+		// cfg, err = generateKubernetesConfig(in)
 		panic("not implemented")
-		// cfg := createKubernetesConfig()
 	case "1": // ECS
-		cfg, e = generateECSConfig(in)
+		cfg, err = generateECSConfig(in)
 	default:
 		return fmt.Errorf("invalid platform number: %s", platform)
 	}
 
-	if e != nil {
-		return e
+	if err != nil {
+		return err
 	}
 
 	cfgBytes, err := yaml.Marshal(cfg)
@@ -83,9 +86,12 @@ func generateConfig(ctx context.Context, input cli.Input, in io.Reader) error {
 		return err
 	}
 
-	fmt.Println("### The config model was successfully generated. Move on to exporting. ###")
+	fmt.Println("### The config model was successfully prepared. Move on to exporting. ###")
 
-	targetPath := promptString("Path to save the generated config (if not specified, it goes to stdout) : ", in)
+	targetPath, err := promptString("Path to save the config (if not specified, it goes to stdout) : ", in)
+	if err != nil {
+		return err
+	}
 	if len(targetPath) == 0 {
 		// If the target path is not specified, print to stdout.
 		printConfig(cfgBytes)
@@ -106,7 +112,12 @@ func exportConfig(configBytes []byte, path string, in io.Reader) {
 		}
 
 		// If the file exists, ask if overwrite it.
-		overwrite := promptStringRequired(fmt.Sprintf("The file %s already exists. Overwrite it? [y/n] : ", path), in)
+		overwrite, e := promptStringRequired(fmt.Sprintf("The file %s already exists. Overwrite it? [y/n] : ", path), in)
+		if e != nil {
+			fmt.Printf("Invalid input for overwrite(string): %v\n", e)
+			printConfig(configBytes)
+			return
+		}
 		if overwrite != "y" && overwrite != "Y" {
 			fmt.Println("Cancelled exporting the config.")
 			printConfig(configBytes)
@@ -129,34 +140,4 @@ func exportConfig(configBytes []byte, path string, in io.Reader) {
 // Print the config to stdout.
 func printConfig(configBytes []byte) {
 	fmt.Printf("\n### Generated Config is below ###\n%s\n", string(configBytes))
-}
-
-// Read a string value from stdin.
-func promptString(message string, in io.Reader) string {
-	var s string
-	fmt.Printf("%s ", message)
-	fmt.Fscanln(in, &s)
-	return s
-}
-
-// Read a string value from stdin, and validate int.
-func promptInt(message string, in io.Reader) (int, error) {
-	var s int
-	fmt.Printf("%s ", message)
-	_, e := fmt.Fscanln(in, &s)
-	if e != nil {
-		return 0, e
-	}
-	return s, nil
-}
-
-// Read a string value from stdin, and validate it is not empty.
-func promptStringRequired(message string, in io.Reader) string {
-	for {
-		in := promptString(message, in)
-		if in != "" {
-			return in
-		}
-		fmt.Printf("[WARN] This field is required. \n")
-	}
 }

@@ -41,13 +41,34 @@ func generateECSConfig(in io.Reader) (*genericConfig, error) {
 }
 
 func generateECSSpec(in io.Reader) (*genericECSApplicationSpec, error) {
-	appName := promptStringRequired("Name of the application: ", in)
-	serviceDefFile := promptStringRequired("Name of the service definition file (e.g. serviceDef.yaml): ", in)
-	taskDefFile := promptStringRequired("Name of the task definition file (e.g. taskDef.yaml): ", in)
+	appName, e := promptStringRequired("Name of the application: ", in)
+	if e != nil {
+		fmt.Printf("Invalid input for application name(string): %v\n", e)
+		return nil, e
+	}
+	serviceDefFile, e := promptStringRequired("Name of the service definition file (e.g. serviceDef.yaml): ", in)
+	if e != nil {
+		fmt.Printf("Invalid input for service definition file(string): %v\n", e)
+		return nil, e
+	}
+
+	taskDefFile, e := promptStringRequired("Name of the task definition file (e.g. taskDef.yaml): ", in)
+	if e != nil {
+		fmt.Printf("Invalid input for task definition file(string): %v\n", e)
+		return nil, e
+	}
 
 	// target groups
-	targetGroupArn := promptString("ARN of the target group to the service: ", in)
-	containerName := promptString("Name of the container of the target group: ", in)
+	targetGroupArn, e := promptString("ARN of the target group to the service: ", in)
+	if e != nil {
+		fmt.Printf("Invalid input for targetGroupArn(string): %v\n", e)
+		return nil, e
+	}
+	containerName, e := promptString("Name of the container of the target group: ", in)
+	if e != nil {
+		fmt.Printf("Invalid input for containerName(string): %v\n", e)
+		return nil, e
+	}
 	containerPort, e := promptInt("Port of the container of the target group [int]: ", in)
 	if e != nil {
 		fmt.Printf("Invalid input for containerPort(int): %v\n", e)
