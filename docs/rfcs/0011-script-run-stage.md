@@ -90,34 +90,23 @@ spec:
             - "curl -X POST -H 'Content-type: application/json' --data '{"text":"failed to deploy: rollback"}' $SLACK_WEBHOOK_URL"
 ```
 
-**SCRIPT_SYNC stage also rollbacks** when the deployment status is `DeploymentStatus_DEPLOYMENT_CANCELLED` or `DeploymentStatus_DEPLOYMENT_FAILURE` even though other rollback stage is also executed.
+**SCRIPT_RUN stage also rollbacks**. Execute the command to rollback SCRIPT_RUN to the point where the deployment was canceled or failed.
+When there are multiple SCRIPT_RUN stages to be rolled back, they are executed in the same order as SCRIPT_RUN on the pipeline.
 
-For example, here is a deploy pipeline combined with other k8s stages.
-The result status of the pipeline is FAIL or CANCELED, piped rollbacks the stages `K8S_CANARY_ROLLOUT`, `K8S_PRIMARY_ROLLOUT`, and `SCRIPT_RUN`.
+For example, consider when deployment proceeds in the following order from 1 to 7.
 
-```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: KubernetesApp
-spec:
-  pipeline:
-    stages:
-      - name: K8S_CANARY_ROLLOUT
-        with:
-          replicas: 10%
-      - name: WAIT_APPROVAL
-        with:
-          timeout: 30m
-      - name: K8S_PRIMARY_ROLLOUT
-      - name: K8S_CANARY_CLEAN
-      - name: SCRIPT_RUN
-        with:
-          env:
-            SLACK_WEBHOOK_URL: ""
-          runs:
-            - "curl -X POST -H 'Content-type: application/json' --data '{"text":"successfully deployed!!"}' $SLACK_WEBHOOK_URL"
-          onRollback:
-            - "curl -X POST -H 'Content-type: application/json' --data '{"text":"failed to deploy: rollback"}' $SLACK_WEBHOOK_URL"
-```
+1. K8S_CANARY_ROLLOUT
+2. WAIT
+3. SCRIPT_RUN
+4. K8S_PRIMARY_ROLLOUT
+5. SCRIPT_RUN
+6. K8S_CANARY_CLEAN
+7. SCRIPT_RUN
+
+Then
+- If 4 is canceled or fails while running, only SCRIPT_RUN of 3 will be rolled back.
+- If 6 is canceled or fails while running, only SCRIPT_RUNs 3 and 5 will be rolled back.
+
 
 ## prepare environment for execution
 
