@@ -16,6 +16,9 @@ package kubernetes
 
 import (
 	"context"
+	"encoding/json"
+	"os"
+	"os/exec"
 	"strings"
 
 	"go.uber.org/zap"
@@ -27,6 +30,8 @@ import (
 
 type rollbackExecutor struct {
 	executor.Input
+
+	appDir string
 }
 
 func (e *rollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
@@ -39,7 +44,8 @@ func (e *rollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	switch model.Stage(e.Stage.Name) {
 	case model.StageRollback:
 		status = e.ensureRollback(ctx)
-
+	case model.StageScriptRunRollback:
+		status = e.ensureScriptRunRollback(ctx)
 	default:
 		e.LogPersister.Errorf("Unsupported stage %s for kubernetes application", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
@@ -73,6 +79,8 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 			appCfg.Input.HelmChart.Insecure = e.PipedConfig.IsInsecureChartRepository(chartRepoName)
 		}
 	}
+
+	e.appDir = ds.AppDir
 
 	loader := provider.NewLoader(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, appCfg.Input, e.GitClient, e.Logger)
 	e.Logger.Info("start executing kubernetes stage",
@@ -167,6 +175,48 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	}
 
 	if len(errs) > 0 {
+		return model.StageStatus_STAGE_FAILURE
+	}
+	return model.StageStatus_STAGE_SUCCESS
+}
+
+func (e *rollbackExecutor) ensureScriptRunRollback(ctx context.Context) model.StageStatus {
+	e.LogPersister.Infof("Runnnig commands for rollback...")
+
+	onRollback, ok := e.Stage.Metadata["onRollback"]
+	if !ok {
+		e.LogPersister.Error("onRollback metadata is missing")
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	if onRollback == "" {
+		e.LogPersister.Info("No commands to run")
+		return model.StageStatus_STAGE_SUCCESS
+	}
+
+	envStr, ok := e.Stage.Metadata["env"]
+	env := make(map[string]string, 0)
+	if ok {
+		_ = json.Unmarshal([]byte(envStr), &env)
+	}
+
+	for _, v := range strings.Split(onRollback, "\n") {
+		if v != "" {
+			e.LogPersister.Infof("   %s", v)
+		}
+	}
+
+	envs := make([]string, 0, len(env))
+	for key, value := range env {
+		envs = append(envs, key+"="+value)
+	}
+
+	cmd := exec.Command("/bin/sh", "-l", "-c", onRollback)
+	cmd.Dir = e.appDir
+	cmd.Env = append(os.Environ(), envs...)
+	cmd.Stdout = e.LogPersister
+	cmd.Stderr = e.LogPersister
+	if err := cmd.Run(); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 	return model.StageStatus_STAGE_SUCCESS
