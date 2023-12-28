@@ -31,17 +31,19 @@ func loadTargetGroups(targetGroups config.ECSTargetGroups) (*types.LoadBalancer,
 	}
 
 	primary := &types.LoadBalancer{
-		TargetGroupArn: aws.String(targetGroups.Primary.TargetGroupArn),
-		ContainerName:  aws.String(targetGroups.Primary.ContainerName),
-		ContainerPort:  aws.Int32(int32(targetGroups.Primary.ContainerPort)),
+		TargetGroupArn:   aws.String(targetGroups.Primary.TargetGroupArn),
+		ContainerName:    aws.String(targetGroups.Primary.ContainerName),
+		ContainerPort:    aws.Int32(int32(targetGroups.Primary.ContainerPort)),
+		LoadBalancerName: aws.String(targetGroups.Primary.LoadBalancerName),
 	}
 
 	var canary *types.LoadBalancer
 	if targetGroups.Canary != nil {
 		canary = &types.LoadBalancer{
-			TargetGroupArn: aws.String(targetGroups.Canary.TargetGroupArn),
-			ContainerName:  aws.String(targetGroups.Canary.ContainerName),
-			ContainerPort:  aws.Int32(int32(targetGroups.Canary.ContainerPort)),
+			TargetGroupArn:   aws.String(targetGroups.Canary.TargetGroupArn),
+			ContainerName:    aws.String(targetGroups.Canary.ContainerName),
+			ContainerPort:    aws.Int32(int32(targetGroups.Canary.ContainerPort)),
+			LoadBalancerName: aws.String(targetGroups.Canary.LoadBalancerName),
 		}
 	}
 
