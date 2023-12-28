@@ -50,9 +50,10 @@ func TestLoadTargetGroup(t *testing.T) {
 			},
 			expected: []*types.LoadBalancer{
 				{
-					TargetGroupArn: aws.String("primary-target-group-arn"),
-					ContainerName:  aws.String("primary-container-name"),
-					ContainerPort:  aws.Int32(80),
+					TargetGroupArn:   aws.String("primary-target-group-arn"),
+					ContainerName:    aws.String("primary-container-name"),
+					ContainerPort:    aws.Int32(80),
+					LoadBalancerName: aws.String(""),
 				},
 				nil,
 			},
@@ -74,14 +75,16 @@ func TestLoadTargetGroup(t *testing.T) {
 			},
 			expected: []*types.LoadBalancer{
 				{
-					TargetGroupArn: aws.String("primary-target-group-arn"),
-					ContainerName:  aws.String("primary-container-name"),
-					ContainerPort:  aws.Int32(80),
+					TargetGroupArn:   aws.String("primary-target-group-arn"),
+					ContainerName:    aws.String("primary-container-name"),
+					ContainerPort:    aws.Int32(80),
+					LoadBalancerName: aws.String(""),
 				},
 				{
-					TargetGroupArn: aws.String("canary-target-group-arn"),
-					ContainerName:  aws.String("canary-container-name"),
-					ContainerPort:  aws.Int32(80),
+					TargetGroupArn:   aws.String("canary-target-group-arn"),
+					ContainerName:    aws.String("canary-container-name"),
+					ContainerPort:    aws.Int32(80),
+					LoadBalancerName: aws.String(""),
 				},
 			},
 			expectedErr: false,
