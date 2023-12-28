@@ -369,34 +369,37 @@ func (s *scheduler) Run(ctx context.Context) error {
 	// we start rollback stage if the auto-rollback option is true.
 	if deploymentStatus == model.DeploymentStatus_DEPLOYMENT_CANCELLED ||
 		deploymentStatus == model.DeploymentStatus_DEPLOYMENT_FAILURE {
-		if stage, ok := s.deployment.FindRollbackStage(); ok {
+
+		if rollbackStages, ok := s.deployment.FindRollbackStages(); ok {
 			// Update to change deployment status to ROLLING_BACK.
 			if err := s.reportDeploymentStatusChanged(ctx, model.DeploymentStatus_DEPLOYMENT_ROLLING_BACK, statusReason); err != nil {
 				return err
 			}
 
-			// Start running rollback stage.
-			var (
-				sig, handler = executor.NewStopSignal()
-				doneCh       = make(chan struct{})
-			)
-			go func() {
-				rbs := *stage
-				rbs.Requires = []string{lastStage.Id}
-				s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
-					return s.executorRegistry.RollbackExecutor(s.deployment.Kind, in)
-				})
-				close(doneCh)
-			}()
+			for _, stage := range rollbackStages {
+				// Start running rollback stage.
+				var (
+					sig, handler = executor.NewStopSignal()
+					doneCh       = make(chan struct{})
+				)
+				go func() {
+					rbs := *stage
+					rbs.Requires = []string{lastStage.Id}
+					s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
+						return s.executorRegistry.RollbackExecutor(s.deployment.Kind, in)
+					})
+					close(doneCh)
+				}()
 
-			select {
-			case <-ctx.Done():
-				handler.Terminate()
-				<-doneCh
-				return nil
+				select {
+				case <-ctx.Done():
+					handler.Terminate()
+					<-doneCh
+					return nil
 
-			case <-doneCh:
-				break
+				case <-doneCh:
+					break
+				}
 			}
 		}
 	}

@@ -587,12 +587,56 @@ func TestFindRollbackStage(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			d := &Deployment{
 				Stages: tt.stages,
 			}
 			stage, found := d.FindRollbackStage()
 			assert.Equal(t, tt.wantStage, stage)
+			assert.Equal(t, tt.wantStageFound, found)
+		})
+	}
+}
+
+func TestFindRollbackStags(t *testing.T) {
+	tests := []struct {
+		name           string
+		stages         []*PipelineStage
+		wantStages     []*PipelineStage
+		wantStageFound bool
+	}{
+		{
+			name: "found",
+			stages: []*PipelineStage{
+				{Name: StageK8sSync.String()},
+				{Name: StageRollback.String()},
+				{Name: StageScriptRunRollback.String()},
+			},
+			wantStages: []*PipelineStage{
+				{Name: StageRollback.String()},
+				{Name: StageScriptRunRollback.String()},
+			},
+			wantStageFound: true,
+		},
+		{
+			name: "not found",
+			stages: []*PipelineStage{
+				{Name: StageK8sSync.String()},
+			},
+			wantStages:     []*PipelineStage{},
+			wantStageFound: false,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			d := &Deployment{
+				Stages: tt.stages,
+			}
+			stages, found := d.FindRollbackStages()
+			assert.Equal(t, tt.wantStages, stages)
 			assert.Equal(t, tt.wantStageFound, found)
 		})
 	}
