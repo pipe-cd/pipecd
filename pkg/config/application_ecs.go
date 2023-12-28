@@ -95,9 +95,10 @@ type ECSTargetGroups struct {
 }
 
 type ECSTargetGroup struct {
-	TargetGroupArn string `json:"targetGroupArn"`
-	ContainerName  string `json:"containerName"`
-	ContainerPort  int    `json:"containerPort"`
+	TargetGroupArn   string `json:"targetGroupArn"`
+	ContainerName    string `json:"containerName"`
+	ContainerPort    int    `json:"containerPort"`
+	LoadBalancerName string `json:"loadBalancerName"`
 }
 
 // ECSSyncStageOptions contains all configurable values for a ECS_SYNC stage.
