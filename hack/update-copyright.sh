@@ -14,6 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ROOT='./'
+ROOT_DIR='./'
 
-for i in `grep -rlZ "Copyright [0-9]\{4\} The PipeCD Authors" $ROOT`; do sed -i '' "s/Copyright [0-9]\{4\} The PipeCD Authors/Copyright $(date +%Y) The PipeCD Authors/g" $i; done
+for i in `grep -rlZ "Copyright [0-9]\{4\} The PipeCD Authors" $ROOT_DIR`; do sed -i '' "s/Copyright [0-9]\{4\} The PipeCD Authors/Copyright $(date +%Y) The PipeCD Authors/g" $i; done
