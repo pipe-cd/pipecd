@@ -183,6 +183,10 @@ update/docsy:
 	rm -rf docs/themes/docsy
 	git clone --recurse-submodules --depth 1 https://github.com/google/docsy.git docs/themes/docsy
 
+.PHONY: update/copyright
+update/copyright:
+	./hack/update-copyright.sh
+
 # Generate commands
 
 .PHONY: gen/code
