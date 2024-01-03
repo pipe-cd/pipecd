@@ -14,15 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# parse params
-while [[ -z "$1" ]]
-do
-    echo "Missing release version..."
-    exit 1
-done
+ROOT_DIR='./'
 
-echo "Prepare release for version $1"
-
-# Update release file
-RELEASE_FILE=RELEASE
-sed -i '' "s/tag:.*/tag: $1/" $RELEASE_FILE
+for i in `grep -rlZ "Copyright [0-9]\{4\} The PipeCD Authors" $ROOT_DIR`; do sed -i '' "s/Copyright [0-9]\{4\} The PipeCD Authors/Copyright $(date +%Y) The PipeCD Authors/g" $i; done
