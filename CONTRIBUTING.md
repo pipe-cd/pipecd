@@ -119,7 +119,7 @@ Don't stress too much about PR titles. The maintainers will help you get the tit
 By contributing to PipeCD, you agree that your contributions will be licensed under the Apache License Version 2. Include the following header at the top of your new file(s):
 
 ```go
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.

@@ -647,12 +647,19 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | approvers | []string | List of username who has permission to approve. | Yes |
 | minApproverNum | int | Number of minimum needed approvals to make this stage complete. Default is 1. | No |
 
-### CustomSyncStageOptions
+### CustomSyncStageOptions (deprecated)
 | Field | Type | Description | Required |
 |-|-|-|-|
 | timeout | duration | The maximum time the stage can be taken to run. Default is `6h`| No |
 | envs | map[string]string | Environment variables used with scripts. | No |
 | run | string | Script run on this stage. | Yes |
+
+### ScriptRunStageOptions
+| Field | Type | Description | Required |
+|-|-|-|-|
+| run | string | Script run on this stage. | Yes |
+| env | map[string]string | Environment variables used with scripts. | No |
+| timeout | duration | The maximum time the stage can be taken to run. Default is `6h`| No |
 
 ## PostSync
 

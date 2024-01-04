@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,9 +17,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
+	"net/http"
 	"regexp"
 
 	"github.com/google/go-github/v39/github"
@@ -123,7 +122,7 @@ func (g *githubClient) parseGitHubEvent(ctx context.Context) (*githubEvent, erro
 	}
 
 	eventPath := os.Getenv("GITHUB_EVENT_PATH")
-	payload, err := ioutil.ReadFile(eventPath)
+	payload, err := os.ReadFile(eventPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read event payload: %v", err)
 	}
