@@ -16,6 +16,7 @@ package initialize
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/goccy/go-yaml"
@@ -28,20 +29,19 @@ import (
 func TestGenerateECSConfig(t *testing.T) {
 	testcases := []struct {
 		name         string
-		inputs       []string // mock for user's input
+		inputs       string // mock for user's input
 		expectedFile string
 		expectedErr  error
 	}{
 		{
 			name: "valid config for ECSApp",
-			inputs: []string{
-				"myApp",
-				"serviceDef.yaml",
-				"taskDef.yaml",
-				"arn:aws:elasticloadbalancing:ap-northeast-1:123456789012:targetgroup/xxx/xxx",
-				"web",
-				"80",
-			},
+			inputs: `myApp
+				serviceDef.yaml
+				taskDef.yaml
+				arn:aws:elasticloadbalancing:ap-northeast-1:123456789012:targetgroup/xxx/xxx
+				web
+				80
+				`,
 			expectedFile: "testdata/ecs-app.yaml",
 			expectedErr:  nil,
 		},
@@ -50,7 +50,9 @@ func TestGenerateECSConfig(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Mock user's input.
-			reader := prompt.NewMockReader(tc.inputs)
+			strReader := strings.NewReader(tc.inputs)
+			// reader := prompt.NewMockReader(tc.inputs)
+			reader := prompt.NewReader(strReader)
 
 			// Generate the config.
 			cfg, err := generateECSConfig(reader)

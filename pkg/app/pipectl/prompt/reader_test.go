@@ -15,7 +15,7 @@
 package prompt
 
 import (
-	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -53,8 +53,8 @@ func TestReadString(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			in := bytes.NewBufferString(tc.input)
-			r := stdinReader{in: in}
+			strReader := strings.NewReader(tc.input)
+			r := NewReader(strReader)
 			actual, e := r.ReadString("anyPrompt")
 			assert.Equal(t, tc.expected, actual)
 			assert.Equal(t, tc.expectedErr, e != nil)
@@ -94,8 +94,8 @@ func TestReadStrings(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			in := bytes.NewBufferString(tc.input)
-			r := stdinReader{in: in}
+			strReader := strings.NewReader(tc.input)
+			r := NewReader(strReader)
 			actual, e := r.ReadStrings("anyPrompt")
 			assert.Equal(t, tc.expected, actual)
 			assert.Equal(t, tc.expectedErr, e != nil)
@@ -135,8 +135,8 @@ func TestReadInt(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			in := bytes.NewBufferString(tc.input)
-			r := stdinReader{in: in}
+			strReader := strings.NewReader(tc.input)
+			r := NewReader(strReader)
 			actual, e := r.ReadInt("anyPrompt")
 			assert.Equal(t, tc.expected, actual)
 			assert.Equal(t, tc.expectedErr, e != nil)
@@ -176,8 +176,8 @@ func TestReadStringRequired(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			in := bytes.NewBufferString(tc.input)
-			r := stdinReader{in: in}
+			strReader := strings.NewReader(tc.input)
+			r := NewReader(strReader)
 			actual, e := r.ReadStringRequired("anyPrompt")
 			assert.Equal(t, tc.expected, actual)
 			assert.Equal(t, tc.expectedErr, e != nil)

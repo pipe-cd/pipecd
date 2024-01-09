@@ -18,7 +18,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -45,12 +44,13 @@ type Reader interface {
 
 // stdReader is a Reader implementation that reads input from stdin.
 type stdinReader struct {
-	in io.Reader
+	reader bufio.Reader
 }
 
-// returns a new Reader implementation that reads input from stdin.
-func NewStdinReader() Reader {
-	return &stdinReader{in: bufio.NewReader(os.Stdin)}
+func NewReader(in io.Reader) Reader {
+	return &stdinReader{
+		reader: *bufio.NewReader(in),
+	}
 }
 
 func (r *stdinReader) ReadString(message string) (string, error) {
@@ -71,8 +71,7 @@ func (r *stdinReader) ReadString(message string) (string, error) {
 
 func (r *stdinReader) ReadStrings(message string) ([]string, error) {
 	fmt.Printf("%s ", message)
-	reader := bufio.NewReader(r.in)
-	line, e := reader.ReadString('\n')
+	line, e := r.reader.ReadString('\n')
 	if e != nil {
 		return nil, e
 	}

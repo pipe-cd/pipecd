@@ -74,7 +74,7 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 		}
 	}()
 
-	reader := prompt.NewStdinReader()
+	reader := prompt.NewReader(os.Stdin)
 	return generateConfig(ctx, input, reader)
 }
 
