@@ -1,7 +1,7 @@
 ---
-title: "Install Control Plane"
-linkTitle: "Install Control Plane"
-weight: 2
+title: "Installing Control Plane on Kubernetes"
+linkTitle: "Installing Control Plane on Kubernetes"
+weight: 1
 description: >
   This page describes how to install control plane on a Kubernetes cluster.
 ---
@@ -31,7 +31,7 @@ cat /dev/urandom | head -c64 | base64 > encryption-key
 Control Plane Architecture
 </p>
 
-The Control Plane of PipeCD is constructed by several components, as shown in the above graph (for more in detail please read [Control Plane architecture overview docs](../../user-guide/managing-controlplane/architecture-overview/)). As mentioned in the graph, the PipeCD's data can be stored in one of the provided fully-managed or self-managed services. So you have to decide which kind of [data store](../../user-guide/managing-controlplane/architecture-overview/#data-store) and [file store](../../user-guide/managing-controlplane/architecture-overview/#file-store) you want to use and prepare a Control Plane configuration file suitable for that choice.
+The Control Plane of PipeCD is constructed by several components, as shown in the above graph (for more in detail please read [Control Plane architecture overview docs](../../../user-guide/managing-controlplane/architecture-overview/)). As mentioned in the graph, the PipeCD's data can be stored in one of the provided fully-managed or self-managed services. So you have to decide which kind of [data store](../../../user-guide/managing-controlplane/architecture-overview/#data-store) and [file store](../../../user-guide/managing-controlplane/architecture-overview/#file-store) you want to use and prepare a Control Plane configuration file suitable for that choice.
 
 #### Using Firestore and GCS
 
@@ -60,7 +60,7 @@ spec:
       credentialsFile: /etc/pipecd-secret/gcs-service-account
 ```
 
-See [ConfigurationReference](../../user-guide/managing-controlplane/configuration-reference/) for the full configuration.
+See [ConfigurationReference](../../../user-guide/managing-controlplane/configuration-reference/) for the full configuration.
 
 After all, install the Control Plane as bellow:
 
@@ -96,7 +96,7 @@ spec:
       autoCreateBucket: true
 ```
 
-You can find required configurations to use other datastores and filestores from [ConfigurationReference](../../user-guide/managing-controlplane/configuration-reference/).
+You can find required configurations to use other datastores and filestores from [ConfigurationReference](../../../user-guide/managing-controlplane/configuration-reference/).
 
 __Caution__: In case of using `MySQL` as Control Plane's datastore, please note that the implementation of PipeCD requires some features that only available on [MySQL v8](https://dev.mysql.com/doc/refman/8.0/en/), make sure your MySQL service is satisfied the requirement.
 
@@ -127,7 +127,7 @@ On that page, you will see the list of registered projects and a link to registe
 
 Once a new project has been registered, a static admin (username, password) will be automatically generated for the project admin, you can use that to login via the login form in the above section.
 
-For more about adding a new project in detail, please read the following [docs](../../user-guide/managing-controlplane/adding-a-project/).
+For more about adding a new project in detail, please read the following [docs](../../../user-guide/managing-controlplane/adding-a-project/).
 
 ### 4'. Upgrade Control Plane version
 
