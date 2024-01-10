@@ -26,9 +26,9 @@ type Prompt struct {
 	bufReader bufio.Reader
 }
 
-type PromptInput struct {
+type Input struct {
 	Message       string
-	TargetPointer any // *つけたりして、ポインタ型を強制できないかな
+	TargetPointer any
 	Required      bool
 }
 
@@ -38,7 +38,7 @@ func NewPrompt(in io.Reader) Prompt {
 	}
 }
 
-func (prompt *Prompt) Run(inputs []PromptInput) error {
+func (prompt *Prompt) Run(inputs []Input) error {
 	for _, in := range inputs {
 		if e := prompt.run(in); e != nil {
 			return e
@@ -47,7 +47,7 @@ func (prompt *Prompt) Run(inputs []PromptInput) error {
 	return nil
 }
 
-func (prompt *Prompt) run(in PromptInput) error {
+func (prompt *Prompt) run(in Input) error {
 	fmt.Printf("%s ", in.Message)
 	line, e := prompt.bufReader.ReadString('\n')
 	if e != nil {

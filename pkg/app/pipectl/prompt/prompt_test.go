@@ -21,76 +21,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRunStringSlice(t *testing.T) {
-	t.Parallel()
-
-	testcases := []struct {
-		name          string
-		in            PromptInput
-		str           string // user's input
-		expectedValue []string
-		expectedErr   bool
-	}{
-		{
-			name: "valid string slice",
-			in: PromptInput{
-				Message:       "anyPrompt",
-				TargetPointer: new([]string),
-				Required:      false,
-			},
-			str:           "foo bar\n",
-			expectedValue: []string{"foo", "bar"},
-			expectedErr:   false,
-		},
-		{
-			name: "empty but not required",
-			in: PromptInput{
-				Message:       "anyPrompt",
-				TargetPointer: new([]string),
-				Required:      false,
-			},
-			str:           "\n",
-			expectedValue: nil,
-			expectedErr:   false,
-		},
-		{
-			name: "missing required",
-			in: PromptInput{
-				Message:       "anyPrompt",
-				TargetPointer: new([]string),
-				Required:      true,
-			},
-			str:           "\n",
-			expectedValue: nil,
-			expectedErr:   true,
-		},
-	}
-
-	for _, tc := range testcases {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			strReader := strings.NewReader(tc.str)
-			p := NewPrompt(strReader)
-			e := p.run(tc.in)
-			assert.Equal(t, tc.expectedErr, e != nil)
-			assert.Equal(t, tc.expectedValue, *tc.in.TargetPointer.(*[]string))
-		})
-	}
-}
-
 func TestRunString(t *testing.T) {
 	t.Parallel()
 
 	testcases := []struct {
 		name          string
-		in            PromptInput
+		in            Input
 		str           string // user's input
 		expectedValue string
 		expectedErr   bool
 	}{
 		{
 			name: "valid string",
-			in: PromptInput{
+			in: Input{
 				Message:       "anyPrompt",
 				TargetPointer: new(string),
 				Required:      false,
@@ -101,7 +44,7 @@ func TestRunString(t *testing.T) {
 		},
 		{
 			name: "empty but not required",
-			in: PromptInput{
+			in: Input{
 				Message:       "anyPrompt",
 				TargetPointer: new(string),
 				Required:      false,
@@ -112,7 +55,7 @@ func TestRunString(t *testing.T) {
 		},
 		{
 			name: "missing required",
-			in: PromptInput{
+			in: Input{
 				Message:       "anyPrompt",
 				TargetPointer: new(string),
 				Required:      true,
@@ -123,7 +66,7 @@ func TestRunString(t *testing.T) {
 		},
 		{
 			name: "two many arguments",
-			in: PromptInput{
+			in: Input{
 				Message:       "anyPrompt",
 				TargetPointer: new(string),
 				Required:      false,
@@ -146,19 +89,76 @@ func TestRunString(t *testing.T) {
 	}
 }
 
+func TestRunStringSlice(t *testing.T) {
+	t.Parallel()
+
+	testcases := []struct {
+		name          string
+		in            Input
+		str           string // user's input
+		expectedValue []string
+		expectedErr   bool
+	}{
+		{
+			name: "valid string slice",
+			in: Input{
+				Message:       "anyPrompt",
+				TargetPointer: new([]string),
+				Required:      false,
+			},
+			str:           "foo bar\n",
+			expectedValue: []string{"foo", "bar"},
+			expectedErr:   false,
+		},
+		{
+			name: "empty but not required",
+			in: Input{
+				Message:       "anyPrompt",
+				TargetPointer: new([]string),
+				Required:      false,
+			},
+			str:           "\n",
+			expectedValue: nil,
+			expectedErr:   false,
+		},
+		{
+			name: "missing required",
+			in: Input{
+				Message:       "anyPrompt",
+				TargetPointer: new([]string),
+				Required:      true,
+			},
+			str:           "\n",
+			expectedValue: nil,
+			expectedErr:   true,
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			strReader := strings.NewReader(tc.str)
+			p := NewPrompt(strReader)
+			e := p.run(tc.in)
+			assert.Equal(t, tc.expectedErr, e != nil)
+			assert.Equal(t, tc.expectedValue, *tc.in.TargetPointer.(*[]string))
+		})
+	}
+}
+
 func TestRunInt(t *testing.T) {
 	t.Parallel()
 
 	testcases := []struct {
 		name          string
-		in            PromptInput
+		in            Input
 		str           string // user's input
 		expectedValue int
 		expectedErr   bool
 	}{
 		{
 			name: "valid int",
-			in: PromptInput{
+			in: Input{
 				Message:       "anyPrompt",
 				TargetPointer: new(int),
 				Required:      false,
@@ -169,7 +169,7 @@ func TestRunInt(t *testing.T) {
 		},
 		{
 			name: "invalid int",
-			in: PromptInput{
+			in: Input{
 				Message:       "anyPrompt",
 				TargetPointer: new(int),
 				Required:      false,
@@ -180,7 +180,7 @@ func TestRunInt(t *testing.T) {
 		},
 		{
 			name: "empty but not required",
-			in: PromptInput{
+			in: Input{
 				Message:       "anyPrompt",
 				TargetPointer: new(int),
 				Required:      false,
@@ -191,7 +191,7 @@ func TestRunInt(t *testing.T) {
 		},
 		{
 			name: "missing required",
-			in: PromptInput{
+			in: Input{
 				Message:       "anyPrompt",
 				TargetPointer: new(int),
 				Required:      true,
@@ -219,14 +219,14 @@ func TestRunBool(t *testing.T) {
 
 	testcases := []struct {
 		name          string
-		in            PromptInput
+		in            Input
 		str           string // user's input
 		expectedValue bool
 		expectedErr   bool
 	}{
 		{
 			name: "valid bool",
-			in: PromptInput{
+			in: Input{
 				Message:       "anyPrompt",
 				TargetPointer: new(bool),
 				Required:      false,
@@ -237,7 +237,7 @@ func TestRunBool(t *testing.T) {
 		},
 		{
 			name: "invalid bool",
-			in: PromptInput{
+			in: Input{
 				Message:       "anyPrompt",
 				TargetPointer: new(bool),
 				Required:      false,
@@ -248,7 +248,7 @@ func TestRunBool(t *testing.T) {
 		},
 		{
 			name: "empty but not required",
-			in: PromptInput{
+			in: Input{
 				Message:       "anyPrompt",
 				TargetPointer: new(bool),
 				Required:      false,
@@ -259,7 +259,7 @@ func TestRunBool(t *testing.T) {
 		},
 		{
 			name: "missing required",
-			in: PromptInput{
+			in: Input{
 				Message:       "anyPrompt",
 				TargetPointer: new(bool),
 				Required:      true,
