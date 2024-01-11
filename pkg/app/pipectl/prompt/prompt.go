@@ -38,18 +38,18 @@ func NewPrompt(in io.Reader) Prompt {
 	}
 }
 
-// Run sequentially asks for inputs and set the values to the target pointers.
-func (prompt *Prompt) Run(inputs []Input) error {
+// RunSlice sequentially asks for inputs and set the values to the target pointers.
+func (prompt *Prompt) RunSlice(inputs []Input) error {
 	for _, in := range inputs {
-		if e := prompt.RunOne(in); e != nil {
+		if e := prompt.Run(in); e != nil {
 			return e
 		}
 	}
 	return nil
 }
 
-// RunOne asks for an input and set the value to the target pointer.
-func (prompt *Prompt) RunOne(input Input) error {
+// Run asks for an input and set the value to the target pointer.
+func (prompt *Prompt) Run(input Input) error {
 	fmt.Printf("%s: ", input.Message)
 	line, e := prompt.bufReader.ReadString('\n')
 	if e != nil {

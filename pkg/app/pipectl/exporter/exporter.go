@@ -50,7 +50,7 @@ func askOverwrite() (overwrite bool, err error) {
 		Required:      false,
 	}
 	p := prompt.NewPrompt(os.Stdin)
-	err = p.RunOne(overwriteInput)
+	err = p.Run(overwriteInput)
 	if err != nil {
 		return false, err
 	}

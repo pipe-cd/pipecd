@@ -34,14 +34,9 @@ type command struct {
 	// Add flags if needed.
 }
 
-var (
-	platform   int
-	exportPath string
-)
-
 const (
-	platformKubernetes = 0
-	platformECS        = 1
+	platformKubernetes string = "0"
+	platformECS        string = "1"
 )
 
 // Use genericConfigs in order to simplify using the spec.
@@ -90,8 +85,14 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 }
 
 func generateConfig(ctx context.Context, input cli.Input, p prompt.Prompt) error {
+	// user's inputs
+	var (
+		platform   string
+		exportPath string
+	)
+
 	platformInput := prompt.Input{
-		Message:       fmt.Sprintf("Which platform? Enter the number [%d]Kubernetes [%d]ECS", platformKubernetes, platformECS),
+		Message:       fmt.Sprintf("Which platform? Enter the number [%s]Kubernetes [%s]ECS", platformKubernetes, platformECS),
 		TargetPointer: &platform,
 		Required:      true,
 	}
@@ -101,7 +102,7 @@ func generateConfig(ctx context.Context, input cli.Input, p prompt.Prompt) error
 		Required:      false,
 	}
 
-	err := p.Run([]prompt.Input{platformInput})
+	err := p.Run(platformInput)
 	if err != nil {
 		return fmt.Errorf("invalid platform number: %v", err)
 	}
@@ -109,12 +110,11 @@ func generateConfig(ctx context.Context, input cli.Input, p prompt.Prompt) error
 	var cfg *genericConfig
 	switch platform {
 	case platformKubernetes:
-		// cfg, err = generateKubernetesConfig(...)
 		panic("not implemented")
 	case platformECS:
 		cfg, err = generateECSConfig(p)
 	default:
-		return fmt.Errorf("invalid platform number: %d", platform)
+		return fmt.Errorf("invalid platform number: %s", platform)
 	}
 
 	if err != nil {
@@ -127,21 +127,30 @@ func generateConfig(ctx context.Context, input cli.Input, p prompt.Prompt) error
 	}
 
 	fmt.Println("### The config model was successfully prepared. Move on to exporting. ###")
-	err = p.RunOne(exportPathInput)
+	err = p.Run(exportPathInput)
 	if err != nil {
+		printConfig(cfgBytes)
 		return err
 	}
+	err = export(cfgBytes, exportPath)
+	if err != nil {
+		return nil
+	}
+
+	return nil
+}
+
+func export(cfgBytes []byte, exportPath string) error {
 	if len(exportPath) == 0 {
+		// if the path is not specified, print to stdout
 		printConfig(cfgBytes)
 		return nil
 	}
-	err = exporter.Export(cfgBytes, exportPath)
+	err := exporter.Export(cfgBytes, exportPath)
 	if err != nil {
-		// fmt.Printf("Failed to export to %s: %v\n", exportPath, err)
 		printConfig(cfgBytes)
 		return err
 	}
-
 	return nil
 }
 

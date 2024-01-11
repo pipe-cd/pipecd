@@ -27,6 +27,8 @@ import (
 )
 
 func TestGenerateECSConfig(t *testing.T) {
+	t.Parallel()
+
 	testcases := []struct {
 		name         string
 		inputs       string // mock for user's input
@@ -56,6 +58,7 @@ func TestGenerateECSConfig(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			reader := strings.NewReader(tc.inputs)
 			prompt := prompt.NewPrompt(reader)

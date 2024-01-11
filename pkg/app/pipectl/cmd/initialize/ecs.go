@@ -70,7 +70,7 @@ func generateECSConfig(p prompt.Prompt) (*genericConfig, error) {
 		},
 	}
 
-	err := p.Run(inputs)
+	err := p.RunSlice(inputs)
 	if err != nil {
 		return nil, err
 	}

@@ -83,7 +83,7 @@ func TestRunString(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			strReader := strings.NewReader(tc.str)
 			p := NewPrompt(strReader)
-			err := p.RunOne(tc.in)
+			err := p.Run(tc.in)
 			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expectedValue, *tc.in.TargetPointer.(*string))
 		})
@@ -140,7 +140,7 @@ func TestRunStringSlice(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			strReader := strings.NewReader(tc.str)
 			p := NewPrompt(strReader)
-			err := p.RunOne(tc.in)
+			err := p.Run(tc.in)
 			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expectedValue, *tc.in.TargetPointer.(*[]string))
 		})
@@ -219,7 +219,7 @@ func TestRunInt(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			strReader := strings.NewReader(tc.str)
 			p := NewPrompt(strReader)
-			err := p.RunOne(tc.in)
+			err := p.Run(tc.in)
 			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expectedValue, *tc.in.TargetPointer.(*int))
 		})
@@ -320,7 +320,7 @@ func TestRunBool(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			strReader := strings.NewReader(tc.str)
 			p := NewPrompt(strReader)
-			err := p.RunOne(tc.in)
+			err := p.Run(tc.in)
 			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expectedValue, *tc.in.TargetPointer.(*bool))
 		})
