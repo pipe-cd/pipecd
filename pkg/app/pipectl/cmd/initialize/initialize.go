@@ -24,6 +24,7 @@ import (
 	"github.com/goccy/go-yaml"
 	"github.com/spf13/cobra"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/exporter"
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/prompt"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -32,6 +33,16 @@ import (
 type command struct {
 	// Add flags if needed.
 }
+
+var (
+	platform   int
+	exportPath string
+)
+
+const (
+	platformKubernetes = 0
+	platformECS        = 1
+)
 
 // Use genericConfigs in order to simplify using the spec.
 type genericConfig struct {
@@ -67,32 +78,43 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 	go func() {
 		select {
 		case s := <-signals:
-			fmt.Printf(" Interrupted by signal: %v\n", s)
+			fmt.Printf("Interrupted by signal: %v\n", s)
 			cancel()
 			os.Exit(1)
 		case <-ctx.Done():
 		}
 	}()
 
-	reader := prompt.NewReader(os.Stdin)
-	return generateConfig(ctx, input, reader)
+	p := prompt.NewPrompt(os.Stdin)
+	return generateConfig(ctx, input, p)
 }
 
-func generateConfig(ctx context.Context, input cli.Input, reader prompt.Reader) error {
-	platform, err := reader.ReadString("Which platform? Enter the number [0]Kubernetes [1]ECS : ")
+func generateConfig(ctx context.Context, input cli.Input, p prompt.Prompt) error {
+	platformInput := prompt.Input{
+		Message:       fmt.Sprintf("Which platform? Enter the number [%d]Kubernetes [%d]ECS", platformKubernetes, platformECS),
+		TargetPointer: &platform,
+		Required:      true,
+	}
+	exportPathInput := prompt.Input{
+		Message:       "Path to save the config (if not specified, it goes to stdout)",
+		TargetPointer: &exportPath,
+		Required:      false,
+	}
+
+	err := p.Run([]prompt.Input{platformInput})
 	if err != nil {
-		return fmt.Errorf("invalid input: %v`", err)
+		return fmt.Errorf("invalid platform number: %v", err)
 	}
 
 	var cfg *genericConfig
 	switch platform {
-	case "0": // Kubernetes
-		// cfg, err = generateKubernetesConfig(in)
+	case platformKubernetes:
+		// cfg, err = generateKubernetesConfig(...)
 		panic("not implemented")
-	case "1": // ECS
-		cfg, err = generateECSConfig(reader)
+	case platformECS:
+		cfg, err = generateECSConfig(p)
 	default:
-		return fmt.Errorf("invalid platform number: %s", platform)
+		return fmt.Errorf("invalid platform number: %d", platform)
 	}
 
 	if err != nil {
@@ -105,56 +127,22 @@ func generateConfig(ctx context.Context, input cli.Input, reader prompt.Reader) 
 	}
 
 	fmt.Println("### The config model was successfully prepared. Move on to exporting. ###")
-	exportConfig(cfgBytes, reader)
+	err = p.RunOne(exportPathInput)
+	if err != nil {
+		return err
+	}
+	if len(exportPath) == 0 {
+		printConfig(cfgBytes)
+		return nil
+	}
+	err = exporter.Export(cfgBytes, exportPath)
+	if err != nil {
+		// fmt.Printf("Failed to export to %s: %v\n", exportPath, err)
+		printConfig(cfgBytes)
+		return err
+	}
 
 	return nil
-}
-
-func exportConfig(configBytes []byte, reader prompt.Reader) {
-	path, err := reader.ReadString("Path to save the config (if not specified, it goes to stdout) : ")
-	if err != nil {
-		fmt.Printf("Failed to read path %s \n", path)
-		printConfig(configBytes)
-		return
-	}
-	if len(path) == 0 {
-		// If the target path is not specified, print to stdout.
-		printConfig(configBytes)
-		return
-	}
-
-	// Check if the file/directory already exists and ask if overwrite it.
-	if fInfo, err := os.Stat(path); err == nil {
-		if fInfo.IsDir() {
-			fmt.Printf("The path %s is a directory. Please specify a file path.\n", path)
-			printConfig(configBytes)
-			return
-		}
-
-		// If the file exists, ask if overwrite it.
-		overwrite, err := reader.ReadStringRequired(fmt.Sprintf("The file %s already exists. Overwrite it? [y/n] : ", path))
-		if err != nil {
-			fmt.Printf("Invalid input for overwrite(string): %v\n", err)
-			printConfig(configBytes)
-			return
-		}
-		if overwrite != "y" && overwrite != "Y" {
-			fmt.Println("Cancelled exporting the config.")
-			printConfig(configBytes)
-			return
-		}
-	}
-
-	// If the file does not exist or overwrite, write to the path, including validating.
-	fmt.Printf("Start exporting the config to %s\n", path)
-	err = os.WriteFile(path, configBytes, 0644)
-	if err != nil {
-		fmt.Printf("Failed to export the config to %s: %v\n", path, err)
-		// If failed, print the config to avoid losing it.
-		printConfig(configBytes)
-	} else {
-		fmt.Printf("Successfully exported the config to %s\n", path)
-	}
 }
 
 // Print the config to stdout.

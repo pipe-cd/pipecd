@@ -15,6 +15,7 @@
 package prompt
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -29,7 +30,7 @@ func TestRunString(t *testing.T) {
 		in            Input
 		str           string // user's input
 		expectedValue string
-		expectedErr   bool
+		expectedErr   error
 	}{
 		{
 			name: "valid string",
@@ -40,7 +41,7 @@ func TestRunString(t *testing.T) {
 			},
 			str:           "foo\n",
 			expectedValue: "foo",
-			expectedErr:   false,
+			expectedErr:   nil,
 		},
 		{
 			name: "empty but not required",
@@ -51,7 +52,7 @@ func TestRunString(t *testing.T) {
 			},
 			str:           "\n",
 			expectedValue: "",
-			expectedErr:   false,
+			expectedErr:   nil,
 		},
 		{
 			name: "missing required",
@@ -62,7 +63,7 @@ func TestRunString(t *testing.T) {
 			},
 			str:           "\n",
 			expectedValue: "",
-			expectedErr:   true,
+			expectedErr:   fmt.Errorf("this field is required"),
 		},
 		{
 			name: "two many arguments",
@@ -73,7 +74,7 @@ func TestRunString(t *testing.T) {
 			},
 			str:           "foo bar\n",
 			expectedValue: "",
-			expectedErr:   true,
+			expectedErr:   fmt.Errorf("too many arguments"),
 		},
 	}
 
@@ -82,8 +83,8 @@ func TestRunString(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			strReader := strings.NewReader(tc.str)
 			p := NewPrompt(strReader)
-			e := p.run(tc.in)
-			assert.Equal(t, tc.expectedErr, e != nil)
+			err := p.RunOne(tc.in)
+			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expectedValue, *tc.in.TargetPointer.(*string))
 		})
 	}
@@ -97,7 +98,7 @@ func TestRunStringSlice(t *testing.T) {
 		in            Input
 		str           string // user's input
 		expectedValue []string
-		expectedErr   bool
+		expectedErr   error
 	}{
 		{
 			name: "valid string slice",
@@ -108,7 +109,7 @@ func TestRunStringSlice(t *testing.T) {
 			},
 			str:           "foo bar\n",
 			expectedValue: []string{"foo", "bar"},
-			expectedErr:   false,
+			expectedErr:   nil,
 		},
 		{
 			name: "empty but not required",
@@ -119,7 +120,7 @@ func TestRunStringSlice(t *testing.T) {
 			},
 			str:           "\n",
 			expectedValue: nil,
-			expectedErr:   false,
+			expectedErr:   nil,
 		},
 		{
 			name: "missing required",
@@ -130,7 +131,7 @@ func TestRunStringSlice(t *testing.T) {
 			},
 			str:           "\n",
 			expectedValue: nil,
-			expectedErr:   true,
+			expectedErr:   fmt.Errorf("this field is required"),
 		},
 	}
 
@@ -139,8 +140,8 @@ func TestRunStringSlice(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			strReader := strings.NewReader(tc.str)
 			p := NewPrompt(strReader)
-			e := p.run(tc.in)
-			assert.Equal(t, tc.expectedErr, e != nil)
+			err := p.RunOne(tc.in)
+			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expectedValue, *tc.in.TargetPointer.(*[]string))
 		})
 	}
@@ -154,7 +155,7 @@ func TestRunInt(t *testing.T) {
 		in            Input
 		str           string // user's input
 		expectedValue int
-		expectedErr   bool
+		expectedErr   error
 	}{
 		{
 			name: "valid int",
@@ -165,7 +166,7 @@ func TestRunInt(t *testing.T) {
 			},
 			str:           "123\n",
 			expectedValue: 123,
-			expectedErr:   false,
+			expectedErr:   nil,
 		},
 		{
 			name: "invalid int",
@@ -176,7 +177,7 @@ func TestRunInt(t *testing.T) {
 			},
 			str:           "abc\n",
 			expectedValue: 0,
-			expectedErr:   true,
+			expectedErr:   fmt.Errorf("this field should be an int value"),
 		},
 		{
 			name: "empty but not required",
@@ -187,7 +188,7 @@ func TestRunInt(t *testing.T) {
 			},
 			str:           "\n",
 			expectedValue: 0,
-			expectedErr:   false,
+			expectedErr:   nil,
 		},
 		{
 			name: "missing required",
@@ -198,7 +199,18 @@ func TestRunInt(t *testing.T) {
 			},
 			str:           "\n",
 			expectedValue: 0,
-			expectedErr:   true,
+			expectedErr:   fmt.Errorf("this field is required"),
+		},
+		{
+			name: "too many arguments",
+			in: Input{
+				Message:       "anyPrompt",
+				TargetPointer: new(int),
+				Required:      true,
+			},
+			str:           "12 34\n",
+			expectedValue: 0,
+			expectedErr:   fmt.Errorf("too many arguments"),
 		},
 	}
 
@@ -207,8 +219,8 @@ func TestRunInt(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			strReader := strings.NewReader(tc.str)
 			p := NewPrompt(strReader)
-			e := p.run(tc.in)
-			assert.Equal(t, tc.expectedErr, e != nil)
+			err := p.RunOne(tc.in)
+			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expectedValue, *tc.in.TargetPointer.(*int))
 		})
 	}
@@ -222,7 +234,7 @@ func TestRunBool(t *testing.T) {
 		in            Input
 		str           string // user's input
 		expectedValue bool
-		expectedErr   bool
+		expectedErr   error
 	}{
 		{
 			name: "valid bool",
@@ -233,7 +245,29 @@ func TestRunBool(t *testing.T) {
 			},
 			str:           "true\n",
 			expectedValue: true,
-			expectedErr:   false,
+			expectedErr:   nil,
+		},
+		{
+			name: "y means true",
+			in: Input{
+				Message:       "anyPrompt",
+				TargetPointer: new(bool),
+				Required:      false,
+			},
+			str:           "y\n",
+			expectedValue: true,
+			expectedErr:   nil,
+		},
+		{
+			name: "n means false",
+			in: Input{
+				Message:       "anyPrompt",
+				TargetPointer: new(bool),
+				Required:      false,
+			},
+			str:           "n\n",
+			expectedValue: false,
+			expectedErr:   nil,
 		},
 		{
 			name: "invalid bool",
@@ -244,7 +278,7 @@ func TestRunBool(t *testing.T) {
 			},
 			str:           "abc\n",
 			expectedValue: false,
-			expectedErr:   true,
+			expectedErr:   fmt.Errorf("this field should be a bool value"),
 		},
 		{
 			name: "empty but not required",
@@ -255,7 +289,7 @@ func TestRunBool(t *testing.T) {
 			},
 			str:           "\n",
 			expectedValue: false,
-			expectedErr:   false,
+			expectedErr:   nil,
 		},
 		{
 			name: "missing required",
@@ -266,7 +300,18 @@ func TestRunBool(t *testing.T) {
 			},
 			str:           "\n",
 			expectedValue: false,
-			expectedErr:   true,
+			expectedErr:   fmt.Errorf("this field is required"),
+		},
+		{
+			name: "too many arguments",
+			in: Input{
+				Message:       "anyPrompt",
+				TargetPointer: new(bool),
+				Required:      true,
+			},
+			str:           "true false\n",
+			expectedValue: false,
+			expectedErr:   fmt.Errorf("too many arguments"),
 		},
 	}
 
@@ -275,8 +320,8 @@ func TestRunBool(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			strReader := strings.NewReader(tc.str)
 			p := NewPrompt(strReader)
-			e := p.run(tc.in)
-			assert.Equal(t, tc.expectedErr, e != nil)
+			err := p.RunOne(tc.in)
+			assert.Equal(t, tc.expectedErr, err)
 			assert.Equal(t, tc.expectedValue, *tc.in.TargetPointer.(*bool))
 		})
 	}

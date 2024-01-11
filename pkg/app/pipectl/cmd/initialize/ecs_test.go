@@ -31,10 +31,10 @@ func TestGenerateECSConfig(t *testing.T) {
 		name         string
 		inputs       string // mock for user's input
 		expectedFile string
-		expectedErr  error
+		expectedErr  bool
 	}{
 		{
-			name: "valid config for ECSApp",
+			name: "valid inputs",
 			inputs: `myApp
 				serviceDef.yaml
 				taskDef.yaml
@@ -43,31 +43,39 @@ func TestGenerateECSConfig(t *testing.T) {
 				80
 				`,
 			expectedFile: "testdata/ecs-app.yaml",
-			expectedErr:  nil,
+			expectedErr:  false,
+		},
+		{
+			name: "missing required",
+			inputs: `myApp
+				serviceDef.yaml
+				 `,
+			expectedFile: "",
+			expectedErr:  true,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Mock user's input.
-			strReader := strings.NewReader(tc.inputs)
-			// reader := prompt.NewMockReader(tc.inputs)
-			reader := prompt.NewReader(strReader)
+			reader := strings.NewReader(tc.inputs)
+			prompt := prompt.NewPrompt(reader)
 
-			// Generate the config.
-			cfg, err := generateECSConfig(reader)
-			assert.Equal(t, tc.expectedErr, err)
+			// Generate the config
+			cfg, err := generateECSConfig(prompt)
+			assert.Equal(t, tc.expectedErr, err != nil)
 
-			// Compare the YAML output
-			yml, err := yaml.Marshal(cfg)
-			assert.NoError(t, err)
-			file, err := os.ReadFile(tc.expectedFile)
-			assert.NoError(t, err)
-			assert.Equal(t, string(file), string(yml))
+			if err == nil {
+				// Compare the YAML output
+				yml, err := yaml.Marshal(cfg)
+				assert.NoError(t, err)
+				file, err := os.ReadFile(tc.expectedFile)
+				assert.NoError(t, err)
+				assert.Equal(t, string(file), string(yml))
 
-			// Check if the YAML output is compatible with the original Config model
-			_, err = config.DecodeYAML(yml)
-			assert.NoError(t, err)
+				// Check if the YAML output is compatible with the original Config model
+				_, err = config.DecodeYAML(yml)
+				assert.NoError(t, err)
+			}
 		})
 	}
 }

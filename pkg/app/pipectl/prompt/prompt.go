@@ -38,44 +38,40 @@ func NewPrompt(in io.Reader) Prompt {
 	}
 }
 
+// Run sequentially asks for inputs and set the values to the target pointers.
 func (prompt *Prompt) Run(inputs []Input) error {
 	for _, in := range inputs {
-		if e := prompt.run(in); e != nil {
+		if e := prompt.RunOne(in); e != nil {
 			return e
 		}
 	}
 	return nil
 }
 
-func (prompt *Prompt) run(in Input) error {
-	fmt.Printf("%s ", in.Message)
+// RunOne asks for an input and set the value to the target pointer.
+func (prompt *Prompt) RunOne(input Input) error {
+	fmt.Printf("%s: ", input.Message)
 	line, e := prompt.bufReader.ReadString('\n')
 	if e != nil {
 		return e
 	}
+	// split by spaces
 	fields := strings.Fields(line)
 
 	if len(fields) == 0 {
-		if in.Required {
+		if input.Required {
 			return fmt.Errorf("this field is required")
 		} else {
 			return nil
 		}
 	}
 
-	fmt.Println("fields[0]:", fields[0])
-
-	switch p := in.TargetPointer.(type) {
+	switch p := input.TargetPointer.(type) {
 	case *string:
 		if len(fields) > 1 {
 			return fmt.Errorf("too many arguments")
 		}
 		*p = fields[0]
-
-		fmt.Println("p:", p)
-		fmt.Println("*p:", *p)
-		fmt.Println("&p:", &p)
-
 	case *[]string:
 		*p = fields
 	case *int:
@@ -84,18 +80,26 @@ func (prompt *Prompt) run(in Input) error {
 		}
 		n, e := strconv.Atoi(fields[0])
 		if e != nil {
-			return fmt.Errorf("this field should be an int value: %s", fields[0])
+			return fmt.Errorf("this field should be an int value")
 		}
 		*p = n
 	case *bool:
 		if len(fields) > 1 {
 			return fmt.Errorf("too many arguments")
 		}
-		b, e := strconv.ParseBool(fields[0])
-		if e != nil {
-			return fmt.Errorf("this field should be a bool value: %s", fields[0])
+
+		switch fields[0] {
+		case "y", "Y":
+			*p = true
+		case "n", "N":
+			*p = false
+		default:
+			b, e := strconv.ParseBool(fields[0])
+			if e != nil {
+				return fmt.Errorf("this field should be a bool value")
+			}
+			*p = b
 		}
-		*p = b
 	default:
 		return fmt.Errorf("unsupported type: %T", p)
 	}
