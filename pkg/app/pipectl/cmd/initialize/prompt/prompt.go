@@ -46,8 +46,8 @@ func NewPrompt(in io.Reader) Prompt {
 // RunSlice sequentially asks for inputs and set the values to the target pointers.
 func (p *Prompt) RunSlice(inputs []Input) error {
 	for _, in := range inputs {
-		if e := p.Run(in); e != nil {
-			return e
+		if err := p.Run(in); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -56,9 +56,9 @@ func (p *Prompt) RunSlice(inputs []Input) error {
 // Run asks for an input and set the value to the target pointer.
 func (p *Prompt) Run(input Input) error {
 	fmt.Printf("%s: ", input.Message)
-	line, e := p.bufReader.ReadString('\n')
-	if e != nil {
-		return e
+	line, err := p.bufReader.ReadString('\n')
+	if err != nil {
+		return err
 	}
 	// split by spaces
 	fields := strings.Fields(line)
@@ -83,8 +83,8 @@ func (p *Prompt) Run(input Input) error {
 		if len(fields) > 1 {
 			return fmt.Errorf("too many arguments")
 		}
-		n, e := strconv.Atoi(fields[0])
-		if e != nil {
+		n, err := strconv.Atoi(fields[0])
+		if err != nil {
 			return fmt.Errorf("this field should be an int value")
 		}
 		*tp = n
@@ -99,8 +99,8 @@ func (p *Prompt) Run(input Input) error {
 		case "n", "N":
 			*tp = false
 		default:
-			b, e := strconv.ParseBool(fields[0])
-			if e != nil {
+			b, err := strconv.ParseBool(fields[0])
+			if err != nil {
 				return fmt.Errorf("this field should be a bool value")
 			}
 			*tp = b
