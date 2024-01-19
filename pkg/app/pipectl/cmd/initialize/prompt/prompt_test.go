@@ -81,6 +81,7 @@ func TestRunString(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			strReader := strings.NewReader(tc.str)
 			p := NewPrompt(strReader)
 			err := p.Run(tc.in)
@@ -138,6 +139,7 @@ func TestRunStringSlice(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			strReader := strings.NewReader(tc.str)
 			p := NewPrompt(strReader)
 			err := p.Run(tc.in)
@@ -217,6 +219,7 @@ func TestRunInt(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			strReader := strings.NewReader(tc.str)
 			p := NewPrompt(strReader)
 			err := p.Run(tc.in)
@@ -318,6 +321,7 @@ func TestRunBool(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			strReader := strings.NewReader(tc.str)
 			p := NewPrompt(strReader)
 			err := p.Run(tc.in)

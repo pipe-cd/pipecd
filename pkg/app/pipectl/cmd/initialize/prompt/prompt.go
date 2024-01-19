@@ -22,14 +22,19 @@ import (
 	"strings"
 )
 
+// Prompt is a helper for asking inputs from users.
 type Prompt struct {
 	bufReader bufio.Reader
 }
 
+// Input represents an query to ask from users.
 type Input struct {
-	Message       string
+	// Message is a message to show when asking for an input. e.g. "Which platform to use?"
+	Message string
+	// TargetPointer is a pointer to the target variable to set the value of the input.
 	TargetPointer any
-	Required      bool
+	// Required indicates whether this input is required or not.
+	Required bool
 }
 
 func NewPrompt(in io.Reader) Prompt {
@@ -39,9 +44,9 @@ func NewPrompt(in io.Reader) Prompt {
 }
 
 // RunSlice sequentially asks for inputs and set the values to the target pointers.
-func (prompt *Prompt) RunSlice(inputs []Input) error {
+func (p *Prompt) RunSlice(inputs []Input) error {
 	for _, in := range inputs {
-		if e := prompt.Run(in); e != nil {
+		if e := p.Run(in); e != nil {
 			return e
 		}
 	}
@@ -49,9 +54,9 @@ func (prompt *Prompt) RunSlice(inputs []Input) error {
 }
 
 // Run asks for an input and set the value to the target pointer.
-func (prompt *Prompt) Run(input Input) error {
+func (p *Prompt) Run(input Input) error {
 	fmt.Printf("%s: ", input.Message)
-	line, e := prompt.bufReader.ReadString('\n')
+	line, e := p.bufReader.ReadString('\n')
 	if e != nil {
 		return e
 	}
@@ -66,14 +71,14 @@ func (prompt *Prompt) Run(input Input) error {
 		}
 	}
 
-	switch p := input.TargetPointer.(type) {
+	switch tp := input.TargetPointer.(type) {
 	case *string:
 		if len(fields) > 1 {
 			return fmt.Errorf("too many arguments")
 		}
-		*p = fields[0]
+		*tp = fields[0]
 	case *[]string:
-		*p = fields
+		*tp = fields
 	case *int:
 		if len(fields) > 1 {
 			return fmt.Errorf("too many arguments")
@@ -82,7 +87,7 @@ func (prompt *Prompt) Run(input Input) error {
 		if e != nil {
 			return fmt.Errorf("this field should be an int value")
 		}
-		*p = n
+		*tp = n
 	case *bool:
 		if len(fields) > 1 {
 			return fmt.Errorf("too many arguments")
@@ -90,18 +95,18 @@ func (prompt *Prompt) Run(input Input) error {
 
 		switch fields[0] {
 		case "y", "Y":
-			*p = true
+			*tp = true
 		case "n", "N":
-			*p = false
+			*tp = false
 		default:
 			b, e := strconv.ParseBool(fields[0])
 			if e != nil {
 				return fmt.Errorf("this field should be a bool value")
 			}
-			*p = b
+			*tp = b
 		}
 	default:
-		return fmt.Errorf("unsupported type: %T", p)
+		return fmt.Errorf("unsupported type: %T", tp)
 	}
 	return nil
 }

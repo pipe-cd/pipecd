@@ -22,7 +22,7 @@ import (
 	"github.com/goccy/go-yaml"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipectl/prompt"
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/initialize/prompt"
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
@@ -60,6 +60,7 @@ func TestGenerateECSConfig(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			reader := strings.NewReader(tc.inputs)
 			prompt := prompt.NewPrompt(reader)
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipectl/prompt"
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/initialize/prompt"
 )
 
 // Export the bytes to the path.

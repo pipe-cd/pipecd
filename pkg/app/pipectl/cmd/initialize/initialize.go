@@ -24,8 +24,8 @@ import (
 	"github.com/goccy/go-yaml"
 	"github.com/spf13/cobra"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipectl/exporter"
-	"github.com/pipe-cd/pipecd/pkg/app/pipectl/prompt"
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/initialize/exporter"
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/initialize/prompt"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
@@ -35,8 +35,9 @@ type command struct {
 }
 
 const (
-	platformKubernetes string = "0"
-	platformECS        string = "1"
+	// platform numbers to select which platform to use.
+	platformKubernetes string = "0" // for KubernetesApp
+	platformECS        string = "1" // for ECSApp
 )
 
 // Use genericConfigs in order to simplify using the spec.
