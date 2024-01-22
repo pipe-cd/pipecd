@@ -29,7 +29,7 @@ import (
 
 const (
 	SharedConfigurationDirName = ".pipe"
-	versionV1Beta1             = "pipecd.dev/v1beta1"
+	VersionV1Beta1             = "pipecd.dev/v1beta1"
 )
 
 // Kind represents the kind of configuration the data contains.
@@ -172,7 +172,7 @@ type validator interface {
 
 // Validate validates the value of all fields.
 func (c *Config) Validate() error {
-	if c.APIVersion != versionV1Beta1 {
+	if c.APIVersion != VersionV1Beta1 {
 		return fmt.Errorf("unsupported version: %s", c.APIVersion)
 	}
 	if c.Kind == "" {

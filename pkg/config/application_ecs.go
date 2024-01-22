@@ -47,32 +47,32 @@ func (s *ECSApplicationSpec) Validate() error {
 
 type ECSDeploymentInput struct {
 	// The Amazon Resource Name (ARN) that identifies the cluster.
-	ClusterArn string `json:"clusterArn"`
+	ClusterArn string `json:"clusterArn,omitempty"`
 	// The launch type on which to run your task.
 	// https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_types.html
 	// Default is FARGATE
-	LaunchType string `json:"launchType" default:"FARGATE"`
+	LaunchType string `json:"launchType,omitempty" default:"FARGATE"`
 	// VpcConfiguration ECSVpcConfiguration `json:"awsvpcConfiguration"`
-	AwsVpcConfiguration ECSVpcConfiguration `json:"awsvpcConfiguration"`
+	AwsVpcConfiguration ECSVpcConfiguration `json:"awsvpcConfiguration,omitempty" default:""`
 	// The name of service definition file placing in application directory.
 	ServiceDefinitionFile string `json:"serviceDefinitionFile"`
 	// The name of task definition file placing in application directory.
 	// Default is taskdef.json
 	TaskDefinitionFile string `json:"taskDefinitionFile" default:"taskdef.json"`
 	// ECSTargetGroups
-	TargetGroups ECSTargetGroups `json:"targetGroups"`
+	TargetGroups ECSTargetGroups `json:"targetGroups,omitempty"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
 	// Run standalone task during deployment.
 	// Default is true.
-	RunStandaloneTask *bool `json:"runStandaloneTask" default:"true"`
+	RunStandaloneTask *bool `json:"runStandaloneTask,omitempty" default:"true"`
 	// How the ECS service is accessed.
 	// Possible values are:
 	//  - ELB -  The service is accessed via ELB and target groups.
 	//  - SERVICE_DISCOVERY -  The service is accessed via ECS Service Discovery.
 	// Default is ELB.
-	AccessType string `json:"accessType" default:"ELB"`
+	AccessType string `json:"accessType,omitempty" default:"ELB"`
 }
 
 func (in *ECSDeploymentInput) IsStandaloneTask() bool {
@@ -84,21 +84,21 @@ func (in *ECSDeploymentInput) IsAccessedViaELB() bool {
 }
 
 type ECSVpcConfiguration struct {
-	Subnets        []string
-	AssignPublicIP string
-	SecurityGroups []string
+	Subnets        []string `json:"subnets,omitempty"`
+	AssignPublicIP string   `json:"assignPublicIp,omitempty"`
+	SecurityGroups []string `json:"securityGroups,omitempty"`
 }
 
 type ECSTargetGroups struct {
-	Primary *ECSTargetGroup `json:"primary"`
-	Canary  *ECSTargetGroup `json:"canary"`
+	Primary *ECSTargetGroup `json:"primary,omitempty"`
+	Canary  *ECSTargetGroup `json:"canary,omitempty"`
 }
 
 type ECSTargetGroup struct {
-	TargetGroupArn   string `json:"targetGroupArn"`
-	ContainerName    string `json:"containerName"`
-	ContainerPort    int    `json:"containerPort"`
-	LoadBalancerName string `json:"loadBalancerName"`
+	TargetGroupArn   string `json:"targetGroupArn,omitempty"`
+	ContainerName    string `json:"containerName,omitempty"`
+	ContainerPort    int    `json:"containerPort,omitempty"`
+	LoadBalancerName string `json:"loadBalancerName,omitempty"`
 }
 
 // ECSSyncStageOptions contains all configurable values for a ECS_SYNC stage.
