@@ -29,10 +29,11 @@ import (
 	"time"
 
 	"github.com/manifoldco/promptui"
+	"github.com/spf13/cobra"
+
 	"github.com/pipe-cd/pipecd/pkg/backoff"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/version"
-	"github.com/spf13/cobra"
 )
 
 const (

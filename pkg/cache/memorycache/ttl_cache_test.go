@@ -19,24 +19,23 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/pipe-cd/pipecd/pkg/cache"
 )
 
 func TestTTLCache(t *testing.T) {
-	t.Run("test context cancel", func(t *testing.T) {
+	t.Run("remain a value after context canceled", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		c := NewTTLCache(ctx, 0, 5*time.Second)
 		err := c.Put("key-1", "value-1")
 		require.NoError(t, err)
 		cancel()
-		err = c.Put("key-2", "value-2")
-		require.NoError(t, err)
 		<-time.After(6 * time.Second)
-		value, err := c.Get("key-2")
+		value, err := c.Get("key-1")
 		require.NoError(t, err)
-		assert.Equal(t, "value-2", value)
+		assert.Equal(t, "value-1", value)
 	})
 	t.Run("test eviction", func(t *testing.T) {
 		c := NewTTLCache(context.TODO(), 0, 5*time.Second)
