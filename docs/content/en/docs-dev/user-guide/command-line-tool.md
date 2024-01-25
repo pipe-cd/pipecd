@@ -45,7 +45,7 @@ You can use pipectl to add and sync applications, wait for a deployment status.
 
 1. Add pipectl plugin to asdf. (If you have not yet `asdf add plugin add pipectl`.)
     ```console
-    asdf add plugin pipectl
+    asdf plugin add pipectl
     ```
 
 2. Install pipectl. Available versions are [here](https://github.com/pipe-cd/pipecd/releases).
