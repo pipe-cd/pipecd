@@ -35,6 +35,7 @@ func TestGenerateKubernetesConfig(t *testing.T) {
 		expectedFile string
 		expectedErr  bool
 	}{
+		// Kustomize
 		{
 			name: "valid inputs for Kustomize",
 			inputs: `myApp
@@ -53,11 +54,34 @@ func TestGenerateKubernetesConfig(t *testing.T) {
 			expectedFile: "testdata/k8s-app-kustomize-empty.yaml",
 			expectedErr:  false,
 		},
+		// Helm
 		{
-			name:         "missing required",
-			inputs:       `myApp`, // missing selecting kustomize or helm
-			expectedFile: "",
-			expectedErr:  true,
+			name: "valid inputs for Helm",
+			inputs: `myApp
+				1
+				3.13.1
+				`,
+			expectedFile: "testdata/k8s-app-helm.yaml",
+			expectedErr:  false,
+		},
+		{
+			name: "Helm specific fields are all empty",
+			inputs: `myApp
+				1
+				
+				`,
+			expectedFile: "testdata/k8s-app-helm-empty.yaml",
+			expectedErr:  false,
+		},
+		// Common in Kustomize & Helm
+		{
+			name: "Kustomize specific fields are all empty",
+			inputs: `myApp
+				0
+
+				`,
+			expectedFile: "testdata/k8s-app-kustomize-empty.yaml",
+			expectedErr:  false,
 		},
 	}
 

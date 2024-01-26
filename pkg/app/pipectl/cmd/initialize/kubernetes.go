@@ -65,8 +65,7 @@ func generateKubernetesConfig(p prompt.Prompt) (*genericConfig, error) {
 	case kustomize:
 		deploymentInput, err = kustomizeInput(p)
 	case helm:
-		panic("not implemented yet")
-		// deploymentInput, err = generateKubernetesHelmConfig(p)
+		deploymentInput, err = helmImput(p)
 	default:
 		return nil, errors.New("invalid number")
 	}
@@ -87,6 +86,7 @@ func generateKubernetesConfig(p prompt.Prompt) (*genericConfig, error) {
 	}, nil
 }
 
+// Genarate a KubernetesDeploymentInput for Kustomize
 func kustomizeInput(p prompt.Prompt) (*config.KubernetesDeploymentInput, error) {
 	var (
 		kustomizeVersion string
@@ -106,6 +106,30 @@ func kustomizeInput(p prompt.Prompt) (*config.KubernetesDeploymentInput, error) 
 
 	deploymentInput := &config.KubernetesDeploymentInput{
 		KustomizeVersion: kustomizeVersion,
+	}
+
+	return deploymentInput, nil
+}
+
+func helmImput(p prompt.Prompt) (*config.KubernetesDeploymentInput, error) {
+	var (
+		helmVersion string
+	)
+	inputs := []prompt.Input{
+		{
+			Message:       "Helm version",
+			TargetPointer: &helmVersion,
+			Required:      false,
+		},
+	}
+
+	err := p.RunSlice(inputs)
+	if err != nil {
+		return nil, err
+	}
+
+	deploymentInput := &config.KubernetesDeploymentInput{
+		HelmVersion: helmVersion,
 	}
 
 	return deploymentInput, nil
