@@ -56,21 +56,30 @@ func TestGenerateKubernetesConfig(t *testing.T) {
 		},
 		// Helm
 		{
-			name: "valid inputs for Helm",
+			name: "valid inputs for Helm remote chart",
 			inputs: `myApp
 				1
 				3.13.1
+				oci://ghcr.io/pipe-cd
+				chart/helloworld
+				v0.30.0
+				helm-remote-chart
+				values1.yaml values2.yaml
 				`,
-			expectedFile: "testdata/k8s-app-helm.yaml",
+			expectedFile: "testdata/k8s-app-helm-remote.yaml",
 			expectedErr:  false,
 		},
 		{
-			name: "Helm specific fields are all empty",
+			name: "valid inputs for Helm local chart",
 			inputs: `myApp
 				1
-				
+				3.13.1
+
+				../../local-modules/helm-charts/helloworld
+				helm-local-chart
+				values1.yaml values2.yaml
 				`,
-			expectedFile: "testdata/k8s-app-helm-empty.yaml",
+			expectedFile: "testdata/k8s-app-helm-local.yaml",
 			expectedErr:  false,
 		},
 		// Common in Kustomize & Helm

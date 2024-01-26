@@ -114,21 +114,104 @@ func kustomizeInput(p prompt.Prompt) (*config.KubernetesDeploymentInput, error) 
 func helmImput(p prompt.Prompt) (*config.KubernetesDeploymentInput, error) {
 	var (
 		helmVersion string
+
+		// remote chart
+		chartRepository string
+		chartName       string
+		chartVersion    string
+		// local chart
+		chartPath string
+
+		// helm options
+		releaseName string
+		valueFiles  []string
 	)
-	inputs := []prompt.Input{
+
+	basicInputs := []prompt.Input{
 		{
 			Message:       "Helm version",
 			TargetPointer: &helmVersion,
 			Required:      false,
 		},
+		{
+			Message:       "Helm Chart Repository (if empty, use local chart)",
+			TargetPointer: &chartRepository,
+			Required:      false,
+		},
 	}
 
-	err := p.RunSlice(inputs)
+	// If chartRepository is not empty, use remote chart
+	remoteChartInputs := []prompt.Input{
+		{
+			Message:       "Name of the Helm Chart",
+			TargetPointer: &chartName,
+			Required:      true,
+		},
+		{
+			Message:       "Version of the Helm Chart",
+			TargetPointer: &chartVersion,
+			Required:      true,
+		},
+	}
+
+	// If chartRepository is empty, use local chart
+	localChartInputs := []prompt.Input{
+		{
+			Message:       "Relative path from the repository root to the chart directory",
+			TargetPointer: &chartPath,
+			Required:      true,
+		},
+	}
+
+	// Helm options
+	helmOptionsInputs := []prompt.Input{
+		{
+			Message:       "Release name of helm deployment",
+			TargetPointer: &releaseName,
+			Required:      false,
+		},
+		{
+			Message:       "Value files (separated by space)",
+			TargetPointer: &valueFiles,
+			Required:      false,
+		},
+	}
+
+	err := p.RunSlice(basicInputs)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(chartRepository) > 0 {
+		// Use remote chart
+		err = p.RunSlice(remoteChartInputs)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// Use local chart
+		err = p.RunSlice(localChartInputs)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = p.RunSlice(helmOptionsInputs)
 	if err != nil {
 		return nil, err
 	}
 
 	deploymentInput := &config.KubernetesDeploymentInput{
+		HelmChart: &config.InputHelmChart{
+			Repository: chartRepository,
+			Name:       chartName,
+			Version:    chartVersion,
+			Path:       chartPath,
+		},
+		HelmOptions: &config.InputHelmOptions{
+			ReleaseName: releaseName,
+			ValueFiles:  valueFiles,
+		},
 		HelmVersion: helmVersion,
 	}
 
