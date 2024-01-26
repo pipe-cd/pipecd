@@ -72,24 +72,24 @@ type KubernetesVariantLabel struct {
 type KubernetesDeploymentInput struct {
 	// List of manifest files in the application directory used to deploy.
 	// Empty means all manifest files in the directory will be used.
-	Manifests []string `json:"manifests"`
+	Manifests []string `json:"manifests,omitempty"`
 	// Version of kubectl will be used.
-	KubectlVersion string `json:"kubectlVersion"`
+	KubectlVersion string `json:"kubectlVersion,omitempty"`
 
 	// Version of kustomize will be used.
-	KustomizeVersion string `json:"kustomizeVersion"`
+	KustomizeVersion string `json:"kustomizeVersion,omitempty"`
 	// List of options that should be used by Kustomize commands.
-	KustomizeOptions map[string]string `json:"kustomizeOptions"`
+	KustomizeOptions map[string]string `json:"kustomizeOptions,omitempty"`
 
 	// Version of helm will be used.
-	HelmVersion string `json:"helmVersion"`
+	HelmVersion string `json:"helmVersion,omitempty"`
 	// Where to fetch helm chart.
-	HelmChart *InputHelmChart `json:"helmChart"`
+	HelmChart *InputHelmChart `json:"helmChart,omitempty"`
 	// Configurable parameters for helm commands.
-	HelmOptions *InputHelmOptions `json:"helmOptions"`
+	HelmOptions *InputHelmOptions `json:"helmOptions,omitempty"`
 
 	// The namespace where manifests will be applied.
-	Namespace string `json:"namespace"`
+	Namespace string `json:"namespace,omitempty"`
 
 	// Automatically reverts all deployment changes on failure.
 	// Default is true.
