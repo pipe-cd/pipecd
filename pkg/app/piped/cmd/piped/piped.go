@@ -275,6 +275,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	gitOptions := []git.Option{
 		git.WithUserName(cfg.Git.Username),
 		git.WithEmail(cfg.Git.Email),
+		git.WithAutoDetach(true),
 		git.WithLogger(input.Logger),
 	}
 	for _, repo := range cfg.GitHelmChartRepositories() {
@@ -456,6 +457,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		gc, err := git.NewClient(
 			git.WithUserName(cfg.Git.Username),
 			git.WithEmail(cfg.Git.Email),
+			git.WithAutoDetach(true),
 			git.WithLogger(input.Logger),
 		)
 		if err != nil {

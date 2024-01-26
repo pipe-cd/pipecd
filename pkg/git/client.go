@@ -49,9 +49,10 @@ type client struct {
 	mu        sync.Mutex
 	repoLocks map[string]*sync.Mutex
 
-	gitEnvs       []string
-	gitEnvsByRepo map[string][]string
-	logger        *zap.Logger
+	gitEnvs         []string
+	gitEnvsByRepo   map[string][]string
+	gitGCAutoDetach bool
+	logger          *zap.Logger
 }
 
 type Option func(*client)
@@ -90,6 +91,12 @@ func WithEmail(e string) Option {
 	}
 }
 
+func WithAutoDetach(a bool) Option {
+	return func(c *client) {
+		c.gitGCAutoDetach = a
+	}
+}
+
 // NewClient creates a new CLient instance for cloning git repositories.
 // After using Clean should be called to delete cache data.
 func NewClient(opts ...Option) (Client, error) {
@@ -104,13 +111,14 @@ func NewClient(opts ...Option) (Client, error) {
 	}
 
 	c := &client{
-		username:      defaultUsername,
-		email:         defaultEmail,
-		gitPath:       gitPath,
-		cacheDir:      cacheDir,
-		repoLocks:     make(map[string]*sync.Mutex),
-		gitEnvsByRepo: make(map[string][]string, 0),
-		logger:        zap.NewNop(),
+		username:        defaultUsername,
+		email:           defaultEmail,
+		gitPath:         gitPath,
+		cacheDir:        cacheDir,
+		repoLocks:       make(map[string]*sync.Mutex),
+		gitEnvsByRepo:   make(map[string][]string, 0),
+		gitGCAutoDetach: true,
+		logger:          zap.NewNop(),
 	}
 
 	for _, opt := range opts {
@@ -202,6 +210,10 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		if err := r.setUser(ctx, c.username, c.email); err != nil {
 			return nil, fmt.Errorf("failed to set user: %v", err)
 		}
+	}
+
+	if err := r.setAutoDetach(ctx, c.gitGCAutoDetach); err != nil {
+		return nil, fmt.Errorf("failed to set auto detach: %v", err)
 	}
 
 	// Because we did a local cloning so the remote url of origin
