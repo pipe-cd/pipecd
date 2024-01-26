@@ -65,7 +65,7 @@ func generateKubernetesConfig(p prompt.Prompt) (*genericConfig, error) {
 	case kustomize:
 		deploymentInput, err = kustomizeInput(p)
 	case helm:
-		deploymentInput, err = helmImput(p)
+		deploymentInput, err = helmInput(p)
 	default:
 		return nil, errors.New("invalid number")
 	}
@@ -111,7 +111,7 @@ func kustomizeInput(p prompt.Prompt) (*config.KubernetesDeploymentInput, error) 
 	return deploymentInput, nil
 }
 
-func helmImput(p prompt.Prompt) (*config.KubernetesDeploymentInput, error) {
+func helmInput(p prompt.Prompt) (*config.KubernetesDeploymentInput, error) {
 	var (
 		helmVersion string
 
