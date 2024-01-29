@@ -212,6 +212,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		}
 	}
 
+	logger.Info("setting gc.autoDetach", zap.Bool("gc.autoDetach", c.gitGCAutoDetach))
 	if err := r.setAutoDetach(ctx, c.gitGCAutoDetach); err != nil {
 		return nil, fmt.Errorf("failed to set auto detach: %v", err)
 	}
