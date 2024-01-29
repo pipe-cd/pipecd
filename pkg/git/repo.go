@@ -295,7 +295,7 @@ func (r *repo) setRemote(ctx context.Context, remote string) error {
 	return nil
 }
 
-func (r *repo) setAutoDetach(ctx context.Context, autoDetach bool) error {
+func (r *repo) setGCAutoDetach(ctx context.Context, autoDetach bool) error {
 	out, err := r.runGitCommand(ctx, "config", "gc.autoDetach", strconv.FormatBool(autoDetach))
 	if err != nil {
 		return formatCommandError(err, out)
