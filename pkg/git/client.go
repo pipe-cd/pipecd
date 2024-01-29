@@ -42,17 +42,17 @@ type Client interface {
 }
 
 type client struct {
-	username  string
-	email     string
-	gitPath   string
-	cacheDir  string
-	mu        sync.Mutex
-	repoLocks map[string]*sync.Mutex
+	username     string
+	email        string
+	gcAutoDetach bool // whether to be executed `git gc`in the foreground when some git commands (e.g. merge, commit and so on) are executed.
+	gitPath      string
+	cacheDir     string
+	mu           sync.Mutex
+	repoLocks    map[string]*sync.Mutex
 
-	gitEnvs         []string
-	gitEnvsByRepo   map[string][]string
-	gitGCAutoDetach bool
-	logger          *zap.Logger
+	gitEnvs       []string
+	gitEnvsByRepo map[string][]string
+	logger        *zap.Logger
 }
 
 type Option func(*client)
@@ -91,12 +91,6 @@ func WithEmail(e string) Option {
 	}
 }
 
-func WithAutoDetach(a bool) Option {
-	return func(c *client) {
-		c.gitGCAutoDetach = a
-	}
-}
-
 // NewClient creates a new CLient instance for cloning git repositories.
 // After using Clean should be called to delete cache data.
 func NewClient(opts ...Option) (Client, error) {
@@ -111,14 +105,14 @@ func NewClient(opts ...Option) (Client, error) {
 	}
 
 	c := &client{
-		username:        defaultUsername,
-		email:           defaultEmail,
-		gitPath:         gitPath,
-		cacheDir:        cacheDir,
-		repoLocks:       make(map[string]*sync.Mutex),
-		gitEnvsByRepo:   make(map[string][]string, 0),
-		gitGCAutoDetach: true,
-		logger:          zap.NewNop(),
+		username:      defaultUsername,
+		email:         defaultEmail,
+		gcAutoDetach:  true, // Enable this by default. See issue #4760, discussion #4758.
+		gitPath:       gitPath,
+		cacheDir:      cacheDir,
+		repoLocks:     make(map[string]*sync.Mutex),
+		gitEnvsByRepo: make(map[string][]string, 0),
+		logger:        zap.NewNop(),
 	}
 
 	for _, opt := range opts {
@@ -195,6 +189,11 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		args = append(args, "-b", branch)
 	}
 	args = append(args, repoCachePath, destination)
+
+	logger.Info("cloning a repo from cached one in local",
+		zap.String("src", repoCachePath),
+		zap.String("dst", destination),
+	)
 	if out, err := runGitCommand(ctx, c.gitPath, "", c.envsForRepo(remote), args...); err != nil {
 		logger.Error("failed to clone from local",
 			zap.String("out", string(out)),
@@ -212,8 +211,8 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		}
 	}
 
-	logger.Info("setting gc.autoDetach", zap.Bool("gc.autoDetach", c.gitGCAutoDetach), zap.String("r.dir", r.dir))
-	if err := r.setGCAutoDetach(ctx, c.gitGCAutoDetach); err != nil {
+	logger.Info("setting gc.autoDetach", zap.Bool("gc.autoDetach", c.gcAutoDetach))
+	if err := r.setGCAutoDetach(ctx, c.gcAutoDetach); err != nil {
 		return nil, fmt.Errorf("failed to set auto detach: %v", err)
 	}
 
