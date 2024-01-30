@@ -15,6 +15,7 @@
 package initialize
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -35,11 +36,13 @@ func TestGenerateECSConfig(t *testing.T) {
 		expectedFile string
 		expectedErr  bool
 	}{
+		// QuickSync
 		{
-			name: "valid inputs",
+			name: "valid inputs for QuickSync",
 			inputs: `myApp
 				serviceDef.yaml
 				taskDef.yaml
+				0
 				arn:aws:elasticloadbalancing:ap-northeast-1:123456789012:targetgroup/xxx/xxx
 				web
 				80
@@ -48,12 +51,33 @@ func TestGenerateECSConfig(t *testing.T) {
 			expectedErr:  false,
 		},
 		{
-			name: "missing required",
+			name: "missing required deploymentStrategy",
 			inputs: `myApp
 				serviceDef.yaml
-				 `,
+				taskDef.yaml
+				
+				`,
 			expectedFile: "",
 			expectedErr:  true,
+		},
+		// Canary
+		{
+			name: "valid inputs for Canary",
+			inputs: `myApp
+				serviceDef.yaml
+				taskDef.yaml
+				1
+				arn:aws:elasticloadbalancing:ap-northeast-1:123456789012:targetgroup/xxx/xxx
+				web
+				80
+				arn:aws:elasticloadbalancing:ap-northeast-1:123456789012:targetgroup/yyy/yyy
+				web
+				80
+				20
+				120
+				`,
+			expectedFile: "testdata/ecs-app-canary.yaml",
+			expectedErr:  false,
 		},
 	}
 
@@ -79,6 +103,8 @@ func TestGenerateECSConfig(t *testing.T) {
 				// Check if the YAML output is compatible with the original Config model
 				_, err = config.DecodeYAML(yml)
 				assert.NoError(t, err)
+			} else {
+				fmt.Println(err)
 			}
 		})
 	}
