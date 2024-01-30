@@ -181,7 +181,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 }
 
 func (e *rollbackExecutor) ensureScriptRunRollback(ctx context.Context) model.StageStatus {
-	e.LogPersister.Infof("Runnnig commands for rollback...")
+	e.LogPersister.Info("Runnnig commands for rollback...")
 
 	onRollback, ok := e.Stage.Metadata["onRollback"]
 	if !ok {
