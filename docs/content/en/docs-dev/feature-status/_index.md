@@ -131,12 +131,12 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Deployment Chain](../user-guide/managing-application/deployment-chain/) - Allow rolling out to multiple clusters gradually or promoting across environments | Alpha |
 | [Metrics](../user-guide/managing-controlplane/metrics/) - Dashboards for PipeCD and Piped metrics | Beta |
 
-## pipectl 
+## [pipectl](../user-guide/command-line-tool/)
 
-### init
+### pipectl init
 
 | Feature | Phase |
 |-|-|
-| Kubernetes - QuickSync | Alpha |
+| Kubernetes - QuickSync | Incubating |
 | ECS - QuickSync | Alpha |
-| ECS - Pipeline Sync | Alpha |
+| ECS - Pipeline Sync | Incubating |
