@@ -104,6 +104,7 @@ Available Commands:
   encrypt      Encrypt the plaintext entered in either stdin or the --input-file flag.
   event        Manage event resources.
   help         Help about any command
+  init         Generate an application config (app.pipecd.yaml) easily and interactively.
   piped        Manage piped resources.
   plan-preview Show plan preview against the specified commit.
   quickstart   Quick prepare PipeCD control plane in quickstart mode.
