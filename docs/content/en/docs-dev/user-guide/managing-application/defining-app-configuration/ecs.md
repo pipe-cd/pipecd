@@ -144,6 +144,11 @@ spec:
       - name: ECS_CANARY_CLEAN
 ```
 
+## NOTE
+
+- When you use ELB for deployments, all listener rules that have the same target groups as configured in app.pipecd.yaml will be controlled.
+- For more information and diagrams, see [Issue#4733 [ECS] Modify ELB listener rules other than defaults without adding config](https://github.com/pipe-cd/pipecd/pull/4733).
+
 ## Reference
 
 See [Configuration Reference](../../../configuration-reference/#ecs-application) for the full configuration.
