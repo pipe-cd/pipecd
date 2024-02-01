@@ -791,8 +791,8 @@ func parseCommitMsg(msg string, args argsTemplate) string {
 // makeBranchName generates a new branch name in the format {eventName}-{uuid} if newBranch is true.
 // If newBranch is false, the function returns the existing branch name.
 func makeBranchName(newBranch bool, eventName, branch string) string {
-	if !newBranch {
-		return branch
+	if newBranch {
+		return fmt.Sprintf("%s-%s", eventName, uuid.New().String())
 	}
-	return fmt.Sprintf("%s-%s", eventName, uuid.New().String())
+	return branch
 }
