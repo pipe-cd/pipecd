@@ -133,7 +133,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 
 ## [pipectl](../user-guide/command-line-tool/)
 
-### pipectl init
+### [pipectl init](../user-guide/command-line-tool.md#generating-an-application-config-apppipecdyaml)
 
 | Feature | Phase |
 |-|-|
