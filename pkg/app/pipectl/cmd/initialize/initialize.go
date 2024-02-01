@@ -51,9 +51,9 @@ func NewCommand() *cobra.Command {
 	c := &command{}
 	cmd := &cobra.Command{
 		Use:     "init",
-		Short:   "Generate a app.pipecd.yaml easily and interactively",
+		Short:   "Generate an application config (app.pipecd.yaml) easily and interactively.",
 		Example: `  pipectl init`,
-		Long:    "Generate a app.pipecd.yaml easily, interactively selecting options.",
+		Long:    "Generate an application config (app.pipecd.yaml) easily, interactively selecting options.",
 		RunE:    cli.WithContext(c.run),
 	}
 

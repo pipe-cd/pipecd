@@ -130,3 +130,13 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Insights](../user-guide/insights/) - Show the delivery performance of a team or an application | Incubating |
 | [Deployment Chain](../user-guide/managing-application/deployment-chain/) - Allow rolling out to multiple clusters gradually or promoting across environments | Alpha |
 | [Metrics](../user-guide/managing-controlplane/metrics/) - Dashboards for PipeCD and Piped metrics | Beta |
+
+## [pipectl](../user-guide/command-line-tool/)
+
+### [pipectl init](../user-guide/command-line-tool.md#generating-an-application-config-apppipecdyaml)
+
+| Feature | Phase |
+|-|-|
+| Kubernetes - QuickSync | Incubating |
+| ECS - QuickSync | Alpha |
+| ECS - Pipeline Sync | Incubating |
