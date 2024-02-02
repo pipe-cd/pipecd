@@ -108,6 +108,10 @@ const (
 	// all changes made by the CUSTOM_SYNC stage will be reverted to
 	// bring back the pre-deploy stage.
 	StageCustomSyncRollback Stage = "CUSTOM_SYNC_ROLLBACK"
+	// StageScriptRunRollback represents a state where
+	// all changes made by the SCRIPT_RUN_ROLLBACK stage will be reverted to
+	// bring back the pre-deploy stage.
+	StageScriptRunRollback Stage = "SCRIPT_RUN_ROLLBACK"
 )
 
 func (s Stage) String() string {

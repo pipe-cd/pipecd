@@ -27,6 +27,7 @@ const (
 	PredefinedStageECSSync            = "ECSSync"
 	PredefinedStageRollback           = "Rollback"
 	PredefinedStageCustomSyncRollback = "CustomSyncRollback"
+	PredefinedStageScriptRunRollback  = "ScriptRunRollback"
 )
 
 var predefinedStages = map[string]config.PipelineStage{
@@ -64,6 +65,11 @@ var predefinedStages = map[string]config.PipelineStage{
 		ID:   PredefinedStageCustomSyncRollback,
 		Name: model.StageCustomSyncRollback,
 		Desc: "Rollback the custom stages",
+	},
+	PredefinedStageScriptRunRollback: {
+		ID:   PredefinedStageScriptRunRollback,
+		Name: model.StageScriptRunRollback,
+		Desc: "Rollback the script run stage",
 	},
 }
 

@@ -154,6 +154,16 @@ func (d *Deployment) FindRollbackStage() (*PipelineStage, bool) {
 	return nil, false
 }
 
+func (d *Deployment) FindRollbackStages() ([]*PipelineStage, bool) {
+	rollbackStages := make([]*PipelineStage, 0, len(d.Stages))
+	for i, stage := range d.Stages {
+		if d.Stages[i].Name == StageRollback.String() || d.Stages[i].Name == StageScriptRunRollback.String() {
+			rollbackStages = append(rollbackStages, stage)
+		}
+	}
+	return rollbackStages, len(rollbackStages) > 0
+}
+
 // DeploymentStatusesFromStrings converts a list of strings to list of DeploymentStatus.
 func DeploymentStatusesFromStrings(statuses []string) ([]DeploymentStatus, error) {
 	out := make([]DeploymentStatus, 0, len(statuses))
