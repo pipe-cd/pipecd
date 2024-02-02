@@ -107,7 +107,7 @@ func NewClient(opts ...Option) (Client, error) {
 	c := &client{
 		username:      defaultUsername,
 		email:         defaultEmail,
-		gcAutoDetach:  true, // Enable this by default. See issue #4760, discussion #4758.
+		gcAutoDetach:  false, // Disable this by default. See issue #4760, discussion #4758.
 		gitPath:       gitPath,
 		cacheDir:      cacheDir,
 		repoLocks:     make(map[string]*sync.Mutex),
