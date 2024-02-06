@@ -8,7 +8,7 @@ description: >
 
 `SCRIPT_RUN` stage is one stage in the pipeline and you can execute any commands.
 
-> Note: This feature is at the alpha status and only for the application kind of KubernetesApp.
+> Note: This feature is at the alpha status and currently only for the application kind of KubernetesApp.
 
 ## How to configure SCRIPT_RUN stage
 
