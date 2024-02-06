@@ -38,12 +38,12 @@ This document explains the basic usage of [pprof](https://pkg.go.dev/net/http/pp
     ```
 
 3. Get the Execution Trace
-      ```bash
-      curl http://localhost:9085/debug/pprof/trace > trace.out
-      ```
-      This will save the execution trace data to a file named trace.out. You can then view this trace using the go tool trace command:
-      ```bash
-      go tool trace trace.out
-      ```
-      Please replace localhost:9085 with the actual address and port of your Piped's admin server.
+    ```bash
+    curl http://localhost:9085/debug/pprof/trace > trace.out
+    ```
+    This will save the execution trace data to a file named trace.out. You can then view this trace using the go tool trace command:
+    ```bash
+    go tool trace trace.out
+    ```
+    Please replace localhost:9085 with the actual address and port of your Piped's admin server.
 
