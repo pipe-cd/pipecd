@@ -443,6 +443,58 @@ One of `yamlField` or `regex` is required.
 | functionManifestFile | string | The name of function manifest file placing in application directory. Default is `function.yaml`. | No |
 | autoRollback | bool | Automatically reverts to the previous state when the deployment is failed. Default is `true`. | No |
 
+### Specific function.yaml
+
+| Field            | Type             | Description                        | Required |
+|------------------|------------------|------------------------------------|----------|
+| Name             | string           | Name of the Lambda function        | Yes      |
+| Role             | string           | IAM role ARN                       | Yes      |
+| ImageURI         | string           | URI of the container image         | Yes      |
+| S3Bucket         | string           | S3 bucket name for code package   | Yes      |
+| S3Key            | string           | S3 key for code package            | Yes      |
+| S3ObjectVersion  | string           | S3 object version for code package | Yes      |
+| SourceCode       | [SourceCode](#sourcecode)       | Git settings                | Yes      |
+| Handler          | string           | Lambda function handler            | Yes      |
+| Architectures    | [[]Architecture](#[]architecture)   | Supported architectures            | No       |
+| EphemeralStorage | [EphemeralStorage](#ephemeralstorage)| Ephemeral storage configuration    | No       |
+| Runtime          | string           | Runtime environment                | Yes      |
+| Memory           | int32            | Memory allocation (in MB)          | Yes      |
+| Timeout          | int32            | Function timeout (in seconds)      | Yes      |
+| Tags             | map[string]string| Key-value pairs for tags           | No       |
+| Environments     | map[string]string| Environment variables              | No       |
+| VPCConfig        | [VPCConfig](#vpcconfig)       | VPC configuration                  | No       |
+
+### SourceCode Definition
+
+| Field | Type   | Description              | Required |
+|-------|--------|--------------------------|----------|
+| Git   | string | Git repository URL       | Yes      |
+| Ref   | string | Git branch/tag/reference| Yes      |
+| Path  | string | Path within the repository | Yes    |
+
+### Architecture Definition
+
+| Field | Type   | Description            | Required |
+|-------|--------|------------------------|----------|
+| Name  | string | Name of the architecture | Yes     |
+
+### EphemeralStorage Definition
+
+| Field | Type  | Description                  | Required |
+|-------|-------|------------------------------|----------|
+| Size  | int32 | Size of the ephemeral storage| No       |
+
+### VPCConfig Definition
+
+| Field           | Type     | Description                 | Required |
+|-----------------|----------|-----------------------------|----------|
+| SecurityGroupIDs| []string | List of security group IDs  | No       |
+| SubnetIDs       | []string | List of subnet IDs          | No       |
+
+- Note
+    - See more Details
+        - [Configuration Lambda application](./managing-application/defining-app-configuration/lambda.md)
+
 ## LambdaQuickSync
 
 | Field | Type | Description | Required |
