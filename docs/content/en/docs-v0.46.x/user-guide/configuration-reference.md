@@ -455,7 +455,7 @@ One of `yamlField` or `regex` is required.
 | S3ObjectVersion  | string           | S3 object version for code package | Yes      |
 | SourceCode       | [SourceCode](#sourcecode)       | Git settings                | Yes      |
 | Handler          | string           | Lambda function handler            | Yes      |
-| Architectures    | [[]Architecture](#[]architecture)   | Supported architectures            | No       |
+| Architectures    | [[]Architecture](#architecture)   | Supported architectures            | No       |
 | EphemeralStorage | [EphemeralStorage](#ephemeralstorage)| Ephemeral storage configuration    | No       |
 | Runtime          | string           | Runtime environment                | Yes      |
 | Memory           | int32            | Memory allocation (in MB)          | Yes      |
@@ -464,7 +464,7 @@ One of `yamlField` or `regex` is required.
 | Environments     | map[string]string| Environment variables              | No       |
 | VPCConfig        | [VPCConfig](#vpcconfig)       | VPC configuration                  | No       |
 
-### SourceCode Definition
+### SourceCode
 
 | Field | Type   | Description              | Required |
 |-------|--------|--------------------------|----------|
@@ -472,19 +472,19 @@ One of `yamlField` or `regex` is required.
 | Ref   | string | Git branch/tag/reference| Yes      |
 | Path  | string | Path within the repository | Yes    |
 
-### Architecture Definition
+### Architecture
 
 | Field | Type   | Description            | Required |
 |-------|--------|------------------------|----------|
 | Name  | string | Name of the architecture | Yes     |
 
-### EphemeralStorage Definition
+### EphemeralStorage
 
 | Field | Type  | Description                  | Required |
 |-------|-------|------------------------------|----------|
 | Size  | int32 | Size of the ephemeral storage| No       |
 
-### VPCConfig Definition
+### VPCConfig
 
 | Field           | Type     | Description                 | Required |
 |-----------------|----------|-----------------------------|----------|
