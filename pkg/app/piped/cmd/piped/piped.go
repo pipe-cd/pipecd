@@ -86,6 +86,7 @@ type piped struct {
 	configFile      string
 	configData      string
 	configGCPSecret string
+	configEnvKey    string
 
 	insecure                             bool
 	certFile                             string
@@ -118,6 +119,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&p.configFile, "config-file", p.configFile, "The path to the configuration file.")
 	cmd.Flags().StringVar(&p.configData, "config-data", p.configData, "The base64 encoded string of the configuration data.")
 	cmd.Flags().StringVar(&p.configGCPSecret, "config-gcp-secret", p.configGCPSecret, "The resource ID of secret that contains Piped config and be stored in GCP SecretManager.")
+	cmd.Flags().StringVar(&p.configEnvKey, "config-env-key", p.configEnvKey, "The env variable key to the configuration.")
 
 	cmd.Flags().BoolVar(&p.insecure, "insecure", p.insecure, "Whether disabling transport security while connecting to control-plane.")
 	cmd.Flags().StringVar(&p.certFile, "cert-file", p.certFile, "The path to the TLS certificate file.")
@@ -615,6 +617,22 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 			return nil, fmt.Errorf("failed to load config from SecretManager (%w)", err)
 		}
 		cfg, err := config.DecodeYAML(data)
+		if err != nil {
+			return nil, err
+		}
+		return extract(cfg)
+	}
+
+	if p.configEnvKey != "" {
+		encoded := os.Getenv(p.configEnvKey)
+		if encoded == "" {
+			return nil, fmt.Errorf("no data found in the environment variable %s", p.configEnvKey)
+		}
+		decoded, err := base64.StdEncoding.DecodeString(encoded)
+		if err != nil {
+			return nil, fmt.Errorf("the given config-data isn't base64 encoded: %w", err)
+		}
+		cfg, err := config.DecodeYAML(decoded)
 		if err != nil {
 			return nil, err
 		}

@@ -66,6 +66,7 @@ type launcher struct {
 	gitPipedConfigFile      string
 	gitSSHKeyFile           string
 	configFilePathInGitRepo string
+	configEnvKey            string
 	insecure                bool
 	certFile                string
 	homeDir                 string
@@ -108,6 +109,8 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&l.gitPipedConfigFile, "git-piped-config-file", l.gitPipedConfigFile, "Relative path within git repository to locate Piped config file.")
 	cmd.Flags().StringVar(&l.gitSSHKeyFile, "git-ssh-key-file", l.gitSSHKeyFile, "The path to SSH private key to fetch private git repository.")
 
+	cmd.Flags().StringVar(&l.configEnvKey, "config-env-key", l.configEnvKey, "The env variable key to the configuration.")
+
 	cmd.Flags().BoolVar(&l.insecure, "insecure", l.insecure, "Whether disabling transport security while connecting to control-plane.")
 	cmd.Flags().StringVar(&l.certFile, "cert-file", l.certFile, "The path to the TLS certificate file.")
 
@@ -129,6 +132,7 @@ func NewCommand() *cobra.Command {
 		"git-branch":             {},
 		"git-piped-config-file":  {},
 		"git-ssh-key-file":       {},
+		"conifg-env-key":         {},
 		"home-dir":               {},
 		"default-version":        {},
 		"launcher-admin-port":    {},
@@ -430,11 +434,24 @@ func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {
 		return os.ReadFile(filepath.Join(l.configRepo.GetPath(), l.gitPipedConfigFile))
 	}
 
+	if l.configEnvKey != "" {
+		encoded := os.Getenv(l.configEnvKey)
+		if encoded == "" {
+			return nil, fmt.Errorf("no data found in the environment variable %s", l.configEnvKey)
+		}
+		decoded, err := base64.StdEncoding.DecodeString(encoded)
+		if err != nil {
+			return nil, fmt.Errorf("the given config-data isn't base64 encoded: %w", err)
+		}
+		return decoded, nil
+	}
+
 	return nil, fmt.Errorf("either [%s] must be set", strings.Join([]string{
 		"config-file",
 		"config-data",
 		"config-from-gcp-secret",
 		"config-from-git-repo",
+		"config-env-key",
 	}, ", "))
 }
 
