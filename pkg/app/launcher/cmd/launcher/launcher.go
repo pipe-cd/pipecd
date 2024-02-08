@@ -132,7 +132,7 @@ func NewCommand() *cobra.Command {
 		"git-branch":             {},
 		"git-piped-config-file":  {},
 		"git-ssh-key-file":       {},
-		"conifg-env-key":         {},
+		"config-env-key":         {},
 		"home-dir":               {},
 		"default-version":        {},
 		"launcher-admin-port":    {},
