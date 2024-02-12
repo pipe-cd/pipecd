@@ -361,7 +361,6 @@ func (g *PipedGit) Validate() error {
 		return errors.New("only either sshKeyFile or sshKeyData can be set")
 	}
 	if isPassword && (g.Username == "" || g.Password == "") {
-		fmt.Println("ERROR")
 		return errors.New("both username and password must be set")
 	}
 	return nil
