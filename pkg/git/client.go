@@ -16,6 +16,7 @@ package git
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"net/url"
 	"os"
@@ -274,9 +275,13 @@ func includePasswordAuthRemote(remote, username, password string) (string, error
 	}
 	u, err := parseGitURL(remote)
 	if err != nil {
-		return "", fmt.Errorf("failed to include passwordAuth: %v", err)
+		return "", fmt.Errorf("failed to include password: %v", err)
 	}
-	u.User = url.UserPassword(username, password)
+	decodedPassword, err := base64.StdEncoding.DecodeString(password)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode password: %v", err)
+	}
+	u.User = url.UserPassword(username, string(decodedPassword))
 	return u.String(), nil
 }
 
