@@ -480,8 +480,8 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			git.WithEmail(cfg.Git.Email),
 			git.WithLogger(input.Logger),
 			git.WithPasswordAuth(
-				cfg.Git.PasswordAuth.UserName,
-				cfg.Git.PasswordAuth.Password,
+				cfg.Git.Username,
+				cfg.Git.Password,
 			),
 		)
 		if err != nil {

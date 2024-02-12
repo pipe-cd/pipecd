@@ -608,10 +608,7 @@ func TestPipedConfigMask(t *testing.T) {
 					HostName:          "foo",
 					SSHKeyFile:        "foo",
 					SSHKeyData:        "foo",
-					PasswordAuth: PipedGitPasswordAuth{
-						UserName: "foo",
-						Password: "foo",
-					},
+					Password:          "foo",
 				},
 				Repositories: []PipedRepository{
 					{
@@ -775,10 +772,7 @@ func TestPipedConfigMask(t *testing.T) {
 					HostName:          "foo",
 					SSHKeyFile:        maskString,
 					SSHKeyData:        maskString,
-					PasswordAuth: PipedGitPasswordAuth{
-						UserName: maskString,
-						Password: maskString,
-					},
+					Password:          maskString,
 				},
 				Repositories: []PipedRepository{
 					{
@@ -957,10 +951,7 @@ func TestPipedSpecClone(t *testing.T) {
 					Username:   "username",
 					Email:      "username@email.com",
 					SSHKeyFile: "/etc/piped-secret/ssh-key",
-					PasswordAuth: PipedGitPasswordAuth{
-						UserName: "userName",
-						Password: "Password",
-					},
+					Password:   "Password",
 				},
 				Repositories: []PipedRepository{
 					{
@@ -1158,10 +1149,7 @@ func TestPipedSpecClone(t *testing.T) {
 					Username:   "username",
 					Email:      "username@email.com",
 					SSHKeyFile: "/etc/piped-secret/ssh-key",
-					PasswordAuth: PipedGitPasswordAuth{
-						UserName: "userName",
-						Password: "Password",
-					},
+					Password:   "Password",
 				},
 				Repositories: []PipedRepository{
 					{
@@ -1461,25 +1449,19 @@ func TestPipeGitValidate(t *testing.T) {
 		err  error
 	}{
 		{
-			name: "Both SSH and PAT are not valid",
+			name: "Both SSH and Password are not valid",
 			git: PipedGit{
 				SSHKeyData: "sshkey1",
-				PasswordAuth: PipedGitPasswordAuth{
-					UserName: "UserName",
-					Password: "Password",
-				},
+				Password:   "Password",
 			},
 			err: errors.New("cannot configure both sshKeyData or sshKeyFile and password authentication"),
 		},
 		{
-			name: "Both SSH and PAT is not valid",
+			name: "Both SSH and Password is not valid",
 			git: PipedGit{
 				SSHKeyFile: "sshkeyfile",
 				SSHKeyData: "sshkeydata",
-				PasswordAuth: PipedGitPasswordAuth{
-					UserName: "",
-					Password: "Password",
-				},
+				Password:   "Password",
 			},
 			err: errors.New("cannot configure both sshKeyData or sshKeyFile and password authentication"),
 		},
@@ -1506,34 +1488,20 @@ func TestPipeGitValidate(t *testing.T) {
 			err: errors.New("only either sshKeyFile or sshKeyData can be set"),
 		},
 		{
-			name: "PAT is valid",
+			name: "Password is valid",
 			git: PipedGit{
-				PasswordAuth: PipedGitPasswordAuth{
-					UserName: "UserName",
-					Password: "Password",
-				},
+				Username: "Username",
+				Password: "Password",
 			},
 			err: nil,
 		},
 		{
-			name: "PAT username is empty",
+			name: "Username is empty",
 			git: PipedGit{
-				PasswordAuth: PipedGitPasswordAuth{
-					UserName: "UserName",
-					Password: "",
-				},
+				Username: "",
+				Password: "Password",
 			},
-			err: errors.New("both userName and password must be set"),
-		},
-		{
-			name: "PAT token is empty",
-			git: PipedGit{
-				PasswordAuth: PipedGitPasswordAuth{
-					UserName: "",
-					Password: "Password",
-				},
-			},
-			err: errors.New("both userName and password must be set"),
+			err: errors.New("both username and password must be set"),
 		},
 		{
 			name: "Git config is empty",
