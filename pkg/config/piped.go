@@ -331,7 +331,8 @@ type PipedGit struct {
 	SSHKeyData string `json:"sshKeyData,omitempty"`
 	// The password authentication.
 	// This will be used to clone the source code of the specified git repositories.
-	PasswordAuth PipedGitPasswordAuth `json:"passwordAuth,omitempty"`
+	//PasswordAuth PipedGitPasswordAuth `json:"passwordAuth,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
 func (g PipedGit) ShouldConfigureSSHConfig() bool {
@@ -352,22 +353,17 @@ func (g PipedGit) LoadSSHKey() ([]byte, error) {
 }
 
 func (g *PipedGit) Validate() error {
-	patErr := g.PasswordAuth.Validate()
-	patFlag := g.PasswordAuth.UserName != "" || g.PasswordAuth.Password != ""
-	if g.ShouldConfigureSSHConfig() && patFlag {
+	isPassword := g.Password != ""
+	isSSH := g.ShouldConfigureSSHConfig()
+	if isSSH && isPassword {
 		return errors.New("cannot configure both sshKeyData or sshKeyFile and password authentication")
 	}
-	if patFlag && patErr != nil {
-		return patErr
-	}
-	if g.SSHKeyData != "" && g.SSHKeyFile != "" {
+	if isSSH && (g.SSHKeyData != "" && g.SSHKeyFile != "") {
 		return errors.New("only either sshKeyFile or sshKeyData can be set")
 	}
-	if patFlag && patErr != nil {
-		return patErr
-	}
-	if g.SSHKeyData != "" && g.SSHKeyFile != "" {
-		return errors.New("only either sshKeyFile or sshKeyData can be set")
+	if isPassword && (g.Username == "" || g.Password == "") {
+		fmt.Println("ERROR")
+		return errors.New("both username and password must be set")
 	}
 	return nil
 }
@@ -382,24 +378,9 @@ func (g *PipedGit) Mask() {
 	if len(g.SSHKeyData) != 0 {
 		g.SSHKeyData = maskString
 	}
-	if len(g.PasswordAuth.UserName) != 0 {
-		g.PasswordAuth.UserName = maskString
+	if len(g.Password) != 0 {
+		g.Password = maskString
 	}
-	if len(g.PasswordAuth.Password) != 0 {
-		g.PasswordAuth.Password = maskString
-	}
-}
-
-type PipedGitPasswordAuth struct {
-	UserName string `json:"userName,omitempty"`
-	Password string `json:"password,omitempty"`
-}
-
-func (p PipedGitPasswordAuth) Validate() error {
-	if p.UserName == "" || p.Password == "" {
-		return errors.New("both userName and password must be set")
-	}
-	return nil
 }
 
 type PipedGitPersonalAccessToken struct {
