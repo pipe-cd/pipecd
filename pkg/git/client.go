@@ -93,7 +93,7 @@ func WithEmail(e string) Option {
 	}
 }
 
-func WithPasswordAuth(username, password string) Option {
+func WithPassword(username, password string) Option {
 	return func(c *client) {
 		if username != "" && password != "" {
 			c.username = username
@@ -144,7 +144,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		)
 	)
 
-	remote, err := includePasswordAuthRemote(remote, c.username, c.password)
+	remote, err := includePasswordRemote(remote, c.username, c.password)
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +269,7 @@ func (c *client) envsForRepo(remote string) []string {
 	return append(envs, c.gitEnvs...)
 }
 
-func includePasswordAuthRemote(remote, username, password string) (string, error) {
+func includePasswordRemote(remote, username, password string) (string, error) {
 	if username == "" || password == "" {
 		return remote, nil
 	}
