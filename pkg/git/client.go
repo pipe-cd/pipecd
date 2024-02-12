@@ -43,13 +43,14 @@ type Client interface {
 }
 
 type client struct {
-	username  string
-	email     string
-	gitPath   string
-	cacheDir  string
-	mu        sync.Mutex
-	repoLocks map[string]*sync.Mutex
-	password  string
+	username     string
+	email        string
+	gcAutoDetach bool // whether to be executed `git gc`in the foreground when some git commands (e.g. merge, commit and so on) are executed.
+	gitPath      string
+	cacheDir     string
+	mu           sync.Mutex
+	repoLocks    map[string]*sync.Mutex
+	password     string
 
 	gitEnvs       []string
 	gitEnvsByRepo map[string][]string

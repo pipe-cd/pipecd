@@ -381,18 +381,6 @@ func (g *PipedGit) Mask() {
 	}
 }
 
-type PipedGitPersonalAccessToken struct {
-	UserName  string `json:"userName,omitempty"`
-	UserToken string `json:"userToken,omitempty"`
-}
-
-func (p PipedGitPasswordAuth) Validate() error {
-	if p.UserName == "" || p.Password == "" {
-		return errors.New("both userName and password must be set")
-	}
-	return nil
-}
-
 type PipedRepository struct {
 	// Unique identifier for this repository.
 	// This must be unique in the piped scope.
