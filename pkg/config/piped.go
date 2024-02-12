@@ -331,7 +331,6 @@ type PipedGit struct {
 	SSHKeyData string `json:"sshKeyData,omitempty"`
 	// The password authentication.
 	// This will be used to clone the source code of the specified git repositories.
-	//PasswordAuth PipedGitPasswordAuth `json:"passwordAuth,omitempty"`
 	Password string `json:"password,omitempty"`
 }
 

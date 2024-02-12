@@ -43,17 +43,13 @@ type Client interface {
 }
 
 type client struct {
-	username     string
-	email        string
-	gcAutoDetach bool // whether to be executed `git gc`in the foreground when some git commands (e.g. merge, commit and so on) are executed.
-	gitPath      string
-	cacheDir     string
-	mu           sync.Mutex
-	repoLocks    map[string]*sync.Mutex
-	passwordAuth struct {
-		userName string
-		password string
-	}
+	username  string
+	email     string
+	gitPath   string
+	cacheDir  string
+	mu        sync.Mutex
+	repoLocks map[string]*sync.Mutex
+	password  string
 
 	gitEnvs       []string
 	gitEnvsByRepo map[string][]string
@@ -96,11 +92,11 @@ func WithEmail(e string) Option {
 	}
 }
 
-func WithPasswordAuth(userName, password string) Option {
+func WithPasswordAuth(username, password string) Option {
 	return func(c *client) {
-		if userName != "" && password != "" {
-			c.passwordAuth.userName = userName
-			c.passwordAuth.password = password
+		if username != "" && password != "" {
+			c.username = username
+			c.password = password
 		}
 	}
 }
@@ -147,7 +143,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		)
 	)
 
-	remote, err := includePasswordAuthRemote(remote, c.passwordAuth.userName, c.passwordAuth.password)
+	remote, err := includePasswordAuthRemote(remote, c.username, c.password)
 	if err != nil {
 		return nil, err
 	}
@@ -291,15 +287,15 @@ func (c *client) envsForRepo(remote string) []string {
 	return append(envs, c.gitEnvs...)
 }
 
-func includePasswordAuthRemote(remote, userName, password string) (string, error) {
-	if userName == "" || password == "" {
+func includePasswordAuthRemote(remote, username, password string) (string, error) {
+	if username == "" || password == "" {
 		return remote, nil
 	}
 	u, err := parseGitURL(remote)
 	if err != nil {
 		return "", fmt.Errorf("failed to include passwordAuth: %v", err)
 	}
-	u.User = url.UserPassword(userName, password)
+	u.User = url.UserPassword(username, password)
 	return u.String(), nil
 }
 
