@@ -49,13 +49,7 @@ spec:
 | hostName | string | The hostname or IP address of the remote git server. Default is the same value with Host. | No |
 | sshKeyFile | string | The path to the private ssh key file. This will be used to clone the source code of the specified git repositories. | No |
 | sshKeyData | string | Base64 encoded string of SSH key. | No |
-| passwordAuth | [PipedGitPasswordAuth](#gitPasswordAuth) | Configuration for password authentication. | No |
-
-## GitPasswordAuth
-| Field | Type | Description | Required |
-|-|-|-|-|
-| userName | string | The user name for git used while cloning above Git repository. | Yes |
-| password | string | The password for git used while cloning above Git repository. | Yes |
+| password | string | The password for git used while cloning above Git repository. | No |
 
 ## GitRepository
 
