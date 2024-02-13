@@ -829,7 +829,12 @@ func (p *piped) getConfigDataFromAWSSecretsManager(ctx context.Context) ([]byte,
 		return nil, err
 	}
 
-	return []byte(*result.SecretString), nil
+	decoded, err := base64.StdEncoding.DecodeString(*result.SecretString)
+	if err != nil {
+		return nil, err
+	}
+
+	return decoded, nil
 }
 
 func registerMetrics(pipedID, projectID, launcherVersion string) *prometheus.Registry {

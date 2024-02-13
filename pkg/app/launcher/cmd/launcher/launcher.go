@@ -449,7 +449,11 @@ func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		return []byte(*result.SecretString), nil
+		decoded, err := base64.StdEncoding.DecodeString(*result.SecretString)
+		if err != nil {
+			return nil, err
+		}
+		return decoded, nil
 	}
 
 	if l.configFromGitRepo {
