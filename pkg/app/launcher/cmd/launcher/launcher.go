@@ -107,7 +107,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&l.gcpSecretID, "gcp-secret-id", l.gcpSecretID, "The resource ID of secret that contains Piped config in GCP SecretManager service.")
 
 	cmd.Flags().BoolVar(&l.configFromAWSSecret, "config-from-aws-secret", l.configFromAWSSecret, "Whether to load Piped config that is being stored in AWS Secrets Manager service.")
-	cmd.Flags().StringVar(&l.awsSecretID, "aws-secret-id", l.awsSecretID, "The resource ID of secret that contains Piped config in AWS Secrets Manager service.")
+	cmd.Flags().StringVar(&l.awsSecretID, "aws-secret-id", l.awsSecretID, "The ARN of secret that contains Piped config in AWS Secrets Manager service.")
 
 	cmd.Flags().BoolVar(&l.configFromGitRepo, "config-from-git-repo", l.configFromGitRepo, "Whether to load Piped config that is being stored in a git repository.")
 	cmd.Flags().StringVar(&l.gitRepoURL, "git-repo-url", l.gitRepoURL, "The remote URL of git repository to fetch Piped config.")
@@ -464,6 +464,7 @@ func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {
 		"config-file",
 		"config-data",
 		"config-from-gcp-secret",
+		"config-from-aws-secret",
 		"config-from-git-repo",
 	}, ", "))
 }

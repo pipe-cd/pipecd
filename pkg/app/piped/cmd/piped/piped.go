@@ -30,6 +30,8 @@ import (
 	"time"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	awssecretsmanager "github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/spf13/cobra"
@@ -86,6 +88,7 @@ type piped struct {
 	configFile      string
 	configData      string
 	configGCPSecret string
+	configAWSSecret string
 
 	insecure                             bool
 	certFile                             string
@@ -118,6 +121,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&p.configFile, "config-file", p.configFile, "The path to the configuration file.")
 	cmd.Flags().StringVar(&p.configData, "config-data", p.configData, "The base64 encoded string of the configuration data.")
 	cmd.Flags().StringVar(&p.configGCPSecret, "config-gcp-secret", p.configGCPSecret, "The resource ID of secret that contains Piped config and be stored in GCP SecretManager.")
+	cmd.Flags().StringVar(&p.configAWSSecret, "config-aws-secret", p.configAWSSecret, "The ARN of secret that contains Piped config and be stored in AWS Secrets Manager.")
 
 	cmd.Flags().BoolVar(&p.insecure, "insecure", p.insecure, "Whether disabling transport security while connecting to control-plane.")
 	cmd.Flags().StringVar(&p.certFile, "cert-file", p.certFile, "The path to the TLS certificate file.")
@@ -574,8 +578,8 @@ func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID
 
 // loadConfig reads the Piped configuration data from the specified source.
 func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
-	if p.configFile != "" && p.configGCPSecret != "" {
-		return nil, fmt.Errorf("only config-file or config-gcp-secret could be set")
+	if p.configFile != "" && p.configGCPSecret != "" && p.configAWSSecret != "" {
+		return nil, fmt.Errorf("only one of config-file, config-gcp-secret or config-aws-secret could be set")
 	}
 
 	extract := func(cfg *config.Config) (*config.PipedSpec, error) {
@@ -621,7 +625,19 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 		return extract(cfg)
 	}
 
-	return nil, fmt.Errorf("either config-file or config-gcp-secret must be set")
+	if p.configAWSSecret != "" {
+		data, err := p.getConfigDataFromAWSSecretsManager(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load config from AWS Secrets Manager (%w)", err)
+		}
+		cfg, err := config.DecodeYAML(data)
+		if err != nil {
+			return nil, err
+		}
+		return extract(cfg)
+	}
+
+	return nil, fmt.Errorf("one of config-file, config-gcp-secret or config-aws-secret must be set")
 }
 
 func (p *piped) initializeSecretDecrypter(cfg *config.PipedSpec) (crypto.Decrypter, error) {
@@ -795,6 +811,25 @@ func (p *piped) getConfigDataFromSecretManager(ctx context.Context) ([]byte, err
 	}
 
 	return resp.Payload.Data, nil
+}
+
+func (p *piped) getConfigDataFromAWSSecretsManager(ctx context.Context) ([]byte, error) {
+	cfg, err := awsconfig.LoadDefaultConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
+	client := awssecretsmanager.NewFromConfig(cfg)
+
+	in := &awssecretsmanager.GetSecretValueInput{
+		SecretId: &p.configAWSSecret,
+	}
+
+	result, err := client.GetSecretValue(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+
+	return []byte(*result.SecretString), nil
 }
 
 func registerMetrics(pipedID, projectID, launcherVersion string) *prometheus.Registry {
