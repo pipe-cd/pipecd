@@ -578,8 +578,9 @@ func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID
 
 // loadConfig reads the Piped configuration data from the specified source.
 func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
-	if p.configFile != "" && p.configGCPSecret != "" && p.configAWSSecret != "" {
-		return nil, fmt.Errorf("only one of config-file, config-gcp-secret or config-aws-secret could be set")
+	// HACK: When the version of cobra is updated to >=v1.8.0, this should be replaced with https://pkg.go.dev/github.com/spf13/cobra#Command.MarkFlagsOneRequired.
+	if err := p.hasTooManyConfigFlags(); err != nil {
+		return nil, err
 	}
 
 	extract := func(cfg *config.Config) (*config.PipedSpec, error) {
@@ -907,4 +908,17 @@ func stopCommandHandler(ctx context.Context, cmdLister commandstore.Lister, logg
 	}
 
 	return true, nil
+}
+
+func (p *piped) hasTooManyConfigFlags() error {
+	cnt := 0
+	for _, v := range []string{p.configFile, p.configGCPSecret, p.configAWSSecret} {
+		if v != "" {
+			cnt++
+		}
+	}
+	if cnt > 1 {
+		return fmt.Errorf("only one of config-file, config-gcp-secret or config-aws-secret could be set")
+	}
+	return nil
 }
