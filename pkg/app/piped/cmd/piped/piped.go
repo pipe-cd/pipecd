@@ -578,7 +578,7 @@ func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID
 
 // loadConfig reads the Piped configuration data from the specified source.
 func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
-	// HACK: When the version of cobra is updated to >=v1.8.0, this should be replaced with https://pkg.go.dev/github.com/spf13/cobra#Command.MarkFlagsOneRequired.
+	// HACK: When the version of cobra is updated to >=v1.8.0, this should be replaced with https://pkg.go.dev/github.com/spf13/cobra#Command.MarkFlagsMutuallyExclusive.
 	if err := p.hasTooManyConfigFlags(); err != nil {
 		return nil, err
 	}
