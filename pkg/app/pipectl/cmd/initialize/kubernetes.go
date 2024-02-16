@@ -15,7 +15,6 @@
 package initialize
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/initialize/prompt"
@@ -67,7 +66,7 @@ func generateKubernetesConfig(p prompt.Prompt) (*genericConfig, error) {
 	case helm:
 		deploymentInput, err = helmInput(p)
 	default:
-		return nil, errors.New("invalid number")
+		return nil, fmt.Errorf("invalid manifest manager: %s", manifestManager)
 	}
 	if err != nil {
 		return nil, err
@@ -91,15 +90,13 @@ func kustomizeInput(p prompt.Prompt) (*config.KubernetesDeploymentInput, error) 
 	var (
 		kustomizeVersion string
 	)
-	inputs := []prompt.Input{
-		{
-			Message:       "Kustomize version",
-			TargetPointer: &kustomizeVersion,
-			Required:      false,
-		},
+	input := prompt.Input{
+		Message:       "Kustomize version",
+		TargetPointer: &kustomizeVersion,
+		Required:      false,
 	}
 
-	err := p.RunSlice(inputs)
+	err := p.Run(input)
 	if err != nil {
 		return nil, err
 	}
@@ -140,29 +137,6 @@ func helmInput(p prompt.Prompt) (*config.KubernetesDeploymentInput, error) {
 		},
 	}
 
-	// If chartRepository is not empty, use remote chart
-	remoteChartInputs := []prompt.Input{
-		{
-			Message:       "Name of the Helm Chart",
-			TargetPointer: &chartName,
-			Required:      true,
-		},
-		{
-			Message:       "Version of the Helm Chart",
-			TargetPointer: &chartVersion,
-			Required:      true,
-		},
-	}
-
-	// If chartRepository is empty, use local chart
-	localChartInputs := []prompt.Input{
-		{
-			Message:       "Relative path from the repository root to the chart directory",
-			TargetPointer: &chartPath,
-			Required:      true,
-		},
-	}
-
 	// Helm options
 	helmOptionsInputs := []prompt.Input{
 		{
@@ -182,14 +156,33 @@ func helmInput(p prompt.Prompt) (*config.KubernetesDeploymentInput, error) {
 		return nil, err
 	}
 
-	if len(chartRepository) > 0 {
+	if chartRepository != "" {
 		// Use remote chart
+		remoteChartInputs := []prompt.Input{
+			{
+				Message:       "Name of the Helm Chart",
+				TargetPointer: &chartName,
+				Required:      true,
+			},
+			{
+				Message:       "Version of the Helm Chart",
+				TargetPointer: &chartVersion,
+				Required:      true,
+			},
+		}
 		err = p.RunSlice(remoteChartInputs)
 		if err != nil {
 			return nil, err
 		}
 	} else {
 		// Use local chart
+		localChartInputs := []prompt.Input{
+			{
+				Message:       "Relative path from the repository root to the chart directory",
+				TargetPointer: &chartPath,
+				Required:      true,
+			},
+		}
 		err = p.RunSlice(localChartInputs)
 		if err != nil {
 			return nil, err
