@@ -46,4 +46,3 @@ This document explains the basic usage of [pprof](https://pkg.go.dev/net/http/pp
     go tool trace trace.out
     ```
     Please replace localhost:9085 with the actual address and port of your Piped's admin server.
-
