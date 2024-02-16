@@ -55,6 +55,15 @@ func TestHasTooManyConfigFlags(t *testing.T) {
 			},
 			expectErr: true,
 		},
+		{
+			title: "three configs are set",
+			p: &piped{
+				configFile:      "config.yaml",
+				configGCPSecret: "xxx",
+				configAWSSecret: "yyy",
+			},
+			expectErr: true,
+		},
 	}
 
 	for _, tc := range testcases {
