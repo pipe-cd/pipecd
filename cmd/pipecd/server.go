@@ -402,7 +402,8 @@ func runHTTPServer(ctx context.Context, httpServer *http.Server, gracePeriod tim
 
 	<-ctx.Done()
 
-	ctx, _ = context.WithTimeout(context.Background(), gracePeriod)
+	ctx, cancel = context.WithTimeout(context.Background(), gracePeriod)
+	defer cancel()
 	logger.Info("stopping http server")
 	if err := httpServer.Shutdown(ctx); err != nil {
 		logger.Error("failed to shutdown http server", zap.Error(err))
