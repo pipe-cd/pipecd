@@ -111,7 +111,7 @@ func generateConfig(ctx context.Context, input cli.Input, p prompt.Prompt) error
 	var cfg *genericConfig
 	switch platform {
 	case platformKubernetes:
-		panic("not implemented")
+		cfg, err = generateKubernetesConfig(p)
 	case platformECS:
 		cfg, err = generateECSConfig(p)
 	default:

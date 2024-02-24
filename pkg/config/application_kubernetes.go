@@ -72,24 +72,24 @@ type KubernetesVariantLabel struct {
 type KubernetesDeploymentInput struct {
 	// List of manifest files in the application directory used to deploy.
 	// Empty means all manifest files in the directory will be used.
-	Manifests []string `json:"manifests"`
+	Manifests []string `json:"manifests,omitempty"`
 	// Version of kubectl will be used.
-	KubectlVersion string `json:"kubectlVersion"`
+	KubectlVersion string `json:"kubectlVersion,omitempty"`
 
 	// Version of kustomize will be used.
-	KustomizeVersion string `json:"kustomizeVersion"`
+	KustomizeVersion string `json:"kustomizeVersion,omitempty"`
 	// List of options that should be used by Kustomize commands.
-	KustomizeOptions map[string]string `json:"kustomizeOptions"`
+	KustomizeOptions map[string]string `json:"kustomizeOptions,omitempty"`
 
 	// Version of helm will be used.
-	HelmVersion string `json:"helmVersion"`
+	HelmVersion string `json:"helmVersion,omitempty"`
 	// Where to fetch helm chart.
-	HelmChart *InputHelmChart `json:"helmChart"`
+	HelmChart *InputHelmChart `json:"helmChart,omitempty"`
 	// Configurable parameters for helm commands.
-	HelmOptions *InputHelmOptions `json:"helmOptions"`
+	HelmOptions *InputHelmOptions `json:"helmOptions,omitempty"`
 
 	// The namespace where manifests will be applied.
-	Namespace string `json:"namespace"`
+	Namespace string `json:"namespace,omitempty"`
 
 	// Automatically reverts all deployment changes on failure.
 	// Default is true.
@@ -103,16 +103,16 @@ type KubernetesDeploymentInput struct {
 type InputHelmChart struct {
 	// Git remote address where the chart is placing.
 	// Empty means the same repository.
-	GitRemote string `json:"gitRemote"`
+	GitRemote string `json:"gitRemote,omitempty"`
 	// The commit SHA or tag for remote git.
-	Ref string `json:"ref"`
+	Ref string `json:"ref,omitempty"`
 	// Relative path from the repository root directory to the chart directory.
-	Path string `json:"path"`
+	Path string `json:"path,omitempty"`
 
 	// The name of an added Helm Chart Repository.
-	Repository string `json:"repository"`
-	Name       string `json:"name"`
-	Version    string `json:"version"`
+	Repository string `json:"repository,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Version    string `json:"version,omitempty"`
 	// Whether to skip TLS certificate checks for the repository or not.
 	// This option will automatically set the value of HelmChartRepository.Insecure.
 	Insecure bool `json:"-"`
@@ -121,17 +121,17 @@ type InputHelmChart struct {
 type InputHelmOptions struct {
 	// The release name of helm deployment.
 	// By default the release name is equal to the application name.
-	ReleaseName string `json:"releaseName"`
+	ReleaseName string `json:"releaseName,omitempty"`
 	// List of values.
-	SetValues map[string]string `json:"setValues"`
+	SetValues map[string]string `json:"setValues,omitempty"`
 	// List of value files should be loaded.
-	ValueFiles []string `json:"valueFiles"`
+	ValueFiles []string `json:"valueFiles,omitempty"`
 	// List of file path for values.
-	SetFiles map[string]string `json:"setFiles"`
+	SetFiles map[string]string `json:"setFiles,omitempty"`
 	// Set of supported Kubernetes API versions.
-	APIVersions []string `json:"apiVersions"`
+	APIVersions []string `json:"apiVersions,omitempty"`
 	// Kubernetes version used for Capabilities.KubeVersion
-	KubeVersion string `json:"kubeVersion"`
+	KubeVersion string `json:"kubeVersion,omitempty"`
 }
 
 type KubernetesTrafficRoutingMethod string
