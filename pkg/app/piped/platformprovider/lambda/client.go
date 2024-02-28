@@ -529,6 +529,30 @@ func (c *client) untagFunction(ctx context.Context, functionArn string, tags map
 	return nil
 }
 
+func (c *client) publishLayer(ctx context.Context, in *lambda.PublishLayerVersionInput) error {
+	// in := &lambda.PublishLayerVersionInput{
+	// 	Content: &types.LayerVersionContentInput{
+	// 		S3Bucket:        aws.String(""),
+	// 		S3Key:           aws.String(""),
+	// 		S3ObjectVersion: aws.String(""),
+	// 		ZipFile:         []byte{},
+	// 	},
+	// 	CompatibleRuntimes: []types.Runtime{
+	// 		// "nodejs",
+	// 	},
+	// 	Description: aws.String(""),
+	// 	LicenseInfo: aws.String(""),
+	// 	LayerName:   aws.String(""),
+	// }
+
+	_, err := c.client.PublishLayerVersion(ctx, in)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func makeFlowControlTagsMaps(remoteTags, definedTags map[string]string) (newDefinedTags, updatedTags, removedTags map[string]string) {
 	newDefinedTags = make(map[string]string)
 	updatedTags = make(map[string]string)
