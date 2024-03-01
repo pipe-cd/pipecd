@@ -78,6 +78,23 @@ func TestGenerateECSConfig(t *testing.T) {
 			expectedFile: "testdata/ecs-app-canary.yaml",
 			expectedErr:  false,
 		},
+		// Blue/Green
+		{
+			name: "valid inputs for Blue/Green",
+			inputs: `myApp
+				serviceDef.yaml
+				taskDef.yaml
+				2
+				arn:aws:elasticloadbalancing:ap-northeast-1:123456789012:targetgroup/xxx/xxx
+				web
+				80
+				arn:aws:elasticloadbalancing:ap-northeast-1:123456789012:targetgroup/yyy/yyy
+				web
+				80
+				`,
+			expectedFile: "testdata/ecs-app-bluegreen.yaml",
+			expectedErr:  false,
+		},
 	}
 
 	for _, tc := range testcases {

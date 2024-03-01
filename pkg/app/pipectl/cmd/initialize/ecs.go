@@ -83,7 +83,7 @@ func generateECSConfig(p prompt.Prompt) (*genericConfig, error) {
 	case deploymentStrategyCanary:
 		in, pipeline, err = inputCanary(&p)
 	case deploymentStrategyBlueGreen:
-		panic("not implemented yet")
+		in, pipeline, err = inputBlueGreen(&p)
 	default:
 		return nil, fmt.Errorf("invalid deployment strategy: %s", deploymentStrategy)
 	}
@@ -175,6 +175,71 @@ func inputCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *genericDeployme
 				With: &config.ECSTrafficRoutingStageOptions{
 					Canary: config.Percentage{
 						Number: canaryTrafficPercent,
+					},
+				},
+			},
+			{
+				// The simplest analysis stage, just waiting for 30 seconds.
+				// The purpose is to let users know AnalysisStage and adopt Progressive Delivery without human operations.
+				Name: model.StageAnalysis,
+				With: &config.AnalysisStageOptions{
+					Duration: config.Duration(60 * time.Second),
+				},
+			},
+			{
+				Name: model.StageECSPrimaryRollout,
+			},
+			{
+				Name: model.StageECSTrafficRouting,
+				With: &config.ECSTrafficRoutingStageOptions{
+					Primary: config.Percentage{
+						Number: 100,
+					},
+				},
+			},
+			{
+				Name: model.StageECSCanaryClean,
+			},
+		},
+	}
+
+	return &deploymentInput, pipeline, nil
+}
+
+func inputBlueGreen(p *prompt.Prompt) (*config.ECSDeploymentInput, *genericDeploymentPipeline, error) {
+	// target groups configs
+	primaryTarget, err := inputTargetGroup(p, "(primary TaskSet)")
+	if err != nil {
+		return nil, nil, err
+	}
+
+	canaryTarget, err := inputTargetGroup(p, "(canary TaskSet)")
+	if err != nil {
+		return nil, nil, err
+	}
+
+	deploymentInput := config.ECSDeploymentInput{
+		TargetGroups: config.ECSTargetGroups{
+			Primary: primaryTarget,
+			Canary:  canaryTarget,
+		},
+	}
+
+	pipeline := &genericDeploymentPipeline{
+		Stages: []genericPipelineStage{
+			{
+				Name: model.StageECSCanaryRollout,
+				With: &config.ECSCanaryRolloutStageOptions{
+					Scale: config.Percentage{
+						Number: 100,
+					},
+				},
+			},
+			{
+				Name: model.StageECSTrafficRouting,
+				With: &config.ECSTrafficRoutingStageOptions{
+					Canary: config.Percentage{
+						Number: 100,
 					},
 				},
 			},
