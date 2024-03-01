@@ -27,7 +27,7 @@ import (
 type genericECSApplicationSpec struct {
 	Name        string                    `json:"name"`
 	Input       config.ECSDeploymentInput `json:"input"`
-	Pipeline    config.DeploymentPipeline `json:"pipeline,omitempty"`
+	Pipeline    genericDeploymentPipeline `json:"pipeline,omitempty"`
 	Description string                    `json:"description,omitempty"`
 }
 
@@ -76,7 +76,7 @@ func generateECSConfig(p prompt.Prompt) (*genericConfig, error) {
 	}
 
 	var in *config.ECSDeploymentInput
-	var pipeline *config.DeploymentPipeline
+	var pipeline *genericDeploymentPipeline
 	switch deploymentStrategy {
 	case deploymentStrategyQuickSync:
 		in, err = inputQuickSync(&p)
@@ -123,7 +123,7 @@ func inputQuickSync(p *prompt.Prompt) (*config.ECSDeploymentInput, error) {
 	}, nil
 }
 
-func inputCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *config.DeploymentPipeline, error) {
+func inputCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *genericDeploymentPipeline, error) {
 	// target groups configs
 	primaryTarget, err := inputTargetGroup(p, "(primary TaskSet)")
 	if err != nil {
@@ -159,11 +159,11 @@ func inputCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *config.Deployme
 		return nil, nil, err
 	}
 
-	pipeline := &config.DeploymentPipeline{
-		Stages: []config.PipelineStage{
+	pipeline := &genericDeploymentPipeline{
+		Stages: []genericPipelineStage{
 			{
 				Name: model.StageECSCanaryRollout,
-				ECSCanaryRolloutStageOptions: &config.ECSCanaryRolloutStageOptions{
+				With: &config.ECSCanaryRolloutStageOptions{
 					Scale: config.Percentage{
 						// scale=trafficPercentage at first for the simpler configuration.
 						Number: canaryTrafficPercent,
@@ -172,7 +172,7 @@ func inputCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *config.Deployme
 			},
 			{
 				Name: model.StageECSTrafficRouting,
-				ECSTrafficRoutingStageOptions: &config.ECSTrafficRoutingStageOptions{
+				With: &config.ECSTrafficRoutingStageOptions{
 					Canary: config.Percentage{
 						Number: canaryTrafficPercent,
 					},
@@ -182,8 +182,8 @@ func inputCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *config.Deployme
 				// The simplest analysis stage, just waiting for 30 seconds.
 				// The purpose is to let users know AnalysisStage and adopt Progressive Delivery without human operations.
 				Name: model.StageAnalysis,
-				AnalysisStageOptions: &config.AnalysisStageOptions{
-					Duration: config.Duration(time.Duration(30) * time.Second),
+				With: &config.AnalysisStageOptions{
+					Duration: config.Duration(60 * time.Second),
 				},
 			},
 			{
@@ -191,7 +191,7 @@ func inputCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *config.Deployme
 			},
 			{
 				Name: model.StageECSTrafficRouting,
-				ECSTrafficRoutingStageOptions: &config.ECSTrafficRoutingStageOptions{
+				With: &config.ECSTrafficRoutingStageOptions{
 					Primary: config.Percentage{
 						Number: 100,
 					},

@@ -66,7 +66,7 @@ func TestGenerateECSConfig(t *testing.T) {
 			inputs: `myApp
 				serviceDef.yaml
 				taskDef.yaml
-				1
+				1 
 				arn:aws:elasticloadbalancing:ap-northeast-1:123456789012:targetgroup/xxx/xxx
 				web
 				80
@@ -74,7 +74,6 @@ func TestGenerateECSConfig(t *testing.T) {
 				web
 				80
 				20
-				120
 				`,
 			expectedFile: "testdata/ecs-app-canary.yaml",
 			expectedErr:  false,
