@@ -51,12 +51,26 @@ func TestGenerateECSConfig(t *testing.T) {
 			expectedErr:  false,
 		},
 		{
-			name: "missing required deploymentStrategy",
+			name: "empty inputs",
+			// Missing appName, serviceDefFile, taskDefFile, deploymentStrategy, targetGroupARN, targetGroupContainerName, targetGroupPort
+			inputs: `
+				
+				
+				
+
+
+			
+				`,
+			expectedFile: "testdata/ecs-app-empty.yaml",
+			expectedErr:  false,
+		},
+		{
+			name: "invalid deployment strategy",
 			inputs: `myApp
 				serviceDef.yaml
 				taskDef.yaml
-				
-				`,
+				3
+			`,
 			expectedFile: "",
 			expectedErr:  true,
 		},

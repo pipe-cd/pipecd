@@ -34,11 +34,11 @@ type genericECSApplicationSpec struct {
 func generateECSConfig(p prompt.Prompt) (*genericConfig, error) {
 	// inputs
 	var (
-		appName        string
-		serviceDefFile string
-		taskDefFile    string
+		appName        string = "<YOUR_APPLICATION_NAME>"
+		serviceDefFile string = "<YOUR_SERVICE_DEFINITION_FILE>"
+		taskDefFile    string = "<YOUR_TASK_DEFINITION_FILE>"
 
-		deploymentStrategy string
+		deploymentStrategy string = "0" // QuickSync by default
 	)
 
 	const (
@@ -51,22 +51,22 @@ func generateECSConfig(p prompt.Prompt) (*genericConfig, error) {
 		{
 			Message:       "Name of the application",
 			TargetPointer: &appName,
-			Required:      true,
+			Required:      false,
 		},
 		{
 			Message:       "Name of the service definition file (e.g. serviceDef.yaml)",
 			TargetPointer: &serviceDefFile,
-			Required:      true,
+			Required:      false,
 		},
 		{
 			Message:       "Name of the task definition file (e.g. taskDef.yaml)",
 			TargetPointer: &taskDefFile,
-			Required:      true,
+			Required:      false,
 		},
 		{
 			Message:       fmt.Sprintf("Deployment strategy [%s]QuickSync [%s]Canary [%s]BlueGreen", deploymentStrategyQuickSync, deploymentStrategyCanary, deploymentStrategyBlueGreen),
 			TargetPointer: &deploymentStrategy,
-			Required:      true,
+			Required:      false,
 		},
 	}
 
@@ -273,9 +273,9 @@ func inputBlueGreen(p *prompt.Prompt) (*config.ECSDeploymentInput, *genericDeplo
 
 func inputTargetGroup(p *prompt.Prompt, annotation string) (*config.ECSTargetGroup, error) {
 	var (
-		targetGroupArn string
-		containerName  string
-		containerPort  int
+		targetGroupArn string = "<YOUR_TARGET_GROUP_ARN>"
+		containerName  string = "<YOUR_CONTAINER_NAME>"
+		containerPort  int    = 80
 	)
 
 	inputs := []prompt.Input{
