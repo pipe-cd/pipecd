@@ -79,11 +79,11 @@ func generateECSConfig(p prompt.Prompt) (*genericConfig, error) {
 	var pipeline *genericDeploymentPipeline
 	switch deploymentStrategy {
 	case deploymentStrategyQuickSync:
-		in, err = inputQuickSync(&p)
+		in, err = inputECSQuickSync(&p)
 	case deploymentStrategyCanary:
-		in, pipeline, err = inputCanary(&p)
+		in, pipeline, err = inputECSCanary(&p)
 	case deploymentStrategyBlueGreen:
-		in, pipeline, err = inputBlueGreen(&p)
+		in, pipeline, err = inputECSBlueGreen(&p)
 	default:
 		return nil, fmt.Errorf("invalid deployment strategy: %s", deploymentStrategy)
 	}
@@ -110,8 +110,8 @@ func generateECSConfig(p prompt.Prompt) (*genericConfig, error) {
 	}, nil
 }
 
-func inputQuickSync(p *prompt.Prompt) (*config.ECSDeploymentInput, error) {
-	tg, err := inputTargetGroup(p, "")
+func inputECSQuickSync(p *prompt.Prompt) (*config.ECSDeploymentInput, error) {
+	tg, err := inputECSTargetGroup(p, "")
 	if err != nil {
 		return nil, err
 	}
@@ -123,14 +123,14 @@ func inputQuickSync(p *prompt.Prompt) (*config.ECSDeploymentInput, error) {
 	}, nil
 }
 
-func inputCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *genericDeploymentPipeline, error) {
+func inputECSCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *genericDeploymentPipeline, error) {
 	// target groups configs
-	primaryTarget, err := inputTargetGroup(p, "(primary TaskSet)")
+	primaryTarget, err := inputECSTargetGroup(p, "(primary TaskSet)")
 	if err != nil {
 		return nil, nil, err
 	}
 
-	canaryTarget, err := inputTargetGroup(p, "(canary TaskSet)")
+	canaryTarget, err := inputECSTargetGroup(p, "(canary TaskSet)")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -206,14 +206,14 @@ func inputCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *genericDeployme
 	return &deploymentInput, pipeline, nil
 }
 
-func inputBlueGreen(p *prompt.Prompt) (*config.ECSDeploymentInput, *genericDeploymentPipeline, error) {
+func inputECSBlueGreen(p *prompt.Prompt) (*config.ECSDeploymentInput, *genericDeploymentPipeline, error) {
 	// target groups configs
-	primaryTarget, err := inputTargetGroup(p, "(primary TaskSet)")
+	primaryTarget, err := inputECSTargetGroup(p, "(primary TaskSet)")
 	if err != nil {
 		return nil, nil, err
 	}
 
-	canaryTarget, err := inputTargetGroup(p, "(canary TaskSet)")
+	canaryTarget, err := inputECSTargetGroup(p, "(canary TaskSet)")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -271,7 +271,7 @@ func inputBlueGreen(p *prompt.Prompt) (*config.ECSDeploymentInput, *genericDeplo
 	return &deploymentInput, pipeline, nil
 }
 
-func inputTargetGroup(p *prompt.Prompt, annotation string) (*config.ECSTargetGroup, error) {
+func inputECSTargetGroup(p *prompt.Prompt, annotation string) (*config.ECSTargetGroup, error) {
 	var (
 		targetGroupArn string = "<YOUR_TARGET_GROUP_ARN>"
 		containerName  string = "<YOUR_CONTAINER_NAME>"
