@@ -16,6 +16,7 @@ package initialize
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/initialize/prompt"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -123,6 +124,7 @@ func inputQuickSync(p *prompt.Prompt) (*config.ECSDeploymentInput, error) {
 }
 
 func inputCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *config.DeploymentPipeline, error) {
+	// target groups configs
 	primaryTarget, err := inputTargetGroup(p, "(primary)")
 	if err != nil {
 		return nil, nil, err
@@ -143,17 +145,11 @@ func inputCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *config.Deployme
 	// pipeline configs
 	var (
 		canaryTrafficPercent int
-		waitDuration         int
 	)
 	inputs := []prompt.Input{
 		{
 			Message:       fmt.Sprintf("Percentage of traffic to canary (default:%d)", canaryTrafficPercent),
 			TargetPointer: &canaryTrafficPercent,
-			Required:      false,
-		},
-		{
-			Message:       fmt.Sprintf("Waiting seconds after rolling out canary (default:%d)", waitDuration),
-			TargetPointer: &waitDuration,
 			Required:      false,
 		},
 	}
@@ -183,9 +179,11 @@ func inputCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *config.Deployme
 				},
 			},
 			{
-				Name: model.StageWait,
-				WaitStageOptions: &config.WaitStageOptions{
-					Duration: config.Duration(waitDuration),
+				// The simplest analysis stage, just waiting for 30 seconds.
+				// The purpose is to let users know AnalysisStage and adopt Progressive Delivery without human operations.
+				Name: model.StageAnalysis,
+				AnalysisStageOptions: &config.AnalysisStageOptions{
+					Duration: config.Duration(time.Duration(30) * time.Second),
 				},
 			},
 			{
