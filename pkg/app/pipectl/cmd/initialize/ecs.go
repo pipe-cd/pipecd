@@ -125,12 +125,12 @@ func inputQuickSync(p *prompt.Prompt) (*config.ECSDeploymentInput, error) {
 
 func inputCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *config.DeploymentPipeline, error) {
 	// target groups configs
-	primaryTarget, err := inputTargetGroup(p, "(primary)")
+	primaryTarget, err := inputTargetGroup(p, "(primary TaskSet)")
 	if err != nil {
 		return nil, nil, err
 	}
 
-	canaryTarget, err := inputTargetGroup(p, "(canary)")
+	canaryTarget, err := inputTargetGroup(p, "(canary TaskSet)")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -144,7 +144,7 @@ func inputCanary(p *prompt.Prompt) (*config.ECSDeploymentInput, *config.Deployme
 
 	// pipeline configs
 	var (
-		canaryTrafficPercent int
+		canaryTrafficPercent int = 10
 	)
 	inputs := []prompt.Input{
 		{
