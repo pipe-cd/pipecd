@@ -369,34 +369,37 @@ func (s *scheduler) Run(ctx context.Context) error {
 	// we start rollback stage if the auto-rollback option is true.
 	if deploymentStatus == model.DeploymentStatus_DEPLOYMENT_CANCELLED ||
 		deploymentStatus == model.DeploymentStatus_DEPLOYMENT_FAILURE {
-		if stage, ok := s.deployment.FindRollbackStage(); ok {
+
+		if rollbackStages, ok := s.deployment.FindRollbackStages(); ok {
 			// Update to change deployment status to ROLLING_BACK.
 			if err := s.reportDeploymentStatusChanged(ctx, model.DeploymentStatus_DEPLOYMENT_ROLLING_BACK, statusReason); err != nil {
 				return err
 			}
 
-			// Start running rollback stage.
-			var (
-				sig, handler = executor.NewStopSignal()
-				doneCh       = make(chan struct{})
-			)
-			go func() {
-				rbs := *stage
-				rbs.Requires = []string{lastStage.Id}
-				s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
-					return s.executorRegistry.RollbackExecutor(s.deployment.Kind, in)
-				})
-				close(doneCh)
-			}()
+			for _, stage := range rollbackStages {
+				// Start running rollback stage.
+				var (
+					sig, handler = executor.NewStopSignal()
+					doneCh       = make(chan struct{})
+				)
+				go func() {
+					rbs := *stage
+					rbs.Requires = []string{lastStage.Id}
+					s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
+						return s.executorRegistry.RollbackExecutor(s.deployment.Kind, in)
+					})
+					close(doneCh)
+				}()
 
-			select {
-			case <-ctx.Done():
-				handler.Terminate()
-				<-doneCh
-				return nil
+				select {
+				case <-ctx.Done():
+					handler.Terminate()
+					<-doneCh
+					return nil
 
-			case <-doneCh:
-				break
+				case <-doneCh:
+					break
+				}
 			}
 		}
 	}
@@ -432,6 +435,24 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		}
 		lp.Complete(time.Minute)
 	}()
+
+	// Check whether to execute the script rollback stage or not.
+	// If the base stage is executed, the script rollback stage will be executed.
+	if ps.Name == model.StageScriptRunRollback.String() {
+		baseStageID := ps.Metadata["baseStageID"]
+		if baseStageID == "" {
+			return
+		}
+
+		baseStageStatus, ok := s.stageStatuses[baseStageID]
+		if !ok {
+			return
+		}
+
+		if baseStageStatus == model.StageStatus_STAGE_NOT_STARTED_YET || baseStageStatus == model.StageStatus_STAGE_SKIPPED {
+			return
+		}
+	}
 
 	// Update stage status to RUNNING if needed.
 	if model.CanUpdateStageStatus(ps.Status, model.StageStatus_STAGE_RUNNING) {

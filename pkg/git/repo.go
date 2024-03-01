@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -288,6 +289,14 @@ func (r *repo) setUser(ctx context.Context, username, email string) error {
 
 func (r *repo) setRemote(ctx context.Context, remote string) error {
 	out, err := r.runGitCommand(ctx, "remote", "set-url", "origin", remote)
+	if err != nil {
+		return formatCommandError(err, out)
+	}
+	return nil
+}
+
+func (r *repo) setGCAutoDetach(ctx context.Context, autoDetach bool) error {
+	out, err := r.runGitCommand(ctx, "config", "gc.autoDetach", strconv.FormatBool(autoDetach))
 	if err != nil {
 		return formatCommandError(err, out)
 	}

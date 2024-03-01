@@ -13,6 +13,7 @@ Note: It's not required to install the PipeCD control plane to the cluster where
 ### Prerequisites
 - Having a Kubernetes cluster and connect to it via [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 - Forked the [Examples](https://github.com/pipe-cd/examples) repository
+- Prepare for authentication to [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry).
 
 ### 1. Installing PipeCD in quickstart mode
 

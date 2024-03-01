@@ -17,8 +17,11 @@ package git
 import (
 	"context"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -182,4 +185,60 @@ func TestCommitChanges(t *testing.T) {
 	bytes, err = os.ReadFile(filepath.Join(r.dir, "a/b/c/new.txt"))
 	require.NoError(t, err)
 	assert.Equal(t, string(changes["a/b/c/new.txt"]), string(bytes))
+}
+
+func Test_setGCAutoDetach(t *testing.T) {
+	faker, err := newFaker()
+	require.NoError(t, err)
+	defer faker.clean()
+
+	var (
+		org      = "test-repo-org"
+		repoName = "repo-set-gc-auto-detach"
+		ctx      = context.Background()
+	)
+
+	err = faker.makeRepo(org, repoName)
+	require.NoError(t, err)
+	r := &repo{
+		dir:     faker.repoDir(org, repoName),
+		gitPath: faker.gitPath,
+	}
+
+	getGCAutoDetach := func(ctx context.Context, repo *repo) (bool, error) {
+		cmd := exec.CommandContext(ctx, r.gitPath, "config", "--get", "gc.autoDetach")
+		cmd.Dir = r.dir
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			return false, err
+		}
+		v, err := strconv.ParseBool(strings.TrimSuffix(string(out), "\n"))
+		if err != nil {
+			return false, err
+		}
+
+		return v, nil
+	}
+
+	// set  as true firstly, and then set as false.
+	// set true
+	err = r.setGCAutoDetach(ctx, true)
+	require.NoError(t, err)
+
+	got, err := getGCAutoDetach(ctx, r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	require.NoError(t, err)
+
+	assert.Equal(t, true, got)
+
+	// set false
+	err = r.setGCAutoDetach(ctx, false)
+	require.NoError(t, err)
+
+	got, err = getGCAutoDetach(ctx, r)
+	require.NoError(t, err)
+
+	assert.Equal(t, false, got)
 }
