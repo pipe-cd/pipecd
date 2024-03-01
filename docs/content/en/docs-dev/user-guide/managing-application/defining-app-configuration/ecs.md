@@ -19,6 +19,11 @@ To deploy your application to run continuously or to place it behind a load bala
 
 If you're not familiar with ECS, you can get examples for those files from [here](../../../../examples/#ecs-applications).
 
+## Easier configuration by `pipectl init`
+
+You can generate an application config file easily and interactively by [`pipectl init`](../../command-line-tool.md#generating-an-application-config-apppipecdyaml).
+
+
 ## Quick sync
 
 By default, when the [pipeline](../../../configuration-reference/#ecs-application) was not specified, PipeCD triggers a quick sync deployment for the merged pull request.
