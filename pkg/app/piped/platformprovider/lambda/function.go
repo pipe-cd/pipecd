@@ -74,6 +74,7 @@ type FunctionManifestSpec struct {
 	Tags             map[string]string `json:"tags,omitempty"`
 	Environments     map[string]string `json:"environments,omitempty"`
 	VPCConfig        *VPCConfig        `json:"vpcConfig,omitempty"`
+	Layers           []string          `json:"layers,omitempty"`
 }
 
 type VPCConfig struct {
