@@ -8,7 +8,7 @@ description: >
 
 Based on the application configuration and the pull request changes, PipeCD plans how to execute the deployment: doing quick sync or doing progressive sync with the specified pipeline.
 
-## Easier configuration by `pipectl init`
+Note:
 
 You can generate an application config file easily and interactively by [`pipectl init`](../../command-line-tool.md#generating-an-application-config-apppipecdyaml).
 
