@@ -150,12 +150,10 @@ func (p *planner) Run(ctx context.Context) error {
 		p.done.Store(true)
 	}()
 
-	repoID := p.deployment.GitPath.Repo.Id
-	repoCfg, ok := p.pipedConfig.GetRepository(repoID)
-	if !ok {
-		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-		reason := fmt.Sprintf("Repository %s was not found in piped configuration", repoID)
-		return p.reportDeploymentFailed(ctx, reason)
+	repoCfg := config.PipedRepository{
+		RepoID: p.deployment.GitPath.Repo.Id,
+		Remote: p.deployment.GitPath.Repo.Remote,
+		Branch: p.deployment.GitPath.Repo.Branch,
 	}
 
 	in := pln.Input{

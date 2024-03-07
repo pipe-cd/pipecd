@@ -40,7 +40,7 @@ func (t *Trigger) triggerDeployment(
 	return nil
 }
 
-func buildDeployment(
+func (t *Trigger) buildDeployment(
 	app *model.Application,
 	branch string,
 	commit git.Commit,
@@ -55,6 +55,10 @@ func buildDeployment(
 
 	var commitURL string
 	if r := app.GitPath.Repo; r != nil {
+		if repo, ok := t.config.GetRepository(r.Id); ok {
+			r.Branch = repo.Branch
+			r.Remote = repo.Remote
+		}
 		url, err := git.MakeCommitURL(r.Remote, commit.Hash)
 		if err != nil {
 			return nil, err

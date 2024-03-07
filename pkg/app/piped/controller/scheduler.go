@@ -220,12 +220,10 @@ func (s *scheduler) Run(ctx context.Context) error {
 	)
 	deploymentStatus = model.DeploymentStatus_DEPLOYMENT_SUCCESS
 
-	repoID := s.deployment.GitPath.Repo.Id
-	repoCfg, ok := s.pipedConfig.GetRepository(repoID)
-	if !ok {
-		deploymentStatus := model.DeploymentStatus_DEPLOYMENT_FAILURE
-		statusReason := fmt.Sprintf("Repository %s was not found in piped configuration", repoID)
-		return s.reportDeploymentCompleted(ctx, deploymentStatus, statusReason, "")
+	repoCfg := config.PipedRepository{
+		RepoID: s.deployment.GitPath.Repo.Id,
+		Remote: s.deployment.GitPath.Repo.Remote,
+		Branch: s.deployment.GitPath.Repo.Branch,
 	}
 
 	s.targetDSP = deploysource.NewProvider(
