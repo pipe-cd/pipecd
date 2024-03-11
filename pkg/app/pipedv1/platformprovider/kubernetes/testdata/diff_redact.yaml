@@ -1,0 +1,17 @@
+apiVersion: v1
+metadata:
+  name: pipecd-secrets
+  namespace: default
+kind: Secret
+type: Opaque
+data:
+  service-account.json: real-secret-data-1
+---
+apiVersion: v1
+metadata:
+  name: pipecd-secrets
+  namespace: default
+kind: Secret
+type: Opaque
+data:
+  service-account.json: real-secret-data-2

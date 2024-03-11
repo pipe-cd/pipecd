@@ -1,0 +1,62 @@
+// Copyright 2024 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package grpc.pluggin.applicationkind;
+option go_package = "github.com/pipe-cd/pipecd/pkg/app/pipedv1/pluggin/applicationkind/api";
+
+import "validate/validate.proto";
+import "pkg/model/common.proto";
+import "pkg/model/deployment.proto";
+
+// PlannerService defines the public APIs for remote planners.
+service PlannerService {
+    // BuildPlan builds plan for the given deployment.
+    rpc BuildPlan(BuildPlanRequest) returns (BuildPlanResponse);
+}
+
+message BuildPlanRequest {
+    // The deployment to build plan for.
+    model.Deployment deployment = 1 [(validate.rules).message.required = true];
+    string most_recent_successful_commit_hash = 2;
+}
+
+message BuildPlanResponse {
+    // The built deployment plan.
+    DeploymentPlan plan = 1;
+}
+
+message DeploymentPlan {
+    model.SyncStrategy sync_strategy = 1;
+    // Text summary of planned deployment.
+    string summary = 2;
+    repeated model.ArtifactVersion versions = 3;
+    repeated model.PipelineStage stages = 4;
+}
+
+service ExecutorService {
+    // Execute executes the given deployment plan.
+    rpc ExecutePipeline(ExecutePipelineRequest) returns (stream ExecutePipelineResponse);
+}
+
+message ExecutePipelineRequest {
+    // The deployment plan to execute.
+    DeploymentPlan plan = 1 [(validate.rules).message.required = true];
+}
+
+message ExecutePipelineResponse {
+    model.DeploymentStatus status = 1;
+    string log = 2;
+}
