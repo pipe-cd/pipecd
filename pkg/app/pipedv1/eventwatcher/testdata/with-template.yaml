@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foo
+spec:
+  template:
+    spec:
+      containers:
+      - name: foo
+        image: gcr.io/pipecd/foo:v0.1.0
+        ports:
+        - containerPort: 9085
+        env:
+        - name: FOO
+          value: {{ .encryptedSecrets.foo }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bar
+spec:
+  template:
+    spec:
+      containers:
+      - name: bar
+        image: gcr.io/pipecd/bar:v0.1.0
+        ports:
+        - containerPort: 9085
+        env:
+        - name: BAR
+          value: {{ .encryptedSecrets.bar }}

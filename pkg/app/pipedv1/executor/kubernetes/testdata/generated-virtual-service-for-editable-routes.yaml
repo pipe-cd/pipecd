@@ -1,0 +1,57 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: helloworld
+spec:
+  hosts:
+  - helloworld
+  http:
+  - name: no-specified-destinations
+  - name: include-destinations-for-all-variants
+    route:
+    - destination:
+        host: helloworld
+        subset: primary
+      weight: 100
+    - destination:
+        host: helloworld
+        subset: canary
+    - destination:
+        host: helloworld
+        subset: baseline
+  - name: zero-weights-were-not-specified
+    route:
+    - destination:
+        host: helloworld
+        subset: primary
+      weight: 100
+  - match:
+    - headers:
+        end-user:
+          exact: jason
+      ignoreUriCase: true
+      uri:
+        prefix: /ratings/v2/
+    name: only-primary-destination
+    route:
+    - destination:
+        host: helloworld
+        subset: primary
+      weight: 50
+    - destination:
+        host: helloworld
+        subset: canary
+      weight: 30
+    - destination:
+        host: helloworld
+        subset: baseline
+      weight: 20
+  - name: include-destination-to-other-host
+    route:
+    - destination:
+        host: helloworld
+        subset: primary
+      weight: 50
+    - destination:
+        host: another-host
+      weight: 50
