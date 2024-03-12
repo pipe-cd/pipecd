@@ -61,6 +61,32 @@ func (m *BuildPlanRequest) validate(all bool) error {
 
 	var errors []error
 
+	if utf8.RuneCountInString(m.GetWorkingDir()) < 1 {
+		err := BuildPlanRequestValidationError{
+			field:  "WorkingDir",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for LastSuccessfulCommitHash
+
+	// no validation rules for LastSuccessfulConfigFileName
+
+	if len(m.GetPipedConfig()) < 1 {
+		err := BuildPlanRequestValidationError{
+			field:  "PipedConfig",
+			reason: "value length must be at least 1 bytes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if m.GetDeployment() == nil {
 		err := BuildPlanRequestValidationError{
 			field:  "Deployment",
@@ -100,8 +126,6 @@ func (m *BuildPlanRequest) validate(all bool) error {
 			}
 		}
 	}
-
-	// no validation rules for MostRecentSuccessfulCommitHash
 
 	if len(errors) > 0 {
 		return BuildPlanRequestMultiError(errors)
