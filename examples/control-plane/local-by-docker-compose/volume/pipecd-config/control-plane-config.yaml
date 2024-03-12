@@ -1,0 +1,21 @@
+apiVersion: "pipecd.dev/v1beta1"
+kind: ControlPlane
+spec:
+  datastore:
+    type: MYSQL
+    config:
+      url: root:test@tcp(pipecd-mysql:3306)
+      database: control-plane-local
+  filestore:
+    type: MINIO
+    config:
+      endpoint: http://pipecd-minio:9000
+      bucket: control-plane-local
+      accessKeyFile: /etc/pipecd-secret/minio-access-key
+      secretKeyFile: /etc/pipecd-secret/minio-secret-key
+      autoCreateBucket: true
+  projects:
+    - id: control-plane-local
+      staticAdmin:
+        username: hello-pipecd
+        passwordHash: "$2a$10$ye96mUqUqTnjUqgwQJbJzel/LJibRhUnmzyypACkvrTSnQpVFZ7qK" # bcrypt value of "hello-pipecd"

@@ -1,0 +1,64 @@
+version: '3'
+
+services:
+  # Proxy for connecting between the browser and the Control Plane via gRPC.
+  pipecd-gateway:
+    image: envoyproxy/envoy-alpine:v1.18.3
+    command:
+      - -c /etc/envoy/envoy-config.yaml
+    ports:
+      - 9095:9095
+      - 8080:9090
+    volumes:
+      - ./volume/envoy:/etc/envoy
+      - ./volume/pipecd-secret:/etc/pipecd-secret
+
+  # Main component of the Control Plane.
+  pipecd-server:
+    image: ghcr.io/pipe-cd/pipecd:v0.46.0
+    ports:
+      - 9080:9080
+    entrypoint: >
+      /bin/sh -c "
+      until (nc -z pipecd-minio 9000 && nc -z pipecd-mysql 3306) do sleep 2; done;
+      pipecd server --insecure-cookie=true --cache-address=pipecd-cache:6379 --config-file=/etc/pipecd-config/control-plane-config.yaml --enable-grpc-reflection=false --encryption-key-file=/etc/pipecd-secret/encryption-key --log-encoding=humanize --metrics=true;
+      "
+    volumes:
+      - ./volume/pipecd-config:/etc/pipecd-config
+      - ./volume/pipecd-secret:/etc/pipecd-secret
+
+  # For cache.
+  pipecd-cache:
+    image: redis:5.0.5-alpine3.9
+
+  # For administration.
+  pipecd-ops:
+    image: ghcr.io/pipe-cd/pipecd:v0.46.0
+    entrypoint: >
+      /bin/sh -c "
+      until (nc -z pipecd-minio 9000 && nc -z pipecd-mysql 3306) do sleep 2; done;
+      pipecd ops --cache-address=pipecd-cache:6379 --config-file=/etc/pipecd-config/control-plane-config.yaml --log-encoding=humanize --metrics=true;
+      "
+    volumes:
+      - ./volume/pipecd-config:/etc/pipecd-config
+      - ./volume/pipecd-secret:/etc/pipecd-secret
+    ports:
+      - 9185:9085
+
+  # Datastore for storing application data.
+  pipecd-mysql:
+    image: mysql:8.0.23
+    platform: linux/x86_64
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: control-plane-local
+
+  # Filestore for logs and so on.
+  pipecd-minio:
+    image: minio/minio:RELEASE.2020-08-26T00-00-49Z
+    command: server /data
+    environment:
+      MINIO_ACCESS_KEY: control-plane-local-access-key
+      MINIO_SECRET_KEY: control-plane-local-secret-key
+    ports:
+      - 9000:9000
