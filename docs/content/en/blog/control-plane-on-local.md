@@ -3,7 +3,7 @@ date: 2024-03-12
 title: "Control Plane on local by docker-compose"
 linkTitle: "Control Plane on local by docker-compose"
 weight: 989
-description: ""
+description: "This blog shows you how to install a PipeCD Control Plane on local machine easily."
 author: Tetsuya Kikuchi ([@t-kikuc](https://github.com/t-kikuc))
 ---
 
