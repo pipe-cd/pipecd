@@ -78,13 +78,13 @@ func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) 
 		secretDecrypter,
 	)
 
-	if in.MostRecentSuccessfulCommitHash != "" {
+	if in.LastSuccessfulCommitHash != "" {
 		gp := *in.Deployment.GitPath
-		gp.ConfigFilename = p.lastSuccessfulConfigFilename // TODO: get from request parameter
+		gp.ConfigFilename = in.LastSuccessfulConfigFileName
 
 		runningDSP = deploysource.NewProvider(
 			filepath.Join(workingDir, "running-deploysource"),
-			deploysource.NewGitSourceCloner(gitClient, repoCfg, "running", in.MostRecentSuccessfulCommitHash),
+			deploysource.NewGitSourceCloner(gitClient, repoCfg, "running", in.LastSuccessfulCommitHash),
 			gp,
 			secretDecrypter,
 		)
@@ -212,7 +212,7 @@ func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) 
 	// This is the first time to deploy this application
 	// or it was unable to retrieve that value.
 	// We just apply all manifests.
-	if in.MostRecentSuccessfulCommitHash == "" {
+	if in.LastSuccessfulCommitHash == "" {
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())
 		out.Summary = "Quick sync by applying all manifests because it seems this is the first deployment"
@@ -220,7 +220,7 @@ func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) 
 	}
 
 	// Load manifests of the previously applied commit.
-	oldManifests, ok := manifestCache.Get(in.MostRecentSuccessfulCommitHash)
+	oldManifests, ok := manifestCache.Get(in.LastSuccessfulCommitHash)
 	if !ok {
 		// When the manifests were not in the cache we have to load them.
 		var runningDs *deploysource.DeploySource
@@ -241,7 +241,7 @@ func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) 
 			err = fmt.Errorf("failed to load previously deployed manifests: %w", err)
 			return &api.BuildPlanResponse{Plan: out}, err
 		}
-		manifestCache.Put(in.MostRecentSuccessfulCommitHash, oldManifests)
+		manifestCache.Put(in.LastSuccessfulCommitHash, oldManifests)
 	}
 
 	progressive, desc := decideStrategy(oldManifests, newManifests, cfg.Workloads, ps.Logger)
