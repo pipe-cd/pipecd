@@ -16,6 +16,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/pluggin/applicationkind/api"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/diff"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -42,9 +43,8 @@ const (
 
 func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) (*api.BuildPlanResponse, error) {
 	var (
-		pipedConfig *config.PipedSpec
-		gitClient   gitClient
-		// TODO: how to create secretDecrypter
+		pipedConfig     *config.PipedSpec
+		gitClient       gitClient
 		secretDecrypter secretDecrypter
 
 		repoCfg = config.PipedRepository{
@@ -81,6 +81,13 @@ func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) 
 	gitClient, err = git.NewClient(gitOptions...)
 	if err != nil {
 		err = fmt.Errorf("failed to create git client (%v)", err)
+		return nil, err
+	}
+
+	// Initialize secret decrypter.
+	secretDecrypter, err = initializeSecretDecrypter(pipedConfig)
+	if err != nil {
+		err = fmt.Errorf("failed to initialize secret decrypter (%v)", err)
 		return nil, err
 	}
 
@@ -364,6 +371,38 @@ func decideStrategy(olds, news []provider.Manifest, workloadRefs []config.K8sRes
 
 	desc = "Quick sync by applying all manifests"
 	return
+}
+
+func initializeSecretDecrypter(cfg *config.PipedSpec) (crypto.Decrypter, error) {
+	sm := cfg.SecretManagement
+	if sm == nil {
+		return nil, nil
+	}
+
+	switch sm.Type {
+	case model.SecretManagementTypeNone:
+		return nil, nil
+
+	case model.SecretManagementTypeKeyPair:
+		key, err := sm.KeyPair.LoadPrivateKey()
+		if err != nil {
+			return nil, err
+		}
+		decrypter, err := crypto.NewHybridDecrypter(key)
+		if err != nil {
+			return nil, fmt.Errorf("failed to initialize decrypter (%w)", err)
+		}
+		return decrypter, nil
+
+	case model.SecretManagementTypeGCPKMS:
+		return nil, fmt.Errorf("type %q is not implemented yet", sm.Type.String())
+
+	case model.SecretManagementTypeAWSKMS:
+		return nil, fmt.Errorf("type %q is not implemented yet", sm.Type.String())
+
+	default:
+		return nil, fmt.Errorf("unsupported secret management type: %s", sm.Type.String())
+	}
 }
 
 func isInsecureChartRepository(cfg *config.PipedSpec, name string) bool {
