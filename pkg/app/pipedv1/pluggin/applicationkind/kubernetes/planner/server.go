@@ -22,15 +22,32 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 )
 
-type planService struct {
+type PlannerService struct {
+	api.UnimplementedPlannerServiceServer
+
 	RegexPool *regexpool.Pool
 	Logger    *zap.Logger
 }
 
+// Register registers all handling of this service into the specified gRPC server.
+func (a *PlannerService) Register(server *grpc.Server) {
+	api.RegisterPlannerServiceServer(server, a)
+}
+
+// NewPlannerService creates a new planService.
+func NewPlannerService(logger *zap.Logger) *PlannerService {
+	return &PlannerService{
+		RegexPool: regexpool.DefaultPool(),
+		Logger:    logger.Named("planner"),
+	}
+}
+
 type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
+	Clean() error
 }
 
 type secretDecrypter interface {
@@ -41,7 +58,7 @@ const (
 	versionUnknown = "unknown"
 )
 
-func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) (*api.BuildPlanResponse, error) {
+func (ps *PlannerService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) (*api.BuildPlanResponse, error) {
 	var (
 		pipedConfig     *config.PipedSpec
 		gitClient       gitClient
@@ -83,6 +100,13 @@ func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) 
 		err = fmt.Errorf("failed to create git client (%v)", err)
 		return nil, err
 	}
+	defer func() {
+		if err := gitClient.Clean(); err != nil {
+			ps.Logger.Error("had an error while cleaning gitClient", zap.Error(err))
+			return
+		}
+		ps.Logger.Info("successfully cleaned gitClient")
+	}()
 
 	// Initialize secret decrypter.
 	secretDecrypter, err = initializeSecretDecrypter(pipedConfig)
