@@ -43,9 +43,7 @@ const (
 func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) (*api.BuildPlanResponse, error) {
 	var (
 		pipedConfig *config.PipedSpec
-
-		// TODO: how to create gitClient
-		gitClient gitClient
+		gitClient   gitClient
 		// TODO: how to create secretDecrypter
 		secretDecrypter secretDecrypter
 
@@ -66,6 +64,25 @@ func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) 
 	}
 
 	pipedConfig = rawCfg.PipedSpec
+
+	// Initialize git client.
+	gitOptions := []git.Option{
+		git.WithUserName(pipedConfig.Git.Username),
+		git.WithEmail(pipedConfig.Git.Email),
+		git.WithLogger(ps.Logger),
+	}
+	for _, repo := range pipedConfig.GitHelmChartRepositories() {
+		if f := repo.SSHKeyFile; f != "" {
+			// Configure git client to use the specified SSH key while fetching private Helm charts.
+			env := fmt.Sprintf("GIT_SSH_COMMAND=ssh -i %s -o StrictHostKeyChecking=no -F /dev/null", f)
+			gitOptions = append(gitOptions, git.WithGitEnvForRepo(repo.GitRemote, env))
+		}
+	}
+	gitClient, err = git.NewClient(gitOptions...)
+	if err != nil {
+		err = fmt.Errorf("failed to create git client (%v)", err)
+		return nil, err
+	}
 
 	targetDSP = deploysource.NewProvider(
 		filepath.Join(in.WorkingDir, "target-deploysource"),
