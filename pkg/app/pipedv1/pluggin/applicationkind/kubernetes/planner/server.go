@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -58,21 +57,8 @@ func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) 
 		out        = &api.DeploymentPlan{}
 	)
 
-	// Make sure the existence of the workspace directory.
-	// Each planner/scheduler will have a working directory inside this workspace.
-	dir, err := os.MkdirTemp("", "workspace")
-	if err != nil {
-		return nil, fmt.Errorf("failed to create a workspace directory: %w", err)
-	}
-
-	// Ensure the existence of the working directory for the deployment.
-	workingDir, err := os.MkdirTemp(dir, in.Deployment.Id+"-planner-*")
-	if err != nil {
-		return nil, fmt.Errorf("failed to create working directory for planner: %w", err)
-	}
-
 	targetDSP = deploysource.NewProvider(
-		filepath.Join(workingDir, "target-deploysource"),
+		filepath.Join(in.WorkingDir, "target-deploysource"),
 		deploysource.NewGitSourceCloner(gitClient, repoCfg, "target", in.Deployment.Trigger.Commit.Hash),
 		*in.Deployment.GitPath,
 		secretDecrypter,
@@ -83,7 +69,7 @@ func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) 
 		gp.ConfigFilename = in.LastSuccessfulConfigFileName
 
 		runningDSP = deploysource.NewProvider(
-			filepath.Join(workingDir, "running-deploysource"),
+			filepath.Join(in.WorkingDir, "running-deploysource"),
 			deploysource.NewGitSourceCloner(gitClient, repoCfg, "running", in.LastSuccessfulCommitHash),
 			gp,
 			secretDecrypter,
