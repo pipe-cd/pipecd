@@ -49,7 +49,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/apistore/eventstore"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/appconfigreporter"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/chartrepo"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/controller"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/driftdetector"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/eventwatcher"
@@ -63,6 +62,8 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/statsreporter"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/trigger"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller"
+	plugginservice "github.com/pipe-cd/pipecd/pkg/app/pipedv1/pluggin/applicationkind/api"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/cli"
@@ -392,10 +393,17 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		})
 	}
 
+	plugginClient, err := p.createPlugginClient(ctx, "", input.Logger)
+	if err != nil {
+		input.Logger.Error("failed to create gRPC client to piped pluggins", zap.Error(err))
+		return err
+	}
+
 	// Start running deployment controller.
 	{
 		c := controller.NewController(
 			apiClient,
+			plugginClient,
 			gitClient,
 			deploymentLister,
 			commandLister,
@@ -571,6 +579,20 @@ func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID
 	client, err := pipedservice.NewClient(ctx, address, options...)
 	if err != nil {
 		logger.Error("failed to create api client", zap.Error(err))
+		return nil, err
+	}
+	return client, nil
+}
+
+// createPlugginClient makes a gRPC client to connect to the pluggin.
+func (p *piped) createPlugginClient(ctx context.Context, address string, logger *zap.Logger) (plugginservice.ApplicationPlugginClient, error) {
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+
+	// TODO: Secure this connection between piped and its pluggin.
+	client, err := plugginservice.NewClient(ctx, address, rpcclient.WithBlock())
+	if err != nil {
+		logger.Error("failed to create pluggin client", zap.Error(err))
 		return nil, err
 	}
 	return client, nil

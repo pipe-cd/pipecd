@@ -36,27 +36,37 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
 )
 
-// What planner does:
-// - Wait until there is no PLANNED or RUNNING deployment
-// - Pick the oldest PENDING deployment to plan its pipeline
-// - Compare with the last successful commit
-// - Decide the pipeline should be executed (scale, progressive, rollback)
-// - Update the pipeline stages and change the deployment status to PLANNED
 type planner struct {
 	// Readonly deployment model.
 	deployment                   *model.Deployment
 	lastSuccessfulCommitHash     string
 	lastSuccessfulConfigFilename string
 	workingDir                   string
-	apiClient                    apiClient
-	gitClient                    gitClient
-	metadataStore                metadatastore.MetadataStore
-	notifier                     notifier
-	secretDecrypter              secretDecrypter
-	plannerRegistry              registry.Registry
 	pipedConfig                  *config.PipedSpec
-	appManifestsCache            cache.Cache
-	logger                       *zap.Logger
+
+	// The plugginClient is used to call pluggin that actually
+	// performs planning deployment.
+	plugginClient plugginClient
+
+	// The apiClient is used to report the deployment status.
+	apiClient apiClient
+
+	// The notifier and metadataStore are used for
+	// notification features.
+	notifier      notifier
+	metadataStore metadatastore.MetadataStore
+
+	// TODO: Remove this
+	secretDecrypter secretDecrypter
+	// TODO: Remove this
+	gitClient gitClient
+	// TODO: Remove this
+	plannerRegistry registry.Registry
+	// TODO: Remove this
+	appManifestsCache cache.Cache
+
+	// TODO: Find a way to show log from pluggin's planner
+	logger *zap.Logger
 
 	done                 atomic.Bool
 	doneTimestamp        time.Time
@@ -72,12 +82,13 @@ func newPlanner(
 	lastSuccessfulCommitHash string,
 	lastSuccessfulConfigFilename string,
 	workingDir string,
+	plugginClient plugginClient,
 	apiClient apiClient,
-	gitClient gitClient,
+	gitClient gitClient, // Remove this
 	notifier notifier,
-	sd secretDecrypter,
+	sd secretDecrypter, // Remove this
 	pipedConfig *config.PipedSpec,
-	appManifestsCache cache.Cache,
+	appManifestsCache cache.Cache, // Remove this
 	logger *zap.Logger,
 ) *planner {
 
@@ -94,6 +105,7 @@ func newPlanner(
 		lastSuccessfulCommitHash:     lastSuccessfulCommitHash,
 		lastSuccessfulConfigFilename: lastSuccessfulConfigFilename,
 		workingDir:                   workingDir,
+		plugginClient:                plugginClient,
 		apiClient:                    apiClient,
 		gitClient:                    gitClient,
 		metadataStore:                metadatastore.NewMetadataStore(apiClient, d),
@@ -142,6 +154,11 @@ func (p *planner) Cancel(cmd model.ReportableCommand) {
 	close(p.cancelledCh)
 }
 
+// What planner does:
+// - Wait until there is no PLANNED or RUNNING deployment
+// - Pick the oldest PENDING deployment to plan its pipeline
+// - <*> Perform planning a deployment by calling the pluggin's planner
+// - Update the deployment status to PLANNED or not based on the result
 func (p *planner) Run(ctx context.Context) error {
 	p.logger.Info("start running planner")
 

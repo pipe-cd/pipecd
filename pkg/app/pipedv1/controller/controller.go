@@ -35,6 +35,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/logpersister"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
+	plugginservice "github.com/pipe-cd/pipecd/pkg/app/pipedv1/pluggin/applicationkind/api"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -57,6 +58,10 @@ type apiClient interface {
 	ReportStageLogsFromLastCheckpoint(ctx context.Context, in *pipedservice.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error)
 
 	InChainDeploymentPlannable(ctx context.Context, in *pipedservice.InChainDeploymentPlannableRequest, opts ...grpc.CallOption) (*pipedservice.InChainDeploymentPlannableResponse, error)
+}
+
+type plugginClient interface {
+	BuildPlan(ctx context.Context, in *plugginservice.BuildPlanRequest, opts ...grpc.CallOption) (*plugginservice.BuildPlanResponse, error)
 }
 
 type gitClient interface {
@@ -106,6 +111,7 @@ var (
 
 type controller struct {
 	apiClient           apiClient
+	plugginClient       plugginClient
 	gitClient           gitClient
 	deploymentLister    deploymentLister
 	commandLister       commandLister
@@ -147,6 +153,7 @@ type controller struct {
 // NewController creates a new instance for DeploymentController.
 func NewController(
 	apiClient apiClient,
+	plugginClient plugginClient,
 	gitClient gitClient,
 	deploymentLister deploymentLister,
 	commandLister commandLister,
@@ -167,6 +174,7 @@ func NewController(
 	)
 	return &controller{
 		apiClient:           apiClient,
+		plugginClient:       plugginClient,
 		gitClient:           gitClient,
 		deploymentLister:    deploymentLister,
 		commandLister:       commandLister,
@@ -473,6 +481,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		commitHash,
 		configFilename,
 		workingDir,
+		c.plugginClient,
 		c.apiClient,
 		c.gitClient,
 		c.notifier,
