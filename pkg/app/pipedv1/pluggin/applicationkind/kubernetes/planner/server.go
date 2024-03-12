@@ -127,15 +127,6 @@ func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) 
 		manifestCache.Put(in.Deployment.Trigger.Commit.Hash, newManifests)
 	}
 
-	// TODO: set version to response
-	// Determine application version from the manifests.
-	if version, e := determineVersion(newManifests); e != nil {
-		ps.Logger.Warn("unable to determine version", zap.Error(e))
-		out.Version = versionUnknown
-	} else {
-		out.Version = version
-	}
-
 	if versions, e := determineVersions(newManifests); e != nil || len(versions) == 0 {
 		ps.Logger.Warn("unable to determine versions", zap.Error(e))
 		out.Versions = []*model.ArtifactVersion{
@@ -486,55 +477,6 @@ func parseContainerImage(image string) (img containerImage) {
 	paths := strings.Split(parts[0], "/")
 	img.name = paths[len(paths)-1]
 	return
-}
-
-// determineVersion decides running version of an application based on its manifests.
-// Currently, this shows the tag values of using container images.
-// In case only one container is used, its tag value will be returned.
-//
-// TODO: Add ability to configure how to determine application version.
-func determineVersion(manifests []provider.Manifest) (string, error) {
-	images := make([]containerImage, 0)
-
-	for _, m := range manifests {
-		if !m.Key.IsDeployment() {
-			continue
-		}
-		data, err := m.MarshalJSON()
-		if err != nil {
-			return "", err
-		}
-		var d resource.Deployment
-		if err := json.Unmarshal(data, &d); err != nil {
-			return "", err
-		}
-
-		containers := d.Spec.Template.Spec.Containers
-		for _, c := range containers {
-			images = append(images, parseContainerImage(c.Image))
-		}
-	}
-
-	if len(images) == 0 {
-		return versionUnknown, nil
-	}
-
-	// In case the workload is containing only one container
-	// return only the tag name.
-	if len(images) == 1 {
-		return images[0].tag, nil
-	}
-
-	// In case multiple containers are used
-	// return version in format: "tag-1 (name-1), tag-2 (name-2)"
-	var b strings.Builder
-	b.WriteString(fmt.Sprintf("%s (%s)", images[0].tag, images[0].name))
-
-	for _, img := range images[1:] {
-		b.WriteString(fmt.Sprintf(", %s (%s)", img.tag, img.name))
-	}
-
-	return b.String(), nil
 }
 
 // determineVersions decides artifact versions of an application.
