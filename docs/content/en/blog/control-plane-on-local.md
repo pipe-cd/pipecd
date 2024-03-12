@@ -82,7 +82,7 @@ To clean up the Control Plane, execute the below command.
 docker-compose down
 ```
 
-NOTE: By following commands instead of avobe one, you can keep data such as Piped or applications even after restarting/updating the server component.
+NOTE: By following commands instead of above one, you can keep data such as Piped or applications on the Control Plane even after restarting/updating the server component.
 
 ```sh
 # Restart only the server component.
