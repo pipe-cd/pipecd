@@ -42,6 +42,8 @@ const (
 
 func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) (*api.BuildPlanResponse, error) {
 	var (
+		pipedConfig *config.PipedSpec
+
 		// TODO: how to create gitClient
 		gitClient gitClient
 		// TODO: how to create secretDecrypter
@@ -56,6 +58,14 @@ func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) 
 		runningDSP deploysource.Provider
 		out        = &api.DeploymentPlan{}
 	)
+
+	rawCfg, err := config.DecodeYAML(in.PipedConfig)
+	if err != nil {
+		err = fmt.Errorf("failed to decode piped configuration (%v)", err)
+		return nil, err
+	}
+
+	pipedConfig = rawCfg.PipedSpec
 
 	targetDSP = deploysource.NewProvider(
 		filepath.Join(in.WorkingDir, "target-deploysource"),
@@ -91,7 +101,7 @@ func (ps *planService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) 
 	if cfg.Input.HelmChart != nil {
 		chartRepoName := cfg.Input.HelmChart.Repository
 		if chartRepoName != "" {
-			cfg.Input.HelmChart.Insecure = in.PipedConfig.IsInsecureChartRepository(chartRepoName)
+			cfg.Input.HelmChart.Insecure = isInsecureChartRepository(pipedConfig, chartRepoName)
 		}
 	}
 
@@ -337,6 +347,15 @@ func decideStrategy(olds, news []provider.Manifest, workloadRefs []config.K8sRes
 
 	desc = "Quick sync by applying all manifests"
 	return
+}
+
+func isInsecureChartRepository(cfg *config.PipedSpec, name string) bool {
+	for _, cr := range cfg.ChartRepositories {
+		if cr.Name == name {
+			return cr.Insecure
+		}
+	}
+	return false
 }
 
 func findWorkloadManifests(manifests []provider.Manifest, refs []config.K8sResourceReference) []provider.Manifest {
