@@ -11,7 +11,7 @@ Currently, you can deploy and operate a PipeCD Control Plane on a Kubernetes clu
 However, some developers would like to build a Control Plane more easily for introduction or development.
 This blog shows you how to install a PipeCD Control Plane on local machine easily.
 
-Intended readers are those who would like to:
+This blog is for those who would like to:
 - begin using PipeCD and experiment its features instantly, including Control Plane and Piped
 - develop PipeCD and debug your codes easily
 
@@ -20,9 +20,9 @@ Intended readers are those who would like to:
 The general architecture of PipeCD Control Plane is as below.
 ![](/images/control-plane-components.png)
 
-NOTE: See [Architecture Overview](docs/user-guide/managing-controlplane/architecture-overview/) doc for details.
+> Note: See [Architecture Overview](docs/user-guide/managing-controlplane/architecture-overview/) doc for details.
 
-In this blog, you will build the Control Plane by these containers:
+In this blog, you will build a Control Plane by these containers:
 
 - Server: pipecd server
 - Ops: pipecd ops
@@ -37,7 +37,9 @@ In this blog, you will build the Control Plane by these containers:
 
 ### Installation of Control Plane
 
-You can install a Control Plane by just executing this command:
+1. Get the example codes from https://github.com/pipe-cd/examples/tree/master/control-plane/local-by-docker-compose/.
+
+2. Execute the below command for docker-compose.yaml you got in [1.].
 
 ```sh
 docker-compose up
@@ -59,7 +61,7 @@ pipecd-server-1   | grpc server is running on [::]:9081
 pipecd-server-1   | start running http server on :9082
 ```
 
-### Access the console of the Control Plane to confirm
+### To confirm: Access the console of the Control Plane
 
 1. Access http://localhost:8080 on your web browser.
 
@@ -82,7 +84,7 @@ To clean up the Control Plane, execute the below command.
 docker-compose down
 ```
 
-NOTE: By following commands instead of above one, you can keep data such as Piped or applications on the Control Plane even after restarting/updating the server component.
+> Note: By following commands instead of above one, you can keep data such as Piped or applications on the Control Plane even after restarting/updating the server component.
 
 ```sh
 # Restart only the server component.
