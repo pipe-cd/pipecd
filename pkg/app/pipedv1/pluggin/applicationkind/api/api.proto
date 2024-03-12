@@ -28,9 +28,15 @@ service PlannerService {
 }
 
 message BuildPlanRequest {
-    // The deployment to build plan for.
-    model.Deployment deployment = 1 [(validate.rules).message.required = true];
-    string most_recent_successful_commit_hash = 2;
+    string working_dir = 1 [(validate.rules).string.min_len = 1];
+    // Last successful commit hash and config file name.
+    // Use to build deployment source object for last successful deployment.
+    string last_successful_commit_hash = 2;
+    string last_successful_config_file_name = 3;
+    // The configuration of the piped that handles the deployment.
+    bytes piped_config = 4 [(validate.rules).bytes.min_len = 1];
+    // The deployment to build a plan for.
+    model.Deployment deployment = 5 [(validate.rules).message.required = true];
 }
 
 message BuildPlanResponse {
