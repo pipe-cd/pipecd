@@ -10,23 +10,23 @@ import (
 	"strings"
 	"time"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes/resource"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/pluggin/applicationkind/api"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/diff"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
 type PlannerService struct {
-	api.UnimplementedPlannerServiceServer
+	platform.UnimplementedPlannerServiceServer
 
 	RegexPool *regexpool.Pool
 	Logger    *zap.Logger
@@ -34,7 +34,7 @@ type PlannerService struct {
 
 // Register registers all handling of this service into the specified gRPC server.
 func (a *PlannerService) Register(server *grpc.Server) {
-	api.RegisterPlannerServiceServer(server, a)
+	platform.RegisterPlannerServiceServer(server, a)
 }
 
 // NewPlannerService creates a new planService.
@@ -58,7 +58,7 @@ const (
 	versionUnknown = "unknown"
 )
 
-func (ps *PlannerService) BuildPlan(ctx context.Context, in *api.BuildPlanRequest) (*api.BuildPlanResponse, error) {
+func (ps *PlannerService) BuildPlan(ctx context.Context, in *platform.BuildPlanRequest) (*platform.BuildPlanResponse, error) {
 	var (
 		pipedConfig     *config.PipedSpec
 		gitClient       gitClient
@@ -71,7 +71,7 @@ func (ps *PlannerService) BuildPlan(ctx context.Context, in *api.BuildPlanReques
 		}
 		targetDSP  deploysource.Provider
 		runningDSP deploysource.Provider
-		out        = &api.DeploymentPlan{}
+		out        = &platform.DeploymentPlan{}
 	)
 
 	rawCfg, err := config.DecodeYAML(in.PipedConfig)
@@ -192,7 +192,7 @@ func (ps *PlannerService) BuildPlan(ctx context.Context, in *api.BuildPlanReques
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())
 		out.Summary = in.Deployment.Trigger.StrategySummary
-		return &api.BuildPlanResponse{Plan: out}, nil
+		return &platform.BuildPlanResponse{Plan: out}, nil
 	case model.SyncStrategy_PIPELINE:
 		if cfg.Pipeline == nil {
 			err = fmt.Errorf("unable to force sync with pipeline because no pipeline was specified")
@@ -201,7 +201,7 @@ func (ps *PlannerService) BuildPlan(ctx context.Context, in *api.BuildPlanReques
 		out.SyncStrategy = model.SyncStrategy_PIPELINE
 		out.Stages = buildProgressivePipeline(cfg.Pipeline, autoRollback, time.Now())
 		out.Summary = in.Deployment.Trigger.StrategySummary
-		return &api.BuildPlanResponse{Plan: out}, nil
+		return &platform.BuildPlanResponse{Plan: out}, nil
 	}
 
 	// If the progressive pipeline was not configured
@@ -210,7 +210,7 @@ func (ps *PlannerService) BuildPlan(ctx context.Context, in *api.BuildPlanReques
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())
 		out.Summary = "Quick sync by applying all manifests (no pipeline was configured)"
-		return &api.BuildPlanResponse{Plan: out}, nil
+		return &platform.BuildPlanResponse{Plan: out}, nil
 	}
 
 	// Force to use pipeline when the alwaysUsePipeline field was configured.
@@ -218,7 +218,7 @@ func (ps *PlannerService) BuildPlan(ctx context.Context, in *api.BuildPlanReques
 		out.SyncStrategy = model.SyncStrategy_PIPELINE
 		out.Stages = buildProgressivePipeline(cfg.Pipeline, autoRollback, time.Now())
 		out.Summary = "Sync with the specified pipeline (alwaysUsePipeline was set)"
-		return &api.BuildPlanResponse{Plan: out}, nil
+		return &platform.BuildPlanResponse{Plan: out}, nil
 	}
 
 	// This deployment is triggered by a commit with the intent to perform pipeline.
@@ -227,13 +227,13 @@ func (ps *PlannerService) BuildPlan(ctx context.Context, in *api.BuildPlanReques
 		pipelineRegex, err := ps.RegexPool.Get(p)
 		if err != nil {
 			err = fmt.Errorf("failed to compile commitMatcher.pipeline(%s): %w", p, err)
-			return &api.BuildPlanResponse{Plan: out}, err
+			return &platform.BuildPlanResponse{Plan: out}, err
 		}
 		if pipelineRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
 			out.SyncStrategy = model.SyncStrategy_PIPELINE
 			out.Stages = buildProgressivePipeline(cfg.Pipeline, autoRollback, time.Now())
 			out.Summary = fmt.Sprintf("Sync progressively because the commit message was matching %q", p)
-			return &api.BuildPlanResponse{Plan: out}, err
+			return &platform.BuildPlanResponse{Plan: out}, err
 		}
 	}
 
@@ -243,13 +243,13 @@ func (ps *PlannerService) BuildPlan(ctx context.Context, in *api.BuildPlanReques
 		syncRegex, err := ps.RegexPool.Get(s)
 		if err != nil {
 			err = fmt.Errorf("failed to compile commitMatcher.sync(%s): %w", s, err)
-			return &api.BuildPlanResponse{Plan: out}, err
+			return &platform.BuildPlanResponse{Plan: out}, err
 		}
 		if syncRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
 			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 			out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())
 			out.Summary = fmt.Sprintf("Quick sync by applying all manifests because the commit message was matching %q", s)
-			return &api.BuildPlanResponse{Plan: out}, nil
+			return &platform.BuildPlanResponse{Plan: out}, nil
 		}
 	}
 
@@ -260,7 +260,7 @@ func (ps *PlannerService) BuildPlan(ctx context.Context, in *api.BuildPlanReques
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())
 		out.Summary = "Quick sync by applying all manifests because it seems this is the first deployment"
-		return &api.BuildPlanResponse{Plan: out}, nil
+		return &platform.BuildPlanResponse{Plan: out}, nil
 	}
 
 	// Load manifests of the previously applied commit.
@@ -271,19 +271,19 @@ func (ps *PlannerService) BuildPlan(ctx context.Context, in *api.BuildPlanReques
 		runningDs, err = runningDSP.Get(ctx, io.Discard)
 		if err != nil {
 			err = fmt.Errorf("failed to prepare the running deploy source data (%v)", err)
-			return &api.BuildPlanResponse{Plan: out}, err
+			return &platform.BuildPlanResponse{Plan: out}, err
 		}
 
 		runningCfg := runningDs.ApplicationConfig.KubernetesApplicationSpec
 		if runningCfg == nil {
 			err = fmt.Errorf("unable to find the running configuration (%v)", err)
-			return &api.BuildPlanResponse{Plan: out}, err
+			return &platform.BuildPlanResponse{Plan: out}, err
 		}
 		loader := provider.NewLoader(in.Deployment.ApplicationName, runningDs.AppDir, runningDs.RepoDir, in.Deployment.GitPath.ConfigFilename, runningCfg.Input, gitClient, ps.Logger)
 		oldManifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			err = fmt.Errorf("failed to load previously deployed manifests: %w", err)
-			return &api.BuildPlanResponse{Plan: out}, err
+			return &platform.BuildPlanResponse{Plan: out}, err
 		}
 		manifestCache.Put(in.LastSuccessfulCommitHash, oldManifests)
 	}
@@ -294,12 +294,12 @@ func (ps *PlannerService) BuildPlan(ctx context.Context, in *api.BuildPlanReques
 	if progressive {
 		out.SyncStrategy = model.SyncStrategy_PIPELINE
 		out.Stages = buildProgressivePipeline(cfg.Pipeline, autoRollback, time.Now())
-		return &api.BuildPlanResponse{Plan: out}, err
+		return &platform.BuildPlanResponse{Plan: out}, err
 	}
 
 	out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 	out.Stages = buildQuickSyncPipeline(autoRollback, time.Now())
-	return &api.BuildPlanResponse{Plan: out}, err
+	return &platform.BuildPlanResponse{Plan: out}, err
 }
 
 // First up, checks to see if the workload's `spec.template` has been changed,
