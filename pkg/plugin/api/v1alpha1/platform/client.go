@@ -17,7 +17,7 @@
 // The planner bases on the changes from git commits
 // then builds the deployment manifests to know the behavior of the deployment.
 // From that behavior the planner can decides which pipeline should be applied.
-package api
+package platform
 
 import (
 	"context"
