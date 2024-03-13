@@ -76,8 +76,8 @@ PipeCD consists of several components and docs:
 - **cmd/piped**: piped is an agent component that runs in your cluster. [README.md](./cmd/piped/README.md)
 - **cmd/pipectl**: The command-line tool for PipeCD.
 - **cmd/launcher**: The command executor that enables the remote upgrade feature of the piped agent.
-- **web**: The web application provided by the control plane.
-- **docs**: Documentation and references.
+- **web**: The web application provided by the control plane. [README.md](./web/README.md)
+- **docs**: Documentation and references. [README.md](./docs/README.md)
 
 **You can find detailed development information in the README file of each directory.**
 
