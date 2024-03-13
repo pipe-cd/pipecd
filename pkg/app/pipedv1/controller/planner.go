@@ -44,10 +44,9 @@ type planner struct {
 	workingDir                   string
 	pipedConfig                  *config.PipedSpec
 
-	// The plugginClient is used to call pluggin that actually
+	// The pluginClient is used to call pluggin that actually
 	// performs planning deployment.
-	// TODO: This should be array of plugin clients.
-	plugginClient pluginClient
+	pluginClient pluginClient
 
 	// The apiClient is used to report the deployment status.
 	apiClient apiClient
@@ -83,7 +82,7 @@ func newPlanner(
 	lastSuccessfulCommitHash string,
 	lastSuccessfulConfigFilename string,
 	workingDir string,
-	plugginClient pluginClient,
+	pluginClient pluginClient,
 	apiClient apiClient,
 	gitClient gitClient, // Remove this
 	notifier notifier,
@@ -106,7 +105,7 @@ func newPlanner(
 		lastSuccessfulCommitHash:     lastSuccessfulCommitHash,
 		lastSuccessfulConfigFilename: lastSuccessfulConfigFilename,
 		workingDir:                   workingDir,
-		plugginClient:                plugginClient,
+		pluginClient:                 pluginClient,
 		apiClient:                    apiClient,
 		gitClient:                    gitClient,
 		metadataStore:                metadatastore.NewMetadataStore(apiClient, d),
