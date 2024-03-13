@@ -35,12 +35,12 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/logpersister"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
-	plugginservice "github.com/pipe-cd/pipecd/pkg/app/pipedv1/pluggin/applicationkind/api"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
 )
 
 type apiClient interface {
@@ -61,7 +61,7 @@ type apiClient interface {
 }
 
 type plugginClient interface {
-	BuildPlan(ctx context.Context, in *plugginservice.BuildPlanRequest, opts ...grpc.CallOption) (*plugginservice.BuildPlanResponse, error)
+	BuildPlan(ctx context.Context, in *platform.BuildPlanRequest, opts ...grpc.CallOption) (*platform.BuildPlanResponse, error)
 }
 
 type gitClient interface {

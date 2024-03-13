@@ -63,7 +63,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/trigger"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller"
-	plugginservice "github.com/pipe-cd/pipecd/pkg/app/pipedv1/pluggin/applicationkind/api"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/cli"
@@ -71,6 +70,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
 	"github.com/pipe-cd/pipecd/pkg/version"
@@ -585,12 +585,17 @@ func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID
 }
 
 // createPlugginClient makes a gRPC client to connect to the pluggin.
-func (p *piped) createPlugginClient(ctx context.Context, address string, logger *zap.Logger) (plugginservice.ApplicationPlugginClient, error) {
+func (p *piped) createPlugginClient(ctx context.Context, address string, logger *zap.Logger) (platform.ApplicationPlugginClient, error) {
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
+	options := []rpcclient.DialOption{
+		rpcclient.WithBlock(),
+		rpcclient.WithInsecure(),
+	}
+
 	// TODO: Secure this connection between piped and its pluggin.
-	client, err := plugginservice.NewClient(ctx, address, rpcclient.WithBlock())
+	client, err := platform.NewClient(ctx, address, options...)
 	if err != nil {
 		logger.Error("failed to create pluggin client", zap.Error(err))
 		return nil, err
