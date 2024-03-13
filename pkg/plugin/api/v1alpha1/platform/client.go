@@ -27,7 +27,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
 )
 
-type ApplicationPlugginClient interface {
+type PlatformPluginClient interface {
 	PlannerServiceClient
 	ExecutorServiceClient
 	Close() error
@@ -39,7 +39,7 @@ type client struct {
 	conn *grpc.ClientConn
 }
 
-func NewClient(ctx context.Context, address string, opts ...rpcclient.DialOption) (ApplicationPlugginClient, error) {
+func NewClient(ctx context.Context, address string, opts ...rpcclient.DialOption) (PlatformPluginClient, error) {
 	conn, err := rpcclient.DialContext(ctx, address, opts...)
 	if err != nil {
 		return nil, err

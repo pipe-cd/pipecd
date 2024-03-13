@@ -393,7 +393,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		})
 	}
 
-	plugginClient, err := p.createPlugginClient(ctx, "", input.Logger)
+	pluginClient, err := p.createPluginClient(ctx, "", input.Logger)
 	if err != nil {
 		input.Logger.Error("failed to create gRPC client to piped pluggins", zap.Error(err))
 		return err
@@ -403,7 +403,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	{
 		c := controller.NewController(
 			apiClient,
-			plugginClient,
+			pluginClient,
 			gitClient,
 			deploymentLister,
 			commandLister,
@@ -584,8 +584,8 @@ func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID
 	return client, nil
 }
 
-// createPlugginClient makes a gRPC client to connect to the pluggin.
-func (p *piped) createPlugginClient(ctx context.Context, address string, logger *zap.Logger) (platform.ApplicationPlugginClient, error) {
+// createPluginClient makes a gRPC client to connect to the pluggin.
+func (p *piped) createPluginClient(ctx context.Context, address string, logger *zap.Logger) (platform.PlatformPluginClient, error) {
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 

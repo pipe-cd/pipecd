@@ -46,7 +46,8 @@ type planner struct {
 
 	// The plugginClient is used to call pluggin that actually
 	// performs planning deployment.
-	plugginClient plugginClient
+	// TODO: This should be array of plugin clients.
+	plugginClient pluginClient
 
 	// The apiClient is used to report the deployment status.
 	apiClient apiClient
@@ -82,7 +83,7 @@ func newPlanner(
 	lastSuccessfulCommitHash string,
 	lastSuccessfulConfigFilename string,
 	workingDir string,
-	plugginClient plugginClient,
+	plugginClient pluginClient,
 	apiClient apiClient,
 	gitClient gitClient, // Remove this
 	notifier notifier,

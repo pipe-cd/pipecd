@@ -60,7 +60,7 @@ type apiClient interface {
 	InChainDeploymentPlannable(ctx context.Context, in *pipedservice.InChainDeploymentPlannableRequest, opts ...grpc.CallOption) (*pipedservice.InChainDeploymentPlannableResponse, error)
 }
 
-type plugginClient interface {
+type pluginClient interface {
 	BuildPlan(ctx context.Context, in *platform.BuildPlanRequest, opts ...grpc.CallOption) (*platform.BuildPlanResponse, error)
 }
 
@@ -111,7 +111,7 @@ var (
 
 type controller struct {
 	apiClient           apiClient
-	plugginClient       plugginClient
+	pluginClient        pluginClient
 	gitClient           gitClient
 	deploymentLister    deploymentLister
 	commandLister       commandLister
@@ -153,7 +153,7 @@ type controller struct {
 // NewController creates a new instance for DeploymentController.
 func NewController(
 	apiClient apiClient,
-	plugginClient plugginClient,
+	plugginClient pluginClient,
 	gitClient gitClient,
 	deploymentLister deploymentLister,
 	commandLister commandLister,
@@ -174,7 +174,7 @@ func NewController(
 	)
 	return &controller{
 		apiClient:           apiClient,
-		plugginClient:       plugginClient,
+		pluginClient:        plugginClient,
 		gitClient:           gitClient,
 		deploymentLister:    deploymentLister,
 		commandLister:       commandLister,
@@ -481,7 +481,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		commitHash,
 		configFilename,
 		workingDir,
-		c.plugginClient,
+		c.pluginClient,
 		c.apiClient,
 		c.gitClient,
 		c.notifier,
