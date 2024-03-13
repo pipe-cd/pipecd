@@ -14,8 +14,8 @@
 
 syntax = "proto3";
 
-package grpc.plugin.platformapi;
-option go_package = "github.com/pipe-cd/pipecd/pkg/plugin/platform/platformapi";
+package grpc.plugin.platformapi.v1alpha1;
+option go_package = "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform";
 
 import "validate/validate.proto";
 import "pkg/model/common.proto";

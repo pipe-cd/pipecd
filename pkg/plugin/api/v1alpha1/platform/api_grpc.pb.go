@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.18.1
-// source: pkg/plugin/platform/api/api.proto
+// source: pkg/plugin/api/v1alpha1/platform/api.proto
 
-package platformapi
+package platform
 
 import (
 	context "context"
@@ -36,7 +36,7 @@ func NewPlannerServiceClient(cc grpc.ClientConnInterface) PlannerServiceClient {
 
 func (c *plannerServiceClient) BuildPlan(ctx context.Context, in *BuildPlanRequest, opts ...grpc.CallOption) (*BuildPlanResponse, error) {
 	out := new(BuildPlanResponse)
-	err := c.cc.Invoke(ctx, "/grpc.plugin.platformapi.PlannerService/BuildPlan", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc.plugin.platformapi.v1alpha1.PlannerService/BuildPlan", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func _PlannerService_BuildPlan_Handler(srv interface{}, ctx context.Context, dec
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.plugin.platformapi.PlannerService/BuildPlan",
+		FullMethod: "/grpc.plugin.platformapi.v1alpha1.PlannerService/BuildPlan",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PlannerServiceServer).BuildPlan(ctx, req.(*BuildPlanRequest))
@@ -94,7 +94,7 @@ func _PlannerService_BuildPlan_Handler(srv interface{}, ctx context.Context, dec
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var PlannerService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "grpc.plugin.platformapi.PlannerService",
+	ServiceName: "grpc.plugin.platformapi.v1alpha1.PlannerService",
 	HandlerType: (*PlannerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -103,7 +103,7 @@ var PlannerService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "pkg/plugin/platform/api/api.proto",
+	Metadata: "pkg/plugin/api/v1alpha1/platform/api.proto",
 }
 
 // ExecutorServiceClient is the client API for ExecutorService service.
@@ -123,7 +123,7 @@ func NewExecutorServiceClient(cc grpc.ClientConnInterface) ExecutorServiceClient
 }
 
 func (c *executorServiceClient) ExecutePipeline(ctx context.Context, in *ExecutePipelineRequest, opts ...grpc.CallOption) (ExecutorService_ExecutePipelineClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ExecutorService_ServiceDesc.Streams[0], "/grpc.plugin.platformapi.ExecutorService/ExecutePipeline", opts...)
+	stream, err := c.cc.NewStream(ctx, &ExecutorService_ServiceDesc.Streams[0], "/grpc.plugin.platformapi.v1alpha1.ExecutorService/ExecutePipeline", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +208,7 @@ func (x *executorServiceExecutePipelineServer) Send(m *ExecutePipelineResponse) 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ExecutorService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "grpc.plugin.platformapi.ExecutorService",
+	ServiceName: "grpc.plugin.platformapi.v1alpha1.ExecutorService",
 	HandlerType: (*ExecutorServiceServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
@@ -218,5 +218,5 @@ var ExecutorService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "pkg/plugin/platform/api/api.proto",
+	Metadata: "pkg/plugin/api/v1alpha1/platform/api.proto",
 }
