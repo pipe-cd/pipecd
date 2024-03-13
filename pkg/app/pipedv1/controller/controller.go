@@ -40,7 +40,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
 )
 
 type apiClient interface {
@@ -58,10 +57,6 @@ type apiClient interface {
 	ReportStageLogsFromLastCheckpoint(ctx context.Context, in *pipedservice.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error)
 
 	InChainDeploymentPlannable(ctx context.Context, in *pipedservice.InChainDeploymentPlannableRequest, opts ...grpc.CallOption) (*pipedservice.InChainDeploymentPlannableResponse, error)
-}
-
-type pluginClient interface {
-	BuildPlan(ctx context.Context, in *platform.BuildPlanRequest, opts ...grpc.CallOption) (*platform.BuildPlanResponse, error)
 }
 
 type gitClient interface {
@@ -111,7 +106,7 @@ var (
 
 type controller struct {
 	apiClient           apiClient
-	pluginClient        pluginClient
+	pluginRegistry      PluginRegistry
 	gitClient           gitClient
 	deploymentLister    deploymentLister
 	commandLister       commandLister
@@ -119,8 +114,9 @@ type controller struct {
 	liveResourceLister  liveResourceLister
 	analysisResultStore analysisResultStore
 	notifier            notifier
-	secretDecrypter     secretDecrypter
-	pipedConfig         *config.PipedSpec
+	pipedConfig         []byte
+	secretDecrypter     secretDecrypter   // TODO: Remove this
+	pipedCfg            *config.PipedSpec // TODO: Remove this, use pipedConfig instead
 	appManifestsCache   cache.Cache
 	logPersister        logpersister.Persister
 
@@ -153,7 +149,6 @@ type controller struct {
 // NewController creates a new instance for DeploymentController.
 func NewController(
 	apiClient apiClient,
-	plugginClient pluginClient,
 	gitClient gitClient,
 	deploymentLister deploymentLister,
 	commandLister commandLister,
@@ -162,7 +157,8 @@ func NewController(
 	analysisResultStore analysisResultStore,
 	notifier notifier,
 	sd secretDecrypter,
-	pipedConfig *config.PipedSpec,
+	pipedCfg *config.PipedSpec,
+	pipedConfig []byte,
 	appManifestsCache cache.Cache,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
@@ -174,7 +170,7 @@ func NewController(
 	)
 	return &controller{
 		apiClient:           apiClient,
-		pluginClient:        plugginClient,
+		pluginRegistry:      DefaultPluginRegistry(),
 		gitClient:           gitClient,
 		deploymentLister:    deploymentLister,
 		commandLister:       commandLister,
@@ -184,6 +180,7 @@ func NewController(
 		notifier:            notifier,
 		secretDecrypter:     sd,
 		appManifestsCache:   appManifestsCache,
+		pipedCfg:            pipedCfg,
 		pipedConfig:         pipedConfig,
 		logPersister:        lp,
 
@@ -476,18 +473,21 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		}
 	}
 
+	pluginClient, ok := c.pluginRegistry.Plugin(d.Kind)
+	if !ok {
+		logger.Error("no plugin client for the application kind", zap.String("kind", d.Kind.String()))
+		return nil, fmt.Errorf("no plugin client for the application kind %s", d.Kind.String())
+	}
+
 	planner := newPlanner(
 		d,
 		commitHash,
 		configFilename,
 		workingDir,
-		c.pluginClient,
+		pluginClient,
 		c.apiClient,
-		c.gitClient,
 		c.notifier,
-		c.secretDecrypter,
 		c.pipedConfig,
-		c.appManifestsCache,
 		c.logger,
 	)
 
@@ -630,7 +630,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.logPersister,
 		c.notifier,
 		c.secretDecrypter,
-		c.pipedConfig,
+		c.pipedCfg,
 		c.appManifestsCache,
 		c.logger,
 	)

@@ -18,22 +18,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"path/filepath"
 	"time"
 
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/controllermetrics"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/metadatastore"
-	pln "github.com/pipe-cd/pipecd/pkg/app/piped/planner"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/planner/registry"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
-	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/pipe-cd/pipecd/pkg/regexpool"
+	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
 )
 
 type planner struct {
@@ -42,11 +37,11 @@ type planner struct {
 	lastSuccessfulCommitHash     string
 	lastSuccessfulConfigFilename string
 	workingDir                   string
-	pipedConfig                  *config.PipedSpec
+	pipedConfig                  []byte
 
 	// The pluginClient is used to call pluggin that actually
 	// performs planning deployment.
-	pluginClient pluginClient
+	pluginClient platform.PlatformPluginClient
 
 	// The apiClient is used to report the deployment status.
 	apiClient apiClient
@@ -55,15 +50,6 @@ type planner struct {
 	// notification features.
 	notifier      notifier
 	metadataStore metadatastore.MetadataStore
-
-	// TODO: Remove this
-	secretDecrypter secretDecrypter
-	// TODO: Remove this
-	gitClient gitClient
-	// TODO: Remove this
-	plannerRegistry registry.Registry
-	// TODO: Remove this
-	appManifestsCache cache.Cache
 
 	// TODO: Find a way to show log from pluggin's planner
 	logger *zap.Logger
@@ -82,13 +68,10 @@ func newPlanner(
 	lastSuccessfulCommitHash string,
 	lastSuccessfulConfigFilename string,
 	workingDir string,
-	pluginClient pluginClient,
+	pluginClient platform.PlatformPluginClient,
 	apiClient apiClient,
-	gitClient gitClient, // Remove this
 	notifier notifier,
-	sd secretDecrypter, // Remove this
-	pipedConfig *config.PipedSpec,
-	appManifestsCache cache.Cache, // Remove this
+	pipedConfig []byte,
 	logger *zap.Logger,
 ) *planner {
 
@@ -107,13 +90,9 @@ func newPlanner(
 		workingDir:                   workingDir,
 		pluginClient:                 pluginClient,
 		apiClient:                    apiClient,
-		gitClient:                    gitClient,
 		metadataStore:                metadatastore.NewMetadataStore(apiClient, d),
 		notifier:                     notifier,
-		secretDecrypter:              sd,
 		pipedConfig:                  pipedConfig,
-		plannerRegistry:              registry.DefaultRegistry(),
-		appManifestsCache:            appManifestsCache,
 		doneDeploymentStatus:         d.Status,
 		cancelledCh:                  make(chan *model.ReportableCommand, 1),
 		nowFunc:                      time.Now,
@@ -167,56 +146,19 @@ func (p *planner) Run(ctx context.Context) error {
 		p.done.Store(true)
 	}()
 
-	repoCfg := config.PipedRepository{
-		RepoID: p.deployment.GitPath.Repo.Id,
-		Remote: p.deployment.GitPath.Repo.Remote,
-		Branch: p.deployment.GitPath.Repo.Branch,
-	}
-
-	in := pln.Input{
-		ApplicationID:                  p.deployment.ApplicationId,
-		ApplicationName:                p.deployment.ApplicationName,
-		GitPath:                        *p.deployment.GitPath,
-		Trigger:                        *p.deployment.Trigger,
-		MostRecentSuccessfulCommitHash: p.lastSuccessfulCommitHash,
-		PipedConfig:                    p.pipedConfig,
-		AppManifestsCache:              p.appManifestsCache,
-		RegexPool:                      regexpool.DefaultPool(),
-		GitClient:                      p.gitClient,
-		Logger:                         p.logger,
-	}
-
-	in.TargetDSP = deploysource.NewProvider(
-		filepath.Join(p.workingDir, "target-deploysource"),
-		deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "target", p.deployment.Trigger.Commit.Hash),
-		*p.deployment.GitPath,
-		p.secretDecrypter,
-	)
-
-	if p.lastSuccessfulCommitHash != "" {
-		gp := *p.deployment.GitPath
-		gp.ConfigFilename = p.lastSuccessfulConfigFilename
-
-		in.RunningDSP = deploysource.NewProvider(
-			filepath.Join(p.workingDir, "running-deploysource"),
-			deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "running", p.lastSuccessfulCommitHash),
-			gp,
-			p.secretDecrypter,
-		)
-	}
-
 	defer func() {
 		controllermetrics.UpdateDeploymentStatus(p.deployment, p.doneDeploymentStatus)
 	}()
 
-	planner, ok := p.plannerRegistry.Planner(p.deployment.Kind)
-	if !ok {
-		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-		p.reportDeploymentFailed(ctx, "Unable to find the planner for this application kind")
-		return fmt.Errorf("unable to find the planner for application %v", p.deployment.Kind)
+	in := &platform.BuildPlanRequest{
+		Deployment:                   p.deployment,
+		WorkingDir:                   p.workingDir,
+		LastSuccessfulCommitHash:     p.lastSuccessfulCommitHash,
+		LastSuccessfulConfigFileName: p.lastSuccessfulConfigFilename,
+		PipedConfig:                  p.pipedConfig,
 	}
 
-	out, err := planner.Plan(ctx, in)
+	out, err := p.pluginClient.BuildPlan(ctx, in)
 
 	// If the deployment was already cancelled, we ignore the plan result.
 	select {
@@ -236,10 +178,10 @@ func (p *planner) Run(ctx context.Context) error {
 	}
 
 	p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_PLANNED
-	return p.reportDeploymentPlanned(ctx, out)
+	return p.reportDeploymentPlanned(ctx, out.Plan)
 }
 
-func (p *planner) reportDeploymentPlanned(ctx context.Context, out pln.Output) error {
+func (p *planner) reportDeploymentPlanned(ctx context.Context, out *platform.DeploymentPlan) error {
 	var (
 		err   error
 		retry = pipedservice.NewRetry(10)
@@ -249,7 +191,6 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, out pln.Output) e
 			StatusReason:              "The deployment has been planned",
 			RunningCommitHash:         p.lastSuccessfulCommitHash,
 			RunningConfigFilename:     p.lastSuccessfulConfigFilename,
-			Version:                   out.Version,
 			Versions:                  out.Versions,
 			Stages:                    out.Stages,
 			DeploymentChainId:         p.deployment.DeploymentChainId,

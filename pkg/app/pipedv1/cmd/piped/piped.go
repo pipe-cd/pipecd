@@ -70,7 +70,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
-	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
 	"github.com/pipe-cd/pipecd/pkg/version"
@@ -393,9 +392,9 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		})
 	}
 
-	pluginClient, err := p.createPluginClient(ctx, "", input.Logger)
+	cfgData, err := p.loadConfigByte(ctx)
 	if err != nil {
-		input.Logger.Error("failed to create gRPC client to piped pluggins", zap.Error(err))
+		input.Logger.Error("failed to load piped configuration", zap.Error(err))
 		return err
 	}
 
@@ -403,7 +402,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 	{
 		c := controller.NewController(
 			apiClient,
-			pluginClient,
 			gitClient,
 			deploymentLister,
 			commandLister,
@@ -413,6 +411,7 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			notifier,
 			decrypter,
 			cfg,
+			cfgData,
 			appManifestsCache,
 			p.gracePeriod,
 			input.Logger,
@@ -584,25 +583,6 @@ func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID
 	return client, nil
 }
 
-// createPluginClient makes a gRPC client to connect to the pluggin.
-func (p *piped) createPluginClient(ctx context.Context, address string, logger *zap.Logger) (platform.PlatformPluginClient, error) {
-	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
-	defer cancel()
-
-	options := []rpcclient.DialOption{
-		rpcclient.WithBlock(),
-		rpcclient.WithInsecure(),
-	}
-
-	// TODO: Secure this connection between piped and its pluggin.
-	client, err := platform.NewClient(ctx, address, options...)
-	if err != nil {
-		logger.Error("failed to create pluggin client", zap.Error(err))
-		return nil, err
-	}
-	return client, nil
-}
-
 // loadConfig reads the Piped configuration data from the specified source.
 func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 	// HACK: When the version of cobra is updated to >=v1.8.0, this should be replaced with https://pkg.go.dev/github.com/spf13/cobra#Command.MarkFlagsMutuallyExclusive.
@@ -663,6 +643,44 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 			return nil, err
 		}
 		return extract(cfg)
+	}
+
+	return nil, fmt.Errorf("one of config-file, config-gcp-secret or config-aws-secret must be set")
+}
+
+// loadConfig reads the Piped configuration data from the specified source.
+func (p *piped) loadConfigByte(ctx context.Context) ([]byte, error) {
+	// HACK: When the version of cobra is updated to >=v1.8.0, this should be replaced with https://pkg.go.dev/github.com/spf13/cobra#Command.MarkFlagsMutuallyExclusive.
+	if err := p.hasTooManyConfigFlags(); err != nil {
+		return nil, err
+	}
+
+	if p.configFile != "" {
+		return os.ReadFile(p.configFile)
+	}
+
+	if p.configData != "" {
+		data, err := base64.StdEncoding.DecodeString(p.configData)
+		if err != nil {
+			return nil, fmt.Errorf("the given config-data isn't base64 encoded: %w", err)
+		}
+		return data, nil
+	}
+
+	if p.configGCPSecret != "" {
+		data, err := p.getConfigDataFromSecretManager(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load config from SecretManager (%w)", err)
+		}
+		return data, nil
+	}
+
+	if p.configAWSSecret != "" {
+		data, err := p.getConfigDataFromAWSSecretsManager(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load config from AWS Secrets Manager (%w)", err)
+		}
+		return data, nil
 	}
 
 	return nil, fmt.Errorf("one of config-file, config-gcp-secret or config-aws-secret must be set")
