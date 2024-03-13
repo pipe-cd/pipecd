@@ -27,7 +27,7 @@ Flags:
   -h, --help                                       help for piped
       --insecure                                   Whether disabling transport security while connecting to control-plane.
       --launcher-version string                    The version of launcher which initialized this Piped.
-      --tools-dir string                           The path to directory where to install needed tools such as kubectl, helm, kustomize. (default "/Users/s24798/.piped/tools")
+      --tools-dir string                           The path to directory where to install needed tools such as kubectl, helm, kustomize. (default "~/.piped/tools")
 
 Global Flags:
       --log-encoding string                The encoding type for logger [json|console|humanize]. (default "humanize")
