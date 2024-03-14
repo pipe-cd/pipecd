@@ -13,7 +13,6 @@ This blog shows you how to install a PipeCD Control Plane on local machine easil
 
 This blog is for those who would like to:
 - begin using PipeCD and experiment its features instantly, including Control Plane and Piped
-- develop PipeCD and debug your codes easily
 
 ### Architecture
 
@@ -30,14 +29,9 @@ In this blog, you will build a Control Plane by these containers:
 - Data Store: MySQL
 - File Store: MinIO
 
-### Prerequisites
-
-- You have [Docker Engine](https://docs.docker.com/engine/)
-- You have [docker-compose](https://docs.docker.jp/compose/install.html)
-
 ### Installation of Control Plane
 
-1. Get the example codes from https://github.com/pipe-cd/examples/tree/master/control-plane/local-by-docker-compose/.
+1. Get the demo codes from https://github.com/pipe-cd/demo/blob/main/control_plane/docker-compose/
 
 2. Execute the below command for docker-compose.yaml you got in [1.].
 
