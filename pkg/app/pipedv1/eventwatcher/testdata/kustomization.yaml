@@ -1,0 +1,3 @@
+images:
+- name: gcr.io/pipecd/foo
+  newTag: v0.1.0
