@@ -24,7 +24,7 @@ import "pkg/model/deployment.proto";
 // PlannerService defines the public APIs for remote planners.
 service PlannerService {
     // BuildPlan builds plan for the given deployment.
-    rpc BuildPlan(BuildPlanRequest) returns (BuildPlanResponse);
+    rpc BuildPlan(BuildPlanRequest) returns (BuildPlanResponse) {}
 }
 
 message BuildPlanRequest {
@@ -53,16 +53,18 @@ message DeploymentPlan {
 }
 
 service ExecutorService {
-    // Execute executes the given deployment plan.
-    rpc ExecutePipeline(ExecutePipelineRequest) returns (stream ExecutePipelineResponse);
+    // Execute executes the given stage of the deployment plan.
+    rpc ExecuteStage(ExecuteStageRequest) returns (stream ExecuteStageResponse) {}
 }
 
-message ExecutePipelineRequest {
-    // The deployment plan to execute.
-    DeploymentPlan plan = 1 [(validate.rules).message.required = true];
+message ExecuteStageRequest {
+    model.PipelineStage stage = 1 [(validate.rules).message.required = true];
+    bytes stage_config = 2 [(validate.rules).bytes.min_len = 1];
+    bytes piped_config = 3 [(validate.rules).bytes.min_len = 1];
+    model.Deployment deployment = 4 [(validate.rules).message.required = true];
 }
 
-message ExecutePipelineResponse {
-    model.DeploymentStatus status = 1;
+message ExecuteStageResponse {
+    model.StageStatus status = 1;
     string log = 2;
 }
