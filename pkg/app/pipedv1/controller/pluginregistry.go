@@ -21,12 +21,10 @@
 package controller
 
 import (
-	"context"
 	"sync"
 
 	"github.com/pipe-cd/pipecd/pkg/model"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
-	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
 )
 
 type PluginRegistry interface {
@@ -60,18 +58,21 @@ func DefaultPluginRegistry() PluginRegistry {
 
 func init() {
 	// TODO: Register all available built-in plugins.
-	defaultPluginRegistry.mu.Lock()
-	defer defaultPluginRegistry.mu.Unlock()
 
-	options := []rpcclient.DialOption{
-		rpcclient.WithBlock(),
-		rpcclient.WithInsecure(),
-	}
+	// NOTE: If you want to directry test the plugin, you can use the following code.
 
-	cli, err := platform.NewClient(context.Background(), "localhost:10000", options...)
-	if err != nil {
-		panic(err)
-	}
+	// defaultPluginRegistry.mu.Lock()
+	// defer defaultPluginRegistry.mu.Unlock()
 
-	defaultPluginRegistry.plugins[model.ApplicationKind_KUBERNETES] = cli
+	// options := []rpcclient.DialOption{
+	// 	rpcclient.WithBlock(),
+	// 	rpcclient.WithInsecure(),
+	// }
+
+	// cli, err := platform.NewClient(context.Background(), "localhost:10000", options...)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// defaultPluginRegistry.plugins[model.ApplicationKind_KUBERNETES] = cli
 }
