@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/pluggin/applicationkind/kubernetes/planner"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/platform/kubernetes/planner"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
 	"github.com/spf13/cobra"

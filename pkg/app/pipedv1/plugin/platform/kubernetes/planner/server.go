@@ -12,7 +12,7 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
 	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes/resource"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes/resource" // TODO: Remove to plugin package
 	"github.com/pipe-cd/pipecd/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/crypto"
