@@ -1,5 +1,5 @@
 ---
-date: 2024-03-12
+date: 2024-03-14
 title: "Control Plane on local by docker-compose"
 linkTitle: "Control Plane on local by docker-compose"
 weight: 989
