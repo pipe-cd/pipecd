@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package kubernetes
+package sync
 
 import (
 	"time"
@@ -29,8 +29,12 @@ type ExecutorService struct {
 }
 
 func (es *ExecutorService) ExecuteStage(req *platform.ExecuteStageRequest, stream platform.ExecutorService_ExecuteStageServer) error {
+	var (
+		logPersister = NewLogPersister(es.logger, stream)
+	)
+
 	// Load the manifests at the specified commit.
-	es.LogPersister.Infof("Loading manifests at commit %s for handling", e.commit)
+	logPersister.Infof("Loading manifests at commit %s for handling", e.commit)
 	manifests, err := loadManifests(
 		ctx,
 		e.Deployment.ApplicationId,
@@ -40,10 +44,13 @@ func (es *ExecutorService) ExecuteStage(req *platform.ExecuteStageRequest, strea
 		e.Logger,
 	)
 	if err != nil {
-		e.LogPersister.Errorf("Failed while loading manifests (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
+		logPersister.Errorf("Failed while loading manifests (%v)", err)
+		stream.Send(&platform.ExecuteStageResponse{
+			Status: model.StageStatus_STAGE_FAILURE,
+		})
+		return nil
 	}
-	e.LogPersister.Successf("Successfully loaded %d manifests", len(manifests))
+	logPersister.Successf("Successfully loaded %d manifests", len(manifests))
 
 	// Because the loaded manifests are read-only
 	// we duplicate them to avoid updating the shared manifests data in cache.
@@ -59,8 +66,11 @@ func (es *ExecutorService) ExecuteStage(req *platform.ExecuteStageRequest, strea
 		workloads := findWorkloadManifests(manifests, e.appCfg.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, variantLabel, primaryVariant); err != nil {
-				e.LogPersister.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
-				return model.StageStatus_STAGE_FAILURE
+				logPersister.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
+				stream.Send(&platform.ExecuteStageResponse{
+					Status: model.StageStatus_STAGE_FAILURE,
+				})
+				return nil
 			}
 		}
 	}
@@ -77,24 +87,33 @@ func (es *ExecutorService) ExecuteStage(req *platform.ExecuteStageRequest, strea
 
 	// Add config-hash annotation to the workloads.
 	if err := annotateConfigHash(manifests); err != nil {
-		e.LogPersister.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)
-		return model.StageStatus_STAGE_FAILURE
+		logPersister.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)
+		stream.Send(&platform.ExecuteStageResponse{
+			Status: model.StageStatus_STAGE_FAILURE,
+		})
+		return nil
 	}
 
 	// Start applying all manifests to add or update running resources.
-	if err := applyManifests(ctx, e.applierGetter, manifests, e.appCfg.Input.Namespace, e.LogPersister); err != nil {
-		return model.StageStatus_STAGE_FAILURE
+	if err := applyManifests(ctx, e.applierGetter, manifests, e.appCfg.Input.Namespace, logPersister); err != nil {
+		stream.Send(&platform.ExecuteStageResponse{
+			Status: model.StageStatus_STAGE_FAILURE,
+		})
+		return nil
 	}
 
 	if !e.appCfg.QuickSync.Prune {
-		e.LogPersister.Info("Resource GC was skipped because sync.prune was not configured")
-		return model.StageStatus_STAGE_SUCCESS
+		logPersister.Info("Resource GC was skipped because sync.prune was not configured")
+		stream.Send(&platform.ExecuteStageResponse{
+			Status: model.StageStatus_STAGE_SUCCESS,
+		})
+		return nil
 	}
 
 	// Wait for all applied manifests to be stable.
 	// In theory, we don't need to wait for them to be stable before going to the next step
 	// but waiting for a while reduces the number of Kubernetes changes in a short time.
-	e.LogPersister.Info("Waiting for the applied manifests to be stable")
+	logPersister.Info("Waiting for the applied manifests to be stable")
 	select {
 	case <-time.After(15 * time.Second):
 		break
@@ -103,30 +122,42 @@ func (es *ExecutorService) ExecuteStage(req *platform.ExecuteStageRequest, strea
 	}
 
 	// Find the running resources that are not defined in Git for removing.
-	e.LogPersister.Info("Start finding all running resources but no longer defined in Git")
+	logPersister.Info("Start finding all running resources but no longer defined in Git")
 	liveResources, ok := e.AppLiveResourceLister.ListKubernetesResources()
 	if !ok {
-		e.LogPersister.Info("There is no data about live resource so no resource will be removed")
+		logPersister.Info("There is no data about live resource so no resource will be removed")
+		stream.Send(&platform.ExecuteStageResponse{
+			Status: model.StageStatus_STAGE_SUCCESS,
+		})
 		return model.StageStatus_STAGE_SUCCESS
 	}
-	e.LogPersister.Successf("Successfully loaded %d live resources", len(liveResources))
+	logPersister.Successf("Successfully loaded %d live resources", len(liveResources))
 	for _, m := range liveResources {
-		e.LogPersister.Successf("- loaded live resource: %s", m.Key.ReadableString())
+		logPersister.Successf("- loaded live resource: %s", m.Key.ReadableString())
 	}
 
 	removeKeys := findRemoveResources(manifests, liveResources)
 	if len(removeKeys) == 0 {
-		e.LogPersister.Info("There are no live resources should be removed")
-		return model.StageStatus_STAGE_SUCCESS
+		logPersister.Info("There are no live resources should be removed")
+		stream.Send(&platform.ExecuteStageResponse{
+			Status: model.StageStatus_STAGE_SUCCESS,
+		})
+		return nil
 	}
-	e.LogPersister.Infof("Found %d live resources that are no longer defined in Git", len(removeKeys))
+	logPersister.Infof("Found %d live resources that are no longer defined in Git", len(removeKeys))
 
 	// Start deleting all running resources that are not defined in Git.
-	if err := deleteResources(ctx, e.applierGetter, removeKeys, e.LogPersister); err != nil {
-		return model.StageStatus_STAGE_FAILURE
+	if err := deleteResources(ctx, e.applierGetter, removeKeys, logPersister); err != nil {
+		stream.Send(&platform.ExecuteStageResponse{
+			Status: model.StageStatus_STAGE_FAILURE,
+		})
+		return nil
 	}
 
-	return model.StageStatus_STAGE_SUCCESS
+	stream.Send(&platform.ExecuteStageResponse{
+		Status: model.StageStatus_STAGE_SUCCESS,
+	})
+	return nil
 }
 
 func findRemoveResources(manifests []provider.Manifest, liveResources []provider.Manifest) []provider.ResourceKey {
