@@ -110,3 +110,15 @@ All Piped's metrics are sent to the control plane so that they are also availabl
 | `http_request_duration_milliseconds` | histogram | Histogram of request latencies in milliseconds. |
 | `http_requests_total` | counter | Total number of HTTP requests. |
 | `insight_application_total` | gauge | Number of applications currently controlled by control plane. |
+
+## Health Checking
+
+The below components expose their endpoint for health checking.
+- server
+- ops
+- piped
+- launcher (only when you run with designating the `launcher-admin-port` option.)
+
+The spec of the health check endpoint is as below.
+- Path: `/healthz`
+- Port: the same as admin server's port. 9085 by default.
