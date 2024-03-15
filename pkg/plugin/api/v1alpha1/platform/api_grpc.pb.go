@@ -110,8 +110,8 @@ var PlannerService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ExecutorServiceClient interface {
-	// Execute executes the given deployment plan.
-	ExecutePipeline(ctx context.Context, in *ExecutePipelineRequest, opts ...grpc.CallOption) (ExecutorService_ExecutePipelineClient, error)
+	// Execute executes the given stage of the deployment plan.
+	ExecuteStage(ctx context.Context, in *ExecuteStageRequest, opts ...grpc.CallOption) (ExecutorService_ExecuteStageClient, error)
 }
 
 type executorServiceClient struct {
@@ -122,12 +122,12 @@ func NewExecutorServiceClient(cc grpc.ClientConnInterface) ExecutorServiceClient
 	return &executorServiceClient{cc}
 }
 
-func (c *executorServiceClient) ExecutePipeline(ctx context.Context, in *ExecutePipelineRequest, opts ...grpc.CallOption) (ExecutorService_ExecutePipelineClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ExecutorService_ServiceDesc.Streams[0], "/grpc.plugin.platformapi.v1alpha1.ExecutorService/ExecutePipeline", opts...)
+func (c *executorServiceClient) ExecuteStage(ctx context.Context, in *ExecuteStageRequest, opts ...grpc.CallOption) (ExecutorService_ExecuteStageClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ExecutorService_ServiceDesc.Streams[0], "/grpc.plugin.platformapi.v1alpha1.ExecutorService/ExecuteStage", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &executorServiceExecutePipelineClient{stream}
+	x := &executorServiceExecuteStageClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -137,17 +137,17 @@ func (c *executorServiceClient) ExecutePipeline(ctx context.Context, in *Execute
 	return x, nil
 }
 
-type ExecutorService_ExecutePipelineClient interface {
-	Recv() (*ExecutePipelineResponse, error)
+type ExecutorService_ExecuteStageClient interface {
+	Recv() (*ExecuteStageResponse, error)
 	grpc.ClientStream
 }
 
-type executorServiceExecutePipelineClient struct {
+type executorServiceExecuteStageClient struct {
 	grpc.ClientStream
 }
 
-func (x *executorServiceExecutePipelineClient) Recv() (*ExecutePipelineResponse, error) {
-	m := new(ExecutePipelineResponse)
+func (x *executorServiceExecuteStageClient) Recv() (*ExecuteStageResponse, error) {
+	m := new(ExecuteStageResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -158,8 +158,8 @@ func (x *executorServiceExecutePipelineClient) Recv() (*ExecutePipelineResponse,
 // All implementations must embed UnimplementedExecutorServiceServer
 // for forward compatibility
 type ExecutorServiceServer interface {
-	// Execute executes the given deployment plan.
-	ExecutePipeline(*ExecutePipelineRequest, ExecutorService_ExecutePipelineServer) error
+	// Execute executes the given stage of the deployment plan.
+	ExecuteStage(*ExecuteStageRequest, ExecutorService_ExecuteStageServer) error
 	mustEmbedUnimplementedExecutorServiceServer()
 }
 
@@ -167,8 +167,8 @@ type ExecutorServiceServer interface {
 type UnimplementedExecutorServiceServer struct {
 }
 
-func (UnimplementedExecutorServiceServer) ExecutePipeline(*ExecutePipelineRequest, ExecutorService_ExecutePipelineServer) error {
-	return status.Errorf(codes.Unimplemented, "method ExecutePipeline not implemented")
+func (UnimplementedExecutorServiceServer) ExecuteStage(*ExecuteStageRequest, ExecutorService_ExecuteStageServer) error {
+	return status.Errorf(codes.Unimplemented, "method ExecuteStage not implemented")
 }
 func (UnimplementedExecutorServiceServer) mustEmbedUnimplementedExecutorServiceServer() {}
 
@@ -183,24 +183,24 @@ func RegisterExecutorServiceServer(s grpc.ServiceRegistrar, srv ExecutorServiceS
 	s.RegisterService(&ExecutorService_ServiceDesc, srv)
 }
 
-func _ExecutorService_ExecutePipeline_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(ExecutePipelineRequest)
+func _ExecutorService_ExecuteStage_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ExecuteStageRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(ExecutorServiceServer).ExecutePipeline(m, &executorServiceExecutePipelineServer{stream})
+	return srv.(ExecutorServiceServer).ExecuteStage(m, &executorServiceExecuteStageServer{stream})
 }
 
-type ExecutorService_ExecutePipelineServer interface {
-	Send(*ExecutePipelineResponse) error
+type ExecutorService_ExecuteStageServer interface {
+	Send(*ExecuteStageResponse) error
 	grpc.ServerStream
 }
 
-type executorServiceExecutePipelineServer struct {
+type executorServiceExecuteStageServer struct {
 	grpc.ServerStream
 }
 
-func (x *executorServiceExecutePipelineServer) Send(m *ExecutePipelineResponse) error {
+func (x *executorServiceExecuteStageServer) Send(m *ExecuteStageResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -213,8 +213,8 @@ var ExecutorService_ServiceDesc = grpc.ServiceDesc{
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "ExecutePipeline",
-			Handler:       _ExecutorService_ExecutePipeline_Handler,
+			StreamName:    "ExecuteStage",
+			Handler:       _ExecutorService_ExecuteStage_Handler,
 			ServerStreams: true,
 		},
 	},
