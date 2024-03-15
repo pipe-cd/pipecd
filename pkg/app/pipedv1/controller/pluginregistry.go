@@ -58,4 +58,21 @@ func DefaultPluginRegistry() PluginRegistry {
 
 func init() {
 	// TODO: Register all available built-in plugins.
+
+	// NOTE: If you want to directry test the plugin, you can use the following code.
+
+	// defaultPluginRegistry.mu.Lock()
+	// defer defaultPluginRegistry.mu.Unlock()
+
+	// options := []rpcclient.DialOption{
+	// 	rpcclient.WithBlock(),
+	// 	rpcclient.WithInsecure(),
+	// }
+
+	// cli, err := platform.NewClient(context.Background(), "localhost:10000", options...)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// defaultPluginRegistry.plugins[model.ApplicationKind_KUBERNETES] = cli
 }
