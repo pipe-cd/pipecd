@@ -508,31 +508,31 @@ var _ interface {
 	ErrorName() string
 } = DeploymentPlanValidationError{}
 
-// Validate checks the field values on ExecutePipelineRequest with the rules
+// Validate checks the field values on ExecuteStageRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ExecutePipelineRequest) Validate() error {
+func (m *ExecuteStageRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ExecutePipelineRequest with the rules
+// ValidateAll checks the field values on ExecuteStageRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// ExecutePipelineRequestMultiError, or nil if none found.
-func (m *ExecutePipelineRequest) ValidateAll() error {
+// ExecuteStageRequestMultiError, or nil if none found.
+func (m *ExecuteStageRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ExecutePipelineRequest) validate(all bool) error {
+func (m *ExecuteStageRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	if m.GetPlan() == nil {
-		err := ExecutePipelineRequestValidationError{
-			field:  "Plan",
+	if m.GetStage() == nil {
+		err := ExecuteStageRequestValidationError{
+			field:  "Stage",
 			reason: "value is required",
 		}
 		if !all {
@@ -542,28 +542,90 @@ func (m *ExecutePipelineRequest) validate(all bool) error {
 	}
 
 	if all {
-		switch v := interface{}(m.GetPlan()).(type) {
+		switch v := interface{}(m.GetStage()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ExecutePipelineRequestValidationError{
-					field:  "Plan",
+				errors = append(errors, ExecuteStageRequestValidationError{
+					field:  "Stage",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, ExecutePipelineRequestValidationError{
-					field:  "Plan",
+				errors = append(errors, ExecuteStageRequestValidationError{
+					field:  "Stage",
 					reason: "embedded message failed validation",
 					cause:  err,
 				})
 			}
 		}
-	} else if v, ok := interface{}(m.GetPlan()).(interface{ Validate() error }); ok {
+	} else if v, ok := interface{}(m.GetStage()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return ExecutePipelineRequestValidationError{
-				field:  "Plan",
+			return ExecuteStageRequestValidationError{
+				field:  "Stage",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(m.GetStageConfig()) < 1 {
+		err := ExecuteStageRequestValidationError{
+			field:  "StageConfig",
+			reason: "value length must be at least 1 bytes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(m.GetPipedConfig()) < 1 {
+		err := ExecuteStageRequestValidationError{
+			field:  "PipedConfig",
+			reason: "value length must be at least 1 bytes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetDeployment() == nil {
+		err := ExecuteStageRequestValidationError{
+			field:  "Deployment",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetDeployment()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ExecuteStageRequestValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ExecuteStageRequestValidationError{
+					field:  "Deployment",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDeployment()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ExecuteStageRequestValidationError{
+				field:  "Deployment",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}
@@ -571,19 +633,19 @@ func (m *ExecutePipelineRequest) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return ExecutePipelineRequestMultiError(errors)
+		return ExecuteStageRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// ExecutePipelineRequestMultiError is an error wrapping multiple validation
-// errors returned by ExecutePipelineRequest.ValidateAll() if the designated
+// ExecuteStageRequestMultiError is an error wrapping multiple validation
+// errors returned by ExecuteStageRequest.ValidateAll() if the designated
 // constraints aren't met.
-type ExecutePipelineRequestMultiError []error
+type ExecuteStageRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ExecutePipelineRequestMultiError) Error() string {
+func (m ExecuteStageRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -592,11 +654,11 @@ func (m ExecutePipelineRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ExecutePipelineRequestMultiError) AllErrors() []error { return m }
+func (m ExecuteStageRequestMultiError) AllErrors() []error { return m }
 
-// ExecutePipelineRequestValidationError is the validation error returned by
-// ExecutePipelineRequest.Validate if the designated constraints aren't met.
-type ExecutePipelineRequestValidationError struct {
+// ExecuteStageRequestValidationError is the validation error returned by
+// ExecuteStageRequest.Validate if the designated constraints aren't met.
+type ExecuteStageRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -604,24 +666,24 @@ type ExecutePipelineRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e ExecutePipelineRequestValidationError) Field() string { return e.field }
+func (e ExecuteStageRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ExecutePipelineRequestValidationError) Reason() string { return e.reason }
+func (e ExecuteStageRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ExecutePipelineRequestValidationError) Cause() error { return e.cause }
+func (e ExecuteStageRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ExecutePipelineRequestValidationError) Key() bool { return e.key }
+func (e ExecuteStageRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ExecutePipelineRequestValidationError) ErrorName() string {
-	return "ExecutePipelineRequestValidationError"
+func (e ExecuteStageRequestValidationError) ErrorName() string {
+	return "ExecuteStageRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e ExecutePipelineRequestValidationError) Error() string {
+func (e ExecuteStageRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -633,14 +695,14 @@ func (e ExecutePipelineRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sExecutePipelineRequest.%s: %s%s",
+		"invalid %sExecuteStageRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ExecutePipelineRequestValidationError{}
+var _ error = ExecuteStageRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -648,24 +710,24 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ExecutePipelineRequestValidationError{}
+} = ExecuteStageRequestValidationError{}
 
-// Validate checks the field values on ExecutePipelineResponse with the rules
+// Validate checks the field values on ExecuteStageResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ExecutePipelineResponse) Validate() error {
+func (m *ExecuteStageResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ExecutePipelineResponse with the
-// rules defined in the proto definition for this message. If any rules are
+// ValidateAll checks the field values on ExecuteStageResponse with the rules
+// defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// ExecutePipelineResponseMultiError, or nil if none found.
-func (m *ExecutePipelineResponse) ValidateAll() error {
+// ExecuteStageResponseMultiError, or nil if none found.
+func (m *ExecuteStageResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ExecutePipelineResponse) validate(all bool) error {
+func (m *ExecuteStageResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -677,19 +739,19 @@ func (m *ExecutePipelineResponse) validate(all bool) error {
 	// no validation rules for Log
 
 	if len(errors) > 0 {
-		return ExecutePipelineResponseMultiError(errors)
+		return ExecuteStageResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// ExecutePipelineResponseMultiError is an error wrapping multiple validation
-// errors returned by ExecutePipelineResponse.ValidateAll() if the designated
+// ExecuteStageResponseMultiError is an error wrapping multiple validation
+// errors returned by ExecuteStageResponse.ValidateAll() if the designated
 // constraints aren't met.
-type ExecutePipelineResponseMultiError []error
+type ExecuteStageResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ExecutePipelineResponseMultiError) Error() string {
+func (m ExecuteStageResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -698,11 +760,11 @@ func (m ExecutePipelineResponseMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ExecutePipelineResponseMultiError) AllErrors() []error { return m }
+func (m ExecuteStageResponseMultiError) AllErrors() []error { return m }
 
-// ExecutePipelineResponseValidationError is the validation error returned by
-// ExecutePipelineResponse.Validate if the designated constraints aren't met.
-type ExecutePipelineResponseValidationError struct {
+// ExecuteStageResponseValidationError is the validation error returned by
+// ExecuteStageResponse.Validate if the designated constraints aren't met.
+type ExecuteStageResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -710,24 +772,24 @@ type ExecutePipelineResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e ExecutePipelineResponseValidationError) Field() string { return e.field }
+func (e ExecuteStageResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ExecutePipelineResponseValidationError) Reason() string { return e.reason }
+func (e ExecuteStageResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ExecutePipelineResponseValidationError) Cause() error { return e.cause }
+func (e ExecuteStageResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ExecutePipelineResponseValidationError) Key() bool { return e.key }
+func (e ExecuteStageResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ExecutePipelineResponseValidationError) ErrorName() string {
-	return "ExecutePipelineResponseValidationError"
+func (e ExecuteStageResponseValidationError) ErrorName() string {
+	return "ExecuteStageResponseValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e ExecutePipelineResponseValidationError) Error() string {
+func (e ExecuteStageResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -739,14 +801,14 @@ func (e ExecutePipelineResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sExecutePipelineResponse.%s: %s%s",
+		"invalid %sExecuteStageResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ExecutePipelineResponseValidationError{}
+var _ error = ExecuteStageResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -754,4 +816,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ExecutePipelineResponseValidationError{}
+} = ExecuteStageResponseValidationError{}
