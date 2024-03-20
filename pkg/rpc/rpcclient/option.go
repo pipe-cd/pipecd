@@ -19,6 +19,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type option struct {
@@ -51,7 +52,7 @@ func WithTransportCredentials(creds credentials.TransportCredentials) DialOption
 
 func WithInsecure() DialOption {
 	return func(o *option) {
-		o.options = append(o.options, grpc.WithInsecure())
+		o.options = append(o.options, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 }
 
@@ -69,7 +70,7 @@ func WithPerRPCCredentials(creds credentials.PerRPCCredentials) DialOption {
 
 func WithMaxRecvMsgSize(m int) DialOption {
 	return func(o *option) {
-		o.options = append(o.options, grpc.WithMaxMsgSize(m))
+		o.options = append(o.options, grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(m)))
 	}
 }
 
