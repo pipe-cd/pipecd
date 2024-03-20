@@ -25,7 +25,7 @@ Booth information
 
 ```
 Project: PipeCD
-Kiosk #: PP4-B
+Kiosk #: PP16-A
 Kiosk Shift: Part-time - AM (Fri)
 Location: Solutions Showcase | Level 7.2 | Hall 7.2 | Project Pavilion
 ```
