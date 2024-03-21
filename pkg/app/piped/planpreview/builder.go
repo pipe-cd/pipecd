@@ -377,12 +377,6 @@ func (b *builder) listApplications(repo config.PipedRepository) []*model.Applica
 		if app.GitPath.Repo.Id != repo.RepoID {
 			continue
 		}
-		if app.GitPath.Repo.Remote != repo.Remote {
-			continue
-		}
-		if app.GitPath.Repo.Branch != repo.Branch {
-			continue
-		}
 		out = append(out, app)
 	}
 

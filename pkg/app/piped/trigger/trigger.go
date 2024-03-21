@@ -296,7 +296,7 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 		}
 
 		// Build the deployment to trigger.
-		deployment, err := buildDeployment(
+		deployment, err := t.buildDeployment(
 			app,
 			branch,
 			headCommit,
