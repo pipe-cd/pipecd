@@ -36,6 +36,7 @@ import { selectPipedById } from "~/modules/pipeds";
 import { AppLiveState } from "./app-live-state";
 import { OutOfSyncReason, InvalidConfigReason } from "./sync-state-reason";
 import { ArtifactVersion } from "~~/model/common_pb";
+import { CopyIconButton } from "~/components/copy-icon-button";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -355,6 +356,15 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
                       }
                     />
                   )}
+                  <DetailTableRow
+                    label="Application ID"
+                    value={
+                      <>
+                        {applicationId}
+                        <CopyIconButton name="Application ID" value={applicationId} size="small" />
+                      </>
+                    }
+                  />
                 </tbody>
               </table>
             ) : (
