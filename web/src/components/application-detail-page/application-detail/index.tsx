@@ -361,7 +361,11 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
                     value={
                       <>
                         {applicationId}
-                        <CopyIconButton name="Application ID" value={applicationId} size="small" />
+                        <CopyIconButton
+                          name="Application ID"
+                          value={applicationId}
+                          size="small"
+                        />
                       </>
                     }
                   />
