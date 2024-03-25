@@ -331,6 +331,19 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
             {app && piped ? (
               <table>
                 <tbody>
+                <DetailTableRow
+                    label="Application ID"
+                    value={
+                      <>
+                        {applicationId}
+                        <CopyIconButton
+                          name="Application ID"
+                          value={applicationId}
+                          size="small"
+                        />
+                      </>
+                    }
+                  />
                   <DetailTableRow
                     label="Kind"
                     value={APPLICATION_KIND_TEXT[app.kind]}
@@ -356,19 +369,6 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
                       }
                     />
                   )}
-                  <DetailTableRow
-                    label="Application ID"
-                    value={
-                      <>
-                        {applicationId}
-                        <CopyIconButton
-                          name="Application ID"
-                          value={applicationId}
-                          size="small"
-                        />
-                      </>
-                    }
-                  />
                 </tbody>
               </table>
             ) : (
