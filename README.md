@@ -67,7 +67,7 @@ The [installation guide](https://pipecd.dev/docs/installation/) explains and hel
 - Join our PipeCD Development and Community Meeting where we share the latest project news, demos, answer questions, and triage issues.
   - 🗓️ Bi-weekly (twice a month)
   - ⏰ 14:30 Hanoi | 16:30 Tokyo | 15:30 Shanghai | 13:00 India | 8:30 CET | 23:30 PST
-  - 🗒️ [Meeting minutes](https://bit.ly/pipecd-mtg-notes) (zoom link included)
+  - 🗒️ [Meeting minutes](https://bit.ly/pipecd-mtg-notes) (zoom link and schedule included)
 
 Participation in PipeCD project is governed by the CNCF [Code of Conduct](CODE_OF_CONDUCT.md).
 
