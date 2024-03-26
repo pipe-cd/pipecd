@@ -331,7 +331,7 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
             {app && piped ? (
               <table>
                 <tbody>
-                <DetailTableRow
+                  <DetailTableRow
                     label="Application ID"
                     value={
                       <>
