@@ -16,7 +16,9 @@ package git
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -49,6 +51,7 @@ type client struct {
 	cacheDir     string
 	mu           sync.Mutex
 	repoLocks    map[string]*sync.Mutex
+	password     string
 
 	gitEnvs       []string
 	gitEnvsByRepo map[string][]string
@@ -87,6 +90,15 @@ func WithEmail(e string) Option {
 	return func(c *client) {
 		if e != "" {
 			c.email = e
+		}
+	}
+}
+
+func WithPassword(username, password string) Option {
+	return func(c *client) {
+		if username != "" && password != "" {
+			c.username = username
+			c.password = password
 		}
 	}
 }
@@ -133,10 +145,15 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		)
 	)
 
+	remote, err := includePasswordRemote(remote, c.username, c.password)
+	if err != nil {
+		return nil, err
+	}
+
 	c.lockRepo(repoID)
 	defer c.unlockRepo(repoID)
 
-	_, err := os.Stat(repoCachePath)
+	_, err = os.Stat(repoCachePath)
 	if err != nil && !os.IsNotExist(err) {
 		return nil, err
 	}
@@ -270,6 +287,22 @@ func (c *client) unlockRepo(repoID string) {
 func (c *client) envsForRepo(remote string) []string {
 	envs := c.gitEnvsByRepo[remote]
 	return append(envs, c.gitEnvs...)
+}
+
+func includePasswordRemote(remote, username, password string) (string, error) {
+	if username == "" || password == "" {
+		return remote, nil
+	}
+	u, err := parseGitURL(remote)
+	if err != nil {
+		return "", fmt.Errorf("failed to include password: %v", err)
+	}
+	decodedPassword, err := base64.StdEncoding.DecodeString(password)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode password: %v", err)
+	}
+	u.User = url.UserPassword(username, string(decodedPassword))
+	return u.String(), nil
 }
 
 func runGitCommand(ctx context.Context, execPath, dir string, envs []string, args ...string) ([]byte, error) {
