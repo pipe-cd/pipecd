@@ -28,6 +28,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/initialize/prompt"
 	"github.com/pipe-cd/pipecd/pkg/cli"
 	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type command struct {
@@ -45,6 +46,19 @@ type genericConfig struct {
 	APIVersion      string      `json:"apiVersion"`
 	Kind            config.Kind `json:"kind"`
 	ApplicationSpec interface{} `json:"spec"`
+}
+
+// Define genericDeploymentPipeline and genericPipelineStage to export stage options as `with: ` structure.
+type genericDeploymentPipeline struct {
+	Stages []genericPipelineStage `json:"stages"`
+}
+
+type genericPipelineStage struct {
+	ID      string          `json:"id,omitempty"`
+	Name    model.Stage     `json:"name,omitempty"`
+	Desc    string          `json:"desc,omitempty"`
+	Timeout config.Duration `json:"timeout,omitempty"`
+	With    interface{}     `json:"with,omitempty"`
 }
 
 func NewCommand() *cobra.Command {
