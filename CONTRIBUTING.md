@@ -81,6 +81,8 @@ PipeCD consists of several components and docs:
 
 **You can find detailed development information in the README file of each directory.**
 
+Note: While working with the PipeCD codebase, you may refer to [Makefile](./Makefile) for useful commands.
+
 ### Online one-click setup for contributing
 
 We are preparing Gitpod and Codespace to facilitate the setup process for contributing.
