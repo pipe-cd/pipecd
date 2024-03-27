@@ -463,6 +463,7 @@ One of `yamlField` or `regex` is required.
 | Tags             | map[string]string| Key-value pairs for tags           | No       |
 | Environments     | map[string]string| Environment variables              | No       |
 | VPCConfig        | [VPCConfig](#vpcconfig)       | VPC configuration                  | No       |
+| Layers        | []string       | ARNs of [layers](https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html) to depend on                | No       |
 
 ### SourceCode
 
