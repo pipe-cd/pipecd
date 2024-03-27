@@ -59,10 +59,7 @@ And many more, please explore in [docs](https://pipecd.dev/docs).
 - Join our [Slack workspace](https://cloud-native.slack.com/archives/C01B27F9T0X) to get help and to discuss features.
 - Tweet [@pipecd_dev](https://twitter.com/pipecd_dev) on Twitter/X.
 - Create Github [Issues](https://github.com/pipe-cd/pipecd/issues) or [Discussions](https://github.com/pipe-cd/pipecd/discussions/) to report bugs or request features.
-- Join our PipeCD Development and Community Meeting where we share the latest project news, demos, answer questions, and triage issues.
-  - 🗓️ Bi-weekly (twice a month)
-  - ⏰ 14:30 Hanoi | 16:30 Tokyo | 15:30 Shanghai | 13:00 India | 8:30 CET | 23:30 PST
-  - 🗒️ [Meeting minutes](https://bit.ly/pipecd-mtg-notes) (zoom link and schedule included)
+- Join our upcoming PipeCD Development and Community Meeting where we share the latest project news, demos, answer questions, and triage issues ([meeting access and agenda](https://bit.ly/pipecd-mtg-notes)).
 
 Participation in PipeCD project is governed by the CNCF [Code of Conduct](CODE_OF_CONDUCT.md).
 
