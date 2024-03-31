@@ -46,35 +46,28 @@ And many more, please explore in [docs](https://pipecd.dev/docs).
 
 #
 
-### Quickstart
+### Getting Started
 
-The [quickstart guide](https://pipecd.dev/docs/quickstart/) shows how to set up PipeCD components and deploy a hello-world application with PipeCD.
-
-#
-
-### Installation
-
-The [installation guide](https://pipecd.dev/docs/installation/) explains and helps set up PipeCD for your real-life production environment.
+- The [quickstart guide](https://pipecd.dev/docs/quickstart/) shows how to set up PipeCD components and deploy a hello-world application with PipeCD for testing purposes.
+- The [installation guide](https://pipecd.dev/docs/installation/) explains and helps set up PipeCD for your real-life use environment.
 
 #
 
-### Release and development
+### Community and development
 
-Please check [the release page](https://github.com/pipe-cd/pipecd/releases) to see what is included in the latest release. Also, [Releases documentation](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md/) explains our versioning and release cycle.
+- Check out the [PipeCD website](https://pipecd.dev) for the complete documentation and helpful links.
+- Join our [Slack workspace](https://cloud-native.slack.com/archives/C01B27F9T0X) to get help and to discuss features.
+- Tweet [@pipecd_dev](https://twitter.com/pipecd_dev) on Twitter/X.
+- Create Github [Issues](https://github.com/pipe-cd/pipecd/issues) or [Discussions](https://github.com/pipe-cd/pipecd/discussions/) to report bugs or request features.
+- Join our upcoming PipeCD Development and Community Meeting where we share the latest project news, demos, answer questions, and triage issues ([meeting access and agenda](https://bit.ly/pipecd-mtg-notes)).
 
-Go to the [Discussion](https://github.com/pipe-cd/pipecd/discussions) to know what we are working on and which will be added to the next release.
+Participation in PipeCD project is governed by the CNCF [Code of Conduct](CODE_OF_CONDUCT.md).
 
 #
 
 ### Contributing
 
-We'd love you to join us! Please see the [Contributing docs](CONTRIBUTING.md).
-
-#
-
-### Community
-
-As a CNCF Sandbox project, PipeCD follows [CNCF Code of Conduct](https://github.com/pipe-cd/pipecd/blob/master/CODE_OF_CONDUCT.md).
+We'd love you to join us! Please see the [Contributing docs](CONTRIBUTING.md) to get started.
 
 #
 

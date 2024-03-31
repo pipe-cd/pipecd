@@ -12,6 +12,7 @@ import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import dayjs from "dayjs";
 import { FC, memo } from "react";
 import { Link as RouterLink } from "react-router-dom";
+import { CopyIconButton } from "~/components/copy-icon-button";
 import { DeploymentStatusIcon } from "~/components/deployment-status-icon";
 import { DetailTableRow } from "~/components/detail-table-row";
 import { SplitButton } from "~/components/split-button";
@@ -154,6 +155,19 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
             <div className={classes.content}>
               <table>
                 <tbody>
+                  <DetailTableRow
+                    label="Deployment ID"
+                    value={
+                      <>
+                        {deploymentId}
+                        <CopyIconButton
+                          name="Deployment ID"
+                          value={deploymentId}
+                          size="small"
+                        />
+                      </>
+                    }
+                  />
                   <DetailTableRow
                     label="Application"
                     value={

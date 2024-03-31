@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foo
+spec:
+  selector:
+    matchLabels:
+      app: foo
+  replicas: 1
+  template:
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: foo
+          image: hogehoge.io/foo:v0.1
+          env:
+            - name: test_env
+              valueFrom:
+                configMapKeyRef:
+                  name: test_env_name
+                  key: test_env_key

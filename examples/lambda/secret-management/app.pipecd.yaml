@@ -8,6 +8,6 @@ spec:
   encryption:
     encryptedSecrets:
       # Encrypted via the web console.
-      password: AQClmqFuXZ10F83HgWIKHzr92YL/x8HBQyc7RUbxyJexjaKvFJ2YeYJWnqcssxBt8EAC4Kie+iZr5ABWZ2yNEQaPRSaBTTBRLetsmsJfdtDZOr1VvXj7nPEBFBajxsIs1LhFLejsR8WMDmYk2Sy4h1pP8dhYL6oNaAxU17ehdQ5PMCqo0Lv8hN5/Qhz4+KW/yotxgqgJm5eFPUnWLlvkbO6P1iyEpg+xZZNcUjqKbZ8MyU7zf7yms4kuouo+p5yoSjqI9jEEy5DJ9TdJtn5S8ENKUoDLDunsERrBip2kSIv8nxNgBMOfqLskjyKrMgMGMyGqwXGJiKPqFiLDM/6TWo2B2f2cVIPRmCNUU9uVMadHfK5DFxr3NZG6
+      key: AQClmqFuXZ10F83HgWIKHzr92YL/x8HBQyc7RUbxyJexjaKvFJ2YeYJWnqcssxBt8EAC4Kie+iZr5ABWZ2yNEQaPRSaBTTBRLetsmsJfdtDZOr1VvXj7nPEBFBajxsIs1LhFLejsR8WMDmYk2Sy4h1pP8dhYL6oNaAxU17ehdQ5PMCqo0Lv8hN5/Qhz4+KW/yotxgqgJm5eFPUnWLlvkbO6P1iyEpg+xZZNcUjqKbZ8MyU7zf7yms4kuouo+p5yoSjqI9jEEy5DJ9TdJtn5S8ENKUoDLDunsERrBip2kSIv8nxNgBMOfqLskjyKrMgMGMyGqwXGJiKPqFiLDM/6TWo2B2f2cVIPRmCNUU9uVMadHfK5DFxr3NZG6
     decryptionTargets:
       - function.yaml

@@ -118,6 +118,7 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 		Environment: &types.Environment{
 			Variables: fm.Spec.Environments,
 		},
+		Layers: fm.Spec.Layers,
 	}
 	if len(fm.Spec.Architectures) != 0 {
 		var architectures []types.Architecture
@@ -183,6 +184,7 @@ func (c *client) CreateFunctionFromSource(ctx context.Context, fm FunctionManife
 		Environment: &types.Environment{
 			Variables: fm.Spec.Environments,
 		},
+		Layers: fm.Spec.Layers,
 	}
 	if len(fm.Spec.Architectures) != 0 {
 		architectures := make([]types.Architecture, 0, len(fm.Spec.Architectures))
@@ -294,6 +296,7 @@ func (c *client) updateFunctionConfiguration(ctx context.Context, fm FunctionMan
 			Environment: &types.Environment{
 				Variables: fm.Spec.Environments,
 			},
+			Layers: fm.Spec.Layers,
 		}
 		// For zip packing Lambda function code, allow update the function handler
 		// on update the function's manifest.

@@ -74,6 +74,11 @@ type FunctionManifestSpec struct {
 	Tags             map[string]string `json:"tags,omitempty"`
 	Environments     map[string]string `json:"environments,omitempty"`
 	VPCConfig        *VPCConfig        `json:"vpcConfig,omitempty"`
+	// A list of function layers used in the function.
+	// Specify each layer by its ARN including the version.
+	// You can use layers only with Lambda functions deployed as a .zip file archive. Layers are ignored for a container image.
+	// See https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html.
+	Layers []string `json:"layers,omitempty"`
 }
 
 type VPCConfig struct {

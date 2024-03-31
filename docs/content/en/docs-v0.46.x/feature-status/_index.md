@@ -69,7 +69,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
 | [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Incubating |
 | [Application live state](../user-guide/managing-application/application-live-state/) | Incubating |
-| [Plan preview](../user-guide/plan-preview) | Alpha |
+| [Plan preview](../user-guide/plan-preview) | Incubating |
 | [Manifest attachment](../user-guide/managing-application/manifest-attachment) | Alpha |
 
 ### Amazon ECS
@@ -84,7 +84,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Quick sync deployment for [ECS Service Discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html) | Alpha |
 | Deployment with a defined pipeline for [ECS Service Discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html) | Alpha |
 | Support [AWS App Mesh](https://aws.amazon.com/app-mesh/) | Incubating |
-| [Plan preview](../user-guide/plan-preview) | Alpha |
+| [Plan preview](../user-guide/plan-preview) | Incubating |
 | [Manifest attachment](../user-guide/managing-application/manifest-attachment) | Alpha |
 
 ## Piped Agent

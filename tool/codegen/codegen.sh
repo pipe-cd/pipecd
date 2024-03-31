@@ -19,6 +19,8 @@ goProtoDirs=(
   "pkg/app/server/service/pipedservice"
   "pkg/app/server/service/webservice"
   "pkg/app/helloworld/service"
+  "pkg/plugin/api/v1alpha1/platform"
+  "pkg/app/pipedv1/cmd/piped/service"
 )
 
 for dir in ${goProtoDirs[*]}; do
