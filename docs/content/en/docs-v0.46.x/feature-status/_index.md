@@ -123,6 +123,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Google SSO | Incubating |
 | Support GCP [Firestore](https://cloud.google.com/firestore) as data store | Beta |
 | Support [MySQL v8.0](https://www.mysql.com/) as data store | Beta |
+| Support file store as data store | Alpha |
 | Support GCP [GCS](https://cloud.google.com/storage) as file store | Beta |
 | Support AWS [S3](https://aws.amazon.com/s3/) as file store | Beta |
 | Support [Minio](https://github.com/minio/minio) as file store | Beta |
