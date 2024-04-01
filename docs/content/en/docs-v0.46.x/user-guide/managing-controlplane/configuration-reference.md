@@ -31,7 +31,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| type | string | Which type of data store should be used. Can be one of the following values<br>`FIRESTORE`, `MYSQL`, `FILEDB`. | Yes |
+| type | string | Which type of data store should be used. Can be one of the following values<br>`FIRESTORE`, `MYSQL`. | Yes |
 | config | [DataStoreConfig](#datastoreconfig) | Specific configuration for the datastore type. This must be one of these DataStoreConfig. | Yes |
 
 ## DataStoreConfig
