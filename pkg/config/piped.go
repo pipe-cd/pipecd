@@ -329,8 +329,8 @@ type PipedGit struct {
 	SSHKeyFile string `json:"sshKeyFile,omitempty"`
 	// Base64 encoded string of ssh-key.
 	SSHKeyData string `json:"sshKeyData,omitempty"`
-	// The password authentication.
-	// This will be used to clone the source code of the specified git repositories.
+	// Base64 encoded string of password.
+	// This will be used to clone the source repo with https basic auth.
 	Password string `json:"password,omitempty"`
 }
 
