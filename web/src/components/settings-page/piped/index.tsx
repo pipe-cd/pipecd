@@ -107,8 +107,8 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     (state) => state.pipeds.releasedVersions
   );
 
-  const [isUpgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
-  const handleUpgradeDialogClose = (): void => setUpgradeDialogOpen(false);
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
+  const handleUpgradeDialogClose = (): void => setIsUpgradeDialogOpen(false);
 
   const registeredPiped = useAppSelector<RegisteredPiped | null>(
     (state) => state.pipeds.registeredPiped
@@ -179,7 +179,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
         <Button
           color="primary"
           startIcon={<UpgradeIcon />}
-          onClick={() => setUpgradeDialogOpen(true)}
+          onClick={() => setIsUpgradeDialogOpen(true)}
         >
           {UI_TEXT_UPGRADE}
         </Button>
@@ -256,11 +256,19 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
         <DialogContent>
           <TextWithCopyButton
             name="Piped Id"
-            value={registeredPiped?.id || ""}
+            value={registeredPiped?.id ?? ""}
           />
           <TextWithCopyButton
             name="Piped Key"
-            value={registeredPiped?.key || ""}
+            value={registeredPiped?.key ?? ""}
+          />
+          <TextWithCopyButton
+            name="Base64 Encoded Piped Key"
+            value={
+              registeredPiped?.key !== undefined
+                ? btoa(registeredPiped?.key)
+                : ""
+            }
           />
           <Box display="flex" justifyContent="flex-end" m={1} mt={2}>
             <Button color="primary" onClick={handleClosePipedInfo}>
