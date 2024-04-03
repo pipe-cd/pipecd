@@ -25,6 +25,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
+	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 )
 
@@ -98,5 +99,10 @@ func (r *reporter) report(ctx context.Context) error {
 		r.logger.Error("failed to report stats", zap.Error(err))
 		return err
 	}
+
+	// Delete deployment metrics which are already reported
+	// in order to avoid error of excess message size.
+	controllermetrics.Reset()
+
 	return nil
 }

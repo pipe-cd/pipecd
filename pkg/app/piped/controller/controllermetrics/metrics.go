@@ -54,3 +54,8 @@ func Register(r prometheus.Registerer) {
 		deploymentStatus,
 	)
 }
+
+// Reset deletes all deploymentStatus metrics, which should be called to remove old unnecessary metrics.
+func Reset() {
+	deploymentStatus.Reset()
+}
