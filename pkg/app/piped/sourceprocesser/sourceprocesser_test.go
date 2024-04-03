@@ -15,8 +15,10 @@
 package sourceprocesser
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,7 +27,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
-func TestSourceProcesser(t *testing.T) {
+func TestSourceProcessor(t *testing.T) {
 	t.Parallel()
 
 	workspace, err := os.MkdirTemp("", "test-process-data")
@@ -37,44 +39,133 @@ func TestSourceProcesser(t *testing.T) {
 		prefix: "decrypted-",
 	}
 
-	fileData := map[string]string{
-		"config.yaml":   "config-data",
-		"resource.yaml": "echo {{ .attachment.config }} && echo {{ .encryptedSecrets.secret }}",
-	}
-	attachConfig := config.Attachment{
-		Sources: map[string]string{
-			"config": "config.yaml",
+	testcases := []struct {
+		name                string
+		fileData            map[string]string
+		attachConfig        config.Attachment
+		secretConfig        config.SecretEncryption
+		expected            map[string]string
+		expectedErrorPrefix string
+	}{
+		{
+			name: "target not found",
+			fileData: map[string]string{
+				"resource.yaml": "resource-data",
+			},
+			secretConfig: config.SecretEncryption{
+				EncryptedSecrets: map[string]string{
+					"password": "encrypted-password",
+				},
+				DecryptionTargets: []string{
+					"not-found-resource.yaml",
+				},
+			},
+			expectedErrorPrefix: "failed to parse target file not-found-resource.yaml",
 		},
-		Targets: []string{
-			"resource.yaml",
+		{
+			name: "no target file specified",
+			fileData: map[string]string{
+				"resource.yaml": "resource-data",
+			},
+			expectedErrorPrefix: "no target file path was specified",
 		},
-	}
-	secretConfig := config.SecretEncryption{
-		EncryptedSecrets: map[string]string{
-			"secret": "encrypted-secret",
+		{
+			name: "attachment work with secret decryption",
+			fileData: map[string]string{
+				"config.yaml":   "config-data",
+				"resource.yaml": "echo {{ .attachment.config }} && echo {{ .encryptedSecrets.secret }}",
+			},
+			attachConfig: config.Attachment{
+				Sources: map[string]string{
+					"config": "config.yaml",
+				},
+				Targets: []string{
+					"resource.yaml",
+				},
+			},
+			secretConfig: config.SecretEncryption{
+				EncryptedSecrets: map[string]string{
+					"secret": "encrypted-secret",
+				},
+				DecryptionTargets: []string{
+					"resource.yaml",
+				},
+			},
+			expected: map[string]string{
+				"resource.yaml": "echo config-data && echo decrypted-encrypted-secret",
+			},
 		},
-		DecryptionTargets: []string{
-			"resource.yaml",
+		{
+			name: "sprig function",
+			fileData: map[string]string{
+				"config.yaml":   "config-data",
+				"resource.yaml": "echo {{ .attachment.config | b64enc }}",
+			},
+			attachConfig: config.Attachment{
+				Sources: map[string]string{
+					"config": "config.yaml",
+				},
+				Targets: []string{
+					"resource.yaml",
+				},
+			},
+			expected: map[string]string{
+				"resource.yaml": "echo Y29uZmlnLWRhdGE=", // base64 encode of "config-data"
+			},
+		},
+		{
+			name: "sub directory",
+			fileData: map[string]string{
+				"sub/dir/config.yaml": "config-data",
+				"resource.yaml":       "echo {{ .attachment.config }}",
+			},
+			attachConfig: config.Attachment{
+				Sources: map[string]string{
+					"config": "sub/dir/config.yaml",
+				},
+				Targets: []string{
+					"resource.yaml",
+				},
+			},
+			expected: map[string]string{
+				"resource.yaml": "echo config-data",
+			},
 		},
 	}
 
-	appDir, err := os.MkdirTemp(workspace, "app-dir")
-	require.NoError(t, err)
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			appDir, err := os.MkdirTemp(workspace, "app-dir")
+			require.NoError(t, err)
 
-	for p, c := range fileData {
-		p = filepath.Join(appDir, p)
-		err = os.MkdirAll(filepath.Dir(p), 0700)
-		require.NoError(t, err)
-		err = os.WriteFile(p, []byte(c), 0600)
-		require.NoError(t, err)
+			for p, c := range tc.fileData {
+				p = filepath.Join(appDir, p)
+				err = os.MkdirAll(filepath.Dir(p), 0700)
+				require.NoError(t, err)
+				err = os.WriteFile(p, []byte(c), 0600)
+				require.NoError(t, err)
+			}
+
+			atp := NewAttachmentProcessor(&tc.attachConfig)
+			sdp := NewSecretDecrypterProcessor(&tc.secretConfig, dcr)
+			sp := NewSourceProcessor(appDir, []SourceTemplateProcessor{atp, sdp}...)
+
+			err = sp.Process()
+			if tc.expectedErrorPrefix != "" {
+				require.Error(t, err)
+				assert.True(t, strings.HasPrefix(err.Error(), tc.expectedErrorPrefix), fmt.Sprintf("Error: %v", err))
+			} else {
+				require.NoError(t, err)
+			}
+
+			for p, c := range tc.expected {
+				p = filepath.Join(appDir, p)
+				data, err := os.ReadFile(p)
+				require.NoError(t, err)
+				assert.Equal(t, c, string(data))
+			}
+		})
 	}
 
-	err = DecryptSecrets(appDir, secretConfig, dcr)
-	require.NoError(t, err)
-	err = AttachData(appDir, attachConfig)
-	require.NoError(t, err)
-
-	data, err := os.ReadFile(filepath.Join(appDir, "resource.yaml"))
-	require.NoError(t, err)
-	assert.Equal(t, "echo config-data && echo decrypted-encrypted-secret", string(data))
 }

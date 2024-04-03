@@ -16,11 +16,6 @@ package sourceprocesser
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-	"text/template"
-
-	"github.com/Masterminds/sprig/v3"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
@@ -29,52 +24,40 @@ type secretDecrypter interface {
 	Decrypt(string) (string, error)
 }
 
-func DecryptSecrets(appDir string, enc config.SecretEncryption, dcr secretDecrypter) error {
-	if len(enc.DecryptionTargets) == 0 {
-		return nil
+type secretDecrypterProcessor struct {
+	enc *config.SecretEncryption
+	dcr secretDecrypter
+}
+
+func NewSecretDecrypterProcessor(enc *config.SecretEncryption, dcr secretDecrypter) *secretDecrypterProcessor {
+	return &secretDecrypterProcessor{
+		enc: enc,
+		dcr: dcr,
 	}
-	if len(enc.EncryptedSecrets) == 0 {
-		return fmt.Errorf("no encrypted secret was specified to decrypt (%q)", enc.DecryptionTargets)
+}
+
+func (s *secretDecrypterProcessor) BuildTemplateData(appDir string) (map[string]string, error) {
+	if len(s.enc.EncryptedSecrets) == 0 {
+		// Skip building no error.
+		return nil, nil
 	}
 
-	secrets := make(map[string]string, len(enc.EncryptedSecrets))
-	for k, v := range enc.EncryptedSecrets {
-		ds, err := dcr.Decrypt(v)
+	secrets := make(map[string]string, len(s.enc.EncryptedSecrets))
+	for k, v := range s.enc.EncryptedSecrets {
+		ds, err := s.dcr.Decrypt(v)
 		if err != nil {
-			return fmt.Errorf("failed to decrypt %s secret (%w)", k, err)
+			return nil, fmt.Errorf("failed to decrypt %s secret (%w)", k, err)
 		}
 		secrets[k] = ds
 	}
-	data := map[string](map[string]string){
-		"encryptedSecrets": secrets,
-	}
 
-	for _, t := range enc.DecryptionTargets {
-		targetPath := filepath.Join(appDir, t)
-		fileName := filepath.Base(targetPath)
-		tmpl := template.
-			New(fileName).
-			Funcs(sprig.TxtFuncMap()).
-			Option("missingkey=error")
-		tmpl, err := tmpl.ParseFiles(targetPath)
-		if err != nil {
-			return fmt.Errorf("failed to parse decryption target %s (%w)", t, err)
-		}
+	return secrets, nil
+}
 
-		f, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_TRUNC, 0644)
-		if err != nil {
-			return fmt.Errorf("failed to open decryption target %s (%w)", t, err)
-		}
+func (s *secretDecrypterProcessor) TargetFilePaths() []string {
+	return s.enc.DecryptionTargets
+}
 
-		if err := tmpl.Execute(f, data); err != nil {
-			f.Close()
-			return fmt.Errorf("failed to render decryption target %s (%w)", t, err)
-		}
-
-		if err := f.Close(); err != nil {
-			return fmt.Errorf("failed to close decryption target %s (%w)", t, err)
-		}
-	}
-
-	return nil
+func (s *secretDecrypterProcessor) TemplateKey() string {
+	return "encryptedSecrets"
 }

@@ -18,60 +18,42 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"text/template"
-
-	"github.com/Masterminds/sprig/v3"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
-func AttachData(appDir string, atc config.Attachment) error {
-	if len(atc.Targets) == 0 {
-		return nil
+type attachmentProcessor struct {
+	atc *config.Attachment
+}
+
+func NewAttachmentProcessor(atc *config.Attachment) *attachmentProcessor {
+	return &attachmentProcessor{
+		atc: atc,
 	}
-	if len(atc.Sources) == 0 {
-		return fmt.Errorf("no source data to attach")
+}
+
+func (p *attachmentProcessor) BuildTemplateData(appDir string) (map[string]string, error) {
+	if len(p.atc.Sources) == 0 {
+		// Skip building no error.
+		return nil, nil
 	}
 
-	src := make(map[string]string, len(atc.Sources))
-	for k, v := range atc.Sources {
+	src := make(map[string]string, len(p.atc.Sources))
+	for k, v := range p.atc.Sources {
 		srcPath := filepath.Join(appDir, v)
 		buff, err := os.ReadFile(srcPath)
 		if err != nil {
-			return fmt.Errorf("failed to read data source to attach from file %s (%w)", v, err)
+			return nil, fmt.Errorf("failed to read data source to attach from file %s (%w)", v, err)
 		}
 		src[k] = string(buff)
 	}
-	data := map[string](map[string]string){
-		"attachment": src,
-	}
+	return src, nil
+}
 
-	for _, t := range atc.Targets {
-		targetPath := filepath.Join(appDir, t)
-		fileName := filepath.Base(targetPath)
-		tmpl := template.
-			New(fileName).
-			Funcs(sprig.TxtFuncMap()).
-			Option("missingkey=error")
-		tmpl, err := tmpl.ParseFiles(targetPath)
-		if err != nil {
-			return fmt.Errorf("failed to parse attaching target %s (%w)", t, err)
-		}
+func (p *attachmentProcessor) TargetFilePaths() []string {
+	return p.atc.Targets
+}
 
-		f, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_TRUNC, 0644)
-		if err != nil {
-			return fmt.Errorf("failed to open attaching target %s (%w)", t, err)
-		}
-
-		if err := tmpl.Execute(f, data); err != nil {
-			f.Close()
-			return fmt.Errorf("failed to render attaching target %s (%w)", t, err)
-		}
-
-		if err := f.Close(); err != nil {
-			return fmt.Errorf("failed to close attached target %s (%w)", t, err)
-		}
-	}
-
-	return nil
+func (p *attachmentProcessor) TemplateKey() string {
+	return "attachment"
 }
