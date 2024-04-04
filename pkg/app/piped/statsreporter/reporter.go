@@ -93,6 +93,14 @@ func (r *reporter) report(ctx context.Context) error {
 	}
 
 	req := &pipedservice.ReportStatRequest{
+		// PipedStats includes the following metrics in addition to Go metrics:
+		//  - cloudprovider_kubernetes_tool_calls_total
+		//  - deployment_status
+		//  - livestatestore_kubernetes_api_requests_total
+		//  - livestatestore_kubernetes_resource_events_total
+		//  - plan_preview_command_handled_total
+		//  - plan_preview_command_handling_seconds
+		//	- plan_preview_command_received_total
 		PipedStats: b,
 	}
 	if _, err := r.apiClient.ReportStat(ctx, req); err != nil {
