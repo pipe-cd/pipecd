@@ -102,7 +102,7 @@ func (r *reporter) report(ctx context.Context) error {
 
 	// Delete deployment metrics which are already reported
 	// in order to avoid error of excess message size.
-	controllermetrics.Reset()
+	controllermetrics.Flush()
 
 	return nil
 }

@@ -55,7 +55,7 @@ func Register(r prometheus.Registerer) {
 	)
 }
 
-// Reset deletes all deploymentStatus metrics, which should be called to remove old unnecessary metrics.
-func Reset() {
+// Flush deletes all deploymentStatus metrics to remove old unnecessary metrics.
+func Flush() {
 	deploymentStatus.Reset()
 }
