@@ -73,7 +73,7 @@ func (s *store) initialize() {
 		}
 
 		// Add the missing resource into the dependedResources of the app.
-		key := provider.MakeResourceKey(an.resource)
+		key := provider.GetResourceKeyFromActualResource(an.resource)
 
 		// Ignore in case appNodes with appID not existed in store.
 		if s.apps[appID] == nil {
@@ -103,7 +103,7 @@ func (s *store) initialize() {
 func (s *store) addResource(obj *unstructured.Unstructured, appID string) {
 	var (
 		uid    = string(obj.GetUID())
-		key    = provider.MakeResourceKey(obj)
+		key    = provider.GetResourceKeyFromActualResource(obj)
 		owners = obj.GetOwnerReferences()
 		now    = time.Now()
 	)
@@ -189,7 +189,7 @@ func (s *store) onDeleteResource(obj *unstructured.Unstructured) {
 	var (
 		uid    = string(obj.GetUID())
 		appID  = obj.GetAnnotations()[provider.LabelApplication]
-		key    = provider.MakeResourceKey(obj)
+		key    = provider.GetResourceKeyFromActualResource(obj)
 		owners = obj.GetOwnerReferences()
 		now    = time.Now()
 	)

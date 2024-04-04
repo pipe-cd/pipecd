@@ -246,6 +246,21 @@ func (k ResourceKey) IsEqualWithIgnoringNamespace(a ResourceKey) bool {
 	return true
 }
 
+// GetResourceKeyFromActualResource extracts the ResourceKey from the given resource object.
+// If the ResourceKey is not found in the annotations, it will create a new one.
+func GetResourceKeyFromActualResource(obj *unstructured.Unstructured) ResourceKey {
+	annotation, ok := obj.GetAnnotations()[LabelResourceKey]
+	if !ok {
+		return MakeResourceKey(obj)
+	}
+
+	key, err := DecodeResourceKey(annotation)
+	if err != nil {
+		return MakeResourceKey(obj)
+	}
+	return key
+}
+
 func MakeResourceKey(obj *unstructured.Unstructured) ResourceKey {
 	k := ResourceKey{
 		APIVersion: obj.GetAPIVersion(),

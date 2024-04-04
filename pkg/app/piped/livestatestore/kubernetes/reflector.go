@@ -249,7 +249,11 @@ func (r *reflector) start(_ context.Context) error {
 
 func (r *reflector) onObjectAdd(obj interface{}) {
 	u := obj.(*unstructured.Unstructured)
-	key := provider.MakeResourceKey(u)
+	key := provider.GetResourceKeyFromActualResource(u)
+	if anoKey := u.GetAnnotations()[provider.LabelResourceKey]; anoKey != "" {
+		key, _ = provider.DecodeResourceKey(anoKey)
+
+	}
 
 	// Ignore all predefined ones.
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
@@ -283,7 +287,7 @@ func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 	oldU := oldObj.(*unstructured.Unstructured)
 
 	// Ignore all predefined ones.
-	key := provider.MakeResourceKey(u)
+	key := provider.GetResourceKeyFromActualResource(u)
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
 		kubernetesmetrics.IncResourceEventsCounter(
 			kubernetesmetrics.LabelEventUpdate,
@@ -312,7 +316,7 @@ func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 
 func (r *reflector) onObjectDelete(obj interface{}) {
 	u := obj.(*unstructured.Unstructured)
-	key := provider.MakeResourceKey(u)
+	key := provider.GetResourceKeyFromActualResource(u)
 
 	// Ignore all predefined ones.
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
