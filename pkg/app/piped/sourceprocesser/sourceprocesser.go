@@ -50,7 +50,7 @@ func NewSourceProcessor(appDir string, templateProcessors ...SourceTemplateProce
 
 func (p *processor) Process() error {
 	if len(p.templateProcessors) == 0 {
-		return nil
+		return fmt.Errorf("no template processor was specified")
 	}
 
 	var targets []string
