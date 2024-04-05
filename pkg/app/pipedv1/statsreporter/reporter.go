@@ -25,6 +25,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 )
 
@@ -92,11 +93,24 @@ func (r *reporter) report(ctx context.Context) error {
 	}
 
 	req := &pipedservice.ReportStatRequest{
+		// PipedStats includes the following metrics in addition to Go metrics:
+		//  - cloudprovider_kubernetes_tool_calls_total
+		//  - deployment_status
+		//  - livestatestore_kubernetes_api_requests_total
+		//  - livestatestore_kubernetes_resource_events_total
+		//  - plan_preview_command_handled_total
+		//  - plan_preview_command_handling_seconds
+		//  - plan_preview_command_received_total
 		PipedStats: b,
 	}
 	if _, err := r.apiClient.ReportStat(ctx, req); err != nil {
 		r.logger.Error("failed to report stats", zap.Error(err))
 		return err
 	}
+
+	// Delete deployment metrics which are already reported
+	// in order to avoid error of excess message size.
+	controllermetrics.Flush()
+
 	return nil
 }
