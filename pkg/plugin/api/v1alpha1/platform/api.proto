@@ -1,0 +1,70 @@
+// Copyright 2024 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package grpc.plugin.platformapi.v1alpha1;
+option go_package = "github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform";
+
+import "validate/validate.proto";
+import "pkg/model/common.proto";
+import "pkg/model/deployment.proto";
+
+// PlannerService defines the public APIs for remote planners.
+service PlannerService {
+    // BuildPlan builds plan for the given deployment.
+    rpc BuildPlan(BuildPlanRequest) returns (BuildPlanResponse) {}
+}
+
+message BuildPlanRequest {
+    string working_dir = 1 [(validate.rules).string.min_len = 1];
+    // Last successful commit hash and config file name.
+    // Use to build deployment source object for last successful deployment.
+    string last_successful_commit_hash = 2;
+    string last_successful_config_file_name = 3;
+    // The configuration of the piped that handles the deployment.
+    bytes piped_config = 4 [(validate.rules).bytes.min_len = 1];
+    // The deployment to build a plan for.
+    model.Deployment deployment = 5 [(validate.rules).message.required = true];
+}
+
+message BuildPlanResponse {
+    // The built deployment plan.
+    DeploymentPlan plan = 1;
+}
+
+message DeploymentPlan {
+    model.SyncStrategy sync_strategy = 1;
+    // Text summary of planned deployment.
+    string summary = 2;
+    repeated model.ArtifactVersion versions = 3;
+    repeated model.PipelineStage stages = 4;
+}
+
+service ExecutorService {
+    // Execute executes the given stage of the deployment plan.
+    rpc ExecuteStage(ExecuteStageRequest) returns (stream ExecuteStageResponse) {}
+}
+
+message ExecuteStageRequest {
+    model.PipelineStage stage = 1 [(validate.rules).message.required = true];
+    bytes stage_config = 2 [(validate.rules).bytes.min_len = 1];
+    bytes piped_config = 3 [(validate.rules).bytes.min_len = 1];
+    model.Deployment deployment = 4 [(validate.rules).message.required = true];
+}
+
+message ExecuteStageResponse {
+    model.StageStatus status = 1;
+    string log = 2;
+}
