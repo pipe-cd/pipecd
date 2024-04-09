@@ -96,6 +96,32 @@ func TestSourceProcessor(t *testing.T) {
 			},
 		},
 		{
+			name: "secret decryption combined attachement",
+			fileData: map[string]string{
+				"config.yaml":   "{{ .encryptedSecrets.secret }}",
+				"resource.yaml": "echo {{ .attachment.config }}",
+			},
+			attachConfig: config.Attachment{
+				Sources: map[string]string{
+					"config": "config.yaml",
+				},
+				Targets: []string{
+					"resource.yaml",
+				},
+			},
+			secretConfig: config.SecretEncryption{
+				EncryptedSecrets: map[string]string{
+					"secret": "encrypted-secret",
+				},
+				DecryptionTargets: []string{
+					"config.yaml",
+				},
+			},
+			expected: map[string]string{
+				"resource.yaml": "echo decrypted-encrypted-secret",
+			},
+		},
+		{
 			name: "sprig function",
 			fileData: map[string]string{
 				"config.yaml":   "config-data",
