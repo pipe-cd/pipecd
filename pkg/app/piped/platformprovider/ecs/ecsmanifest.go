@@ -27,17 +27,31 @@ type ECSManifest struct {
 }
 
 // Unstructured returns the unstructured representation of the ECSManifest.
-func (m ECSManifest) Unstructured() (*unstructured.Unstructured, error) {
-	y, err := yaml.Marshal(m)
-	if err != nil {
-		return nil, err
+func (m ECSManifest) Unstructured() (unstructured.Unstructured, error) {
+	manifest := struct {
+		TaskDefinition    *types.TaskDefinition
+		ServiceDefinition *types.Service
+		ApiVersion        string `json:"apiVersion"`
+		Kind              string `json:"kind"`
+	}{
+		TaskDefinition:    m.TaskDefinition,
+		ServiceDefinition: m.ServiceDefinition,
+		ApiVersion:        "pipecd.dev/v1beta1",
+		Kind:              "PipeCDECSManifest",
 	}
 
-	var unstructuredManifest *unstructured.Unstructured
+	y, err := yaml.Marshal(manifest)
+	if err != nil {
+		return unstructured.Unstructured{}, err
+	}
+
+	var unstructuredManifest unstructured.Unstructured
 	err = yaml.Unmarshal(y, &unstructuredManifest)
 	if err != nil {
-		return nil, err
+		return unstructured.Unstructured{}, err
 	}
+
+	// TODO remove apiVersion & kind from the result? to hide them when comapring diff.
 
 	return unstructuredManifest, nil
 }
