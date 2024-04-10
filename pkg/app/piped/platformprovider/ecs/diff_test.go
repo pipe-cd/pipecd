@@ -104,13 +104,13 @@ func TestDiffResult_Render(t *testing.T) {
    Interactive: null
    Links: null
    LinuxParameters: null
-@@ -5,7 +5,7 @@
- DeploymentConfiguration: null
- DeploymentController: null
+@@ -10,7 +10,7 @@
+ DeploymentController:
+   Type: EXTERNAL
  Deployments: null
 -DesiredCount: 2
 +DesiredCount: 3
- EnableECSManagedTags: false
+ EnableECSManagedTags: true
  EnableExecuteCommand: false
  Events: null
 `
@@ -165,13 +165,13 @@ func TestDiffByCommand(t *testing.T) {
    Interactive: null
    Links: null
    LinuxParameters: null
-@@ -5,7 +5,7 @@
- DeploymentConfiguration: null
- DeploymentController: null
+@@ -10,7 +10,7 @@
+ DeploymentController:
+   Type: EXTERNAL
  Deployments: null
 -DesiredCount: 2
 +DesiredCount: 3
- EnableECSManagedTags: false
+ EnableECSManagedTags: true
  EnableExecuteCommand: false
  Events: null`,
 		},
