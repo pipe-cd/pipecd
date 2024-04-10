@@ -1,6 +1,6 @@
 cluster: arn:aws:ecs:ap-northeast-1:XXXX:cluster/test-cluster
 serviceName: nginx-service
-desiredCount: 2
+desiredCount: 3
 # deploymentConfiguration:
 #   maximumPercent: 200
 #   minimumHealthyPercent: 0

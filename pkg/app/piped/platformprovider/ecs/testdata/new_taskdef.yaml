@@ -3,7 +3,7 @@ executionRoleArn: arn:aws:iam::XXXX:role/ecsTaskExecutionRole
 containerDefinitions:
   - command: null
     cpu: 100
-    image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:1
+    image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:2
     memory: 100
     mountPoints: []
     name: web

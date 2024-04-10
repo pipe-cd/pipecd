@@ -17,6 +17,7 @@ package ecs
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,132 +33,164 @@ func TestDiff(t *testing.T) {
 	require.NotEmpty(t, new)
 
 	// Expect to have diff.
-	got, err := Diff(old, new)
+	diff, err := Diff(old, new)
 	require.NoError(t, err)
-	require.NotEmpty(t, got)
+	require.NotEmpty(t, diff)
 
-	// Expect no diff.
-	got, err = Diff(old, old)
+	// Expect no diff for the same manifest.
+	diff, err = Diff(old, old)
 	require.NoError(t, err)
-	require.NotEmpty(t, got)
+	require.NotEmpty(t, diff)
 }
 
-// func TestDiffResult_NoChange(t *testing.T) {
-// 	t.Parallel()
+func TestDiffResult_NoChange(t *testing.T) {
+	t.Parallel()
 
-// 	old, err := LoadECSManifest("./testdata/", "old_taskdef.yaml", "old_servicedef.yaml")
-// 	require.NoError(t, err)
-// 	require.NotEmpty(t, old)
+	old, err := LoadECSManifest("testdata/", "old_taskdef.yaml", "old_servicedef.yaml")
+	require.NoError(t, err)
+	require.NotEmpty(t, old)
 
-// 	new, err := LoadECSManifest("./testdata/", "new_taskdef.yaml", "new_servicedef.yaml")
-// 	require.NoError(t, err)
-// 	require.NotEmpty(t, new)
+	new, err := LoadECSManifest("testdata/", "new_taskdef.yaml", "new_servicedef.yaml")
+	require.NoError(t, err)
+	require.NotEmpty(t, new)
 
-// 	result, err := Diff(old, new)
-// 	require.NoError(t, err)
+	diff, err := Diff(old, new)
+	require.NoError(t, err)
 
-// 	got := result.NoChange()
-// 	require.False(t, got)
-// }
+	// Expect to have change.
+	noChange := diff.NoChange()
+	require.False(t, noChange)
+}
 
-// func TestDiffResult_Render(t *testing.T) {
-// 	old, err := LoadECSManifest("./testdata/", "old_taskdef.yaml", "old_servicedef.yaml")
-// 	require.NoError(t, err)
+// TODO: Convert each attribute in render result to lowerCamelCase
+func TestDiffResult_Render(t *testing.T) {
+	old, err := LoadECSManifest("testdata/", "old_taskdef.yaml", "old_servicedef.yaml")
+	require.NoError(t, err)
 
-// 	new, err := LoadECSManifest("./testdata/", "new_taskdef.yaml", "new_servicedef.yaml")
-// 	require.NoError(t, err)
+	new, err := LoadECSManifest("testdata/", "new_taskdef.yaml", "new_servicedef.yaml")
+	require.NoError(t, err)
 
-// 	result, err := Diff(old, new)
-// 	require.NoError(t, err)
+	result, err := Diff(old, new)
+	require.NoError(t, err)
 
-// 	// Not use diff command
-// 	opt := DiffRenderOptions{}
-// 	got := result.Render(opt)
-// 	want := `  spec:
-//     template:
-//       spec:
-//         containers:
-//           -
-//             #spec.template.spec.containers.0.image
-// -           image: gcr.io/pipecd/helloworld:v0.6.0
-// +           image: gcr.io/pipecd/helloworld:v0.5.0
+	// Not using diff command
+	opt := DiffRenderOptions{}
+	actual := result.Render(opt)
+	expected := `  ServiceDefinition:
+    #ServiceDefinition.DesiredCount
+-   DesiredCount: 2
++   DesiredCount: 3
 
-// `
-// 	require.Equal(t, want, got)
+  TaskDefinition:
+    ContainerDefinitions:
+      -
+        #TaskDefinition.ContainerDefinitions.0.Image
+-       Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:1
++       Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:2
 
-// 	// Use diff command
-// 	opt = DiffRenderOptions{UseDiffCommand: true}
-// 	got = result.Render(opt)
-// 	want = `@@ -18,7 +18,7 @@
-//        containers:
-//        - args:
-//          - server
-// -        image: gcr.io/pipecd/helloworld:v0.6.0
-// +        image: gcr.io/pipecd/helloworld:v0.5.0
-//          ports:
-//          - containerPort: 9085
-//            name: http1
-// `
-// 	require.Equal(t, want, got)
-// }
 
-// func TestDiffByCommand(t *testing.T) {
-// 	t.Parallel()
+`
+	require.Equal(t, expected, actual)
 
-// 	testcases := []struct {
-// 		name        string
-// 		command     string
-// 		oldManifest string
-// 		newManifest string
-// 		expected    string
-// 		expectedErr bool
-// 	}{
-// 		{
-// 			name:        "no command",
-// 			command:     "non-existent-diff",
-// 			oldManifest: "testdata/old_manifest.yaml",
-// 			newManifest: "testdata/old_manifest.yaml",
-// 			expected:    "",
-// 			expectedErr: true,
-// 		},
-// 		{
-// 			name:        "no diff",
-// 			command:     diffCommand,
-// 			oldManifest: "testdata/old_manifest.yaml",
-// 			newManifest: "testdata/old_manifest.yaml",
-// 			expected:    "",
-// 		},
-// 		{
-// 			name:        "has diff",
-// 			command:     diffCommand,
-// 			oldManifest: "testdata/old_manifest.yaml",
-// 			newManifest: "testdata/new_manifest.yaml",
-// 			expected: `@@ -18,7 +18,7 @@
-//        containers:
-//        - args:
-//          - server
-// -        image: gcr.io/pipecd/helloworld:v0.6.0
-// +        image: gcr.io/pipecd/helloworld:v0.5.0
-//          ports:
-//          - containerPort: 9085
-//            name: http1`,
-// 		},
-// 	}
-// 	for _, tc := range testcases {
-// 		t.Run(tc.name, func(t *testing.T) {
-// 			old, err := LoadECSManifest("./testdata/", "old_taskdef.yaml", "old_servicedef.yaml")
-// 			require.NoError(t, err)
+	// Use diff command
+	opt = DiffRenderOptions{UseDiffCommand: true}
+	actual = result.Render(opt)
+	expected = `@@ -17,7 +17,7 @@
+   FirelensConfiguration: null
+   HealthCheck: null
+   Hostname: null
+-  Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:1
++  Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:2
+   Interactive: null
+   Links: null
+   LinuxParameters: null
+@@ -5,7 +5,7 @@
+ DeploymentConfiguration: null
+ DeploymentController: null
+ Deployments: null
+-DesiredCount: 2
++DesiredCount: 3
+ EnableECSManagedTags: false
+ EnableExecuteCommand: false
+ Events: null
+`
+	require.Equal(t, expected, actual)
+}
 
-// 			new, err := LoadECSManifest("./testdata/", "new_taskdef.yaml", "new_servicedef.yaml")
-// 			require.NoError(t, err)
+func TestDiffByCommand(t *testing.T) {
+	t.Parallel()
 
-// 			got, err := diffByCommand(tc.command, old, new)
-// 			if tc.expectedErr {
-// 				assert.Error(t, err)
-// 			} else {
-// 				assert.NoError(t, err)
-// 			}
-// 			assert.Equal(t, tc.expected, string(got))
-// 		})
-// 	}
-// }
+	testcases := []struct {
+		name          string
+		command       string
+		oldTaskDef    string
+		oldServiceDef string
+		newTaskDef    string
+		newServiceDef string
+		expected      string
+		expectedErr   bool
+	}{
+		{
+			name:          "no command",
+			command:       "non-existent-diff",
+			oldTaskDef:    "old_taskdef.yaml",
+			oldServiceDef: "old_servicedef.yaml",
+			newTaskDef:    "old_taskdef.yaml",
+			newServiceDef: "old_servicedef.yaml",
+			expected:      "",
+			expectedErr:   true,
+		},
+		{
+			name:          "no diff",
+			command:       diffCommand,
+			oldTaskDef:    "old_taskdef.yaml",
+			oldServiceDef: "old_servicedef.yaml",
+			newTaskDef:    "old_taskdef.yaml",
+			newServiceDef: "old_servicedef.yaml",
+			expected:      "\n",
+		},
+		{
+			name:          "has diff",
+			command:       diffCommand,
+			oldTaskDef:    "old_taskdef.yaml",
+			oldServiceDef: "old_servicedef.yaml",
+			newTaskDef:    "new_taskdef.yaml",
+			newServiceDef: "new_servicedef.yaml",
+			expected: `@@ -17,7 +17,7 @@
+   FirelensConfiguration: null
+   HealthCheck: null
+   Hostname: null
+-  Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:1
++  Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:2
+   Interactive: null
+   Links: null
+   LinuxParameters: null
+@@ -5,7 +5,7 @@
+ DeploymentConfiguration: null
+ DeploymentController: null
+ Deployments: null
+-DesiredCount: 2
++DesiredCount: 3
+ EnableECSManagedTags: false
+ EnableExecuteCommand: false
+ Events: null`,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			old, err := LoadECSManifest("testdata/", tc.oldTaskDef, tc.oldServiceDef)
+			require.NoError(t, err)
+
+			new, err := LoadECSManifest("testdata/", tc.newTaskDef, tc.newServiceDef)
+			require.NoError(t, err)
+
+			got, err := diffByCommand(tc.command, old, new)
+			if tc.expectedErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, tc.expected, string(got))
+		})
+	}
+}

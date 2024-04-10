@@ -107,7 +107,7 @@ func diffByCommand(command string, old, new ECSManifest) ([]byte, error) {
 	}
 
 	// TODO merge? or just return both?
-	return bytes.Join([][]byte{taskDiff, serviceDiff}, []byte("\n\n")), nil
+	return bytes.Join([][]byte{taskDiff, serviceDiff}, []byte("\n")), nil
 }
 
 func diffYamlByCommand(command string, old, new interface{}) ([]byte, error) {
