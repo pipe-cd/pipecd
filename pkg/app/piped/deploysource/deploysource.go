@@ -28,6 +28,20 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
+type EmbeddedType string
+
+const (
+	EmbeddedTypeSecretOnly     EmbeddedType = "EMBEDDED_TYPE_SECRET_ONLY"
+	EmbeddedTypeAttachmentOnly EmbeddedType = "EMBEDDED_TYPE_ATTACHMENT_ONLY"
+	EmbeddedTypeBoth           EmbeddedType = "EMBEDDED_TYPE_BOTH"
+	EmbeddedTypeNone           EmbeddedType = "EMBEDDED_TYPE_NONE"
+)
+
+type embedded struct {
+	secret     bool
+	attachment bool
+}
+
 type DeploySource struct {
 	RepoDir                  string
 	AppDir                   string
@@ -171,16 +185,40 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	}
 	fmt.Fprintln(lw, "Successfully loaded the application configuration file")
 
+	var (
+		embedded     embedded
+		embeddedType = EmbeddedTypeNone
+	)
 	// Decrypt the sealed secrets if needed.
 	if gac.Encryption != nil && p.secretDecrypter != nil && len(gac.Encryption.DecryptionTargets) > 0 {
+		embedded.secret = true
+	}
+
+	if gac.Attachment != nil && len(gac.Attachment.Targets) > 0 {
+		embedded.attachment = true
+	}
+
+	if embedded.secret && embedded.attachment {
+		embeddedType = EmbeddedTypeBoth
+	} else if embedded.secret {
+		embeddedType = EmbeddedTypeSecretOnly
+	} else if embedded.attachment {
+		embeddedType = EmbeddedTypeAttachmentOnly
+	}
+
+	switch embeddedType {
+	case EmbeddedTypeBoth:
+		if err := sourceprocesser.EmbedCombination(appDir, *gac.Encryption, p.secretDecrypter, *gac.Attachment); err != nil {
+			fmt.Fprintf(lw, "Unable to embed the secret and attachment data (%v)\n", err)
+			return nil, err
+		}
+	case EmbeddedTypeSecretOnly:
 		if err := sourceprocesser.DecryptSecrets(appDir, *gac.Encryption, p.secretDecrypter); err != nil {
 			fmt.Fprintf(lw, "Unable to decrypt the secrets (%v)\n", err)
 			return nil, err
 		}
 		fmt.Fprintf(lw, "Successfully decrypted secrets: %v\n", gac.Encryption.DecryptionTargets)
-	}
-
-	if gac.Attachment != nil && len(gac.Attachment.Targets) > 0 {
+	case EmbeddedTypeAttachmentOnly:
 		if err := sourceprocesser.AttachData(appDir, *gac.Attachment); err != nil {
 			fmt.Fprintf(lw, "Unable to attach the data (%v)\n", err)
 			return nil, err

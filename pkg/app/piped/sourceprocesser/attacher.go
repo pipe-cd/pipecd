@@ -21,16 +21,15 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
-
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
-func AttachData(appDir string, atc config.Attachment) error {
+func PrepareAttachmentData(appDir string, atc config.Attachment) (map[string](map[string]string), error) {
 	if len(atc.Targets) == 0 {
-		return nil
+		return make(map[string]map[string]string), nil
 	}
 	if len(atc.Sources) == 0 {
-		return fmt.Errorf("no source data to attach")
+		return make(map[string]map[string]string), nil
 	}
 
 	src := make(map[string]string, len(atc.Sources))
@@ -38,7 +37,7 @@ func AttachData(appDir string, atc config.Attachment) error {
 		srcPath := filepath.Join(appDir, v)
 		buff, err := os.ReadFile(srcPath)
 		if err != nil {
-			return fmt.Errorf("failed to read data source to attach from file %s (%w)", v, err)
+			return nil, fmt.Errorf("failed to read data source to attach from file %s (%w)", v, err)
 		}
 		src[k] = string(buff)
 	}
@@ -46,7 +45,11 @@ func AttachData(appDir string, atc config.Attachment) error {
 		"attachment": src,
 	}
 
-	for _, t := range atc.Targets {
+	return data, nil
+}
+
+func EmbedAttach(appDir string, targets []string, data map[string](map[string]string)) error {
+	for _, t := range targets {
 		targetPath := filepath.Join(appDir, t)
 		fileName := filepath.Base(targetPath)
 		tmpl := template.
@@ -71,6 +74,23 @@ func AttachData(appDir string, atc config.Attachment) error {
 		if err := f.Close(); err != nil {
 			return fmt.Errorf("failed to close attached target %s (%w)", t, err)
 		}
+	}
+
+	return nil
+}
+
+func AttachData(appDir string, atc config.Attachment) error {
+	data, err := PrepareAttachmentData(appDir, atc)
+	if err != nil {
+		return err
+	}
+
+	if len(data) == 0 {
+		return nil
+	}
+
+	if err := EmbedAttach(appDir, atc.Targets, data); err != nil {
+		return err
 	}
 
 	return nil

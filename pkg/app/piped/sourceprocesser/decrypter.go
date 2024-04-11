@@ -21,7 +21,6 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
-
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
@@ -29,19 +28,19 @@ type secretDecrypter interface {
 	Decrypt(string) (string, error)
 }
 
-func DecryptSecrets(appDir string, enc config.SecretEncryption, dcr secretDecrypter) error {
+func PrepareSecretData(enc config.SecretEncryption, dcr secretDecrypter) (map[string](map[string]string), error) {
 	if len(enc.DecryptionTargets) == 0 {
-		return nil
+		return make(map[string]map[string]string), nil
 	}
 	if len(enc.EncryptedSecrets) == 0 {
-		return fmt.Errorf("no encrypted secret was specified to decrypt (%q)", enc.DecryptionTargets)
+		return make(map[string]map[string]string), nil
 	}
 
 	secrets := make(map[string]string, len(enc.EncryptedSecrets))
 	for k, v := range enc.EncryptedSecrets {
 		ds, err := dcr.Decrypt(v)
 		if err != nil {
-			return fmt.Errorf("failed to decrypt %s secret (%w)", k, err)
+			return nil, fmt.Errorf("failed to decrypt %s secret (%w)", k, err)
 		}
 		secrets[k] = ds
 	}
@@ -49,7 +48,11 @@ func DecryptSecrets(appDir string, enc config.SecretEncryption, dcr secretDecryp
 		"encryptedSecrets": secrets,
 	}
 
-	for _, t := range enc.DecryptionTargets {
+	return data, nil
+}
+
+func EmbedSecret(appDir string, targets []string, data map[string](map[string]string)) error {
+	for _, t := range targets {
 		targetPath := filepath.Join(appDir, t)
 		fileName := filepath.Base(targetPath)
 		tmpl := template.
@@ -74,6 +77,23 @@ func DecryptSecrets(appDir string, enc config.SecretEncryption, dcr secretDecryp
 		if err := f.Close(); err != nil {
 			return fmt.Errorf("failed to close decryption target %s (%w)", t, err)
 		}
+	}
+
+	return nil
+}
+
+func DecryptSecrets(appDir string, enc config.SecretEncryption, dcr secretDecrypter) error {
+	data, err := PrepareSecretData(enc, dcr)
+	if err != nil {
+		return err
+	}
+
+	if len(data) == 0 {
+		return nil
+	}
+
+	if err := EmbedSecret(appDir, enc.DecryptionTargets, data); err != nil {
+		return err
 	}
 
 	return nil
