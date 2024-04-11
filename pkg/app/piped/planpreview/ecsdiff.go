@@ -38,8 +38,6 @@ func (b *builder) ecsdiff(
 		err                      error
 	)
 
-	// [MEMO] (1) デプロイ予定のマニフェスト(=serviceDef+taskDef)を取得
-
 	newManifest, err = b.loadECSManifest(ctx, *app, targetDSP)
 	if err != nil {
 		fmt.Fprintf(buf, "failed to load ecs manifest at the head commit (%v)\n", err)
@@ -58,14 +56,12 @@ func (b *builder) ecsdiff(
 		b.secretDecrypter,
 	)
 
-	// [MEMO] (2) デプロイ済のマニフェスト(=serviceDef+taskDef)を取得。　実際の現環境を見る訳ではないのがポイント
 	oldManifest, err = b.loadECSManifest(ctx, *app, runningDSP)
 	if err != nil {
 		fmt.Fprintf(buf, "failed to load ecs manifest at the running commit (%v)\n", err)
 		return nil, err
 	}
 
-	// [MEMO] (3) マニフェストの差分を取得（Diff関数は実装する）
 	result, err := provider.Diff(
 		oldManifest,
 		newManifest,
@@ -77,7 +73,6 @@ func (b *builder) ecsdiff(
 		return nil, err
 	}
 
-	// [MEMO] (4) Diffの結果を表示（CloudRunと対してかわらないはず）
 	summary := fmt.Sprintf("%d changes were detected", len(result.Diff.Nodes()))
 	if result.NoChange() {
 		fmt.Fprintln(buf, "No changes were detected")
