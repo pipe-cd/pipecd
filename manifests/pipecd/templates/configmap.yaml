@@ -200,7 +200,7 @@ data:
             replacement: $1
 
       - job_name: pipecd-ops
-        # This scrape_interval must not be larger than 1m, which is the interval of piped's stats-reporting.
+        # This scrape_interval must not be larger than the interval of piped's stats-reporting.
         # ref: https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/statsreporter/reporter.go#L53
         scrape_interval: 1m
         kubernetes_sd_configs:
