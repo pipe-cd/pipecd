@@ -73,7 +73,6 @@ func (b *builder) ecsdiff(
 		return nil, err
 	}
 
-	summary := fmt.Sprintf("%d changes were detected", len(result.Diff.Nodes()))
 	if result.NoChange() {
 		fmt.Fprintln(buf, "No changes were detected")
 		return &diffResult{
@@ -82,6 +81,7 @@ func (b *builder) ecsdiff(
 		}, nil
 	}
 
+	summary := fmt.Sprintf("%d changes were detected", len(result.Diff.Nodes()))
 	details := result.Render(provider.DiffRenderOptions{
 		UseDiffCommand: true,
 	})
