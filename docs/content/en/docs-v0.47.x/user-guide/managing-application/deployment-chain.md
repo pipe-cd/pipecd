@@ -6,7 +6,7 @@ description: >
   Specific guide for configuring chain of deployments.
 ---
 
-For users who want to use PipeCD to build a complex deployment flow, which contains multiple applications across multiple application kinds and roll out them to multiple clusters gradually or promoting across environments, this guideline will show you how to use PipeCD to archive that requirement.
+For users who want to use PipeCD to build a complex deployment flow, which contains multiple applications across multiple application kinds and roll out them to multiple clusters gradually or promoting across environments, this guideline will show you how to use PipeCD to achieve that requirement.
 
 ## Configuration
 
