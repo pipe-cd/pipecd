@@ -57,7 +57,7 @@ Something you need to care about while creating your deployment chain with PipeC
 
 ![](/images/deployment-chain-console.png)
 
-The UI for this deployment chain feature currently is under deployment, we can only __view deployments in chain one by one__ on the deployments page and deployment detail page as usual.
+The UI for this deployment chain feature currently is under development, we can only __view deployments in chain one by one__ on the deployments page and deployment detail page as usual.
 
 ## Reference
 
