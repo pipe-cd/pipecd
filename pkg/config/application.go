@@ -554,6 +554,9 @@ func (e *SecretEncryption) Validate() error {
 			return fmt.Errorf("value field of %s in encryptedSecrets must not be empty", k)
 		}
 	}
+	if len(e.DecryptionTargets) == 0 {
+		return fmt.Errorf("no target files to be decrypted")
+	}
 	return nil
 }
 
@@ -564,14 +567,17 @@ type Attachment struct {
 	Targets []string `json:"targets"`
 }
 
-func (e *Attachment) Validate() error {
-	for k, v := range e.Sources {
+func (a *Attachment) Validate() error {
+	for k, v := range a.Sources {
 		if k == "" {
 			return fmt.Errorf("key field in sources must not be empty")
 		}
 		if v == "" {
 			return fmt.Errorf("value field in sources must not be empty")
 		}
+	}
+	if len(a.Targets) == 0 {
+		return fmt.Errorf("no target files to be embedded")
 	}
 	return nil
 }
