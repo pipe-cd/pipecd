@@ -63,13 +63,6 @@ func TestSourceProcessor(t *testing.T) {
 			expectedErrorPrefix: "failed to parse target file not-found-resource.yaml",
 		},
 		{
-			name: "no target file specified",
-			fileData: map[string]string{
-				"resource.yaml": "resource-data",
-			},
-			expectedErrorPrefix: "no target file path was specified",
-		},
-		{
 			name: "attachment work with secret decryption",
 			fileData: map[string]string{
 				"config.yaml":   "config-data",
@@ -175,7 +168,7 @@ func TestSourceProcessor(t *testing.T) {
 
 			atp := NewAttachmentProcessor(&tc.attachConfig)
 			sdp := NewSecretDecrypterProcessor(&tc.secretConfig, dcr)
-			sp := NewSourceProcessor(appDir, []SourceTemplateProcessor{atp, sdp}...)
+			sp := NewSourceProcessor(appDir, []SourceTemplateProcessor{sdp, atp}...)
 
 			err = sp.Process()
 			if tc.expectedErrorPrefix != "" {

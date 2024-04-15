@@ -18,6 +18,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"text/template"
+
+	"github.com/Masterminds/sprig/v3"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
@@ -50,10 +53,33 @@ func (p *attachmentProcessor) BuildTemplateData(appDir string) (map[string]strin
 	return src, nil
 }
 
-func (p *attachmentProcessor) TargetFilePaths() []string {
-	return p.atc.Targets
-}
-
 func (p *attachmentProcessor) TemplateKey() string {
 	return "attachment"
+}
+
+func (p *attachmentProcessor) TemplateSource(appDir string, data map[string]map[string]string) error {
+	for _, t := range p.atc.Targets {
+		targetPath := filepath.Join(appDir, t)
+		fileName := filepath.Base(targetPath)
+		tmpl := template.New(fileName).Funcs(sprig.TxtFuncMap()).Option("missingkey=error")
+		tmpl, err := tmpl.ParseFiles(targetPath)
+		if err != nil {
+			return fmt.Errorf("failed to parse target file %s (%w)", t, err)
+		}
+
+		f, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_TRUNC, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to open target file %s (%w)", t, err)
+		}
+
+		if err := tmpl.Execute(f, data); err != nil {
+			f.Close()
+			return fmt.Errorf("failed to render target file %s (%w)", t, err)
+		}
+
+		if err := f.Close(); err != nil {
+			return fmt.Errorf("failed to close target file %s (%w)", t, err)
+		}
+	}
+	return nil
 }

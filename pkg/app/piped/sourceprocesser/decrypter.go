@@ -16,6 +16,11 @@ package sourceprocesser
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"text/template"
+
+	"github.com/Masterminds/sprig/v3"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
@@ -54,10 +59,33 @@ func (s *secretDecrypterProcessor) BuildTemplateData(appDir string) (map[string]
 	return secrets, nil
 }
 
-func (s *secretDecrypterProcessor) TargetFilePaths() []string {
-	return s.enc.DecryptionTargets
-}
-
 func (s *secretDecrypterProcessor) TemplateKey() string {
 	return "encryptedSecrets"
+}
+
+func (s *secretDecrypterProcessor) TemplateSource(appDir string, data map[string]map[string]string) error {
+	for _, t := range s.enc.DecryptionTargets {
+		targetPath := filepath.Join(appDir, t)
+		fileName := filepath.Base(targetPath)
+		tmpl := template.New(fileName).Funcs(sprig.TxtFuncMap()).Option("missingkey=error")
+		tmpl, err := tmpl.ParseFiles(targetPath)
+		if err != nil {
+			return fmt.Errorf("failed to parse target file %s (%w)", t, err)
+		}
+
+		f, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_TRUNC, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to open target file %s (%w)", t, err)
+		}
+
+		if err := tmpl.Execute(f, data); err != nil {
+			f.Close()
+			return fmt.Errorf("failed to render target file %s (%w)", t, err)
+		}
+
+		if err := f.Close(); err != nil {
+			return fmt.Errorf("failed to close target file %s (%w)", t, err)
+		}
+	}
+	return nil
 }

@@ -16,18 +16,13 @@ package sourceprocesser
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-	"text/template"
-
-	"github.com/Masterminds/sprig/v3"
 )
 
 type SourceTemplateProcessor interface {
 	// BuildTemplateData returns the data that will be used to template target files
 	BuildTemplateData(appDir string) (map[string]string, error)
-	// TargetFilePaths returns the paths of target files that will be templated
-	TargetFilePaths() []string
+	// TemplateSource performs the templating prepared data to the source files
+	TemplateSource(appDir string, data map[string](map[string]string)) error
 	// TemplateKey returns the key that will be used to store the data in the template
 	TemplateKey() string
 }
@@ -53,14 +48,7 @@ func (p *processor) Process() error {
 		return fmt.Errorf("no template processor was specified")
 	}
 
-	var targets []string
-	for _, tp := range p.templateProcessors {
-		targets = append(targets, tp.TargetFilePaths()...)
-	}
-	if len(targets) == 0 {
-		return fmt.Errorf("no target file path was specified")
-	}
-
+	// Build the initial data for the template.
 	data := make(map[string](map[string]string))
 	for _, tp := range p.templateProcessors {
 		pdata, err := tp.BuildTemplateData(p.appDir)
@@ -73,27 +61,21 @@ func (p *processor) Process() error {
 		data[tp.TemplateKey()] = pdata
 	}
 
-	for _, t := range targets {
-		targetPath := filepath.Join(p.appDir, t)
-		fileName := filepath.Base(targetPath)
-		tmpl := template.New(fileName).Funcs(sprig.TxtFuncMap()).Option("missingkey=error")
-		tmpl, err := tmpl.ParseFiles(targetPath)
+	for _, tp := range p.templateProcessors {
+		// Rebuid the data for the template to get up to date
+		// data after previous template processing.
+		pdata, err := tp.BuildTemplateData(p.appDir)
 		if err != nil {
-			return fmt.Errorf("failed to parse target file %s (%w)", t, err)
+			return err
 		}
-
-		f, err := os.OpenFile(targetPath, os.O_WRONLY|os.O_TRUNC, 0644)
-		if err != nil {
-			return fmt.Errorf("failed to open target file %s (%w)", t, err)
+		if len(pdata) == 0 {
+			continue
 		}
+		data[tp.TemplateKey()] = pdata
 
-		if err := tmpl.Execute(f, data); err != nil {
-			f.Close()
-			return fmt.Errorf("failed to render target file %s (%w)", t, err)
-		}
-
-		if err := f.Close(); err != nil {
-			return fmt.Errorf("failed to close target file %s (%w)", t, err)
+		// Perform the templating.
+		if err := tp.TemplateSource(p.appDir, data); err != nil {
+			return err
 		}
 	}
 
