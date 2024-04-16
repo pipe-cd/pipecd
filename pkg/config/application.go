@@ -441,13 +441,13 @@ func (c *CustomSyncOptions) Validate() error {
 // AnalysisStageOptions contains all configurable values for a K8S_ANALYSIS stage.
 type AnalysisStageOptions struct {
 	// How long the analysis process should be executed.
-	Duration Duration `json:"duration"`
+	Duration Duration `json:"duration,omitempty"`
 	// TODO: Consider about how to handle a pod restart
 	// possible count of pod restarting
-	RestartThreshold int                          `json:"restartThreshold"`
-	Metrics          []TemplatableAnalysisMetrics `json:"metrics"`
-	Logs             []TemplatableAnalysisLog     `json:"logs"`
-	HTTPS            []TemplatableAnalysisHTTP    `json:"https"`
+	RestartThreshold int                          `json:"restartThreshold,omitempty"`
+	Metrics          []TemplatableAnalysisMetrics `json:"metrics,omitempty"`
+	Logs             []TemplatableAnalysisLog     `json:"logs,omitempty"`
+	HTTPS            []TemplatableAnalysisHTTP    `json:"https,omitempty"`
 }
 
 func (a *AnalysisStageOptions) Validate() error {
