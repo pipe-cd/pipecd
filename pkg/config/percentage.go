@@ -22,8 +22,8 @@ import (
 )
 
 type Percentage struct {
-	Number    int
-	HasSuffix bool
+	Number    int  `json:",omitempty"`
+	HasSuffix bool `json:",omitempty"`
 }
 
 func (p Percentage) String() string {
@@ -40,6 +40,10 @@ func (p Percentage) Int() int {
 
 func (p Percentage) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.String())
+}
+
+func (p Percentage) MarshalYAML() (interface{}, error) {
+	return p.Number, nil
 }
 
 func (p *Percentage) UnmarshalJSON(b []byte) error {
