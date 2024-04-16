@@ -6,7 +6,7 @@ description: >
   Specific guide for configuring chain of deployments.
 ---
 
-For users who want to use PipeCD to build a complex deployment flow, which contains multiple applications across multiple application kinds and roll out them to multiple clusters gradually or promoting across environments, this guideline will show you how to use PipeCD to archive that requirement.
+For users who want to use PipeCD to build a complex deployment flow, which contains multiple applications across multiple application kinds and roll out them to multiple clusters gradually or promoting across environments, this guideline will show you how to use PipeCD to achieve that requirement.
 
 ## Configuration
 
@@ -57,7 +57,7 @@ Something you need to care about while creating your deployment chain with PipeC
 
 ![](/images/deployment-chain-console.png)
 
-The UI for this deployment chain feature currently is under deployment, we can only __view deployments in chain one by one__ on the deployments page and deployment detail page as usual.
+The UI for this deployment chain feature currently is under development, we can only __view deployments in chain one by one__ on the deployments page and deployment detail page as usual.
 
 ## Reference
 
