@@ -555,7 +555,7 @@ func (e *SecretEncryption) Validate() error {
 		}
 	}
 	if len(e.DecryptionTargets) == 0 {
-		return fmt.Errorf("no target files to be decrypted")
+		return fmt.Errorf("derecryptionTargets must not be empty")
 	}
 	return nil
 }
@@ -577,7 +577,7 @@ func (a *Attachment) Validate() error {
 		}
 	}
 	if len(a.Targets) == 0 {
-		return fmt.Errorf("no target files to be embedded")
+		return fmt.Errorf("attachment targets must not be empty")
 	}
 	return nil
 }
