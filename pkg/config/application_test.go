@@ -222,11 +222,13 @@ func TestValidateEncryption(t *testing.T) {
 		{
 			name:             "invalid because key is empty",
 			encryptedSecrets: map[string]string{"": "pw"},
+			targets:          []string{"secret.yaml"},
 			wantErr:          true,
 		},
 		{
 			name:             "invalid because value is empty",
 			encryptedSecrets: map[string]string{"password": ""},
+			targets:          []string{"secret.yaml"},
 			wantErr:          true,
 		},
 		{
@@ -236,6 +238,7 @@ func TestValidateEncryption(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			s := &SecretEncryption{
 				EncryptedSecrets:  tc.encryptedSecrets,
@@ -263,11 +266,13 @@ func TestValidateAttachment(t *testing.T) {
 		{
 			name:    "invalid because key is empty",
 			sources: map[string]string{"": "config-data"},
+			targets: []string{"target.yaml"},
 			wantErr: true,
 		},
 		{
 			name:    "invalid because value is empty",
 			sources: map[string]string{"config": ""},
+			targets: []string{"target.yaml"},
 			wantErr: true,
 		},
 		{
@@ -277,6 +282,7 @@ func TestValidateAttachment(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			a := &Attachment{
 				Sources: tc.sources,

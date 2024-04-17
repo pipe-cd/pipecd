@@ -546,6 +546,9 @@ type SecretEncryption struct {
 }
 
 func (e *SecretEncryption) Validate() error {
+	if len(e.DecryptionTargets) == 0 {
+		return fmt.Errorf("derecryptionTargets must not be empty")
+	}
 	for k, v := range e.EncryptedSecrets {
 		if k == "" {
 			return fmt.Errorf("key field in encryptedSecrets must not be empty")
@@ -553,9 +556,6 @@ func (e *SecretEncryption) Validate() error {
 		if v == "" {
 			return fmt.Errorf("value field of %s in encryptedSecrets must not be empty", k)
 		}
-	}
-	if len(e.DecryptionTargets) == 0 {
-		return fmt.Errorf("derecryptionTargets must not be empty")
 	}
 	return nil
 }
@@ -568,6 +568,9 @@ type Attachment struct {
 }
 
 func (a *Attachment) Validate() error {
+	if len(a.Targets) == 0 {
+		return fmt.Errorf("attachment targets must not be empty")
+	}
 	for k, v := range a.Sources {
 		if k == "" {
 			return fmt.Errorf("key field in sources must not be empty")
@@ -575,9 +578,6 @@ func (a *Attachment) Validate() error {
 		if v == "" {
 			return fmt.Errorf("value field in sources must not be empty")
 		}
-	}
-	if len(a.Targets) == 0 {
-		return fmt.Errorf("attachment targets must not be empty")
 	}
 	return nil
 }
