@@ -21,7 +21,7 @@ import (
 type SourceTemplateProcessor interface {
 	// BuildTemplateData returns the data that will be used to template target files
 	BuildTemplateData(appDir string) (map[string]string, error)
-	// TemplateSource performs the templating prepared data to the source files
+	// TemplateSource performs templating prepared data to the source files
 	TemplateSource(appDir string, data map[string](map[string]string)) error
 	// TemplateKey returns the key that will be used to store the data in the template
 	TemplateKey() string

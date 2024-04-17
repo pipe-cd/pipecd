@@ -188,7 +188,7 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 			fmt.Fprintf(lw, "Unable to process the source files (%v)\n", err)
 			return nil, err
 		}
-		fmt.Fprintln(lw, "Successfully process the source files")
+		fmt.Fprintln(lw, "Successfully processed the source files")
 	}
 
 	return &DeploySource{
