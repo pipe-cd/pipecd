@@ -171,21 +171,24 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	}
 	fmt.Fprintln(lw, "Successfully loaded the application configuration file")
 
+	var templProcessors []sourceprocesser.SourceTemplateProcessor
 	// Decrypt the sealed secrets if needed.
-	if gac.Encryption != nil && p.secretDecrypter != nil && len(gac.Encryption.DecryptionTargets) > 0 {
-		if err := sourceprocesser.DecryptSecrets(appDir, *gac.Encryption, p.secretDecrypter); err != nil {
-			fmt.Fprintf(lw, "Unable to decrypt the secrets (%v)\n", err)
-			return nil, err
-		}
-		fmt.Fprintf(lw, "Successfully decrypted secrets: %v\n", gac.Encryption.DecryptionTargets)
+	if gac.Encryption != nil && p.secretDecrypter != nil {
+		templProcessors = append(templProcessors, sourceprocesser.NewSecretDecrypterProcessor(gac.Encryption, p.secretDecrypter))
+	}
+	// Attach the data if needed.
+	if gac.Attachment != nil {
+		templProcessors = append(templProcessors, sourceprocesser.NewAttachmentProcessor(gac.Attachment))
 	}
 
-	if gac.Attachment != nil && len(gac.Attachment.Targets) > 0 {
-		if err := sourceprocesser.AttachData(appDir, *gac.Attachment); err != nil {
-			fmt.Fprintf(lw, "Unable to attach the data (%v)\n", err)
+	// Process templating source files.
+	if len(templProcessors) > 0 {
+		sp := sourceprocesser.NewSourceProcessor(appDir, templProcessors...)
+		if err := sp.Process(); err != nil {
+			fmt.Fprintf(lw, "Unable to process the source files (%v)\n", err)
 			return nil, err
 		}
-		fmt.Fprintf(lw, "Successfully attached data: %v\n", gac.Attachment.Targets)
+		fmt.Fprintln(lw, "Successfully processed the source files")
 	}
 
 	return &DeploySource{
