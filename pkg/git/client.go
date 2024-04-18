@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -143,15 +142,22 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		)
 	)
 
-	remote, err := includePasswordRemote(remote, c.username, c.password)
-	if err != nil {
-		return nil, err
+	// remote, err := includePasswordRemote(remote, c.username, c.password)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	authArgs := []string{}
+	if c.username != "" && c.password != "" {
+		token := fmt.Sprintf("%s:%s", c.username, c.password)
+		encodedToken := base64.StdEncoding.EncodeToString([]byte(token))
+		authArgs = append(authArgs, "--config-env", fmt.Sprintf("http.extraHeader=%s", encodedToken))
 	}
 
 	c.lockRepo(repoID)
 	defer c.unlockRepo(repoID)
 
-	_, err = os.Stat(repoCachePath)
+	_, err := os.Stat(repoCachePath)
 	if err != nil && !os.IsNotExist(err) {
 		return nil, err
 	}
@@ -163,7 +169,9 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 			return nil, err
 		}
 		out, err := retryCommand(3, time.Second, logger, func() ([]byte, error) {
-			return runGitCommand(ctx, c.gitPath, "", c.envsForRepo(remote), "clone", "--mirror", remote, repoCachePath)
+			args := []string{"clone", "--mirror", remote, repoCachePath}
+			args = append(args, authArgs...)
+			return runGitCommand(ctx, c.gitPath, "", c.envsForRepo(remote), args...)
 		})
 		if err != nil {
 			logger.Error("failed to clone from remote",
@@ -176,7 +184,9 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		// Cache hit. Do a git fetch to keep updated.
 		c.logger.Info(fmt.Sprintf("fetching %s to update the cache", repoID))
 		out, err := retryCommand(3, time.Second, c.logger, func() ([]byte, error) {
-			return runGitCommand(ctx, c.gitPath, repoCachePath, c.envsForRepo(remote), "fetch")
+			args := []string{"fetch"}
+			args = append(args, authArgs...)
+			return runGitCommand(ctx, c.gitPath, repoCachePath, c.envsForRepo(remote), args...)
 		})
 		if err != nil {
 			logger.Error("failed to fetch from remote",
@@ -268,21 +278,21 @@ func (c *client) envsForRepo(remote string) []string {
 	return append(envs, c.gitEnvs...)
 }
 
-func includePasswordRemote(remote, username, password string) (string, error) {
-	if username == "" || password == "" {
-		return remote, nil
-	}
-	u, err := parseGitURL(remote)
-	if err != nil {
-		return "", fmt.Errorf("failed to include password: %v", err)
-	}
-	decodedPassword, err := base64.StdEncoding.DecodeString(password)
-	if err != nil {
-		return "", fmt.Errorf("failed to decode password: %v", err)
-	}
-	u.User = url.UserPassword(username, string(decodedPassword))
-	return u.String(), nil
-}
+// func includePasswordRemote(remote, username, password string) (string, error) {
+// 	if username == "" || password == "" {
+// 		return remote, nil
+// 	}
+// 	u, err := parseGitURL(remote)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to include password: %v", err)
+// 	}
+// 	decodedPassword, err := base64.StdEncoding.DecodeString(password)
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to decode password: %v", err)
+// 	}
+// 	u.User = url.UserPassword(username, string(decodedPassword))
+// 	return u.String(), nil
+// }
 
 func runGitCommand(ctx context.Context, execPath, dir string, envs []string, args ...string) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, execPath, args...)
