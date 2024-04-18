@@ -480,7 +480,6 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 			git.WithEmail(cfg.Git.Email),
 			git.WithLogger(input.Logger),
 			git.WithPassword(
-				cfg.Git.Username,
 				cfg.Git.Password,
 			),
 		)

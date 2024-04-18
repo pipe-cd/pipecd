@@ -93,10 +93,9 @@ func WithEmail(e string) Option {
 	}
 }
 
-func WithPassword(username, password string) Option {
+func WithPassword(password string) Option {
 	return func(c *client) {
-		if username != "" && password != "" {
-			c.username = username
+		if password != "" {
 			c.password = password
 		}
 	}
