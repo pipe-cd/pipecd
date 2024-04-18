@@ -77,15 +77,7 @@ func TestDiffResult_Render(t *testing.T) {
 	// Use diff command
 	opt = DiffRenderOptions{UseDiffCommand: true}
 	actual = result.Render(opt)
-	expected = `@@ -17,7 +17,7 @@
-   FirelensConfiguration: null
-   HealthCheck: null
-   Hostname: null
--  Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:1
-+  Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:2
-   Interactive: null
-   Links: null
-   LinuxParameters: null
+	expected = `# 1. ServiceDefinition
 @@ -10,7 +10,7 @@
  DeploymentController:
    Type: EXTERNAL
@@ -95,6 +87,17 @@ func TestDiffResult_Render(t *testing.T) {
  EnableECSManagedTags: true
  EnableExecuteCommand: false
  Events: null
+
+# 2. TaskDefinition
+@@ -17,7 +17,7 @@
+   FirelensConfiguration: null
+   HealthCheck: null
+   Hostname: null
+-  Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:1
++  Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:2
+   Interactive: null
+   Links: null
+   LinuxParameters: null
 `
 	require.Equal(t, expected, actual)
 }
@@ -129,7 +132,11 @@ func TestDiffByCommand(t *testing.T) {
 			oldServiceDef: "old_servicedef.yaml",
 			newTaskDef:    "old_taskdef.yaml",
 			newServiceDef: "old_servicedef.yaml",
-			expected:      "\n",
+			expected: `# 1. ServiceDefinition
+
+
+# 2. TaskDefinition
+`,
 		},
 		{
 			name:          "has diff",
@@ -138,15 +145,7 @@ func TestDiffByCommand(t *testing.T) {
 			oldServiceDef: "old_servicedef.yaml",
 			newTaskDef:    "new_taskdef.yaml",
 			newServiceDef: "new_servicedef.yaml",
-			expected: `@@ -17,7 +17,7 @@
-   FirelensConfiguration: null
-   HealthCheck: null
-   Hostname: null
--  Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:1
-+  Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:2
-   Interactive: null
-   Links: null
-   LinuxParameters: null
+			expected: `# 1. ServiceDefinition
 @@ -10,7 +10,7 @@
  DeploymentController:
    Type: EXTERNAL
@@ -155,7 +154,18 @@ func TestDiffByCommand(t *testing.T) {
 +DesiredCount: 3
  EnableECSManagedTags: true
  EnableExecuteCommand: false
- Events: null`,
+ Events: null
+
+# 2. TaskDefinition
+@@ -17,7 +17,7 @@
+   FirelensConfiguration: null
+   HealthCheck: null
+   Hostname: null
+-  Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:1
++  Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:2
+   Interactive: null
+   Links: null
+   LinuxParameters: null`,
 		},
 	}
 	for _, tc := range testcases {
