@@ -36,11 +36,11 @@ func (m ECSManifest) Unstructured() (unstructured.Unstructured, error) {
 	}{
 		TaskDefinition:    m.TaskDefinition,
 		ServiceDefinition: m.ServiceDefinition,
-		// Append ApiVersion and Kind here to avoid error
+		// Append ApiVersion and Kind here just to avoid error
 		// when unmarshalling the yaml to unstructured.Unstructured.
 		// These do not affect the manifest's content.
-		ApiVersion: "pipecd.dev/v1beta1",
-		Kind:       "PipeCDECSManifest",
+		ApiVersion: "__pipecd.dev/v1beta1__",
+		Kind:       "__PipeCDECSManifes__",
 	}
 
 	y, err := yaml.Marshal(manifest)
