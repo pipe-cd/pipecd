@@ -5,8 +5,7 @@ deploymentConfiguration:
   maximumPercent: 200
   minimumHealthyPercent: 0
 schedulingStrategy: REPLICA
-# CAUTION: To enable PipeCD controls the deployment
-# DeploymentController of type EXTERNAL is required.
+# Sample Comment for test
 deploymentController:
   type: EXTERNAL
 enableECSManagedTags: true
@@ -20,3 +19,8 @@ networkConfiguration:
     subnets:
       - subnet-YYYY
       - subnet-YYYY
+tags:
+  - key: key1
+    value: value1
+  - key: key2
+    value: value2
