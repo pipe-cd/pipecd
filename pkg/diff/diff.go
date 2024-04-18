@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"sigs.k8s.io/yaml"
 )
 
 type differ struct {
@@ -81,6 +82,42 @@ func DiffUnstructureds(x, y unstructured.Unstructured, key string, opts ...Optio
 		path = []PathStep{}
 		vx   = reflect.ValueOf(x.Object)
 		vy   = reflect.ValueOf(y.Object)
+		d    = &differ{result: &Result{}}
+	)
+	for _, opt := range opts {
+		opt(d)
+	}
+
+	d.initIgnoredPaths(key)
+
+	if err := d.diff(path, vx, vy); err != nil {
+		return nil, err
+	}
+
+	d.result.sort()
+	return d.result, nil
+}
+
+// DiffStructs calulates the diff between two struct objects,
+// which are not k8s manifests.
+func DiffStructs(x, y interface{}, key string, opts ...Option) (*Result, error) {
+	map_x := map[string]interface{}{}
+	map_y := map[string]interface{}{}
+	yml_x, err := yaml.Marshal(x)
+	if err != nil {
+		return nil, err
+	}
+	yml_y, err := yaml.Marshal(y)
+	if err != nil {
+		return nil, err
+	}
+	yaml.Unmarshal(yml_x, &map_x)
+	yaml.Unmarshal(yml_y, &map_y)
+
+	var (
+		path = []PathStep{}
+		vx   = reflect.ValueOf(map_x)
+		vy   = reflect.ValueOf(map_y)
 		d    = &differ{result: &Result{}}
 	)
 	for _, opt := range opts {
