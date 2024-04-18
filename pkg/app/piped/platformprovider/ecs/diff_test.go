@@ -45,7 +45,6 @@ func TestDiff(t *testing.T) {
 	require.True(t, noChange)
 }
 
-// TODO: Convert each attribute in render result to lowerCamelCase
 func TestDiffResult_Render(t *testing.T) {
 	old, err := LoadECSManifest("testdata/", "old_taskdef.yaml", "old_servicedef.yaml")
 	require.NoError(t, err)

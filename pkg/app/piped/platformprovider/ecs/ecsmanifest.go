@@ -36,8 +36,11 @@ func (m ECSManifest) Unstructured() (unstructured.Unstructured, error) {
 	}{
 		TaskDefinition:    m.TaskDefinition,
 		ServiceDefinition: m.ServiceDefinition,
-		ApiVersion:        "pipecd.dev/v1beta1",
-		Kind:              "PipeCDECSManifest",
+		// Append ApiVersion and Kind here to avoid error
+		// when unmarshalling the yaml to unstructured.Unstructured.
+		// These do not affect the manifest's content.
+		ApiVersion: "pipecd.dev/v1beta1",
+		Kind:       "PipeCDECSManifest",
 	}
 
 	y, err := yaml.Marshal(manifest)
@@ -50,8 +53,6 @@ func (m ECSManifest) Unstructured() (unstructured.Unstructured, error) {
 	if err != nil {
 		return unstructured.Unstructured{}, err
 	}
-
-	// TODO remove apiVersion & kind from the result? to hide them when comapring diff.
 
 	return unstructuredManifest, nil
 }
