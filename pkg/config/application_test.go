@@ -210,30 +210,85 @@ func TestValidateEncryption(t *testing.T) {
 	testcases := []struct {
 		name             string
 		encryptedSecrets map[string]string
+		targets          []string
 		wantErr          bool
 	}{
 		{
 			name:             "valid",
 			encryptedSecrets: map[string]string{"password": "pw"},
+			targets:          []string{"secret.yaml"},
 			wantErr:          false,
 		},
 		{
 			name:             "invalid because key is empty",
 			encryptedSecrets: map[string]string{"": "pw"},
+			targets:          []string{"secret.yaml"},
 			wantErr:          true,
 		},
 		{
 			name:             "invalid because value is empty",
 			encryptedSecrets: map[string]string{"password": ""},
+			targets:          []string{"secret.yaml"},
+			wantErr:          true,
+		},
+		{
+			name:             "no target files sepcified",
+			encryptedSecrets: map[string]string{"password": "pw"},
 			wantErr:          true,
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			s := &SecretEncryption{
-				EncryptedSecrets: tc.encryptedSecrets,
+				EncryptedSecrets:  tc.encryptedSecrets,
+				DecryptionTargets: tc.targets,
 			}
 			err := s.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
+		})
+	}
+}
+
+func TestValidateAttachment(t *testing.T) {
+	testcases := []struct {
+		name    string
+		sources map[string]string
+		targets []string
+		wantErr bool
+	}{
+		{
+			name:    "valid",
+			sources: map[string]string{"config": "config.yaml"},
+			targets: []string{"target.yaml"},
+			wantErr: false,
+		},
+		{
+			name:    "invalid because key is empty",
+			sources: map[string]string{"": "config-data"},
+			targets: []string{"target.yaml"},
+			wantErr: true,
+		},
+		{
+			name:    "invalid because value is empty",
+			sources: map[string]string{"config": ""},
+			targets: []string{"target.yaml"},
+			wantErr: true,
+		},
+		{
+			name:    "no target files sepcified",
+			sources: map[string]string{"config": "config.yaml"},
+			wantErr: true,
+		},
+	}
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			a := &Attachment{
+				Sources: tc.sources,
+				Targets: tc.targets,
+			}
+			err := a.Validate()
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}

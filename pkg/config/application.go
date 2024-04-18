@@ -546,6 +546,9 @@ type SecretEncryption struct {
 }
 
 func (e *SecretEncryption) Validate() error {
+	if len(e.DecryptionTargets) == 0 {
+		return fmt.Errorf("derecryptionTargets must not be empty")
+	}
 	for k, v := range e.EncryptedSecrets {
 		if k == "" {
 			return fmt.Errorf("key field in encryptedSecrets must not be empty")
@@ -564,8 +567,11 @@ type Attachment struct {
 	Targets []string `json:"targets"`
 }
 
-func (e *Attachment) Validate() error {
-	for k, v := range e.Sources {
+func (a *Attachment) Validate() error {
+	if len(a.Targets) == 0 {
+		return fmt.Errorf("attachment targets must not be empty")
+	}
+	for k, v := range a.Sources {
 		if k == "" {
 			return fmt.Errorf("key field in sources must not be empty")
 		}
