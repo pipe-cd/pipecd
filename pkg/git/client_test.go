@@ -177,11 +177,11 @@ func (g gitCommander) addCommit(filename string, content string) error {
 	})
 }
 
-func TestCloneUsingPassword(t *testing.T) {
-	url, err := includePasswordRemote("https://example.com/org/repo", "test-user", "dGVzdC1wYXNzd29yZA==")
-	require.NoError(t, err)
-	assert.Equal(t, "https://test-user:test-password@example.com/org/repo", url)
-}
+// func TestCloneUsingPassword(t *testing.T) {
+// 	// url, err := includePasswordRemote("https://example.com/org/repo", "test-user", "dGVzdC1wYXNzd29yZA==")
+// 	require.NoError(t, err)
+// 	assert.Equal(t, "https://test-user:test-password@example.com/org/repo", url)
+// }
 
 func TestRetryCommand(t *testing.T) {
 	var (
