@@ -142,16 +142,12 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		)
 	)
 
-	// remote, err := includePasswordRemote(remote, c.username, c.password)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	authArgs := []string{}
 	if c.username != "" && c.password != "" {
 		token := fmt.Sprintf("%s:%s", c.username, c.password)
 		encodedToken := base64.StdEncoding.EncodeToString([]byte(token))
-		authArgs = append(authArgs, "--config-env", fmt.Sprintf("http.extraHeader=%s", encodedToken))
+		header := fmt.Sprintf("Authorization: Basic %s", encodedToken)
+		authArgs = append(authArgs, "-c", fmt.Sprintf("http.extraHeader=%s", header))
 	}
 
 	c.lockRepo(repoID)
@@ -170,7 +166,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		}
 		out, err := retryCommand(3, time.Second, logger, func() ([]byte, error) {
 			args := []string{"clone", "--mirror", remote, repoCachePath}
-			args = append(args, authArgs...)
+			args = append(authArgs, args...)
 			return runGitCommand(ctx, c.gitPath, "", c.envsForRepo(remote), args...)
 		})
 		if err != nil {
@@ -185,7 +181,7 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		c.logger.Info(fmt.Sprintf("fetching %s to update the cache", repoID))
 		out, err := retryCommand(3, time.Second, c.logger, func() ([]byte, error) {
 			args := []string{"fetch"}
-			args = append(args, authArgs...)
+			args = append(authArgs, args...)
 			return runGitCommand(ctx, c.gitPath, repoCachePath, c.envsForRepo(remote), args...)
 		})
 		if err != nil {
@@ -277,22 +273,6 @@ func (c *client) envsForRepo(remote string) []string {
 	envs := c.gitEnvsByRepo[remote]
 	return append(envs, c.gitEnvs...)
 }
-
-// func includePasswordRemote(remote, username, password string) (string, error) {
-// 	if username == "" || password == "" {
-// 		return remote, nil
-// 	}
-// 	u, err := parseGitURL(remote)
-// 	if err != nil {
-// 		return "", fmt.Errorf("failed to include password: %v", err)
-// 	}
-// 	decodedPassword, err := base64.StdEncoding.DecodeString(password)
-// 	if err != nil {
-// 		return "", fmt.Errorf("failed to decode password: %v", err)
-// 	}
-// 	u.User = url.UserPassword(username, string(decodedPassword))
-// 	return u.String(), nil
-// }
 
 func runGitCommand(ctx context.Context, execPath, dir string, envs []string, args ...string) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, execPath, args...)
