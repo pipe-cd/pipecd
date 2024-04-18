@@ -64,6 +64,23 @@ You can use pipectl to add and sync applications, wait for a deployment status.
     pipectl version
     ```
 
+### [aqua](https://aquaproj.github.io/)
+
+1. Add pipectl to `aqua.yaml`. (If you want to select a version, use `aqua g -i -s pipe-cd/pipecd/pipectl`)
+    ```console
+    aqua g -i pipe-cd/pipecd/pipectl
+    ```
+
+2. Install pipectl.
+    ```console
+    aqua i
+    ```
+
+3. Test to ensure the version you installed is up-to-date.
+    ```console
+    pipectl version
+    ```
+
 ### Docker
 We are storing every version of docker image for pipectl on Google Cloud Container Registry.
 Available versions are [here](https://github.com/pipe-cd/pipecd/releases).
