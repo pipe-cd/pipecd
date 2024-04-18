@@ -11,7 +11,9 @@ You can use pipectl to add and sync applications, wait for a deployment status.
 
 ## Installation
 
-### Binary
+The Pipectl command-line tool can be installed using one of the following methods:
+
+### Directly download and set up binary
 
 1. Download the appropriate version for your platform from [PipeCD Releases](https://github.com/pipe-cd/pipecd/releases).
 
@@ -41,7 +43,7 @@ You can use pipectl to add and sync applications, wait for a deployment status.
     pipectl version
     ```
 
-### [Asdf](https://asdf-vm.com/)
+### Using [Asdf](https://asdf-vm.com/)
 
 1. Add pipectl plugin to asdf. (If you have not yet `asdf add plugin add pipectl`.)
     ```console
@@ -64,7 +66,7 @@ You can use pipectl to add and sync applications, wait for a deployment status.
     pipectl version
     ```
 
-### [aqua](https://aquaproj.github.io/)
+### Using [Aqua](https://aquaproj.github.io/)
 
 1. Add pipectl to `aqua.yaml`. (If you want to select a version, use `aqua g -i -s pipe-cd/pipecd/pipectl`)
     ```console
@@ -81,7 +83,8 @@ You can use pipectl to add and sync applications, wait for a deployment status.
     pipectl version
     ```
 
-### Docker
+### Run in Docker container
+
 We are storing every version of docker image for pipectl on Google Cloud Container Registry.
 Available versions are [here](https://github.com/pipe-cd/pipecd/releases).
 
