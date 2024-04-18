@@ -32,34 +32,17 @@ func TestDiff(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, new)
 
-	// Expect to have diff.
-	diff, err := Diff(old, new)
-	require.NoError(t, err)
-	require.NotEmpty(t, diff)
-
-	// Expect no diff for the same manifest.
-	diff, err = Diff(old, old)
-	require.NoError(t, err)
-	require.NotEmpty(t, diff)
-}
-
-func TestDiffResult_NoChange(t *testing.T) {
-	t.Parallel()
-
-	old, err := LoadECSManifest("testdata/", "old_taskdef.yaml", "old_servicedef.yaml")
-	require.NoError(t, err)
-	require.NotEmpty(t, old)
-
-	new, err := LoadECSManifest("testdata/", "new_taskdef.yaml", "new_servicedef.yaml")
-	require.NoError(t, err)
-	require.NotEmpty(t, new)
-
-	diff, err := Diff(old, new)
-	require.NoError(t, err)
-
 	// Expect to have change.
+	diff, err := Diff(old, new)
+	require.NoError(t, err)
 	noChange := diff.NoChange()
 	require.False(t, noChange)
+
+	// Expect no change.
+	diff, err = Diff(old, old)
+	require.NoError(t, err)
+	noChange = diff.NoChange()
+	require.True(t, noChange)
 }
 
 // TODO: Convert each attribute in render result to lowerCamelCase
@@ -131,7 +114,7 @@ func TestDiffByCommand(t *testing.T) {
 		expectedErr   bool
 	}{
 		{
-			name:          "no command",
+			name:          "invalid command",
 			command:       "non-existent-diff",
 			oldTaskDef:    "old_taskdef.yaml",
 			oldServiceDef: "old_servicedef.yaml",
