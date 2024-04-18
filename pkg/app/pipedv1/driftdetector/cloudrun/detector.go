@@ -267,16 +267,19 @@ func (d *detector) loadHeadServiceManifest(app *model.Application, repo git.Repo
 			appDir = filepath.Join(repoDir, app.GitPath.Path)
 		}
 
+		var templProcessors []sourceprocesser.SourceTemplateProcessor
 		// Decrypting secrets to manifests.
 		if encryptionUsed {
-			if err := sourceprocesser.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
-				return provider.ServiceManifest{}, fmt.Errorf("failed to decrypt secrets (%w)", err)
-			}
+			templProcessors = append(templProcessors, sourceprocesser.NewSecretDecrypterProcessor(gds.Encryption, d.secretDecrypter))
 		}
 		// Then attaching configurated files to manifests.
 		if attachmentUsed {
-			if err := sourceprocesser.AttachData(appDir, *gds.Attachment); err != nil {
-				return provider.ServiceManifest{}, fmt.Errorf("failed to attach files (%w)", err)
+			templProcessors = append(templProcessors, sourceprocesser.NewAttachmentProcessor(gds.Attachment))
+		}
+		if len(templProcessors) > 0 {
+			sp := sourceprocesser.NewSourceProcessor(appDir, templProcessors...)
+			if err := sp.Process(); err != nil {
+				return provider.ServiceManifest{}, fmt.Errorf("failed to process source files: %w", err)
 			}
 		}
 
