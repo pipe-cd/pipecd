@@ -44,16 +44,8 @@ func Diff(old, new ECSManifest, opts ...diff.Option) (*DiffResult, error) {
 	if key == nil {
 		return nil, fmt.Errorf("service name is required in the old service definition")
 	}
-	old_u, err := old.Unstructured()
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert old service definition to unstructured: %w", err)
-	}
-	new_u, err := new.Unstructured()
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert new service definition to unstructured: %w", err)
-	}
 
-	d, err := diff.DiffUnstructureds(old_u, new_u, *key, opts...)
+	d, err := diff.DiffStructs(old, new, *key, opts...)
 	if err != nil {
 		return nil, err
 	}

@@ -16,45 +16,12 @@ package ecs
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"sigs.k8s.io/yaml"
 )
 
 // ECSManifest is defined just for wrapping TaskDefinition and Service.
 type ECSManifest struct {
 	TaskDefinition    *types.TaskDefinition
 	ServiceDefinition *types.Service
-}
-
-// Unstructured returns the unstructured representation of the ECSManifest.
-func (m ECSManifest) Unstructured() (unstructured.Unstructured, error) {
-	manifest := struct {
-		TaskDefinition    *types.TaskDefinition
-		ServiceDefinition *types.Service
-		ApiVersion        string `json:"apiVersion"`
-		Kind              string `json:"kind"`
-	}{
-		TaskDefinition:    m.TaskDefinition,
-		ServiceDefinition: m.ServiceDefinition,
-		// Append ApiVersion and Kind here just to avoid error
-		// when unmarshalling the yaml to unstructured.Unstructured.
-		// These do not affect the manifest's content.
-		ApiVersion: "__pipecd.dev/v1beta1__",
-		Kind:       "__PipeCDECSManifes__",
-	}
-
-	y, err := yaml.Marshal(manifest)
-	if err != nil {
-		return unstructured.Unstructured{}, err
-	}
-
-	var unstructuredManifest unstructured.Unstructured
-	err = yaml.Unmarshal(y, &unstructuredManifest)
-	if err != nil {
-		return unstructured.Unstructured{}, err
-	}
-
-	return unstructuredManifest, nil
 }
 
 // LoadECSManifest loads the taskDefinition and serviceDefinition from the given files.
