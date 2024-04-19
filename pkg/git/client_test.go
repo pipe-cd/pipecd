@@ -134,7 +134,7 @@ func (f *faker) makeRepo(org, repo string) error {
 	}
 
 	err := commander.runGitCommands([][]string{
-		{"init"},
+		{"init", "--initial-branch", "master"},
 	})
 	if err != nil {
 		return err
