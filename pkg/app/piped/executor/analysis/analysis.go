@@ -112,7 +112,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		for {
 			select {
 			case <-ticker.C:
-				if !e.checkSkipped(ctx) {
+				if !e.checkSkippedFromCmd(ctx) {
 					continue
 				}
 				status = model.StageStatus_STAGE_SKIPPED
@@ -339,7 +339,7 @@ func (e *Executor) buildAppArgs(customArgs map[string]string) argsTemplate {
 	return args
 }
 
-func (e *Executor) checkSkipped(ctx context.Context) bool {
+func (e *Executor) checkSkippedFromCmd(ctx context.Context) bool {
 	var skipCmd *model.ReportableCommand
 	commands := e.CommandLister.ListCommands()
 
