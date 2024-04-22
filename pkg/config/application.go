@@ -404,6 +404,13 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// SkipStageOptions contains all configurable values for skipping a stage.
+type SkipStageOptions struct {
+	CommitMessagePrefix string `json:"commitMessagePrefix,omitempty"`
+	// CommitMessageSuffix string
+	Paths []string `json:"paths,omitempty"`
+}
+
 // WaitStageOptions contains all configurable values for a WAIT stage.
 type WaitStageOptions struct {
 	Duration Duration `json:"duration"`
@@ -413,9 +420,10 @@ type WaitStageOptions struct {
 type WaitApprovalStageOptions struct {
 	// The maximum length of time to wait before giving up.
 	// Defaults to 6h.
-	Timeout        Duration `json:"timeout" default:"6h"`
-	Approvers      []string `json:"approvers"`
-	MinApproverNum int      `json:"minApproverNum" default:"1"`
+	Timeout          Duration         `json:"timeout" default:"6h"`
+	Approvers        []string         `json:"approvers"`
+	MinApproverNum   int              `json:"minApproverNum" default:"1"`
+	SkipStageOptions SkipStageOptions `json:"skipOn,omitempty"`
 }
 
 func (w *WaitApprovalStageOptions) Validate() error {
@@ -448,6 +456,7 @@ type AnalysisStageOptions struct {
 	Metrics          []TemplatableAnalysisMetrics `json:"metrics,omitempty"`
 	Logs             []TemplatableAnalysisLog     `json:"logs,omitempty"`
 	HTTPS            []TemplatableAnalysisHTTP    `json:"https,omitempty"`
+	SkipStageOptions SkipStageOptions             `json:"skipOn,omitempty"`
 }
 
 func (a *AnalysisStageOptions) Validate() error {
