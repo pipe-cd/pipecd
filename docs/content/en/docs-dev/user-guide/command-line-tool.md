@@ -83,6 +83,24 @@ The Pipectl command-line tool can be installed using one of the following method
     pipectl version
     ```
 
+### Using [Homebrew](https://brew.sh/)
+
+1. Add the `pipe-cd/tap` and fetch new formulae from GitHub.
+    ```console
+    brew tap pipe-cd/tap
+    brew update
+    ```
+
+2. Install pipectl.
+    ```console
+    brew install pipectl
+    ```
+
+3. Test to ensure the version you installed is up-to-date.
+    ```console
+    pipectl version
+    ```
+
 ### Run in Docker container
 
 We are storing every version of docker image for pipectl on Google Cloud Container Registry.
@@ -102,7 +120,7 @@ There are two kinds of key role: `READ_ONLY` and `READ_WRITE`. Depending on the 
 Adding a new API key from Settings tab
 </p>
 
-When executing a command of pipectl you have to specify either a string of API key via `--api-key` flag or a path to the API key file via `--api-key-file` flag. 
+When executing a command of pipectl you have to specify either a string of API key via `--api-key` flag or a path to the API key file via `--api-key-file` flag.
 
 ## Usage
 
@@ -338,7 +356,7 @@ Note: The docs for pipectl available command is maybe outdated, we suggest users
 Generate an app.pipecd.yaml interactively:
 
 ``` console
-$ pipectl init 
+$ pipectl init
 Which platform? Enter the number [0]Kubernetes [1]ECS: 1
 Name of the application: myApp
 ...
