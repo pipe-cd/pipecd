@@ -11,7 +11,9 @@ You can use pipectl to add and sync applications, wait for a deployment status.
 
 ## Installation
 
-### Binary
+The Pipectl command-line tool can be installed using one of the following methods:
+
+### Directly download and set up binary
 
 1. Download the appropriate version for your platform from [PipeCD Releases](https://github.com/pipe-cd/pipecd/releases).
 
@@ -41,7 +43,7 @@ You can use pipectl to add and sync applications, wait for a deployment status.
     pipectl version
     ```
 
-### [Asdf](https://asdf-vm.com/)
+### Using [Asdf](https://asdf-vm.com/)
 
 1. Add pipectl plugin to asdf. (If you have not yet `asdf add plugin add pipectl`.)
     ```console
@@ -64,7 +66,43 @@ You can use pipectl to add and sync applications, wait for a deployment status.
     pipectl version
     ```
 
-### Docker
+### Using [Aqua](https://aquaproj.github.io/)
+
+1. Add pipectl to `aqua.yaml`. (If you want to select a version, use `aqua g -i -s pipe-cd/pipecd/pipectl`)
+    ```console
+    aqua g -i pipe-cd/pipecd/pipectl
+    ```
+
+2. Install pipectl.
+    ```console
+    aqua i
+    ```
+
+3. Test to ensure the version you installed is up-to-date.
+    ```console
+    pipectl version
+    ```
+
+### Using [Homebrew](https://brew.sh/)
+
+1. Add the `pipe-cd/tap` and fetch new formulae from GitHub.
+    ```console
+    brew tap pipe-cd/tap
+    brew update
+    ```
+
+2. Install pipectl.
+    ```console
+    brew install pipectl
+    ```
+
+3. Test to ensure the version you installed is up-to-date.
+    ```console
+    pipectl version
+    ```
+
+### Run in Docker container
+
 We are storing every version of docker image for pipectl on Google Cloud Container Registry.
 Available versions are [here](https://github.com/pipe-cd/pipecd/releases).
 
@@ -82,7 +120,7 @@ There are two kinds of key role: `READ_ONLY` and `READ_WRITE`. Depending on the 
 Adding a new API key from Settings tab
 </p>
 
-When executing a command of pipectl you have to specify either a string of API key via `--api-key` flag or a path to the API key file via `--api-key-file` flag. 
+When executing a command of pipectl you have to specify either a string of API key via `--api-key` flag or a path to the API key file via `--api-key-file` flag.
 
 ## Usage
 
@@ -318,7 +356,7 @@ Note: The docs for pipectl available command is maybe outdated, we suggest users
 Generate an app.pipecd.yaml interactively:
 
 ``` console
-$ pipectl init 
+$ pipectl init
 Which platform? Enter the number [0]Kubernetes [1]ECS: 1
 Name of the application: myApp
 ...

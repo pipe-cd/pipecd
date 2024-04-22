@@ -45,6 +45,18 @@ sudo mv ./pipectl /usr/local/bin/pipectl
 asdf plugin add pipectl && asdf install pipectl latest && asdf global pipectl latest
 ```
 
+##### Method 3: [aqua](https://aquaproj.github.io/) Supported Installation
+
+```console
+aqua g -i pipe-cd/pipecd/pipectl && aqua i
+```
+
+##### Method 4: [Homebrew](https://brew.sh/) Supported Installation
+
+```console
+brew install pipe-cd/tap/pipectl
+```
+
 #### 1.2. Installing PipeCD's components
 
 We can simply use __pipectl quickstart__ command to start the PipeCD installation process and follow the instruction

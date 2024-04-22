@@ -97,7 +97,10 @@ test/integration:
 
 .PHONY: run/pipecd
 run/pipecd: $(eval TIMESTAMP = $(shell date +%s))
-run/pipecd: BUILD_VERSION ?= "$(shell git describe --tags --always --abbrev=7)-$(TIMESTAMP)"
+# NOTE: previously `git describe --tags` was used to determine the version for running locally
+# However, this does not work on a forked branch, so the decision was made to hardcode at version 0.0.0
+# see: https://github.com/pipe-cd/pipecd/issues/4845
+run/pipecd: BUILD_VERSION ?= "v0.0.0-$(shell git rev-parse --short HEAD)-$(TIMESTAMP)"
 run/pipecd: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
 run/pipecd: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
 run/pipecd: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
