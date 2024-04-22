@@ -51,6 +51,12 @@ asdf plugin add pipectl && asdf install pipectl latest && asdf global pipectl la
 aqua g -i pipe-cd/pipecd/pipectl && aqua i
 ```
 
+##### Method 4: [Homebrew](https://brew.sh/) Supported Installation
+
+```console
+brew install pipe-cd/tap/pipectl
+```
+
 #### 1.2. Installing PipeCD's components
 
 We can simply use __pipectl quickstart__ command to start the PipeCD installation process and follow the instruction
