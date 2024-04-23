@@ -77,6 +77,7 @@ func (d *differ) initIgnoredPaths(key string) {
 }
 
 // DiffUnstructureds calculates the diff between two unstructured objects.
+// If you compare non-k8s manifests, use DiffStructureds instead.
 func DiffUnstructureds(x, y unstructured.Unstructured, key string, opts ...Option) (*Result, error) {
 	var (
 		path = []PathStep{}
@@ -99,6 +100,7 @@ func DiffUnstructureds(x, y unstructured.Unstructured, key string, opts ...Optio
 }
 
 // DiffStructureds calulates the diff between non-k8s manifests.
+// If you compare k8s manifests, use DiffUnstructureds instead.
 func DiffStructureds(x, y interface{}, opts ...Option) (*Result, error) {
 	map_x := map[string]interface{}{}
 	map_y := map[string]interface{}{}
