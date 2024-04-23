@@ -37,12 +37,7 @@ func (d *DiffResult) NoChange() bool {
 }
 
 func Diff(old, new ECSManifest, opts ...diff.Option) (*DiffResult, error) {
-	key := old.ServiceDefinition.ServiceName
-	if key == nil {
-		return nil, fmt.Errorf("service name is required in the old service definition")
-	}
-
-	d, err := diff.DiffStructs(old, new, *key, opts...)
+	d, err := diff.DiffStructs(old, new, opts...)
 	if err != nil {
 		return nil, err
 	}

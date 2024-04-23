@@ -100,7 +100,7 @@ func DiffUnstructureds(x, y unstructured.Unstructured, key string, opts ...Optio
 
 // DiffStructs calulates the diff between two struct objects,
 // which are not k8s manifests.
-func DiffStructs(x, y interface{}, key string, opts ...Option) (*Result, error) {
+func DiffStructs(x, y interface{}, opts ...Option) (*Result, error) {
 	map_x := map[string]interface{}{}
 	map_y := map[string]interface{}{}
 	yml_x, err := yaml.Marshal(x)
@@ -123,8 +123,6 @@ func DiffStructs(x, y interface{}, key string, opts ...Option) (*Result, error) 
 	for _, opt := range opts {
 		opt(d)
 	}
-
-	d.initIgnoredPaths(key)
 
 	if err := d.diff(path, vx, vy); err != nil {
 		return nil, err
