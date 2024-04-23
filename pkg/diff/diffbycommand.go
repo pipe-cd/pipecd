@@ -34,11 +34,6 @@ func DiffByCommand(command string, old, new interface{}) ([]byte, error) {
 		return nil, err
 	}
 
-	return DiffBytesByCommand(command, oldBytes, newBytes)
-}
-
-// DiffBytesByCommand runs the command to compare the given bytes.
-func DiffBytesByCommand(command string, oldBytes, newBytes []byte) ([]byte, error) {
 	oldFile, err := os.CreateTemp("", "old")
 	if err != nil {
 		return nil, err
