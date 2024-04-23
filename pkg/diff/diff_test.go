@@ -356,7 +356,7 @@ func TestDiffStructs(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			diff, err := DiffStructs(tc.old, tc.new)
+			diff, err := DiffStructureds(tc.old, tc.new)
 			require.NoError(t, err)
 			assert.Equal(t, tc.diffNum, diff.NumNodes())
 		})

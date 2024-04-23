@@ -37,7 +37,7 @@ func (d *DiffResult) NoChange() bool {
 }
 
 func Diff(old, new ECSManifest, opts ...diff.Option) (*DiffResult, error) {
-	d, err := diff.DiffStructs(old, new, opts...)
+	d, err := diff.DiffStructureds(old, new, opts...)
 	if err != nil {
 		return nil, err
 	}

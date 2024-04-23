@@ -98,9 +98,8 @@ func DiffUnstructureds(x, y unstructured.Unstructured, key string, opts ...Optio
 	return d.result, nil
 }
 
-// DiffStructs calulates the diff between two struct objects,
-// which are not k8s manifests.
-func DiffStructs(x, y interface{}, opts ...Option) (*Result, error) {
+// DiffStructureds calulates the diff between non-k8s manifests.
+func DiffStructureds(x, y interface{}, opts ...Option) (*Result, error) {
 	map_x := map[string]interface{}{}
 	map_y := map[string]interface{}{}
 	yml_x, err := yaml.Marshal(x)
