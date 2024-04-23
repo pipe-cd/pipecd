@@ -441,13 +441,13 @@ func (c *CustomSyncOptions) Validate() error {
 // AnalysisStageOptions contains all configurable values for a K8S_ANALYSIS stage.
 type AnalysisStageOptions struct {
 	// How long the analysis process should be executed.
-	Duration Duration `json:"duration"`
+	Duration Duration `json:"duration,omitempty"`
 	// TODO: Consider about how to handle a pod restart
 	// possible count of pod restarting
-	RestartThreshold int                          `json:"restartThreshold"`
-	Metrics          []TemplatableAnalysisMetrics `json:"metrics"`
-	Logs             []TemplatableAnalysisLog     `json:"logs"`
-	HTTPS            []TemplatableAnalysisHTTP    `json:"https"`
+	RestartThreshold int                          `json:"restartThreshold,omitempty"`
+	Metrics          []TemplatableAnalysisMetrics `json:"metrics,omitempty"`
+	Logs             []TemplatableAnalysisLog     `json:"logs,omitempty"`
+	HTTPS            []TemplatableAnalysisHTTP    `json:"https,omitempty"`
 }
 
 func (a *AnalysisStageOptions) Validate() error {
@@ -546,6 +546,9 @@ type SecretEncryption struct {
 }
 
 func (e *SecretEncryption) Validate() error {
+	if len(e.DecryptionTargets) == 0 {
+		return fmt.Errorf("derecryptionTargets must not be empty")
+	}
 	for k, v := range e.EncryptedSecrets {
 		if k == "" {
 			return fmt.Errorf("key field in encryptedSecrets must not be empty")
@@ -564,8 +567,11 @@ type Attachment struct {
 	Targets []string `json:"targets"`
 }
 
-func (e *Attachment) Validate() error {
-	for k, v := range e.Sources {
+func (a *Attachment) Validate() error {
+	if len(a.Targets) == 0 {
+		return fmt.Errorf("attachment targets must not be empty")
+	}
+	for k, v := range a.Sources {
 		if k == "" {
 			return fmt.Errorf("key field in sources must not be empty")
 		}

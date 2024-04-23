@@ -44,39 +44,6 @@ func TestAttachData(t *testing.T) {
 		expectedErrorPrefix string
 	}{
 		{
-			name: "target not found",
-			fileData: map[string]string{
-				"config.yaml": "config-data",
-			},
-			attachConfig: config.Attachment{
-				Sources: map[string]string{
-					"config": "config.yaml",
-				},
-				Targets: []string{
-					"not-found-resource.yaml",
-				},
-			},
-			expectedErrorPrefix: "failed to parse attaching target not-found-resource.yaml",
-		},
-		{
-			name: "the target is not using any attachment",
-			fileData: map[string]string{
-				"config.yaml":   "config-data",
-				"resource.yaml": "resource-data",
-			},
-			attachConfig: config.Attachment{
-				Sources: map[string]string{
-					"config": "config.yaml",
-				},
-				Targets: []string{
-					"resource.yaml",
-				},
-			},
-			expected: map[string]string{
-				"resource.yaml": "resource-data",
-			},
-		},
-		{
 			name: "single target",
 			fileData: map[string]string{
 				"config.yaml":   "config-data",
@@ -91,25 +58,7 @@ func TestAttachData(t *testing.T) {
 				},
 			},
 			expected: map[string]string{
-				"resource.yaml": "echo config-data",
-			},
-		},
-		{
-			name: "sprig function",
-			fileData: map[string]string{
-				"config.yaml":   "config-data",
-				"resource.yaml": "echo {{ .attachment.config | b64enc }}",
-			},
-			attachConfig: config.Attachment{
-				Sources: map[string]string{
-					"config": "config.yaml",
-				},
-				Targets: []string{
-					"resource.yaml",
-				},
-			},
-			expected: map[string]string{
-				"resource.yaml": "echo Y29uZmlnLWRhdGE=", // base64 encode of "config-data"
+				"config": "config-data",
 			},
 		},
 		{
@@ -131,8 +80,8 @@ func TestAttachData(t *testing.T) {
 				},
 			},
 			expected: map[string]string{
-				"resource1.yaml": "echo Y29uZmlnLWRhdGE=", // base64 encode of "config-data"
-				"resource2.yaml": "echo config-data-2",
+				"config1": "config-data",
+				"config2": "config-data-2",
 			},
 		},
 		{
@@ -150,24 +99,8 @@ func TestAttachData(t *testing.T) {
 				},
 			},
 			expected: map[string]string{
-				"resource.yaml": "echo config-data",
+				"config": "config-data",
 			},
-		},
-		{
-			name: "target is using a nonexistent attachment",
-			fileData: map[string]string{
-				"config.yaml":   "config-data",
-				"resource.yaml": "echo {{ .attachment.config }} && echo {{ .attachment.nonexistent }}",
-			},
-			attachConfig: config.Attachment{
-				Sources: map[string]string{
-					"config": "config.yaml",
-				},
-				Targets: []string{
-					"resource.yaml",
-				},
-			},
-			expectedErrorPrefix: "failed to render attaching target resource.yaml",
 		},
 	}
 
@@ -185,7 +118,8 @@ func TestAttachData(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			err = AttachData(appDir, tc.attachConfig)
+			atp := NewAttachmentProcessor(&tc.attachConfig)
+			data, err := atp.BuildTemplateData(appDir)
 			if tc.expectedErrorPrefix != "" {
 				require.Error(t, err)
 				assert.True(t, strings.HasPrefix(err.Error(), tc.expectedErrorPrefix), fmt.Sprintf("Error: %v", err))
@@ -193,12 +127,7 @@ func TestAttachData(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			for p, c := range tc.expected {
-				p = filepath.Join(appDir, p)
-				data, err := os.ReadFile(p)
-				require.NoError(t, err)
-				assert.Equal(t, c, string(data))
-			}
+			assert.Equal(t, tc.expected, data)
 		})
 	}
 }
