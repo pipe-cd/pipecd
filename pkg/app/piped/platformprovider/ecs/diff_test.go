@@ -21,16 +21,30 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func loadManifests(appDir, taskDefFile, serviceDefFile string) (ECSManifest, error) {
+	taskDef, err := LoadTaskDefinition(appDir, taskDefFile)
+	if err != nil {
+		return ECSManifest{}, err
+	}
+	serviceDef, err := LoadServiceDefinition(appDir, serviceDefFile)
+	if err != nil {
+		return ECSManifest{}, err
+	}
+
+	return ECSManifest{
+		TaskDefinition:    &taskDef,
+		ServiceDefinition: &serviceDef,
+	}, nil
+}
+
 func TestDiff(t *testing.T) {
 	t.Parallel()
 
-	old, err := LoadECSManifest("testdata/", "old_taskdef.yaml", "old_servicedef.yaml")
+	old, err := loadManifests("testdata/", "old_taskdef.yaml", "old_servicedef.yaml")
 	require.NoError(t, err)
-	require.NotEmpty(t, old)
 
-	new, err := LoadECSManifest("testdata/", "new_taskdef.yaml", "new_servicedef.yaml")
+	new, err := loadManifests("testdata/", "new_taskdef.yaml", "new_servicedef.yaml")
 	require.NoError(t, err)
-	require.NotEmpty(t, new)
 
 	// Expect to have change.
 	diff, err := Diff(old, new)
@@ -46,10 +60,10 @@ func TestDiff(t *testing.T) {
 }
 
 func TestDiffResult_Render(t *testing.T) {
-	old, err := LoadECSManifest("testdata/", "old_taskdef.yaml", "old_servicedef.yaml")
+	old, err := loadManifests("testdata/", "old_taskdef.yaml", "old_servicedef.yaml")
 	require.NoError(t, err)
 
-	new, err := LoadECSManifest("testdata/", "new_taskdef.yaml", "new_servicedef.yaml")
+	new, err := loadManifests("testdata/", "new_taskdef.yaml", "new_servicedef.yaml")
 	require.NoError(t, err)
 
 	result, err := Diff(old, new)
@@ -170,10 +184,10 @@ func TestDiffByCommand(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			old, err := LoadECSManifest("testdata/", tc.oldTaskDef, tc.oldServiceDef)
+			old, err := loadManifests("testdata/", tc.oldTaskDef, tc.oldServiceDef)
 			require.NoError(t, err)
 
-			new, err := LoadECSManifest("testdata/", tc.newTaskDef, tc.newServiceDef)
+			new, err := loadManifests("testdata/", tc.newTaskDef, tc.newServiceDef)
 			require.NoError(t, err)
 
 			got, err := diffByCommand(tc.command, old, new)

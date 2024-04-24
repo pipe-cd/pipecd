@@ -116,9 +116,18 @@ func (b *builder) loadECSManifest(ctx context.Context, app model.Application, ds
 		return provider.ECSManifest{}, fmt.Errorf("malformed application configuration file")
 	}
 
-	manifest, err = provider.LoadECSManifest(ds.AppDir, appCfg.Input.TaskDefinitionFile, appCfg.Input.ServiceDefinitionFile)
+	taskDef, err := provider.LoadTaskDefinition(ds.AppDir, appCfg.Input.TaskDefinitionFile)
 	if err != nil {
 		return provider.ECSManifest{}, err
+	}
+	serviceDef, err := provider.LoadServiceDefinition(ds.AppDir, appCfg.Input.ServiceDefinitionFile)
+	if err != nil {
+		return provider.ECSManifest{}, err
+	}
+
+	manifest = provider.ECSManifest{
+		TaskDefinition:    &taskDef,
+		ServiceDefinition: &serviceDef,
 	}
 
 	cache.Put(commit, manifest)

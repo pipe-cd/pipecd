@@ -23,20 +23,3 @@ type ECSManifest struct {
 	TaskDefinition    *types.TaskDefinition
 	ServiceDefinition *types.Service
 }
-
-// LoadECSManifest loads the taskDefinition and serviceDefinition from the given files.
-func LoadECSManifest(appDir, taskDefFilename, serviceDefFilename string) (ECSManifest, error) {
-	service, err := LoadServiceDefinition(appDir, serviceDefFilename)
-	if err != nil {
-		return ECSManifest{}, err
-	}
-	task, err := LoadTaskDefinition(appDir, taskDefFilename)
-	if err != nil {
-		return ECSManifest{}, err
-	}
-
-	return ECSManifest{
-		TaskDefinition:    &task,
-		ServiceDefinition: &service,
-	}, nil
-}
