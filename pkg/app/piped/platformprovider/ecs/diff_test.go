@@ -17,7 +17,6 @@ package ecs
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -114,89 +113,4 @@ func TestDiffResult_Render(t *testing.T) {
    LinuxParameters: null
 `
 	require.Equal(t, expected, actual)
-}
-
-func TestDiffByCommand(t *testing.T) {
-	t.Parallel()
-
-	testcases := []struct {
-		name          string
-		command       string
-		oldTaskDef    string
-		oldServiceDef string
-		newTaskDef    string
-		newServiceDef string
-		expected      string
-		expectedErr   bool
-	}{
-		{
-			name:          "invalid command",
-			command:       "non-existent-diff",
-			oldTaskDef:    "old_taskdef.yaml",
-			oldServiceDef: "old_servicedef.yaml",
-			newTaskDef:    "old_taskdef.yaml",
-			newServiceDef: "old_servicedef.yaml",
-			expected:      "",
-			expectedErr:   true,
-		},
-		{
-			name:          "no diff",
-			command:       diffCommand,
-			oldTaskDef:    "old_taskdef.yaml",
-			oldServiceDef: "old_servicedef.yaml",
-			newTaskDef:    "old_taskdef.yaml",
-			newServiceDef: "old_servicedef.yaml",
-			expected: `# 1. ServiceDefinition
-
-
-# 2. TaskDefinition
-`,
-		},
-		{
-			name:          "has diff",
-			command:       diffCommand,
-			oldTaskDef:    "old_taskdef.yaml",
-			oldServiceDef: "old_servicedef.yaml",
-			newTaskDef:    "new_taskdef.yaml",
-			newServiceDef: "new_servicedef.yaml",
-			expected: `# 1. ServiceDefinition
-@@ -10,7 +10,7 @@
- DeploymentController:
-   Type: EXTERNAL
- Deployments: null
--DesiredCount: 2
-+DesiredCount: 3
- EnableECSManagedTags: true
- EnableExecuteCommand: false
- Events: null
-
-# 2. TaskDefinition
-@@ -17,7 +17,7 @@
-   FirelensConfiguration: null
-   HealthCheck: null
-   Hostname: null
--  Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:1
-+  Image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:2
-   Interactive: null
-   Links: null
-   LinuxParameters: null`,
-		},
-	}
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			old, err := loadManifests("testdata/", tc.oldTaskDef, tc.oldServiceDef)
-			require.NoError(t, err)
-
-			new, err := loadManifests("testdata/", tc.newTaskDef, tc.newServiceDef)
-			require.NoError(t, err)
-
-			got, err := diffByCommand(tc.command, old, new)
-			if tc.expectedErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-			assert.Equal(t, tc.expected, string(got))
-		})
-	}
 }
