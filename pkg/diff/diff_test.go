@@ -272,7 +272,7 @@ func loadUnstructureds(path string) ([]unstructured.Unstructured, error) {
 	return out, nil
 }
 
-func TestDiffStructs(t *testing.T) {
+func TestDiffStructureds(t *testing.T) {
 	type SubStruct struct {
 		FieldSub string
 	}
