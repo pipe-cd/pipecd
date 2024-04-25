@@ -20,17 +20,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func loadManifests(appDir, taskDefFile, serviceDefFile string) (ECSManifest, error) {
+func loadManifests(appDir, taskDefFile, serviceDefFile string) (ECSManifests, error) {
 	taskDef, err := LoadTaskDefinition(appDir, taskDefFile)
 	if err != nil {
-		return ECSManifest{}, err
+		return ECSManifests{}, err
 	}
 	serviceDef, err := LoadServiceDefinition(appDir, serviceDefFile)
 	if err != nil {
-		return ECSManifest{}, err
+		return ECSManifests{}, err
 	}
 
-	return ECSManifest{
+	return ECSManifests{
 		TaskDefinition:    &taskDef,
 		ServiceDefinition: &serviceDef,
 	}, nil

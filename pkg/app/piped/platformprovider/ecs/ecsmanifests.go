@@ -18,8 +18,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 )
 
-// ECSManifest is defined just for wrapping TaskDefinition and Service.
-type ECSManifest struct {
+// ECSManifests is configurations of ECS task definition and service.
+type ECSManifests struct {
 	TaskDefinition    *types.TaskDefinition
 	ServiceDefinition *types.Service
 }

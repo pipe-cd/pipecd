@@ -28,15 +28,15 @@ const (
 
 type DiffResult struct {
 	Diff *diff.Result
-	Old  ECSManifest
-	New  ECSManifest
+	Old  ECSManifests
+	New  ECSManifests
 }
 
 func (d *DiffResult) NoChange() bool {
 	return len(d.Diff.Nodes()) == 0
 }
 
-func Diff(old, new ECSManifest, opts ...diff.Option) (*DiffResult, error) {
+func Diff(old, new ECSManifests, opts ...diff.Option) (*DiffResult, error) {
 	d, err := diff.DiffStructureds(old, new, opts...)
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (d *DiffResult) Render(opt DiffRenderOptions) string {
 	return b.String()
 }
 
-func diffByCommand(command string, old, new ECSManifest) ([]byte, error) {
+func diffByCommand(command string, old, new ECSManifests) ([]byte, error) {
 	taskDiff, err := diff.DiffByCommand(command, old.TaskDefinition, new.TaskDefinition)
 	if err != nil {
 		return nil, err

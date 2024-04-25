@@ -23,39 +23,39 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/cache"
 )
 
-type ECSManifestCache struct {
+type ECSManifestsCache struct {
 	AppID  string
 	Cache  cache.Cache
 	Logger *zap.Logger
 }
 
-func (c ECSManifestCache) Get(commit string) (ECSManifest, bool) {
-	key := ecsManifestCacheKey(c.AppID, commit)
+func (c ECSManifestsCache) Get(commit string) (ECSManifests, bool) {
+	key := ecsManifestsCacheKey(c.AppID, commit)
 	item, err := c.Cache.Get(key)
 	if err == nil {
-		return item.(ECSManifest), true
+		return item.(ECSManifests), true
 	}
 
 	if errors.Is(err, cache.ErrNotFound) {
-		c.Logger.Info("ecs manifest were not found in cache",
+		c.Logger.Info("ecs manifests were not found in cache",
 			zap.String("app-id", c.AppID),
 			zap.String("commit-hash", commit),
 		)
-		return ECSManifest{}, false
+		return ECSManifests{}, false
 	}
 
-	c.Logger.Error("failed while retrieving ecs manifest from cache",
+	c.Logger.Error("failed while retrieving ecs manifests from cache",
 		zap.String("app-id", c.AppID),
 		zap.String("commit-hash", commit),
 		zap.Error(err),
 	)
-	return ECSManifest{}, false
+	return ECSManifests{}, false
 }
 
-func (c ECSManifestCache) Put(commit string, sm ECSManifest) {
-	key := ecsManifestCacheKey(c.AppID, commit)
+func (c ECSManifestsCache) Put(commit string, sm ECSManifests) {
+	key := ecsManifestsCacheKey(c.AppID, commit)
 	if err := c.Cache.Put(key, sm); err != nil {
-		c.Logger.Error("failed while putting ecs manifest from cache",
+		c.Logger.Error("failed while putting ecs manifests from cache",
 			zap.String("app-id", c.AppID),
 			zap.String("commit-hash", commit),
 			zap.Error(err),
@@ -63,6 +63,6 @@ func (c ECSManifestCache) Put(commit string, sm ECSManifest) {
 	}
 }
 
-func ecsManifestCacheKey(appID, commit string) string {
+func ecsManifestsCacheKey(appID, commit string) string {
 	return fmt.Sprintf("%s/%s", appID, commit)
 }
