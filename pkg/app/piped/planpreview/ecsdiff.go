@@ -81,16 +81,14 @@ func (b *builder) ecsdiff(
 		}, nil
 	}
 
-	summary := fmt.Sprintf("%d changes were detected", len(result.Diff.Nodes()))
 	details := result.Render(provider.DiffRenderOptions{
 		UseDiffCommand: true,
 	})
 	fmt.Fprintf(buf, "--- Last Deploy\n+++ Head Commit\n\n%s\n", details)
 
 	return &diffResult{
-		summary: summary,
+		summary: fmt.Sprintf("%d changes were detected", len(result.Diff.Nodes())),
 	}, nil
-
 }
 
 func (b *builder) loadECSManifests(ctx context.Context, app model.Application, dsp deploysource.Provider) (provider.ECSManifests, error) {
