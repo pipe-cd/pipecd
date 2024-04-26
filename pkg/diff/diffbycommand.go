@@ -23,8 +23,8 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-// DiffByCommand converts the given objects into yaml and then runs the command to compare them.
-func DiffByCommand(command string, old, new interface{}) ([]byte, error) {
+// RenderByCommand converts the given objects into yaml and then runs the command to compare them.
+func RenderByCommand(command string, old, new interface{}) ([]byte, error) {
 	_, err := exec.LookPath(command)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find the command '%s', err = %w", command, err)

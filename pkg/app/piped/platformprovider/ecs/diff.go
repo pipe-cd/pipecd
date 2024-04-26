@@ -81,12 +81,12 @@ func (d *DiffResult) Render(opt DiffRenderOptions) string {
 }
 
 func renderByCommand(command string, old, new ECSManifests) ([]byte, error) {
-	taskDiff, err := diff.DiffByCommand(command, old.TaskDefinition, new.TaskDefinition)
+	taskDiff, err := diff.RenderByCommand(command, old.TaskDefinition, new.TaskDefinition)
 	if err != nil {
 		return nil, err
 	}
 
-	serviceDiff, err := diff.DiffByCommand(command, old.ServiceDefinition, new.ServiceDefinition)
+	serviceDiff, err := diff.RenderByCommand(command, old.ServiceDefinition, new.ServiceDefinition)
 	if err != nil {
 		return nil, err
 	}
