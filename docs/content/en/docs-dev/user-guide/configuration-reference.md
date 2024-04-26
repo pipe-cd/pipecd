@@ -306,10 +306,10 @@ One of `yamlField` or `regex` is required.
 | Field | Type | Description | Required |
 |-|-|-|-|
 | manifests | []string | List of manifest files in the application directory used to deploy. Empty means all manifest files in the directory will be used. | No |
-| kubectlVersion | string | Version of kubectl will be used. Empty means the version set on [piped config](../managing-piped/configuration-reference/#platformproviderkubernetesconfig) or [default version](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/install-kubectl.sh#L24) will be used. | No |
-| kustomizeVersion | string | Version of kustomize will be used. Empty means the [default version](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/install-kustomize.sh#L24) will be used. | No |
+| kubectlVersion | string | Version of kubectl will be used. Empty means the version set on [piped config](../managing-piped/configuration-reference/#platformproviderkubernetesconfig) or [default version](https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/toolregistry/install.go#L29) will be used. | No |
+| kustomizeVersion | string | Version of kustomize will be used. Empty means the [default version](https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/toolregistry/install.go#L30) will be used. | No |
 | kustomizeOptions | map[string]string | List of options that should be used by Kustomize commands. | No |
-| helmVersion | string | Version of helm will be used. Empty means the [default version](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/install-helm.sh#L24) will be used. | No |
+| helmVersion | string | Version of helm will be used. Empty means the [default version](https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/toolregistry/install.go#L31) will be used. | No |
 | helmChart | [HelmChart](#helmchart) | Where to fetch helm chart. | No |
 | helmOptions | [HelmOptions](#helmoptions) | Configurable parameters for helm commands. | No |
 | namespace | string | The namespace where manifests will be applied. | No |
