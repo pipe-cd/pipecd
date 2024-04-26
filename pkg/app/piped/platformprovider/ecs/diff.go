@@ -68,7 +68,7 @@ func (d *DiffResult) Render(opt DiffRenderOptions) string {
 	if !opt.UseDiffCommand {
 		b.WriteString(renderer.Render(d.Diff.Nodes()))
 	} else {
-		d, err := diffByCommand(diffCommand, d.Old, d.New)
+		d, err := renderByCommand(diffCommand, d.Old, d.New)
 		if err != nil {
 			b.WriteString(fmt.Sprintf("An error occurred while rendering diff (%v)", err))
 		} else {
@@ -80,7 +80,7 @@ func (d *DiffResult) Render(opt DiffRenderOptions) string {
 	return b.String()
 }
 
-func diffByCommand(command string, old, new ECSManifests) ([]byte, error) {
+func renderByCommand(command string, old, new ECSManifests) ([]byte, error) {
 	taskDiff, err := diff.DiffByCommand(command, old.TaskDefinition, new.TaskDefinition)
 	if err != nil {
 		return nil, err
