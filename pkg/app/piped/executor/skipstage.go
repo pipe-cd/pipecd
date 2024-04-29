@@ -23,7 +23,7 @@ import (
 
 // based on stage's config.
 func checkSkipStage(ctx context.Context, in Input, opt config.SkipStageOptions) (skip bool, err error) {
-	if opt.Paths == nil && opt.CommitMessagePrefix == "" {
+	if opt.Paths == nil && len(opt.CommitMessagePrefixes) == 0 {
 		// When no condition is specified for skipping.
 		return false, nil
 	}
@@ -45,24 +45,27 @@ func checkSkipStage(ctx context.Context, in Input, opt config.SkipStageOptions) 
 		// check whether changed files are included in opt.Paths.
 		// if any file is included, return true.
 		if opt.Paths != nil {
-			for _, path := range changedFiles {
+			for _, _ = range changedFiles {
 				// TODO use regex
-				if opt.Paths.Match(path) {
-					return true, nil
-				}
+				// if opt.Paths.Match(path) {
+				// 	return true, nil
+				// }
+				panic("skip-stage by path-pattern is not implemented yet")
 			}
 		}
 	}
 
 	// (2)Gitのコミットメッセージで判定する場合
-	if opt.CommitMessagePrefix != "" {
+	if len(opt.CommitMessagePrefixes) > 0 {
 		commit, err := clonedRepo.GetCommitFromHash(ctx, in.TargetDSP.Revision())
 		if err != nil {
 			return false, err
 		}
 
-		if strings.HasPrefix(commit.Message, opt.CommitMessagePrefix) {
-			return true, nil
+		for _, prefix := range opt.CommitMessagePrefixes {
+			if strings.HasPrefix(commit.Message, prefix) {
+				return true, nil
+			}
 		}
 	}
 
