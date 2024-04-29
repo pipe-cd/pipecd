@@ -413,7 +413,8 @@ type SkipStageOptions struct {
 
 // WaitStageOptions contains all configurable values for a WAIT stage.
 type WaitStageOptions struct {
-	Duration Duration `json:"duration"`
+	Duration         Duration         `json:"duration"`
+	SkipStageOptions SkipStageOptions `json:"skipOn,omitempty"`
 }
 
 // WaitStageOptions contains all configurable values for a WAIT_APPROVAL stage.
