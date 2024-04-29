@@ -23,7 +23,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/git"
 )
 
-// based on stage's config.
+// CheckSkipStage checks whether the stage should be skipped or not.
 func CheckSkipStage(ctx context.Context, in Input, opt config.SkipStageOptions) (skip bool, err error) {
 	if opt.Paths == nil && len(opt.CommitMessagePrefixes) == 0 {
 		// When no condition is specified for skipping.
@@ -36,8 +36,7 @@ func CheckSkipStage(ctx context.Context, in Input, opt config.SkipStageOptions) 
 		return false, err
 	}
 
-	// (1)と(2)はOR。どちらか一方でも満たせばスキップする。
-	// (1)ファイルパスで判定する場合
+	// Check by path pattern
 	skip, err = skipByPathPattern(ctx, in, opt, clonedRepo)
 	if err != nil {
 		return false, err
@@ -46,7 +45,7 @@ func CheckSkipStage(ctx context.Context, in Input, opt config.SkipStageOptions) 
 		return true, nil
 	}
 
-	// (2)Gitのコミットメッセージで判定する場合
+	// Check by prefix of Git commit message
 	skip, err = skipByCommitMessagePrefixes(ctx, in, opt, clonedRepo)
 	return skip, err
 }
