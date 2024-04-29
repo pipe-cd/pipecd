@@ -80,7 +80,8 @@ func skipByCommitMessagePrefixes(ctx context.Context, in Input, opt config.SkipS
 		return false, nil
 	}
 
-	commit, err := repo.GetCommitFromHash(ctx, in.TargetDSP.Revision())
+	// TODO
+	commit, err := repo.GetCommitFromRev(ctx, in.TargetDSP.Revision())
 	if err != nil {
 		return false, err
 	}

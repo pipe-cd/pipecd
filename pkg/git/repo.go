@@ -39,7 +39,7 @@ type Repo interface {
 	ListCommits(ctx context.Context, visionRange string) ([]Commit, error)
 	GetLatestCommit(ctx context.Context) (Commit, error)
 	GetCommitHashForRev(ctx context.Context, rev string) (string, error)
-	GetCommitFromHash(ctx context.Context, commithash string) (Commit, error)
+	GetCommitFromRev(ctx context.Context, rev string) (Commit, error)
 	ChangedFiles(ctx context.Context, from, to string) ([]string, error)
 	Checkout(ctx context.Context, commitish string) error
 	CheckoutPullRequest(ctx context.Context, number int, branch string) error
@@ -139,6 +139,23 @@ func (r *repo) GetCommitHashForRev(ctx context.Context, rev string) (string, err
 	}
 
 	return strings.TrimSpace(string(out)), nil
+}
+
+// GetCommitFromRev returns the commit for the given hash.
+func (r *repo) GetCommitFromRev(ctx context.Context, rev string) (Commit, error) {
+	args := []string{
+		"show",
+		"--quiet", // suppress diff output
+		"--no-decorate",
+		fmt.Sprintf("--pretty=format:%s", commitLogFormat),
+		rev,
+	}
+	out, err := r.runGitCommand(ctx, args...)
+	if err != nil {
+		return Commit{}, formatCommandError(err, out)
+	}
+
+	return parseCommit(string(out))
 }
 
 // ChangedFiles returns a list of files those were touched between two commits.

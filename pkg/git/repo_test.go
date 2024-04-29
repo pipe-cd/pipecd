@@ -242,3 +242,30 @@ func Test_setGCAutoDetach(t *testing.T) {
 
 	assert.Equal(t, false, got)
 }
+
+func TestGetCommitFromRev(t *testing.T) {
+	faker, err := newFaker()
+	require.NoError(t, err)
+	defer faker.clean()
+
+	var (
+		org      = "test-repo-org"
+		repoName = "repo-get-commit-from-rev"
+		ctx      = context.Background()
+	)
+
+	err = faker.makeRepo(org, repoName)
+	require.NoError(t, err)
+	r := &repo{
+		dir:     faker.repoDir(org, repoName),
+		gitPath: faker.gitPath,
+	}
+
+	commits, err := r.ListCommits(ctx, "")
+	require.NoError(t, err)
+	assert.Equal(t, 1, len(commits))
+
+	commit, err := r.GetCommitFromRev(ctx, "HEAD")
+	require.NoError(t, err)
+	assert.Equal(t, commits[0].Hash, commit.Hash)
+}
