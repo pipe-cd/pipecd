@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/git"
 )
 
 // based on stage's config.
@@ -28,44 +29,65 @@ func checkSkipStage(ctx context.Context, in Input, opt config.SkipStageOptions) 
 		return false, nil
 	}
 
-	repo := in.Application.GitPath.Repo
-	clonedRepo, err := in.GitClient.Clone(ctx, repo.Id, repo.Remote, repo.Branch, "")
+	appRepo := in.Application.GitPath.Repo
+	clonedRepo, err := in.GitClient.Clone(ctx, appRepo.Id, appRepo.Remote, appRepo.Branch, "")
 	if err != nil {
 		return false, err
 	}
 
 	// (1)と(2)はOR。どちらか一方でも満たせばスキップする。
 	// (1)ファイルパスで判定する場合
-	if opt.Paths != nil {
-		changedFiles, err := clonedRepo.ChangedFiles(ctx, in.RunningDSP.Revision(), in.TargetDSP.Revision())
-		if err != nil {
-			return false, err
-		}
-
-		// check whether changed files are included in opt.Paths.
-		// if any file is included, return true.
-		if opt.Paths != nil {
-			for _, _ = range changedFiles {
-				// TODO use regex
-				// if opt.Paths.Match(path) {
-				// 	return true, nil
-				// }
-				panic("skip-stage by path-pattern is not implemented yet")
-			}
-		}
+	skip, err = skipByPathPattern(ctx, in, opt, clonedRepo)
+	if err != nil {
+		return false, err
+	}
+	if skip {
+		return true, nil
 	}
 
 	// (2)Gitのコミットメッセージで判定する場合
-	if len(opt.CommitMessagePrefixes) > 0 {
-		commit, err := clonedRepo.GetCommitFromHash(ctx, in.TargetDSP.Revision())
-		if err != nil {
-			return false, err
-		}
+	skip, err = skipByCommitMessagePrefixes(ctx, in, opt, clonedRepo)
+	return skip, err
+}
 
-		for _, prefix := range opt.CommitMessagePrefixes {
-			if strings.HasPrefix(commit.Message, prefix) {
-				return true, nil
-			}
+func skipByPathPattern(ctx context.Context, in Input, opt config.SkipStageOptions, repo git.Repo) (skip bool, err error) {
+	if opt.Paths == nil {
+		return false, nil
+	}
+
+	changedFiles, err := repo.ChangedFiles(ctx, in.RunningDSP.Revision(), in.TargetDSP.Revision())
+	if err != nil {
+		return false, err
+	}
+
+	// check whether changed files are included in opt.Paths.
+	// if any file is included, return true.
+	if opt.Paths != nil {
+		for _, _ = range changedFiles {
+			// TODO use regex
+			// if opt.Paths.Match(path) {
+			// 	return true, nil
+			// }
+			panic("skip-stage by path-pattern is not implemented yet")
+		}
+	}
+
+	return false, nil
+}
+
+func skipByCommitMessagePrefixes(ctx context.Context, in Input, opt config.SkipStageOptions, repo git.Repo) (skip bool, err error) {
+	if len(opt.CommitMessagePrefixes) > 0 {
+		return false, nil
+	}
+
+	commit, err := repo.GetCommitFromHash(ctx, in.TargetDSP.Revision())
+	if err != nil {
+		return false, err
+	}
+
+	for _, prefix := range opt.CommitMessagePrefixes {
+		if strings.HasPrefix(commit.Message, prefix) {
+			return true, nil
 		}
 	}
 
