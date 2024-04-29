@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/filematcher"
 	"github.com/pipe-cd/pipecd/pkg/git"
 )
 
@@ -50,37 +51,11 @@ func checkSkipStage(ctx context.Context, in Input, opt config.SkipStageOptions) 
 	return skip, err
 }
 
-func skipByPathPattern(ctx context.Context, in Input, opt config.SkipStageOptions, repo git.Repo) (skip bool, err error) {
-	if opt.Paths == nil {
-		return false, nil
-	}
-
-	changedFiles, err := repo.ChangedFiles(ctx, in.RunningDSP.Revision(), in.TargetDSP.Revision())
-	if err != nil {
-		return false, err
-	}
-
-	// check whether changed files are included in opt.Paths.
-	// if any file is included, return true.
-	if opt.Paths != nil {
-		for _, _ = range changedFiles {
-			// TODO use regex
-			// if opt.Paths.Match(path) {
-			// 	return true, nil
-			// }
-			panic("skip-stage by path-pattern is not implemented yet")
-		}
-	}
-
-	return false, nil
-}
-
 func skipByCommitMessagePrefixes(ctx context.Context, in Input, opt config.SkipStageOptions, repo git.Repo) (skip bool, err error) {
 	if len(opt.CommitMessagePrefixes) > 0 {
 		return false, nil
 	}
 
-	// TODO
 	commit, err := repo.GetCommitFromRev(ctx, in.TargetDSP.Revision())
 	if err != nil {
 		return false, err
@@ -93,4 +68,40 @@ func skipByCommitMessagePrefixes(ctx context.Context, in Input, opt config.SkipS
 	}
 
 	return false, nil
+}
+
+func skipByPathPattern(ctx context.Context, in Input, opt config.SkipStageOptions, repo git.Repo) (skip bool, err error) {
+	if opt.Paths == nil {
+		return false, nil
+	}
+
+	changedFiles, err := repo.ChangedFiles(ctx, in.RunningDSP.Revision(), in.TargetDSP.Revision())
+	if err != nil {
+		return false, err
+	}
+	// TODO: Which should we choose when no file is changed? (e.g. when SYNC command is executed from Console)
+	//       hasOnlyPathToSkip() returns true in this case.
+	// if len(changedFiles) == 0 {
+	// 	return false, err
+	// }
+
+	return hasOnlyPathsToSkip(opt.Paths, changedFiles)
+}
+
+// hasOnlyPathsToSkip returns true if and only if all changed files are included in `skipPatterns`.
+// If any changed file is not included in `skipPatterns`, it returns false.
+// If `changedFiles` is empty, it returns true.
+func hasOnlyPathsToSkip(skipPatterns []string, changedFiles []string) (bool, error) {
+	matcher, err := filematcher.NewPatternMatcher(skipPatterns)
+	if err != nil {
+		return false, err
+	}
+
+	for _, changedFile := range changedFiles {
+		if !matcher.Matches(changedFile) {
+			return false, nil
+		}
+	}
+
+	return true, nil
 }
