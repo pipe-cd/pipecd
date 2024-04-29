@@ -24,7 +24,7 @@ import (
 )
 
 // based on stage's config.
-func checkSkipStage(ctx context.Context, in Input, opt config.SkipStageOptions) (skip bool, err error) {
+func CheckSkipStage(ctx context.Context, in Input, opt config.SkipStageOptions) (skip bool, err error) {
 	if opt.Paths == nil && len(opt.CommitMessagePrefixes) == 0 {
 		// When no condition is specified for skipping.
 		return false, nil
