@@ -7,7 +7,7 @@ description: "This blog shows you how to install a PipeCD Control Plane on local
 author: Tetsuya Kikuchi ([@t-kikuc](https://github.com/t-kikuc))
 ---
 
-Currently, you can deploy and operate a PipeCD Control Plane on a Kubernetes cluster or [on Amazon ECS](./control-plane-on-ecs.md).
+Currently, you can deploy and operate a PipeCD Control Plane on a Kubernetes cluster or [on Amazon ECS](https://pipecd.dev/blog/2023/02/07/pipecd-best-practice-02-control-plane-on-ecs/).
 However, some developers would like to build a Control Plane more easily for introduction or development.
 This blog shows you how to install a PipeCD Control Plane on local machine easily.
 
@@ -19,8 +19,7 @@ This blog is for those who would like to:
 The general architecture of PipeCD Control Plane is as below.
 ![](/images/control-plane-components.png)
 
-> Note: See [Architecture Overview](docs/user-guide/managing-controlplane/architecture-overview/) doc for details.
-
+> Note: See [Architecture Overview](https://pipecd.dev/docs/user-guide/managing-controlplane/architecture-overview/) doc for details.
 In this blog, you will build a Control Plane by these containers:
 
 - Server: pipecd server
