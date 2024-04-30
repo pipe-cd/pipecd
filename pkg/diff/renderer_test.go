@@ -333,11 +333,7 @@ func TestRenderByCommand(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			actual, err := RenderByCommand(tc.command, tc.old, tc.new)
-			if tc.expectErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
+			assert.Equal(t, tc.expectErr, err != nil)
 			assert.Equal(t, tc.expectedDiff, string(actual))
 		})
 	}
