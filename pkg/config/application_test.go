@@ -103,7 +103,7 @@ func TestValidateWaitApprovalStageOptions(t *testing.T) {
 	}
 }
 
-func TestFindSlackAccounts(t *testing.T) {
+func TestFindSlackAccountsAndGroupsAndGroups(t *testing.T) {
 	testcases := []struct {
 		name     string
 		mentions []NotificationMention
@@ -166,13 +166,28 @@ func TestFindSlackAccounts(t *testing.T) {
 			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
 			want:  []string{},
 		},
+		{
+			name: "match an event name with Slack Groups",
+			mentions: []NotificationMention{
+				{
+					Event:       "DEPLOYMENT_TRIGGERED",
+					SlackGroups: []string{"group-1", "group-2"},
+				},
+				{
+					Event: "DEPLOYMENT_PLANNED",
+					Slack: []string{"user-3", "user-4"},
+				},
+			},
+			event: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+			want:  []string{"group-1", "group-2"},
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			n := &DeploymentNotification{
 				tc.mentions,
 			}
-			as := n.FindSlackAccounts(tc.event)
+			as := n.FindSlackAccountsAndGroups(tc.event)
 			assert.ElementsMatch(t, tc.want, as)
 		})
 	}
