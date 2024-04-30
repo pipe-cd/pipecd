@@ -951,6 +951,7 @@ type NotificationReceiverSlack struct {
 	OAuthTokenFile    string   `json:"oauthTokenFile"`
 	ChannelID         string   `json:"channelID"`
 	MentionedAccounts []string `json:"mentionedAccounts,omitempty"`
+	MentionedGroups   []string `json:"mentionedGroups,omitempty"`
 }
 
 func (n *NotificationReceiverSlack) Mask() {
@@ -970,6 +971,14 @@ func (n *NotificationReceiverSlack) Validate() error {
 	for _, mentionedAccount := range n.MentionedAccounts {
 		formatMentionedAccount := strings.TrimPrefix(mentionedAccount, "@")
 		mentionedAccounts = append(mentionedAccounts, formatMentionedAccount)
+	}
+	mentionedGroups := make([]string, 0, len(n.MentionedGroups))
+	for _, mentionedGroup := range n.MentionedGroups {
+		formatMentionedGroup := fmt.Sprintf("<!subteam^%s>", strings.TrimPrefix(mentionedGroup, "@"))
+		mentionedGroups = append(mentionedGroups, formatMentionedGroup)
+	}
+	if len(mentionedGroups) > 0 {
+		n.MentionedGroups = mentionedGroups
 	}
 	if len(mentionedAccounts) > 0 {
 		n.MentionedAccounts = mentionedAccounts

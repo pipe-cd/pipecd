@@ -151,7 +151,7 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 		return nil, fmt.Errorf("could not extract mentions config: %w", err)
 	}
 
-	return notification.FindSlackAccounts(event), nil
+	return notification.FindSlackAccountsAndGroups(event), nil
 }
 
 // validateApproverNum checks if number of approves is valid.

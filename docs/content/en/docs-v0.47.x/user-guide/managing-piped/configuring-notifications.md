@@ -83,6 +83,23 @@ spec:
           mentionedAccounts:
             - '@user1'
             - 'user2'
+      - name: integration-slack-api-with-oauthTokenData-and-mentioned-groups
+        slack:
+          oauthTokenData: token
+          channelID: testid
+          mentionedGroups:
+            - 'group1'
+            - '@group2'
+      - name: integration-slack-api-with-oauthTokenData-and-mentioned-both-accounts-and-groups
+        slack:
+          oauthTokenData: token
+          channelID: testid
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
+          mentionedGroups:
+            - 'group1'
+            - '@group2'
 ```
 
 

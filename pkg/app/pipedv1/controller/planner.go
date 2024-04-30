@@ -328,5 +328,5 @@ func (p *planner) getMentionedAccounts(event model.NotificationEventType) ([]str
 		return nil, fmt.Errorf("could not extract mentions config: %w", err)
 	}
 
-	return notification.FindSlackAccounts(event), nil
+	return notification.FindSlackAccountsAndGroups(event), nil
 }

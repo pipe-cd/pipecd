@@ -598,14 +598,21 @@ type DeploymentNotification struct {
 	Mentions []NotificationMention `json:"mentions"`
 }
 
-func (n *DeploymentNotification) FindSlackAccounts(event model.NotificationEventType) []string {
+func (n *DeploymentNotification) FindSlackAccountsAndGroups(event model.NotificationEventType) []string {
 	as := make(map[string]struct{})
 	for _, m := range n.Mentions {
 		if m.Event != allEventsSymbol && "EVENT_"+m.Event != event.String() {
 			continue
 		}
-		for _, s := range m.Slack {
-			as[s] = struct{}{}
+		if len(m.Slack) > 0 {
+			for _, s := range m.Slack {
+				as[s] = struct{}{}
+			}
+		}
+		if len(m.SlackGroups) > 0 {
+			for _, sg := range m.SlackGroups {
+				as[sg] = struct{}{}
+			}
 		}
 	}
 
@@ -622,13 +629,28 @@ type NotificationMention struct {
 	// List of user IDs for mentioning in Slack.
 	// See https://api.slack.com/reference/surfaces/formatting#mentioning-users
 	// for more information on how to check them.
-	Slack []string `json:"slack"`
+	Slack []string `json:"slack,omitempty"`
+	// List of group IDs for mentioning in Slack.
+	// See https://api.slack.com/reference/surfaces/formatting#mentioning-groups
+	// for more information on how to check them.
+	SlackGroups []string `json:"slackgroups,omitempty"`
 	// TODO: Support for email notification
 	// The email for notification.
 	Email []string `json:"email"`
 }
 
 func (n *NotificationMention) Validate() error {
+	if len(n.Slack) == 0 && len(n.SlackGroups) == 0 {
+		return fmt.Errorf("slack or slackGroups must not be empty")
+	}
+	slackGroups := make([]string, 0, len(n.SlackGroups))
+	for _, slackGroup := range n.SlackGroups {
+		formatSlackGroup := fmt.Sprintf("<!subteam^%s>", strings.TrimPrefix(slackGroup, "@"))
+		slackGroups = append(slackGroups, formatSlackGroup)
+	}
+	if len(slackGroups) > 0 {
+		n.SlackGroups = slackGroups
+	}
 	if n.Event == allEventsSymbol {
 		return nil
 	}
