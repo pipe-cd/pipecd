@@ -842,6 +842,142 @@ var _ interface {
 	ErrorName() string
 } = CloudRunApplicationLiveStateValidationError{}
 
+// Validate checks the field values on ECSApplicationLiveState with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ECSApplicationLiveState) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ECSApplicationLiveState with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ECSApplicationLiveStateMultiError, or nil if none found.
+func (m *ECSApplicationLiveState) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ECSApplicationLiveState) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetResources() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ECSApplicationLiveStateValidationError{
+						field:  fmt.Sprintf("Resources[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ECSApplicationLiveStateValidationError{
+						field:  fmt.Sprintf("Resources[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ECSApplicationLiveStateValidationError{
+					field:  fmt.Sprintf("Resources[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ECSApplicationLiveStateMultiError(errors)
+	}
+
+	return nil
+}
+
+// ECSApplicationLiveStateMultiError is an error wrapping multiple validation
+// errors returned by ECSApplicationLiveState.ValidateAll() if the designated
+// constraints aren't met.
+type ECSApplicationLiveStateMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ECSApplicationLiveStateMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ECSApplicationLiveStateMultiError) AllErrors() []error { return m }
+
+// ECSApplicationLiveStateValidationError is the validation error returned by
+// ECSApplicationLiveState.Validate if the designated constraints aren't met.
+type ECSApplicationLiveStateValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ECSApplicationLiveStateValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ECSApplicationLiveStateValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ECSApplicationLiveStateValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ECSApplicationLiveStateValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ECSApplicationLiveStateValidationError) ErrorName() string {
+	return "ECSApplicationLiveStateValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ECSApplicationLiveStateValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sECSApplicationLiveState.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ECSApplicationLiveStateValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ECSApplicationLiveStateValidationError{}
+
 // Validate checks the field values on LambdaApplicationLiveState with the
 // rules defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -1536,3 +1672,184 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CloudRunResourceStateValidationError{}
+
+// Validate checks the field values on ECSResourceState with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *ECSResourceState) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ECSResourceState with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ECSResourceStateMultiError, or nil if none found.
+func (m *ECSResourceState) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ECSResourceState) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetId()) < 1 {
+		err := ECSResourceStateValidationError{
+			field:  "Id",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetName()) < 1 {
+		err := ECSResourceStateValidationError{
+			field:  "Name",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetApiVersion()) < 1 {
+		err := ECSResourceStateValidationError{
+			field:  "ApiVersion",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetKind()) < 1 {
+		err := ECSResourceStateValidationError{
+			field:  "Kind",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for Namespace
+
+	if _, ok := ECSResourceState_HealthStatus_name[int32(m.GetHealthStatus())]; !ok {
+		err := ECSResourceStateValidationError{
+			field:  "HealthStatus",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for HealthDescription
+
+	if m.GetCreatedAt() <= 0 {
+		err := ECSResourceStateValidationError{
+			field:  "CreatedAt",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetUpdatedAt() <= 0 {
+		err := ECSResourceStateValidationError{
+			field:  "UpdatedAt",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return ECSResourceStateMultiError(errors)
+	}
+
+	return nil
+}
+
+// ECSResourceStateMultiError is an error wrapping multiple validation errors
+// returned by ECSResourceState.ValidateAll() if the designated constraints
+// aren't met.
+type ECSResourceStateMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ECSResourceStateMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ECSResourceStateMultiError) AllErrors() []error { return m }
+
+// ECSResourceStateValidationError is the validation error returned by
+// ECSResourceState.Validate if the designated constraints aren't met.
+type ECSResourceStateValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ECSResourceStateValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ECSResourceStateValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ECSResourceStateValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ECSResourceStateValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ECSResourceStateValidationError) ErrorName() string { return "ECSResourceStateValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ECSResourceStateValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sECSResourceState.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ECSResourceStateValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ECSResourceStateValidationError{}
