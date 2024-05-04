@@ -131,7 +131,7 @@ func makeTaskResourceState(task *types.Task, parentArn string) *model.ECSResourc
 		// Namespace:  "",
 
 		HealthStatus:      healthStatus,
-		HealthDescription: fmt.Sprintf("Task's health status is %s", task.HealthStatus),
+		HealthDescription: fmt.Sprintf("Task's last status is %s and the health status is %s", *task.LastStatus, task.HealthStatus),
 
 		CreatedAt: createdAt,
 		UpdatedAt: createdAt, // Task is immutable, so updatedAt is the same as createdAt.
