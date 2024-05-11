@@ -390,7 +390,7 @@ func getAccountsAsString(accounts []string) string {
 	}
 	formattedAccounts := make([]string, 0, len(accounts))
 	for _, a := range accounts {
-		formattedAccounts = append(formattedAccounts, fmt.Sprintf("<@%s>", strings.TrimPrefix(a, "@")))
+		formattedAccounts = append(formattedAccounts, fmt.Sprintf("<@%s>", a))
 	}
 	return strings.Join(formattedAccounts, " ")
 }
@@ -401,7 +401,11 @@ func getGroupsAsString(groups []string) string {
 	}
 	formattedGroups := make([]string, 0, len(groups))
 	for _, g := range groups {
-		formattedGroups = append(formattedGroups, fmt.Sprintf("<!subteam^%s>", strings.TrimPrefix(g, "@")))
+		if !strings.Contains(g, "subteam") {
+			formattedGroups = append(formattedGroups, fmt.Sprintf("<!subteam^%s>", g))
+		} else {
+			formattedGroups = append(formattedGroups, g)
+		}
 	}
 	return strings.Join(formattedGroups, " ")
 }
