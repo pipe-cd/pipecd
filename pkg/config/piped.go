@@ -974,8 +974,12 @@ func (n *NotificationReceiverSlack) Validate() error {
 	}
 	mentionedGroups := make([]string, 0, len(n.MentionedGroups))
 	for _, mentionedGroup := range n.MentionedGroups {
-		formatMentionedGroup := fmt.Sprintf("<!subteam^%s>", strings.TrimPrefix(mentionedGroup, "@"))
-		mentionedGroups = append(mentionedGroups, formatMentionedGroup)
+		if !strings.Contains(mentionedGroup, "subteam^") {
+			formatMentionedGroup := fmt.Sprintf("<!subteam^%s>", mentionedGroup)
+			mentionedGroups = append(mentionedGroups, formatMentionedGroup)
+		} else {
+			mentionedGroups = append(mentionedGroups, mentionedGroup)
+		}
 	}
 	if len(mentionedGroups) > 0 {
 		n.MentionedGroups = mentionedGroups

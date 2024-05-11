@@ -128,7 +128,7 @@ spec:
           hookURL: https://slack.com/dev
           mentionedGroups:
             - 'group1'
-            - '@group2'
+            - '<!subteam^group2>'
       - name: hookurl-with-mentioned-accounts
         slack:
           hookURL: https://slack.com/dev
@@ -143,7 +143,7 @@ spec:
             - '@user2'
           mentionedGroups:
             - 'group1'
-            - '@group2'
+            - '<!subteam^group2>'
       - name: integration-slack-api-with-mentioned-accounts
         slack:
           oauthToken: token
@@ -157,7 +157,7 @@ spec:
           channelID: testid
           mentionedGroups:
             - 'group1'
-            - '@group2'
+            - '<!subteam^group2>'
       - name: integration-slack-api-with-mentioned-both-accounts-groups
         slack:
           oauthToken: token
@@ -167,7 +167,7 @@ spec:
             - '@user2'
           mentionedGroups:
             - 'group1'
-            - '@group2'
+            - '<!subteam^group2>'
       - name: integration-slack-api-with-oauthTokenData
         slack:
           oauthTokenData: token
@@ -189,7 +189,7 @@ spec:
           channelID: testid
           mentionedGroups:
             - 'group1'
-            - '@group2'
+            - '<!subteam^group2>'
       - name: integration-slack-api-with-oauthTokenFile-and-mentioned-both-accounts-and-groups
         slack:
           oauthTokenFile: 'foo/bar'
@@ -199,7 +199,7 @@ spec:
             - '@user2'
           mentionedGroups:
             - 'group1'
-            - '@group2'
+            - '<!subteam^group2>'
       - name: integration-slack-api-with-oauthTokenData-and-mentioned-accounts
         slack:
           oauthTokenData: token
@@ -213,7 +213,7 @@ spec:
           channelID: testid
           mentionedGroups:
             - 'group1'
-            - '@group2'
+            - '<!subteam^group2>'
       - name: integration-slack-api-with-oauthTokenData-and-mentioned-both-accounts-and-groups
         slack:
           oauthTokenData: token
@@ -223,7 +223,7 @@ spec:
             - '@user2'
           mentionedGroups:
             - 'group1'
-            - '@group2'
+            - '<!subteam^group2>'
       - name: ci-webhook
         webhook:
           url: https://pipecd.dev/dev-hook
