@@ -629,7 +629,7 @@ type NotificationMention struct {
 	// List of user IDs for mentioning in Slack.
 	// See https://api.slack.com/reference/surfaces/formatting#mentioning-users
 	// for more information on how to check them.
-	Slack []string `json:"slack,omitempty"`
+	Slack []string `json:"slack"`
 	// List of group IDs for mentioning in Slack.
 	// See https://api.slack.com/reference/surfaces/formatting#mentioning-groups
 	// for more information on how to check them.
@@ -645,8 +645,12 @@ func (n *NotificationMention) Validate() error {
 	}
 	slackGroups := make([]string, 0, len(n.SlackGroups))
 	for _, slackGroup := range n.SlackGroups {
-		formatSlackGroup := fmt.Sprintf("<!subteam^%s>", strings.TrimPrefix(slackGroup, "@"))
-		slackGroups = append(slackGroups, formatSlackGroup)
+		if !strings.Contains(slackGroup, "subteam") {
+			formatSlackGroup := fmt.Sprintf("<!subteam^%s>", slackGroup)
+			slackGroups = append(slackGroups, formatSlackGroup)
+		} else {
+			slackGroups = append(slackGroups, slackGroup)
+		}
 	}
 	if len(slackGroups) > 0 {
 		n.SlackGroups = slackGroups
