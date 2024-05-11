@@ -89,7 +89,7 @@ spec:
           channelID: testid
           mentionedGroups:
             - 'group1'
-            - '@group2'
+            - '<!subteam^group2>'
       - name: integration-slack-api-with-oauthTokenData-and-mentioned-both-accounts-and-groups
         slack:
           oauthTokenData: token
@@ -99,7 +99,7 @@ spec:
             - '@user2'
           mentionedGroups:
             - 'group1'
-            - '@group2'
+            - '<!subteam^group2>'
 ```
 
 

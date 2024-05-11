@@ -264,7 +264,7 @@ Must be one of the following structs:
 | oauthTokenFile | string | The path to the oautoken file | No |
 | channelID | string | The channel id which slack api send to. | No |
 | mentionedAccounts | []string | The accounts to which slack api referes. This field supports both `@username` and `username` writing styles.| No |
-| mentionedGroups | []string | The groups to which slack api referes. This field supports both `@groupname` and `groupname` writing styles.| No |
+| mentionedGroups | []string | The groups to which slack api referes. This field supports both `<!subteam^groupname>` and `groupname` writing styles.| No |
 
 #### NotificationReceiverWebhook
 
