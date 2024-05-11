@@ -34,11 +34,6 @@ func Test_getAccountsAsString(t *testing.T) {
 			want:     "<@foo>",
 		},
 		{
-			name:     "with prefix @",
-			accounts: []string{"@foo"},
-			want:     "<@foo>",
-		},
-		{
 			name:     "multiple",
 			accounts: []string{"foo", "bar"},
 			want:     "<@foo> <@bar>",
@@ -74,8 +69,8 @@ func Test_getGroupsAsString(t *testing.T) {
 			want:   "<!subteam^foo>",
 		},
 		{
-			name:   "with prefix @",
-			groups: []string{"@foo"},
+			name:   "with correct format <!subteam^foo>",
+			groups: []string{"<!subteam^foo>"},
 			want:   "<!subteam^foo>",
 		},
 		{

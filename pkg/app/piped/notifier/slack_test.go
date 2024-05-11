@@ -50,3 +50,43 @@ func Test_getAccountsAsString(t *testing.T) {
 		})
 	}
 }
+
+func Test_getGroupsAsString(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name   string
+		groups []string
+		want   string
+	}{
+		{
+			name:   "empty",
+			groups: []string{},
+			want:   "",
+		},
+		{
+			name:   "single",
+			groups: []string{"foo"},
+			want:   "<!subteam^foo>",
+		},
+		{
+			name:   "with correct format <!subteam^foo>",
+			groups: []string{"<!subteam^foo>"},
+			want:   "<!subteam^foo>",
+		},
+		{
+			name:   "multiple",
+			groups: []string{"foo", "bar"},
+			want:   "<!subteam^foo> <!subteam^bar>",
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := getGroupsAsString(tt.groups)
+			if got != tt.want {
+				t.Errorf("getGroupsAsString(): got %s, want %s", got, tt.want)
+			}
+		})
+	}
+}
