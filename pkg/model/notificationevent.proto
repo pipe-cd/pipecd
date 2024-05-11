@@ -53,18 +53,21 @@ enum NotificationEventGroup {
 message NotificationEventDeploymentTriggered {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     repeated string mentioned_accounts = 3;
+    repeated string mentioned_groups = 4;
 }
 
 message NotificationEventDeploymentPlanned {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     string summary = 3;
     repeated string mentioned_accounts = 4;
+    repeated string mentioned_groups = 5;
 }
 
 message NotificationEventDeploymentApproved {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     string approver = 3;
     repeated string mentioned_accounts = 4;
+    repeated string mentioned_groups = 5;
 }
 
 message NotificationEventDeploymentRollingBack {
@@ -74,23 +77,27 @@ message NotificationEventDeploymentRollingBack {
 message NotificationEventDeploymentSucceeded {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     repeated string mentioned_accounts = 3;
+    repeated string mentioned_groups = 4;
 }
 
 message NotificationEventDeploymentFailed {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     string reason = 3;
     repeated string mentioned_accounts = 4;
+    repeated string mentioned_groups = 5;
 }
 
 message NotificationEventDeploymentCancelled {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     string commander = 3;
     repeated string mentioned_accounts = 4;
+    repeated string mentioned_groups = 5;
 }
 
 message NotificationEventDeploymentWaitApproval {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     repeated string mentioned_accounts = 3;
+    repeated string mentioned_groups = 4;
 }
 
 message NotificationEventDeploymentTriggerFailed {
@@ -99,6 +106,7 @@ message NotificationEventDeploymentTriggerFailed {
     string commit_message = 3 [(validate.rules).string.min_len = 1];
     string reason = 4 [(validate.rules).string.min_len = 1];
     repeated string mentioned_accounts = 5;
+    repeated string mentioned_groups = 6;
 }
 
 message NotificationEventApplicationSynced {
