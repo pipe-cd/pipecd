@@ -645,7 +645,7 @@ func (n *NotificationMention) Validate() error {
 	}
 	slackGroups := make([]string, 0, len(n.SlackGroups))
 	for _, slackGroup := range n.SlackGroups {
-		if !strings.Contains(slackGroup, "subteam") {
+		if !strings.Contains(slackGroup, "!subteam^") {
 			formatSlackGroup := fmt.Sprintf("<!subteam^%s>", slackGroup)
 			slackGroups = append(slackGroups, formatSlackGroup)
 		} else {

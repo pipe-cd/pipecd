@@ -407,7 +407,7 @@ func getGroupsAsString(groups []string) string {
 	}
 	formattedGroups := make([]string, 0, len(groups))
 	for _, g := range groups {
-		if !strings.Contains(g, "subteam") {
+		if !strings.Contains(g, "!subteam^") {
 			formattedGroups = append(formattedGroups, fmt.Sprintf("<!subteam^%s>", g))
 		} else {
 			formattedGroups = append(formattedGroups, g)
