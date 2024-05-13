@@ -55,6 +55,7 @@ func (e *deployExecutor) ensureBaselineRollout(ctx context.Context) model.StageS
 		ds.RepoDir,
 		e.Deployment.GitPath.ConfigFilename,
 		e.appCfg.Input,
+		e.isNamespacedResources,
 		e.GitClient,
 		e.Logger,
 	)

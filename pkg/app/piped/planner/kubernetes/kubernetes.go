@@ -24,6 +24,9 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/planner"
@@ -40,6 +43,7 @@ const (
 
 // Planner plans the deployment pipeline for kubernetes application.
 type Planner struct {
+	isNamespacedResources map[schema.GroupVersionKind]bool
 }
 
 type registerer interface {
@@ -48,11 +52,44 @@ type registerer interface {
 
 // Register registers this planner into the given registerer.
 func Register(r registerer) {
-	r.Register(model.ApplicationKind_KUBERNETES, &Planner{})
+	r.Register(model.ApplicationKind_KUBERNETES, &Planner{
+		isNamespacedResources: make(map[schema.GroupVersionKind]bool),
+	})
 }
 
 // Plan decides which pipeline should be used for the given input.
 func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Output, err error) {
+	// Use discovery to discover APIs supported by the Kubernetes API server.
+	// This should be run periodically with a low rate because the APIs are not added frequently.
+	// https://godoc.org/k8s.io/client-go/discovery
+	cp, ok := in.PipedConfig.FindPlatformProvider(in.PlatformProviderName, model.ApplicationKind_KUBERNETES)
+	if !ok {
+		err = fmt.Errorf("provider %s was not found", in.PlatformProviderName)
+		return
+	}
+	kubeConfig, err := clientcmd.BuildConfigFromFlags(cp.KubernetesConfig.MasterURL, cp.KubernetesConfig.KubeConfigPath)
+	if err != nil {
+		err = fmt.Errorf("failed to build kube config", zap.Error(err))
+		return
+	}
+	discoveryClient, err := discovery.NewDiscoveryClientForConfig(kubeConfig)
+	if err != nil {
+		err = fmt.Errorf("failed to create discovery client: %v", zap.Error(err))
+		return
+	}
+	groupResources, err := discoveryClient.ServerPreferredResources()
+	if err != nil {
+		err = fmt.Errorf("failed to fetch preferred resources: %v", zap.Error(err))
+		return
+	}
+
+	for _, gr := range groupResources {
+		for _, resource := range gr.APIResources {
+			gvk := schema.FromAPIVersionAndKind(gr.GroupVersion, resource.Kind)
+			p.isNamespacedResources[gvk] = resource.Namespaced
+		}
+	}
+
 	ds, err := in.TargetDSP.Get(ctx, io.Discard)
 	if err != nil {
 		err = fmt.Errorf("error while preparing deploy source data (%v)", err)
@@ -81,7 +118,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	newManifests, ok := manifestCache.Get(in.Trigger.Commit.Hash)
 	if !ok {
 		// When the manifests were not in the cache we have to load them.
-		loader := provider.NewLoader(in.ApplicationName, ds.AppDir, ds.RepoDir, in.GitPath.ConfigFilename, cfg.Input, in.GitClient, in.Logger)
+		loader := provider.NewLoader(in.ApplicationName, ds.AppDir, ds.RepoDir, in.GitPath.ConfigFilename, cfg.Input, p.isNamespacedResources, in.GitClient, in.Logger)
 		newManifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			return
@@ -205,7 +242,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 			err = fmt.Errorf("unable to find the running configuration (%v)", err)
 			return
 		}
-		loader := provider.NewLoader(in.ApplicationName, runningDs.AppDir, runningDs.RepoDir, in.GitPath.ConfigFilename, runningCfg.Input, in.GitClient, in.Logger)
+		loader := provider.NewLoader(in.ApplicationName, runningDs.AppDir, runningDs.RepoDir, in.GitPath.ConfigFilename, runningCfg.Input, p.isNamespacedResources, in.GitClient, in.Logger)
 		oldManifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			err = fmt.Errorf("failed to load previously deployed manifests: %w", err)

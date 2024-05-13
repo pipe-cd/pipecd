@@ -23,6 +23,9 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/kubernetes"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
@@ -67,8 +70,9 @@ type detector struct {
 	secretDecrypter   secretDecrypter
 	logger            *zap.Logger
 
-	gitRepos   map[string]git.Repo
-	syncStates map[string]model.ApplicationSyncState
+	gitRepos              map[string]git.Repo
+	syncStates            map[string]model.ApplicationSyncState
+	isNamespacedResources map[schema.GroupVersionKind]bool
 }
 
 func NewDetector(
@@ -87,18 +91,19 @@ func NewDetector(
 		zap.String("platform-provider", cp.Name),
 	)
 	return &detector{
-		provider:          cp,
-		appLister:         appLister,
-		gitClient:         gitClient,
-		stateGetter:       stateGetter,
-		reporter:          reporter,
-		appManifestsCache: appManifestsCache,
-		interval:          time.Minute,
-		config:            cfg,
-		secretDecrypter:   sd,
-		gitRepos:          make(map[string]git.Repo),
-		syncStates:        make(map[string]model.ApplicationSyncState),
-		logger:            logger,
+		provider:              cp,
+		appLister:             appLister,
+		gitClient:             gitClient,
+		stateGetter:           stateGetter,
+		reporter:              reporter,
+		appManifestsCache:     appManifestsCache,
+		interval:              time.Minute,
+		config:                cfg,
+		secretDecrypter:       sd,
+		gitRepos:              make(map[string]git.Repo),
+		syncStates:            make(map[string]model.ApplicationSyncState),
+		isNamespacedResources: make(map[schema.GroupVersionKind]bool),
+		logger:                logger,
 	}
 }
 
@@ -121,6 +126,34 @@ func (d *detector) Run(ctx context.Context) error {
 }
 
 func (d *detector) check(ctx context.Context) {
+	// Use discovery to discover APIs supported by the Kubernetes API server.
+	// This should be run periodically with a low rate because the APIs are not added frequently.
+	// https://godoc.org/k8s.io/client-go/discovery
+	cp := d.provider
+	kubeConfig, err := clientcmd.BuildConfigFromFlags(cp.KubernetesConfig.MasterURL, cp.KubernetesConfig.KubeConfigPath)
+	if err != nil {
+		d.logger.Error("failed to build kube config", zap.Error(err))
+		return
+	}
+	discoveryClient, err := discovery.NewDiscoveryClientForConfig(kubeConfig)
+	if err != nil {
+		d.logger.Error("failed to create discovery client", zap.Error(err))
+		return
+	}
+	groupResources, err := discoveryClient.ServerPreferredResources()
+	if err != nil {
+		d.logger.Error("failed to fetch preferred resources", zap.Error(err))
+		return
+	}
+	d.logger.Info(fmt.Sprintf("successfully preferred resources that contains for %d groups", len(groupResources)))
+
+	for _, gr := range groupResources {
+		for _, resource := range gr.APIResources {
+			gvk := schema.FromAPIVersionAndKind(gr.GroupVersion, resource.Kind)
+			d.isNamespacedResources[gvk] = resource.Namespaced
+		}
+	}
+
 	appsByRepo := d.listGroupedApplication()
 
 	for repoID, apps := range appsByRepo {
@@ -281,7 +314,7 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 			}
 		}
 
-		loader := provider.NewLoader(app.Name, appDir, repoDir, app.GitPath.ConfigFilename, cfg.KubernetesApplicationSpec.Input, d.gitClient, d.logger)
+		loader := provider.NewLoader(app.Name, appDir, repoDir, app.GitPath.ConfigFilename, cfg.KubernetesApplicationSpec.Input, d.isNamespacedResources, d.gitClient, d.logger)
 		manifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			err = fmt.Errorf("failed to load new manifests: %w", err)

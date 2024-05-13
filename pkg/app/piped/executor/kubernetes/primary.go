@@ -170,6 +170,7 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 		ds.RepoDir,
 		e.Deployment.GitPath.ConfigFilename,
 		e.appCfg.Input,
+		e.isNamespacedResources,
 		e.GitClient,
 		e.Logger,
 	)
