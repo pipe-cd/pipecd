@@ -43,7 +43,23 @@ func (e *deployExecutor) ensureBaselineRollout(ctx context.Context) model.StageS
 
 	// Load running manifests at the most successful deployed commit.
 	e.LogPersister.Infof("Loading running manifests at commit %s for handling", runningCommit)
-	manifests, err := e.loadRunningManifests(ctx)
+	ds, err := e.RunningDSP.Get(ctx, e.LogPersister)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to prepare running deploy source (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	loader := provider.NewLoader(
+		e.Deployment.ApplicationName,
+		ds.AppDir,
+		ds.RepoDir,
+		e.Deployment.GitPath.ConfigFilename,
+		e.appCfg.Input,
+		e.GitClient,
+		e.Logger,
+	)
+
+	manifests, err := loadManifests(ctx, e.Deployment.ApplicationId, runningCommit, e.AppManifestsCache, loader, e.Logger)
 	if err != nil {
 		e.LogPersister.Errorf("Failed while loading running manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE

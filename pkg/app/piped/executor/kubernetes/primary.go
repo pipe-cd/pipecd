@@ -156,7 +156,25 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 
 	// Find the running resources that are not defined in Git.
 	e.LogPersister.Info("Start finding all running PRIMARY resources but no longer defined in Git")
-	runningManifests, err := e.loadRunningManifests(ctx)
+	// Load running manifests at the most successful deployed commit.
+	e.LogPersister.Infof("Loading running manifests at commit %s for handling", e.Deployment.RunningCommitHash)
+	ds, err := e.RunningDSP.Get(ctx, e.LogPersister)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to prepare running deploy source (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	loader := provider.NewLoader(
+		e.Deployment.ApplicationName,
+		ds.AppDir,
+		ds.RepoDir,
+		e.Deployment.GitPath.ConfigFilename,
+		e.appCfg.Input,
+		e.GitClient,
+		e.Logger,
+	)
+
+	runningManifests, err := loadManifests(ctx, e.Deployment.ApplicationId, e.Deployment.RunningCommitHash, e.AppManifestsCache, loader, e.Logger)
 	if err != nil {
 		e.LogPersister.Errorf("Failed while loading running manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE

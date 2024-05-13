@@ -154,44 +154,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	return executor.DetermineStageStatus(sig.Signal(), originalStatus, status)
 }
 
-func (e *deployExecutor) loadRunningManifests(ctx context.Context) (manifests []provider.Manifest, err error) {
-	commit := e.Deployment.RunningCommitHash
-	if commit == "" {
-		return nil, fmt.Errorf("unable to determine running commit")
-	}
-
-	loader := &manifestsLoadFunc{
-		loadFunc: func(ctx context.Context) ([]provider.Manifest, error) {
-			ds, err := e.RunningDSP.Get(ctx, e.LogPersister)
-			if err != nil {
-				e.LogPersister.Errorf("Failed to prepare running deploy source (%v)", err)
-				return nil, err
-			}
-
-			loader := provider.NewLoader(
-				e.Deployment.ApplicationName,
-				ds.AppDir,
-				ds.RepoDir,
-				e.Deployment.GitPath.ConfigFilename,
-				e.appCfg.Input,
-				e.GitClient,
-				e.Logger,
-			)
-			return loader.LoadManifests(ctx)
-		},
-	}
-
-	return loadManifests(ctx, e.Deployment.ApplicationId, commit, e.AppManifestsCache, loader, e.Logger)
-}
-
-type manifestsLoadFunc struct {
-	loadFunc func(context.Context) ([]provider.Manifest, error)
-}
-
-func (l *manifestsLoadFunc) LoadManifests(ctx context.Context) ([]provider.Manifest, error) {
-	return l.loadFunc(ctx)
-}
-
+// loadManifests loads the manifest using the given loader. It caches the loaded manifests for the given commit.
 func loadManifests(ctx context.Context, appID, commit string, manifestsCache cache.Cache, loader provider.Loader, logger *zap.Logger) (manifests []provider.Manifest, err error) {
 	cache := provider.AppManifestsCache{
 		AppID:  appID,
