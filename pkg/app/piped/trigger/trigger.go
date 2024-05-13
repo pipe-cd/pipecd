@@ -287,10 +287,6 @@ func (t *Trigger) checkRepoCandidates(ctx context.Context, repoID string, cs []c
 			deploymentChainID = c.command.GetChainSyncApplication().DeploymentChainId
 			deploymentChainBlockIndex = c.command.GetChainSyncApplication().BlockIndex
 
-		case model.TriggerKind_ON_OUT_OF_SYNC:
-			strategy = model.SyncStrategy_QUICK_SYNC
-			strategySummary = "Quick sync to attempt to resolve the detected configuration drift"
-
 		default:
 			strategy = model.SyncStrategy_AUTO
 		}

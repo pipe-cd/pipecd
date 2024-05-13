@@ -65,7 +65,7 @@ We can simply use __pipectl quickstart__ command to start the PipeCD installatio
 pipectl quickstart --version {{< blocks/latest_version >}}
 ```
 
-Follow the instruction, the PipeCD control plane will be installed with a default project named `quickstart`. You can access to the PipeCD console at [http://localhost:8080](http://localhost:8080?project=quickstart) and pipectl command will open the PipeCD console automatically on your browser.
+Follow the instruction, the PipeCD control plane will be installed with a default project named `quickstart`. You can access to the PipeCD console at [http://localhost:8080](http://localhost:8080?project=quickstart) and pipectl command will open the PipeCD console automatically in your browser.
 
 To login, you can use the configured static admin account as below:
 - username: `hello-pipecd`
@@ -73,7 +73,7 @@ To login, you can use the configured static admin account as below:
 
 ![](/images/quickstart-login-form.png)
 
-After logged in successfully, the browser will redirect you to the PipeCD console settings page at `piped` settings tab. You will find the `+ADD` button on the top of this page, click there and insert information to register the deployment runner for PipeCD (called `piped`).
+After successfully logging in, the browser will redirect you to the PipeCD console settings page at the `piped` settings tab. You will find the `+ADD` button on the top of this page, click there and insert information to register the deployment runner for PipeCD (called `piped`).
 
 ![](/images/quickstart-adding-piped.png)
 
@@ -94,7 +94,7 @@ GitRemoteRepo: https://github.com/{FORKED_GITHUB_ORG}/examples.git
 
 That's all!
 
-Note: The __pipectl quickstart__ command will keep running to expose your PipeCD console on `localhost:8080`. If you stop the process, the installed PipeCD components will not lost, you can access to the PipeCD console anytime using __kubectl port-forward__ command
+Note: The __pipectl quickstart__ command will run continuously to expose your PipeCD console on `localhost:8080`. If you stop the process, the installed PipeCD components will not be lost, you can access to the PipeCD console anytime using __kubectl port-forward__ command
 
 ```console
 kubectl -n pipecd port-forward svc/pipecd 8080
@@ -102,7 +102,7 @@ kubectl -n pipecd port-forward svc/pipecd 8080
 
 ### 2. Deploy a kubernetes application with PipeCD
 
-Above are all we need to set up your own PipeCD (both control plane and agent), let's use the installed one to deploy your first Kubernetes application with PipeCD.
+Above is all that is necessary to set up your own PipeCD (both control plane and agent), let's use the installed one to deploy your first Kubernetes application with PipeCD.
 
 #### 2.1. Registering a Kubernetes application
 Navigate to the `Applications` page, click on the `+ADD` button on the top left corner.
@@ -115,7 +115,7 @@ You should see a lot of suggested applications. Select the `canary` application 
 
 ![](/images/quickstart-adding-application-from-suggestions.png)
 
-After a bit, the first deployment would be complete automatically to sync the application to the state specified in the current Git commit.
+After a bit, the first deployment is complete and will automatically sync the application to the state specified in the current Git commit.
 
 ![](/images/quickstart-first-deployment.png)
 
