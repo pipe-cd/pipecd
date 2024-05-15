@@ -531,7 +531,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "grpcapi_create_deployment_total{project=~\"$project\"}",
+          "expr": "sum by (project) (grpcapi_create_deployment_total)",
           "interval": "",
           "legendFormat": "{{project}}",
           "refId": "A"
