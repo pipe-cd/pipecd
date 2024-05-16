@@ -167,46 +167,50 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 		err = fmt.Errorf("unsupport templating method %v", l.templatingMethod)
 	}
 
+	// Refine the namespace when reading manifests from git repo
+	// because the namespace is determined not only by its own namespace on the file but also the namespace on the app.pipecd.yaml.
 	for i := range manifests {
-		namespace, err := l.refineNamespace(manifests[i])
+		m := manifests[i]
+		err := l.refineNamespace(&m)
 		if err != nil {
 			return nil, err
 		}
-		manifests[i].Key.Namespace = namespace
-		manifests[i].u.SetNamespace(namespace)
 	}
 
 	return
 }
 
-// refineNamespace returns the namespace to use for the given manifest.
+// refineNamespace fix the namespace of the given manifest.
 // The priority is as follows:
+// If the resource is cluster-scoped, it returns an empty string.
+// Otherwise, it is the namespace-scoped resource and the namespace is determined by the following order:
 // 1. The namespace set in the application configuration.
 // 2. The namespace set in the manifest.
 // 3. The default namespace.
-// If the resource is cluster-scoped, it returns an empty string.
-func (l *loader) refineNamespace(m Manifest) (string, error) {
+func (l *loader) refineNamespace(m *Manifest) error {
 	namespaced, ok := l.isNamespacedResources[m.u.GroupVersionKind()]
 	if !ok {
-		return "", fmt.Errorf("unknown resource kind %s", m.u.GroupVersionKind().String())
+		return fmt.Errorf("unknown resource kind %s", m.u.GroupVersionKind().String())
 	}
 
-	// cluster-scoped resource
-	if !namespaced {
-		return "", nil
+	namespace := "" // empty if cluster-scoped resource
+
+	if namespaced {
+		namespace = "default"
+
+		if ns := m.u.GetNamespace(); ns != "" {
+			namespace = ns
+		}
+
+		if l.input.Namespace != "" {
+			namespace = l.input.Namespace
+		}
 	}
 
-	// namespace-scoped resource from here
-	if l.input.Namespace != "" {
-		return l.input.Namespace, nil
-	}
+	m.Key.Namespace = namespace
+	m.u.SetNamespace(namespace)
 
-	ns := m.u.GetNamespace()
-	if ns != "" {
-		return ns, nil
-	}
-
-	return "default", nil
+	return nil
 }
 
 func sortManifests(manifests []Manifest) {
