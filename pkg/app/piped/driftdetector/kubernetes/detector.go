@@ -24,8 +24,6 @@ import (
 
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/discovery"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/kubernetes"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
@@ -126,33 +124,13 @@ func (d *detector) Run(ctx context.Context) error {
 }
 
 func (d *detector) check(ctx context.Context) {
-	// Use discovery to discover APIs supported by the Kubernetes API server.
-	// This should be run periodically with a low rate because the APIs are not added frequently.
-	// https://godoc.org/k8s.io/client-go/discovery
-	cp := d.provider
-	kubeConfig, err := clientcmd.BuildConfigFromFlags(cp.KubernetesConfig.MasterURL, cp.KubernetesConfig.KubeConfigPath)
+	isNamespacedResources, err := provider.GetIsNamespacedResources(d.provider.KubernetesConfig)
 	if err != nil {
-		d.logger.Error("failed to build kube config", zap.Error(err))
+		d.logger.Error("failed to get isNamespacedResources", zap.Error(err))
 		return
 	}
-	discoveryClient, err := discovery.NewDiscoveryClientForConfig(kubeConfig)
-	if err != nil {
-		d.logger.Error("failed to create discovery client", zap.Error(err))
-		return
-	}
-	groupResources, err := discoveryClient.ServerPreferredResources()
-	if err != nil {
-		d.logger.Error("failed to fetch preferred resources", zap.Error(err))
-		return
-	}
-	d.logger.Info(fmt.Sprintf("successfully preferred resources that contains for %d groups", len(groupResources)))
 
-	for _, gr := range groupResources {
-		for _, resource := range gr.APIResources {
-			gvk := schema.FromAPIVersionAndKind(gr.GroupVersion, resource.Kind)
-			d.isNamespacedResources[gvk] = resource.Namespaced
-		}
-	}
+	d.isNamespacedResources = isNamespacedResources
 
 	appsByRepo := d.listGroupedApplication()
 

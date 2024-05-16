@@ -25,8 +25,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/discovery"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
@@ -79,38 +77,17 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	ctx := sig.Context()
 	e.commit = e.Deployment.Trigger.Commit.Hash
 
-	// Use discovery to discover APIs supported by the Kubernetes API server.
-	// This should be run periodically with a low rate because the APIs are not added frequently.
-	// https://godoc.org/k8s.io/client-go/discovery
 	cp, ok := e.PipedConfig.FindPlatformProvider(e.Deployment.PlatformProvider, model.ApplicationKind_KUBERNETES)
 	if !ok {
 		e.LogPersister.Errorf("provider %s was not found", e.Deployment.PlatformProvider)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	kubeConfig, err := clientcmd.BuildConfigFromFlags(cp.KubernetesConfig.MasterURL, cp.KubernetesConfig.KubeConfigPath)
+	isNamespacedResources, err := provider.GetIsNamespacedResources(cp.KubernetesConfig)
 	if err != nil {
-		e.LogPersister.Errorf("failed to build kube config", zap.Error(err))
+		e.LogPersister.Errorf("failed to get isNamespacedResources %v", zap.Error(err))
 		return model.StageStatus_STAGE_FAILURE
 	}
-	discoveryClient, err := discovery.NewDiscoveryClientForConfig(kubeConfig)
-	if err != nil {
-		e.LogPersister.Errorf("failed to create discovery client: %v", zap.Error(err))
-		return model.StageStatus_STAGE_FAILURE
-	}
-	groupResources, err := discoveryClient.ServerPreferredResources()
-	if err != nil {
-		e.LogPersister.Errorf("failed to fetch preferred resources: %v", zap.Error(err))
-		return model.StageStatus_STAGE_FAILURE
-	}
-	e.LogPersister.Info(fmt.Sprintf("successfully preferred resources that contains for %d groups", len(groupResources)))
-
-	e.isNamespacedResources = make(map[schema.GroupVersionKind]bool)
-	for _, gr := range groupResources {
-		for _, resource := range gr.APIResources {
-			gvk := schema.FromAPIVersionAndKind(gr.GroupVersion, resource.Kind)
-			e.isNamespacedResources[gvk] = resource.Namespaced
-		}
-	}
+	e.isNamespacedResources = isNamespacedResources
 
 	ds, err := e.TargetDSP.Get(ctx, e.LogPersister)
 	if err != nil {

@@ -25,8 +25,6 @@ import (
 
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/discovery"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/planner"
@@ -59,36 +57,17 @@ func Register(r registerer) {
 
 // Plan decides which pipeline should be used for the given input.
 func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Output, err error) {
-	// Use discovery to discover APIs supported by the Kubernetes API server.
-	// This should be run periodically with a low rate because the APIs are not added frequently.
-	// https://godoc.org/k8s.io/client-go/discovery
 	cp, ok := in.PipedConfig.FindPlatformProvider(in.PlatformProviderName, model.ApplicationKind_KUBERNETES)
 	if !ok {
 		err = fmt.Errorf("provider %s was not found", in.PlatformProviderName)
 		return
 	}
-	kubeConfig, err := clientcmd.BuildConfigFromFlags(cp.KubernetesConfig.MasterURL, cp.KubernetesConfig.KubeConfigPath)
+	isNamespacedResources, err := provider.GetIsNamespacedResources(cp.KubernetesConfig)
 	if err != nil {
-		err = fmt.Errorf("failed to build kube config", zap.Error(err))
+		err = fmt.Errorf("failed to get isNamespacedResources: %v", err)
 		return
 	}
-	discoveryClient, err := discovery.NewDiscoveryClientForConfig(kubeConfig)
-	if err != nil {
-		err = fmt.Errorf("failed to create discovery client: %v", zap.Error(err))
-		return
-	}
-	groupResources, err := discoveryClient.ServerPreferredResources()
-	if err != nil {
-		err = fmt.Errorf("failed to fetch preferred resources: %v", zap.Error(err))
-		return
-	}
-
-	for _, gr := range groupResources {
-		for _, resource := range gr.APIResources {
-			gvk := schema.FromAPIVersionAndKind(gr.GroupVersion, resource.Kind)
-			p.isNamespacedResources[gvk] = resource.Namespaced
-		}
-	}
+	p.isNamespacedResources = isNamespacedResources
 
 	ds, err := in.TargetDSP.Get(ctx, io.Discard)
 	if err != nil {
