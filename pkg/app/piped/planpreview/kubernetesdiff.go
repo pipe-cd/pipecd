@@ -53,17 +53,17 @@ func (b *builder) kubernetesDiff(
 	}
 	kubeConfig, err := clientcmd.BuildConfigFromFlags(cp.KubernetesConfig.MasterURL, cp.KubernetesConfig.KubeConfigPath)
 	if err != nil {
-		err = fmt.Errorf("failed to build kube config", zap.Error(err))
+		err = fmt.Errorf("failed to build kube config: %w", err)
 		return nil, err
 	}
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(kubeConfig)
 	if err != nil {
-		err = fmt.Errorf("failed to create discovery client: %v", zap.Error(err))
+		err = fmt.Errorf("failed to create discovery client: %w", err)
 		return nil, err
 	}
 	groupResources, err := discoveryClient.ServerPreferredResources()
 	if err != nil {
-		err = fmt.Errorf("failed to fetch preferred resources: %v", zap.Error(err))
+		err = fmt.Errorf("failed to fetch preferred resources: %w", err)
 		return nil, err
 	}
 
