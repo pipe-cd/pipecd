@@ -407,8 +407,7 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 // SkipStageOptions contains all configurable values for skipping a stage.
 type SkipStageOptions struct {
 	CommitMessagePrefixes []string `json:"commitMessagePrefixes,omitempty"`
-	// CommitMessageSuffix string
-	Paths []string `json:"paths,omitempty"`
+	Paths                 []string `json:"paths,omitempty"`
 }
 
 // WaitStageOptions contains all configurable values for a WAIT stage.

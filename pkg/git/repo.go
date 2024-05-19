@@ -141,8 +141,8 @@ func (r *repo) GetCommitHashForRev(ctx context.Context, rev string) (string, err
 	return strings.TrimSpace(string(out)), nil
 }
 
-// GetCommitFromRev returns the commit for the given hash.
-func (r *repo) GetCommitFromRev(ctx context.Context, rev string) (Commit, error) {
+// GetCommitFromRev returns the commit for the given rev.
+func (r *repo) GetCommitForRev(ctx context.Context, rev string) (Commit, error) {
 	args := []string{
 		"show",
 		"--quiet", // suppress diff output
