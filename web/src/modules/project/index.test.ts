@@ -296,4 +296,38 @@ resources=deployment;actions=get,create`,
     expect(policies[0].toObject()).toEqual(expected[0]);
     expect(policies[1].toObject()).toEqual(expected[1]);
   });
+
+  it("should parse RBAC policies with multiple policies with multi-lines separator", () => {
+    const policies = parseRBACPolicies({
+      policies: `resources=application;actions=get
+
+
+resources=deployment;actions=get,create`,
+    });
+    const expected = [
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.APPLICATION,
+            labelsMap: [],
+          },
+        ],
+        actionsList: [ProjectRBACPolicy.Action.GET],
+      },
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.DEPLOYMENT,
+            labelsMap: [],
+          },
+        ],
+        actionsList: [
+          ProjectRBACPolicy.Action.GET,
+          ProjectRBACPolicy.Action.CREATE,
+        ],
+      },
+    ];
+    expect(policies[0].toObject()).toEqual(expected[0]);
+    expect(policies[1].toObject()).toEqual(expected[1]);
+  });
 });
