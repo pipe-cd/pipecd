@@ -88,15 +88,23 @@ export const parseRBACPolicies = ({
 }: {
   policies: string;
 }): ProjectRBACPolicy[] => {
-  const ps = policies
-    .replace("\n\n", "\n")
-    .split("\n")
-    .filter((p) => p);
+  const ps = policies.split("\n\n").filter((p) => p);
   const ret: ProjectRBACPolicy[] = [];
   ps.map((p) => {
     p = p.replace(/\s/g, "");
     const policyResource: ProjectRBACPolicy = new ProjectRBACPolicy();
+
+    // policy pattern
+    // resources=RESOURCE_NAME{key1:value1,key2:value2};actions=ACTION
     const policy = p.split(RESOURCE_ACTION_SEPARATOR);
+
+    if (
+      policy.length !== 2 ||
+      policy[0].startsWith(RESOURCES_KEY) === false ||
+      policy[1].startsWith(ACTIONS_KEY) === false
+    ) {
+      return;
+    }
 
     const resources = policy[0].split(KEY_VALUE_SEPARATOR);
     if (resources[0] == RESOURCES_KEY) {
@@ -129,7 +137,16 @@ export const formalizePoliciesList = ({
   policiesList.map((policy) => {
     const resources: string[] = [];
     policy.resourcesList.map((resource) => {
-      resources.push(RBAC_RESOURCE_TYPE_TEXT[resource.type]);
+      let rsc = RBAC_RESOURCE_TYPE_TEXT[resource.type];
+      if (resource.labelsMap.length > 0) {
+        rsc += "{";
+        resource.labelsMap.map((label) => {
+          rsc += label[0] + ":" + label[1] + ",";
+        });
+        rsc = rsc.slice(0, -1); // remove last comma
+        rsc += "}";
+      }
+      resources.push(rsc);
     });
 
     const actions: string[] = [];
