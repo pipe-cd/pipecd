@@ -88,7 +88,10 @@ export const parseRBACPolicies = ({
 }: {
   policies: string;
 }): ProjectRBACPolicy[] => {
-  const ps = policies.split("\n\n").filter((p) => p);
+  const ps = policies
+    .replace("\n\n", "\n")
+    .split("\n")
+    .filter((p) => p);
   const ret: ProjectRBACPolicy[] = [];
   ps.map((p) => {
     p = p.replace(/\s/g, "");
@@ -100,6 +103,7 @@ export const parseRBACPolicies = ({
       resources[1].split(VALUES_SEPARATOR).map((v) => {
         const res: ProjectRBACResource = new ProjectRBACResource();
         res.setType(TEXT_TO_RBAC_RESOURCE_TYPE[v]);
+        res.clearLabelsMap(); // ensure no labels
         policyResource.addResources(res);
       });
     }

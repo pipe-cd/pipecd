@@ -47,7 +47,7 @@
     "jest-environment-jsdom": "^29.5.0",
     "msw": "^0.21.2",
     "prettier": "^2.0.5",
-    "pretty-format": "^27.0.2",
+    "pretty-format": "^29.7.0",
     "process": "^0.11.10",
     "react-test-renderer": "^17.0.2",
     "redux-mock-store": "^1.5.4",
