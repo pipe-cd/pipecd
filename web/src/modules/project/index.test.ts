@@ -297,6 +297,75 @@ resources=deployment;actions=get,create`,
     expect(policies[0].toObject()).toEqual(expected[0]);
     expect(policies[1].toObject()).toEqual(expected[1]);
   });
+
+  it("should parse RBAC policies with multiple policies resources labels", () => {
+    const policies = parseRBACPolicies({
+      policies: `resources=*{env:dev};actions=*
+
+resources=application,deployment{env:dev,team:frontend};actions=get,create`,
+    });
+    const expected = [
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.ALL,
+            labelsMap: [["env", "dev"]],
+          },
+        ],
+        actionsList: [ProjectRBACPolicy.Action.ALL],
+      },
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.APPLICATION,
+            labelsMap: [],
+          },
+          {
+            type: ProjectRBACResource.ResourceType.DEPLOYMENT,
+            labelsMap: [
+              ["env", "dev"],
+              ["team", "frontend"],
+            ],
+          },
+        ],
+        actionsList: [
+          ProjectRBACPolicy.Action.GET,
+          ProjectRBACPolicy.Action.CREATE,
+        ],
+      },
+    ];
+    expect(policies[0].toObject()).toEqual(expected[0]);
+    expect(policies[1].toObject()).toEqual(expected[1]);
+  });
+
+  it("should parse RBAC policies with resources labels", () => {
+    const policies = parseRBACPolicies({
+      policies:
+        "resources=application{env:dev,team:frontend},deployment;actions=get,create",
+    });
+    const expected = [
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.APPLICATION,
+            labelsMap: [
+              ["env", "dev"],
+              ["team", "frontend"],
+            ],
+          },
+          {
+            type: ProjectRBACResource.ResourceType.DEPLOYMENT,
+            labelsMap: [],
+          },
+        ],
+        actionsList: [
+          ProjectRBACPolicy.Action.GET,
+          ProjectRBACPolicy.Action.CREATE,
+        ],
+      },
+    ];
+    expect(policies[0].toObject()).toEqual(expected[0]);
+  });
 });
 
 describe("formalizePoliciesList", () => {
