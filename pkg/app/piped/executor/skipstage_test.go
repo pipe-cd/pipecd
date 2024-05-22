@@ -30,67 +30,67 @@ func TestHasOnlyPathsToSkip(t *testing.T) {
 		name         string
 		skipPatterns []string
 		changedFiles []string
-		expected     bool
+		skip         bool
 	}{
 		{
 			name:         "no skip patterns",
 			skipPatterns: nil,
 			changedFiles: []string{"file1"},
-			expected:     false,
+			skip:         false,
 		},
 		{
 			name:         "no changed files",
 			skipPatterns: []string{"file1"},
 			changedFiles: nil,
-			expected:     true,
+			skip:         true,
 		},
 		{
 			name:         "no skip patterns and no changed files",
 			skipPatterns: nil,
 			changedFiles: nil,
-			expected:     true,
+			skip:         true,
 		},
 		{
 			name:         "skip pattern matches all changed files",
 			skipPatterns: []string{"file1", "file2"},
 			changedFiles: []string{"file1", "file2"},
-			expected:     true,
+			skip:         true,
 		},
 		{
 			name:         "skip pattern does not match changed files",
 			skipPatterns: []string{"file1", "file2"},
 			changedFiles: []string{"file1", "file3"},
-			expected:     false,
+			skip:         false,
 		},
 		{
 			name:         "skip files of a directory",
 			skipPatterns: []string{"dir1/*"},
 			changedFiles: []string{"dir1/file1", "dir1/file2"},
-			expected:     true,
+			skip:         true,
 		},
 		{
 			name:         "skip files recursively",
 			skipPatterns: []string{"dir1/**"},
 			changedFiles: []string{"dir1/file1", "dir1/sub/file2"},
-			expected:     true,
+			skip:         true,
 		},
 		{
 			name:         "skip files not recursively",
 			skipPatterns: []string{"dir1/*"},
 			changedFiles: []string{"dir1/sub/file2"},
-			expected:     false,
+			skip:         false,
 		},
 		{
 			name:         "skip files with the extension recursively",
 			skipPatterns: []string{"dir1/**.yaml"},
 			changedFiles: []string{"dir1/file1.yaml", "dir1/sub/file2.yaml"},
-			expected:     true,
+			skip:         true,
 		},
 		{
 			name:         "skip files with the extension not recursively",
 			skipPatterns: []string{"*.yaml"},
 			changedFiles: []string{"dir1/file1.yaml"},
-			expected:     false,
+			skip:         false,
 		},
 	}
 
@@ -100,7 +100,7 @@ func TestHasOnlyPathsToSkip(t *testing.T) {
 			// We do not use t.Parallel() here due to https://pkg.go.dev/github.com/pipe-cd/pipecd/pkg/filematcher#PatternMatcher.Matches.
 			actual, err := hasOnlyPathsToSkip(tc.skipPatterns, tc.changedFiles)
 			assert.NoError(t, err)
-			assert.Equal(t, tc.expected, actual)
+			assert.Equal(t, tc.skip, actual)
 		})
 	}
 }
