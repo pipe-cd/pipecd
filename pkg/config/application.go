@@ -503,10 +503,11 @@ func (a *AnalysisStageOptions) Validate() error {
 
 // ScriptRunStageOptions contains all configurable values for a SCRIPT_RUN stage.
 type ScriptRunStageOptions struct {
-	Env        map[string]string `json:"env"`
-	Run        string            `json:"run"`
-	Timeout    Duration          `json:"timeout" default:"6h"`
-	OnRollback string            `json:"onRollback"`
+	Env         map[string]string `json:"env"`
+	Run         string            `json:"run"`
+	Timeout     Duration          `json:"timeout" default:"6h"`
+	OnRollback  string            `json:"onRollback"`
+	SkipOptions SkipOptions       `json:"skipOn,omitempty"`
 }
 
 // Validate checks the required fields of ScriptRunStageOptions.
