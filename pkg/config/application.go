@@ -412,8 +412,8 @@ type SkipOptions struct {
 
 // WaitStageOptions contains all configurable values for a WAIT stage.
 type WaitStageOptions struct {
-	Duration    Duration    `json:"duration"`
-	SkipOptions SkipOptions `json:"skipOn,omitempty"`
+	Duration Duration    `json:"duration"`
+	SkipOn   SkipOptions `json:"skipOn,omitempty"`
 }
 
 // WaitStageOptions contains all configurable values for a WAIT_APPROVAL stage.
@@ -423,7 +423,7 @@ type WaitApprovalStageOptions struct {
 	Timeout        Duration    `json:"timeout" default:"6h"`
 	Approvers      []string    `json:"approvers"`
 	MinApproverNum int         `json:"minApproverNum" default:"1"`
-	SkipOptions    SkipOptions `json:"skipOn,omitempty"`
+	SkipOn         SkipOptions `json:"skipOn,omitempty"`
 }
 
 func (w *WaitApprovalStageOptions) Validate() error {
@@ -456,7 +456,7 @@ type AnalysisStageOptions struct {
 	Metrics          []TemplatableAnalysisMetrics `json:"metrics,omitempty"`
 	Logs             []TemplatableAnalysisLog     `json:"logs,omitempty"`
 	HTTPS            []TemplatableAnalysisHTTP    `json:"https,omitempty"`
-	SkipOptions      SkipOptions                  `json:"skipOn,omitempty"`
+	SkipOn           SkipOptions                  `json:"skipOn,omitempty"`
 }
 
 func (a *AnalysisStageOptions) Validate() error {
@@ -503,11 +503,11 @@ func (a *AnalysisStageOptions) Validate() error {
 
 // ScriptRunStageOptions contains all configurable values for a SCRIPT_RUN stage.
 type ScriptRunStageOptions struct {
-	Env         map[string]string `json:"env"`
-	Run         string            `json:"run"`
-	Timeout     Duration          `json:"timeout" default:"6h"`
-	OnRollback  string            `json:"onRollback"`
-	SkipOptions SkipOptions       `json:"skipOn,omitempty"`
+	Env        map[string]string `json:"env"`
+	Run        string            `json:"run"`
+	Timeout    Duration          `json:"timeout" default:"6h"`
+	OnRollback string            `json:"onRollback"`
+	SkipOn     SkipOptions       `json:"skipOn,omitempty"`
 }
 
 // Validate checks the required fields of ScriptRunStageOptions.

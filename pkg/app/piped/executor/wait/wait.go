@@ -53,7 +53,7 @@ func Register(r registerer) {
 // Execute starts waiting for the specified duration.
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	// Skip the stage if needed based on the skip config.
-	skip, err := skipstage.CheckSkipStage(sig.Context(), e.Input, e.StageConfig.WaitStageOptions.SkipOptions)
+	skip, err := skipstage.CheckSkipStage(sig.Context(), e.Input, e.StageConfig.WaitStageOptions.SkipOn)
 	if err != nil {
 		e.Logger.Error("failed to check whether skipping the stage", zap.Error(err))
 		return model.StageStatus_STAGE_FAILURE
