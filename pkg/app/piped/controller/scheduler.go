@@ -26,10 +26,10 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/controllermetrics"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/skipstage"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/registry"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/skipstage"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/metadatastore"
 	pln "github.com/pipe-cd/pipecd/pkg/app/piped/planner"
