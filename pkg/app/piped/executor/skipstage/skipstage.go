@@ -26,19 +26,19 @@ import (
 
 // CheckSkipStage checks whether the stage should be skipped or not.
 func CheckSkipStage(ctx context.Context, in executor.Input, opt config.SkipOptions) (skip bool, err error) {
-	if opt.Paths == nil && len(opt.CommitMessagePrefixes) == 0 {
-		// When no condition is specified for skipping.
+	if len(opt.Paths) == 0 && len(opt.CommitMessagePrefixes) == 0 {
+		// When no condition is specified.
 		return false, nil
 	}
 
 	repoCfg := in.Application.GitPath.Repo
-	clonedRepo, err := in.GitClient.Clone(ctx, repoCfg.Id, repoCfg.Remote, repoCfg.Branch, "")
+	repo, err := in.GitClient.Clone(ctx, repoCfg.Id, repoCfg.Remote, repoCfg.Branch, "")
 	if err != nil {
 		return false, err
 	}
 
 	// Check by path pattern
-	skip, err = skipByPathPattern(ctx, opt, clonedRepo, in.RunningDSP.Revision(), in.TargetDSP.Revision())
+	skip, err = skipByPathPattern(ctx, opt, repo, in.RunningDSP.Revision(), in.TargetDSP.Revision())
 	if err != nil {
 		return false, err
 	}
@@ -46,8 +46,8 @@ func CheckSkipStage(ctx context.Context, in executor.Input, opt config.SkipOptio
 		return true, nil
 	}
 
-	// Check by prefix of Git commit message
-	skip, err = skipByCommitMessagePrefixes(ctx, opt, clonedRepo, in.TargetDSP.Revision())
+	// Check by prefix of commit message
+	skip, err = skipByCommitMessagePrefixes(ctx, opt, repo, in.TargetDSP.Revision())
 	return skip, err
 }
 
