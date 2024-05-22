@@ -55,7 +55,7 @@ func skipByCommitMessagePrefixes(ctx context.Context, in Input, opt config.SkipS
 		return false, nil
 	}
 
-	commit, err := repo.GetCommitFromRev(ctx, in.TargetDSP.Revision())
+	commit, err := repo.GetCommitForRev(ctx, in.TargetDSP.Revision())
 	if err != nil {
 		return false, err
 	}

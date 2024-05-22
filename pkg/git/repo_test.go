@@ -243,7 +243,7 @@ func Test_setGCAutoDetach(t *testing.T) {
 	assert.Equal(t, false, got)
 }
 
-func TestGetCommitFromRev(t *testing.T) {
+func TestGetCommitForRev(t *testing.T) {
 	faker, err := newFaker()
 	require.NoError(t, err)
 	defer faker.clean()
@@ -265,7 +265,7 @@ func TestGetCommitFromRev(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 1, len(commits))
 
-	commit, err := r.GetCommitFromRev(ctx, "HEAD")
+	commit, err := r.GetCommitForRev(ctx, "HEAD")
 	require.NoError(t, err)
 	assert.Equal(t, commits[0].Hash, commit.Hash)
 }

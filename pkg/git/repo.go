@@ -39,7 +39,7 @@ type Repo interface {
 	ListCommits(ctx context.Context, visionRange string) ([]Commit, error)
 	GetLatestCommit(ctx context.Context) (Commit, error)
 	GetCommitHashForRev(ctx context.Context, rev string) (string, error)
-	GetCommitFromRev(ctx context.Context, rev string) (Commit, error)
+	GetCommitForRev(ctx context.Context, rev string) (Commit, error)
 	ChangedFiles(ctx context.Context, from, to string) ([]string, error)
 	Checkout(ctx context.Context, commitish string) error
 	CheckoutPullRequest(ctx context.Context, number int, branch string) error
