@@ -24,7 +24,7 @@ import (
 )
 
 // CheckSkipStage checks whether the stage should be skipped or not.
-func CheckSkipStage(ctx context.Context, in Input, opt config.SkipStageOptions) (skip bool, err error) {
+func CheckSkipStage(ctx context.Context, in Input, opt config.SkipOptions) (skip bool, err error) {
 	if opt.Paths == nil && len(opt.CommitMessagePrefixes) == 0 {
 		// When no condition is specified for skipping.
 		return false, nil
@@ -50,7 +50,7 @@ func CheckSkipStage(ctx context.Context, in Input, opt config.SkipStageOptions) 
 	return skip, err
 }
 
-func skipByCommitMessagePrefixes(ctx context.Context, in Input, opt config.SkipStageOptions, repo git.Repo) (skip bool, err error) {
+func skipByCommitMessagePrefixes(ctx context.Context, in Input, opt config.SkipOptions, repo git.Repo) (skip bool, err error) {
 	if len(opt.CommitMessagePrefixes) > 0 {
 		return false, nil
 	}
@@ -69,7 +69,7 @@ func skipByCommitMessagePrefixes(ctx context.Context, in Input, opt config.SkipS
 	return false, nil
 }
 
-func skipByPathPattern(ctx context.Context, in Input, opt config.SkipStageOptions, repo git.Repo) (skip bool, err error) {
+func skipByPathPattern(ctx context.Context, in Input, opt config.SkipOptions, repo git.Repo) (skip bool, err error) {
 	if opt.Paths == nil {
 		return false, nil
 	}

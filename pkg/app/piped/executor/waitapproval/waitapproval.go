@@ -53,7 +53,7 @@ func Register(r registerer) {
 // Execute starts waiting until an approval from one of the specified users.
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	// Skip the stage if needed based on the skip config.
-	skip, err := executor.CheckSkipStage(sig.Context(), e.Input, e.StageConfig.WaitApprovalStageOptions.SkipStageOptions)
+	skip, err := executor.CheckSkipStage(sig.Context(), e.Input, e.StageConfig.WaitApprovalStageOptions.SkipOptions)
 	if err != nil {
 		e.Logger.Error("failed to check whether skipping the stage", zap.Error(err))
 		return model.StageStatus_STAGE_FAILURE
