@@ -29,6 +29,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/registry"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/skipstage"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/logpersister"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/metadatastore"
 	pln "github.com/pipe-cd/pipecd/pkg/app/piped/planner"
@@ -537,6 +538,18 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	// Skip the stage if needed based on the skip config.
+	skip, err := s.checkSkipStage(sig.Context(), input)
+	if err != nil {
+		lp.Errorf("failed to check whether skipping the stage", zap.Error(err))
+		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
+		return model.StageStatus_STAGE_FAILURE
+	}
+	if skip {
+		lp.Infof("The stage was successfully skipped due to the skip configuration of the stage.")
+		return model.StageStatus_STAGE_SKIPPED
+	}
+
 	// Start running executor.
 	status := ex.Execute(sig)
 
@@ -685,6 +698,25 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	}
 
 	return err
+}
+
+func (s *scheduler) checkSkipStage(ctx context.Context, in executor.Input) (skip bool, err error) {
+	stageConfig := in.StageConfig
+	var skipOptions config.SkipOptions
+	switch stageConfig.Name {
+	case model.StageAnalysis:
+		skipOptions = stageConfig.AnalysisStageOptions.SkipOn
+	case model.StageWait:
+		skipOptions = stageConfig.WaitStageOptions.SkipOn
+	case model.StageWaitApproval:
+		skipOptions = stageConfig.WaitApprovalStageOptions.SkipOn
+	case model.StageScriptRun:
+		skipOptions = stageConfig.ScriptRunStageOptions.SkipOn
+	default:
+		return false, nil
+	}
+
+	return skipstage.CheckSkipStage(ctx, in, skipOptions)
 }
 
 func (s *scheduler) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {

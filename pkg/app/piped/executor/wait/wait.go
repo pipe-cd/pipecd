@@ -22,7 +22,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/skipstage"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -52,16 +51,6 @@ func Register(r registerer) {
 
 // Execute starts waiting for the specified duration.
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
-	// Skip the stage if needed based on the skip config.
-	skip, err := skipstage.CheckSkipStage(sig.Context(), e.Input, e.StageConfig.WaitStageOptions.SkipOn)
-	if err != nil {
-		e.Logger.Error("failed to check whether skipping the stage", zap.Error(err))
-		return model.StageStatus_STAGE_FAILURE
-	}
-	if skip {
-		return model.StageStatus_STAGE_SKIPPED
-	}
-
 	var (
 		originalStatus = e.Stage.Status
 		duration       = defaultDuration

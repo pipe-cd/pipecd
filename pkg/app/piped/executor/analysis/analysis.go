@@ -29,7 +29,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/metrics"
 	metricsfactory "github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/metrics/factory"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/skipstage"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -63,16 +62,6 @@ func Register(r registerer) {
 // Execute spawns and runs multiple analyzer that run a query at the regular time.
 // Any of those fail then the stage ends with failure.
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
-	// Skip the stage if needed based on the skip config.
-	skip, err := skipstage.CheckSkipStage(sig.Context(), e.Input, e.StageConfig.AnalysisStageOptions.SkipOn)
-	if err != nil {
-		e.Logger.Error("failed to check whether skipping the stage", zap.Error(err))
-		return model.StageStatus_STAGE_FAILURE
-	}
-	if skip {
-		return model.StageStatus_STAGE_SKIPPED
-	}
-
 	e.startTime = time.Now()
 	ctx := sig.Context()
 	options := e.StageConfig.AnalysisStageOptions
