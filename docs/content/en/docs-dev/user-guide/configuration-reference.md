@@ -578,6 +578,13 @@ Note: The available values are identical to those found in the aws-sdk-go-v2 Typ
 | Field | Type | Description | Required |
 |-|-|-|-|
 
+## SkipOptions
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| commitMessagePrefixes | []string | List of prefixes. When the prefix of the commit's message matches any of them, the stage will be skipped. Empty means the stage will not be skipped by this condition. | No |
+| paths | []string | List of directories or files. When all changes of the commit match them, the stage will be skipped. Empty means the stage will not be skipped by this condition. Regular expression can be used. | No |
+
 ## StageOptions
 
 ### KubernetesPrimaryRolloutStageOptions
@@ -685,12 +692,14 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 |-|-|-|-|
 | duration | duration | Maximum time to perform the analysis. | Yes |
 | metrics | [][AnalysisMetrics](#analysismetrics) | Configuration for analysis by metrics. | No |
+| skipOn | [SkipOptions](#skipoptions) | When to skip this stage. | No |
 
 ### WaitStageOptions
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 | duration | duration | Time to wait. | Yes |
+| skipOn | [SkipOptions](#skipoptions) | When to skip this stage. | No |
 
 ### WaitApprovalStageOptions
 
@@ -699,6 +708,7 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | timeout | duration | The maximum length of time to wait before giving up. Default is 6h. | No |
 | approvers | []string | List of username who has permission to approve. | Yes |
 | minApproverNum | int | Number of minimum needed approvals to make this stage complete. Default is 1. | No |
+| skipOn | [SkipOptions](#skipoptions) | When to skip this stage. | No |
 
 ### CustomSyncStageOptions (deprecated)
 | Field | Type | Description | Required |
@@ -713,6 +723,7 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | run | string | Script run on this stage. | Yes |
 | env | map[string]string | Environment variables used with scripts. | No |
 | timeout | duration | The maximum time the stage can be taken to run. Default is `6h`| No |
+| skipOn | [SkipOptions](#skipoptions) | When to skip this stage. | No |
 
 ## PostSync
 
