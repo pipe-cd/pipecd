@@ -60,13 +60,16 @@ func skipByCommitMessagePrefixes(ctx context.Context, opt config.SkipOptions, re
 		return false, err
 	}
 
-	for _, prefix := range opt.CommitMessagePrefixes {
-		if strings.HasPrefix(commit.Message, prefix) {
-			return true, nil
+	return commitMessageHasAnyPrefix(commit.Message, opt.CommitMessagePrefixes), nil
+}
+
+func commitMessageHasAnyPrefix(commitMessage string, prefixes []string) bool {
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(commitMessage, prefix) {
+			return true
 		}
 	}
-
-	return false, nil
+	return false
 }
 
 func skipByPathPattern(ctx context.Context, opt config.SkipOptions, repo git.Repo, runningRev, targetRev string) (skip bool, err error) {
@@ -78,18 +81,11 @@ func skipByPathPattern(ctx context.Context, opt config.SkipOptions, repo git.Rep
 	if err != nil {
 		return false, err
 	}
-	// TODO: Which should we choose when no file is changed? (e.g. when SYNC command is executed from Console)
-	//       hasOnlyPathToSkip() returns true in this case.
-	// if len(changedFiles) == 0 {
-	// 	return false, err
-	// }
-
 	return hasOnlyPathsToSkip(opt.Paths, changedFiles)
 }
 
 // hasOnlyPathsToSkip returns true if and only if all changed files are included in `skipPatterns`.
-// If any changed file is not included in `skipPatterns`, it returns false.
-// If `changedFiles` is empty, it returns true.
+// If any changed file does not match all `skipPatterns`, it returns false.
 func hasOnlyPathsToSkip(skipPatterns []string, changedFiles []string) (bool, error) {
 	matcher, err := filematcher.NewPatternMatcher(skipPatterns)
 	if err != nil {
