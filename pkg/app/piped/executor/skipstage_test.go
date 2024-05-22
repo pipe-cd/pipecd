@@ -21,7 +21,40 @@ import (
 )
 
 func TestSkipByCommitMessagePrefixes(t *testing.T) {
+	t.Parallel()
+	testcases := []struct {
+		name          string
+		commitMessage string
+		prefixes      []string
+		skip          bool
+	}{
+		{
+			name:          "no prefixes",
+			commitMessage: "test message",
+			prefixes:      []string{},
+			skip:          false,
+		},
+		{
+			name:          "no commit message",
+			commitMessage: "",
+			prefixes:      []string{"to-skip"},
+			skip:          false,
+		},
+		{
+			name:          "prefix matches",
+			commitMessage: "to-skip: test message",
+			prefixes:      []string{"to-skip"},
+			skip:          true,
+		},
+	}
 
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			skip := commitMessageHasAnyPrefix(tc.commitMessage, tc.prefixes)
+			assert.Equal(t, tc.skip, skip)
+		})
+	}
 }
 
 func TestHasOnlyPathsToSkip(t *testing.T) {
