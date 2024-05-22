@@ -75,19 +75,13 @@ func TestHasOnlyPathsToSkip(t *testing.T) {
 			skip:         true,
 		},
 		{
-			name:         "skip files not recursively",
-			skipPatterns: []string{"dir1/*"},
-			changedFiles: []string{"dir1/sub/file2"},
-			skip:         false,
-		},
-		{
 			name:         "skip files with the extension recursively",
-			skipPatterns: []string{"dir1/**.yaml"},
-			changedFiles: []string{"dir1/file1.yaml", "dir1/sub/file2.yaml"},
+			skipPatterns: []string{"dir1/**/*.yaml"},
+			changedFiles: []string{"dir1/file1.yaml", "dir1/sub1/file2.yaml", "dir1/sub1/sub2/file3.yaml"},
 			skip:         true,
 		},
 		{
-			name:         "skip files with the extension not recursively",
+			name:         "skip files not recursively",
 			skipPatterns: []string{"*.yaml"},
 			changedFiles: []string{"dir1/file1.yaml"},
 			skip:         false,
