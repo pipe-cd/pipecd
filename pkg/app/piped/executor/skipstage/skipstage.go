@@ -52,7 +52,7 @@ func CheckSkipStage(ctx context.Context, in executor.Input, opt config.SkipOptio
 }
 
 func skipByCommitMessagePrefixes(ctx context.Context, opt config.SkipOptions, repo git.Repo, targetRev string) (skip bool, err error) {
-	if len(opt.CommitMessagePrefixes) > 0 {
+	if len(opt.CommitMessagePrefixes) == 0 {
 		return false, nil
 	}
 
@@ -74,7 +74,7 @@ func commitMessageHasAnyPrefix(commitMessage string, prefixes []string) bool {
 }
 
 func skipByPathPattern(ctx context.Context, opt config.SkipOptions, repo git.Repo, runningRev, targetRev string) (skip bool, err error) {
-	if opt.Paths == nil {
+	if len(opt.Paths) == 0 {
 		return false, nil
 	}
 
