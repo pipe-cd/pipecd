@@ -37,7 +37,7 @@ func CheckSkipStage(ctx context.Context, in Input, opt config.SkipOptions) (skip
 	}
 
 	// Check by path pattern
-	skip, err = skipByPathPattern(ctx, in, opt, clonedRepo)
+	skip, err = skipByPathPattern(ctx, opt, clonedRepo, in.RunningDSP.Revision(), in.TargetDSP.Revision())
 	if err != nil {
 		return false, err
 	}
@@ -46,16 +46,16 @@ func CheckSkipStage(ctx context.Context, in Input, opt config.SkipOptions) (skip
 	}
 
 	// Check by prefix of Git commit message
-	skip, err = skipByCommitMessagePrefixes(ctx, in, opt, clonedRepo)
+	skip, err = skipByCommitMessagePrefixes(ctx, opt, clonedRepo, in.TargetDSP.Revision())
 	return skip, err
 }
 
-func skipByCommitMessagePrefixes(ctx context.Context, in Input, opt config.SkipOptions, repo git.Repo) (skip bool, err error) {
+func skipByCommitMessagePrefixes(ctx context.Context, opt config.SkipOptions, repo git.Repo, targetRev string) (skip bool, err error) {
 	if len(opt.CommitMessagePrefixes) > 0 {
 		return false, nil
 	}
 
-	commit, err := repo.GetCommitForRev(ctx, in.TargetDSP.Revision())
+	commit, err := repo.GetCommitForRev(ctx, targetRev)
 	if err != nil {
 		return false, err
 	}
@@ -69,12 +69,12 @@ func skipByCommitMessagePrefixes(ctx context.Context, in Input, opt config.SkipO
 	return false, nil
 }
 
-func skipByPathPattern(ctx context.Context, in Input, opt config.SkipOptions, repo git.Repo) (skip bool, err error) {
+func skipByPathPattern(ctx context.Context, opt config.SkipOptions, repo git.Repo, runningRev, targetRev string) (skip bool, err error) {
 	if opt.Paths == nil {
 		return false, nil
 	}
 
-	changedFiles, err := repo.ChangedFiles(ctx, in.RunningDSP.Revision(), in.TargetDSP.Revision())
+	changedFiles, err := repo.ChangedFiles(ctx, runningRev, targetRev)
 	if err != nil {
 		return false, err
 	}
