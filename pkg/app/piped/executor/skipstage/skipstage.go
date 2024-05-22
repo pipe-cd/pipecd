@@ -12,26 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package executor
+package skipstage
 
 import (
 	"context"
 	"strings"
 
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/filematcher"
 	"github.com/pipe-cd/pipecd/pkg/git"
 )
 
 // CheckSkipStage checks whether the stage should be skipped or not.
-func CheckSkipStage(ctx context.Context, in Input, opt config.SkipOptions) (skip bool, err error) {
+func CheckSkipStage(ctx context.Context, in executor.Input, opt config.SkipOptions) (skip bool, err error) {
 	if opt.Paths == nil && len(opt.CommitMessagePrefixes) == 0 {
 		// When no condition is specified for skipping.
 		return false, nil
 	}
 
-	appRepo := in.Application.GitPath.Repo
-	clonedRepo, err := in.GitClient.Clone(ctx, appRepo.Id, appRepo.Remote, appRepo.Branch, "")
+	repoCfg := in.Application.GitPath.Repo
+	clonedRepo, err := in.GitClient.Clone(ctx, repoCfg.Id, repoCfg.Remote, repoCfg.Branch, "")
 	if err != nil {
 		return false, err
 	}
