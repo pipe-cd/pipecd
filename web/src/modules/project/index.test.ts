@@ -1,4 +1,9 @@
 import { projectSlice, fetchProject, updateStaticAdmin } from "./";
+import { parseRBACPolicies, formalizePoliciesList } from "./index";
+import {
+  ProjectRBACPolicy,
+  ProjectRBACResource,
+} from "pipecd/web/model/project_pb";
 
 describe("projectSlice reducer", () => {
   it("should return the initial state", () => {
@@ -194,5 +199,235 @@ describe("projectSlice reducer", () => {
       userGroups: [],
       rbacRoles: [],
     });
+  });
+});
+
+describe("parseRBACPolicies", () => {
+  it("should parse RBAC policies all", () => {
+    const policies = parseRBACPolicies({ policies: "resources=*;actions=*" });
+    const expected = [
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.ALL,
+            labelsMap: [],
+          },
+        ],
+        actionsList: [ProjectRBACPolicy.Action.ALL],
+      },
+    ];
+    expect(policies[0].toObject()).toEqual(expected[0]);
+  });
+
+  it("should parse RBAC policies with resources and actions specified", () => {
+    const policies = parseRBACPolicies({
+      policies: "resources=application;actions=get,create",
+    });
+    const expected = [
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.APPLICATION,
+            labelsMap: [],
+          },
+        ],
+        actionsList: [
+          ProjectRBACPolicy.Action.GET,
+          ProjectRBACPolicy.Action.CREATE,
+        ],
+      },
+    ];
+    expect(policies[0].toObject()).toEqual(expected[0]);
+  });
+
+  it("should parse RBAC policies with multiple resources and actions specified", () => {
+    const policies = parseRBACPolicies({
+      policies: "resources=application,deployment;actions=get,create",
+    });
+    const expected = [
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.APPLICATION,
+            labelsMap: [],
+          },
+          {
+            type: ProjectRBACResource.ResourceType.DEPLOYMENT,
+            labelsMap: [],
+          },
+        ],
+        actionsList: [
+          ProjectRBACPolicy.Action.GET,
+          ProjectRBACPolicy.Action.CREATE,
+        ],
+      },
+    ];
+    expect(policies[0].toObject()).toEqual(expected[0]);
+  });
+
+  it("should parse RBAC policies with multiple policies", () => {
+    const policies = parseRBACPolicies({
+      policies: `resources=application;actions=get
+
+resources=deployment;actions=get,create`,
+    });
+    const expected = [
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.APPLICATION,
+            labelsMap: [],
+          },
+        ],
+        actionsList: [ProjectRBACPolicy.Action.GET],
+      },
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.DEPLOYMENT,
+            labelsMap: [],
+          },
+        ],
+        actionsList: [
+          ProjectRBACPolicy.Action.GET,
+          ProjectRBACPolicy.Action.CREATE,
+        ],
+      },
+    ];
+    expect(policies[0].toObject()).toEqual(expected[0]);
+    expect(policies[1].toObject()).toEqual(expected[1]);
+  });
+
+  it("should parse RBAC policies with multiple policies resources labels", () => {
+    const policies = parseRBACPolicies({
+      policies: `resources=*{env:dev};actions=*
+
+resources=application,deployment{env:dev,team:frontend};actions=get,create`,
+    });
+    const expected = [
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.ALL,
+            labelsMap: [["env", "dev"]],
+          },
+        ],
+        actionsList: [ProjectRBACPolicy.Action.ALL],
+      },
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.APPLICATION,
+            labelsMap: [],
+          },
+          {
+            type: ProjectRBACResource.ResourceType.DEPLOYMENT,
+            labelsMap: [
+              ["env", "dev"],
+              ["team", "frontend"],
+            ],
+          },
+        ],
+        actionsList: [
+          ProjectRBACPolicy.Action.GET,
+          ProjectRBACPolicy.Action.CREATE,
+        ],
+      },
+    ];
+    expect(policies[0].toObject()).toEqual(expected[0]);
+    expect(policies[1].toObject()).toEqual(expected[1]);
+  });
+
+  it("should parse RBAC policies with resources labels", () => {
+    const policies = parseRBACPolicies({
+      policies:
+        "resources=application{env:dev,team:frontend},deployment;actions=get,create",
+    });
+    const expected = [
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.APPLICATION,
+            labelsMap: [
+              ["env", "dev"],
+              ["team", "frontend"],
+            ],
+          },
+          {
+            type: ProjectRBACResource.ResourceType.DEPLOYMENT,
+            labelsMap: [],
+          },
+        ],
+        actionsList: [
+          ProjectRBACPolicy.Action.GET,
+          ProjectRBACPolicy.Action.CREATE,
+        ],
+      },
+    ];
+    expect(policies[0].toObject()).toEqual(expected[0]);
+  });
+});
+
+describe("formalizePoliciesList", () => {
+  it("should formalize policies list", () => {
+    const policies: ProjectRBACPolicy.AsObject[] = [
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.ALL,
+            labelsMap: [],
+          },
+        ],
+        actionsList: [ProjectRBACPolicy.Action.ALL],
+      },
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.APPLICATION,
+            labelsMap: [],
+          },
+          {
+            type: ProjectRBACResource.ResourceType.DEPLOYMENT,
+            labelsMap: [],
+          },
+        ],
+        actionsList: [
+          ProjectRBACPolicy.Action.GET,
+          ProjectRBACPolicy.Action.CREATE,
+        ],
+      },
+    ];
+    const formalized = formalizePoliciesList({ policiesList: policies });
+    const expected = `resources=*;actions=*
+
+resources=application,deployment;actions=get,create`;
+    expect(formalized).toEqual(expected);
+  });
+
+  it("should formalize policies list labels", () => {
+    const policies: ProjectRBACPolicy.AsObject[] = [
+      {
+        resourcesList: [
+          {
+            type: ProjectRBACResource.ResourceType.APPLICATION,
+            labelsMap: [
+              ["env", "dev"],
+              ["team", "frontend"],
+            ],
+          },
+          {
+            type: ProjectRBACResource.ResourceType.DEPLOYMENT,
+            labelsMap: [],
+          },
+        ],
+        actionsList: [
+          ProjectRBACPolicy.Action.GET,
+          ProjectRBACPolicy.Action.CREATE,
+        ],
+      },
+    ];
+    const formalized = formalizePoliciesList({ policiesList: policies });
+    const expected = `resources=application{env:dev,team:frontend},deployment;actions=get,create`;
+    expect(formalized).toEqual(expected);
   });
 });
