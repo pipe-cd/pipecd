@@ -17,7 +17,7 @@ package cloudrun
 import (
 	"testing"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/cloudrun"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/cloudrun"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -17,8 +17,8 @@ package terraform
 import (
 	"context"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/terraform"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/terraform"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 

@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )

@@ -18,12 +18,12 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/planner"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/planner/cloudrun"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/planner/ecs"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/planner/kubernetes"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/planner/lambda"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/planner/terraform"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/planner"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/planner/cloudrun"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/planner/ecs"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/planner/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/planner/lambda"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/planner/terraform"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 

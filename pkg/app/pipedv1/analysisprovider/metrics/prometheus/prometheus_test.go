@@ -24,7 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/metrics"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/analysisprovider/metrics"
 )
 
 func TestType(t *testing.T) {

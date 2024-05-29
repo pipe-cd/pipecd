@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/planner"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/planner"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )

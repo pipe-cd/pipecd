@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
-	terraformprovider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/terraform"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
+	terraformprovider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/terraform"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 

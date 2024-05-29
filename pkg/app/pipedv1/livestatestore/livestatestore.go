@@ -25,12 +25,12 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/cloudrun"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/ecs"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/kubernetes"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/lambda"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/terraform"
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatestore/cloudrun"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatestore/ecs"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatestore/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatestore/lambda"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatestore/terraform"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )

@@ -18,8 +18,8 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 
