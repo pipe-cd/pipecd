@@ -476,14 +476,14 @@ func (p *Project) AddRBACRole(name string, policies []*ProjectRBACPolicy) error 
 // UpdateRBACRole updates a custom RBAC role.
 // Built-in role cannot be updated.
 func (p *Project) UpdateRBACRole(name string, policies []*ProjectRBACPolicy) error {
+	if isBuiltinRBACRole(name) {
+		return fmt.Errorf("built-in role cannot be updated")
+	}
 	for _, v := range p.RbacRoles {
 		if v.Name == name {
 			v.Policies = policies
 			return nil
 		}
-	}
-	if isBuiltinRBACRole(name) {
-		return fmt.Errorf("built-in role cannot be updated")
 	}
 	return fmt.Errorf("%s role does not exist", name)
 }

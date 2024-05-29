@@ -21,7 +21,7 @@ import (
 	"github.com/google/uuid"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 

@@ -779,7 +779,9 @@ func TestProject_UpdateRBACRole(t *testing.T) {
 					},
 				},
 			},
-			project: &Project{},
+			project: &Project{
+				RbacRoles: []*ProjectRBACRole{builtinAdminRBACRole},
+			},
 			wantErr: true,
 		},
 	}

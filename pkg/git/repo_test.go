@@ -206,7 +206,7 @@ func Test_setGCAutoDetach(t *testing.T) {
 	}
 
 	getGCAutoDetach := func(ctx context.Context, repo *repo) (bool, error) {
-		cmd := exec.CommandContext(ctx, r.gitPath, "config", "--get", "gc.autoDetach")
+		cmd := exec.CommandContext(ctx, repo.gitPath, "config", "--get", "gc.autoDetach")
 		cmd.Dir = r.dir
 		out, err := cmd.CombinedOutput()
 		if err != nil {
@@ -241,6 +241,41 @@ func Test_setGCAutoDetach(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, false, got)
+}
+
+func TestCopy(t *testing.T) {
+	faker, err := newFaker()
+	require.NoError(t, err)
+	defer faker.clean()
+
+	var (
+		org      = "test-repo-org"
+		repoName = "repo-copy"
+		ctx      = context.Background()
+	)
+
+	err = faker.makeRepo(org, repoName)
+	require.NoError(t, err)
+	r := &repo{
+		dir:     faker.repoDir(org, repoName),
+		gitPath: faker.gitPath,
+	}
+
+	commits, err := r.ListCommits(ctx, "")
+	require.NoError(t, err)
+	assert.Equal(t, 1, len(commits))
+
+	tmpDir := filepath.Join(faker.dir, "tmp-repo")
+	newRepo, err := r.Copy(tmpDir)
+	require.NoError(t, err)
+
+	assert.NotEqual(t, r, newRepo)
+
+	newRepoCommits, err := newRepo.ListCommits(ctx, "")
+	require.NoError(t, err)
+	assert.Equal(t, 1, len(newRepoCommits))
+
+	assert.Equal(t, commits, newRepoCommits)
 }
 
 func TestGetCommitForRev(t *testing.T) {

@@ -25,7 +25,7 @@ import (
 	istiov1alpha3 "istio.io/api/networking/v1alpha3"
 	istiov1beta1 "istio.io/api/networking/v1beta1"
 
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )

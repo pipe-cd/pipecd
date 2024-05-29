@@ -25,9 +25,9 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatereporter/cloudrun"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatereporter/kubernetes"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatereporter/cloudrun"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatereporter/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatestore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"

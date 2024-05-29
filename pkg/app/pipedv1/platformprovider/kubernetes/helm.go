@@ -26,8 +26,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/chartrepo"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/chartrepo"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 

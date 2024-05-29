@@ -20,7 +20,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 
@@ -229,25 +228,6 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 // Clean removes all cache data.
 func (c *client) Clean() error {
 	return os.RemoveAll(c.cacheDir)
-}
-
-// getLatestRemoteHashForBranch returns the hash of the latest commit of a remote branch.
-func (c *client) getLatestRemoteHashForBranch(ctx context.Context, remote, branch string) (string, error) {
-	ref := "refs/heads/" + branch
-	out, err := retryCommand(3, time.Second, c.logger, func() ([]byte, error) {
-		return runGitCommand(ctx, c.gitPath, "", c.envsForRepo(remote), "ls-remote", ref)
-	})
-	if err != nil {
-		c.logger.Error("failed to get latest remote hash for branch",
-			zap.String("remote", remote),
-			zap.String("branch", branch),
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return "", err
-	}
-	parts := strings.Split(string(out), "\t")
-	return parts[0], nil
 }
 
 func (c *client) lockRepo(repoID string) {
