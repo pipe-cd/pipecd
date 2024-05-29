@@ -392,7 +392,7 @@ func TestParseGitURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parseGitURL(tt.rawURL)
+			got, err := ParseGitURL(tt.rawURL)
 			assert.Equal(t, tt.wantErr, err != nil)
 			assert.Equal(t, got, tt.wantURL)
 		})
