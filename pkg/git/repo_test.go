@@ -206,7 +206,7 @@ func Test_setGCAutoDetach(t *testing.T) {
 	}
 
 	getGCAutoDetach := func(ctx context.Context, repo *repo) (bool, error) {
-		cmd := exec.CommandContext(ctx, r.gitPath, "config", "--get", "gc.autoDetach")
+		cmd := exec.CommandContext(ctx, repo.gitPath, "config", "--get", "gc.autoDetach")
 		cmd.Dir = r.dir
 		out, err := cmd.CombinedOutput()
 		if err != nil {
