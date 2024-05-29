@@ -29,7 +29,7 @@ import (
 	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider"
 	"github.com/pipe-cd/pipecd/pkg/backoff"
 	appconfig "github.com/pipe-cd/pipecd/pkg/config"
 )

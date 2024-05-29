@@ -22,8 +22,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/planner"
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/terraform"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/planner"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/terraform"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 

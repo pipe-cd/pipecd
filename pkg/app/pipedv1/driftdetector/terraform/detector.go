@@ -25,10 +25,10 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/terraform"
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/terraform"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/sourceprocesser"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/livestatestore/terraform"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/terraform"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/sourceprocesser"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/git"

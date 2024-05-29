@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/cloudrun"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/diff"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )

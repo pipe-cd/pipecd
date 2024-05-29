@@ -23,7 +23,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/sourceprocesser"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/sourceprocesser"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )

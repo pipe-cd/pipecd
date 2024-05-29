@@ -20,8 +20,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/log"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/log/stackdriver"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/analysisprovider/log"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/analysisprovider/log/stackdriver"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )

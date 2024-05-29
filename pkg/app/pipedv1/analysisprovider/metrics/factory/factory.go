@@ -22,9 +22,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/metrics"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/metrics/datadog"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/metrics/prometheus"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/analysisprovider/metrics"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/analysisprovider/metrics/datadog"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/analysisprovider/metrics/prometheus"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
