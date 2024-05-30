@@ -20,7 +20,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSkipByCommitMessagePrefixes(t *testing.T) {
+func TestCommitMessageHasAnyPrefix(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		name          string
