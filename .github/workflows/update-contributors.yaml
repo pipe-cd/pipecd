@@ -12,9 +12,13 @@ jobs:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       - run: |
           make gen/contributions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           title: "[docs] Update contributors"
+          commit-message: "Update contributors"
           signoff: true
           token: ${{ secrets.GITHUB_TOKEN }}
+          delete-branch: true
