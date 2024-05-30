@@ -13,12 +13,12 @@ jobs:
       - run: |
           make gen/contributions
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # `gh` command requires this token.
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
-          title: "[docs] Update contributors"
-          commit-message: "Update contributors"
+          title: "[docs][bot] Update contributors"
+          commit-message: "[docs][bot] Update contributors"
           signoff: true
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true
