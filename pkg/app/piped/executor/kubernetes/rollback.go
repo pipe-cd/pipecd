@@ -17,7 +17,6 @@ package kubernetes
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -69,7 +68,7 @@ func (e *rollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		e.LogPersister.Errorf("failed to fetch preferred resources: %v", zap.Error(err))
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.Info(fmt.Sprintf("successfully preferred resources that contains for %d groups", len(groupResources)))
+	e.LogPersister.Infof("successfully preferred resources that contains for %d groups", len(groupResources))
 
 	e.isNamespacedResources = make(map[schema.GroupVersionKind]bool)
 	for _, gr := range groupResources {
