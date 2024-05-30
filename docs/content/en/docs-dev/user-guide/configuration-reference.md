@@ -582,8 +582,8 @@ Note: The available values are identical to those found in the aws-sdk-go-v2 Typ
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| commitMessagePrefixes | []string | List of prefixes. When the prefix of the commit's message matches any of them, the stage will be skipped. Empty means the stage will not be skipped by this condition. | No |
-| paths | []string | List of directories or files. When all changes of the commit match them, the stage will be skipped. Empty means the stage will not be skipped by this condition. Regular expression can be used. | No |
+| commitMessagePrefixes | []string | List of commit message's prefixes. The stage will be skipped when the prefix of the commit's message matches any of them. Empty means the stage will not be skipped by this condition. | No |
+| paths | []string | List of paths to directories or files. When all commit changes match them, the stage will be skipped. Empty means the stage will not be skipped by this condition. Regular expression can be used. | No |
 
 ## StageOptions
 
