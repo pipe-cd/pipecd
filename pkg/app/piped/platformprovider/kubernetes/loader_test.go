@@ -17,10 +17,11 @@ package kubernetes
 import (
 	"testing"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 func TestSortManifests(t *testing.T) {

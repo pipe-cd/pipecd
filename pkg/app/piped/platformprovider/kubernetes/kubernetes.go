@@ -17,10 +17,11 @@ package kubernetes
 import (
 	"errors"
 
-	"github.com/pipe-cd/pipecd/pkg/config"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 var (
