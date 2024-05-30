@@ -26,7 +26,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/controllermetrics"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/skipstage"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/registry"
@@ -722,7 +721,7 @@ func (s *scheduler) shouldSkipStage(ctx context.Context, in executor.Input) (ski
 		return false, nil
 	}
 
-	return skipstage.CheckSkipStage(ctx, in, skipOptions)
+	return CheckSkipStage(ctx, in, skipOptions)
 }
 
 func (s *scheduler) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
