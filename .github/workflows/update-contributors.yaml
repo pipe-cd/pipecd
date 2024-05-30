@@ -19,6 +19,7 @@ jobs:
         with:
           title: "[docs][bot] Update contributors"
           commit-message: "[docs][bot] Update contributors"
+          branch: "create-pull-request/update-contributors"
+          delete-branch: true
           signoff: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          delete-branch: true
