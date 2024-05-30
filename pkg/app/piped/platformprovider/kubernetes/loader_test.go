@@ -79,7 +79,7 @@ func TestSortManifests(t *testing.T) {
 	}
 }
 
-func Test_loader_refineNamespace(t *testing.T) {
+func Test_loader_determineNamespace(t *testing.T) {
 	testcases := []struct {
 		name                  string
 		manifest              Manifest
@@ -206,7 +206,7 @@ func Test_loader_refineNamespace(t *testing.T) {
 				isNamespacedResources: tc.isNamespacedResources,
 				input:                 tc.cfgK8sInput,
 			}
-			err := l.refineNamespace(&tc.manifest)
+			err := l.determineNamespace(&tc.manifest)
 
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, tc.manifest.Key.Namespace)

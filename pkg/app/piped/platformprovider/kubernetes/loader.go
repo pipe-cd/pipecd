@@ -171,7 +171,7 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 	// because the namespace is determined not only by its own namespace on the file but also the namespace on the app.pipecd.yaml.
 	for i := range manifests {
 		m := manifests[i]
-		err := l.refineNamespace(&m)
+		err := l.determineNamespace(&m)
 		if err != nil {
 			return nil, err
 		}
@@ -180,14 +180,14 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 	return
 }
 
-// refineNamespace fix the namespace of the given manifest.
+// determineNamespace fix the namespace of the given manifest.
 // The priority is as follows:
 // If the resource is cluster-scoped, it returns an empty string.
 // Otherwise, it is the namespace-scoped resource and the namespace is determined by the following order:
 // 1. The namespace set in the application configuration.
 // 2. The namespace set in the manifest.
 // 3. The default namespace.
-func (l *loader) refineNamespace(m *Manifest) error {
+func (l *loader) determineNamespace(m *Manifest) error {
 	namespaced, ok := l.isNamespacedResources[m.u.GroupVersionKind()]
 	if !ok {
 		return fmt.Errorf("unknown resource kind %s", m.u.GroupVersionKind().String())
