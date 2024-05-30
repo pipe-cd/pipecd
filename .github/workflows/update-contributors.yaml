@@ -17,8 +17,8 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
-          title: "[docs][bot] Update contributors"
-          commit-message: "[docs][bot] Update contributors"
+          title: "[bot] Update contributors"
+          commit-message: "[bot] Update contributors"
           branch: "create-pull-request/update-contributors"
           delete-branch: true
           signoff: true
