@@ -541,7 +541,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	// Skip the stage if needed based on the skip config.
 	skip, err := s.shouldSkipStage(sig.Context(), input)
 	if err != nil {
-		lp.Errorf("failed to check whether skipping the stage", zap.Error(err))
+		lp.Errorf("failed to check whether skipping the stage: %w", err.Error())
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
 			s.logger.Error("failed to report stage status", zap.Error(err))
 		}
