@@ -548,10 +548,11 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		return model.StageStatus_STAGE_FAILURE
 	}
 	if skip {
-		lp.Infof("The stage was successfully skipped due to the skip configuration of the stage.")
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_SKIPPED, ps.Requires); err != nil {
 			s.logger.Error("failed to report stage status", zap.Error(err))
+			return model.StageStatus_STAGE_FAILURE
 		}
+		lp.Infof("The stage was successfully skipped due to the skip configuration of the stage.")
 		return model.StageStatus_STAGE_SKIPPED
 	}
 
