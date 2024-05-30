@@ -24,8 +24,8 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/git"
 )
 
-// CheckSkipStage checks whether the stage should be skipped or not.
-func CheckSkipStage(ctx context.Context, in executor.Input, opt config.SkipOptions) (skip bool, err error) {
+// checkSkipStage checks whether the stage should be skipped or not.
+func checkSkipStage(ctx context.Context, in executor.Input, opt config.SkipOptions) (skip bool, err error) {
 	if len(opt.Paths) == 0 && len(opt.CommitMessagePrefixes) == 0 {
 		// When no condition is specified.
 		return false, nil

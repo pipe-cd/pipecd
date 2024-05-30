@@ -721,7 +721,7 @@ func (s *scheduler) shouldSkipStage(ctx context.Context, in executor.Input) (ski
 		return false, nil
 	}
 
-	return CheckSkipStage(ctx, in, skipOptions)
+	return checkSkipStage(ctx, in, skipOptions)
 }
 
 func (s *scheduler) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
