@@ -3,7 +3,7 @@ name: update-contributors
 on:
   workflow_dispatch:
   schedule:
-    - cron: "00 3 * * 5" # 03:00(UTC) on Every Friday 
+    - cron: "00 3 * * 5" # 03:00(UTC) every Friday 
 
 jobs:
   updateContributors:
