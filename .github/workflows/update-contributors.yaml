@@ -1,0 +1,25 @@
+name: update-contributors
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "00 3 * * 5" # 03:00(UTC) on Every Friday 
+
+jobs:
+  updateContributors:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+      - run: |
+          make gen/contributions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # `gh` command requires this token.
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "[docs][bot] Update contributors"
+          commit-message: "[docs][bot] Update contributors"
+          branch: "create-pull-request/update-contributors"
+          delete-branch: true
+          signoff: true
+          token: ${{ secrets.GITHUB_TOKEN }}
