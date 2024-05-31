@@ -8,6 +8,7 @@
 | Le Van Nghia      | [@nghialv](https://github.com/nghialv)           | nghialv2607@gmail.com                        |
 | Yoshiki Fujikane  | [@ffjlabo](https://github.com/ffjlabo)           | ffjlabo@gmail.com                            |
 | Shinnosuke Sawada | [@Warashi](https://github.com/Warashi)           | shin@warashi.dev                             |
+| Tetsuya Kikuchi   | [@t-kikuc](https://github.com/t-kikuc)           | tkikuchi07f@gmail.com                        |
 
 
 E-mail addresses are expected to be used for reporting security issues. \
