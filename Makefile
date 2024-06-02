@@ -198,7 +198,6 @@ update/copyright:
 
 .PHONY: gen/code
 gen/code:
-	# NOTE: Specify a specific version temporally until the next release.
 	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:c3a50d18213a033f4421b738cccb4ac35fd422cd5f20593c72fbbf8df2c7e11e /repo #v0.47.0-38-gfb30821
 
 .PHONY: gen/test-tls
