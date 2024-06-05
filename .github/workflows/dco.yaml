@@ -1,4 +1,4 @@
-name: DCO
+name: DCO-workaround
 on:
   pull_request:
   push:
