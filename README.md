@@ -162,6 +162,7 @@ You can find a list of publicly recognized users of the PipeCD in the [ADOPTERS.
 <a href="https://github.com/GotoRen"><img src="https://avatars.githubusercontent.com/u/63791288?v=4" title="GotoRen" width="80" height="80"></a>
 <a href="https://github.com/RikiyaFujii"><img src="https://avatars.githubusercontent.com/u/23261497?v=4" title="RikiyaFujii" width="80" height="80"></a>
 <a href="https://github.com/SakataAtsuki"><img src="https://avatars.githubusercontent.com/u/58636635?v=4" title="SakataAtsuki" width="80" height="80"></a>
+<a href="https://app.fossa.com/projects/git%2Bgithub.com%2Fpipe-cd%2Fpipecd?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Fpipe-cd%2Fpipecd.svg?type=shield"/></a>
 
 #
 
@@ -170,3 +171,7 @@ You can find a list of publicly recognized users of the PipeCD in the [ADOPTERS.
 <img src="https://www.cncf.io/wp-content/uploads/2022/07/cncf-color-bg.svg" width=300 />
 
 The Linux Foundation® (TLF) has registered trademarks and uses trademarks. For a list of TLF trademarks, see [Trademark Usage](https://www.linuxfoundation.org/trademark-usage/).
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fpipe-cd%2Fpipecd.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fpipe-cd%2Fpipecd?ref=badge_large)
