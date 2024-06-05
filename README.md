@@ -170,3 +170,7 @@ You can find a list of publicly recognized users of the PipeCD in the [ADOPTERS.
 <img src="https://www.cncf.io/wp-content/uploads/2022/07/cncf-color-bg.svg" width=300 />
 
 The Linux Foundation® (TLF) has registered trademarks and uses trademarks. For a list of TLF trademarks, see [Trademark Usage](https://www.linuxfoundation.org/trademark-usage/).
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fpipe-cd%2Fpipecd.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fpipe-cd%2Fpipecd?ref=badge_large)
