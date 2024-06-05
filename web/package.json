@@ -75,7 +75,7 @@
     "dayjs": "^1.8.28",
     "dotenv": "^8.2.0",
     "echarts": "^5.4.0",
-    "formik": "^2.2.9",
+    "formik": "^2.4.6",
     "google-protobuf": "^3.15.6",
     "grpc-web": "^1.0.7",
     "history": "^4.10.1",
