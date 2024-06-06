@@ -37,6 +37,8 @@ Currently, besides `Firestore` PipeCD supports other databases as its datastore 
 
 #### Using Firestore and GCS
 
+Here is an example of configuration file:
+
 ``` yaml
 apiVersion: "pipecd.dev/v1beta1"
 kind: ControlPlane
@@ -61,6 +63,8 @@ spec:
 ```
 
 #### Using MySQL and MINIO
+
+Here is an example of configuration file:
 
 __Caution__: In case of using `MySQL` as Control Plane's datastore, please note that the implementation of PipeCD requires some features that only available on [MySQL v8](https://dev.mysql.com/doc/refman/8.0/en/), make sure your MySQL service is satisfied the requirement.
 
@@ -91,7 +95,6 @@ spec:
 
 # PipeCD requires a GCS bucket and service
 # account files to access Firestore and GCS service. 
-# Here is an example of configuration file:
 
 helm upgrade -i pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/latest_version >}} --namespace={NAMESPACE} \
   --set-file config.data=path-to-control-plane-configuration-file \
