@@ -90,6 +90,8 @@ func (c *applicationDataCollector) Execute(ctx context.Context) {
 	}
 }
 
+// listApplications queries the datastore and gets all projects' applications (including disabled/deleted apps)
+// to ensure projects with all applications disabled/deleted are listed as well.
 func (c *applicationDataCollector) listApplications(ctx context.Context) ([]*model.Application, error) {
 	const limit = 100
 	var cursor string
