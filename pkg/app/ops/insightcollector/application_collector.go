@@ -64,6 +64,7 @@ func (c *applicationDataCollector) Execute(ctx context.Context) {
 			appsByProject[project] = make([]*insight.ApplicationData, 0)
 		}
 
+		// Do not count the deleted application.
 		if app.Status == model.ApplicationActiveStatus_DELETED.String() {
 			continue
 		}
