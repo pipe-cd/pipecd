@@ -42,6 +42,9 @@ The Linux Foundation® (TLF) has registered trademarks and uses trademarks. For 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fpipe-cd%2Fpipecd.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fpipe-cd%2Fpipecd?ref=badge_large)
 EOF
 
+# Remove fossabot from the contributors list.
+sed -i '/fossabot/d' README.md.tmp
+
 mv README.md.tmp README.md
 
 echo "Successfully update the contributions list on README.md"
