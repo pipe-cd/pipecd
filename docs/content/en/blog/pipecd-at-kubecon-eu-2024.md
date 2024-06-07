@@ -5,7 +5,7 @@ linkTitle: "PipeCD at CNCF KubeCon EU 2024"
 weight: 988
 author: Khanh Tran ([@khanhtc1202](https://github.com/khanhtc1202))
 categories: ["Announcement"]
-tags: ["Conference"]
+tags: ["Conference", "News"]
 ---
 
 KubeCon EU 2024 is only four more weeks away!

@@ -6,7 +6,7 @@ weight: 993
 description: "Development status update to recap what happened last few months"
 author: Khanh Tran ([@khanhtc1202](https://twitter.com/khanhtc1202))
 categories: ["Announcement"]
-tags: ["What's new"]
+tags: ["News"]
 ---
 
 _Published by the PipeCD dev team every few months, this update will provide you with news and updates about the project! Please click [here](/blog/2022/02/10/february-2022-update/) if you want to see the last status update._
