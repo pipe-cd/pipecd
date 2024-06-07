@@ -43,7 +43,7 @@ The Linux Foundation® (TLF) has registered trademarks and uses trademarks. For 
 EOF
 
 # Remove fossabot from the contributors list.
-sed -i '/fossabot/d' README.md.tmp
+sed -i '' '/fossabot/d' README.md.tmp
 
 mv README.md.tmp README.md
 
