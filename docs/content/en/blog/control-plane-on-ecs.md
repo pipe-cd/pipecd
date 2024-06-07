@@ -5,6 +5,8 @@ linkTitle: "PipeCD best practice 02"
 weight: 992
 description: "This blog is a guideline for you to operate your own PipeCD on Amazon ECS."
 author: Yohei Namba ([@kevin_namba](https://twitter.com/kevin_namba))
+categories: ["Example"]
+tags: ["Control Plane", "AWS"]
 ---
 
 This blog is a part of PipeCD best practice series, a guideline for you to operate your own PipeCD.

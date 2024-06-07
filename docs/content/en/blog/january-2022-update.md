@@ -5,6 +5,8 @@ linkTitle: "January 2022 update"
 weight: 997
 description: "Development status update to recap what happened in December"
 author: Le Van Nghia ([@nghialv](https://twitter.com/nghialv2607))
+categories: ["Announcement"]
+tags: ["What's new"]
 ---
 
 _Published by the PipeCD dev team every month, this update will provide you with news and updates about the project! Please click [here](/blog/2021/11/01/november-2021-update/) if you want to see the last status update._

@@ -5,6 +5,8 @@ linkTitle: "Control Plane on local by docker-compose"
 weight: 989
 description: "This blog shows you how to install a PipeCD Control Plane on local machine easily."
 author: Tetsuya Kikuchi ([@t-kikuc](https://github.com/t-kikuc))
+categories: ["Example"]
+tags: ["Control Plane"]
 ---
 
 Currently, you can deploy and operate a PipeCD Control Plane on a Kubernetes cluster or [on Amazon ECS](/blog/2023/02/07/pipecd-best-practice-02-control-plane-on-ecs/).
