@@ -101,7 +101,7 @@ github_subdir = "docs"
 # gcs_engine_id = "011737558837375720776:fsdu1nryfng"
 offlineSearch = true
 
-# First one is picked as the Twitter card image if not set on page.
+ # First one is picked as the Twitter card image if not set on page.
 images = ["images/ogp-logo.png"]
 
 # User interface configuration
