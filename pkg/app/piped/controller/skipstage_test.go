@@ -15,12 +15,17 @@
 package controller
 
 import (
+	"context"
 	"testing"
 
+	"github.com/golang/mock/gomock"
+	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/git"
+	"github.com/pipe-cd/pipecd/pkg/git/gittest"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCommitMessageHasAnyPrefix(t *testing.T) {
+func TestSkipByCommitMessagePrefixes(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		name          string
@@ -51,8 +56,19 @@ func TestCommitMessageHasAnyPrefix(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			skip := commitMessageHasAnyPrefix(tc.commitMessage, tc.prefixes)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			repoMock := gittest.NewMockRepo(ctrl)
+			repoMock.EXPECT().GetCommitForRev(gomock.Any(), "test-rev").Return(git.Commit{
+				Message: tc.commitMessage,
+			}, nil).AnyTimes()
+
+			opt := config.SkipOptions{
+				CommitMessagePrefixes: tc.prefixes,
+			}
+			skip, err := skipByCommitMessagePrefixes(context.Background(), opt, repoMock, "test-rev")
 			assert.Equal(t, tc.skip, skip)
+			assert.NoError(t, err)
 		})
 	}
 }
