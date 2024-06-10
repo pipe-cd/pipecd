@@ -68,9 +68,8 @@ type detector struct {
 	secretDecrypter   secretDecrypter
 	logger            *zap.Logger
 
-	gitRepos              map[string]git.Repo
-	syncStates            map[string]model.ApplicationSyncState
-	isNamespacedResources map[schema.GroupVersionKind]bool
+	gitRepos   map[string]git.Repo
+	syncStates map[string]model.ApplicationSyncState
 }
 
 func NewDetector(
@@ -89,19 +88,18 @@ func NewDetector(
 		zap.String("platform-provider", cp.Name),
 	)
 	return &detector{
-		provider:              cp,
-		appLister:             appLister,
-		gitClient:             gitClient,
-		stateGetter:           stateGetter,
-		reporter:              reporter,
-		appManifestsCache:     appManifestsCache,
-		interval:              time.Minute,
-		config:                cfg,
-		secretDecrypter:       sd,
-		gitRepos:              make(map[string]git.Repo),
-		syncStates:            make(map[string]model.ApplicationSyncState),
-		isNamespacedResources: make(map[schema.GroupVersionKind]bool),
-		logger:                logger,
+		provider:          cp,
+		appLister:         appLister,
+		gitClient:         gitClient,
+		stateGetter:       stateGetter,
+		reporter:          reporter,
+		appManifestsCache: appManifestsCache,
+		interval:          time.Minute,
+		config:            cfg,
+		secretDecrypter:   sd,
+		gitRepos:          make(map[string]git.Repo),
+		syncStates:        make(map[string]model.ApplicationSyncState),
+		logger:            logger,
 	}
 }
 
@@ -129,8 +127,6 @@ func (d *detector) check(ctx context.Context) {
 		d.logger.Error("failed to get isNamespacedResources", zap.Error(err))
 		return
 	}
-
-	d.isNamespacedResources = isNamespacedResources
 
 	appsByRepo := d.listGroupedApplication()
 
@@ -177,16 +173,16 @@ func (d *detector) check(ctx context.Context) {
 
 		// Start checking all applications in this repository.
 		for _, app := range apps {
-			if err := d.checkApplication(ctx, app, gitRepo, headCommit); err != nil {
+			if err := d.checkApplication(ctx, app, gitRepo, headCommit, isNamespacedResources); err != nil {
 				d.logger.Error(fmt.Sprintf("failed to check application: %s", app.Id), zap.Error(err))
 			}
 		}
 	}
 }
 
-func (d *detector) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit) error {
+func (d *detector) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit, isNamespacedResources map[schema.GroupVersionKind]bool) error {
 	watchingResourceKinds := d.stateGetter.GetWatchingResourceKinds()
-	headManifests, err := d.loadHeadManifests(ctx, app, repo, headCommit, watchingResourceKinds)
+	headManifests, err := d.loadHeadManifests(ctx, app, repo, headCommit, watchingResourceKinds, isNamespacedResources)
 	if err != nil {
 		return err
 	}
@@ -230,7 +226,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 }
 
-func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit, watchingResourceKinds []provider.APIVersionKind) ([]provider.Manifest, error) {
+func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit, watchingResourceKinds []provider.APIVersionKind, isNamespacedResources map[schema.GroupVersionKind]bool) ([]provider.Manifest, error) {
 	var (
 		manifestCache = provider.AppManifestsCache{
 			AppID:  app.Id,
@@ -292,7 +288,7 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 			}
 		}
 
-		loader := provider.NewLoader(app.Name, appDir, repoDir, app.GitPath.ConfigFilename, cfg.KubernetesApplicationSpec.Input, d.isNamespacedResources, d.gitClient, d.logger)
+		loader := provider.NewLoader(app.Name, appDir, repoDir, app.GitPath.ConfigFilename, cfg.KubernetesApplicationSpec.Input, isNamespacedResources, d.gitClient, d.logger)
 		manifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			err = fmt.Errorf("failed to load new manifests: %w", err)
