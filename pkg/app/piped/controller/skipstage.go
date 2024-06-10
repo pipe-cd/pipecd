@@ -86,15 +86,6 @@ func skipByCommitMessagePrefixes(ctx context.Context, opt config.SkipOptions, re
 	return false, nil
 }
 
-func commitMessageHasAnyPrefix(commitMessage string, prefixes []string) bool {
-	for _, prefix := range prefixes {
-		if strings.HasPrefix(commitMessage, prefix) {
-			return true
-		}
-	}
-	return false
-}
-
 // skipByPathPattern returns true if and only if ALL changed files are included in `opt.Paths`.
 // If ANY changed file does not match all `skipPatterns`, it returns false.
 func skipByPathPattern(ctx context.Context, opt config.SkipOptions, repo git.Repo, runningRev, targetRev string) (skip bool, err error) {
@@ -108,23 +99,6 @@ func skipByPathPattern(ctx context.Context, opt config.SkipOptions, repo git.Rep
 	}
 
 	matcher, err := filematcher.NewPatternMatcher(opt.Paths)
-	if err != nil {
-		return false, err
-	}
-
-	for _, changedFile := range changedFiles {
-		if !matcher.Matches(changedFile) {
-			return false, nil
-		}
-	}
-
-	return true, nil
-}
-
-// hasOnlyPathsToSkip returns true if and only if all changed files are included in `skipPatterns`.
-// If any changed file does not match all `skipPatterns`, it returns false.
-func hasOnlyPathsToSkip(skipPatterns []string, changedFiles []string) (bool, error) {
-	matcher, err := filematcher.NewPatternMatcher(skipPatterns)
 	if err != nil {
 		return false, err
 	}

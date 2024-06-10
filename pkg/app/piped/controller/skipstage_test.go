@@ -59,7 +59,7 @@ func TestSkipByCommitMessagePrefixes(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			repoMock := gittest.NewMockRepo(ctrl)
-			repoMock.EXPECT().GetCommitForRev(gomock.Any(), "test-rev").Return(git.Commit{
+			repoMock.EXPECT().GetCommitForRev(gomock.Any(), gomock.Any()).Return(git.Commit{
 				Message: tc.commitMessage,
 			}, nil).AnyTimes()
 
@@ -73,7 +73,7 @@ func TestSkipByCommitMessagePrefixes(t *testing.T) {
 	}
 }
 
-func TestHasOnlyPathsToSkip(t *testing.T) {
+func TestSkipByPathPattern(t *testing.T) {
 	t.Parallel()
 	testcases := []struct {
 		name         string
@@ -97,7 +97,7 @@ func TestHasOnlyPathsToSkip(t *testing.T) {
 			name:         "no skip patterns and no changed files",
 			skipPatterns: nil,
 			changedFiles: nil,
-			skip:         true,
+			skip:         false,
 		},
 		{
 			name:         "skip pattern matches all changed files",
@@ -141,7 +141,15 @@ func TestHasOnlyPathsToSkip(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			// We do not use t.Parallel() here due to https://pkg.go.dev/github.com/pipe-cd/pipecd/pkg/filematcher#PatternMatcher.Matches.
-			actual, err := hasOnlyPathsToSkip(tc.skipPatterns, tc.changedFiles)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			repoMock := gittest.NewMockRepo(ctrl)
+			repoMock.EXPECT().ChangedFiles(gomock.Any(), gomock.Any(), gomock.Any()).Return(tc.changedFiles, nil).AnyTimes()
+
+			opt := config.SkipOptions{
+				Paths: tc.skipPatterns,
+			}
+			actual, err := skipByPathPattern(context.Background(), opt, repoMock, "running-rev", "target-rev")
 			assert.NoError(t, err)
 			assert.Equal(t, tc.skip, actual)
 		})
