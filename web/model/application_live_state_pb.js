@@ -307,6 +307,7 @@ proto.model.ApplicationLiveStateSnapshot.toObject = function(includeInstance, ms
     terraform: (f = msg.getTerraform()) && proto.model.TerraformApplicationLiveState.toObject(includeInstance, f),
     cloudrun: (f = msg.getCloudrun()) && proto.model.CloudRunApplicationLiveState.toObject(includeInstance, f),
     lambda: (f = msg.getLambda()) && proto.model.LambdaApplicationLiveState.toObject(includeInstance, f),
+    ecs: (f = msg.getEcs()) && proto.model.ECSApplicationLiveState.toObject(includeInstance, f),
     version: (f = msg.getVersion()) && proto.model.ApplicationLiveStateVersion.toObject(includeInstance, f)
   };
 
@@ -383,6 +384,11 @@ proto.model.ApplicationLiveStateSnapshot.deserializeBinaryFromReader = function(
       var value = new proto.model.LambdaApplicationLiveState;
       reader.readMessage(value,proto.model.LambdaApplicationLiveState.deserializeBinaryFromReader);
       msg.setLambda(value);
+      break;
+    case 14:
+      var value = new proto.model.ECSApplicationLiveState;
+      reader.readMessage(value,proto.model.ECSApplicationLiveState.deserializeBinaryFromReader);
+      msg.setEcs(value);
       break;
     case 15:
       var value = new proto.model.ApplicationLiveStateVersion;
@@ -483,6 +489,14 @@ proto.model.ApplicationLiveStateSnapshot.serializeBinaryToWriter = function(mess
       13,
       f,
       proto.model.LambdaApplicationLiveState.serializeBinaryToWriter
+    );
+  }
+  f = message.getEcs();
+  if (f != null) {
+    writer.writeMessage(
+      14,
+      f,
+      proto.model.ECSApplicationLiveState.serializeBinaryToWriter
     );
   }
   f = message.getVersion();
@@ -740,6 +754,43 @@ proto.model.ApplicationLiveStateSnapshot.prototype.clearLambda = function() {
  */
 proto.model.ApplicationLiveStateSnapshot.prototype.hasLambda = function() {
   return jspb.Message.getField(this, 13) != null;
+};
+
+
+/**
+ * optional ECSApplicationLiveState ecs = 14;
+ * @return {?proto.model.ECSApplicationLiveState}
+ */
+proto.model.ApplicationLiveStateSnapshot.prototype.getEcs = function() {
+  return /** @type{?proto.model.ECSApplicationLiveState} */ (
+    jspb.Message.getWrapperField(this, proto.model.ECSApplicationLiveState, 14));
+};
+
+
+/**
+ * @param {?proto.model.ECSApplicationLiveState|undefined} value
+ * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
+*/
+proto.model.ApplicationLiveStateSnapshot.prototype.setEcs = function(value) {
+  return jspb.Message.setWrapperField(this, 14, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.model.ApplicationLiveStateSnapshot} returns this
+ */
+proto.model.ApplicationLiveStateSnapshot.prototype.clearEcs = function() {
+  return this.setEcs(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.model.ApplicationLiveStateSnapshot.prototype.hasEcs = function() {
+  return jspb.Message.getField(this, 14) != null;
 };
 
 

@@ -219,6 +219,35 @@ func (m *ApplicationLiveStateSnapshot) validate(all bool) error {
 		}
 	}
 
+	if all {
+		switch v := interface{}(m.GetEcs()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ApplicationLiveStateSnapshotValidationError{
+					field:  "Ecs",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ApplicationLiveStateSnapshotValidationError{
+					field:  "Ecs",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetEcs()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ApplicationLiveStateSnapshotValidationError{
+				field:  "Ecs",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if m.GetVersion() == nil {
 		err := ApplicationLiveStateSnapshotValidationError{
 			field:  "Version",

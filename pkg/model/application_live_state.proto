@@ -40,6 +40,7 @@ message ApplicationLiveStateSnapshot {
     TerraformApplicationLiveState terraform = 11;
     CloudRunApplicationLiveState cloudrun = 12;
     LambdaApplicationLiveState lambda = 13;
+    ECSApplicationLiveState ecs = 14;
 
     ApplicationLiveStateVersion version = 15 [(validate.rules).message.required = true];
 }

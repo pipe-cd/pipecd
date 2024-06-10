@@ -40,6 +40,11 @@ export class ApplicationLiveStateSnapshot extends jspb.Message {
   hasLambda(): boolean;
   clearLambda(): ApplicationLiveStateSnapshot;
 
+  getEcs(): ECSApplicationLiveState | undefined;
+  setEcs(value?: ECSApplicationLiveState): ApplicationLiveStateSnapshot;
+  hasEcs(): boolean;
+  clearEcs(): ApplicationLiveStateSnapshot;
+
   getVersion(): ApplicationLiveStateVersion | undefined;
   setVersion(value?: ApplicationLiveStateVersion): ApplicationLiveStateSnapshot;
   hasVersion(): boolean;
@@ -64,6 +69,7 @@ export namespace ApplicationLiveStateSnapshot {
     terraform?: TerraformApplicationLiveState.AsObject,
     cloudrun?: CloudRunApplicationLiveState.AsObject,
     lambda?: LambdaApplicationLiveState.AsObject,
+    ecs?: ECSApplicationLiveState.AsObject,
     version?: ApplicationLiveStateVersion.AsObject,
   }
 
