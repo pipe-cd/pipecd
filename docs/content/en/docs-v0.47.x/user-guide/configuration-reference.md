@@ -511,6 +511,26 @@ One of `yamlField` or `regex` is required.
 | runStandaloneTask | bool | Run standalone tasks during deployments. About standalone task, see [here](https://docs.aws.amazon.com/AmazonECS/latest/userguide/ecs_run_task-v2.html). The default value is `true`. |
 | accessType | string | How the ECS service is accessed. One of `ELB` or `SERVICE_DISCOVERY`. See examples [here](https://github.com/pipe-cd/examples/tree/master/ecs/servicediscovery/simple). The default value is `ELB`. |
 
+### Restrictions of Service Definition
+
+There are some restrictions in configuring a service definition file.
+
+- `capacityProviderStrategy` is not supported.
+- `clientToken` is not supported.
+- `deploymentController` is required and must be `EXTERNAL`.
+- `loadBalancers` is not supported. Use `targetGroups` in [ECSDeploymentInput](#ecsdeploymentinput) instead.
+- `platformFamily` is not supported.
+- `propagateTags` is always set as `SERVICE`.
+- `taskDefinition` is not supported. PipeCD uses the definition in `taskDefinitionFile` in [ECSDeploymentInput](#ecsdeploymentinput).
+
+### Restrictions of Task Definition
+
+There are some restrictions in configuring a task definition file.
+
+- `placementConstraints` is not supported.
+- `proxyConfiguration` is not supported.
+- `tags` is not supported.
+
 ### ECSTargetGroupInput
 
 | Field | Type | Description | Required |
