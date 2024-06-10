@@ -705,25 +705,6 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	return err
 }
 
-func (s *scheduler) shouldSkipStage(ctx context.Context, in executor.Input) (skip bool, err error) {
-	stageConfig := in.StageConfig
-	var skipOptions config.SkipOptions
-	switch stageConfig.Name {
-	case model.StageAnalysis:
-		skipOptions = stageConfig.AnalysisStageOptions.SkipOn
-	case model.StageWait:
-		skipOptions = stageConfig.WaitStageOptions.SkipOn
-	case model.StageWaitApproval:
-		skipOptions = stageConfig.WaitApprovalStageOptions.SkipOn
-	case model.StageScriptRun:
-		skipOptions = stageConfig.ScriptRunStageOptions.SkipOn
-	default:
-		return false, nil
-	}
-
-	return checkSkipStage(ctx, in, skipOptions)
-}
-
 func (s *scheduler) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
 	n, ok := s.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
 	if !ok {

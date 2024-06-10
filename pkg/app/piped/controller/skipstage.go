@@ -22,11 +22,27 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/filematcher"
 	"github.com/pipe-cd/pipecd/pkg/git"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 // checkSkipStage checks whether the stage should be skipped or not.
-func checkSkipStage(ctx context.Context, in executor.Input, opt config.SkipOptions) (skip bool, err error) {
-	if len(opt.Paths) == 0 && len(opt.CommitMessagePrefixes) == 0 {
+func (s *scheduler) shouldSkipStage(ctx context.Context, in executor.Input) (skip bool, err error) {
+	stageConfig := in.StageConfig
+	var skipOptions config.SkipOptions
+	switch stageConfig.Name {
+	case model.StageAnalysis:
+		skipOptions = stageConfig.AnalysisStageOptions.SkipOn
+	case model.StageWait:
+		skipOptions = stageConfig.WaitStageOptions.SkipOn
+	case model.StageWaitApproval:
+		skipOptions = stageConfig.WaitApprovalStageOptions.SkipOn
+	case model.StageScriptRun:
+		skipOptions = stageConfig.ScriptRunStageOptions.SkipOn
+	default:
+		return false, nil
+	}
+
+	if len(skipOptions.Paths) == 0 && len(skipOptions.CommitMessagePrefixes) == 0 {
 		// When no condition is specified.
 		return false, nil
 	}
@@ -38,7 +54,7 @@ func checkSkipStage(ctx context.Context, in executor.Input, opt config.SkipOptio
 	}
 
 	// Check by path pattern
-	skip, err = skipByPathPattern(ctx, opt, repo, in.RunningDSP.Revision(), in.TargetDSP.Revision())
+	skip, err = skipByPathPattern(ctx, skipOptions, repo, in.RunningDSP.Revision(), in.TargetDSP.Revision())
 	if err != nil {
 		return false, err
 	}
@@ -47,7 +63,7 @@ func checkSkipStage(ctx context.Context, in executor.Input, opt config.SkipOptio
 	}
 
 	// Check by prefix of commit message
-	skip, err = skipByCommitMessagePrefixes(ctx, opt, repo, in.TargetDSP.Revision())
+	skip, err = skipByCommitMessagePrefixes(ctx, skipOptions, repo, in.TargetDSP.Revision())
 	return skip, err
 }
 
