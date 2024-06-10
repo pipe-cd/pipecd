@@ -79,6 +79,14 @@ func NewReporter(appLister applicationLister, stateGetter livestatestore.Getter,
 				continue
 			}
 			r.reporters = append(r.reporters, cloudrun.NewReporter(cp, appLister, sg, apiClient, logger))
+		case model.PlatformProviderECS:
+			// TODO uncomment here.
+			// sg, ok := stateGetter.ECSGetter(cp.Name)
+			// if !ok {
+			// 	r.logger.Error(fmt.Sprintf(errFmt, cp.Name))
+			// 	continue
+			// }
+			// r.reporters = append(r.reporters, ecs.NewReporter(cp, appLister, sg, apiClient, logger))
 		}
 	}
 
