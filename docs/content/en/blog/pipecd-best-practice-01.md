@@ -5,6 +5,8 @@ linkTitle: "PipeCD best practice 01"
 weight: 996
 description: "This blog is a part of PipeCD best practice series, a guideline for you to operate your own PipeCD cluster."
 author: Khanh Tran ([@khanhtc1202](https://twitter.com/khanhtc1202))
+categories: ["Practice"]
+tags: ["Control Plane"]
 ---
 
 PipeCD is an open source project, you can freely use the released versions of PipeCD to create and operate a continuous delivery system for your service or company. [Quickstart](/docs/quickstart/) docs - a complete guide for you to install required components of PipeCD and deploy a simple application via PipeCD is a good point to get started. However, for the sake of the simplicity of that tutorial, some points to keep in mind when operating a PipeCD cluster have been omitted. You will review the PipeCD architecture again and get some tips on how to operate a PipeCD cluster in this post.

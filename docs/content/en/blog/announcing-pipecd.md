@@ -7,6 +7,8 @@ description: "Continuous Delivery for declarative Kubernetes, Serverless and Inf
 author: Le Van Nghia ([@nghialv](https://twitter.com/nghialv2607))
 images: 
  - images/deployment-details.png
+categories: ["Announcement"]
+tags: []
 ---
 
 Today we are excited to announce the open-source availability of PipeCD: a continuous delivery system for declarative Kubernetes, Serverless, and Infrastructure applications.

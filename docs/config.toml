@@ -76,6 +76,12 @@ style = "tango"
 
 # Everything below this are Site Params
 
+[[menu.main]]
+# This section add 'Tutorial' to the header navigation bar.
+name = "Tutorial"
+url = "https://github.com/pipe-cd/tutorial"
+weight = 25
+
 [params]
 copyright = "The PipeCD Authors"
 
