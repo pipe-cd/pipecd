@@ -335,9 +335,10 @@ func (b *builder) plan(ctx context.Context, app *model.Application, targetDSP de
 	}
 
 	in := planner.Input{
-		ApplicationID:   app.Id,
-		ApplicationName: app.Name,
-		GitPath:         *app.GitPath,
+		ApplicationID:        app.Id,
+		ApplicationName:      app.Name,
+		PlatformProviderName: app.PlatformProvider,
+		GitPath:              *app.GitPath,
 		Trigger: model.DeploymentTrigger{
 			Commit: &model.Commit{
 				Branch: b.repoCfg.Branch,

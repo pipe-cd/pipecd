@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/planner"
@@ -40,6 +41,7 @@ const (
 
 // Planner plans the deployment pipeline for kubernetes application.
 type Planner struct {
+	isNamespacedResources map[schema.GroupVersionKind]bool
 }
 
 type registerer interface {
@@ -48,11 +50,25 @@ type registerer interface {
 
 // Register registers this planner into the given registerer.
 func Register(r registerer) {
-	r.Register(model.ApplicationKind_KUBERNETES, &Planner{})
+	r.Register(model.ApplicationKind_KUBERNETES, &Planner{
+		isNamespacedResources: make(map[schema.GroupVersionKind]bool),
+	})
 }
 
 // Plan decides which pipeline should be used for the given input.
 func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Output, err error) {
+	cp, ok := in.PipedConfig.FindPlatformProvider(in.PlatformProviderName, model.ApplicationKind_KUBERNETES)
+	if !ok {
+		err = fmt.Errorf("provider %s was not found", in.PlatformProviderName)
+		return
+	}
+	isNamespacedResources, err := provider.GetIsNamespacedResources(cp.KubernetesConfig)
+	if err != nil {
+		err = fmt.Errorf("failed to get isNamespacedResources: %v", err)
+		return
+	}
+	p.isNamespacedResources = isNamespacedResources
+
 	ds, err := in.TargetDSP.Get(ctx, io.Discard)
 	if err != nil {
 		err = fmt.Errorf("error while preparing deploy source data (%v)", err)
@@ -81,7 +97,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	newManifests, ok := manifestCache.Get(in.Trigger.Commit.Hash)
 	if !ok {
 		// When the manifests were not in the cache we have to load them.
-		loader := provider.NewLoader(in.ApplicationName, ds.AppDir, ds.RepoDir, in.GitPath.ConfigFilename, cfg.Input, in.GitClient, in.Logger)
+		loader := provider.NewLoader(in.ApplicationName, ds.AppDir, ds.RepoDir, in.GitPath.ConfigFilename, cfg.Input, p.isNamespacedResources, in.GitClient, in.Logger)
 		newManifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			return
@@ -205,7 +221,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 			err = fmt.Errorf("unable to find the running configuration (%v)", err)
 			return
 		}
-		loader := provider.NewLoader(in.ApplicationName, runningDs.AppDir, runningDs.RepoDir, in.GitPath.ConfigFilename, runningCfg.Input, in.GitClient, in.Logger)
+		loader := provider.NewLoader(in.ApplicationName, runningDs.AppDir, runningDs.RepoDir, in.GitPath.ConfigFilename, runningCfg.Input, p.isNamespacedResources, in.GitClient, in.Logger)
 		oldManifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			err = fmt.Errorf("failed to load previously deployed manifests: %w", err)
