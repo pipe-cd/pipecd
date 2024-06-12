@@ -20,12 +20,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/config"
-	"github.com/pipe-cd/pipecd/pkg/model"
 )
-
-type applicationLister interface {
-	List() []*model.Application
-}
 
 type Store struct {
 	logger *zap.Logger
@@ -34,7 +29,7 @@ type Store struct {
 type Getter interface {
 }
 
-func NewStore(cfg *config.PlatformProviderECSConfig, platformProvider string, appLister applicationLister, logger *zap.Logger) *Store {
+func NewStore(cfg *config.PlatformProviderECSConfig, platformProvider string, logger *zap.Logger) *Store {
 	logger = logger.Named("ecs").
 		With(zap.String("platform-provider", platformProvider))
 
