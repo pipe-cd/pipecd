@@ -16,10 +16,13 @@ package ecs
 
 import (
 	"context"
+	"time"
 
 	"go.uber.org/zap"
 
+	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/config"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type Store struct {
@@ -27,6 +30,15 @@ type Store struct {
 }
 
 type Getter interface {
+	GetManifests(appID string) (provider.ECSManifests, bool)
+	GetState(appID string) (State, bool)
+
+	WaitForReady(ctx context.Context, timeout time.Duration) error
+}
+
+type State struct {
+	Resources []*model.CloudRunResourceState
+	Version   model.ApplicationLiveStateVersion
 }
 
 func NewStore(cfg *config.PlatformProviderECSConfig, platformProvider string, logger *zap.Logger) *Store {
@@ -43,4 +55,16 @@ func (s *Store) Run(ctx context.Context) error {
 
 	s.logger.Info("ecs app state store has been stopped")
 	return nil
+}
+
+func (s *Store) GetManifests(appID string) (provider.ECSManifests, bool) {
+	panic("unimplemented")
+}
+
+func (s *Store) GetState(appID string) (State, bool) {
+	panic("unimplemented")
+}
+
+func (s *Store) WaitForReady(ctx context.Context, timeout time.Duration) error {
+	panic("unimplemented")
 }

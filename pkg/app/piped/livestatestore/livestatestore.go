@@ -72,6 +72,7 @@ type lambdaStore interface {
 
 type ecsStore interface {
 	Run(ctx context.Context) error
+	ecs.Getter
 }
 
 // store manages a list of particular stores for all cloud providers.
