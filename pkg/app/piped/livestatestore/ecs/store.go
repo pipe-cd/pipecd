@@ -95,3 +95,11 @@ func (s *store) fetchTasks(ctx context.Context, taskSet types.TaskSet) ([]*types
 // func (s *store) fetchTaskDefinition(ctx context.Context, taskDefArn string) (*types.TaskDefinition, error) {
 // 	return s.client.GetTaskDefinition(ctx, taskDefArn)
 // }
+
+func (s *store) getManifests(appID string) (provider.ECSManifests, bool) {
+	panic("unimplemented")
+}
+
+func (s *store) getState(appID string) (State, bool) {
+	panic("unimplemented")
+}

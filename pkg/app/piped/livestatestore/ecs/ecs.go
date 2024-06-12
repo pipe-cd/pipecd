@@ -26,7 +26,10 @@ import (
 )
 
 type Store struct {
-	logger *zap.Logger
+	store         *store
+	logger        *zap.Logger
+	interval      time.Duration
+	firstSyncedCh chan error
 }
 
 type Getter interface {
@@ -41,13 +44,26 @@ type State struct {
 	Version   model.ApplicationLiveStateVersion
 }
 
-func NewStore(cfg *config.PlatformProviderECSConfig, platformProvider string, logger *zap.Logger) *Store {
+func NewStore(cfg *config.PlatformProviderECSConfig, platformProvider string, logger *zap.Logger) (*Store, error) {
 	logger = logger.Named("ecs").
 		With(zap.String("platform-provider", platformProvider))
 
-	return &Store{
-		logger: logger,
+	client, err := provider.DefaultRegistry().Client(platformProvider, cfg, logger)
+	if err != nil {
+		return nil, err
 	}
+
+	store := &Store{
+		store: &store{
+			client: client,
+			logger: logger.Named("store"),
+		},
+		interval:      15 * time.Second,
+		logger:        logger,
+		firstSyncedCh: make(chan error, 1),
+	}
+
+	return store, nil
 }
 
 func (s *Store) Run(ctx context.Context) error {
@@ -58,13 +74,21 @@ func (s *Store) Run(ctx context.Context) error {
 }
 
 func (s *Store) GetManifests(appID string) (provider.ECSManifests, bool) {
-	panic("unimplemented")
+	return s.store.getManifests(appID)
 }
 
 func (s *Store) GetState(appID string) (State, bool) {
-	panic("unimplemented")
+	return s.store.getState(appID)
 }
 
 func (s *Store) WaitForReady(ctx context.Context, timeout time.Duration) error {
-	panic("unimplemented")
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	select {
+	case <-ctx.Done():
+		return nil
+	case err := <-s.firstSyncedCh:
+		return err
+	}
 }
