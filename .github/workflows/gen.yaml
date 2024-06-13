@@ -10,6 +10,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+    - name: check CPU architecture
+      shell: bash
+      run: cat /proc/cpuinfo && uname -a
     - name: Generate code
       uses: docker://ghcr.io/pipe-cd/codegen@sha256:277a911717e5bd33aca7b38f05dd8ab4a047ba5038a81f9b43d816a5a921fe84 #v0.47.3-rc0-1-g7e27cad
       with:
