@@ -33,7 +33,7 @@ type Store struct {
 }
 
 type Getter interface {
-	GetManifests(appID string) (provider.ECSManifests, bool)
+	GetECSManifests(appID string) (provider.ECSManifests, bool)
 	GetState(appID string) (State, bool)
 
 	WaitForReady(ctx context.Context, timeout time.Duration) error
@@ -69,12 +69,36 @@ func NewStore(cfg *config.PlatformProviderECSConfig, platformProvider string, lo
 func (s *Store) Run(ctx context.Context) error {
 	s.logger.Info("start running ecs app state store")
 
-	s.logger.Info("ecs app state store has been stopped")
-	return nil
+	tick := time.NewTicker(s.interval)
+	defer tick.Stop()
+
+	// Run the first sync of ECS resources.
+	if err := s.store.run(ctx); err != nil {
+		s.firstSyncedCh <- err
+		return err
+	}
+
+	s.logger.Info("successfully ran the first sync of all ecs resources")
+	close(s.firstSyncedCh)
+
+	for {
+		select {
+		case <-ctx.Done():
+			s.logger.Info("ecs app state store has been stopped")
+			return nil
+
+		case <-tick.C:
+			if err := s.store.run(ctx); err != nil {
+				s.logger.Error("failed to sync ecs resources", zap.Error(err))
+				continue
+			}
+			s.logger.Info("successfully synced all ecs resources")
+		}
+	}
 }
 
-func (s *Store) GetManifests(appID string) (provider.ECSManifests, bool) {
-	return s.store.getManifests(appID)
+func (s *Store) GetECSManifests(appID string) (provider.ECSManifests, bool) {
+	return s.store.getECSManifests(appID)
 }
 
 func (s *Store) GetState(appID string) (State, bool) {

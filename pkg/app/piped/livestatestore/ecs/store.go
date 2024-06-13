@@ -35,7 +35,7 @@ type store struct {
 
 type app struct {
 	// ServiceDefinition and its primary taskset's TaskDefinition.
-	manifests provider.ECSManifests
+	ecsManifests provider.ECSManifests
 
 	// States of services, tasksets, and tasks.
 	// NOTE: Standalone tasks are NOT included yet.
@@ -80,7 +80,7 @@ func (s *store) run(ctx context.Context) error {
 			}
 
 			apps[*service.ServiceArn] = app{
-				manifests: provider.ECSManifests{
+				ecsManifests: provider.ECSManifests{
 					ServiceDefinition: service,
 					TaskDefinition:    primaryTaskDef,
 				},
@@ -104,7 +104,7 @@ func (s *store) loadApps() map[string]app {
 	return apps.(map[string]app)
 }
 
-func (s *store) getManifests(appID string) (provider.ECSManifests, bool) {
+func (s *store) getECSManifests(appID string) (provider.ECSManifests, bool) {
 	apps := s.loadApps()
 	if apps == nil {
 		return provider.ECSManifests{}, false
@@ -115,7 +115,7 @@ func (s *store) getManifests(appID string) (provider.ECSManifests, bool) {
 		return provider.ECSManifests{}, false
 	}
 
-	return app.manifests, true
+	return app.ecsManifests, true
 }
 
 func (s *store) getState(appID string) (State, bool) {
