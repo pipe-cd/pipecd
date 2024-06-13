@@ -13,7 +13,13 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global = Function('return this')();
+var global =
+    (typeof globalThis !== 'undefined' && globalThis) ||
+    (typeof window !== 'undefined' && window) ||
+    (typeof global !== 'undefined' && global) ||
+    (typeof self !== 'undefined' && self) ||
+    (function () { return this; }).call(null) ||
+    Function('return this')();
 
 
 
@@ -413,7 +419,8 @@ proto.model.InsightSample.prototype.getLabelsMap = function(opt_noLazyCreate) {
  */
 proto.model.InsightSample.prototype.clearLabelsMap = function() {
   this.getLabelsMap().clear();
-  return this;};
+  return this;
+};
 
 
 /**
@@ -605,7 +612,8 @@ proto.model.InsightSampleStream.prototype.getLabelsMap = function(opt_noLazyCrea
  */
 proto.model.InsightSampleStream.prototype.clearLabelsMap = function() {
   this.getLabelsMap().clear();
-  return this;};
+  return this;
+};
 
 
 /**
@@ -788,7 +796,8 @@ proto.model.InsightApplicationCount.prototype.getLabelsMap = function(opt_noLazy
  */
 proto.model.InsightApplicationCount.prototype.clearLabelsMap = function() {
   this.getLabelsMap().clear();
-  return this;};
+  return this;
+};
 
 
 /**
