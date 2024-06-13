@@ -72,6 +72,7 @@ type lambdaStore interface {
 
 type ecsStore interface {
 	Run(ctx context.Context) error
+	ecs.Getter
 }
 
 // store manages a list of particular stores for all cloud providers.
@@ -126,7 +127,11 @@ func NewStore(ctx context.Context, cfg *config.PipedSpec, appLister applicationL
 			s.lambdaStores[cp.Name] = store
 
 		case model.PlatformProviderECS:
-			store := ecs.NewStore(cp.ECSConfig, cp.Name, appLister, logger)
+			store, err := ecs.NewStore(cp.ECSConfig, cp.Name, logger)
+			if err != nil {
+				logger.Error("failed to create a new ecs's livestatestore", zap.Error(err))
+				continue
+			}
 			s.ecsStores[cp.Name] = store
 		}
 	}
