@@ -21,10 +21,10 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-// MakeResourceStates creates ECSResourceStates of Service, TaskSets, and Tasks.
+// MakeServiceResourceStates creates ECSResourceStates of Service, TaskSets, and Tasks.
 // `taskSetTasks` is a map of TaskSetArn to Tasks.
 func MakeServiceResourceStates(service *types.Service, taskSetTasks map[string][]*types.Task) []*model.ECSResourceState {
-	states := make([]*model.ECSResourceState, 0, len(service.TaskSets)+1)
+	states := []*model.ECSResourceState{}
 
 	states = append(states, makeServiceResourceState(service))
 
