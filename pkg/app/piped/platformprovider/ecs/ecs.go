@@ -48,7 +48,6 @@ type ECS interface {
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
 	WaitServiceStable(ctx context.Context, service types.Service) error
 	GetServices(ctx context.Context, clusterName string) ([]*types.Service, error)
-	GetTaskDefinition(ctx context.Context, taskDefinitionArn string) (*types.TaskDefinition, error)
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
 	RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *config.ECSVpcConfiguration, tags []types.Tag) error
 	GetTaskSetTasks(ctx context.Context, taskSet types.TaskSet) ([]*types.Task, error)
