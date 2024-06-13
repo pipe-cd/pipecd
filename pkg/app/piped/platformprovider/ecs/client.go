@@ -147,6 +147,17 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 	return output.Service, nil
 }
 
+func (c *client) GetTaskDefinition(ctx context.Context, taskDefinitionArn string) (*types.TaskDefinition, error) {
+	input := &ecs.DescribeTaskDefinitionInput{
+		TaskDefinition: aws.String(taskDefinitionArn),
+	}
+	output, err := c.ecsClient.DescribeTaskDefinition(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get ECS task definition %s: %w", taskDefinitionArn, err)
+	}
+	return output.TaskDefinition, nil
+}
+
 func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
 	input := &ecs.RegisterTaskDefinitionInput{
 		Family:                  taskDefinition.Family,
