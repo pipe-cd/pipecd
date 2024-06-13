@@ -199,7 +199,7 @@ update/copyright:
 .PHONY: gen/code
 gen/code:
 	# NOTE: Specify a specific version temporally until the next release.
-	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen:v0.47.3-rc0-1-g7e27cad /repo
+	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:277a911717e5bd33aca7b38f05dd8ab4a047ba5038a81f9b43d816a5a921fe84 /repo #v0.47.3-rc0-1-g7e27cad
 
 .PHONY: gen/test-tls
 gen/test-tls:
