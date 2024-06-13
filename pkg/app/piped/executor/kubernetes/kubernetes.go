@@ -198,7 +198,6 @@ func addBuiltinAnnotations(manifests []provider.Manifest, variantLabel, variant,
 			provider.LabelApplication:        appID,
 			variantLabel:                     variant,
 			provider.LabelOriginalAPIVersion: manifests[i].Key.APIVersion,
-			provider.LabelResourceKey:        manifests[i].Key.String(),
 			provider.LabelCommitHash:         hash,
 		})
 	}
