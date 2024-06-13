@@ -40,7 +40,7 @@ type Getter interface {
 }
 
 type State struct {
-	Resources []*model.CloudRunResourceState
+	Resources []*model.ECSResourceState
 	Version   model.ApplicationLiveStateVersion
 }
 

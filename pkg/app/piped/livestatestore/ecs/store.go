@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"sync/atomic"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"github.com/pipe-cd/pipecd/pkg/model"
@@ -33,73 +34,103 @@ type store struct {
 }
 
 type app struct {
+	// ServiceDefinition and its primary taskset's TaskDefinition.
 	manifests provider.ECSManifests
 
-	// service, taskset, task??, taskDef
-
-	// The states of service and all its active revsions which may handle the traffic.
+	// States of services, tasksets, and tasks.
+	// NOTE: Standalone tasks are NOT included yet.
 	states  []*model.ECSResourceState
 	version model.ApplicationLiveStateVersion
 }
 
 func (s *store) run(ctx context.Context) error {
-
-	{
-		clusters, err := s.fetchClusters(ctx)
-		if err != nil {
-			return fmt.Errorf("failed to fetch ECS clusters: %w", err)
-		}
-
-		for _, cluster := range clusters {
-			services, err := s.fetchServices(ctx, cluster)
-			if err != nil {
-				return fmt.Errorf("failed to fetch ECS services of cluster %s: %w", cluster, err)
-			}
-
-			m := make(map[*types.Service]map[string][]*types.Task, len(services))
-			for _, service := range services {
-				m[service] = make(map[string][]*types.Task, len(service.TaskSets))
-				for _, taskSet := range service.TaskSets {
-					tasks, err := s.fetchTasks(ctx, taskSet)
-					if err != nil {
-						return fmt.Errorf("failed to fetch ECS tasks of task set %s: %w", *taskSet.TaskSetArn, err)
-					}
-					m[service][*taskSet.TaskSetArn] = tasks
-				}
-			}
-			// TODO Convert to apps and store to the Store
-
-		}
-
+	apps := map[string]app{}
+	now := time.Now()
+	version := model.ApplicationLiveStateVersion{
+		Timestamp: now.Unix(),
 	}
+
+	clusters, err := s.client.ListClusters(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to fetch ECS clusters: %w", err)
+	}
+
+	for _, cluster := range clusters {
+		services, err := s.client.GetServices(ctx, cluster)
+		if err != nil {
+			return fmt.Errorf("failed to fetch ECS services of cluster %s: %w", cluster, err)
+		}
+
+		for _, service := range services {
+			taskSetTasks := make(map[string][]*types.Task, len(service.TaskSets))
+			var primaryTaskDef *types.TaskDefinition
+			for _, taskSet := range service.TaskSets {
+				if *taskSet.Status == "PRIMARY" {
+					primaryTaskDef, err = s.client.GetTaskDefinition(ctx, *taskSet.TaskDefinition)
+					if err != nil {
+						return fmt.Errorf("failed to fetch ECS task definition %s: %w", *taskSet.TaskDefinition, err)
+					}
+				}
+
+				tasks, err := s.client.GetTaskSetTasks(ctx, taskSet)
+				if err != nil {
+					return fmt.Errorf("failed to fetch ECS tasks of task set %s: %w", *taskSet.TaskSetArn, err)
+				}
+				taskSetTasks[*taskSet.TaskSetArn] = tasks
+			}
+
+			apps[*service.ServiceArn] = app{
+				manifests: provider.ECSManifests{
+					ServiceDefinition: service,
+					TaskDefinition:    primaryTaskDef,
+				},
+				states:  provider.MakeServiceResourceStates(service, taskSetTasks),
+				version: version,
+			}
+		}
+	}
+
+	// 3. Store the apps
+	s.apps.Store(apps)
 
 	return nil
 }
 
-func (s *store) fetchClusters(ctx context.Context) ([]string, error) {
-	return s.client.ListClusters(ctx)
+func (s *store) loadApps() map[string]app {
+	apps := s.apps.Load()
+	if apps == nil {
+		return nil
+	}
+	return apps.(map[string]app)
 }
-
-func (s *store) fetchServices(ctx context.Context, cluster string) ([]*types.Service, error) {
-	return s.client.GetServices(ctx, cluster)
-}
-
-// func (s *store) fetchTaskSets(ctx context.Context, service types.Service) ([]*types.TaskSet, error) {
-// 	return s.client.GetServiceTaskSets(ctx, service)
-// }
-
-func (s *store) fetchTasks(ctx context.Context, taskSet types.TaskSet) ([]*types.Task, error) {
-	return s.client.GetTaskSetTasks(ctx, taskSet)
-}
-
-// func (s *store) fetchTaskDefinition(ctx context.Context, taskDefArn string) (*types.TaskDefinition, error) {
-// 	return s.client.GetTaskDefinition(ctx, taskDefArn)
-// }
 
 func (s *store) getManifests(appID string) (provider.ECSManifests, bool) {
-	panic("unimplemented")
+	apps := s.loadApps()
+	if apps == nil {
+		return provider.ECSManifests{}, false
+	}
+
+	app, ok := apps[appID]
+	if !ok {
+		return provider.ECSManifests{}, false
+	}
+
+	return app.manifests, true
 }
 
 func (s *store) getState(appID string) (State, bool) {
-	panic("unimplemented")
+	apps := s.loadApps()
+	if apps == nil {
+		return State{}, false
+	}
+
+	app, ok := apps[appID]
+	if !ok {
+		return State{}, false
+	}
+
+	return State{
+		Resources: app.states,
+		Version:   app.version,
+	}, true
 }
