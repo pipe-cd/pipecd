@@ -72,9 +72,8 @@ func makeServiceResourceState(service *types.Service) *model.ECSResourceState {
 		HealthDescription: fmt.Sprintf("Service's status is %s", *service.Status),
 
 		CreatedAt: service.CreatedAt.Unix(),
-		// Service does not have 'updatedAt' field
-		// and we cannot use 'createdAt' here because Service is not immutable.
-		// UpdatedAt: ,
+		// Service does not have the 'UpdatedAt' field
+		// and we cannot use 'CreatedAt' here because Service is not immutable.
 	}
 }
 
