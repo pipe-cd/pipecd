@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -592,45 +591,6 @@ func (c *client) GetTaskSetTasks(ctx context.Context, taskSet types.TaskSet) ([]
 
 		for _, task := range out.Tasks {
 			tasks = append(tasks, &task)
-		}
-	}
-
-	return tasks, nil
-}
-
-func (c *client) GetClusterTasks(ctx context.Context, clusterName string) ([]*types.Task, error) {
-	listIn := &ecs.ListTasksInput{
-		Cluster: aws.String(clusterName),
-	}
-	listOut, err := c.ecsClient.ListTasks(ctx, listIn)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list tasks of cluster %s: %w", clusterName, err)
-	}
-
-	taskArns := listOut.TaskArns
-	tasks := make([]*types.Task, 0, len(taskArns))
-	// Split taskArns into chunks of 100 to avoid the limitation in a single request of DescribeTasks.
-	for i := 0; i < len(taskArns); i += 100 {
-		end := i + 100
-		if end > len(taskArns) {
-			end = len(taskArns)
-		}
-
-		describeIn := &ecs.DescribeTasksInput{
-			Cluster: aws.String(clusterName),
-			Tasks:   listOut.TaskArns[i:end],
-		}
-		out, err := c.ecsClient.DescribeTasks(ctx, describeIn)
-		if err != nil {
-			return nil, fmt.Errorf("failed to describe tasks: %w", err)
-		}
-
-		for _, task := range out.Tasks {
-			// Service tasks have the prefix 'ecs-svc/' in the `startedBy` field,
-			// so we exclude them to get only cluster tasks.
-			if !strings.HasPrefix(*task.StartedBy, "ecs-svc/") {
-				tasks = append(tasks, &task)
-			}
 		}
 	}
 

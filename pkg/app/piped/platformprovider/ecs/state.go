@@ -38,15 +38,6 @@ func MakeServiceResourceStates(service *types.Service, taskSetTasks map[string][
 	return states
 }
 
-// MakeClusterTasksResourceStates creates ECSResourceStates of tasks in the cluster, which are not associated with any service.
-func MakeClusterTasksResourceStates(tasks []*types.Task, clusterArn string) []*model.ECSResourceState {
-	states := make([]*model.ECSResourceState, 0, len(tasks))
-	for _, task := range tasks {
-		states = append(states, makeTaskResourceState(task, clusterArn))
-	}
-	return states
-}
-
 func makeServiceResourceState(service *types.Service) *model.ECSResourceState {
 	var healthStatus model.ECSResourceState_HealthStatus
 	switch *service.Status {
