@@ -63,6 +63,7 @@ func (s *store) run(ctx context.Context) error {
 
 		for _, service := range services {
 			taskSetTasks := make(map[string][]*types.Task, len(service.TaskSets))
+			// Use PRIMARY taskset's task definition as the service's ECSManifests.
 			var primaryTaskDef *types.TaskDefinition
 			for _, taskSet := range service.TaskSets {
 				if *taskSet.Status == "PRIMARY" {
@@ -90,7 +91,6 @@ func (s *store) run(ctx context.Context) error {
 		}
 	}
 
-	// 3. Store the apps
 	s.apps.Store(apps)
 
 	return nil

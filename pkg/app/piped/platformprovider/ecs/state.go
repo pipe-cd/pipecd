@@ -63,7 +63,6 @@ func makeServiceResourceState(service *types.Service) *model.ECSResourceState {
 		OwnerIds:  []string{*service.ClusterArn},
 		ParentIds: []string{*service.ClusterArn},
 		Name:      *service.ServiceName,
-		// TODO: Remove Apiversion, Kind, Namespace from the model if needed.
 		// ApiVersion: "",
 		Kind: "Service",
 		// Namespace:  "",
