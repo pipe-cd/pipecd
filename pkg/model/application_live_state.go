@@ -106,7 +106,6 @@ func (s *ApplicationLiveStateSnapshot) determineCloudRunAppHealthStatus() {
 	s.HealthStatus = ApplicationLiveStateSnapshot_HEALTHY
 }
 
-// TODO: recheck here
 func (s *ApplicationLiveStateSnapshot) determineECSAppHealthStatus() {
 	app := s.Ecs
 	if app == nil {
