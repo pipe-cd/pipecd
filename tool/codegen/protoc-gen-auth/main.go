@@ -92,6 +92,7 @@ func main() {
 				return fmt.Errorf("template execute error: %v", err)
 			}
 			gf.P(string(buf.Bytes()))
+
 		}
 		return nil
 	})
