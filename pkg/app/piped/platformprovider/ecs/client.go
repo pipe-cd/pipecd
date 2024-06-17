@@ -519,23 +519,45 @@ func (c *client) TagResource(ctx context.Context, resourceArn string, tags []typ
 }
 
 func (c *client) ListClusters(ctx context.Context) ([]string, error) {
-	out, err := c.ecsClient.ListClusters(ctx, &ecs.ListClustersInput{})
-	if err != nil {
-		return nil, fmt.Errorf("failed to list ECS clusters: %w", err)
+	in := &ecs.ListClustersInput{
+		MaxResults: aws.Int32(100),
 	}
-	return out.ClusterArns, nil
+	clusters := []string{}
+	for {
+		out, err := c.ecsClient.ListClusters(ctx, in)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list ECS clusters: %w", err)
+		}
+		clusters = append(clusters, out.ClusterArns...)
+		if out.NextToken == nil {
+			return clusters, nil
+		}
+		in.NextToken = out.NextToken
+	}
 }
 
 func (c *client) GetServices(ctx context.Context, clusterName string) ([]*types.Service, error) {
 	listIn := &ecs.ListServicesInput{
-		Cluster: aws.String(clusterName),
+		Cluster:    aws.String(clusterName),
+		MaxResults: aws.Int32(100),
 	}
-	listOut, err := c.ecsClient.ListServices(ctx, listIn)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list services of cluster %s: %w", clusterName, err)
+	var serviceArns []string
+	for {
+		listOut, err := c.ecsClient.ListServices(ctx, listIn)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list services of cluster %s: %w", clusterName, err)
+		}
+		serviceArns = append(serviceArns, listOut.ServiceArns...)
+		if listOut.NextToken == nil {
+			break
+		}
+		listIn.NextToken = listOut.NextToken
 	}
 
-	serviceArns := listOut.ServiceArns
+	if len(serviceArns) == 0 {
+		return []*types.Service{}, nil
+	}
+
 	services := make([]*types.Service, 0, len(serviceArns))
 	// Split serviceArns into chunks of 10 to avoid the limitation in a single request of DescribeServices.
 	for i := 0; i < len(serviceArns); i += 10 {
@@ -552,8 +574,8 @@ func (c *client) GetServices(ctx context.Context, clusterName string) ([]*types.
 			return nil, fmt.Errorf("failed to describe services: %w", err)
 		}
 
-		for _, service := range describeOut.Services {
-			services = append(services, &service)
+		for i := range describeOut.Services {
+			services = append(services, &describeOut.Services[i])
 		}
 	}
 
@@ -589,8 +611,8 @@ func (c *client) GetTaskSetTasks(ctx context.Context, taskSet types.TaskSet) ([]
 			return nil, fmt.Errorf("failed to describe tasks: %w", err)
 		}
 
-		for _, task := range out.Tasks {
-			tasks = append(tasks, &task)
+		for i := range out.Tasks {
+			tasks = append(tasks, &out.Tasks[i])
 		}
 	}
 
