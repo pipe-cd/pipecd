@@ -30,6 +30,42 @@ OpenTelemetry Collector has a customization feature that implements a custom aut
 [go.opentelemetry.io/collector/extension/auth on pkg.go.dev](https://pkg.go.dev/go.opentelemetry.io/collector/extension/auth@v0.102.1)
 We can implement authentication by implementing this Client/Server interface, then using the Client at piped and the Server with a collector.
 
+## Traces planned to collect
+
+I plan to collect traces/spans tagged with these values.
+These are not secret values, but help investigate deployment performance and problems.
+
+- project ID
+- piped ID
+- application ID
+- application Kind
+- deployment ID
+- stage Name
+- stage ID
+
+## How to use these traces
+
+We can send traces anywhere from OpenTelemetry Collector, so we can use any hosting to collect/view traces.
+This section contains sample views of traces collected with Jaeger and its usage.
+
+P.S.
+The sample images in this section are from Jaeger UI. These traces are sent directly to Jaeger from Piped, so it's not implemented the way this RFC proposes. But it's enough to take sample images.
+
+### Detail view of deployment trace
+In Jaeger UI, we can see a detailed view of a deployment.
+With this view, we can inspect which stage takes much time.
+In this case, it's QuickSync, so there is one and only one stage, and it takes about 20 seconds.
+
+![detail view of deployment trace](./assets/0013-jaeger-trace-detail.png)
+
+### Timeline view of multiple deployment traces
+In Jaeger UI, we can see multiple traces in one graph.
+Each point in this graph represents the duration of the trace and the time it occurred.
+With this graph, we can see the performances of multiple deployments.
+In this case, many deployments occurred at the same time, and there seem to be performance impacts. At the leftmost point of the graph, there is a deployment with a duration below 25s. At the rightmost point, there are many deployments with durations over 30s.
+
+![timeline view of multiple deployment traces](./assets/0013-jaeger-trace-timeview.png)
+
 # Alternatives
 
 Another way is to implement a custom client to send traces to the control plane. Then, the control plane sends them to the OpenTelemetry Collectors.
