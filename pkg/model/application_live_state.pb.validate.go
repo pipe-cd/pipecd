@@ -1746,7 +1746,16 @@ func (m *ECSResourceState) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for ApiVersion
+	if utf8.RuneCountInString(m.GetApiVersion()) < 1 {
+		err := ECSResourceStateValidationError{
+			field:  "ApiVersion",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if utf8.RuneCountInString(m.GetKind()) < 1 {
 		err := ECSResourceStateValidationError{

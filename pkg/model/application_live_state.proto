@@ -173,7 +173,7 @@ message ECSResourceState {
     // The unique name for the type of resource.
     string name = 4 [(validate.rules).string.min_len = 1];
     // The api version of this resource represented by "group/version".
-    string api_version = 5;
+    string api_version = 5 [(validate.rules).string.min_len = 1];
     // The kind of this resource.
     string kind = 6 [(validate.rules).string.min_len = 1];
     // The namespace this resource belongs to.
