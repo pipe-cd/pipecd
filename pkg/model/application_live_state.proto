@@ -172,12 +172,12 @@ message ECSResourceState {
     repeated string parent_ids = 3;
     // The unique name for the type of resource.
     string name = 4 [(validate.rules).string.min_len = 1];
-    // The api version of this resource represented by "group/version".
+    // The api version of this resource. Use application's ApiVersion for ECS resources.
     string api_version = 5 [(validate.rules).string.min_len = 1];
     // The kind of this resource.
     string kind = 6 [(validate.rules).string.min_len = 1];
     // The namespace this resource belongs to.
-    // This can be empty for non-namespaced resources.
+    // This is empty for ECS resources.
     string namespace = 7;
 
     HealthStatus health_status = 8 [(validate.rules).enum.defined_only = true];

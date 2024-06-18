@@ -1061,12 +1061,12 @@ type ECSResourceState struct {
 	ParentIds []string `protobuf:"bytes,3,rep,name=parent_ids,json=parentIds,proto3" json:"parent_ids,omitempty"`
 	// The unique name for the type of resource.
 	Name string `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-	// The api version of this resource represented by "group/version".
+	// The api version of this resource. Use application's ApiVersion for ECS resources.
 	ApiVersion string `protobuf:"bytes,5,opt,name=api_version,json=apiVersion,proto3" json:"api_version,omitempty"`
 	// The kind of this resource.
 	Kind string `protobuf:"bytes,6,opt,name=kind,proto3" json:"kind,omitempty"`
 	// The namespace this resource belongs to.
-	// This can be empty for non-namespaced resources.
+	// This is empty for ECS resources.
 	Namespace         string                        `protobuf:"bytes,7,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	HealthStatus      ECSResourceState_HealthStatus `protobuf:"varint,8,opt,name=health_status,json=healthStatus,proto3,enum=model.ECSResourceState_HealthStatus" json:"health_status,omitempty"`
 	HealthDescription string                        `protobuf:"bytes,9,opt,name=health_description,json=healthDescription,proto3" json:"health_description,omitempty"`
