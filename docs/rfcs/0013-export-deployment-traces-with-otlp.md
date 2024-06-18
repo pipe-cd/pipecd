@@ -15,6 +15,10 @@ Conversely, if we save the histories only while it's running, we have to fill th
 So, I propose to separate the metrics to get some statistics and the traces to get deployment performances.
 This RFC proposes the latter, the traces, to get deployment performances.
 
+In this RFC, control plane managers are considered users to collect traces.
+If we want to implement the method of allowing piped managers to collect traces, we need another RFC or implementation.
+It may use the [autoexport package](https://pkg.go.dev/go.opentelemetry.io/contrib/exporters/autoexport@v0.52.0), which allows piped managers to configure an export destination with environment variables.
+
 # Detailed design
 
 ## Architecture
