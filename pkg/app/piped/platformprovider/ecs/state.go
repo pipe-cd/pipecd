@@ -49,6 +49,7 @@ func makeServiceResourceState(service *types.Service) *model.ECSResourceState {
 		healthStatus = model.ECSResourceState_UNKNOWN
 	}
 
+	createdAt := service.CreatedAt.Unix()
 	return &model.ECSResourceState{
 		Id:        *service.ServiceArn,
 		OwnerIds:  []string{*service.ClusterArn},
@@ -61,9 +62,9 @@ func makeServiceResourceState(service *types.Service) *model.ECSResourceState {
 		HealthStatus:      healthStatus,
 		HealthDescription: fmt.Sprintf("Service's status is %s", *service.Status),
 
-		CreatedAt: service.CreatedAt.Unix(),
-		// Service does not have the 'UpdatedAt' field
-		// and we cannot use 'CreatedAt' here because Service is not immutable.
+		CreatedAt: createdAt,
+		// We use CreatedAt for UpdatedAt although Service is not immutable because Service does not have UpdatedAt field.
+		UpdatedAt: createdAt,
 	}
 }
 
