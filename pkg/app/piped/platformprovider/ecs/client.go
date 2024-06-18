@@ -568,6 +568,7 @@ func (c *client) GetServices(ctx context.Context, clusterName string) ([]*types.
 		describeIn := &ecs.DescribeServicesInput{
 			Cluster:  aws.String(clusterName),
 			Services: serviceArns[i:end],
+			Include:  []types.ServiceField{types.ServiceFieldTags},
 		}
 		describeOut, err := c.ecsClient.DescribeServices(ctx, describeIn)
 		if err != nil {

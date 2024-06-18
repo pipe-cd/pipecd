@@ -79,7 +79,20 @@ func (s *store) run(ctx context.Context) error {
 				taskSetTasks[*taskSet.TaskSetArn] = tasks
 			}
 
-			apps[*service.ServiceArn] = app{
+			// Use the application ID tag as the key.
+			appId := ""
+			for _, tag := range service.Tags {
+				if *tag.Key == provider.LabelApplication {
+					appId = *tag.Value
+					break
+				}
+			}
+			if appId == "" {
+				// Skip a service which is not managed by PipeCD.
+				continue
+			}
+
+			apps[appId] = app{
 				ecsManifests: provider.ECSManifests{
 					ServiceDefinition: service,
 					TaskDefinition:    primaryTaskDef,
