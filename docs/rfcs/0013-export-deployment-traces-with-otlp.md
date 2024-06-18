@@ -24,11 +24,14 @@ Collect spans at piped
 → proxies to OpenTelemetry Collector
 → send anywhere with exporters
 
-## How to authenticate piped at OpenTelemetry Collector
+## How to authorize piped at OpenTelemetry Collector
 
-OpenTelemetry Collector has a customization feature that implements a custom authenticator.
-[go.opentelemetry.io/collector/extension/auth on pkg.go.dev](https://pkg.go.dev/go.opentelemetry.io/collector/extension/auth@v0.102.1)
-We can implement authentication by implementing this Client/Server interface, then using the Client at piped and the Server with a collector.
+Envoy has a feature that authorizes incoming requests with an external authorizer.
+[document](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto)
+We can use this filter by implementing [Authorization Service](https://github.com/envoyproxy/envoy/blob/d79f6e8d453ee260e9094093b8dd31af0056e67b/api/envoy/service/auth/v3/external_auth.proto#L29-L34) and some configuration to tell Envoy to use this service.
+Then, the OpenTelemetry Collector only receives authorized requests.
+
+At the piped, we configure the OpenTelemetry gRPC exporter with the authorization header, the same as piped requests to control plane requests.
 
 ## Traces planned to collect
 
@@ -45,11 +48,28 @@ These are not secret values, but help investigate deployment performance and pro
 
 ## How to use these traces
 
-We can send traces anywhere from OpenTelemetry Collector, so we can use any hosting to collect/view traces.
+We can send traces anywhere from OpenTelemetry Collector and use any hosting to collect/view them.
 This section contains sample views of traces collected with Jaeger and its usage.
 
 P.S.
 The sample images in this section are from Jaeger UI. These traces are sent directly to Jaeger from Piped, so it's not implemented the way this RFC proposes. But it's enough to take sample images.
+
+### How to configure to send traces you want
+Users can set the Helm values to configure the OpenTelemetry Collector.
+This sample configuration sends traces to the OTLP receiver running at `otlp.example.com:4317`.
+
+```yaml
+opentelemetry-collector:
+    exporters:
+      otlp:
+        endpoint: otlp.example.com:4317
+
+    service:
+      pipelines:
+        traces:
+          exporters:
+            - otlp
+```
 
 ### Detail view of deployment trace
 In Jaeger UI, we can see a detailed view of a deployment.
@@ -62,7 +82,7 @@ In this case, it's QuickSync, so there is one and only one stage, and it takes a
 In Jaeger UI, we can see multiple traces in one graph.
 Each point in this graph represents the duration of the trace and the time it occurred.
 With this graph, we can see the performances of multiple deployments.
-In this case, many deployments occurred at the same time, and there seem to be performance impacts. At the leftmost point of the graph, there is a deployment with a duration below 25s. At the rightmost point, there are many deployments with durations over 30s.
+In this case, many deployments occurred at the same time, and there are performance impacts. At the leftmost point of the graph, there is a deployment with a duration below 25 seconds. At the rightmost point, there are many deployments with durations over 30 seconds.
 
 ![timeline view of multiple deployment traces](./assets/0013-jaeger-trace-timeview.png)
 
@@ -71,7 +91,3 @@ In this case, many deployments occurred at the same time, and there seem to be p
 Another way is to implement a custom client to send traces to the control plane. Then, the control plane sends them to the OpenTelemetry Collectors.
 It's harder to maintain because we have to maintain not only the custom client but also the control plane proxy implementation.
 With this RPC's proposed method, we can only maintain envoy config and authentication mechanisms.
-
-# Unresolved questions
-
-There is no plan for detailed implementations of custom authentication extensions for the OpenTelemetry Collector.
