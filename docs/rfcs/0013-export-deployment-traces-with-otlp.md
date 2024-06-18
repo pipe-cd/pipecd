@@ -27,7 +27,7 @@ Collect spans at piped
 ## How to authorize piped at OpenTelemetry Collector
 
 Envoy has a feature that authorizes incoming requests with an external authorizer.
-ref; [External Authorization](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto).
+ref; [External Authorization](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/security/ext_authz_filter).
 
 We can use this filter by implementing [Authorization Service](https://github.com/envoyproxy/envoy/blob/d79f6e8d453ee260e9094093b8dd31af0056e67b/api/envoy/service/auth/v3/external_auth.proto#L29-L34) and some configuration to tell Envoy to use this service.
 Then, the OpenTelemetry Collector only receives authorized requests.
