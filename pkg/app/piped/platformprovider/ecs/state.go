@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
@@ -55,8 +56,9 @@ func makeServiceResourceState(service *types.Service) *model.ECSResourceState {
 		OwnerIds:  []string{*service.ClusterArn},
 		ParentIds: []string{*service.ClusterArn},
 		Name:      *service.ServiceName,
-		// ApiVersion: "",
-		Kind: "Service",
+
+		ApiVersion: config.VersionV1Beta1,
+		Kind:       "Service",
 		// Namespace:  "",
 
 		HealthStatus:      healthStatus,
@@ -85,8 +87,8 @@ func makeTaskSetResourceState(taskSet *types.TaskSet) *model.ECSResourceState {
 		ParentIds: []string{*taskSet.ServiceArn},
 		Name:      *taskSet.TaskSetArn,
 
-		// ApiVersion: "",
-		Kind: "TaskSet",
+		ApiVersion: config.VersionV1Beta1,
+		Kind:       "TaskSet",
 		// Namespace:  "",
 
 		HealthStatus:      healthStatus,
@@ -116,8 +118,8 @@ func makeTaskResourceState(task *types.Task, parentArn string) *model.ECSResourc
 		ParentIds: []string{parentArn},
 		Name:      *task.TaskArn,
 
-		// ApiVersion: "",
-		Kind: "Task",
+		ApiVersion: config.VersionV1Beta1,
+		Kind:       "Task",
 		// Namespace:  "",
 
 		HealthStatus:      healthStatus,
