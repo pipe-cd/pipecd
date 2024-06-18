@@ -23,7 +23,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	metrics "github.com/pipe-cd/pipecd/pkg/app/piped/planpreview/planpreviewmetrics"
+	metrics "github.com/pipe-cd/pipecd/pkg/app/pipedv1/planpreview/planpreviewmetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/config"

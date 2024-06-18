@@ -24,9 +24,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/metadatastore"
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes/kubernetestest"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes/kubernetestest"
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 

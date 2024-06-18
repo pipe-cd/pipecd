@@ -24,7 +24,7 @@ import (
 
 	"k8s.io/client-go/rest"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes/kubernetesmetrics"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes/kubernetesmetrics"
 )
 
 var (

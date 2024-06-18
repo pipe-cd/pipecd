@@ -23,12 +23,12 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	httpprovider "github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/http"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/log"
-	logfactory "github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/log/factory"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/metrics"
-	metricsfactory "github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/metrics/factory"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	httpprovider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/analysisprovider/http"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/analysisprovider/log"
+	logfactory "github.com/pipe-cd/pipecd/pkg/app/pipedv1/analysisprovider/log/factory"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/analysisprovider/metrics"
+	metricsfactory "github.com/pipe-cd/pipecd/pkg/app/pipedv1/analysisprovider/metrics/factory"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )

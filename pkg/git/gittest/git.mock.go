@@ -135,19 +135,19 @@ func (mr *MockRepoMockRecorder) GetClonedBranch() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClonedBranch", reflect.TypeOf((*MockRepo)(nil).GetClonedBranch))
 }
 
-// GetCommitHashForRev mocks base method.
-func (m *MockRepo) GetCommitHashForRev(arg0 context.Context, arg1 string) (string, error) {
+// GetCommitForRev mocks base method.
+func (m *MockRepo) GetCommitForRev(arg0 context.Context, arg1 string) (git.Commit, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCommitHashForRev", arg0, arg1)
-	ret0, _ := ret[0].(string)
+	ret := m.ctrl.Call(m, "GetCommitForRev", arg0, arg1)
+	ret0, _ := ret[0].(git.Commit)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetCommitHashForRev indicates an expected call of GetCommitHashForRev.
-func (mr *MockRepoMockRecorder) GetCommitHashForRev(arg0, arg1 interface{}) *gomock.Call {
+// GetCommitForRev indicates an expected call of GetCommitForRev.
+func (mr *MockRepoMockRecorder) GetCommitForRev(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommitHashForRev", reflect.TypeOf((*MockRepo)(nil).GetCommitHashForRev), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommitForRev", reflect.TypeOf((*MockRepo)(nil).GetCommitForRev), arg0, arg1)
 }
 
 // GetLatestCommit mocks base method.

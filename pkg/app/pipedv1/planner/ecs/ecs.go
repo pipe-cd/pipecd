@@ -22,8 +22,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/planner"
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/planner"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 

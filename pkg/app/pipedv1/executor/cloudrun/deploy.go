@@ -19,9 +19,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/cloudrun"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/cloudrun"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 

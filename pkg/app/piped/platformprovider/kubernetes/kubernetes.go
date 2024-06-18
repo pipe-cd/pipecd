@@ -16,6 +16,12 @@ package kubernetes
 
 import (
 	"errors"
+
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/tools/clientcmd"
+
+	"github.com/pipe-cd/pipecd/pkg/config"
 )
 
 var (
@@ -42,3 +48,31 @@ const (
 
 	kustomizationFileName = "kustomization.yaml"
 )
+
+// GetIsNamespacedResources return the map to determine whether the given GroupVersionKind is namespaced or not.
+// The key is GroupVersionKind and the value is a boolean value.
+// This function will get the information from the Kubernetes cluster using the given PlatformProviderKubernetesConfig.
+func GetIsNamespacedResources(cp *config.PlatformProviderKubernetesConfig) (map[schema.GroupVersionKind]bool, error) {
+	kubeConfig, err := clientcmd.BuildConfigFromFlags(cp.MasterURL, cp.KubeConfigPath)
+	if err != nil {
+		return nil, err
+	}
+	discoveryClient, err := discovery.NewDiscoveryClientForConfig(kubeConfig)
+	if err != nil {
+		return nil, err
+	}
+	groupResources, err := discoveryClient.ServerPreferredResources()
+	if err != nil {
+		return nil, err
+	}
+
+	isNamespacedResources := make(map[schema.GroupVersionKind]bool)
+	for _, gr := range groupResources {
+		for _, resource := range gr.APIResources {
+			gvk := schema.FromAPIVersionAndKind(gr.GroupVersion, resource.Kind)
+			isNamespacedResources[gvk] = resource.Namespaced
+		}
+	}
+
+	return isNamespacedResources, nil
+}

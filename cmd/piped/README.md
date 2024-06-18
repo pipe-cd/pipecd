@@ -3,7 +3,7 @@
 
 ## Prerequisites
 
-- [Go 1.19 or later](https://go.dev/)
+- [Go 1.22 or later](https://go.dev/)
 
 ## Repositories
 - [pipecd](https://github.com/pipe-cd/pipecd): contains all source code and documentation of PipeCD project.
@@ -34,7 +34,7 @@ For the full list of available commands, please see the Makefile at the root of 
       # FIXME: Replace here with your piped ID.
       pipedID: 7accd470-1786-49ee-ac09-3c4d4e31dc12
       # Base64 encoded string of the piped private key. You can generate it by the following command.
-      # echo "your-piped-key" | base64
+      # echo -n "your-piped-key" | base64
       # FIXME: Replace here with your piped key file path.
       pipedKeyData: OTl4c2RqdjUxNTF2OW1sOGw5ampndXUyZjB2aGJ4dGw0bHVkamF4Mmc3a3l1enFqY20K
       # Write in a format like "host:443" because the communication is done via gRPC.

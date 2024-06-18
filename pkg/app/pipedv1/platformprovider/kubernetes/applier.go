@@ -22,7 +22,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/config"
 )
 

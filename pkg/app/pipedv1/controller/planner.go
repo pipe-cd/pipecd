@@ -23,8 +23,8 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/controller/controllermetrics"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/metadatastore"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/metadatastore"
 	"github.com/pipe-cd/pipecd/pkg/app/server/service/pipedservice"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"

@@ -26,7 +26,7 @@ import (
 	"github.com/prometheus/common/model"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/analysisprovider/metrics"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/analysisprovider/metrics"
 )
 
 const (

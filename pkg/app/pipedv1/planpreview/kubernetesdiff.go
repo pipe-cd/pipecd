@@ -22,8 +22,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/cache"
 	"github.com/pipe-cd/pipecd/pkg/diff"
 	"github.com/pipe-cd/pipecd/pkg/model"

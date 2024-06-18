@@ -55,38 +55,6 @@ func TestDecryptSecrets(t *testing.T) {
 		expectedErrorPrefix string
 	}{
 		{
-			name: "target not found",
-			sources: map[string]string{
-				"resource.yaml": "resource-data",
-			},
-			encryption: config.SecretEncryption{
-				EncryptedSecrets: map[string]string{
-					"password": "encrypted-password",
-				},
-				DecryptionTargets: []string{
-					"not-found-resource.yaml",
-				},
-			},
-			expectedErrorPrefix: "failed to parse decryption target not-found-resource.yaml",
-		},
-		{
-			name: "the target is not using any encrypted secret",
-			sources: map[string]string{
-				"resource.yaml": "resource-data",
-			},
-			encryption: config.SecretEncryption{
-				EncryptedSecrets: map[string]string{
-					"password": "encrypted-password",
-				},
-				DecryptionTargets: []string{
-					"resource.yaml",
-				},
-			},
-			expected: map[string]string{
-				"resource.yaml": "resource-data",
-			},
-		},
-		{
 			name: "single target",
 			sources: map[string]string{
 				"resource.yaml": "resource-data: {{ .encryptedSecrets.password }}",
@@ -100,7 +68,7 @@ func TestDecryptSecrets(t *testing.T) {
 				},
 			},
 			expected: map[string]string{
-				"resource.yaml": "resource-data: decrypted-encrypted-password",
+				"password": "decrypted-encrypted-password",
 			},
 		},
 		{
@@ -121,40 +89,9 @@ func TestDecryptSecrets(t *testing.T) {
 				},
 			},
 			expected: map[string]string{
-				"resource1.yaml": "resource1-data: decrypted-encrypted-password",
-				"resource2.yaml": "resource2-data: bar is decrypted-encrypted-bar, foo is decrypted-encrypted-foo",
-			},
-		},
-		{
-			name: "target is using a nonexistent encrypted secret",
-			sources: map[string]string{
-				"resource.yaml": "resource-data: {{ .encryptedSecrets.password }}, {{ .encryptedSecrets.nonexistent }}",
-			},
-			encryption: config.SecretEncryption{
-				EncryptedSecrets: map[string]string{
-					"password": "encrypted-password",
-				},
-				DecryptionTargets: []string{
-					"resource.yaml",
-				},
-			},
-			expectedErrorPrefix: `failed to render decryption target resource.yaml (template: resource.yaml:1:69: executing "resource.yaml" at <.encryptedSecrets.nonexistent>: map has no entry for key "nonexistent")`,
-		},
-		{
-			name: "sprig functions",
-			sources: map[string]string{
-				"resource.yaml": "resource-data: {{ .encryptedSecrets.password | b64enc }}",
-			},
-			encryption: config.SecretEncryption{
-				EncryptedSecrets: map[string]string{
-					"password": "encrypted-password",
-				},
-				DecryptionTargets: []string{
-					"resource.yaml",
-				},
-			},
-			expected: map[string]string{
-				"resource.yaml": "resource-data: ZGVjcnlwdGVkLWVuY3J5cHRlZC1wYXNzd29yZA==",
+				"password": "decrypted-encrypted-password",
+				"foo":      "decrypted-encrypted-foo",
+				"bar":      "decrypted-encrypted-bar",
 			},
 		},
 		{
@@ -171,7 +108,7 @@ func TestDecryptSecrets(t *testing.T) {
 				},
 			},
 			expected: map[string]string{
-				"sub/dir/resource.yaml": "resource-data: decrypted-encrypted-password",
+				"password": "decrypted-encrypted-password",
 			},
 		},
 	}
@@ -190,7 +127,8 @@ func TestDecryptSecrets(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			err = DecryptSecrets(appDir, tc.encryption, dcr)
+			sdp := NewSecretDecrypterProcessor(&tc.encryption, dcr)
+			data, err := sdp.BuildTemplateData(appDir)
 			if tc.expectedErrorPrefix != "" {
 				require.Error(t, err)
 				assert.True(t, strings.HasPrefix(err.Error(), tc.expectedErrorPrefix), fmt.Sprintf("Error: %v", err))
@@ -198,12 +136,7 @@ func TestDecryptSecrets(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			for p, c := range tc.expected {
-				p = filepath.Join(appDir, p)
-				data, err := os.ReadFile(p)
-				require.NoError(t, err)
-				assert.Equal(t, c, string(data))
-			}
+			assert.Equal(t, tc.expected, data)
 		})
 	}
 }

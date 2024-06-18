@@ -20,9 +20,9 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
-	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider"
-	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/executor"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider"
+	provider "github.com/pipe-cd/pipecd/pkg/app/pipedv1/platformprovider/ecs"
 	"github.com/pipe-cd/pipecd/pkg/config"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
