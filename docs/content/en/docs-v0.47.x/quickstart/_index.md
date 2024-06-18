@@ -10,6 +10,8 @@ This page is a guideline for installing PipeCD into your Kubernetes cluster and 
 
 Note: It's not required to install the PipeCD control plane to the cluster where your applications are running. Please read this [blog post](/blog/2021/12/29/pipecd-best-practice-01-operate-your-own-pipecd-cluster/) to understand more about PipeCD in real life use cases.
 
+Note: If you want to experiment with PipeCD freely or don't have a Kubernetes cluster, we recommend [this Tutorial](https://github.com/pipe-cd/tutorial).
+
 ### Prerequisites
 - Having a Kubernetes cluster and connect to it via [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 - Forked the [Examples](https://github.com/pipe-cd/examples) repository

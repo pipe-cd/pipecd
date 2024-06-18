@@ -404,18 +404,26 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// SkipOptions contains all configurable values for skipping a stage.
+type SkipOptions struct {
+	CommitMessagePrefixes []string `json:"commitMessagePrefixes,omitempty"`
+	Paths                 []string `json:"paths,omitempty"`
+}
+
 // WaitStageOptions contains all configurable values for a WAIT stage.
 type WaitStageOptions struct {
-	Duration Duration `json:"duration"`
+	Duration Duration    `json:"duration"`
+	SkipOn   SkipOptions `json:"skipOn,omitempty"`
 }
 
 // WaitStageOptions contains all configurable values for a WAIT_APPROVAL stage.
 type WaitApprovalStageOptions struct {
 	// The maximum length of time to wait before giving up.
 	// Defaults to 6h.
-	Timeout        Duration `json:"timeout" default:"6h"`
-	Approvers      []string `json:"approvers"`
-	MinApproverNum int      `json:"minApproverNum" default:"1"`
+	Timeout        Duration    `json:"timeout" default:"6h"`
+	Approvers      []string    `json:"approvers"`
+	MinApproverNum int         `json:"minApproverNum" default:"1"`
+	SkipOn         SkipOptions `json:"skipOn,omitempty"`
 }
 
 func (w *WaitApprovalStageOptions) Validate() error {
@@ -448,6 +456,7 @@ type AnalysisStageOptions struct {
 	Metrics          []TemplatableAnalysisMetrics `json:"metrics,omitempty"`
 	Logs             []TemplatableAnalysisLog     `json:"logs,omitempty"`
 	HTTPS            []TemplatableAnalysisHTTP    `json:"https,omitempty"`
+	SkipOn           SkipOptions                  `json:"skipOn,omitempty"`
 }
 
 func (a *AnalysisStageOptions) Validate() error {
@@ -498,6 +507,7 @@ type ScriptRunStageOptions struct {
 	Run        string            `json:"run"`
 	Timeout    Duration          `json:"timeout" default:"6h"`
 	OnRollback string            `json:"onRollback"`
+	SkipOn     SkipOptions       `json:"skipOn,omitempty"`
 }
 
 // Validate checks the required fields of ScriptRunStageOptions.

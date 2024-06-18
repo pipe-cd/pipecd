@@ -5,6 +5,8 @@ linkTitle: "The PipeCD play environment"
 weight: 994
 description: "In this post, we will have a glance at the play environment of PipeCD, how to access and what you can get from the environment."
 author: Khanh Tran ([@khanhtc1202](https://twitter.com/khanhtc1202))
+categories: ["Announcement"]
+tags: ["Getting Started", "News"]
 ---
 
 Good news, PipeCD team's happy to bring you a place where you can have a look at the PipeCD platform in use. We call it the `play environment` - [https://play.pipecd.dev](https://play.pipecd.dev).

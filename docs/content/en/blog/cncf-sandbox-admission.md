@@ -6,6 +6,8 @@ weight: 991
 description: "Official announcement of CNCF Sandbox admission"
 author: Khanh Tran ([@khanhtc1202](https://twitter.com/khanhtc1202))
 images: ["/images/pipecd-cncf-sandbox.png"]
+categories: ["Announcement"]
+tags: ["CNCF"]
 ---
 
 ![](/images/pipecd-cncf-sandbox.png)

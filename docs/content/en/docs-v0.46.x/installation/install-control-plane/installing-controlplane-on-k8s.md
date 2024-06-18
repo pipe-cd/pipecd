@@ -33,9 +33,11 @@ Control Plane Architecture
 
 The Control Plane of PipeCD is constructed by several components, as shown in the above graph (for more in detail please read [Control Plane architecture overview docs](../../../user-guide/managing-controlplane/architecture-overview/)). As mentioned in the graph, the PipeCD's data can be stored in one of the provided fully-managed or self-managed services. So you have to decide which kind of [data store](../../../user-guide/managing-controlplane/architecture-overview/#data-store) and [file store](../../../user-guide/managing-controlplane/architecture-overview/#file-store) you want to use and prepare a Control Plane configuration file suitable for that choice.
 
+Currently, besides `Firestore` PipeCD supports other databases as its datastore such as `MySQL`. Also as for filestore, PipeCD supports `AWS S3` and `MINIO` either.
+
 #### Using Firestore and GCS
 
-PipeCD requires a GCS bucket and service account files to access Firestore and GCS service. Here is an example of configuration file:
+Here is an example of configuration file:
 
 ``` yaml
 apiVersion: "pipecd.dev/v1beta1"
@@ -60,21 +62,11 @@ spec:
       credentialsFile: /etc/pipecd-secret/gcs-service-account
 ```
 
-See [ConfigurationReference](../../../user-guide/managing-controlplane/configuration-reference/) for the full configuration.
+#### Using MySQL and MINIO
 
-After all, install the Control Plane as bellow:
+Here is an example of configuration file:
 
-``` console
-helm upgrade -i pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/latest_version >}} --namespace={NAMESPACE} \
-  --set-file config.data=path-to-control-plane-configuration-file \
-  --set-file secret.encryptionKey.data=path-to-encryption-key-file \
-  --set-file secret.firestoreServiceAccount.data=path-to-service-account-file \
-  --set-file secret.gcsServiceAccount.data=path-to-service-account-file
-```
-
-Currently, besides `Firestore` PipeCD supports other databases as its datastore such as `MySQL`. Also as for filestore, PipeCD supports `AWS S3` and `MINIO` either.
-
-For example, in case of using `MySQL` as datastore and `MINIO` as filestore, the ControlPlane configuration will be as follow:
+__Caution__: In case of using `MySQL` as Control Plane's datastore, please note that the implementation of PipeCD requires some features that only available on [MySQL v8](https://dev.mysql.com/doc/refman/8.0/en/), make sure your MySQL service is satisfied the requirement.
 
 ```yaml
 apiVersion: "pipecd.dev/v1beta1"
@@ -84,7 +76,7 @@ spec:
   datastore:
     type: MYSQL
     config:
-      url: {YOUR_MYSQL_ADDRESS}
+      url: {YOUR_MYSQL_ADDRESS} # format: <user>:<password>@tcp(<ip>:<port>)
       database: {YOUR_DATABASE_NAME}
   filestore:
     type: MINIO
@@ -96,9 +88,29 @@ spec:
       autoCreateBucket: true
 ```
 
-You can find required configurations to use other datastores and filestores from [ConfigurationReference](../../../user-guide/managing-controlplane/configuration-reference/).
+- Installing Control Plane by using [Helm](https://helm.sh/docs/intro/install/) (3.8.0 or later)
 
-__Caution__: In case of using `MySQL` as Control Plane's datastore, please note that the implementation of PipeCD requires some features that only available on [MySQL v8](https://dev.mysql.com/doc/refman/8.0/en/), make sure your MySQL service is satisfied the requirement.
+  {{< tabpane >}}
+  {{< tab lang="bash" header="Firestore and GCS" >}}
+
+# PipeCD requires a GCS bucket and service
+# account files to access Firestore and GCS service. 
+
+helm upgrade -i pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/latest_version >}} --namespace={NAMESPACE} \
+  --set-file config.data=path-to-control-plane-configuration-file \
+  --set-file secret.encryptionKey.data=path-to-encryption-key-file \
+  --set-file secret.firestoreServiceAccount.data=path-to-service-account-file \
+  --set-file secret.gcsServiceAccount.data=path-to-service-account-file
+  {{< /tab >}}
+  {{< tab lang="bash" header="MySQL and MINIO" >}}
+
+helm upgrade -i pipecd oci://ghcr.io/pipe-cd/chart/pipecd --version {{< blocks/latest_version >}} --namespace={NAMESPACE} \
+  --set-file config.data=path-to-control-plane-configuration-file \
+  --set-file secret.encryptionKey.data=path-to-encryption-key-file \
+  --set-file secret.minioAccessKey.data=path-to-minio-access-key-file \
+  --set-file secret.minioSecretKey.data=ppath-to-minio-secret-key-file
+  {{< /tab >}}
+  {{< /tabpane >}}
 
 ### 3. Accessing the PipeCD web
 

@@ -49,6 +49,7 @@ And many more, please explore in [docs](https://pipecd.dev/docs).
 ### Getting Started
 
 - The [quickstart guide](https://pipecd.dev/docs/quickstart/) shows how to set up PipeCD components and deploy a hello-world application with PipeCD for testing purposes.
+- The [tutorial](https://github.com/pipe-cd/tutorial) shows how to run PipeCD locally for introduction.
 - The [installation guide](https://pipecd.dev/docs/installation/) explains and helps set up PipeCD for your real-life use environment.
 
 #

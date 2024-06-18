@@ -5,6 +5,8 @@ linkTitle: "Terraform Provider for PipeCD"
 weight: 990
 description: "In this post, we announce the release of Terraform provider for PipeCD."
 author: Kenta Kozuka ([@kentakozuka](https://twitter.com/kenta_kozuka))
+categories: ["Announcement"]
+tags: ["Ecosystem", "Terraform"]
 ---
 
 Now PipeCD resources can be managed by Terraform🎉

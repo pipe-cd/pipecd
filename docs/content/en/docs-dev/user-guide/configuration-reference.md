@@ -505,11 +505,31 @@ One of `yamlField` or `regex` is required.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| serviceDefinitionFile | string | The path ECS Service configuration file. Allow file in both `yaml` and `json` format. The default value is `service.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_definition_parameters.html) for parameters.| No |
-| taskDefinitionFile | string | The path to ECS TaskDefinition configuration file. Allow file in both `yaml` and `json` format. The default value is `taskdef.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html) for parameters. | No |
+| serviceDefinitionFile | string | The path ECS Service configuration file. Allow file in both `yaml` and `json` format. The default value is `service.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_definition_parameters.html) and [Restrictions](#restrictions-of-service-definition) for parameters.| No |
+| taskDefinitionFile | string | The path to ECS TaskDefinition configuration file. Allow file in both `yaml` and `json` format. The default value is `taskdef.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html) and [Restrictions](#restrictions-of-task-definition) for parameters. | No |
 | targetGroups | [ECSTargetGroupInput](#ecstargetgroupinput) | The target groups configuration, will be used to routing traffic to created task sets. | Yes (if you want to perform progressive delivery) |
 | runStandaloneTask | bool | Run standalone tasks during deployments. About standalone task, see [here](https://docs.aws.amazon.com/AmazonECS/latest/userguide/ecs_run_task-v2.html). The default value is `true`. |
 | accessType | string | How the ECS service is accessed. One of `ELB` or `SERVICE_DISCOVERY`. See examples [here](https://github.com/pipe-cd/examples/tree/master/ecs/servicediscovery/simple). The default value is `ELB`. |
+
+### Restrictions of Service Definition
+
+There are some restrictions in configuring a service definition file.
+
+- `capacityProviderStrategy` is not supported.
+- `clientToken` is not supported.
+- `deploymentController` is required and must be `EXTERNAL`.
+- `loadBalancers` is not supported. Use `targetGroups` in [ECSDeploymentInput](#ecsdeploymentinput) instead.
+- `platformFamily` is not supported.
+- `propagateTags` is always set as `SERVICE`.
+- `taskDefinition` is not supported. PipeCD uses the definition in `taskDefinitionFile` in [ECSDeploymentInput](#ecsdeploymentinput).
+
+### Restrictions of Task Definition
+
+There are some restrictions in configuring a task definition file.
+
+- `placementConstraints` is not supported.
+- `proxyConfiguration` is not supported.
+- `tags` is not supported.
 
 ### ECSTargetGroupInput
 
@@ -577,6 +597,13 @@ Note: The available values are identical to those found in the aws-sdk-go-v2 Typ
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+
+## SkipOptions
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| commitMessagePrefixes | []string | List of commit message's prefixes. The stage will be skipped when the prefix of the commit's message matches any of them. Empty means the stage will not be skipped by this condition. | No |
+| paths | []string | List of paths to directories or files. When all commit changes match them, the stage will be skipped. Empty means the stage will not be skipped by this condition. Regular expression can be used. | No |
 
 ## StageOptions
 
@@ -685,12 +712,14 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 |-|-|-|-|
 | duration | duration | Maximum time to perform the analysis. | Yes |
 | metrics | [][AnalysisMetrics](#analysismetrics) | Configuration for analysis by metrics. | No |
+| skipOn | [SkipOptions](#skipoptions) | When to skip this stage. | No |
 
 ### WaitStageOptions
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 | duration | duration | Time to wait. | Yes |
+| skipOn | [SkipOptions](#skipoptions) | When to skip this stage. | No |
 
 ### WaitApprovalStageOptions
 
@@ -699,6 +728,7 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | timeout | duration | The maximum length of time to wait before giving up. Default is 6h. | No |
 | approvers | []string | List of username who has permission to approve. | Yes |
 | minApproverNum | int | Number of minimum needed approvals to make this stage complete. Default is 1. | No |
+| skipOn | [SkipOptions](#skipoptions) | When to skip this stage. | No |
 
 ### CustomSyncStageOptions (deprecated)
 | Field | Type | Description | Required |
@@ -713,6 +743,7 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | run | string | Script run on this stage. | Yes |
 | env | map[string]string | Environment variables used with scripts. | No |
 | timeout | duration | The maximum time the stage can be taken to run. Default is `6h`| No |
+| skipOn | [SkipOptions](#skipoptions) | When to skip this stage. | No |
 
 ## PostSync
 

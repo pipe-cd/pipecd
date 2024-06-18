@@ -13,7 +13,13 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global = Function('return this')();
+var global =
+    (typeof globalThis !== 'undefined' && globalThis) ||
+    (typeof window !== 'undefined' && window) ||
+    (typeof global !== 'undefined' && global) ||
+    (typeof self !== 'undefined' && self) ||
+    (function () { return this; }).call(null) ||
+    Function('return this')();
 
 
 
@@ -809,7 +815,8 @@ proto.model.ApplicationPlanPreviewResult.prototype.getLabelsMap = function(opt_n
  */
 proto.model.ApplicationPlanPreviewResult.prototype.clearLabelsMap = function() {
   this.getLabelsMap().clear();
-  return this;};
+  return this;
+};
 
 
 /**
