@@ -26,33 +26,6 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-// func TestMakeResourceStates(t *testing.T) {
-// 	t.Parallel()
-
-// 	sm, err := ParseServiceManifest([]byte(serviceManifest))
-// 	require.NoError(t, err)
-
-// 	svc, err := sm.RunService()
-// 	require.NoError(t, err)
-
-// 	s := (*Service)(svc)
-
-// 	rm, err := ParseRevisionManifest([]byte(revisionManifest))
-// 	require.NoError(t, err)
-
-// 	rev, err := rm.RunRevision()
-// 	require.NoError(t, err)
-
-// 	r := (*Revision)(rev)
-
-// 	// MakeResourceStates
-// 	rs := []*Revision{r}
-// 	states := MakeResourceStates(s, rs, time.Now())
-// 	require.Len(t, states, 2)
-// 	assert.Equal(t, model.CloudRunResourceState_OTHER, states[0].HealthStatus)
-// 	assert.Equal(t, model.CloudRunResourceState_HEALTHY, states[1].HealthStatus)
-// }
-
 func TestMakeServiceResourceState(t *testing.T) {
 	t.Parallel()
 
@@ -102,10 +75,12 @@ func TestMakeServiceResourceState(t *testing.T) {
 				OwnerIds:          []string{"test-cluster-arn"},
 				ParentIds:         []string{"test-cluster-arn"},
 				Name:              "test-service-name",
+				ApiVersion:        "pipecd.dev/v1beta1",
 				Kind:              "Service",
 				HealthStatus:      tc.expectedStatus,
 				HealthDescription: fmt.Sprintf("Service's status is %s", tc.status),
 				CreatedAt:         service.CreatedAt.Unix(),
+				UpdatedAt:         service.CreatedAt.Unix(),
 			}
 
 			assert.Equal(t, expected, state)
@@ -163,6 +138,7 @@ func TestMakeTaskSetResourceState(t *testing.T) {
 				OwnerIds:          []string{"test-service-arn"},
 				ParentIds:         []string{"test-service-arn"},
 				Name:              "test-task-set-arn",
+				ApiVersion:        "pipecd.dev/v1beta1",
 				Kind:              "TaskSet",
 				HealthStatus:      tc.expectedStatus,
 				HealthDescription: fmt.Sprintf("TaskSet's status is %s", tc.status),
@@ -219,6 +195,7 @@ func TestMakeTaskResourceState(t *testing.T) {
 				OwnerIds:          []string{"test-cluster-arn"},
 				ParentIds:         []string{"test-cluster-arn"},
 				Name:              "test-task-arn",
+				ApiVersion:        "pipecd.dev/v1beta1",
 				Kind:              "Task",
 				HealthStatus:      tc.expectedStatus,
 				HealthDescription: fmt.Sprintf("Task's last status is test-last-status and the health status is %s", string(tc.healthStatus)),
