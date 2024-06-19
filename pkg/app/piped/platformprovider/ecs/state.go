@@ -59,7 +59,6 @@ func makeServiceResourceState(service *types.Service) *model.ECSResourceState {
 
 		ApiVersion: config.VersionV1Beta1,
 		Kind:       "Service",
-		// Namespace:  "",
 
 		HealthStatus:      healthStatus,
 		HealthDescription: fmt.Sprintf("Service's status is %s", *service.Status),
@@ -89,7 +88,6 @@ func makeTaskSetResourceState(taskSet *types.TaskSet) *model.ECSResourceState {
 
 		ApiVersion: config.VersionV1Beta1,
 		Kind:       "TaskSet",
-		// Namespace:  "",
 
 		HealthStatus:      healthStatus,
 		HealthDescription: fmt.Sprintf("TaskSet's status is %s", *taskSet.Status),
@@ -120,7 +118,6 @@ func makeTaskResourceState(task *types.Task, parentArn string) *model.ECSResourc
 
 		ApiVersion: config.VersionV1Beta1,
 		Kind:       "Task",
-		// Namespace:  "",
 
 		HealthStatus:      healthStatus,
 		HealthDescription: fmt.Sprintf("Task's last status is %s and the health status is %s", *task.LastStatus, task.HealthStatus),
