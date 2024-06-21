@@ -1,51 +1,57 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<style>
-table {
-  font-family: arial, sans-serif;
-  border-collapse: collapse;
-  width: 100%;
-}
+  <style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
 
-td, th {
-  border: 1px solid #dddddd;
-  text-align: left;
-  padding: 8px;
-}
+    td,
+    th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
 
-tr:nth-child(1) {
-  background-color: #dddddd;
-}
-</style>
+    tr:nth-child(1) {
+      background-color: #dddddd;
+    }
+  </style>
 </head>
+
 <body>
 
-<h2 style="text-align: center;"><a href="/">Welcome to PipeCD Owner Page!</a></h2>
+  <h2 style="text-align: center;"><a href="/">Welcome to PipeCD Owner Page!</a></h2>
 
-<h3>There are {{ len . }} registered projects</h3>
+  <h3>There are {{ len . }} registered projects</h3>
 
-<table>
-  <tr>
-    <th>Index</th>
-    <th>ID</th>
-    <th>Description</th>
-    <th>Static Admin Disabled</th>
-    <th>Shared SSO Name</th>
-    <th>Created At</th>
-  </tr>
-{{ range $index, $project := . }}
-  <tr>
-    <td>{{ $index }}</td>
-    <td>{{ $project.ID }}</td>
-    <td>{{ $project.Description }}</td>
-    <td>{{ $project.StaticAdminDisabled }}</td>
-    <td>{{ $project.SharedSSOName }}</td>
-    <td>{{ $project.CreatedAt }}</td>
-  </tr>
-{{ end }}
+  <table>
+    <tr>
+      <th>Index</th>
+      <th>ID</th>
+      <th>Description</th>
+      <th>Static Admin Disabled</th>
+      <th>Shared SSO Name</th>
+      <th>Created At</th>
+      <th>Reset Static Admin Password</th>
+    </tr>
+    {{ range $index, $project := . }}
+    <tr>
+      <td>{{ $index }}</td>
+      <td>{{ $project.ID }}</td>
+      <td>{{ $project.Description }}</td>
+      <td>{{ $project.StaticAdminDisabled }}</td>
+      <td>{{ $project.SharedSSOName }}</td>
+      <td>{{ $project.CreatedAt }}</td>
+      <td><a href="/projects/reset-password?ID={{ $project.ID }}">Reset Password</a></td>
+    </tr>
+    {{ end }}
 
-</table>
+  </table>
 
 </body>
+
 </html>
