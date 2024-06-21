@@ -20,6 +20,12 @@ jobs:
           title: "[bot] Update contributors"
           commit-message: "[bot] Update contributors"
           branch: "create-pull-request/update-contributors"
+          body: |
+            Automated changes by [create-pull-request](https://github.com/peter-evans/create-pull-request) GitHub action.
+            The workflow is defined [here](https://github.com/pipe-cd/pipecd/blob/master/.github/workflows/update-contributors.yaml).
+
+            **Note:** You need to **close and reopen this PR** manually to trigger status check workflows. (Or just click `Update branch` if possible.)
+            For details, see https://github.com/peter-evans/create-pull-request/blob/main/docs/concepts-guidelines.md#triggering-further-workflow-runs.
           delete-branch: true
           signoff: true
           token: ${{ secrets.GITHUB_TOKEN }}
