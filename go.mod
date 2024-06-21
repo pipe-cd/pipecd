@@ -1,6 +1,6 @@
 module github.com/pipe-cd/pipecd
 
-go 1.20
+go 1.22.4
 
 require (
 	cloud.google.com/go/firestore v1.9.0

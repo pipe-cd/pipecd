@@ -38,7 +38,7 @@ type Repo interface {
 
 	ListCommits(ctx context.Context, visionRange string) ([]Commit, error)
 	GetLatestCommit(ctx context.Context) (Commit, error)
-	GetCommitHashForRev(ctx context.Context, rev string) (string, error)
+	GetCommitForRev(ctx context.Context, rev string) (Commit, error)
 	ChangedFiles(ctx context.Context, from, to string) ([]string, error)
 	Checkout(ctx context.Context, commitish string) error
 	CheckoutPullRequest(ctx context.Context, number int, branch string) error
@@ -130,14 +130,21 @@ func (r *repo) GetLatestCommit(ctx context.Context) (Commit, error) {
 	return commits[0], nil
 }
 
-// GetCommitHashForRev returns the hash value of the commit for a given rev.
-func (r *repo) GetCommitHashForRev(ctx context.Context, rev string) (string, error) {
-	out, err := r.runGitCommand(ctx, "rev-parse", rev)
+// GetCommitFromRev returns the commit for the given rev.
+func (r *repo) GetCommitForRev(ctx context.Context, rev string) (Commit, error) {
+	args := []string{
+		"show",
+		"--quiet", // suppress diff output
+		"--no-decorate",
+		fmt.Sprintf("--pretty=format:%s", commitLogFormat),
+		rev,
+	}
+	out, err := r.runGitCommand(ctx, args...)
 	if err != nil {
-		return "", formatCommandError(err, out)
+		return Commit{}, formatCommandError(err, out)
 	}
 
-	return strings.TrimSpace(string(out)), nil
+	return parseCommit(string(out))
 }
 
 // ChangedFiles returns a list of files those were touched between two commits.

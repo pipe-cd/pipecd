@@ -528,6 +528,24 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		Notifier:              s.notifier,
 	}
 
+	// Skip the stage if needed based on the skip config.
+	skip, err := s.shouldSkipStage(sig.Context(), input)
+	if err != nil {
+		lp.Errorf("failed to check whether skipping the stage: %w", err.Error())
+		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
+			s.logger.Error("failed to report stage status", zap.Error(err))
+		}
+		return model.StageStatus_STAGE_FAILURE
+	}
+	if skip {
+		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_SKIPPED, ps.Requires); err != nil {
+			s.logger.Error("failed to report stage status", zap.Error(err))
+			return model.StageStatus_STAGE_FAILURE
+		}
+		lp.Info("The stage was successfully skipped due to the skip configuration of the stage.")
+		return model.StageStatus_STAGE_SKIPPED
+	}
+
 	// Find the executor for this stage.
 	ex, ok := executorFactory(input)
 	if !ok {

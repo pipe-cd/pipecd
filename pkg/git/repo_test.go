@@ -28,33 +28,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetCommitHashForRev(t *testing.T) {
-	faker, err := newFaker()
-	require.NoError(t, err)
-	defer faker.clean()
-
-	var (
-		org      = "test-repo-org"
-		repoName = "repo-get-commit-hash-for-rev"
-		ctx      = context.Background()
-	)
-
-	err = faker.makeRepo(org, repoName)
-	require.NoError(t, err)
-	r := &repo{
-		dir:     faker.repoDir(org, repoName),
-		gitPath: faker.gitPath,
-	}
-
-	commits, err := r.ListCommits(ctx, "")
-	require.NoError(t, err)
-	assert.Equal(t, 1, len(commits))
-
-	latestCommitHash, err := r.GetCommitHashForRev(ctx, "HEAD")
-	require.NoError(t, err)
-	assert.Equal(t, commits[0].Hash, latestCommitHash)
-}
-
 func TestChangedFiles(t *testing.T) {
 	faker, err := newFaker()
 	require.NoError(t, err)
@@ -73,9 +46,9 @@ func TestChangedFiles(t *testing.T) {
 		gitPath: faker.gitPath,
 	}
 
-	previousCommitHash, err := r.GetCommitHashForRev(ctx, "HEAD")
+	previousCommit, err := r.GetCommitForRev(ctx, "HEAD")
 	require.NoError(t, err)
-	require.NotEqual(t, "", previousCommitHash)
+	require.NotEqual(t, "", previousCommit.Hash)
 
 	err = os.MkdirAll(filepath.Join(r.dir, "new-dir"), os.ModePerm)
 	require.NoError(t, err)
@@ -90,11 +63,11 @@ func TestChangedFiles(t *testing.T) {
 	err = r.addCommit(ctx, "Added new file")
 	require.NoError(t, err)
 
-	headCommitHash, err := r.GetCommitHashForRev(ctx, "HEAD")
+	headCommit, err := r.GetCommitForRev(ctx, "HEAD")
 	require.NoError(t, err)
-	require.NotEqual(t, "", headCommitHash)
+	require.NotEqual(t, "", headCommit.Hash)
 
-	changedFiles, err := r.ChangedFiles(ctx, previousCommitHash, headCommitHash)
+	changedFiles, err := r.ChangedFiles(ctx, previousCommit.Hash, headCommit.Hash)
 	sort.Strings(changedFiles)
 	expectedChangedFiles := []string{
 		"new-dir/new-file.txt",
@@ -276,4 +249,31 @@ func TestCopy(t *testing.T) {
 	assert.Equal(t, 1, len(newRepoCommits))
 
 	assert.Equal(t, commits, newRepoCommits)
+}
+
+func TestGetCommitForRev(t *testing.T) {
+	faker, err := newFaker()
+	require.NoError(t, err)
+	defer faker.clean()
+
+	var (
+		org      = "test-repo-org"
+		repoName = "repo-get-commit-from-rev"
+		ctx      = context.Background()
+	)
+
+	err = faker.makeRepo(org, repoName)
+	require.NoError(t, err)
+	r := &repo{
+		dir:     faker.repoDir(org, repoName),
+		gitPath: faker.gitPath,
+	}
+
+	commits, err := r.ListCommits(ctx, "")
+	require.NoError(t, err)
+	assert.Equal(t, 1, len(commits))
+
+	commit, err := r.GetCommitForRev(ctx, "HEAD")
+	require.NoError(t, err)
+	assert.Equal(t, commits[0].Hash, commit.Hash)
 }
