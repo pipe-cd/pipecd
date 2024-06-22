@@ -98,8 +98,8 @@ spec:
             - 'user1'
             - '@user2'
           mentionedGroups:
-            - 'group1'
-            - '<!subteam^group2>'
+            - 'groupID1'
+            - '<!subteam^groupID2>'
 ```
 
 
