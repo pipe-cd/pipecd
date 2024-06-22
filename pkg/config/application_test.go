@@ -205,6 +205,19 @@ func TestFindSlackAccountsAndGroupsAndGroups(t *testing.T) {
 			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
 			want:  []string{"user-1", "user-2", "group-1", "group-2"},
 		},
+		{
+			name: "match an event name with Slack Users with new field SlackUsers",
+			mentions: []NotificationMention{
+				{
+					Event:       "DEPLOYMENT_PLANNED",
+					SlackUsers:  []string{"user-1", "user-2"},
+					Slack:       []string{"user-3", "user-4"},
+					SlackGroups: []string{"group-1", "group-2"},
+				},
+			},
+			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+			want:  []string{"user-1", "user-2", "user-3", "user-4", "group-1", "group-2"},
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {

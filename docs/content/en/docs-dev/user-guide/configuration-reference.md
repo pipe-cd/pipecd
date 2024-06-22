@@ -300,7 +300,8 @@ One of `yamlField` or `regex` is required.
 | Field | Type | Description | Required |
 |-|-|-|-|
 | event | string | The event to be notified to users. | Yes |
-| slack | []string | List of user IDs for mentioning in Slack. See [here](https://api.slack.com/reference/surfaces/formatting#mentioning-users) for more information on how to check them. | No |
+| slack | []string | Deprecated: Please use `slackUsers` instead. List of user IDs for mentioning in Slack. See [here](https://api.slack.com/reference/surfaces/formatting#mentioning-users) for more information on how to check them. | No |
+| slackUsers | []string | List of user IDs for mentioning in Slack. See [here](https://api.slack.com/reference/surfaces/formatting#mentioning-users) for more information on how to check them. | No |
 | slackGroups | []string | List of group IDs for mentioning in Slack. See [here](https://api.slack.com/reference/surfaces/formatting#mentioning-groups) for more information on how to check them. | No |
 
 ## KubernetesDeploymentInput

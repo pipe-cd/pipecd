@@ -609,6 +609,11 @@ func (n *DeploymentNotification) FindSlackAccountsAndGroups(event model.Notifica
 				as[s] = struct{}{}
 			}
 		}
+		if len(m.SlackUsers) > 0 {
+			for _, su := range m.SlackUsers {
+				as[su] = struct{}{}
+			}
+		}
 		if len(m.SlackGroups) > 0 {
 			for _, sg := range m.SlackGroups {
 				as[sg] = struct{}{}
@@ -626,10 +631,15 @@ func (n *DeploymentNotification) FindSlackAccountsAndGroups(event model.Notifica
 type NotificationMention struct {
 	// The event to be notified to users.
 	Event string `json:"event"`
+	// Deprecated: Please use SlackUsers instead
 	// List of user IDs for mentioning in Slack.
 	// See https://api.slack.com/reference/surfaces/formatting#mentioning-users
 	// for more information on how to check them.
 	Slack []string `json:"slack"`
+	// List of user IDs for mentioning in Slack.
+	// See https://api.slack.com/reference/surfaces/formatting#mentioning-users
+	// for more information on how to check them.
+	SlackUsers []string `json:"slackusers,omitempty"`
 	// List of group IDs for mentioning in Slack.
 	// See https://api.slack.com/reference/surfaces/formatting#mentioning-groups
 	// for more information on how to check them.
