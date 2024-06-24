@@ -384,7 +384,7 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 			verifier = pipedverifier.NewVerifier(
 				ctx,
 				cfg,
-				// These stores are used to handle request over envoy ext_authz, thus the writer should be PipedWriter.
+				// These stores are used to handle request from piped over envoy ext_authz, thus the writer should be PipedWriter.
 				datastore.NewProjectStore(ds, datastore.PipedCommander),
 				datastore.NewPipedStore(ds, datastore.PipedCommander),
 				input.Logger,
