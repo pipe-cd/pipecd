@@ -74,14 +74,15 @@ const (
 )
 
 type server struct {
-	pipedAPIPort int
-	webAPIPort   int
-	httpPort     int
-	apiPort      int
-	adminPort    int
-	staticDir    string
-	cacheAddress string
-	gracePeriod  time.Duration
+	pipedAPIPort   int
+	webAPIPort     int
+	httpPort       int
+	apiPort        int
+	adminPort      int
+	envoyAuthzPort int
+	staticDir      string
+	cacheAddress   string
+	gracePeriod    time.Duration
 
 	tls            bool
 	certFile       string
@@ -97,14 +98,15 @@ type server struct {
 // NewServerCommand creates a new cobra command for executing api server.
 func NewServerCommand() *cobra.Command {
 	s := &server{
-		pipedAPIPort: 9080,
-		webAPIPort:   9081,
-		httpPort:     9082,
-		apiPort:      9083,
-		adminPort:    9085,
-		staticDir:    "web/static",
-		cacheAddress: "cache:6379",
-		gracePeriod:  30 * time.Second,
+		pipedAPIPort:   9080,
+		webAPIPort:     9081,
+		httpPort:       9082,
+		apiPort:        9083,
+		adminPort:      9085,
+		envoyAuthzPort: 9086,
+		staticDir:      "web/static",
+		cacheAddress:   "cache:6379",
+		gracePeriod:    30 * time.Second,
 	}
 	cmd := &cobra.Command{
 		Use:   "server",
@@ -117,6 +119,7 @@ func NewServerCommand() *cobra.Command {
 	cmd.Flags().IntVar(&s.httpPort, "http-port", s.httpPort, "The port number used to run a http server that serves incoming http requests such as auth callbacks or webhook events.")
 	cmd.Flags().IntVar(&s.apiPort, "api-port", s.apiPort, "The port number used to run a grpc server for external apis.")
 	cmd.Flags().IntVar(&s.adminPort, "admin-port", s.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
+	cmd.Flags().IntVar(&s.envoyAuthzPort, "envoy-authz-port", s.envoyAuthzPort, "The port number used to run a gRPC server that serves envoy ExtAuthz service.")
 	cmd.Flags().StringVar(&s.staticDir, "static-dir", s.staticDir, "The directory where contains static assets.")
 	cmd.Flags().StringVar(&s.cacheAddress, "cache-address", s.cacheAddress, "The address to cache service.")
 	cmd.Flags().DurationVar(&s.gracePeriod, "grace-period", s.gracePeriod, "How long to wait for graceful shutdown.")
@@ -372,6 +375,42 @@ func (s *server) run(ctx context.Context, input cli.Input) error {
 
 		group.Go(func() error {
 			return admin.Run(ctx)
+		})
+	}
+
+	// Start a gRPC server for handling envoy ext_authz requests.
+	{
+		var (
+			verifier = pipedverifier.NewVerifier(
+				ctx,
+				cfg,
+				// These stores are used to handle request over envoy ext_authz, thus the writer should be PipedWriter.
+				datastore.NewProjectStore(ds, datastore.PipedCommander),
+				datastore.NewPipedStore(ds, datastore.PipedCommander),
+				input.Logger,
+			)
+			service = grpcapi.NewEnvoyAuthorizationServer(verifier)
+			opts    = []rpc.Option{
+				rpc.WithPort(s.envoyAuthzPort),
+				rpc.WithGracePeriod(s.gracePeriod),
+				rpc.WithLogger(input.Logger),
+				rpc.WithLogUnaryInterceptor(input.Logger),
+			}
+		)
+
+		if s.tls {
+			opts = append(opts, rpc.WithTLS(s.certFile, s.keyFile))
+		}
+		if s.enableGRPCReflection {
+			opts = append(opts, rpc.WithGRPCReflection())
+		}
+		if input.Flags.Metrics {
+			opts = append(opts, rpc.WithPrometheusUnaryInterceptor())
+		}
+
+		server := rpc.NewServer(service, opts...)
+		group.Go(func() error {
+			return server.Run(ctx)
 		})
 	}
 
