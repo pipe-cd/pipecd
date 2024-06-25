@@ -48,6 +48,7 @@ Kubernetes resources can be managed by some annotations provided by PipeCD.
 |-|-|-|-|
 | `pipecd.dev/ignore-drift-detection` | any | "true" | Whether the drift detection should ignore this resource. |
 | `pipecd.dev/server-side-apply` | any | "true" | Use server side apply instead of client side apply. |
+| `pipecd.dev/sync-by-replace` | any | "enabled" | Use `replace` instead of `apply`. |
 
 ## Terraform application
 
