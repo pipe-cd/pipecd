@@ -44,7 +44,7 @@ EOF
 
 # Remove bots from the contributors list.
 sed -i '/fossabot/d' README.md.tmp
-sed -i '/github-actions[bot]/d' README.md.tmp
+sed -i '/github-actions\[bot\]/d' README.md.tmp
 
 mv README.md.tmp README.md
 
