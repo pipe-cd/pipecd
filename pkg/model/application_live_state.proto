@@ -40,6 +40,7 @@ message ApplicationLiveStateSnapshot {
     TerraformApplicationLiveState terraform = 11;
     CloudRunApplicationLiveState cloudrun = 12;
     LambdaApplicationLiveState lambda = 13;
+    ECSApplicationLiveState ecs = 14;
 
     ApplicationLiveStateVersion version = 15 [(validate.rules).message.required = true];
 }
@@ -60,6 +61,10 @@ message TerraformApplicationLiveState {
 
 message CloudRunApplicationLiveState {
     repeated CloudRunResourceState resources = 1;
+}
+
+message ECSApplicationLiveState{
+    repeated ECSResourceState resources = 1;
 }
 
 message LambdaApplicationLiveState {
@@ -139,6 +144,40 @@ message CloudRunResourceState {
     string kind = 6 [(validate.rules).string.min_len = 1];
     // The namespace this resource belongs to.
     // This can be empty for non-namespaced resources.
+    string namespace = 7;
+
+    HealthStatus health_status = 8 [(validate.rules).enum.defined_only = true];
+    string health_description = 9;
+
+    // The timestamp when this resource was created.
+    int64 created_at = 14 [(validate.rules).int64.gt = 0];
+    // The timestamp of the last time when this resource was updated.
+    int64 updated_at = 15 [(validate.rules).int64.gt = 0];
+}
+
+// ECSResourceState represents the state of an ECS service resource.
+message ECSResourceState {
+    enum HealthStatus {
+        UNKNOWN = 0;
+        HEALTHY = 1;
+        OTHER = 2;
+    }
+
+    // The arn of the ECS resource.
+    string id = 1 [(validate.rules).string.min_len = 1];
+    // The sorted list of unique IDs of the owners that depended by this resource.
+    // The owner is another resource that created and managing this resource.
+    repeated string owner_ids = 2;
+    // The sorted list of unique IDs of the parents.
+    repeated string parent_ids = 3;
+    // The unique name for the type of resource.
+    string name = 4 [(validate.rules).string.min_len = 1];
+    // The api version of this resource. Use application's ApiVersion for ECS resources.
+    string api_version = 5 [(validate.rules).string.min_len = 1];
+    // The kind of this resource.
+    string kind = 6 [(validate.rules).string.min_len = 1];
+    // The namespace this resource belongs to.
+    // This is empty for ECS resources.
     string namespace = 7;
 
     HealthStatus health_status = 8 [(validate.rules).enum.defined_only = true];
