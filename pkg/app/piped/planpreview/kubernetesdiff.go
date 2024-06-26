@@ -21,9 +21,6 @@ import (
 	"io"
 
 	"go.uber.org/zap"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/discovery"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
@@ -43,39 +40,7 @@ func (b *builder) kubernetesDiff(
 	var oldManifests, newManifests []provider.Manifest
 	var err error
 
-	// Use discovery to discover APIs supported by the Kubernetes API server.
-	// This should be run periodically with a low rate because the APIs are not added frequently.
-	// https://godoc.org/k8s.io/client-go/discovery
-	cp, ok := b.pipedCfg.FindPlatformProvider(app.PlatformProvider, model.ApplicationKind_KUBERNETES)
-	if !ok {
-		err = fmt.Errorf("provider %s was not found", app.PlatformProvider)
-		return nil, err
-	}
-	kubeConfig, err := clientcmd.BuildConfigFromFlags(cp.KubernetesConfig.MasterURL, cp.KubernetesConfig.KubeConfigPath)
-	if err != nil {
-		err = fmt.Errorf("failed to build kube config: %w", err)
-		return nil, err
-	}
-	discoveryClient, err := discovery.NewDiscoveryClientForConfig(kubeConfig)
-	if err != nil {
-		err = fmt.Errorf("failed to create discovery client: %w", err)
-		return nil, err
-	}
-	groupResources, err := discoveryClient.ServerPreferredResources()
-	if err != nil {
-		err = fmt.Errorf("failed to fetch preferred resources: %w", err)
-		return nil, err
-	}
-
-	isNamespacedResources := make(map[schema.GroupVersionKind]bool)
-	for _, gr := range groupResources {
-		for _, resource := range gr.APIResources {
-			gvk := schema.FromAPIVersionAndKind(gr.GroupVersion, resource.Kind)
-			isNamespacedResources[gvk] = resource.Namespaced
-		}
-	}
-
-	newManifests, err = loadKubernetesManifests(ctx, *app, targetDSP, b.appManifestsCache, isNamespacedResources, b.gitClient, b.logger)
+	newManifests, err = loadKubernetesManifests(ctx, *app, targetDSP, b.appManifestsCache, b.gitClient, b.logger)
 	if err != nil {
 		fmt.Fprintf(buf, "failed to load kubernetes manifests at the head commit (%v)\n", err)
 		return nil, err
@@ -88,7 +53,7 @@ func (b *builder) kubernetesDiff(
 			*app.GitPath,
 			b.secretDecrypter,
 		)
-		oldManifests, err = loadKubernetesManifests(ctx, *app, runningDSP, b.appManifestsCache, isNamespacedResources, b.gitClient, b.logger)
+		oldManifests, err = loadKubernetesManifests(ctx, *app, runningDSP, b.appManifestsCache, b.gitClient, b.logger)
 		if err != nil {
 			fmt.Fprintf(buf, "failed to load kubernetes manifests at the running commit (%v)\n", err)
 			return nil, err
@@ -127,7 +92,7 @@ func (b *builder) kubernetesDiff(
 	}, nil
 }
 
-func loadKubernetesManifests(ctx context.Context, app model.Application, dsp deploysource.Provider, manifestsCache cache.Cache, isNamespacedResources map[schema.GroupVersionKind]bool, gc gitClient, logger *zap.Logger) (manifests []provider.Manifest, err error) {
+func loadKubernetesManifests(ctx context.Context, app model.Application, dsp deploysource.Provider, manifestsCache cache.Cache, gc gitClient, logger *zap.Logger) (manifests []provider.Manifest, err error) {
 	commit := dsp.Revision()
 	cache := provider.AppManifestsCache{
 		AppID:  app.Id,
@@ -157,7 +122,6 @@ func loadKubernetesManifests(ctx context.Context, app model.Application, dsp dep
 		ds.RepoDir,
 		app.GitPath.ConfigFilename,
 		appCfg.Input,
-		isNamespacedResources,
 		gc,
 		logger,
 	)

@@ -44,7 +44,6 @@ type gitClient interface {
 type Input struct {
 	ApplicationID                  string
 	ApplicationName                string
-	PlatformProviderName           string
 	GitPath                        model.ApplicationGitPath
 	Trigger                        model.DeploymentTrigger
 	MostRecentSuccessfulCommitHash string

@@ -159,7 +159,6 @@ func (p *planner) Run(ctx context.Context) error {
 	in := pln.Input{
 		ApplicationID:                  p.deployment.ApplicationId,
 		ApplicationName:                p.deployment.ApplicationName,
-		PlatformProviderName:           p.deployment.PlatformProvider,
 		GitPath:                        *p.deployment.GitPath,
 		Trigger:                        *p.deployment.Trigger,
 		MostRecentSuccessfulCommitHash: p.lastSuccessfulCommitHash,
