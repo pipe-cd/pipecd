@@ -170,6 +170,16 @@ func (p *Project) SetUpdatedAt(t int64) {
 	p.UpdatedAt = t
 }
 
+// GetStaticAdminUsername returns static admin's username.
+func (x *Project) GetStaticAdminUsername() string {
+	var username = ""
+	staticAdmin := x.GetStaticAdmin()
+	if staticAdmin != nil {
+		username = staticAdmin.GetUsername()
+	}
+	return username
+}
+
 // RedactSensitiveData redacts sensitive data.
 func (p *ProjectStaticUser) RedactSensitiveData() {
 	p.PasswordHash = redactedMessage

@@ -305,15 +305,6 @@ func (x *Project) GetStaticAdminDisabled() bool {
 	return false
 }
 
-func (x *Project) GetStaticAdminUsername() string {
-	var username = ""
-	staticAdmin := x.GetStaticAdmin()
-	if staticAdmin != nil {
-		username = staticAdmin.GetUsername()
-	}
-	return username
-}
-
 func (x *Project) GetSso() *ProjectSSOConfig {
 	if x != nil {
 		return x.Sso
