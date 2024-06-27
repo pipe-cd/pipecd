@@ -127,6 +127,7 @@ func TestMakeTaskSetResourceState(t *testing.T) {
 				Status: &tc.status,
 				// Folowing fields are required to avoid nil pointer panic.
 				TaskSetArn: aws.String("test-task-set-arn"),
+				Id:         aws.String("test-task-set-id"),
 				ServiceArn: aws.String("test-service-arn"),
 				CreatedAt:  aws.Time(now),
 				UpdatedAt:  aws.Time(now),
@@ -137,7 +138,7 @@ func TestMakeTaskSetResourceState(t *testing.T) {
 				Id:                "test-task-set-arn",
 				OwnerIds:          []string{"test-service-arn"},
 				ParentIds:         []string{"test-service-arn"},
-				Name:              "test-task-set-arn",
+				Name:              "test-task-set-id",
 				ApiVersion:        "pipecd.dev/v1beta1",
 				Kind:              "TaskSet",
 				HealthStatus:      tc.expectedStatus,
@@ -185,16 +186,16 @@ func TestMakeTaskResourceState(t *testing.T) {
 				HealthStatus: tc.healthStatus,
 				// Folowing fields are required to avoid nil pointer panic.
 				LastStatus: aws.String("test-last-status"),
-				TaskArn:    aws.String("test-task-arn"),
+				TaskArn:    aws.String("arn:aws:ecs:region:account-id:task/test-cluster/test-task-id"),
 				CreatedAt:  aws.Time(now),
 			}
 			state := makeTaskResourceState(task, "test-cluster-arn")
 
 			expected := &model.ECSResourceState{
-				Id:                "test-task-arn",
+				Id:                "arn:aws:ecs:region:account-id:task/test-cluster/test-task-id",
 				OwnerIds:          []string{"test-cluster-arn"},
 				ParentIds:         []string{"test-cluster-arn"},
-				Name:              "test-task-arn",
+				Name:              "test-task-id",
 				ApiVersion:        "pipecd.dev/v1beta1",
 				Kind:              "Task",
 				HealthStatus:      tc.expectedStatus,
