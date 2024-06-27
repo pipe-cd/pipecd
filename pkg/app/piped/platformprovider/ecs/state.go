@@ -16,6 +16,7 @@ package ecs
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -84,7 +85,7 @@ func makeTaskSetResourceState(taskSet *types.TaskSet) *model.ECSResourceState {
 		Id:        *taskSet.TaskSetArn,
 		OwnerIds:  []string{*taskSet.ServiceArn},
 		ParentIds: []string{*taskSet.ServiceArn},
-		Name:      *taskSet.TaskSetArn,
+		Name:      *taskSet.Id,
 
 		ApiVersion: config.VersionV1Beta1,
 		Kind:       "TaskSet",
@@ -109,12 +110,15 @@ func makeTaskResourceState(task *types.Task, parentArn string) *model.ECSResourc
 		healthStatus = model.ECSResourceState_UNKNOWN
 	}
 
+	taskArnParts := strings.Split(*task.TaskArn, "/")
+	taskId := taskArnParts[len(taskArnParts)-1]
+
 	createdAt := task.CreatedAt.Unix()
 	return &model.ECSResourceState{
 		Id:        *task.TaskArn,
 		OwnerIds:  []string{parentArn},
 		ParentIds: []string{parentArn},
-		Name:      *task.TaskArn,
+		Name:      taskId,
 
 		ApiVersion: config.VersionV1Beta1,
 		Kind:       "Task",
