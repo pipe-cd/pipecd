@@ -55,7 +55,22 @@ The commands run in the directory where this application configuration file exis
 
 ![](/images/script-run.png)
 
-# When to rollback
+## Default environment values
+
+You can use the envrionment values related to the deployment.
+
+| Name | Description | Example |
+|-|-|-|
+|SR_DEPLOYMENT_ID| The deployment id | 877625fc-196a-40f9-b6a9-99decd5494a0 |
+|SR_APPLICATION_ID| The application id | 8d7609e0-9ff6-4dc7-a5ac-39660768606a |
+|SR_APPLICATION_NAME| The application name | example |
+|SR_TRIGGERED_AT| The timestamp when the deployment is triggered  | 1719571113 |
+|SR_TRIGGERED_COMMIT_HASH| The commit hash that triggered the deployment | 2bf969a3dad043aaf8ae6419943255e49377da0d |
+|SR_REPOSITORY_URL| The repository url configured in the piped config  | git@github.com:org/repo.git, https://github.com/org/repo |
+|SR_RAW| The json encoded string of above values | {"deploymentID":"877625fc-196a-40f9-b6a9-99decd5494a0","applicationID":"8d7609e0-9ff6-4dc7-a5ac-39660768606a","applicationName":"example","triggeredAt":1719571113,"triggeredCommitHash":"2bf969a3dad043aaf8ae6419943255e49377da0d","repositoryURL":"git@github.com:org/repo.git","labels":{"env":"example","team":"product"}} |
+|SR_LABEL_XXX| The label attached to the deployment. The env name depends on the label name. For example, if a deployment has the labels `env:prd` and `team:server`, `SR_LABEL_ENV` and `SR_LABEL_TEAM` are registered.  | prd, server |
+
+## Rollback
 
 You can define the command as `onRollback` to execute when to rollback similar to `run`.
 Execute the command to rollback SCRIPT_RUN to the point where the deployment was canceled or failed.
@@ -114,7 +129,7 @@ Then
 - If 4 is canceled or fails while running, only SCRIPT_RUN of 3 will be rollbacked.
 - If 6 is canceled or fails while running, only SCRIPT_RUNs 3 and 5 will be rollbacked. The order of executing is 3 -> 5.
 
-# Note
+## Note
 1. You can use `SCRIPT_RUN` stage with only the application kind of `KubernetesApp`. Soon we will implement it. for other application kinds.
 
 2. The public piped image available in PipeCD main repo (ref: [Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/cmd/piped/Dockerfile)) is based on [alpine](https://hub.docker.com/_/alpine/) and only has a few UNIX command available (ref: [piped-base Dockerfile](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/Dockerfile)). If you want to use your commands, you can:
