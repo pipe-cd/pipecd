@@ -24,6 +24,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/scriptrun"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -206,15 +207,18 @@ func (e *rollbackExecutor) ensureScriptRunRollback(ctx context.Context) model.St
 		}
 	}
 
-	defaultEnvs := map[string]string{
-		"DEPLOYMENT_ID":  e.Deployment.Id,
-		"APPLICATION_ID": e.Deployment.ApplicationId,
+	ci := scriptrun.NewContextInfo(e.Deployment)
+	ciEnv, err := ci.BuildEnv()
+	if err != nil {
+		e.LogPersister.Errorf("failed to build srcipt run context info: %w", err)
+		return model.StageStatus_STAGE_FAILURE
 	}
 
-	envs := make([]string, 0, len(env)+len(defaultEnvs))
-	for key, value := range defaultEnvs {
-		envs = append(envs, "SR_"+key+"="+value)
+	envs := make([]string, 0, len(ciEnv)+len(env))
+	for key, value := range ciEnv {
+		envs = append(envs, key+"="+value)
 	}
+
 	for key, value := range env {
 		envs = append(envs, key+"="+value)
 	}
