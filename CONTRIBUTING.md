@@ -72,14 +72,16 @@ If you want to work on any of these issues, simply leave a message saying "I'd l
 
 PipeCD consists of several components and docs:
 
-- **cmd/pipecd**: A centralized component that manages deployment data and provides a gRPC API for connecting pipeds, as well as web functionalities such as authentication.
-- **cmd/piped**: piped is an agent component that runs in your cluster.
-- **cmd/pipectl**: The command-line tool for PipeCD.
-- **cmd/launcher**: The command executor that enables the remote upgrade feature of the piped agent.
-- **web**: The web application provided by the control plane.
-- **docs**: Documentation and references.
+- **cmd/pipecd**: A centralized component that manages deployment data and provides a gRPC API for connecting pipeds, as well as web functionalities such as authentication. [README.md](./cmd/pipecd/README.md)
+- **cmd/piped**: piped is an agent component that runs in your cluster. [README.md](./cmd/piped/README.md)
+- **cmd/pipectl**: The command-line tool for PipeCD. [README.md](./cmd/pipectl/README.md)
+- **cmd/launcher**: The command executor that enables the remote upgrade feature of the piped agent. [README.md](./cmd/launcher/README.md)
+- **web**: The web application provided by the control plane. [README.md](./web/README.md)
+- **docs**: Documentation and references. [README.md](./docs/README.md)
 
 **You can find detailed development information in the README file of each directory.**
+
+Note: While working with the PipeCD codebase, you may refer to [Makefile](./Makefile) for useful commands.
 
 ### Online one-click setup for contributing
 
@@ -119,7 +121,7 @@ Don't stress too much about PR titles. The maintainers will help you get the tit
 By contributing to PipeCD, you agree that your contributions will be licensed under the Apache License Version 2. Include the following header at the top of your new file(s):
 
 ```go
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.

@@ -97,7 +97,10 @@ test/integration:
 
 .PHONY: run/pipecd
 run/pipecd: $(eval TIMESTAMP = $(shell date +%s))
-run/pipecd: BUILD_VERSION ?= "$(shell git describe --tags --always --abbrev=7)-$(TIMESTAMP)"
+# NOTE: previously `git describe --tags` was used to determine the version for running locally
+# However, this does not work on a forked branch, so the decision was made to hardcode at version 0.0.0
+# see: https://github.com/pipe-cd/pipecd/issues/4845
+run/pipecd: BUILD_VERSION ?= "v0.0.0-$(shell git rev-parse --short HEAD)-$(TIMESTAMP)"
 run/pipecd: BUILD_COMMIT ?= $(shell git rev-parse HEAD)
 run/pipecd: BUILD_DATE ?= $(shell date -u '+%Y%m%d-%H%M%S')
 run/pipecd: BUILD_LDFLAGS_PREFIX := -X github.com/pipe-cd/pipecd/pkg/version
@@ -130,11 +133,15 @@ stop/pipecd:
 run/piped: CONFIG_FILE ?=
 run/piped: INSECURE ?= false
 run/piped: LAUNCHER ?= false
+run/piped: LOG_ENCODING ?= humanize
+run/piped: EXPERIMENTAL ?= false
 run/piped:
-ifeq ($(LAUNCHER),true)
-	go run cmd/launcher/main.go launcher --config-file=$(CONFIG_FILE) --insecure=$(INSECURE)
+ifeq ($(EXPERIMENTAL), true)
+	go run cmd/pipedv1/main.go piped --tools-dir=/tmp/piped-bin --config-file=$(CONFIG_FILE) --insecure=$(INSECURE) --log-encoding=$(LOG_ENCODING)
+else ifeq ($(LAUNCHER),true)
+	go run cmd/launcher/main.go launcher --config-file=$(CONFIG_FILE) --insecure=$(INSECURE) --log-encoding=$(LOG_ENCODING)
 else
-	go run cmd/piped/main.go piped --tools-dir=/tmp/piped-bin --config-file=$(CONFIG_FILE) --insecure=$(INSECURE)
+	go run cmd/piped/main.go piped --tools-dir=/tmp/piped-bin --config-file=$(CONFIG_FILE) --insecure=$(INSECURE) --log-encoding=$(LOG_ENCODING)
 endif
 
 .PHONY: run/web
@@ -183,12 +190,16 @@ update/docsy:
 	rm -rf docs/themes/docsy
 	git clone --recurse-submodules --depth 1 https://github.com/google/docsy.git docs/themes/docsy
 
+.PHONY: update/copyright
+update/copyright:
+	./hack/update-copyright.sh
+
 # Generate commands
 
 .PHONY: gen/code
 gen/code:
 	# NOTE: Specify a specific version temporally until the next release.
-	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:fc3db505ef8dbf287b90aafed8c28246d2cca06bda2b43893a3059719fe9fff4 /repo #v0.44.0-38-g7229285
+	docker run --rm -v ${PWD}:/repo -it --entrypoint ./tool/codegen/codegen.sh ghcr.io/pipe-cd/codegen@sha256:3fd8e22eeab21bab2a2f6c1d2770b069922f4973465d57386d672574931943e8 /repo #v0.47.3-rc0-2-g462b842
 
 .PHONY: gen/test-tls
 gen/test-tls:

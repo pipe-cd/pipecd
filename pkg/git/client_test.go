@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -134,7 +134,7 @@ func (f *faker) makeRepo(org, repo string) error {
 	}
 
 	err := commander.runGitCommands([][]string{
-		{"init"},
+		{"init", "--initial-branch", "master"},
 	})
 	if err != nil {
 		return err

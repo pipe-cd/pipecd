@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,6 +27,9 @@ const (
 	// StageAnalysis represents the waiting state for analysing
 	// the application status based on metrics, log, http request...
 	StageAnalysis Stage = "ANALYSIS"
+	// StageScriptRun represents a state where
+	// the specified script will be executed.
+	StageScriptRun Stage = "SCRIPT_RUN"
 
 	// StageK8sSync represents the state where
 	// all resources should be synced with the Git state.
@@ -105,6 +108,10 @@ const (
 	// all changes made by the CUSTOM_SYNC stage will be reverted to
 	// bring back the pre-deploy stage.
 	StageCustomSyncRollback Stage = "CUSTOM_SYNC_ROLLBACK"
+	// StageScriptRunRollback represents a state where
+	// all changes made by the SCRIPT_RUN_ROLLBACK stage will be reverted to
+	// bring back the pre-deploy stage.
+	StageScriptRunRollback Stage = "SCRIPT_RUN_ROLLBACK"
 )
 
 func (s Stage) String() string {

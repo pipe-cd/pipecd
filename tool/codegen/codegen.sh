@@ -19,6 +19,8 @@ goProtoDirs=(
   "pkg/app/server/service/pipedservice"
   "pkg/app/server/service/webservice"
   "pkg/app/helloworld/service"
+  "pkg/plugin/api/v1alpha1/platform"
+  "pkg/app/pipedv1/cmd/piped/service"
 )
 
 for dir in ${goProtoDirs[*]}; do
@@ -54,6 +56,17 @@ jsOutDirs=(
   "web/api_client"
 )
 
+# Check the arch for protc-gen-js
+arch=$(uname -m);
+protocGenJsSupportArch=("x86_64" "aarch64")
+if [[ ! " ${protocGenJsSupportArch[@]} " =~ " ${arch} " ]]; then
+  echo "Unsupported architecture: $arch"
+  exit 1
+fi
+
+protocGenJsIncludePath="/protoc-gen-js-${arch}"
+protocGenJsPath="/protoc-gen-js-${arch}/bin/protoc-gen-js"
+
 i=0
 while [ $i -lt ${#jsProtoDirs[*]} ]; do
   inDir=${jsProtoDirs[$i]}
@@ -70,7 +83,9 @@ while [ $i -lt ${#jsProtoDirs[*]} ]; do
   echo "generating new JS files..."
   protoc \
     -I . \
+    -I ${protocGenJsIncludePath} \
     -I /go/src/github.com/envoyproxy/protoc-gen-validate \
+    --plugin=protoc-gen-js=${protocGenJsPath} \
     --js_out=import_style=commonjs:. \
     --grpc-web_out=import_style=commonjs+dts,mode=grpcweb:. \
     ${inDir}/*.proto

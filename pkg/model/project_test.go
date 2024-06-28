@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -779,7 +779,9 @@ func TestProject_UpdateRBACRole(t *testing.T) {
 					},
 				},
 			},
-			project: &Project{},
+			project: &Project{
+				RbacRoles: []*ProjectRBACRole{builtinAdminRBACRole},
+			},
 			wantErr: true,
 		},
 	}

@@ -1,5 +1,5 @@
 # Builder image to build go program.
-FROM golang:1.20.4-alpine3.16 as BUILDER
+FROM golang:1.22.4 as BUILDER
 
 COPY protoc-gen-auth /protoc-gen-auth
 RUN cd /protoc-gen-auth \
@@ -7,12 +7,12 @@ RUN cd /protoc-gen-auth \
   && chmod +x /usr/local/bin/protoc-gen-auth
 
 # Codegen image which is actually being used.
-FROM golang:1.20.4-alpine3.16
+FROM golang:1.22.4
 
 # This is version of protobuf installed in the image.
 # See https://pkgs.alpinelinux.org/packages?name=protobuf&branch=v3.16
 # NOTE: Start from protobuf v3.20.1, the protoc-gen-js is not included in protobuf package.
-ENV PROTOC_VER=3.18.1
+ENV PROTOC_GEN_JS_VER=3.21.2
 ENV PROTOC_GEN_GO_VER=1.27.1
 ENV PROTOC_GEN_GRPC_WEB_VER=1.3.1
 ENV PROTOC_GEN_GO_GRPC_VER=1.2.0
@@ -20,7 +20,7 @@ ENV PROTOC_GEN_VALIDATE_VER=0.6.6
 ENV GOMOCK_VER=1.6.0
 
 # dependecies and protoc
-RUN apk --no-cache add wget bash protobuf-dev protobuf
+RUN apt update && apt install -y protobuf-compiler
 
 # protoc-gen-go
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v${PROTOC_GEN_GO_VER}
@@ -40,6 +40,17 @@ RUN go install github.com/envoyproxy/protoc-gen-validate@v${PROTOC_GEN_VALIDATE_
   && tar xvfz protoc-gen-validate.tar.gz -C /go/src/github.com/envoyproxy \
   && rm protoc-gen-validate.tar.gz \
   && mv /go/src/github.com/envoyproxy/protoc-gen-validate-${PROTOC_GEN_VALIDATE_VER} /go/src/github.com/envoyproxy/protoc-gen-validate
+
+# protoc-gen-js
+# This is a workaround to use it  https://github.com/protocolbuffers/protobuf-javascript/issues/127#issuecomment-1361047597
+RUN for target in x86_64 aarch_64; do \
+  mkdir /protoc-gen-js-${target} && cd /protoc-gen-js-${target} \
+  && wget https://github.com/protocolbuffers/protobuf-javascript/releases/download/v${PROTOC_GEN_JS_VER}/protobuf-javascript-${PROTOC_GEN_JS_VER}-linux-${target}.tar.gz \
+  && tar xvfz protobuf-javascript-${PROTOC_GEN_JS_VER}-linux-${target}.tar.gz \
+  && chmod +x bin/protoc-gen-js \
+  && rm -rf protobuf-javascript-${PROTOC_GEN_JS_VER}-linux-${target}.tar.gz; \
+  done && \
+  mv /protoc-gen-js-aarch_64/ /protoc-gen-js-aarch64/ 
 
 # protoc-gen-auth
 COPY --from=BUILDER /usr/local/bin/protoc-gen-auth /usr/local/bin/

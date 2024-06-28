@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -152,6 +152,16 @@ func (d *Deployment) FindRollbackStage() (*PipelineStage, bool) {
 		}
 	}
 	return nil, false
+}
+
+func (d *Deployment) FindRollbackStages() ([]*PipelineStage, bool) {
+	rollbackStages := make([]*PipelineStage, 0, len(d.Stages))
+	for i, stage := range d.Stages {
+		if d.Stages[i].Name == StageRollback.String() || d.Stages[i].Name == StageScriptRunRollback.String() {
+			rollbackStages = append(rollbackStages, stage)
+		}
+	}
+	return rollbackStages, len(rollbackStages) > 0
 }
 
 // DeploymentStatusesFromStrings converts a list of strings to list of DeploymentStatus.

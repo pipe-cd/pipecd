@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"sigs.k8s.io/yaml"
 )
 
 type differ struct {
@@ -76,6 +77,7 @@ func (d *differ) initIgnoredPaths(key string) {
 }
 
 // DiffUnstructureds calculates the diff between two unstructured objects.
+// If you compare non-k8s manifests, use DiffStructureds instead.
 func DiffUnstructureds(x, y unstructured.Unstructured, key string, opts ...Option) (*Result, error) {
 	var (
 		path = []PathStep{}
@@ -88,6 +90,40 @@ func DiffUnstructureds(x, y unstructured.Unstructured, key string, opts ...Optio
 	}
 
 	d.initIgnoredPaths(key)
+
+	if err := d.diff(path, vx, vy); err != nil {
+		return nil, err
+	}
+
+	d.result.sort()
+	return d.result, nil
+}
+
+// DiffStructureds calulates the diff between non-k8s manifests.
+// If you compare k8s manifests, use DiffUnstructureds instead.
+func DiffStructureds(x, y interface{}, opts ...Option) (*Result, error) {
+	map_x := map[string]interface{}{}
+	map_y := map[string]interface{}{}
+	yml_x, err := yaml.Marshal(x)
+	if err != nil {
+		return nil, err
+	}
+	yml_y, err := yaml.Marshal(y)
+	if err != nil {
+		return nil, err
+	}
+	yaml.Unmarshal(yml_x, &map_x)
+	yaml.Unmarshal(yml_y, &map_y)
+
+	var (
+		path = []PathStep{}
+		vx   = reflect.ValueOf(map_x)
+		vy   = reflect.ValueOf(map_y)
+		d    = &differ{result: &Result{}}
+	)
+	for _, opt := range opts {
+		opt(d)
+	}
 
 	if err := d.diff(path, vx, vy); err != nil {
 		return nil, err

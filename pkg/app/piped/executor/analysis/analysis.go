@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		for {
 			select {
 			case <-ticker.C:
-				if !e.checkSkipped(ctx) {
+				if !e.checkSkippedByCmd(ctx) {
 					continue
 				}
 				status = model.StageStatus_STAGE_SKIPPED
@@ -339,7 +339,7 @@ func (e *Executor) buildAppArgs(customArgs map[string]string) argsTemplate {
 	return args
 }
 
-func (e *Executor) checkSkipped(ctx context.Context) bool {
+func (e *Executor) checkSkippedByCmd(ctx context.Context) bool {
 	var skipCmd *model.ReportableCommand
 	commands := e.CommandLister.ListCommands()
 

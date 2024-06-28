@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -100,6 +100,70 @@ func TestParseFunctionManifest(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "correct config for LambdaFunction with specifying ephemeral storage",
+			data: `{
+  "apiVersion": "pipecd.dev/v1beta1",
+  "kind": "LambdaFunction",
+  "spec": {
+	  "name": "SimpleFunction",
+	  "role": "arn:aws:iam::xxxxx:role/lambda-role",
+	  "memory": 128,
+	  "timeout": 5,
+	  "image": "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
+	  "ephemeralStorage": {
+		size: 512
+	  }
+  }
+}`,
+			wantSpec: FunctionManifest{
+				Kind:       "LambdaFunction",
+				APIVersion: "pipecd.dev/v1beta1",
+				Spec: FunctionManifestSpec{
+					Name:             "SimpleFunction",
+					Role:             "arn:aws:iam::xxxxx:role/lambda-role",
+					Memory:           128,
+					Timeout:          5,
+					ImageURI:         "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
+					EphemeralStorage: &EphemeralStorage{Size: 512},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "correct config for LambdaFunction with specifying layers",
+			data: `{
+  "apiVersion": "pipecd.dev/v1beta1",
+  "kind": "LambdaFunction",
+  "spec": {
+	  "name": "SimpleFunction",
+	  "role": "arn:aws:iam::xxxxx:role/lambda-role",
+	  "memory": 128,
+	  "timeout": 5,
+	  "image": "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
+	  "layers": [
+		"arn:aws:lambda:REGION:ACCOUNT:layer:test-layer-1:1",
+		"arn:aws:lambda:REGION:ACCOUNT:layer:test-layer-2:2"
+	  ]
+  }
+}`,
+			wantSpec: FunctionManifest{
+				Kind:       "LambdaFunction",
+				APIVersion: "pipecd.dev/v1beta1",
+				Spec: FunctionManifestSpec{
+					Name:     "SimpleFunction",
+					Role:     "arn:aws:iam::xxxxx:role/lambda-role",
+					Memory:   128,
+					Timeout:  5,
+					ImageURI: "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
+					Layers: []string{
+						"arn:aws:lambda:REGION:ACCOUNT:layer:test-layer-1:1",
+						"arn:aws:lambda:REGION:ACCOUNT:layer:test-layer-2:2",
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
 			name: "correct config for LambdaFunction with specifying vpc config",
 			data: `{
   "apiVersion": "pipecd.dev/v1beta1",
@@ -169,6 +233,25 @@ func TestParseFunctionManifest(t *testing.T) {
 	  "memory": 128,
 	  "timeout": 1000,
 	  "image": "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1"
+  }
+}`,
+			wantSpec: FunctionManifest{},
+			wantErr:  true,
+		},
+		{
+			name: "invalid ephemeral storage value",
+			data: `{
+  "apiVersion": "pipecd.dev/v1beta1",
+  "kind": "LambdaFunction",
+  "spec": {
+	  "name": "SimpleFunction",
+	  "role": "arn:aws:iam::xxxxx:role/lambda-role",
+	  "memory": 128,
+	  "timeout": 5,
+	  "image": "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
+	  "ephemeralStorage": {
+		size: 511
+	  }
   }
 }`,
 			wantSpec: FunctionManifest{},

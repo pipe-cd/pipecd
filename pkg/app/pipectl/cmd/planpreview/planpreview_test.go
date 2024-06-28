@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -165,6 +165,13 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 							ApplicationKind: model.ApplicationKind_CLOUDRUN,
 							Error:           "missing key",
 						},
+						{
+							ApplicationId:   "app-5",
+							ApplicationName: "app-5",
+							ApplicationUrl:  "https://pipecd.dev/app-5",
+							ApplicationKind: model.ApplicationKind_ECS,
+							Error:           "wrong application configuration",
+						},
 					},
 				},
 				{
@@ -196,13 +203,16 @@ changes-1
 changes-2
   ---DETAILS_END---
 
-NOTE: An error occurred while building plan-preview for the following 2 applications:
+NOTE: An error occurred while building plan-preview for the following 3 applications:
 
 1. app: app-3, env: env-3, kind: TERRAFORM
   reason: wrong application configuration
 
 2. app: app-4, kind: CLOUDRUN
   reason: missing key
+
+3. app: app-5, kind: ECS
+  reason: wrong application configuration
 
 NOTE: An error occurred while building plan-preview for applications of the following 2 Pipeds:
 

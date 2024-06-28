@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package kubernetes
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -114,6 +115,31 @@ func buildProgressivePipeline(pp *config.DeploymentPipeline, autoRollback bool, 
 			CreatedAt:  now.Unix(),
 			UpdatedAt:  now.Unix(),
 		})
+
+		// Add a stage for rolling back script run stages.
+		for i, s := range pp.Stages {
+			if s.Name == model.StageScriptRun {
+				// Use metadata as a way to pass parameters to the stage.
+				envStr, _ := json.Marshal(s.ScriptRunStageOptions.Env)
+				metadata := map[string]string{
+					"baseStageID": out[i].Id,
+					"onRollback":  s.ScriptRunStageOptions.OnRollback,
+					"env":         string(envStr),
+				}
+				ss, _ := planner.GetPredefinedStage(planner.PredefinedStageScriptRunRollback)
+				out = append(out, &model.PipelineStage{
+					Id:         ss.ID,
+					Name:       ss.Name.String(),
+					Desc:       ss.Desc,
+					Predefined: true,
+					Visible:    false,
+					Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
+					Metadata:   metadata,
+					CreatedAt:  now.Unix(),
+					UpdatedAt:  now.Unix(),
+				})
+			}
+		}
 	}
 
 	return out

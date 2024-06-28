@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -154,6 +154,15 @@ func (p *Project) SetStaticAdmin(username, password string) error {
 		PasswordHash: string(encoded),
 	}
 	return nil
+}
+
+func (x *Project) GetStaticAdminUsername() string {
+	var username = ""
+	staticAdmin := x.GetStaticAdmin()
+	if staticAdmin != nil {
+		username = staticAdmin.GetUsername()
+	}
+	return username
 }
 
 // RedactSensitiveData redacts sensitive data.
@@ -476,14 +485,14 @@ func (p *Project) AddRBACRole(name string, policies []*ProjectRBACPolicy) error 
 // UpdateRBACRole updates a custom RBAC role.
 // Built-in role cannot be updated.
 func (p *Project) UpdateRBACRole(name string, policies []*ProjectRBACPolicy) error {
+	if isBuiltinRBACRole(name) {
+		return fmt.Errorf("built-in role cannot be updated")
+	}
 	for _, v := range p.RbacRoles {
 		if v.Name == name {
 			v.Policies = policies
 			return nil
 		}
-	}
-	if isBuiltinRBACRole(name) {
-		return fmt.Errorf("built-in role cannot be updated")
 	}
 	return fmt.Errorf("%s role does not exist", name)
 }

@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,15 +26,28 @@ import (
 )
 
 func TestTTLCache(t *testing.T) {
-	c := NewTTLCache(context.TODO(), 0, 5*time.Second)
-	err := c.Put("key-1", "value-1")
-	require.NoError(t, err)
-	value, err := c.Get("key-1")
-	require.NoError(t, err)
-	assert.Equal(t, "value-1", value)
+	t.Run("remain a value after context canceled", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		c := NewTTLCache(ctx, 0, 5*time.Second)
+		err := c.Put("key-1", "value-1")
+		require.NoError(t, err)
+		cancel()
+		<-time.After(6 * time.Second)
+		value, err := c.Get("key-1")
+		require.NoError(t, err)
+		assert.Equal(t, "value-1", value)
+	})
+	t.Run("test eviction", func(t *testing.T) {
+		c := NewTTLCache(context.TODO(), 0, 5*time.Second)
+		err := c.Put("key-1", "value-1")
+		require.NoError(t, err)
+		value, err := c.Get("key-1")
+		require.NoError(t, err)
+		assert.Equal(t, "value-1", value)
 
-	c.evictExpired(time.Now())
-	value, err = c.Get("key-1")
-	assert.Equal(t, cache.ErrNotFound, err)
-	assert.Equal(t, nil, value)
+		c.evictExpired(time.Now())
+		value, err = c.Get("key-1")
+		assert.Equal(t, cache.ErrNotFound, err)
+		assert.Equal(t, nil, value)
+	})
 }

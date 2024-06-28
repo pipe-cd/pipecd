@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,9 +30,11 @@ const (
 	functionManifestKind = "LambdaFunction"
 	// Memory and Timeout lower and upper limit as noted via
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#UpdateFunctionConfigurationInput
-	memoryLowerLimit  = 1
-	timeoutLowerLimit = 1
-	timeoutUpperLimit = 900
+	memoryLowerLimit           = 1
+	timeoutLowerLimit          = 1
+	timeoutUpperLimit          = 900
+	ephemeralStorageLowerLimit = 512
+	ephemeralStorageUpperLimit = 10240
 )
 
 type FunctionManifest struct {
@@ -56,21 +58,27 @@ func (fm *FunctionManifest) validate() error {
 
 // FunctionManifestSpec contains configuration for LambdaFunction.
 type FunctionManifestSpec struct {
-	Name            string            `json:"name"`
-	Role            string            `json:"role"`
-	ImageURI        string            `json:"image"`
-	S3Bucket        string            `json:"s3Bucket"`
-	S3Key           string            `json:"s3Key"`
-	S3ObjectVersion string            `json:"s3ObjectVersion"`
-	SourceCode      SourceCode        `json:"source"`
-	Handler         string            `json:"handler"`
-	Architectures   []Architecture    `json:"architectures,omitempty"`
-	Runtime         string            `json:"runtime"`
-	Memory          int32             `json:"memory"`
-	Timeout         int32             `json:"timeout"`
-	Tags            map[string]string `json:"tags,omitempty"`
-	Environments    map[string]string `json:"environments,omitempty"`
-	VPCConfig       *VPCConfig        `json:"vpcConfig,omitempty"`
+	Name             string            `json:"name"`
+	Role             string            `json:"role"`
+	ImageURI         string            `json:"image"`
+	S3Bucket         string            `json:"s3Bucket"`
+	S3Key            string            `json:"s3Key"`
+	S3ObjectVersion  string            `json:"s3ObjectVersion"`
+	SourceCode       SourceCode        `json:"source"`
+	Handler          string            `json:"handler"`
+	Architectures    []Architecture    `json:"architectures,omitempty"`
+	EphemeralStorage *EphemeralStorage `json:"ephemeralStorage,omitempty"`
+	Runtime          string            `json:"runtime"`
+	Memory           int32             `json:"memory"`
+	Timeout          int32             `json:"timeout"`
+	Tags             map[string]string `json:"tags,omitempty"`
+	Environments     map[string]string `json:"environments,omitempty"`
+	VPCConfig        *VPCConfig        `json:"vpcConfig,omitempty"`
+	// A list of function layers used in the function.
+	// Specify each layer by its ARN including the version.
+	// You can use layers only with Lambda functions deployed as a .zip file archive. Layers are ignored for a container image.
+	// See https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html.
+	Layers []string `json:"layers,omitempty"`
 }
 
 type VPCConfig struct {
@@ -98,6 +106,11 @@ func (fmp FunctionManifestSpec) validate() error {
 	for _, arch := range fmp.Architectures {
 		if err := arch.validate(); err != nil {
 			return fmt.Errorf("architecture is invalid: %w", err)
+		}
+	}
+	if fmp.EphemeralStorage != nil {
+		if err := fmp.EphemeralStorage.validate(); err != nil {
+			return fmt.Errorf("ephemeral storage is invalid: %w", err)
 		}
 	}
 	if fmp.Role == "" {
@@ -135,6 +148,17 @@ type Architecture struct {
 func (a Architecture) validate() error {
 	if a.Name != "x86_64" && a.Name != "arm64" {
 		return fmt.Errorf("architecture is invalid")
+	}
+	return nil
+}
+
+type EphemeralStorage struct {
+	Size int32 `json:"size,omitempty"`
+}
+
+func (es EphemeralStorage) validate() error {
+	if es.Size < ephemeralStorageLowerLimit || es.Size > ephemeralStorageUpperLimit {
+		return fmt.Errorf("ephemeral storage is out of range")
 	}
 	return nil
 }

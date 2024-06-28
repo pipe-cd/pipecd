@@ -46,35 +46,29 @@ And many more, please explore in [docs](https://pipecd.dev/docs).
 
 #
 
-### Quickstart
+### Getting Started
 
-The [quickstart guide](https://pipecd.dev/docs/quickstart/) shows how to set up PipeCD components and deploy a hello-world application with PipeCD.
-
-#
-
-### Installation
-
-The [installation guide](https://pipecd.dev/docs/installation/) explains and helps set up PipeCD for your real-life production environment.
+- The [quickstart guide](https://pipecd.dev/docs/quickstart/) shows how to set up PipeCD components and deploy a hello-world application with PipeCD for testing purposes.
+- The [tutorial](https://github.com/pipe-cd/tutorial) shows how to run PipeCD locally for introduction.
+- The [installation guide](https://pipecd.dev/docs/installation/) explains and helps set up PipeCD for your real-life use environment.
 
 #
 
-### Release and development
+### Community and development
 
-Please check [the release page](https://github.com/pipe-cd/pipecd/releases) to see what is included in the latest release. Also, [Releases documentation](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md/) explains our versioning and release cycle.
+- Check out the [PipeCD website](https://pipecd.dev) for the complete documentation and helpful links.
+- Join our [Slack workspace](https://cloud-native.slack.com/archives/C01B27F9T0X) to get help and to discuss features.
+- Tweet [@pipecd_dev](https://twitter.com/pipecd_dev) on Twitter/X.
+- Create Github [Issues](https://github.com/pipe-cd/pipecd/issues) or [Discussions](https://github.com/pipe-cd/pipecd/discussions/) to report bugs or request features.
+- Join our upcoming PipeCD Development and Community Meeting where we share the latest project news, demos, answer questions, and triage issues ([meeting access and agenda](https://bit.ly/pipecd-mtg-notes)).
 
-Go to the [Discussion](https://github.com/pipe-cd/pipecd/discussions) to know what we are working on and which will be added to the next release.
+Participation in PipeCD project is governed by the CNCF [Code of Conduct](CODE_OF_CONDUCT.md).
 
 #
 
 ### Contributing
 
-We'd love you to join us! Please see the [Contributing docs](CONTRIBUTING.md).
-
-#
-
-### Community
-
-As a CNCF Sandbox project, PipeCD follows [CNCF Code of Conduct](https://github.com/pipe-cd/pipecd/blob/master/CODE_OF_CONDUCT.md).
+We'd love you to join us! Please see the [Contributing docs](CONTRIBUTING.md) to get started.
 
 #
 
@@ -92,70 +86,85 @@ You can find a list of publicly recognized users of the PipeCD in the [ADOPTERS.
 <a href="https://github.com/cakecatz"><img src="https://avatars.githubusercontent.com/u/6136383?v=4" title="cakecatz" width="80" height="80"></a>
 <a href="https://github.com/knanao"><img src="https://avatars.githubusercontent.com/u/50069775?v=4" title="knanao" width="80" height="80"></a>
 <a href="https://github.com/ono-max"><img src="https://avatars.githubusercontent.com/u/59436572?v=4" title="ono-max" width="80" height="80"></a>
-<a href="https://github.com/kentakozuka"><img src="https://avatars.githubusercontent.com/u/16733673?v=4" title="kentakozuka" width="80" height="80"></a>
-<a href="https://github.com/stormcat24"><img src="https://avatars.githubusercontent.com/u/919840?v=4" title="stormcat24" width="80" height="80"></a>
 <a href="https://github.com/apps/dependabot"><img src="https://avatars.githubusercontent.com/in/29110?v=4" title="dependabot[bot]" width="80" height="80"></a>
+<a href="https://github.com/kentakozuka"><img src="https://avatars.githubusercontent.com/u/16733673?v=4" title="kentakozuka" width="80" height="80"></a>
+<a href="https://github.com/t-kikuc"><img src="https://avatars.githubusercontent.com/u/97105818?v=4" title="t-kikuc" width="80" height="80"></a>
+<a href="https://github.com/stormcat24"><img src="https://avatars.githubusercontent.com/u/919840?v=4" title="stormcat24" width="80" height="80"></a>
 <a href="https://github.com/Hosshii"><img src="https://avatars.githubusercontent.com/u/49914427?v=4" title="Hosshii" width="80" height="80"></a>
+<a href="https://github.com/ffjlabo"><img src="https://avatars.githubusercontent.com/u/40124947?v=4" title="ffjlabo" width="80" height="80"></a>
 <a href="https://github.com/funera1"><img src="https://avatars.githubusercontent.com/u/60760935?v=4" title="funera1" width="80" height="80"></a>
 <a href="https://github.com/sanposhiho"><img src="https://avatars.githubusercontent.com/u/44139130?v=4" title="sanposhiho" width="80" height="80"></a>
 <a href="https://github.com/Szarny"><img src="https://avatars.githubusercontent.com/u/26561120?v=4" title="Szarny" width="80" height="80"></a>
 <a href="https://github.com/sivchari"><img src="https://avatars.githubusercontent.com/u/55221074?v=4" title="sivchari" width="80" height="80"></a>
 <a href="https://github.com/kevin-namba"><img src="https://avatars.githubusercontent.com/u/68955641?v=4" title="kevin-namba" width="80" height="80"></a>
-<a href="https://github.com/ffjlabo"><img src="https://avatars.githubusercontent.com/u/40124947?v=4" title="ffjlabo" width="80" height="80"></a>
+<a href="https://github.com/hungran"><img src="https://avatars.githubusercontent.com/u/26101787?v=4" title="hungran" width="80" height="80"></a>
 <a href="https://github.com/kurochan"><img src="https://avatars.githubusercontent.com/u/591247?v=4" title="kurochan" width="80" height="80"></a>
 <a href="https://github.com/TaKO8Ki"><img src="https://avatars.githubusercontent.com/u/41065217?v=4" title="TaKO8Ki" width="80" height="80"></a>
 <a href="https://github.com/chaspy"><img src="https://avatars.githubusercontent.com/u/10370988?v=4" title="chaspy" width="80" height="80"></a>
 <a href="https://github.com/gkuga"><img src="https://avatars.githubusercontent.com/u/33643470?v=4" title="gkuga" width="80" height="80"></a>
-<a href="https://github.com/hungran"><img src="https://avatars.githubusercontent.com/u/26101787?v=4" title="hungran" width="80" height="80"></a>
-<a href="https://github.com/karamaru-alpha"><img src="https://avatars.githubusercontent.com/u/38310693?v=4" title="karamaru-alpha" width="80" height="80"></a>
-<a href="https://github.com/TonkyH"><img src="https://avatars.githubusercontent.com/u/50762864?v=4" title="TonkyH" width="80" height="80"></a>
 <a href="https://github.com/golemiso"><img src="https://avatars.githubusercontent.com/u/3282656?v=4" title="golemiso" width="80" height="80"></a>
-<a href="https://github.com/tnqv"><img src="https://avatars.githubusercontent.com/u/23372024?v=4" title="tnqv" width="80" height="80"></a>
-<a href="https://github.com/khanhtc3010"><img src="https://avatars.githubusercontent.com/u/9603918?v=4" title="khanhtc3010" width="80" height="80"></a>
-<a href="https://github.com/na-ga"><img src="https://avatars.githubusercontent.com/u/537006?v=4" title="na-ga" width="80" height="80"></a>
-<a href="https://github.com/kanata2"><img src="https://avatars.githubusercontent.com/u/7460883?v=4" title="kanata2" width="80" height="80"></a>
-<a href="https://github.com/arabian9ts"><img src="https://avatars.githubusercontent.com/u/24448137?v=4" title="arabian9ts" width="80" height="80"></a>
-<a href="https://github.com/anhpnv"><img src="https://avatars.githubusercontent.com/u/40441000?v=4" title="anhpnv" width="80" height="80"></a>
-<a href="https://github.com/seipan"><img src="https://avatars.githubusercontent.com/u/88176012?v=4" title="seipan" width="80" height="80"></a>
-<a href="https://github.com/p0tr3c"><img src="https://avatars.githubusercontent.com/u/12850042?v=4" title="p0tr3c" width="80" height="80"></a>
-<a href="https://github.com/TakumaKurosawa"><img src="https://avatars.githubusercontent.com/u/39955827?v=4" title="TakumaKurosawa" width="80" height="80"></a>
-<a href="https://github.com/seitarof"><img src="https://avatars.githubusercontent.com/u/51070449?v=4" title="seitarof" width="80" height="80"></a>
-<a href="https://github.com/gotyoooo"><img src="https://avatars.githubusercontent.com/u/6133219?v=4" title="gotyoooo" width="80" height="80"></a>
-<a href="https://github.com/ShotaKitazawa"><img src="https://avatars.githubusercontent.com/u/19530785?v=4" title="ShotaKitazawa" width="80" height="80"></a>
-<a href="https://github.com/tennashi"><img src="https://avatars.githubusercontent.com/u/10219626?v=4" title="tennashi" width="80" height="80"></a>
+<a href="https://github.com/karamaru-alpha"><img src="https://avatars.githubusercontent.com/u/38310693?v=4" title="karamaru-alpha" width="80" height="80"></a>
+<a href="https://github.com/nnnkkk7"><img src="https://avatars.githubusercontent.com/u/68233204?v=4" title="nnnkkk7" width="80" height="80"></a>
 <a href="https://github.com/ouchi2501"><img src="https://avatars.githubusercontent.com/u/11391317?v=4" title="ouchi2501" width="80" height="80"></a>
+<a href="https://github.com/TonkyH"><img src="https://avatars.githubusercontent.com/u/50762864?v=4" title="TonkyH" width="80" height="80"></a>
+<a href="https://github.com/Warashi"><img src="https://avatars.githubusercontent.com/u/3600530?v=4" title="Warashi" width="80" height="80"></a>
+<a href="https://github.com/dgannon991"><img src="https://avatars.githubusercontent.com/u/19214156?v=4" title="dgannon991" width="80" height="80"></a>
+<a href="https://github.com/tnqv"><img src="https://avatars.githubusercontent.com/u/23372024?v=4" title="tnqv" width="80" height="80"></a>
+<a href="https://github.com/seipan"><img src="https://avatars.githubusercontent.com/u/88176012?v=4" title="seipan" width="80" height="80"></a>
+<a href="https://github.com/anhpnv"><img src="https://avatars.githubusercontent.com/u/40441000?v=4" title="anhpnv" width="80" height="80"></a>
+<a href="https://github.com/arabian9ts"><img src="https://avatars.githubusercontent.com/u/24448137?v=4" title="arabian9ts" width="80" height="80"></a>
+<a href="https://github.com/kanata2"><img src="https://avatars.githubusercontent.com/u/7460883?v=4" title="kanata2" width="80" height="80"></a>
+<a href="https://github.com/na-ga"><img src="https://avatars.githubusercontent.com/u/537006?v=4" title="na-ga" width="80" height="80"></a>
+<a href="https://github.com/TakumaKurosawa"><img src="https://avatars.githubusercontent.com/u/39955827?v=4" title="TakumaKurosawa" width="80" height="80"></a>
+<a href="https://github.com/khanhtc3010"><img src="https://avatars.githubusercontent.com/u/9603918?v=4" title="khanhtc3010" width="80" height="80"></a>
+<a href="https://github.com/tennashi"><img src="https://avatars.githubusercontent.com/u/10219626?v=4" title="tennashi" width="80" height="80"></a>
+<a href="https://github.com/ShotaKitazawa"><img src="https://avatars.githubusercontent.com/u/19530785?v=4" title="ShotaKitazawa" width="80" height="80"></a>
+<a href="https://github.com/Exzrgs"><img src="https://avatars.githubusercontent.com/u/140805585?v=4" title="Exzrgs" width="80" height="80"></a>
+<a href="https://github.com/gotyoooo"><img src="https://avatars.githubusercontent.com/u/6133219?v=4" title="gotyoooo" width="80" height="80"></a>
+<a href="https://github.com/seitarof"><img src="https://avatars.githubusercontent.com/u/51070449?v=4" title="seitarof" width="80" height="80"></a>
+<a href="https://github.com/minhquang4334"><img src="https://avatars.githubusercontent.com/u/22545967?v=4" title="minhquang4334" width="80" height="80"></a>
+<a href="https://github.com/p0tr3c"><img src="https://avatars.githubusercontent.com/u/12850042?v=4" title="p0tr3c" width="80" height="80"></a>
+<a href="https://github.com/SakataAtsuki"><img src="https://avatars.githubusercontent.com/u/58636635?v=4" title="SakataAtsuki" width="80" height="80"></a>
+<a href="https://github.com/butterv"><img src="https://avatars.githubusercontent.com/u/15773082?v=4" title="butterv" width="80" height="80"></a>
+<a href="https://github.com/mura-s"><img src="https://avatars.githubusercontent.com/u/4702673?v=4" title="mura-s" width="80" height="80"></a>
+<a href="https://github.com/nshmura"><img src="https://avatars.githubusercontent.com/u/9046837?v=4" title="nshmura" width="80" height="80"></a>
+<a href="https://github.com/peaceiris"><img src="https://avatars.githubusercontent.com/u/30958501?v=4" title="peaceiris" width="80" height="80"></a>
+<a href="https://github.com/BIwashi"><img src="https://avatars.githubusercontent.com/u/49979368?v=4" title="BIwashi" width="80" height="80"></a>
+<a href="https://github.com/moko-poi"><img src="https://avatars.githubusercontent.com/u/55864094?v=4" title="moko-poi" width="80" height="80"></a>
+<a href="https://github.com/Linutux"><img src="https://avatars.githubusercontent.com/u/435352?v=4" title="Linutux" width="80" height="80"></a>
+<a href="https://github.com/hosht"><img src="https://avatars.githubusercontent.com/u/3858627?v=4" title="hosht" width="80" height="80"></a>
+<a href="https://github.com/ww24"><img src="https://avatars.githubusercontent.com/u/695166?v=4" title="ww24" width="80" height="80"></a>
+<a href="https://github.com/tnir"><img src="https://avatars.githubusercontent.com/u/10229505?v=4" title="tnir" width="80" height="80"></a>
+<a href="https://github.com/yoiki"><img src="https://avatars.githubusercontent.com/u/39365493?v=4" title="yoiki" width="80" height="80"></a>
+<a href="https://github.com/JohnTitor"><img src="https://avatars.githubusercontent.com/u/25030997?v=4" title="JohnTitor" width="80" height="80"></a>
+<a href="https://github.com/ponkio-o"><img src="https://avatars.githubusercontent.com/u/29038315?v=4" title="ponkio-o" width="80" height="80"></a>
+<a href="https://github.com/testwill"><img src="https://avatars.githubusercontent.com/u/8717479?v=4" title="testwill" width="80" height="80"></a>
+<a href="https://github.com/mugioka"><img src="https://avatars.githubusercontent.com/u/62197019?v=4" title="mugioka" width="80" height="80"></a>
+<a href="https://github.com/naonao2323"><img src="https://avatars.githubusercontent.com/u/74669884?v=4" title="naonao2323" width="80" height="80"></a>
+<a href="https://github.com/tatsuya0429"><img src="https://avatars.githubusercontent.com/u/29541999?v=4" title="tatsuya0429" width="80" height="80"></a>
+<a href="https://github.com/tokku5552"><img src="https://avatars.githubusercontent.com/u/69064290?v=4" title="tokku5552" width="80" height="80"></a>
+<a href="https://github.com/mytheta"><img src="https://avatars.githubusercontent.com/u/18681959?v=4" title="mytheta" width="80" height="80"></a>
 <a href="https://github.com/Abirdcfly"><img src="https://avatars.githubusercontent.com/u/5100555?v=4" title="Abirdcfly" width="80" height="80"></a>
-<a href="https://github.com/benjx1990"><img src="https://avatars.githubusercontent.com/u/72671586?v=4" title="benjx1990" width="80" height="80"></a>
+<a href="https://github.com/clubanderson"><img src="https://avatars.githubusercontent.com/u/407614?v=4" title="clubanderson" width="80" height="80"></a>
+<a href="https://github.com/fazledyn-or"><img src="https://avatars.githubusercontent.com/u/138655107?v=4" title="fazledyn-or" width="80" height="80"></a>
+<a href="https://github.com/pheianox"><img src="https://avatars.githubusercontent.com/u/72671586?v=4" title="pheianox" width="80" height="80"></a>
 <a href="https://github.com/ductnn"><img src="https://avatars.githubusercontent.com/u/22121217?v=4" title="ductnn" width="80" height="80"></a>
+<a href="https://github.com/Forget-C"><img src="https://avatars.githubusercontent.com/u/25631506?v=4" title="Forget-C" width="80" height="80"></a>
 <a href="https://github.com/hongchaodeng"><img src="https://avatars.githubusercontent.com/u/920884?v=4" title="hongchaodeng" width="80" height="80"></a>
 <a href="https://github.com/hori-ryota"><img src="https://avatars.githubusercontent.com/u/2936501?v=4" title="hori-ryota" width="80" height="80"></a>
 <a href="https://github.com/eltociear"><img src="https://avatars.githubusercontent.com/u/22633385?v=4" title="eltociear" width="80" height="80"></a>
 <a href="https://github.com/sano307"><img src="https://avatars.githubusercontent.com/u/12808316?v=4" title="sano307" width="80" height="80"></a>
+<a href="https://github.com/jz543fm"><img src="https://avatars.githubusercontent.com/u/54894612?v=4" title="jz543fm" width="80" height="80"></a>
 <a href="https://github.com/misukuro"><img src="https://avatars.githubusercontent.com/u/1040546?v=4" title="misukuro" width="80" height="80"></a>
 <a href="https://github.com/masaaania"><img src="https://avatars.githubusercontent.com/u/2755429?v=4" title="masaaania" width="80" height="80"></a>
 <a href="https://github.com/KeisukeYamashita"><img src="https://avatars.githubusercontent.com/u/23056537?v=4" title="KeisukeYamashita" width="80" height="80"></a>
 <a href="https://github.com/Lennie"><img src="https://avatars.githubusercontent.com/u/330102?v=4" title="Lennie" width="80" height="80"></a>
 <a href="https://github.com/gitbluf"><img src="https://avatars.githubusercontent.com/u/22802784?v=4" title="gitbluf" width="80" height="80"></a>
 <a href="https://github.com/mi11km"><img src="https://avatars.githubusercontent.com/u/54844746?v=4" title="mi11km" width="80" height="80"></a>
-<a href="https://github.com/phuong-nguyen-duy"><img src="https://avatars.githubusercontent.com/u/60810674?v=4" title="phuong-nguyen-duy" width="80" height="80"></a>
+<a href="https://github.com/jacobnguyenn"><img src="https://avatars.githubusercontent.com/u/60810674?v=4" title="jacobnguyenn" width="80" height="80"></a>
+<a href="https://github.com/chalin"><img src="https://avatars.githubusercontent.com/u/4140793?v=4" title="chalin" width="80" height="80"></a>
 <a href="https://github.com/GotoRen"><img src="https://avatars.githubusercontent.com/u/63791288?v=4" title="GotoRen" width="80" height="80"></a>
 <a href="https://github.com/RikiyaFujii"><img src="https://avatars.githubusercontent.com/u/23261497?v=4" title="RikiyaFujii" width="80" height="80"></a>
-<a href="https://github.com/SakataAtsuki"><img src="https://avatars.githubusercontent.com/u/58636635?v=4" title="SakataAtsuki" width="80" height="80"></a>
-<a href="https://github.com/butterv"><img src="https://avatars.githubusercontent.com/u/15773082?v=4" title="butterv" width="80" height="80"></a>
-<a href="https://github.com/mura-s"><img src="https://avatars.githubusercontent.com/u/4702673?v=4" title="mura-s" width="80" height="80"></a>
-<a href="https://github.com/Warashi"><img src="https://avatars.githubusercontent.com/u/3600530?v=4" title="Warashi" width="80" height="80"></a>
-<a href="https://github.com/Linutux"><img src="https://avatars.githubusercontent.com/u/435352?v=4" title="Linutux" width="80" height="80"></a>
-<a href="https://github.com/hosht"><img src="https://avatars.githubusercontent.com/u/3858627?v=4" title="hosht" width="80" height="80"></a>
-<a href="https://github.com/ww24"><img src="https://avatars.githubusercontent.com/u/695166?v=4" title="ww24" width="80" height="80"></a>
-<a href="https://github.com/tnir"><img src="https://avatars.githubusercontent.com/u/10229505?v=4" title="tnir" width="80" height="80"></a>
-<a href="https://github.com/t-kikuc"><img src="https://avatars.githubusercontent.com/u/97105818?v=4" title="t-kikuc" width="80" height="80"></a>
-<a href="https://github.com/yoiki"><img src="https://avatars.githubusercontent.com/u/39365493?v=4" title="yoiki" width="80" height="80"></a>
-<a href="https://github.com/JohnTitor"><img src="https://avatars.githubusercontent.com/u/25030997?v=4" title="JohnTitor" width="80" height="80"></a>
-<a href="https://github.com/testwill"><img src="https://avatars.githubusercontent.com/u/8717479?v=4" title="testwill" width="80" height="80"></a>
-<a href="https://github.com/mugioka"><img src="https://avatars.githubusercontent.com/u/62197019?v=4" title="mugioka" width="80" height="80"></a>
-<a href="https://github.com/nnnkkk7"><img src="https://avatars.githubusercontent.com/u/68233204?v=4" title="nnnkkk7" width="80" height="80"></a>
-<a href="https://github.com/naonao2323"><img src="https://avatars.githubusercontent.com/u/74669884?v=4" title="naonao2323" width="80" height="80"></a>
-<a href="https://github.com/tokku5552"><img src="https://avatars.githubusercontent.com/u/69064290?v=4" title="tokku5552" width="80" height="80"></a>
 
 #
 
@@ -164,3 +173,7 @@ You can find a list of publicly recognized users of the PipeCD in the [ADOPTERS.
 <img src="https://www.cncf.io/wp-content/uploads/2022/07/cncf-color-bg.svg" width=300 />
 
 The Linux Foundation® (TLF) has registered trademarks and uses trademarks. For a list of TLF trademarks, see [Trademark Usage](https://www.linuxfoundation.org/trademark-usage/).
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fpipe-cd%2Fpipecd.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fpipe-cd%2Fpipecd?ref=badge_large)

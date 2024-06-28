@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -59,6 +59,16 @@ func (c *applicationDataCollector) Execute(ctx context.Context) {
 			project = a.ProjectId
 			app     = insight.BuildApplicationData(a)
 		)
+
+		if _, ok := appsByProject[project]; !ok {
+			appsByProject[project] = make([]*insight.ApplicationData, 0)
+		}
+
+		// Do not count the deleted application.
+		if app.Status == model.ApplicationActiveStatus_DELETED.String() {
+			continue
+		}
+
 		appsByProject[project] = append(appsByProject[project], &app)
 	}
 
@@ -81,6 +91,8 @@ func (c *applicationDataCollector) Execute(ctx context.Context) {
 	}
 }
 
+// listApplications queries the datastore and gets all projects' applications (including disabled/deleted apps)
+// to ensure projects with all applications disabled/deleted are listed as well.
 func (c *applicationDataCollector) listApplications(ctx context.Context) ([]*model.Application, error) {
 	const limit = 100
 	var cursor string
@@ -88,13 +100,7 @@ func (c *applicationDataCollector) listApplications(ctx context.Context) ([]*mod
 
 	for {
 		apps, next, err := c.lister.List(ctx, datastore.ListOptions{
-			Filters: []datastore.ListFilter{
-				{
-					Field:    "Deleted",
-					Operator: datastore.OperatorEqual,
-					Value:    false,
-				},
-			},
+			Filters: []datastore.ListFilter{},
 			Orders: []datastore.Order{
 				{
 					Field:     "CreatedAt",

@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,12 @@
 package config
 
 import (
-	"encoding/json"
+	"fmt"
+)
+
+const (
+	AccessTypeELB              string = "ELB"
+	AccessTypeServiceDiscovery string = "SERVICE_DISCOVERY"
 )
 
 // ECSApplicationSpec represents an application configuration for ECS application.
@@ -32,46 +37,68 @@ func (s *ECSApplicationSpec) Validate() error {
 	if err := s.GenericApplicationSpec.Validate(); err != nil {
 		return err
 	}
+
+	if err := s.Input.validate(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 type ECSDeploymentInput struct {
 	// The Amazon Resource Name (ARN) that identifies the cluster.
-	ClusterArn string `json:"clusterArn"`
+	ClusterArn string `json:"clusterArn,omitempty"`
 	// The launch type on which to run your task.
 	// https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_types.html
 	// Default is FARGATE
-	LaunchType string `json:"launchType" default:"FARGATE"`
+	LaunchType string `json:"launchType,omitempty" default:"FARGATE"`
 	// VpcConfiguration ECSVpcConfiguration `json:"awsvpcConfiguration"`
-	AwsVpcConfiguration ECSVpcConfiguration `json:"awsvpcConfiguration"`
+	AwsVpcConfiguration ECSVpcConfiguration `json:"awsvpcConfiguration,omitempty" default:""`
 	// The name of service definition file placing in application directory.
 	ServiceDefinitionFile string `json:"serviceDefinitionFile"`
 	// The name of task definition file placing in application directory.
 	// Default is taskdef.json
 	TaskDefinitionFile string `json:"taskDefinitionFile" default:"taskdef.json"`
 	// ECSTargetGroups
-	TargetGroups ECSTargetGroups `json:"targetGroups"`
+	TargetGroups ECSTargetGroups `json:"targetGroups,omitempty"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback *bool `json:"autoRollback,omitempty" default:"true"`
 	// Run standalone task during deployment.
 	// Default is true.
-	RunStandaloneTask *bool `json:"runStandaloneTask" default:"true"`
+	RunStandaloneTask *bool `json:"runStandaloneTask,omitempty" default:"true"`
+	// How the ECS service is accessed.
+	// Possible values are:
+	//  - ELB -  The service is accessed via ELB and target groups.
+	//  - SERVICE_DISCOVERY -  The service is accessed via ECS Service Discovery.
+	// Default is ELB.
+	AccessType string `json:"accessType,omitempty" default:"ELB"`
 }
 
 func (in *ECSDeploymentInput) IsStandaloneTask() bool {
 	return in.ServiceDefinitionFile == ""
 }
 
+func (in *ECSDeploymentInput) IsAccessedViaELB() bool {
+	return in.AccessType == AccessTypeELB
+}
+
 type ECSVpcConfiguration struct {
-	Subnets        []string
-	AssignPublicIP string
-	SecurityGroups []string
+	Subnets        []string `json:"subnets,omitempty"`
+	AssignPublicIP string   `json:"assignPublicIp,omitempty"`
+	SecurityGroups []string `json:"securityGroups,omitempty"`
 }
 
 type ECSTargetGroups struct {
-	Primary json.RawMessage `json:"primary"`
-	Canary  json.RawMessage `json:"canary"`
+	Primary *ECSTargetGroup `json:"primary,omitempty"`
+	Canary  *ECSTargetGroup `json:"canary,omitempty"`
+}
+
+type ECSTargetGroup struct {
+	TargetGroupArn   string `json:"targetGroupArn,omitempty"`
+	ContainerName    string `json:"containerName,omitempty"`
+	ContainerPort    int    `json:"containerPort,omitempty"`
+	LoadBalancerName string `json:"loadBalancerName,omitempty"`
 }
 
 // ECSSyncStageOptions contains all configurable values for a ECS_SYNC stage.
@@ -99,9 +126,9 @@ type ECSCanaryCleanStageOptions struct {
 // ECSTrafficRoutingStageOptions contains all configurable values for ECS_TRAFFIC_ROUTING stage.
 type ECSTrafficRoutingStageOptions struct {
 	// Canary represents the amount of traffic that the rolled out CANARY variant will serve.
-	Canary Percentage `json:"canary"`
+	Canary Percentage `json:"canary,omitempty"`
 	// Primary represents the amount of traffic that the rolled out CANARY variant will serve.
-	Primary Percentage `json:"primary"`
+	Primary Percentage `json:"primary,omitempty"`
 }
 
 func (opts ECSTrafficRoutingStageOptions) Percentage() (primary, canary int) {
@@ -120,4 +147,14 @@ func (opts ECSTrafficRoutingStageOptions) Percentage() (primary, canary int) {
 	primary = 100
 	canary = 0
 	return
+}
+
+func (in *ECSDeploymentInput) validate() error {
+	switch in.AccessType {
+	case AccessTypeELB, AccessTypeServiceDiscovery:
+		break
+	default:
+		return fmt.Errorf("invalid accessType: %s", in.AccessType)
+	}
+	return nil
 }

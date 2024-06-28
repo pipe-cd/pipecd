@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ const (
 
 	deploymentReadyRetryTime     = 3
 	deploymentReadyRetryDuration = time.Minute
+	deploymentReadyCheckDuration = 5 * time.Second
 )
 
 type command struct {
@@ -116,7 +117,7 @@ func (c *command) run(ctx context.Context, input cli.Input) error {
 	}
 
 	var wg sync.WaitGroup
-	if err = c.exposeService(ctx, &wg); err != nil {
+	if err = c.exposeService(ctx, &wg, input); err != nil {
 		input.Logger.Error("Failed to expose PipeCD control plane service!!")
 		return err
 	}
@@ -217,7 +218,45 @@ func (c *command) installPiped(ctx context.Context, helm string, input cli.Input
 	return nil
 }
 
-func (c *command) exposeService(ctx context.Context, wg *sync.WaitGroup) error {
+func (c *command) printExposeState(ctx context.Context, input cli.Input) {
+	binName := "bash"
+	epath, err := exec.LookPath(binName)
+	if err != nil {
+		return
+	}
+
+	if epath != "" {
+		binName = epath
+	}
+	kubectl, _ := c.getKubectl()
+	cmdText := fmt.Sprintf("%s -n %s", kubectl, c.namespace) +
+		` get pods --no-headers | awk '{print $3}' | sort | uniq -c | awk '{total+=$1; statuses[$2]=$1} END {for (status in statuses) printf " %s %s", status, statuses[status]}'`
+	args := []string{
+		"-c",
+		cmdText,
+	}
+	cmd := exec.CommandContext(ctx, binName, args...)
+	var stdout bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Run()
+	input.Logger.Sugar().Infof("PipeCD control plane status:%s", stdout.String())
+}
+
+func (c *command) exposeService(ctx context.Context, wg *sync.WaitGroup, input cli.Input) error {
+	input.Logger.Info("\nWaiting for PipeCD control plane to be ready...")
+	notify := make(chan struct{})
+	go func() {
+		ticker := time.NewTicker(deploymentReadyCheckDuration)
+		for {
+			select {
+			case <-ticker.C:
+				c.printExposeState(ctx, input)
+			case <-notify:
+				return
+			}
+		}
+	}()
+	defer close(notify)
 	kubectl, err := c.getKubectl()
 	if err != nil {
 		return fmt.Errorf("failed to prepare required tool (kubectl) for installation: %v", err)
@@ -240,6 +279,7 @@ func (c *command) exposeService(ctx context.Context, wg *sync.WaitGroup) error {
 	for retry.WaitNext(ctx) {
 		cmd.Run()
 		if strings.Contains(stdout.String(), "successfully rolled out") {
+			notify <- struct{}{}
 			serverIsReady = true
 			break
 		}

@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/deployment"
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/encrypt"
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/event"
+	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/initialize"
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/piped"
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/planpreview"
 	"github.com/pipe-cd/pipecd/pkg/app/pipectl/cmd/quickstart"
@@ -41,6 +42,7 @@ func main() {
 		piped.NewCommand(),
 		encrypt.NewCommand(),
 		quickstart.NewCommand(),
+		initialize.NewCommand(),
 	)
 
 	if err := app.Run(); err != nil {

@@ -83,3 +83,35 @@ A bugfix for a functional issue (not a data loss or security issue) that only af
 - Before cutting a new release, wait for all jobs in GitHub Actions to pass on the release branch.
 
 - Create a tagged release from the release branch `release-vX.Y.x`. The release should start with "v" and be followed by the version number.
+
+## RC Release
+1. Move on to [Releases > Draft a New Release](https://github.com/pipe-cd/pipecd/releases/new).
+2. Set values as below:
+   1. `Choose a tag`: Create a new tag `vX.Y.Z-rcN`
+   2. `Target`(branch): `master`
+   3. `Release title`: `Release vX.Y.Z-rcN`
+   4. Body area
+      1. Copy from the previous rc-release note.
+      2. Modify the version of `> Note: This is a candidate release of vX.Y.Z.` if needed.
+      3. Modify the version of  `## Changes since`.
+      4. List Changes:
+         1. Extract commits to include by the below commands.
+
+            ```zsh
+            $ PREVIOUS_TAG=v0.46.0-rc1 # Set the previous release tag
+            $ git log $PREVIOUS_TAG..HEAD --oneline  | awk '{$1=""; print substr($0, 2)}'
+            ```
+
+            output(from newer to older):
+
+            ```
+            Add reference to the blog that shows how to install control plane on ECS (#4746)
+            Update copyright (#4745)
+            ...
+            Add docs for SCRIPT_RUN stage (#4734)
+            ```
+
+         2. Classify the changes into 'Notable Changes' and 'Internal Changes'.
+         3. Write them to the body area.
+   5. **Select `Set as a pre-release`**, not `Set as the latest release`.
+3. Push `Publish Release`.

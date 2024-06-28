@@ -1,0 +1,17 @@
+apiVersion: pipecd.dev/v1beta1
+kind: ECSApp
+spec:
+  name: servicediscovery-simple
+  labels:
+    env: example
+    team: xyz
+  input:
+    serviceDefinitionFile: servicedef.yaml
+    taskDefinitionFile: taskdef.yaml
+    # When you use ECS Service Discovery for interservice networking, you must specify 'SERVICE_DISCOVERY' for 'accessType'.
+    accessType: SERVICE_DISCOVERY 
+    # 'targetGroups' is not used in Service Discovery type.
+  description: |
+    This app demonstrates how to deploy an ECS application using Service Discovery with [Quick Sync](https://pipecd.dev/docs/concepts/#sync-strategy) strategy.\
+    No pipeline is specified then in each deployment PipeCD will roll out the new version and switch all traffic to it immediately.\
+    References: [adding a new app](https://pipecd.dev/docs/user-guide/managing-application/adding-an-application/), [app configuration](https://pipecd.dev/docs/user-guide/configuration-reference/)

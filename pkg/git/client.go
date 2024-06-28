@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 
@@ -42,12 +41,13 @@ type Client interface {
 }
 
 type client struct {
-	username  string
-	email     string
-	gitPath   string
-	cacheDir  string
-	mu        sync.Mutex
-	repoLocks map[string]*sync.Mutex
+	username     string
+	email        string
+	gcAutoDetach bool // whether to be executed `git gc`in the foreground when some git commands (e.g. merge, commit and so on) are executed.
+	gitPath      string
+	cacheDir     string
+	mu           sync.Mutex
+	repoLocks    map[string]*sync.Mutex
 
 	gitEnvs       []string
 	gitEnvsByRepo map[string][]string
@@ -106,6 +106,7 @@ func NewClient(opts ...Option) (Client, error) {
 	c := &client{
 		username:      defaultUsername,
 		email:         defaultEmail,
+		gcAutoDetach:  false, // Disable this by default. See issue #4760, discussion #4758.
 		gitPath:       gitPath,
 		cacheDir:      cacheDir,
 		repoLocks:     make(map[string]*sync.Mutex),
@@ -187,6 +188,11 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		args = append(args, "-b", branch)
 	}
 	args = append(args, repoCachePath, destination)
+
+	logger.Info("cloning a repo from cached one in local",
+		zap.String("src", repoCachePath),
+		zap.String("dst", destination),
+	)
 	if out, err := runGitCommand(ctx, c.gitPath, "", c.envsForRepo(remote), args...); err != nil {
 		logger.Error("failed to clone from local",
 			zap.String("out", string(out)),
@@ -204,6 +210,11 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		}
 	}
 
+	logger.Info("setting gc.autoDetach", zap.Bool("gc.autoDetach", c.gcAutoDetach))
+	if err := r.setGCAutoDetach(ctx, c.gcAutoDetach); err != nil {
+		return nil, fmt.Errorf("failed to set auto detach: %v", err)
+	}
+
 	// Because we did a local cloning so the remote url of origin
 	// is the path to the cache directory.
 	// We do this change to correct it.
@@ -217,25 +228,6 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 // Clean removes all cache data.
 func (c *client) Clean() error {
 	return os.RemoveAll(c.cacheDir)
-}
-
-// getLatestRemoteHashForBranch returns the hash of the latest commit of a remote branch.
-func (c *client) getLatestRemoteHashForBranch(ctx context.Context, remote, branch string) (string, error) {
-	ref := "refs/heads/" + branch
-	out, err := retryCommand(3, time.Second, c.logger, func() ([]byte, error) {
-		return runGitCommand(ctx, c.gitPath, "", c.envsForRepo(remote), "ls-remote", ref)
-	})
-	if err != nil {
-		c.logger.Error("failed to get latest remote hash for branch",
-			zap.String("remote", remote),
-			zap.String("branch", branch),
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return "", err
-	}
-	parts := strings.Split(string(out), "\t")
-	return parts[0], nil
 }
 
 func (c *client) lockRepo(repoID string) {

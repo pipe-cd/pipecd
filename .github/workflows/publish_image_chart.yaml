@@ -1,4 +1,4 @@
-name: publish
+name: publish_image_chart
 
 on:
   push:
@@ -11,7 +11,7 @@ env:
   GHCR: ghcr.io
   GCR: gcr.io
   HELM_VERSION: 3.8.2
-  GO_VERSION: 1.20.5
+  GO_VERSION: 1.22.4
   NODE_VERSION: 16.13.0
 
 jobs:
@@ -20,6 +20,44 @@ jobs:
     permissions:
       contents: read
       packages: write
+    strategy:
+      matrix:
+        container_registry:
+          - ghcr.io/pipe-cd
+          - gcr.io/pipecd
+        image:
+          - helloworld
+          - launcher
+          - launcher-okd
+          - pipecd
+          - piped
+          - piped-okd
+          - pipectl
+        include:
+          - image: helloworld
+            dockerfile: cmd/helloworld/Dockerfile
+          - image: launcher
+            dockerfile: cmd/launcher/Dockerfile
+          - image: launcher-okd
+            dockerfile: cmd/launcher/Dockerfile-okd
+          - image: pipecd
+            dockerfile: cmd/pipecd/Dockerfile
+          - image: piped
+            dockerfile: cmd/piped/Dockerfile
+          - image: piped-okd
+            dockerfile: cmd/piped/Dockerfile-okd
+          - image: pipectl
+            dockerfile: cmd/pipectl/Dockerfile
+        exclude:
+          - image: launcher-okd
+            container_registry: gcr.io/pipecd
+          - image: pipecd
+            container_registry: gcr.io/pipecd
+          - image: piped-okd
+            container_registry: gcr.io/pipecd
+          - image: pipectl
+            container_registry: gcr.io/pipecd
+
     steps:
       - uses: actions/checkout@v3
         with:
@@ -76,69 +114,15 @@ jobs:
           password: ${{ secrets.GCR_SA }}
 
       # Building and pushing container images.
-      - name: Build and push pipecd image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+      - name: Build and push ${{ matrix.image }} image
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 #v5.0.0
         with:
           push: true
           context: .
-          file: cmd/pipecd/Dockerfile
+          file: ${{ matrix.dockerfile }}
           platforms: linux/amd64,linux/arm64
-          tags: ${{ env.GHCR }}/pipe-cd/pipecd:${{ env.PIPECD_VERSION }}
-      - name: Build and push piped image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          push: true
-          context: .
-          file: cmd/piped/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.GHCR }}/pipe-cd/piped:${{ env.PIPECD_VERSION }}
-            ${{ env.GCR }}/pipecd/piped:${{ env.PIPECD_VERSION }}
-      - name: Build and push piped-okd image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          push: true
-          context: .
-          file: cmd/piped/Dockerfile-okd
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ env.GHCR }}/pipe-cd/piped-okd:${{ env.PIPECD_VERSION }}
-      - name: Build and push launcher image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          push: true
-          context: .
-          file: cmd/launcher/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.GHCR }}/pipe-cd/launcher:${{ env.PIPECD_VERSION }}
-            ${{ env.GCR }}/pipecd/launcher:${{ env.PIPECD_VERSION }}
-      - name: Build and push launcher-okd image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          push: true
-          context: .
-          file: cmd/launcher/Dockerfile-okd
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ env.GHCR }}/pipe-cd/launcher-okd:${{ env.PIPECD_VERSION }}
-      - name: Build and push pipectl image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          push: true
-          context: .
-          file: cmd/pipectl/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ env.GHCR }}/pipe-cd/pipectl:${{ env.PIPECD_VERSION }}
-      - name: Build and push helloworld image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          push: true
-          context: .
-          file: cmd/helloworld/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.GHCR }}/pipe-cd/helloworld:${{ env.PIPECD_VERSION }}
-            ${{ env.GCR }}/pipecd/helloworld:${{ env.PIPECD_VERSION }}
-
+          tags: ${{ matrix.container_registry }}/${{ matrix.image }}:${{ env.PIPECD_VERSION }}
+      
       # Building and pushing Helm charts.
       - name: Install helm
         uses: Azure/setup-helm@v1

@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -92,6 +92,7 @@ func main() {
 				return fmt.Errorf("template execute error: %v", err)
 			}
 			gf.P(string(buf.Bytes()))
+
 		}
 		return nil
 	})

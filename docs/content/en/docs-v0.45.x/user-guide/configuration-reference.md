@@ -44,7 +44,8 @@ spec:
 
 Kubernetes resources can be managed by some annotations provided by PipeCD.
 
-| Annotation key | Target resource(es) | Possible values | Description |
+| Annotation key | Target resource(s) | Possible values | Description |
+|-|-|-|-|
 | `pipecd.dev/ignore-drift-detection` | any | "true" | Whether the drift detection should ignore this resource. |
 | `pipecd.dev/server-side-apply` | any | "true" | Use server side apply instead of client side apply. |
 
@@ -206,7 +207,7 @@ One of `yamlField` or `regex` is required.
 |-|-|-|-|
 | file | string | The relative path from the repository root to the file to be updated. | Yes |
 | yamlField | string | The yaml path to the field to be updated. It requires to start with `$` which represents the root element. e.g. `$.foo.bar[0].baz`. | No |
-| regex | string | The regex string that specify what should be replaced. The only first capturing group enclosed by `()` will be replaced with the new value. e.g. `host.xz/foo/bar:(v[0-9]+.[0-9]+.[0-9]+)` | No |
+| regex | string | The regex string that specify what should be replaced. The only first capturing group enclosed by `()` will be replaced with the new value. e.g. `host.xz/foo/bar:(v[0-9].[0-9].[0-9])` | No |
 
 ## CommitMatcher
 
@@ -477,6 +478,7 @@ Note: The available values are identical to those found in the aws-sdk-go-v2 Typ
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| recreate | bool | Whether to delete old tasksets before creating new ones or not. Default to false. | No |
 
 ## AnalysisMetrics
 

@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -118,6 +118,7 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 		Environment: &types.Environment{
 			Variables: fm.Spec.Environments,
 		},
+		Layers: fm.Spec.Layers,
 	}
 	if len(fm.Spec.Architectures) != 0 {
 		var architectures []types.Architecture
@@ -125,6 +126,11 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 			architectures = append(architectures, types.Architecture(arch.Name))
 		}
 		input.Architectures = architectures
+	}
+	if fm.Spec.EphemeralStorage != nil {
+		input.EphemeralStorage = &types.EphemeralStorage{
+			Size: aws.Int32(fm.Spec.EphemeralStorage.Size),
+		}
 	}
 	if fm.Spec.VPCConfig != nil {
 		input.VpcConfig = &types.VpcConfig{
@@ -178,8 +184,26 @@ func (c *client) CreateFunctionFromSource(ctx context.Context, fm FunctionManife
 		Environment: &types.Environment{
 			Variables: fm.Spec.Environments,
 		},
+		Layers: fm.Spec.Layers,
 	}
-
+	if len(fm.Spec.Architectures) != 0 {
+		architectures := make([]types.Architecture, 0, len(fm.Spec.Architectures))
+		for _, arch := range fm.Spec.Architectures {
+			architectures = append(architectures, types.Architecture(arch.Name))
+		}
+		input.Architectures = architectures
+	}
+	if fm.Spec.EphemeralStorage != nil {
+		input.EphemeralStorage = &types.EphemeralStorage{
+			Size: aws.Int32(fm.Spec.EphemeralStorage.Size),
+		}
+	}
+	if fm.Spec.VPCConfig != nil {
+		input.VpcConfig = &types.VpcConfig{
+			SecurityGroupIds: fm.Spec.VPCConfig.SecurityGroupIDs,
+			SubnetIds:        fm.Spec.VPCConfig.SubnetIDs,
+		}
+	}
 	_, err = c.client.CreateFunction(ctx, input)
 	if err != nil {
 		return fmt.Errorf("failed to create Lambda function %s: %w", fm.Spec.Name, err)
@@ -272,11 +296,17 @@ func (c *client) updateFunctionConfiguration(ctx context.Context, fm FunctionMan
 			Environment: &types.Environment{
 				Variables: fm.Spec.Environments,
 			},
+			Layers: fm.Spec.Layers,
 		}
 		// For zip packing Lambda function code, allow update the function handler
 		// on update the function's manifest.
 		if fm.Spec.Handler != "" {
 			configInput.Handler = aws.String(fm.Spec.Handler)
+		}
+		if fm.Spec.EphemeralStorage != nil {
+			configInput.EphemeralStorage = &types.EphemeralStorage{
+				Size: aws.Int32(fm.Spec.EphemeralStorage.Size),
+			}
 		}
 		if fm.Spec.VPCConfig != nil {
 			configInput.VpcConfig = &types.VpcConfig{

@@ -1,0 +1,26 @@
+cluster: arn:aws:ecs:ap-northeast-1:XXXX:cluster/test-cluster
+serviceName: nginx-service
+desiredCount: 3
+deploymentConfiguration:
+  maximumPercent: 200
+  minimumHealthyPercent: 0
+schedulingStrategy: REPLICA
+# Sample Comment for test
+deploymentController:
+  type: EXTERNAL
+enableECSManagedTags: true
+propagateTags: SERVICE
+launchType: FARGATE
+networkConfiguration:
+  awsvpcConfiguration:
+    assignPublicIp: ENABLED
+    securityGroups:
+      - sg-YYYY
+    subnets:
+      - subnet-YYYY
+      - subnet-YYYY
+tags:
+  - key: key1
+    value: value1
+  - key: key2
+    value: value2

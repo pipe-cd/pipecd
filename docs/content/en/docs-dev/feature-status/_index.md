@@ -69,7 +69,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
 | [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Incubating |
 | [Application live state](../user-guide/managing-application/application-live-state/) | Incubating |
-| [Plan preview](../user-guide/plan-preview) | Alpha |
+| [Plan preview](../user-guide/plan-preview) | Incubating |
 | [Manifest attachment](../user-guide/managing-application/manifest-attachment) | Alpha |
 
 ### Amazon ECS
@@ -81,6 +81,8 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Automated rollback](../user-guide/managing-application/rolling-back-a-deployment/) | Beta |
 | [Automated configuration drift detection](../user-guide/managing-application/configuration-drift-detection/) | Incubating |
 | [Application live state](../user-guide/managing-application/application-live-state/) | Incubating |
+| Quick sync deployment for [ECS Service Discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html) | Alpha |
+| Deployment with a defined pipeline for [ECS Service Discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-discovery.html) | Alpha |
 | Support [AWS App Mesh](https://aws.amazon.com/app-mesh/) | Incubating |
 | [Plan preview](../user-guide/plan-preview) | Alpha |
 | [Manifest attachment](../user-guide/managing-application/manifest-attachment) | Alpha |
@@ -121,6 +123,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Google SSO | Incubating |
 | Support GCP [Firestore](https://cloud.google.com/firestore) as data store | Beta |
 | Support [MySQL v8.0](https://www.mysql.com/) as data store | Beta |
+| Support file store as data store | Alpha |
 | Support GCP [GCS](https://cloud.google.com/storage) as file store | Beta |
 | Support AWS [S3](https://aws.amazon.com/s3/) as file store | Beta |
 | Support [Minio](https://github.com/minio/minio) as file store | Beta |
@@ -128,3 +131,13 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Insights](../user-guide/insights/) - Show the delivery performance of a team or an application | Incubating |
 | [Deployment Chain](../user-guide/managing-application/deployment-chain/) - Allow rolling out to multiple clusters gradually or promoting across environments | Alpha |
 | [Metrics](../user-guide/managing-controlplane/metrics/) - Dashboards for PipeCD and Piped metrics | Beta |
+
+## [pipectl](../user-guide/command-line-tool/)
+
+### [pipectl init](../user-guide/command-line-tool.md#generating-an-application-config-apppipecdyaml)
+
+| Feature | Phase |
+|-|-|
+| Kubernetes - QuickSync | Incubating |
+| ECS - QuickSync | Alpha |
+| ECS - Pipeline Sync | Incubating |

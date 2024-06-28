@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import (
 )
 
 type Percentage struct {
-	Number    int
-	HasSuffix bool
+	Number    int  `json:",omitempty"`
+	HasSuffix bool `json:",omitempty"`
 }
 
 func (p Percentage) String() string {
@@ -40,6 +40,10 @@ func (p Percentage) Int() int {
 
 func (p Percentage) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.String())
+}
+
+func (p Percentage) MarshalYAML() (interface{}, error) {
+	return p.Number, nil
 }
 
 func (p *Percentage) UnmarshalJSON(b []byte) error {

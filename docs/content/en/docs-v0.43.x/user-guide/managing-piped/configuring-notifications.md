@@ -16,23 +16,23 @@ Notification configuration including:
 [Notification Route](../configuration-reference/#notificationroute) matches events based on their metadata like `name`, `group`, `app`, `labels`.
 Below is the list of supporting event names and their groups.
 
-| Event | Group | Supported |
-|-|-|-|
-| DEPLOYMENT_TRIGGERED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
-| DEPLOYMENT_PLANNED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
-| DEPLOYMENT_APPROVED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
-| DEPLOYMENT_WAIT_APPROVAL | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
-| DEPLOYMENT_ROLLING_BACK | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
-| DEPLOYMENT_SUCCEEDED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
-| DEPLOYMENT_FAILED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
-| DEPLOYMENT_CANCELLED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
-| DEPLOYMENT_TRIGGER_FAILED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
-| APPLICATION_SYNCED | APPLICATION_SYNC | <p style="text-align: center;"><input type="checkbox" disabled></p> |
-| APPLICATION_OUT_OF_SYNC | APPLICATION_SYNC | <p style="text-align: center;"><input type="checkbox" disabled></p> |
-| APPLICATION_HEALTHY | APPLICATION_HEALTH | <p style="text-align: center;"><input type="checkbox" disabled></p> |
-| APPLICATION_UNHEALTHY | APPLICATION_HEALTH | <p style="text-align: center;"><input type="checkbox" disabled></p> |
-| PIPED_STARTED | PIPED | <p style="text-align: center;"><input type="checkbox" checked  disabled></p> |
-| PIPED_STOPPED | PIPED | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |
+| Event | Group | Supported | Description |
+|-|-|-|-|
+| DEPLOYMENT_TRIGGERED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
+| DEPLOYMENT_PLANNED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
+| DEPLOYMENT_APPROVED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
+| DEPLOYMENT_WAIT_APPROVAL | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
+| DEPLOYMENT_ROLLING_BACK | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" disabled></p> |  |
+| DEPLOYMENT_SUCCEEDED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
+| DEPLOYMENT_FAILED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
+| DEPLOYMENT_CANCELLED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
+| DEPLOYMENT_TRIGGER_FAILED | DEPLOYMENT | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
+| APPLICATION_SYNCED | APPLICATION_SYNC | <p style="text-align: center;"><input type="checkbox" disabled></p> |  |
+| APPLICATION_OUT_OF_SYNC | APPLICATION_SYNC | <p style="text-align: center;"><input type="checkbox" disabled></p> |  |
+| APPLICATION_HEALTHY | APPLICATION_HEALTH | <p style="text-align: center;"><input type="checkbox" disabled></p> |  |
+| APPLICATION_UNHEALTHY | APPLICATION_HEALTH | <p style="text-align: center;"><input type="checkbox" disabled></p> |  |
+| PIPED_STARTED | PIPED | <p style="text-align: center;"><input type="checkbox" checked  disabled></p> |  |
+| PIPED_STOPPED | PIPED | <p style="text-align: center;"><input type="checkbox" checked disabled></p> |  |
 
 ### Sending notifications to Slack
 
@@ -52,7 +52,7 @@ spec:
       - name: prod-slack
         events:
           - DEPLOYMENT_TRIGGERED
-          - DEPLOYMENT_COMPLETED
+          - DEPLOYMENT_SUCCEEDED
         labels:
           env: prod
           team: pipecd

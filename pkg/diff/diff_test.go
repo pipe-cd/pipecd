@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -270,6 +270,97 @@ func loadUnstructureds(path string) ([]unstructured.Unstructured, error) {
 		out = append(out, obj)
 	}
 	return out, nil
+}
+
+func TestDiffStructureds(t *testing.T) {
+	type SubStruct struct {
+		FieldSub string
+	}
+	type TestStruct struct {
+		Field1 string
+		Field2 int
+		Field3 bool
+		Field4 []string
+		Field5 map[string]string
+		Field6 SubStruct
+	}
+
+	testcases := []struct {
+		name    string
+		old     TestStruct
+		new     TestStruct
+		key     string
+		diffNum int
+	}{
+		{
+			name: "no diff",
+			old: TestStruct{
+				Field1: "value1",
+				Field2: 1,
+				Field3: true,
+				Field4: []string{"a", "b"},
+				Field5: map[string]string{
+					"key1": "value1",
+				},
+				Field6: SubStruct{
+					FieldSub: "valueSub",
+				},
+			},
+			new: TestStruct{
+				Field1: "value1",
+				Field2: 1,
+				Field3: true,
+				Field4: []string{"a", "b"},
+				Field5: map[string]string{
+					"key1": "value1",
+				},
+				Field6: SubStruct{
+					FieldSub: "valueSub",
+				},
+			},
+			key:     "value1",
+			diffNum: 0,
+		},
+		{
+			name: "has diff",
+			old: TestStruct{
+				Field1: "value1",
+				Field2: 1,
+				Field3: true,
+				Field4: []string{"a", "b"},
+				Field5: map[string]string{
+					"key1": "value1",
+				},
+				Field6: SubStruct{
+					FieldSub: "valueSub",
+				},
+			},
+			new: TestStruct{
+				Field1: "value2",
+				Field2: 10,
+				Field3: false,
+				Field4: []string{"a", "b", "c"},
+				Field5: map[string]string{
+					"key1": "valueXXX",
+				},
+				Field6: SubStruct{
+					FieldSub: "xxx",
+				},
+			},
+			key:     "value1",
+			diffNum: 6,
+		},
+	}
+
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			diff, err := DiffStructureds(tc.old, tc.new)
+			require.NoError(t, err)
+			assert.Equal(t, tc.diffNum, diff.NumNodes())
+		})
+	}
 }
 
 func TestIsEmptyInterface(t *testing.T) {

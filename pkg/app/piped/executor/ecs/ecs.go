@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"go.uber.org/zap"
@@ -38,6 +39,7 @@ const (
 	trafficRoutePrimaryMetadataKey = "primary-percentage"
 	trafficRouteCanaryMetadataKey  = "canary-percentage"
 	canaryScaleMetadataKey         = "canary-scale"
+	currentListenersKey            = "current-listeners"
 )
 
 type registerer interface {
@@ -240,6 +242,8 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	}
 
 	// Remove old taskSets if existed.
+	// HACK: All old task sets including canary are deleted here.
+	//       However, we need to discuss whether we should delete the canary here or in later stage(CanaryClean).
 	for _, prevTaskSet := range prevTaskSets {
 		if err = client.DeleteTaskSet(ctx, *prevTaskSet); err != nil {
 			return err
@@ -437,17 +441,30 @@ func routing(ctx context.Context, in *executor.Input, platformProviderName strin
 		},
 	}
 
-	metadata := map[string]string{
+	metadataPercentage := map[string]string{
 		trafficRoutePrimaryMetadataKey: strconv.FormatInt(int64(primary), 10),
 		trafficRouteCanaryMetadataKey:  strconv.FormatInt(int64(canary), 10),
 	}
-	if err := in.MetadataStore.Stage(in.Stage.Id).PutMulti(ctx, metadata); err != nil {
+	if err := in.MetadataStore.Stage(in.Stage.Id).PutMulti(ctx, metadataPercentage); err != nil {
 		in.Logger.Error("Failed to store traffic routing config to metadata store", zap.Error(err))
 	}
 
-	currListenerArns, err := client.GetListenerArns(ctx, primaryTargetGroup)
-	if err != nil {
-		in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
+	var currListenerArns []string
+	value, ok := in.MetadataStore.Shared().Get(currentListenersKey)
+	if ok {
+		currListenerArns = strings.Split(value, ",")
+	} else {
+		currListenerArns, err = client.GetListenerArns(ctx, primaryTargetGroup)
+		if err != nil {
+			in.LogPersister.Errorf("Failed to get current active listeners: %v", err)
+			return false
+		}
+	}
+
+	// Store created listeners to use later.
+	metadata := strings.Join(currListenerArns, ",")
+	if err := in.MetadataStore.Shared().Put(ctx, currentListenersKey, metadata); err != nil {
+		in.LogPersister.Errorf("Unable to store created listeners to metadata store: %v", err)
 		return false
 	}
 

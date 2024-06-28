@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -392,7 +392,7 @@ func TestParseGitURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parseGitURL(tt.rawURL)
+			got, err := ParseGitURL(tt.rawURL)
 			assert.Equal(t, tt.wantErr, err != nil)
 			assert.Equal(t, got, tt.wantURL)
 		})

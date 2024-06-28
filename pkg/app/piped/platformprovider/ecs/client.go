@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -437,34 +437,59 @@ func (c *client) ModifyListeners(ctx context.Context, listenerArns []string, rou
 		return fmt.Errorf("invalid listener configuration: requires 2 target groups")
 	}
 
-	modifyListener := func(ctx context.Context, listenerArn string) error {
-		input := &elasticloadbalancingv2.ModifyListenerInput{
+	for _, listenerArn := range listenerArns {
+		describeRulesOutput, err := c.elbClient.DescribeRules(ctx, &elasticloadbalancingv2.DescribeRulesInput{
 			ListenerArn: aws.String(listenerArn),
-			DefaultActions: []elbtypes.Action{
-				{
-					Type: elbtypes.ActionTypeEnumForward,
-					ForwardConfig: &elbtypes.ForwardActionConfig{
-						TargetGroups: []elbtypes.TargetGroupTuple{
-							{
-								TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
-								Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
-							},
-							{
-								TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
-								Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
+		})
+		if err != nil {
+			return fmt.Errorf("failed to describe rules of listener %s: %w", listenerArn, err)
+		}
+
+		for _, rule := range describeRulesOutput.Rules {
+			modifiedActions := make([]elbtypes.Action, 0, len(rule.Actions))
+			for _, action := range rule.Actions {
+				if action.Type == elbtypes.ActionTypeEnumForward && routingTrafficCfg.hasSameTargets(action.ForwardConfig.TargetGroups) {
+					// Modify only the forward action which has the same target groups.
+					modifiedAction := elbtypes.Action{
+						Type:  elbtypes.ActionTypeEnumForward,
+						Order: action.Order,
+						ForwardConfig: &elbtypes.ForwardActionConfig{
+							TargetGroups: []elbtypes.TargetGroupTuple{
+								{
+									TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
+									Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
+								},
+								{
+									TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
+									Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
+								},
 							},
 						},
-					},
-				},
-			},
-		}
-		_, err := c.elbClient.ModifyListener(ctx, input)
-		return err
-	}
+					}
+					modifiedActions = append(modifiedActions, modifiedAction)
+				} else {
+					modifiedActions = append(modifiedActions, action)
+				}
+			}
 
-	for _, listener := range listenerArns {
-		if err := modifyListener(ctx, listener); err != nil {
-			return err
+			// The default rule needs to be modified by ModifyListener API.
+			if rule.IsDefault {
+				_, err := c.elbClient.ModifyListener(ctx, &elasticloadbalancingv2.ModifyListenerInput{
+					ListenerArn:    &listenerArn,
+					DefaultActions: modifiedActions,
+				})
+				if err != nil {
+					return fmt.Errorf("failed to modify default rule %s: %w", *rule.RuleArn, err)
+				}
+			} else {
+				_, err := c.elbClient.ModifyRule(ctx, &elasticloadbalancingv2.ModifyRuleInput{
+					RuleArn: rule.RuleArn,
+					Actions: modifiedActions,
+				})
+				if err != nil {
+					return fmt.Errorf("failed to modify rule %s: %w", *rule.RuleArn, err)
+				}
+			}
 		}
 	}
 	return nil

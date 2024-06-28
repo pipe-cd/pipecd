@@ -13,7 +13,13 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global = Function('return this')();
+var global =
+    (typeof globalThis !== 'undefined' && globalThis) ||
+    (typeof window !== 'undefined' && window) ||
+    (typeof global !== 'undefined' && global) ||
+    (typeof self !== 'undefined' && self) ||
+    (function () { return this; }).call(null) ||
+    Function('return this')();
 
 
 
@@ -5807,7 +5813,8 @@ proto.grpc.service.webservice.AddApplicationRequest.prototype.getLabelsMap = fun
  */
 proto.grpc.service.webservice.AddApplicationRequest.prototype.clearLabelsMap = function() {
   this.getLabelsMap().clear();
-  return this;};
+  return this;
+};
 
 
 
@@ -7460,7 +7467,8 @@ proto.grpc.service.webservice.ListApplicationsRequest.Options.prototype.getLabel
  */
 proto.grpc.service.webservice.ListApplicationsRequest.Options.prototype.clearLabelsMap = function() {
   this.getLabelsMap().clear();
-  return this;};
+  return this;
+};
 
 
 /**
@@ -9298,7 +9306,8 @@ proto.grpc.service.webservice.ListDeploymentsRequest.Options.prototype.getLabels
  */
 proto.grpc.service.webservice.ListDeploymentsRequest.Options.prototype.clearLabelsMap = function() {
   this.getLabelsMap().clear();
-  return this;};
+  return this;
+};
 
 
 /**
@@ -16015,7 +16024,8 @@ proto.grpc.service.webservice.GetInsightDataRequest.prototype.getLabelsMap = fun
  */
 proto.grpc.service.webservice.GetInsightDataRequest.prototype.clearLabelsMap = function() {
   this.getLabelsMap().clear();
-  return this;};
+  return this;
+};
 
 
 
@@ -17763,7 +17773,8 @@ proto.grpc.service.webservice.ListEventsRequest.Options.prototype.getLabelsMap =
  */
 proto.grpc.service.webservice.ListEventsRequest.Options.prototype.clearLabelsMap = function() {
   this.getLabelsMap().clear();
-  return this;};
+  return this;
+};
 
 
 /**

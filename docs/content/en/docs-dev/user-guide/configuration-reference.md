@@ -44,9 +44,11 @@ spec:
 
 Kubernetes resources can be managed by some annotations provided by PipeCD.
 
-| Annotation key | Target resource(es) | Possible values | Description |
+| Annotation key | Target resource(s) | Possible values | Description |
+|-|-|-|-|
 | `pipecd.dev/ignore-drift-detection` | any | "true" | Whether the drift detection should ignore this resource. |
 | `pipecd.dev/server-side-apply` | any | "true" | Use server side apply instead of client side apply. |
+| `pipecd.dev/sync-by-replace` | any | "enabled" | Use `replace` instead of `apply`. |
 
 ## Terraform application
 
@@ -305,10 +307,10 @@ One of `yamlField` or `regex` is required.
 | Field | Type | Description | Required |
 |-|-|-|-|
 | manifests | []string | List of manifest files in the application directory used to deploy. Empty means all manifest files in the directory will be used. | No |
-| kubectlVersion | string | Version of kubectl will be used. Empty means the version set on [piped config](../managing-piped/configuration-reference/#platformproviderkubernetesconfig) or [default version](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/install-kubectl.sh#L24) will be used. | No |
-| kustomizeVersion | string | Version of kustomize will be used. Empty means the [default version](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/install-kustomize.sh#L24) will be used. | No |
+| kubectlVersion | string | Version of kubectl will be used. Empty means the version set on [piped config](../managing-piped/configuration-reference/#platformproviderkubernetesconfig) or [default version](https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/toolregistry/install.go#L29) will be used. | No |
+| kustomizeVersion | string | Version of kustomize will be used. Empty means the [default version](https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/toolregistry/install.go#L30) will be used. | No |
 | kustomizeOptions | map[string]string | List of options that should be used by Kustomize commands. | No |
-| helmVersion | string | Version of helm will be used. Empty means the [default version](https://github.com/pipe-cd/pipecd/blob/master/tool/piped-base/install-helm.sh#L24) will be used. | No |
+| helmVersion | string | Version of helm will be used. Empty means the [default version](https://github.com/pipe-cd/pipecd/blob/master/pkg/app/piped/toolregistry/install.go#L31) will be used. | No |
 | helmChart | [HelmChart](#helmchart) | Where to fetch helm chart. | No |
 | helmOptions | [HelmOptions](#helmoptions) | Configurable parameters for helm commands. | No |
 | namespace | string | The namespace where manifests will be applied. | No |
@@ -331,6 +333,7 @@ One of `yamlField` or `regex` is required.
 | Field | Type | Description | Required |
 |-|-|-|-|
 | releaseName | string | The release name of helm deployment. By default, the release name is equal to the application name. | No |
+| setValues | map[string]string | List of values. | No |
 | valueFiles | []string | List of value files should be loaded. Only local files stored under the application directory or remote files served at the http(s) endpoint are allowed. | No |
 | setFiles | map[string]string | List of file path for values. | No |
 | apiVersions | []string | Kubernetes api versions used for Capabilities.APIVersions. | No |
@@ -441,6 +444,59 @@ One of `yamlField` or `regex` is required.
 | functionManifestFile | string | The name of function manifest file placing in application directory. Default is `function.yaml`. | No |
 | autoRollback | bool | Automatically reverts to the previous state when the deployment is failed. Default is `true`. | No |
 
+### Specific function.yaml
+
+| Field            | Type             | Description                        | Required |
+|------------------|------------------|------------------------------------|----------|
+| Name             | string           | Name of the Lambda function        | Yes      |
+| Role             | string           | IAM role ARN                       | Yes      |
+| ImageURI         | string           | URI of the container image         | Yes      |
+| S3Bucket         | string           | S3 bucket name for code package   | Yes      |
+| S3Key            | string           | S3 key for code package            | Yes      |
+| S3ObjectVersion  | string           | S3 object version for code package | Yes      |
+| SourceCode       | [SourceCode](#sourcecode)       | Git settings                | Yes      |
+| Handler          | string           | Lambda function handler            | Yes      |
+| Architectures    | [[]Architecture](#architecture)   | Supported architectures            | No       |
+| EphemeralStorage | [EphemeralStorage](#ephemeralstorage)| Ephemeral storage configuration    | No       |
+| Runtime          | string           | Runtime environment                | Yes      |
+| Memory           | int32            | Memory allocation (in MB)          | Yes      |
+| Timeout          | int32            | Function timeout (in seconds)      | Yes      |
+| Tags             | map[string]string| Key-value pairs for tags           | No       |
+| Environments     | map[string]string| Environment variables              | No       |
+| VPCConfig        | [VPCConfig](#vpcconfig)       | VPC configuration                  | No       |
+| Layers        | []string       | ARNs of [layers](https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html) to depend on                | No       |
+
+### SourceCode
+
+| Field | Type   | Description              | Required |
+|-------|--------|--------------------------|----------|
+| Git   | string | Git repository URL       | Yes      |
+| Ref   | string | Git branch/tag/reference| Yes      |
+| Path  | string | Path within the repository | Yes    |
+
+### Architecture
+
+| Field | Type   | Description            | Required |
+|-------|--------|------------------------|----------|
+| Name  | string | Name of the architecture | Yes     |
+
+### EphemeralStorage
+
+| Field | Type  | Description                  | Required |
+|-------|-------|------------------------------|----------|
+| Size  | int32 | Size of the ephemeral storage| No       |
+
+### VPCConfig
+
+| Field           | Type     | Description                 | Required |
+|-----------------|----------|-----------------------------|----------|
+| SecurityGroupIDs| []string | List of security group IDs  | No       |
+| SubnetIDs       | []string | List of subnet IDs          | No       |
+
+- Note
+    - See more Details
+        - [Configuration Lambda application](../managing-application/defining-app-configuration/lambda)
+
 ## LambdaQuickSync
 
 | Field | Type | Description | Required |
@@ -450,10 +506,31 @@ One of `yamlField` or `regex` is required.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| serviceDefinitionFile | string | The path ECS Service configuration file. Allow file in both `yaml` and `json` format. The default value is `service.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_definition_parameters.html) for parameters.| No |
-| taskDefinitionFile | string | The path to ECS TaskDefinition configuration file. Allow file in both `yaml` and `json` format. The default value is `taskdef.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html) for parameters. | No |
+| serviceDefinitionFile | string | The path ECS Service configuration file. Allow file in both `yaml` and `json` format. The default value is `service.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_definition_parameters.html) and [Restrictions](#restrictions-of-service-definition) for parameters.| No |
+| taskDefinitionFile | string | The path to ECS TaskDefinition configuration file. Allow file in both `yaml` and `json` format. The default value is `taskdef.json`. See [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html) and [Restrictions](#restrictions-of-task-definition) for parameters. | No |
 | targetGroups | [ECSTargetGroupInput](#ecstargetgroupinput) | The target groups configuration, will be used to routing traffic to created task sets. | Yes (if you want to perform progressive delivery) |
 | runStandaloneTask | bool | Run standalone tasks during deployments. About standalone task, see [here](https://docs.aws.amazon.com/AmazonECS/latest/userguide/ecs_run_task-v2.html). The default value is `true`. |
+| accessType | string | How the ECS service is accessed. One of `ELB` or `SERVICE_DISCOVERY`. See examples [here](https://github.com/pipe-cd/examples/tree/master/ecs/servicediscovery/simple). The default value is `ELB`. |
+
+### Restrictions of Service Definition
+
+There are some restrictions in configuring a service definition file.
+
+- `capacityProviderStrategy` is not supported.
+- `clientToken` is not supported.
+- `deploymentController` is required and must be `EXTERNAL`.
+- `loadBalancers` is not supported. Use `targetGroups` in [ECSDeploymentInput](#ecsdeploymentinput) instead.
+- `platformFamily` is not supported.
+- `propagateTags` is always set as `SERVICE`.
+- `taskDefinition` is not supported. PipeCD uses the definition in `taskDefinitionFile` in [ECSDeploymentInput](#ecsdeploymentinput).
+
+### Restrictions of Task Definition
+
+There are some restrictions in configuring a task definition file.
+
+- `placementConstraints` is not supported.
+- `proxyConfiguration` is not supported.
+- `tags` is not supported.
 
 ### ECSTargetGroupInput
 
@@ -477,6 +554,7 @@ Note: The available values are identical to those found in the aws-sdk-go-v2 Typ
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| recreate | bool | Whether to delete old tasksets before creating new ones or not. Default to false. | No |
 
 ## AnalysisMetrics
 
@@ -520,6 +598,13 @@ Note: The available values are identical to those found in the aws-sdk-go-v2 Typ
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+
+## SkipOptions
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| commitMessagePrefixes | []string | List of commit message's prefixes. The stage will be skipped when the prefix of the commit's message matches any of them. Empty means the stage will not be skipped by this condition. | No |
+| paths | []string | List of paths to directories or files. When all commit changes match them, the stage will be skipped. Empty means the stage will not be skipped by this condition. Regular expression can be used. | No |
 
 ## StageOptions
 
@@ -628,12 +713,14 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 |-|-|-|-|
 | duration | duration | Maximum time to perform the analysis. | Yes |
 | metrics | [][AnalysisMetrics](#analysismetrics) | Configuration for analysis by metrics. | No |
+| skipOn | [SkipOptions](#skipoptions) | When to skip this stage. | No |
 
 ### WaitStageOptions
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 | duration | duration | Time to wait. | Yes |
+| skipOn | [SkipOptions](#skipoptions) | When to skip this stage. | No |
 
 ### WaitApprovalStageOptions
 
@@ -642,13 +729,22 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | timeout | duration | The maximum length of time to wait before giving up. Default is 6h. | No |
 | approvers | []string | List of username who has permission to approve. | Yes |
 | minApproverNum | int | Number of minimum needed approvals to make this stage complete. Default is 1. | No |
+| skipOn | [SkipOptions](#skipoptions) | When to skip this stage. | No |
 
-### CustomSyncStageOptions
+### CustomSyncStageOptions (deprecated)
 | Field | Type | Description | Required |
 |-|-|-|-|
 | timeout | duration | The maximum time the stage can be taken to run. Default is `6h`| No |
 | envs | map[string]string | Environment variables used with scripts. | No |
 | run | string | Script run on this stage. | Yes |
+
+### ScriptRunStageOptions
+| Field | Type | Description | Required |
+|-|-|-|-|
+| run | string | Script run on this stage. | Yes |
+| env | map[string]string | Environment variables used with scripts. | No |
+| timeout | duration | The maximum time the stage can be taken to run. Default is `6h`| No |
+| skipOn | [SkipOptions](#skipoptions) | When to skip this stage. | No |
 
 ## PostSync
 
@@ -695,6 +791,7 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | Field | Type | Description | Required |
 |-|-|-|-|
 | commitMessage | string | The commit message used to push after replacing values. Default message is used if not given. | No |
+| makePullRequest | bool | Whether to create a new branch or not when commit changes in event watcher. Default is `false`. | No |
 | replacements | [][EventWatcherReplacement](#eventwatcherreplacement) | List of places where will be replaced when the new event matches. | Yes |
 
 ## DriftDetection

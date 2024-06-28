@@ -1,8 +1,8 @@
-FROM golang:1.13.4-alpine3.10 AS builder
+FROM golang:1.22.4-alpine3.20 AS builder
 COPY main.go .
 RUN go build -o /server main.go
 
-FROM alpine:3.10
+FROM alpine:3.17
 RUN apk --no-cache add ca-certificates
 
 COPY --from=builder /server ./

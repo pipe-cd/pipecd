@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -189,7 +189,7 @@ func TestPipedConfig(t *testing.T) {
 							Labels: map[string]string{
 								"env": "dev",
 							},
-							Events:   []string{"DEPLOYMENT_TRIGGERED", "DEPLOYMENT_COMPLETED"},
+							Events:   []string{"DEPLOYMENT_TRIGGERED", "DEPLOYMENT_SUCCEEDED"},
 							Receiver: "prod-slack-channel",
 						},
 						{
@@ -1018,7 +1018,7 @@ func TestPipedSpecClone(t *testing.T) {
 							Labels: map[string]string{
 								"env": "dev",
 							},
-							Events:   []string{"DEPLOYMENT_TRIGGERED", "DEPLOYMENT_COMPLETED"},
+							Events:   []string{"DEPLOYMENT_TRIGGERED", "DEPLOYMENT_SUCCEEDED"},
 							Receiver: "prod-slack-channel",
 						},
 						{
@@ -1215,7 +1215,7 @@ func TestPipedSpecClone(t *testing.T) {
 							Labels: map[string]string{
 								"env": "dev",
 							},
-							Events:   []string{"DEPLOYMENT_TRIGGERED", "DEPLOYMENT_COMPLETED"},
+							Events:   []string{"DEPLOYMENT_TRIGGERED", "DEPLOYMENT_SUCCEEDED"},
 							Receiver: "prod-slack-channel",
 						},
 						{

@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -225,6 +225,7 @@ type PipelineStage struct {
 	WaitStageOptions         *WaitStageOptions
 	WaitApprovalStageOptions *WaitApprovalStageOptions
 	AnalysisStageOptions     *AnalysisStageOptions
+	ScriptRunStageOptions    *ScriptRunStageOptions
 
 	K8sPrimaryRolloutStageOptions  *K8sPrimaryRolloutStageOptions
 	K8sCanaryRolloutStageOptions   *K8sCanaryRolloutStageOptions
@@ -291,6 +292,12 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.AnalysisStageOptions)
 		}
+	case model.StageScriptRun:
+		s.ScriptRunStageOptions = &ScriptRunStageOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.ScriptRunStageOptions)
+		}
+
 	case model.StageK8sPrimaryRollout:
 		s.K8sPrimaryRolloutStageOptions = &K8sPrimaryRolloutStageOptions{}
 		if len(gs.With) > 0 {
@@ -397,18 +404,26 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// SkipOptions contains all configurable values for skipping a stage.
+type SkipOptions struct {
+	CommitMessagePrefixes []string `json:"commitMessagePrefixes,omitempty"`
+	Paths                 []string `json:"paths,omitempty"`
+}
+
 // WaitStageOptions contains all configurable values for a WAIT stage.
 type WaitStageOptions struct {
-	Duration Duration `json:"duration"`
+	Duration Duration    `json:"duration"`
+	SkipOn   SkipOptions `json:"skipOn,omitempty"`
 }
 
 // WaitStageOptions contains all configurable values for a WAIT_APPROVAL stage.
 type WaitApprovalStageOptions struct {
 	// The maximum length of time to wait before giving up.
 	// Defaults to 6h.
-	Timeout        Duration `json:"timeout" default:"6h"`
-	Approvers      []string `json:"approvers"`
-	MinApproverNum int      `json:"minApproverNum" default:"1"`
+	Timeout        Duration    `json:"timeout" default:"6h"`
+	Approvers      []string    `json:"approvers"`
+	MinApproverNum int         `json:"minApproverNum" default:"1"`
+	SkipOn         SkipOptions `json:"skipOn,omitempty"`
 }
 
 func (w *WaitApprovalStageOptions) Validate() error {
@@ -434,13 +449,14 @@ func (c *CustomSyncOptions) Validate() error {
 // AnalysisStageOptions contains all configurable values for a K8S_ANALYSIS stage.
 type AnalysisStageOptions struct {
 	// How long the analysis process should be executed.
-	Duration Duration `json:"duration"`
+	Duration Duration `json:"duration,omitempty"`
 	// TODO: Consider about how to handle a pod restart
 	// possible count of pod restarting
-	RestartThreshold int                          `json:"restartThreshold"`
-	Metrics          []TemplatableAnalysisMetrics `json:"metrics"`
-	Logs             []TemplatableAnalysisLog     `json:"logs"`
-	HTTPS            []TemplatableAnalysisHTTP    `json:"https"`
+	RestartThreshold int                          `json:"restartThreshold,omitempty"`
+	Metrics          []TemplatableAnalysisMetrics `json:"metrics,omitempty"`
+	Logs             []TemplatableAnalysisLog     `json:"logs,omitempty"`
+	HTTPS            []TemplatableAnalysisHTTP    `json:"https,omitempty"`
+	SkipOn           SkipOptions                  `json:"skipOn,omitempty"`
 }
 
 func (a *AnalysisStageOptions) Validate() error {
@@ -485,6 +501,23 @@ func (a *AnalysisStageOptions) Validate() error {
 	return nil
 }
 
+// ScriptRunStageOptions contains all configurable values for a SCRIPT_RUN stage.
+type ScriptRunStageOptions struct {
+	Env        map[string]string `json:"env"`
+	Run        string            `json:"run"`
+	Timeout    Duration          `json:"timeout" default:"6h"`
+	OnRollback string            `json:"onRollback"`
+	SkipOn     SkipOptions       `json:"skipOn,omitempty"`
+}
+
+// Validate checks the required fields of ScriptRunStageOptions.
+func (s *ScriptRunStageOptions) Validate() error {
+	if s.Run == "" {
+		return fmt.Errorf("SCRIPT_RUN stage requires run field")
+	}
+	return nil
+}
+
 type AnalysisTemplateRef struct {
 	Name    string            `json:"name"`
 	AppArgs map[string]string `json:"appArgs"`
@@ -523,6 +556,9 @@ type SecretEncryption struct {
 }
 
 func (e *SecretEncryption) Validate() error {
+	if len(e.DecryptionTargets) == 0 {
+		return fmt.Errorf("derecryptionTargets must not be empty")
+	}
 	for k, v := range e.EncryptedSecrets {
 		if k == "" {
 			return fmt.Errorf("key field in encryptedSecrets must not be empty")
@@ -541,8 +577,11 @@ type Attachment struct {
 	Targets []string `json:"targets"`
 }
 
-func (e *Attachment) Validate() error {
-	for k, v := range e.Sources {
+func (a *Attachment) Validate() error {
+	if len(a.Targets) == 0 {
+		return fmt.Errorf("attachment targets must not be empty")
+	}
+	for k, v := range a.Sources {
 		if k == "" {
 			return fmt.Errorf("key field in sources must not be empty")
 		}

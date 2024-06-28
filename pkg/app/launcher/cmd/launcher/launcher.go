@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,10 +29,12 @@ import (
 	"time"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
+	secretmanagerpb "cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	awssecretsmanager "github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
-	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 	"google.golang.org/grpc/credentials"
 	"sigs.k8s.io/yaml"
 
@@ -60,6 +62,8 @@ type launcher struct {
 	configData              string
 	configFromGCPSecret     bool
 	gcpSecretID             string
+	configFromAWSSecret     bool
+	awsSecretID             string
 	configFromGitRepo       bool
 	gitRepoURL              string
 	gitBranch               string
@@ -102,6 +106,9 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&l.configFromGCPSecret, "config-from-gcp-secret", l.configFromGCPSecret, "Whether to load Piped config that is being stored in GCP SecretManager service.")
 	cmd.Flags().StringVar(&l.gcpSecretID, "gcp-secret-id", l.gcpSecretID, "The resource ID of secret that contains Piped config in GCP SecretManager service.")
 
+	cmd.Flags().BoolVar(&l.configFromAWSSecret, "config-from-aws-secret", l.configFromAWSSecret, "Whether to load Piped config that is being stored in AWS Secrets Manager service.")
+	cmd.Flags().StringVar(&l.awsSecretID, "aws-secret-id", l.awsSecretID, "The ARN of secret that contains Piped config in AWS Secrets Manager service.")
+
 	cmd.Flags().BoolVar(&l.configFromGitRepo, "config-from-git-repo", l.configFromGitRepo, "Whether to load Piped config that is being stored in a git repository.")
 	cmd.Flags().StringVar(&l.gitRepoURL, "git-repo-url", l.gitRepoURL, "The remote URL of git repository to fetch Piped config.")
 	cmd.Flags().StringVar(&l.gitBranch, "git-branch", l.gitBranch, "Branch of git repository to for Piped config.")
@@ -125,6 +132,8 @@ func NewCommand() *cobra.Command {
 		"config-from-gcp-secret": {},
 		"gcp-secret-id":          {},
 		"config-from-git-repo":   {},
+		"config-from-aws-secret": {},
+		"aws-secret-id":          {},
 		"git-repo-url":           {},
 		"git-branch":             {},
 		"git-piped-config-file":  {},
@@ -142,6 +151,11 @@ func (l *launcher) validateFlags() error {
 	if l.configFromGCPSecret {
 		if l.gcpSecretID == "" {
 			return fmt.Errorf("gcp-secret-id must be set to load Piped config from GCP SecretManager service")
+		}
+	}
+	if l.configFromAWSSecret {
+		if l.awsSecretID == "" {
+			return fmt.Errorf("aws-secret-id must be set to load Piped config from AWS Secrets Manager service")
 		}
 	}
 	if l.configFromGitRepo {
@@ -422,6 +436,26 @@ func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {
 		return resp.Payload.Data, nil
 	}
 
+	if l.configFromAWSSecret {
+		cfg, err := awsconfig.LoadDefaultConfig(ctx)
+		if err != nil {
+			return nil, err
+		}
+		client := awssecretsmanager.NewFromConfig(cfg)
+		in := &awssecretsmanager.GetSecretValueInput{
+			SecretId: &l.awsSecretID,
+		}
+		result, err := client.GetSecretValue(ctx, in)
+		if err != nil {
+			return nil, err
+		}
+		decoded, err := base64.StdEncoding.DecodeString(*result.SecretString)
+		if err != nil {
+			return nil, err
+		}
+		return decoded, nil
+	}
+
 	if l.configFromGitRepo {
 		// Pull to update the local data.
 		if err := l.configRepo.Pull(ctx, l.gitBranch); err != nil {
@@ -434,6 +468,7 @@ func (l *launcher) loadConfigData(ctx context.Context) ([]byte, error) {
 		"config-file",
 		"config-data",
 		"config-from-gcp-secret",
+		"config-from-aws-secret",
 		"config-from-git-repo",
 	}, ", "))
 }

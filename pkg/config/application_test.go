@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -210,30 +210,85 @@ func TestValidateEncryption(t *testing.T) {
 	testcases := []struct {
 		name             string
 		encryptedSecrets map[string]string
+		targets          []string
 		wantErr          bool
 	}{
 		{
 			name:             "valid",
 			encryptedSecrets: map[string]string{"password": "pw"},
+			targets:          []string{"secret.yaml"},
 			wantErr:          false,
 		},
 		{
 			name:             "invalid because key is empty",
 			encryptedSecrets: map[string]string{"": "pw"},
+			targets:          []string{"secret.yaml"},
 			wantErr:          true,
 		},
 		{
 			name:             "invalid because value is empty",
 			encryptedSecrets: map[string]string{"password": ""},
+			targets:          []string{"secret.yaml"},
+			wantErr:          true,
+		},
+		{
+			name:             "no target files sepcified",
+			encryptedSecrets: map[string]string{"password": "pw"},
 			wantErr:          true,
 		},
 	}
 	for _, tc := range testcases {
+		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			s := &SecretEncryption{
-				EncryptedSecrets: tc.encryptedSecrets,
+				EncryptedSecrets:  tc.encryptedSecrets,
+				DecryptionTargets: tc.targets,
 			}
 			err := s.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
+		})
+	}
+}
+
+func TestValidateAttachment(t *testing.T) {
+	testcases := []struct {
+		name    string
+		sources map[string]string
+		targets []string
+		wantErr bool
+	}{
+		{
+			name:    "valid",
+			sources: map[string]string{"config": "config.yaml"},
+			targets: []string{"target.yaml"},
+			wantErr: false,
+		},
+		{
+			name:    "invalid because key is empty",
+			sources: map[string]string{"": "config-data"},
+			targets: []string{"target.yaml"},
+			wantErr: true,
+		},
+		{
+			name:    "invalid because value is empty",
+			sources: map[string]string{"config": ""},
+			targets: []string{"target.yaml"},
+			wantErr: true,
+		},
+		{
+			name:    "no target files sepcified",
+			sources: map[string]string{"config": "config.yaml"},
+			wantErr: true,
+		},
+	}
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			a := &Attachment{
+				Sources: tc.sources,
+				Targets: tc.targets,
+			}
+			err := a.Validate()
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
@@ -699,6 +754,35 @@ func TestCustomSyncConfig(t *testing.T) {
 				assert.Equal(t, tc.expectedAPIVersion, cfg.APIVersion)
 				assert.Equal(t, tc.expectedSpec, cfg.spec)
 			}
+		})
+	}
+}
+
+func TestScriptSycConfiguration(t *testing.T) {
+	testcases := []struct {
+		name    string
+		opts    ScriptRunStageOptions
+		wantErr bool
+	}{
+		{
+			name: "valid",
+			opts: ScriptRunStageOptions{
+				Run: "echo 'hello world'",
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid",
+			opts: ScriptRunStageOptions{
+				Run: "",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.opts.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
 }

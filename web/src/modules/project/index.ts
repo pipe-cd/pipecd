@@ -83,6 +83,9 @@ const VALUES_SEPARATOR = ",";
 const RESOURCES_KEY = "resources";
 const ACTIONS_KEY = "actions";
 
+const RESOURCES_NAME_REGEX = /([^,{}]+(?:{[^}]*})?)/g;
+const RESOURCES_LABELS_REGEX = /\{([^}]*)\}/;
+
 export const parseRBACPolicies = ({
   policies,
 }: {
@@ -93,23 +96,41 @@ export const parseRBACPolicies = ({
   ps.map((p) => {
     p = p.replace(/\s/g, "");
     const policyResource: ProjectRBACPolicy = new ProjectRBACPolicy();
+
+    // Policy pattern:
+    // resources=RESOURCE_NAME{key1:value1,key2:value2};actions=ACTION
     const policy = p.split(RESOURCE_ACTION_SEPARATOR);
 
-    const resources = policy[0].split(KEY_VALUE_SEPARATOR);
-    if (resources[0] == RESOURCES_KEY) {
-      resources[1].split(VALUES_SEPARATOR).map((v) => {
-        const res: ProjectRBACResource = new ProjectRBACResource();
-        res.setType(TEXT_TO_RBAC_RESOURCE_TYPE[v]);
-        policyResource.addResources(res);
-      });
+    if (
+      policy.length !== 2 ||
+      policy[0].startsWith(RESOURCES_KEY + KEY_VALUE_SEPARATOR) === false ||
+      policy[1].startsWith(ACTIONS_KEY + KEY_VALUE_SEPARATOR) === false
+    ) {
+      return;
     }
 
-    const actions = policy[1].split(KEY_VALUE_SEPARATOR);
-    if (actions[0] == ACTIONS_KEY) {
-      actions[1].split(VALUES_SEPARATOR).map((v) => {
-        policyResource.addActions(TEXT_TO_RBAC_ACTION_TYPE[v]);
-      });
-    }
+    // Cut the header `resources=`.
+    const resources = policy[0].substring(RESOURCES_KEY.length + 1);
+    resources.match(RESOURCES_NAME_REGEX)?.map((r) => {
+      const resource = new ProjectRBACResource();
+      const labels = r.match(RESOURCES_LABELS_REGEX);
+      if (labels) {
+        resource.clearLabelsMap(); // ensure no labels
+        const labelsMap = labels[1].split(",");
+        labelsMap.map((l) => {
+          const [key, value] = l.split(":");
+          resource.getLabelsMap().set(key, value);
+        });
+      }
+      resource.setType(TEXT_TO_RBAC_RESOURCE_TYPE[r.split("{")[0]]);
+      policyResource.addResources(resource);
+    });
+
+    // Cut the header `actions=`.
+    const actions = policy[1].substring(ACTIONS_KEY.length + 1);
+    actions.split(VALUES_SEPARATOR).map((v) => {
+      policyResource.addActions(TEXT_TO_RBAC_ACTION_TYPE[v]);
+    });
 
     ret.push(policyResource);
   });
@@ -125,7 +146,16 @@ export const formalizePoliciesList = ({
   policiesList.map((policy) => {
     const resources: string[] = [];
     policy.resourcesList.map((resource) => {
-      resources.push(RBAC_RESOURCE_TYPE_TEXT[resource.type]);
+      let rsc = RBAC_RESOURCE_TYPE_TEXT[resource.type];
+      if (resource.labelsMap.length > 0) {
+        rsc += "{";
+        resource.labelsMap.map((label) => {
+          rsc += label[0] + ":" + label[1] + ",";
+        });
+        rsc = rsc.slice(0, -1); // remove last comma
+        rsc += "}";
+      }
+      resources.push(rsc);
     });
 
     const actions: string[] = [];

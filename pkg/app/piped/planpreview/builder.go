@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -249,6 +249,8 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 		dr, err = b.terraformDiff(ctx, app, targetDSP, &buf)
 	case model.ApplicationKind_CLOUDRUN:
 		dr, err = b.cloudrundiff(ctx, app, targetDSP, preCommit, &buf)
+	case model.ApplicationKind_ECS:
+		dr, err = b.ecsdiff(ctx, app, targetDSP, preCommit, &buf)
 	default:
 		// TODO: Calculating planpreview's diff for other application kinds.
 		dr = &diffResult{

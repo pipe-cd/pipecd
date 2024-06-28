@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -141,36 +141,21 @@ func main() {
 			doComment(failureBadgeURL + "\nUnable to run plan-preview for a closed pull request.")
 			return
 		}
+
+		minimizePreviousComment(ctx, ghGraphQLClient, event)
+
 		body := makeCommentBody(event, result)
-		doComment(failureBadgeURL + "\n" + body)
+		doComment(body)
+
+		log.Println("Successfully minimized last plan-preview result on pull request")
 		log.Println("plan-preview result has error")
 		os.Exit(1)
 	}
 
-	// Find comments we sent before
-	comment, err := findLatestPlanPreviewComment(ctx, ghGraphQLClient, event.Owner, event.Repo, event.PRNumber)
-	if err != nil {
-		log.Printf("Unable to find the previous comment to minimize (%v)\n", err)
-	}
+	minimizePreviousComment(ctx, ghGraphQLClient, event)
 
 	body := makeCommentBody(event, result)
 	doComment(body)
-
-	if comment == nil {
-		return
-	}
-
-	if bool(comment.IsMinimized) {
-		log.Printf("Previous plan-preview comment has already minimized. So don't minimize anything\n")
-		return
-	}
-
-	if err := minimizeComment(ctx, ghGraphQLClient, comment.ID, "OUTDATED"); err != nil {
-		log.Printf("warning: cannot minimize comment: %s\n", err.Error())
-		return
-	}
-
-	log.Printf("Successfully minimized last plan-preview result on pull request\n")
 }
 
 type arguments struct {

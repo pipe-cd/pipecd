@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import (
 const dir = "/public"
 
 // Don't update here manually. /hack/gen-release-docs.sh does.
-const latestPath = "/docs-v0.45.x/"
+const latestPath = "/docs-v0.47.x/"
 
 func main() {
 	var (

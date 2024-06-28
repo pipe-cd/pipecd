@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@ package ecs
 
 import (
 	"context"
+
+	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
@@ -97,9 +99,13 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	primary, _, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
-	if !ok {
-		return model.StageStatus_STAGE_FAILURE
+	var primary *types.LoadBalancer
+	// When the service is not accessed via ELB, the target group is not used.
+	if ecsInput.IsAccessedViaELB() {
+		primary, _, ok = loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
+		if !ok {
+			return model.StageStatus_STAGE_FAILURE
+		}
 	}
 
 	recreate := e.appCfg.QuickSync.Recreate
@@ -120,16 +126,27 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	primary, _, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
-	if !ok {
-		return model.StageStatus_STAGE_FAILURE
-	}
-	if primary == nil {
-		e.LogPersister.Error("Primary target group is required to enable rolling out PRIMARY variant")
-		return model.StageStatus_STAGE_FAILURE
-	}
+	switch e.appCfg.Input.AccessType {
+	case config.AccessTypeELB:
+		primary, _, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
+		if !ok {
+			return model.StageStatus_STAGE_FAILURE
+		}
+		if primary == nil {
+			e.LogPersister.Error("Primary target group is required to enable rolling out PRIMARY variant")
+			return model.StageStatus_STAGE_FAILURE
+		}
 
-	if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary) {
+		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary) {
+			return model.StageStatus_STAGE_FAILURE
+		}
+	case config.AccessTypeServiceDiscovery:
+		// Target groups are not used.
+		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, nil) {
+			return model.StageStatus_STAGE_FAILURE
+		}
+	default:
+		e.LogPersister.Errorf("Unsupported access type %s in stage %s for ECS application", e.appCfg.Input.AccessType, e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -146,16 +163,27 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	_, canary, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
-	if !ok {
-		return model.StageStatus_STAGE_FAILURE
-	}
-	if canary == nil {
-		e.LogPersister.Error("Canary target group is required to enable rolling out CANARY variant")
-		return model.StageStatus_STAGE_FAILURE
-	}
+	switch e.appCfg.Input.AccessType {
+	case config.AccessTypeELB:
+		_, canary, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
+		if !ok {
+			return model.StageStatus_STAGE_FAILURE
+		}
+		if canary == nil {
+			e.LogPersister.Error("Canary target group is required to enable rolling out CANARY variant")
+			return model.StageStatus_STAGE_FAILURE
+		}
 
-	if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, canary) {
+		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, canary) {
+			return model.StageStatus_STAGE_FAILURE
+		}
+	case config.AccessTypeServiceDiscovery:
+		// Target groups are not used.
+		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, nil) {
+			return model.StageStatus_STAGE_FAILURE
+		}
+	default:
+		e.LogPersister.Errorf("Unsupported access type %s in stage %s for ECS application", e.appCfg.Input.AccessType, e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -163,6 +191,12 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 }
 
 func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
+	// Traffic Routing is not supported for other kinds than ELB.
+	if !e.appCfg.Input.IsAccessedViaELB() {
+		e.LogPersister.Errorf("Unsupported access type %s in stage %s for ECS application", e.appCfg.Input.AccessType, e.Stage.Name)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	primary, canary, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE

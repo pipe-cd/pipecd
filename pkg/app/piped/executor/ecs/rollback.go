@@ -1,4 +1,4 @@
-// Copyright 2023 The PipeCD Authors.
+// Copyright 2024 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -111,8 +111,8 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 		return false
 	}
 
-	// Rollback ECS service configuration to previous state.
-	service, err := client.UpdateService(ctx, serviceDefinition)
+	// Rollback ECS service configuration to previous state including commit-hash of the tag.
+	service, err := applyServiceDefinition(ctx, client, serviceDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to rollback ECS service %s configuration to previous stage: %v", *serviceDefinition.ServiceName, err)
 		return false
@@ -159,7 +159,7 @@ func rollback(ctx context.Context, in *executor.Input, platformProviderName stri
 		}
 
 		if err := client.ModifyListeners(ctx, currListenerArns, routingTrafficCfg); err != nil {
-			in.LogPersister.Errorf("Failed to routing traffic to PRIMARY variant: %v", err)
+			in.LogPersister.Errorf("Failed to routing traffic to PRIMARY/CANARY variants: %v", err)
 			return false
 		}
 	}
