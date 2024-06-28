@@ -24,8 +24,11 @@ jobs:
 <<<<<<< HEAD
           title: "[docs][bot] Update contributors"
           commit-message: "[docs][bot] Update contributors"
+          branch: "create-pull-request/update-contributors"
+          delete-branch: true
           signoff: true
           token: ${{ secrets.GITHUB_TOKEN }}
+<<<<<<< HEAD
           delete-branch: true
 =======
           title: "[bot] Update contributors"
@@ -41,3 +44,5 @@ jobs:
           signoff: true
           token: ${{ secrets.GITHUB_TOKEN }}
 >>>>>>> ce9bc16169c3898232918d2c52591107ea180095
+=======
+>>>>>>> 5b8e554527b9a2a6b01547f23a1a8ef267e35558
