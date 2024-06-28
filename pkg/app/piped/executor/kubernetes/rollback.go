@@ -206,7 +206,15 @@ func (e *rollbackExecutor) ensureScriptRunRollback(ctx context.Context) model.St
 		}
 	}
 
-	envs := make([]string, 0, len(env))
+	defaultEnvs := map[string]string{
+		"DEPLOYMENT_ID":  e.Deployment.Id,
+		"APPLICATION_ID": e.Deployment.ApplicationId,
+	}
+
+	envs := make([]string, 0, len(env)+len(defaultEnvs))
+	for key, value := range defaultEnvs {
+		envs = append(envs, "SR_"+key+"="+value)
+	}
 	for key, value := range env {
 		envs = append(envs, key+"="+value)
 	}
