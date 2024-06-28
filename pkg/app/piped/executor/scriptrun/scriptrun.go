@@ -99,7 +99,16 @@ func (e *Executor) executeCommand() model.StageStatus {
 		}
 	}
 
-	envs := make([]string, 0, len(opts.Env))
+	defautEnvs := map[string]string{
+		"DEPLOYMENT_ID":  e.Deployment.Id,
+		"APPLICATION_ID": e.Deployment.ApplicationId,
+	}
+
+	envs := make([]string, 0, len(opts.Env)+len(defautEnvs))
+	for key, value := range defautEnvs {
+		envs = append(envs, "SR_"+key+"="+value)
+	}
+
 	for key, value := range opts.Env {
 		envs = append(envs, key+"="+value)
 	}
