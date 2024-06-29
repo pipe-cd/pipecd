@@ -115,6 +115,11 @@ export class ProjectSSOConfig extends jspb.Message {
   hasGoogle(): boolean;
   clearGoogle(): ProjectSSOConfig;
 
+  getOidc(): ProjectSSOConfig.Oidc | undefined;
+  setOidc(value?: ProjectSSOConfig.Oidc): ProjectSSOConfig;
+  hasOidc(): boolean;
+  clearOidc(): ProjectSSOConfig;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ProjectSSOConfig.AsObject;
   static toObject(includeInstance: boolean, msg: ProjectSSOConfig): ProjectSSOConfig.AsObject;
@@ -129,6 +134,7 @@ export namespace ProjectSSOConfig {
     sessionTtl: number,
     github?: ProjectSSOConfig.GitHub.AsObject,
     google?: ProjectSSOConfig.Google.AsObject,
+    oidc?: ProjectSSOConfig.Oidc.AsObject,
   }
 
   export class GitHub extends jspb.Message {
@@ -189,9 +195,63 @@ export namespace ProjectSSOConfig {
   }
 
 
+  export class Oidc extends jspb.Message {
+    getClientId(): string;
+    setClientId(value: string): Oidc;
+
+    getClientSecret(): string;
+    setClientSecret(value: string): Oidc;
+
+    getIssuer(): string;
+    setIssuer(value: string): Oidc;
+
+    getRedirectUri(): string;
+    setRedirectUri(value: string): Oidc;
+
+    getAuthorizationEndpoint(): string;
+    setAuthorizationEndpoint(value: string): Oidc;
+
+    getTokenEndpoint(): string;
+    setTokenEndpoint(value: string): Oidc;
+
+    getUserInfoEndpoint(): string;
+    setUserInfoEndpoint(value: string): Oidc;
+
+    getProxyUrl(): string;
+    setProxyUrl(value: string): Oidc;
+
+    getScopesList(): Array<string>;
+    setScopesList(value: Array<string>): Oidc;
+    clearScopesList(): Oidc;
+    addScopes(value: string, index?: number): Oidc;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Oidc.AsObject;
+    static toObject(includeInstance: boolean, msg: Oidc): Oidc.AsObject;
+    static serializeBinaryToWriter(message: Oidc, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Oidc;
+    static deserializeBinaryFromReader(message: Oidc, reader: jspb.BinaryReader): Oidc;
+  }
+
+  export namespace Oidc {
+    export type AsObject = {
+      clientId: string,
+      clientSecret: string,
+      issuer: string,
+      redirectUri: string,
+      authorizationEndpoint: string,
+      tokenEndpoint: string,
+      userInfoEndpoint: string,
+      proxyUrl: string,
+      scopesList: Array<string>,
+    }
+  }
+
+
   export enum Provider { 
     GITHUB = 0,
     GOOGLE = 2,
+    OIDC = 3,
   }
 }
 
