@@ -41,6 +41,9 @@ const useStyles = makeStyles((theme) => ({
   githubLoginButton: {
     background: "#24292E",
   },
+  oidcLoginButton: {
+    background: "#4A90E2",
+  },
   divider: {
     display: "flex",
     alignItems: "center",
@@ -93,6 +96,15 @@ export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
           >
             <MarkGithubIcon className={classes.githubMark} />
             LOGIN WITH GITHUB
+          </Button>
+
+          <Button
+            type="submit"
+            color="primary"
+            variant="contained"
+            className={classes.oidcLoginButton}
+          >
+            LOGIN WITH OIDC
           </Button>
         </form>
 
