@@ -74,6 +74,7 @@ message ProjectSSOConfig {
 
         GITHUB = 0;
         GOOGLE = 2;
+        OIDC = 3;
     }
 
     message GitHub {
@@ -96,11 +97,33 @@ message ProjectSSOConfig {
         string client_secret = 2 [(validate.rules).string.min_len = 1];
     }
 
+    message Oidc {
+        // The client id string of OpenID Connect oauth app.
+        string client_id = 1 [(validate.rules).string.min_len = 1];
+        // The client secret string of OpenID Connect oauth app.
+        string client_secret = 2 [(validate.rules).string.min_len = 1];
+        // The address of OpenID Connect service.
+        string issuer = 3;
+        // The address of the redirect uri.
+        string redirect_uri = 4;
+        // The address of the authorization endpoint.
+        string authorization_endpoint = 5;
+        // The address of the token endpoint.
+        string token_endpoint = 6;
+        // The address of the user info endpoint.
+        string user_info_endpoint = 7;
+        // The address of the proxy used while communicating with the OpenID Connect service.
+        string proxy_url = 8;
+        // scopes to request from the OpenID Connect service.
+        repeated string scopes = 9;
+    }
+
     Provider provider = 1 [(validate.rules).enum.defined_only = true];
     // The session ttl for users (hours)
     int64 session_ttl = 2 [(validate.rules).int64.gt = 0];
     GitHub github = 10;
     Google google = 11;
+    Oidc oidc = 12;
 }
 
 message ProjectRBACConfig {
