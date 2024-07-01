@@ -67,10 +67,25 @@ You can use the envrionment values related to the deployment.
 |SR_TRIGGERED_AT| The timestamp when the deployment is triggered  | 1719571113 |
 |SR_TRIGGERED_COMMIT_HASH| The commit hash that triggered the deployment | 2bf969a3dad043aaf8ae6419943255e49377da0d |
 |SR_REPOSITORY_URL| The repository url configured in the piped config  | git@github.com:org/repo.git, https://github.com/org/repo |
-|SR_SUMMARY| The summary of the deployment | Sync with the specified pipeline because piped received a command from user via web console or pipectl
- |
+|SR_SUMMARY| The summary of the deployment | Sync with the specified pipeline because piped received a command from user via web console or pipectl|
 |SR_CONTEXT_RAW| The json encoded string of above values | {"deploymentID":"877625fc-196a-40f9-b6a9-99decd5494a0","applicationID":"8d7609e0-9ff6-4dc7-a5ac-39660768606a","applicationName":"example","triggeredAt":1719571113,"triggeredCommitHash":"2bf969a3dad043aaf8ae6419943255e49377da0d","repositoryURL":"git@github.com:org/repo.git","labels":{"env":"example","team":"product"}} |
 |SR_LABEL_XXX| The label attached to the deployment. The env name depends on the label name. For example, if a deployment has the labels `env:prd` and `team:server`, `SR_LABEL_ENV` and `SR_LABEL_TEAM` are registered.  | prd, server |
+
+### Use `SR_CONTEXT_RAW` with jq
+
+You can use jq command to refer to the values from `SR_CONTEXT_RAW`.
+
+```
+      - name: SCRIPT_RUN
+        with:
+          run: |
+            echo "Get deploymentID from SR_CONTEXT_RAW"
+            echo $SR_CONTEXT_RAW | jq -r '.deploymentID'
+            sleep 10
+          onRollback: |
+            echo "rollback script-run"
+```
+
 
 ## Rollback
 
