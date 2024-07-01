@@ -167,7 +167,7 @@ func (src *ContextInfo) BuildEnv() (map[string]string, error) {
 		"SR_TRIGGERED_AT":          strconv.FormatInt(src.TriggeredAt, 10),
 		"SR_TRIGGERED_COMMIT_HASH": src.TriggeredCommitHash,
 		"SR_REPOSITORY_URL":        src.RepositoryURL,
-		"SR_RAW":                   string(b), // Add the raw json string as an environment variable.
+		"SR_CONTEXT_RAW":           string(b), // Add the raw json string as an environment variable.
 	}
 
 	for k, v := range src.Labels {
