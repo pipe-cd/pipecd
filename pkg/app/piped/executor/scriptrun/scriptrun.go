@@ -14,8 +14,10 @@
 package scriptrun
 
 import (
+	"encoding/json"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -99,7 +101,18 @@ func (e *Executor) executeCommand() model.StageStatus {
 		}
 	}
 
-	envs := make([]string, 0, len(opts.Env))
+	ci := NewContextInfo(e.Deployment)
+	ciEnv, err := ci.BuildEnv()
+	if err != nil {
+		e.LogPersister.Errorf("failed to build srcipt run context info: %w", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	envs := make([]string, 0, len(ciEnv)+len(opts.Env))
+	for key, value := range ciEnv {
+		envs = append(envs, key+"="+value)
+	}
+
 	for key, value := range opts.Env {
 		envs = append(envs, key+"="+value)
 	}
@@ -114,6 +127,58 @@ func (e *Executor) executeCommand() model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 	return model.StageStatus_STAGE_SUCCESS
+}
+
+// ContextInfo is the information that will be passed to the script run stage.
+type ContextInfo struct {
+	DeploymentID        string            `json:"deploymentID,omitempty"`
+	ApplicationID       string            `json:"applicationID,omitempty"`
+	ApplicationName     string            `json:"applicationName,omitempty"`
+	TriggeredAt         int64             `json:"triggeredAt,omitempty"`
+	TriggeredCommitHash string            `json:"triggeredCommitHash,omitempty"`
+	RepositoryURL       string            `json:"repositoryURL,omitempty"`
+	Summary             string            `json:"summary,omitempty"`
+	Labels              map[string]string `json:"labels,omitempty"`
+}
+
+// NewContextInfo creates a new ContextInfo from the given deployment.
+func NewContextInfo(d *model.Deployment) *ContextInfo {
+	return &ContextInfo{
+		DeploymentID:        d.Id,
+		ApplicationID:       d.ApplicationId,
+		ApplicationName:     d.ApplicationName,
+		TriggeredAt:         d.Trigger.Timestamp,
+		TriggeredCommitHash: d.Trigger.Commit.Hash,
+		RepositoryURL:       d.GitPath.Repo.Remote,
+		Summary:             d.Summary,
+		Labels:              d.Labels,
+	}
+}
+
+// BuildEnv builds the environment variables from the context info.
+func (src *ContextInfo) BuildEnv() (map[string]string, error) {
+	b, err := json.Marshal(src)
+	if err != nil {
+		return nil, err
+	}
+
+	envs := map[string]string{
+		"SR_DEPLOYMENT_ID":         src.DeploymentID,
+		"SR_APPLICATION_ID":        src.ApplicationID,
+		"SR_APPLICATION_NAME":      src.ApplicationName,
+		"SR_TRIGGERED_AT":          strconv.FormatInt(src.TriggeredAt, 10),
+		"SR_TRIGGERED_COMMIT_HASH": src.TriggeredCommitHash,
+		"SR_REPOSITORY_URL":        src.RepositoryURL,
+		"SR_SUMMARY":               src.Summary,
+		"SR_CONTEXT_RAW":           string(b), // Add the raw json string as an environment variable.
+	}
+
+	for k, v := range src.Labels {
+		eName := "SR_LABELS_" + strings.ToUpper(k)
+		envs[eName] = v
+	}
+
+	return envs, nil
 }
 
 type RollbackExecutor struct {
