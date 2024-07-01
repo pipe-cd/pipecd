@@ -131,12 +131,12 @@ func (e *Executor) executeCommand() model.StageStatus {
 
 // ContextInfo is the information that will be passed to the script run stage.
 type ContextInfo struct {
-	DeploymentID        string            `json:"deploymentID"`
-	ApplicationID       string            `json:"applicationID"`
+	DeploymentID        string            `json:"deploymentID,omitempty"`
+	ApplicationID       string            `json:"applicationID,omitempty"`
 	ApplicationName     string            `json:"applicationName,omitempty"`
-	TriggeredAt         int64             `json:"triggeredAt"`
-	TriggeredCommitHash string            `json:"triggeredCommitHash"`
-	RepositoryURL       string            `json:"repositoryURL"`
+	TriggeredAt         int64             `json:"triggeredAt,omitempty"`
+	TriggeredCommitHash string            `json:"triggeredCommitHash,omitempty"`
+	RepositoryURL       string            `json:"repositoryURL,omitempty"`
 	Summary             string            `json:"summary,omitempty"`
 	Labels              map[string]string `json:"labels,omitempty"`
 }
