@@ -27,6 +27,7 @@ func Test_ContextInfo_BuildEnv(t *testing.T) {
 					"key1": "value1",
 					"key2": "value2",
 				},
+				Summary: "summary",
 			},
 			want: map[string]string{
 				"SR_DEPLOYMENT_ID":         "deployment-id",
@@ -35,6 +36,7 @@ func Test_ContextInfo_BuildEnv(t *testing.T) {
 				"SR_TRIGGERED_AT":          "1234567890",
 				"SR_TRIGGERED_COMMIT_HASH": "commit-hash",
 				"SR_REPOSITORY_URL":        "repo-url",
+				"SR_SUMMARY":               "summary",
 				"SR_LABELS_KEY1":           "value1",
 				"SR_LABELS_KEY2":           "value2",
 			},

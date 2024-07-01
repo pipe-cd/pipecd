@@ -137,6 +137,7 @@ type ContextInfo struct {
 	TriggeredAt         int64             `json:"triggeredAt"`
 	TriggeredCommitHash string            `json:"triggeredCommitHash"`
 	RepositoryURL       string            `json:"repositoryURL"`
+	Summary             string            `json:"summary,omitempty"`
 	Labels              map[string]string `json:"labels,omitempty"`
 }
 
@@ -149,6 +150,7 @@ func NewContextInfo(d *model.Deployment) *ContextInfo {
 		TriggeredAt:         d.Trigger.Timestamp,
 		TriggeredCommitHash: d.Trigger.Commit.Hash,
 		RepositoryURL:       d.GitPath.Repo.Remote,
+		Summary:             d.Summary,
 		Labels:              d.Labels,
 	}
 }
@@ -167,6 +169,7 @@ func (src *ContextInfo) BuildEnv() (map[string]string, error) {
 		"SR_TRIGGERED_AT":          strconv.FormatInt(src.TriggeredAt, 10),
 		"SR_TRIGGERED_COMMIT_HASH": src.TriggeredCommitHash,
 		"SR_REPOSITORY_URL":        src.RepositoryURL,
+		"SR_SUMMARY":               src.Summary,
 		"SR_CONTEXT_RAW":           string(b), // Add the raw json string as an environment variable.
 	}
 
