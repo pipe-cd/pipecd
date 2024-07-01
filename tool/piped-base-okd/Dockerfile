@@ -16,6 +16,7 @@ RUN \
         libc-dev \
         musl-nscd-dev \
         make \
+        jq \
         cmake && \
 
     # Install glibc to be used for building nss_wrapper.
