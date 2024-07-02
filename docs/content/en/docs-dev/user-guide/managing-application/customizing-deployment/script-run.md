@@ -8,7 +8,7 @@ description: >
 
 `SCRIPT_RUN` stage is one stage in the pipeline and you can execute any commands.
 
-> Note: This feature is at the alpha status and currently only for the application kind of KubernetesApp.
+> Note: This feature is at the alpha status. Currently you can use it on all application kinds, but the rollback feature is only for the application kind of KubernetesApp.
 
 ## How to configure SCRIPT_RUN stage
 
@@ -88,6 +88,8 @@ You can use jq command to refer to the values from `SR_CONTEXT_RAW`.
 
 
 ## Rollback
+
+> Note: Currently, this feature is only for the application kind of KubernetesApp.
 
 You can define the command as `onRollback` to execute when to rollback similar to `run`.
 Execute the command to rollback SCRIPT_RUN to the point where the deployment was canceled or failed.
