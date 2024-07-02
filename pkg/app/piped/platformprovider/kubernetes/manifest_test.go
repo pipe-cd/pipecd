@@ -24,13 +24,12 @@ import (
 
 func TestParseManifests(t *testing.T) {
 	maker := func(name, kind string, metadata map[string]interface{}) Manifest {
-		namespace, _ := metadata["namespace"].(string)
 		return Manifest{
 			Key: ResourceKey{
 				APIVersion: "v1",
 				Kind:       kind,
 				Name:       name,
-				Namespace:  namespace,
+				Namespace:  "default",
 			},
 			u: &unstructured.Unstructured{
 				Object: map[string]interface{}{
@@ -73,13 +72,11 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: envoy-config
-  namespace: default
   creationTimestamp: "2022-12-09T01:23:45Z"
 `,
 			want: []Manifest{
 				maker("envoy-config", "ConfigMap", map[string]interface{}{
 					"name":              "envoy-config",
-					"namespace":         "default",
 					"creationTimestamp": "2022-12-09T01:23:45Z",
 				}),
 			},
@@ -91,15 +88,13 @@ apiVersion: v1
 kind: Kind1
 metadata:
   name: config
-  namespace: default
   extra: |
     single-new-line
 `,
 			want: []Manifest{
 				maker("config", "Kind1", map[string]interface{}{
-					"name":      "config",
-					"namespace": "default",
-					"extra":     "single-new-line\n",
+					"name":  "config",
+					"extra": "single-new-line\n",
 				}),
 			},
 		},
@@ -110,14 +105,12 @@ apiVersion: v1
 kind: Kind1
 metadata:
   name: config
-  namespace: default
   extra: |
     no-new-line`,
 			want: []Manifest{
 				maker("config", "Kind1", map[string]interface{}{
-					"name":      "config",
-					"namespace": "default",
-					"extra":     "no-new-line",
+					"name":  "config",
+					"extra": "no-new-line",
 				}),
 			},
 		},
@@ -128,7 +121,6 @@ apiVersion: v1
 kind: Kind1
 metadata:
   name: config1
-  namespace: default
   extra: |-
     no-new-line
 ---
@@ -136,7 +128,6 @@ apiVersion: v1
 kind: Kind2
 metadata:
   name: config2
-  namespace: default
   extra: |
     single-new-line-1
 ---
@@ -144,7 +135,6 @@ apiVersion: v1
 kind: Kind3
 metadata:
   name: config3
-  namespace: default
   extra: |
     single-new-line-2
 
@@ -154,7 +144,6 @@ apiVersion: v1
 kind: Kind4
 metadata:
   name: config4
-  namespace: default
   extra: |+
     multiple-new-line-1
 
@@ -164,7 +153,6 @@ apiVersion: v1
 kind: Kind5
 metadata:
   name: config5
-  namespace: default
   extra: |+
     multiple-new-line-2
 
@@ -172,29 +160,24 @@ metadata:
 `,
 			want: []Manifest{
 				maker("config1", "Kind1", map[string]interface{}{
-					"name":      "config1",
-					"namespace": "default",
-					"extra":     "no-new-line",
+					"name":  "config1",
+					"extra": "no-new-line",
 				}),
 				maker("config2", "Kind2", map[string]interface{}{
-					"name":      "config2",
-					"namespace": "default",
-					"extra":     "single-new-line-1\n",
+					"name":  "config2",
+					"extra": "single-new-line-1\n",
 				}),
 				maker("config3", "Kind3", map[string]interface{}{
-					"name":      "config3",
-					"namespace": "default",
-					"extra":     "single-new-line-2\n",
+					"name":  "config3",
+					"extra": "single-new-line-2\n",
 				}),
 				maker("config4", "Kind4", map[string]interface{}{
-					"name":      "config4",
-					"namespace": "default",
-					"extra":     "multiple-new-line-1\n\n\n",
+					"name":  "config4",
+					"extra": "multiple-new-line-1\n\n\n",
 				}),
 				maker("config5", "Kind5", map[string]interface{}{
-					"name":      "config5",
-					"namespace": "default",
-					"extra":     "multiple-new-line-2\n\n\n",
+					"name":  "config5",
+					"extra": "multiple-new-line-2\n\n\n",
 				}),
 			},
 		},

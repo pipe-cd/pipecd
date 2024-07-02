@@ -161,6 +161,21 @@ func TestCommitChanges(t *testing.T) {
 }
 
 func Test_setGCAutoDetach(t *testing.T) {
+	getGCAutoDetach := func(ctx context.Context, repo *repo) (bool, error) {
+		cmd := exec.CommandContext(ctx, repo.gitPath, "config", "--get", "gc.autoDetach")
+		cmd.Dir = repo.dir
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			return false, err
+		}
+		v, err := strconv.ParseBool(strings.TrimSuffix(string(out), "\n"))
+		if err != nil {
+			return false, err
+		}
+
+		return v, nil
+	}
+
 	faker, err := newFaker()
 	require.NoError(t, err)
 	defer faker.clean()
@@ -173,24 +188,10 @@ func Test_setGCAutoDetach(t *testing.T) {
 
 	err = faker.makeRepo(org, repoName)
 	require.NoError(t, err)
+
 	r := &repo{
 		dir:     faker.repoDir(org, repoName),
 		gitPath: faker.gitPath,
-	}
-
-	getGCAutoDetach := func(ctx context.Context, repo *repo) (bool, error) {
-		cmd := exec.CommandContext(ctx, repo.gitPath, "config", "--get", "gc.autoDetach")
-		cmd.Dir = r.dir
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			return false, err
-		}
-		v, err := strconv.ParseBool(strings.TrimSuffix(string(out), "\n"))
-		if err != nil {
-			return false, err
-		}
-
-		return v, nil
 	}
 
 	// set  as true firstly, and then set as false.

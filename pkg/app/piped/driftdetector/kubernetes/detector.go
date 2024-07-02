@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/livestatestore/kubernetes"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
@@ -122,12 +121,6 @@ func (d *detector) Run(ctx context.Context) error {
 }
 
 func (d *detector) check(ctx context.Context) {
-	isNamespacedResources, err := provider.GetIsNamespacedResources(d.provider.KubernetesConfig)
-	if err != nil {
-		d.logger.Error("failed to get isNamespacedResources", zap.Error(err))
-		return
-	}
-
 	appsByRepo := d.listGroupedApplication()
 
 	for repoID, apps := range appsByRepo {
@@ -173,16 +166,16 @@ func (d *detector) check(ctx context.Context) {
 
 		// Start checking all applications in this repository.
 		for _, app := range apps {
-			if err := d.checkApplication(ctx, app, gitRepo, headCommit, isNamespacedResources); err != nil {
+			if err := d.checkApplication(ctx, app, gitRepo, headCommit); err != nil {
 				d.logger.Error(fmt.Sprintf("failed to check application: %s", app.Id), zap.Error(err))
 			}
 		}
 	}
 }
 
-func (d *detector) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit, isNamespacedResources map[schema.GroupVersionKind]bool) error {
+func (d *detector) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit) error {
 	watchingResourceKinds := d.stateGetter.GetWatchingResourceKinds()
-	headManifests, err := d.loadHeadManifests(ctx, app, repo, headCommit, watchingResourceKinds, isNamespacedResources)
+	headManifests, err := d.loadHeadManifests(ctx, app, repo, headCommit, watchingResourceKinds)
 	if err != nil {
 		return err
 	}
@@ -226,7 +219,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 }
 
-func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit, watchingResourceKinds []provider.APIVersionKind, isNamespacedResources map[schema.GroupVersionKind]bool) ([]provider.Manifest, error) {
+func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit, watchingResourceKinds []provider.APIVersionKind) ([]provider.Manifest, error) {
 	var (
 		manifestCache = provider.AppManifestsCache{
 			AppID:  app.Id,
@@ -288,7 +281,7 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 			}
 		}
 
-		loader := provider.NewLoader(app.Name, appDir, repoDir, app.GitPath.ConfigFilename, cfg.KubernetesApplicationSpec.Input, isNamespacedResources, d.gitClient, d.logger)
+		loader := provider.NewLoader(app.Name, appDir, repoDir, app.GitPath.ConfigFilename, cfg.KubernetesApplicationSpec.Input, d.gitClient, d.logger)
 		manifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			err = fmt.Errorf("failed to load new manifests: %w", err)

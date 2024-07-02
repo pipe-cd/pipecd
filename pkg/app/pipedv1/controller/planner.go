@@ -150,82 +150,84 @@ func (p *planner) Run(ctx context.Context) error {
 		controllermetrics.UpdateDeploymentStatus(p.deployment, p.doneDeploymentStatus)
 	}()
 
-	in := &platform.BuildPlanRequest{
-		Deployment:                   p.deployment,
-		WorkingDir:                   p.workingDir,
-		LastSuccessfulCommitHash:     p.lastSuccessfulCommitHash,
-		LastSuccessfulConfigFileName: p.lastSuccessfulConfigFilename,
-		PipedConfig:                  p.pipedConfig,
-	}
+	return nil
 
-	out, err := p.pluginClient.BuildPlan(ctx, in)
+	// in := &platform.BuildPlanRequest{
+	// 	Deployment:                   p.deployment,
+	// 	WorkingDir:                   p.workingDir,
+	// 	LastSuccessfulCommitHash:     p.lastSuccessfulCommitHash,
+	// 	LastSuccessfulConfigFileName: p.lastSuccessfulConfigFilename,
+	// 	PipedConfig:                  p.pipedConfig,
+	// }
 
-	// If the deployment was already cancelled, we ignore the plan result.
-	select {
-	case cmd := <-p.cancelledCh:
-		if cmd != nil {
-			p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
-			desc := fmt.Sprintf("Deployment was cancelled by %s while planning", cmd.Commander)
-			p.reportDeploymentCancelled(ctx, cmd.Commander, desc)
-			return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil)
-		}
-	default:
-	}
+	// out, err := p.pluginClient.BuildPlan(ctx, in)
 
-	if err != nil {
-		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-		return p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to plan the deployment (%v)", err))
-	}
+	// // If the deployment was already cancelled, we ignore the plan result.
+	// select {
+	// case cmd := <-p.cancelledCh:
+	// 	if cmd != nil {
+	// 		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
+	// 		desc := fmt.Sprintf("Deployment was cancelled by %s while planning", cmd.Commander)
+	// 		p.reportDeploymentCancelled(ctx, cmd.Commander, desc)
+	// 		return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil)
+	// 	}
+	// default:
+	// }
 
-	p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_PLANNED
-	return p.reportDeploymentPlanned(ctx, out.Plan)
+	// if err != nil {
+	// 	p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
+	// 	return p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to plan the deployment (%v)", err))
+	// }
+
+	// p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_PLANNED
+	// return p.reportDeploymentPlanned(ctx, out.Plan)
 }
 
-func (p *planner) reportDeploymentPlanned(ctx context.Context, out *platform.DeploymentPlan) error {
-	var (
-		err   error
-		retry = pipedservice.NewRetry(10)
-		req   = &pipedservice.ReportDeploymentPlannedRequest{
-			DeploymentId:              p.deployment.Id,
-			Summary:                   out.Summary,
-			StatusReason:              "The deployment has been planned",
-			RunningCommitHash:         p.lastSuccessfulCommitHash,
-			RunningConfigFilename:     p.lastSuccessfulConfigFilename,
-			Versions:                  out.Versions,
-			Stages:                    out.Stages,
-			DeploymentChainId:         p.deployment.DeploymentChainId,
-			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
-		}
-	)
+// func (p *planner) reportDeploymentPlanned(ctx context.Context, out *platform.DeploymentPlan) error {
+// 	var (
+// 		err   error
+// 		retry = pipedservice.NewRetry(10)
+// 		req   = &pipedservice.ReportDeploymentPlannedRequest{
+// 			DeploymentId:              p.deployment.Id,
+// 			Summary:                   out.Summary,
+// 			StatusReason:              "The deployment has been planned",
+// 			RunningCommitHash:         p.lastSuccessfulCommitHash,
+// 			RunningConfigFilename:     p.lastSuccessfulConfigFilename,
+// 			Versions:                  out.Versions,
+// 			Stages:                    out.Stages,
+// 			DeploymentChainId:         p.deployment.DeploymentChainId,
+// 			DeploymentChainBlockIndex: p.deployment.DeploymentChainBlockIndex,
+// 		}
+// 	)
 
-	accounts, err := p.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED)
-	if err != nil {
-		p.logger.Error("failed to get the list of accounts", zap.Error(err))
-	}
+// 	accounts, err := p.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED)
+// 	if err != nil {
+// 		p.logger.Error("failed to get the list of accounts", zap.Error(err))
+// 	}
 
-	defer func() {
-		p.notifier.Notify(model.NotificationEvent{
-			Type: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
-			Metadata: &model.NotificationEventDeploymentPlanned{
-				Deployment:        p.deployment,
-				Summary:           out.Summary,
-				MentionedAccounts: accounts,
-			},
-		})
-	}()
+// 	defer func() {
+// 		p.notifier.Notify(model.NotificationEvent{
+// 			Type: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+// 			Metadata: &model.NotificationEventDeploymentPlanned{
+// 				Deployment:        p.deployment,
+// 				Summary:           out.Summary,
+// 				MentionedAccounts: accounts,
+// 			},
+// 		})
+// 	}()
 
-	for retry.WaitNext(ctx) {
-		if _, err = p.apiClient.ReportDeploymentPlanned(ctx, req); err == nil {
-			return nil
-		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
-	}
+// 	for retry.WaitNext(ctx) {
+// 		if _, err = p.apiClient.ReportDeploymentPlanned(ctx, req); err == nil {
+// 			return nil
+// 		}
+// 		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+// 	}
 
-	if err != nil {
-		p.logger.Error("failed to mark deployment to be planned", zap.Error(err))
-	}
-	return err
-}
+// 	if err != nil {
+// 		p.logger.Error("failed to mark deployment to be planned", zap.Error(err))
+// 	}
+// 	return err
+// }
 
 func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) error {
 	var (

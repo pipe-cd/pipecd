@@ -35,42 +35,31 @@ var (
 	_ = sort.Sort
 )
 
-// Validate checks the field values on ListStageCommandsRequest with the rules
+// Validate checks the field values on DecryptSecretRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ListStageCommandsRequest) Validate() error {
+func (m *DecryptSecretRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ListStageCommandsRequest with the
-// rules defined in the proto definition for this message. If any rules are
+// ValidateAll checks the field values on DecryptSecretRequest with the rules
+// defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// ListStageCommandsRequestMultiError, or nil if none found.
-func (m *ListStageCommandsRequest) ValidateAll() error {
+// DecryptSecretRequestMultiError, or nil if none found.
+func (m *DecryptSecretRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ListStageCommandsRequest) validate(all bool) error {
+func (m *DecryptSecretRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetDeploymentId()) < 1 {
-		err := ListStageCommandsRequestValidationError{
-			field:  "DeploymentId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetStageId()) < 1 {
-		err := ListStageCommandsRequestValidationError{
-			field:  "StageId",
+	if utf8.RuneCountInString(m.GetSecret()) < 1 {
+		err := DecryptSecretRequestValidationError{
+			field:  "Secret",
 			reason: "value length must be at least 1 runes",
 		}
 		if !all {
@@ -80,19 +69,19 @@ func (m *ListStageCommandsRequest) validate(all bool) error {
 	}
 
 	if len(errors) > 0 {
-		return ListStageCommandsRequestMultiError(errors)
+		return DecryptSecretRequestMultiError(errors)
 	}
 
 	return nil
 }
 
-// ListStageCommandsRequestMultiError is an error wrapping multiple validation
-// errors returned by ListStageCommandsRequest.ValidateAll() if the designated
+// DecryptSecretRequestMultiError is an error wrapping multiple validation
+// errors returned by DecryptSecretRequest.ValidateAll() if the designated
 // constraints aren't met.
-type ListStageCommandsRequestMultiError []error
+type DecryptSecretRequestMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ListStageCommandsRequestMultiError) Error() string {
+func (m DecryptSecretRequestMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -101,11 +90,11 @@ func (m ListStageCommandsRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ListStageCommandsRequestMultiError) AllErrors() []error { return m }
+func (m DecryptSecretRequestMultiError) AllErrors() []error { return m }
 
-// ListStageCommandsRequestValidationError is the validation error returned by
-// ListStageCommandsRequest.Validate if the designated constraints aren't met.
-type ListStageCommandsRequestValidationError struct {
+// DecryptSecretRequestValidationError is the validation error returned by
+// DecryptSecretRequest.Validate if the designated constraints aren't met.
+type DecryptSecretRequestValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -113,24 +102,24 @@ type ListStageCommandsRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e ListStageCommandsRequestValidationError) Field() string { return e.field }
+func (e DecryptSecretRequestValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ListStageCommandsRequestValidationError) Reason() string { return e.reason }
+func (e DecryptSecretRequestValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ListStageCommandsRequestValidationError) Cause() error { return e.cause }
+func (e DecryptSecretRequestValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ListStageCommandsRequestValidationError) Key() bool { return e.key }
+func (e DecryptSecretRequestValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ListStageCommandsRequestValidationError) ErrorName() string {
-	return "ListStageCommandsRequestValidationError"
+func (e DecryptSecretRequestValidationError) ErrorName() string {
+	return "DecryptSecretRequestValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e ListStageCommandsRequestValidationError) Error() string {
+func (e DecryptSecretRequestValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -142,14 +131,14 @@ func (e ListStageCommandsRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sListStageCommandsRequest.%s: %s%s",
+		"invalid %sDecryptSecretRequest.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ListStageCommandsRequestValidationError{}
+var _ error = DecryptSecretRequestValidationError{}
 
 var _ interface {
 	Field() string
@@ -157,323 +146,46 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ListStageCommandsRequestValidationError{}
+} = DecryptSecretRequestValidationError{}
 
-// Validate checks the field values on ListStageCommandsResponse with the rules
+// Validate checks the field values on DecryptSecretResponse with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ListStageCommandsResponse) Validate() error {
+func (m *DecryptSecretResponse) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ListStageCommandsResponse with the
-// rules defined in the proto definition for this message. If any rules are
+// ValidateAll checks the field values on DecryptSecretResponse with the rules
+// defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// ListStageCommandsResponseMultiError, or nil if none found.
-func (m *ListStageCommandsResponse) ValidateAll() error {
+// DecryptSecretResponseMultiError, or nil if none found.
+func (m *DecryptSecretResponse) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ListStageCommandsResponse) validate(all bool) error {
+func (m *DecryptSecretResponse) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	for idx, item := range m.GetCommands() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, ListStageCommandsResponseValidationError{
-						field:  fmt.Sprintf("Commands[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, ListStageCommandsResponseValidationError{
-						field:  fmt.Sprintf("Commands[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return ListStageCommandsResponseValidationError{
-					field:  fmt.Sprintf("Commands[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
+	// no validation rules for DecryptedSecret
 
 	if len(errors) > 0 {
-		return ListStageCommandsResponseMultiError(errors)
+		return DecryptSecretResponseMultiError(errors)
 	}
 
 	return nil
 }
 
-// ListStageCommandsResponseMultiError is an error wrapping multiple validation
-// errors returned by ListStageCommandsResponse.ValidateAll() if the
-// designated constraints aren't met.
-type ListStageCommandsResponseMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ListStageCommandsResponseMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ListStageCommandsResponseMultiError) AllErrors() []error { return m }
-
-// ListStageCommandsResponseValidationError is the validation error returned by
-// ListStageCommandsResponse.Validate if the designated constraints aren't met.
-type ListStageCommandsResponseValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e ListStageCommandsResponseValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e ListStageCommandsResponseValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e ListStageCommandsResponseValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e ListStageCommandsResponseValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e ListStageCommandsResponseValidationError) ErrorName() string {
-	return "ListStageCommandsResponseValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e ListStageCommandsResponseValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sListStageCommandsResponse.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = ListStageCommandsResponseValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = ListStageCommandsResponseValidationError{}
-
-// Validate checks the field values on GetLatestAnalysisResultRequest with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *GetLatestAnalysisResultRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on GetLatestAnalysisResultRequest with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// GetLatestAnalysisResultRequestMultiError, or nil if none found.
-func (m *GetLatestAnalysisResultRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *GetLatestAnalysisResultRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if utf8.RuneCountInString(m.GetApplicationId()) < 1 {
-		err := GetLatestAnalysisResultRequestValidationError{
-			field:  "ApplicationId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if len(errors) > 0 {
-		return GetLatestAnalysisResultRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// GetLatestAnalysisResultRequestMultiError is an error wrapping multiple
-// validation errors returned by GetLatestAnalysisResultRequest.ValidateAll()
-// if the designated constraints aren't met.
-type GetLatestAnalysisResultRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m GetLatestAnalysisResultRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m GetLatestAnalysisResultRequestMultiError) AllErrors() []error { return m }
-
-// GetLatestAnalysisResultRequestValidationError is the validation error
-// returned by GetLatestAnalysisResultRequest.Validate if the designated
+// DecryptSecretResponseMultiError is an error wrapping multiple validation
+// errors returned by DecryptSecretResponse.ValidateAll() if the designated
 // constraints aren't met.
-type GetLatestAnalysisResultRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e GetLatestAnalysisResultRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e GetLatestAnalysisResultRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e GetLatestAnalysisResultRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e GetLatestAnalysisResultRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e GetLatestAnalysisResultRequestValidationError) ErrorName() string {
-	return "GetLatestAnalysisResultRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e GetLatestAnalysisResultRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sGetLatestAnalysisResultRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = GetLatestAnalysisResultRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = GetLatestAnalysisResultRequestValidationError{}
-
-// Validate checks the field values on GetLatestAnalysisResultResponse with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *GetLatestAnalysisResultResponse) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on GetLatestAnalysisResultResponse with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// GetLatestAnalysisResultResponseMultiError, or nil if none found.
-func (m *GetLatestAnalysisResultResponse) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *GetLatestAnalysisResultResponse) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if all {
-		switch v := interface{}(m.GetAnalysisResult()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, GetLatestAnalysisResultResponseValidationError{
-					field:  "AnalysisResult",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, GetLatestAnalysisResultResponseValidationError{
-					field:  "AnalysisResult",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetAnalysisResult()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return GetLatestAnalysisResultResponseValidationError{
-				field:  "AnalysisResult",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if len(errors) > 0 {
-		return GetLatestAnalysisResultResponseMultiError(errors)
-	}
-
-	return nil
-}
-
-// GetLatestAnalysisResultResponseMultiError is an error wrapping multiple
-// validation errors returned by GetLatestAnalysisResultResponse.ValidateAll()
-// if the designated constraints aren't met.
-type GetLatestAnalysisResultResponseMultiError []error
+type DecryptSecretResponseMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m GetLatestAnalysisResultResponseMultiError) Error() string {
+func (m DecryptSecretResponseMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -482,12 +194,11 @@ func (m GetLatestAnalysisResultResponseMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m GetLatestAnalysisResultResponseMultiError) AllErrors() []error { return m }
+func (m DecryptSecretResponseMultiError) AllErrors() []error { return m }
 
-// GetLatestAnalysisResultResponseValidationError is the validation error
-// returned by GetLatestAnalysisResultResponse.Validate if the designated
-// constraints aren't met.
-type GetLatestAnalysisResultResponseValidationError struct {
+// DecryptSecretResponseValidationError is the validation error returned by
+// DecryptSecretResponse.Validate if the designated constraints aren't met.
+type DecryptSecretResponseValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -495,24 +206,24 @@ type GetLatestAnalysisResultResponseValidationError struct {
 }
 
 // Field function returns field value.
-func (e GetLatestAnalysisResultResponseValidationError) Field() string { return e.field }
+func (e DecryptSecretResponseValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e GetLatestAnalysisResultResponseValidationError) Reason() string { return e.reason }
+func (e DecryptSecretResponseValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e GetLatestAnalysisResultResponseValidationError) Cause() error { return e.cause }
+func (e DecryptSecretResponseValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e GetLatestAnalysisResultResponseValidationError) Key() bool { return e.key }
+func (e DecryptSecretResponseValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e GetLatestAnalysisResultResponseValidationError) ErrorName() string {
-	return "GetLatestAnalysisResultResponseValidationError"
+func (e DecryptSecretResponseValidationError) ErrorName() string {
+	return "DecryptSecretResponseValidationError"
 }
 
 // Error satisfies the builtin error interface
-func (e GetLatestAnalysisResultResponseValidationError) Error() string {
+func (e DecryptSecretResponseValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -524,14 +235,14 @@ func (e GetLatestAnalysisResultResponseValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sGetLatestAnalysisResultResponse.%s: %s%s",
+		"invalid %sDecryptSecretResponse.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = GetLatestAnalysisResultResponseValidationError{}
+var _ error = DecryptSecretResponseValidationError{}
 
 var _ interface {
 	Field() string
@@ -539,250 +250,4 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = GetLatestAnalysisResultResponseValidationError{}
-
-// Validate checks the field values on PutLatestAnalysisResultRequest with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *PutLatestAnalysisResultRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on PutLatestAnalysisResultRequest with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// PutLatestAnalysisResultRequestMultiError, or nil if none found.
-func (m *PutLatestAnalysisResultRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *PutLatestAnalysisResultRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if utf8.RuneCountInString(m.GetApplicationId()) < 1 {
-		err := PutLatestAnalysisResultRequestValidationError{
-			field:  "ApplicationId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if all {
-		switch v := interface{}(m.GetAnalysisResult()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, PutLatestAnalysisResultRequestValidationError{
-					field:  "AnalysisResult",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, PutLatestAnalysisResultRequestValidationError{
-					field:  "AnalysisResult",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetAnalysisResult()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return PutLatestAnalysisResultRequestValidationError{
-				field:  "AnalysisResult",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if len(errors) > 0 {
-		return PutLatestAnalysisResultRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// PutLatestAnalysisResultRequestMultiError is an error wrapping multiple
-// validation errors returned by PutLatestAnalysisResultRequest.ValidateAll()
-// if the designated constraints aren't met.
-type PutLatestAnalysisResultRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m PutLatestAnalysisResultRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m PutLatestAnalysisResultRequestMultiError) AllErrors() []error { return m }
-
-// PutLatestAnalysisResultRequestValidationError is the validation error
-// returned by PutLatestAnalysisResultRequest.Validate if the designated
-// constraints aren't met.
-type PutLatestAnalysisResultRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e PutLatestAnalysisResultRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e PutLatestAnalysisResultRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e PutLatestAnalysisResultRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e PutLatestAnalysisResultRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e PutLatestAnalysisResultRequestValidationError) ErrorName() string {
-	return "PutLatestAnalysisResultRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e PutLatestAnalysisResultRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sPutLatestAnalysisResultRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = PutLatestAnalysisResultRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = PutLatestAnalysisResultRequestValidationError{}
-
-// Validate checks the field values on PutLatestAnalysisResultResponse with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *PutLatestAnalysisResultResponse) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on PutLatestAnalysisResultResponse with
-// the rules defined in the proto definition for this message. If any rules
-// are violated, the result is a list of violation errors wrapped in
-// PutLatestAnalysisResultResponseMultiError, or nil if none found.
-func (m *PutLatestAnalysisResultResponse) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *PutLatestAnalysisResultResponse) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if len(errors) > 0 {
-		return PutLatestAnalysisResultResponseMultiError(errors)
-	}
-
-	return nil
-}
-
-// PutLatestAnalysisResultResponseMultiError is an error wrapping multiple
-// validation errors returned by PutLatestAnalysisResultResponse.ValidateAll()
-// if the designated constraints aren't met.
-type PutLatestAnalysisResultResponseMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m PutLatestAnalysisResultResponseMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m PutLatestAnalysisResultResponseMultiError) AllErrors() []error { return m }
-
-// PutLatestAnalysisResultResponseValidationError is the validation error
-// returned by PutLatestAnalysisResultResponse.Validate if the designated
-// constraints aren't met.
-type PutLatestAnalysisResultResponseValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e PutLatestAnalysisResultResponseValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e PutLatestAnalysisResultResponseValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e PutLatestAnalysisResultResponseValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e PutLatestAnalysisResultResponseValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e PutLatestAnalysisResultResponseValidationError) ErrorName() string {
-	return "PutLatestAnalysisResultResponseValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e PutLatestAnalysisResultResponseValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sPutLatestAnalysisResultResponse.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = PutLatestAnalysisResultResponseValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = PutLatestAnalysisResultResponseValidationError{}
+} = DecryptSecretResponseValidationError{}

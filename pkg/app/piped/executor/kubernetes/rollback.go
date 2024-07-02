@@ -22,11 +22,9 @@ import (
 	"strings"
 
 	"go.uber.org/zap"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/discovery"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipecd/pkg/app/piped/executor/scriptrun"
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/kubernetes"
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
@@ -34,8 +32,7 @@ import (
 type rollbackExecutor struct {
 	executor.Input
 
-	appDir                string
-	isNamespacedResources map[schema.GroupVersionKind]bool
+	appDir string
 }
 
 func (e *rollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
@@ -44,39 +41,6 @@ func (e *rollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		originalStatus = e.Stage.Status
 		status         model.StageStatus
 	)
-
-	// Use discovery to discover APIs supported by the Kubernetes API server.
-	// This should be run periodically with a low rate because the APIs are not added frequently.
-	// https://godoc.org/k8s.io/client-go/discovery
-	cp, ok := e.PipedConfig.FindPlatformProvider(e.Deployment.PlatformProvider, model.ApplicationKind_KUBERNETES)
-	if !ok {
-		e.LogPersister.Errorf("provider %s was not found", e.Deployment.PlatformProvider)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	kubeConfig, err := clientcmd.BuildConfigFromFlags(cp.KubernetesConfig.MasterURL, cp.KubernetesConfig.KubeConfigPath)
-	if err != nil {
-		e.LogPersister.Errorf("failed to build kube config", zap.Error(err))
-		return model.StageStatus_STAGE_FAILURE
-	}
-	discoveryClient, err := discovery.NewDiscoveryClientForConfig(kubeConfig)
-	if err != nil {
-		e.LogPersister.Errorf("failed to create discovery client: %v", zap.Error(err))
-		return model.StageStatus_STAGE_FAILURE
-	}
-	groupResources, err := discoveryClient.ServerPreferredResources()
-	if err != nil {
-		e.LogPersister.Errorf("failed to fetch preferred resources: %v", zap.Error(err))
-		return model.StageStatus_STAGE_FAILURE
-	}
-	e.LogPersister.Infof("successfully preferred resources that contains for %d groups", len(groupResources))
-
-	e.isNamespacedResources = make(map[schema.GroupVersionKind]bool)
-	for _, gr := range groupResources {
-		for _, resource := range gr.APIResources {
-			gvk := schema.FromAPIVersionAndKind(gr.GroupVersion, resource.Kind)
-			e.isNamespacedResources[gvk] = resource.Namespaced
-		}
-	}
 
 	switch model.Stage(e.Stage.Name) {
 	case model.StageRollback:
@@ -119,7 +83,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 
 	e.appDir = ds.AppDir
 
-	loader := provider.NewLoader(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, appCfg.Input, e.isNamespacedResources, e.GitClient, e.Logger)
+	loader := provider.NewLoader(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, appCfg.Input, e.GitClient, e.Logger)
 	e.Logger.Info("start executing kubernetes stage",
 		zap.String("stage-name", e.Stage.Name),
 		zap.String("app-dir", ds.AppDir),
@@ -243,7 +207,18 @@ func (e *rollbackExecutor) ensureScriptRunRollback(ctx context.Context) model.St
 		}
 	}
 
-	envs := make([]string, 0, len(env))
+	ci := scriptrun.NewContextInfo(e.Deployment)
+	ciEnv, err := ci.BuildEnv()
+	if err != nil {
+		e.LogPersister.Errorf("failed to build srcipt run context info: %w", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	envs := make([]string, 0, len(ciEnv)+len(env))
+	for key, value := range ciEnv {
+		envs = append(envs, key+"="+value)
+	}
+
 	for key, value := range env {
 		envs = append(envs, key+"="+value)
 	}

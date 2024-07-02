@@ -158,7 +158,7 @@ func (a *applier) Delete(ctx context.Context, k ResourceKey) (err error) {
 		return err
 	}
 
-	if k.String() != m.Key.String() {
+	if k.String() != m.GetAnnotations()[LabelResourceKey] {
 		return ErrNotFound
 	}
 
