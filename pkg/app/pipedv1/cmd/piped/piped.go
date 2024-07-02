@@ -49,6 +49,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/apistore/eventstore"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/appconfigreporter"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/chartrepo"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/grpcapi"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/controller/controllermetrics"
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/driftdetector"
@@ -70,6 +71,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/crypto"
 	"github.com/pipe-cd/pipecd/pkg/git"
 	"github.com/pipe-cd/pipecd/pkg/model"
+	"github.com/pipe-cd/pipecd/pkg/rpc"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 	"github.com/pipe-cd/pipecd/pkg/rpc/rpcclient"
 	"github.com/pipe-cd/pipecd/pkg/version"
@@ -93,6 +95,7 @@ type piped struct {
 	insecure                             bool
 	certFile                             string
 	adminPort                            int
+	pluginServicePort                    int
 	toolsDir                             string
 	enableDefaultKubernetesCloudProvider bool
 	gracePeriod                          time.Duration
@@ -107,10 +110,11 @@ func NewCommand() *cobra.Command {
 		panic(fmt.Sprintf("failed to detect the current user's home directory: %v", err))
 	}
 	p := &piped{
-		adminPort:      9085,
-		toolsDir:       path.Join(home, ".piped", "tools"),
-		gracePeriod:    30 * time.Second,
-		maxRecvMsgSize: 1024 * 1024 * 10, // 10MB
+		adminPort:         9085,
+		pluginServicePort: 9087,
+		toolsDir:          path.Join(home, ".piped", "tools"),
+		gracePeriod:       30 * time.Second,
+		maxRecvMsgSize:    1024 * 1024 * 10, // 10MB
 	}
 	cmd := &cobra.Command{
 		Use:   "piped",
@@ -126,6 +130,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&p.insecure, "insecure", p.insecure, "Whether disabling transport security while connecting to control-plane.")
 	cmd.Flags().StringVar(&p.certFile, "cert-file", p.certFile, "The path to the TLS certificate file.")
 	cmd.Flags().IntVar(&p.adminPort, "admin-port", p.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
+	cmd.Flags().IntVar(&p.pluginServicePort, "plugin-service-port", p.pluginServicePort, "The port number used to run a gRPC server for plugin services.")
 
 	cmd.Flags().StringVar(&p.toolsDir, "tools-dir", p.toolsDir, "The path to directory where to install needed tools such as kubectl, helm, kustomize.")
 	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not. This feature is deprecated.")
@@ -361,6 +366,25 @@ func (p *piped) run(ctx context.Context, input cli.Input) (runErr error) {
 		r := livestatereporter.NewReporter(applicationLister, liveStateGetter, apiClient, cfg, input.Logger)
 		group.Go(func() error {
 			return r.Run(ctx)
+		})
+	}
+
+	// Start running plugin service server.
+	{
+		var (
+			service = grpcapi.NewPluginAPI(cfg, input.Logger)
+			opts    = []rpc.Option{
+				rpc.WithPort(p.pluginServicePort),
+				rpc.WithGracePeriod(p.gracePeriod),
+				rpc.WithLogger(input.Logger),
+				rpc.WithLogUnaryInterceptor(input.Logger),
+				rpc.WithRequestValidationUnaryInterceptor(),
+			}
+		)
+		// TODO: Ensure piped <-> plugin communication is secure.
+		server := rpc.NewServer(service, opts...)
+		group.Go(func() error {
+			return server.Run(ctx)
 		})
 	}
 
@@ -686,6 +710,7 @@ func (p *piped) loadConfigByte(ctx context.Context) ([]byte, error) {
 	return nil, fmt.Errorf("one of config-file, config-gcp-secret or config-aws-secret must be set")
 }
 
+// TODO: Remove this once the decryption task by plugin call to the plugin service is implemented.
 func (p *piped) initializeSecretDecrypter(cfg *config.PipedSpec) (crypto.Decrypter, error) {
 	sm := cfg.SecretManagement
 	if sm == nil {
