@@ -21,10 +21,10 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
-	"github.com/pipe-cd/pipecd/pkg/model"
 	"go.uber.org/zap"
 
 	provider "github.com/pipe-cd/pipecd/pkg/app/piped/platformprovider/ecs"
+	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
 type store struct {
