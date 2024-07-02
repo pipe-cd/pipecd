@@ -16,6 +16,7 @@ package git
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"os/exec"
@@ -48,6 +49,7 @@ type client struct {
 	cacheDir     string
 	mu           sync.Mutex
 	repoLocks    map[string]*sync.Mutex
+	password     string
 
 	gitEnvs       []string
 	gitEnvsByRepo map[string][]string
@@ -86,6 +88,14 @@ func WithEmail(e string) Option {
 	return func(c *client) {
 		if e != "" {
 			c.email = e
+		}
+	}
+}
+
+func WithPassword(password string) Option {
+	return func(c *client) {
+		if password != "" {
+			c.password = password
 		}
 	}
 }
@@ -132,6 +142,14 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		)
 	)
 
+	authArgs := []string{}
+	if c.username != "" && c.password != "" {
+		token := fmt.Sprintf("%s:%s", c.username, c.password)
+		encodedToken := base64.StdEncoding.EncodeToString([]byte(token))
+		header := fmt.Sprintf("Authorization: Basic %s", encodedToken)
+		authArgs = append(authArgs, "-c", fmt.Sprintf("http.extraHeader=%s", header))
+	}
+
 	c.lockRepo(repoID)
 	defer c.unlockRepo(repoID)
 
@@ -147,7 +165,9 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 			return nil, err
 		}
 		out, err := retryCommand(3, time.Second, logger, func() ([]byte, error) {
-			return runGitCommand(ctx, c.gitPath, "", c.envsForRepo(remote), "clone", "--mirror", remote, repoCachePath)
+			args := []string{"clone", "--mirror", remote, repoCachePath}
+			args = append(authArgs, args...)
+			return runGitCommand(ctx, c.gitPath, "", c.envsForRepo(remote), args...)
 		})
 		if err != nil {
 			logger.Error("failed to clone from remote",
@@ -160,7 +180,9 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		// Cache hit. Do a git fetch to keep updated.
 		c.logger.Info(fmt.Sprintf("fetching %s to update the cache", repoID))
 		out, err := retryCommand(3, time.Second, c.logger, func() ([]byte, error) {
-			return runGitCommand(ctx, c.gitPath, repoCachePath, c.envsForRepo(remote), "fetch")
+			args := []string{"fetch"}
+			args = append(authArgs, args...)
+			return runGitCommand(ctx, c.gitPath, repoCachePath, c.envsForRepo(remote), args...)
 		})
 		if err != nil {
 			logger.Error("failed to fetch from remote",
