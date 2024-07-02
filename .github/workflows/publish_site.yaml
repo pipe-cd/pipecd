@@ -24,9 +24,9 @@ jobs:
       - name: Determine version
         run: echo "PIPECD_VERSION=$(git describe --tags --always --abbrev=7)" >> $GITHUB_ENV
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@c03b5dbed22245418539b65eb9a3b1d5fdd9a0a6 #v2.5.0
+        uses: peaceiris/actions-hugo@75d2e84710de30f6ff7268e08f310b60ef14033f #v3.0.0
         with:
-          hugo-version: '0.92.1'
+          hugo-version: '0.128.0'
           extended: true
       - name: Setup Node
         uses: actions/setup-node@v3

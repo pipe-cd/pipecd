@@ -22,12 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PluginServiceClient interface {
-	// ListStageCommands returns the list requested commands to the given stage.
-	ListStageCommands(ctx context.Context, in *ListStageCommandsRequest, opts ...grpc.CallOption) (*ListStageCommandsResponse, error)
-	// Put and Get the latest analysis result of a given application.
-	// Used by the analysis plugin to store and retrieve the latest analysis result.
-	GetLatestAnalysisResult(ctx context.Context, in *GetLatestAnalysisResultRequest, opts ...grpc.CallOption) (*GetLatestAnalysisResultResponse, error)
-	PutLatestAnalysisResult(ctx context.Context, in *PutLatestAnalysisResultRequest, opts ...grpc.CallOption) (*PutLatestAnalysisResultResponse, error)
+	// DecryptSecret decrypts the given secret.
+	DecryptSecret(ctx context.Context, in *DecryptSecretRequest, opts ...grpc.CallOption) (*DecryptSecretResponse, error)
 }
 
 type pluginServiceClient struct {
@@ -38,27 +34,9 @@ func NewPluginServiceClient(cc grpc.ClientConnInterface) PluginServiceClient {
 	return &pluginServiceClient{cc}
 }
 
-func (c *pluginServiceClient) ListStageCommands(ctx context.Context, in *ListStageCommandsRequest, opts ...grpc.CallOption) (*ListStageCommandsResponse, error) {
-	out := new(ListStageCommandsResponse)
-	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/ListStageCommands", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *pluginServiceClient) GetLatestAnalysisResult(ctx context.Context, in *GetLatestAnalysisResultRequest, opts ...grpc.CallOption) (*GetLatestAnalysisResultResponse, error) {
-	out := new(GetLatestAnalysisResultResponse)
-	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/GetLatestAnalysisResult", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *pluginServiceClient) PutLatestAnalysisResult(ctx context.Context, in *PutLatestAnalysisResultRequest, opts ...grpc.CallOption) (*PutLatestAnalysisResultResponse, error) {
-	out := new(PutLatestAnalysisResultResponse)
-	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/PutLatestAnalysisResult", in, out, opts...)
+func (c *pluginServiceClient) DecryptSecret(ctx context.Context, in *DecryptSecretRequest, opts ...grpc.CallOption) (*DecryptSecretResponse, error) {
+	out := new(DecryptSecretResponse)
+	err := c.cc.Invoke(ctx, "/grpc.piped.service.PluginService/DecryptSecret", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -69,12 +47,8 @@ func (c *pluginServiceClient) PutLatestAnalysisResult(ctx context.Context, in *P
 // All implementations must embed UnimplementedPluginServiceServer
 // for forward compatibility
 type PluginServiceServer interface {
-	// ListStageCommands returns the list requested commands to the given stage.
-	ListStageCommands(context.Context, *ListStageCommandsRequest) (*ListStageCommandsResponse, error)
-	// Put and Get the latest analysis result of a given application.
-	// Used by the analysis plugin to store and retrieve the latest analysis result.
-	GetLatestAnalysisResult(context.Context, *GetLatestAnalysisResultRequest) (*GetLatestAnalysisResultResponse, error)
-	PutLatestAnalysisResult(context.Context, *PutLatestAnalysisResultRequest) (*PutLatestAnalysisResultResponse, error)
+	// DecryptSecret decrypts the given secret.
+	DecryptSecret(context.Context, *DecryptSecretRequest) (*DecryptSecretResponse, error)
 	mustEmbedUnimplementedPluginServiceServer()
 }
 
@@ -82,14 +56,8 @@ type PluginServiceServer interface {
 type UnimplementedPluginServiceServer struct {
 }
 
-func (UnimplementedPluginServiceServer) ListStageCommands(context.Context, *ListStageCommandsRequest) (*ListStageCommandsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListStageCommands not implemented")
-}
-func (UnimplementedPluginServiceServer) GetLatestAnalysisResult(context.Context, *GetLatestAnalysisResultRequest) (*GetLatestAnalysisResultResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLatestAnalysisResult not implemented")
-}
-func (UnimplementedPluginServiceServer) PutLatestAnalysisResult(context.Context, *PutLatestAnalysisResultRequest) (*PutLatestAnalysisResultResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PutLatestAnalysisResult not implemented")
+func (UnimplementedPluginServiceServer) DecryptSecret(context.Context, *DecryptSecretRequest) (*DecryptSecretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DecryptSecret not implemented")
 }
 func (UnimplementedPluginServiceServer) mustEmbedUnimplementedPluginServiceServer() {}
 
@@ -104,56 +72,20 @@ func RegisterPluginServiceServer(s grpc.ServiceRegistrar, srv PluginServiceServe
 	s.RegisterService(&PluginService_ServiceDesc, srv)
 }
 
-func _PluginService_ListStageCommands_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListStageCommandsRequest)
+func _PluginService_DecryptSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DecryptSecretRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PluginServiceServer).ListStageCommands(ctx, in)
+		return srv.(PluginServiceServer).DecryptSecret(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.piped.service.PluginService/ListStageCommands",
+		FullMethod: "/grpc.piped.service.PluginService/DecryptSecret",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PluginServiceServer).ListStageCommands(ctx, req.(*ListStageCommandsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PluginService_GetLatestAnalysisResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetLatestAnalysisResultRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PluginServiceServer).GetLatestAnalysisResult(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/grpc.piped.service.PluginService/GetLatestAnalysisResult",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PluginServiceServer).GetLatestAnalysisResult(ctx, req.(*GetLatestAnalysisResultRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PluginService_PutLatestAnalysisResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PutLatestAnalysisResultRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PluginServiceServer).PutLatestAnalysisResult(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/grpc.piped.service.PluginService/PutLatestAnalysisResult",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PluginServiceServer).PutLatestAnalysisResult(ctx, req.(*PutLatestAnalysisResultRequest))
+		return srv.(PluginServiceServer).DecryptSecret(ctx, req.(*DecryptSecretRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -166,16 +98,8 @@ var PluginService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*PluginServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ListStageCommands",
-			Handler:    _PluginService_ListStageCommands_Handler,
-		},
-		{
-			MethodName: "GetLatestAnalysisResult",
-			Handler:    _PluginService_GetLatestAnalysisResult_Handler,
-		},
-		{
-			MethodName: "PutLatestAnalysisResult",
-			Handler:    _PluginService_PutLatestAnalysisResult_Handler,
+			MethodName: "DecryptSecret",
+			Handler:    _PluginService_DecryptSecret_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

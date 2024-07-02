@@ -55,6 +55,8 @@ If you are only fixing a bug, you can submit a pull request right away, but we s
 
 If you discover security-related bugs that may compromise the security of current users, please send a direct message to our maintainers on Slack or Twitter instead of opening a public issue.
 
+You can find our DM contacts via [MAINTAINERS.md](./MAINTAINERS.md).
+
 ### Enhancement requests
 If you would like to request an enhancement to existing features, you can file an issue with the [enhancement request template](https://github.com/pipe-cd/pipecd/issues/new?assignees=&labels=kind%2Fenhancement&projects=&template=enhancement.md).
 

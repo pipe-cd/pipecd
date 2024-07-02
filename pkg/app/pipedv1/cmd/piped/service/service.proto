@@ -18,41 +18,17 @@ package grpc.piped.service;
 option go_package = "github.com/pipe-cd/pipecd/pkg/app/pipedv1/cmd/piped/service";
 
 import "validate/validate.proto";
-import "pkg/model/command.proto";
-import "pkg/model/analysis_result.proto";
 
 // PluginService provides the ability to interact with plugins.
 service PluginService {
-    // ListStageCommands returns the list requested commands to the given stage.
-    rpc ListStageCommands(ListStageCommandsRequest) returns (ListStageCommandsResponse) {}
-
-    // Put and Get the latest analysis result of a given application.
-    // Used by the analysis plugin to store and retrieve the latest analysis result.
-    rpc GetLatestAnalysisResult(GetLatestAnalysisResultRequest) returns (GetLatestAnalysisResultResponse) {}
-    rpc PutLatestAnalysisResult(PutLatestAnalysisResultRequest) returns (PutLatestAnalysisResultResponse) {}
+    // DecryptSecret decrypts the given secret.
+    rpc DecryptSecret(DecryptSecretRequest) returns (DecryptSecretResponse) {}
 }
 
-message ListStageCommandsRequest {
-    string deployment_id = 1 [(validate.rules).string = {min_len: 1}];
-    string stage_id = 2 [(validate.rules).string = {min_len: 1}];
+message DecryptSecretRequest {
+    string secret = 1 [(validate.rules).string.min_len = 1];
 }
 
-message ListStageCommandsResponse {
-    repeated model.Command commands = 1;
-}
-
-message GetLatestAnalysisResultRequest {
-    string application_id = 1 [(validate.rules).string = {min_len: 1}];
-}
-
-message GetLatestAnalysisResultResponse {
-    model.AnalysisResult analysis_result = 1;
-}
-
-message PutLatestAnalysisResultRequest {
-    string application_id = 1 [(validate.rules).string = {min_len: 1}];
-    model.AnalysisResult analysis_result = 2;
-}
-
-message PutLatestAnalysisResultResponse {
+message DecryptSecretResponse {
+    string decrypted_secret = 1;
 }

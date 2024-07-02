@@ -39,32 +39,32 @@ var (
 	_ = model.SyncStrategy(0)
 )
 
-// Validate checks the field values on BuildPlanRequest with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *BuildPlanRequest) Validate() error {
+// Validate checks the field values on DetermineStrategyRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DetermineStrategyRequest) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on BuildPlanRequest with the rules
-// defined in the proto definition for this message. If any rules are
+// ValidateAll checks the field values on DetermineStrategyRequest with the
+// rules defined in the proto definition for this message. If any rules are
 // violated, the result is a list of violation errors wrapped in
-// BuildPlanRequestMultiError, or nil if none found.
-func (m *BuildPlanRequest) ValidateAll() error {
+// DetermineStrategyRequestMultiError, or nil if none found.
+func (m *DetermineStrategyRequest) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *BuildPlanRequest) validate(all bool) error {
+func (m *DetermineStrategyRequest) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetWorkingDir()) < 1 {
-		err := BuildPlanRequestValidationError{
-			field:  "WorkingDir",
-			reason: "value length must be at least 1 runes",
+	if m.GetInput() == nil {
+		err := DetermineStrategyRequestValidationError{
+			field:  "Input",
+			reason: "value is required",
 		}
 		if !all {
 			return err
@@ -72,23 +72,801 @@ func (m *BuildPlanRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for LastSuccessfulCommitHash
+	if all {
+		switch v := interface{}(m.GetInput()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, DetermineStrategyRequestValidationError{
+					field:  "Input",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, DetermineStrategyRequestValidationError{
+					field:  "Input",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetInput()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return DetermineStrategyRequestValidationError{
+				field:  "Input",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
-	// no validation rules for LastSuccessfulConfigFileName
+	if len(errors) > 0 {
+		return DetermineStrategyRequestMultiError(errors)
+	}
 
-	if len(m.GetPipedConfig()) < 1 {
-		err := BuildPlanRequestValidationError{
-			field:  "PipedConfig",
-			reason: "value length must be at least 1 bytes",
+	return nil
+}
+
+// DetermineStrategyRequestMultiError is an error wrapping multiple validation
+// errors returned by DetermineStrategyRequest.ValidateAll() if the designated
+// constraints aren't met.
+type DetermineStrategyRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DetermineStrategyRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DetermineStrategyRequestMultiError) AllErrors() []error { return m }
+
+// DetermineStrategyRequestValidationError is the validation error returned by
+// DetermineStrategyRequest.Validate if the designated constraints aren't met.
+type DetermineStrategyRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DetermineStrategyRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DetermineStrategyRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DetermineStrategyRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DetermineStrategyRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DetermineStrategyRequestValidationError) ErrorName() string {
+	return "DetermineStrategyRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DetermineStrategyRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDetermineStrategyRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DetermineStrategyRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DetermineStrategyRequestValidationError{}
+
+// Validate checks the field values on DetermineStrategyResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DetermineStrategyResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DetermineStrategyResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DetermineStrategyResponseMultiError, or nil if none found.
+func (m *DetermineStrategyResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DetermineStrategyResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for SyncStrategy
+
+	// no validation rules for Summary
+
+	if len(errors) > 0 {
+		return DetermineStrategyResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// DetermineStrategyResponseMultiError is an error wrapping multiple validation
+// errors returned by DetermineStrategyResponse.ValidateAll() if the
+// designated constraints aren't met.
+type DetermineStrategyResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DetermineStrategyResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DetermineStrategyResponseMultiError) AllErrors() []error { return m }
+
+// DetermineStrategyResponseValidationError is the validation error returned by
+// DetermineStrategyResponse.Validate if the designated constraints aren't met.
+type DetermineStrategyResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DetermineStrategyResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DetermineStrategyResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DetermineStrategyResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DetermineStrategyResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DetermineStrategyResponseValidationError) ErrorName() string {
+	return "DetermineStrategyResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DetermineStrategyResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDetermineStrategyResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DetermineStrategyResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DetermineStrategyResponseValidationError{}
+
+// Validate checks the field values on QuickSyncPlanRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *QuickSyncPlanRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on QuickSyncPlanRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// QuickSyncPlanRequestMultiError, or nil if none found.
+func (m *QuickSyncPlanRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *QuickSyncPlanRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetInput() == nil {
+		err := QuickSyncPlanRequestValidationError{
+			field:  "Input",
+			reason: "value is required",
 		}
 		if !all {
 			return err
 		}
 		errors = append(errors, err)
 	}
+
+	if all {
+		switch v := interface{}(m.GetInput()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, QuickSyncPlanRequestValidationError{
+					field:  "Input",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, QuickSyncPlanRequestValidationError{
+					field:  "Input",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetInput()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return QuickSyncPlanRequestValidationError{
+				field:  "Input",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return QuickSyncPlanRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// QuickSyncPlanRequestMultiError is an error wrapping multiple validation
+// errors returned by QuickSyncPlanRequest.ValidateAll() if the designated
+// constraints aren't met.
+type QuickSyncPlanRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m QuickSyncPlanRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m QuickSyncPlanRequestMultiError) AllErrors() []error { return m }
+
+// QuickSyncPlanRequestValidationError is the validation error returned by
+// QuickSyncPlanRequest.Validate if the designated constraints aren't met.
+type QuickSyncPlanRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e QuickSyncPlanRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e QuickSyncPlanRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e QuickSyncPlanRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e QuickSyncPlanRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e QuickSyncPlanRequestValidationError) ErrorName() string {
+	return "QuickSyncPlanRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e QuickSyncPlanRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sQuickSyncPlanRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = QuickSyncPlanRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = QuickSyncPlanRequestValidationError{}
+
+// Validate checks the field values on QuickSyncPlanResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *QuickSyncPlanResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on QuickSyncPlanResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// QuickSyncPlanResponseMultiError, or nil if none found.
+func (m *QuickSyncPlanResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *QuickSyncPlanResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetStages() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, QuickSyncPlanResponseValidationError{
+						field:  fmt.Sprintf("Stages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, QuickSyncPlanResponseValidationError{
+						field:  fmt.Sprintf("Stages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return QuickSyncPlanResponseValidationError{
+					field:  fmt.Sprintf("Stages[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return QuickSyncPlanResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// QuickSyncPlanResponseMultiError is an error wrapping multiple validation
+// errors returned by QuickSyncPlanResponse.ValidateAll() if the designated
+// constraints aren't met.
+type QuickSyncPlanResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m QuickSyncPlanResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m QuickSyncPlanResponseMultiError) AllErrors() []error { return m }
+
+// QuickSyncPlanResponseValidationError is the validation error returned by
+// QuickSyncPlanResponse.Validate if the designated constraints aren't met.
+type QuickSyncPlanResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e QuickSyncPlanResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e QuickSyncPlanResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e QuickSyncPlanResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e QuickSyncPlanResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e QuickSyncPlanResponseValidationError) ErrorName() string {
+	return "QuickSyncPlanResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e QuickSyncPlanResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sQuickSyncPlanResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = QuickSyncPlanResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = QuickSyncPlanResponseValidationError{}
+
+// Validate checks the field values on PipelineSyncPlanRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PipelineSyncPlanRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PipelineSyncPlanRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PipelineSyncPlanRequestMultiError, or nil if none found.
+func (m *PipelineSyncPlanRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PipelineSyncPlanRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetInput() == nil {
+		err := PipelineSyncPlanRequestValidationError{
+			field:  "Input",
+			reason: "value is required",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if all {
+		switch v := interface{}(m.GetInput()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, PipelineSyncPlanRequestValidationError{
+					field:  "Input",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, PipelineSyncPlanRequestValidationError{
+					field:  "Input",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetInput()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return PipelineSyncPlanRequestValidationError{
+				field:  "Input",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return PipelineSyncPlanRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// PipelineSyncPlanRequestMultiError is an error wrapping multiple validation
+// errors returned by PipelineSyncPlanRequest.ValidateAll() if the designated
+// constraints aren't met.
+type PipelineSyncPlanRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PipelineSyncPlanRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PipelineSyncPlanRequestMultiError) AllErrors() []error { return m }
+
+// PipelineSyncPlanRequestValidationError is the validation error returned by
+// PipelineSyncPlanRequest.Validate if the designated constraints aren't met.
+type PipelineSyncPlanRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PipelineSyncPlanRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PipelineSyncPlanRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PipelineSyncPlanRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PipelineSyncPlanRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PipelineSyncPlanRequestValidationError) ErrorName() string {
+	return "PipelineSyncPlanRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PipelineSyncPlanRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPipelineSyncPlanRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PipelineSyncPlanRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PipelineSyncPlanRequestValidationError{}
+
+// Validate checks the field values on PipelineSyncPlanResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PipelineSyncPlanResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PipelineSyncPlanResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PipelineSyncPlanResponseMultiError, or nil if none found.
+func (m *PipelineSyncPlanResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PipelineSyncPlanResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetStages() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, PipelineSyncPlanResponseValidationError{
+						field:  fmt.Sprintf("Stages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, PipelineSyncPlanResponseValidationError{
+						field:  fmt.Sprintf("Stages[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return PipelineSyncPlanResponseValidationError{
+					field:  fmt.Sprintf("Stages[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return PipelineSyncPlanResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// PipelineSyncPlanResponseMultiError is an error wrapping multiple validation
+// errors returned by PipelineSyncPlanResponse.ValidateAll() if the designated
+// constraints aren't met.
+type PipelineSyncPlanResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PipelineSyncPlanResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PipelineSyncPlanResponseMultiError) AllErrors() []error { return m }
+
+// PipelineSyncPlanResponseValidationError is the validation error returned by
+// PipelineSyncPlanResponse.Validate if the designated constraints aren't met.
+type PipelineSyncPlanResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PipelineSyncPlanResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PipelineSyncPlanResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PipelineSyncPlanResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PipelineSyncPlanResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PipelineSyncPlanResponseValidationError) ErrorName() string {
+	return "PipelineSyncPlanResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PipelineSyncPlanResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPipelineSyncPlanResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PipelineSyncPlanResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PipelineSyncPlanResponseValidationError{}
+
+// Validate checks the field values on PlanPluginInput with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *PlanPluginInput) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PlanPluginInput with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PlanPluginInputMultiError, or nil if none found.
+func (m *PlanPluginInput) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PlanPluginInput) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
 
 	if m.GetDeployment() == nil {
-		err := BuildPlanRequestValidationError{
+		err := PlanPluginInputValidationError{
 			field:  "Deployment",
 			reason: "value is required",
 		}
@@ -102,7 +880,7 @@ func (m *BuildPlanRequest) validate(all bool) error {
 		switch v := interface{}(m.GetDeployment()).(type) {
 		case interface{ ValidateAll() error }:
 			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, BuildPlanRequestValidationError{
+				errors = append(errors, PlanPluginInputValidationError{
 					field:  "Deployment",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -110,7 +888,7 @@ func (m *BuildPlanRequest) validate(all bool) error {
 			}
 		case interface{ Validate() error }:
 			if err := v.Validate(); err != nil {
-				errors = append(errors, BuildPlanRequestValidationError{
+				errors = append(errors, PlanPluginInputValidationError{
 					field:  "Deployment",
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -119,7 +897,7 @@ func (m *BuildPlanRequest) validate(all bool) error {
 		}
 	} else if v, ok := interface{}(m.GetDeployment()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return BuildPlanRequestValidationError{
+			return PlanPluginInputValidationError{
 				field:  "Deployment",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -127,20 +905,37 @@ func (m *BuildPlanRequest) validate(all bool) error {
 		}
 	}
 
+	if utf8.RuneCountInString(m.GetSourceRemoteUrl()) < 1 {
+		err := PlanPluginInputValidationError{
+			field:  "SourceRemoteUrl",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for LastSuccessfulCommitHash
+
+	// no validation rules for LastSuccessfulConfigFileName
+
+	// no validation rules for PluginConfig
+
 	if len(errors) > 0 {
-		return BuildPlanRequestMultiError(errors)
+		return PlanPluginInputMultiError(errors)
 	}
 
 	return nil
 }
 
-// BuildPlanRequestMultiError is an error wrapping multiple validation errors
-// returned by BuildPlanRequest.ValidateAll() if the designated constraints
+// PlanPluginInputMultiError is an error wrapping multiple validation errors
+// returned by PlanPluginInput.ValidateAll() if the designated constraints
 // aren't met.
-type BuildPlanRequestMultiError []error
+type PlanPluginInputMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m BuildPlanRequestMultiError) Error() string {
+func (m PlanPluginInputMultiError) Error() string {
 	var msgs []string
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -149,11 +944,11 @@ func (m BuildPlanRequestMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m BuildPlanRequestMultiError) AllErrors() []error { return m }
+func (m PlanPluginInputMultiError) AllErrors() []error { return m }
 
-// BuildPlanRequestValidationError is the validation error returned by
-// BuildPlanRequest.Validate if the designated constraints aren't met.
-type BuildPlanRequestValidationError struct {
+// PlanPluginInputValidationError is the validation error returned by
+// PlanPluginInput.Validate if the designated constraints aren't met.
+type PlanPluginInputValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -161,22 +956,22 @@ type BuildPlanRequestValidationError struct {
 }
 
 // Field function returns field value.
-func (e BuildPlanRequestValidationError) Field() string { return e.field }
+func (e PlanPluginInputValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e BuildPlanRequestValidationError) Reason() string { return e.reason }
+func (e PlanPluginInputValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e BuildPlanRequestValidationError) Cause() error { return e.cause }
+func (e PlanPluginInputValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e BuildPlanRequestValidationError) Key() bool { return e.key }
+func (e PlanPluginInputValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e BuildPlanRequestValidationError) ErrorName() string { return "BuildPlanRequestValidationError" }
+func (e PlanPluginInputValidationError) ErrorName() string { return "PlanPluginInputValidationError" }
 
 // Error satisfies the builtin error interface
-func (e BuildPlanRequestValidationError) Error() string {
+func (e PlanPluginInputValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -188,14 +983,14 @@ func (e BuildPlanRequestValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sBuildPlanRequest.%s: %s%s",
+		"invalid %sPlanPluginInput.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = BuildPlanRequestValidationError{}
+var _ error = PlanPluginInputValidationError{}
 
 var _ interface {
 	Field() string
@@ -203,310 +998,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = BuildPlanRequestValidationError{}
-
-// Validate checks the field values on BuildPlanResponse with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *BuildPlanResponse) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on BuildPlanResponse with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// BuildPlanResponseMultiError, or nil if none found.
-func (m *BuildPlanResponse) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *BuildPlanResponse) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if all {
-		switch v := interface{}(m.GetPlan()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, BuildPlanResponseValidationError{
-					field:  "Plan",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, BuildPlanResponseValidationError{
-					field:  "Plan",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetPlan()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return BuildPlanResponseValidationError{
-				field:  "Plan",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if len(errors) > 0 {
-		return BuildPlanResponseMultiError(errors)
-	}
-
-	return nil
-}
-
-// BuildPlanResponseMultiError is an error wrapping multiple validation errors
-// returned by BuildPlanResponse.ValidateAll() if the designated constraints
-// aren't met.
-type BuildPlanResponseMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m BuildPlanResponseMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m BuildPlanResponseMultiError) AllErrors() []error { return m }
-
-// BuildPlanResponseValidationError is the validation error returned by
-// BuildPlanResponse.Validate if the designated constraints aren't met.
-type BuildPlanResponseValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e BuildPlanResponseValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e BuildPlanResponseValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e BuildPlanResponseValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e BuildPlanResponseValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e BuildPlanResponseValidationError) ErrorName() string {
-	return "BuildPlanResponseValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e BuildPlanResponseValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sBuildPlanResponse.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = BuildPlanResponseValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = BuildPlanResponseValidationError{}
-
-// Validate checks the field values on DeploymentPlan with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *DeploymentPlan) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on DeploymentPlan with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in DeploymentPlanMultiError,
-// or nil if none found.
-func (m *DeploymentPlan) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *DeploymentPlan) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for SyncStrategy
-
-	// no validation rules for Summary
-
-	for idx, item := range m.GetVersions() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, DeploymentPlanValidationError{
-						field:  fmt.Sprintf("Versions[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, DeploymentPlanValidationError{
-						field:  fmt.Sprintf("Versions[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return DeploymentPlanValidationError{
-					field:  fmt.Sprintf("Versions[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
-	for idx, item := range m.GetStages() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, DeploymentPlanValidationError{
-						field:  fmt.Sprintf("Stages[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, DeploymentPlanValidationError{
-						field:  fmt.Sprintf("Stages[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return DeploymentPlanValidationError{
-					field:  fmt.Sprintf("Stages[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
-	if len(errors) > 0 {
-		return DeploymentPlanMultiError(errors)
-	}
-
-	return nil
-}
-
-// DeploymentPlanMultiError is an error wrapping multiple validation errors
-// returned by DeploymentPlan.ValidateAll() if the designated constraints
-// aren't met.
-type DeploymentPlanMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m DeploymentPlanMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m DeploymentPlanMultiError) AllErrors() []error { return m }
-
-// DeploymentPlanValidationError is the validation error returned by
-// DeploymentPlan.Validate if the designated constraints aren't met.
-type DeploymentPlanValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e DeploymentPlanValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e DeploymentPlanValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e DeploymentPlanValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e DeploymentPlanValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e DeploymentPlanValidationError) ErrorName() string { return "DeploymentPlanValidationError" }
-
-// Error satisfies the builtin error interface
-func (e DeploymentPlanValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sDeploymentPlan.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = DeploymentPlanValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = DeploymentPlanValidationError{}
+} = PlanPluginInputValidationError{}
 
 // Validate checks the field values on ExecuteStageRequest with the rules
 // defined in the proto definition for this message. If any rules are
