@@ -21,8 +21,9 @@ import (
 
 	"github.com/pipe-cd/pipecd/pkg/app/server/pipedverifier"
 	"github.com/pipe-cd/pipecd/pkg/rpc"
+	"github.com/pipe-cd/pipecd/pkg/rpc/rpcauth"
 
-	"github.com/envoyproxy/go-control-plane/envoy/service/auth/v3"
+	authv3 "github.com/envoyproxy/go-control-plane/envoy/service/auth/v3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -57,7 +58,7 @@ func (e *EnvoyAuthorizationServer) Check(ctx context.Context, request *authv3.Ch
 		return &authv3.CheckResponse{Status: status.New(codes.Unauthenticated, "missing authorization header").Proto()}, nil
 	}
 
-	projectID, pipedID, pipedKey, err := e.parsePipedToken(a)
+	projectID, pipedID, pipedKey, err := e.parseAuthorizationHeader(a)
 	if err != nil {
 		return &authv3.CheckResponse{Status: status.New(codes.PermissionDenied, err.Error()).Proto()}, nil
 	}
@@ -69,14 +70,10 @@ func (e *EnvoyAuthorizationServer) Check(ctx context.Context, request *authv3.Ch
 	return &authv3.CheckResponse{Status: status.New(codes.OK, "OK").Proto()}, nil
 }
 
-func (e *EnvoyAuthorizationServer) parsePipedToken(a string) (string, string, string, error) {
-	if !strings.HasPrefix(a, "Bearer ") {
+func (e *EnvoyAuthorizationServer) parseAuthorizationHeader(header string) (string, string, string, error) {
+	if !strings.HasPrefix(header, "Bearer ") {
 		return "", "", "", errors.New("invalid authorization header")
 	}
 
-	parts := strings.Split(strings.TrimPrefix(a, "Bearer "), ",")
-	if len(parts) != 3 || parts[0] == "" || parts[1] == "" || parts[2] == "" {
-		return "", "", "", errors.New("malformed piped token")
-	}
-	return parts[0], parts[1], parts[2], nil
+	return rpcauth.ParsePipedToken(strings.TrimPrefix(header, "Bearer "))
 }
