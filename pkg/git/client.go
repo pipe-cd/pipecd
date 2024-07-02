@@ -252,6 +252,11 @@ func (c *client) envsForRepo(remote string) []string {
 	return append(envs, c.gitEnvs...)
 }
 
+// RunGitCommand runs a git command with the given arguments.
+func RunGitCommand(ctx context.Context, execPath, dir string, envs []string, args ...string) ([]byte, error) {
+	return runGitCommand(ctx, execPath, dir, envs, args...)
+}
+
 func runGitCommand(ctx context.Context, execPath, dir string, envs []string, args ...string) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, execPath, args...)
 	cmd.Dir = dir
