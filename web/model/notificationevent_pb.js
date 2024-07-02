@@ -321,7 +321,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.model.NotificationEventDeploymentTriggered.repeatedFields_ = [3];
+proto.model.NotificationEventDeploymentTriggered.repeatedFields_ = [3,4];
 
 
 
@@ -355,7 +355,8 @@ proto.model.NotificationEventDeploymentTriggered.prototype.toObject = function(o
 proto.model.NotificationEventDeploymentTriggered.toObject = function(includeInstance, msg) {
   var f, obj = {
     deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
-    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
+    mentionedGroupsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -401,6 +402,10 @@ proto.model.NotificationEventDeploymentTriggered.deserializeBinaryFromReader = f
       var value = /** @type {string} */ (reader.readString());
       msg.addMentionedAccounts(value);
       break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedGroups(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -442,6 +447,13 @@ proto.model.NotificationEventDeploymentTriggered.serializeBinaryToWriter = funct
   if (f.length > 0) {
     writer.writeRepeatedString(
       3,
+      f
+    );
+  }
+  f = message.getMentionedGroupsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      4,
       f
     );
   }
@@ -522,13 +534,50 @@ proto.model.NotificationEventDeploymentTriggered.prototype.clearMentionedAccount
 };
 
 
+/**
+ * repeated string mentioned_groups = 4;
+ * @return {!Array<string>}
+ */
+proto.model.NotificationEventDeploymentTriggered.prototype.getMentionedGroupsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.model.NotificationEventDeploymentTriggered} returns this
+ */
+proto.model.NotificationEventDeploymentTriggered.prototype.setMentionedGroupsList = function(value) {
+  return jspb.Message.setField(this, 4, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.model.NotificationEventDeploymentTriggered} returns this
+ */
+proto.model.NotificationEventDeploymentTriggered.prototype.addMentionedGroups = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.model.NotificationEventDeploymentTriggered} returns this
+ */
+proto.model.NotificationEventDeploymentTriggered.prototype.clearMentionedGroupsList = function() {
+  return this.setMentionedGroupsList([]);
+};
+
+
 
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
-proto.model.NotificationEventDeploymentPlanned.repeatedFields_ = [4];
+proto.model.NotificationEventDeploymentPlanned.repeatedFields_ = [4,5];
 
 
 
@@ -563,7 +612,8 @@ proto.model.NotificationEventDeploymentPlanned.toObject = function(includeInstan
   var f, obj = {
     deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
     summary: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
+    mentionedGroupsList: (f = jspb.Message.getRepeatedField(msg, 5)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -613,6 +663,10 @@ proto.model.NotificationEventDeploymentPlanned.deserializeBinaryFromReader = fun
       var value = /** @type {string} */ (reader.readString());
       msg.addMentionedAccounts(value);
       break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedGroups(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -661,6 +715,13 @@ proto.model.NotificationEventDeploymentPlanned.serializeBinaryToWriter = functio
   if (f.length > 0) {
     writer.writeRepeatedString(
       4,
+      f
+    );
+  }
+  f = message.getMentionedGroupsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      5,
       f
     );
   }
@@ -759,13 +820,50 @@ proto.model.NotificationEventDeploymentPlanned.prototype.clearMentionedAccountsL
 };
 
 
+/**
+ * repeated string mentioned_groups = 5;
+ * @return {!Array<string>}
+ */
+proto.model.NotificationEventDeploymentPlanned.prototype.getMentionedGroupsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 5));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.model.NotificationEventDeploymentPlanned} returns this
+ */
+proto.model.NotificationEventDeploymentPlanned.prototype.setMentionedGroupsList = function(value) {
+  return jspb.Message.setField(this, 5, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.model.NotificationEventDeploymentPlanned} returns this
+ */
+proto.model.NotificationEventDeploymentPlanned.prototype.addMentionedGroups = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 5, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.model.NotificationEventDeploymentPlanned} returns this
+ */
+proto.model.NotificationEventDeploymentPlanned.prototype.clearMentionedGroupsList = function() {
+  return this.setMentionedGroupsList([]);
+};
+
+
 
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
-proto.model.NotificationEventDeploymentApproved.repeatedFields_ = [4];
+proto.model.NotificationEventDeploymentApproved.repeatedFields_ = [4,5];
 
 
 
@@ -800,7 +898,8 @@ proto.model.NotificationEventDeploymentApproved.toObject = function(includeInsta
   var f, obj = {
     deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
     approver: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
+    mentionedGroupsList: (f = jspb.Message.getRepeatedField(msg, 5)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -850,6 +949,10 @@ proto.model.NotificationEventDeploymentApproved.deserializeBinaryFromReader = fu
       var value = /** @type {string} */ (reader.readString());
       msg.addMentionedAccounts(value);
       break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedGroups(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -898,6 +1001,13 @@ proto.model.NotificationEventDeploymentApproved.serializeBinaryToWriter = functi
   if (f.length > 0) {
     writer.writeRepeatedString(
       4,
+      f
+    );
+  }
+  f = message.getMentionedGroupsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      5,
       f
     );
   }
@@ -993,6 +1103,43 @@ proto.model.NotificationEventDeploymentApproved.prototype.addMentionedAccounts =
  */
 proto.model.NotificationEventDeploymentApproved.prototype.clearMentionedAccountsList = function() {
   return this.setMentionedAccountsList([]);
+};
+
+
+/**
+ * repeated string mentioned_groups = 5;
+ * @return {!Array<string>}
+ */
+proto.model.NotificationEventDeploymentApproved.prototype.getMentionedGroupsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 5));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.model.NotificationEventDeploymentApproved} returns this
+ */
+proto.model.NotificationEventDeploymentApproved.prototype.setMentionedGroupsList = function(value) {
+  return jspb.Message.setField(this, 5, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.model.NotificationEventDeploymentApproved} returns this
+ */
+proto.model.NotificationEventDeploymentApproved.prototype.addMentionedGroups = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 5, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.model.NotificationEventDeploymentApproved} returns this
+ */
+proto.model.NotificationEventDeploymentApproved.prototype.clearMentionedGroupsList = function() {
+  return this.setMentionedGroupsList([]);
 };
 
 
@@ -1153,7 +1300,7 @@ proto.model.NotificationEventDeploymentRollingBack.prototype.hasDeployment = fun
  * @private {!Array<number>}
  * @const
  */
-proto.model.NotificationEventDeploymentSucceeded.repeatedFields_ = [3];
+proto.model.NotificationEventDeploymentSucceeded.repeatedFields_ = [3,4];
 
 
 
@@ -1187,7 +1334,8 @@ proto.model.NotificationEventDeploymentSucceeded.prototype.toObject = function(o
 proto.model.NotificationEventDeploymentSucceeded.toObject = function(includeInstance, msg) {
   var f, obj = {
     deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
-    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
+    mentionedGroupsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -1233,6 +1381,10 @@ proto.model.NotificationEventDeploymentSucceeded.deserializeBinaryFromReader = f
       var value = /** @type {string} */ (reader.readString());
       msg.addMentionedAccounts(value);
       break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedGroups(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1274,6 +1426,13 @@ proto.model.NotificationEventDeploymentSucceeded.serializeBinaryToWriter = funct
   if (f.length > 0) {
     writer.writeRepeatedString(
       3,
+      f
+    );
+  }
+  f = message.getMentionedGroupsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      4,
       f
     );
   }
@@ -1354,13 +1513,50 @@ proto.model.NotificationEventDeploymentSucceeded.prototype.clearMentionedAccount
 };
 
 
+/**
+ * repeated string mentioned_groups = 4;
+ * @return {!Array<string>}
+ */
+proto.model.NotificationEventDeploymentSucceeded.prototype.getMentionedGroupsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.model.NotificationEventDeploymentSucceeded} returns this
+ */
+proto.model.NotificationEventDeploymentSucceeded.prototype.setMentionedGroupsList = function(value) {
+  return jspb.Message.setField(this, 4, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.model.NotificationEventDeploymentSucceeded} returns this
+ */
+proto.model.NotificationEventDeploymentSucceeded.prototype.addMentionedGroups = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.model.NotificationEventDeploymentSucceeded} returns this
+ */
+proto.model.NotificationEventDeploymentSucceeded.prototype.clearMentionedGroupsList = function() {
+  return this.setMentionedGroupsList([]);
+};
+
+
 
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
-proto.model.NotificationEventDeploymentFailed.repeatedFields_ = [4];
+proto.model.NotificationEventDeploymentFailed.repeatedFields_ = [4,5];
 
 
 
@@ -1395,7 +1591,8 @@ proto.model.NotificationEventDeploymentFailed.toObject = function(includeInstanc
   var f, obj = {
     deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
     reason: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
+    mentionedGroupsList: (f = jspb.Message.getRepeatedField(msg, 5)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -1445,6 +1642,10 @@ proto.model.NotificationEventDeploymentFailed.deserializeBinaryFromReader = func
       var value = /** @type {string} */ (reader.readString());
       msg.addMentionedAccounts(value);
       break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedGroups(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1493,6 +1694,13 @@ proto.model.NotificationEventDeploymentFailed.serializeBinaryToWriter = function
   if (f.length > 0) {
     writer.writeRepeatedString(
       4,
+      f
+    );
+  }
+  f = message.getMentionedGroupsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      5,
       f
     );
   }
@@ -1591,13 +1799,50 @@ proto.model.NotificationEventDeploymentFailed.prototype.clearMentionedAccountsLi
 };
 
 
+/**
+ * repeated string mentioned_groups = 5;
+ * @return {!Array<string>}
+ */
+proto.model.NotificationEventDeploymentFailed.prototype.getMentionedGroupsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 5));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.model.NotificationEventDeploymentFailed} returns this
+ */
+proto.model.NotificationEventDeploymentFailed.prototype.setMentionedGroupsList = function(value) {
+  return jspb.Message.setField(this, 5, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.model.NotificationEventDeploymentFailed} returns this
+ */
+proto.model.NotificationEventDeploymentFailed.prototype.addMentionedGroups = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 5, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.model.NotificationEventDeploymentFailed} returns this
+ */
+proto.model.NotificationEventDeploymentFailed.prototype.clearMentionedGroupsList = function() {
+  return this.setMentionedGroupsList([]);
+};
+
+
 
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
-proto.model.NotificationEventDeploymentCancelled.repeatedFields_ = [4];
+proto.model.NotificationEventDeploymentCancelled.repeatedFields_ = [4,5];
 
 
 
@@ -1632,7 +1877,8 @@ proto.model.NotificationEventDeploymentCancelled.toObject = function(includeInst
   var f, obj = {
     deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
     commander: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
+    mentionedGroupsList: (f = jspb.Message.getRepeatedField(msg, 5)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -1682,6 +1928,10 @@ proto.model.NotificationEventDeploymentCancelled.deserializeBinaryFromReader = f
       var value = /** @type {string} */ (reader.readString());
       msg.addMentionedAccounts(value);
       break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedGroups(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1730,6 +1980,13 @@ proto.model.NotificationEventDeploymentCancelled.serializeBinaryToWriter = funct
   if (f.length > 0) {
     writer.writeRepeatedString(
       4,
+      f
+    );
+  }
+  f = message.getMentionedGroupsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      5,
       f
     );
   }
@@ -1828,13 +2085,50 @@ proto.model.NotificationEventDeploymentCancelled.prototype.clearMentionedAccount
 };
 
 
+/**
+ * repeated string mentioned_groups = 5;
+ * @return {!Array<string>}
+ */
+proto.model.NotificationEventDeploymentCancelled.prototype.getMentionedGroupsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 5));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.model.NotificationEventDeploymentCancelled} returns this
+ */
+proto.model.NotificationEventDeploymentCancelled.prototype.setMentionedGroupsList = function(value) {
+  return jspb.Message.setField(this, 5, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.model.NotificationEventDeploymentCancelled} returns this
+ */
+proto.model.NotificationEventDeploymentCancelled.prototype.addMentionedGroups = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 5, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.model.NotificationEventDeploymentCancelled} returns this
+ */
+proto.model.NotificationEventDeploymentCancelled.prototype.clearMentionedGroupsList = function() {
+  return this.setMentionedGroupsList([]);
+};
+
+
 
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
-proto.model.NotificationEventDeploymentWaitApproval.repeatedFields_ = [3];
+proto.model.NotificationEventDeploymentWaitApproval.repeatedFields_ = [3,4];
 
 
 
@@ -1868,7 +2162,8 @@ proto.model.NotificationEventDeploymentWaitApproval.prototype.toObject = functio
 proto.model.NotificationEventDeploymentWaitApproval.toObject = function(includeInstance, msg) {
   var f, obj = {
     deployment: (f = msg.getDeployment()) && pkg_model_deployment_pb.Deployment.toObject(includeInstance, f),
-    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
+    mentionedGroupsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -1914,6 +2209,10 @@ proto.model.NotificationEventDeploymentWaitApproval.deserializeBinaryFromReader 
       var value = /** @type {string} */ (reader.readString());
       msg.addMentionedAccounts(value);
       break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedGroups(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1955,6 +2254,13 @@ proto.model.NotificationEventDeploymentWaitApproval.serializeBinaryToWriter = fu
   if (f.length > 0) {
     writer.writeRepeatedString(
       3,
+      f
+    );
+  }
+  f = message.getMentionedGroupsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      4,
       f
     );
   }
@@ -2035,13 +2341,50 @@ proto.model.NotificationEventDeploymentWaitApproval.prototype.clearMentionedAcco
 };
 
 
+/**
+ * repeated string mentioned_groups = 4;
+ * @return {!Array<string>}
+ */
+proto.model.NotificationEventDeploymentWaitApproval.prototype.getMentionedGroupsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.model.NotificationEventDeploymentWaitApproval} returns this
+ */
+proto.model.NotificationEventDeploymentWaitApproval.prototype.setMentionedGroupsList = function(value) {
+  return jspb.Message.setField(this, 4, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.model.NotificationEventDeploymentWaitApproval} returns this
+ */
+proto.model.NotificationEventDeploymentWaitApproval.prototype.addMentionedGroups = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.model.NotificationEventDeploymentWaitApproval} returns this
+ */
+proto.model.NotificationEventDeploymentWaitApproval.prototype.clearMentionedGroupsList = function() {
+  return this.setMentionedGroupsList([]);
+};
+
+
 
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
-proto.model.NotificationEventDeploymentTriggerFailed.repeatedFields_ = [5];
+proto.model.NotificationEventDeploymentTriggerFailed.repeatedFields_ = [5,6];
 
 
 
@@ -2078,7 +2421,8 @@ proto.model.NotificationEventDeploymentTriggerFailed.toObject = function(include
     commitHash: jspb.Message.getFieldWithDefault(msg, 2, ""),
     commitMessage: jspb.Message.getFieldWithDefault(msg, 3, ""),
     reason: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 5)) == null ? undefined : f
+    mentionedAccountsList: (f = jspb.Message.getRepeatedField(msg, 5)) == null ? undefined : f,
+    mentionedGroupsList: (f = jspb.Message.getRepeatedField(msg, 6)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -2135,6 +2479,10 @@ proto.model.NotificationEventDeploymentTriggerFailed.deserializeBinaryFromReader
     case 5:
       var value = /** @type {string} */ (reader.readString());
       msg.addMentionedAccounts(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMentionedGroups(value);
       break;
     default:
       reader.skipField();
@@ -2198,6 +2546,13 @@ proto.model.NotificationEventDeploymentTriggerFailed.serializeBinaryToWriter = f
   if (f.length > 0) {
     writer.writeRepeatedString(
       5,
+      f
+    );
+  }
+  f = message.getMentionedGroupsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      6,
       f
     );
   }
@@ -2329,6 +2684,43 @@ proto.model.NotificationEventDeploymentTriggerFailed.prototype.addMentionedAccou
  */
 proto.model.NotificationEventDeploymentTriggerFailed.prototype.clearMentionedAccountsList = function() {
   return this.setMentionedAccountsList([]);
+};
+
+
+/**
+ * repeated string mentioned_groups = 6;
+ * @return {!Array<string>}
+ */
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.getMentionedGroupsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 6));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.model.NotificationEventDeploymentTriggerFailed} returns this
+ */
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.setMentionedGroupsList = function(value) {
+  return jspb.Message.setField(this, 6, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.model.NotificationEventDeploymentTriggerFailed} returns this
+ */
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.addMentionedGroups = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 6, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.model.NotificationEventDeploymentTriggerFailed} returns this
+ */
+proto.model.NotificationEventDeploymentTriggerFailed.prototype.clearMentionedGroupsList = function() {
+  return this.setMentionedGroupsList([]);
 };
 
 

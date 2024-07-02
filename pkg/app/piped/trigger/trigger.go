@@ -473,7 +473,7 @@ func (t *Trigger) GetLastTriggeredCommitGetter() LastTriggeredCommitGetter {
 func (t *Trigger) notifyDeploymentTriggered(_ context.Context, appCfg *config.GenericApplicationSpec, d *model.Deployment) {
 	var mentions []string
 	if n := appCfg.DeploymentNotification; n != nil {
-		mentions = n.FindSlackAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED)
+		mentions = n.FindSlackAccountsAndGroups(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED)
 	}
 
 	t.notifier.Notify(model.NotificationEvent{
@@ -488,7 +488,7 @@ func (t *Trigger) notifyDeploymentTriggered(_ context.Context, appCfg *config.Ge
 func (t *Trigger) notifyDeploymentTriggerFailed(app *model.Application, appCfg *config.GenericApplicationSpec, reason string, commit git.Commit) {
 	var mentions []string
 	if n := appCfg.DeploymentNotification; n != nil {
-		mentions = n.FindSlackAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED)
+		mentions = n.FindSlackAccountsAndGroups(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED)
 	}
 
 	t.notifier.Notify(model.NotificationEvent{

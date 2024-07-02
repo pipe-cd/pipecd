@@ -123,12 +123,27 @@ spec:
         slack:
           oauthToken: token
           channelID: testid
+      - name: hookurl-with-mentioned-groups
+        slack:
+          hookURL: https://slack.com/dev
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
       - name: hookurl-with-mentioned-accounts
         slack:
           hookURL: https://slack.com/dev
           mentionedAccounts:
             - 'user1'
             - '@user2'
+      - name: hookurl-with-mentioned-both-accounts-and-groups
+        slack:
+          hookURL: https://slack.com/dev
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
       - name: integration-slack-api-with-mentioned-accounts
         slack:
           oauthToken: token
@@ -136,6 +151,23 @@ spec:
           mentionedAccounts:
             - 'user1'
             - '@user2'
+      - name: integration-slack-api-with-mentioned-groups
+        slack:
+          oauthToken: token
+          channelID: testid
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
+      - name: integration-slack-api-with-mentioned-both-accounts-groups
+        slack:
+          oauthToken: token
+          channelID: testid
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
       - name: integration-slack-api-with-oauthTokenData
         slack:
           oauthTokenData: token
@@ -151,6 +183,23 @@ spec:
           mentionedAccounts:
             - 'user1'
             - '@user2'
+      - name: integration-slack-api-with-oauthTokenFile-and-mentioned-groups
+        slack:
+          oauthTokenFile: 'foo/bar'
+          channelID: testid
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
+      - name: integration-slack-api-with-oauthTokenFile-and-mentioned-both-accounts-and-groups
+        slack:
+          oauthTokenFile: 'foo/bar'
+          channelID: testid
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
       - name: integration-slack-api-with-oauthTokenData-and-mentioned-accounts
         slack:
           oauthTokenData: token
@@ -158,6 +207,23 @@ spec:
           mentionedAccounts:
             - 'user1'
             - '@user2'
+      - name: integration-slack-api-with-oauthTokenData-and-mentioned-groups
+        slack:
+          oauthTokenData: token
+          channelID: testid
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
+      - name: integration-slack-api-with-oauthTokenData-and-mentioned-both-accounts-and-groups
+        slack:
+          oauthTokenData: token
+          channelID: testid
+          mentionedAccounts:
+            - 'user1'
+            - '@user2'
+          mentionedGroups:
+            - 'group1'
+            - '<!subteam^group2>'
       - name: ci-webhook
         webhook:
           url: https://pipecd.dev/dev-hook

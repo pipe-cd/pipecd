@@ -222,10 +222,25 @@ func TestPipedConfig(t *testing.T) {
 							},
 						},
 						{
+							Name: "hookurl-with-mentioned-groups",
+							Slack: &NotificationReceiverSlack{
+								HookURL:         "https://slack.com/dev",
+								MentionedGroups: []string{"<!subteam^group1>", "<!subteam^group2>"},
+							},
+						},
+						{
 							Name: "hookurl-with-mentioned-accounts",
 							Slack: &NotificationReceiverSlack{
 								HookURL:           "https://slack.com/dev",
 								MentionedAccounts: []string{"user1", "user2"},
+							},
+						},
+						{
+							Name: "hookurl-with-mentioned-both-accounts-and-groups",
+							Slack: &NotificationReceiverSlack{
+								HookURL:           "https://slack.com/dev",
+								MentionedAccounts: []string{"user1", "user2"},
+								MentionedGroups:   []string{"<!subteam^group1>", "<!subteam^group2>"},
 							},
 						},
 						{
@@ -234,6 +249,23 @@ func TestPipedConfig(t *testing.T) {
 								OAuthToken:        "token",
 								ChannelID:         "testid",
 								MentionedAccounts: []string{"user1", "user2"},
+							},
+						},
+						{
+							Name: "integration-slack-api-with-mentioned-groups",
+							Slack: &NotificationReceiverSlack{
+								OAuthToken:      "token",
+								ChannelID:       "testid",
+								MentionedGroups: []string{"<!subteam^group1>", "<!subteam^group2>"},
+							},
+						},
+						{
+							Name: "integration-slack-api-with-mentioned-both-accounts-groups",
+							Slack: &NotificationReceiverSlack{
+								OAuthToken:        "token",
+								ChannelID:         "testid",
+								MentionedAccounts: []string{"user1", "user2"},
+								MentionedGroups:   []string{"<!subteam^group1>", "<!subteam^group2>"},
 							},
 						},
 						{
@@ -259,11 +291,45 @@ func TestPipedConfig(t *testing.T) {
 							},
 						},
 						{
+							Name: "integration-slack-api-with-oauthTokenFile-and-mentioned-groups",
+							Slack: &NotificationReceiverSlack{
+								OAuthTokenFile:  "foo/bar",
+								ChannelID:       "testid",
+								MentionedGroups: []string{"<!subteam^group1>", "<!subteam^group2>"},
+							},
+						},
+						{
+							Name: "integration-slack-api-with-oauthTokenFile-and-mentioned-both-accounts-and-groups",
+							Slack: &NotificationReceiverSlack{
+								OAuthTokenFile:    "foo/bar",
+								ChannelID:         "testid",
+								MentionedAccounts: []string{"user1", "user2"},
+								MentionedGroups:   []string{"<!subteam^group1>", "<!subteam^group2>"},
+							},
+						},
+						{
 							Name: "integration-slack-api-with-oauthTokenData-and-mentioned-accounts",
 							Slack: &NotificationReceiverSlack{
 								OAuthTokenData:    "token",
 								ChannelID:         "testid",
 								MentionedAccounts: []string{"user1", "user2"},
+							},
+						},
+						{
+							Name: "integration-slack-api-with-oauthTokenData-and-mentioned-groups",
+							Slack: &NotificationReceiverSlack{
+								OAuthTokenData:  "token",
+								ChannelID:       "testid",
+								MentionedGroups: []string{"<!subteam^group1>", "<!subteam^group2>"},
+							},
+						},
+						{
+							Name: "integration-slack-api-with-oauthTokenData-and-mentioned-both-accounts-and-groups",
+							Slack: &NotificationReceiverSlack{
+								OAuthTokenData:    "token",
+								ChannelID:         "testid",
+								MentionedAccounts: []string{"user1", "user2"},
+								MentionedGroups:   []string{"<!subteam^group1>", "<!subteam^group2>"},
 							},
 						},
 						{

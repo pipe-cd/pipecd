@@ -103,7 +103,7 @@ func TestValidateWaitApprovalStageOptions(t *testing.T) {
 	}
 }
 
-func TestFindSlackAccounts(t *testing.T) {
+func TestFindSlackAccountsAndGroupsAndGroups(t *testing.T) {
 	testcases := []struct {
 		name     string
 		mentions []NotificationMention
@@ -133,12 +133,13 @@ func TestFindSlackAccounts(t *testing.T) {
 					Slack: []string{"user-1", "user-2"},
 				},
 				{
-					Event: "*",
-					Slack: []string{"user-1", "user-3"},
+					Event:       "*",
+					Slack:       []string{"user-1", "user-3"},
+					SlackGroups: []string{"group-1", "group-2"},
 				},
 			},
 			event: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
-			want:  []string{"user-1", "user-2", "user-3"},
+			want:  []string{"group-1", "group-2", "user-1", "user-2", "user-3"},
 		},
 		{
 			name: "match by all-events mark",
@@ -156,6 +157,21 @@ func TestFindSlackAccounts(t *testing.T) {
 			want:  []string{"user-1", "user-3"},
 		},
 		{
+			name: "match by all-events mark with slack groups",
+			mentions: []NotificationMention{
+				{
+					Event: "DEPLOYMENT_TRIGGERED",
+					Slack: []string{"user-1", "user-2"},
+				},
+				{
+					Event:       "*",
+					SlackGroups: []string{"group-1", "group-2"},
+				},
+			},
+			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+			want:  []string{"group-1", "group-2"},
+		},
+		{
 			name: "does not match anything",
 			mentions: []NotificationMention{
 				{
@@ -166,13 +182,49 @@ func TestFindSlackAccounts(t *testing.T) {
 			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
 			want:  []string{},
 		},
+		{
+			name: "match an event name with Slack Groups",
+			mentions: []NotificationMention{
+				{
+					Event:       "DEPLOYMENT_PLANNED",
+					SlackGroups: []string{"group-1", "group-2"},
+				},
+			},
+			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+			want:  []string{"group-1", "group-2"},
+		},
+		{
+			name: "match an event name with Slack Users and Groups",
+			mentions: []NotificationMention{
+				{
+					Event:       "DEPLOYMENT_PLANNED",
+					Slack:       []string{"user-1", "user-2"},
+					SlackGroups: []string{"group-1", "group-2"},
+				},
+			},
+			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+			want:  []string{"user-1", "user-2", "group-1", "group-2"},
+		},
+		{
+			name: "match an event name with Slack Users with new field SlackUsers",
+			mentions: []NotificationMention{
+				{
+					Event:       "DEPLOYMENT_PLANNED",
+					SlackUsers:  []string{"user-1", "user-2"},
+					Slack:       []string{"user-3", "user-4"},
+					SlackGroups: []string{"group-1", "group-2"},
+				},
+			},
+			event: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+			want:  []string{"user-1", "user-2", "user-3", "user-4", "group-1", "group-2"},
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			n := &DeploymentNotification{
 				tc.mentions,
 			}
-			as := n.FindSlackAccounts(tc.event)
+			as := n.FindSlackAccountsAndGroups(tc.event)
 			assert.ElementsMatch(t, tc.want, as)
 		})
 	}
