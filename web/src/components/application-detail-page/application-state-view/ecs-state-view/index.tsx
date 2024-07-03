@@ -52,15 +52,17 @@ function useGraph(
   graph.setGraph({ rankdir: "LR", align: "UL" });
   graph.setDefaultEdgeLabel(() => ({}));
 
-  const service = resources.find((r) => r.parentIdsList.length === 0);
   resources.forEach((resource) => {
     graph.setNode(resource.id, {
       resource,
       height: NODE_HEIGHT,
       width: NODE_WIDTH,
     });
-    if (service && resource.parentIdsList.length > 0) {
-      graph.setEdge(service.id, resource.id);
+    // 'Service' does not need parent nodes.
+    if (resource.kind != "Service" && resource.parentIdsList.length > 0) {
+      resource.parentIdsList.forEach((parentId) => {
+        graph.setEdge(parentId, resource.id);
+      });
     }
   });
 
