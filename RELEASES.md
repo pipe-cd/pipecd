@@ -48,13 +48,15 @@ This refers to the release of new features or breaking changes.
 - Create a tagged release from the master branch. The release should start with "v" and be followed by the version number.
 
 ## Minor release
-This refers to the release of new features.
+This refers to the release of new features (breaking change may be included).
 
 Please refer to [Major release](https://github.com/pipe-cd/pipecd/blob/master/RELEASES.md#major-release) for the processes.
 
 ## Patch release
 This refers to the release of critical bug fixes. \
 A bugfix for a functional issue (not a data loss or security issue) that only affects an alpha feature does not qualify as a critical bug fix.
+
+This may also contain some minor features, but ensure that it does NOT contain any breaking changes.
 
 ### Prerequisites
 - `gh` is needed to be installed and ran `gh auth login`. Please refer to [cli/cli](https://github.com/cli/cli).
