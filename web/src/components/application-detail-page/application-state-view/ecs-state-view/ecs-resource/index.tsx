@@ -24,19 +24,20 @@ export interface ECSResourceProps {
   onClick: (resource: ECSResourceState.AsObject) => void;
 }
 
-export const ECSResource: FC<ECSResourceProps> = memo(
-  function ECSResource({ resource, onClick }) {
-    const classes = useStyles();
-    return (
-      <Paper square className={classes.root} onClick={() => onClick(resource)}>
-        <Typography variant="caption">{resource.kind}</Typography>
-        <div className={classes.nameLine}>
-          <ECSResourceHealthStatusIcon health={resource.healthStatus} />
-          <Typography variant="subtitle2" className={classes.name}>
-            {resource.name}
-          </Typography>
-        </div>
-      </Paper>
-    );
-  }
-);
+export const ECSResource: FC<ECSResourceProps> = memo(function ECSResource({
+  resource,
+  onClick,
+}) {
+  const classes = useStyles();
+  return (
+    <Paper square className={classes.root} onClick={() => onClick(resource)}>
+      <Typography variant="caption">{resource.kind}</Typography>
+      <div className={classes.nameLine}>
+        <ECSResourceHealthStatusIcon health={resource.healthStatus} />
+        <Typography variant="subtitle2" className={classes.name}>
+          {resource.name}
+        </Typography>
+      </div>
+    </Paper>
+  );
+});

@@ -72,9 +72,7 @@ function useGraph(
   return graph;
 }
 
-export const ECSStateView: FC<ECSStateViewProps> = ({
-  resources,
-}) => {
+export const ECSStateView: FC<ECSStateViewProps> = ({ resources }) => {
   const classes = useStyles();
   const [
     selectedResource,
