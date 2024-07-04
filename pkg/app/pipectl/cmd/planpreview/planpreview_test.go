@@ -172,6 +172,13 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 							ApplicationKind: model.ApplicationKind_ECS,
 							Error:           "wrong application configuration",
 						},
+						{
+							ApplicationId:   "app-6",
+							ApplicationName: "app-6",
+							ApplicationUrl:  "https://pipecd.dev/app-6",
+							ApplicationKind: model.ApplicationKind_LAMBDA,
+							Error:           "wrong application configuration",
+						},
 					},
 				},
 				{
@@ -203,7 +210,7 @@ changes-1
 changes-2
   ---DETAILS_END---
 
-NOTE: An error occurred while building plan-preview for the following 3 applications:
+NOTE: An error occurred while building plan-preview for the following 4 applications:
 
 1. app: app-3, env: env-3, kind: TERRAFORM
   reason: wrong application configuration
@@ -212,6 +219,9 @@ NOTE: An error occurred while building plan-preview for the following 3 applicat
   reason: missing key
 
 3. app: app-5, kind: ECS
+  reason: wrong application configuration
+
+4. app: app-6, kind: LAMBDA
   reason: wrong application configuration
 
 NOTE: An error occurred while building plan-preview for applications of the following 2 Pipeds:
