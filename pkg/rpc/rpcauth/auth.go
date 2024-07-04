@@ -52,6 +52,11 @@ func MakePipedToken(projectID, pipedID, pipedKey string) string {
 	return fmt.Sprintf("%s,%s,%s", projectID, pipedID, pipedKey)
 }
 
+// ParsePipedToken parses a piped token and returns projectID, pipedID, pipedKey.
+func ParsePipedToken(token string) (projectID, pipedID, pipedKey string, err error) {
+	return parsePipedToken(token)
+}
+
 func parsePipedToken(token string) (projectID, pipedID, pipedKey string, err error) {
 	parts := strings.Split(token, ",")
 	if len(parts) != 3 {
