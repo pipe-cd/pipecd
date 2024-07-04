@@ -55,7 +55,7 @@ func (c AppManifestsCache) Get(commit string) ([]Manifest, bool) {
 func (c AppManifestsCache) Put(commit string, manifests []Manifest) {
 	key := appManifestsCacheKey(c.AppID, commit)
 	if err := c.Cache.Put(key, manifests); err != nil {
-		c.Logger.Error("failed while putting app manifests from cache",
+		c.Logger.Error("failed while putting app manifests into cache",
 			zap.String("app-id", c.AppID),
 			zap.String("commit-hash", commit),
 			zap.Error(err),
