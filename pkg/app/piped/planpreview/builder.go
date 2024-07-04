@@ -251,8 +251,9 @@ func (b *builder) buildApp(ctx context.Context, worker int, command string, app 
 		dr, err = b.cloudrundiff(ctx, app, targetDSP, preCommit, &buf)
 	case model.ApplicationKind_ECS:
 		dr, err = b.ecsdiff(ctx, app, targetDSP, preCommit, &buf)
+	case model.ApplicationKind_LAMBDA:
+		dr, err = b.lambdadiff(ctx, app, targetDSP, preCommit, &buf)
 	default:
-		// TODO: Calculating planpreview's diff for other application kinds.
 		dr = &diffResult{
 			summary: fmt.Sprintf("%s application is not implemented yet (coming soon)", app.Kind.String()),
 		}
