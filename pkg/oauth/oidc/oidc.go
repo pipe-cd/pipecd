@@ -27,9 +27,9 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-const (
-	listPerPage = 100
-)
+var usernameClaimKeys = []string{"username", "preferred_username", "cognito:username"}
+var avatarUrlClaimKeys = []string{"picture", "avatar_url"}
+var roleClaimKeys = []string{"groups", "roles", "cognito:groups", "custom:roles", "custom:groups"}
 
 // OAuthClient is a oauth client for OIDC.
 type OAuthClient struct {
@@ -120,14 +120,13 @@ func (c *OAuthClient) GetUser(ctx context.Context, clientId string) (*model.User
 
 func (c *OAuthClient) decideRole(claims jwt.MapClaims) (role *model.Role, err error) {
 	roleStrings := make([]string, 0)
-	keys := []string{"groups", "roles", "cognito:groups", "custom:roles", "custom:groups"}
 
 	role = &model.Role{
 		ProjectId:        c.project.Id,
 		ProjectRbacRoles: roleStrings,
 	}
 
-	for _, key := range keys {
+	for _, key := range roleClaimKeys {
 		val, ok := claims[key]
 		if !ok || val == nil {
 			continue
@@ -178,11 +177,9 @@ func (c *OAuthClient) decideRole(claims jwt.MapClaims) (role *model.Role, err er
 }
 
 func (c *OAuthClient) decideUserInfos(claims jwt.MapClaims) (username, avatarUrl string, err error) {
-	usernameKeys := []string{"username", "name", "preferred_username", "cognito:username"}
-	avatarUrlKey := "avatar_url"
 
 	username = ""
-	for _, key := range usernameKeys {
+	for _, key := range usernameClaimKeys {
 		val, ok := claims[key]
 		if ok && val != nil {
 			if str, ok := val.(string); ok && str != "" {
@@ -198,10 +195,13 @@ func (c *OAuthClient) decideUserInfos(claims jwt.MapClaims) (username, avatarUrl
 	}
 
 	avatarUrl = ""
-	val, ok := claims[avatarUrlKey]
-	if ok && val != nil {
-		if str, ok := val.(string); ok && str != "" {
-			avatarUrl = str
+	for _, key := range avatarUrlClaimKeys {
+		val, ok := claims[key]
+		if ok && val != nil {
+			if str, ok := val.(string); ok && str != "" {
+				avatarUrl = str
+				break
+			}
 		}
 	}
 
