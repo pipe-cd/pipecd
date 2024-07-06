@@ -27,7 +27,7 @@ import (
 	"github.com/pipe-cd/pipecd/pkg/model"
 )
 
-var usernameClaimKeys = []string{"username", "preferred_username", "cognito:username"}
+var usernameClaimKeys = []string{"username", "preferred_username", "name", "cognito:username"}
 var avatarUrlClaimKeys = []string{"picture", "avatar_url"}
 var roleClaimKeys = []string{"groups", "roles", "cognito:groups", "custom:roles", "custom:groups"}
 
