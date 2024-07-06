@@ -43,7 +43,7 @@ Requirements:
 
 - The IdToken will be used to decide the user's role and username.
 - The IdToken must contain information about the Username and Role.
-  - Supported Claims Key for Username (in order of priority): `username`, `preferred_username`, `cognito:username`
+  - Supported Claims Key for Username (in order of priority): `username`, `preferred_username`,`name`, `cognito:username`
   - Supported Claims Key for Role (in order of priority): `groups`, `roles`, `cognito:groups`, `custom:roles`, `custom:groups`
   - Supported Claims Key for Avatar (in order of priority): `picture`, `avatar_url`
 
