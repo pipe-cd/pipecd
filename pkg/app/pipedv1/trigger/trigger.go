@@ -471,24 +471,29 @@ func (t *Trigger) GetLastTriggeredCommitGetter() LastTriggeredCommitGetter {
 }
 
 func (t *Trigger) notifyDeploymentTriggered(_ context.Context, appCfg *config.GenericApplicationSpec, d *model.Deployment) {
-	var mentions []string
+	var users []string
+	var groups []string
 	if n := appCfg.DeploymentNotification; n != nil {
-		mentions = n.FindSlackAccountsAndGroups(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED)
+		users = n.FindSlackUsers(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED)
+		groups = n.FindSlackGroups(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED)
 	}
 
 	t.notifier.Notify(model.NotificationEvent{
 		Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
 		Metadata: &model.NotificationEventDeploymentTriggered{
 			Deployment:        d,
-			MentionedAccounts: mentions,
+			MentionedAccounts: users,
+			MentionedGroups:   groups,
 		},
 	})
 }
 
 func (t *Trigger) notifyDeploymentTriggerFailed(app *model.Application, appCfg *config.GenericApplicationSpec, reason string, commit git.Commit) {
-	var mentions []string
+	var users []string
+	var groups []string
 	if n := appCfg.DeploymentNotification; n != nil {
-		mentions = n.FindSlackAccountsAndGroups(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED)
+		users = n.FindSlackUsers(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED)
+		groups = n.FindSlackUsers(model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGER_FAILED)
 	}
 
 	t.notifier.Notify(model.NotificationEvent{
@@ -496,7 +501,8 @@ func (t *Trigger) notifyDeploymentTriggerFailed(app *model.Application, appCfg *
 		Metadata: &model.NotificationEventDeploymentTriggerFailed{
 			Application:       app,
 			CommitHash:        commit.Hash,
-			MentionedAccounts: mentions,
+			MentionedAccounts: users,
+			MentionedGroups:   groups,
 			CommitMessage:     commit.Message,
 			Reason:            reason,
 		},

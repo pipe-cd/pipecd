@@ -110,7 +110,12 @@ func (e *Executor) checkApproval(ctx context.Context, num int) bool {
 }
 
 func (e *Executor) reportApproved(approver string) {
-	accounts, err := e.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED)
+	users, err := e.getMentionedUsers(model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED)
+	if err != nil {
+		e.Logger.Error("failed to get the list of users", zap.Error(err))
+	}
+
+	groups, err := e.getMentionedGroups(model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED)
 	if err != nil {
 		e.Logger.Error("failed to get the list of accounts", zap.Error(err))
 	}
@@ -120,13 +125,19 @@ func (e *Executor) reportApproved(approver string) {
 		Metadata: &model.NotificationEventDeploymentApproved{
 			Deployment:        e.Deployment,
 			Approver:          approver,
-			MentionedAccounts: accounts,
+			MentionedAccounts: users,
+			MentionedGroups:   groups,
 		},
 	})
 }
 
 func (e *Executor) reportRequiringApproval() {
-	accounts, err := e.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
+	users, err := e.getMentionedUsers(model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
+	if err != nil {
+		e.Logger.Error("failed to get the list of users", zap.Error(err))
+	}
+
+	groups, err := e.getMentionedGroups(model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
 	if err != nil {
 		e.Logger.Error("failed to get the list of accounts", zap.Error(err))
 	}
@@ -135,12 +146,13 @@ func (e *Executor) reportRequiringApproval() {
 		Type: model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL,
 		Metadata: &model.NotificationEventDeploymentWaitApproval{
 			Deployment:        e.Deployment,
-			MentionedAccounts: accounts,
+			MentionedAccounts: users,
+			MentionedGroups:   groups,
 		},
 	})
 }
 
-func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
+func (e *Executor) getMentionedUsers(event model.NotificationEventType) ([]string, error) {
 	n, ok := e.MetadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
 	if !ok {
 		return []string{}, nil
@@ -148,10 +160,24 @@ func (e *Executor) getMentionedAccounts(event model.NotificationEventType) ([]st
 
 	var notification config.DeploymentNotification
 	if err := json.Unmarshal([]byte(n), &notification); err != nil {
-		return nil, fmt.Errorf("could not extract mentions config: %w", err)
+		return nil, fmt.Errorf("could not extract mentions users config: %w", err)
 	}
 
-	return notification.FindSlackAccountsAndGroups(event), nil
+	return notification.FindSlackUsers(event), nil
+}
+
+func (e *Executor) getMentionedGroups(event model.NotificationEventType) ([]string, error) {
+	n, ok := e.MetadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
+	if !ok {
+		return []string{}, nil
+	}
+
+	var notification config.DeploymentNotification
+	if err := json.Unmarshal([]byte(n), &notification); err != nil {
+		return nil, fmt.Errorf("could not extract mentions groups config: %w", err)
+	}
+
+	return notification.FindSlackGroups(event), nil
 }
 
 // validateApproverNum checks if number of approves is valid.

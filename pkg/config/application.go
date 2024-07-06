@@ -598,7 +598,29 @@ type DeploymentNotification struct {
 	Mentions []NotificationMention `json:"mentions"`
 }
 
-func (n *DeploymentNotification) FindSlackAccountsAndGroups(event model.NotificationEventType) []string {
+// FindSlackGroups returns a list of slack group IDs to be mentioned for the given event.
+func (n *DeploymentNotification) FindSlackGroups(event model.NotificationEventType) []string {
+	as := make(map[string]struct{})
+	for _, m := range n.Mentions {
+		if m.Event != allEventsSymbol && "EVENT_"+m.Event != event.String() {
+			continue
+		}
+		if len(m.SlackGroups) > 0 {
+			for _, sg := range m.SlackGroups {
+				as[sg] = struct{}{}
+			}
+		}
+	}
+
+	approvers := make([]string, 0, len(as))
+	for a := range as {
+		approvers = append(approvers, a)
+	}
+	return approvers
+}
+
+// FindSlackUsers returns a list of slack user IDs to be mentioned for the given event.
+func (n *DeploymentNotification) FindSlackUsers(event model.NotificationEventType) []string {
 	as := make(map[string]struct{})
 	for _, m := range n.Mentions {
 		if m.Event != allEventsSymbol && "EVENT_"+m.Event != event.String() {
@@ -612,11 +634,6 @@ func (n *DeploymentNotification) FindSlackAccountsAndGroups(event model.Notifica
 		if len(m.SlackUsers) > 0 {
 			for _, su := range m.SlackUsers {
 				as[su] = struct{}{}
-			}
-		}
-		if len(m.SlackGroups) > 0 {
-			for _, sg := range m.SlackGroups {
-				as[sg] = struct{}{}
 			}
 		}
 	}
@@ -650,20 +667,8 @@ type NotificationMention struct {
 }
 
 func (n *NotificationMention) Validate() error {
-	if len(n.Slack) == 0 && len(n.SlackGroups) == 0 {
-		return fmt.Errorf("slack or slackGroups must not be empty")
-	}
-	slackGroups := make([]string, 0, len(n.SlackGroups))
-	for _, slackGroup := range n.SlackGroups {
-		if !strings.Contains(slackGroup, "!subteam^") {
-			formatSlackGroup := fmt.Sprintf("<!subteam^%s>", slackGroup)
-			slackGroups = append(slackGroups, formatSlackGroup)
-		} else {
-			slackGroups = append(slackGroups, slackGroup)
-		}
-	}
-	if len(slackGroups) > 0 {
-		n.SlackGroups = slackGroups
+	if len(n.Slack) == 0 && len(n.SlackGroups) == 0 && len(n.SlackUsers) == 0 {
+		return fmt.Errorf("slack, slackusers or slackGroups must not be empty")
 	}
 	if n.Event == allEventsSymbol {
 		return nil

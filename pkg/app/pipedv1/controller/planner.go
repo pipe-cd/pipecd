@@ -245,9 +245,14 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) err
 		retry = pipedservice.NewRetry(10)
 	)
 
-	accounts, err := p.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
+	users, err := p.getMentionedUsers(model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
 	if err != nil {
-		p.logger.Error("failed to get the list of accounts", zap.Error(err))
+		p.logger.Error("failed to get the list of users", zap.Error(err))
+	}
+
+	groups, err := p.getMentionedGroups(model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
+	if err != nil {
+		p.logger.Error("failed to get the list of groups", zap.Error(err))
 	}
 
 	defer func() {
@@ -256,7 +261,8 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) err
 			Metadata: &model.NotificationEventDeploymentFailed{
 				Deployment:        p.deployment,
 				Reason:            reason,
-				MentionedAccounts: accounts,
+				MentionedAccounts: users,
+				MentionedGroups:   groups,
 			},
 		})
 	}()
@@ -290,9 +296,14 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 		retry = pipedservice.NewRetry(10)
 	)
 
-	accounts, err := p.getMentionedAccounts(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+	users, err := p.getMentionedUsers(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 	if err != nil {
-		p.logger.Error("failed to get the list of accounts", zap.Error(err))
+		p.logger.Error("failed to get the list of users", zap.Error(err))
+	}
+
+	groups, err := p.getMentionedGroups(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+	if err != nil {
+		p.logger.Error("failed to get the list of groups", zap.Error(err))
 	}
 
 	defer func() {
@@ -301,7 +312,8 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 			Metadata: &model.NotificationEventDeploymentCancelled{
 				Deployment:        p.deployment,
 				Commander:         commander,
-				MentionedAccounts: accounts,
+				MentionedAccounts: users,
+				MentionedGroups:   groups,
 			},
 		})
 	}()
@@ -319,7 +331,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 	return err
 }
 
-func (p *planner) getMentionedAccounts(event model.NotificationEventType) ([]string, error) {
+func (p *planner) getMentionedUsers(event model.NotificationEventType) ([]string, error) {
 	n, ok := p.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
 	if !ok {
 		return []string{}, nil
@@ -330,5 +342,19 @@ func (p *planner) getMentionedAccounts(event model.NotificationEventType) ([]str
 		return nil, fmt.Errorf("could not extract mentions config: %w", err)
 	}
 
-	return notification.FindSlackAccountsAndGroups(event), nil
+	return notification.FindSlackUsers(event), nil
+}
+
+func (p *planner) getMentionedGroups(event model.NotificationEventType) ([]string, error) {
+	n, ok := p.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
+	if !ok {
+		return []string{}, nil
+	}
+
+	var notification config.DeploymentNotification
+	if err := json.Unmarshal([]byte(n), &notification); err != nil {
+		return nil, fmt.Errorf("could not extract mentions config: %w", err)
+	}
+
+	return notification.FindSlackGroups(event), nil
 }
