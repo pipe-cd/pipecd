@@ -16,6 +16,7 @@ RUN \
         ca-certificates \
         git \
         openssh \
+        jq \
         curl && \
     update-ca-certificates && \
     mkdir -p ${PIPED_TOOLS_DIR} && \

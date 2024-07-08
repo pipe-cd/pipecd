@@ -23,33 +23,54 @@ import "pkg/model/deployment.proto";
 
 // PlannerService defines the public APIs for remote planners.
 service PlannerService {
-    // BuildPlan builds plan for the given deployment.
-    rpc BuildPlan(BuildPlanRequest) returns (BuildPlanResponse) {}
+    // DetermineStrategy determines which strategy should be used for the given deployment.
+    rpc DetermineStrategy(DetermineStrategyRequest) returns (DetermineStrategyResponse) {}
+    // QuickSyncPlan builds plan for the given deployment using quick sync strategy.
+    rpc QuickSyncPlan(QuickSyncPlanRequest) returns (QuickSyncPlanResponse) {}
+    // PipelineSyncPlan builds plan for the given deployment using pipeline sync strategy.
+    rpc PipelineSyncPlan(PipelineSyncPlanRequest) returns (PipelineSyncPlanResponse) {}
 }
 
-message BuildPlanRequest {
-    string working_dir = 1 [(validate.rules).string.min_len = 1];
+message DetermineStrategyRequest {
+    PlanPluginInput input = 1 [(validate.rules).message.required = true];
+}
+
+message DetermineStrategyResponse {
+    // The determined sync strategy.
+    model.SyncStrategy sync_strategy = 1;
+    // Text summary of the determined strategy.
+    string summary = 2;
+}
+
+message QuickSyncPlanRequest {
+    PlanPluginInput input = 1 [(validate.rules).message.required = true];
+}
+
+message QuickSyncPlanResponse {
+    // Stages of deployment pipeline under quick sync strategy.
+    repeated model.PipelineStage stages = 1;
+}
+
+message PipelineSyncPlanRequest {
+    PlanPluginInput input = 1 [(validate.rules).message.required = true];
+}
+
+message PipelineSyncPlanResponse {
+    // Stages of deployment pipeline under pipeline sync strategy.
+    repeated model.PipelineStage stages = 1;
+}
+
+message PlanPluginInput {
+    // The deployment to build a plan for.
+    model.Deployment deployment = 1 [(validate.rules).message.required = true];
+    // The remote URL of the deployment source, where plugin can find the deployments sources (manifests).
+    string source_remote_url = 2 [(validate.rules).string.min_len = 1];
     // Last successful commit hash and config file name.
     // Use to build deployment source object for last successful deployment.
-    string last_successful_commit_hash = 2;
-    string last_successful_config_file_name = 3;
-    // The configuration of the piped that handles the deployment.
-    bytes piped_config = 4 [(validate.rules).bytes.min_len = 1];
-    // The deployment to build a plan for.
-    model.Deployment deployment = 5 [(validate.rules).message.required = true];
-}
-
-message BuildPlanResponse {
-    // The built deployment plan.
-    DeploymentPlan plan = 1;
-}
-
-message DeploymentPlan {
-    model.SyncStrategy sync_strategy = 1;
-    // Text summary of planned deployment.
-    string summary = 2;
-    repeated model.ArtifactVersion versions = 3;
-    repeated model.PipelineStage stages = 4;
+    string last_successful_commit_hash = 3;
+    string last_successful_config_file_name = 4;
+    // The configuration of plugin that handles the deployment.
+    bytes plugin_config = 5;
 }
 
 service ExecutorService {
