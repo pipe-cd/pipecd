@@ -95,7 +95,17 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func rollback(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, primaryTargetGroup *types.LoadBalancer, canaryTargetGroup *types.LoadBalancer, ignoreDesiredCountOnUpdate bool) bool {
+func rollback(
+	ctx context.Context,
+	in *executor.Input,
+	platformProviderName string,
+	platformProviderCfg *config.PlatformProviderECSConfig,
+	taskDefinition types.TaskDefinition,
+	serviceDefinition types.Service,
+	primaryTargetGroup *types.LoadBalancer,
+	canaryTargetGroup *types.LoadBalancer,
+	ignoreDesiredCountOnUpdate bool,
+) bool {
 	in.LogPersister.Infof("Start rollback the ECS service and task family: %s and %s to original stage", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
