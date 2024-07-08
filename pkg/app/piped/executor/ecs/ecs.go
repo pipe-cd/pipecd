@@ -146,7 +146,8 @@ func applyTaskDefinition(ctx context.Context, cli provider.Client, taskDefinitio
 	return td, nil
 }
 
-func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDefinition types.Service) (*types.Service, error) {
+// The parameter `ignoreDesiredCountOnUpdate` is only used when updating the service, not for creating it.
+func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDefinition types.Service, ignoreDesiredCountOnUpdate bool) (*types.Service, error) {
 	found, err := cli.ServiceExists(ctx, *serviceDefinition.ClusterArn, *serviceDefinition.ServiceName)
 	if err != nil {
 		return nil, fmt.Errorf("unable to validate service name %s: %w", *serviceDefinition.ServiceName, err)
@@ -154,7 +155,7 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 
 	var service *types.Service
 	if found {
-		service, err = cli.UpdateService(ctx, serviceDefinition)
+		service, err = cli.UpdateService(ctx, serviceDefinition, ignoreDesiredCountOnUpdate)
 		if err != nil {
 			return nil, fmt.Errorf("failed to update ECS service %s: %w", *serviceDefinition.ServiceName, err)
 		}
@@ -253,7 +254,7 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	return nil
 }
 
-func sync(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, recreate bool, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
+func sync(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, recreate bool, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer, ignoreDesiredCountOnUpdate bool) bool {
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
@@ -268,7 +269,7 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 	}
 
 	in.LogPersister.Infof("Start applying the ECS service definition")
-	service, err := applyServiceDefinition(ctx, client, serviceDefinition)
+	service, err := applyServiceDefinition(ctx, client, serviceDefinition, ignoreDesiredCountOnUpdate)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply service %s: %v", *serviceDefinition.ServiceName, err)
 		return false
@@ -279,7 +280,7 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 		// Scale down the service tasks by set it to 0
 		in.LogPersister.Infof("Scale down ECS desired tasks count to 0")
 		service.DesiredCount = 0
-		if _, err = client.UpdateService(ctx, *service); err != nil {
+		if _, err = client.UpdateService(ctx, *service, false); err != nil {
 			in.LogPersister.Errorf("Failed to stop service tasks: %v", err)
 			return false
 		}
@@ -293,7 +294,7 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 		// Scale up the service tasks count back to its desired.
 		in.LogPersister.Infof("Scale up ECS desired tasks count back to %d", cnt)
 		service.DesiredCount = cnt
-		if _, err = client.UpdateService(ctx, *service); err != nil {
+		if _, err = client.UpdateService(ctx, *service, false); err != nil {
 			in.LogPersister.Errorf("Failed to turning back service tasks: %v", err)
 			return false
 		}
@@ -315,7 +316,7 @@ func sync(ctx context.Context, in *executor.Input, platformProviderName string, 
 	return true
 }
 
-func rollout(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer) bool {
+func rollout(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer, ignoreDesiredCountOnUpdate bool) bool {
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
@@ -330,7 +331,7 @@ func rollout(ctx context.Context, in *executor.Input, platformProviderName strin
 	}
 
 	in.LogPersister.Infof("Start applying the ECS service definition")
-	service, err := applyServiceDefinition(ctx, client, serviceDefinition)
+	service, err := applyServiceDefinition(ctx, client, serviceDefinition, ignoreDesiredCountOnUpdate)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to apply service %s: %v", *serviceDefinition.ServiceName, err)
 		return false
