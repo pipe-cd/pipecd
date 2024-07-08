@@ -90,6 +90,7 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 	input := &ecs.CreateServiceInput{
 		Cluster:                       service.ClusterArn,
 		ServiceName:                   service.ServiceName,
+		DesiredCount:                  aws.Int32(service.DesiredCount),
 		DeploymentController:          service.DeploymentController,
 		DeploymentConfiguration:       service.DeploymentConfiguration,
 		EnableECSManagedTags:          service.EnableECSManagedTags,
