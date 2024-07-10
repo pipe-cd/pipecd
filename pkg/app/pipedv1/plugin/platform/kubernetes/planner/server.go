@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/deploysource"
-	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin/sourcecloner"
+	"github.com/pipe-cd/pipecd/pkg/app/pipedv1/plugin"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
 	"github.com/pipe-cd/pipecd/pkg/regexpool"
 
@@ -79,14 +79,10 @@ func (ps *PlannerService) DetermineStrategy(ctx context.Context, in *platform.De
 func (ps *PlannerService) QuickSyncPlan(ctx context.Context, in *platform.QuickSyncPlanRequest) (*platform.QuickSyncPlanResponse, error) {
 	now := time.Now()
 
-	cloner, err := sourcecloner.NewCloner(
-		in.GetInput().GetSourceRemoteUrl(),
-		in.GetInput().GetDeployment().GetGitPath().GetRepo().GetBranch(),
-		"target",
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create git client (%w)", err)
-	}
+  cloner, err := plugin.GetPlanSourceCloner(in.GetInput())
+  if err != nil {
+    return nil, err
+  }
 
 	d, err := os.MkdirTemp("", "") // TODO
 	if err != nil {
