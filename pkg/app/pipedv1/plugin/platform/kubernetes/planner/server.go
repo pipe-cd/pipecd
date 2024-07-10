@@ -79,10 +79,10 @@ func (ps *PlannerService) DetermineStrategy(ctx context.Context, in *platform.De
 func (ps *PlannerService) QuickSyncPlan(ctx context.Context, in *platform.QuickSyncPlanRequest) (*platform.QuickSyncPlanResponse, error) {
 	now := time.Now()
 
-  cloner, err := plugin.GetPlanSourceCloner(in.GetInput())
-  if err != nil {
-    return nil, err
-  }
+	cloner, err := plugin.GetPlanSourceCloner(in.GetInput())
+	if err != nil {
+		return nil, err
+	}
 
 	d, err := os.MkdirTemp("", "") // TODO
 	if err != nil {

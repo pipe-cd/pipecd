@@ -20,5 +20,5 @@ func GetPlanSourceCloner(input *platform.PlanPluginInput) (deploysource.SourceCl
 		input.GetDeployment().GetGitPath().GetRepo().GetBranch(),
 	)
 
-  return cloner, nil
+	return cloner, nil
 }

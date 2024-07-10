@@ -90,11 +90,11 @@ func (d *localSourceCloner) RevisionName() string {
 
 func (d *localSourceCloner) Clone(ctx context.Context, dest string) error {
 	repo, err := d.repo.Copy(dest)
-  if err != nil {
-    return err
-  }
-  if err := repo.Checkout(ctx, d.revision); err != nil {
-    return err
-  }
+	if err != nil {
+		return err
+	}
+	if err := repo.Checkout(ctx, d.revision); err != nil {
+		return err
+	}
 	return nil
 }
