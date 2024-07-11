@@ -44,7 +44,7 @@ type Client interface {
 type ECS interface {
 	ServiceExists(ctx context.Context, clusterName string, servicesName string) (bool, error)
 	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
-	UpdateService(ctx context.Context, service types.Service, ignoreDesiredCount bool) (*types.Service, error)
+	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
 	WaitServiceStable(ctx context.Context, service types.Service) error
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
 	RunTask(ctx context.Context, taskDefinition types.TaskDefinition, clusterArn string, launchType string, awsVpcConfiguration *config.ECSVpcConfiguration, tags []types.Tag) error

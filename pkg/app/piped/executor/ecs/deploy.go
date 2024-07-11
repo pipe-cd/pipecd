@@ -109,8 +109,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 
 	recreate := e.appCfg.QuickSync.Recreate
-	ignoreDesiredCountOnUpdate := *e.appCfg.Input.IgnoreDesiredCountOnUpdate
-	if !sync(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, recreate, taskDefinition, servicedefinition, primary, ignoreDesiredCountOnUpdate) {
+	if !sync(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, recreate, taskDefinition, servicedefinition, primary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -127,8 +126,6 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	ignoreDesiredCountOnUpdate := *e.appCfg.Input.IgnoreDesiredCountOnUpdate
-
 	switch e.appCfg.Input.AccessType {
 	case config.AccessTypeELB:
 		primary, _, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
@@ -140,12 +137,12 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 			return model.StageStatus_STAGE_FAILURE
 		}
 
-		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary, ignoreDesiredCountOnUpdate) {
+		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, primary) {
 			return model.StageStatus_STAGE_FAILURE
 		}
 	case config.AccessTypeServiceDiscovery:
 		// Target groups are not used.
-		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, nil, ignoreDesiredCountOnUpdate) {
+		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, nil) {
 			return model.StageStatus_STAGE_FAILURE
 		}
 	default:
@@ -166,8 +163,6 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	ignoreDesiredCountOnUpdate := *e.appCfg.Input.IgnoreDesiredCountOnUpdate
-
 	switch e.appCfg.Input.AccessType {
 	case config.AccessTypeELB:
 		_, canary, ok := loadTargetGroups(&e.Input, e.appCfg, e.deploySource)
@@ -179,12 +174,12 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 			return model.StageStatus_STAGE_FAILURE
 		}
 
-		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, canary, ignoreDesiredCountOnUpdate) {
+		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, canary) {
 			return model.StageStatus_STAGE_FAILURE
 		}
 	case config.AccessTypeServiceDiscovery:
 		// Target groups are not used.
-		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, nil, ignoreDesiredCountOnUpdate) {
+		if !rollout(ctx, &e.Input, e.platformProviderName, e.platformProviderCfg, taskDefinition, servicedefinition, nil) {
 			return model.StageStatus_STAGE_FAILURE
 		}
 	default:
