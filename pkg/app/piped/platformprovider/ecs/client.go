@@ -120,6 +120,21 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 	return output.Service, nil
 }
 
+func (c *client) PruneServiceTasks(ctx context.Context, service types.Service) error {
+	input := &ecs.UpdateServiceInput{
+		Cluster:      service.ClusterArn,
+		Service:      service.ServiceName,
+		DesiredCount: aws.Int32(0),
+	}
+
+	_, err := c.ecsClient.UpdateService(ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to update ECS service %s: %w", *service.ServiceName, err)
+	}
+
+	return nil
+}
+
 func (c *client) UpdateService(ctx context.Context, service types.Service) (*types.Service, error) {
 	input := &ecs.UpdateServiceInput{
 		Cluster:              service.ClusterArn,
