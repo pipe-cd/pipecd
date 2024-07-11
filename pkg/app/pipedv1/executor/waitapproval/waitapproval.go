@@ -110,14 +110,9 @@ func (e *Executor) checkApproval(ctx context.Context, num int) bool {
 }
 
 func (e *Executor) reportApproved(approver string) {
-	users, err := e.getMentionedUsers(model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED)
+	users, groups, err := e.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
 	if err != nil {
-		e.Logger.Error("failed to get the list of users", zap.Error(err))
-	}
-
-	groups, err := e.getMentionedGroups(model.NotificationEventType_EVENT_DEPLOYMENT_APPROVED)
-	if err != nil {
-		e.Logger.Error("failed to get the list of accounts", zap.Error(err))
+		e.Logger.Error("failed to get the list of users or groups", zap.Error(err))
 	}
 
 	e.Notifier.Notify(model.NotificationEvent{
@@ -132,14 +127,9 @@ func (e *Executor) reportApproved(approver string) {
 }
 
 func (e *Executor) reportRequiringApproval() {
-	users, err := e.getMentionedUsers(model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
+	users, groups, err := e.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
 	if err != nil {
-		e.Logger.Error("failed to get the list of users", zap.Error(err))
-	}
-
-	groups, err := e.getMentionedGroups(model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL)
-	if err != nil {
-		e.Logger.Error("failed to get the list of accounts", zap.Error(err))
+		e.Logger.Error("failed to get the list of users or groups", zap.Error(err))
 	}
 
 	e.Notifier.Notify(model.NotificationEvent{
@@ -152,32 +142,19 @@ func (e *Executor) reportRequiringApproval() {
 	})
 }
 
-func (e *Executor) getMentionedUsers(event model.NotificationEventType) ([]string, error) {
+// getMentionedUsers returns the list of users groups who should be mentioned in the notification.
+func (e *Executor) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
 	n, ok := e.MetadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
 	if !ok {
-		return []string{}, nil
+		return []string{}, []string{}, nil
 	}
 
 	var notification config.DeploymentNotification
 	if err := json.Unmarshal([]byte(n), &notification); err != nil {
-		return nil, fmt.Errorf("could not extract mentions users config: %w", err)
+		return nil, nil, fmt.Errorf("could not extract mentions users and groups config: %w", err)
 	}
 
-	return notification.FindSlackUsers(event), nil
-}
-
-func (e *Executor) getMentionedGroups(event model.NotificationEventType) ([]string, error) {
-	n, ok := e.MetadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
-	if !ok {
-		return []string{}, nil
-	}
-
-	var notification config.DeploymentNotification
-	if err := json.Unmarshal([]byte(n), &notification); err != nil {
-		return nil, fmt.Errorf("could not extract mentions groups config: %w", err)
-	}
-
-	return notification.FindSlackGroups(event), nil
+	return notification.FindSlackUsers(event), notification.FindSlackGroups(event), nil
 }
 
 // validateApproverNum checks if number of approves is valid.

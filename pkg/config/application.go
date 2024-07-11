@@ -592,7 +592,7 @@ func (a *Attachment) Validate() error {
 	return nil
 }
 
-// DeploymentNotification represents the way to send to users.
+// DeploymentNotification represents the way to send to users or groups.
 type DeploymentNotification struct {
 	// List of users to be notified for each event.
 	Mentions []NotificationMention `json:"mentions"`

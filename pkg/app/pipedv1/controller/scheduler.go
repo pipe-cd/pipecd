@@ -634,14 +634,9 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	defer func() {
 		switch status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
-			users, err := s.getMentionedUsers(model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED)
+			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 			if err != nil {
 				s.logger.Error("failed to get the list of users", zap.Error(err))
-			}
-
-			groups, err := s.getMentionedGroups(model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED)
-			if err != nil {
-				s.logger.Error("failed to get the list of groups", zap.Error(err))
 			}
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED,
@@ -653,14 +648,11 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE:
-			users, err := s.getMentionedUsers(model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
+			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 			if err != nil {
 				s.logger.Error("failed to get the list of users", zap.Error(err))
 			}
-			groups, err := s.getMentionedGroups(model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
-			if err != nil {
-				s.logger.Error("failed to get the list of groups", zap.Error(err))
-			}
+
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_FAILED,
 				Metadata: &model.NotificationEventDeploymentFailed{
@@ -672,13 +664,9 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_CANCELLED:
-			users, err := s.getMentionedUsers(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			users, groups, err := s.getApplicationNotificationMentions(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
 			if err != nil {
 				s.logger.Error("failed to get the list of users", zap.Error(err))
-			}
-			groups, err := s.getMentionedGroups(model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
-			if err != nil {
-				s.logger.Error("failed to get the list of groups", zap.Error(err))
 			}
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED,
@@ -703,32 +691,19 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	return err
 }
 
-func (s *scheduler) getMentionedUsers(event model.NotificationEventType) ([]string, error) {
-	n, ok := s.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
+// getApplicationNotificationMentions returns the list of users groups who should be mentioned in the notification.
+func (p *scheduler) getApplicationNotificationMentions(event model.NotificationEventType) ([]string, []string, error) {
+	n, ok := p.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
 	if !ok {
-		return []string{}, nil
+		return []string{}, []string{}, nil
 	}
 
 	var notification config.DeploymentNotification
 	if err := json.Unmarshal([]byte(n), &notification); err != nil {
-		return nil, fmt.Errorf("could not extract mentions config: %w", err)
+		return nil, nil, fmt.Errorf("could not extract mentions config: %w", err)
 	}
 
-	return notification.FindSlackUsers(event), nil
-}
-
-func (s *scheduler) getMentionedGroups(event model.NotificationEventType) ([]string, error) {
-	n, ok := s.metadataStore.Shared().Get(model.MetadataKeyDeploymentNotification)
-	if !ok {
-		return []string{}, nil
-	}
-
-	var notification config.DeploymentNotification
-	if err := json.Unmarshal([]byte(n), &notification); err != nil {
-		return nil, fmt.Errorf("could not extract mentions config: %w", err)
-	}
-
-	return notification.FindSlackGroups(event), nil
+	return notification.FindSlackUsers(event), notification.FindSlackGroups(event), nil
 }
 
 func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) error {
