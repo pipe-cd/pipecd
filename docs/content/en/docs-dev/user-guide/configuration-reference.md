@@ -511,7 +511,7 @@ One of `yamlField` or `regex` is required.
 | targetGroups | [ECSTargetGroupInput](#ecstargetgroupinput) | The target groups configuration, will be used to routing traffic to created task sets. | Yes (if you want to perform progressive delivery) |
 | runStandaloneTask | bool | Run standalone tasks during deployments. About standalone task, see [here](https://docs.aws.amazon.com/AmazonECS/latest/userguide/ecs_run_task-v2.html). The default value is `true`. |
 | accessType | string | How the ECS service is accessed. One of `ELB` or `SERVICE_DISCOVERY`. See examples [here](https://github.com/pipe-cd/examples/tree/master/ecs/servicediscovery/simple). The default value is `ELB`. |
-| ignoreDesiredCountOnUpdate | bool | Whether to ignore the desiredCount of the service definition when updating the service or drift detection. For example, when you use auto scaling (e.g. [Application AutoScaling](https://docs.aws.amazon.com/autoscaling/application/userguide/what-is-application-auto-scaling.html)) and set `true` for this field, the desiredCount will not be updated to the value in the serviceDefinition. The default value is `false`. |
+| ignoreDesiredCountOnUpdate | bool | Whether to ignore the desiredCount of the service definition when updating the service. For example, when you use auto scaling (e.g. [Application AutoScaling](https://docs.aws.amazon.com/autoscaling/application/userguide/what-is-application-auto-scaling.html)) and set `true` for this field, the desiredCount will not be updated to the value in the serviceDefinition. The default value is `false`. |
 
 ### Restrictions of Service Definition
 
