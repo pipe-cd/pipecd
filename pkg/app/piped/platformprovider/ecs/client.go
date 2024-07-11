@@ -120,17 +120,15 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 	return output.Service, nil
 }
 
-func (c *client) UpdateService(ctx context.Context, service types.Service, ignoreDesiredCount bool) (*types.Service, error) {
+func (c *client) UpdateService(ctx context.Context, service types.Service) (*types.Service, error) {
 	input := &ecs.UpdateServiceInput{
 		Cluster:              service.ClusterArn,
 		Service:              service.ServiceName,
+		DesiredCount:         aws.Int32(service.DesiredCount),
 		EnableExecuteCommand: aws.Bool(service.EnableExecuteCommand),
 		PlacementStrategy:    service.PlacementStrategy,
 		// TODO: Support update other properties of service.
 		// PlacementConstraints:    service.PlacementConstraints,
-	}
-	if !ignoreDesiredCount {
-		input.DesiredCount = aws.Int32(service.DesiredCount)
 	}
 	output, err := c.ecsClient.UpdateService(ctx, input)
 	if err != nil {
