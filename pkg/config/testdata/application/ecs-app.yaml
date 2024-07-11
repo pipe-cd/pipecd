@@ -9,4 +9,3 @@ spec:
         targetGroupArn: arn:aws:elasticloadbalancing:xyz
         containerName: web
         containerPort: 80
-    ignoreDesiredCountOnUpdate: true
