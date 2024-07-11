@@ -73,7 +73,8 @@ type ECSDeploymentInput struct {
 	//  - SERVICE_DISCOVERY -  The service is accessed via ECS Service Discovery.
 	// Default is ELB.
 	AccessType string `json:"accessType,omitempty" default:"ELB"`
-	// Whether to ignore the desiredCount of the service definition when updating the service.
+
+	// Whether to ignore desiredCount of the service definition when updating the service.
 	// If this is set as true, the desiredCount will be updated when creating the service, but will not be updated when updating the service.
 	// Default is false.
 	IgnoreDesiredCountOnUpdate *bool `json:"ignoreDesiredCountOnUpdate,omitempty" default:"false"`

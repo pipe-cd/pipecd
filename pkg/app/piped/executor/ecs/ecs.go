@@ -254,17 +254,7 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	return nil
 }
 
-func sync(
-	ctx context.Context,
-	in *executor.Input,
-	platformProviderName string,
-	platformProviderCfg *config.PlatformProviderECSConfig,
-	recreate bool,
-	taskDefinition types.TaskDefinition,
-	serviceDefinition types.Service,
-	targetGroup *types.LoadBalancer,
-	ignoreDesiredCountOnUpdate bool,
-) bool {
+func sync(ctx context.Context, in *executor.Input, platformProviderName string, platformProviderCfg *config.PlatformProviderECSConfig, recreate bool, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup *types.LoadBalancer, ignoreDesiredCountOnUpdate bool) bool {
 	client, err := provider.DefaultRegistry().Client(platformProviderName, platformProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", platformProviderName, err)
