@@ -25,7 +25,6 @@ import (
 	"sync"
 
 	"go.uber.org/zap"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/pipe-cd/pipecd/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipecd/pkg/config"
@@ -50,14 +49,13 @@ type gitClient interface {
 }
 
 type loader struct {
-	appName               string
-	appDir                string
-	repoDir               string
-	configFileName        string
-	input                 config.KubernetesDeploymentInput
-	isNamespacedResources map[schema.GroupVersionKind]bool
-	gc                    gitClient
-	logger                *zap.Logger
+	appName        string
+	appDir         string
+	repoDir        string
+	configFileName string
+	input          config.KubernetesDeploymentInput
+	gc             gitClient
+	logger         *zap.Logger
 
 	templatingMethod TemplatingMethod
 	kustomize        *Kustomize
@@ -69,26 +67,27 @@ type loader struct {
 func NewLoader(
 	appName, appDir, repoDir, configFileName string,
 	input config.KubernetesDeploymentInput,
-	isNamespacedResources map[schema.GroupVersionKind]bool,
 	gc gitClient,
 	logger *zap.Logger,
 ) Loader {
 
 	return &loader{
-		appName:               appName,
-		appDir:                appDir,
-		repoDir:               repoDir,
-		configFileName:        configFileName,
-		input:                 input,
-		isNamespacedResources: isNamespacedResources,
-		gc:                    gc,
-		logger:                logger.Named("kubernetes-loader"),
+		appName:        appName,
+		appDir:         appDir,
+		repoDir:        repoDir,
+		configFileName: configFileName,
+		input:          input,
+		gc:             gc,
+		logger:         logger.Named("kubernetes-loader"),
 	}
 }
 
 // LoadManifests renders and loads all manifests for application.
 func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err error) {
 	defer func() {
+		// Override namespace if set because ParseManifests does not parse it
+		// if namespace is not explicitly specified in the manifests.
+		setNamespace(manifests, l.input.Namespace)
 		sortManifests(manifests)
 	}()
 	l.initOnce.Do(func() {
@@ -167,50 +166,16 @@ func (l *loader) LoadManifests(ctx context.Context) (manifests []Manifest, err e
 		err = fmt.Errorf("unsupport templating method %v", l.templatingMethod)
 	}
 
-	// Refine the namespace when reading manifests from git repo
-	// because the namespace is determined not only by its own namespace on the file but also the namespace on the app.pipecd.yaml.
-	for i := range manifests {
-		m := manifests[i]
-		err := l.determineNamespace(&m)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	return
 }
 
-// determineNamespace fix the namespace of the given manifest.
-// The priority is as follows:
-// If the resource is cluster-scoped, it returns an empty string.
-// Otherwise, it is the namespace-scoped resource and the namespace is determined by the following order:
-// 1. The namespace set in the application configuration.
-// 2. The namespace set in the manifest.
-// 3. The default namespace.
-func (l *loader) determineNamespace(m *Manifest) error {
-	namespaced, ok := l.isNamespacedResources[m.u.GroupVersionKind()]
-	if !ok {
-		return fmt.Errorf("unknown resource kind %s", m.u.GroupVersionKind().String())
+func setNamespace(manifests []Manifest, namespace string) {
+	if namespace == "" {
+		return
 	}
-
-	namespace := "" // empty if cluster-scoped resource
-
-	if namespaced {
-		namespace = "default"
-
-		if ns := m.u.GetNamespace(); ns != "" {
-			namespace = ns
-		}
-
-		if l.input.Namespace != "" {
-			namespace = l.input.Namespace
-		}
+	for i := range manifests {
+		manifests[i].Key.Namespace = namespace
 	}
-
-	m.Key.Namespace = namespace
-	m.u.SetNamespace(namespace)
-
-	return nil
 }
 
 func sortManifests(manifests []Manifest) {
