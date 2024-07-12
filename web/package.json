@@ -88,7 +88,7 @@
     "react-intersection-observer": "^8.26.2",
     "react-markdown": "^6.0.2",
     "react-redux": "^7.2.9",
-    "react-router-dom": "^5.2.0",
+    "react-router-dom": "^5.3.4",
     "react-syntax-highlighter": "^15.5.0",
     "redux-thunk": "^2.4.1",
     "yup": "^0.32.11"
