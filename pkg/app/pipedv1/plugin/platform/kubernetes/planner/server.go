@@ -102,13 +102,13 @@ func (ps *PlannerService) QuickSyncPlan(ctx context.Context, in *platform.QuickS
 		return nil, err
 	}
 
-	autoRollback := false
-	if a := ds.ApplicationConfig.KubernetesApplicationSpec.Input.AutoRollback; a != nil {
-		autoRollback = *a
+	cfg := ds.ApplicationConfig.KubernetesApplicationSpec
+	if cfg == nil {
+		return nil, fmt.Errorf("missing KubernetesApplicationSpec in application configuration")
 	}
 
 	return &platform.QuickSyncPlanResponse{
-		Stages: buildQuickSyncPipeline(autoRollback, now),
+		Stages: buildQuickSyncPipeline(*cfg.Input.AutoRollback, now),
 	}, nil
 }
 
