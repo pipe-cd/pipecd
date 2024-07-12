@@ -97,6 +97,8 @@ priorityClassName: {}
 
 podLabels: {}
 
+podAnnotations: {}
+
 # Specifies how much of each resource the Piped container needs.
 resources: {}
 
