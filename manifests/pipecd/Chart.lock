@@ -5,5 +5,8 @@ dependencies:
 - name: grafana
   repository: https://grafana.github.io/helm-charts
   version: 6.16.2
-digest: sha256:2d733ccc35073795a41f9dd5aa6e03dcab3e195fd313db97751d23de3b6899bc
-generated: "2022-04-22T22:31:08.89498+09:00"
+- name: opentelemetry-collector
+  repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+  version: 0.93.3
+digest: sha256:4025b0e61e9889d55016505f93a4718b548bc7a36599cf4cfe29ba31fdfd1503
+generated: "2024-06-17T15:44:50.374800619+09:00"

@@ -22,8 +22,12 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PlannerServiceClient interface {
-	// BuildPlan builds plan for the given deployment.
-	BuildPlan(ctx context.Context, in *BuildPlanRequest, opts ...grpc.CallOption) (*BuildPlanResponse, error)
+	// DetermineStrategy determines which strategy should be used for the given deployment.
+	DetermineStrategy(ctx context.Context, in *DetermineStrategyRequest, opts ...grpc.CallOption) (*DetermineStrategyResponse, error)
+	// QuickSyncPlan builds plan for the given deployment using quick sync strategy.
+	QuickSyncPlan(ctx context.Context, in *QuickSyncPlanRequest, opts ...grpc.CallOption) (*QuickSyncPlanResponse, error)
+	// PipelineSyncPlan builds plan for the given deployment using pipeline sync strategy.
+	PipelineSyncPlan(ctx context.Context, in *PipelineSyncPlanRequest, opts ...grpc.CallOption) (*PipelineSyncPlanResponse, error)
 }
 
 type plannerServiceClient struct {
@@ -34,9 +38,27 @@ func NewPlannerServiceClient(cc grpc.ClientConnInterface) PlannerServiceClient {
 	return &plannerServiceClient{cc}
 }
 
-func (c *plannerServiceClient) BuildPlan(ctx context.Context, in *BuildPlanRequest, opts ...grpc.CallOption) (*BuildPlanResponse, error) {
-	out := new(BuildPlanResponse)
-	err := c.cc.Invoke(ctx, "/grpc.plugin.platformapi.v1alpha1.PlannerService/BuildPlan", in, out, opts...)
+func (c *plannerServiceClient) DetermineStrategy(ctx context.Context, in *DetermineStrategyRequest, opts ...grpc.CallOption) (*DetermineStrategyResponse, error) {
+	out := new(DetermineStrategyResponse)
+	err := c.cc.Invoke(ctx, "/grpc.plugin.platformapi.v1alpha1.PlannerService/DetermineStrategy", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *plannerServiceClient) QuickSyncPlan(ctx context.Context, in *QuickSyncPlanRequest, opts ...grpc.CallOption) (*QuickSyncPlanResponse, error) {
+	out := new(QuickSyncPlanResponse)
+	err := c.cc.Invoke(ctx, "/grpc.plugin.platformapi.v1alpha1.PlannerService/QuickSyncPlan", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *plannerServiceClient) PipelineSyncPlan(ctx context.Context, in *PipelineSyncPlanRequest, opts ...grpc.CallOption) (*PipelineSyncPlanResponse, error) {
+	out := new(PipelineSyncPlanResponse)
+	err := c.cc.Invoke(ctx, "/grpc.plugin.platformapi.v1alpha1.PlannerService/PipelineSyncPlan", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -47,8 +69,12 @@ func (c *plannerServiceClient) BuildPlan(ctx context.Context, in *BuildPlanReque
 // All implementations must embed UnimplementedPlannerServiceServer
 // for forward compatibility
 type PlannerServiceServer interface {
-	// BuildPlan builds plan for the given deployment.
-	BuildPlan(context.Context, *BuildPlanRequest) (*BuildPlanResponse, error)
+	// DetermineStrategy determines which strategy should be used for the given deployment.
+	DetermineStrategy(context.Context, *DetermineStrategyRequest) (*DetermineStrategyResponse, error)
+	// QuickSyncPlan builds plan for the given deployment using quick sync strategy.
+	QuickSyncPlan(context.Context, *QuickSyncPlanRequest) (*QuickSyncPlanResponse, error)
+	// PipelineSyncPlan builds plan for the given deployment using pipeline sync strategy.
+	PipelineSyncPlan(context.Context, *PipelineSyncPlanRequest) (*PipelineSyncPlanResponse, error)
 	mustEmbedUnimplementedPlannerServiceServer()
 }
 
@@ -56,8 +82,14 @@ type PlannerServiceServer interface {
 type UnimplementedPlannerServiceServer struct {
 }
 
-func (UnimplementedPlannerServiceServer) BuildPlan(context.Context, *BuildPlanRequest) (*BuildPlanResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BuildPlan not implemented")
+func (UnimplementedPlannerServiceServer) DetermineStrategy(context.Context, *DetermineStrategyRequest) (*DetermineStrategyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
+}
+func (UnimplementedPlannerServiceServer) QuickSyncPlan(context.Context, *QuickSyncPlanRequest) (*QuickSyncPlanResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QuickSyncPlan not implemented")
+}
+func (UnimplementedPlannerServiceServer) PipelineSyncPlan(context.Context, *PipelineSyncPlanRequest) (*PipelineSyncPlanResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PipelineSyncPlan not implemented")
 }
 func (UnimplementedPlannerServiceServer) mustEmbedUnimplementedPlannerServiceServer() {}
 
@@ -72,20 +104,56 @@ func RegisterPlannerServiceServer(s grpc.ServiceRegistrar, srv PlannerServiceSer
 	s.RegisterService(&PlannerService_ServiceDesc, srv)
 }
 
-func _PlannerService_BuildPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BuildPlanRequest)
+func _PlannerService_DetermineStrategy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DetermineStrategyRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PlannerServiceServer).BuildPlan(ctx, in)
+		return srv.(PlannerServiceServer).DetermineStrategy(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc.plugin.platformapi.v1alpha1.PlannerService/BuildPlan",
+		FullMethod: "/grpc.plugin.platformapi.v1alpha1.PlannerService/DetermineStrategy",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlannerServiceServer).BuildPlan(ctx, req.(*BuildPlanRequest))
+		return srv.(PlannerServiceServer).DetermineStrategy(ctx, req.(*DetermineStrategyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PlannerService_QuickSyncPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuickSyncPlanRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlannerServiceServer).QuickSyncPlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.plugin.platformapi.v1alpha1.PlannerService/QuickSyncPlan",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlannerServiceServer).QuickSyncPlan(ctx, req.(*QuickSyncPlanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PlannerService_PipelineSyncPlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PipelineSyncPlanRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlannerServiceServer).PipelineSyncPlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.plugin.platformapi.v1alpha1.PlannerService/PipelineSyncPlan",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlannerServiceServer).PipelineSyncPlan(ctx, req.(*PipelineSyncPlanRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -98,8 +166,16 @@ var PlannerService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*PlannerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "BuildPlan",
-			Handler:    _PlannerService_BuildPlan_Handler,
+			MethodName: "DetermineStrategy",
+			Handler:    _PlannerService_DetermineStrategy_Handler,
+		},
+		{
+			MethodName: "QuickSyncPlan",
+			Handler:    _PlannerService_QuickSyncPlan_Handler,
+		},
+		{
+			MethodName: "PipelineSyncPlan",
+			Handler:    _PlannerService_PipelineSyncPlan_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
