@@ -93,7 +93,7 @@ spec:
       {{- if .Values.quickstart.enabled }}
       initContainers:
         - name: dep-waiter
-          image: alpine:3.14
+          image: alpine:3.20
           command: ["sh", "-c"]
           args:
             - |
@@ -259,7 +259,7 @@ spec:
       {{- if .Values.quickstart.enabled }}
       initContainers:
         - name: dep-waiter
-          image: alpine:3.14
+          image: alpine:3.20
           command: ["sh", "-c"]
           args:
             - |
