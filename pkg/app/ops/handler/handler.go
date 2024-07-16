@@ -35,16 +35,20 @@ import (
 var templateFS embed.FS
 
 var (
-	topPageTmpl           = template.Must(template.ParseFS(templateFS, "templates/Top"))
-	listProjectsTmpl      = template.Must(template.ParseFS(templateFS, "templates/ListProjects"))
-	applicationCountsTmpl = template.Must(template.ParseFS(templateFS, "templates/ApplicationCounts"))
-	addProjectTmpl        = template.Must(template.ParseFS(templateFS, "templates/AddProject"))
-	addedProjectTmpl      = template.Must(template.ParseFS(templateFS, "templates/AddedProject"))
+	topPageTmpl              = template.Must(template.ParseFS(templateFS, "templates/Top"))
+	listProjectsTmpl         = template.Must(template.ParseFS(templateFS, "templates/ListProjects"))
+	applicationCountsTmpl    = template.Must(template.ParseFS(templateFS, "templates/ApplicationCounts"))
+	addProjectTmpl           = template.Must(template.ParseFS(templateFS, "templates/AddProject"))
+	addedProjectTmpl         = template.Must(template.ParseFS(templateFS, "templates/AddedProject"))
+	confirmPasswordResetTmpl = template.Must(template.ParseFS(templateFS, "templates/ConfirmPasswordReset"))
+	resetPasswordTmpl        = template.Must(template.ParseFS(templateFS, "templates/ResetPassword"))
 )
 
 type projectStore interface {
 	Add(ctx context.Context, proj *model.Project) error
 	List(ctx context.Context, opts datastore.ListOptions) ([]model.Project, error)
+	Get(ctx context.Context, id string) (*model.Project, error)
+	UpdateProjectStaticAdmin(ctx context.Context, id, username, password string) error
 }
 
 type Handler struct {
@@ -72,6 +76,7 @@ func NewHandler(port int, ps projectStore, sharedSSOConfigs []config.SharedSSOCo
 	mux.HandleFunc("/", h.handleTop)
 	mux.HandleFunc("/projects", h.handleListProjects)
 	mux.HandleFunc("/projects/add", h.handleAddProject)
+	mux.HandleFunc("/projects/reset-password", h.handleResetPassword)
 
 	return h
 }
@@ -149,6 +154,106 @@ func (h *Handler) handleListProjects(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := listProjectsTmpl.Execute(w, data); err != nil {
 		h.logger.Error("failed to render ListProjects page template", zap.Error(err))
+	}
+}
+
+func (h *Handler) getProjectByIDOrReturnError(id string, w http.ResponseWriter) *model.Project {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	project, err := h.projectStore.Get(ctx, id)
+	if err != nil {
+		h.logger.Error("failed to retrieve existing project",
+			zap.String("id", id),
+			zap.Error(err),
+		)
+		http.Error(w, fmt.Sprintf("Unable to retrieve existing project (%v)", err), http.StatusInternalServerError)
+		return nil
+	}
+	return project
+}
+
+func (h *Handler) confirmPasswordReset(w http.ResponseWriter, r *http.Request, optionalErrorMessage string) {
+	id := html.EscapeString(r.URL.Query().Get("ID"))
+	if id == "" {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+	project := h.getProjectByIDOrReturnError(id, w)
+	if project == nil {
+		return
+	}
+	data := map[string]string{
+		"ID":                  id,
+		"Description":         project.Desc,
+		"StaticAdminUsername": project.GetStaticAdminUsername(),
+		"CreatedAt":           time.Unix(project.CreatedAt, 0).String(),
+		"ErrorMessage":        optionalErrorMessage,
+	}
+	if err := confirmPasswordResetTmpl.Execute(w, data); err != nil {
+		h.logger.Error("failed to render ConfirmResetPassword page template", zap.Error(err))
+	}
+
+}
+
+func (h *Handler) handleResetPassword(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodPost {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+	if r.Method == http.MethodGet {
+		h.confirmPasswordReset(w, r, "")
+		return
+	}
+	id := html.EscapeString(r.FormValue("ID"))
+	if id == "" {
+		h.confirmPasswordReset(w, r, "Missing ID Parameter")
+		return
+	}
+	confirmationID := html.EscapeString(r.FormValue("confirmationID"))
+	if confirmationID == "" {
+		h.confirmPasswordReset(w, r, "Missing confirmation ID")
+		return
+	}
+
+	if id != confirmationID {
+		h.confirmPasswordReset(w, r, "Confirmation ID doesn't match")
+		return
+	}
+
+	// get the existing project model
+	project := h.getProjectByIDOrReturnError(id, w)
+	if project == nil {
+		return
+	}
+
+	// get the username and account for NULLs or blank strings (the model supports both)
+	var username = project.GetStaticAdminUsername()
+	if username == "" {
+		username = model.GenerateRandomString(10)
+	}
+
+	// generate a new password
+	password := model.GenerateRandomString(30)
+
+	// update the details
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := h.projectStore.UpdateProjectStaticAdmin(ctx, id, username, password); err != nil {
+		h.logger.Error("failed to update static admin",
+			zap.String("id", id),
+			zap.Error(err),
+		)
+		http.Error(w, fmt.Sprintf("Unable to reset the password for project (%v)", err), http.StatusInternalServerError)
+		return
+	}
+
+	data := map[string]string{
+		"ID":                  project.Id,
+		"StaticAdminUsername": username,
+		"StaticAdminPassword": password,
+	}
+	if err := resetPasswordTmpl.Execute(w, data); err != nil {
+		h.logger.Error("failed to render ResetPassword page template", zap.Error(err))
 	}
 }
 
@@ -231,14 +336,4 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 	if err := addedProjectTmpl.Execute(w, data); err != nil {
 		h.logger.Error("failed to render AddedProject page template", zap.Error(err))
 	}
-}
-
-func groupApplicationCounts(counts []model.InsightApplicationCount) (total int, groups map[string]int) {
-	groups = make(map[string]int)
-	for _, c := range counts {
-		total += int(c.Count)
-		kind := c.Labels[model.InsightApplicationCountLabelKey_KIND.String()]
-		groups[kind] += int(c.Count)
-	}
-	return
 }

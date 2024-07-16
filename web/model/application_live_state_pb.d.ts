@@ -390,14 +390,8 @@ export class ECSResourceState extends jspb.Message {
   getName(): string;
   setName(value: string): ECSResourceState;
 
-  getApiVersion(): string;
-  setApiVersion(value: string): ECSResourceState;
-
   getKind(): string;
   setKind(value: string): ECSResourceState;
-
-  getNamespace(): string;
-  setNamespace(value: string): ECSResourceState;
 
   getHealthStatus(): ECSResourceState.HealthStatus;
   setHealthStatus(value: ECSResourceState.HealthStatus): ECSResourceState;
@@ -425,9 +419,7 @@ export namespace ECSResourceState {
     ownerIdsList: Array<string>,
     parentIdsList: Array<string>,
     name: string,
-    apiVersion: string,
     kind: string,
-    namespace: string,
     healthStatus: ECSResourceState.HealthStatus,
     healthDescription: string,
     createdAt: number,
