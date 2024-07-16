@@ -15,10 +15,12 @@
 package model
 
 import (
+	"context"
 	"crypto/subtle"
 	"fmt"
 	"net/url"
 
+	"github.com/coreos/go-oidc/v3/oidc"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -261,6 +263,11 @@ func (p *ProjectSSOConfig) GenerateAuthCodeURL(project, callbackURL, state strin
 			return "", fmt.Errorf("missing GitHub oauth in the SSO configuration")
 		}
 		return p.Github.GenerateAuthCodeURL(project, callbackURL, state)
+	case ProjectSSOConfig_OIDC:
+		if p.Oidc == nil {
+			return "", fmt.Errorf("missing OIDC oauth in the SSO configuration")
+		}
+		return p.Oidc.GenerateAuthCodeURL(project, state)
 
 	default:
 		return "", fmt.Errorf("not implemented")
@@ -343,6 +350,34 @@ func (p *ProjectSSOConfig_GitHub) GenerateAuthCodeURL(project, callbackURL, stat
 	}
 	cfg.Scopes = githubScopes
 	cfg.RedirectURL = fmt.Sprintf("%s?project=%s", callbackURL, project)
+	authURL := cfg.AuthCodeURL(state, oauth2.ApprovalForce, oauth2.AccessTypeOnline)
+
+	return authURL, nil
+}
+
+// GenerateAuthCodeURL generates an auth URL for the specified configuration.
+func (p *ProjectSSOConfig_Oidc) GenerateAuthCodeURL(project, state string) (string, error) {
+	ctx := context.Background()
+	provider, err := oidc.NewProvider(ctx, p.Issuer)
+	if err != nil {
+		return "", err
+	}
+
+	scopes := []string{}
+	if len(p.Scopes) == 0 {
+		scopes = append(scopes, oidc.ScopeOpenID)
+	} else {
+		scopes = p.Scopes
+	}
+
+	cfg := oauth2.Config{
+		ClientID:    p.ClientId,
+		Endpoint:    provider.Endpoint(),
+		Scopes:      scopes,
+		RedirectURL: p.RedirectUri,
+	}
+
+	state = fmt.Sprintf("%s:%s", state, project)
 	authURL := cfg.AuthCodeURL(state, oauth2.ApprovalForce, oauth2.AccessTypeOnline)
 
 	return authURL, nil
