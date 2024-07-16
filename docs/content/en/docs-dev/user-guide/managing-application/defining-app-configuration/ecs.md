@@ -155,7 +155,9 @@ spec:
   - That means you need to link target groups to your listener rules before deployments.
   - For more information and diagrams, see [Issue#4733 [ECS] Modify ELB listener rules other than defaults without adding config](https://github.com/pipe-cd/pipecd/pull/4733).
 - When you use [Service Connect](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-connect.html), you cannot use Canary or Blue/Green deployment yet because Service Connect does not support the external deployment yet.
-- When you use auto scaling for a service, you can avoid reconciling `desiredCount` by not setting `desiredCount` in the service definition. See [Restrictions of Service Definition](../../../configuration-reference/#restrictions-of-service-definition).
+- When you use AutoScaling for a service, you can disable reconciling `desiredCount` by following steps.
+  1. Create a service without defining `desiredCount` in the service definition file. See [Restrictions of Service Definition](../../../configuration-reference/#restrictions-of-service-definition).
+  2. Configure AutoScaling by yourself.
 
 ## Reference
 
