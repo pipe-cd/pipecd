@@ -22,6 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PlannerServiceClient interface {
+	// DetermineVersions determines which versions of the artifacts will be used for the given deployment.
+	DetermineVersions(ctx context.Context, in *DetermineVersionsRequest, opts ...grpc.CallOption) (*DetermineVersionsResponse, error)
 	// DetermineStrategy determines which strategy should be used for the given deployment.
 	DetermineStrategy(ctx context.Context, in *DetermineStrategyRequest, opts ...grpc.CallOption) (*DetermineStrategyResponse, error)
 	// QuickSyncPlan builds plan for the given deployment using quick sync strategy.
@@ -36,6 +38,15 @@ type plannerServiceClient struct {
 
 func NewPlannerServiceClient(cc grpc.ClientConnInterface) PlannerServiceClient {
 	return &plannerServiceClient{cc}
+}
+
+func (c *plannerServiceClient) DetermineVersions(ctx context.Context, in *DetermineVersionsRequest, opts ...grpc.CallOption) (*DetermineVersionsResponse, error) {
+	out := new(DetermineVersionsResponse)
+	err := c.cc.Invoke(ctx, "/grpc.plugin.platformapi.v1alpha1.PlannerService/DetermineVersions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *plannerServiceClient) DetermineStrategy(ctx context.Context, in *DetermineStrategyRequest, opts ...grpc.CallOption) (*DetermineStrategyResponse, error) {
@@ -69,6 +80,8 @@ func (c *plannerServiceClient) PipelineSyncPlan(ctx context.Context, in *Pipelin
 // All implementations must embed UnimplementedPlannerServiceServer
 // for forward compatibility
 type PlannerServiceServer interface {
+	// DetermineVersions determines which versions of the artifacts will be used for the given deployment.
+	DetermineVersions(context.Context, *DetermineVersionsRequest) (*DetermineVersionsResponse, error)
 	// DetermineStrategy determines which strategy should be used for the given deployment.
 	DetermineStrategy(context.Context, *DetermineStrategyRequest) (*DetermineStrategyResponse, error)
 	// QuickSyncPlan builds plan for the given deployment using quick sync strategy.
@@ -82,6 +95,9 @@ type PlannerServiceServer interface {
 type UnimplementedPlannerServiceServer struct {
 }
 
+func (UnimplementedPlannerServiceServer) DetermineVersions(context.Context, *DetermineVersionsRequest) (*DetermineVersionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DetermineVersions not implemented")
+}
 func (UnimplementedPlannerServiceServer) DetermineStrategy(context.Context, *DetermineStrategyRequest) (*DetermineStrategyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DetermineStrategy not implemented")
 }
@@ -102,6 +118,24 @@ type UnsafePlannerServiceServer interface {
 
 func RegisterPlannerServiceServer(s grpc.ServiceRegistrar, srv PlannerServiceServer) {
 	s.RegisterService(&PlannerService_ServiceDesc, srv)
+}
+
+func _PlannerService_DetermineVersions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DetermineVersionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlannerServiceServer).DetermineVersions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc.plugin.platformapi.v1alpha1.PlannerService/DetermineVersions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlannerServiceServer).DetermineVersions(ctx, req.(*DetermineVersionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _PlannerService_DetermineStrategy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -165,6 +199,10 @@ var PlannerService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "grpc.plugin.platformapi.v1alpha1.PlannerService",
 	HandlerType: (*PlannerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "DetermineVersions",
+			Handler:    _PlannerService_DetermineVersions_Handler,
+		},
 		{
 			MethodName: "DetermineStrategy",
 			Handler:    _PlannerService_DetermineStrategy_Handler,
