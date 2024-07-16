@@ -1,6 +1,6 @@
 FROM alpine:3.20
 
-ARG GOOGLE_CLOUD_SDK_VERSION=324.0.0
+ARG GOOGLE_CLOUD_SDK_VERSION=477.0.0
 
 RUN \
     apk add --no-cache \
