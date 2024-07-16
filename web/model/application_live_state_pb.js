@@ -3020,13 +3020,11 @@ proto.model.ECSResourceState.toObject = function(includeInstance, msg) {
     ownerIdsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
     parentIdsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
     name: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    apiVersion: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    kind: jspb.Message.getFieldWithDefault(msg, 6, ""),
-    namespace: jspb.Message.getFieldWithDefault(msg, 7, ""),
-    healthStatus: jspb.Message.getFieldWithDefault(msg, 8, 0),
-    healthDescription: jspb.Message.getFieldWithDefault(msg, 9, ""),
-    createdAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
-    updatedAt: jspb.Message.getFieldWithDefault(msg, 15, 0)
+    kind: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    healthStatus: jspb.Message.getFieldWithDefault(msg, 6, 0),
+    healthDescription: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    createdAt: jspb.Message.getFieldWithDefault(msg, 8, 0),
+    updatedAt: jspb.Message.getFieldWithDefault(msg, 9, 0)
   };
 
   if (includeInstance) {
@@ -3081,29 +3079,21 @@ proto.model.ECSResourceState.deserializeBinaryFromReader = function(msg, reader)
       break;
     case 5:
       var value = /** @type {string} */ (reader.readString());
-      msg.setApiVersion(value);
-      break;
-    case 6:
-      var value = /** @type {string} */ (reader.readString());
       msg.setKind(value);
       break;
-    case 7:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setNamespace(value);
-      break;
-    case 8:
+    case 6:
       var value = /** @type {!proto.model.ECSResourceState.HealthStatus} */ (reader.readEnum());
       msg.setHealthStatus(value);
       break;
-    case 9:
+    case 7:
       var value = /** @type {string} */ (reader.readString());
       msg.setHealthDescription(value);
       break;
-    case 14:
+    case 8:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setCreatedAt(value);
       break;
-    case 15:
+    case 9:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setUpdatedAt(value);
       break;
@@ -3164,52 +3154,38 @@ proto.model.ECSResourceState.serializeBinaryToWriter = function(message, writer)
       f
     );
   }
-  f = message.getApiVersion();
+  f = message.getKind();
   if (f.length > 0) {
     writer.writeString(
       5,
       f
     );
   }
-  f = message.getKind();
-  if (f.length > 0) {
-    writer.writeString(
-      6,
-      f
-    );
-  }
-  f = message.getNamespace();
-  if (f.length > 0) {
-    writer.writeString(
-      7,
-      f
-    );
-  }
   f = message.getHealthStatus();
   if (f !== 0.0) {
     writer.writeEnum(
-      8,
+      6,
       f
     );
   }
   f = message.getHealthDescription();
   if (f.length > 0) {
     writer.writeString(
-      9,
+      7,
       f
     );
   }
   f = message.getCreatedAt();
   if (f !== 0) {
     writer.writeInt64(
-      14,
+      8,
       f
     );
   }
   f = message.getUpdatedAt();
   if (f !== 0) {
     writer.writeInt64(
-      15,
+      9,
       f
     );
   }
@@ -3336,10 +3312,10 @@ proto.model.ECSResourceState.prototype.setName = function(value) {
 
 
 /**
- * optional string api_version = 5;
+ * optional string kind = 5;
  * @return {string}
  */
-proto.model.ECSResourceState.prototype.getApiVersion = function() {
+proto.model.ECSResourceState.prototype.getKind = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
@@ -3348,53 +3324,17 @@ proto.model.ECSResourceState.prototype.getApiVersion = function() {
  * @param {string} value
  * @return {!proto.model.ECSResourceState} returns this
  */
-proto.model.ECSResourceState.prototype.setApiVersion = function(value) {
+proto.model.ECSResourceState.prototype.setKind = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 
 /**
- * optional string kind = 6;
- * @return {string}
- */
-proto.model.ECSResourceState.prototype.getKind = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.model.ECSResourceState} returns this
- */
-proto.model.ECSResourceState.prototype.setKind = function(value) {
-  return jspb.Message.setProto3StringField(this, 6, value);
-};
-
-
-/**
- * optional string namespace = 7;
- * @return {string}
- */
-proto.model.ECSResourceState.prototype.getNamespace = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.model.ECSResourceState} returns this
- */
-proto.model.ECSResourceState.prototype.setNamespace = function(value) {
-  return jspb.Message.setProto3StringField(this, 7, value);
-};
-
-
-/**
- * optional HealthStatus health_status = 8;
+ * optional HealthStatus health_status = 6;
  * @return {!proto.model.ECSResourceState.HealthStatus}
  */
 proto.model.ECSResourceState.prototype.getHealthStatus = function() {
-  return /** @type {!proto.model.ECSResourceState.HealthStatus} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
+  return /** @type {!proto.model.ECSResourceState.HealthStatus} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
 };
 
 
@@ -3403,16 +3343,16 @@ proto.model.ECSResourceState.prototype.getHealthStatus = function() {
  * @return {!proto.model.ECSResourceState} returns this
  */
 proto.model.ECSResourceState.prototype.setHealthStatus = function(value) {
-  return jspb.Message.setProto3EnumField(this, 8, value);
+  return jspb.Message.setProto3EnumField(this, 6, value);
 };
 
 
 /**
- * optional string health_description = 9;
+ * optional string health_description = 7;
  * @return {string}
  */
 proto.model.ECSResourceState.prototype.getHealthDescription = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
 };
 
 
@@ -3421,16 +3361,16 @@ proto.model.ECSResourceState.prototype.getHealthDescription = function() {
  * @return {!proto.model.ECSResourceState} returns this
  */
 proto.model.ECSResourceState.prototype.setHealthDescription = function(value) {
-  return jspb.Message.setProto3StringField(this, 9, value);
+  return jspb.Message.setProto3StringField(this, 7, value);
 };
 
 
 /**
- * optional int64 created_at = 14;
+ * optional int64 created_at = 8;
  * @return {number}
  */
 proto.model.ECSResourceState.prototype.getCreatedAt = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 14, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
 };
 
 
@@ -3439,16 +3379,16 @@ proto.model.ECSResourceState.prototype.getCreatedAt = function() {
  * @return {!proto.model.ECSResourceState} returns this
  */
 proto.model.ECSResourceState.prototype.setCreatedAt = function(value) {
-  return jspb.Message.setProto3IntField(this, 14, value);
+  return jspb.Message.setProto3IntField(this, 8, value);
 };
 
 
 /**
- * optional int64 updated_at = 15;
+ * optional int64 updated_at = 9;
  * @return {number}
  */
 proto.model.ECSResourceState.prototype.getUpdatedAt = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 15, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 9, 0));
 };
 
 
@@ -3457,7 +3397,7 @@ proto.model.ECSResourceState.prototype.getUpdatedAt = function() {
  * @return {!proto.model.ECSResourceState} returns this
  */
 proto.model.ECSResourceState.prototype.setUpdatedAt = function(value) {
-  return jspb.Message.setProto3IntField(this, 15, value);
+  return jspb.Message.setProto3IntField(this, 9, value);
 };
 
 

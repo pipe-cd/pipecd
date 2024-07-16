@@ -172,19 +172,14 @@ message ECSResourceState {
     repeated string parent_ids = 3;
     // The unique name for the type of resource.
     string name = 4 [(validate.rules).string.min_len = 1];
-    // The api version of this resource. Use application's ApiVersion for ECS resources.
-    string api_version = 5 [(validate.rules).string.min_len = 1];
-    // The kind of this resource.
-    string kind = 6 [(validate.rules).string.min_len = 1];
-    // The namespace this resource belongs to.
-    // This is empty for ECS resources.
-    string namespace = 7;
+    // The kind of this resource. e.g. Service, TaskSet, Task.
+    string kind = 5 [(validate.rules).string.min_len = 1];
 
-    HealthStatus health_status = 8 [(validate.rules).enum.defined_only = true];
-    string health_description = 9;
+    HealthStatus health_status = 6 [(validate.rules).enum.defined_only = true];
+    string health_description = 7;
 
     // The timestamp when this resource was created.
-    int64 created_at = 14 [(validate.rules).int64.gt = 0];
+    int64 created_at = 8 [(validate.rules).int64.gt = 0];
     // The timestamp of the last time when this resource was updated.
-    int64 updated_at = 15 [(validate.rules).int64.gt = 0];
+    int64 updated_at = 9 [(validate.rules).int64.gt = 0];
 }
