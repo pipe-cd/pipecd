@@ -71,6 +71,9 @@ message PlanPluginInput {
     string last_successful_config_file_name = 4;
     // The configuration of plugin that handles the deployment.
     bytes plugin_config = 5;
+    // The workking directory to use in plugin.
+    // This directory contains the cloned deploy source with the directory name "deploy_source".
+    string working_dir = 6;
 }
 
 service ExecutorService {

@@ -922,6 +922,8 @@ func (m *PlanPluginInput) validate(all bool) error {
 
 	// no validation rules for PluginConfig
 
+	// no validation rules for WorkingDir
+
 	if len(errors) > 0 {
 		return PlanPluginInputMultiError(errors)
 	}
