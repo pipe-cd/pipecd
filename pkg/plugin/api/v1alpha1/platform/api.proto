@@ -23,12 +23,23 @@ import "pkg/model/deployment.proto";
 
 // PlannerService defines the public APIs for remote planners.
 service PlannerService {
+    // DetermineVersions determines which versions of the artifacts will be used for the given deployment.
+    rpc DetermineVersions(DetermineVersionsRequest) returns (DetermineVersionsResponse) {}
     // DetermineStrategy determines which strategy should be used for the given deployment.
     rpc DetermineStrategy(DetermineStrategyRequest) returns (DetermineStrategyResponse) {}
     // QuickSyncPlan builds plan for the given deployment using quick sync strategy.
     rpc QuickSyncPlan(QuickSyncPlanRequest) returns (QuickSyncPlanResponse) {}
     // PipelineSyncPlan builds plan for the given deployment using pipeline sync strategy.
     rpc PipelineSyncPlan(PipelineSyncPlanRequest) returns (PipelineSyncPlanResponse) {}
+}
+
+message DetermineVersionsRequest {
+    PlanPluginInput input = 1 [(validate.rules).message.required = true];
+}
+
+message DetermineVersionsResponse {
+    // The determined versions of the artifacts.
+    repeated model.ArtifactVersion versions = 1;
 }
 
 message DetermineStrategyRequest {
