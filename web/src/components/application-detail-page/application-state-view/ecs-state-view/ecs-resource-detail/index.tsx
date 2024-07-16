@@ -46,7 +46,6 @@ export interface ECSResourceDetailProps {
   resource: {
     name: string;
     kind: string;
-    apiVersion: string;
     healthDescription: string;
   };
   onClose: () => void;
@@ -72,15 +71,6 @@ export const ECSResourceDetail: FC<ECSResourceDetailProps> = ({
         </Typography>
         <Typography variant="body1" className={classes.sectionBody}>
           {resource.kind}
-        </Typography>
-      </div>
-
-      <div className={classes.section}>
-        <Typography variant="subtitle1" className={classes.sectionTitle}>
-          Api Version
-        </Typography>
-        <Typography variant="body1" className={classes.sectionBody}>
-          {resource.apiVersion}
         </Typography>
       </div>
 
