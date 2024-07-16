@@ -34,19 +34,19 @@ func (b *builder) lambdadiff(
 	buf *bytes.Buffer,
 ) (*diffResult, error) {
 	var (
-		oldManifests, newManifests provider.FunctionManifest
-		err                        error
+		oldManifest, newManifest provider.FunctionManifest
+		err                      error
 	)
 
-	newManifests, err = b.loadFunctionManifest(ctx, *app, targetDSP)
+	newManifest, err = b.loadFunctionManifest(ctx, *app, targetDSP)
 	if err != nil {
-		fmt.Fprintf(buf, "failed to load lambda manifests at the head commit (%v)\n", err)
+		fmt.Fprintf(buf, "failed to load lambda manifest at the head commit (%v)\n", err)
 		return nil, err
 	}
 
 	if lastCommit == "" {
 		fmt.Fprintf(buf, "failed to find the commit of the last successful deployment")
-		return nil, fmt.Errorf("cannot get the old manifests without the last successful deployment")
+		return nil, fmt.Errorf("cannot get the old manifest without the last successful deployment")
 	}
 
 	runningDSP := deploysource.NewProvider(
@@ -56,20 +56,20 @@ func (b *builder) lambdadiff(
 		b.secretDecrypter,
 	)
 
-	oldManifests, err = b.loadFunctionManifest(ctx, *app, runningDSP)
+	oldManifest, err = b.loadFunctionManifest(ctx, *app, runningDSP)
 	if err != nil {
-		fmt.Fprintf(buf, "failed to load lambda manifests at the running commit (%v)\n", err)
+		fmt.Fprintf(buf, "failed to load lambda manifest at the running commit (%v)\n", err)
 		return nil, err
 	}
 
 	result, err := provider.Diff(
-		oldManifests,
-		newManifests,
+		oldManifest,
+		newManifest,
 		diff.WithEquateEmpty(),
 		diff.WithCompareNumberAndNumericString(),
 	)
 	if err != nil {
-		fmt.Fprintf(buf, "failed to compare manifests (%v)\n", err)
+		fmt.Fprintf(buf, "failed to compare manifest (%v)\n", err)
 		return nil, err
 	}
 
