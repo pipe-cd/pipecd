@@ -255,7 +255,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		*s.deployment.GitPath,
 		nil,
 	)
-	ds, err := configDSP.GetReadOnly(ctx, io.Discard)
+	ds, err := configDSP.Get(ctx, io.Discard)
 	if err != nil {
 		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
 		statusReason = fmt.Sprintf("Unable to prepare application configuration source data at target commit (%v)", err)
