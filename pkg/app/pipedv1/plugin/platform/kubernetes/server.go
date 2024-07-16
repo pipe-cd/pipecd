@@ -71,8 +71,11 @@ func (s *server) run(ctx context.Context, input cli.Input) (runErr error) {
 	// Start a gRPC server for handling external API requests.
 	{
 		var (
-			service = planner.NewPlannerService(input.Logger)
-			opts    = []rpc.Option{
+			service = planner.NewPlannerService(
+				nil, // TODO: Inject the real secret decrypter. It should be a instance of pipedv1/plugin/secrets.Decrypter.
+				input.Logger,
+			)
+			opts = []rpc.Option{
 				rpc.WithPort(s.apiPort),
 				rpc.WithGracePeriod(s.gracePeriod),
 				rpc.WithLogger(input.Logger),
