@@ -25,3 +25,6 @@ area/examples:
 area/tool:
 - tool/*
 - tool/**/*
+
+area/pipedv1:
+- pkg/app/pipedv1/**/*
