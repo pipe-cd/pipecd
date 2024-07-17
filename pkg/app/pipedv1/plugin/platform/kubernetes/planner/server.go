@@ -108,7 +108,7 @@ func (ps *PlannerService) QuickSyncPlan(ctx context.Context, in *platform.QuickS
 	}
 
 	return &platform.QuickSyncPlanResponse{
-		Stages: buildQuickSyncPipeline(*cfg.Input.AutoRollback, now),
+		Stages: buildQuickSyncPipeline(*cfg.Planner.AutoRollback, now),
 	}, nil
 }
 
