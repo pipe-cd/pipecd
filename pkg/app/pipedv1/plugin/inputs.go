@@ -18,8 +18,9 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/creasty/defaults"
 	"github.com/pipe-cd/pipecd/pkg/plugin/api/v1alpha1/platform"
+
+	"github.com/creasty/defaults"
 )
 
 // DecodeApplicationSpec decodes the spec field of the given ApplicationConfig
